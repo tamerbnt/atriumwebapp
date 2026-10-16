@@ -259,6 +259,102 @@ function notify() {
 
 const EMPTY_PLANS: MembershipPlan[] = [];
 
+// Module-level singletons to prevent race conditions across multiple hook consumers
+let hasInitialSynced = false;
+let activeBranchSub: (() => void) | null = null;
+let activeSubscribedBranchId: string | null = null;
+let activeTimerInterval: ReturnType<typeof setInterval> | null = null;
+
+function ensureBranchSubscription(branchId: string) {
+  if (!isSupabaseConfigured()) return;
+  if (activeSubscribedBranchId === branchId && activeBranchSub) {
+    return;
+  }
+  if (activeBranchSub) {
+    try {
+      activeBranchSub();
+    } catch (e) {
+      console.warn('[store] Cleanup old branch realtime failed:', e);
+    }
+    activeBranchSub = null;
+  }
+  activeSubscribedBranchId = branchId;
+  activeBranchSub = realtimeService.subscribeToBranch(branchId, {
+    onMemberChange: () => {
+      memberService.fetchMembers(branchId).then((newMembers) => {
+        if (newMembers.length > 0) {
+          const others = globalState.members.filter((m) => m.facilityId !== branchId);
+          globalState = {
+            ...globalState,
+            members: [...newMembers, ...others],
+            lastSyncedAt: new Date().toISOString(),
+          };
+          notify();
+        }
+      });
+    },
+    onLeadChange: () => {
+      memberService.fetchRegistrationRequests(branchId).then((newLeads) => {
+        if (newLeads.length > 0) {
+          const others = globalState.leads.filter((l) => l.facilityId !== branchId);
+          globalState = {
+            ...globalState,
+            leads: [...newLeads, ...others],
+            lastSyncedAt: new Date().toISOString(),
+          };
+          notify();
+        }
+      });
+    },
+  });
+}
+
+function ensureTimerTick(isRunning: boolean, isPaused: boolean) {
+  if (isRunning && !isPaused) {
+    if (!activeTimerInterval) {
+      activeTimerInterval = setInterval(() => {
+        const current = globalState.activeTimer;
+        if (!current.isRunning || current.isPaused) {
+          if (activeTimerInterval) {
+            clearInterval(activeTimerInterval);
+            activeTimerInterval = null;
+          }
+          return;
+        }
+
+        const newElapsed = current.elapsedSeconds + 1;
+        let newPomodoroSecs = current.pomodoroRemainingSeconds;
+        let newPomodoroMode = current.pomodoroMode;
+
+        if (current.isPomodoro) {
+          if (newPomodoroSecs <= 1) {
+            newPomodoroMode = current.pomodoroMode === 'work' ? 'break' : 'work';
+            newPomodoroSecs = newPomodoroMode === 'work' ? 1500 : 300;
+          } else {
+            newPomodoroSecs -= 1;
+          }
+        }
+
+        globalState = {
+          ...globalState,
+          activeTimer: {
+            ...current,
+            elapsedSeconds: newElapsed,
+            pomodoroRemainingSeconds: newPomodoroSecs,
+            pomodoroMode: newPomodoroMode,
+          },
+        };
+        notify();
+      }, 1000);
+    }
+  } else {
+    if (activeTimerInterval) {
+      clearInterval(activeTimerInterval);
+      activeTimerInterval = null;
+    }
+  }
+}
+
 export function useAtriumStore() {
   const [state, setState] = useState<AppState>(globalState);
 
@@ -389,85 +485,22 @@ export function useAtriumStore() {
     }
   };
 
-  // Synchronize on mount if configured
+  // Synchronize on mount if configured (once across the application)
   useEffect(() => {
-    if (isSupabaseConfigured()) {
+    if (isSupabaseConfigured() && !hasInitialSynced) {
+      hasInitialSynced = true;
       syncWithSupabase();
     }
   }, []);
 
   // Real-time synchronization subscription for current active branch
   useEffect(() => {
-    if (!isSupabaseConfigured()) return;
-
-    const unsubscribe = realtimeService.subscribeToBranch(state.currentBranchId, {
-      onMemberChange: () => {
-        memberService.fetchMembers(state.currentBranchId).then((newMembers) => {
-          if (newMembers.length > 0) {
-            const others = globalState.members.filter((m) => m.facilityId !== state.currentBranchId);
-            globalState = {
-              ...globalState,
-              members: [...newMembers, ...others],
-              lastSyncedAt: new Date().toISOString(),
-            };
-            notify();
-          }
-        });
-      },
-      onLeadChange: () => {
-        memberService.fetchRegistrationRequests(state.currentBranchId).then((newLeads) => {
-          if (newLeads.length > 0) {
-            const others = globalState.leads.filter((l) => l.facilityId !== state.currentBranchId);
-            globalState = {
-              ...globalState,
-              leads: [...newLeads, ...others],
-              lastSyncedAt: new Date().toISOString(),
-            };
-            notify();
-          }
-        });
-      },
-    });
-
-    return () => {
-      unsubscribe();
-    };
+    ensureBranchSubscription(state.currentBranchId);
   }, [state.currentBranchId]);
 
   // Active Timer Background Tick
   useEffect(() => {
-    if (!state.activeTimer.isRunning || state.activeTimer.isPaused) return;
-
-    const interval = setInterval(() => {
-      const current = globalState.activeTimer;
-      if (!current.isRunning || current.isPaused) return;
-
-      const newElapsed = current.elapsedSeconds + 1;
-      let newPomodoroSecs = current.pomodoroRemainingSeconds;
-      let newPomodoroMode = current.pomodoroMode;
-
-      if (current.isPomodoro) {
-        if (newPomodoroSecs <= 1) {
-          newPomodoroMode = current.pomodoroMode === 'work' ? 'break' : 'work';
-          newPomodoroSecs = newPomodoroMode === 'work' ? 1500 : 300;
-        } else {
-          newPomodoroSecs -= 1;
-        }
-      }
-
-      globalState = {
-        ...globalState,
-        activeTimer: {
-          ...current,
-          elapsedSeconds: newElapsed,
-          pomodoroRemainingSeconds: newPomodoroSecs,
-          pomodoroMode: newPomodoroMode,
-        },
-      };
-      notify();
-    }, 1000);
-
-    return () => clearInterval(interval);
+    ensureTimerTick(state.activeTimer.isRunning, state.activeTimer.isPaused);
   }, [state.activeTimer.isRunning, state.activeTimer.isPaused]);
 
   // Helpers

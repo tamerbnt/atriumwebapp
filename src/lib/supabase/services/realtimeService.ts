@@ -7,6 +7,8 @@ export interface RealtimeSubscriptionCallbacks {
   onBranchChange?: (payload: any) => void;
 }
 
+let activeChannel: RealtimeChannel | null = null;
+
 export const realtimeService = {
   subscribeToBranch(
     branchId: string,
@@ -17,41 +19,67 @@ export const realtimeService = {
       return () => {};
     }
 
-    const channelName = `branch-sync-${branchId}`;
-    const channel: RealtimeChannel = client
-      .channel(channelName)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'members_directory',
-          filter: `branch_id=eq.${branchId}`,
-        },
-        (payload) => {
-          if (callbacks.onMemberChange) callbacks.onMemberChange(payload);
+    try {
+      // Remove any previously active channel to avoid channel reuse collision
+      if (activeChannel) {
+        try {
+          client.removeChannel(activeChannel);
+        } catch (e) {
+          console.warn('[Realtime] Previous channel remove failed:', e);
         }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'registration_requests',
-          filter: `branch_id=eq.${branchId}`,
-        },
-        (payload) => {
-          if (callbacks.onLeadChange) callbacks.onLeadChange(payload);
-        }
-      )
-      .subscribe((status) => {
-        if (status === 'SUBSCRIBED') {
-          // Connected to realtime channel
-        }
-      });
+        activeChannel = null;
+      }
 
-    return () => {
-      client.removeChannel(channel);
-    };
+      // Generate a unique channel topic to prevent "cannot add callbacks after subscribe()"
+      const channelName = `branch-sync-${branchId}-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+      const channel: RealtimeChannel = client
+        .channel(channelName)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'members_directory',
+            filter: `branch_id=eq.${branchId}`,
+          },
+          (payload) => {
+            if (callbacks.onMemberChange) callbacks.onMemberChange(payload);
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'registration_requests',
+            filter: `branch_id=eq.${branchId}`,
+          },
+          (payload) => {
+            if (callbacks.onLeadChange) callbacks.onLeadChange(payload);
+          }
+        )
+        .subscribe((status) => {
+          if (status === 'SUBSCRIBED') {
+            // Connected to realtime channel
+          }
+        });
+
+      activeChannel = channel;
+
+      return () => {
+        try {
+          if (activeChannel === channel) {
+            activeChannel = null;
+          }
+          client.removeChannel(channel);
+        } catch (e) {
+          console.warn('[Realtime] Cleanup channel failed:', e);
+        }
+      };
+    } catch (err) {
+      console.warn('[Realtime] Failed to establish branch subscription:', err);
+      return () => {};
+    }
   },
 };
+
