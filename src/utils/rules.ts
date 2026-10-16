@@ -1,0 +1,208 @@
+import type { BusinessCategory, MemberStatus, SupportedLanguage } from '../types/index.ts';
+
+/**
+ * Validates lifetime voucher format: ATR-{TIER}-LIFE-{XXXX}-{XXXX}
+ * Valid TIERs: STARTER, PRO, ENTERPRISE
+ */
+export function validateVoucherCode(code: string): {
+  isValid: boolean;
+  tierRank?: 1 | 2 | 3;
+  tierName?: 'Starter' | 'Pro' | 'Enterprise';
+  error?: string;
+} {
+  if (!code || typeof code !== 'string') {
+    return { isValid: false, error: 'Voucher code is required' };
+  }
+
+  const cleanCode = code.trim().toUpperCase();
+  const pattern = /^ATR-(STARTER|PRO|ENTERPRISE)-LIFE-[A-Z0-9]{4}-[A-Z0-9]{4}$/;
+  const match = cleanCode.match(pattern);
+
+  if (!match) {
+    return {
+      isValid: false,
+      error: 'Invalid voucher format. Expected: ATR-{TIER}-LIFE-XXXX-XXXX (e.g. ATR-PRO-LIFE-A4B2-C9D1)',
+    };
+  }
+
+  const tier = match[1];
+  switch (tier) {
+    case 'STARTER':
+      return { isValid: true, tierRank: 1, tierName: 'Starter' };
+    case 'PRO':
+      return { isValid: true, tierRank: 2, tierName: 'Pro' };
+    case 'ENTERPRISE':
+      return { isValid: true, tierRank: 3, tierName: 'Enterprise' };
+    default:
+      return { isValid: false, error: 'Unknown tier in voucher' };
+  }
+}
+
+/**
+ * Checks resource quota against plan allowance
+ */
+export function checkQuota(
+  currentCount: number,
+  maxAllowed: number
+): {
+  isAllowed: boolean;
+  remaining: number;
+  percentageUsed: number;
+} {
+  // -1 indicates unlimited
+  if (maxAllowed < 0) {
+    return {
+      isAllowed: true,
+      remaining: 9999,
+      percentageUsed: 0,
+    };
+  }
+
+  const remaining = Math.max(0, maxAllowed - currentCount);
+  const percentageUsed = maxAllowed > 0 ? Math.min(100, Math.round((currentCount / maxAllowed) * 100)) : 100;
+
+  return {
+    isAllowed: currentCount < maxAllowed,
+    remaining,
+    percentageUsed,
+  };
+}
+
+/**
+ * Calculates remaining days from an ISO date string
+ * Returns -1 for perpetual lifetime licenses
+ */
+export function calculateDaysRemaining(isLifetime: boolean, expiresAt?: string): number {
+  if (isLifetime) return -1;
+  if (!expiresAt) return 0;
+
+  const now = new Date().getTime();
+  const target = new Date(expiresAt).getTime();
+  const diffTime = target - now;
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+  return Math.max(0, diffDays);
+}
+
+/**
+ * Format currency with tabular figures
+ */
+export function formatMoney(amount: number, currency = 'DZD'): string {
+  const formatted = new Intl.NumberFormat('en-US', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  }).format(amount);
+  return `${formatted} ${currency}`;
+}
+
+/**
+ * Status visual mapping for MemberStatus
+ */
+export function getStatusConfig(status: MemberStatus): {
+  label: string;
+  color: string;
+  bg: string;
+} {
+  switch (status) {
+    case 'Active':
+      return { label: 'Active', color: '#10B981', bg: '#ECFDF5' };
+    case 'Expired':
+      return { label: 'Expired', color: '#EF4444', bg: '#FEF2F2' };
+    case 'Frozen':
+      return { label: 'Frozen', color: '#3B82F6', bg: '#EFF6FF' };
+    case 'Suspended':
+      return { label: 'Suspended', color: '#F59E0B', bg: '#FFFBEB' };
+    case 'Pending':
+      return { label: 'Pending', color: '#6B7280', bg: '#F3F4F6' };
+    case 'Lead':
+      return { label: 'Lead', color: '#8B5CF6', bg: '#F5F3FF' };
+    case 'Banned':
+      return { label: 'Banned', color: '#991B1B', bg: '#FEE2E2' };
+    default:
+      return { label: 'Unknown', color: '#6B7280', bg: '#F3F4F6' };
+  }
+}
+
+/**
+ * Category-specific localized terminology dictionary
+ */
+export const TERMINOLOGY_STORE: Record<
+  BusinessCategory,
+  {
+    members: Record<SupportedLanguage, string>;
+    memberSingle: Record<SupportedLanguage, string>;
+    registration: Record<SupportedLanguage, string>;
+    plan: Record<SupportedLanguage, string>;
+    shop: Record<SupportedLanguage, string>;
+    scheduler: Record<SupportedLanguage, string>;
+    facility: Record<SupportedLanguage, string>;
+  }
+> = {
+  membership_session: {
+    members: { en: 'Members', fr: 'Membres', ar: 'الأعضاء' },
+    memberSingle: { en: 'Member', fr: 'Membre', ar: 'عضو' },
+    registration: { en: 'Registrations', fr: 'Inscriptions', ar: 'التسجيلات' },
+    plan: { en: 'Membership Plans', fr: 'Forfaits d\'adhésion', ar: 'خطط العضوية' },
+    shop: { en: 'Pro Shop', fr: 'Boutique', ar: 'المتجر الرياضي' },
+    scheduler: { en: 'Class Schedule', fr: 'Planning des cours', ar: 'جدول الحصص' },
+    facility: { en: 'Gym Branch', fr: 'Salle de sport', ar: 'فرع النادي' },
+  },
+  appointment_service: {
+    members: { en: 'Clients', fr: 'Clients', ar: 'العملاء' },
+    memberSingle: { en: 'Client', fr: 'Client', ar: 'عميل' },
+    registration: { en: 'Appointments', fr: 'Rendez-vous', ar: 'المواعيد' },
+    plan: { en: 'Service Packages', fr: 'Forfaits services', ar: 'باقات الخدمات' },
+    shop: { en: 'Beauty Store', fr: 'Boutique soins', ar: 'منتجات التجميل' },
+    scheduler: { en: 'Booking Calendar', fr: 'Calendrier réservations', ar: 'تقويم الحجوزات' },
+    facility: { en: 'Salon Location', fr: 'Salon', ar: 'فرع الصالون' },
+  },
+  pos_inventory: {
+    members: { en: 'Customers', fr: 'Clients', ar: 'الزبائن' },
+    memberSingle: { en: 'Customer', fr: 'Client', ar: 'زبون' },
+    registration: { en: 'Orders & Tables', fr: 'Commandes & Tables', ar: 'الطلبات والطاولات' },
+    plan: { en: 'Menu & Combos', fr: 'Menus & Formules', ar: 'القوائم والعروض' },
+    shop: { en: 'POS Register', fr: 'Caisse POS', ar: 'نقطة البيع' },
+    scheduler: { en: 'Reservations', fr: 'Réservations', ar: 'الحجوزات' },
+    facility: { en: 'Restaurant Branch', fr: 'Restaurant', ar: 'فرع المطعم' },
+  },
+  project_milestone: {
+    members: { en: 'Contacts & Clients', fr: 'Contacts & Clients', ar: 'جهات الاتصال' },
+    memberSingle: { en: 'Contact', fr: 'Contact', ar: 'جهة اتصال' },
+    registration: { en: 'Inquiries & Leads', fr: 'Demandes & Prospects', ar: 'الاستفسارات' },
+    plan: { en: 'Retainer Packages', fr: 'Contrats de service', ar: 'عقود الخدمات' },
+    shop: { en: 'Billable Items', fr: 'Articles facturables', ar: 'بنود الفوترة' },
+    scheduler: { en: 'Milestone Timeline', fr: 'Échéancier', ar: 'الجدول الزمني' },
+    facility: { en: 'Agency Office', fr: 'Agence', ar: 'مكتب الوكالة' },
+  },
+  rental_booking: {
+    members: { en: 'Renters & Guests', fr: 'Locataires & Invités', ar: 'المستأجرون والضيوف' },
+    memberSingle: { en: 'Renter', fr: 'Locataire', ar: 'مستأجر' },
+    registration: { en: 'Booking Requests', fr: 'Demandes de location', ar: 'طلبات الحجز' },
+    plan: { en: 'Rental Tiers', fr: 'Tarifs de location', ar: 'باقات الإيجار' },
+    shop: { en: 'Add-on Equipment', fr: 'Équipements optionnels', ar: 'المعدات الإضافية' },
+    scheduler: { en: 'Occupancy Calendar', fr: 'Calendrier d\'occupation', ar: 'تقويم الإشغال' },
+    facility: { en: 'Venue Location', fr: 'Espace', ar: 'الموقع' },
+  },
+  education_cohort: {
+    members: { en: 'Students', fr: 'Étudiants', ar: 'الطلاب' },
+    memberSingle: { en: 'Student', fr: 'Étudiant', ar: 'طالب' },
+    registration: { en: 'Enrollments', fr: 'Inscriptions', ar: 'طلبات التسجيل' },
+    plan: { en: 'Tuition Programs', fr: 'Programmes de cours', ar: 'البرامج الدراسية' },
+    shop: { en: 'Books & Supplies', fr: 'Fournitures & Livres', ar: 'الكتب واللوازم' },
+    scheduler: { en: 'Class Timetable', fr: 'Emploi du temps', ar: 'جدول الحصص' },
+    facility: { en: 'Campus Branch', fr: 'Campus', ar: 'المركز الدراسي' },
+  },
+};
+
+export function getCategoryTerminology(category: BusinessCategory, lang: SupportedLanguage) {
+  const dict = TERMINOLOGY_STORE[category] || TERMINOLOGY_STORE.membership_session;
+  return {
+    members: dict.members[lang] || dict.members.en,
+    memberSingle: dict.memberSingle[lang] || dict.memberSingle.en,
+    registration: dict.registration[lang] || dict.registration.en,
+    plan: dict.plan[lang] || dict.plan.en,
+    shop: dict.shop[lang] || dict.shop.en,
+    scheduler: dict.scheduler[lang] || dict.scheduler.en,
+    facility: dict.facility[lang] || dict.facility.en,
+  };
+}

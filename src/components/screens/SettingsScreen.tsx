@@ -1,0 +1,493 @@
+import React, { useState } from 'react';
+import {
+  Settings,
+  Building2,
+  Monitor,
+  ShieldCheck,
+  Plus,
+  Trash2,
+  KeyRound,
+  CheckCircle2,
+  AlertTriangle,
+  Sparkles,
+  ExternalLink,
+} from 'lucide-react';
+import { useAtriumStore } from '../../services/store';
+import { Modal } from '../ui/Modal';
+import { validateVoucherCode } from '../../utils/rules';
+
+interface SettingsScreenProps {
+  onOpenVoucherModal: () => void;
+}
+
+export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherModal }) => {
+  const {
+    account,
+    subscription,
+    businesses,
+    branches,
+    devices,
+    quotas,
+    currentBusiness,
+    addBranch,
+    registerDevice,
+    revokeDevice,
+  } = useAtriumStore();
+
+  const [isAddBranchOpen, setIsAddBranchOpen] = useState(false);
+  const [branchName, setBranchName] = useState('');
+  const [branchCode, setBranchCode] = useState('');
+  const [branchAddress, setBranchAddress] = useState('');
+  const [branchPhone, setBranchPhone] = useState('');
+  const [branchError, setBranchError] = useState<string | null>(null);
+
+  const [isAddDeviceOpen, setIsAddDeviceOpen] = useState(false);
+  const [deviceLabel, setDeviceLabel] = useState('');
+  const [deviceHwId, setDeviceHwId] = useState('');
+  const [deviceError, setDeviceError] = useState<string | null>(null);
+
+  const handleCreateBranch = (e: React.FormEvent) => {
+    e.preventDefault();
+    setBranchError(null);
+    try {
+      addBranch(branchName, branchCode, branchAddress, branchPhone);
+      setIsAddBranchOpen(false);
+      setBranchName('');
+      setBranchCode('');
+      setBranchAddress('');
+      setBranchPhone('');
+    } catch (err: any) {
+      setBranchError(err.message || 'Failed to create branch');
+    }
+  };
+
+  const handleRegisterDevice = (e: React.FormEvent) => {
+    e.preventDefault();
+    setDeviceError(null);
+    try {
+      registerDevice(deviceLabel, deviceHwId);
+      setIsAddDeviceOpen(false);
+      setDeviceLabel('');
+      setDeviceHwId('');
+    } catch (err: any) {
+      setDeviceError(err.message || 'Failed to register terminal');
+    }
+  };
+
+  return (
+    <div className="space-y-8 animate-in fade-in duration-200">
+      {/* Row 0: Screen Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-neutral-200 dark:border-neutral-800">
+        <div className="flex items-center gap-3.5">
+          <div
+            style={{ backgroundColor: 'var(--color-accent-dim)', color: 'var(--color-accent)' }}
+            className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-xs"
+          >
+            <Settings size={24} />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white">
+              System Settings & Architecture
+            </h1>
+            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
+              Manage branches, POS devices, license vouchers, and multi-tenant security
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Row 1: License Status Banner */}
+      <div
+        style={{
+          backgroundColor: 'var(--color-card-bg)',
+          border: '1px solid var(--color-card-border)',
+          borderRadius: 'var(--radius-card)',
+        }}
+        className="p-6 relative overflow-hidden"
+      >
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold uppercase tracking-wider text-neutral-400">
+                Active License Entitlement
+              </span>
+              <span
+                className={`px-2 py-0.5 rounded text-[11px] font-bold ${
+                  subscription.isLifetime
+                    ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300'
+                    : 'bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300'
+                }`}
+              >
+                {subscription.isLifetime ? 'PERPETUAL LIFETIME' : '30-DAY TRIAL'}
+              </span>
+            </div>
+            <h2 className="text-xl font-bold text-neutral-900 dark:text-white">
+              Atrium {subscription.plan.name} Tier Rank #{subscription.plan.tierRank}
+            </h2>
+            <p className="text-xs text-neutral-500 dark:text-neutral-400">
+              {subscription.isLifetime
+                ? `Activated via voucher code ${subscription.activatedByVoucher || 'ATR-LIFE-VOUCHER'}. Perpetual updates and sync authorized.`
+                : 'Free evaluation tier. Enter your lifetime prepaid cash voucher code to unlock full capacity.'}
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={onOpenVoucherModal}
+            style={{
+              backgroundColor: 'var(--color-accent)',
+              borderRadius: 'var(--radius-button)',
+            }}
+            className="h-10 px-5 text-xs font-bold text-white flex items-center gap-2 shrink-0 hover:opacity-90 active:scale-98 transition-all cursor-pointer shadow-xs"
+          >
+            <KeyRound size={15} />
+            <span>Redeem Lifetime Voucher</span>
+          </button>
+        </div>
+
+        {/* Quota gauges */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6 pt-5 border-t border-neutral-200/50 dark:border-neutral-800/50 text-xs">
+          <div>
+            <span className="text-neutral-400 block text-[11px]">Businesses Allowed</span>
+            <span className="font-bold text-neutral-800 dark:text-neutral-200 tabular-nums">
+              {businesses.length} / {subscription.plan.maxBusinesses}
+            </span>
+          </div>
+          <div>
+            <span className="text-neutral-400 block text-[11px]">Branches Allowed</span>
+            <span className="font-bold text-neutral-800 dark:text-neutral-200 tabular-nums">
+              {branches.length} / {subscription.plan.maxBranches}
+            </span>
+          </div>
+          <div>
+            <span className="text-neutral-400 block text-[11px]">POS Devices Allowed</span>
+            <span className="font-bold text-neutral-800 dark:text-neutral-200 tabular-nums">
+              {devices.length} / {subscription.plan.maxDevices}
+            </span>
+          </div>
+          <div>
+            <span className="text-neutral-400 block text-[11px]">Cross-Branch Reports</span>
+            <span className="font-bold text-emerald-600 dark:text-emerald-400">
+              {subscription.plan.crossBranchReports ? 'Enabled' : 'Pro Tier Only'}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Row 2: Branches Management */}
+      <div
+        style={{
+          backgroundColor: 'var(--color-card-bg)',
+          border: '1px solid var(--color-card-border)',
+          borderRadius: 'var(--radius-card)',
+        }}
+        className="p-6 space-y-4"
+      >
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-base font-bold text-neutral-900 dark:text-white">
+              Physical Branches & Facilities
+            </h3>
+            <p className="text-xs text-neutral-500">
+              All physical locations under tenant business ({branches.length} registered)
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setIsAddBranchOpen(true)}
+            style={{
+              backgroundColor: 'var(--color-accent)',
+              borderRadius: 'var(--radius-button)',
+            }}
+            className="h-9 px-3.5 text-xs font-semibold text-white flex items-center gap-1.5 cursor-pointer hover:opacity-90 transition-opacity"
+          >
+            <Plus size={14} />
+            <span>Add Branch</span>
+          </button>
+        </div>
+
+        <div className="divide-y divide-neutral-200/60 dark:divide-neutral-800/80">
+          {branches.map((b) => (
+            <div key={b.id} className="py-3 flex items-center justify-between">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-bold text-neutral-900 dark:text-white">
+                    {b.name}
+                  </span>
+                  <span className="font-mono text-[10px] bg-neutral-100 dark:bg-neutral-800 px-2 py-0.5 rounded text-neutral-500">
+                    {b.code}
+                  </span>
+                  {b.isMainBranch && (
+                    <span className="text-[10px] font-bold text-[#C4785A] bg-[#C4785A]/10 px-2 py-0.5 rounded">
+                      Headquarters
+                    </span>
+                  )}
+                </div>
+                <div className="text-xs text-neutral-500 mt-0.5">
+                  {b.address || 'Address not configured'} · {b.phone || 'No phone'}
+                </div>
+              </div>
+
+              <span className="text-xs text-emerald-600 font-semibold flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                Online
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Row 3: Authorized Devices & Terminals */}
+      <div
+        style={{
+          backgroundColor: 'var(--color-card-bg)',
+          border: '1px solid var(--color-card-border)',
+          borderRadius: 'var(--radius-card)',
+        }}
+        className="p-6 space-y-4"
+      >
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-base font-bold text-neutral-900 dark:text-white">
+              Authorized POS Hardware Terminals
+            </h3>
+            <p className="text-xs text-neutral-500">
+              C# .NET desktop terminals and web consoles permitted for RPC access
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setIsAddDeviceOpen(true)}
+            style={{
+              backgroundColor: 'var(--color-accent)',
+              borderRadius: 'var(--radius-button)',
+            }}
+            className="h-9 px-3.5 text-xs font-semibold text-white flex items-center gap-1.5 cursor-pointer hover:opacity-90 transition-opacity"
+          >
+            <Plus size={14} />
+            <span>Register Device</span>
+          </button>
+        </div>
+
+        <div className="divide-y divide-neutral-200/60 dark:divide-neutral-800/80">
+          {devices.map((dev) => (
+            <div key={dev.id} className="py-3 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-500">
+                  <Monitor size={16} />
+                </div>
+                <div>
+                  <div className="text-sm font-bold text-neutral-900 dark:text-white">
+                    {dev.label}
+                  </div>
+                  <div className="text-xs font-mono text-neutral-400">
+                    ID: {dev.hardwareId} · Registered: {new Date(dev.registeredAt).toLocaleDateString()}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <span className="text-xs text-emerald-600 font-semibold">Active Terminal</span>
+                {devices.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => revokeDevice(dev.id)}
+                    className="text-xs text-rose-500 hover:text-rose-700 cursor-pointer p-1"
+                    title="Revoke authorization"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Add Branch Modal */}
+      <Modal
+        isOpen={isAddBranchOpen}
+        onClose={() => setIsAddBranchOpen(false)}
+        title="Add Business Branch"
+        subtitle={`Expand ${currentBusiness.name} location network`}
+      >
+        <form onSubmit={handleCreateBranch} className="space-y-4">
+          {branchError && (
+            <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-700 text-xs border border-rose-200">
+              {branchError}
+            </div>
+          )}
+
+          <div className="space-y-1">
+            <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
+              Branch Name *
+            </label>
+            <input
+              type="text"
+              required
+              value={branchName}
+              onChange={(e) => setBranchName(e.target.value)}
+              placeholder="e.g. Apex West Sidi Yahia"
+              style={{
+                backgroundColor: 'var(--color-surface-bg)',
+                borderColor: 'var(--color-border)',
+                borderRadius: 'var(--radius-input)',
+              }}
+              className="w-full h-11 px-3 text-sm border focus:outline-none focus:border-[#C4785A] text-neutral-900 dark:text-white"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
+                Branch Code *
+              </label>
+              <input
+                type="text"
+                required
+                value={branchCode}
+                onChange={(e) => setBranchCode(e.target.value)}
+                placeholder="e.g. APX-WEST"
+                style={{
+                  backgroundColor: 'var(--color-surface-bg)',
+                  borderColor: 'var(--color-border)',
+                  borderRadius: 'var(--radius-input)',
+                }}
+                className="w-full h-11 px-3 text-sm border focus:outline-none focus:border-[#C4785A] text-neutral-900 dark:text-white uppercase font-mono"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
+                Phone
+              </label>
+              <input
+                type="tel"
+                value={branchPhone}
+                onChange={(e) => setBranchPhone(e.target.value)}
+                placeholder="+213 21 00 00 00"
+                style={{
+                  backgroundColor: 'var(--color-surface-bg)',
+                  borderColor: 'var(--color-border)',
+                  borderRadius: 'var(--radius-input)',
+                }}
+                className="w-full h-11 px-3 text-sm border focus:outline-none focus:border-[#C4785A] text-neutral-900 dark:text-white"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
+              Physical Address
+            </label>
+            <input
+              type="text"
+              value={branchAddress}
+              onChange={(e) => setBranchAddress(e.target.value)}
+              placeholder="Boulevard, City, Wilaya"
+              style={{
+                backgroundColor: 'var(--color-surface-bg)',
+                borderColor: 'var(--color-border)',
+                borderRadius: 'var(--radius-input)',
+              }}
+              className="w-full h-11 px-3 text-sm border focus:outline-none focus:border-[#C4785A] text-neutral-900 dark:text-white"
+            />
+          </div>
+
+          <div className="flex justify-end gap-3 pt-3">
+            <button
+              type="button"
+              onClick={() => setIsAddBranchOpen(false)}
+              className="h-10 px-4 text-xs font-semibold text-neutral-500 cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              style={{
+                backgroundColor: 'var(--color-accent)',
+                borderRadius: 'var(--radius-button)',
+              }}
+              className="h-10 px-5 text-xs font-semibold text-white cursor-pointer shadow-xs"
+            >
+              Create Branch
+            </button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Add Device Modal */}
+      <Modal
+        isOpen={isAddDeviceOpen}
+        onClose={() => setIsAddDeviceOpen(false)}
+        title="Authorize POS Hardware Terminal"
+        subtitle="Register machine hardware ID for desktop or web kiosk"
+      >
+        <form onSubmit={handleRegisterDevice} className="space-y-4">
+          {deviceError && (
+            <div className="p-3 rounded-xl bg-rose-50 text-rose-700 text-xs border border-rose-200">
+              {deviceError}
+            </div>
+          )}
+
+          <div className="space-y-1">
+            <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
+              Terminal Friendly Label *
+            </label>
+            <input
+              type="text"
+              required
+              value={deviceLabel}
+              onChange={(e) => setDeviceLabel(e.target.value)}
+              placeholder="e.g. Reception Desk 2 (POS)"
+              style={{
+                backgroundColor: 'var(--color-surface-bg)',
+                borderColor: 'var(--color-border)',
+                borderRadius: 'var(--radius-input)',
+              }}
+              className="w-full h-11 px-3 text-sm border focus:outline-none focus:border-[#C4785A] text-neutral-900 dark:text-white"
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
+              Hardware ID *
+            </label>
+            <input
+              type="text"
+              required
+              value={deviceHwId}
+              onChange={(e) => setDeviceHwId(e.target.value)}
+              placeholder="e.g. HW-POS-ALGIERS-03"
+              style={{
+                backgroundColor: 'var(--color-surface-bg)',
+                borderColor: 'var(--color-border)',
+                borderRadius: 'var(--radius-input)',
+              }}
+              className="w-full h-11 px-3 text-sm border focus:outline-none focus:border-[#C4785A] text-neutral-900 dark:text-white font-mono uppercase"
+            />
+          </div>
+
+          <div className="flex justify-end gap-3 pt-3">
+            <button
+              type="button"
+              onClick={() => setIsAddDeviceOpen(false)}
+              className="h-10 px-4 text-xs font-semibold text-neutral-500 cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              style={{
+                backgroundColor: 'var(--color-accent)',
+                borderRadius: 'var(--radius-button)',
+              }}
+              className="h-10 px-5 text-xs font-semibold text-white cursor-pointer shadow-xs"
+            >
+              Authorize Terminal
+            </button>
+          </div>
+        </form>
+      </Modal>
+    </div>
+  );
+};

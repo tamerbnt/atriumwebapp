@@ -1,1 +1,88 @@
 @import "tailwindcss";
+
+@layer base {
+  :root {
+    /* Brand Accent — Desktop Terracotta */
+    --color-accent: #C4785A;
+    --color-accent-dim: rgba(196, 120, 90, 0.15);
+    --color-accent-hover: #b3684a;
+    --color-accent-light: #FDF4F0;
+
+    /* Desktop Outer Window Canvas (Detached Floating Island backdrop) */
+    --color-window-bg: #E8ECEF;
+    --color-surface-bg: #FFFFFF;
+    --color-card-bg: #FFFFFF;
+    --color-card-border: #E8ECEF;
+    --color-card-dark: #18181B;
+
+    /* Text */
+    --color-text-primary: #18181B;
+    --color-text-secondary: #71717A;
+    --color-text-tertiary: #A1A1AA;
+
+    /* Borders & Subtle Dividers */
+    --color-border: #E4E4E7;
+    --color-border-subtle: #F4F4F5;
+
+    /* Dock Sidebar (Always Dark Obsidian) */
+    --color-dock-bg: #18181B;
+    --color-dock-hover: rgba(255, 255, 255, 0.1);
+
+    /* Status Colors */
+    --color-status-success: #10B981;
+    --color-status-success-bg: #ECFDF5;
+    --color-status-warning: #F59E0B;
+    --color-status-error: #EF4444;
+
+    /* Radii matching desktop */
+    --radius-dock: 28px;
+    --radius-stage: 28px;
+    --radius-card: 20px;
+    --radius-pill: 9999px;
+  }
+
+  [data-theme="dark"] {
+    --color-window-bg: #0F0F11;
+    --color-surface-bg: #18181B;
+    --color-card-bg: #18181B;
+    --color-card-border: #27272A;
+    --color-card-dark: #09090B;
+
+    --color-text-primary: #FAFAFA;
+    --color-text-secondary: #A1A1AA;
+    --color-text-tertiary: #71717A;
+
+    --color-border: #27272A;
+    --color-border-subtle: #1F1F23;
+  }
+
+  body {
+    background-color: var(--color-window-bg);
+    color: var(--color-text-primary);
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    margin: 0;
+    padding: 0;
+    -webkit-font-smoothing: antialiased;
+    overflow: hidden;
+  }
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(196, 120, 90, 0.25);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-accent);
+}

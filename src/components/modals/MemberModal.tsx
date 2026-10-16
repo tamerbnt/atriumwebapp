@@ -1,0 +1,399 @@
+import React, { useState, useEffect } from 'react';
+import { useAtriumStore } from '../../services/store';
+import { Member, Gender } from '../../types/index';
+import { Modal } from '../ui/Modal';
+
+interface MemberModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  memberToEdit?: Member | null;
+}
+
+export const MemberModal: React.FC<MemberModalProps> = ({
+  isOpen,
+  onClose,
+  memberToEdit,
+}) => {
+  const { plans, currentBranch, terminology, addMember, updateMember } = useAtriumStore();
+
+  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [planId, setPlanId] = useState('');
+  const [cardId, setCardId] = useState('');
+  const [gender, setGender] = useState<Gender>('Male');
+  const [dateOfBirth, setDateOfBirth] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [emergencyName, setEmergencyName] = useState('');
+  const [emergencyPhone, setEmergencyPhone] = useState('');
+  const [source, setSource] = useState('Walk-in');
+  const [notes, setNotes] = useState('');
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    if (memberToEdit) {
+      setFullName(memberToEdit.fullName);
+      setEmail(memberToEdit.email);
+      setPhoneNumber(memberToEdit.phoneNumber);
+      setPlanId(memberToEdit.membershipPlanId || (plans[0]?.id ?? ''));
+      setCardId(memberToEdit.cardId || '');
+      setGender(memberToEdit.gender);
+      setDateOfBirth(memberToEdit.dateOfBirth || '');
+      setStartDate(memberToEdit.startDate);
+      setEmergencyName(memberToEdit.emergencyContactName || '');
+      setEmergencyPhone(memberToEdit.emergencyContactPhone || '');
+      setSource(memberToEdit.source || 'Walk-in');
+      setNotes(memberToEdit.notes || '');
+    } else {
+      setFullName('');
+      setEmail('');
+      setPhoneNumber('');
+      setPlanId(plans[0]?.id || '');
+      setCardId(`RFID-${Math.floor(100000 + Math.random() * 900000)}`);
+      setGender('Male');
+      setDateOfBirth('1995-01-01');
+      setStartDate(new Date().toISOString().split('T')[0]);
+      setEmergencyName('');
+      setEmergencyPhone('');
+      setSource('Walk-in');
+      setNotes('');
+    }
+  }, [isOpen, memberToEdit]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const selectedPlan = plans.find((p) => p.id === planId) || plans[0];
+    const durationDays = selectedPlan ? selectedPlan.durationDays : 30;
+
+    const start = new Date(startDate || Date.now());
+    const expDate = new Date(start.getTime() + durationDays * 24 * 60 * 60 * 1000);
+    const expirationDate = expDate.toISOString().split('T')[0];
+
+    if (memberToEdit) {
+      updateMember(memberToEdit.id, {
+        fullName,
+        email,
+        phoneNumber,
+        cardId,
+        gender,
+        dateOfBirth,
+        startDate,
+        membershipPlanId: selectedPlan?.id,
+        membershipPlanName: selectedPlan?.name,
+        emergencyContactName: emergencyName,
+        emergencyContactPhone: emergencyPhone,
+        source,
+        notes,
+      });
+    } else {
+      addMember({
+        fullName,
+        email,
+        phoneNumber,
+        cardId,
+        status: 'Active',
+        startDate,
+        expirationDate,
+        membershipPlanId: selectedPlan?.id,
+        membershipPlanName: selectedPlan?.name,
+        remainingSessions: durationDays >= 90 ? 999 : 30,
+        gender,
+        dateOfBirth,
+        source,
+        emergencyContactName: emergencyName,
+        emergencyContactPhone: emergencyPhone,
+        notes,
+      });
+    }
+
+    onClose();
+  };
+
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={memberToEdit ? `Edit ${terminology.memberSingle}` : `Add New ${terminology.memberSingle}`}
+      subtitle={`Enrolling into ${currentBranch.name}`}
+      maxWidth="lg"
+    >
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Section 1: Personal Info */}
+        <div className="space-y-3">
+          <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-400">
+            Personal Information
+          </h4>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
+                Full Name *
+              </label>
+              <input
+                type="text"
+                required
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                placeholder="e.g. Riyad Mahrez"
+                style={{
+                  backgroundColor: 'var(--color-surface-bg)',
+                  borderColor: 'var(--color-border)',
+                  borderRadius: 'var(--radius-input)',
+                }}
+                className="w-full h-11 px-3 text-sm border focus:outline-none focus:border-[#C4785A] text-neutral-900 dark:text-white"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
+                Email Address *
+              </label>
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="name@email.com"
+                style={{
+                  backgroundColor: 'var(--color-surface-bg)',
+                  borderColor: 'var(--color-border)',
+                  borderRadius: 'var(--radius-input)',
+                }}
+                className="w-full h-11 px-3 text-sm border focus:outline-none focus:border-[#C4785A] text-neutral-900 dark:text-white"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
+                Phone Number *
+              </label>
+              <input
+                type="tel"
+                required
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
+                placeholder="+213 550 11 22 33"
+                style={{
+                  backgroundColor: 'var(--color-surface-bg)',
+                  borderColor: 'var(--color-border)',
+                  borderRadius: 'var(--radius-input)',
+                }}
+                className="w-full h-11 px-3 text-sm border focus:outline-none focus:border-[#C4785A] text-neutral-900 dark:text-white"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
+                  Gender
+                </label>
+                <select
+                  value={gender}
+                  onChange={(e) => setGender(e.target.value as Gender)}
+                  style={{
+                    backgroundColor: 'var(--color-surface-bg)',
+                    borderColor: 'var(--color-border)',
+                    borderRadius: 'var(--radius-input)',
+                  }}
+                  className="w-full h-11 px-3 text-sm border focus:outline-none focus:border-[#C4785A] text-neutral-900 dark:text-white"
+                >
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
+                  Date of Birth
+                </label>
+                <input
+                  type="date"
+                  value={dateOfBirth}
+                  onChange={(e) => setDateOfBirth(e.target.value)}
+                  style={{
+                    backgroundColor: 'var(--color-surface-bg)',
+                    borderColor: 'var(--color-border)',
+                    borderRadius: 'var(--radius-input)',
+                  }}
+                  className="w-full h-11 px-3 text-sm border focus:outline-none focus:border-[#C4785A] text-neutral-900 dark:text-white"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Section 2: Membership Details */}
+        <div className="space-y-3 pt-2 border-t border-neutral-200/60 dark:border-neutral-800/80">
+          <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-400">
+            {terminology.plan} & Access Credentials
+          </h4>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
+                Plan Package *
+              </label>
+              <select
+                value={planId}
+                onChange={(e) => setPlanId(e.target.value)}
+                style={{
+                  backgroundColor: 'var(--color-surface-bg)',
+                  borderColor: 'var(--color-border)',
+                  borderRadius: 'var(--radius-input)',
+                }}
+                className="w-full h-11 px-3 text-sm border focus:outline-none focus:border-[#C4785A] text-neutral-900 dark:text-white"
+              >
+                {plans.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name} ({p.durationDays}d)
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
+                Start Date
+              </label>
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                style={{
+                  backgroundColor: 'var(--color-surface-bg)',
+                  borderColor: 'var(--color-border)',
+                  borderRadius: 'var(--radius-input)',
+                }}
+                className="w-full h-11 px-3 text-sm border focus:outline-none focus:border-[#C4785A] text-neutral-900 dark:text-white"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
+                RFID / Barcode Card
+              </label>
+              <input
+                type="text"
+                value={cardId}
+                onChange={(e) => setCardId(e.target.value)}
+                placeholder="RFID-XXXXXX"
+                style={{
+                  backgroundColor: 'var(--color-surface-bg)',
+                  borderColor: 'var(--color-border)',
+                  borderRadius: 'var(--radius-input)',
+                }}
+                className="w-full h-11 px-3 text-sm font-mono border focus:outline-none focus:border-[#C4785A] text-neutral-900 dark:text-white uppercase"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Section 3: Emergency & Source */}
+        <div className="space-y-3 pt-2 border-t border-neutral-200/60 dark:border-neutral-800/80">
+          <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-400">
+            Emergency & Notes
+          </h4>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
+                Emergency Contact
+              </label>
+              <input
+                type="text"
+                value={emergencyName}
+                onChange={(e) => setEmergencyName(e.target.value)}
+                placeholder="Name"
+                style={{
+                  backgroundColor: 'var(--color-surface-bg)',
+                  borderColor: 'var(--color-border)',
+                  borderRadius: 'var(--radius-input)',
+                }}
+                className="w-full h-11 px-3 text-sm border focus:outline-none focus:border-[#C4785A] text-neutral-900 dark:text-white"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
+                Emergency Phone
+              </label>
+              <input
+                type="tel"
+                value={emergencyPhone}
+                onChange={(e) => setEmergencyPhone(e.target.value)}
+                placeholder="+213 555 00 00 00"
+                style={{
+                  backgroundColor: 'var(--color-surface-bg)',
+                  borderColor: 'var(--color-border)',
+                  borderRadius: 'var(--radius-input)',
+                }}
+                className="w-full h-11 px-3 text-sm border focus:outline-none focus:border-[#C4785A] text-neutral-900 dark:text-white"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
+                Acquisition Channel
+              </label>
+              <select
+                value={source}
+                onChange={(e) => setSource(e.target.value)}
+                style={{
+                  backgroundColor: 'var(--color-surface-bg)',
+                  borderColor: 'var(--color-border)',
+                  borderRadius: 'var(--radius-input)',
+                }}
+                className="w-full h-11 px-3 text-sm border focus:outline-none focus:border-[#C4785A] text-neutral-900 dark:text-white"
+              >
+                <option value="Walk-in">Walk-in</option>
+                <option value="Instagram">Instagram</option>
+                <option value="Facebook">Facebook</option>
+                <option value="Referral">Friend Referral</option>
+                <option value="Website">Official Website</option>
+                <option value="VIP Partner">VIP Partner</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
+              Private Notes
+            </label>
+            <textarea
+              rows={2}
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Medical alerts, preferences, personal trainer requests..."
+              style={{
+                backgroundColor: 'var(--color-surface-bg)',
+                borderColor: 'var(--color-border)',
+                borderRadius: 'var(--radius-input)',
+              }}
+              className="w-full p-2.5 text-sm border focus:outline-none focus:border-[#C4785A] text-neutral-900 dark:text-white resize-none"
+            />
+          </div>
+        </div>
+
+        {/* Footer actions */}
+        <div className="flex items-center justify-end gap-3 pt-3 border-t border-neutral-200/60 dark:border-neutral-800/80">
+          <button
+            type="button"
+            onClick={onClose}
+            className="h-10 px-4 text-xs font-semibold text-neutral-500 hover:text-neutral-800 dark:hover:text-white cursor-pointer"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            style={{
+              backgroundColor: 'var(--color-accent)',
+              borderRadius: 'var(--radius-button)',
+            }}
+            className="h-10 px-6 text-xs font-semibold text-white cursor-pointer shadow-xs hover:opacity-90 active:scale-98 transition-all"
+          >
+            {memberToEdit ? 'Save Changes' : `Enroll ${terminology.memberSingle}`}
+          </button>
+        </div>
+      </form>
+    </Modal>
+  );
+};
