@@ -87,7 +87,8 @@ export interface Database {
           id: string;
           full_name: string | null;
           email: string;
-          phone: string | null;
+          phone?: string | null;
+          phone_number?: string | null;
           is_active: boolean;
           created_at: string;
           updated_at: string;
@@ -97,6 +98,7 @@ export interface Database {
           full_name?: string | null;
           email: string;
           phone?: string | null;
+          phone_number?: string | null;
           is_active?: boolean;
           created_at?: string;
           updated_at?: string;
@@ -170,7 +172,7 @@ export interface Database {
           account_id: string;
           business_id: string;
           name: string;
-          code: string | null;
+          code?: string | null;
           address: string | null;
           phone: string | null;
           is_main_branch: boolean;
@@ -225,7 +227,8 @@ export interface Database {
           plan_id: string;
           duration_months: number;
           is_redeemed: boolean;
-          redeemed_by_account_id: string | null;
+          redeemed_by?: string | null;
+          redeemed_by_account_id?: string | null;
           redeemed_at: string | null;
           created_by_note: string | null;
           created_at: string;
@@ -236,6 +239,7 @@ export interface Database {
           plan_id: string;
           duration_months?: number;
           is_redeemed?: boolean;
+          redeemed_by?: string | null;
           redeemed_by_account_id?: string | null;
           redeemed_at?: string | null;
           created_by_note?: string | null;

@@ -7,3 +7,4 @@ export * from './services/licenseService';
 export * from './services/memberService';
 export * from './services/staffService';
 export * from './services/realtimeService';
+export * from './services/freelanceService';

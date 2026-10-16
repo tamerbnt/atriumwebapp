@@ -1,0 +1,5 @@
+{
+  "summary": "Complete Supabase PostgreSQL schema blueprint for Atrium ERP & CRM (all 7 categories, including the 5 dedicated Freelancer & Solo Practitioner queries, RPC function definitions, and automated schema introspection SQL query).",
+  "updatedAt": "2026-10-16T22:04:28.541998271Z",
+  "userFacing": true
+}

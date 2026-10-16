@@ -56,11 +56,11 @@ export const mapDbRoleToStaffRole = (dbRole: string): StaffRole => {
   }
 };
 
-export const mapAccountFromDb = (row: DbAccount): Account => ({
+export const mapAccountFromDb = (row: any): Account => ({
   id: row.id,
   fullName: row.full_name || 'Account Owner',
   email: row.email,
-  phone: row.phone || undefined,
+  phone: row.phone_number || row.phone || undefined,
   isActive: row.is_active,
   createdAt: row.created_at,
 });

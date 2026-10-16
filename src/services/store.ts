@@ -68,6 +68,7 @@ import {
   memberService,
   staffService,
   realtimeService,
+  freelanceService,
 } from '../lib/supabase/index';
 
 const STORAGE_KEY = 'atrium_erp_desktop_v2';
@@ -262,12 +263,30 @@ export function useAtriumStore() {
       const session = await authService.getSession();
       const accountId = session?.user?.id || globalState.account.id;
 
-      const [businesses, branches, members, leads, staff] = await Promise.all([
+      const [
+        businesses,
+        branches,
+        members,
+        leads,
+        staff,
+        freelanceClients,
+        freelanceProjects,
+        freelanceTimeLogs,
+        freelanceInvoices,
+        freelanceProposals,
+        freelanceExpenses,
+      ] = await Promise.all([
         tenantService.fetchBusinesses(accountId),
         tenantService.fetchBranches(accountId),
         memberService.fetchMembers(globalState.currentBranchId),
         memberService.fetchRegistrationRequests(globalState.currentBranchId),
         staffService.fetchStaffForSync(accountId, globalState.currentBranchId),
+        freelanceService.fetchClients(globalState.currentBranchId),
+        freelanceService.fetchProjects(globalState.currentBranchId),
+        freelanceService.fetchTimeLogs(globalState.currentBranchId),
+        freelanceService.fetchInvoices(globalState.currentBranchId),
+        freelanceService.fetchProposals(globalState.currentBranchId),
+        freelanceService.fetchExpenses(globalState.currentBranchId),
       ]);
 
       const updates: Partial<AppState> = {
@@ -289,6 +308,24 @@ export function useAtriumStore() {
       }
       if (staff.length > 0) {
         updates.staff = staff;
+      }
+      if (freelanceClients.length > 0) {
+        updates.freelanceClients = freelanceClients;
+      }
+      if (freelanceProjects.length > 0) {
+        updates.freelanceProjects = freelanceProjects;
+      }
+      if (freelanceTimeLogs.length > 0) {
+        updates.timeLogs = freelanceTimeLogs;
+      }
+      if (freelanceInvoices.length > 0) {
+        updates.freelanceInvoices = freelanceInvoices;
+      }
+      if (freelanceProposals.length > 0) {
+        updates.freelanceProposals = freelanceProposals;
+      }
+      if (freelanceExpenses.length > 0) {
+        updates.freelanceExpenses = freelanceExpenses;
       }
 
       globalState = {
@@ -1513,15 +1550,30 @@ export function useAtriumStore() {
       freelanceClients: [newClient, ...globalState.freelanceClients],
     };
     notify();
+
+    if (isSupabaseConfigured()) {
+      freelanceService.upsertClient(newClient).catch((err) => {
+        console.warn('[store] Supabase upsertClient notice:', err);
+      });
+    }
+
     return newClient;
   };
 
   const updateFreelanceClient = (id: string, updates: Partial<FreelanceClient>) => {
+    const updatedClients = globalState.freelanceClients.map((c) => (c.id === id ? { ...c, ...updates } : c));
     globalState = {
       ...globalState,
-      freelanceClients: globalState.freelanceClients.map((c) => (c.id === id ? { ...c, ...updates } : c)),
+      freelanceClients: updatedClients,
     };
     notify();
+
+    const target = updatedClients.find((c) => c.id === id);
+    if (target && isSupabaseConfigured()) {
+      freelanceService.upsertClient(target).catch((err) => {
+        console.warn('[store] Supabase updateClient notice:', err);
+      });
+    }
   };
 
   const addFreelanceProject = (projectData: Omit<FreelanceProject, 'id' | 'tenantId' | 'facilityId' | 'loggedHours' | 'createdAt'>) => {
@@ -1538,6 +1590,13 @@ export function useAtriumStore() {
       freelanceProjects: [newProject, ...globalState.freelanceProjects],
     };
     notify();
+
+    if (isSupabaseConfigured()) {
+      freelanceService.upsertProject(newProject).catch((err) => {
+        console.warn('[store] Supabase upsertProject notice:', err);
+      });
+    }
+
     return newProject;
   };
 
@@ -1624,6 +1683,13 @@ export function useAtriumStore() {
       freelanceProjects: updatedProjects,
     };
     notify();
+
+    if (isSupabaseConfigured()) {
+      freelanceService.upsertTimeLog(entry).catch((err) => {
+        console.warn('[store] Supabase upsertTimeLog notice:', err);
+      });
+    }
+
     return entry;
   };
 
@@ -1709,23 +1775,38 @@ export function useAtriumStore() {
       ),
     };
     notify();
+
+    if (isSupabaseConfigured()) {
+      freelanceService.upsertInvoice(newInv).catch((err) => {
+        console.warn('[store] Supabase upsertInvoice notice:', err);
+      });
+    }
+
     return newInv;
   };
 
   const updateInvoiceStatus = (invoiceId: string, status: InvoiceStatus) => {
+    const updatedInvoices = globalState.freelanceInvoices.map((inv) =>
+      inv.id === invoiceId
+        ? {
+            ...inv,
+            status,
+            paidAt: status === 'Paid' ? new Date().toISOString() : inv.paidAt,
+          }
+        : inv
+    );
     globalState = {
       ...globalState,
-      freelanceInvoices: globalState.freelanceInvoices.map((inv) =>
-        inv.id === invoiceId
-          ? {
-              ...inv,
-              status,
-              paidAt: status === 'Paid' ? new Date().toISOString() : inv.paidAt,
-            }
-          : inv
-      ),
+      freelanceInvoices: updatedInvoices,
     };
     notify();
+
+    const target = updatedInvoices.find((inv) => inv.id === invoiceId);
+    if (target && isSupabaseConfigured()) {
+      freelanceService.upsertInvoice(target).catch((err) => {
+        console.warn('[store] Supabase updateInvoice notice:', err);
+      });
+    }
   };
 
   const createFreelanceProposal = (proposalData: Omit<FreelanceProposal, 'id' | 'tenantId' | 'facilityId' | 'createdAt'>) => {
@@ -1741,6 +1822,13 @@ export function useAtriumStore() {
       freelanceProposals: [newProp, ...globalState.freelanceProposals],
     };
     notify();
+
+    if (isSupabaseConfigured()) {
+      freelanceService.upsertProposal(newProp).catch((err) => {
+        console.warn('[store] Supabase upsertProposal notice:', err);
+      });
+    }
+
     return newProp;
   };
 
@@ -1824,6 +1912,13 @@ export function useAtriumStore() {
       freelanceExpenses: [newExp, ...globalState.freelanceExpenses],
     };
     notify();
+
+    if (isSupabaseConfigured()) {
+      freelanceService.upsertExpense(newExp).catch((err) => {
+        console.warn('[store] Supabase upsertExpense notice:', err);
+      });
+    }
+
     return newExp;
   };
 
