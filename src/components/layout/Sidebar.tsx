@@ -12,6 +12,9 @@ import {
   ChevronDown,
   ChevronRight,
   ChevronLeft,
+  Clock,
+  FileText,
+  Kanban,
 } from 'lucide-react';
 import { useAtriumStore, ActiveScreen } from '../../services/store';
 
@@ -26,70 +29,123 @@ export const Sidebar: React.FC<SidebarProps> = ({
   isOpenMobile = false,
   onCloseMobile,
 }) => {
-  const { activeScreen, setScreen, terminology } = useAtriumStore();
+  const { activeScreen, setScreen, terminology, currentBusiness } = useAtriumStore();
   const [isExpanded, setIsExpanded] = useState(false);
+
+  const isFreelance = currentBusiness?.category === 'freelance_solo';
 
   const dockNavItems: Array<{
     id: ActiveScreen;
     icon: React.ReactNode;
     title: string;
     label: string;
-  }> = [
-    {
-      id: 'dashboard',
-      icon: <Home size={19} />,
-      title: 'Home Dashboard',
-      label: 'Home',
-    },
-    {
-      id: 'analytics',
-      icon: <BarChart2 size={19} />,
-      title: 'Facility Analytics',
-      label: 'Analytics',
-    },
-    {
-      id: 'members',
-      icon: <Users size={19} />,
-      title: `${terminology.members} Directory`,
-      label: terminology.members,
-    },
-    {
-      id: 'registrations',
-      icon: <ClipboardList size={19} />,
-      title: `${terminology.registration} & Intake`,
-      label: terminology.registration,
-    },
-    {
-      id: 'history',
-      icon: <History size={19} />,
-      title: 'Operations History',
-      label: 'History',
-    },
-    {
-      id: 'shop',
-      icon: <ShoppingBag size={19} />,
-      title: `${terminology.shop} & Products`,
-      label: terminology.shop,
-    },
-    {
-      id: 'scheduler',
-      icon: <Calendar size={19} />,
-      title: terminology.scheduler,
-      label: terminology.scheduler,
-    },
-    {
-      id: 'finance',
-      icon: <Wallet size={19} />,
-      title: 'Finance & Staff',
-      label: 'Finance',
-    },
-    {
-      id: 'settings',
-      icon: <Settings size={19} />,
-      title: 'Settings & License',
-      label: 'Settings',
-    },
-  ];
+  }> = isFreelance
+    ? [
+        {
+          id: 'dashboard',
+          icon: <Home size={19} />,
+          title: 'Solo Command Dashboard',
+          label: 'Home',
+        },
+        {
+          id: 'members',
+          icon: <Users size={19} />,
+          title: 'Clients CRM & 360° Inspector',
+          label: 'Clients',
+        },
+        {
+          id: 'scheduler',
+          icon: <Kanban size={19} />,
+          title: 'Deliverables & Deadlines Kanban',
+          label: 'Deliverables',
+        },
+        {
+          id: 'analytics',
+          icon: <Clock size={19} />,
+          title: 'Time Tracker & Pomodoro',
+          label: 'Time Tracker',
+        },
+        {
+          id: 'registrations',
+          icon: <ClipboardList size={19} />,
+          title: 'Proposals & Inquiries',
+          label: 'Proposals',
+        },
+        {
+          id: 'shop',
+          icon: <FileText size={19} />,
+          title: 'Invoices & Billing Hub',
+          label: 'Invoices',
+        },
+        {
+          id: 'finance',
+          icon: <Wallet size={19} />,
+          title: 'Tax Reserves & Net Profit',
+          label: 'Finance',
+        },
+        {
+          id: 'settings',
+          icon: <Settings size={19} />,
+          title: 'Settings & Workspace',
+          label: 'Settings',
+        },
+      ]
+    : [
+        {
+          id: 'dashboard',
+          icon: <Home size={19} />,
+          title: 'Home Dashboard',
+          label: 'Home',
+        },
+        {
+          id: 'analytics',
+          icon: <BarChart2 size={19} />,
+          title: 'Facility Analytics',
+          label: 'Analytics',
+        },
+        {
+          id: 'members',
+          icon: <Users size={19} />,
+          title: `${terminology.members} Directory`,
+          label: terminology.members,
+        },
+        {
+          id: 'registrations',
+          icon: <ClipboardList size={19} />,
+          title: `${terminology.registration} & Intake`,
+          label: terminology.registration,
+        },
+        {
+          id: 'history',
+          icon: <History size={19} />,
+          title: 'Operations History',
+          label: 'History',
+        },
+        {
+          id: 'shop',
+          icon: <ShoppingBag size={19} />,
+          title: `${terminology.shop} & Products`,
+          label: terminology.shop,
+        },
+        {
+          id: 'scheduler',
+          icon: <Calendar size={19} />,
+          title: terminology.scheduler,
+          label: terminology.scheduler,
+        },
+        {
+          id: 'finance',
+          icon: <Wallet size={19} />,
+          title: 'Finance & Staff',
+          label: 'Finance',
+        },
+        {
+          id: 'settings',
+          icon: <Settings size={19} />,
+          title: 'Settings & License',
+          label: 'Settings',
+        },
+      ];
 
   return (
     <>

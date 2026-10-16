@@ -20,10 +20,17 @@ import {
   User,
   Phone,
   Lock,
+  Search,
+  Laptop,
 } from 'lucide-react';
 import { useAtriumStore } from '../../services/store';
 import { BusinessCategory, OnboardingParams } from '../../types/index';
 import { validateVoucherCode } from '../../utils/rules';
+import {
+  findCategoryByBusinessSearch,
+  POPULAR_BUSINESS_SEARCHES,
+  BusinessMatchResult,
+} from '../../utils/businessMapping';
 
 interface OnboardingWizardProps {
   isOpen: boolean;
@@ -46,6 +53,35 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ isOpen, onCl
   const [category, setCategory] = useState<BusinessCategory>('membership_session');
   const [branchName, setBranchName] = useState('Downtown Flagship');
   const [branchAddress, setBranchAddress] = useState('14 Boulevard Didouche Mourad, Algiers');
+  const [businessSearchQuery, setBusinessSearchQuery] = useState('');
+  const [matchResult, setMatchResult] = useState<BusinessMatchResult | null>(null);
+
+  const handleBusinessSearch = (query: string) => {
+    setBusinessSearchQuery(query);
+    if (!query.trim()) {
+      setMatchResult(null);
+      return;
+    }
+    const match = findCategoryByBusinessSearch(query);
+    if (match) {
+      setMatchResult(match);
+      setCategory(match.category);
+    } else {
+      setMatchResult(null);
+    }
+  };
+
+  const handleSelectPopularSearch = (item: (typeof POPULAR_BUSINESS_SEARCHES)[0]) => {
+    setBusinessSearchQuery(item.label);
+    setCategory(item.category);
+    const match = findCategoryByBusinessSearch(item.query);
+    setMatchResult(match);
+  };
+
+  const handleClearSearch = () => {
+    setBusinessSearchQuery('');
+    setMatchResult(null);
+  };
 
   // Step 3: License & Voucher
   const [licenseOption, setLicenseOption] = useState<'trial' | 'voucher'>('trial');
@@ -158,6 +194,13 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ isOpen, onCl
       subtitle: 'Bootcamps, Language schools, Tutoring',
       icon: <GraduationCap size={20} className="text-[#C4785A]" />,
       tagline: 'Cohort Enrollment & Course Schedules',
+    },
+    {
+      id: 'freelance_solo',
+      title: 'Freelancers & Solo',
+      subtitle: 'Design, Dev, Consulting, Media Creators',
+      icon: <Laptop size={20} className="text-[#C4785A]" />,
+      tagline: 'Floating Stopwatch, Retainers & Invoices',
     },
   ];
 
@@ -339,14 +382,91 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ isOpen, onCl
               </div>
             </div>
 
-            {/* 6 Business Category Cards Grid */}
-            <div>
-              <label className="block text-xs font-semibold text-neutral-300 mb-2">
-                Select Business Category (Vertical)
-              </label>
+            {/* Search Bar & Semantic Matcher */}
+            <div className="space-y-2 pt-1">
+              <div className="flex items-center justify-between">
+                <label className="block text-xs font-semibold text-neutral-300">
+                  Search Your Business Activity
+                </label>
+                <span className="text-[11px] text-neutral-400 font-medium">
+                  Auto-maps to vertical
+                </span>
+              </div>
+              <div className="relative">
+                <Search size={14} className="absolute left-3.5 top-3 text-neutral-500 pointer-events-none" />
+                <input
+                  type="text"
+                  value={businessSearchQuery}
+                  onChange={(e) => handleBusinessSearch(e.target.value)}
+                  placeholder="e.g. Barbershop, CrossFit, Pâtisserie, Coworking, UI Designer..."
+                  className="w-full h-10 pl-9 pr-8 rounded-xl bg-neutral-900/90 border border-neutral-700/80 text-white text-xs placeholder:text-neutral-500 focus:outline-none focus:border-[#C4785A] transition-all"
+                />
+                {businessSearchQuery && (
+                  <button
+                    type="button"
+                    onClick={handleClearSearch}
+                    className="absolute right-3 top-3 text-neutral-500 hover:text-white cursor-pointer"
+                    title="Clear search"
+                  >
+                    <X size={14} />
+                  </button>
+                )}
+              </div>
+
+              {/* Popular Quick Suggestion Chips */}
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
+                <span className="text-[10px] text-neutral-500 font-semibold shrink-0">Popular:</span>
+                {POPULAR_BUSINESS_SEARCHES.map((item) => {
+                  const isChipActive =
+                    category === item.category &&
+                    businessSearchQuery.toLowerCase().includes(item.label.toLowerCase().slice(0, 4));
+                  return (
+                    <button
+                      key={item.label}
+                      type="button"
+                      onClick={() => handleSelectPopularSearch(item)}
+                      className={`px-2.5 py-1 text-[11px] font-medium rounded-lg whitespace-nowrap transition-colors cursor-pointer border ${
+                        isChipActive
+                          ? 'bg-[#2A2420] text-[#C4785A] border-[#483B33] font-bold'
+                          : 'bg-neutral-800/80 hover:bg-neutral-700 text-neutral-300 border-transparent'
+                      }`}
+                    >
+                      {item.label}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Match Feedback Banner */}
+              {matchResult && (
+                <div className="px-3.5 py-2 rounded-xl bg-[#2A2420] border border-[#483B33] text-xs text-[#E5A186] flex items-center justify-between animate-in fade-in slide-in-from-top-1 duration-150">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Sparkles size={14} className="text-[#C4785A] shrink-0" />
+                    <span className="truncate">
+                      Auto-matched from <strong>"{matchResult.matchedKeyword}"</strong> → <strong className="text-white">{matchResult.categoryTitle}</strong>
+                    </span>
+                  </div>
+                  <span className="text-[10px] font-bold text-[#C4785A] shrink-0 ml-2 uppercase tracking-wide">
+                    Selected
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* 7 Business Category Cards Grid */}
+            <div className="pt-1">
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-xs font-semibold text-neutral-300">
+                  Industry Verticals ({categories.length})
+                </label>
+                <span className="text-[11px] text-neutral-500">
+                  Click any card to override
+                </span>
+              </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
                 {categories.map((cat) => {
                   const isSelected = category === cat.id;
+                  const isSearchMatch = matchResult && matchResult.category === cat.id;
                   return (
                     <div
                       key={cat.id}
@@ -354,6 +474,8 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ isOpen, onCl
                       className={`p-3 rounded-2xl border transition-all cursor-pointer relative ${
                         isSelected
                           ? 'bg-[#2A2420] border-[#C4785A] shadow-md ring-1 ring-[#C4785A]'
+                          : isSearchMatch
+                          ? 'bg-amber-950/30 border-amber-500/60 ring-1 ring-amber-500/60'
                           : 'bg-neutral-900/90 border-neutral-800 hover:border-neutral-700'
                       }`}
                     >
@@ -367,7 +489,12 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ isOpen, onCl
                           </div>
                         )}
                       </div>
-                      <div className="text-xs font-bold text-white">{cat.title}</div>
+                      <div className="text-xs font-bold text-white flex items-center gap-1.5">
+                        <span>{cat.title}</span>
+                        {isSearchMatch && (
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#C4785A] animate-pulse" />
+                        )}
+                      </div>
                       <div className="text-[10px] text-neutral-400 mt-0.5 leading-tight">
                         {cat.subtitle}
                       </div>

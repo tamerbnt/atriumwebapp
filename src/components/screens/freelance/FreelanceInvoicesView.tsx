@@ -107,14 +107,24 @@ export const FreelanceInvoicesView: React.FC = () => {
       total: Number(item.quantity) * Number(item.unitRate),
     }));
 
+    const subtotal = formattedItems.reduce((acc, it) => acc + it.total, 0);
+    const taxAmt = (subtotal * Number(taxPercent)) / 100;
+    const totalAmt = subtotal + taxAmt;
+
     const created = createFreelanceInvoice({
       clientId: client.id,
       clientName: client.name,
       clientCompany: client.company,
       clientEmail: client.email,
-      currency,
+      invoiceNumber: `INV-${new Date().getFullYear()}-${String(freelanceInvoices.length + 1).padStart(3, '0')}`,
+      issueDate: new Date().toISOString().split('T')[0],
       dueDate,
+      status: 'Sent',
+      currency,
       taxPercent: Number(taxPercent),
+      subtotal,
+      taxAmount: taxAmt,
+      totalAmount: totalAmt,
       notes,
       items: formattedItems,
       paymentDetails: {

@@ -25,10 +25,17 @@ import {
   Activity,
   Layers,
   CheckCircle2,
+  Search,
+  X,
 } from 'lucide-react';
 import { useAtriumStore } from '../../services/store';
 import { BusinessCategory, OnboardingParams } from '../../types/index';
 import { validateVoucherCode } from '../../utils/rules';
+import {
+  findCategoryByBusinessSearch,
+  POPULAR_BUSINESS_SEARCHES,
+  BusinessMatchResult,
+} from '../../utils/businessMapping';
 
 interface PowerOnboardingScreenProps {
   onComplete: () => void;
@@ -54,6 +61,35 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
   const [category, setCategory] = useState<BusinessCategory>('membership_session');
   const [branchName, setBranchName] = useState('Downtown Flagship');
   const [branchAddress, setBranchAddress] = useState('14 Boulevard Didouche Mourad, Algiers');
+  const [businessSearchQuery, setBusinessSearchQuery] = useState('');
+  const [matchResult, setMatchResult] = useState<BusinessMatchResult | null>(null);
+
+  const handleBusinessSearch = (query: string) => {
+    setBusinessSearchQuery(query);
+    if (!query.trim()) {
+      setMatchResult(null);
+      return;
+    }
+    const match = findCategoryByBusinessSearch(query);
+    if (match) {
+      setMatchResult(match);
+      setCategory(match.category);
+    } else {
+      setMatchResult(null);
+    }
+  };
+
+  const handleSelectPopularSearch = (item: (typeof POPULAR_BUSINESS_SEARCHES)[0]) => {
+    setBusinessSearchQuery(item.label);
+    setCategory(item.category);
+    const match = findCategoryByBusinessSearch(item.query);
+    setMatchResult(match);
+  };
+
+  const handleClearSearch = () => {
+    setBusinessSearchQuery('');
+    setMatchResult(null);
+  };
 
   // Step 3: License & Voucher
   const [licenseOption, setLicenseOption] = useState<'trial' | 'voucher'>('voucher');
@@ -366,21 +402,103 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                   </div>
                 </div>
 
-                {/* 6 Verticals Compact Grid */}
-                <div className="space-y-1.5">
-                  <label className="block text-[11px] font-bold text-neutral-700">
-                    Choose Industry Vertical
-                  </label>
+                {/* Search Bar & Semantic Matcher */}
+                <div className="space-y-1.5 pt-1">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-[11px] font-bold text-neutral-700">
+                      Search Your Business Activity
+                    </label>
+                    <span className="text-[10px] text-neutral-400 font-medium">
+                      Auto-detects matching category
+                    </span>
+                  </div>
+                  <div className="relative">
+                    <Search size={14} className="absolute left-3 top-2.5 text-neutral-400 pointer-events-none" />
+                    <input
+                      type="text"
+                      value={businessSearchQuery}
+                      onChange={(e) => handleBusinessSearch(e.target.value)}
+                      placeholder="e.g. Barbershop, CrossFit, Pâtisserie, Coworking, UI Designer..."
+                      className="w-full h-9 pl-9 pr-8 rounded-xl bg-neutral-50 border border-neutral-200 text-neutral-900 text-xs font-medium focus:bg-white focus:outline-none focus:border-[#C4785A] transition-all"
+                    />
+                    {businessSearchQuery && (
+                      <button
+                        type="button"
+                        onClick={handleClearSearch}
+                        className="absolute right-2.5 top-2.5 text-neutral-400 hover:text-neutral-700 cursor-pointer"
+                        title="Clear search"
+                      >
+                        <X size={13} />
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Popular Quick Suggestion Chips */}
+                  <div className="flex items-center gap-1.5 overflow-x-auto pb-1 pt-0.5 text-[11px]">
+                    <span className="text-[10px] text-neutral-400 font-semibold shrink-0">Popular:</span>
+                    {POPULAR_BUSINESS_SEARCHES.map((item) => {
+                      const isChipActive =
+                        category === item.category &&
+                        businessSearchQuery.toLowerCase().includes(item.label.toLowerCase().slice(0, 4));
+                      return (
+                        <button
+                          key={item.label}
+                          type="button"
+                          onClick={() => handleSelectPopularSearch(item)}
+                          className={`px-2 py-0.5 text-[10px] font-medium rounded-lg whitespace-nowrap transition-colors cursor-pointer border ${
+                            isChipActive
+                              ? 'bg-[#FDF4F0] text-[#C4785A] border-[#F5E2D8] font-bold'
+                              : 'bg-neutral-100 hover:bg-neutral-200/80 text-neutral-600 border-transparent'
+                          }`}
+                        >
+                          {item.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Match Feedback Banner */}
+                  {matchResult && (
+                    <div className="px-3 py-1.5 rounded-xl bg-[#FDF4F0] border border-[#FBE5DC] text-[11px] text-[#8C3D28] flex items-center justify-between animate-in fade-in slide-in-from-top-1 duration-150">
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <Sparkles size={13} className="text-[#C4785A] shrink-0" />
+                        <span className="truncate">
+                          Auto-matched from <strong>"{matchResult.matchedKeyword}"</strong> → <strong className="text-[#C4785A]">{matchResult.categoryTitle}</strong>
+                        </span>
+                      </div>
+                      <span className="text-[10px] font-bold text-[#C4785A] shrink-0 ml-2 uppercase tracking-wide">
+                        Selected
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {/* 7 Verticals Compact Grid */}
+                <div className="space-y-1.5 pt-1">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-[11px] font-bold text-neutral-700">
+                      Industry Categories ({verticals.length})
+                    </label>
+                    <span className="text-[10px] text-neutral-400">
+                      Click any card to override
+                    </span>
+                  </div>
                   <div className="grid grid-cols-2 gap-2">
                     {verticals.map((v) => {
                       const isSelected = category === v.id;
+                      const isSearchMatch = matchResult && matchResult.category === v.id;
                       return (
                         <div
                           key={v.id}
-                          onClick={() => setCategory(v.id)}
-                          className={`p-2.5 rounded-2xl border transition-all cursor-pointer ${
+                          onClick={() => {
+                            setCategory(v.id);
+                            // Keep search context or clear if manually overridden
+                          }}
+                          className={`p-2.5 rounded-2xl border transition-all cursor-pointer relative ${
                             isSelected
                               ? 'bg-[#FDF4F0] border-[#C4785A] shadow-xs ring-1 ring-[#C4785A]'
+                              : isSearchMatch
+                              ? 'bg-amber-50/50 border-amber-300 ring-1 ring-amber-300'
                               : 'bg-neutral-50 border-neutral-200 hover:bg-neutral-100/70'
                           }`}
                         >
@@ -394,7 +512,12 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                               </div>
                             )}
                           </div>
-                          <div className="text-xs font-bold text-neutral-900">{v.title}</div>
+                          <div className="text-xs font-bold text-neutral-900 flex items-center gap-1">
+                            <span>{v.title}</span>
+                            {isSearchMatch && (
+                              <span className="w-1.5 h-1.5 rounded-full bg-[#C4785A] animate-pulse" />
+                            )}
+                          </div>
                           <div className="text-[10px] text-neutral-500 truncate">{v.tagline}</div>
                         </div>
                       );

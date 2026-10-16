@@ -130,7 +130,7 @@ export const FreelanceTimeTrackerView: React.FC = () => {
       billUnbilledHours(clientId, 0);
       setScreen('shop');
     } catch (err: any) {
-      alert(err.message || 'Error billing hours');
+      console.error('Error billing hours:', err?.message || err);
     }
   };
 

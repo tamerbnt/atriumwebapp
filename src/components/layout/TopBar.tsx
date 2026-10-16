@@ -17,6 +17,9 @@ import {
   Pause,
   Square,
   Clock,
+  Building2,
+  ChevronDown,
+  Check,
 } from 'lucide-react';
 import { useAtriumStore } from '../../services/store';
 import { formatDuration } from '../../utils/rules';
@@ -48,6 +51,11 @@ export const TopBar: React.FC<TopBarProps> = ({
     isSupabaseConfigured,
     lastSyncedAt,
     currentBusiness,
+    businesses,
+    branches,
+    currentBusinessId,
+    switchBusiness,
+    switchBranch,
     activeTimer,
     pauseTimer,
     resumeTimer,
@@ -55,6 +63,9 @@ export const TopBar: React.FC<TopBarProps> = ({
   } = useAtriumStore();
 
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [facilityDropdownOpen, setFacilityDropdownOpen] = useState(false);
+
+  const isFreelance = currentBusiness?.category === 'freelance_solo';
 
   const getBreadcrumb = () => {
     switch (activeScreen) {
@@ -63,7 +74,7 @@ export const TopBar: React.FC<TopBarProps> = ({
           <div className="flex items-center gap-1.5 text-xs">
             <span className="font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-1.5">
               <Home size={13} className="text-[#C4785A]" />
-              Home
+              {isFreelance ? 'Solo Command' : 'Home'}
             </span>
           </div>
         );
@@ -76,10 +87,12 @@ export const TopBar: React.FC<TopBarProps> = ({
               className="text-neutral-400 hover:text-[#C4785A] font-medium transition-colors flex items-center gap-1 cursor-pointer"
             >
               <Home size={12} />
-              <span>Home</span>
+              <span>{isFreelance ? 'Solo Command' : 'Home'}</span>
             </button>
             <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
-            <span className="text-neutral-900 dark:text-white font-semibold">Analytics</span>
+            <span className="text-neutral-900 dark:text-white font-semibold">
+              {isFreelance ? 'Time Tracker & Pomodoro' : 'Analytics'}
+            </span>
           </nav>
         );
       case 'members':
@@ -95,7 +108,7 @@ export const TopBar: React.FC<TopBarProps> = ({
                 className="text-neutral-400 hover:text-[#C4785A] font-medium transition-colors flex items-center gap-1 cursor-pointer"
               >
                 <Home size={12} />
-                <span>Home</span>
+                <span>{isFreelance ? 'Solo Command' : 'Home'}</span>
               </button>
               <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
               <button
@@ -120,7 +133,7 @@ export const TopBar: React.FC<TopBarProps> = ({
               className="text-neutral-400 hover:text-[#C4785A] font-medium transition-colors flex items-center gap-1 cursor-pointer"
             >
               <Home size={12} />
-              <span>Home</span>
+              <span>{isFreelance ? 'Solo Command' : 'Home'}</span>
             </button>
             <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
             <span className="text-neutral-900 dark:text-white font-semibold">{terminology.members}</span>
@@ -135,10 +148,12 @@ export const TopBar: React.FC<TopBarProps> = ({
               className="text-neutral-400 hover:text-[#C4785A] font-medium transition-colors flex items-center gap-1 cursor-pointer"
             >
               <Home size={12} />
-              <span>Home</span>
+              <span>{isFreelance ? 'Solo Command' : 'Home'}</span>
             </button>
             <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
-            <span className="text-neutral-900 dark:text-white font-semibold">{terminology.registration} & Intake</span>
+            <span className="text-neutral-900 dark:text-white font-semibold">
+              {isFreelance ? 'Proposals & Inquiries' : `${terminology.registration} & Intake`}
+            </span>
           </nav>
         );
       case 'shop':
@@ -150,10 +165,12 @@ export const TopBar: React.FC<TopBarProps> = ({
               className="text-neutral-400 hover:text-[#C4785A] font-medium transition-colors flex items-center gap-1 cursor-pointer"
             >
               <Home size={12} />
-              <span>Home</span>
+              <span>{isFreelance ? 'Solo Command' : 'Home'}</span>
             </button>
             <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
-            <span className="text-neutral-900 dark:text-white font-semibold">{terminology.shop} & Products</span>
+            <span className="text-neutral-900 dark:text-white font-semibold">
+              {isFreelance ? 'Invoices & Billing Hub' : `${terminology.shop} & Products`}
+            </span>
           </nav>
         );
       case 'scheduler':
@@ -165,7 +182,7 @@ export const TopBar: React.FC<TopBarProps> = ({
               className="text-neutral-400 hover:text-[#C4785A] font-medium transition-colors flex items-center gap-1 cursor-pointer"
             >
               <Home size={12} />
-              <span>Home</span>
+              <span>{isFreelance ? 'Solo Command' : 'Home'}</span>
             </button>
             <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
             <span className="text-neutral-900 dark:text-white font-semibold">{terminology.scheduler}</span>
@@ -180,10 +197,12 @@ export const TopBar: React.FC<TopBarProps> = ({
               className="text-neutral-400 hover:text-[#C4785A] font-medium transition-colors flex items-center gap-1 cursor-pointer"
             >
               <Home size={12} />
-              <span>Home</span>
+              <span>{isFreelance ? 'Solo Command' : 'Home'}</span>
             </button>
             <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
-            <span className="text-neutral-900 dark:text-white font-semibold">Finance & Staff</span>
+            <span className="text-neutral-900 dark:text-white font-semibold">
+              {isFreelance ? 'Tax Reserves & Net Profit' : 'Finance & Staff'}
+            </span>
           </nav>
         );
       case 'history':
@@ -195,10 +214,12 @@ export const TopBar: React.FC<TopBarProps> = ({
               className="text-neutral-400 hover:text-[#C4785A] font-medium transition-colors flex items-center gap-1 cursor-pointer"
             >
               <Home size={12} />
-              <span>Home</span>
+              <span>{isFreelance ? 'Solo Command' : 'Home'}</span>
             </button>
             <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
-            <span className="text-neutral-900 dark:text-white font-semibold">Operations History</span>
+            <span className="text-neutral-900 dark:text-white font-semibold">
+              {isFreelance ? 'Time Logs & Chronometer' : 'Operations History'}
+            </span>
           </nav>
         );
       case 'settings':
@@ -210,10 +231,12 @@ export const TopBar: React.FC<TopBarProps> = ({
               className="text-neutral-400 hover:text-[#C4785A] font-medium transition-colors flex items-center gap-1 cursor-pointer"
             >
               <Home size={12} />
-              <span>Home</span>
+              <span>{isFreelance ? 'Solo Command' : 'Home'}</span>
             </button>
             <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
-            <span className="text-neutral-900 dark:text-white font-semibold">Settings & License</span>
+            <span className="text-neutral-900 dark:text-white font-semibold">
+              {isFreelance ? 'Workspace & Settings' : 'Settings & License'}
+            </span>
           </nav>
         );
       default:
@@ -227,10 +250,10 @@ export const TopBar: React.FC<TopBarProps> = ({
 
   return (
     <header
-      className="h-[52px] my-3 mr-3 ml-2 px-5 rounded-[26px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 flex items-center justify-between gap-4 shrink-0 shadow-2xs z-20"
+      className="h-[52px] my-3 mr-3 ml-2 px-4 sm:px-5 rounded-[26px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 flex items-center justify-between gap-3 shrink-0 shadow-2xs z-20"
     >
-      {/* Left: Mobile Toggle & Working Interactive Breadcrumbs */}
-      <div className="flex items-center gap-3 min-w-0">
+      {/* Left: Mobile Toggle & Working Interactive Breadcrumbs & Facility Capsule */}
+      <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
         <button
           type="button"
           onClick={onToggleMobileMenu}
@@ -239,7 +262,63 @@ export const TopBar: React.FC<TopBarProps> = ({
         >
           <Menu size={17} />
         </button>
-        {getBreadcrumb()}
+
+        {/* Global Facility Switcher Dropdown */}
+        <div className="relative shrink-0">
+          <button
+            type="button"
+            onClick={() => setFacilityDropdownOpen(!facilityDropdownOpen)}
+            className="h-8 px-2.5 rounded-full bg-[#F4EFEA] dark:bg-neutral-800 border border-[#E8DFD8] dark:border-neutral-700 flex items-center gap-1.5 cursor-pointer hover:bg-[#EFE8E1] dark:hover:bg-neutral-700/80 transition-colors shadow-2xs"
+            title="Switch Facility or Business Vertical"
+          >
+            <Building2 size={13} className="text-[#C4785A]" />
+            <span className="text-[11px] font-bold text-neutral-800 dark:text-neutral-200 max-w-[90px] sm:max-w-[130px] truncate">
+              {currentBusiness?.name || 'Facility'}
+            </span>
+            <ChevronDown size={11} className={`text-neutral-500 transition-transform ${facilityDropdownOpen ? 'rotate-180' : ''}`} />
+          </button>
+
+          {facilityDropdownOpen && (
+            <div className="absolute left-0 mt-2 w-64 rounded-2xl bg-white dark:bg-[#1E1B19] border border-neutral-200 dark:border-neutral-700 shadow-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
+              <div className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+                Switch Vertical / Facility
+              </div>
+              {businesses.map((biz) => {
+                const isCurrent = biz.id === currentBusinessId;
+                const matchingBranch = branches.find((b) => b.businessId === biz.id);
+                return (
+                  <button
+                    key={biz.id}
+                    type="button"
+                    onClick={() => {
+                      switchBusiness(biz.id);
+                      if (matchingBranch) switchBranch(matchingBranch.id);
+                      setFacilityDropdownOpen(false);
+                    }}
+                    className={`w-full px-3 py-2 text-left flex items-center justify-between text-xs transition-colors cursor-pointer ${
+                      isCurrent
+                        ? 'bg-[#FCEEE8] dark:bg-neutral-800 text-[#C4785A] font-bold'
+                        : 'text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 min-w-0">
+                      <Building2 size={13} className={isCurrent ? 'text-[#C4785A]' : 'text-neutral-400'} />
+                      <div className="truncate">
+                        <div className="truncate font-medium">{biz.name}</div>
+                        <div className="text-[10px] text-neutral-400 capitalize">{biz.category.replace('_', ' ')}</div>
+                      </div>
+                    </div>
+                    {isCurrent && <Check size={14} />}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        <div className="hidden sm:block">
+          {getBreadcrumb()}
+        </div>
       </div>
 
       {/* Center: Live Floating Stopwatch Pill */}
@@ -250,7 +329,7 @@ export const TopBar: React.FC<TopBarProps> = ({
               <span className={`w-2 h-2 rounded-full ${activeTimer.isPaused ? 'bg-amber-500' : 'bg-emerald-500 animate-pulse'}`} />
               <button
                 type="button"
-                onClick={() => setScreen('scheduler')}
+                onClick={() => setScreen(isFreelance ? 'analytics' : 'scheduler')}
                 className="font-bold text-neutral-900 dark:text-white font-mono tabular-nums hover:text-[#C4785A] transition-colors cursor-pointer"
                 title="View active deliverable and timer"
               >
@@ -292,7 +371,7 @@ export const TopBar: React.FC<TopBarProps> = ({
           ) : (
             <button
               type="button"
-              onClick={() => setScreen('scheduler')}
+              onClick={() => setScreen(isFreelance ? 'analytics' : 'scheduler')}
               className="flex items-center gap-1.5 text-[11px] font-semibold text-neutral-600 dark:text-neutral-300 hover:text-[#C4785A] transition-colors cursor-pointer"
               title="Open Focus Timer"
             >

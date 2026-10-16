@@ -192,7 +192,7 @@ export const FreelanceClientsView: React.FC = () => {
       billUnbilledHours(client.id, 0, `Invoice for unbilled hours - ${client.name}`);
       setScreen('shop');
     } catch (err: any) {
-      alert(err.message || 'Unable to bill unbilled hours');
+      console.error('Unable to bill unbilled hours:', err?.message || err);
     }
   };
 

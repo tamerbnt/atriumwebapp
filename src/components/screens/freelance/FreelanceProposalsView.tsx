@@ -76,6 +76,7 @@ export const FreelanceProposalsView: React.FC = () => {
       currency: formData.currency,
       estimatedTimelineWeeks: Number(formData.estimatedTimelineWeeks),
       validUntil: formData.validUntil,
+      status: 'Pending',
     });
 
     setIsDraftModalOpen(false);
@@ -86,7 +87,7 @@ export const FreelanceProposalsView: React.FC = () => {
       convertProposalToProject(proposalId);
       setScreen('scheduler');
     } catch (err: any) {
-      alert(err.message || 'Error converting proposal');
+      console.error('Error converting proposal:', err?.message || err);
     }
   };
 

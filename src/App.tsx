@@ -40,8 +40,8 @@ export default function App() {
     closeFastSwitch,
   } = useAtriumStore();
 
-  // Launches every time the app opens as requested
-  const [showPowerOnboarding, setShowPowerOnboarding] = useState(true);
+  // Onboarding wizard can be opened on demand via openOnboarding or new business setup
+  const [showPowerOnboarding, setShowPowerOnboarding] = useState(false);
 
   const [isVoucherModalOpen, setIsVoucherModalOpen] = useState(false);
   const [isMemberModalOpen, setIsMemberModalOpen] = useState(false);

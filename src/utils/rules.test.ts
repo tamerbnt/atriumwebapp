@@ -83,3 +83,63 @@ test('getCategoryTerminology dynamically adapts terms to vertical', () => {
   const restaurantTerms = getCategoryTerminology('pos_inventory', 'ar');
   assert.equal(restaurantTerms.members, 'الزبائن');
 });
+
+test('findCategoryByBusinessSearch accurately maps user search input to correct category', async () => {
+  const { findCategoryByBusinessSearch } = await import('./businessMapping.ts');
+
+  // 1. Gym / Fitness
+  const gymMatch1 = findCategoryByBusinessSearch('crossfit');
+  assert.equal(gymMatch1?.category, 'membership_session');
+
+  const gymMatch2 = findCategoryByBusinessSearch('salle de sport');
+  assert.equal(gymMatch2?.category, 'membership_session');
+
+  // 2. Salon / Beauty
+  const salonMatch1 = findCategoryByBusinessSearch('barbershop');
+  assert.equal(salonMatch1?.category, 'appointment_service');
+
+  const salonMatch2 = findCategoryByBusinessSearch('salon de coiffure');
+  assert.equal(salonMatch2?.category, 'appointment_service');
+
+  const salonMatch3 = findCategoryByBusinessSearch('cabinet dentaire');
+  assert.equal(salonMatch3?.category, 'appointment_service');
+
+  // 3. Restaurant / POS
+  const restoMatch1 = findCategoryByBusinessSearch('pizzeria');
+  assert.equal(restoMatch1?.category, 'pos_inventory');
+
+  const restoMatch2 = findCategoryByBusinessSearch('pâtisserie');
+  assert.equal(restoMatch2?.category, 'pos_inventory');
+
+  // 4. Projects / Agency
+  const agencyMatch = findCategoryByBusinessSearch('marketing agency');
+  assert.equal(agencyMatch?.category, 'project_milestone');
+
+  const lawMatch = findCategoryByBusinessSearch('cabinet d avocat');
+  assert.equal(lawMatch?.category, 'project_milestone');
+
+  // 5. Rentals / Coworking
+  const rentalMatch = findCategoryByBusinessSearch('coworking space');
+  assert.equal(rentalMatch?.category, 'rental_booking');
+
+  const venueMatch = findCategoryByBusinessSearch('salle des fêtes');
+  assert.equal(venueMatch?.category, 'rental_booking');
+
+  // 6. Education / Academy
+  const eduMatch1 = findCategoryByBusinessSearch('ecole de langues');
+  assert.equal(eduMatch1?.category, 'education_cohort');
+
+  const eduMatch2 = findCategoryByBusinessSearch('coding bootcamp');
+  assert.equal(eduMatch2?.category, 'education_cohort');
+
+  // 7. Freelance / Solo
+  const freelanceMatch1 = findCategoryByBusinessSearch('freelance web dev');
+  assert.equal(freelanceMatch1?.category, 'freelance_solo');
+
+  const freelanceMatch2 = findCategoryByBusinessSearch('ui ux designer');
+  assert.equal(freelanceMatch2?.category, 'freelance_solo');
+
+  // Null for empty or short queries
+  assert.equal(findCategoryByBusinessSearch(''), null);
+  assert.equal(findCategoryByBusinessSearch('a'), null);
+});
