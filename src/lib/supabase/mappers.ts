@@ -8,6 +8,9 @@ import type {
   StaffMember,
   RegistrationLead,
   StaffRole,
+  Appointment,
+  Product,
+  Sale,
 } from '../../types/index';
 
 type DbAccount = Database['public']['Tables']['accounts']['Row'];
@@ -32,6 +35,8 @@ export const mapStaffRoleToDb = (role: StaffRole): StaffRoleEnum => {
       return 'stylist';
     case 'Waiter':
       return 'waiter';
+    case 'Creative':
+      return 'creative';
     default:
       return 'staff';
   }
@@ -51,6 +56,8 @@ export const mapDbRoleToStaffRole = (dbRole: string): StaffRole => {
       return 'Stylist';
     case 'waiter':
       return 'Waiter';
+    case 'creative':
+      return 'Creative';
     default:
       return 'Staff';
   }
@@ -143,13 +150,14 @@ export const mapMemberFromDb = (row: DbMember): Member => ({
   email: row.email || '',
   phoneNumber: row.phone || '',
   cardId: row.rfid_tag || row.barcode || undefined,
-  status: row.is_active ? 'Active' : 'Expired',
+  status: (row.status as any) || (row.is_active ? 'Active' : 'Expired'),
   startDate: row.created_at.split('T')[0],
   expirationDate: new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0],
   remainingSessions: 12,
-  gender: 'Other',
+  gender: (row.gender as any) || 'Other',
+  profileImageUrl: row.photo_url || undefined,
   createdAt: row.created_at,
-  updatedAt: row.created_at,
+  updatedAt: row.updated_at || row.created_at,
 });
 
 export const mapLeadFromDb = (row: DbRegistrationRequest): RegistrationLead => {
@@ -169,3 +177,54 @@ export const mapLeadFromDb = (row: DbRegistrationRequest): RegistrationLead => {
     updatedAt: row.processed_at || row.requested_at,
   };
 };
+
+export const mapAppointmentFromDb = (row: Database['public']['Tables']['appointments']['Row']): Appointment => ({
+  id: row.id,
+  tenantId: row.account_id,
+  facilityId: row.branch_id,
+  clientId: row.client_id || '',
+  clientName: row.client_name,
+  clientPhone: row.client_phone || '',
+  staffId: row.staff_id || '',
+  staffName: row.staff_name,
+  serviceId: row.service_id || '',
+  serviceName: row.service_name,
+  date: row.date,
+  startTime: row.start_time,
+  endTime: row.end_time,
+  durationMinutes: Number(row.duration_minutes || 45),
+  price: Number(row.price || 0),
+  status: (row.status as any) || 'Confirmed',
+  notes: row.notes || undefined,
+  createdAt: row.created_at,
+});
+
+export const mapProductFromDb = (row: Database['public']['Tables']['products']['Row']): Product => ({
+  id: row.id,
+  tenantId: row.account_id,
+  facilityId: row.branch_id,
+  name: row.name,
+  description: row.description || '',
+  price: { amount: Number(row.price || 0), currency: 'DZD' },
+  cost: { amount: Number(row.cost || 0), currency: 'DZD' },
+  stockQuantity: Number(row.stock_quantity || 0),
+  sku: row.sku || 'SKU-GEN',
+  category: row.category || 'General',
+  imageUrl: row.image_url || undefined,
+  reorderLevel: Number(row.reorder_level || 5),
+  isActive: row.is_active,
+  isPinned: false,
+});
+
+export const mapSaleFromDb = (row: Database['public']['Tables']['sales']['Row']): Sale => ({
+  id: row.id,
+  tenantId: row.account_id,
+  facilityId: row.branch_id,
+  memberId: row.member_id || undefined,
+  memberName: row.member_name || undefined,
+  totalAmount: Number(row.total_amount || 0),
+  paymentMethod: (row.payment_method as any) || 'Cash',
+  items: Array.isArray(row.items) ? (row.items as any) : [],
+  notes: row.notes || undefined,
+  createdAt: row.created_at,
+});

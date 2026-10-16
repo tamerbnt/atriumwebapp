@@ -69,6 +69,8 @@ import {
   staffService,
   realtimeService,
   freelanceService,
+  appointmentService,
+  posService,
 } from '../lib/supabase/index';
 
 const STORAGE_KEY = 'atrium_erp_desktop_v2';
@@ -188,31 +190,56 @@ const DEFAULT_STATE: AppState = {
 type Listener = () => void;
 let globalState: AppState = (() => {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      return {
-        ...DEFAULT_STATE,
-        ...parsed,
-        appointments: parsed.appointments && parsed.appointments.length > 0 ? parsed.appointments : INITIAL_APPOINTMENTS,
-        servicesCatalog: parsed.servicesCatalog && parsed.servicesCatalog.length > 0 ? parsed.servicesCatalog : INITIAL_SALON_SERVICES,
-        freelanceClients: parsed.freelanceClients && parsed.freelanceClients.length > 0 ? parsed.freelanceClients : INITIAL_FREELANCE_CLIENTS,
-        freelanceProjects: parsed.freelanceProjects && parsed.freelanceProjects.length > 0 ? parsed.freelanceProjects : INITIAL_FREELANCE_PROJECTS,
-        timeLogs: parsed.timeLogs && parsed.timeLogs.length > 0 ? parsed.timeLogs : INITIAL_TIME_LOGS,
-        freelanceInvoices: parsed.freelanceInvoices && parsed.freelanceInvoices.length > 0 ? parsed.freelanceInvoices : INITIAL_FREELANCE_INVOICES,
-        freelanceProposals: parsed.freelanceProposals && parsed.freelanceProposals.length > 0 ? parsed.freelanceProposals : INITIAL_FREELANCE_PROPOSALS,
-        freelanceExpenses: parsed.freelanceExpenses && parsed.freelanceExpenses.length > 0 ? parsed.freelanceExpenses : INITIAL_FREELANCE_EXPENSES,
-        activeTimer: parsed.activeTimer || INITIAL_ACTIVE_TIMER,
-        currentUser: parsed.currentUser || DEFAULT_USER,
-        isAuthenticated: parsed.isAuthenticated !== undefined ? parsed.isAuthenticated : true,
-        isOnboardingOpen: false,
-        isFastSwitchOpen: false,
-        supabaseStatus: isSupabaseConfigured() ? 'connecting' : 'unconfigured',
-        isSyncing: false,
-      };
+    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        const businesses = Array.isArray(parsed.businesses) && parsed.businesses.length > 0 ? parsed.businesses : INITIAL_BUSINESSES;
+        const branches = Array.isArray(parsed.branches) && parsed.branches.length > 0 ? parsed.branches : INITIAL_BRANCHES;
+        
+        // Ensure valid current business and branch IDs
+        const hasValidBusiness = businesses.some((b: any) => b.id === parsed.currentBusinessId);
+        const currentBusinessId = hasValidBusiness ? parsed.currentBusinessId : businesses[0].id;
+        
+        const validBranchesForBiz = branches.filter((br: any) => br.businessId === currentBusinessId);
+        const hasValidBranch = branches.some((br: any) => br.id === parsed.currentBranchId);
+        const currentBranchId = hasValidBranch ? parsed.currentBranchId : (validBranchesForBiz[0]?.id || branches[0].id);
+
+        return {
+          ...DEFAULT_STATE,
+          ...parsed,
+          businesses,
+          branches,
+          currentBusinessId,
+          currentBranchId,
+          subscription: parsed.subscription?.plan ? parsed.subscription : DEFAULT_STATE.subscription,
+          members: Array.isArray(parsed.members) && parsed.members.length > 0 ? parsed.members : INITIAL_MEMBERS,
+          leads: Array.isArray(parsed.leads) && parsed.leads.length > 0 ? parsed.leads : INITIAL_LEADS,
+          products: Array.isArray(parsed.products) && parsed.products.length > 0 ? parsed.products : INITIAL_PRODUCTS,
+          sales: Array.isArray(parsed.sales) && parsed.sales.length > 0 ? parsed.sales : INITIAL_SALES,
+          staff: Array.isArray(parsed.staff) && parsed.staff.length > 0 ? parsed.staff : INITIAL_STAFF,
+          schedule: Array.isArray(parsed.schedule) && parsed.schedule.length > 0 ? parsed.schedule : INITIAL_SCHEDULE,
+          devices: Array.isArray(parsed.devices) && parsed.devices.length > 0 ? parsed.devices : INITIAL_DEVICES,
+          appointments: Array.isArray(parsed.appointments) && parsed.appointments.length > 0 ? parsed.appointments : INITIAL_APPOINTMENTS,
+          servicesCatalog: Array.isArray(parsed.servicesCatalog) && parsed.servicesCatalog.length > 0 ? parsed.servicesCatalog : INITIAL_SALON_SERVICES,
+          freelanceClients: Array.isArray(parsed.freelanceClients) && parsed.freelanceClients.length > 0 ? parsed.freelanceClients : INITIAL_FREELANCE_CLIENTS,
+          freelanceProjects: Array.isArray(parsed.freelanceProjects) && parsed.freelanceProjects.length > 0 ? parsed.freelanceProjects : INITIAL_FREELANCE_PROJECTS,
+          timeLogs: Array.isArray(parsed.timeLogs) && parsed.timeLogs.length > 0 ? parsed.timeLogs : INITIAL_TIME_LOGS,
+          freelanceInvoices: Array.isArray(parsed.freelanceInvoices) && parsed.freelanceInvoices.length > 0 ? parsed.freelanceInvoices : INITIAL_FREELANCE_INVOICES,
+          freelanceProposals: Array.isArray(parsed.freelanceProposals) && parsed.freelanceProposals.length > 0 ? parsed.freelanceProposals : INITIAL_FREELANCE_PROPOSALS,
+          freelanceExpenses: Array.isArray(parsed.freelanceExpenses) && parsed.freelanceExpenses.length > 0 ? parsed.freelanceExpenses : INITIAL_FREELANCE_EXPENSES,
+          activeTimer: parsed.activeTimer || INITIAL_ACTIVE_TIMER,
+          currentUser: parsed.currentUser || DEFAULT_USER,
+          isAuthenticated: parsed.isAuthenticated !== undefined ? parsed.isAuthenticated : true,
+          isOnboardingOpen: false,
+          isFastSwitchOpen: false,
+          supabaseStatus: isSupabaseConfigured() ? 'connecting' : 'unconfigured',
+          isSyncing: false,
+        };
+      }
     }
   } catch (e) {
-    console.warn('Failed to load Atrium state from localStorage', e);
+    console.warn('Failed to load Atrium state from localStorage, falling back to clean default state', e);
   }
   return DEFAULT_STATE;
 })();
@@ -221,7 +248,9 @@ const listeners = new Set<Listener>();
 
 function notify() {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(globalState));
+    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(globalState));
+    }
   } catch (e) {
     console.warn('Failed to persist state', e);
   }
@@ -269,6 +298,9 @@ export function useAtriumStore() {
         members,
         leads,
         staff,
+        appointments,
+        products,
+        sales,
         freelanceClients,
         freelanceProjects,
         freelanceTimeLogs,
@@ -281,6 +313,9 @@ export function useAtriumStore() {
         memberService.fetchMembers(globalState.currentBranchId),
         memberService.fetchRegistrationRequests(globalState.currentBranchId),
         staffService.fetchStaffForSync(accountId, globalState.currentBranchId),
+        appointmentService.fetchAppointments(globalState.currentBranchId),
+        posService.fetchProducts(globalState.currentBranchId),
+        posService.fetchSales(globalState.currentBranchId),
         freelanceService.fetchClients(globalState.currentBranchId),
         freelanceService.fetchProjects(globalState.currentBranchId),
         freelanceService.fetchTimeLogs(globalState.currentBranchId),
@@ -308,6 +343,15 @@ export function useAtriumStore() {
       }
       if (staff.length > 0) {
         updates.staff = staff;
+      }
+      if (appointments.length > 0) {
+        updates.appointments = appointments;
+      }
+      if (products.length > 0) {
+        updates.products = products;
+      }
+      if (sales.length > 0) {
+        updates.sales = sales;
       }
       if (freelanceClients.length > 0) {
         updates.freelanceClients = freelanceClients;
@@ -428,26 +472,30 @@ export function useAtriumStore() {
 
   // Helpers
   const currentBusiness =
-    state.businesses.find((b) => b.id === state.currentBusinessId) || state.businesses[0];
+    (state.businesses && state.businesses.find((b) => b.id === state.currentBusinessId)) ||
+    (state.businesses && state.businesses[0]) ||
+    INITIAL_BUSINESSES[0];
   const currentBranch =
-    state.branches.find((b) => b.id === state.currentBranchId) || state.branches[0];
-  const terminology = getCategoryTerminology(currentBusiness.category, state.language);
+    (state.branches && state.branches.find((b) => b.id === state.currentBranchId)) ||
+    (state.branches && state.branches[0]) ||
+    INITIAL_BRANCHES[0];
+  const terminology = getCategoryTerminology(currentBusiness?.category || 'pos_inventory', state.language);
 
   // Quotas
-  const plan = state.subscription.plan;
-  const businessQuota = checkQuota(state.businesses.length, plan.maxBusinesses);
-  const branchQuota = checkQuota(state.branches.length, plan.maxBranches);
-  const deviceQuota = checkQuota(state.devices.length, plan.maxDevices);
-  const staffQuota = checkQuota(state.staff.length, plan.maxStaff);
+  const plan = state.subscription?.plan || INITIAL_PLANS[0];
+  const businessQuota = checkQuota((state.businesses || []).length, plan?.maxBusinesses || 1);
+  const branchQuota = checkQuota((state.branches || []).length, plan?.maxBranches || 1);
+  const deviceQuota = checkQuota((state.devices || []).length, plan?.maxDevices || 1);
+  const staffQuota = checkQuota((state.staff || []).length, plan?.maxStaff || 1);
 
   // Scoped lists
-  const currentMembers = state.members.filter((m) => m.facilityId === state.currentBranchId);
-  const currentLeads = state.leads.filter((l) => l.facilityId === state.currentBranchId);
-  const currentProducts = state.products.filter((p) => p.facilityId === state.currentBranchId);
-  const currentStaff = state.staff.filter((s) => s.facilityId === state.currentBranchId);
-  const currentSales = state.sales.filter((s) => s.facilityId === state.currentBranchId);
-  const currentSchedule = state.schedule.filter((sc) => sc.facilityId === state.currentBranchId);
-  const currentPlans = state.plansByBranch[state.currentBranchId] || EMPTY_PLANS;
+  const currentMembers = (state.members || []).filter((m) => m.facilityId === state.currentBranchId);
+  const currentLeads = (state.leads || []).filter((l) => l.facilityId === state.currentBranchId);
+  const currentProducts = (state.products || []).filter((p) => p.facilityId === state.currentBranchId);
+  const currentStaff = (state.staff || []).filter((s) => s.facilityId === state.currentBranchId);
+  const currentSales = (state.sales || []).filter((s) => s.facilityId === state.currentBranchId);
+  const currentSchedule = (state.schedule || []).filter((sc) => sc.facilityId === state.currentBranchId);
+  const currentPlans = (state.plansByBranch && state.plansByBranch[state.currentBranchId]) || EMPTY_PLANS;
   const currentAppointments = (state.appointments || []).filter((a) => a.facilityId === state.currentBranchId);
   const currentServices = (state.servicesCatalog || []).filter((s) => s.facilityId === state.currentBranchId);
 
@@ -697,6 +745,13 @@ export function useAtriumStore() {
       sales: [sale, ...globalState.sales],
     };
     notify();
+
+    if (isSupabaseConfigured()) {
+      posService.createSale(sale).catch((err) => {
+        console.warn('[store] Failed to save sale to Supabase:', err);
+      });
+    }
+
     return sale;
   };
 
@@ -715,6 +770,13 @@ export function useAtriumStore() {
       appointments: [newApt, ...(globalState.appointments || [])],
     };
     notify();
+
+    if (isSupabaseConfigured()) {
+      appointmentService.upsertAppointment(newApt).catch((err) => {
+        console.warn('[store] Failed to save appointment to Supabase:', err);
+      });
+    }
+
     return newApt;
   };
 
@@ -726,6 +788,12 @@ export function useAtriumStore() {
       ),
     };
     notify();
+
+    if (isSupabaseConfigured()) {
+      appointmentService.updateStatus(id, status).catch((err) => {
+        console.warn('[store] Failed to update appointment status in Supabase:', err);
+      });
+    }
   };
 
   const rescheduleAppointment = (
@@ -752,6 +820,15 @@ export function useAtriumStore() {
       }),
     };
     notify();
+
+    if (isSupabaseConfigured()) {
+      const target = globalState.appointments?.find((a) => a.id === id);
+      if (target) {
+        appointmentService.upsertAppointment(target).catch((err) => {
+          console.warn('[store] Failed to reschedule appointment in Supabase:', err);
+        });
+      }
+    }
   };
 
   const deleteAppointment = (id: string) => {
@@ -953,6 +1030,13 @@ export function useAtriumStore() {
       products: [newProduct, ...globalState.products],
     };
     notify();
+
+    if (isSupabaseConfigured()) {
+      posService.upsertProduct(newProduct).catch((err) => {
+        console.warn('[store] Failed to save product to Supabase:', err);
+      });
+    }
+
     return newProduct;
   };
 
@@ -1756,6 +1840,18 @@ export function useAtriumStore() {
       ),
     };
     notify();
+
+    if (isSupabaseConfigured()) {
+      freelanceService.upsertInvoice(newInvoice).catch((err) => {
+        console.warn('[store] Failed to save invoice to Supabase:', err);
+      });
+      unbilled.forEach((t) => {
+        freelanceService.upsertTimeLog({ ...t, isInvoiced: true }).catch((err) => {
+          console.warn('[store] Failed to update time log in Supabase:', err);
+        });
+      });
+    }
+
     return newInvoice;
   };
 
@@ -1896,6 +1992,18 @@ export function useAtriumStore() {
       ),
     };
     notify();
+
+    if (isSupabaseConfigured()) {
+      freelanceService.upsertProject(newProject).catch((err) => {
+        console.warn('[store] Failed to save converted project to Supabase:', err);
+      });
+      if (prop) {
+        freelanceService.upsertProposal({ ...prop, status: 'Accepted' }).catch((err) => {
+          console.warn('[store] Failed to update proposal status in Supabase:', err);
+        });
+      }
+    }
+
     return newProject;
   };
 

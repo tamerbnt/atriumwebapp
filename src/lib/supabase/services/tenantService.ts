@@ -1,4 +1,4 @@
-import { getSupabaseClient } from '../client';
+import { getSupabaseClient, isUuid } from '../client';
 import { mapBusinessFromDb, mapBranchFromDb } from '../mappers';
 import type { Business, Branch, BusinessCategory } from '../../../types/index';
 
@@ -39,7 +39,7 @@ export const tenantService = {
 
   async fetchBusinesses(accountId: string): Promise<Business[]> {
     const client = getSupabaseClient();
-    if (!client) return [];
+    if (!client || !isUuid(accountId)) return [];
 
     const { data, error } = await client
       .from('businesses')
@@ -56,7 +56,7 @@ export const tenantService = {
 
   async fetchBranches(accountId: string, businessId?: string): Promise<Branch[]> {
     const client = getSupabaseClient();
-    if (!client) return [];
+    if (!client || !isUuid(accountId)) return [];
 
     let query = client
       .from('branches')
@@ -64,7 +64,7 @@ export const tenantService = {
       .eq('account_id', accountId)
       .eq('is_active', true);
 
-    if (businessId) {
+    if (businessId && isUuid(businessId)) {
       query = query.eq('business_id', businessId);
     }
 
@@ -78,7 +78,7 @@ export const tenantService = {
 
   async fetchTenantFacilities(tenantId: string) {
     const client = getSupabaseClient();
-    if (!client) return [];
+    if (!client || !isUuid(tenantId)) return [];
 
     const { data, error } = await client.rpc('get_tenant_facilities', {
       p_tenant_id: tenantId,

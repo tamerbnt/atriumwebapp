@@ -8,3 +8,5 @@ export * from './services/memberService';
 export * from './services/staffService';
 export * from './services/realtimeService';
 export * from './services/freelanceService';
+export * from './services/appointmentService';
+export * from './services/posService';

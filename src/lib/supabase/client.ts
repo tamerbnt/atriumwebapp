@@ -5,8 +5,9 @@ import type { Database } from './types';
 const DEFAULT_SUPABASE_URL = 'https://tzzncsbvezywtaknwind.supabase.co';
 const DEFAULT_SUPABASE_ANON_KEY = 'sb_publishable_32fUrUTxIXdeau3MgAPR_g_7LoZ4rwu';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || DEFAULT_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || DEFAULT_SUPABASE_ANON_KEY;
+const metaEnv = typeof import.meta !== 'undefined' ? (import.meta as any).env : undefined;
+const supabaseUrl = metaEnv?.VITE_SUPABASE_URL || DEFAULT_SUPABASE_URL;
+const supabaseAnonKey = metaEnv?.VITE_SUPABASE_ANON_KEY || DEFAULT_SUPABASE_ANON_KEY;
 
 export const isSupabaseConfigured = (): boolean => {
   return Boolean(
@@ -15,6 +16,11 @@ export const isSupabaseConfigured = (): boolean => {
     supabaseUrl.startsWith('http') &&
     supabaseAnonKey.length > 10
   );
+};
+
+export const isUuid = (id: string | null | undefined): boolean => {
+  if (!id) return false;
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
 };
 
 export type SupabaseConnectionState = 'connected' | 'connecting' | 'offline' | 'unconfigured';

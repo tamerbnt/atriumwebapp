@@ -12,7 +12,8 @@ export type BusinessCategory =
   | 'membership_session'
   | 'project_milestone'
   | 'rental_booking'
-  | 'education_cohort';
+  | 'education_cohort'
+  | 'freelance_solo';
 
 export type StaffRoleEnum =
   | 'owner'
@@ -21,7 +22,8 @@ export type StaffRoleEnum =
   | 'technician'
   | 'stylist'
   | 'waiter'
-  | 'staff';
+  | 'staff'
+  | 'creative';
 
 export interface Database {
   public: {
@@ -432,8 +434,12 @@ export interface Database {
           phone: string | null;
           rfid_tag: string | null;
           barcode: string | null;
+          status: string;
+          gender: string | null;
+          photo_url: string | null;
           is_active: boolean;
           created_at: string;
+          updated_at: string;
         };
         Insert: {
           id?: string;
@@ -444,8 +450,12 @@ export interface Database {
           phone?: string | null;
           rfid_tag?: string | null;
           barcode?: string | null;
+          status?: string;
+          gender?: string | null;
+          photo_url?: string | null;
           is_active?: boolean;
           created_at?: string;
+          updated_at?: string;
         };
         Update: Partial<Database['public']['Tables']['members_directory']['Insert']>;
         Relationships: [];
@@ -492,6 +502,350 @@ export interface Database {
           processed_at?: string | null;
         };
         Update: Partial<Database['public']['Tables']['registration_requests']['Insert']>;
+        Relationships: [];
+      };
+      appointments: {
+        Row: {
+          id: string;
+          account_id: string;
+          branch_id: string;
+          client_id: string | null;
+          client_name: string;
+          client_phone: string | null;
+          staff_id: string | null;
+          staff_name: string;
+          service_id: string | null;
+          service_name: string;
+          date: string;
+          start_time: string;
+          end_time: string;
+          duration_minutes: number;
+          price: number;
+          status: string;
+          notes: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          account_id: string;
+          branch_id: string;
+          client_id?: string | null;
+          client_name: string;
+          client_phone?: string | null;
+          staff_id?: string | null;
+          staff_name: string;
+          service_id?: string | null;
+          service_name: string;
+          date: string;
+          start_time: string;
+          end_time: string;
+          duration_minutes?: number;
+          price?: number;
+          status?: string;
+          notes?: string | null;
+          created_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['appointments']['Insert']>;
+        Relationships: [];
+      };
+      products: {
+        Row: {
+          id: string;
+          account_id: string;
+          branch_id: string;
+          name: string;
+          description: string | null;
+          price: number;
+          cost: number;
+          stock_quantity: number;
+          sku: string | null;
+          category: string;
+          image_url: string | null;
+          reorder_level: number;
+          is_active: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          account_id: string;
+          branch_id: string;
+          name: string;
+          description?: string | null;
+          price?: number;
+          cost?: number;
+          stock_quantity?: number;
+          sku?: string | null;
+          category?: string;
+          image_url?: string | null;
+          reorder_level?: number;
+          is_active?: boolean;
+          created_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['products']['Insert']>;
+        Relationships: [];
+      };
+      sales: {
+        Row: {
+          id: string;
+          account_id: string;
+          branch_id: string;
+          member_id: string | null;
+          member_name: string | null;
+          total_amount: number;
+          payment_method: string;
+          items: Json;
+          notes: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          account_id: string;
+          branch_id: string;
+          member_id?: string | null;
+          member_name?: string | null;
+          total_amount?: number;
+          payment_method?: string;
+          items?: Json;
+          notes?: string | null;
+          created_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['sales']['Insert']>;
+        Relationships: [];
+      };
+      freelance_clients: {
+        Row: {
+          id: string;
+          account_id: string;
+          branch_id: string;
+          name: string;
+          company: string | null;
+          email: string;
+          phone: string | null;
+          currency: string;
+          hourly_rate: number;
+          status: string;
+          monthly_retainer_hours: number | null;
+          monthly_retainer_amount: number | null;
+          lifetime_billed: number;
+          notes: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          account_id: string;
+          branch_id: string;
+          name: string;
+          company?: string | null;
+          email: string;
+          phone?: string | null;
+          currency?: string;
+          hourly_rate?: number;
+          status?: string;
+          monthly_retainer_hours?: number | null;
+          monthly_retainer_amount?: number | null;
+          lifetime_billed?: number;
+          notes?: string | null;
+          created_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['freelance_clients']['Insert']>;
+        Relationships: [];
+      };
+      freelance_projects: {
+        Row: {
+          id: string;
+          account_id: string;
+          branch_id: string;
+          client_id: string;
+          client_name: string;
+          title: string;
+          description: string | null;
+          pricing_model: string;
+          currency: string;
+          budget: number;
+          estimated_hours: number;
+          logged_hours: number;
+          stage: string;
+          deadline: string | null;
+          deliverables: Json;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          account_id: string;
+          branch_id: string;
+          client_id: string;
+          client_name: string;
+          title: string;
+          description?: string | null;
+          pricing_model?: string;
+          currency?: string;
+          budget?: number;
+          estimated_hours?: number;
+          logged_hours?: number;
+          stage?: string;
+          deadline?: string | null;
+          deliverables?: Json;
+          created_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['freelance_projects']['Insert']>;
+        Relationships: [];
+      };
+      freelance_time_logs: {
+        Row: {
+          id: string;
+          account_id: string;
+          branch_id: string;
+          client_id: string;
+          client_name: string;
+          project_id: string;
+          project_title: string;
+          task_description: string;
+          duration_seconds: number;
+          is_billable: boolean;
+          is_invoiced: boolean;
+          rate_at_moment: number;
+          currency: string;
+          date: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          account_id: string;
+          branch_id: string;
+          client_id: string;
+          client_name: string;
+          project_id: string;
+          project_title: string;
+          task_description: string;
+          duration_seconds?: number;
+          is_billable?: boolean;
+          is_invoiced?: boolean;
+          rate_at_moment?: number;
+          currency?: string;
+          date?: string;
+          created_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['freelance_time_logs']['Insert']>;
+        Relationships: [];
+      };
+      freelance_invoices: {
+        Row: {
+          id: string;
+          account_id: string;
+          branch_id: string;
+          client_id: string;
+          client_name: string;
+          client_company: string | null;
+          client_email: string;
+          invoice_number: string;
+          currency: string;
+          issue_date: string;
+          due_date: string;
+          status: string;
+          items: Json;
+          subtotal: number;
+          tax_percent: number;
+          tax_amount: number;
+          total_amount: number;
+          payment_details: Json | null;
+          notes: string | null;
+          paid_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          account_id: string;
+          branch_id: string;
+          client_id: string;
+          client_name: string;
+          client_company?: string | null;
+          client_email: string;
+          invoice_number: string;
+          currency?: string;
+          issue_date?: string;
+          due_date: string;
+          status?: string;
+          items?: Json;
+          subtotal?: number;
+          tax_percent?: number;
+          tax_amount?: number;
+          total_amount?: number;
+          payment_details?: Json | null;
+          notes?: string | null;
+          paid_at?: string | null;
+          created_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['freelance_invoices']['Insert']>;
+        Relationships: [];
+      };
+      freelance_proposals: {
+        Row: {
+          id: string;
+          account_id: string;
+          branch_id: string;
+          client_name: string;
+          client_company: string | null;
+          client_email: string;
+          title: string;
+          overview: string | null;
+          scope_items: Json;
+          pricing_model: string;
+          proposed_budget: number;
+          currency: string;
+          estimated_timeline_weeks: number;
+          valid_until: string | null;
+          status: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          account_id: string;
+          branch_id: string;
+          client_name: string;
+          client_company?: string | null;
+          client_email: string;
+          title: string;
+          overview?: string | null;
+          scope_items?: Json;
+          pricing_model?: string;
+          proposed_budget?: number;
+          currency?: string;
+          estimated_timeline_weeks?: number;
+          valid_until?: string | null;
+          status?: string;
+          created_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['freelance_proposals']['Insert']>;
+        Relationships: [];
+      };
+      freelance_expenses: {
+        Row: {
+          id: string;
+          account_id: string;
+          branch_id: string;
+          category: string;
+          vendor: string;
+          description: string;
+          amount: number;
+          currency: string;
+          date: string;
+          is_tax_deductible: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          account_id: string;
+          branch_id: string;
+          category?: string;
+          vendor: string;
+          description: string;
+          amount?: number;
+          currency?: string;
+          date?: string;
+          is_tax_deductible?: boolean;
+          created_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['freelance_expenses']['Insert']>;
         Relationships: [];
       };
     };

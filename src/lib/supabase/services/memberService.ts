@@ -1,29 +1,32 @@
-import { getSupabaseClient } from '../client';
+import { getSupabaseClient, isUuid } from '../client';
 import { mapMemberFromDb, mapLeadFromDb } from '../mappers';
 import type { Member, RegistrationLead } from '../../../types/index';
 
 export const memberService = {
   async fetchMembers(branchId: string): Promise<Member[]> {
     const client = getSupabaseClient();
-    if (!client) return [];
+    if (!client || !isUuid(branchId)) return [];
 
-    const { data, error } = await client
-      .from('members_directory')
-      .select('*')
-      .eq('branch_id', branchId)
-      .eq('is_active', true)
-      .order('created_at', { ascending: false });
+    try {
+      const { data, error } = await client
+        .from('members_directory')
+        .select('*')
+        .eq('branch_id', branchId)
+        .eq('is_active', true);
 
-    if (error) {
-      console.warn('[memberService] fetchMembers failed:', error);
+      if (error) {
+        console.warn('[memberService] fetchMembers failed:', error);
+        return [];
+      }
+      return (data || []).map(mapMemberFromDb);
+    } catch {
       return [];
     }
-    return (data || []).map(mapMemberFromDb);
   },
 
   async createMember(member: Omit<Member, 'id' | 'createdAt' | 'updatedAt'> & { id?: string }): Promise<Member | null> {
     const client = getSupabaseClient();
-    if (!client) return null;
+    if (!client || !isUuid(member.tenantId) || !isUuid(member.facilityId)) return null;
 
     const { data, error } = await client
       .from('members_directory')
@@ -34,6 +37,9 @@ export const memberService = {
         email: member.email || null,
         phone: member.phoneNumber || null,
         rfid_tag: member.cardId || null,
+        status: member.status || 'Active',
+        gender: member.gender || 'Other',
+        photo_url: member.profileImageUrl || null,
         is_active: member.status === 'Active',
       })
       .select()
@@ -48,7 +54,7 @@ export const memberService = {
 
   async updateMember(member: Member): Promise<boolean> {
     const client = getSupabaseClient();
-    if (!client) return false;
+    if (!client || !isUuid(member.id)) return false;
 
     const { error } = await client
       .from('members_directory')
@@ -57,7 +63,11 @@ export const memberService = {
         email: member.email || null,
         phone: member.phoneNumber || null,
         rfid_tag: member.cardId || null,
+        status: member.status || 'Active',
+        gender: member.gender || 'Other',
+        photo_url: member.profileImageUrl || null,
         is_active: member.status === 'Active',
+        updated_at: new Date().toISOString(),
       })
       .eq('id', member.id);
 
@@ -70,7 +80,7 @@ export const memberService = {
 
   async deleteMember(memberId: string): Promise<boolean> {
     const client = getSupabaseClient();
-    if (!client) return false;
+    if (!client || !isUuid(memberId)) return false;
 
     const { error } = await client
       .from('members_directory')
@@ -86,24 +96,28 @@ export const memberService = {
 
   async fetchRegistrationRequests(branchId: string): Promise<RegistrationLead[]> {
     const client = getSupabaseClient();
-    if (!client) return [];
+    if (!client || !isUuid(branchId)) return [];
 
-    const { data, error } = await client
-      .from('registration_requests')
-      .select('*')
-      .eq('branch_id', branchId)
-      .order('requested_at', { ascending: false });
+    try {
+      const { data, error } = await client
+        .from('registration_requests')
+        .select('*')
+        .eq('branch_id', branchId)
+        .order('requested_at', { ascending: false });
 
-    if (error) {
-      console.warn('[memberService] fetchRegistrationRequests failed:', error);
+      if (error) {
+        console.warn('[memberService] fetchRegistrationRequests failed:', error);
+        return [];
+      }
+      return (data || []).map(mapLeadFromDb);
+    } catch {
       return [];
     }
-    return (data || []).map(mapLeadFromDb);
   },
 
   async createRegistrationRequest(lead: Omit<RegistrationLead, 'id' | 'createdAt' | 'updatedAt'>): Promise<RegistrationLead | null> {
     const client = getSupabaseClient();
-    if (!client) return null;
+    if (!client || !isUuid(lead.tenantId) || !isUuid(lead.facilityId)) return null;
 
     const { data, error } = await client
       .from('registration_requests')

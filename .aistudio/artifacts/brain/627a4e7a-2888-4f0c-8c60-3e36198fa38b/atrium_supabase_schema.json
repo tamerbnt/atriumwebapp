@@ -1,0 +1,471 @@
+{
+  "project_name": "Atrium ERP & CRM",
+  "version": "2.1.0",
+  "generated_at": "2026-10-16T22:05:00Z",
+  "supabase_connection": {
+    "project_url": "https://tzzncsbvezywtaknwind.supabase.co",
+    "anon_publishable_key": "sb_publishable_32fUrUTxIXdeau3MgAPR_g_7LoZ4rwu",
+    "status": "configured",
+    "offline_first_mode": "active (localStorage cache with optimistic sync)"
+  },
+  "business_categories": [
+    { "id": "membership_session", "name": "Gym & Fitness", "description": "RFID turnstiles, recurring memberships, session tracking" },
+    { "id": "appointment_service", "name": "Salon & Beauty", "description": "Staff roster, appointments, salon service menu" },
+    { "id": "pos_inventory", "name": "Restaurant & POS Retail", "description": "Quick sales, bar/dining tickets, stock depletion" },
+    { "id": "project_milestone", "name": "Projects & Agency", "description": "Client retainers, phases, team assignment" },
+    { "id": "rental_booking", "name": "Rentals & Venues", "description": "Time slot reservations, equipment leasing" },
+    { "id": "education_cohort", "name": "Education & Academies", "description": "Cohorts, student enrollment, term courses" },
+    { "id": "freelance_solo", "name": "Freelancer & Solo Practice", "description": "Floating live stopwatch, hourly & retainer billing, branded PDF invoices, client project deliverables" }
+  ],
+  "schema_introspection_query_sql": "SELECT json_build_object('tables', (SELECT json_agg(json_build_object('table_name', t.table_name, 'columns', (SELECT json_agg(json_build_object('column_name', c.column_name, 'data_type', c.data_type, 'is_nullable', c.is_nullable, 'column_default', c.column_default) ORDER BY c.ordinal_position) FROM information_schema.columns c WHERE c.table_schema = 'public' AND c.table_name = t.table_name))) FROM information_schema.tables t WHERE t.table_schema = 'public' AND t.table_type = 'BASE TABLE'), 'functions', (SELECT json_agg(json_build_object('routine_name', r.routine_name, 'data_type', r.data_type)) FROM information_schema.routines r WHERE r.routine_schema = 'public')) AS supabase_schema_json;",
+  "tables": [
+    {
+      "name": "subscription_plans",
+      "category": "core_tenant",
+      "description": "Subscription tiers (Free Trial, Starter, Pro, Enterprise)",
+      "columns": [
+        { "name": "id", "type": "uuid", "is_primary": true, "default": "gen_random_uuid()" },
+        { "name": "name", "type": "text", "is_unique": true, "nullable": false },
+        { "name": "tier_rank", "type": "integer", "is_unique": true, "nullable": false },
+        { "name": "max_businesses", "type": "integer", "default": 1 },
+        { "name": "max_branches", "type": "integer", "default": 1 },
+        { "name": "max_devices", "type": "integer", "default": 1 },
+        { "name": "max_staff", "type": "integer", "default": 3 },
+        { "name": "cross_branch_reports", "type": "boolean", "default": false },
+        { "name": "shared_members", "type": "boolean", "default": false },
+        { "name": "is_free_tier", "type": "boolean", "default": false },
+        { "name": "trial_days", "type": "integer", "default": 0 },
+        { "name": "price_label", "type": "text", "nullable": true },
+        { "name": "created_at", "type": "timestamptz", "default": "now()" }
+      ]
+    },
+    {
+      "name": "modules",
+      "category": "core_tenant",
+      "description": "System feature modules toggled per plan or tier",
+      "columns": [
+        { "name": "id", "type": "uuid", "is_primary": true, "default": "gen_random_uuid()" },
+        { "name": "key", "type": "text", "is_unique": true, "nullable": false },
+        { "name": "display_name", "type": "text", "nullable": false },
+        { "name": "icon", "type": "text", "nullable": true },
+        { "name": "description", "type": "text", "nullable": true },
+        { "name": "is_core", "type": "boolean", "default": false },
+        { "name": "sort_order", "type": "integer", "default": 0 }
+      ]
+    },
+    {
+      "name": "accounts",
+      "category": "core_tenant",
+      "description": "Tenant owner accounts",
+      "columns": [
+        { "name": "id", "type": "uuid", "is_primary": true, "default": "gen_random_uuid()" },
+        { "name": "full_name", "type": "text", "nullable": true },
+        { "name": "email", "type": "text", "is_unique": true, "nullable": false },
+        { "name": "phone", "type": "text", "nullable": true },
+        { "name": "is_active", "type": "boolean", "default": true },
+        { "name": "created_at", "type": "timestamptz", "default": "now()" },
+        { "name": "updated_at", "type": "timestamptz", "default": "now()" }
+      ]
+    },
+    {
+      "name": "license_vouchers",
+      "category": "core_tenant",
+      "description": "Prepaid lifetime or promotional vouchers",
+      "columns": [
+        { "name": "id", "type": "uuid", "is_primary": true, "default": "gen_random_uuid()" },
+        { "name": "code", "type": "text", "is_unique": true, "nullable": false },
+        { "name": "plan_id", "type": "uuid", "references": "subscription_plans(id)" },
+        { "name": "duration_months", "type": "integer", "default": 0 },
+        { "name": "is_redeemed", "type": "boolean", "default": false },
+        { "name": "redeemed_by_account_id", "type": "uuid", "references": "accounts(id)", "nullable": true },
+        { "name": "redeemed_at", "type": "timestamptz", "nullable": true },
+        { "name": "created_by_note", "type": "text", "nullable": true },
+        { "name": "created_at", "type": "timestamptz", "default": "now()" }
+      ]
+    },
+    {
+      "name": "account_subscriptions",
+      "category": "core_tenant",
+      "description": "Active subscription for each account",
+      "columns": [
+        { "name": "id", "type": "uuid", "is_primary": true, "default": "gen_random_uuid()" },
+        { "name": "account_id", "type": "uuid", "references": "accounts(id)", "nullable": false },
+        { "name": "plan_id", "type": "uuid", "references": "subscription_plans(id)", "nullable": false },
+        { "name": "status", "type": "text", "default": "trial" },
+        { "name": "is_lifetime", "type": "boolean", "default": false },
+        { "name": "trial_ends_at", "type": "timestamptz", "nullable": true },
+        { "name": "current_period_end", "type": "timestamptz", "nullable": true },
+        { "name": "grace_ends_at", "type": "timestamptz", "nullable": true },
+        { "name": "activated_by_voucher", "type": "uuid", "references": "license_vouchers(id)", "nullable": true },
+        { "name": "created_at", "type": "timestamptz", "default": "now()" },
+        { "name": "updated_at", "type": "timestamptz", "default": "now()" }
+      ]
+    },
+    {
+      "name": "businesses",
+      "category": "core_tenant",
+      "description": "Multi-vertical business units",
+      "columns": [
+        { "name": "id", "type": "uuid", "is_primary": true, "default": "gen_random_uuid()" },
+        { "name": "account_id", "type": "uuid", "references": "accounts(id)", "nullable": false },
+        { "name": "category", "type": "text", "default": "pos_inventory" },
+        { "name": "name", "type": "text", "nullable": false },
+        { "name": "display_name", "type": "text", "nullable": true },
+        { "name": "address", "type": "text", "nullable": true },
+        { "name": "phone", "type": "text", "nullable": true },
+        { "name": "logo_url", "type": "text", "nullable": true },
+        { "name": "is_active", "type": "boolean", "default": true },
+        { "name": "created_at", "type": "timestamptz", "default": "now()" },
+        { "name": "updated_at", "type": "timestamptz", "default": "now()" }
+      ]
+    },
+    {
+      "name": "branches",
+      "category": "core_tenant",
+      "description": "Physical branch or facility locations",
+      "columns": [
+        { "name": "id", "type": "uuid", "is_primary": true, "default": "gen_random_uuid()" },
+        { "name": "account_id", "type": "uuid", "references": "accounts(id)", "nullable": false },
+        { "name": "business_id", "type": "uuid", "references": "businesses(id)", "nullable": false },
+        { "name": "name", "type": "text", "nullable": false },
+        { "name": "code", "type": "text", "nullable": false },
+        { "name": "address", "type": "text", "nullable": true },
+        { "name": "phone", "type": "text", "nullable": true },
+        { "name": "is_main_branch", "type": "boolean", "default": false },
+        { "name": "is_active", "type": "boolean", "default": true },
+        { "name": "created_at", "type": "timestamptz", "default": "now()" },
+        { "name": "updated_at", "type": "timestamptz", "default": "now()" }
+      ]
+    },
+    {
+      "name": "devices",
+      "category": "core_tenant",
+      "description": "POS terminals and authorized devices",
+      "columns": [
+        { "name": "id", "type": "uuid", "is_primary": true, "default": "gen_random_uuid()" },
+        { "name": "account_id", "type": "uuid", "references": "accounts(id)", "nullable": false },
+        { "name": "branch_id", "type": "uuid", "references": "branches(id)", "nullable": false },
+        { "name": "hardware_id", "type": "text", "is_unique": true, "nullable": false },
+        { "name": "label", "type": "text", "nullable": false },
+        { "name": "is_active", "type": "boolean", "default": true },
+        { "name": "last_seen_at", "type": "timestamptz", "default": "now()" },
+        { "name": "registered_at", "type": "timestamptz", "default": "now()" }
+      ]
+    },
+    {
+      "name": "staff",
+      "category": "core_operational",
+      "description": "Staff members, employees, managers",
+      "columns": [
+        { "name": "id", "type": "uuid", "is_primary": true, "default": "gen_random_uuid()" },
+        { "name": "account_id", "type": "uuid", "references": "accounts(id)", "nullable": false },
+        { "name": "full_name", "type": "text", "nullable": false },
+        { "name": "email", "type": "text", "nullable": true },
+        { "name": "phone", "type": "text", "nullable": true },
+        { "name": "role", "type": "staff_role_enum", "default": "staff" },
+        { "name": "pin_hash", "type": "text", "nullable": true },
+        { "name": "is_active", "type": "boolean", "default": true },
+        { "name": "created_at", "type": "timestamptz", "default": "now()" },
+        { "name": "updated_at", "type": "timestamptz", "default": "now()" }
+      ]
+    },
+    {
+      "name": "members_directory",
+      "category": "operational_memberships",
+      "description": "Gym, fitness, spa & membership clients",
+      "columns": [
+        { "name": "id", "type": "uuid", "is_primary": true, "default": "gen_random_uuid()" },
+        { "name": "account_id", "type": "uuid", "references": "accounts(id)", "nullable": false },
+        { "name": "branch_id", "type": "uuid", "references": "branches(id)", "nullable": false },
+        { "name": "full_name", "type": "text", "nullable": false },
+        { "name": "email", "type": "text", "nullable": true },
+        { "name": "phone", "type": "text", "nullable": true },
+        { "name": "rfid_tag", "type": "text", "nullable": true },
+        { "name": "barcode", "type": "text", "nullable": true },
+        { "name": "status", "type": "text", "default": "Active" },
+        { "name": "gender", "type": "text", "nullable": true },
+        { "name": "photo_url", "type": "text", "nullable": true },
+        { "name": "is_active", "type": "boolean", "default": true },
+        { "name": "created_at", "type": "timestamptz", "default": "now()" },
+        { "name": "updated_at", "type": "timestamptz", "default": "now()" }
+      ]
+    },
+    {
+      "name": "registration_requests",
+      "category": "operational_memberships",
+      "description": "Online signups and membership leads",
+      "columns": [
+        { "name": "id", "type": "uuid", "is_primary": true, "default": "gen_random_uuid()" },
+        { "name": "account_id", "type": "uuid", "references": "accounts(id)", "nullable": false },
+        { "name": "branch_id", "type": "uuid", "references": "branches(id)", "nullable": false },
+        { "name": "payload", "type": "jsonb", "default": "{}" },
+        { "name": "status", "type": "text", "default": "pending" },
+        { "name": "requested_at", "type": "timestamptz", "default": "now()" },
+        { "name": "processed_at", "type": "timestamptz", "nullable": true }
+      ]
+    },
+    {
+      "name": "appointments",
+      "category": "operational_salon",
+      "description": "Salon, spa, clinic & consultation appointments",
+      "columns": [
+        { "name": "id", "type": "uuid", "is_primary": true, "default": "gen_random_uuid()" },
+        { "name": "account_id", "type": "uuid", "references": "accounts(id)", "nullable": false },
+        { "name": "branch_id", "type": "uuid", "references": "branches(id)", "nullable": false },
+        { "name": "client_id", "type": "text", "nullable": true },
+        { "name": "client_name", "type": "text", "nullable": false },
+        { "name": "client_phone", "type": "text", "nullable": true },
+        { "name": "staff_id", "type": "text", "nullable": true },
+        { "name": "staff_name", "type": "text", "nullable": false },
+        { "name": "service_id", "type": "text", "nullable": true },
+        { "name": "service_name", "type": "text", "nullable": false },
+        { "name": "date", "type": "date", "nullable": false },
+        { "name": "start_time", "type": "text", "nullable": false },
+        { "name": "end_time", "type": "text", "nullable": false },
+        { "name": "duration_minutes", "type": "integer", "default": 45 },
+        { "name": "price", "type": "numeric", "default": 0 },
+        { "name": "status", "type": "text", "default": "Confirmed" },
+        { "name": "notes", "type": "text", "nullable": true },
+        { "name": "created_at", "type": "timestamptz", "default": "now()" }
+      ]
+    },
+    {
+      "name": "products",
+      "category": "operational_pos",
+      "description": "Products, items, inventory for retail POS",
+      "columns": [
+        { "name": "id", "type": "uuid", "is_primary": true, "default": "gen_random_uuid()" },
+        { "name": "account_id", "type": "uuid", "references": "accounts(id)", "nullable": false },
+        { "name": "branch_id", "type": "uuid", "references": "branches(id)", "nullable": false },
+        { "name": "name", "type": "text", "nullable": false },
+        { "name": "description", "type": "text", "nullable": true },
+        { "name": "price", "type": "numeric", "default": 0 },
+        { "name": "cost", "type": "numeric", "default": 0 },
+        { "name": "stock_quantity", "type": "integer", "default": 0 },
+        { "name": "sku", "type": "text", "nullable": true },
+        { "name": "category", "type": "text", "default": "General" },
+        { "name": "image_url", "type": "text", "nullable": true },
+        { "name": "reorder_level", "type": "integer", "default": 5 },
+        { "name": "is_active", "type": "boolean", "default": true },
+        { "name": "created_at", "type": "timestamptz", "default": "now()" }
+      ]
+    },
+    {
+      "name": "sales",
+      "category": "operational_pos",
+      "description": "Sales tickets and point-of-sale receipts",
+      "columns": [
+        { "name": "id", "type": "uuid", "is_primary": true, "default": "gen_random_uuid()" },
+        { "name": "account_id", "type": "uuid", "references": "accounts(id)", "nullable": false },
+        { "name": "branch_id", "type": "uuid", "references": "branches(id)", "nullable": false },
+        { "name": "member_id", "type": "text", "nullable": true },
+        { "name": "member_name", "type": "text", "nullable": true },
+        { "name": "total_amount", "type": "numeric", "default": 0 },
+        { "name": "payment_method", "type": "text", "default": "Cash" },
+        { "name": "items", "type": "jsonb", "default": "[]" },
+        { "name": "notes", "type": "text", "nullable": true },
+        { "name": "created_at", "type": "timestamptz", "default": "now()" }
+      ]
+    },
+    {
+      "name": "freelance_clients",
+      "category": "operational_freelance",
+      "description": "Freelancer & Solo Practitioner client directory (Query 1)",
+      "columns": [
+        { "name": "id", "type": "uuid", "is_primary": true, "default": "gen_random_uuid()" },
+        { "name": "account_id", "type": "uuid", "references": "accounts(id)", "nullable": false },
+        { "name": "branch_id", "type": "uuid", "references": "branches(id)", "nullable": false },
+        { "name": "name", "type": "text", "nullable": false },
+        { "name": "company", "type": "text", "nullable": true },
+        { "name": "email", "type": "text", "nullable": false },
+        { "name": "phone", "type": "text", "nullable": true },
+        { "name": "currency", "type": "text", "default": "DZD" },
+        { "name": "hourly_rate", "type": "numeric", "default": 0 },
+        { "name": "status", "type": "text", "default": "ProjectBased" },
+        { "name": "monthly_retainer_hours", "type": "numeric", "default": 0 },
+        { "name": "monthly_retainer_amount", "type": "numeric", "default": 0 },
+        { "name": "lifetime_billed", "type": "numeric", "default": 0 },
+        { "name": "notes", "type": "text", "nullable": true },
+        { "name": "created_at", "type": "timestamptz", "default": "now()" }
+      ]
+    },
+    {
+      "name": "freelance_projects",
+      "category": "operational_freelance",
+      "description": "Freelance projects and milestone deliverables (Query 2)",
+      "columns": [
+        { "name": "id", "type": "uuid", "is_primary": true, "default": "gen_random_uuid()" },
+        { "name": "account_id", "type": "uuid", "references": "accounts(id)", "nullable": false },
+        { "name": "branch_id", "type": "uuid", "references": "branches(id)", "nullable": false },
+        { "name": "client_id", "type": "text", "nullable": false },
+        { "name": "client_name", "type": "text", "nullable": false },
+        { "name": "title", "type": "text", "nullable": false },
+        { "name": "description", "type": "text", "nullable": true },
+        { "name": "pricing_model", "type": "text", "default": "Fixed" },
+        { "name": "currency", "type": "text", "default": "DZD" },
+        { "name": "budget", "type": "numeric", "default": 0 },
+        { "name": "estimated_hours", "type": "numeric", "default": 0 },
+        { "name": "logged_hours", "type": "numeric", "default": 0 },
+        { "name": "stage", "type": "text", "default": "InProgress" },
+        { "name": "deadline", "type": "date", "nullable": true },
+        { "name": "deliverables", "type": "jsonb", "default": "[]" },
+        { "name": "created_at", "type": "timestamptz", "default": "now()" }
+      ]
+    },
+    {
+      "name": "freelance_time_logs",
+      "category": "operational_freelance",
+      "description": "Live stopwatch and billable time logs (Query 3)",
+      "columns": [
+        { "name": "id", "type": "uuid", "is_primary": true, "default": "gen_random_uuid()" },
+        { "name": "account_id", "type": "uuid", "references": "accounts(id)", "nullable": false },
+        { "name": "branch_id", "type": "uuid", "references": "branches(id)", "nullable": false },
+        { "name": "client_id", "type": "text", "nullable": false },
+        { "name": "client_name", "type": "text", "nullable": false },
+        { "name": "project_id", "type": "text", "nullable": false },
+        { "name": "project_title", "type": "text", "nullable": false },
+        { "name": "task_description", "type": "text", "nullable": false },
+        { "name": "duration_seconds", "type": "integer", "default": 0 },
+        { "name": "is_billable", "type": "boolean", "default": true },
+        { "name": "is_invoiced", "type": "boolean", "default": false },
+        { "name": "rate_at_moment", "type": "numeric", "default": 0 },
+        { "name": "currency", "type": "text", "default": "DZD" },
+        { "name": "date", "type": "date", "default": "CURRENT_DATE" },
+        { "name": "created_at", "type": "timestamptz", "default": "now()" }
+      ]
+    },
+    {
+      "name": "freelance_invoices",
+      "category": "operational_freelance",
+      "description": "Branded invoices, line items and payment status (Query 4)",
+      "columns": [
+        { "name": "id", "type": "uuid", "is_primary": true, "default": "gen_random_uuid()" },
+        { "name": "account_id", "type": "uuid", "references": "accounts(id)", "nullable": false },
+        { "name": "branch_id", "type": "uuid", "references": "branches(id)", "nullable": false },
+        { "name": "client_id", "type": "text", "nullable": false },
+        { "name": "client_name", "type": "text", "nullable": false },
+        { "name": "client_company", "type": "text", "nullable": true },
+        { "name": "client_email", "type": "text", "nullable": false },
+        { "name": "invoice_number", "type": "text", "nullable": false },
+        { "name": "currency", "type": "text", "default": "DZD" },
+        { "name": "issue_date", "type": "date", "default": "CURRENT_DATE" },
+        { "name": "due_date", "date": "date", "nullable": false },
+        { "name": "status", "type": "text", "default": "Sent" },
+        { "name": "items", "type": "jsonb", "default": "[]" },
+        { "name": "subtotal", "type": "numeric", "default": 0 },
+        { "name": "tax_percent", "type": "numeric", "default": 0 },
+        { "name": "tax_amount", "type": "numeric", "default": 0 },
+        { "name": "total_amount", "type": "numeric", "default": 0 },
+        { "name": "payment_details", "type": "jsonb", "nullable": true },
+        { "name": "notes", "type": "text", "nullable": true },
+        { "name": "paid_at", "type": "timestamptz", "nullable": true },
+        { "name": "created_at", "type": "timestamptz", "default": "now()" }
+      ]
+    },
+    {
+      "name": "freelance_proposals",
+      "category": "operational_freelance",
+      "description": "Client project proposals and scope agreements (Query 5a)",
+      "columns": [
+        { "name": "id", "type": "uuid", "is_primary": true, "default": "gen_random_uuid()" },
+        { "name": "account_id", "type": "uuid", "references": "accounts(id)", "nullable": false },
+        { "name": "branch_id", "type": "uuid", "references": "branches(id)", "nullable": false },
+        { "name": "client_name", "type": "text", "nullable": false },
+        { "name": "client_company", "type": "text", "nullable": true },
+        { "name": "client_email", "type": "text", "nullable": false },
+        { "name": "title", "type": "text", "nullable": false },
+        { "name": "overview", "type": "text", "nullable": true },
+        { "name": "scope_items", "type": "jsonb", "default": "[]" },
+        { "name": "pricing_model", "type": "text", "default": "Fixed" },
+        { "name": "proposed_budget", "type": "numeric", "default": 0 },
+        { "name": "currency", "type": "text", "default": "DZD" },
+        { "name": "estimated_timeline_weeks", "type": "integer", "default": 4 },
+        { "name": "valid_until", "type": "date", "nullable": true },
+        { "name": "status", "type": "text", "default": "Pending" },
+        { "name": "created_at", "type": "timestamptz", "default": "now()" }
+      ]
+    },
+    {
+      "name": "freelance_expenses",
+      "category": "operational_freelance",
+      "description": "Freelancer business expenses and tax deductions (Query 5b)",
+      "columns": [
+        { "name": "id", "type": "uuid", "is_primary": true, "default": "gen_random_uuid()" },
+        { "name": "account_id", "type": "uuid", "references": "accounts(id)", "nullable": false },
+        { "name": "branch_id", "type": "uuid", "references": "branches(id)", "nullable": false },
+        { "name": "category", "type": "text", "default": "Software" },
+        { "name": "vendor", "type": "text", "nullable": false },
+        { "name": "description", "type": "text", "nullable": false },
+        { "name": "amount", "type": "numeric", "default": 0 },
+        { "name": "currency", "type": "text", "default": "EUR" },
+        { "name": "date", "type": "date", "default": "CURRENT_DATE" },
+        { "name": "is_tax_deductible", "type": "boolean", "default": true },
+        { "name": "created_at", "type": "timestamptz", "default": "now()" }
+      ]
+    }
+  ],
+  "the_5_new_freelance_queries_sql": [
+    {
+      "order": 1,
+      "table": "freelance_clients",
+      "sql": "CREATE TABLE IF NOT EXISTS public.freelance_clients (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), account_id uuid NOT NULL REFERENCES public.accounts(id) ON DELETE CASCADE, branch_id uuid NOT NULL REFERENCES public.branches(id) ON DELETE CASCADE, name text NOT NULL, company text, email text NOT NULL, phone text, currency text NOT NULL DEFAULT 'DZD', hourly_rate numeric NOT NULL DEFAULT 0, status text NOT NULL DEFAULT 'ProjectBased', monthly_retainer_hours numeric DEFAULT 0, monthly_retainer_amount numeric DEFAULT 0, lifetime_billed numeric NOT NULL DEFAULT 0, notes text, created_at timestamptz NOT NULL DEFAULT now());"
+    },
+    {
+      "order": 2,
+      "table": "freelance_projects",
+      "sql": "CREATE TABLE IF NOT EXISTS public.freelance_projects (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), account_id uuid NOT NULL REFERENCES public.accounts(id) ON DELETE CASCADE, branch_id uuid NOT NULL REFERENCES public.branches(id) ON DELETE CASCADE, client_id text NOT NULL, client_name text NOT NULL, title text NOT NULL, description text, pricing_model text NOT NULL DEFAULT 'Fixed', currency text NOT NULL DEFAULT 'DZD', budget numeric NOT NULL DEFAULT 0, estimated_hours numeric NOT NULL DEFAULT 0, logged_hours numeric NOT NULL DEFAULT 0, stage text NOT NULL DEFAULT 'InProgress', deadline date, deliverables jsonb NOT NULL DEFAULT '[]'::jsonb, created_at timestamptz NOT NULL DEFAULT now());"
+    },
+    {
+      "order": 3,
+      "table": "freelance_time_logs",
+      "sql": "CREATE TABLE IF NOT EXISTS public.freelance_time_logs (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), account_id uuid NOT NULL REFERENCES public.accounts(id) ON DELETE CASCADE, branch_id uuid NOT NULL REFERENCES public.branches(id) ON DELETE CASCADE, client_id text NOT NULL, client_name text NOT NULL, project_id text NOT NULL, project_title text NOT NULL, task_description text NOT NULL, duration_seconds int NOT NULL DEFAULT 0, is_billable bool NOT NULL DEFAULT true, is_invoiced bool NOT NULL DEFAULT false, rate_at_moment numeric NOT NULL DEFAULT 0, currency text NOT NULL DEFAULT 'DZD', date date NOT NULL DEFAULT CURRENT_DATE, created_at timestamptz NOT NULL DEFAULT now());"
+    },
+    {
+      "order": 4,
+      "table": "freelance_invoices",
+      "sql": "CREATE TABLE IF NOT EXISTS public.freelance_invoices (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), account_id uuid NOT NULL REFERENCES public.accounts(id) ON DELETE CASCADE, branch_id uuid NOT NULL REFERENCES public.branches(id) ON DELETE CASCADE, client_id text NOT NULL, client_name text NOT NULL, client_company text, client_email text NOT NULL, invoice_number text NOT NULL, currency text NOT NULL DEFAULT 'DZD', issue_date date NOT NULL DEFAULT CURRENT_DATE, due_date date NOT NULL, status text NOT NULL DEFAULT 'Sent', items jsonb NOT NULL DEFAULT '[]'::jsonb, subtotal numeric NOT NULL DEFAULT 0, tax_percent numeric NOT NULL DEFAULT 0, tax_amount numeric NOT NULL DEFAULT 0, total_amount numeric NOT NULL DEFAULT 0, payment_details jsonb, notes text, paid_at timestamptz, created_at timestamptz NOT NULL DEFAULT now());"
+    },
+    {
+      "order": 5,
+      "table": "freelance_proposals_and_expenses",
+      "sql": "CREATE TABLE IF NOT EXISTS public.freelance_proposals (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), account_id uuid NOT NULL REFERENCES public.accounts(id) ON DELETE CASCADE, branch_id uuid NOT NULL REFERENCES public.branches(id) ON DELETE CASCADE, client_name text NOT NULL, client_company text, client_email text NOT NULL, title text NOT NULL, overview text, scope_items jsonb NOT NULL DEFAULT '[]'::jsonb, pricing_model text NOT NULL DEFAULT 'Fixed', proposed_budget numeric NOT NULL DEFAULT 0, currency text NOT NULL DEFAULT 'DZD', estimated_timeline_weeks int NOT NULL DEFAULT 4, valid_until date, status text NOT NULL DEFAULT 'Pending', created_at timestamptz NOT NULL DEFAULT now()); CREATE TABLE IF NOT EXISTS public.freelance_expenses (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), account_id uuid NOT NULL REFERENCES public.accounts(id) ON DELETE CASCADE, branch_id uuid NOT NULL REFERENCES public.branches(id) ON DELETE CASCADE, category text NOT NULL DEFAULT 'Software', vendor text NOT NULL, description text NOT NULL, amount numeric NOT NULL DEFAULT 0, currency text NOT NULL DEFAULT 'EUR', date date NOT NULL DEFAULT CURRENT_DATE, is_tax_deductible bool NOT NULL DEFAULT true, created_at timestamptz NOT NULL DEFAULT now());"
+    }
+  ],
+  "rpc_functions": [
+    {
+      "name": "onboard_owner_account",
+      "args": ["p_owner_id uuid", "p_full_name text", "p_email text", "p_business_name text", "p_branch_name text", "p_category text", "p_device_label text", "p_voucher_code text", "p_modules jsonb"],
+      "returns": "jsonb with success, account_id, business_id, branch_id, plan_status, is_lifetime, tier_rank, plan_name"
+    },
+    {
+      "name": "create_business",
+      "args": ["p_account_id uuid", "p_name text", "p_category text", "p_address text", "p_phone text"],
+      "returns": "jsonb with success, business_id"
+    },
+    {
+      "name": "create_branch",
+      "args": ["p_account_id uuid", "p_business_id uuid", "p_name text", "p_address text", "p_phone text"],
+      "returns": "jsonb with success, branch_id"
+    },
+    {
+      "name": "get_tenant_facilities",
+      "args": ["p_tenant_id uuid"],
+      "returns": "TABLE (branch_id uuid, branch_name text, business_id uuid, business_name text, category_code int, category_name text, is_main boolean)"
+    },
+    {
+      "name": "get_staff_profiles",
+      "args": ["p_email text"],
+      "returns": "TABLE (id uuid, full_name text, email text, role text, role_rank int, pin_code text, account_id uuid)"
+    },
+    {
+      "name": "get_staff_for_sync",
+      "args": ["p_account_id uuid", "p_facility_id uuid", "p_updated_after timestamptz"],
+      "returns": "SETOF public.staff"
+    },
+    {
+      "name": "redeem_license_voucher",
+      "args": ["p_account_id uuid", "p_voucher_code text"],
+      "returns": "jsonb with success, plan, message"
+    }
+  ]
+}

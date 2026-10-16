@@ -1,4 +1,4 @@
-import { getSupabaseClient } from '../client';
+import { getSupabaseClient, isUuid } from '../client';
 import { mapStaffFromDb, mapStaffRoleToDb } from '../mappers';
 import type { StaffMember } from '../../../types/index';
 
@@ -20,7 +20,7 @@ export const staffService = {
 
   async fetchStaffForSync(accountId: string, branchId?: string): Promise<StaffMember[]> {
     const client = getSupabaseClient();
-    if (!client) return [];
+    if (!client || !isUuid(accountId)) return [];
 
     // Try RPC first as specified in v1.3
     try {
