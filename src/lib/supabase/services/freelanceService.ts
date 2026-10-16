@@ -470,4 +470,94 @@ export const freelanceService = {
       return false;
     }
   },
+
+  async deleteClient(id: string): Promise<boolean> {
+    const client = getSupabaseClient();
+    if (!client) return false;
+    try {
+      const { error } = await (client as any).from('freelance_clients').delete().eq('id', id);
+      if (error) {
+        console.warn('[freelanceService] deleteClient warning:', error.message);
+        return false;
+      }
+      return true;
+    } catch {
+      return false;
+    }
+  },
+
+  async deleteProject(id: string): Promise<boolean> {
+    const client = getSupabaseClient();
+    if (!client) return false;
+    try {
+      const { error } = await (client as any).from('freelance_projects').delete().eq('id', id);
+      if (error) {
+        console.warn('[freelanceService] deleteProject warning:', error.message);
+        return false;
+      }
+      return true;
+    } catch {
+      return false;
+    }
+  },
+
+  async deleteTimeLog(id: string): Promise<boolean> {
+    const client = getSupabaseClient();
+    if (!client) return false;
+    try {
+      const { error } = await (client as any).from('freelance_time_logs').delete().eq('id', id);
+      if (error) {
+        console.warn('[freelanceService] deleteTimeLog warning:', error.message);
+        return false;
+      }
+      return true;
+    } catch {
+      return false;
+    }
+  },
+
+  async deleteInvoice(id: string): Promise<boolean> {
+    const client = getSupabaseClient();
+    if (!client) return false;
+    try {
+      const { error } = await (client as any).from('freelance_invoices').delete().eq('id', id);
+      if (error) {
+        console.warn('[freelanceService] deleteInvoice warning:', error.message);
+        return false;
+      }
+      return true;
+    } catch {
+      return false;
+    }
+  },
+
+  async deleteProposal(id: string): Promise<boolean> {
+    const client = getSupabaseClient();
+    if (!client) return false;
+    try {
+      const { error } = await (client as any).from('freelance_proposals').delete().eq('id', id);
+      if (error) {
+        console.warn('[freelanceService] deleteProposal warning:', error.message);
+        return false;
+      }
+      return true;
+    } catch {
+      return false;
+    }
+  },
+
+  async deleteExpense(id: string): Promise<boolean> {
+    const client = getSupabaseClient();
+    if (!client) return false;
+    try {
+      const { error } = await (client as any).from('freelance_expenses').delete().eq('id', id);
+      if (error) {
+        console.warn('[freelanceService] deleteExpense warning:', error.message);
+        return false;
+      }
+      return true;
+    } catch {
+      return false;
+    }
+  },
 };

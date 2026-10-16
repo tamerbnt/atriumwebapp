@@ -1693,6 +1693,40 @@ export function useAtriumStore() {
     }
   };
 
+  const deleteFreelanceClient = (clientId: string, cascade = false) => {
+    const target = globalState.freelanceClients.find((c) => c.id === clientId);
+    const updatedClients = globalState.freelanceClients.filter((c) => c.id !== clientId);
+    let updatedProjects = globalState.freelanceProjects;
+    let updatedTimeLogs = globalState.timeLogs;
+    let updatedInvoices = globalState.freelanceInvoices;
+    let updatedProposals = globalState.freelanceProposals;
+
+    if (cascade) {
+      updatedProjects = updatedProjects.filter((p) => p.clientId !== clientId);
+      updatedTimeLogs = updatedTimeLogs.filter((t) => t.clientId !== clientId);
+      updatedInvoices = updatedInvoices.filter((i) => i.clientId !== clientId);
+      if (target?.email) {
+        updatedProposals = updatedProposals.filter((p) => p.clientEmail.toLowerCase() !== target.email.toLowerCase());
+      }
+    }
+
+    globalState = {
+      ...globalState,
+      freelanceClients: updatedClients,
+      freelanceProjects: updatedProjects,
+      timeLogs: updatedTimeLogs,
+      freelanceInvoices: updatedInvoices,
+      freelanceProposals: updatedProposals,
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      freelanceService.deleteClient(clientId).catch((err) => {
+        console.warn('[store] Supabase deleteClient notice:', err);
+      });
+    }
+  };
+
   const addFreelanceProject = (projectData: Omit<FreelanceProject, 'id' | 'tenantId' | 'facilityId' | 'loggedHours' | 'createdAt'>) => {
     const newProject: FreelanceProject = {
       ...projectData,
@@ -1717,12 +1751,53 @@ export function useAtriumStore() {
     return newProject;
   };
 
-  const updateProjectStage = (projectId: string, stage: DeliverableStage) => {
+  const updateFreelanceProject = (projectId: string, updates: Partial<FreelanceProject>) => {
+    const updatedProjects = globalState.freelanceProjects.map((p) =>
+      p.id === projectId ? { ...p, ...updates } : p
+    );
     globalState = {
       ...globalState,
-      freelanceProjects: globalState.freelanceProjects.map((p) => (p.id === projectId ? { ...p, stage } : p)),
+      freelanceProjects: updatedProjects,
     };
     notify();
+
+    const target = updatedProjects.find((p) => p.id === projectId);
+    if (target && isSupabaseConfigured()) {
+      freelanceService.upsertProject(target).catch((err) => {
+        console.warn('[store] Supabase updateFreelanceProject notice:', err);
+      });
+    }
+  };
+
+  const deleteFreelanceProject = (projectId: string) => {
+    globalState = {
+      ...globalState,
+      freelanceProjects: globalState.freelanceProjects.filter((p) => p.id !== projectId),
+      timeLogs: globalState.timeLogs.filter((t) => t.projectId !== projectId),
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      freelanceService.deleteProject(projectId).catch((err) => {
+        console.warn('[store] Supabase deleteProject notice:', err);
+      });
+    }
+  };
+
+  const updateProjectStage = (projectId: string, stage: DeliverableStage) => {
+    const updatedProjects = globalState.freelanceProjects.map((p) => (p.id === projectId ? { ...p, stage } : p));
+    globalState = {
+      ...globalState,
+      freelanceProjects: updatedProjects,
+    };
+    notify();
+
+    const target = updatedProjects.find((p) => p.id === projectId);
+    if (target && isSupabaseConfigured()) {
+      freelanceService.upsertProject(target).catch((err) => {
+        console.warn('[store] Supabase updateProjectStage notice:', err);
+      });
+    }
   };
 
   const addDeliverable = (projectId: string, title: string, estimatedHours: number, dueDate: string, description?: string) => {
@@ -1737,37 +1812,113 @@ export function useAtriumStore() {
       dueDate,
       isCompleted: false,
     };
+    const updatedProjects = globalState.freelanceProjects.map((p) => {
+      if (p.id === projectId) {
+        return {
+          ...p,
+          estimatedHours: p.estimatedHours + estimatedHours,
+          deliverables: [...p.deliverables, newDeliv],
+        };
+      }
+      return p;
+    });
+
     globalState = {
       ...globalState,
-      freelanceProjects: globalState.freelanceProjects.map((p) => {
-        if (p.id === projectId) {
-          return {
-            ...p,
-            estimatedHours: p.estimatedHours + estimatedHours,
-            deliverables: [...p.deliverables, newDeliv],
-          };
-        }
-        return p;
-      }),
+      freelanceProjects: updatedProjects,
     };
     notify();
+
+    const target = updatedProjects.find((p) => p.id === projectId);
+    if (target && isSupabaseConfigured()) {
+      freelanceService.upsertProject(target).catch((err) => {
+        console.warn('[store] Supabase addDeliverable project notice:', err);
+      });
+    }
+
     return newDeliv;
   };
 
-  const updateDeliverableStage = (projectId: string, deliverableId: string, stage: DeliverableStage) => {
+  const updateDeliverable = (
+    projectId: string,
+    deliverableId: string,
+    updates: Partial<FreelanceDeliverable>
+  ) => {
+    const updatedProjects = globalState.freelanceProjects.map((p) => {
+      if (p.id === projectId) {
+        const updatedDeliverables = p.deliverables.map((d) => {
+          if (d.id === deliverableId) {
+            const nextStage = updates.stage || d.stage;
+            const isCompleted =
+              updates.isCompleted !== undefined
+                ? updates.isCompleted
+                : nextStage === 'Approved' || nextStage === 'Billed';
+            return { ...d, ...updates, isCompleted };
+          }
+          return d;
+        });
+
+        const newTotalEstimated = updatedDeliverables.reduce((acc, curr) => acc + (curr.estimatedHours || 0), 0);
+        const allCompleted = updatedDeliverables.length > 0 && updatedDeliverables.every((d) => d.isCompleted);
+        const nextProjectStage = allCompleted && p.stage !== 'Completed' ? 'Completed' : p.stage;
+
+        return {
+          ...p,
+          estimatedHours: newTotalEstimated > 0 ? newTotalEstimated : p.estimatedHours,
+          stage: nextProjectStage,
+          deliverables: updatedDeliverables,
+        };
+      }
+      return p;
+    });
+
     globalState = {
       ...globalState,
-      freelanceProjects: globalState.freelanceProjects.map((p) => {
-        if (p.id === projectId) {
-          const updated = p.deliverables.map((d) =>
-            d.id === deliverableId ? { ...d, stage, isCompleted: stage === 'Approved' || stage === 'Billed' } : d
-          );
-          return { ...p, deliverables: updated };
-        }
-        return p;
-      }),
+      freelanceProjects: updatedProjects,
     };
     notify();
+
+    const target = updatedProjects.find((p) => p.id === projectId);
+    if (target && isSupabaseConfigured()) {
+      freelanceService.upsertProject(target).catch((err) => {
+        console.warn('[store] Supabase updateDeliverable notice:', err);
+      });
+    }
+  };
+
+  const deleteDeliverable = (projectId: string, deliverableId: string) => {
+    const updatedProjects = globalState.freelanceProjects.map((p) => {
+      if (p.id === projectId) {
+        const removed = p.deliverables.find((d) => d.id === deliverableId);
+        const filtered = p.deliverables.filter((d) => d.id !== deliverableId);
+        const estDiff = removed ? removed.estimatedHours : 0;
+        const loggedDiff = removed ? removed.loggedHours : 0;
+        return {
+          ...p,
+          estimatedHours: Math.max(0, p.estimatedHours - estDiff),
+          loggedHours: Math.max(0, Number((p.loggedHours - loggedDiff).toFixed(2))),
+          deliverables: filtered,
+        };
+      }
+      return p;
+    });
+
+    globalState = {
+      ...globalState,
+      freelanceProjects: updatedProjects,
+    };
+    notify();
+
+    const target = updatedProjects.find((p) => p.id === projectId);
+    if (target && isSupabaseConfigured()) {
+      freelanceService.upsertProject(target).catch((err) => {
+        console.warn('[store] Supabase deleteDeliverable notice:', err);
+      });
+    }
+  };
+
+  const updateDeliverableStage = (projectId: string, deliverableId: string, stage: DeliverableStage) => {
+    updateDeliverable(projectId, deliverableId, { stage });
   };
 
   const logTimeEntry = (entryData: Omit<TimeLogEntry, 'id' | 'tenantId' | 'facilityId' | 'createdAt' | 'isInvoiced'>) => {
@@ -1808,6 +1959,83 @@ export function useAtriumStore() {
     }
 
     return entry;
+  };
+
+  const updateTimeLog = (id: string, updates: Partial<TimeLogEntry>) => {
+    const current = globalState.timeLogs.find((t) => t.id === id);
+    if (!current) return;
+
+    const diffHours = updates.durationSeconds !== undefined
+      ? Number(((updates.durationSeconds - current.durationSeconds) / 3600).toFixed(2))
+      : 0;
+
+    let updatedProjects = globalState.freelanceProjects;
+    if (diffHours !== 0) {
+      updatedProjects = updatedProjects.map((p) => {
+        if (p.id === current.projectId) {
+          return {
+            ...p,
+            loggedHours: Math.max(0, Number((p.loggedHours + diffHours).toFixed(2))),
+            deliverables: p.deliverables.map((d) =>
+              d.id === current.deliverableId
+                ? { ...d, loggedHours: Math.max(0, Number((d.loggedHours + diffHours).toFixed(2))) }
+                : d
+            ),
+          };
+        }
+        return p;
+      });
+    }
+
+    const updatedLogs = globalState.timeLogs.map((t) => (t.id === id ? { ...t, ...updates } : t));
+
+    globalState = {
+      ...globalState,
+      timeLogs: updatedLogs,
+      freelanceProjects: updatedProjects,
+    };
+    notify();
+
+    const target = updatedLogs.find((t) => t.id === id);
+    if (target && isSupabaseConfigured()) {
+      freelanceService.upsertTimeLog(target).catch((err) => {
+        console.warn('[store] Supabase upsertTimeLog notice:', err);
+      });
+    }
+  };
+
+  const deleteTimeLog = (id: string) => {
+    const current = globalState.timeLogs.find((t) => t.id === id);
+    if (!current) return;
+
+    const hoursToRemove = Number((current.durationSeconds / 3600).toFixed(2));
+    const updatedProjects = globalState.freelanceProjects.map((p) => {
+      if (p.id === current.projectId) {
+        return {
+          ...p,
+          loggedHours: Math.max(0, Number((p.loggedHours - hoursToRemove).toFixed(2))),
+          deliverables: p.deliverables.map((d) =>
+            d.id === current.deliverableId
+              ? { ...d, loggedHours: Math.max(0, Number((d.loggedHours - hoursToRemove).toFixed(2))) }
+              : d
+          ),
+        };
+      }
+      return p;
+    });
+
+    globalState = {
+      ...globalState,
+      timeLogs: globalState.timeLogs.filter((t) => t.id !== id),
+      freelanceProjects: updatedProjects,
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      freelanceService.deleteTimeLog(id).catch((err) => {
+        console.warn('[store] Supabase deleteTimeLog notice:', err);
+      });
+    }
   };
 
   const billUnbilledHours = (clientId: string, taxPercent = 0, notes?: string) => {
@@ -1938,6 +2166,52 @@ export function useAtriumStore() {
     }
   };
 
+  const deleteFreelanceInvoice = (invoiceId: string) => {
+    const target = globalState.freelanceInvoices.find((inv) => inv.id === invoiceId);
+    if (!target) return;
+
+    // Identify any time log IDs contained in the invoice items
+    const loggedIds = new Set(
+      target.items
+        .filter((item) => item.id.startsWith('item_time_'))
+        .map((item) => item.id.replace('item_', ''))
+    );
+
+    // If invoice had time logs, release them back to uninvoiced
+    const updatedTimeLogs = globalState.timeLogs.map((t) =>
+      loggedIds.has(t.id) ? { ...t, isInvoiced: false } : t
+    );
+
+    // Deduct lifetimeBilled if client exists
+    const updatedClients = globalState.freelanceClients.map((c) =>
+      c.id === target.clientId
+        ? { ...c, lifetimeBilled: Math.max(0, c.lifetimeBilled - target.totalAmount) }
+        : c
+    );
+
+    globalState = {
+      ...globalState,
+      freelanceInvoices: globalState.freelanceInvoices.filter((inv) => inv.id !== invoiceId),
+      timeLogs: updatedTimeLogs,
+      freelanceClients: updatedClients,
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      freelanceService.deleteInvoice(invoiceId).catch((err) => {
+        console.warn('[store] Supabase deleteInvoice notice:', err);
+      });
+      loggedIds.forEach((tId) => {
+        const logItem = updatedTimeLogs.find((l) => l.id === tId);
+        if (logItem) {
+          freelanceService.upsertTimeLog(logItem).catch((err) => {
+            console.warn('[store] Failed to update time log in Supabase:', err);
+          });
+        }
+      });
+    }
+  };
+
   const createFreelanceProposal = (proposalData: Omit<FreelanceProposal, 'id' | 'tenantId' | 'facilityId' | 'createdAt'>) => {
     const newProp: FreelanceProposal = {
       ...proposalData,
@@ -1959,6 +2233,36 @@ export function useAtriumStore() {
     }
 
     return newProp;
+  };
+
+  const updateFreelanceProposal = (id: string, updates: Partial<FreelanceProposal>) => {
+    const updatedProps = globalState.freelanceProposals.map((p) => (p.id === id ? { ...p, ...updates } : p));
+    globalState = {
+      ...globalState,
+      freelanceProposals: updatedProps,
+    };
+    notify();
+
+    const target = updatedProps.find((p) => p.id === id);
+    if (target && isSupabaseConfigured()) {
+      freelanceService.upsertProposal(target).catch((err) => {
+        console.warn('[store] Supabase updateProposal notice:', err);
+      });
+    }
+  };
+
+  const deleteFreelanceProposal = (id: string) => {
+    globalState = {
+      ...globalState,
+      freelanceProposals: globalState.freelanceProposals.filter((p) => p.id !== id),
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      freelanceService.deleteProposal(id).catch((err) => {
+        console.warn('[store] Supabase deleteProposal notice:', err);
+      });
+    }
   };
 
   const convertProposalToProject = (proposalId: string) => {
@@ -2166,15 +2470,25 @@ export function useAtriumStore() {
     resetTimer,
     addFreelanceClient,
     updateFreelanceClient,
+    deleteFreelanceClient,
     addFreelanceProject,
+    updateFreelanceProject,
+    deleteFreelanceProject,
     updateProjectStage,
     addDeliverable,
+    updateDeliverable,
+    deleteDeliverable,
     updateDeliverableStage,
     logTimeEntry,
+    updateTimeLog,
+    deleteTimeLog,
     billUnbilledHours,
     createFreelanceInvoice,
     updateInvoiceStatus,
+    deleteFreelanceInvoice,
     createFreelanceProposal,
+    updateFreelanceProposal,
+    deleteFreelanceProposal,
     convertProposalToProject,
     addFreelanceExpense,
     deleteFreelanceExpense,

@@ -49,10 +49,20 @@ export const FreelanceDashboardView: React.FC = () => {
   const [isFacilityDropdownOpen, setIsFacilityDropdownOpen] = useState(false);
 
   // Compute stats
-  const totalInvoiced = freelanceInvoices.reduce((sum, inv) => sum + inv.totalAmount, 0);
   const paidInvoices = freelanceInvoices.filter((i) => i.status === 'Paid');
   const overdueInvoices = freelanceInvoices.filter((i) => i.status === 'Overdue');
   const pendingInvoices = freelanceInvoices.filter((i) => i.status === 'Sent');
+
+  // Dynamic pipeline by currency
+  const pipelineByCurrency = freelanceInvoices.reduce<Record<string, number>>((acc, inv) => {
+    acc[inv.currency] = (acc[inv.currency] || 0) + inv.totalAmount;
+    return acc;
+  }, {});
+  const formattedPipeline = Object.entries(pipelineByCurrency).length > 0
+    ? Object.entries(pipelineByCurrency)
+        .map(([curr, sum]) => formatCurrencyAmount(sum, curr as any))
+        .join(' · ')
+    : '0 EUR';
 
   // Weekly hours logged
   const totalSecondsLogged = timeLogs.reduce((sum, log) => sum + log.durationSeconds, 0);
@@ -61,16 +71,34 @@ export const FreelanceDashboardView: React.FC = () => {
   const weeklyTargetHours = 35;
   const capacityPercent = Math.min(100, Math.round((totalBillableHours / weeklyTargetHours) * 100));
 
-  // Effective Hourly Rate (Total billed EUR equivalent / billable hours)
-  const ehrRate = totalBillableHours > 0 ? Math.round(5200 / totalBillableHours) : 85;
+  // Dynamic Effective Hourly Rate (Total billed EUR equivalent / billable hours)
+  const totalBilledValueEUR = timeLogs.reduce((sum, log) => {
+    if (!log.isBillable) return sum;
+    const factor = log.currency === 'DZD' ? 1 / 215 : 1;
+    return sum + (log.durationSeconds / 3600) * (log.rateAtMoment || 85) * factor;
+  }, 0);
+  const ehrRate = totalBillableHours > 0
+    ? Math.round(totalBilledValueEUR / totalBillableHours)
+    : (freelanceClients[0]?.hourlyRate || 85);
 
   // Active deliverables count & scope creep check
   let activeDeliverablesCount = 0;
   let scopeCreepCount = 0;
+  let highestOverrunDeliverable: { title: string; projectTitle: string; diffHours: number } | null = null;
   freelanceProjects.forEach((proj) => {
-    proj.deliverables.forEach((d) => {
+    (proj.deliverables || []).forEach((d) => {
       if (!d.isCompleted) activeDeliverablesCount++;
-      if (d.loggedHours > d.estimatedHours) scopeCreepCount++;
+      if (d.loggedHours > d.estimatedHours) {
+        scopeCreepCount++;
+        const diff = Number((d.loggedHours - d.estimatedHours).toFixed(1));
+        if (!highestOverrunDeliverable || diff > highestOverrunDeliverable.diffHours) {
+          highestOverrunDeliverable = {
+            title: d.title,
+            projectTitle: proj.title,
+            diffHours: diff,
+          };
+        }
+      }
     });
   });
 
@@ -161,15 +189,15 @@ export const FreelanceDashboardView: React.FC = () => {
 
       {/* Row 1: Four Hero Metrics */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Metric 1: Monthly Invoiced */}
+        {/* Metric 1: Invoiced Pipeline */}
         <div className="p-5 rounded-[24px] bg-[#F8F9FA] dark:bg-neutral-800/40 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs flex flex-col justify-between">
           <div className="flex items-center justify-between text-neutral-500 dark:text-neutral-400 text-xs font-semibold">
             <span>Invoiced Pipeline</span>
             <DollarSign size={16} className="text-[#C4785A]" />
           </div>
           <div className="my-2">
-            <span className="text-2xl font-black text-neutral-900 dark:text-white tabular-nums tracking-tight">
-              €5,100 / 480k DZD
+            <span className="text-xl sm:text-2xl font-black text-neutral-900 dark:text-white tabular-nums tracking-tight truncate block">
+              {formattedPipeline}
             </span>
             <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium block mt-0.5">
               {paidInvoices.length} paid · {pendingInvoices.length} pending settlement
@@ -189,15 +217,17 @@ export const FreelanceDashboardView: React.FC = () => {
           </div>
           <div className="my-2">
             <span className="text-2xl font-black text-neutral-900 dark:text-white tabular-nums tracking-tight">
-              €88.50 <span className="text-xs font-medium text-neutral-400">/ hr</span>
+              €{ehrRate} <span className="text-xs font-medium text-neutral-400">/ hr</span>
             </span>
             <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium block mt-0.5">
-              +14% vs. target baseline (€75/hr)
+              {ehrRate >= 75 ? '+18% vs. target baseline (€75/hr)' : 'Target baseline: €75/hr'}
             </span>
           </div>
           <div className="text-[11px] text-neutral-400 pt-2 border-t border-neutral-200/60 dark:border-neutral-700/60 flex items-center justify-between">
             <span>Tracked profitability</span>
-            <span className="font-semibold text-neutral-700 dark:text-neutral-300">High Tier</span>
+            <span className="font-semibold text-neutral-700 dark:text-neutral-300">
+              {ehrRate >= 85 ? 'High Tier' : 'Standard Tier'}
+            </span>
           </div>
         </div>
 
@@ -274,8 +304,10 @@ export const FreelanceDashboardView: React.FC = () => {
                   Invoice #{overdueInvoices[0].invoiceNumber} for {overdueInvoices[0].clientName} ({formatCurrencyAmount(overdueInvoices[0].totalAmount, overdueInvoices[0].currency)}) is overdue.{' '}
                 </span>
               )}
-              {scopeCreepCount > 0 && (
-                <span>Deliverable "Web Application Premiere" has exceeded estimated budget by 4.5 hours.</span>
+              {scopeCreepCount > 0 && highestOverrunDeliverable && (
+                <span>
+                  Deliverable "{highestOverrunDeliverable.title}" ({highestOverrunDeliverable.projectTitle}) has exceeded estimated budget by {highestOverrunDeliverable.diffHours} hours.
+                </span>
               )}
             </div>
           </div>
@@ -325,21 +357,30 @@ export const FreelanceDashboardView: React.FC = () => {
             {!activeTimer.isRunning ? (
               <button
                 type="button"
-                onClick={() =>
+                onClick={() => {
+                  if (freelanceClients.length === 0 || freelanceProjects.length === 0) {
+                    setScreen('scheduler');
+                    return;
+                  }
+                  const client = freelanceClients[0];
+                  const project = freelanceProjects.find((p) => p.clientId === client.id) || freelanceProjects[0];
+                  const deliverable = project?.deliverables?.find((d) => !d.isCompleted) || project?.deliverables?.[0];
                   startTimer(
-                    freelanceClients[0]?.id || 'fcli_01',
-                    freelanceClients[0]?.company || 'TechNova SAS',
-                    freelanceProjects[0]?.id || 'fproj_01',
-                    freelanceProjects[0]?.title || 'Cloud Billing & Dashboard Refactor',
-                    'Working on component refinement',
-                    'deliv_02',
-                    'Multi-Tenant Permission Role Matrix'
-                  )
-                }
+                    client.id,
+                    client.company || client.name,
+                    project.id,
+                    project.title,
+                    deliverable ? `Working on ${deliverable.title}` : 'Focus Sprint Session',
+                    deliverable?.id,
+                    deliverable?.title
+                  );
+                }}
                 className="h-10 px-5 rounded-full bg-[#C4785A] text-white text-xs font-bold flex items-center gap-2 hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
               >
                 <Play size={14} />
-                <span>Start Focus Sprint</span>
+                <span>
+                  {freelanceProjects.length === 0 ? 'Create Project to Track' : 'Start Focus Sprint'}
+                </span>
               </button>
             ) : activeTimer.isPaused ? (
               <button
@@ -392,49 +433,65 @@ export const FreelanceDashboardView: React.FC = () => {
           </div>
 
           <div className="space-y-2.5">
-            {freelanceInvoices.slice(0, 3).map((invoice) => (
-              <div
-                key={invoice.id}
-                onClick={() => setPreviewInvoice(invoice)}
-                className="p-4 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200/80 dark:border-neutral-700/60 flex items-center justify-between hover:border-[#C4785A]/60 transition-colors cursor-pointer group shadow-2xs"
-              >
-                <div className="space-y-0.5">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-neutral-900 dark:text-white group-hover:text-[#C4785A] transition-colors">
-                      {invoice.clientCompany || invoice.clientName}
-                    </span>
-                    <span className="text-[11px] text-neutral-400 font-mono">
-                      #{invoice.invoiceNumber}
-                    </span>
-                  </div>
-                  <span className="text-[11px] text-neutral-500 dark:text-neutral-400 block truncate max-w-sm">
-                    {invoice.items[0]?.description}
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-4 text-right">
-                  <div>
-                    <span className="text-sm font-black text-neutral-900 dark:text-white tabular-nums block">
-                      {formatCurrencyAmount(invoice.totalAmount, invoice.currency)}
-                    </span>
-                    <span className="text-[10px] text-neutral-400 block">
-                      Due: {invoice.dueDate}
-                    </span>
-                  </div>
-                  <span
-                    className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${
-                      invoice.status === 'Paid'
-                        ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400'
-                        : invoice.status === 'Overdue'
-                        ? 'bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-400'
-                        : 'bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-400'
-                    }`}
-                  >
-                    {invoice.status}
-                  </span>
-                </div>
+            {freelanceInvoices.length === 0 ? (
+              <div className="p-8 text-center bg-white dark:bg-neutral-800 rounded-2xl border border-dashed border-neutral-200 dark:border-neutral-700">
+                <FileText size={28} className="mx-auto text-neutral-300 dark:text-neutral-600 mb-2" />
+                <p className="text-xs font-semibold text-neutral-600 dark:text-neutral-300">No invoices generated yet</p>
+                <p className="text-[11px] text-neutral-400 mt-0.5">Bill your unbilled hours or create an invoice in the Invoicing tab.</p>
+                <button
+                  type="button"
+                  onClick={() => setScreen('shop')}
+                  className="mt-3 px-3 py-1.5 rounded-full bg-[#C4785A] text-white text-[11px] font-bold hover:opacity-90 transition-opacity cursor-pointer inline-flex items-center gap-1.5"
+                >
+                  <Plus size={13} />
+                  <span>Create Invoice</span>
+                </button>
               </div>
-            ))}
+            ) : (
+              freelanceInvoices.slice(0, 3).map((invoice) => (
+                <div
+                  key={invoice.id}
+                  onClick={() => setPreviewInvoice(invoice)}
+                  className="p-4 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200/80 dark:border-neutral-700/60 flex items-center justify-between hover:border-[#C4785A]/60 transition-colors cursor-pointer group shadow-2xs"
+                >
+                  <div className="space-y-0.5">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-neutral-900 dark:text-white group-hover:text-[#C4785A] transition-colors">
+                        {invoice.clientCompany || invoice.clientName}
+                      </span>
+                      <span className="text-[11px] text-neutral-400 font-mono">
+                        #{invoice.invoiceNumber}
+                      </span>
+                    </div>
+                    <span className="text-[11px] text-neutral-500 dark:text-neutral-400 block truncate max-w-sm">
+                      {invoice.items[0]?.description}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-4 text-right">
+                    <div>
+                      <span className="text-sm font-black text-neutral-900 dark:text-white tabular-nums block">
+                        {formatCurrencyAmount(invoice.totalAmount, invoice.currency)}
+                      </span>
+                      <span className="text-[10px] text-neutral-400 block">
+                        Due: {invoice.dueDate}
+                      </span>
+                    </div>
+                    <span
+                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${
+                        invoice.status === 'Paid'
+                          ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400'
+                          : invoice.status === 'Overdue'
+                          ? 'bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-400'
+                          : 'bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-400'
+                      }`}
+                    >
+                      {invoice.status}
+                    </span>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>
@@ -461,7 +518,20 @@ export const FreelanceDashboardView: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {freelanceClients.map((client) => {
+          {freelanceClients.length === 0 ? (
+            <div className="col-span-full p-8 text-center bg-white dark:bg-neutral-800 rounded-2xl border border-dashed border-neutral-200 dark:border-neutral-700">
+              <Building2 size={28} className="mx-auto text-neutral-300 dark:text-neutral-600 mb-2" />
+              <p className="text-xs font-semibold text-neutral-600 dark:text-neutral-300">No client accounts yet</p>
+              <button
+                type="button"
+                onClick={() => setScreen('members')}
+                className="mt-2 text-xs font-bold text-[#C4785A] hover:underline cursor-pointer"
+              >
+                + Add your first client in Clients CRM
+              </button>
+            </div>
+          ) : (
+            freelanceClients.map((client) => {
             const clientProjects = freelanceProjects.filter((p) => p.clientId === client.id);
             return (
               <div

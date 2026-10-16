@@ -13,6 +13,8 @@ import {
   X,
   FileCheck,
   User,
+  Edit2,
+  Trash2,
 } from 'lucide-react';
 import { useAtriumStore } from '../../../services/store';
 import { formatCurrencyAmount } from '../../../utils/rules';
@@ -38,13 +40,33 @@ export const FreelanceDeliverablesView: React.FC = () => {
     freelanceClients,
     updateDeliverableStage,
     addDeliverable,
+    updateDeliverable,
+    deleteDeliverable,
     addFreelanceProject,
+    deleteFreelanceProject,
     startTimer,
+    setScreen,
   } = useAtriumStore();
 
   const [selectedProjectId, setSelectedProjectId] = useState<string>('all');
   const [isAddDeliverableModalOpen, setIsAddDeliverableModalOpen] = useState(false);
   const [isAddProjectModalOpen, setIsAddProjectModalOpen] = useState(false);
+  const [deliverableToEdit, setDeliverableToEdit] = useState<{
+    project: FreelanceProject;
+    deliverable: FreelanceDeliverable;
+  } | null>(null);
+  const [editDeliverableForm, setEditDeliverableForm] = useState({
+    title: '',
+    description: '',
+    estimatedHours: 10,
+    dueDate: '',
+  });
+  const [deliverableToDelete, setDeliverableToDelete] = useState<{
+    projectId: string;
+    deliverableId: string;
+    title: string;
+  } | null>(null);
+  const [projectToDelete, setProjectToDelete] = useState<FreelanceProject | null>(null);
 
   // New Deliverable Form
   const [targetProjectId, setTargetProjectId] = useState<string>(
@@ -228,9 +250,41 @@ export const FreelanceDeliverablesView: React.FC = () => {
             </button>
           ))}
         </div>
+
+        {selectedProjectId !== 'all' && (
+          <button
+            type="button"
+            onClick={() => {
+              const targetProj = freelanceProjects.find((p) => p.id === selectedProjectId);
+              if (targetProj) setProjectToDelete(targetProj);
+            }}
+            className="px-2.5 py-1.5 rounded-lg border border-rose-200 dark:border-rose-900/60 text-rose-600 dark:text-rose-400 text-xs font-semibold flex items-center gap-1 hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer shrink-0"
+            title="Delete this project"
+          >
+            <Trash2 size={12} />
+            <span>Delete Project</span>
+          </button>
+        )}
       </div>
 
-      {/* 5-Column Kanban Board */}
+      {freelanceProjects.length === 0 ? (
+        <div className="p-12 text-center rounded-3xl border border-dashed border-neutral-200 dark:border-neutral-800 bg-[#F8F9FA] dark:bg-neutral-900/40 space-y-3">
+          <Kanban size={36} className="mx-auto text-neutral-300 dark:text-neutral-600" />
+          <h3 className="text-base font-bold text-neutral-900 dark:text-white">No Projects Available</h3>
+          <p className="text-xs text-neutral-500 max-w-sm mx-auto">
+            You don't have any projects registered yet. Create a project to start planning deliverables and tracking billable sprints.
+          </p>
+          <button
+            type="button"
+            onClick={() => setIsAddProjectModalOpen(true)}
+            className="px-4 py-2 rounded-xl bg-[#C4785A] text-white text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer inline-flex items-center gap-1.5 shadow-xs"
+          >
+            <Plus size={14} />
+            <span>Create First Project</span>
+          </button>
+        </div>
+      ) : (
+      /* 5-Column Kanban Board */
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 items-start">
         {STAGES.map((stage) => {
           const itemsInStage = flattenedDeliverables.filter(
@@ -322,15 +376,47 @@ export const FreelanceDeliverablesView: React.FC = () => {
 
                       {/* Card Action Controls */}
                       <div className="flex items-center justify-between gap-1 pt-2 border-t border-neutral-100 dark:border-neutral-800/80">
-                        <button
-                          type="button"
-                          onClick={() => handleStartTimerForDeliverable(project, deliverable)}
-                          className="h-7 px-2 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-[#C4785A] hover:text-white text-[11px] font-semibold flex items-center gap-1 transition-colors cursor-pointer"
-                          title="Track time on this task"
-                        >
-                          <Play size={10} />
-                          <span>Track</span>
-                        </button>
+                        <div className="flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() => handleStartTimerForDeliverable(project, deliverable)}
+                            className="h-7 px-2 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-[#C4785A] hover:text-white text-[11px] font-semibold flex items-center gap-1 transition-colors cursor-pointer"
+                            title="Track time on this task"
+                          >
+                            <Play size={10} />
+                            <span>Track</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setDeliverableToEdit({ project, deliverable });
+                              setEditDeliverableForm({
+                                title: deliverable.title,
+                                description: deliverable.description || '',
+                                estimatedHours: deliverable.estimatedHours,
+                                dueDate: deliverable.dueDate,
+                              });
+                            }}
+                            className="h-7 w-7 rounded-lg text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center justify-center transition-colors cursor-pointer"
+                            title="Edit deliverable"
+                          >
+                            <Edit2 size={12} />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setDeliverableToDelete({
+                                projectId: project.id,
+                                deliverableId: deliverable.id,
+                                title: deliverable.title,
+                              })
+                            }
+                            className="h-7 w-7 rounded-lg text-neutral-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 flex items-center justify-center transition-colors cursor-pointer"
+                            title="Delete deliverable"
+                          >
+                            <Trash2 size={12} />
+                          </button>
+                        </div>
 
                         {/* Move Stage Selector */}
                         <select
