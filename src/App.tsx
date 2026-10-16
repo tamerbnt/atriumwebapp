@@ -18,9 +18,17 @@ import { LeadModal } from './components/modals/LeadModal';
 import { LoginScreen } from './components/auth/LoginScreen';
 import { FastSwitchModal } from './components/auth/FastSwitchModal';
 import { PowerOnboardingScreen } from './components/auth/PowerOnboardingScreen';
+import { FreelanceDashboardView } from './components/screens/freelance/FreelanceDashboardView';
+import { FreelanceClientsView } from './components/screens/freelance/FreelanceClientsView';
+import { FreelanceDeliverablesView } from './components/screens/freelance/FreelanceDeliverablesView';
+import { FreelanceTimeTrackerView } from './components/screens/freelance/FreelanceTimeTrackerView';
+import { FreelanceInvoicesView } from './components/screens/freelance/FreelanceInvoicesView';
+import { FreelanceProposalsView } from './components/screens/freelance/FreelanceProposalsView';
+import { FreelanceFinanceView } from './components/screens/freelance/FreelanceFinanceView';
 
 export default function App() {
   const {
+    currentBusiness,
     activeScreen,
     theme,
     language,
@@ -68,7 +76,34 @@ export default function App() {
     setIsMemberModalOpen(true);
   };
 
+  const isFreelance = currentBusiness?.category === 'freelance_solo';
+
   const renderActiveScreen = () => {
+    if (isFreelance) {
+      switch (activeScreen) {
+        case 'dashboard':
+          return <FreelanceDashboardView />;
+        case 'analytics':
+          return <FreelanceTimeTrackerView />;
+        case 'members':
+          return <FreelanceClientsView />;
+        case 'registrations':
+          return <FreelanceProposalsView />;
+        case 'scheduler':
+          return <FreelanceDeliverablesView />;
+        case 'shop':
+          return <FreelanceInvoicesView />;
+        case 'finance':
+          return <FreelanceFinanceView />;
+        case 'history':
+          return <FreelanceTimeTrackerView />;
+        case 'settings':
+          return <SettingsScreen onOpenVoucherModal={() => setIsVoucherModalOpen(true)} />;
+        default:
+          return <FreelanceDashboardView />;
+      }
+    }
+
     switch (activeScreen) {
       case 'dashboard':
         return <DashboardScreen onAddMember={handleOpenAddMember} />;

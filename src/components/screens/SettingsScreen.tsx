@@ -11,6 +11,10 @@ import {
   AlertTriangle,
   Sparkles,
   ExternalLink,
+  Database,
+  Cloud,
+  CloudOff,
+  RotateCw,
 } from 'lucide-react';
 import { useAtriumStore } from '../../services/store';
 import { Modal } from '../ui/Modal';
@@ -33,6 +37,12 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
     registerDevice,
     revokeDevice,
     openOnboarding,
+    supabaseStatus,
+    isSyncing,
+    syncWithSupabase,
+    isSupabaseConfigured,
+    lastSyncedAt,
+    syncErrorMessage,
   } = useAtriumStore();
 
   const [isAddBranchOpen, setIsAddBranchOpen] = useState(false);
@@ -176,6 +186,106 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             </span>
           </div>
         </div>
+      </div>
+
+      {/* Row 1.5: Supabase Cloud & PostgreSQL Database Integration */}
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[26px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div
+              className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 ${
+                supabaseStatus === 'connected'
+                  ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400'
+                  : supabaseStatus === 'connecting'
+                  ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-400'
+                  : supabaseStatus === 'offline'
+                  ? 'bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-400'
+                  : 'bg-neutral-200 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300'
+              }`}
+            >
+              <Database size={20} />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-base font-bold text-neutral-900 dark:text-white">
+                  Supabase Cloud Database & Realtime
+                </h3>
+                <span
+                  className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
+                    supabaseStatus === 'connected'
+                      ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400'
+                      : supabaseStatus === 'connecting'
+                      ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-400'
+                      : supabaseStatus === 'offline'
+                      ? 'bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-400'
+                      : 'bg-neutral-200 text-neutral-700 dark:bg-neutral-700 dark:text-neutral-300'
+                  }`}
+                >
+                  {supabaseStatus === 'connected'
+                    ? 'Cloud Connected'
+                    : supabaseStatus === 'connecting'
+                    ? 'Syncing'
+                    : supabaseStatus === 'offline'
+                    ? 'Offline Fallback'
+                    : 'Hybrid / Local Engine'}
+                </span>
+              </div>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
+                Multi-tenant PostgreSQL backend with 17 relational tables, 14 stored RPCs, and Row-Level Security (RLS).
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => syncWithSupabase()}
+            disabled={isSyncing}
+            className="h-9 px-4 text-xs font-bold rounded-full border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-800 dark:text-white hover:bg-neutral-50 dark:hover:bg-neutral-700/60 flex items-center gap-2 cursor-pointer transition-colors shadow-2xs disabled:opacity-60"
+          >
+            <RotateCw size={13} className={isSyncing ? 'animate-spin text-[#C4785A]' : ''} />
+            <span>{isSyncing ? 'Syncing Tables...' : 'Sync Database Now'}</span>
+          </button>
+        </div>
+
+        {/* Cloud Diagnostics */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+          <div className="p-3.5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60">
+            <span className="text-[11px] font-semibold text-neutral-400 block">Schema Architecture</span>
+            <span className="text-sm font-bold text-neutral-800 dark:text-neutral-200 mt-1 block">
+              17 Tables + 14 Stored RPCs
+            </span>
+            <span className="text-[10px] text-neutral-400 block mt-0.5">
+              Strict multi-tenant RLS isolation
+            </span>
+          </div>
+
+          <div className="p-3.5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60">
+            <span className="text-[11px] font-semibold text-neutral-400 block">Realtime WebSockets</span>
+            <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400 mt-1 block">
+              Active Broadcast Listener
+            </span>
+            <span className="text-[10px] text-neutral-400 block mt-0.5">
+              Live updates on check-ins & sales
+            </span>
+          </div>
+
+          <div className="p-3.5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60">
+            <span className="text-[11px] font-semibold text-neutral-400 block">Last Cloud Sync</span>
+            <span className="text-sm font-bold text-neutral-800 dark:text-neutral-200 mt-1 block">
+              {lastSyncedAt ? new Date(lastSyncedAt).toLocaleTimeString() : 'Ready on command'}
+            </span>
+            <span className="text-[10px] text-neutral-400 block mt-0.5">
+              {isSupabaseConfigured ? 'Dual-mode live cloud active' : 'Offline local storage fallback'}
+            </span>
+          </div>
+        </div>
+
+        {syncErrorMessage && (
+          <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/60 text-xs text-rose-700 dark:text-rose-300 flex items-center gap-2">
+            <AlertTriangle size={15} className="shrink-0" />
+            <span>{syncErrorMessage}</span>
+          </div>
+        )}
       </div>
 
       {/* Row 2: Branches Management */}

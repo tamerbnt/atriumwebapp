@@ -6,7 +6,8 @@ export type BusinessCategory =
   | 'pos_inventory'       // Restaurant & Retail (FacilityType: 6)
   | 'project_milestone'   // Projects & Agency (FacilityType: 13)
   | 'rental_booking'      // Rentals & Venue (FacilityType: 14)
-  | 'education_cohort';   // Education & Training (FacilityType: 15)
+  | 'education_cohort'    // Education & Training (FacilityType: 15)
+  | 'freelance_solo';     // Freelancers & Solo Work (FacilityType: 16)
 
 export type SupportedLanguage = 'en' | 'fr' | 'ar';
 export type AppTheme = 'light' | 'dark';
@@ -336,3 +337,199 @@ export interface Appointment {
   notes?: string;
   createdAt: string;
 }
+
+// ==========================================
+// Freelancer & Solo Practitioner (Category 16)
+// ==========================================
+
+export type CurrencyCode = 'DZD' | 'EUR' | 'USD';
+
+export type FreelanceClientStatus =
+  | 'ActiveRetainer'
+  | 'ProjectBased'
+  | 'Prospect'
+  | 'Archived';
+
+export interface FreelanceClient {
+  id: string;
+  tenantId: string;
+  facilityId: string;
+  name: string;
+  company?: string;
+  email: string;
+  phone?: string;
+  country?: string;
+  currency: CurrencyCode;
+  hourlyRate: number;
+  status: FreelanceClientStatus;
+  avatarUrl?: string;
+  monthlyRetainerHours?: number;
+  monthlyRetainerAmount?: number;
+  notes?: string;
+  lifetimeBilled: number;
+  createdAt: string;
+}
+
+export type PricingModel = 'Fixed' | 'Hourly' | 'Retainer';
+
+export type DeliverableStage =
+  | 'Briefing'
+  | 'InProgress'
+  | 'ClientReview'
+  | 'Approved'
+  | 'Billed';
+
+export interface FreelanceDeliverable {
+  id: string;
+  projectId: string;
+  title: string;
+  description?: string;
+  stage: DeliverableStage;
+  estimatedHours: number;
+  loggedHours: number;
+  dueDate: string;
+  isCompleted: boolean;
+}
+
+export interface FreelanceProject {
+  id: string;
+  tenantId: string;
+  facilityId: string;
+  clientId: string;
+  clientName: string;
+  title: string;
+  description: string;
+  pricingModel: PricingModel;
+  currency: CurrencyCode;
+  budget: number;
+  hourlyRate?: number;
+  estimatedHours: number;
+  loggedHours: number;
+  stage: DeliverableStage;
+  startDate: string;
+  deadline: string;
+  deliverables: FreelanceDeliverable[];
+  createdAt: string;
+}
+
+export interface TimeLogEntry {
+  id: string;
+  tenantId: string;
+  facilityId: string;
+  clientId: string;
+  clientName: string;
+  projectId: string;
+  projectTitle: string;
+  deliverableId?: string;
+  deliverableTitle?: string;
+  taskDescription: string;
+  durationSeconds: number; // in seconds
+  isBillable: boolean;
+  isInvoiced: boolean;
+  rateAtMoment: number;
+  currency: CurrencyCode;
+  date: string; // YYYY-MM-DD
+  createdAt: string;
+}
+
+export type InvoiceStatus = 'Draft' | 'Sent' | 'Paid' | 'Overdue';
+
+export interface FreelanceInvoiceItem {
+  id: string;
+  description: string;
+  quantity: number; // e.g. hours or 1 for fixed milestone
+  unitRate: number;
+  total: number;
+}
+
+export interface FreelanceInvoice {
+  id: string;
+  tenantId: string;
+  facilityId: string;
+  clientId: string;
+  clientName: string;
+  clientCompany?: string;
+  clientEmail: string;
+  invoiceNumber: string; // e.g. INV-2026-001
+  currency: CurrencyCode;
+  issueDate: string;
+  dueDate: string;
+  status: InvoiceStatus;
+  items: FreelanceInvoiceItem[];
+  subtotal: number;
+  taxPercent: number; // e.g. 0% for international or 19%
+  taxAmount: number;
+  totalAmount: number;
+  notes?: string;
+  paymentDetails?: {
+    bankName: string;
+    accountHolder: string;
+    ribOrIban: string;
+    swift?: string;
+  };
+  paidAt?: string;
+  createdAt: string;
+}
+
+export type ProposalStatus = 'Pending' | 'Accepted' | 'Declined';
+
+export interface FreelanceProposal {
+  id: string;
+  tenantId: string;
+  facilityId: string;
+  clientName: string;
+  clientEmail: string;
+  clientCompany?: string;
+  title: string;
+  overview: string;
+  scopeItems: string[];
+  pricingModel: PricingModel;
+  proposedBudget: number;
+  currency: CurrencyCode;
+  estimatedTimelineWeeks: number;
+  validUntil: string;
+  status: ProposalStatus;
+  createdAt: string;
+}
+
+export type ExpenseCategory =
+  | 'Software'
+  | 'Hardware'
+  | 'Office'
+  | 'Subcontractor'
+  | 'Travel'
+  | 'Other';
+
+export interface FreelanceExpense {
+  id: string;
+  tenantId: string;
+  facilityId: string;
+  vendor: string;
+  description: string;
+  category: ExpenseCategory;
+  amount: number;
+  currency: CurrencyCode;
+  date: string;
+  isTaxDeductible: boolean;
+  receiptUrl?: string;
+  createdAt: string;
+}
+
+export interface ActiveTimerState {
+  isRunning: boolean;
+  isPaused: boolean;
+  clientId: string;
+  clientName: string;
+  projectId: string;
+  projectTitle: string;
+  deliverableId?: string;
+  deliverableTitle?: string;
+  taskDescription: string;
+  elapsedSeconds: number;
+  isBillable: boolean;
+  isPomodoro: boolean;
+  pomodoroRemainingSeconds: number; // 25 mins = 1500
+  pomodoroMode: 'work' | 'break';
+  startedAt: string | null;
+}
+

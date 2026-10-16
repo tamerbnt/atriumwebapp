@@ -10,8 +10,16 @@ import {
   Lock,
   Sparkles,
   LogOut,
+  Cloud,
+  CloudOff,
+  Database,
+  Play,
+  Pause,
+  Square,
+  Clock,
 } from 'lucide-react';
 import { useAtriumStore } from '../../services/store';
+import { formatDuration } from '../../utils/rules';
 
 interface TopBarProps {
   onOpenVoucherModal: () => void;
@@ -34,6 +42,16 @@ export const TopBar: React.FC<TopBarProps> = ({
     openFastSwitch,
     openOnboarding,
     logout,
+    supabaseStatus,
+    isSyncing,
+    syncWithSupabase,
+    isSupabaseConfigured,
+    lastSyncedAt,
+    currentBusiness,
+    activeTimer,
+    pauseTimer,
+    resumeTimer,
+    stopTimer,
   } = useAtriumStore();
 
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -224,6 +242,67 @@ export const TopBar: React.FC<TopBarProps> = ({
         {getBreadcrumb()}
       </div>
 
+      {/* Center: Live Floating Stopwatch Pill */}
+      {(activeTimer.isRunning || currentBusiness.category === 'freelance_solo') && (
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-neutral-100 dark:bg-neutral-800/90 border border-neutral-200/80 dark:border-neutral-700/80 text-xs shadow-2xs">
+          {activeTimer.isRunning ? (
+            <>
+              <span className={`w-2 h-2 rounded-full ${activeTimer.isPaused ? 'bg-amber-500' : 'bg-emerald-500 animate-pulse'}`} />
+              <button
+                type="button"
+                onClick={() => setScreen('scheduler')}
+                className="font-bold text-neutral-900 dark:text-white font-mono tabular-nums hover:text-[#C4785A] transition-colors cursor-pointer"
+                title="View active deliverable and timer"
+              >
+                {formatDuration(activeTimer.elapsedSeconds)}
+              </button>
+              <span className="text-[11px] text-neutral-500 max-w-[120px] truncate hidden sm:inline">
+                {activeTimer.clientName}
+              </span>
+              <div className="flex items-center gap-1 pl-1 border-l border-neutral-300 dark:border-neutral-700">
+                {activeTimer.isPaused ? (
+                  <button
+                    type="button"
+                    onClick={resumeTimer}
+                    className="p-1 rounded-full text-emerald-600 hover:bg-emerald-100 dark:hover:bg-emerald-950 cursor-pointer"
+                    title="Resume timer"
+                  >
+                    <Play size={12} className="fill-current" />
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={pauseTimer}
+                    className="p-1 rounded-full text-amber-600 hover:bg-amber-100 dark:hover:bg-amber-950 cursor-pointer"
+                    title="Pause timer"
+                  >
+                    <Pause size={12} />
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={stopTimer}
+                  className="p-1 rounded-full text-rose-600 hover:bg-rose-100 dark:hover:bg-rose-950 cursor-pointer"
+                  title="Stop and save log"
+                >
+                  <Square size={11} className="fill-current" />
+                </button>
+              </div>
+            </>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setScreen('scheduler')}
+              className="flex items-center gap-1.5 text-[11px] font-semibold text-neutral-600 dark:text-neutral-300 hover:text-[#C4785A] transition-colors cursor-pointer"
+              title="Open Focus Timer"
+            >
+              <Clock size={13} className="text-[#C4785A]" />
+              <span>Start Timer</span>
+            </button>
+          )}
+        </div>
+      )}
+
       {/* Right Controls */}
       <div className="flex items-center gap-3 shrink-0">
         {/* Sun / Moon Theme Capsule */}
@@ -243,12 +322,61 @@ export const TopBar: React.FC<TopBarProps> = ({
           />
         </button>
 
-        {/* Refresh Button */}
+        {/* Supabase Cloud Connection Status Badge */}
+        <div
+          title={
+            supabaseStatus === 'connected'
+              ? `Connected to Supabase PostgreSQL & Realtime${lastSyncedAt ? ` (Synced: ${new Date(lastSyncedAt).toLocaleTimeString()})` : ''}`
+              : supabaseStatus === 'connecting'
+              ? 'Connecting to Supabase...'
+              : supabaseStatus === 'offline'
+              ? 'Offline mode — local changes will sync when connection is restored'
+              : 'Local Storage / Demo Mode (Set VITE_SUPABASE_URL to connect live cloud)'
+          }
+          className={`hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium border transition-colors ${
+            supabaseStatus === 'connected'
+              ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800'
+              : supabaseStatus === 'connecting'
+              ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800'
+              : supabaseStatus === 'offline'
+              ? 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-800'
+              : 'bg-neutral-100 text-neutral-600 border-neutral-200 dark:bg-neutral-800 dark:text-neutral-300 dark:border-neutral-700'
+          }`}
+        >
+          {supabaseStatus === 'connected' ? (
+            <>
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <Cloud size={12} />
+              <span>Cloud Synced</span>
+            </>
+          ) : supabaseStatus === 'connecting' ? (
+            <>
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-ping" />
+              <RotateCw size={12} className="animate-spin" />
+              <span>Syncing...</span>
+            </>
+          ) : supabaseStatus === 'offline' ? (
+            <>
+              <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+              <CloudOff size={12} />
+              <span>Offline</span>
+            </>
+          ) : (
+            <>
+              <Database size={12} className="text-[#C4785A]" />
+              <span>Hybrid / Local</span>
+            </>
+          )}
+        </div>
+
+        {/* Sync / Refresh Button */}
         <button
           type="button"
-          onClick={() => window.location.reload()}
-          title="Refresh Data"
-          className="w-8 h-8 rounded-full flex items-center justify-center text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+          onClick={() => syncWithSupabase()}
+          title={isSupabaseConfigured ? 'Sync with Supabase Cloud' : 'Refresh State'}
+          className={`w-8 h-8 rounded-full flex items-center justify-center text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer ${
+            isSyncing ? 'animate-spin text-[#C4785A]' : ''
+          }`}
         >
           <RotateCw size={14} />
         </button>

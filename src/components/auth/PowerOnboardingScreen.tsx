@@ -6,6 +6,7 @@ import {
   Utensils,
   Briefcase,
   GraduationCap,
+  Laptop,
   KeyRound,
   Check,
   ChevronRight,
@@ -163,6 +164,13 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
       subtitle: 'Bootcamps, Language schools, Academies',
       icon: <GraduationCap size={18} className="text-[#C4785A]" />,
       tagline: 'Cohort Timetables & Enrollments',
+    },
+    {
+      id: 'freelance_solo',
+      title: 'Freelancers & Solo',
+      subtitle: 'Design, Dev, Consulting, Media Creators',
+      icon: <Laptop size={18} className="text-[#C4785A]" />,
+      tagline: 'Floating Stopwatch, Retainers & Invoices',
     },
   ];
 

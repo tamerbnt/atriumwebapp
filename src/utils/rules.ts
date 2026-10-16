@@ -192,6 +192,15 @@ export const TERMINOLOGY_STORE: Record<
     scheduler: { en: 'Class Timetable', fr: 'Emploi du temps', ar: 'جدول الحصص' },
     facility: { en: 'Campus Branch', fr: 'Campus', ar: 'المركز الدراسي' },
   },
+  freelance_solo: {
+    members: { en: 'Clients', fr: 'Clients', ar: 'العملاء' },
+    memberSingle: { en: 'Client', fr: 'Client', ar: 'عميل' },
+    registration: { en: 'Proposals & Inquiries', fr: 'Devis & Prospections', ar: 'العروض والاستفسارات' },
+    plan: { en: 'Service Packages & Retainers', fr: 'Forfaits & Abonnements', ar: 'باقات الخدمات والاشتراكات' },
+    shop: { en: 'Invoices & Billing', fr: 'Facturation & Règlements', ar: 'الفواتير والمدفوعات' },
+    scheduler: { en: 'Deliverables & Deadlines', fr: 'Livrables & Délais', ar: 'المشاريع والمواعيد' },
+    facility: { en: 'Studio / Workspace', fr: 'Studio / Espace', ar: 'مساحة العمل' },
+  },
 };
 
 export function getCategoryTerminology(category: BusinessCategory, lang: SupportedLanguage) {
@@ -206,3 +215,39 @@ export function getCategoryTerminology(category: BusinessCategory, lang: Support
     facility: dict.facility[lang] || dict.facility.en,
   };
 }
+
+/**
+ * Format elapsed seconds into HH:MM:SS or MM:SS
+ */
+export function formatDuration(totalSeconds: number): string {
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  const pad = (n: number) => n.toString().padStart(2, '0');
+  if (hours > 0) {
+    return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+  }
+  return `${pad(minutes)}:${pad(seconds)}`;
+}
+
+/**
+ * Format currency with proper symbol and decimal placement
+ */
+export function formatCurrencyAmount(amount: number, currency: 'DZD' | 'EUR' | 'USD' | string = 'DZD'): string {
+  const formatted = new Intl.NumberFormat('en-US', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  }).format(amount);
+
+  switch (currency) {
+    case 'EUR':
+      return `€${formatted}`;
+    case 'USD':
+      return `$${formatted}`;
+    case 'DZD':
+    default:
+      return `${formatted} DZD`;
+  }
+}
+

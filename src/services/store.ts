@@ -23,6 +23,18 @@ import {
   StaffRole,
   SubscriptionPlan,
   SupportedLanguage,
+  FreelanceClient,
+  FreelanceProject,
+  FreelanceDeliverable,
+  TimeLogEntry,
+  FreelanceInvoice,
+  FreelanceProposal,
+  FreelanceExpense,
+  ActiveTimerState,
+  CurrencyCode,
+  DeliverableStage,
+  InvoiceStatus,
+  ProposalStatus,
 } from '../types/index';
 import {
   INITIAL_ACCOUNT,
@@ -39,8 +51,24 @@ import {
   INITIAL_SALON_SERVICES,
   INITIAL_SCHEDULE,
   INITIAL_STAFF,
+  INITIAL_FREELANCE_CLIENTS,
+  INITIAL_FREELANCE_PROJECTS,
+  INITIAL_TIME_LOGS,
+  INITIAL_FREELANCE_INVOICES,
+  INITIAL_FREELANCE_PROPOSALS,
+  INITIAL_FREELANCE_EXPENSES,
+  INITIAL_ACTIVE_TIMER,
 } from './seedData';
 import { checkQuota, getCategoryTerminology, validateVoucherCode } from '../utils/rules';
+import {
+  isSupabaseConfigured,
+  authService,
+  tenantService,
+  licenseService,
+  memberService,
+  staffService,
+  realtimeService,
+} from '../lib/supabase/index';
 
 const STORAGE_KEY = 'atrium_erp_desktop_v2';
 
@@ -54,6 +82,8 @@ export type ActiveScreen =
   | 'finance'
   | 'history'
   | 'settings';
+
+export type SupabaseStatus = 'connected' | 'connecting' | 'offline' | 'unconfigured';
 
 interface AppState {
   account: Account;
@@ -81,6 +111,19 @@ interface AppState {
   isAuthenticated: boolean;
   isOnboardingOpen: boolean;
   isFastSwitchOpen: boolean;
+  // Supabase Integration & Sync
+  supabaseStatus: SupabaseStatus;
+  isSyncing: boolean;
+  lastSyncedAt: string | null;
+  syncErrorMessage: string | null;
+  // Freelancer & Solo Practitioner (Category 16)
+  freelanceClients: FreelanceClient[];
+  freelanceProjects: FreelanceProject[];
+  timeLogs: TimeLogEntry[];
+  freelanceInvoices: FreelanceInvoice[];
+  freelanceProposals: FreelanceProposal[];
+  freelanceExpenses: FreelanceExpense[];
+  activeTimer: ActiveTimerState;
 }
 
 const DEFAULT_USER: CurrentUser = {
@@ -126,6 +169,18 @@ const DEFAULT_STATE: AppState = {
   isAuthenticated: true,
   isOnboardingOpen: false,
   isFastSwitchOpen: false,
+  supabaseStatus: isSupabaseConfigured() ? 'connecting' : 'unconfigured',
+  isSyncing: false,
+  lastSyncedAt: null,
+  syncErrorMessage: null,
+  // Freelancer & Solo Practitioner
+  freelanceClients: INITIAL_FREELANCE_CLIENTS,
+  freelanceProjects: INITIAL_FREELANCE_PROJECTS,
+  timeLogs: INITIAL_TIME_LOGS,
+  freelanceInvoices: INITIAL_FREELANCE_INVOICES,
+  freelanceProposals: INITIAL_FREELANCE_PROPOSALS,
+  freelanceExpenses: INITIAL_FREELANCE_EXPENSES,
+  activeTimer: INITIAL_ACTIVE_TIMER,
 };
 
 // Global reactive subscribers
@@ -140,10 +195,19 @@ let globalState: AppState = (() => {
         ...parsed,
         appointments: parsed.appointments && parsed.appointments.length > 0 ? parsed.appointments : INITIAL_APPOINTMENTS,
         servicesCatalog: parsed.servicesCatalog && parsed.servicesCatalog.length > 0 ? parsed.servicesCatalog : INITIAL_SALON_SERVICES,
+        freelanceClients: parsed.freelanceClients && parsed.freelanceClients.length > 0 ? parsed.freelanceClients : INITIAL_FREELANCE_CLIENTS,
+        freelanceProjects: parsed.freelanceProjects && parsed.freelanceProjects.length > 0 ? parsed.freelanceProjects : INITIAL_FREELANCE_PROJECTS,
+        timeLogs: parsed.timeLogs && parsed.timeLogs.length > 0 ? parsed.timeLogs : INITIAL_TIME_LOGS,
+        freelanceInvoices: parsed.freelanceInvoices && parsed.freelanceInvoices.length > 0 ? parsed.freelanceInvoices : INITIAL_FREELANCE_INVOICES,
+        freelanceProposals: parsed.freelanceProposals && parsed.freelanceProposals.length > 0 ? parsed.freelanceProposals : INITIAL_FREELANCE_PROPOSALS,
+        freelanceExpenses: parsed.freelanceExpenses && parsed.freelanceExpenses.length > 0 ? parsed.freelanceExpenses : INITIAL_FREELANCE_EXPENSES,
+        activeTimer: parsed.activeTimer || INITIAL_ACTIVE_TIMER,
         currentUser: parsed.currentUser || DEFAULT_USER,
         isAuthenticated: parsed.isAuthenticated !== undefined ? parsed.isAuthenticated : true,
         isOnboardingOpen: false,
         isFastSwitchOpen: false,
+        supabaseStatus: isSupabaseConfigured() ? 'connecting' : 'unconfigured',
+        isSyncing: false,
       };
     }
   } catch (e) {
@@ -175,6 +239,155 @@ export function useAtriumStore() {
       listeners.delete(listener);
     };
   }, []);
+
+  const syncWithSupabase = async () => {
+    if (!isSupabaseConfigured()) {
+      globalState = {
+        ...globalState,
+        supabaseStatus: 'unconfigured',
+        isSyncing: false,
+      };
+      notify();
+      return;
+    }
+
+    globalState = {
+      ...globalState,
+      isSyncing: true,
+      syncErrorMessage: null,
+    };
+    notify();
+
+    try {
+      const session = await authService.getSession();
+      const accountId = session?.user?.id || globalState.account.id;
+
+      const [businesses, branches, members, leads, staff] = await Promise.all([
+        tenantService.fetchBusinesses(accountId),
+        tenantService.fetchBranches(accountId),
+        memberService.fetchMembers(globalState.currentBranchId),
+        memberService.fetchRegistrationRequests(globalState.currentBranchId),
+        staffService.fetchStaffForSync(accountId, globalState.currentBranchId),
+      ]);
+
+      const updates: Partial<AppState> = {
+        supabaseStatus: 'connected',
+        isSyncing: false,
+        lastSyncedAt: new Date().toISOString(),
+        syncErrorMessage: null,
+      };
+
+      if (businesses.length > 0) updates.businesses = businesses;
+      if (branches.length > 0) updates.branches = branches;
+      if (members.length > 0) {
+        const otherMembers = globalState.members.filter((m) => m.facilityId !== globalState.currentBranchId);
+        updates.members = [...members, ...otherMembers];
+      }
+      if (leads.length > 0) {
+        const otherLeads = globalState.leads.filter((l) => l.facilityId !== globalState.currentBranchId);
+        updates.leads = [...leads, ...otherLeads];
+      }
+      if (staff.length > 0) {
+        updates.staff = staff;
+      }
+
+      globalState = {
+        ...globalState,
+        ...updates,
+      };
+      notify();
+    } catch (err: any) {
+      console.warn('[store] syncWithSupabase failed:', err);
+      globalState = {
+        ...globalState,
+        supabaseStatus: 'offline',
+        isSyncing: false,
+        syncErrorMessage: err.message || 'Network error syncing with Supabase',
+      };
+      notify();
+    }
+  };
+
+  // Synchronize on mount if configured
+  useEffect(() => {
+    if (isSupabaseConfigured()) {
+      syncWithSupabase();
+    }
+  }, []);
+
+  // Real-time synchronization subscription for current active branch
+  useEffect(() => {
+    if (!isSupabaseConfigured()) return;
+
+    const unsubscribe = realtimeService.subscribeToBranch(state.currentBranchId, {
+      onMemberChange: () => {
+        memberService.fetchMembers(state.currentBranchId).then((newMembers) => {
+          if (newMembers.length > 0) {
+            const others = globalState.members.filter((m) => m.facilityId !== state.currentBranchId);
+            globalState = {
+              ...globalState,
+              members: [...newMembers, ...others],
+              lastSyncedAt: new Date().toISOString(),
+            };
+            notify();
+          }
+        });
+      },
+      onLeadChange: () => {
+        memberService.fetchRegistrationRequests(state.currentBranchId).then((newLeads) => {
+          if (newLeads.length > 0) {
+            const others = globalState.leads.filter((l) => l.facilityId !== state.currentBranchId);
+            globalState = {
+              ...globalState,
+              leads: [...newLeads, ...others],
+              lastSyncedAt: new Date().toISOString(),
+            };
+            notify();
+          }
+        });
+      },
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, [state.currentBranchId]);
+
+  // Active Timer Background Tick
+  useEffect(() => {
+    if (!state.activeTimer.isRunning || state.activeTimer.isPaused) return;
+
+    const interval = setInterval(() => {
+      const current = globalState.activeTimer;
+      if (!current.isRunning || current.isPaused) return;
+
+      const newElapsed = current.elapsedSeconds + 1;
+      let newPomodoroSecs = current.pomodoroRemainingSeconds;
+      let newPomodoroMode = current.pomodoroMode;
+
+      if (current.isPomodoro) {
+        if (newPomodoroSecs <= 1) {
+          newPomodoroMode = current.pomodoroMode === 'work' ? 'break' : 'work';
+          newPomodoroSecs = newPomodoroMode === 'work' ? 1500 : 300;
+        } else {
+          newPomodoroSecs -= 1;
+        }
+      }
+
+      globalState = {
+        ...globalState,
+        activeTimer: {
+          ...current,
+          elapsedSeconds: newElapsed,
+          pomodoroRemainingSeconds: newPomodoroSecs,
+          pomodoroMode: newPomodoroMode,
+        },
+      };
+      notify();
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [state.activeTimer.isRunning, state.activeTimer.isPaused]);
 
   // Helpers
   const currentBusiness =
@@ -280,6 +493,13 @@ export function useAtriumStore() {
       isDetailOpen: true,
     };
     notify();
+
+    if (isSupabaseConfigured()) {
+      memberService.createMember(member).catch((err) => {
+        console.warn('[store] Failed to save member to Supabase:', err);
+      });
+    }
+
     return member;
   };
 
@@ -291,6 +511,15 @@ export function useAtriumStore() {
       ),
     };
     notify();
+
+    if (isSupabaseConfigured()) {
+      const target = globalState.members.find((m) => m.id === id);
+      if (target) {
+        memberService.updateMember(target).catch((err) => {
+          console.warn('[store] Failed to update member in Supabase:', err);
+        });
+      }
+    }
   };
 
   const deleteMember = (id: string) => {
@@ -301,6 +530,12 @@ export function useAtriumStore() {
       isDetailOpen: globalState.selectedMemberId === id ? false : globalState.isDetailOpen,
     };
     notify();
+
+    if (isSupabaseConfigured()) {
+      memberService.deleteMember(id).catch((err) => {
+        console.warn('[store] Failed to delete member in Supabase:', err);
+      });
+    }
   };
 
   const addLead = (newLead: Omit<RegistrationLead, 'id' | 'tenantId' | 'facilityId' | 'createdAt' | 'updatedAt'>) => {
@@ -317,6 +552,13 @@ export function useAtriumStore() {
       leads: [lead, ...globalState.leads],
     };
     notify();
+
+    if (isSupabaseConfigured()) {
+      memberService.createRegistrationRequest(lead).catch((err) => {
+        console.warn('[store] Failed to save lead to Supabase:', err);
+      });
+    }
+
     return lead;
   };
 
@@ -579,6 +821,15 @@ export function useAtriumStore() {
       currentBranchId: newBranch.id,
     };
     notify();
+
+    if (isSupabaseConfigured()) {
+      tenantService
+        .createBranch(state.account.id, state.currentBusinessId, name, address, phone)
+        .catch((err) => {
+          console.warn('[store] Failed to create branch on Supabase:', err);
+        });
+    }
+
     return newBranch;
   };
 
@@ -639,6 +890,12 @@ export function useAtriumStore() {
       subscription: updatedSubscription,
     };
     notify();
+
+    if (isSupabaseConfigured()) {
+      licenseService.redeemVoucher(globalState.account.id, code).catch((err) => {
+        console.warn('[store] Supabase redeem_license_voucher notice:', err);
+      });
+    }
 
     return {
       success: true,
@@ -1079,7 +1336,503 @@ export function useAtriumStore() {
     };
 
     notify();
+
+    if (isSupabaseConfigured()) {
+      tenantService
+        .onboardOwnerAccount({
+          ownerId: accountId,
+          fullName: params.fullName,
+          email: params.email,
+          businessName: params.businessName,
+          branchName: params.branchName,
+          category: params.category,
+          voucherCode: params.voucherCode,
+        })
+        .catch((err) => {
+          console.warn('[store] Supabase onboard_owner_account RPC notice:', err);
+        });
+    }
+
     return { success: true, account: newAccount, business: newBusiness, branch: newBranch };
+  };
+
+  // ==========================================
+  // Freelancer & Solo Actions
+  // ==========================================
+
+  const startTimer = (
+    clientId: string,
+    clientName: string,
+    projectId: string,
+    projectTitle: string,
+    taskDescription: string,
+    deliverableId?: string,
+    deliverableTitle?: string,
+    isBillable = true,
+    isPomodoro = false
+  ) => {
+    globalState = {
+      ...globalState,
+      activeTimer: {
+        isRunning: true,
+        isPaused: false,
+        clientId,
+        clientName,
+        projectId,
+        projectTitle,
+        deliverableId,
+        deliverableTitle,
+        taskDescription,
+        elapsedSeconds: 0,
+        isBillable,
+        isPomodoro,
+        pomodoroRemainingSeconds: 1500,
+        pomodoroMode: 'work',
+        startedAt: new Date().toISOString(),
+      },
+    };
+    notify();
+  };
+
+  const pauseTimer = () => {
+    globalState = {
+      ...globalState,
+      activeTimer: { ...globalState.activeTimer, isPaused: true },
+    };
+    notify();
+  };
+
+  const resumeTimer = () => {
+    globalState = {
+      ...globalState,
+      activeTimer: { ...globalState.activeTimer, isPaused: false },
+    };
+    notify();
+  };
+
+  const stopTimer = () => {
+    const timer = globalState.activeTimer;
+    if (timer.elapsedSeconds >= 10) {
+      const client = globalState.freelanceClients.find((c) => c.id === timer.clientId);
+      const rate = client?.hourlyRate || 85;
+      const currency = client?.currency || 'EUR';
+
+      const newEntry: TimeLogEntry = {
+        id: `time_${Date.now()}`,
+        tenantId: state.account.id,
+        facilityId: state.currentBranchId,
+        clientId: timer.clientId,
+        clientName: timer.clientName,
+        projectId: timer.projectId,
+        projectTitle: timer.projectTitle,
+        deliverableId: timer.deliverableId,
+        deliverableTitle: timer.deliverableTitle,
+        taskDescription: timer.taskDescription || 'Focus sprint session',
+        durationSeconds: timer.elapsedSeconds,
+        isBillable: timer.isBillable,
+        isInvoiced: false,
+        rateAtMoment: rate,
+        currency,
+        date: new Date().toISOString().split('T')[0],
+        createdAt: new Date().toISOString(),
+      };
+
+      const additionalHours = Number((timer.elapsedSeconds / 3600).toFixed(2));
+      const updatedProjects = globalState.freelanceProjects.map((p) => {
+        if (p.id === timer.projectId) {
+          const updatedDeliverables = p.deliverables.map((d) => {
+            if (d.id === timer.deliverableId) {
+              return { ...d, loggedHours: Number((d.loggedHours + additionalHours).toFixed(2)) };
+            }
+            return d;
+          });
+          return {
+            ...p,
+            loggedHours: Number((p.loggedHours + additionalHours).toFixed(2)),
+            deliverables: updatedDeliverables,
+          };
+        }
+        return p;
+      });
+
+      globalState = {
+        ...globalState,
+        timeLogs: [newEntry, ...globalState.timeLogs],
+        freelanceProjects: updatedProjects,
+        activeTimer: {
+          ...timer,
+          isRunning: false,
+          isPaused: false,
+          elapsedSeconds: 0,
+          startedAt: null,
+        },
+      };
+      notify();
+      return newEntry;
+    } else {
+      globalState = {
+        ...globalState,
+        activeTimer: {
+          ...timer,
+          isRunning: false,
+          isPaused: false,
+          elapsedSeconds: 0,
+          startedAt: null,
+        },
+      };
+      notify();
+      return null;
+    }
+  };
+
+  const resetTimer = () => {
+    globalState = {
+      ...globalState,
+      activeTimer: {
+        ...globalState.activeTimer,
+        isRunning: false,
+        isPaused: false,
+        elapsedSeconds: 0,
+        startedAt: null,
+      },
+    };
+    notify();
+  };
+
+  const addFreelanceClient = (clientData: Omit<FreelanceClient, 'id' | 'tenantId' | 'facilityId' | 'lifetimeBilled' | 'createdAt'>) => {
+    const newClient: FreelanceClient = {
+      ...clientData,
+      id: `fcli_${Date.now()}`,
+      tenantId: state.account.id,
+      facilityId: state.currentBranchId,
+      lifetimeBilled: 0,
+      createdAt: new Date().toISOString(),
+    };
+    globalState = {
+      ...globalState,
+      freelanceClients: [newClient, ...globalState.freelanceClients],
+    };
+    notify();
+    return newClient;
+  };
+
+  const updateFreelanceClient = (id: string, updates: Partial<FreelanceClient>) => {
+    globalState = {
+      ...globalState,
+      freelanceClients: globalState.freelanceClients.map((c) => (c.id === id ? { ...c, ...updates } : c)),
+    };
+    notify();
+  };
+
+  const addFreelanceProject = (projectData: Omit<FreelanceProject, 'id' | 'tenantId' | 'facilityId' | 'loggedHours' | 'createdAt'>) => {
+    const newProject: FreelanceProject = {
+      ...projectData,
+      id: `fproj_${Date.now()}`,
+      tenantId: state.account.id,
+      facilityId: state.currentBranchId,
+      loggedHours: 0,
+      createdAt: new Date().toISOString(),
+    };
+    globalState = {
+      ...globalState,
+      freelanceProjects: [newProject, ...globalState.freelanceProjects],
+    };
+    notify();
+    return newProject;
+  };
+
+  const updateProjectStage = (projectId: string, stage: DeliverableStage) => {
+    globalState = {
+      ...globalState,
+      freelanceProjects: globalState.freelanceProjects.map((p) => (p.id === projectId ? { ...p, stage } : p)),
+    };
+    notify();
+  };
+
+  const addDeliverable = (projectId: string, title: string, estimatedHours: number, dueDate: string, description?: string) => {
+    const newDeliv: FreelanceDeliverable = {
+      id: `deliv_${Date.now()}`,
+      projectId,
+      title,
+      description,
+      stage: 'InProgress',
+      estimatedHours,
+      loggedHours: 0,
+      dueDate,
+      isCompleted: false,
+    };
+    globalState = {
+      ...globalState,
+      freelanceProjects: globalState.freelanceProjects.map((p) => {
+        if (p.id === projectId) {
+          return {
+            ...p,
+            estimatedHours: p.estimatedHours + estimatedHours,
+            deliverables: [...p.deliverables, newDeliv],
+          };
+        }
+        return p;
+      }),
+    };
+    notify();
+    return newDeliv;
+  };
+
+  const updateDeliverableStage = (projectId: string, deliverableId: string, stage: DeliverableStage) => {
+    globalState = {
+      ...globalState,
+      freelanceProjects: globalState.freelanceProjects.map((p) => {
+        if (p.id === projectId) {
+          const updated = p.deliverables.map((d) =>
+            d.id === deliverableId ? { ...d, stage, isCompleted: stage === 'Approved' || stage === 'Billed' } : d
+          );
+          return { ...p, deliverables: updated };
+        }
+        return p;
+      }),
+    };
+    notify();
+  };
+
+  const logTimeEntry = (entryData: Omit<TimeLogEntry, 'id' | 'tenantId' | 'facilityId' | 'createdAt' | 'isInvoiced'>) => {
+    const entry: TimeLogEntry = {
+      ...entryData,
+      id: `time_${Date.now()}`,
+      tenantId: state.account.id,
+      facilityId: state.currentBranchId,
+      isInvoiced: false,
+      createdAt: new Date().toISOString(),
+    };
+
+    const addHours = Number((entry.durationSeconds / 3600).toFixed(2));
+    const updatedProjects = globalState.freelanceProjects.map((p) => {
+      if (p.id === entry.projectId) {
+        return {
+          ...p,
+          loggedHours: Number((p.loggedHours + addHours).toFixed(2)),
+          deliverables: p.deliverables.map((d) =>
+            d.id === entry.deliverableId ? { ...d, loggedHours: Number((d.loggedHours + addHours).toFixed(2)) } : d
+          ),
+        };
+      }
+      return p;
+    });
+
+    globalState = {
+      ...globalState,
+      timeLogs: [entry, ...globalState.timeLogs],
+      freelanceProjects: updatedProjects,
+    };
+    notify();
+    return entry;
+  };
+
+  const billUnbilledHours = (clientId: string, taxPercent = 0, notes?: string) => {
+    const client = globalState.freelanceClients.find((c) => c.id === clientId);
+    if (!client) throw new Error('Client not found');
+
+    const unbilled = globalState.timeLogs.filter(
+      (t) => t.clientId === clientId && t.isBillable && !t.isInvoiced
+    );
+    if (unbilled.length === 0) throw new Error('No unbilled hours available for this client');
+
+    const totalHours = unbilled.reduce((sum, item) => sum + item.durationSeconds / 3600, 0);
+    const subtotal = unbilled.reduce((sum, item) => sum + (item.durationSeconds / 3600) * item.rateAtMoment, 0);
+    const roundedSubtotal = Math.round(subtotal * 100) / 100;
+    const taxAmount = Math.round((roundedSubtotal * (taxPercent / 100)) * 100) / 100;
+    const totalAmount = roundedSubtotal + taxAmount;
+
+    const invoiceNum = `INV-${new Date().getFullYear()}-${Math.floor(100 + Math.random() * 900)}`;
+    const newInvoice: FreelanceInvoice = {
+      id: `inv_${Date.now()}`,
+      tenantId: state.account.id,
+      facilityId: state.currentBranchId,
+      clientId,
+      clientName: client.name,
+      clientCompany: client.company,
+      clientEmail: client.email,
+      invoiceNumber: invoiceNum,
+      currency: client.currency,
+      issueDate: new Date().toISOString().split('T')[0],
+      dueDate: new Date(Date.now() + 15 * 86400000).toISOString().split('T')[0],
+      status: 'Sent',
+      items: unbilled.map((t) => ({
+        id: `item_${t.id}`,
+        description: `${t.projectTitle}: ${t.taskDescription} (${(t.durationSeconds / 3600).toFixed(1)} hrs)`,
+        quantity: Number((t.durationSeconds / 3600).toFixed(2)),
+        unitRate: t.rateAtMoment,
+        total: Math.round(((t.durationSeconds / 3600) * t.rateAtMoment) * 100) / 100,
+      })),
+      subtotal: roundedSubtotal,
+      taxPercent,
+      taxAmount,
+      totalAmount,
+      notes: notes || `Itemized bill for ${totalHours.toFixed(1)} hours of professional services.`,
+      paymentDetails: {
+        bankName: 'BEA / International Wire or Algérie Poste',
+        accountHolder: state.account.fullName,
+        ribOrIban: '002 00012 34567890 12',
+      },
+      createdAt: new Date().toISOString(),
+    };
+
+    const unbilledIds = new Set(unbilled.map((t) => t.id));
+    const updatedTimeLogs = globalState.timeLogs.map((t) =>
+      unbilledIds.has(t.id) ? { ...t, isInvoiced: true } : t
+    );
+
+    globalState = {
+      ...globalState,
+      freelanceInvoices: [newInvoice, ...globalState.freelanceInvoices],
+      timeLogs: updatedTimeLogs,
+      freelanceClients: globalState.freelanceClients.map((c) =>
+        c.id === clientId ? { ...c, lifetimeBilled: c.lifetimeBilled + totalAmount } : c
+      ),
+    };
+    notify();
+    return newInvoice;
+  };
+
+  const createFreelanceInvoice = (invoiceData: Omit<FreelanceInvoice, 'id' | 'tenantId' | 'facilityId' | 'createdAt'>) => {
+    const newInv: FreelanceInvoice = {
+      ...invoiceData,
+      id: `inv_${Date.now()}`,
+      tenantId: state.account.id,
+      facilityId: state.currentBranchId,
+      createdAt: new Date().toISOString(),
+    };
+    globalState = {
+      ...globalState,
+      freelanceInvoices: [newInv, ...globalState.freelanceInvoices],
+      freelanceClients: globalState.freelanceClients.map((c) =>
+        c.id === newInv.clientId ? { ...c, lifetimeBilled: c.lifetimeBilled + newInv.totalAmount } : c
+      ),
+    };
+    notify();
+    return newInv;
+  };
+
+  const updateInvoiceStatus = (invoiceId: string, status: InvoiceStatus) => {
+    globalState = {
+      ...globalState,
+      freelanceInvoices: globalState.freelanceInvoices.map((inv) =>
+        inv.id === invoiceId
+          ? {
+              ...inv,
+              status,
+              paidAt: status === 'Paid' ? new Date().toISOString() : inv.paidAt,
+            }
+          : inv
+      ),
+    };
+    notify();
+  };
+
+  const createFreelanceProposal = (proposalData: Omit<FreelanceProposal, 'id' | 'tenantId' | 'facilityId' | 'createdAt'>) => {
+    const newProp: FreelanceProposal = {
+      ...proposalData,
+      id: `prop_${Date.now()}`,
+      tenantId: state.account.id,
+      facilityId: state.currentBranchId,
+      createdAt: new Date().toISOString(),
+    };
+    globalState = {
+      ...globalState,
+      freelanceProposals: [newProp, ...globalState.freelanceProposals],
+    };
+    notify();
+    return newProp;
+  };
+
+  const convertProposalToProject = (proposalId: string) => {
+    const prop = globalState.freelanceProposals.find((p) => p.id === proposalId);
+    if (!prop) throw new Error('Proposal not found');
+
+    let client = globalState.freelanceClients.find(
+      (c) => c.email.toLowerCase() === prop.clientEmail.toLowerCase()
+    );
+    if (!client) {
+      client = {
+        id: `fcli_${Date.now()}`,
+        tenantId: state.account.id,
+        facilityId: state.currentBranchId,
+        name: prop.clientName,
+        company: prop.clientCompany,
+        email: prop.clientEmail,
+        currency: prop.currency,
+        hourlyRate: prop.pricingModel === 'Hourly' ? 85 : 0,
+        status: 'ProjectBased',
+        lifetimeBilled: 0,
+        createdAt: new Date().toISOString(),
+      };
+      globalState = {
+        ...globalState,
+        freelanceClients: [client, ...globalState.freelanceClients],
+      };
+    }
+
+    const newProject: FreelanceProject = {
+      id: `fproj_${Date.now()}`,
+      tenantId: state.account.id,
+      facilityId: state.currentBranchId,
+      clientId: client.id,
+      clientName: client.company || client.name,
+      title: prop.title,
+      description: prop.overview,
+      pricingModel: prop.pricingModel,
+      currency: prop.currency,
+      budget: prop.proposedBudget,
+      estimatedHours: prop.estimatedTimelineWeeks * 20,
+      loggedHours: 0,
+      stage: 'InProgress',
+      startDate: new Date().toISOString().split('T')[0],
+      deadline: prop.validUntil,
+      deliverables: prop.scopeItems.map((item, idx) => ({
+        id: `deliv_${Date.now()}_${idx}`,
+        projectId: `fproj_${Date.now()}`,
+        title: item,
+        stage: idx === 0 ? 'InProgress' : 'Briefing',
+        estimatedHours: Math.round((prop.estimatedTimelineWeeks * 20) / (prop.scopeItems.length || 1)),
+        loggedHours: 0,
+        dueDate: prop.validUntil,
+        isCompleted: false,
+      })),
+      createdAt: new Date().toISOString(),
+    };
+
+    globalState = {
+      ...globalState,
+      freelanceProjects: [newProject, ...globalState.freelanceProjects],
+      freelanceProposals: globalState.freelanceProposals.map((p) =>
+        p.id === proposalId ? { ...p, status: 'Accepted' } : p
+      ),
+    };
+    notify();
+    return newProject;
+  };
+
+  const addFreelanceExpense = (expenseData: Omit<FreelanceExpense, 'id' | 'tenantId' | 'facilityId' | 'createdAt'>) => {
+    const newExp: FreelanceExpense = {
+      ...expenseData,
+      id: `exp_${Date.now()}`,
+      tenantId: state.account.id,
+      facilityId: state.currentBranchId,
+      createdAt: new Date().toISOString(),
+    };
+    globalState = {
+      ...globalState,
+      freelanceExpenses: [newExp, ...globalState.freelanceExpenses],
+    };
+    notify();
+    return newExp;
+  };
+
+  const deleteFreelanceExpense = (id: string) => {
+    globalState = {
+      ...globalState,
+      freelanceExpenses: globalState.freelanceExpenses.filter((e) => e.id !== id),
+    };
+    notify();
   };
 
   const resetAllData = () => {
@@ -1106,6 +1859,21 @@ export function useAtriumStore() {
       devices: deviceQuota,
       staff: staffQuota,
     },
+    // Supabase Sync & Connection State
+    supabaseStatus: state.supabaseStatus,
+    isSyncing: state.isSyncing,
+    lastSyncedAt: state.lastSyncedAt,
+    syncErrorMessage: state.syncErrorMessage,
+    isSupabaseConfigured: isSupabaseConfigured(),
+    syncWithSupabase,
+    // Freelancer Collections
+    freelanceClients: state.freelanceClients,
+    freelanceProjects: state.freelanceProjects,
+    timeLogs: state.timeLogs,
+    freelanceInvoices: state.freelanceInvoices,
+    freelanceProposals: state.freelanceProposals,
+    freelanceExpenses: state.freelanceExpenses,
+    activeTimer: state.activeTimer,
     // Auth State
     currentUser: state.currentUser,
     isAuthenticated: state.isAuthenticated,
@@ -1154,6 +1922,26 @@ export function useAtriumStore() {
     deleteAppointment,
     addServiceItem,
     checkoutAppointment,
+    // Freelance Actions
+    startTimer,
+    pauseTimer,
+    resumeTimer,
+    stopTimer,
+    resetTimer,
+    addFreelanceClient,
+    updateFreelanceClient,
+    addFreelanceProject,
+    updateProjectStage,
+    addDeliverable,
+    updateDeliverableStage,
+    logTimeEntry,
+    billUnbilledHours,
+    createFreelanceInvoice,
+    updateInvoiceStatus,
+    createFreelanceProposal,
+    convertProposalToProject,
+    addFreelanceExpense,
+    deleteFreelanceExpense,
     // Auth Actions
     login,
     loginWithPin,
