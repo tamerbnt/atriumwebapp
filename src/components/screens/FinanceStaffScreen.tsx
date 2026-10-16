@@ -42,7 +42,7 @@ export const FinanceStaffScreen: React.FC = () => {
   } = useAtriumStore();
 
   const [isAddStaffOpen, setIsAddStaffOpen] = useState(false);
-  const [roleFilter, setRoleFilter] = useState<'All' | 'Manager' | 'Cashier' | 'Owner' | 'Staff'>('All');
+  const [roleFilter, setRoleFilter] = useState<'All' | 'Manager' | 'Cashier' | 'Owner' | 'Staff' | 'Stylist'>('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchActive, setIsSearchActive] = useState(false);
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
@@ -66,7 +66,7 @@ export const FinanceStaffScreen: React.FC = () => {
   const filteredStaff = useMemo(() => {
     return staff.filter((member) => {
       if (roleFilter !== 'All') {
-        if (roleFilter === 'Staff' && member.role !== 'Staff' && member.role !== 'Technician' && member.role !== 'Waiter') return false;
+        if (roleFilter === 'Staff' && member.role !== 'Staff' && member.role !== 'Technician' && member.role !== 'Waiter' && member.role !== 'Stylist') return false;
         if (roleFilter !== 'Staff' && member.role !== roleFilter) return false;
       }
       if (searchQuery.trim()) {
@@ -89,6 +89,8 @@ export const FinanceStaffScreen: React.FC = () => {
         return 'bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border-blue-200';
       case 'Cashier':
         return 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-200';
+      case 'Stylist':
+        return 'bg-pink-100 dark:bg-pink-950/60 text-pink-700 dark:text-pink-300 border-pink-200';
       default:
         return 'bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border-neutral-200';
     }
@@ -104,6 +106,7 @@ export const FinanceStaffScreen: React.FC = () => {
         Manager: 1,
         Cashier: 2,
         Technician: 3,
+        Stylist: 3,
         Waiter: 4,
         Staff: 7,
         AgencyDirector: 20,
@@ -376,7 +379,7 @@ export const FinanceStaffScreen: React.FC = () => {
 
             {/* Role Filter Capsules */}
             <div className="flex items-center p-0.5 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 gap-0.5 text-xs font-semibold shadow-2xs">
-              {(['All', 'Manager', 'Cashier', 'Owner', 'Staff'] as const).map((r) => {
+              {(['All', 'Manager', 'Cashier', 'Stylist', 'Staff'] as const).map((r) => {
                 const isActive = roleFilter === r;
                 return (
                   <button
@@ -782,6 +785,7 @@ export const FinanceStaffScreen: React.FC = () => {
               >
                 <option value="Manager">Manager (Rank 1)</option>
                 <option value="Cashier">Cashier (Rank 2)</option>
+                <option value="Stylist">Stylist / Practitioner (Rank 3)</option>
                 <option value="Technician">Technician (Rank 3)</option>
                 <option value="Waiter">Waiter (Rank 4)</option>
                 <option value="Staff">General Staff (Rank 7)</option>

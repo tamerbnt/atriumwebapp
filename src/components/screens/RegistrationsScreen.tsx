@@ -84,8 +84,8 @@ export const RegistrationsScreen: React.FC<RegistrationsScreenProps> = ({ onAddL
     const plan = plans.find((p) => p.id === selectedPlanId) || plans[0];
     convertLeadToMember(
       conversionLead.id,
-      plan ? plan.id : 'plan_a1',
-      plan ? plan.name : 'Plan A1',
+      plan ? plan.id : 'standard_pkg',
+      plan ? plan.name : 'Standard Package',
       plan ? plan.durationDays : 365
     );
     setConversionLead(null);
@@ -100,7 +100,7 @@ export const RegistrationsScreen: React.FC<RegistrationsScreenProps> = ({ onAddL
       `"${l.fullName}"`,
       `"${l.phoneNumber}"`,
       `"${l.email}"`,
-      `"${l.preferredPlanName || 'Plan A1'}"`,
+      `"${l.preferredPlanName || plans[0]?.name || 'Standard Package'}"`,
       `"${l.source}"`,
       `"${l.status}"`,
       `"${new Date(l.createdAt).toLocaleDateString()}"`,
@@ -480,7 +480,7 @@ export const RegistrationsScreen: React.FC<RegistrationsScreenProps> = ({ onAddL
                       {/* Preferred Plan */}
                       <td className="px-4 py-3">
                         <span className="text-xs font-bold text-[#C4785A]">
-                          {lead.preferredPlanName || 'Plan A1'}
+                          {lead.preferredPlanName || plans[0]?.name || 'Standard Package'}
                         </span>
                         {lead.preferredStartDate && (
                           <span className="block text-[11px] text-neutral-400">
@@ -598,7 +598,7 @@ export const RegistrationsScreen: React.FC<RegistrationsScreenProps> = ({ onAddL
                   <div className="flex justify-between">
                     <span className="text-neutral-400">Plan:</span>
                     <span className="font-bold text-[#C4785A]">
-                      {lead.preferredPlanName || 'Plan A1'}
+                      {lead.preferredPlanName || plans[0]?.name || 'Standard Package'}
                     </span>
                   </div>
                   <div className="flex justify-between">
@@ -709,7 +709,7 @@ export const RegistrationsScreen: React.FC<RegistrationsScreenProps> = ({ onAddL
               <div>
                 <span className="text-xs font-bold text-[#C4785A]">Preferred Plan</span>
                 <div className="text-sm font-black text-neutral-900 dark:text-white mt-0.5">
-                  {selectedLead.preferredPlanName || 'Plan A1 (30 sessions)'}
+                  {selectedLead.preferredPlanName || plans[0]?.name || 'Standard Package'}
                 </div>
               </div>
               <span className="text-base font-black text-[#C4785A] tabular-nums">

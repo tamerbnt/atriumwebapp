@@ -26,7 +26,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   isOpenMobile = false,
   onCloseMobile,
 }) => {
-  const { activeScreen, setScreen } = useAtriumStore();
+  const { activeScreen, setScreen, terminology } = useAtriumStore();
   const [isExpanded, setIsExpanded] = useState(false);
 
   const dockNavItems: Array<{
@@ -50,14 +50,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
     {
       id: 'members',
       icon: <Users size={19} />,
-      title: 'Members Directory',
-      label: 'Members',
+      title: `${terminology.members} Directory`,
+      label: terminology.members,
     },
     {
       id: 'registrations',
       icon: <ClipboardList size={19} />,
-      title: 'Registrations & Intake',
-      label: 'Intake',
+      title: `${terminology.registration} & Intake`,
+      label: terminology.registration,
     },
     {
       id: 'history',
@@ -68,14 +68,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
     {
       id: 'shop',
       icon: <ShoppingBag size={19} />,
-      title: 'POS Shop & Products',
-      label: 'POS Shop',
+      title: `${terminology.shop} & Products`,
+      label: terminology.shop,
     },
     {
       id: 'scheduler',
       icon: <Calendar size={19} />,
-      title: 'Schedule & Timetable',
-      label: 'Schedule',
+      title: terminology.scheduler,
+      label: terminology.scheduler,
     },
     {
       id: 'finance',

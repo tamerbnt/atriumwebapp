@@ -30,6 +30,7 @@ export const TopBar: React.FC<TopBarProps> = ({
     theme,
     setTheme,
     currentUser,
+    terminology,
     openFastSwitch,
     openOnboarding,
     logout,
@@ -84,7 +85,7 @@ export const TopBar: React.FC<TopBarProps> = ({
                 onClick={() => selectMember(null)}
                 className="text-neutral-400 hover:text-[#C4785A] font-medium transition-colors cursor-pointer"
               >
-                Members
+                {terminology.members}
               </button>
               <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
               <span className="text-neutral-900 dark:text-white font-semibold truncate max-w-[130px] sm:max-w-[200px]">
@@ -104,7 +105,7 @@ export const TopBar: React.FC<TopBarProps> = ({
               <span>Home</span>
             </button>
             <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
-            <span className="text-neutral-900 dark:text-white font-semibold">Members</span>
+            <span className="text-neutral-900 dark:text-white font-semibold">{terminology.members}</span>
           </nav>
         );
       case 'registrations':
@@ -119,7 +120,7 @@ export const TopBar: React.FC<TopBarProps> = ({
               <span>Home</span>
             </button>
             <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
-            <span className="text-neutral-900 dark:text-white font-semibold">Registrations & Intake</span>
+            <span className="text-neutral-900 dark:text-white font-semibold">{terminology.registration} & Intake</span>
           </nav>
         );
       case 'shop':
@@ -134,7 +135,7 @@ export const TopBar: React.FC<TopBarProps> = ({
               <span>Home</span>
             </button>
             <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
-            <span className="text-neutral-900 dark:text-white font-semibold">POS Shop & Products</span>
+            <span className="text-neutral-900 dark:text-white font-semibold">{terminology.shop} & Products</span>
           </nav>
         );
       case 'scheduler':
@@ -149,7 +150,7 @@ export const TopBar: React.FC<TopBarProps> = ({
               <span>Home</span>
             </button>
             <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
-            <span className="text-neutral-900 dark:text-white font-semibold">Schedule & Timetable</span>
+            <span className="text-neutral-900 dark:text-white font-semibold">{terminology.scheduler}</span>
           </nav>
         );
       case 'finance':

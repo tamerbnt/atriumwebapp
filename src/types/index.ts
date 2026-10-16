@@ -177,6 +177,7 @@ export type StaffRole =
   | 'Manager'
   | 'Cashier'
   | 'Technician'
+  | 'Stylist'
   | 'Waiter'
   | 'Staff'
   | 'AgencyDirector'
@@ -211,7 +212,20 @@ export interface Product {
   cost: Money;
   stockQuantity: number;
   sku: string;
-  category: 'Supplement' | 'Equipment' | 'Beverage' | 'Clothing' | 'Service' | 'Food' | 'Other';
+  category:
+    | 'Supplement'
+    | 'Equipment'
+    | 'Beverage'
+    | 'Clothing'
+    | 'Service'
+    | 'Food'
+    | 'Hair Care'
+    | 'Skin Care'
+    | 'Beauty Products'
+    | 'Nails & Spa'
+    | 'Accessories'
+    | 'Other'
+    | (string & {});
   imageUrl?: string;
   reorderLevel: number;
   isActive: boolean;

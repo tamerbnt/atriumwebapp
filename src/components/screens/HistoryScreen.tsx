@@ -21,6 +21,7 @@ import {
   ArrowUpRight,
   ShieldCheck,
   FileSpreadsheet,
+  Scissors,
 } from 'lucide-react';
 import { useAtriumStore } from '../../services/store';
 import { Sale } from '../../types/index';
@@ -450,6 +451,12 @@ export const HistoryScreen: React.FC = () => {
                               {it.quantity}x {it.productName}
                             </span>
                           ))}
+                          {sale.notes && (
+                            <span className="px-2 py-0.5 rounded-md bg-[#FDF4F0] dark:bg-neutral-800 text-[#C4785A] text-[10px] font-bold flex items-center gap-1 border border-[#F5E2D8] dark:border-neutral-700">
+                              <Scissors size={10} />
+                              <span>{sale.notes.replace('Salon Appointment Checkout — ', '')}</span>
+                            </span>
+                          )}
                         </div>
                       </td>
 
@@ -503,9 +510,16 @@ export const HistoryScreen: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="text-xs text-neutral-500 line-clamp-2 mb-4">
+                <div className="text-xs text-neutral-500 line-clamp-2 mb-2">
                   {sale.items.map((i) => `${i.quantity}x ${i.productName}`).join(', ')}
                 </div>
+
+                {sale.notes && (
+                  <div className="text-[11px] font-semibold text-[#C4785A] mb-3 flex items-center gap-1 bg-[#FDF4F0] dark:bg-neutral-800 px-2.5 py-1 rounded-lg border border-[#F5E2D8] dark:border-neutral-700 truncate">
+                    <Scissors size={11} className="shrink-0" />
+                    <span className="truncate">{sale.notes.replace('Salon Appointment Checkout — ', '')}</span>
+                  </div>
+                )}
 
                 <div className="flex items-center justify-between pt-3 border-t border-neutral-100 dark:border-neutral-800">
                   <span className="text-xs text-neutral-400 font-medium">Settled Amount</span>
@@ -572,6 +586,19 @@ export const HistoryScreen: React.FC = () => {
                 </span>
               </div>
             </div>
+
+            {/* Stylist Attribution if present */}
+            {selectedSale.notes && (
+              <div className="p-3.5 rounded-2xl bg-[#FDF4F0] dark:bg-neutral-800/80 border border-[#F5E2D8] dark:border-neutral-700 space-y-1">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#C4785A] flex items-center gap-1">
+                  <Scissors size={12} />
+                  <span>Stylist & Treatment Attribution</span>
+                </span>
+                <p className="text-xs font-semibold text-neutral-800 dark:text-neutral-200">
+                  {selectedSale.notes}
+                </p>
+              </div>
+            )}
 
             {/* Line Items breakdown */}
             <div className="space-y-2">

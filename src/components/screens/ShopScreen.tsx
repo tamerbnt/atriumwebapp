@@ -41,6 +41,7 @@ export const ShopScreen: React.FC = () => {
     staff,
     terminology,
     currentBranch,
+    currentBusiness,
     businesses,
     branches,
     currentBusinessId,
@@ -49,6 +50,8 @@ export const ShopScreen: React.FC = () => {
     processSale,
     addProduct,
   } = useAtriumStore();
+
+  const isSalon = currentBusiness.category === 'appointment_service';
 
   const [categoryFilter, setCategoryFilter] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState('');
@@ -65,7 +68,9 @@ export const ShopScreen: React.FC = () => {
 
   // New product fields
   const [newProductName, setNewProductName] = useState('');
-  const [newProductCategory, setNewProductCategory] = useState<'Supplement' | 'Equipment' | 'Beverage' | 'Service'>('Supplement');
+  const [newProductCategory, setNewProductCategory] = useState<string>(
+    isSalon ? 'Hair Care' : 'Supplement'
+  );
   const [newProductSku, setNewProductSku] = useState('PROD-');
   const [newProductPrice, setNewProductPrice] = useState(2500);
   const [newProductStock, setNewProductStock] = useState(25);
@@ -75,9 +80,13 @@ export const ShopScreen: React.FC = () => {
     products.forEach((p) => {
       if (p.category) set.add(p.category);
     });
-    ['Supplement', 'Equipment', 'Beverage', 'Service'].forEach((c) => set.add(c));
+    if (isSalon) {
+      ['Hair Care', 'Skin Care', 'Beauty Products', 'Nails & Spa', 'Accessories'].forEach((c) => set.add(c));
+    } else {
+      ['Supplement', 'Equipment', 'Beverage', 'Service'].forEach((c) => set.add(c));
+    }
     return Array.from(set);
-  }, [products]);
+  }, [products, isSalon]);
 
   const filteredProducts = useMemo(() => {
     return products.filter((p) => {
@@ -857,13 +866,25 @@ export const ShopScreen: React.FC = () => {
               </label>
               <select
                 value={newProductCategory}
-                onChange={(e) => setNewProductCategory(e.target.value as any)}
+                onChange={(e) => setNewProductCategory(e.target.value)}
                 className="w-full h-11 px-3 text-sm rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:border-[#C4785A] text-neutral-900 dark:text-white"
               >
-                <option value="Supplement">Supplement</option>
-                <option value="Equipment">Equipment</option>
-                <option value="Beverage">Beverage</option>
-                <option value="Service">Service</option>
+                {isSalon ? (
+                  <>
+                    <option value="Hair Care">Hair Care & Treatment</option>
+                    <option value="Skin Care">Skin Care & Serums</option>
+                    <option value="Beauty Products">Beauty & Cosmetics</option>
+                    <option value="Nails & Spa">Nails & Spa Retail</option>
+                    <option value="Accessories">Salon Tools & Accessories</option>
+                  </>
+                ) : (
+                  <>
+                    <option value="Supplement">Supplement</option>
+                    <option value="Equipment">Equipment</option>
+                    <option value="Beverage">Beverage</option>
+                    <option value="Service">Service</option>
+                  </>
+                )}
               </select>
             </div>
 

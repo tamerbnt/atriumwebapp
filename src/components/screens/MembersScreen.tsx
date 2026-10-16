@@ -23,10 +23,13 @@ import {
   AlertCircle,
   Building2,
   Sparkles,
+  Scissors,
+  Clock,
 } from 'lucide-react';
 import { useAtriumStore } from '../../services/store';
 import { Member, MemberStatus } from '../../types/index';
 import { calculateDaysRemaining, formatMoney } from '../../utils/rules';
+import { AppointmentModal } from '../modals/AppointmentModal';
 
 interface MembersScreenProps {
   onAddMember: () => void;
@@ -42,9 +45,11 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
     plans,
     businesses,
     branches,
+    currentBusiness,
     currentBusinessId,
     currentBranch,
     terminology,
+    appointments,
     switchBusiness,
     switchBranch,
     selectedMember,
@@ -63,6 +68,7 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isFacilityDropdownOpen, setIsFacilityDropdownOpen] = useState(false);
   const [saveNoteSuccess, setSaveNoteSuccess] = useState(false);
+  const [isBookModalOpen, setIsBookModalOpen] = useState(false);
 
   // Desktop sample members matching screenshot amira and saraa
   const displayMembers = useMemo(() => {
@@ -128,9 +134,9 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
     const rows = displayMembers.map((m) => [
       `"${m.fullName}"`,
       `"${m.cardId || ''}"`,
-      `"${m.membershipPlanName || 'Plan A1'}"`,
+      `"${m.membershipPlanName || 'Standard'}"`,
       `"${m.status}"`,
-      `"1,500.00 DA"`,
+      `"0.00 DA"`,
       `"${m.phoneNumber}"`,
       `"${m.email}"`,
       `"${m.expirationDate}"`,
@@ -246,10 +252,10 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
       <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[26px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
         <div>
           <h2 className="text-base font-bold text-neutral-900 dark:text-white">
-            Roster & Retention Health
+            {terminology.members} & Retention Health
           </h2>
           <p className="text-xs text-neutral-400 dark:text-neutral-500">
-            Active membership pipeline, renewal retention, and monthly member intake
+            Active {terminology.members.toLowerCase()} pipeline, renewal retention, and intake volume
           </p>
         </div>
 
@@ -258,7 +264,7 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
           <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
             <div>
               <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
-                Active Member Base
+                Active {terminology.members} Base
               </span>
               <div className="mt-1">
                 <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
@@ -275,7 +281,7 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
           <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
             <div>
               <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
-                Renewal Churn Risk
+                Renewal & Retention Alert
               </span>
               <div className="mt-1">
                 <span className="text-[10px] font-bold text-[#C4785A] bg-[#C4785A]/10 px-2 py-0.5 rounded-full">
@@ -295,13 +301,13 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
                 Monthly Inflow
               </span>
               <div className="text-[11px] text-[#C4785A] font-semibold mt-0.5">
-                New subscriptions & enrollments this month
+                New packages & client profiles this month
               </div>
             </div>
             <div className="text-2xl font-black text-white tabular-nums">
-              +0{' '}
+              +{displayMembers.length}{' '}
               <span className="text-xs font-normal text-neutral-400">
-                nouveaux adhérents
+                {terminology.members.toLowerCase()}
               </span>
             </div>
           </div>
@@ -316,7 +322,7 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
           <div className="flex items-center gap-2">
             <Users size={16} className="text-neutral-500" />
             <span className="text-sm font-bold text-neutral-900 dark:text-white">
-              Members
+              {terminology.members}
             </span>
             <span className="text-xs text-neutral-400 font-semibold tabular-nums ml-1">
               {displayMembers.length}
@@ -392,7 +398,6 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
               className="h-9 px-3 text-xs rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 font-semibold text-neutral-700 dark:text-neutral-300 cursor-pointer focus:outline-none shadow-2xs"
             >
               <option value="All">All Plans</option>
-              <option value="plan_a1">Plan A1</option>
               {plans.map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.name}
@@ -475,11 +480,11 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
                     />
                   </div>
                   <div className="col-span-4 flex items-center gap-1">
-                    <span>Member</span>
+                    <span>{terminology.memberSingle}</span>
                     <span className="text-[10px]">↕</span>
                   </div>
                   <div className="col-span-2 text-center flex items-center justify-center gap-1">
-                    <span>Plan</span>
+                    <span>{terminology.plan}</span>
                     <span className="text-[10px]">↕</span>
                   </div>
                   <div className="col-span-2 text-center flex items-center justify-center gap-1">
@@ -487,7 +492,7 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
                     <span className="text-[10px]">↕</span>
                   </div>
                   <div className="col-span-2 text-right flex items-center justify-end gap-1 pr-2">
-                    <span>Balance</span>
+                    <span>{currentBusiness.category === 'appointment_service' ? 'Package / Value' : 'Balance'}</span>
                     <span className="text-[10px]">↕</span>
                   </div>
                   <div className="col-span-1"></div>
@@ -499,6 +504,8 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
                     const isChecked = selectedIds.includes(member.id);
                     const isSelected = selectedMember?.id === member.id && isDetailOpen;
                     const avatarColor = getMemberInitialsColor(member.fullName);
+                    const matchedPlan = plans.find((p) => p.id === member.membershipPlanId);
+                    const priceDisplay = matchedPlan ? formatMoney(matchedPlan.price.amount) : '1,500.00 DA';
 
                     return (
                       <div
@@ -541,10 +548,10 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
                           </div>
                         </div>
 
-                        {/* Plan Tag (A1 pill matching screenshot) */}
+                        {/* Plan Tag */}
                         <div className="col-span-2 text-center">
-                          <span className="inline-block px-3 py-0.5 rounded-full bg-[#FDF4F0] dark:bg-neutral-700/80 text-[#C4785A] text-[11px] font-bold border border-[#F5E2D8] dark:border-neutral-600">
-                            {member.membershipPlanName === 'Plan A1' ? 'A1' : member.membershipPlanName || 'A1'}
+                          <span className="inline-block px-3 py-0.5 rounded-full bg-[#FDF4F0] dark:bg-neutral-700/80 text-[#C4785A] text-[11px] font-bold border border-[#F5E2D8] dark:border-neutral-600 truncate max-w-[130px]">
+                            {member.membershipPlanName || 'Standard'}
                           </span>
                         </div>
 
@@ -572,9 +579,9 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
                           </span>
                         </div>
 
-                        {/* Balance (1,500.00 DA matching screenshot) */}
+                        {/* Balance / Value */}
                         <div className="col-span-2 text-right font-mono font-bold text-xs text-neutral-900 dark:text-white tabular-nums pr-2">
-                          1,500.00 DA
+                          {priceDisplay}
                         </div>
 
                         {/* Eye inspect action icon */}
@@ -588,7 +595,7 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
                           <button
                             type="button"
                             className="p-1.5 rounded-full text-neutral-400 hover:text-[#C4785A] hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
-                            title="Inspect member details"
+                            title={`Inspect ${terminology.memberSingle.toLowerCase()} details`}
                           >
                             <Eye size={15} />
                           </button>
@@ -605,6 +612,8 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
                   const isChecked = selectedIds.includes(member.id);
                   const isSelected = selectedMember?.id === member.id && isDetailOpen;
                   const avatarColor = getMemberInitialsColor(member.fullName);
+                  const matchedPlan = plans.find((p) => p.id === member.membershipPlanId);
+                  const priceDisplay = matchedPlan ? formatMoney(matchedPlan.price.amount) : '1,500.00 DA';
 
                   return (
                     <div
@@ -644,11 +653,11 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
                       </div>
 
                       <div className="flex items-center justify-between text-xs pt-2 border-t border-[#EDF1F3] dark:border-neutral-700/60">
-                        <span className="px-2.5 py-0.5 rounded-full bg-[#FDF4F0] dark:bg-neutral-700 text-[#C4785A] text-[11px] font-bold border border-[#F5E2D8] dark:border-neutral-600">
-                          {member.membershipPlanName === 'Plan A1' ? 'A1' : member.membershipPlanName || 'A1'}
+                        <span className="px-2.5 py-0.5 rounded-full bg-[#FDF4F0] dark:bg-neutral-700 text-[#C4785A] text-[11px] font-bold border border-[#F5E2D8] dark:border-neutral-600 truncate max-w-[140px]">
+                          {member.membershipPlanName || 'Standard'}
                         </span>
                         <span className="font-bold text-neutral-900 dark:text-white tabular-nums">
-                          1,500.00 DA
+                          {priceDisplay}
                         </span>
                       </div>
                     </div>
@@ -657,9 +666,9 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
               </div>
             )}
 
-            {/* Table Footer matching Screenshot 881: "X membres affichés" */}
+            {/* Table Footer */}
             <div className="text-center py-3 text-xs text-neutral-400">
-              {displayMembers.length} membres affichés
+              {displayMembers.length} {terminology.members.toLowerCase()} affichés
             </div>
           </div>
 
@@ -689,7 +698,7 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
                       </h3>
                       <div className="mt-1 flex items-center gap-2">
                         <span className="text-[11px] font-bold text-[#C4785A] bg-[#C4785A]/15 px-2 py-0.5 rounded-full">
-                          Plan A1
+                          {selectedMember.membershipPlanName || 'Standard Package'}
                         </span>
                         <span className="text-[11px] font-mono text-neutral-400">
                           ID: {selectedMember.cardId || '46466446'}
@@ -738,16 +747,18 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
                     className="p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-800 text-xs font-semibold flex flex-col items-center gap-1 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 cursor-pointer transition-colors"
                   >
                     <RotateCcw size={14} className="text-blue-500" />
-                    <span>+30 Sess</span>
+                    <span>{currentBusiness.category === 'appointment_service' ? '+Pass' : '+30 Sess'}</span>
                   </button>
                 </div>
 
-                {/* Subscription Details Card */}
+                {/* Subscription / Package Details Card */}
                 <div className="p-4 rounded-2xl bg-[#FAF9F6] dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-800 text-xs space-y-2">
                   <div className="flex justify-between">
-                    <span className="text-neutral-400">Account Balance:</span>
-                    <span className="font-bold text-neutral-900 dark:text-white tabular-nums">
-                      1,500.00 DA
+                    <span className="text-neutral-400">
+                      {currentBusiness.category === 'appointment_service' ? 'Package Plan:' : 'Account Plan:'}
+                    </span>
+                    <span className="font-bold text-neutral-900 dark:text-white truncate max-w-[180px]">
+                      {selectedMember.membershipPlanName || 'Standard Package'}
                     </span>
                   </div>
                   <div className="flex justify-between">
@@ -763,11 +774,87 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-neutral-400">Remaining Sessions:</span>
+                    <span className="text-neutral-400">
+                      {currentBusiness.category === 'appointment_service' ? 'Included Sessions:' : 'Remaining Sessions:'}
+                    </span>
                     <span className="font-bold text-emerald-600 tabular-nums">
-                      {selectedMember.remainingSessions || 30} sessions
+                      {selectedMember.remainingSessions || 30} visits
                     </span>
                   </div>
+                </div>
+
+                {/* Appointment & Treatment Ledger for Client */}
+                <div className="space-y-2.5 text-xs">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-[11px] font-bold uppercase tracking-wider text-neutral-400 flex items-center gap-1.5">
+                      <Scissors size={12} className="text-[#C4785A]" />
+                      <span>Bookings & Treatments</span>
+                    </h4>
+                    <button
+                      type="button"
+                      onClick={() => setIsBookModalOpen(true)}
+                      className="text-[11px] font-bold text-[#C4785A] hover:underline cursor-pointer"
+                    >
+                      + Book Service
+                    </button>
+                  </div>
+
+                  {(() => {
+                    const clientApts = appointments.filter((a) => a.clientId === selectedMember.id);
+                    if (clientApts.length === 0) {
+                      return (
+                        <div className="p-3 rounded-xl border border-dashed border-neutral-200 dark:border-neutral-800 text-center text-neutral-400">
+                          <p className="text-[11px]">No treatments booked yet.</p>
+                          <button
+                            type="button"
+                            onClick={() => setIsBookModalOpen(true)}
+                            className="mt-1 text-[11px] font-bold text-[#C4785A] cursor-pointer"
+                          >
+                            Schedule first appointment →
+                          </button>
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                        {clientApts.map((apt) => (
+                          <div
+                            key={apt.id}
+                            className="p-2.5 rounded-xl border border-neutral-100 dark:border-neutral-800/80 bg-neutral-50/60 dark:bg-neutral-800/40 text-xs flex flex-col gap-1"
+                          >
+                            <div className="flex items-center justify-between">
+                              <span className="font-bold text-neutral-900 dark:text-white truncate">
+                                {apt.serviceName}
+                              </span>
+                              <span
+                                className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md ${
+                                  apt.status === 'InChair'
+                                    ? 'bg-amber-500 text-white'
+                                    : apt.status === 'Completed'
+                                    ? 'bg-emerald-600 text-white'
+                                    : apt.status === 'Cancelled'
+                                    ? 'bg-neutral-400 text-white'
+                                    : 'bg-indigo-600 text-white'
+                                }`}
+                              >
+                                {apt.status === 'InChair' ? 'In Chair' : apt.status}
+                              </span>
+                            </div>
+                            <div className="flex items-center justify-between text-[11px] text-neutral-500">
+                              <span>
+                                {apt.date} • {apt.startTime} ({apt.durationMinutes}m)
+                              </span>
+                              <span className="font-bold text-[#C4785A]">{formatMoney(apt.price)}</span>
+                            </div>
+                            <div className="text-[10px] text-neutral-400 flex items-center gap-1">
+                              <span>Stylist: {apt.staffName}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })()}
                 </div>
 
                 {/* Contact Information */}
@@ -823,7 +910,7 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
                   className="text-xs font-semibold text-rose-600 hover:text-rose-700 cursor-pointer flex items-center gap-1"
                 >
                   <Trash2 size={13} />
-                  <span>Delete Member</span>
+                  <span>Delete {terminology.memberSingle}</span>
                 </button>
               </div>
             </aside>
@@ -835,7 +922,7 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
       {selectedIds.length > 0 && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-[#18181B] text-white px-5 py-2.5 rounded-full shadow-2xl flex items-center gap-4 z-50 text-xs animate-in slide-in-from-bottom-4">
           <span className="font-semibold text-neutral-300">
-            {selectedIds.length} members selected
+            {selectedIds.length} {terminology.members.toLowerCase()} selected
           </span>
           <div className="h-4 w-px bg-neutral-700" />
           <button
@@ -873,6 +960,18 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
             <X size={14} />
           </button>
         </div>
+      )}
+
+      {/* Appointment Booking Modal */}
+      {selectedMember && (
+        <AppointmentModal
+          isOpen={isBookModalOpen}
+          onClose={() => setIsBookModalOpen(false)}
+          appointment={null}
+          initialDate={new Date().toISOString().split('T')[0]}
+          initialTime="10:00"
+          initialStaffId={undefined}
+        />
       )}
     </div>
   );

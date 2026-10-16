@@ -129,6 +129,22 @@ export const StylistScheduleView: React.FC = () => {
     });
   }, [selectedDate]);
 
+  const [checkoutToast, setCheckoutToast] = useState<{
+    message: string;
+    saleId: string;
+    stylist: string;
+  } | null>(null);
+
+  const handleOneClickCheckout = (apt: Appointment) => {
+    const sale = checkoutAppointment(apt.id, 'Cash');
+    setCheckoutToast({
+      message: `Checked out ${apt.clientName}! Sale #${sale.id.slice(-6).toUpperCase()} credited to ${apt.staffName}.`,
+      saleId: sale.id,
+      stylist: apt.staffName,
+    });
+    setTimeout(() => setCheckoutToast(null), 4000);
+  };
+
   const handleOpenAddModal = (time?: string, staffId?: string) => {
     setActiveAppointment(null);
     setSlotPrefill({
@@ -174,6 +190,15 @@ export const StylistScheduleView: React.FC = () => {
     <div className="flex-1 flex flex-col min-w-0 bg-transparent overflow-hidden">
       {/* Top Header Bar */}
       <div className="px-6 py-4 border-b border-neutral-200/80 dark:border-neutral-800 bg-white/50 dark:bg-neutral-900/40 backdrop-blur-md">
+        {checkoutToast && (
+          <div className="mb-3 p-3 bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-300 dark:border-emerald-700 rounded-xl text-emerald-800 dark:text-emerald-200 text-xs font-semibold flex items-center justify-between shadow-xs animate-in slide-in-from-top-1">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 size={15} className="text-emerald-600" />
+              <span>{checkoutToast.message}</span>
+            </div>
+            <span className="text-[11px] font-mono opacity-80">Ref #{checkoutToast.saleId.slice(-6)}</span>
+          </div>
+        )}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 mb-1">
@@ -525,6 +550,21 @@ export const StylistScheduleView: React.FC = () => {
                                 <span>{apt.startTime} - {apt.endTime} ({apt.durationMinutes}m)</span>
                                 <span className="font-bold text-[#C4785A]">{formatMoney(apt.price)}</span>
                               </div>
+
+                              {apt.status === 'InChair' && (
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleOneClickCheckout(apt);
+                                  }}
+                                  className="mt-2 w-full py-1 rounded-lg bg-[#C4785A] hover:bg-[#b0674c] text-white text-[10px] font-bold flex items-center justify-center gap-1 shadow-2xs transition-colors cursor-pointer"
+                                  title="1-Click Check Out & Bill to POS"
+                                >
+                                  <CreditCard size={11} />
+                                  <span>1-Click Checkout</span>
+                                </button>
+                              )}
                             </div>
                           ) : (
                             <button
@@ -608,18 +648,34 @@ export const StylistScheduleView: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-4 self-end sm:self-center">
+                    <div className="flex items-center gap-3 self-end sm:self-center">
                       <div className="text-right">
                         <p className="text-sm font-bold text-neutral-900 dark:text-white">{formatMoney(apt.price)}</p>
                         <p className="text-[10px] text-neutral-400">{apt.clientPhone}</p>
                       </div>
+
+                      {apt.status !== 'Completed' && apt.status !== 'Cancelled' && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleOneClickCheckout(apt);
+                          }}
+                          className="px-3 py-1.5 text-xs font-bold rounded-xl bg-[#C4785A] hover:bg-[#b56b4f] text-white flex items-center gap-1.5 shadow-2xs transition-colors cursor-pointer"
+                          title="1-Click Check Out & Bill to POS"
+                        >
+                          <CreditCard size={13} />
+                          <span>Checkout</span>
+                        </button>
+                      )}
+
                       <button
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
                           handleOpenEditModal(apt);
                         }}
-                        className="px-3 py-1.5 text-xs font-semibold rounded-xl bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-200 transition-colors"
+                        className="px-3 py-1.5 text-xs font-semibold rounded-xl bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-200 transition-colors cursor-pointer"
                       >
                         Manage
                       </button>

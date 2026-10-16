@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Home,
   Plus,
@@ -16,8 +16,16 @@ import {
   KeyRound,
   Check,
   Building2,
+  Scissors,
+  Calendar,
+  Users,
+  Eye,
+  AlertCircle,
 } from 'lucide-react';
 import { useAtriumStore } from '../../services/store';
+import { formatMoney } from '../../utils/rules';
+import { AppointmentModal } from '../modals/AppointmentModal';
+import { Appointment } from '../../types/index';
 
 interface DashboardScreenProps {
   onAddMember: () => void;
@@ -29,24 +37,92 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
   onOpenVoucherModal,
 }) => {
   const {
+    currentBusiness,
     currentBranch,
     businesses,
     branches,
     currentBusinessId,
-    currentBranchId,
+    appointments,
+    sales,
+    staff,
+    members,
+    terminology,
     switchBusiness,
     switchBranch,
     setScreen,
+    checkoutAppointment,
   } = useAtriumStore();
 
+  const isSalon = currentBusiness.category === 'appointment_service';
+
   const [activityTab, setActivityTab] = useState<'Tous' | 'Passages' | 'Ventes'>('Tous');
+  const [salonActivityTab, setSalonActivityTab] = useState<'Tous' | 'Rendezvous' | 'Ventes'>('Tous');
   const [isFacilityDropdownOpen, setIsFacilityDropdownOpen] = useState(false);
   const [isQuickActionsOpen, setIsQuickActionsOpen] = useState(false);
-  const [currentTipIndex, setCurrentTipIndex] = useState(2); // Step 3 / 5
+  const [currentTipIndex, setCurrentTipIndex] = useState(0);
   const [peopleInside, setPeopleInside] = useState(0);
   const [entreesJour, setEntreesJour] = useState(48);
+  const [isAppointmentModalOpen, setIsAppointmentModalOpen] = useState(false);
+  const [selectedAppointmentForEdit, setSelectedAppointmentForEdit] = useState<Appointment | null>(null);
+  const [checkoutToast, setCheckoutToast] = useState<string | null>(null);
 
-  const tips = [
+  const todayStr = useMemo(() => new Date().toISOString().split('T')[0], []);
+
+  // Salon specific metrics
+  const salonMetrics = useMemo(() => {
+    const todayApts = appointments.filter((a) => a.date === todayStr);
+    const activeApts = todayApts.length > 0 ? todayApts : appointments;
+    const inChair = activeApts.filter((a) => a.status === 'InChair');
+    const completed = activeApts.filter((a) => a.status === 'Completed');
+    const confirmed = activeApts.filter((a) => a.status === 'Confirmed');
+
+    const appointmentRev = completed.reduce((sum, a) => sum + a.price, 0);
+    const posRev = sales.reduce((sum, s) => sum + s.totalAmount, 0);
+    const totalDailyRev = appointmentRev + posRev;
+
+    return {
+      todayCount: activeApts.length,
+      inChairCount: inChair.length,
+      completedCount: completed.length,
+      confirmedCount: confirmed.length,
+      totalDailyRev,
+      activeApts,
+    };
+  }, [appointments, sales, todayStr]);
+
+  // Salon Stylists & Chair distribution
+  const stylistChairs = useMemo(() => {
+    const activeStaff = staff.filter((s) => s.isActive);
+    return activeStaff.map((st, index) => {
+      // Find what this stylist is working on today
+      const inChairBooking = appointments.find(
+        (a) => a.staffId === st.id && a.status === 'InChair'
+      );
+      const nextBooking = appointments.find(
+        (a) => a.staffId === st.id && a.status === 'Confirmed'
+      );
+      const todayTotal = appointments.filter(
+        (a) => a.staffId === st.id && a.date === todayStr
+      ).length;
+
+      return {
+        stylist: st,
+        chairNumber: index + 1,
+        inChairBooking,
+        nextBooking,
+        todayTotal,
+        status: inChairBooking ? ('InChair' as const) : nextBooking ? ('Booked' as const) : ('Available' as const),
+      };
+    });
+  }, [staff, appointments, todayStr]);
+
+  const handleQuickCheckout = (apt: Appointment) => {
+    const sale = checkoutAppointment(apt.id, 'Cash');
+    setCheckoutToast(`Checked out ${apt.clientName}! Sale #${sale.id.slice(-6).toUpperCase()} credited to ${apt.staffName}.`);
+    setTimeout(() => setCheckoutToast(null), 4000);
+  };
+
+  const gymTips = [
     {
       step: 'STEP 1 / 5',
       title: 'Conseil Atrium',
@@ -87,6 +163,46 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
     },
   ];
 
+  const salonTips = [
+    {
+      step: 'STEP 1 / 5',
+      title: 'Salon Master Tip',
+      text: 'Send automated SMS reminders 2 hours before scheduled hair coloring & spa appointments.',
+      buttonText: 'Open Stylist Scheduler',
+      action: () => setScreen('scheduler'),
+    },
+    {
+      step: 'STEP 2 / 5',
+      title: 'Salon Master Tip',
+      text: 'Boost average ticket size by upselling post-balayage hair serums directly at chair checkout.',
+      buttonText: 'Manage Beauty Store',
+      action: () => setScreen('shop'),
+    },
+    {
+      step: 'STEP 3 / 5',
+      title: 'Salon Master Tip',
+      text: 'Configure chair assignment and commission tiers in Finance & Staff for senior colorists.',
+      buttonText: 'View Staff & Payroll',
+      action: () => setScreen('finance'),
+    },
+    {
+      step: 'STEP 4 / 5',
+      title: 'Salon Master Tip',
+      text: 'Review client past treatment history before starting high-lift lightening and keratin smoothing.',
+      buttonText: 'Client Directory',
+      action: () => setScreen('members'),
+    },
+    {
+      step: 'STEP 5 / 5',
+      title: 'Salon Master Tip',
+      text: 'Add multi-service bridal packages in registration plans to streamline event bookings.',
+      buttonText: 'Registration Pipeline',
+      action: () => setScreen('registrations'),
+    },
+  ];
+
+  const activeTips = isSalon ? salonTips : gymTips;
+
   // Pillar chart mock data matching desktop screenshot
   const pillarHeights = [38, 55, 75, 70, 95, 62, 40, 78, 30, 48];
   const pillarColors = [
@@ -115,7 +231,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
     '19:00',
   ];
 
-  const allActivities = [
+  const gymActivities = [
     {
       id: 'act_01',
       type: 'Ventes',
@@ -166,21 +282,99 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
     },
   ];
 
-  const filteredActivities = allActivities.filter((item) => {
+  // Salon dynamic activities
+  const salonActivities = useMemo(() => {
+    const list: Array<{
+      id: string;
+      type: 'Rendezvous' | 'Ventes';
+      client: string;
+      operation: string;
+      status: string;
+      time: string;
+      badgeColor: string;
+    }> = [];
+
+    // Add recent appointments
+    appointments.slice(0, 5).forEach((apt) => {
+      list.push({
+        id: apt.id,
+        type: 'Rendezvous',
+        client: apt.clientName,
+        operation: `${apt.serviceName} • Stylist: ${apt.staffName}`,
+        status: apt.status === 'InChair' ? 'In Chair' : apt.status,
+        time: `${apt.startTime} (${apt.durationMinutes}m)`,
+        badgeColor:
+          apt.status === 'InChair'
+            ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
+            : apt.status === 'Completed'
+            ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
+            : 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950/60 dark:text-indigo-300',
+      });
+    });
+
+    // Add recent sales
+    sales.slice(0, 4).forEach((s) => {
+      list.push({
+        id: s.id,
+        type: 'Ventes',
+        client: s.memberName || 'Walk-in Client',
+        operation: s.items.map((i) => `${i.quantity}x ${i.productName}`).join(', '),
+        status: formatMoney(s.totalAmount),
+        time: new Date(s.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        badgeColor: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300',
+      });
+    });
+
+    return list;
+  }, [appointments, sales]);
+
+  const filteredGymActivities = gymActivities.filter((item) => {
     if (activityTab === 'Tous') return true;
     return item.type === activityTab;
   });
 
+  const filteredSalonActivities = salonActivities.filter((item) => {
+    if (salonActivityTab === 'Tous') return true;
+    return item.type === salonActivityTab;
+  });
+
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
-      {/* Top Header Row matching Desktop */}
+      {/* Toast Alert */}
+      {checkoutToast && (
+        <div className="p-3.5 bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-300 dark:border-emerald-700 rounded-2xl text-emerald-800 dark:text-emerald-200 text-xs font-semibold flex items-center justify-between shadow-md animate-in slide-in-from-top-2">
+          <div className="flex items-center gap-2">
+            <Check size={16} className="text-emerald-600" />
+            <span>{checkoutToast}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setScreen('history')}
+            className="underline hover:text-emerald-900 cursor-pointer text-[11px]"
+          >
+            View in Operations History →
+          </button>
+        </div>
+      )}
+
+      {/* Top Header Row */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white">
-            Welcome back, Tamer!
-          </h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white">
+              Welcome back, Tamer!
+            </h1>
+            {isSalon && (
+              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#FDF4F0] text-[#C4785A] border border-[#F5E2D8] flex items-center gap-1">
+                <Scissors size={12} />
+                <span>Salon & Spa Edition</span>
+              </span>
+            )}
+          </div>
           <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
-            Here is what's happening at your facility today.
+            {isSalon
+              ? `Real-time chair occupancy, appointments & retail revenue for ${currentBranch?.name || 'Luxe Beauty Lounge'}`
+              : `Here is what's happening at your facility today.`}
           </p>
         </div>
 
@@ -256,41 +450,93 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
 
             {/* Quick Actions Dropdown Menu */}
             {isQuickActionsOpen && (
-              <div className="absolute right-0 mt-2 w-56 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsQuickActionsOpen(false);
-                    onAddMember();
-                  }}
-                  className="w-full px-3.5 py-2 text-left flex items-center gap-2.5 text-xs text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50 cursor-pointer"
-                >
-                  <Plus size={14} className="text-[#C4785A]" />
-                  <span className="font-semibold">Add New Member</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsQuickActionsOpen(false);
-                    setPeopleInside((p) => Math.min(100, p + 1));
-                    setEntreesJour((e) => e + 1);
-                  }}
-                  className="w-full px-3.5 py-2 text-left flex items-center gap-2.5 text-xs text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50 cursor-pointer"
-                >
-                  <UserCheck size={14} className="text-emerald-500" />
-                  <span className="font-semibold">Quick Walk-in Passage</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsQuickActionsOpen(false);
-                    setScreen('shop');
-                  }}
-                  className="w-full px-3.5 py-2 text-left flex items-center gap-2.5 text-xs text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50 cursor-pointer"
-                >
-                  <ShoppingCart size={14} className="text-blue-500" />
-                  <span className="font-semibold">Record POS Sale</span>
-                </button>
+              <div className="absolute right-0 mt-2 w-60 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
+                {isSalon ? (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsQuickActionsOpen(false);
+                        setSelectedAppointmentForEdit(null);
+                        setIsAppointmentModalOpen(true);
+                      }}
+                      className="w-full px-3.5 py-2 text-left flex items-center gap-2.5 text-xs text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50 cursor-pointer"
+                    >
+                      <Scissors size={14} className="text-[#C4785A]" />
+                      <span className="font-semibold">Book Salon Treatment</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsQuickActionsOpen(false);
+                        setScreen('scheduler');
+                      }}
+                      className="w-full px-3.5 py-2 text-left flex items-center gap-2.5 text-xs text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50 cursor-pointer"
+                    >
+                      <Calendar size={14} className="text-amber-500" />
+                      <span className="font-semibold">Stylist Multi-Chair Schedule</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsQuickActionsOpen(false);
+                        setScreen('shop');
+                      }}
+                      className="w-full px-3.5 py-2 text-left flex items-center gap-2.5 text-xs text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50 cursor-pointer"
+                    >
+                      <ShoppingCart size={14} className="text-blue-500" />
+                      <span className="font-semibold">Beauty Product Retail POS</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsQuickActionsOpen(false);
+                        onAddMember();
+                      }}
+                      className="w-full px-3.5 py-2 text-left flex items-center gap-2.5 text-xs text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50 cursor-pointer"
+                    >
+                      <Users size={14} className="text-emerald-500" />
+                      <span className="font-semibold">Register New Client</span>
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsQuickActionsOpen(false);
+                        onAddMember();
+                      }}
+                      className="w-full px-3.5 py-2 text-left flex items-center gap-2.5 text-xs text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50 cursor-pointer"
+                    >
+                      <Plus size={14} className="text-[#C4785A]" />
+                      <span className="font-semibold">Add New Member</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsQuickActionsOpen(false);
+                        setPeopleInside((p) => Math.min(100, p + 1));
+                        setEntreesJour((e) => e + 1);
+                      }}
+                      className="w-full px-3.5 py-2 text-left flex items-center gap-2.5 text-xs text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50 cursor-pointer"
+                    >
+                      <UserCheck size={14} className="text-emerald-500" />
+                      <span className="font-semibold">Quick Walk-in Passage</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsQuickActionsOpen(false);
+                        setScreen('shop');
+                      }}
+                      className="w-full px-3.5 py-2 text-left flex items-center gap-2.5 text-xs text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50 cursor-pointer"
+                    >
+                      <ShoppingCart size={14} className="text-blue-500" />
+                      <span className="font-semibold">Record POS Sale</span>
+                    </button>
+                  </>
+                )}
                 {onOpenVoucherModal && (
                   <button
                     type="button"
@@ -298,7 +544,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                       setIsQuickActionsOpen(false);
                       onOpenVoucherModal();
                     }}
-                    className="w-full px-3.5 py-2 text-left flex items-center gap-2.5 text-xs text-[#C4785A] hover:bg-[#FCEEE8] dark:hover:bg-neutral-700/50 cursor-pointer"
+                    className="w-full px-3.5 py-2 text-left flex items-center gap-2.5 text-xs text-[#C4785A] hover:bg-[#FCEEE8] dark:hover:bg-neutral-700/50 cursor-pointer border-t border-neutral-100 dark:border-neutral-700 mt-1"
                   >
                     <KeyRound size={14} />
                     <span className="font-semibold">Redeem Lifetime Voucher</span>
@@ -310,9 +556,9 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
         </div>
       </div>
 
-      {/* Main Grid: Left Summary Column + Right Activity Column */}
+      {/* Main Grid Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* LEFT COLUMN: Summary Card + Metrics + Tip (5 cols on lg) */}
+        {/* LEFT COLUMN: Summary / Performance (5 cols on lg) */}
         <div className="lg:col-span-5 space-y-4">
           {/* Summary Group Container */}
           <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[26px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
@@ -320,10 +566,10 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
             <div className="flex items-start justify-between">
               <div>
                 <h2 className="text-base font-bold text-neutral-900 dark:text-white">
-                  Summary
+                  {isSalon ? 'Salon Daily Pulse' : 'Summary'}
                 </h2>
                 <p className="text-xs text-neutral-400 dark:text-neutral-500">
-                  Track live facility performance.
+                  {isSalon ? 'Live bookings, chairs & intake metrics' : 'Track live facility performance.'}
                 </p>
               </div>
               <div className="h-7 px-3 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 text-[11px] font-semibold text-neutral-700 dark:text-neutral-300 flex items-center gap-1 cursor-pointer shadow-2xs">
@@ -332,39 +578,69 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
               </div>
             </div>
 
-            {/* People Inside & Entrées Jour — Pure White Cards */}
-            <div className="grid grid-cols-2 gap-3">
-              <div className="bg-white dark:bg-neutral-800 rounded-[20px] p-4 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
-                <div className="flex items-center gap-1.5 text-xs text-[#64748B] dark:text-neutral-400 font-medium">
-                  <ArrowDown size={13} className="text-[#C4785A]" />
-                  <span>People Inside</span>
+            {/* Key KPI Tiles */}
+            {isSalon ? (
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-white dark:bg-neutral-800 rounded-[20px] p-4 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
+                  <div className="flex items-center gap-1.5 text-xs text-[#64748B] dark:text-neutral-400 font-medium">
+                    <Scissors size={13} className="text-[#C4785A]" />
+                    <span>In Chair Now</span>
+                  </div>
+                  <div className="text-2xl font-black tracking-tight text-neutral-900 dark:text-white mt-1 tabular-nums flex items-baseline gap-1.5">
+                    {salonMetrics.inChairCount}
+                    <span className="text-xs font-semibold text-amber-500 animate-pulse">active</span>
+                  </div>
                 </div>
-                <div className="text-2xl font-black tracking-tight text-neutral-900 dark:text-white mt-1 tabular-nums">
-                  {peopleInside}{' '}
-                  <span className="text-xs font-semibold text-neutral-400">/ 100</span>
+
+                <div className="bg-white dark:bg-neutral-800 rounded-[20px] p-4 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
+                  <div className="flex items-center gap-1.5 text-xs text-[#64748B] dark:text-neutral-400 font-medium">
+                    <Calendar size={13} className="text-emerald-500" />
+                    <span>Total Bookings</span>
+                  </div>
+                  <div className="text-2xl font-black tracking-tight text-neutral-900 dark:text-white mt-1 tabular-nums">
+                    {salonMetrics.todayCount}{' '}
+                    <span className="text-xs font-semibold text-neutral-400">clients</span>
+                  </div>
                 </div>
               </div>
-
-              <div className="bg-white dark:bg-neutral-800 rounded-[20px] p-4 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
-                <div className="flex items-center gap-1.5 text-xs text-[#64748B] dark:text-neutral-400 font-medium">
-                  <ArrowUp size={13} className="text-emerald-500" />
-                  <span>Entrées Jour</span>
+            ) : (
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-white dark:bg-neutral-800 rounded-[20px] p-4 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
+                  <div className="flex items-center gap-1.5 text-xs text-[#64748B] dark:text-neutral-400 font-medium">
+                    <ArrowDown size={13} className="text-[#C4785A]" />
+                    <span>People Inside</span>
+                  </div>
+                  <div className="text-2xl font-black tracking-tight text-neutral-900 dark:text-white mt-1 tabular-nums">
+                    {peopleInside}{' '}
+                    <span className="text-xs font-semibold text-neutral-400">/ 100</span>
+                  </div>
                 </div>
-                <div className="text-2xl font-black tracking-tight text-neutral-900 dark:text-white mt-1 tabular-nums">
-                  {entreesJour}{' '}
-                  <span className="text-xs font-semibold text-neutral-400">entrées</span>
+
+                <div className="bg-white dark:bg-neutral-800 rounded-[20px] p-4 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
+                  <div className="flex items-center gap-1.5 text-xs text-[#64748B] dark:text-neutral-400 font-medium">
+                    <ArrowUp size={13} className="text-emerald-500" />
+                    <span>Entrées Jour</span>
+                  </div>
+                  <div className="text-2xl font-black tracking-tight text-neutral-900 dark:text-white mt-1 tabular-nums">
+                    {entreesJour}{' '}
+                    <span className="text-xs font-semibold text-neutral-400">entrées</span>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
 
-            {/* Signature Rounded Pillar Bar Chart */}
+            {/* Signature Pillar Bar Chart */}
             <div className="space-y-1.5 pt-1">
+              <div className="flex justify-between items-center text-[11px] font-semibold text-neutral-500 px-1">
+                <span>{isSalon ? 'Peak Treatment Booking Hours' : 'Hourly Traffic Distribution'}</span>
+                <span className="text-[#C4785A] font-bold">Today</span>
+              </div>
               <div className="h-28 flex items-end justify-between gap-2.5 px-1 pt-3">
                 {pillarHeights.map((height, i) => (
                   <div
                     key={i}
                     className="flex-1 flex flex-col justify-end items-center h-full group relative"
-                    title={`${pillarHours[i]}: ${Math.round((height / 100) * 80)} entrées`}
+                    title={`${pillarHours[i]}: ${Math.round((height / 100) * 12)} bookings`}
                   >
                     <div
                       style={{
@@ -385,12 +661,12 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
             </div>
           </div>
 
-          {/* Bottom 2 Metrics (Moyenne Semaine & Objectif Mensuel) — Separate White Cards */}
+          {/* Bottom 2 Metrics (Salon or Gym) */}
           <div className="grid grid-cols-2 gap-3">
             <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
               <div className="text-[11px] font-semibold text-[#64748B] dark:text-neutral-400 flex items-center gap-1.5">
                 <Clock size={13} className="text-neutral-400" />
-                <span>Moyenne Semaine</span>
+                <span>{isSalon ? 'Chair Utilization' : 'Moyenne Semaine'}</span>
               </div>
               <div className="mt-1 flex items-center gap-1.5">
                 <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
@@ -398,14 +674,14 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                 </span>
               </div>
               <div className="text-xl font-black text-neutral-900 dark:text-white mt-1 tabular-nums">
-                18,400 DA
+                {isSalon ? '82.4%' : '18,400 DA'}
               </div>
             </div>
 
             <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
               <div className="text-[11px] font-semibold text-[#64748B] dark:text-neutral-400 flex items-center gap-1.5">
                 <TrendingUp size={13} className="text-neutral-400" />
-                <span>Objectif Mensuel</span>
+                <span>{isSalon ? 'Daily Salon Sales' : 'Objectif Mensuel'}</span>
               </div>
               <div className="mt-1 flex items-center gap-1.5">
                 <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
@@ -413,39 +689,39 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                 </span>
               </div>
               <div className="text-xl font-black text-neutral-900 dark:text-white mt-1 tabular-nums">
-                84.5%
+                {isSalon ? formatMoney(salonMetrics.totalDailyRev) : '84.5%'}
               </div>
             </div>
           </div>
 
-          {/* Conseil Atrium Tip Card — Pure White Card with Soft Border */}
+          {/* Conseil Atrium Tip Card */}
           <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs space-y-3">
             <div className="flex items-center justify-between text-xs">
               <div className="flex items-center gap-2">
                 <span className="text-[10px] font-bold tracking-wider text-[#C4785A] bg-[#C4785A]/10 px-2 py-0.5 rounded-md uppercase">
-                  {tips[currentTipIndex].step}
+                  {activeTips[currentTipIndex].step}
                 </span>
                 <span className="font-bold text-neutral-800 dark:text-neutral-200">
-                  {tips[currentTipIndex].title}
+                  {activeTips[currentTipIndex].title}
                 </span>
               </div>
               <div className="flex items-center gap-1 text-neutral-400 text-xs">
                 <button
                   type="button"
                   onClick={() =>
-                    setCurrentTipIndex((prev) => (prev > 0 ? prev - 1 : tips.length - 1))
+                    setCurrentTipIndex((prev) => (prev > 0 ? prev - 1 : activeTips.length - 1))
                   }
                   className="p-1 hover:text-neutral-700 dark:hover:text-neutral-200 cursor-pointer"
                 >
                   <ChevronLeft size={14} />
                 </button>
                 <span className="text-[11px] font-semibold text-neutral-500">
-                  {currentTipIndex + 1} / {tips.length}
+                  {currentTipIndex + 1} / {activeTips.length}
                 </span>
                 <button
                   type="button"
                   onClick={() =>
-                    setCurrentTipIndex((prev) => (prev < tips.length - 1 ? prev + 1 : 0))
+                    setCurrentTipIndex((prev) => (prev < activeTips.length - 1 ? prev + 1 : 0))
                   }
                   className="p-1 hover:text-neutral-700 dark:hover:text-neutral-200 cursor-pointer"
                 >
@@ -455,195 +731,491 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
             </div>
 
             <p className="text-xs text-[#52525B] dark:text-neutral-300 leading-relaxed min-h-[34px]">
-              {tips[currentTipIndex].text}
+              {activeTips[currentTipIndex].text}
             </p>
 
             <button
               type="button"
-              onClick={tips[currentTipIndex].action}
+              onClick={activeTips[currentTipIndex].action}
               className="w-full h-10 rounded-xl bg-[#FDF4F0] dark:bg-neutral-700/70 text-[#C4785A] hover:bg-[#FBECE6] text-xs font-bold flex items-center justify-center gap-1 transition-colors cursor-pointer"
             >
-              <span>{tips[currentTipIndex].buttonText}</span>
+              <span>{activeTips[currentTipIndex].buttonText}</span>
               <ChevronRight size={13} />
             </button>
           </div>
         </div>
 
-        {/* RIGHT COLUMN: Activity Metrics & Recent Activity Table (7 cols on lg) */}
+        {/* RIGHT COLUMN: Activity & Stylist Chairs (7 cols on lg) */}
         <div className="lg:col-span-7 space-y-4">
           {/* Top Activity Card with 3 Metrics */}
           <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[26px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
-            <div>
-              <h2 className="text-base font-bold text-neutral-900 dark:text-white">
-                Activity
-              </h2>
-              <p className="text-xs text-neutral-400 dark:text-neutral-500">
-                Track your daily operational activity.
-              </p>
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-base font-bold text-neutral-900 dark:text-white">
+                  {isSalon ? 'Salon Workstation Performance' : 'Activity'}
+                </h2>
+                <p className="text-xs text-neutral-400 dark:text-neutral-500">
+                  {isSalon
+                    ? 'Stylist productivity, active chairs & service turnover'
+                    : 'Track your daily operational activity.'}
+                </p>
+              </div>
+              {isSalon && (
+                <button
+                  type="button"
+                  onClick={() => setScreen('scheduler')}
+                  className="text-xs font-bold text-[#C4785A] hover:underline flex items-center gap-1 cursor-pointer"
+                >
+                  <span>Open Full Scheduler</span>
+                  <ChevronRight size={13} />
+                </button>
+              )}
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {/* Tile 1: Revenue Today — Pure White Card with Soft Border */}
-              <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[126px]">
-                <div>
-                  <span className="text-[11px] font-semibold text-[#64748B] dark:text-neutral-400">
-                    Revenue Today
-                  </span>
-                  <div className="mt-0.5">
-                    <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
-                      ↗ 0%
+            {isSalon ? (
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {/* Tile 1: Revenue Today */}
+                <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[126px]">
+                  <div>
+                    <span className="text-[11px] font-semibold text-[#64748B] dark:text-neutral-400">
+                      Salon Revenue Today
                     </span>
+                    <div className="mt-0.5">
+                      <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
+                        ↗ +14.2% vs avg
+                      </span>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-xl font-black text-neutral-900 dark:text-white tabular-nums">
+                      {formatMoney(salonMetrics.totalDailyRev)}
+                    </div>
+                    <div className="w-full h-0.5 bg-[#C4785A] mt-2.5 rounded-full opacity-80" />
                   </div>
                 </div>
-                <div>
-                  <div className="text-xl font-black text-neutral-900 dark:text-white tabular-nums">
-                    0 DA
-                  </div>
-                  {/* Subtle terracotta baseline */}
-                  <div className="w-full h-0.5 bg-[#C4785A] mt-2.5 rounded-full opacity-80" />
-                </div>
-              </div>
 
-              {/* Tile 2: Active Members with Green Wave Curve — Pure White Card */}
-              <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[126px]">
-                <div>
-                  <span className="text-[11px] font-semibold text-[#64748B] dark:text-neutral-400">
-                    Active Members
-                  </span>
-                  <div className="mt-0.5">
-                    <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
-                      vs yesterday
+                {/* Tile 2: Active Stylists */}
+                <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[126px]">
+                  <div>
+                    <span className="text-[11px] font-semibold text-[#64748B] dark:text-neutral-400">
+                      Active Stylists
                     </span>
+                    <div className="mt-0.5">
+                      <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
+                        {stylistChairs.filter((c) => c.status === 'InChair').length} in service
+                      </span>
+                    </div>
+                  </div>
+                  <div className="relative">
+                    <div className="text-xl font-black text-neutral-900 dark:text-white tabular-nums">
+                      {stylistChairs.length} Chairs
+                    </div>
+                    {/* Stylist avatar circles */}
+                    <div className="flex -space-x-1.5 mt-2">
+                      {stylistChairs.slice(0, 4).map((c, idx) => (
+                        <div
+                          key={idx}
+                          className="w-6 h-6 rounded-full bg-[#C4785A]/15 text-[#C4785A] text-[10px] font-bold flex items-center justify-center border-2 border-white dark:border-neutral-800"
+                        >
+                          {c.stylist.fullName.charAt(0)}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
-                <div className="relative">
-                  <div className="text-xl font-black text-neutral-900 dark:text-white tabular-nums">
-                    2
-                  </div>
-                  {/* Smooth green wave sparkline matching screenshot */}
-                  <svg
-                    className="w-full h-7 mt-1 text-emerald-500"
-                    viewBox="0 0 100 25"
-                    fill="none"
-                  >
-                    <path
-                      d="M0 20 Q 25 24 50 14 T 100 5"
-                      stroke="currentColor"
-                      strokeWidth="2.5"
-                      strokeLinecap="round"
-                    />
-                  </svg>
-                </div>
-              </div>
 
-              {/* Tile 3: Expiring Soon in Dark Obsidian (#18181B) */}
-              <div className="p-4 rounded-[20px] bg-[#18181B] border border-neutral-800 text-white flex flex-col justify-between h-[126px] shadow-sm">
-                <div>
-                  <span className="text-[11px] font-medium text-neutral-300">
-                    Expiring Soon
-                  </span>
-                  <div className="mt-0.5">
-                    <span className="text-[10px] font-bold text-amber-300 bg-amber-400/20 px-2 py-0.5 rounded-full">
-                      ↘ 0%
+                {/* Tile 3: Pending & In-Chair in Dark Obsidian */}
+                <div className="p-4 rounded-[20px] bg-[#18181B] border border-neutral-800 text-white flex flex-col justify-between h-[126px] shadow-sm">
+                  <div>
+                    <span className="text-[11px] font-medium text-neutral-300">
+                      Next Bookings Ahead
                     </span>
+                    <div className="mt-0.5">
+                      <span className="text-[10px] font-bold text-amber-300 bg-amber-400/20 px-2 py-0.5 rounded-full">
+                        {salonMetrics.confirmedCount} upcoming
+                      </span>
+                    </div>
                   </div>
-                </div>
-                <div>
-                  <div className="text-xl font-black text-white tabular-nums">
-                    0
+                  <div>
+                    <div className="text-xl font-black text-white tabular-nums">
+                      {salonMetrics.confirmedCount}
+                    </div>
+                    <div className="w-full h-0.5 bg-amber-500 mt-2.5 rounded-full opacity-80" />
                   </div>
-                  <div className="w-full h-0.5 bg-amber-500 mt-2.5 rounded-full opacity-80" />
                 </div>
               </div>
-            </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[126px]">
+                  <div>
+                    <span className="text-[11px] font-semibold text-[#64748B] dark:text-neutral-400">
+                      Revenue Today
+                    </span>
+                    <div className="mt-0.5">
+                      <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
+                        ↗ 0%
+                      </span>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-xl font-black text-neutral-900 dark:text-white tabular-nums">
+                      0 DA
+                    </div>
+                    <div className="w-full h-0.5 bg-[#C4785A] mt-2.5 rounded-full opacity-80" />
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[126px]">
+                  <div>
+                    <span className="text-[11px] font-semibold text-[#64748B] dark:text-neutral-400">
+                      Active Members
+                    </span>
+                    <div className="mt-0.5">
+                      <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
+                        vs yesterday
+                      </span>
+                    </div>
+                  </div>
+                  <div className="relative">
+                    <div className="text-xl font-black text-neutral-900 dark:text-white tabular-nums">
+                      {members.filter((m) => m.status === 'Active').length}
+                    </div>
+                    <svg
+                      className="w-full h-7 mt-1 text-emerald-500"
+                      viewBox="0 0 100 25"
+                      fill="none"
+                    >
+                      <path
+                        d="M0 20 Q 25 24 50 14 T 100 5"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-[20px] bg-[#18181B] border border-neutral-800 text-white flex flex-col justify-between h-[126px] shadow-sm">
+                  <div>
+                    <span className="text-[11px] font-medium text-neutral-300">
+                      Expiring Soon
+                    </span>
+                    <div className="mt-0.5">
+                      <span className="text-[10px] font-bold text-amber-300 bg-amber-400/20 px-2 py-0.5 rounded-full">
+                        ↘ 0%
+                      </span>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-xl font-black text-white tabular-nums">
+                      0
+                    </div>
+                    <div className="w-full h-0.5 bg-amber-500 mt-2.5 rounded-full opacity-80" />
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
-          {/* Bottom Card: Recent Activity Table Group */}
+          {/* Salon Specific: Stylist Chairs Live Workstation Board */}
+          {isSalon && (
+            <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[26px] p-5 space-y-3.5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-base font-bold text-neutral-900 dark:text-white flex items-center gap-2">
+                    <Scissors size={16} className="text-[#C4785A]" />
+                    <span>Stylist Chairs & Live Workstations</span>
+                  </h3>
+                  <p className="text-xs text-neutral-400 dark:text-neutral-500">
+                    Real-time status of each practitioner chair
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedAppointmentForEdit(null);
+                    setIsAppointmentModalOpen(true);
+                  }}
+                  className="px-3 py-1.5 rounded-full bg-[#C4785A] text-white text-xs font-bold hover:opacity-90 flex items-center gap-1 cursor-pointer transition-all shadow-xs"
+                >
+                  <Plus size={13} />
+                  <span>New Booking / Walk-in</span>
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {stylistChairs.map((chair) => {
+                  const isInChair = chair.status === 'InChair';
+                  const isBooked = chair.status === 'Booked';
+
+                  return (
+                    <div
+                      key={chair.stylist.id}
+                      className={`p-3.5 rounded-[18px] border transition-all ${
+                        isInChair
+                          ? 'bg-amber-50/70 dark:bg-amber-950/30 border-amber-300/80 dark:border-amber-700/60'
+                          : isBooked
+                          ? 'bg-white dark:bg-neutral-800 border-[#E9EEF0] dark:border-neutral-700/60'
+                          : 'bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-200/60 dark:border-emerald-800/50'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <div className="w-7 h-7 rounded-full bg-[#C4785A]/15 text-[#C4785A] font-bold text-xs flex items-center justify-center">
+                            {chair.chairNumber}
+                          </div>
+                          <div>
+                            <span className="text-xs font-bold text-neutral-900 dark:text-white block leading-tight">
+                              Chair {chair.chairNumber} • {chair.stylist.fullName}
+                            </span>
+                            <span className="text-[10px] text-neutral-400">
+                              {chair.stylist.role}
+                            </span>
+                          </div>
+                        </div>
+
+                        <span
+                          className={`text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${
+                            isInChair
+                              ? 'bg-amber-500 text-white animate-pulse'
+                              : isBooked
+                              ? 'bg-indigo-600 text-white'
+                              : 'bg-emerald-600 text-white'
+                          }`}
+                        >
+                          {isInChair ? 'In Chair' : isBooked ? 'Booked' : 'Available'}
+                        </span>
+                      </div>
+
+                      {isInChair && chair.inChairBooking && (
+                        <div className="mt-2 p-2.5 bg-white/80 dark:bg-neutral-900/60 rounded-xl border border-amber-200/60 dark:border-amber-900/40 text-xs">
+                          <div className="flex justify-between items-start">
+                            <span className="font-bold text-neutral-900 dark:text-white truncate">
+                              {chair.inChairBooking.clientName}
+                            </span>
+                            <span className="font-bold text-[#C4785A]">
+                              {formatMoney(chair.inChairBooking.price)}
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-neutral-500 truncate mt-0.5">
+                            {chair.inChairBooking.serviceName} ({chair.inChairBooking.startTime} - {chair.inChairBooking.endTime})
+                          </p>
+                          <div className="mt-2 flex items-center justify-between pt-1.5 border-t border-neutral-100 dark:border-neutral-800">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedAppointmentForEdit(chair.inChairBooking!);
+                                setIsAppointmentModalOpen(true);
+                              }}
+                              className="text-[11px] font-semibold text-neutral-600 hover:text-neutral-900 cursor-pointer"
+                            >
+                              Manage Service
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleQuickCheckout(chair.inChairBooking!)}
+                              className="px-2 py-0.5 rounded-md bg-[#C4785A] text-white text-[10px] font-bold hover:opacity-90 cursor-pointer flex items-center gap-1 shadow-2xs"
+                            >
+                              <CreditCard size={10} />
+                              <span>1-Click Checkout</span>
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
+                      {isBooked && chair.nextBooking && (
+                        <div className="mt-2 p-2.5 bg-neutral-50/80 dark:bg-neutral-900/40 rounded-xl border border-neutral-200/60 dark:border-neutral-800 text-xs">
+                          <div className="flex justify-between items-start">
+                            <span className="font-bold text-neutral-800 dark:text-neutral-200 truncate">
+                              Next: {chair.nextBooking.clientName}
+                            </span>
+                            <span className="text-[11px] font-semibold text-neutral-500">
+                              {chair.nextBooking.startTime}
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-neutral-500 truncate mt-0.5">
+                            {chair.nextBooking.serviceName}
+                          </p>
+                        </div>
+                      )}
+
+                      {!isInChair && !isBooked && (
+                        <div className="mt-2 p-2.5 rounded-xl border border-dashed border-emerald-300 dark:border-emerald-800/60 text-center">
+                          <p className="text-[11px] text-emerald-700 dark:text-emerald-400 font-medium">
+                            Chair is open for walk-in client
+                          </p>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSelectedAppointmentForEdit(null);
+                              setIsAppointmentModalOpen(true);
+                            }}
+                            className="mt-1 text-[11px] font-bold text-[#C4785A] hover:underline cursor-pointer"
+                          >
+                            + Seat Walk-in Now
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Activity Table Group */}
           <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[26px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-base font-bold text-neutral-900 dark:text-white">
-                  Recent Activity
+                  {isSalon ? 'Live Treatment & Sales Stream' : 'Recent Activity'}
                 </h3>
                 <p className="text-xs text-neutral-400 dark:text-neutral-500">
-                  Track your daily operational activity.
+                  {isSalon
+                    ? 'Real-time appointments, in-chair statuses, and POS checkouts'
+                    : 'Track your daily operational activity.'}
                 </p>
               </div>
 
-              {/* Activity Filter Tabs: Tous | Passages | Ventes */}
-              <div className="h-8 p-0.5 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex items-center gap-0.5 text-xs font-semibold shadow-2xs">
-                {(['Tous', 'Passages', 'Ventes'] as const).map((tab) => (
-                  <button
-                    key={tab}
-                    type="button"
-                    onClick={() => setActivityTab(tab)}
-                    style={{
-                      backgroundColor:
-                        activityTab === tab ? '#FDF4F0' : 'transparent',
-                      color:
-                        activityTab === tab ? 'var(--color-accent)' : '#71717A',
-                    }}
-                    className={`px-3 py-1 rounded-full cursor-pointer transition-all ${
-                      activityTab === tab ? 'font-bold' : 'hover:text-neutral-900 dark:hover:text-white'
-                    }`}
-                  >
-                    {tab}
-                  </button>
-                ))}
-              </div>
+              {/* Activity Filter Tabs */}
+              {isSalon ? (
+                <div className="h-8 p-0.5 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex items-center gap-0.5 text-xs font-semibold shadow-2xs">
+                  {(['Tous', 'Rendezvous', 'Ventes'] as const).map((tab) => (
+                    <button
+                      key={tab}
+                      type="button"
+                      onClick={() => setSalonActivityTab(tab)}
+                      style={{
+                        backgroundColor:
+                          salonActivityTab === tab ? '#FDF4F0' : 'transparent',
+                        color:
+                          salonActivityTab === tab ? 'var(--color-accent)' : '#71717A',
+                      }}
+                      className={`px-3 py-1 rounded-full cursor-pointer transition-all ${
+                        salonActivityTab === tab ? 'font-bold' : 'hover:text-neutral-900 dark:hover:text-white'
+                      }`}
+                    >
+                      {tab === 'Rendezvous' ? 'Bookings' : tab === 'Ventes' ? 'Sales' : 'All'}
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div className="h-8 p-0.5 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex items-center gap-0.5 text-xs font-semibold shadow-2xs">
+                  {(['Tous', 'Passages', 'Ventes'] as const).map((tab) => (
+                    <button
+                      key={tab}
+                      type="button"
+                      onClick={() => setActivityTab(tab)}
+                      style={{
+                        backgroundColor:
+                          activityTab === tab ? '#FDF4F0' : 'transparent',
+                        color:
+                          activityTab === tab ? 'var(--color-accent)' : '#71717A',
+                      }}
+                      className={`px-3 py-1 rounded-full cursor-pointer transition-all ${
+                        activityTab === tab ? 'font-bold' : 'hover:text-neutral-900 dark:hover:text-white'
+                      }`}
+                    >
+                      {tab}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
-            {/* Table Header and White Row Cards matching Screenshot_880 */}
+            {/* Rows */}
             <div className="space-y-2">
               <div className="grid grid-cols-12 px-4 py-2 text-[11px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">
                 <div className="col-span-5 flex items-center gap-1">
-                  <span>Membre</span>
+                  <span>{isSalon ? 'Client' : 'Membre'}</span>
                   <span className="text-[10px]">↕</span>
                 </div>
-                <div className="col-span-4">Opération</div>
+                <div className="col-span-4">{isSalon ? 'Treatment / Service' : 'Opération'}</div>
                 <div className="col-span-1 text-center">Statut</div>
-                <div className="col-span-2 text-right">Heure</div>
+                <div className="col-span-2 text-right">{isSalon ? 'Time / Total' : 'Heure'}</div>
               </div>
 
               <div className="space-y-2">
-                {filteredActivities.map((row) => (
-                  <div
-                    key={row.id}
-                    className="grid grid-cols-12 items-center px-4 py-3 rounded-[16px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs hover:border-[#D5DFE3] dark:hover:border-neutral-600 transition-all"
-                  >
-                    <div className="col-span-5 flex items-center gap-2.5 min-w-0 pr-2">
-                      <div className="w-8 h-8 rounded-full bg-[#FDF4F0] dark:bg-neutral-700/80 text-[#C4785A] flex items-center justify-center font-bold text-[11px] shrink-0 border border-[#F5E2D8] dark:border-neutral-600">
-                        {row.type === 'Ventes' ? '$$' : 'IN'}
+                {isSalon
+                  ? filteredSalonActivities.map((row) => (
+                      <div
+                        key={row.id}
+                        className="grid grid-cols-12 items-center px-4 py-3 rounded-[16px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs hover:border-[#D5DFE3] dark:hover:border-neutral-600 transition-all"
+                      >
+                        <div className="col-span-5 flex items-center gap-2.5 min-w-0 pr-2">
+                          <div className="w-8 h-8 rounded-full bg-[#FDF4F0] dark:bg-neutral-700/80 text-[#C4785A] flex items-center justify-center font-bold text-[11px] shrink-0 border border-[#F5E2D8] dark:border-neutral-600">
+                            {row.type === 'Ventes' ? '$$' : <Scissors size={12} />}
+                          </div>
+                          <span className="text-xs font-bold text-neutral-900 dark:text-white truncate">
+                            {row.client}
+                          </span>
+                        </div>
+
+                        <div className="col-span-4 text-xs text-[#52525B] dark:text-neutral-300 font-medium truncate pr-2">
+                          {row.operation}
+                        </div>
+
+                        <div className="col-span-1 flex justify-center">
+                          <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${row.badgeColor}`}>
+                            {row.status}
+                          </span>
+                        </div>
+
+                        <div className="col-span-2 text-right text-xs text-neutral-400 font-mono tabular-nums">
+                          {row.time}
+                        </div>
                       </div>
-                      <span className="text-xs font-bold text-neutral-900 dark:text-white truncate">
-                        {row.member}
-                      </span>
-                    </div>
+                    ))
+                  : filteredGymActivities.map((row) => (
+                      <div
+                        key={row.id}
+                        className="grid grid-cols-12 items-center px-4 py-3 rounded-[16px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs hover:border-[#D5DFE3] dark:hover:border-neutral-600 transition-all"
+                      >
+                        <div className="col-span-5 flex items-center gap-2.5 min-w-0 pr-2">
+                          <div className="w-8 h-8 rounded-full bg-[#FDF4F0] dark:bg-neutral-700/80 text-[#C4785A] flex items-center justify-center font-bold text-[11px] shrink-0 border border-[#F5E2D8] dark:border-neutral-600">
+                            {row.type === 'Ventes' ? '$$' : 'IN'}
+                          </div>
+                          <span className="text-xs font-bold text-neutral-900 dark:text-white truncate">
+                            {row.member}
+                          </span>
+                        </div>
 
-                    <div className="col-span-4 text-xs text-[#52525B] dark:text-neutral-300 font-medium truncate pr-2">
-                      {row.operation}
-                    </div>
+                        <div className="col-span-4 text-xs text-[#52525B] dark:text-neutral-300 font-medium truncate pr-2">
+                          {row.operation}
+                        </div>
 
-                    <div className="col-span-1 flex justify-center">
-                      <div className="w-6 h-6 rounded-md bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
-                        {row.type === 'Ventes' ? (
-                          <ShoppingCart size={13} />
-                        ) : (
-                          <UserCheck size={13} />
-                        )}
+                        <div className="col-span-1 flex justify-center">
+                          <div className="w-6 h-6 rounded-md bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                            {row.type === 'Ventes' ? (
+                              <ShoppingCart size={13} />
+                            ) : (
+                              <UserCheck size={13} />
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="col-span-2 text-right text-xs text-neutral-400 font-mono tabular-nums">
+                          {row.time}
+                        </div>
                       </div>
-                    </div>
-
-                    <div className="col-span-2 text-right text-xs text-neutral-400 font-mono tabular-nums">
-                      {row.time}
-                    </div>
-                  </div>
-                ))}
+                    ))}
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Appointment Modal for Booking or Editing from Dashboard */}
+      {isAppointmentModalOpen && (
+        <AppointmentModal
+          isOpen={isAppointmentModalOpen}
+          onClose={() => {
+            setIsAppointmentModalOpen(false);
+            setSelectedAppointmentForEdit(null);
+          }}
+          appointment={selectedAppointmentForEdit}
+        />
+      )}
     </div>
   );
 };
