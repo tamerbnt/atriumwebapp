@@ -1,0 +1,6 @@
+{
+  "name": "Atrium ERP & CRM",
+  "description": "Multi-tenant, multi-category business management platform with Apple Spatial aesthetic, lifetime licensing, and multi-facility support.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
