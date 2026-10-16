@@ -38,6 +38,7 @@ export const ShopScreen: React.FC = () => {
   const {
     products,
     members,
+    staff,
     terminology,
     currentBranch,
     businesses,
@@ -55,7 +56,8 @@ export const ShopScreen: React.FC = () => {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
   const [isAddProductModalOpen, setIsAddProductModalOpen] = useState(false);
-  const [selectedMemberId, setSelectedMemberId] = useState<string>('mem_amira');
+  const [selectedMemberId, setSelectedMemberId] = useState<string>(members[0]?.id || '');
+  const [selectedStaffId, setSelectedStaffId] = useState<string>(staff[0]?.id || '');
   const [paymentMethod, setPaymentMethod] = useState<'Cash' | 'Card' | 'MemberBalance'>('Cash');
   const [completedSale, setCompletedSale] = useState<any | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -68,7 +70,14 @@ export const ShopScreen: React.FC = () => {
   const [newProductPrice, setNewProductPrice] = useState(2500);
   const [newProductStock, setNewProductStock] = useState(25);
 
-  const categories = ['All', 'Supplement', 'Equipment', 'Beverage', 'Service'];
+  const categories = useMemo(() => {
+    const set = new Set<string>(['All']);
+    products.forEach((p) => {
+      if (p.category) set.add(p.category);
+    });
+    ['Supplement', 'Equipment', 'Beverage', 'Service'].forEach((c) => set.add(c));
+    return Array.from(set);
+  }, [products]);
 
   const filteredProducts = useMemo(() => {
     return products.filter((p) => {
@@ -127,7 +136,9 @@ export const ShopScreen: React.FC = () => {
 
   const handleCheckout = () => {
     if (cart.length === 0) return;
-    const sale = processSale(cart, paymentMethod, selectedMemberId || undefined);
+    const assignedStaff = staff.find((s) => s.id === selectedStaffId);
+    const notes = assignedStaff ? `Serviced by: ${assignedStaff.fullName}` : undefined;
+    const sale = processSale(cart, paymentMethod, selectedMemberId || undefined, notes);
     setCompletedSale(sale);
     setCart([]);
     setIsCheckoutModalOpen(false);
@@ -740,6 +751,27 @@ export const ShopScreen: React.FC = () => {
               ))}
             </select>
           </div>
+
+          {/* Stylist / Staff attribution */}
+          {staff.length > 0 && (
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
+                Attributed Stylist / Staff
+              </label>
+              <select
+                value={selectedStaffId}
+                onChange={(e) => setSelectedStaffId(e.target.value)}
+                className="w-full h-11 px-3 text-sm rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white"
+              >
+                <option value="">None / General Retail</option>
+                {staff.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.fullName} ({s.role})
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
           {/* Payment Method */}
           <div className="space-y-1.5">

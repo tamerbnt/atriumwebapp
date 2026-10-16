@@ -4,6 +4,7 @@ import { Member } from './types/index';
 import { Sidebar } from './components/layout/Sidebar';
 import { TopBar } from './components/layout/TopBar';
 import { DashboardScreen } from './components/screens/DashboardScreen';
+import { AnalyticsScreen } from './components/screens/AnalyticsScreen';
 import { MembersScreen } from './components/screens/MembersScreen';
 import { RegistrationsScreen } from './components/screens/RegistrationsScreen';
 import { ShopScreen } from './components/screens/ShopScreen';
@@ -14,9 +15,25 @@ import { SettingsScreen } from './components/screens/SettingsScreen';
 import { VoucherModal } from './components/modals/VoucherModal';
 import { MemberModal } from './components/modals/MemberModal';
 import { LeadModal } from './components/modals/LeadModal';
+import { LoginScreen } from './components/auth/LoginScreen';
+import { FastSwitchModal } from './components/auth/FastSwitchModal';
+import { PowerOnboardingScreen } from './components/auth/PowerOnboardingScreen';
 
 export default function App() {
-  const { activeScreen, theme, language } = useAtriumStore();
+  const {
+    activeScreen,
+    theme,
+    language,
+    isAuthenticated,
+    isOnboardingOpen,
+    isFastSwitchOpen,
+    openOnboarding,
+    closeOnboarding,
+    closeFastSwitch,
+  } = useAtriumStore();
+
+  // Launches every time the app opens as requested
+  const [showPowerOnboarding, setShowPowerOnboarding] = useState(true);
 
   const [isVoucherModalOpen, setIsVoucherModalOpen] = useState(false);
   const [isMemberModalOpen, setIsMemberModalOpen] = useState(false);
@@ -27,6 +44,11 @@ export default function App() {
   // Sync theme & RTL on boot
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
     document.documentElement.setAttribute('dir', language === 'ar' ? 'rtl' : 'ltr');
     document.documentElement.setAttribute('lang', language);
   }, [theme, language]);
@@ -50,6 +72,8 @@ export default function App() {
     switch (activeScreen) {
       case 'dashboard':
         return <DashboardScreen onAddMember={handleOpenAddMember} />;
+      case 'analytics':
+        return <AnalyticsScreen />;
       case 'members':
         return (
           <MembersScreen
@@ -73,6 +97,31 @@ export default function App() {
         return <DashboardScreen onAddMember={handleOpenAddMember} />;
     }
   };
+
+  // Launch powerful onboarding screen every time on app load or when onboarding is requested
+  if (showPowerOnboarding || isOnboardingOpen) {
+    return (
+      <PowerOnboardingScreen
+        onComplete={() => {
+          setShowPowerOnboarding(false);
+          closeOnboarding();
+        }}
+        onSkipToDashboard={() => {
+          setShowPowerOnboarding(false);
+          closeOnboarding();
+        }}
+      />
+    );
+  }
+
+  // If user is not authenticated, render LoginScreen with Onboarding access
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen w-screen bg-[#121110]">
+        <LoginScreen onStartOnboarding={openOnboarding} />
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-[var(--color-window-bg)]">
@@ -117,6 +166,13 @@ export default function App() {
       <LeadModal
         isOpen={isLeadModalOpen}
         onClose={() => setIsLeadModalOpen(false)}
+      />
+
+      {/* Section 11 Fast Switch Modal */}
+      <FastSwitchModal
+        isOpen={isFastSwitchOpen}
+        onClose={closeFastSwitch}
+        onOpenOnboarding={() => setShowPowerOnboarding(true)}
       />
     </div>
   );

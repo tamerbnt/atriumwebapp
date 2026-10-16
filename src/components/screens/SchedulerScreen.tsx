@@ -23,11 +23,13 @@ import {
 import { useAtriumStore } from '../../services/store';
 import { ScheduleEvent } from '../../types/index';
 import { Modal } from '../ui/Modal';
+import { StylistScheduleView } from './StylistScheduleView';
 
 export const SchedulerScreen: React.FC = () => {
   const {
     schedule,
     currentBranch,
+    currentBusiness,
     businesses,
     branches,
     currentBusinessId,
@@ -35,6 +37,10 @@ export const SchedulerScreen: React.FC = () => {
     switchBranch,
     terminology,
   } = useAtriumStore();
+
+  if (currentBusiness.category === 'appointment_service') {
+    return <StylistScheduleView />;
+  }
 
   const [selectedDay, setSelectedDay] = useState<number>(1); // Monday default
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);

@@ -32,6 +32,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
     addBranch,
     registerDevice,
     revokeDevice,
+    openOnboarding,
   } = useAtriumStore();
 
   const [isAddBranchOpen, setIsAddBranchOpen] = useState(false);
@@ -93,6 +94,17 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
               Manage branches, POS devices, license vouchers, and multi-tenant security
             </p>
           </div>
+        </div>
+
+        <div className="flex items-center gap-2.5">
+          <button
+            type="button"
+            onClick={openOnboarding}
+            className="h-10 px-4 rounded-xl bg-[#FDF4F0] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 text-[#C4785A] text-xs font-bold flex items-center gap-2 hover:bg-[#FBECE6] dark:hover:bg-neutral-700/80 transition-colors cursor-pointer"
+          >
+            <Sparkles size={14} />
+            <span>New Business Setup Wizard</span>
+          </button>
         </div>
       </div>
 

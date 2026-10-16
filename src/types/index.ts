@@ -264,3 +264,61 @@ export interface CategoryTerminology {
   scheduler: Record<SupportedLanguage, string>;
   facility: Record<SupportedLanguage, string>;
 }
+
+export interface CurrentUser {
+  id: string;
+  fullName: string;
+  email: string;
+  role: StaffRole;
+  roleRank: number;
+  avatar?: string;
+  branchId?: string;
+  pinCode?: string;
+}
+
+export interface OnboardingParams {
+  fullName: string;
+  email: string;
+  password?: string;
+  phone?: string;
+  businessName: string;
+  category: BusinessCategory;
+  branchName: string;
+  branchAddress?: string;
+  branchPhone?: string;
+  voucherCode?: string;
+}
+
+export type AppointmentStatus = 'Confirmed' | 'InChair' | 'Completed' | 'Cancelled' | 'NoShow';
+
+export interface ServiceItem {
+  id: string;
+  facilityId: string;
+  name: string;
+  category: 'Hair' | 'Nails' | 'Facial' | 'Massage' | 'Bridal' | 'Barber';
+  durationMinutes: number;
+  price: number;
+  colorCode: string;
+  description?: string;
+}
+
+export interface Appointment {
+  id: string;
+  tenantId: string;
+  facilityId: string;
+  clientId: string;
+  clientName: string;
+  clientPhone: string;
+  staffId: string;
+  staffName: string;
+  serviceId: string;
+  serviceName: string;
+  date: string; // YYYY-MM-DD
+  startTime: string; // HH:mm
+  endTime: string; // HH:mm
+  durationMinutes: number;
+  price: number;
+  status: AppointmentStatus;
+  notes?: string;
+  createdAt: string;
+}

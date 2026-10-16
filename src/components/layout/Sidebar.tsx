@@ -42,7 +42,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       label: 'Home',
     },
     {
-      id: 'dashboard',
+      id: 'analytics',
       icon: <BarChart2 size={19} />,
       title: 'Facility Analytics',
       label: 'Analytics',
@@ -156,10 +156,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* Center Vertical Dock Navigation */}
         <nav className="flex flex-col items-center gap-2.5 my-auto w-full">
           {dockNavItems.map((item, index) => {
-            const isActive =
-              item.id === 'dashboard' && index === 0
-                ? activeScreen === 'dashboard'
-                : activeScreen === item.id;
+            const isActive = activeScreen === item.id;
 
             return (
               <button

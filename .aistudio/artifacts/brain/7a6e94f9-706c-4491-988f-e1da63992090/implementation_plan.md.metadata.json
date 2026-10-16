@@ -1,0 +1,6 @@
+{
+  "summary": "Implementation plan for building the Appointment & Service category (appointment_service) with complete multi-stylist column scheduler, shared screens data isolation (clients, beauty shop, history, staff, registrations), service catalog bookings, and seamless vertical switching.",
+  "updatedAt": "2026-10-16T19:17:16.875698313Z",
+  "requestFeedback": true,
+  "userFacing": true
+}

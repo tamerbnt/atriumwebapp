@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *, .dark, .dark *));
+
 @layer base {
   :root {
     /* Brand Accent — Desktop Terracotta */
@@ -48,7 +50,8 @@
     --radius-pill: 9999px;
   }
 
-  [data-theme="dark"] {
+  [data-theme="dark"],
+  .dark {
     --color-window-bg: #0C0C0E;
     --color-surface-bg: #18181B;
     --color-card-bg: #18181B;

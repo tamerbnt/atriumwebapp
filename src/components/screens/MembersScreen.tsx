@@ -44,6 +44,7 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
     branches,
     currentBusinessId,
     currentBranch,
+    terminology,
     switchBusiness,
     switchBranch,
     selectedMember,
@@ -162,10 +163,10 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
           </div>
           <div>
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white">
-              Members
+              {terminology.members}
             </h1>
             <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
-              Browse, filter, and manage member profiles, subscriptions, and access
+              Browse, filter, and manage {terminology.members.toLowerCase()} profiles, packages, and visit history
             </p>
           </div>
         </div>
@@ -236,7 +237,7 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
             className="h-10 px-5 rounded-full text-xs font-bold text-white flex items-center gap-2 cursor-pointer hover:opacity-90 active:scale-98 transition-all shadow-xs"
           >
             <Plus size={15} strokeWidth={2.5} />
-            <span>Add Member</span>
+            <span>Add {terminology.memberSingle}</span>
           </button>
         </div>
       </div>
