@@ -21,12 +21,7 @@ export function FilterCapsules<T extends string>({
 }: FilterCapsulesProps<T>) {
   return (
     <div
-      style={{
-        backgroundColor: 'var(--color-card-bg)',
-        border: '1px solid var(--color-border)',
-        borderRadius: 'var(--radius-pill)',
-      }}
-      className={`inline-flex items-center p-1 gap-1 overflow-x-auto max-w-full ${className}`}
+      className={`inline-flex items-center p-0.5 gap-0.5 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs overflow-x-auto max-w-full ${className}`}
     >
       {options.map((option) => {
         const isActive = activeKey === option.key;
@@ -36,12 +31,11 @@ export function FilterCapsules<T extends string>({
             type="button"
             onClick={() => onChange(option.key)}
             style={{
-              backgroundColor: isActive ? 'var(--color-accent-dim)' : 'transparent',
-              color: isActive ? 'var(--color-accent)' : 'var(--color-text-secondary)',
-              borderRadius: '8px',
+              backgroundColor: isActive ? '#FCEEE8' : 'transparent',
+              color: isActive ? 'var(--color-accent)' : '#71717A',
             }}
-            className={`px-3 py-1.5 text-xs font-semibold whitespace-nowrap transition-all duration-150 flex items-center gap-1.5 cursor-pointer ${
-              isActive ? 'shadow-xs font-bold' : 'hover:text-slate-900 dark:hover:text-white'
+            className={`px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-150 flex items-center gap-1.5 cursor-pointer ${
+              isActive ? 'font-bold' : 'hover:text-neutral-900 dark:hover:text-white'
             }`}
           >
             <span>{option.label}</span>

@@ -51,18 +51,12 @@ export const Modal: React.FC<ModalProps> = ({
 
       {/* Dialog Surface */}
       <div
-        style={{
-          backgroundColor: 'var(--color-surface-bg)',
-          border: '1px solid var(--color-border)',
-          borderRadius: 'var(--radius-modal)',
-          boxShadow: 'var(--shadow-modal)',
-        }}
-        className={`relative w-full ${widthClasses} z-10 max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200`}
+        className={`relative w-full ${widthClasses} z-10 max-h-[90vh] flex flex-col overflow-hidden rounded-[28px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 shadow-2xl animate-in fade-in zoom-in-95 duration-200`}
         role="dialog"
         aria-modal="true"
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-neutral-200/60 dark:border-neutral-800/80">
+        <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-[#EDF1F3] dark:border-neutral-800/80">
           <div>
             <h2 className="text-xl font-bold tracking-tight text-neutral-900 dark:text-white">
               {title}

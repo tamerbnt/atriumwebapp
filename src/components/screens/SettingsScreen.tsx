@@ -97,14 +97,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
       </div>
 
       {/* Row 1: License Status Banner */}
-      <div
-        style={{
-          backgroundColor: 'var(--color-card-bg)',
-          border: '1px solid var(--color-card-border)',
-          borderRadius: 'var(--radius-card)',
-        }}
-        className="p-6 relative overflow-hidden"
-      >
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[26px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs relative overflow-hidden">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
@@ -124,7 +117,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             <h2 className="text-xl font-bold text-neutral-900 dark:text-white">
               Atrium {subscription.plan.name} Tier Rank #{subscription.plan.tierRank}
             </h2>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">
+            <p className="text-xs text-[#52525B] dark:text-neutral-400">
               {subscription.isLifetime
                 ? `Activated via voucher code ${subscription.activatedByVoucher || 'ATR-LIFE-VOUCHER'}. Perpetual updates and sync authorized.`
                 : 'Free evaluation tier. Enter your lifetime prepaid cash voucher code to unlock full capacity.'}
@@ -136,9 +129,8 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             onClick={onOpenVoucherModal}
             style={{
               backgroundColor: 'var(--color-accent)',
-              borderRadius: 'var(--radius-button)',
             }}
-            className="h-10 px-5 text-xs font-bold text-white flex items-center gap-2 shrink-0 hover:opacity-90 active:scale-98 transition-all cursor-pointer shadow-xs"
+            className="h-10 px-5 text-xs font-bold text-white flex items-center gap-2 shrink-0 rounded-full hover:opacity-90 active:scale-98 transition-all cursor-pointer shadow-xs"
           >
             <KeyRound size={15} />
             <span>Redeem Lifetime Voucher</span>
@@ -146,28 +138,28 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
         </div>
 
         {/* Quota gauges */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6 pt-5 border-t border-neutral-200/50 dark:border-neutral-800/50 text-xs">
-          <div>
-            <span className="text-neutral-400 block text-[11px]">Businesses Allowed</span>
-            <span className="font-bold text-neutral-800 dark:text-neutral-200 tabular-nums">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
+          <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
+            <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400 block text-[11px]">Businesses Allowed</span>
+            <span className="text-xl font-black text-neutral-900 dark:text-white tabular-nums mt-1 block">
               {businesses.length} / {subscription.plan.maxBusinesses}
             </span>
           </div>
-          <div>
-            <span className="text-neutral-400 block text-[11px]">Branches Allowed</span>
-            <span className="font-bold text-neutral-800 dark:text-neutral-200 tabular-nums">
+          <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
+            <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400 block text-[11px]">Branches Allowed</span>
+            <span className="text-xl font-black text-neutral-900 dark:text-white tabular-nums mt-1 block">
               {branches.length} / {subscription.plan.maxBranches}
             </span>
           </div>
-          <div>
-            <span className="text-neutral-400 block text-[11px]">POS Devices Allowed</span>
-            <span className="font-bold text-neutral-800 dark:text-neutral-200 tabular-nums">
+          <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
+            <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400 block text-[11px]">POS Devices Allowed</span>
+            <span className="text-xl font-black text-neutral-900 dark:text-white tabular-nums mt-1 block">
               {devices.length} / {subscription.plan.maxDevices}
             </span>
           </div>
-          <div>
-            <span className="text-neutral-400 block text-[11px]">Cross-Branch Reports</span>
-            <span className="font-bold text-emerald-600 dark:text-emerald-400">
+          <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
+            <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400 block text-[11px]">Cross-Branch Reports</span>
+            <span className="text-sm font-black text-emerald-600 dark:text-emerald-400 mt-2 block">
               {subscription.plan.crossBranchReports ? 'Enabled' : 'Pro Tier Only'}
             </span>
           </div>
@@ -175,20 +167,13 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
       </div>
 
       {/* Row 2: Branches Management */}
-      <div
-        style={{
-          backgroundColor: 'var(--color-card-bg)',
-          border: '1px solid var(--color-card-border)',
-          borderRadius: 'var(--radius-card)',
-        }}
-        className="p-6 space-y-4"
-      >
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[26px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-base font-bold text-neutral-900 dark:text-white">
               Physical Branches & Facilities
             </h3>
-            <p className="text-xs text-neutral-500">
+            <p className="text-xs text-neutral-400 dark:text-neutral-500">
               All physical locations under tenant business ({branches.length} registered)
             </p>
           </div>
@@ -197,28 +182,27 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             onClick={() => setIsAddBranchOpen(true)}
             style={{
               backgroundColor: 'var(--color-accent)',
-              borderRadius: 'var(--radius-button)',
             }}
-            className="h-9 px-3.5 text-xs font-semibold text-white flex items-center gap-1.5 cursor-pointer hover:opacity-90 transition-opacity"
+            className="h-9 px-4 text-xs font-bold text-white flex items-center gap-1.5 rounded-full cursor-pointer hover:opacity-90 transition-opacity shadow-xs"
           >
             <Plus size={14} />
             <span>Add Branch</span>
           </button>
         </div>
 
-        <div className="divide-y divide-neutral-200/60 dark:divide-neutral-800/80">
+        <div className="space-y-2">
           {branches.map((b) => (
-            <div key={b.id} className="py-3 flex items-center justify-between">
+            <div key={b.id} className="p-4 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex items-center justify-between shadow-2xs hover:border-[#D5DFE3] transition-all">
               <div>
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-bold text-neutral-900 dark:text-white">
                     {b.name}
                   </span>
-                  <span className="font-mono text-[10px] bg-neutral-100 dark:bg-neutral-800 px-2 py-0.5 rounded text-neutral-500">
+                  <span className="font-mono text-[10px] bg-neutral-100 dark:bg-neutral-800 px-2 py-0.5 rounded-full text-neutral-500 font-bold">
                     {b.code}
                   </span>
                   {b.isMainBranch && (
-                    <span className="text-[10px] font-bold text-[#C4785A] bg-[#C4785A]/10 px-2 py-0.5 rounded">
+                    <span className="text-[10px] font-bold text-[#C4785A] bg-[#C4785A]/10 px-2 py-0.5 rounded-full">
                       Headquarters
                     </span>
                   )}
@@ -228,7 +212,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
                 </div>
               </div>
 
-              <span className="text-xs text-emerald-600 font-semibold flex items-center gap-1">
+              <span className="text-xs text-emerald-600 font-semibold flex items-center gap-1.5 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-1 rounded-full">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                 Online
               </span>
@@ -238,20 +222,13 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
       </div>
 
       {/* Row 3: Authorized Devices & Terminals */}
-      <div
-        style={{
-          backgroundColor: 'var(--color-card-bg)',
-          border: '1px solid var(--color-card-border)',
-          borderRadius: 'var(--radius-card)',
-        }}
-        className="p-6 space-y-4"
-      >
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[26px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-base font-bold text-neutral-900 dark:text-white">
               Authorized POS Hardware Terminals
             </h3>
-            <p className="text-xs text-neutral-500">
+            <p className="text-xs text-neutral-400 dark:text-neutral-500">
               C# .NET desktop terminals and web consoles permitted for RPC access
             </p>
           </div>
@@ -260,21 +237,20 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             onClick={() => setIsAddDeviceOpen(true)}
             style={{
               backgroundColor: 'var(--color-accent)',
-              borderRadius: 'var(--radius-button)',
             }}
-            className="h-9 px-3.5 text-xs font-semibold text-white flex items-center gap-1.5 cursor-pointer hover:opacity-90 transition-opacity"
+            className="h-9 px-4 text-xs font-bold text-white flex items-center gap-1.5 rounded-full cursor-pointer hover:opacity-90 transition-opacity shadow-xs"
           >
             <Plus size={14} />
             <span>Register Device</span>
           </button>
         </div>
 
-        <div className="divide-y divide-neutral-200/60 dark:divide-neutral-800/80">
+        <div className="space-y-2">
           {devices.map((dev) => (
-            <div key={dev.id} className="py-3 flex items-center justify-between">
+            <div key={dev.id} className="p-4 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex items-center justify-between shadow-2xs hover:border-[#D5DFE3] transition-all">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-500">
-                  <Monitor size={16} />
+                <div className="w-9 h-9 rounded-xl bg-[#F8F9FA] dark:bg-neutral-700/80 border border-[#EDF1F3] dark:border-neutral-600 flex items-center justify-center text-neutral-600 dark:text-neutral-300">
+                  <Monitor size={17} />
                 </div>
                 <div>
                   <div className="text-sm font-bold text-neutral-900 dark:text-white">
@@ -287,12 +263,15 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
               </div>
 
               <div className="flex items-center gap-3">
-                <span className="text-xs text-emerald-600 font-semibold">Active Terminal</span>
+                <span className="text-xs text-emerald-600 font-semibold bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-1 rounded-full flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                  Active Terminal
+                </span>
                 {devices.length > 1 && (
                   <button
                     type="button"
                     onClick={() => revokeDevice(dev.id)}
-                    className="text-xs text-rose-500 hover:text-rose-700 cursor-pointer p-1"
+                    className="text-xs text-rose-500 hover:text-rose-700 cursor-pointer p-1.5 rounded-full hover:bg-rose-50 transition-colors"
                     title="Revoke authorization"
                   >
                     <Trash2 size={14} />

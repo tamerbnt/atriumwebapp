@@ -312,36 +312,30 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
 
       {/* Main Grid: Left Summary Column + Right Activity Column */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* LEFT COLUMN: Summary Card (5 cols on lg) */}
+        {/* LEFT COLUMN: Summary Card + Metrics + Tip (5 cols on lg) */}
         <div className="lg:col-span-5 space-y-4">
-          <div
-            style={{
-              backgroundColor: 'var(--color-card-bg)',
-              border: '1px solid var(--color-card-border)',
-              borderRadius: 'var(--radius-stage)',
-            }}
-            className="p-6 space-y-6 shadow-xs"
-          >
+          {/* Summary Group Container */}
+          <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[26px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
             {/* Summary Header */}
             <div className="flex items-start justify-between">
               <div>
                 <h2 className="text-base font-bold text-neutral-900 dark:text-white">
                   Summary
                 </h2>
-                <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                <p className="text-xs text-neutral-400 dark:text-neutral-500">
                   Track live facility performance.
                 </p>
               </div>
-              <div className="h-7 px-2.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-[11px] font-semibold text-neutral-600 dark:text-neutral-300 flex items-center gap-1 cursor-pointer">
+              <div className="h-7 px-3 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 text-[11px] font-semibold text-neutral-700 dark:text-neutral-300 flex items-center gap-1 cursor-pointer shadow-2xs">
                 <span>Daily</span>
-                <ChevronDown size={12} />
+                <ChevronDown size={12} className="text-neutral-400" />
               </div>
             </div>
 
-            {/* People Inside & Entrées Jour */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <div className="flex items-center gap-1.5 text-xs text-neutral-400">
+            {/* People Inside & Entrées Jour — Pure White Cards */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="bg-white dark:bg-neutral-800 rounded-[20px] p-4 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
+                <div className="flex items-center gap-1.5 text-xs text-[#64748B] dark:text-neutral-400 font-medium">
                   <ArrowDown size={13} className="text-[#C4785A]" />
                   <span>People Inside</span>
                 </div>
@@ -351,8 +345,8 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                 </div>
               </div>
 
-              <div>
-                <div className="flex items-center gap-1.5 text-xs text-neutral-400">
+              <div className="bg-white dark:bg-neutral-800 rounded-[20px] p-4 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
+                <div className="flex items-center gap-1.5 text-xs text-[#64748B] dark:text-neutral-400 font-medium">
                   <ArrowUp size={13} className="text-emerald-500" />
                   <span>Entrées Jour</span>
                 </div>
@@ -364,8 +358,8 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
             </div>
 
             {/* Signature Rounded Pillar Bar Chart */}
-            <div className="space-y-1.5">
-              <div className="h-28 flex items-end justify-between gap-2.5 px-1 pt-4">
+            <div className="space-y-1.5 pt-1">
+              <div className="h-28 flex items-end justify-between gap-2.5 px-1 pt-3">
                 {pillarHeights.map((height, i) => (
                   <div
                     key={i}
@@ -389,117 +383,114 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                 <span>19:00</span>
               </div>
             </div>
+          </div>
 
-            {/* Bottom 2 Metrics (Moyenne Semaine & Objectif Mensuel) */}
-            <div className="grid grid-cols-2 gap-3 pt-2">
-              <div className="p-3.5 rounded-2xl bg-[#FAF9F6] dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-800">
-                <div className="text-[11px] font-semibold text-neutral-500 flex items-center gap-1">
-                  <Clock size={12} />
-                  <span>Moyenne Semaine</span>
-                </div>
-                <div className="mt-1 flex items-center gap-1.5">
-                  <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.2 rounded-full">
-                    ↗ +8.5%
-                  </span>
-                </div>
-                <div className="text-base font-extrabold text-neutral-900 dark:text-white mt-1 tabular-nums">
-                  18,400 DA
-                </div>
+          {/* Bottom 2 Metrics (Moyenne Semaine & Objectif Mensuel) — Separate White Cards */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
+              <div className="text-[11px] font-semibold text-[#64748B] dark:text-neutral-400 flex items-center gap-1.5">
+                <Clock size={13} className="text-neutral-400" />
+                <span>Moyenne Semaine</span>
               </div>
-
-              <div className="p-3.5 rounded-2xl bg-[#FAF9F6] dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-800">
-                <div className="text-[11px] font-semibold text-neutral-500 flex items-center gap-1">
-                  <TrendingUp size={12} />
-                  <span>Objectif Mensuel</span>
-                </div>
-                <div className="mt-1 flex items-center gap-1.5">
-                  <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.2 rounded-full">
-                    ↗ On Track
-                  </span>
-                </div>
-                <div className="text-base font-extrabold text-neutral-900 dark:text-white mt-1 tabular-nums">
-                  84.5%
-                </div>
+              <div className="mt-1 flex items-center gap-1.5">
+                <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
+                  ↗ +8.5%
+                </span>
+              </div>
+              <div className="text-xl font-black text-neutral-900 dark:text-white mt-1 tabular-nums">
+                18,400 DA
               </div>
             </div>
 
-            {/* Conseil Atrium Tip Carousel */}
-            <div className="p-4 rounded-2xl bg-[#FDF9F6] dark:bg-neutral-800/50 border border-[#F3E7DF] dark:border-neutral-700/60 space-y-3">
-              <div className="flex items-center justify-between text-xs">
-                <div className="flex items-center gap-2">
-                  <span className="text-[9px] font-bold tracking-wider text-[#C4785A] bg-[#C4785A]/15 px-2 py-0.5 rounded-md uppercase">
-                    {tips[currentTipIndex].step}
-                  </span>
-                  <span className="font-bold text-neutral-800 dark:text-neutral-200">
-                    {tips[currentTipIndex].title}
-                  </span>
-                </div>
-                <div className="flex items-center gap-1 text-neutral-400 text-xs">
-                  <ChevronLeft
-                    size={14}
-                    onClick={() =>
-                      setCurrentTipIndex((prev) => (prev > 0 ? prev - 1 : tips.length - 1))
-                    }
-                    className="cursor-pointer hover:text-neutral-700 p-0.5"
-                  />
-                  <span className="text-[11px] font-semibold">
-                    {currentTipIndex + 1} / {tips.length}
-                  </span>
-                  <ChevronRight
-                    size={14}
-                    onClick={() =>
-                      setCurrentTipIndex((prev) => (prev < tips.length - 1 ? prev + 1 : 0))
-                    }
-                    className="cursor-pointer hover:text-neutral-700 p-0.5"
-                  />
-                </div>
+            <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
+              <div className="text-[11px] font-semibold text-[#64748B] dark:text-neutral-400 flex items-center gap-1.5">
+                <TrendingUp size={13} className="text-neutral-400" />
+                <span>Objectif Mensuel</span>
               </div>
-
-              <p className="text-xs text-neutral-600 dark:text-neutral-300 leading-relaxed min-h-[34px]">
-                {tips[currentTipIndex].text}
-              </p>
-
-              <button
-                type="button"
-                onClick={tips[currentTipIndex].action}
-                className="w-full h-9 rounded-xl bg-[#F5ECE5] dark:bg-neutral-700 text-[#C4785A] hover:bg-[#ECE1D8] text-xs font-bold flex items-center justify-center gap-1 transition-colors cursor-pointer"
-              >
-                <span>{tips[currentTipIndex].buttonText}</span>
-                <ChevronRight size={13} />
-              </button>
+              <div className="mt-1 flex items-center gap-1.5">
+                <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
+                  ↗ On Track
+                </span>
+              </div>
+              <div className="text-xl font-black text-neutral-900 dark:text-white mt-1 tabular-nums">
+                84.5%
+              </div>
             </div>
+          </div>
+
+          {/* Conseil Atrium Tip Card — Pure White Card with Soft Border */}
+          <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs space-y-3">
+            <div className="flex items-center justify-between text-xs">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-bold tracking-wider text-[#C4785A] bg-[#C4785A]/10 px-2 py-0.5 rounded-md uppercase">
+                  {tips[currentTipIndex].step}
+                </span>
+                <span className="font-bold text-neutral-800 dark:text-neutral-200">
+                  {tips[currentTipIndex].title}
+                </span>
+              </div>
+              <div className="flex items-center gap-1 text-neutral-400 text-xs">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setCurrentTipIndex((prev) => (prev > 0 ? prev - 1 : tips.length - 1))
+                  }
+                  className="p-1 hover:text-neutral-700 dark:hover:text-neutral-200 cursor-pointer"
+                >
+                  <ChevronLeft size={14} />
+                </button>
+                <span className="text-[11px] font-semibold text-neutral-500">
+                  {currentTipIndex + 1} / {tips.length}
+                </span>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setCurrentTipIndex((prev) => (prev < tips.length - 1 ? prev + 1 : 0))
+                  }
+                  className="p-1 hover:text-neutral-700 dark:hover:text-neutral-200 cursor-pointer"
+                >
+                  <ChevronRight size={14} />
+                </button>
+              </div>
+            </div>
+
+            <p className="text-xs text-[#52525B] dark:text-neutral-300 leading-relaxed min-h-[34px]">
+              {tips[currentTipIndex].text}
+            </p>
+
+            <button
+              type="button"
+              onClick={tips[currentTipIndex].action}
+              className="w-full h-10 rounded-xl bg-[#FDF4F0] dark:bg-neutral-700/70 text-[#C4785A] hover:bg-[#FBECE6] text-xs font-bold flex items-center justify-center gap-1 transition-colors cursor-pointer"
+            >
+              <span>{tips[currentTipIndex].buttonText}</span>
+              <ChevronRight size={13} />
+            </button>
           </div>
         </div>
 
         {/* RIGHT COLUMN: Activity Metrics & Recent Activity Table (7 cols on lg) */}
         <div className="lg:col-span-7 space-y-4">
           {/* Top Activity Card with 3 Metrics */}
-          <div
-            style={{
-              backgroundColor: 'var(--color-card-bg)',
-              border: '1px solid var(--color-card-border)',
-              borderRadius: 'var(--radius-stage)',
-            }}
-            className="p-6 space-y-4 shadow-xs"
-          >
+          <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[26px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
             <div>
               <h2 className="text-base font-bold text-neutral-900 dark:text-white">
                 Activity
               </h2>
-              <p className="text-xs text-neutral-500 dark:text-neutral-400">
+              <p className="text-xs text-neutral-400 dark:text-neutral-500">
                 Track your daily operational activity.
               </p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {/* Tile 1: Revenue Today */}
-              <div className="p-4 rounded-2xl bg-[#FAF9F6] dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-800 flex flex-col justify-between h-[124px]">
+              {/* Tile 1: Revenue Today — Pure White Card with Soft Border */}
+              <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[126px]">
                 <div>
-                  <span className="text-[11px] font-medium text-neutral-500">
+                  <span className="text-[11px] font-semibold text-[#64748B] dark:text-neutral-400">
                     Revenue Today
                   </span>
                   <div className="mt-0.5">
-                    <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.2 rounded-full">
+                    <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
                       ↗ 0%
                     </span>
                   </div>
@@ -508,19 +499,19 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                   <div className="text-xl font-black text-neutral-900 dark:text-white tabular-nums">
                     0 DA
                   </div>
-                  {/* Subtle flat baseline */}
-                  <div className="w-full h-0.5 bg-[#C4785A]/40 mt-2" />
+                  {/* Subtle terracotta baseline */}
+                  <div className="w-full h-0.5 bg-[#C4785A] mt-2.5 rounded-full opacity-80" />
                 </div>
               </div>
 
-              {/* Tile 2: Active Members with Green Wave Curve */}
-              <div className="p-4 rounded-2xl bg-[#FAF9F6] dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-800 flex flex-col justify-between h-[124px]">
+              {/* Tile 2: Active Members with Green Wave Curve — Pure White Card */}
+              <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[126px]">
                 <div>
-                  <span className="text-[11px] font-medium text-neutral-500">
+                  <span className="text-[11px] font-semibold text-[#64748B] dark:text-neutral-400">
                     Active Members
                   </span>
                   <div className="mt-0.5">
-                    <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.2 rounded-full">
+                    <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
                       vs yesterday
                     </span>
                   </div>
@@ -546,18 +537,13 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
               </div>
 
               {/* Tile 3: Expiring Soon in Dark Obsidian (#18181B) */}
-              <div
-                style={{
-                  backgroundColor: 'var(--color-card-dark)',
-                }}
-                className="p-4 rounded-2xl text-white flex flex-col justify-between h-[124px] shadow-sm"
-              >
+              <div className="p-4 rounded-[20px] bg-[#18181B] border border-neutral-800 text-white flex flex-col justify-between h-[126px] shadow-sm">
                 <div>
-                  <span className="text-[11px] font-medium text-neutral-400">
+                  <span className="text-[11px] font-medium text-neutral-300">
                     Expiring Soon
                   </span>
                   <div className="mt-0.5">
-                    <span className="text-[10px] font-bold text-amber-400 bg-amber-400/15 px-1.5 py-0.2 rounded-full">
+                    <span className="text-[10px] font-bold text-amber-300 bg-amber-400/20 px-2 py-0.5 rounded-full">
                       ↘ 0%
                     </span>
                   </div>
@@ -566,33 +552,26 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                   <div className="text-xl font-black text-white tabular-nums">
                     0
                   </div>
-                  <div className="w-full h-0.5 bg-amber-500/60 mt-2" />
+                  <div className="w-full h-0.5 bg-amber-500 mt-2.5 rounded-full opacity-80" />
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Bottom Card: Recent Activity Table */}
-          <div
-            style={{
-              backgroundColor: 'var(--color-card-bg)',
-              border: '1px solid var(--color-card-border)',
-              borderRadius: 'var(--radius-stage)',
-            }}
-            className="p-6 space-y-4 shadow-xs"
-          >
+          {/* Bottom Card: Recent Activity Table Group */}
+          <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[26px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-base font-bold text-neutral-900 dark:text-white">
                   Recent Activity
                 </h3>
-                <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                <p className="text-xs text-neutral-400 dark:text-neutral-500">
                   Track your daily operational activity.
                 </p>
               </div>
 
               {/* Activity Filter Tabs: Tous | Passages | Ventes */}
-              <div className="h-8 p-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800/80 flex items-center gap-0.5 text-xs font-semibold">
+              <div className="h-8 p-0.5 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex items-center gap-0.5 text-xs font-semibold shadow-2xs">
                 {(['Tous', 'Passages', 'Ventes'] as const).map((tab) => (
                   <button
                     key={tab}
@@ -600,12 +579,12 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                     onClick={() => setActivityTab(tab)}
                     style={{
                       backgroundColor:
-                        activityTab === tab ? '#FFFFFF' : 'transparent',
+                        activityTab === tab ? '#FDF4F0' : 'transparent',
                       color:
                         activityTab === tab ? 'var(--color-accent)' : '#71717A',
                     }}
                     className={`px-3 py-1 rounded-full cursor-pointer transition-all ${
-                      activityTab === tab ? 'shadow-xs font-bold' : 'hover:text-neutral-900 dark:hover:text-white'
+                      activityTab === tab ? 'font-bold' : 'hover:text-neutral-900 dark:hover:text-white'
                     }`}
                   >
                     {tab}
@@ -614,55 +593,53 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
               </div>
             </div>
 
-            {/* Table */}
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="text-[11px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider border-b border-neutral-100 dark:border-neutral-800 h-10">
-                    <th className="px-3">Membre ↕</th>
-                    <th className="px-4">Opération</th>
-                    <th className="px-4 text-center">Statut</th>
-                    <th className="px-3 text-right">Heure</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-neutral-100/70 dark:divide-neutral-800/60">
-                  {filteredActivities.map((row) => (
-                    <tr
-                      key={row.id}
-                      className="h-14 hover:bg-neutral-50/50 dark:hover:bg-neutral-800/30 transition-colors"
-                    >
-                      <td className="px-3">
-                        <div className="flex items-center gap-2.5">
-                          <div className="w-7 h-7 rounded-full bg-[#FAF3EE] dark:bg-neutral-800 text-[#C4785A] flex items-center justify-center font-bold text-[11px] shrink-0 border border-[#F0DFD5] dark:border-neutral-700">
-                            {row.type === 'Ventes' ? '$$' : 'IN'}
-                          </div>
-                          <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
-                            {row.member}
-                          </span>
-                        </div>
-                      </td>
+            {/* Table Header and White Row Cards matching Screenshot_880 */}
+            <div className="space-y-2">
+              <div className="grid grid-cols-12 px-4 py-2 text-[11px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">
+                <div className="col-span-5 flex items-center gap-1">
+                  <span>Membre</span>
+                  <span className="text-[10px]">↕</span>
+                </div>
+                <div className="col-span-4">Opération</div>
+                <div className="col-span-1 text-center">Statut</div>
+                <div className="col-span-2 text-right">Heure</div>
+              </div>
 
-                      <td className="px-4 text-xs text-neutral-600 dark:text-neutral-300">
-                        {row.operation}
-                      </td>
+              <div className="space-y-2">
+                {filteredActivities.map((row) => (
+                  <div
+                    key={row.id}
+                    className="grid grid-cols-12 items-center px-4 py-3 rounded-[16px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs hover:border-[#D5DFE3] dark:hover:border-neutral-600 transition-all"
+                  >
+                    <div className="col-span-5 flex items-center gap-2.5 min-w-0 pr-2">
+                      <div className="w-8 h-8 rounded-full bg-[#FDF4F0] dark:bg-neutral-700/80 text-[#C4785A] flex items-center justify-center font-bold text-[11px] shrink-0 border border-[#F5E2D8] dark:border-neutral-600">
+                        {row.type === 'Ventes' ? '$$' : 'IN'}
+                      </div>
+                      <span className="text-xs font-bold text-neutral-900 dark:text-white truncate">
+                        {row.member}
+                      </span>
+                    </div>
 
-                      <td className="px-4 text-center">
-                        <div className="w-6 h-6 rounded-md bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 flex items-center justify-center mx-auto">
-                          {row.type === 'Ventes' ? (
-                            <ShoppingCart size={13} />
-                          ) : (
-                            <UserCheck size={13} />
-                          )}
-                        </div>
-                      </td>
+                    <div className="col-span-4 text-xs text-[#52525B] dark:text-neutral-300 font-medium truncate pr-2">
+                      {row.operation}
+                    </div>
 
-                      <td className="px-3 text-right text-xs text-neutral-400 tabular-nums">
-                        {row.time}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                    <div className="col-span-1 flex justify-center">
+                      <div className="w-6 h-6 rounded-md bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                        {row.type === 'Ventes' ? (
+                          <ShoppingCart size={13} />
+                        ) : (
+                          <UserCheck size={13} />
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="col-span-2 text-right text-xs text-neutral-400 font-mono tabular-nums">
+                      {row.time}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>

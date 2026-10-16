@@ -141,16 +141,13 @@ export const ShopScreen: React.FC = () => {
       name: newProductName,
       category: newProductCategory,
       sku: newProductSku || `SKU-${Date.now().toString().slice(-4)}`,
-      barcode: `613000${Math.floor(100000 + Math.random() * 900000)}`,
       description: `${newProductCategory} product for athletes`,
       price: { amount: Number(newProductPrice), currency: 'DZD' },
-      costPrice: { amount: Math.round(Number(newProductPrice) * 0.65), currency: 'DZD' },
+      cost: { amount: Math.round(Number(newProductPrice) * 0.65), currency: 'DZD' },
       stockQuantity: Number(newProductStock),
-      reorderPoint: 5,
-      isTaxable: false,
-      vatRate: 0,
+      reorderLevel: 5,
       isActive: true,
-      expiryDate: '2026-12-31',
+      isPinned: false,
     });
 
     setIsAddProductModalOpen(false);
@@ -275,28 +272,21 @@ export const ShopScreen: React.FC = () => {
       </div>
 
       {/* Row 1: Inventory & POS Health Banner Card */}
-      <div
-        style={{
-          backgroundColor: 'var(--color-card-bg)',
-          border: '1px solid var(--color-card-border)',
-          borderRadius: 'var(--radius-stage)',
-        }}
-        className="p-6 space-y-4 shadow-xs"
-      >
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[26px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
         <div>
           <h2 className="text-base font-bold text-neutral-900 dark:text-white">
             Inventory Valuation & Checkout Velocity
           </h2>
-          <p className="text-xs text-neutral-500 dark:text-neutral-400">
+          <p className="text-xs text-neutral-400 dark:text-neutral-500">
             Stock reserves, restock thresholds, and instant retail register liquidity
           </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {/* Tile 1: Stock Valuation */}
-          <div className="p-4 rounded-2xl bg-[#FAF9F6] dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-800 flex flex-col justify-between h-[120px]">
+          {/* Tile 1: Stock Valuation — Pure White Card */}
+          <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
             <div>
-              <span className="text-xs font-medium text-neutral-500">
+              <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
                 Inventory Retail Valuation
               </span>
               <div className="mt-1">
@@ -310,10 +300,10 @@ export const ShopScreen: React.FC = () => {
             </div>
           </div>
 
-          {/* Tile 2: Low Stock Alerts */}
-          <div className="p-4 rounded-2xl bg-[#FAF9F6] dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-800 flex flex-col justify-between h-[120px]">
+          {/* Tile 2: Low Stock Alerts — Pure White Card */}
+          <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
             <div>
-              <span className="text-xs font-medium text-neutral-500">
+              <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
                 Restock Reorder Alerts
               </span>
               <div className="mt-1">
@@ -329,14 +319,9 @@ export const ShopScreen: React.FC = () => {
           </div>
 
           {/* Tile 3: Dark Obsidian Card */}
-          <div
-            style={{
-              backgroundColor: 'var(--color-card-dark)',
-            }}
-            className="p-4 rounded-2xl text-white flex flex-col justify-between h-[120px] shadow-sm"
-          >
+          <div className="p-5 rounded-[20px] bg-[#18181B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
             <div>
-              <span className="text-xs font-medium text-neutral-400">
+              <span className="text-xs font-medium text-neutral-300">
                 Barcode Terminal State
               </span>
               <div className="text-[11px] text-[#C4785A] font-semibold mt-0.5">
@@ -352,14 +337,7 @@ export const ShopScreen: React.FC = () => {
       </div>
 
       {/* Row 2: POS Catalog & Live Register Split Master Card */}
-      <div
-        style={{
-          backgroundColor: 'var(--color-card-bg)',
-          border: '1px solid var(--color-card-border)',
-          borderRadius: 'var(--radius-stage)',
-        }}
-        className="p-6 space-y-4 shadow-xs"
-      >
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[26px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
         {/* Table Control Header */}
         <div className="flex flex-wrap items-center justify-between gap-3">
           {/* Left: Icon + Title + Count */}
@@ -385,7 +363,7 @@ export const ShopScreen: React.FC = () => {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search product name, SKU, barcode..."
-                    className="h-9 px-3 text-xs rounded-full border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 focus:outline-none focus:border-[#C4785A] w-52 text-neutral-900 dark:text-white"
+                    className="h-9 px-3 text-xs rounded-full border border-[#E9EEF0] dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:border-[#C4785A] w-52 text-neutral-900 dark:text-white shadow-2xs"
                   />
                   <button
                     type="button"
@@ -402,7 +380,7 @@ export const ShopScreen: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsSearchActive(true)}
-                  className="w-9 h-9 rounded-full bg-[#FAF9F6] dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 flex items-center justify-center text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 cursor-pointer transition-colors"
+                  className="w-9 h-9 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex items-center justify-center text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 cursor-pointer transition-colors shadow-2xs"
                   title="Search inventory"
                 >
                   <Search size={14} />
@@ -411,7 +389,7 @@ export const ShopScreen: React.FC = () => {
             </div>
 
             {/* Category Segmented Capsules */}
-            <div className="flex items-center p-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800/80 gap-0.5 text-xs font-semibold overflow-x-auto">
+            <div className="flex items-center p-0.5 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 gap-0.5 text-xs font-semibold shadow-2xs overflow-x-auto">
               {categories.map((cat) => {
                 const isActive = categoryFilter === cat;
                 return (
@@ -424,7 +402,7 @@ export const ShopScreen: React.FC = () => {
                       color: isActive ? 'var(--color-accent)' : '#71717A',
                     }}
                     className={`px-3 py-1 rounded-full cursor-pointer transition-all ${
-                      isActive ? 'font-bold shadow-2xs' : 'hover:text-neutral-900 dark:hover:text-white'
+                      isActive ? 'font-bold' : 'hover:text-neutral-900 dark:hover:text-white'
                     }`}
                   >
                     {cat}
@@ -437,7 +415,7 @@ export const ShopScreen: React.FC = () => {
             <button
               type="button"
               onClick={handleExportCSV}
-              className="h-9 px-3.5 rounded-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-xs font-semibold text-neutral-700 dark:text-neutral-300 flex items-center gap-1.5 hover:bg-neutral-50 dark:hover:bg-neutral-700/50 cursor-pointer transition-colors shadow-2xs"
+              className="h-9 px-3.5 rounded-full border border-[#E9EEF0] dark:border-neutral-700/60 bg-white dark:bg-neutral-800 text-xs font-semibold text-neutral-700 dark:text-neutral-300 flex items-center gap-1.5 hover:bg-neutral-50 dark:hover:bg-neutral-700/50 cursor-pointer transition-colors shadow-2xs"
               title="Download CSV inventory"
             >
               <Download size={13} />
@@ -445,30 +423,30 @@ export const ShopScreen: React.FC = () => {
             </button>
 
             {/* View Mode Toggle */}
-            <div className="flex items-center gap-1 p-0.5 rounded-lg border border-neutral-200 dark:border-neutral-700">
+            <div className="flex items-center gap-1 p-0.5 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
               <button
                 type="button"
                 onClick={() => setViewMode('grid')}
-                className={`p-1.5 rounded-md cursor-pointer transition-colors ${
+                className={`p-1.5 rounded-full cursor-pointer transition-colors ${
                   viewMode === 'grid'
                     ? 'text-[#C4785A] bg-[#C4785A]/10 font-bold'
                     : 'text-neutral-400 hover:text-neutral-600'
                 }`}
                 title="Grid view"
               >
-                <LayoutGrid size={15} />
+                <LayoutGrid size={14} />
               </button>
               <button
                 type="button"
                 onClick={() => setViewMode('list')}
-                className={`p-1.5 rounded-md cursor-pointer transition-colors ${
+                className={`p-1.5 rounded-full cursor-pointer transition-colors ${
                   viewMode === 'list'
                     ? 'text-[#C4785A] bg-[#C4785A]/10 font-bold'
                     : 'text-neutral-400 hover:text-neutral-600'
                 }`}
                 title="List view"
               >
-                <List size={15} />
+                <List size={14} />
               </button>
             </div>
 
@@ -476,10 +454,10 @@ export const ShopScreen: React.FC = () => {
             <button
               type="button"
               onClick={toggleFullscreen}
-              className="p-2 rounded-lg border border-neutral-200 dark:border-neutral-700 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 cursor-pointer"
+              className="w-9 h-9 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex items-center justify-center text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 cursor-pointer transition-colors shadow-2xs"
               title="Toggle Fullscreen"
             >
-              <Maximize2 size={15} />
+              <Maximize2 size={13} />
             </button>
           </div>
         </div>
@@ -496,10 +474,10 @@ export const ShopScreen: React.FC = () => {
                     <div
                       key={product.id}
                       onClick={() => !isOutOfStock && addToCart(product)}
-                      className={`p-5 rounded-2xl border transition-all flex flex-col justify-between h-[210px] ${
+                      className={`p-5 rounded-[20px] border transition-all flex flex-col justify-between h-[210px] shadow-2xs ${
                         isOutOfStock
-                          ? 'opacity-50 cursor-not-allowed border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/20'
-                          : 'cursor-pointer border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-800/40 hover:border-[#C4785A]/50 hover:shadow-xs group'
+                          ? 'opacity-50 cursor-not-allowed border-[#E9EEF0] dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/20'
+                          : 'cursor-pointer border-[#E9EEF0] dark:border-neutral-700/60 bg-white dark:bg-neutral-800 hover:border-[#D5DFE3] dark:hover:border-neutral-600 hover:shadow-xs group'
                       }`}
                     >
                       <div>
@@ -519,12 +497,12 @@ export const ShopScreen: React.FC = () => {
                         <h3 className="text-sm font-bold text-neutral-900 dark:text-white group-hover:text-[#C4785A] transition-colors line-clamp-2">
                           {product.name}
                         </h3>
-                        <p className="text-xs text-neutral-400 line-clamp-2 mt-1">
+                        <p className="text-xs text-[#52525B] dark:text-neutral-400 line-clamp-2 mt-1">
                           {product.description}
                         </p>
                       </div>
 
-                      <div className="pt-3 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between">
+                      <div className="pt-3 border-t border-[#EDF1F3] dark:border-neutral-800 flex items-center justify-between">
                         <span className="text-base font-black text-neutral-900 dark:text-white tabular-nums">
                           {formatMoney(product.price.amount, product.price.currency)}
                         </span>
@@ -610,29 +588,29 @@ export const ShopScreen: React.FC = () => {
           </div>
 
           {/* Live POS Register Order Cart Panel */}
-          <div className="p-5 rounded-2xl bg-[#FAF9F6] dark:bg-neutral-800/60 border border-neutral-200/80 dark:border-neutral-700/80 flex flex-col justify-between min-h-[460px] sticky top-24 shadow-xs">
+          <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between min-h-[460px] sticky top-24 shadow-2xs">
             <div>
-              <div className="flex items-center justify-between pb-3 border-b border-neutral-200/60 dark:border-neutral-700/80">
+              <div className="flex items-center justify-between pb-3 border-b border-[#EDF1F3] dark:border-neutral-700/80">
                 <div className="flex items-center gap-2">
                   <Receipt size={17} className="text-[#C4785A]" />
                   <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
                     POS Register Cart
                   </h3>
                 </div>
-                <span className="text-xs font-bold text-neutral-500 tabular-nums bg-white dark:bg-neutral-700 px-2 py-0.5 rounded-full border border-neutral-200 dark:border-neutral-600">
+                <span className="text-xs font-bold text-neutral-600 dark:text-neutral-300 tabular-nums bg-[#F8F9FA] dark:bg-neutral-700 px-2.5 py-0.5 rounded-full border border-[#E9EEF0] dark:border-neutral-600">
                   {cart.reduce((n, i) => n + i.quantity, 0)} items
                 </span>
               </div>
 
               {/* Quick Member Link */}
               <div className="my-3 space-y-1">
-                <label className="text-[11px] font-bold text-neutral-500 dark:text-neutral-400">
+                <label className="text-[11px] font-bold text-[#64748B] dark:text-neutral-400">
                   Assign Customer:
                 </label>
                 <select
                   value={selectedMemberId}
                   onChange={(e) => setSelectedMemberId(e.target.value)}
-                  className="w-full h-9 px-3 text-xs rounded-full border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white font-semibold focus:outline-none"
+                  className="w-full h-9 px-3 text-xs rounded-full border border-[#E9EEF0] dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white font-semibold focus:outline-none shadow-2xs"
                 >
                   <option value="">Guest Walk-In Customer</option>
                   {members.map((m) => (

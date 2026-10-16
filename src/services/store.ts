@@ -194,6 +194,14 @@ export function useAtriumStore() {
     notify();
   };
 
+  const switchBusiness = (businessId: string) => {
+    switchFacility(businessId);
+  };
+
+  const switchBranch = (branchId: string) => {
+    switchFacility(state.currentBusinessId, branchId);
+  };
+
   const selectMember = (memberId: string | null) => {
     globalState = {
       ...globalState,
@@ -474,6 +482,21 @@ export function useAtriumStore() {
     };
   };
 
+  const addProduct = (productData: Omit<Product, 'id' | 'tenantId' | 'facilityId'>) => {
+    const newProduct: Product = {
+      ...productData,
+      id: `prod_${Date.now()}`,
+      tenantId: state.account.id,
+      facilityId: state.currentBranchId,
+    };
+    globalState = {
+      ...globalState,
+      products: [newProduct, ...globalState.products],
+    };
+    notify();
+    return newProduct;
+  };
+
   const resetAllData = () => {
     globalState = DEFAULT_STATE;
     notify();
@@ -484,6 +507,8 @@ export function useAtriumStore() {
     subscription: state.subscription,
     businesses: state.businesses,
     branches: state.branches,
+    currentBusinessId: state.currentBusinessId,
+    currentBranchId: state.currentBranchId,
     currentBusiness,
     currentBranch,
     activeScreen: state.activeScreen,
@@ -512,6 +537,8 @@ export function useAtriumStore() {
     setTheme,
     setLanguage,
     switchFacility,
+    switchBusiness,
+    switchBranch,
     selectMember,
     closeDetail,
     addMember,
@@ -520,6 +547,7 @@ export function useAtriumStore() {
     addLead,
     updateLeadStatus,
     convertLeadToMember,
+    addProduct,
     processSale,
     addStaff,
     addBranch,

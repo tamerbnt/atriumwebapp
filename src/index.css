@@ -12,17 +12,19 @@
     --color-window-bg: #E8ECEF;
     --color-surface-bg: #FFFFFF;
     --color-card-bg: #FFFFFF;
-    --color-card-border: #E8ECEF;
+    --color-card-border: #E9EEF0;
+    --color-group-bg: #F8F9FA;
+    --color-group-border: #EDF1F3;
     --color-card-dark: #18181B;
 
     /* Text */
     --color-text-primary: #18181B;
-    --color-text-secondary: #71717A;
-    --color-text-tertiary: #A1A1AA;
+    --color-text-secondary: #64748B;
+    --color-text-tertiary: #94A3B8;
 
     /* Borders & Subtle Dividers */
-    --color-border: #E4E4E7;
-    --color-border-subtle: #F4F4F5;
+    --color-border: #E2E8EC;
+    --color-border-subtle: #EDF1F3;
 
     /* Dock Sidebar (Always Dark Obsidian) */
     --color-dock-bg: #18181B;
@@ -36,16 +38,23 @@
 
     /* Radii matching desktop */
     --radius-dock: 28px;
-    --radius-stage: 28px;
+    --radius-canvas: 32px;
+    --radius-stage: 26px;
+    --radius-group: 26px;
     --radius-card: 20px;
+    --radius-input: 14px;
+    --radius-button: 9999px;
+    --radius-modal: 28px;
     --radius-pill: 9999px;
   }
 
   [data-theme="dark"] {
-    --color-window-bg: #0F0F11;
+    --color-window-bg: #0C0C0E;
     --color-surface-bg: #18181B;
     --color-card-bg: #18181B;
     --color-card-border: #27272A;
+    --color-group-bg: #141416;
+    --color-group-border: #232328;
     --color-card-dark: #09090B;
 
     --color-text-primary: #FAFAFA;
@@ -54,6 +63,16 @@
 
     --color-border: #27272A;
     --color-border-subtle: #1F1F23;
+
+    --radius-dock: 28px;
+    --radius-canvas: 32px;
+    --radius-stage: 26px;
+    --radius-group: 26px;
+    --radius-card: 20px;
+    --radius-input: 14px;
+    --radius-button: 9999px;
+    --radius-modal: 28px;
+    --radius-pill: 9999px;
   }
 
   body {

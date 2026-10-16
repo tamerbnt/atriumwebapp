@@ -21,15 +21,10 @@ export const StatTile: React.FC<StatTileProps> = ({
 }) => {
   return (
     <div
-      style={{
-        backgroundColor: 'var(--color-card-bg)',
-        border: '1px solid var(--color-card-border)',
-        borderRadius: 'var(--radius-card)',
-      }}
-      className={`p-5 flex flex-col justify-between h-[130px] transition-all duration-200 hover:shadow-xs ${className}`}
+      className={`p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[130px] transition-all duration-200 hover:border-[#D5DFE3] dark:hover:border-neutral-600 ${className}`}
     >
       <div className="flex items-center justify-between">
-        <span className="text-xs font-semibold tracking-wide uppercase text-neutral-500 dark:text-neutral-400">
+        <span className="text-xs font-semibold tracking-wide text-[#64748B] dark:text-neutral-400">
           {label}
         </span>
         <div
@@ -44,23 +39,23 @@ export const StatTile: React.FC<StatTileProps> = ({
       </div>
 
       <div>
-        <div className="text-2xl font-bold tracking-tight tabular-nums text-neutral-900 dark:text-white">
+        <div className="text-2xl font-black tracking-tight tabular-nums text-neutral-900 dark:text-white">
           {value}
         </div>
         <div className="flex items-center gap-2 mt-1">
           {trend && trendValue && (
             <span
-              className={`text-xs font-medium ${
+              className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                 trend === 'up'
-                  ? 'text-emerald-600 dark:text-emerald-400'
-                  : 'text-rose-600 dark:text-rose-400'
+                  ? 'text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40'
+                  : 'text-rose-600 bg-rose-50 dark:bg-rose-950/40'
               }`}
             >
-              {trend === 'up' ? '↑' : '↓'} {trendValue}
+              {trend === 'up' ? '↗' : '↘'} {trendValue}
             </span>
           )}
           {subtitle && (
-            <span className="text-xs text-neutral-400 dark:text-neutral-500 truncate">
+            <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400 truncate">
               {subtitle}
             </span>
           )}

@@ -25,13 +25,7 @@ export const SearchBox: React.FC<SearchBoxProps> = ({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        style={{
-          backgroundColor: 'var(--color-card-bg)',
-          borderColor: 'var(--color-border)',
-          borderRadius: 'var(--radius-input)',
-          color: 'var(--color-text-primary)',
-        }}
-        className="w-full h-11 pl-10 pr-9 text-sm border focus:outline-none focus:border-[#C4785A] focus:ring-3 focus:ring-[#C4785A]/20 transition-all placeholder:text-neutral-400"
+        className="w-full h-11 pl-10 pr-9 text-sm rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700 focus:outline-none focus:border-[#C4785A] text-neutral-900 dark:text-white transition-all placeholder:text-neutral-400 shadow-2xs"
       />
       {value && (
         <button

@@ -242,28 +242,21 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
       </div>
 
       {/* Row 1: "Roster & Retention Health" Banner Card matching Screenshot 881 */}
-      <div
-        style={{
-          backgroundColor: 'var(--color-card-bg)',
-          border: '1px solid var(--color-card-border)',
-          borderRadius: 'var(--radius-stage)',
-        }}
-        className="p-6 space-y-4 shadow-xs"
-      >
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[26px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
         <div>
           <h2 className="text-base font-bold text-neutral-900 dark:text-white">
             Roster & Retention Health
           </h2>
-          <p className="text-xs text-neutral-500 dark:text-neutral-400">
+          <p className="text-xs text-neutral-400 dark:text-neutral-500">
             Active membership pipeline, renewal retention, and monthly member intake
           </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {/* Tile 1: Active Member Base */}
-          <div className="p-4 rounded-2xl bg-[#FAF9F6] dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-800 flex flex-col justify-between h-[120px]">
+          {/* Tile 1: Active Member Base — Pure White Card */}
+          <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
             <div>
-              <span className="text-xs font-medium text-neutral-500">
+              <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
                 Active Member Base
               </span>
               <div className="mt-1">
@@ -277,10 +270,10 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
             </div>
           </div>
 
-          {/* Tile 2: Renewal Churn Risk */}
-          <div className="p-4 rounded-2xl bg-[#FAF9F6] dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-800 flex flex-col justify-between h-[120px]">
+          {/* Tile 2: Renewal Churn Risk — Pure White Card */}
+          <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
             <div>
-              <span className="text-xs font-medium text-neutral-500">
+              <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
                 Renewal Churn Risk
               </span>
               <div className="mt-1">
@@ -295,14 +288,9 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
           </div>
 
           {/* Tile 3: Monthly Inflow (Dark Obsidian Card #18181B) */}
-          <div
-            style={{
-              backgroundColor: 'var(--color-card-dark)',
-            }}
-            className="p-4 rounded-2xl text-white flex flex-col justify-between h-[120px] shadow-sm"
-          >
+          <div className="p-5 rounded-[20px] bg-[#18181B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
             <div>
-              <span className="text-xs font-medium text-neutral-400">
+              <span className="text-xs font-medium text-neutral-300">
                 Monthly Inflow
               </span>
               <div className="text-[11px] text-[#C4785A] font-semibold mt-0.5">
@@ -319,15 +307,8 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
         </div>
       </div>
 
-      {/* Row 2: Members Master Table Card matching Screenshot 881 */}
-      <div
-        style={{
-          backgroundColor: 'var(--color-card-bg)',
-          border: '1px solid var(--color-card-border)',
-          borderRadius: 'var(--radius-stage)',
-        }}
-        className="p-6 space-y-4 shadow-xs"
-      >
+      {/* Row 2: Members Master Table Group matching Screenshot 881 */}
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[26px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
         {/* Table Control Header */}
         <div className="flex flex-wrap items-center justify-between gap-3">
           {/* Left: Icon + Title + Count */}
@@ -353,7 +334,7 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search name, ID..."
-                    className="h-9 px-3 text-xs rounded-full border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 focus:outline-none focus:border-[#C4785A] w-48 text-neutral-900 dark:text-white"
+                    className="h-9 px-3 text-xs rounded-full border border-[#E9EEF0] dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:border-[#C4785A] w-48 text-neutral-900 dark:text-white shadow-2xs"
                   />
                   <button
                     type="button"
@@ -370,7 +351,7 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
                 <button
                   type="button"
                   onClick={() => setIsSearchActive(true)}
-                  className="w-9 h-9 rounded-full bg-[#FAF9F6] dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 flex items-center justify-center text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 cursor-pointer transition-colors"
+                  className="w-9 h-9 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex items-center justify-center text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 cursor-pointer transition-colors shadow-2xs"
                   title="Search members"
                 >
                   <Search size={14} />
@@ -379,7 +360,7 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
             </div>
 
             {/* Status Filter Segmented Capsules matching Screenshot 881 */}
-            <div className="flex items-center p-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800/80 gap-0.5 text-xs font-semibold">
+            <div className="flex items-center p-0.5 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 gap-0.5 text-xs font-semibold shadow-2xs">
               {(['All', 'Active', 'Expiring', 'Expired', 'Archived'] as const).map(
                 (filter) => {
                   const isActive = statusFilter === filter;
@@ -393,7 +374,7 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
                         color: isActive ? 'var(--color-accent)' : '#71717A',
                       }}
                       className={`px-3 py-1 rounded-full cursor-pointer transition-all ${
-                        isActive ? 'font-bold shadow-2xs' : 'hover:text-neutral-900 dark:hover:text-white'
+                        isActive ? 'font-bold' : 'hover:text-neutral-900 dark:hover:text-white'
                       }`}
                     >
                       {filter}
@@ -407,7 +388,7 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
             <select
               value={planFilter}
               onChange={(e) => setPlanFilter(e.target.value)}
-              className="h-9 px-3 text-xs rounded-full bg-neutral-100 dark:bg-neutral-800 border-none font-semibold text-neutral-700 dark:text-neutral-300 cursor-pointer focus:outline-none"
+              className="h-9 px-3 text-xs rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 font-semibold text-neutral-700 dark:text-neutral-300 cursor-pointer focus:outline-none shadow-2xs"
             >
               <option value="All">All Plans</option>
               <option value="plan_a1">Plan A1</option>
@@ -422,7 +403,7 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
             <button
               type="button"
               onClick={handleExportCSV}
-              className="h-9 px-3.5 rounded-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-xs font-semibold text-neutral-700 dark:text-neutral-300 flex items-center gap-1.5 hover:bg-neutral-50 dark:hover:bg-neutral-700/50 cursor-pointer transition-colors shadow-2xs"
+              className="h-9 px-3.5 rounded-full border border-[#E9EEF0] dark:border-neutral-700/60 bg-white dark:bg-neutral-800 text-xs font-semibold text-neutral-700 dark:text-neutral-300 flex items-center gap-1.5 hover:bg-neutral-50 dark:hover:bg-neutral-700/50 cursor-pointer transition-colors shadow-2xs"
               title="Download CSV export"
             >
               <Download size={13} />
@@ -430,30 +411,30 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
             </button>
 
             {/* View Mode Toggle: Grid & List */}
-            <div className="flex items-center gap-1 p-0.5 rounded-lg border border-neutral-200 dark:border-neutral-700">
+            <div className="flex items-center gap-1 p-0.5 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
               <button
                 type="button"
                 onClick={() => setViewMode('grid')}
-                className={`p-1.5 rounded-md cursor-pointer transition-colors ${
+                className={`p-1.5 rounded-full cursor-pointer transition-colors ${
                   viewMode === 'grid'
                     ? 'text-[#C4785A] bg-[#C4785A]/10 font-bold'
                     : 'text-neutral-400 hover:text-neutral-600'
                 }`}
                 title="Grid view"
               >
-                <LayoutGrid size={15} />
+                <LayoutGrid size={14} />
               </button>
               <button
                 type="button"
                 onClick={() => setViewMode('list')}
-                className={`p-1.5 rounded-md cursor-pointer transition-colors ${
+                className={`p-1.5 rounded-full cursor-pointer transition-colors ${
                   viewMode === 'list'
                     ? 'text-[#C4785A] bg-[#C4785A]/10 font-bold'
                     : 'text-neutral-400 hover:text-neutral-600'
                 }`}
                 title="List view"
               >
-                <List size={15} />
+                <List size={14} />
               </button>
             </div>
 
@@ -461,7 +442,7 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
             <button
               type="button"
               onClick={toggleFullscreen}
-              className="w-9 h-9 rounded-full border border-neutral-200 dark:border-neutral-700 flex items-center justify-center text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 cursor-pointer transition-colors"
+              className="w-9 h-9 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex items-center justify-center text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 cursor-pointer transition-colors shadow-2xs"
               title="Toggle Fullscreen"
             >
               <Maximize2 size={13} />
@@ -478,135 +459,143 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
             }`}
           >
             {viewMode === 'list' ? (
-              <div className="border border-neutral-200/60 dark:border-neutral-800/80 rounded-2xl overflow-hidden">
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="h-12 border-b border-neutral-200/60 dark:border-neutral-800/80 text-[11px] font-bold text-neutral-500 uppercase tracking-wider bg-neutral-50/50 dark:bg-neutral-800/20">
-                      <th className="w-12 px-4 text-center">
-                        <input
-                          type="checkbox"
-                          checked={
-                            selectedIds.length === displayMembers.length &&
-                            displayMembers.length > 0
-                          }
-                          onChange={toggleSelectAll}
-                          className="w-4 h-4 rounded-md border-neutral-300 text-[#C4785A] focus:ring-[#C4785A] cursor-pointer"
-                        />
-                      </th>
-                      <th className="px-4">Member ↕</th>
-                      <th className="px-4 text-center">Plan ↕</th>
-                      <th className="px-4 text-center">Status ↕</th>
-                      <th className="px-4 text-right">Balance ↕</th>
-                      <th className="w-12 px-3 text-center"></th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800/60">
-                    {displayMembers.map((member) => {
-                      const isChecked = selectedIds.includes(member.id);
-                      const isSelected = selectedMember?.id === member.id && isDetailOpen;
-                      const avatarColor = getMemberInitialsColor(member.fullName);
+              <div className="space-y-2">
+                {/* Desktop Column Header Bar matching Screenshot 881 */}
+                <div className="grid grid-cols-12 items-center px-4 py-3 rounded-2xl bg-white dark:bg-neutral-800/90 border border-[#E9EEF0] dark:border-neutral-700/60 text-[11px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider shadow-2xs">
+                  <div className="col-span-1 flex items-center justify-center">
+                    <input
+                      type="checkbox"
+                      checked={
+                        selectedIds.length === displayMembers.length &&
+                        displayMembers.length > 0
+                      }
+                      onChange={toggleSelectAll}
+                      className="w-4 h-4 rounded-md border-neutral-300 text-[#C4785A] focus:ring-[#C4785A] cursor-pointer"
+                    />
+                  </div>
+                  <div className="col-span-4 flex items-center gap-1">
+                    <span>Member</span>
+                    <span className="text-[10px]">↕</span>
+                  </div>
+                  <div className="col-span-2 text-center flex items-center justify-center gap-1">
+                    <span>Plan</span>
+                    <span className="text-[10px]">↕</span>
+                  </div>
+                  <div className="col-span-2 text-center flex items-center justify-center gap-1">
+                    <span>Status</span>
+                    <span className="text-[10px]">↕</span>
+                  </div>
+                  <div className="col-span-2 text-right flex items-center justify-end gap-1 pr-2">
+                    <span>Balance</span>
+                    <span className="text-[10px]">↕</span>
+                  </div>
+                  <div className="col-span-1"></div>
+                </div>
 
-                      return (
-                        <tr
-                          key={member.id}
-                          onClick={() => selectMember(member.id)}
-                          style={{
-                            backgroundColor: isSelected
-                              ? 'rgba(196, 120, 90, 0.08)'
-                              : 'transparent',
-                          }}
-                          className="h-16 hover:bg-neutral-50/80 dark:hover:bg-neutral-800/40 transition-colors cursor-pointer group"
+                {/* Member Card Strips matching Screenshot 881 */}
+                <div className="space-y-2">
+                  {displayMembers.map((member) => {
+                    const isChecked = selectedIds.includes(member.id);
+                    const isSelected = selectedMember?.id === member.id && isDetailOpen;
+                    const avatarColor = getMemberInitialsColor(member.fullName);
+
+                    return (
+                      <div
+                        key={member.id}
+                        onClick={() => selectMember(member.id)}
+                        className={`grid grid-cols-12 items-center px-4 py-3.5 rounded-2xl bg-white dark:bg-neutral-800 border transition-all cursor-pointer shadow-2xs ${
+                          isSelected
+                            ? 'border-[#C4785A] ring-1 ring-[#C4785A]/30'
+                            : 'border-[#E9EEF0] dark:border-neutral-700/60 hover:border-[#D5DFE3] dark:hover:border-neutral-600'
+                        }`}
+                      >
+                        {/* Checkbox */}
+                        <div
+                          className="col-span-1 flex items-center justify-center"
+                          onClick={(e) => e.stopPropagation()}
                         >
-                          {/* Checkbox */}
-                          <td
-                            className="w-12 px-4 text-center"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <input
-                              type="checkbox"
-                              checked={isChecked}
-                              onChange={() => toggleSelectOne(member.id)}
-                              className="w-4 h-4 rounded-md border-neutral-300 text-[#C4785A] focus:ring-[#C4785A] cursor-pointer"
-                            />
-                          </td>
+                          <input
+                            type="checkbox"
+                            checked={isChecked}
+                            onChange={() => toggleSelectOne(member.id)}
+                            className="w-4 h-4 rounded-md border-neutral-300 text-[#C4785A] focus:ring-[#C4785A] cursor-pointer"
+                          />
+                        </div>
 
-                          {/* Member Identity Stack with Avatar */}
-                          <td className="px-4 py-2.5">
-                            <div className="flex items-center gap-3">
-                              <div
-                                style={{ backgroundColor: avatarColor }}
-                                className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-white text-xs shrink-0 shadow-2xs"
-                              >
-                                {member.fullName.charAt(0).toUpperCase()}
-                              </div>
-                              <div>
-                                <div className="text-xs font-bold text-neutral-900 dark:text-white capitalize">
-                                  {member.fullName.toLowerCase()}
-                                </div>
-                                <div className="text-[11px] text-neutral-400 font-mono">
-                                  ID: {member.cardId?.replace('RFID-', '') || '46466446'}
-                                </div>
-                              </div>
+                        {/* Member Identity Stack with Avatar */}
+                        <div className="col-span-4 flex items-center gap-3 min-w-0 pr-2">
+                          <div
+                            style={{ backgroundColor: avatarColor }}
+                            className="w-9 h-9 rounded-full flex items-center justify-center font-bold text-white text-xs shrink-0 shadow-2xs"
+                          >
+                            {member.fullName.charAt(0).toUpperCase()}
+                          </div>
+                          <div className="min-w-0">
+                            <div className="text-xs font-bold text-neutral-900 dark:text-white capitalize truncate">
+                              {member.fullName.toLowerCase()}
                             </div>
-                          </td>
+                            <div className="text-[11px] text-neutral-400 font-mono">
+                              ID: {member.cardId?.replace('RFID-', '') || '46466446'}
+                            </div>
+                          </div>
+                        </div>
 
-                          {/* Plan Tag (A1 pill matching screenshot) */}
-                          <td className="px-4 py-2.5 text-center">
-                            <span className="inline-block px-2.5 py-0.5 rounded-full bg-[#FCEFE9] dark:bg-neutral-800 text-[#C4785A] text-[11px] font-bold">
-                              {member.membershipPlanName === 'Plan A1' ? 'A1' : member.membershipPlanName || 'A1'}
-                            </span>
-                          </td>
+                        {/* Plan Tag (A1 pill matching screenshot) */}
+                        <div className="col-span-2 text-center">
+                          <span className="inline-block px-3 py-0.5 rounded-full bg-[#FDF4F0] dark:bg-neutral-700/80 text-[#C4785A] text-[11px] font-bold border border-[#F5E2D8] dark:border-neutral-600">
+                            {member.membershipPlanName === 'Plan A1' ? 'A1' : member.membershipPlanName || 'A1'}
+                          </span>
+                        </div>
 
-                          {/* Status (● Active with green dot) */}
-                          <td className="px-4 py-2.5 text-center">
-                            <span
-                              className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold border ${
-                                member.status === 'Active'
-                                  ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border-emerald-200/50'
-                                  : member.status === 'Frozen'
-                                  ? 'bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border-blue-200/50'
-                                  : 'bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border-rose-200/50'
-                              }`}
-                            >
-                              <span
-                                className={`w-1.5 h-1.5 rounded-full ${
-                                  member.status === 'Active'
-                                    ? 'bg-emerald-500'
-                                    : member.status === 'Frozen'
-                                    ? 'bg-blue-500'
-                                    : 'bg-rose-500'
-                                }`}
-                              />
-                              {member.status}
-                            </span>
-                          </td>
-
-                          {/* Balance (1,500.00 DA matching screenshot) */}
-                          <td className="px-4 py-2.5 text-right font-bold text-xs text-neutral-900 dark:text-white tabular-nums">
-                            1,500.00 DA
-                          </td>
-
-                          {/* Eye inspect action icon */}
-                          <td
-                            className="w-12 px-3 text-center"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              selectMember(member.id);
-                            }}
+                        {/* Status (● Active with green dot) */}
+                        <div className="col-span-2 text-center">
+                          <span
+                            className={`inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-semibold border ${
+                              member.status === 'Active'
+                                ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border-emerald-200/60'
+                                : member.status === 'Frozen'
+                                ? 'bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border-blue-200/60'
+                                : 'bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border-rose-200/60'
+                            }`}
                           >
-                            <button
-                              type="button"
-                              className="p-1 rounded-md text-neutral-400 hover:text-[#C4785A] transition-colors cursor-pointer"
-                              title="Inspect member details"
-                            >
-                              <Eye size={15} />
-                            </button>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+                            <span
+                              className={`w-1.5 h-1.5 rounded-full ${
+                                member.status === 'Active'
+                                  ? 'bg-emerald-500'
+                                  : member.status === 'Frozen'
+                                  ? 'bg-blue-500'
+                                  : 'bg-rose-500'
+                              }`}
+                            />
+                            {member.status}
+                          </span>
+                        </div>
+
+                        {/* Balance (1,500.00 DA matching screenshot) */}
+                        <div className="col-span-2 text-right font-mono font-bold text-xs text-neutral-900 dark:text-white tabular-nums pr-2">
+                          1,500.00 DA
+                        </div>
+
+                        {/* Eye inspect action icon */}
+                        <div
+                          className="col-span-1 flex items-center justify-center"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            selectMember(member.id);
+                          }}
+                        >
+                          <button
+                            type="button"
+                            className="p-1.5 rounded-full text-neutral-400 hover:text-[#C4785A] hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
+                            title="Inspect member details"
+                          >
+                            <Eye size={15} />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             ) : (
               /* Grid View Cards */
@@ -620,19 +609,17 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
                     <div
                       key={member.id}
                       onClick={() => selectMember(member.id)}
-                      style={{
-                        backgroundColor: isSelected
-                          ? 'rgba(196, 120, 90, 0.08)'
-                          : 'var(--color-card-bg)',
-                        border: '1px solid var(--color-card-border)',
-                      }}
-                      className="p-4 rounded-2xl shadow-xs hover:border-[#C4785A]/40 transition-all cursor-pointer space-y-3 group"
+                      className={`p-4 rounded-[20px] bg-white dark:bg-neutral-800 border transition-all cursor-pointer space-y-3 group shadow-2xs ${
+                        isSelected
+                          ? 'border-[#C4785A] ring-1 ring-[#C4785A]/30'
+                          : 'border-[#E9EEF0] dark:border-neutral-700/60 hover:border-[#D5DFE3]'
+                      }`}
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex items-center gap-3">
                           <div
                             style={{ backgroundColor: avatarColor }}
-                            className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white text-sm shrink-0 shadow-xs"
+                            className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white text-sm shrink-0 shadow-2xs"
                           >
                             {member.fullName.charAt(0).toUpperCase()}
                           </div>
@@ -655,8 +642,8 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
                         />
                       </div>
 
-                      <div className="flex items-center justify-between text-xs pt-1 border-t border-neutral-100 dark:border-neutral-800">
-                        <span className="px-2 py-0.5 rounded-full bg-[#FCEFE9] dark:bg-neutral-800 text-[#C4785A] text-[11px] font-bold">
+                      <div className="flex items-center justify-between text-xs pt-2 border-t border-[#EDF1F3] dark:border-neutral-700/60">
+                        <span className="px-2.5 py-0.5 rounded-full bg-[#FDF4F0] dark:bg-neutral-700 text-[#C4785A] text-[11px] font-bold border border-[#F5E2D8] dark:border-neutral-600">
                           {member.membershipPlanName === 'Plan A1' ? 'A1' : member.membershipPlanName || 'A1'}
                         </span>
                         <span className="font-bold text-neutral-900 dark:text-white tabular-nums">
@@ -680,11 +667,8 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
             <aside
               style={{
                 width: '390px',
-                backgroundColor: 'var(--color-card-bg)',
-                border: '1px solid var(--color-card-border)',
-                borderRadius: '20px',
               }}
-              className="shrink-0 p-6 flex flex-col justify-between max-h-[calc(100vh-220px)] overflow-y-auto animate-in slide-in-from-right-8 duration-200 shadow-md"
+              className="shrink-0 p-6 flex flex-col justify-between max-h-[calc(100vh-220px)] overflow-y-auto animate-in slide-in-from-right-8 duration-200 bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 rounded-[24px] shadow-lg"
             >
               <div className="space-y-6">
                 {/* Header */}

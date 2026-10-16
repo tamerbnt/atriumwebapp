@@ -91,9 +91,11 @@ export default function App() {
           onToggleMobileMenu={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
         />
 
-        {/* Dynamic Screen Viewport with 48px standard padding */}
-        <main className="flex-1 overflow-y-auto px-4 sm:px-8 lg:px-10 py-5 sm:py-8">
-          <div className="max-w-7xl mx-auto">{renderActiveScreen()}</div>
+        {/* Dynamic Screen Viewport wrapped in pure white desktop container */}
+        <main className="flex-1 overflow-y-auto pr-3 pl-2 pb-3 min-w-0">
+          <div className="bg-white dark:bg-[#18181B] rounded-[32px] p-6 sm:p-8 min-h-[calc(100vh-80px)] border border-[#E9EEF0] dark:border-neutral-800 shadow-2xs">
+            {renderActiveScreen()}
+          </div>
         </main>
       </div>
 

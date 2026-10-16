@@ -15,10 +15,10 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, size = 'md' })
       style={{
         backgroundColor: config.bg,
         color: config.color,
-        border: `1px solid ${config.color}30`,
+        border: `1px solid ${config.color}25`,
       }}
-      className={`inline-flex items-center gap-1.5 rounded-lg font-semibold whitespace-nowrap transition-colors ${
-        size === 'sm' ? 'px-2 py-0.5 text-xs' : 'px-2.5 py-1 text-xs'
+      className={`inline-flex items-center gap-1.5 rounded-full font-bold whitespace-nowrap transition-colors shadow-2xs ${
+        size === 'sm' ? 'px-2.5 py-0.5 text-[10px]' : 'px-3 py-1 text-xs'
       }`}
     >
       <span

@@ -51,7 +51,7 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({ isOpen, onClose }) =
     >
       <div className="space-y-5">
         {/* Active Entitlement Status */}
-        <div className="p-4 rounded-2xl bg-neutral-100 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700/60 flex items-center justify-between">
+        <div className="p-4 rounded-[20px] bg-[#F8F9FA] dark:bg-neutral-800/60 border border-[#EDF1F3] dark:border-neutral-700/60 flex items-center justify-between shadow-2xs">
           <div>
             <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 block">
               Current License Status
@@ -92,7 +92,7 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({ isOpen, onClose }) =
                   borderColor: 'var(--color-border)',
                   borderRadius: 'var(--radius-input)',
                 }}
-                className="w-full h-11 pl-10 pr-3 text-sm font-mono uppercase tracking-wider border focus:outline-none focus:border-[#C4785A] text-neutral-900 dark:text-white"
+                className="w-full h-11 pl-10 pr-3 text-sm font-mono uppercase tracking-wider border focus:outline-none focus:border-[#C4785A] text-neutral-900 dark:text-white shadow-2xs"
               />
             </div>
             <span className="text-[11px] text-neutral-400 block mt-1">
@@ -116,7 +116,7 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({ isOpen, onClose }) =
         {/* Feedback Alert */}
         {resultMessage && (
           <div
-            className={`p-3.5 rounded-xl text-xs font-semibold flex items-start gap-2.5 border ${
+            className={`p-3.5 rounded-2xl text-xs font-semibold flex items-start gap-2.5 border ${
               resultMessage.success
                 ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200'
                 : 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border-rose-200'
@@ -132,7 +132,7 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({ isOpen, onClose }) =
         )}
 
         {/* Preset Sample Vouchers */}
-        <div className="pt-2 border-t border-neutral-200/60 dark:border-neutral-800/80">
+        <div className="pt-2 border-t border-[#EDF1F3] dark:border-neutral-800/80">
           <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-400 block mb-2">
             Test Codes (Instant Lifetime Demo Activation)
           </span>
@@ -142,13 +142,13 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({ isOpen, onClose }) =
                 key={v.code}
                 type="button"
                 onClick={() => handleApplyPreset(v.code)}
-                className="w-full text-left p-2 rounded-xl border border-neutral-200/80 dark:border-neutral-800 hover:border-[#C4785A]/50 bg-neutral-50/50 dark:bg-neutral-800/30 flex items-center justify-between group cursor-pointer transition-colors"
+                className="w-full text-left p-3 rounded-2xl border border-[#E9EEF0] dark:border-neutral-800 hover:border-[#D5DFE3] bg-white dark:bg-neutral-800/50 flex items-center justify-between group cursor-pointer transition-colors shadow-2xs"
               >
                 <div>
-                  <div className="text-xs font-semibold text-neutral-800 dark:text-neutral-200">
+                  <div className="text-xs font-bold text-neutral-900 dark:text-white">
                     {v.label}
                   </div>
-                  <span className="text-[11px] font-mono text-[#C4785A]">
+                  <span className="text-[11px] font-mono text-[#C4785A] font-semibold">
                     {v.code}
                   </span>
                 </div>

@@ -207,28 +207,21 @@ export const SchedulerScreen: React.FC = () => {
       </div>
 
       {/* Row 1: Weekly Utilization & Attendance Health Banner Card */}
-      <div
-        style={{
-          backgroundColor: 'var(--color-card-bg)',
-          border: '1px solid var(--color-card-border)',
-          borderRadius: 'var(--radius-stage)',
-        }}
-        className="p-6 space-y-4 shadow-xs"
-      >
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[26px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
         <div>
           <h2 className="text-base font-bold text-neutral-900 dark:text-white">
             Weekly Utilization & Attendance Health
           </h2>
-          <p className="text-xs text-neutral-500 dark:text-neutral-400">
+          <p className="text-xs text-neutral-400 dark:text-neutral-500">
             Timetable density, enrolled athlete ratios, and peak floor occupancy
           </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {/* Tile 1: Weekly Classes */}
-          <div className="p-4 rounded-2xl bg-[#FAF9F6] dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-800 flex flex-col justify-between h-[120px]">
+          {/* Tile 1: Weekly Classes — Pure White Card */}
+          <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
             <div>
-              <span className="text-xs font-medium text-neutral-500">
+              <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
                 Weekly Scheduled Classes
               </span>
               <div className="mt-1">
@@ -243,10 +236,10 @@ export const SchedulerScreen: React.FC = () => {
             </div>
           </div>
 
-          {/* Tile 2: Enrolled Athletes */}
-          <div className="p-4 rounded-2xl bg-[#FAF9F6] dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-800 flex flex-col justify-between h-[120px]">
+          {/* Tile 2: Enrolled Athletes — Pure White Card */}
+          <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
             <div>
-              <span className="text-xs font-medium text-neutral-500">
+              <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
                 Enrolled Athletes Total
               </span>
               <div className="mt-1">
@@ -262,14 +255,9 @@ export const SchedulerScreen: React.FC = () => {
           </div>
 
           {/* Tile 3: Dark Obsidian Card */}
-          <div
-            style={{
-              backgroundColor: 'var(--color-card-dark)',
-            }}
-            className="p-4 rounded-2xl text-white flex flex-col justify-between h-[120px] shadow-sm"
-          >
+          <div className="p-5 rounded-[20px] bg-[#18181B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
             <div>
-              <span className="text-xs font-medium text-neutral-400">
+              <span className="text-xs font-medium text-neutral-300">
                 Peak Floor Capacity
               </span>
               <div className="text-[11px] text-[#C4785A] font-semibold mt-0.5">
@@ -287,14 +275,7 @@ export const SchedulerScreen: React.FC = () => {
       </div>
 
       {/* Row 2: Timetable Master Card */}
-      <div
-        style={{
-          backgroundColor: 'var(--color-card-bg)',
-          border: '1px solid var(--color-card-border)',
-          borderRadius: 'var(--radius-stage)',
-        }}
-        className="p-6 space-y-4 shadow-xs"
-      >
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[26px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
         {/* Table Control Header */}
         <div className="flex flex-wrap items-center justify-between gap-3">
           {/* Left: Icon + Title + Count */}
@@ -320,7 +301,7 @@ export const SchedulerScreen: React.FC = () => {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search session title, trainer, area..."
-                    className="h-9 px-3 text-xs rounded-full border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 focus:outline-none focus:border-[#C4785A] w-52 text-neutral-900 dark:text-white"
+                    className="h-9 px-3 text-xs rounded-full border border-[#E9EEF0] dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:border-[#C4785A] w-52 text-neutral-900 dark:text-white shadow-2xs"
                   />
                   <button
                     type="button"
@@ -337,7 +318,7 @@ export const SchedulerScreen: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsSearchActive(true)}
-                  className="w-9 h-9 rounded-full bg-[#FAF9F6] dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 flex items-center justify-center text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 cursor-pointer transition-colors"
+                  className="w-9 h-9 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex items-center justify-center text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 cursor-pointer transition-colors shadow-2xs"
                   title="Search timetable"
                 >
                   <Search size={14} />
@@ -346,7 +327,7 @@ export const SchedulerScreen: React.FC = () => {
             </div>
 
             {/* Day of Week Segmented Capsules */}
-            <div className="flex items-center p-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800/80 gap-0.5 text-xs font-semibold overflow-x-auto max-w-xs sm:max-w-none">
+            <div className="flex items-center p-0.5 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 gap-0.5 text-xs font-semibold shadow-2xs overflow-x-auto max-w-xs sm:max-w-none">
               {days.map((d) => {
                 const isActive = selectedDay === d.id;
                 return (
@@ -359,7 +340,7 @@ export const SchedulerScreen: React.FC = () => {
                       color: isActive ? 'var(--color-accent)' : '#71717A',
                     }}
                     className={`px-3 py-1 rounded-full cursor-pointer transition-all ${
-                      isActive ? 'font-bold shadow-2xs' : 'hover:text-neutral-900 dark:hover:text-white'
+                      isActive ? 'font-bold' : 'hover:text-neutral-900 dark:hover:text-white'
                     }`}
                   >
                     {d.short}
@@ -372,7 +353,7 @@ export const SchedulerScreen: React.FC = () => {
             <select
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
-              className="h-9 px-3 text-xs rounded-full bg-neutral-100 dark:bg-neutral-800 border-none font-semibold text-neutral-700 dark:text-neutral-300 cursor-pointer focus:outline-none"
+              className="h-9 px-3 text-xs rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 font-semibold text-neutral-700 dark:text-neutral-300 cursor-pointer focus:outline-none shadow-2xs"
             >
               {categories.map((c) => (
                 <option key={c} value={c}>
@@ -385,7 +366,7 @@ export const SchedulerScreen: React.FC = () => {
             <button
               type="button"
               onClick={handleExportCSV}
-              className="h-9 px-3.5 rounded-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-xs font-semibold text-neutral-700 dark:text-neutral-300 flex items-center gap-1.5 hover:bg-neutral-50 dark:hover:bg-neutral-700/50 cursor-pointer transition-colors shadow-2xs"
+              className="h-9 px-3.5 rounded-full border border-[#E9EEF0] dark:border-neutral-700/60 bg-white dark:bg-neutral-800 text-xs font-semibold text-neutral-700 dark:text-neutral-300 flex items-center gap-1.5 hover:bg-neutral-50 dark:hover:bg-neutral-700/50 cursor-pointer transition-colors shadow-2xs"
               title="Download timetable CSV"
             >
               <Download size={13} />
@@ -393,30 +374,30 @@ export const SchedulerScreen: React.FC = () => {
             </button>
 
             {/* View Mode Toggle */}
-            <div className="flex items-center gap-1 p-0.5 rounded-lg border border-neutral-200 dark:border-neutral-700">
+            <div className="flex items-center gap-1 p-0.5 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
               <button
                 type="button"
                 onClick={() => setViewMode('grid')}
-                className={`p-1.5 rounded-md cursor-pointer transition-colors ${
+                className={`p-1.5 rounded-full cursor-pointer transition-colors ${
                   viewMode === 'grid'
                     ? 'text-[#C4785A] bg-[#C4785A]/10 font-bold'
                     : 'text-neutral-400 hover:text-neutral-600'
                 }`}
                 title="Grid view"
               >
-                <LayoutGrid size={15} />
+                <LayoutGrid size={14} />
               </button>
               <button
                 type="button"
                 onClick={() => setViewMode('list')}
-                className={`p-1.5 rounded-md cursor-pointer transition-colors ${
+                className={`p-1.5 rounded-full cursor-pointer transition-colors ${
                   viewMode === 'list'
                     ? 'text-[#C4785A] bg-[#C4785A]/10 font-bold'
                     : 'text-neutral-400 hover:text-neutral-600'
                 }`}
                 title="List view"
               >
-                <List size={15} />
+                <List size={14} />
               </button>
             </div>
 
@@ -424,10 +405,10 @@ export const SchedulerScreen: React.FC = () => {
             <button
               type="button"
               onClick={toggleFullscreen}
-              className="p-2 rounded-lg border border-neutral-200 dark:border-neutral-700 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 cursor-pointer"
+              className="w-9 h-9 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex items-center justify-center text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 cursor-pointer transition-colors shadow-2xs"
               title="Toggle Fullscreen"
             >
-              <Maximize2 size={15} />
+              <Maximize2 size={13} />
             </button>
           </div>
         </div>
@@ -448,10 +429,10 @@ export const SchedulerScreen: React.FC = () => {
                   <div
                     key={event.id}
                     onClick={() => setSelectedEvent(event)}
-                    className={`p-5 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between h-[210px] ${
+                    className={`p-5 rounded-[20px] border transition-all cursor-pointer flex flex-col justify-between h-[210px] shadow-2xs ${
                       selectedEvent?.id === event.id
-                        ? 'border-[#C4785A] bg-[#FAF9F6] dark:bg-neutral-800/80 shadow-sm'
-                        : 'border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-800/40 hover:border-neutral-300 hover:shadow-xs'
+                        ? 'border-[#C4785A] bg-[#FCEEE8]/40 dark:bg-neutral-800/80 ring-1 ring-[#C4785A]/30'
+                        : 'border-[#E9EEF0] dark:border-neutral-700/60 bg-white dark:bg-neutral-800 hover:border-[#D5DFE3] dark:hover:border-neutral-600'
                     }`}
                   >
                     <div>

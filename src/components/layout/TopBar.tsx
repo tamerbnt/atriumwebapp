@@ -66,12 +66,7 @@ export const TopBar: React.FC<TopBarProps> = ({
 
   return (
     <header
-      style={{
-        backgroundColor: 'var(--color-surface-bg)',
-        border: '1px solid var(--color-border)',
-        borderRadius: 'var(--radius-dock)',
-      }}
-      className="h-[52px] my-3 mr-3 ml-2 px-5 flex items-center justify-between gap-4 shrink-0 shadow-xs z-20"
+      className="h-[52px] my-3 mr-3 ml-2 px-5 rounded-[26px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 flex items-center justify-between gap-4 shrink-0 shadow-2xs z-20"
     >
       {/* Left: Mobile Toggle & Breadcrumbs */}
       <div className="flex items-center gap-3 min-w-0">
