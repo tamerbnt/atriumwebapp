@@ -15,6 +15,11 @@ import {
   Cloud,
   CloudOff,
   RotateCw,
+  Laptop,
+  FileDown,
+  Printer,
+  WifiOff,
+  Download,
 } from 'lucide-react';
 import { useAtriumStore } from '../../services/store';
 import { Modal } from '../ui/Modal';
@@ -37,6 +42,13 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
     registerDevice,
     revokeDevice,
     openOnboarding,
+    openDesktopUpgradeModal,
+    currentUser,
+    members,
+    products,
+    freelanceClients,
+    freelanceInvoices,
+    sales,
     supabaseStatus,
     isSyncing,
     syncWithSupabase,
@@ -56,6 +68,59 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
   const [deviceLabel, setDeviceLabel] = useState('');
   const [deviceHwId, setDeviceHwId] = useState('');
   const [deviceError, setDeviceError] = useState<string | null>(null);
+  const [exportedStatus, setExportedStatus] = useState<string | null>(null);
+
+  const handleExportDataBackup = () => {
+    try {
+      const backupPayload = {
+        exportedAt: new Date().toISOString(),
+        user: currentUser,
+        account,
+        business: currentBusiness,
+        subscription,
+        statistics: {
+          membersCount: members.length,
+          productsCount: products.length,
+          freelanceClientsCount: freelanceClients.length,
+          invoicesCount: freelanceInvoices.length,
+          salesCount: sales.length,
+          branchesCount: branches.length,
+        },
+        data: {
+          branches,
+          members,
+          products,
+          freelanceClients,
+          freelanceInvoices,
+          sales,
+          devices,
+        },
+      };
+
+      const blob = new Blob([JSON.stringify(backupPayload, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `atrium-${currentBusiness.name.toLowerCase().replace(/\s+/g, '_')}-workspace-backup.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      setExportedStatus('Workspace JSON backup downloaded successfully!');
+      setTimeout(() => setExportedStatus(null), 4000);
+    } catch (err) {
+      console.warn('Backup export failed:', err);
+    }
+  };
+
+  const handleOpenAddBranch = () => {
+    if (branches.length >= subscription.plan.maxBranches) {
+      openDesktopUpgradeModal('branch_limit');
+    } else {
+      setIsAddBranchOpen(true);
+    }
+  };
 
   const handleCreateBranch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -106,7 +171,26 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
           </div>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex flex-wrap items-center gap-2.5">
+          <button
+            type="button"
+            onClick={handleExportDataBackup}
+            className="h-10 px-3.5 rounded-xl bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer border border-neutral-200 dark:border-neutral-700"
+            title="Download full JSON workspace backup"
+          >
+            <FileDown size={14} className="text-[#C4785A]" />
+            <span>Export Backup</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => openDesktopUpgradeModal('general')}
+            className="h-10 px-4 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-white text-xs font-bold flex items-center gap-2 transition-colors cursor-pointer dark:border dark:border-neutral-700 shadow-xs"
+          >
+            <Laptop size={14} className="text-[#C4785A]" />
+            <span>Download Desktop App</span>
+          </button>
+
           <button
             type="button"
             onClick={openOnboarding}
@@ -117,6 +201,13 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
           </button>
         </div>
       </div>
+
+      {exportedStatus && (
+        <div className="p-3 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-xs font-semibold flex items-center gap-2 animate-in fade-in">
+          <CheckCircle2 size={15} className="text-emerald-500 shrink-0" />
+          <span>{exportedStatus}</span>
+        </div>
+      )}
 
       {/* Row 1: License Status Banner */}
       <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[26px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs relative overflow-hidden">
@@ -142,20 +233,53 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             <p className="text-xs text-[#52525B] dark:text-neutral-400">
               {subscription.isLifetime
                 ? `Activated via voucher code ${subscription.activatedByVoucher || 'ATR-LIFE-VOUCHER'}. Perpetual updates and sync authorized.`
-                : 'Free evaluation tier. Enter your lifetime prepaid cash voucher code to unlock full capacity.'}
+                : 'Free evaluation tier. Enter your lifetime prepaid cash voucher code or upgrade on Desktop to unlock multi-branch management.'}
             </p>
           </div>
 
+          <div className="flex items-center gap-2.5 shrink-0">
+            <button
+              type="button"
+              onClick={() => openDesktopUpgradeModal('general')}
+              className="h-10 px-4 text-xs font-bold text-neutral-800 dark:text-neutral-200 border border-neutral-300 dark:border-neutral-700 rounded-full bg-white dark:bg-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-700 flex items-center gap-2 cursor-pointer transition-colors shadow-2xs"
+            >
+              <Download size={14} className="text-[#C4785A]" />
+              <span>Get Desktop Edition</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={onOpenVoucherModal}
+              style={{
+                backgroundColor: 'var(--color-accent)',
+              }}
+              className="h-10 px-5 text-xs font-bold text-white flex items-center gap-2 shrink-0 rounded-full hover:opacity-90 active:scale-98 transition-all cursor-pointer shadow-xs"
+            >
+              <KeyRound size={15} />
+              <span>Redeem Lifetime Voucher</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Free Web Edition Banner Notice */}
+        <div className="p-3.5 rounded-2xl bg-gradient-to-r from-[#FDF4F0] via-[#FAF0EA] to-white dark:from-[#26211E] dark:to-[#18181B] border border-[#F5E2D8] dark:border-[#3E3832] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-2.5">
+            <Laptop size={18} className="text-[#C4785A] shrink-0" />
+            <div>
+              <span className="font-extrabold text-neutral-900 dark:text-white">
+                Current Plan: Free Web Edition (1 Business, 1 Branch)
+              </span>
+              <p className="text-neutral-500 dark:text-neutral-400 text-[11px] mt-0.5">
+                Need more branches or offline mode? Upgrade with a Lifetime License on Desktop. Your cloud data automatically syncs via your Google account.
+              </p>
+            </div>
+          </div>
           <button
             type="button"
-            onClick={onOpenVoucherModal}
-            style={{
-              backgroundColor: 'var(--color-accent)',
-            }}
-            className="h-10 px-5 text-xs font-bold text-white flex items-center gap-2 shrink-0 rounded-full hover:opacity-90 active:scale-98 transition-all cursor-pointer shadow-xs"
+            onClick={() => openDesktopUpgradeModal('general')}
+            className="px-3.5 py-1.5 rounded-full bg-[#C4785A] text-white text-[11px] font-bold hover:bg-[#b3684a] transition-colors shrink-0 cursor-pointer self-start sm:self-auto"
           >
-            <KeyRound size={15} />
-            <span>Redeem Lifetime Voucher</span>
+            Upgrade on Desktop
           </button>
         </div>
 
@@ -296,12 +420,12 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
               Physical Branches & Facilities
             </h3>
             <p className="text-xs text-neutral-400 dark:text-neutral-500">
-              All physical locations under tenant business ({branches.length} registered)
+              All physical locations under tenant business ({branches.length} registered · {subscription.plan.maxBranches} permitted on {subscription.plan.name})
             </p>
           </div>
           <button
             type="button"
-            onClick={() => setIsAddBranchOpen(true)}
+            onClick={handleOpenAddBranch}
             style={{
               backgroundColor: 'var(--color-accent)',
             }}
@@ -311,6 +435,30 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             <span>Add Branch</span>
           </button>
         </div>
+
+        {/* Multi-Branch Desktop Alert when at capacity */}
+        {branches.length >= subscription.plan.maxBranches && (
+          <div className="p-3.5 rounded-2xl bg-[#FDF4F0] dark:bg-[#2A2420]/70 border border-[#F5E2D8] dark:border-[#4A3B33] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+            <div className="flex items-center gap-2.5">
+              <Building2 size={18} className="text-[#C4785A] shrink-0" />
+              <div>
+                <span className="font-extrabold text-neutral-900 dark:text-white">
+                  Multi-Facility Management is an Atrium Desktop Feature
+                </span>
+                <p className="text-neutral-600 dark:text-neutral-300 text-[11px] mt-0.5">
+                  Manage multiple physical branches, cross-branch memberships, and unified inventory reporting with Atrium Desktop.
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => openDesktopUpgradeModal('branch_limit')}
+              className="px-3 py-1.5 rounded-full bg-[#C4785A] text-white text-[11px] font-bold hover:bg-[#b3684a] transition-colors shrink-0 cursor-pointer self-start sm:self-auto"
+            >
+              Download Atrium Desktop (Windows / Mac)
+            </button>
+          </div>
+        )}
 
         <div className="space-y-2">
           {branches.map((b) => (
@@ -351,7 +499,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
               Authorized POS Hardware Terminals
             </h3>
             <p className="text-xs text-neutral-400 dark:text-neutral-500">
-              C# .NET desktop terminals and web consoles permitted for RPC access
+              Desktop workstations, barcode scanners, and thermal receipt printers
             </p>
           </div>
           <button
@@ -364,6 +512,28 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
           >
             <Plus size={14} />
             <span>Register Device</span>
+          </button>
+        </div>
+
+        {/* Hardware integration notice banner */}
+        <div className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-2.5">
+            <Printer size={18} className="text-[#C4785A] shrink-0" />
+            <div>
+              <span className="font-bold text-neutral-800 dark:text-neutral-200">
+                Hardware integration &amp; offline-first SQLite synchronization require Atrium Desktop
+              </span>
+              <p className="text-neutral-500 dark:text-neutral-400 text-[11px] mt-0.5">
+                Thermal receipt printers (ESC/POS), cash drawers, barcode guns, and biometric fingerprint/RFID turnstiles connect natively via the desktop app.
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => openDesktopUpgradeModal('general')}
+            className="px-3 py-1.5 rounded-full border border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-200 text-[11px] font-bold hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors shrink-0 cursor-pointer self-start sm:self-auto"
+          >
+            Learn More
           </button>
         </div>
 

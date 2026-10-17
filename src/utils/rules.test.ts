@@ -143,3 +143,24 @@ test('findCategoryByBusinessSearch accurately maps user search input to correct 
   assert.equal(findCategoryByBusinessSearch(''), null);
   assert.equal(findCategoryByBusinessSearch('a'), null);
 });
+
+test('Free Web Tier enforces 1 business and 1 branch limit while Desktop expands', () => {
+  // Free Web Tier (1 business, 1 branch)
+  const freeWebBizQuota = checkQuota(1, 1);
+  assert.equal(freeWebBizQuota.isAllowed, false);
+  assert.equal(freeWebBizQuota.remaining, 0);
+
+  const freeWebBranchQuota = checkQuota(1, 1);
+  assert.equal(freeWebBranchQuota.isAllowed, false);
+  assert.equal(freeWebBranchQuota.remaining, 0);
+
+  // Desktop Pro Tier (3 businesses, 5 branches)
+  const desktopProBizQuota = checkQuota(1, 3);
+  assert.equal(desktopProBizQuota.isAllowed, true);
+  assert.equal(desktopProBizQuota.remaining, 2);
+
+  const desktopProBranchQuota = checkQuota(1, 5);
+  assert.equal(desktopProBranchQuota.isAllowed, true);
+  assert.equal(desktopProBranchQuota.remaining, 4);
+});
+

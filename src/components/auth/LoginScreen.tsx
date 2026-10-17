@@ -17,6 +17,8 @@ import {
 import { useAtriumStore } from '../../services/store';
 import { authService } from '../../lib/supabase/services/authService';
 
+import { GoogleOAuthGuideModal } from '../modals/GoogleOAuthGuideModal';
+
 interface LoginScreenProps {
   onStartOnboarding: () => void;
 }
@@ -25,23 +27,33 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
   const { login, loginWithPin, staff } = useAtriumStore();
 
   const [authMode, setAuthMode] = useState<'password' | 'pin'>('password');
-  const [email, setEmail] = useState('bentouatitamer@gmail.com');
+  const [email, setEmail] = useState('mehdisamih79@gmail.com');
   const [password, setPassword] = useState('••••••••••••');
   const [showPassword, setShowPassword] = useState(false);
   const [pin, setPin] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
   const [rememberDevice, setRememberDevice] = useState(true);
+  const [isGoogleGuideOpen, setIsGoogleGuideOpen] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
   const handleGoogleLogin = async () => {
+    setIsGoogleLoading(true);
+    setError(null);
     try {
       const res = await authService.signInWithGoogle();
       if (res?.error) {
-        login('bentouatitamer@gmail.com', 'demo');
+        setError(res.error.message || 'Google Sign-in failed. You can sign in using Fast Owner Access or check the setup guide.');
       }
-    } catch {
-      login('bentouatitamer@gmail.com', 'demo');
+    } catch (err: any) {
+      setError(err?.message || 'Google Sign-in encountered an issue.');
+    } finally {
+      setIsGoogleLoading(false);
     }
+  };
+
+  const handleFastOwnerLogin = (ownerEmail: string = 'mehdisamih79@gmail.com') => {
+    login(ownerEmail, 'owner2026');
   };
 
   const handlePasswordSubmit = (e: React.FormEvent) => {
@@ -128,7 +140,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
         <button
           type="button"
           onClick={handleGoogleLogin}
-          className="w-full h-11 rounded-xl bg-white hover:bg-neutral-100 text-neutral-800 text-xs font-bold transition-all flex items-center justify-center gap-2.5 shadow-md cursor-pointer mb-3"
+          disabled={isGoogleLoading}
+          className="w-full h-11 rounded-xl bg-white hover:bg-neutral-100 text-neutral-800 text-xs font-bold transition-all flex items-center justify-center gap-2.5 shadow-md cursor-pointer mb-2 disabled:opacity-75"
         >
           <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
             <path
@@ -148,8 +161,31 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
               d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
             />
           </svg>
-          <span>Continue with Google</span>
+          <span>{isGoogleLoading ? 'Connecting Google Account...' : 'Continue with Google'}</span>
         </button>
+
+        {/* 1-Click Fast Owner Sign-in & OAuth Guide Row */}
+        <div className="flex items-center gap-2 mb-3">
+          <button
+            type="button"
+            onClick={() => handleFastOwnerLogin('mehdisamih79@gmail.com')}
+            className="flex-1 h-9 px-3 rounded-xl bg-[#2A2420] hover:bg-[#342D28] border border-[#483B33] text-white text-[11px] font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+            title="Instant sign-in without Google OAuth"
+          >
+            <Sparkles size={13} className="text-[#C4785A]" />
+            <span>Fast Sign-in as Owner</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setIsGoogleGuideOpen(true)}
+            className="h-9 px-3 rounded-xl bg-neutral-900/90 hover:bg-neutral-800 border border-neutral-700/80 text-neutral-300 hover:text-white text-[11px] font-semibold flex items-center justify-center gap-1 transition-colors cursor-pointer"
+            title="View Google Cloud & 403 Error Fix Guide"
+          >
+            <HelpCircle size={13} className="text-amber-400" />
+            <span>OAuth 403 Guide</span>
+          </button>
+        </div>
 
         <div className="relative flex py-2 items-center mb-3">
           <div className="flex-grow border-t border-neutral-800"></div>
@@ -395,6 +431,13 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
           </div>
         </div>
       )}
+
+      {/* Google OAuth & 403 Troubleshooting Modal */}
+      <GoogleOAuthGuideModal
+        isOpen={isGoogleGuideOpen}
+        onClose={() => setIsGoogleGuideOpen(false)}
+        onInstantLogin={handleFastOwnerLogin}
+      />
     </div>
   );
 };

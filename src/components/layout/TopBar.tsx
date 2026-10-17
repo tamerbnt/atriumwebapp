@@ -20,6 +20,8 @@ import {
   Building2,
   ChevronDown,
   Check,
+  Laptop,
+  Plus,
 } from 'lucide-react';
 import { useAtriumStore } from '../../services/store';
 import { formatDuration } from '../../utils/rules';
@@ -60,6 +62,7 @@ export const TopBar: React.FC<TopBarProps> = ({
     pauseTimer,
     resumeTimer,
     stopTimer,
+    openDesktopUpgradeModal,
   } = useAtriumStore();
 
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -312,6 +315,25 @@ export const TopBar: React.FC<TopBarProps> = ({
                   </button>
                 );
               })}
+
+              <div className="pt-1.5 mt-1 border-t border-neutral-100 dark:border-neutral-800 px-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFacilityDropdownOpen(false);
+                    openDesktopUpgradeModal('branch_limit');
+                  }}
+                  className="w-full px-2.5 py-1.5 rounded-xl text-left flex items-center justify-between text-xs text-[#C4785A] hover:bg-[#FDF4F0] dark:hover:bg-neutral-800 font-semibold cursor-pointer transition-colors"
+                >
+                  <div className="flex items-center gap-2">
+                    <Plus size={13} />
+                    <span>Add Facility or Branch</span>
+                  </div>
+                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-[#C4785A]/15 text-[#C4785A]">
+                    Desktop
+                  </span>
+                </button>
+              </div>
             </div>
           )}
         </div>

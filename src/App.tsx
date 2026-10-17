@@ -25,6 +25,7 @@ import { FreelanceTimeTrackerView } from './components/screens/freelance/Freelan
 import { FreelanceInvoicesView } from './components/screens/freelance/FreelanceInvoicesView';
 import { FreelanceProposalsView } from './components/screens/freelance/FreelanceProposalsView';
 import { FreelanceFinanceView } from './components/screens/freelance/FreelanceFinanceView';
+import { DesktopUpgradeModal } from './components/modals/DesktopUpgradeModal';
 
 export default function App() {
   const {
@@ -35,9 +36,12 @@ export default function App() {
     isAuthenticated,
     isOnboardingOpen,
     isFastSwitchOpen,
+    isDesktopUpgradeModalOpen,
+    desktopUpgradeReason,
     openOnboarding,
     closeOnboarding,
     closeFastSwitch,
+    closeDesktopUpgradeModal,
   } = useAtriumStore();
 
   // Onboarding wizard can be opened on demand via openOnboarding or new business setup
@@ -208,6 +212,14 @@ export default function App() {
         isOpen={isFastSwitchOpen}
         onClose={closeFastSwitch}
         onOpenOnboarding={() => setShowPowerOnboarding(true)}
+      />
+
+      {/* Free Web to Desktop Lifetime Upgrade Modal */}
+      <DesktopUpgradeModal
+        isOpen={isDesktopUpgradeModalOpen}
+        onClose={closeDesktopUpgradeModal}
+        onOpenVoucherModal={() => setIsVoucherModalOpen(true)}
+        reason={desktopUpgradeReason}
       />
     </div>
   );

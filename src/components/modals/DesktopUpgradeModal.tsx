@@ -178,6 +178,65 @@ export const DesktopUpgradeModal: React.FC<DesktopUpgradeModalProps> = ({
           </div>
         </div>
 
+        {/* Free Web vs Desktop Lifetime Side-by-Side Comparison */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+          {/* Free Web Tier Card */}
+          <div className="p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700/60 space-y-2.5">
+            <div className="flex items-center justify-between">
+              <span className="font-extrabold text-neutral-900 dark:text-white">Free Web App</span>
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
+                Active Now
+              </span>
+            </div>
+            <ul className="space-y-1.5 text-neutral-600 dark:text-neutral-300 text-[11px]">
+              <li className="flex items-center gap-1.5">
+                <CheckCircle2 size={13} className="text-emerald-500 shrink-0" />
+                <span><strong>1 Business</strong> &amp; <strong>1 Branch</strong></span>
+              </li>
+              <li className="flex items-center gap-1.5">
+                <CheckCircle2 size={13} className="text-emerald-500 shrink-0" />
+                <span>Real-time Supabase Cloud Storage</span>
+              </li>
+              <li className="flex items-center gap-1.5">
+                <CheckCircle2 size={13} className="text-emerald-500 shrink-0" />
+                <span>Web POS, Invoicing &amp; CRM</span>
+              </li>
+              <li className="flex items-center gap-1.5">
+                <CheckCircle2 size={13} className="text-emerald-500 shrink-0" />
+                <span>100% Free Forever (No credit card)</span>
+              </li>
+            </ul>
+          </div>
+
+          {/* Paid Desktop Lifetime Card */}
+          <div className="p-4 rounded-2xl bg-[#FDF4F0] dark:bg-[#2A2420]/60 border border-[#F5E2D8] dark:border-[#4A3B33] space-y-2.5">
+            <div className="flex items-center justify-between">
+              <span className="font-extrabold text-[#C4785A]">Paid Desktop App</span>
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#C4785A] text-white">
+                Lifetime License
+              </span>
+            </div>
+            <ul className="space-y-1.5 text-neutral-700 dark:text-neutral-300 text-[11px]">
+              <li className="flex items-center gap-1.5">
+                <Sparkles size={13} className="text-[#C4785A] shrink-0" />
+                <span><strong>Multi-Branch</strong> Chains &amp; Brands</span>
+              </li>
+              <li className="flex items-center gap-1.5">
+                <Sparkles size={13} className="text-[#C4785A] shrink-0" />
+                <span><strong>Offline-First</strong> local SQLite engine</span>
+              </li>
+              <li className="flex items-center gap-1.5">
+                <Sparkles size={13} className="text-[#C4785A] shrink-0" />
+                <span>Thermal receipt printer &amp; barcode guns</span>
+              </li>
+              <li className="flex items-center gap-1.5">
+                <Sparkles size={13} className="text-[#C4785A] shrink-0" />
+                <span>Prepaid Lifetime Cash Vouchers</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
         {/* The Seamless Data Sync Reassurance Box */}
         <div className="p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700/60 space-y-3">
           <div className="flex items-center gap-2 text-neutral-900 dark:text-white font-bold text-xs">

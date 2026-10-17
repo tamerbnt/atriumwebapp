@@ -23,6 +23,8 @@ import {
   AlertTriangle,
   Sparkles,
   Barcode,
+  Printer,
+  Laptop,
 } from 'lucide-react';
 import { useAtriumStore } from '../../services/store';
 import { Product } from '../../types/index';
@@ -49,6 +51,7 @@ export const ShopScreen: React.FC = () => {
     switchBranch,
     processSale,
     addProduct,
+    openDesktopUpgradeModal,
   } = useAtriumStore();
 
   const isSalon = currentBusiness.category === 'appointment_service';
@@ -985,16 +988,54 @@ export const ShopScreen: React.FC = () => {
               ))}
             </div>
 
-            <button
-              type="button"
-              onClick={() => setCompletedSale(null)}
-              style={{
-                backgroundColor: 'var(--color-accent)',
-              }}
-              className="w-full h-10 text-xs font-bold text-white rounded-full cursor-pointer hover:opacity-90 shadow-xs"
-            >
-              Done / New Register Order
-            </button>
+            {/* Hardware ESC/POS Desktop Prompt */}
+            <div className="p-3 rounded-2xl bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700/60 text-left text-xs space-y-1.5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5 text-neutral-800 dark:text-neutral-200 font-bold">
+                  <Printer size={13} className="text-[#C4785A]" />
+                  <span>Thermal POS Hardware</span>
+                </div>
+                <span className="text-[10px] font-bold text-[#C4785A] bg-[#C4785A]/15 px-2 py-0.5 rounded-full">
+                  Atrium Desktop
+                </span>
+              </div>
+              <p className="text-[11px] text-neutral-500 leading-relaxed">
+                Direct ESC/POS 80mm/58mm thermal receipt printing and automated cash drawer triggers require Atrium Desktop.
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  setCompletedSale(null);
+                  openDesktopUpgradeModal('general');
+                }}
+                className="text-[11px] font-bold text-[#C4785A] hover:underline flex items-center gap-1 cursor-pointer pt-0.5"
+              >
+                <Laptop size={11} />
+                <span>Get Desktop POS Hardware Edition</span>
+              </button>
+            </div>
+
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => window.print()}
+                className="h-10 px-4 text-xs font-bold text-neutral-700 dark:text-neutral-200 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 rounded-full cursor-pointer flex items-center justify-center gap-1.5 border border-neutral-200 dark:border-neutral-700"
+              >
+                <Printer size={13} />
+                <span>Print Browser Receipt</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setCompletedSale(null)}
+                style={{
+                  backgroundColor: 'var(--color-accent)',
+                }}
+                className="flex-1 h-10 text-xs font-bold text-white rounded-full cursor-pointer hover:opacity-90 shadow-xs"
+              >
+                Done / New Register Order
+              </button>
+            </div>
           </div>
         </Modal>
       )}

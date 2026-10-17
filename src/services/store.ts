@@ -499,6 +499,36 @@ export function useAtriumStore() {
     }
   }, []);
 
+  // Supabase Auth state listener for seamless Google OAuth session hydration
+  useEffect(() => {
+    if (!isSupabaseConfigured()) return;
+    const unsubscribe = authService.onAuthStateChange(async (session) => {
+      if (session?.user) {
+        await authService.ensureUserAccount(session.user);
+        const fullName =
+          session.user.user_metadata?.full_name ||
+          session.user.user_metadata?.name ||
+          session.user.email?.split('@')[0] ||
+          'Atrium Owner';
+        globalState = {
+          ...globalState,
+          currentUser: {
+            ...globalState.currentUser,
+            id: session.user.id,
+            email: session.user.email || globalState.currentUser.email,
+            fullName,
+          },
+          isAuthenticated: true,
+        };
+        notify();
+        syncWithSupabase();
+      }
+    });
+    return () => {
+      unsubscribe();
+    };
+  }, []);
+
   // Real-time synchronization subscription for current active branch
   useEffect(() => {
     ensureBranchSubscription(state.currentBranchId);
@@ -948,6 +978,57 @@ export function useAtriumStore() {
     };
     notify();
     return newStaff;
+  };
+
+  const addBusiness = (name: string, category: BusinessCategory, address?: string, phone?: string) => {
+    if (!businessQuota.isAllowed) {
+      openDesktopUpgradeModal('business_limit');
+      throw new Error(`Business limit reached for ${plan.name} (${plan.maxBusinesses}). Upgrade to Atrium Desktop to unlock multi-business management.`);
+    }
+
+    const newBiz: Business = {
+      id: `biz_${Date.now()}`,
+      accountId: state.account.id,
+      name,
+      displayName: name,
+      category,
+      address,
+      phone,
+      isActive: true,
+      createdAt: new Date().toISOString(),
+    };
+
+    const newBranch: Branch = {
+      id: `branch_${Date.now()}`,
+      accountId: state.account.id,
+      businessId: newBiz.id,
+      name: `${name} Main`,
+      code: name.substring(0, 3).toUpperCase() || 'M01',
+      address,
+      phone,
+      isMainBranch: true,
+      isActive: true,
+      createdAt: new Date().toISOString(),
+    };
+
+    globalState = {
+      ...globalState,
+      businesses: [...globalState.businesses, newBiz],
+      branches: [...globalState.branches, newBranch],
+      currentBusinessId: newBiz.id,
+      currentBranchId: newBranch.id,
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      tenantService
+        .createBusiness(state.account.id, name, category, address, phone)
+        .catch((err) => {
+          console.warn('[store] Failed to create business on Supabase:', err);
+        });
+    }
+
+    return newBiz;
   };
 
   const addBranch = (name: string, code: string, address?: string, phone?: string) => {
@@ -2475,6 +2556,7 @@ export function useAtriumStore() {
     addProduct,
     processSale,
     addStaff,
+    addBusiness,
     addBranch,
     registerDevice,
     revokeDevice,

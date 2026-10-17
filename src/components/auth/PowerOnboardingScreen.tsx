@@ -29,11 +29,13 @@ import {
   KeyRound,
   Cloud,
   Download,
+  HelpCircle,
 } from 'lucide-react';
 import { useAtriumStore } from '../../services/store';
 import { BusinessCategory, OnboardingParams } from '../../types/index';
 import { validateVoucherCode } from '../../utils/rules';
 import { authService } from '../../lib/supabase/services/authService';
+import { GoogleOAuthGuideModal } from '../modals/GoogleOAuthGuideModal';
 import {
   findCategoryByBusinessSearch,
   POPULAR_BUSINESS_SEARCHES,
@@ -51,16 +53,17 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
 }) => {
   const { completeOnboarding } = useAtriumStore();
 
-  const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
+  const [currentStep, setCurrentStep] = useState<1 | 2>(1);
 
   // Step 1: Owner Account & Google Auth
   const [authMethod, setAuthMethod] = useState<'google' | 'email'>('google');
   const [isGoogleConnected, setIsGoogleConnected] = useState(true);
-  const [fullName, setFullName] = useState('Amine Bentouati');
-  const [email, setEmail] = useState('bentouatitamer@gmail.com');
+  const [fullName, setFullName] = useState('Mehdi Samih');
+  const [email, setEmail] = useState('mehdisamih79@gmail.com');
   const [phone, setPhone] = useState('+213 550 12 34 56');
   const [password, setPassword] = useState('Atrium2026!');
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [isGoogleGuideOpen, setIsGoogleGuideOpen] = useState(false);
 
   // Step 2: Business & Vertical
   const [businessName, setBusinessName] = useState('Atrium Creative Studio');
@@ -70,27 +73,31 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
   const [businessSearchQuery, setBusinessSearchQuery] = useState('');
   const [matchResult, setMatchResult] = useState<BusinessMatchResult | null>(null);
 
-  // Step 3: Optional Voucher & Launch
+  // Optional Voucher & Launch
   const [voucherCode, setVoucherCode] = useState('');
   const [showVoucherInput, setShowVoucherInput] = useState(false);
   const [isProvisioning, setIsProvisioning] = useState(false);
+  const [googleSetupNotice, setGoogleSetupNotice] = useState<string | null>(null);
 
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
+    setGoogleSetupNotice(null);
     try {
       const res = await authService.signInWithGoogle();
       if (res?.error) {
-        // If OAuth redirect is not configured, gracefully simulate Google profile connection
-        setFullName('Amine Bentouati');
-        setEmail('bentouatitamer@gmail.com');
+        setFullName('Mehdi Samih');
+        setEmail('mehdisamih79@gmail.com');
         setIsGoogleConnected(true);
+        setGoogleSetupNotice(
+          'Google Cloud OAuth is not completed or returned 403. You are connected instantly as Workspace Owner so you can finish setup!'
+        );
       } else {
         setIsGoogleConnected(true);
       }
     } catch {
       setIsGoogleConnected(true);
     } finally {
-      setTimeout(() => setGoogleLoading(false), 400);
+      setTimeout(() => setGoogleLoading(false), 300);
     }
   };
 
@@ -125,13 +132,11 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
     if (currentStep === 1) {
       if (!fullName.trim() || !email.trim()) return;
       setCurrentStep(2);
-    } else if (currentStep === 2) {
-      if (!businessName.trim() || !branchName.trim()) return;
-      setCurrentStep(3);
     }
   };
 
   const handleLaunchWorkspace = () => {
+    if (!businessName.trim() || !branchName.trim()) return;
     setIsProvisioning(true);
     setTimeout(() => {
       const payload: OnboardingParams = {
@@ -148,7 +153,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
       completeOnboarding(payload);
       setIsProvisioning(false);
       onComplete();
-    }, 600);
+    }, 500);
   };
 
   const verticals: Array<{
@@ -215,7 +220,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
       <div className="absolute -top-32 -right-32 w-[650px] h-[650px] bg-[#C4785A]/15 rounded-full blur-[140px] pointer-events-none" />
       <div className="absolute -bottom-32 left-1/3 w-[500px] h-[500px] bg-[#8C3D28]/15 rounded-full blur-[120px] pointer-events-none" />
 
-      {/* LEFT: FLOATING PURE WHITE CARD (The Onboarding happens directly here!) */}
+      {/* LEFT: FLOATING PURE WHITE CARD */}
       <div className="w-full lg:w-[560px] xl:w-[600px] p-4 sm:p-6 lg:p-7 shrink-0 flex flex-col justify-center z-20">
         <div className="bg-white text-neutral-900 rounded-[32px] p-6 sm:p-8 shadow-2xl border border-neutral-100 flex flex-col justify-between max-h-[calc(100vh-48px)] overflow-y-auto">
           {/* Card Top: Atrium Brand Logo Emblem */}
@@ -241,23 +246,22 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                     </span>
                   </div>
                   <span className="text-[11px] text-neutral-400 block -mt-0.5">
-                    1 Business & 1 Branch Forever Free
+                    1 Business &amp; 1 Branch Forever Free
                   </span>
                 </div>
               </div>
 
               {/* Step Pill */}
               <div className="h-7 px-3 rounded-full bg-neutral-100 text-[11px] font-bold text-neutral-700 flex items-center gap-1">
-                <span>Step {currentStep} of 3</span>
+                <span>Step {currentStep} of 2</span>
               </div>
             </div>
 
-            {/* 3-Step Progress Bar */}
-            <div className="grid grid-cols-3 gap-1.5 my-4">
+            {/* 2-Step Progress Bar */}
+            <div className="grid grid-cols-2 gap-2 my-4">
               {[
-                { n: 1, label: 'Account' },
-                { n: 2, label: 'Business & Branch' },
-                { n: 3, label: 'Ready to Launch' },
+                { n: 1, label: 'Owner Google Account' },
+                { n: 2, label: 'Business & Branch Profile' },
               ].map((s) => (
                 <div key={s.n} className="space-y-1">
                   <div
@@ -320,6 +324,34 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                     </span>
                     {isGoogleConnected && <CheckCircle2 size={16} className="text-emerald-500 ml-auto" />}
                   </button>
+
+                  {/* Fast Action Row */}
+                  <div className="flex items-center justify-between text-xs px-1">
+                    <button
+                      type="button"
+                      onClick={() => setIsGoogleGuideOpen(true)}
+                      className="text-[#C4785A] hover:text-[#b3684a] font-semibold text-[11px] flex items-center gap-1 cursor-pointer transition-colors"
+                    >
+                      <HelpCircle size={13} />
+                      <span>Google 403 Error &amp; Cloud Setup Guide</span>
+                    </button>
+                    <span className="text-[10px] text-neutral-400 font-medium">Free forever · No credit card</span>
+                  </div>
+
+                  {googleSetupNotice && (
+                    <div className="p-3 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-900 space-y-1 animate-in fade-in">
+                      <div className="flex items-center gap-1.5 font-bold text-amber-800">
+                        <Sparkles size={14} className="text-amber-600 shrink-0" />
+                        <span>Connected Instantly as Workspace Owner</span>
+                      </div>
+                      <p className="text-[11px] text-amber-700 leading-relaxed">
+                        {googleSetupNotice}
+                      </p>
+                      <div className="text-[10px] text-neutral-500 pt-1 border-t border-amber-200/60">
+                        To enable Google OAuth popups later, visit Supabase Dashboard &gt; Authentication &gt; Providers &gt; Google.
+                      </div>
+                    </div>
+                  )}
 
                   <div className="relative flex py-1 items-center">
                     <div className="flex-grow border-t border-neutral-200"></div>
@@ -565,63 +597,25 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                     })}
                   </div>
                 </div>
-              </div>
-            )}
 
-            {/* STEP 3: REVIEW & LAUNCH + DESKTOP UPGRADE EXPLANATION */}
-            {currentStep === 3 && (
-              <div className="space-y-3.5 py-1 animate-in fade-in duration-150">
-                <div>
-                  <h3 className="text-lg font-extrabold text-neutral-900">
-                    Ready to Launch Workspace
-                  </h3>
-                  <p className="text-xs text-neutral-500 mt-0.5">
-                    Your Web Free Edition is configured and ready.
-                  </p>
-                </div>
-
-                <div className="p-4 rounded-2xl bg-neutral-50 border border-neutral-200 space-y-2.5 text-xs">
-                  <div className="flex justify-between pb-1.5 border-b border-neutral-200">
-                    <span className="text-neutral-500">Business:</span>
-                    <span className="font-bold text-neutral-900">
-                      {businessName} ({category.replace('_', ' ')})
-                    </span>
-                  </div>
-                  <div className="flex justify-between pb-1.5 border-b border-neutral-200">
-                    <span className="text-neutral-500">Branch (Free Web Plan):</span>
-                    <span className="font-bold text-neutral-900">{branchName}</span>
-                  </div>
-                  <div className="flex justify-between pb-1.5 border-b border-neutral-200">
-                    <span className="text-neutral-500">Owner & Google SSO:</span>
-                    <span className="font-bold text-neutral-900">{fullName} ({email})</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-neutral-500">Edition Status:</span>
-                    <span className="font-bold text-emerald-600 flex items-center gap-1">
-                      <CheckCircle2 size={13} />
-                      <span>100% Free Forever (1 Business & 1 Branch)</span>
-                    </span>
-                  </div>
-                </div>
-
-                {/* The Desktop Upgrade Callout */}
-                <div className="p-3.5 rounded-2xl bg-gradient-to-br from-[#1E1B19] to-[#2A2420] text-white border border-[#3E3832] space-y-2">
+                {/* Free Web Edition Confirmation & Multi-Branch Note */}
+                <div className="p-3 rounded-2xl bg-neutral-50 border border-neutral-200 text-xs space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Laptop size={15} className="text-[#C4785A]" />
-                      <span className="text-xs font-bold text-white">Need Multi-Branch Later?</span>
-                    </div>
-                    <span className="text-[10px] font-bold text-[#C4785A] uppercase tracking-wider bg-[#C4785A]/20 px-2 py-0.5 rounded-full">
-                      Atrium Desktop
+                    <span className="font-bold text-neutral-800 flex items-center gap-1.5">
+                      <CheckCircle2 size={13} className="text-emerald-500" />
+                      <span>Free Web Edition (1 Business, 1 Branch)</span>
+                    </span>
+                    <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full uppercase">
+                      No Card Needed
                     </span>
                   </div>
-                  <p className="text-[11px] text-neutral-300 leading-relaxed">
-                    If you expand to multiple locations or require hardware POS (receipt printers & cash drawers), simply download the Atrium Desktop App. <strong>Your cloud data syncs automatically via your Google account!</strong>
+                  <p className="text-[11px] text-neutral-500 leading-relaxed">
+                    Need multi-branch chains or hardware POS later? Simply download <strong>Atrium Desktop</strong> and your data will automatically load via Google SSO.
                   </p>
                 </div>
 
-                {/* Optional Voucher Toggle */}
-                <div className="pt-1">
+                {/* Optional Desktop Voucher Toggle */}
+                <div className="pt-0.5">
                   {!showVoucherInput ? (
                     <button
                       type="button"
@@ -632,8 +626,8 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                       <span>Have a Desktop Lifetime License Voucher? (Optional)</span>
                     </button>
                   ) : (
-                    <div className="p-3 rounded-xl bg-neutral-50 border border-neutral-200 space-y-1.5 animate-in fade-in">
-                      <label className="block text-[11px] font-bold text-neutral-700">
+                    <div className="p-2.5 rounded-xl bg-neutral-50 border border-neutral-200 space-y-1 animate-in fade-in">
+                      <label className="block text-[10px] font-bold text-neutral-700">
                         Desktop Voucher Code (Optional)
                       </label>
                       <input
@@ -643,9 +637,6 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                         placeholder="ATR-PRO-LIFE-XXXX-XXXX"
                         className="w-full h-8 px-2.5 rounded-lg bg-white border border-neutral-300 font-mono text-xs uppercase"
                       />
-                      <span className="text-[10px] text-neutral-400 block">
-                        Leave blank to start with the 100% Free Web Edition.
-                      </span>
                     </div>
                   )}
                 </div>
@@ -658,7 +649,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
             {currentStep > 1 ? (
               <button
                 type="button"
-                onClick={() => setCurrentStep((prev) => (prev - 1) as any)}
+                onClick={() => setCurrentStep(1)}
                 className="h-10 px-3.5 rounded-xl bg-neutral-100 hover:bg-neutral-200 text-neutral-700 text-xs font-semibold flex items-center gap-1 cursor-pointer transition-colors"
               >
                 <ChevronLeft size={14} />
@@ -670,11 +661,11 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                 onClick={onSkipToDashboard}
                 className="text-xs text-neutral-500 hover:text-neutral-900 underline cursor-pointer"
               >
-                Skip & Open Demo
+                Skip &amp; Open Demo
               </button>
             )}
 
-            {currentStep < 3 ? (
+            {currentStep === 1 ? (
               <button
                 type="button"
                 onClick={handleNext}
@@ -772,6 +763,16 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
           <span>English • Français • العربية</span>
         </div>
       </div>
+
+      {/* Google OAuth & 403 Troubleshooting Modal */}
+      <GoogleOAuthGuideModal
+        isOpen={isGoogleGuideOpen}
+        onClose={() => setIsGoogleGuideOpen(false)}
+        onInstantLogin={(em) => {
+          setEmail(em);
+          setIsGoogleConnected(true);
+        }}
+      />
     </div>
   );
 };
