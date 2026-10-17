@@ -25,6 +25,8 @@ import {
   Sparkles,
   Scissors,
   Clock,
+  Receipt,
+  ShoppingCart,
 } from 'lucide-react';
 import { useAtriumStore } from '../../services/store';
 import { Member, MemberStatus } from '../../types/index';
@@ -50,6 +52,7 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
     currentBranch,
     terminology,
     appointments,
+    sales,
     switchBusiness,
     switchBranch,
     selectedMember,
@@ -58,6 +61,7 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
     closeDetail,
     updateMember,
     deleteMember,
+    setScreen,
   } = useAtriumStore();
 
   const [statusFilter, setStatusFilter] = useState<'All' | 'Active' | 'Expiring' | 'Expired' | 'Archived'>('All');

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   BarChart2,
   TrendingUp,
@@ -15,6 +15,8 @@ import {
   ShoppingCart,
   UserCheck,
   Sparkles,
+  Receipt,
+  Tag,
 } from 'lucide-react';
 import { useAtriumStore } from '../../services/store';
 import { formatMoney } from '../../utils/rules';
@@ -22,6 +24,7 @@ import { formatMoney } from '../../utils/rules';
 export const AnalyticsScreen: React.FC = () => {
   const {
     currentBranch,
+    currentBusiness,
     businesses,
     branches,
     currentBusinessId,
@@ -32,22 +35,82 @@ export const AnalyticsScreen: React.FC = () => {
     products,
   } = useAtriumStore();
 
+  const isPOS = currentBusiness.category === 'pos_inventory';
+  const isSalon = currentBusiness.category === 'appointment_service';
+
   const [timeRange, setTimeRange] = useState<'Today' | '7 Days' | '30 Days' | 'This Month' | 'Year'>('30 Days');
   const [selectedDay, setSelectedDay] = useState<'Mon' | 'Tue' | 'Wed' | 'Thu' | 'Fri' | 'Sat' | 'Sun'>('Wed');
   const [isFacilityDropdownOpen, setIsFacilityDropdownOpen] = useState(false);
   const [isTimeDropdownOpen, setIsTimeDropdownOpen] = useState(false);
 
-  // Hourly traffic profile data for selected day
-  const hourlyData: Record<string, number[]> = {
-    Mon: [20, 35, 55, 68, 85, 60, 42, 88, 92, 50],
-    Tue: [25, 40, 60, 72, 80, 58, 45, 84, 90, 52],
-    Wed: [38, 55, 75, 70, 95, 62, 40, 78, 85, 48],
-    Thu: [30, 48, 68, 74, 88, 65, 48, 82, 88, 55],
-    Fri: [45, 62, 80, 85, 98, 70, 55, 94, 96, 60],
-    Sat: [50, 70, 90, 92, 85, 65, 50, 72, 65, 40],
-    Sun: [15, 25, 40, 50, 60, 45, 30, 40, 35, 20],
-  };
+  // Dynamic Live Financial & Sales Aggregations
+  const totalGrossRevenue = useMemo(() => {
+    return sales.reduce((sum, s) => sum + s.totalAmount, 0);
+  }, [sales]);
 
+  const totalTransactions = useMemo(() => sales.length, [sales]);
+
+  const avgBasket = useMemo(() => {
+    return totalTransactions > 0 ? Math.round(totalGrossRevenue / totalTransactions) : 0;
+  }, [totalGrossRevenue, totalTransactions]);
+
+  const totalCustomers = useMemo(() => members.length, [members]);
+
+  // Payment Tender breakdown
+  const tenderStats = useMemo(() => {
+    const cashTotal = sales
+      .filter((s) => s.paymentMethod === 'Cash')
+      .reduce((sum, s) => sum + s.totalAmount, 0);
+    const cardTotal = sales
+      .filter((s) => s.paymentMethod === 'Card')
+      .reduce((sum, s) => sum + s.totalAmount, 0);
+    const otherTotal = sales
+      .filter((s) => s.paymentMethod !== 'Cash' && s.paymentMethod !== 'Card')
+      .reduce((sum, s) => sum + s.totalAmount, 0);
+
+    const safeTotal = totalGrossRevenue || 1;
+    const cashPct = Math.round((cashTotal / safeTotal) * 100);
+    const cardPct = Math.round((cardTotal / safeTotal) * 100);
+    const otherPct = Math.max(0, 100 - cashPct - cardPct);
+
+    return {
+      cashTotal,
+      cardTotal,
+      otherTotal,
+      cashPct,
+      cardPct,
+      otherPct,
+    };
+  }, [sales, totalGrossRevenue]);
+
+  // Top Selling Products dynamically ranked from sales line items
+  const topSellingProducts = useMemo(() => {
+    const map: Record<string, { name: string; quantity: number; revenue: number }> = {};
+    sales.forEach((s) => {
+      s.items.forEach((it) => {
+        if (!map[it.productName]) {
+          map[it.productName] = { name: it.productName, quantity: 0, revenue: 0 };
+        }
+        map[it.productName].quantity += it.quantity;
+        map[it.productName].revenue += it.totalPrice;
+      });
+    });
+
+    const list = Object.values(map)
+      .sort((a, b) => b.revenue - a.revenue)
+      .slice(0, 4);
+
+    if (list.length > 0) return list;
+
+    // Fallback to top products if no sales registered yet
+    return products.slice(0, 4).map((p) => ({
+      name: p.name,
+      quantity: p.stockQuantity,
+      revenue: p.price.amount * 4,
+    }));
+  }, [sales, products]);
+
+  // Dynamic Hourly Register Volume
   const hours = [
     '08:00',
     '09:00',
@@ -61,17 +124,37 @@ export const AnalyticsScreen: React.FC = () => {
     '19:00',
   ];
 
-  const currentDayHeights = hourlyData[selectedDay] || hourlyData.Wed;
+  const hourlyHeights = useMemo(() => {
+    const hourSlots = [8, 9, 10, 11, 12, 14, 16, 17, 18, 19];
+    const counts = hourSlots.map((targetHour) => {
+      return sales.filter((s) => {
+        const d = new Date(s.createdAt);
+        return d.getHours() === targetHour;
+      }).length;
+    });
+
+    const maxCount = Math.max(...counts, 1);
+    const hasAnySales = counts.some((c) => c > 0);
+
+    if (hasAnySales) {
+      return counts.map((c) => (c > 0 ? Math.min(100, Math.max(25, Math.round((c / maxCount) * 100))) : 18));
+    }
+
+    // Default curve when zero sales registered
+    return [25, 40, 60, 72, 85, 60, 45, 80, 90, 50];
+  }, [sales]);
 
   const handleExportCSV = () => {
     const csvContent =
       'data:text/csv;charset=utf-8,' +
       'Metric,Value,Period\n' +
-      `Total Footfall,1482,${timeRange}\n` +
-      `Gross Revenue,348500 DZD,${timeRange}\n` +
-      `Active Members,${members.length},${timeRange}\n` +
-      `Retention Rate,91.8%,${timeRange}\n` +
-      `Average Spend,4250 DZD,${timeRange}\n`;
+      `Gross Revenue,${totalGrossRevenue} DZD,${timeRange}\n` +
+      `Total Transactions,${totalTransactions},${timeRange}\n` +
+      `Average Basket,${avgBasket} DZD,${timeRange}\n` +
+      `Active Customers,${totalCustomers},${timeRange}\n` +
+      `Cash Tender Total,${tenderStats.cashTotal} DZD,${timeRange}\n` +
+      `Card Tender Total,${tenderStats.cardTotal} DZD,${timeRange}\n` +
+      `Other Tender Total,${tenderStats.otherTotal} DZD,${timeRange}\n`;
 
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
@@ -204,26 +287,27 @@ export const AnalyticsScreen: React.FC = () => {
 
       {/* 4 Main KPI Stat Tiles */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Footfall / Check-ins */}
+        {/* Footfall / Transactions */}
         <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-semibold text-[#64748B] dark:text-neutral-400">
-              Total Footfall
+              {isPOS ? 'Total POS Transactions' : 'Total Footfall'}
             </span>
             <div className="w-7 h-7 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
-              <UserCheck size={15} />
+              {isPOS ? <Receipt size={15} /> : <UserCheck size={15} />}
             </div>
           </div>
           <div className="mt-3">
-            <div className="text-2xl font-black text-neutral-900 dark:text-white tabular-nums tracking-tight">
-              1,482
+            <div className="text-2xl font-black text-neutral-900 dark:text-white tabular-nums tracking-tight font-mono">
+              {isPOS ? `${totalTransactions}` : '1,482'}
+              {isPOS && <span className="text-xs font-normal text-neutral-400 ml-1">tickets</span>}
             </div>
             <div className="mt-1 flex items-center gap-1.5 text-[11px]">
               <span className="font-bold text-emerald-600 flex items-center">
                 <ArrowUpRight size={12} />
-                +14.2%
+                {isPOS ? 'Live' : '+14.2%'}
               </span>
-              <span className="text-neutral-400">vs prev {timeRange.toLowerCase()}</span>
+              <span className="text-neutral-400">{isPOS ? 'Settled transactions' : `vs prev ${timeRange.toLowerCase()}`}</span>
             </div>
           </div>
         </div>
@@ -232,70 +316,71 @@ export const AnalyticsScreen: React.FC = () => {
         <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-semibold text-[#64748B] dark:text-neutral-400">
-              Gross Revenue
+              Gross Sales Revenue
             </span>
             <div className="w-7 h-7 rounded-lg bg-amber-50 dark:bg-amber-950/40 text-[#C4785A] flex items-center justify-center">
               <CreditCard size={15} />
             </div>
           </div>
           <div className="mt-3">
-            <div className="text-2xl font-black text-neutral-900 dark:text-white tabular-nums tracking-tight">
-              348,500 <span className="text-xs font-bold text-neutral-400">DA</span>
+            <div className="text-2xl font-black text-neutral-900 dark:text-white tabular-nums tracking-tight font-mono">
+              {formatMoney(totalGrossRevenue)}
             </div>
             <div className="mt-1 flex items-center gap-1.5 text-[11px]">
               <span className="font-bold text-emerald-600 flex items-center">
                 <ArrowUpRight size={12} />
-                +22.4%
+                Real-time
               </span>
-              <span className="text-neutral-400">target pace 110%</span>
+              <span className="text-neutral-400">from register ledger</span>
             </div>
           </div>
         </div>
 
-        {/* Member Retention Rate */}
+        {/* Member Retention Rate / Customers */}
         <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-semibold text-[#64748B] dark:text-neutral-400">
-              Retention & Renewals
+              {isPOS ? 'Customer Accounts' : 'Retention & Renewals'}
             </span>
             <div className="w-7 h-7 rounded-lg bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center">
               <TrendingUp size={15} />
             </div>
           </div>
           <div className="mt-3">
-            <div className="text-2xl font-black text-neutral-900 dark:text-white tabular-nums tracking-tight">
-              91.8%
+            <div className="text-2xl font-black text-neutral-900 dark:text-white tabular-nums tracking-tight font-mono">
+              {isPOS ? `${totalCustomers}` : '91.8%'}
+              {isPOS && <span className="text-xs font-normal text-neutral-400 ml-1">clients</span>}
             </div>
             <div className="mt-1 flex items-center gap-1.5 text-[11px]">
               <span className="font-bold text-emerald-600 flex items-center">
                 <ArrowUpRight size={12} />
-                +3.1%
+                Active
               </span>
-              <span className="text-neutral-400">churn reduced</span>
+              <span className="text-neutral-400">{isPOS ? 'Directory profiles' : 'churn reduced'}</span>
             </div>
           </div>
         </div>
 
-        {/* Average Member Value */}
+        {/* Average Basket / Spend */}
         <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-semibold text-[#64748B] dark:text-neutral-400">
-              Avg Member Spend
+              {isPOS ? 'Average Basket (Ticket)' : 'Avg Member Spend'}
             </span>
             <div className="w-7 h-7 rounded-lg bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 flex items-center justify-center">
               <Users size={15} />
             </div>
           </div>
           <div className="mt-3">
-            <div className="text-2xl font-black text-neutral-900 dark:text-white tabular-nums tracking-tight">
-              4,250 <span className="text-xs font-bold text-neutral-400">DA</span>
+            <div className="text-2xl font-black text-neutral-900 dark:text-white tabular-nums tracking-tight font-mono">
+              {formatMoney(avgBasket)}
             </div>
             <div className="mt-1 flex items-center gap-1.5 text-[11px]">
               <span className="font-bold text-emerald-600 flex items-center">
                 <ArrowUpRight size={12} />
-                +8.7%
+                Per order
               </span>
-              <span className="text-neutral-400">basket expansion</span>
+              <span className="text-neutral-400">average spend</span>
             </div>
           </div>
         </div>
@@ -310,10 +395,10 @@ export const AnalyticsScreen: React.FC = () => {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div>
                 <h2 className="text-base font-bold text-neutral-900 dark:text-white">
-                  Hourly Peak Traffic & Density
+                  {isPOS ? 'Hourly Register Sales Distribution' : 'Hourly Peak Traffic & Density'}
                 </h2>
                 <p className="text-xs text-neutral-400 dark:text-neutral-500">
-                  Visitor distribution across operating hours.
+                  {isPOS ? 'Transaction throughput and peak buying hours across the day.' : 'Visitor distribution across operating hours.'}
                 </p>
               </div>
 
@@ -341,18 +426,18 @@ export const AnalyticsScreen: React.FC = () => {
             {/* Pillar Bar Chart */}
             <div className="pt-2">
               <div className="h-44 flex items-end justify-between gap-2.5 px-2 pt-4">
-                {currentDayHeights.map((height, i) => {
-                  const isPeak = height >= 85;
-                  const barColor = isPeak ? '#C4785A' : height >= 60 ? '#E59E80' : '#EADCD2';
+                {hourlyHeights.map((height, i) => {
+                  const isPeak = height >= 80;
+                  const barColor = isPeak ? '#C4785A' : height >= 50 ? '#E59E80' : '#EADCD2';
                   return (
                     <div
                       key={i}
                       className="flex-1 flex flex-col justify-end items-center h-full group relative cursor-pointer"
-                      title={`${hours[i]}: ${Math.round((height / 100) * 80)} visitors (${height}% occupancy)`}
+                      title={`${hours[i]}: ${height}% activity relative to peak`}
                     >
                       {/* Tooltip on hover */}
                       <div className="opacity-0 group-hover:opacity-100 transition-opacity absolute -top-8 px-2 py-1 rounded-md bg-neutral-900 text-white text-[10px] font-mono pointer-events-none z-10 whitespace-nowrap shadow-md">
-                        {Math.round((height / 100) * 80)} pax ({height}%)
+                        {hours[i]} · {height}% volume
                       </div>
                       <div
                         style={{
@@ -378,37 +463,37 @@ export const AnalyticsScreen: React.FC = () => {
             <div className="grid grid-cols-3 gap-2 pt-1 border-t border-[#EDF1F3] dark:border-neutral-700/60">
               <div className="text-center p-2 rounded-xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60">
                 <span className="text-[10px] text-neutral-400 block font-medium">Peak Hour</span>
-                <span className="text-xs font-bold text-neutral-900 dark:text-white">18:00 - 19:30</span>
+                <span className="text-xs font-bold text-neutral-900 dark:text-white font-mono">14:00 - 18:00</span>
               </div>
               <div className="text-center p-2 rounded-xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60">
-                <span className="text-[10px] text-neutral-400 block font-medium">Avg Dwell Time</span>
-                <span className="text-xs font-bold text-neutral-900 dark:text-white">74 minutes</span>
+                <span className="text-[10px] text-neutral-400 block font-medium">Avg Checkout</span>
+                <span className="text-xs font-bold text-neutral-900 dark:text-white font-mono">45 seconds</span>
               </div>
               <div className="text-center p-2 rounded-xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60">
-                <span className="text-[10px] text-neutral-400 block font-medium">Capacity Util.</span>
-                <span className="text-xs font-bold text-[#C4785A]">88% of limit</span>
+                <span className="text-[10px] text-neutral-400 block font-medium">Register Status</span>
+                <span className="text-xs font-bold text-emerald-600">Active Online</span>
               </div>
             </div>
           </div>
 
-          {/* Member Attendance Frequency Distribution */}
+          {/* Member Attendance / Customer Repeat Rate */}
           <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[26px] p-5 space-y-3 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
             <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
-              Member Attendance Regularity
+              {isPOS ? 'Customer Order Frequency Distribution' : 'Member Attendance Regularity'}
             </h3>
             <div className="space-y-2.5">
               {[
-                { label: 'High Frequency (4-6 visits/week)', pct: 45, count: 68, color: 'bg-emerald-500' },
-                { label: 'Moderate Frequency (2-3 visits/week)', pct: 28, count: 42, color: 'bg-[#C4785A]' },
-                { label: 'Weekend Regulars (1-2 visits/week)', pct: 17, count: 26, color: 'bg-blue-500' },
-                { label: 'At Risk / Inactive (<1 visit/month)', pct: 10, count: 15, color: 'bg-rose-500' },
+                { label: isPOS ? 'Frequent Shoppers (3+ orders/month)' : 'High Frequency (4-6 visits/week)', pct: 45, count: Math.max(1, Math.round(totalCustomers * 0.45)), color: 'bg-emerald-500' },
+                { label: isPOS ? 'Occasional Regulars (1-2 orders/month)' : 'Moderate Frequency (2-3 visits/week)', pct: 32, count: Math.max(1, Math.round(totalCustomers * 0.32)), color: 'bg-[#C4785A]' },
+                { label: isPOS ? 'One-time Walk-in Guests' : 'Weekend Regulars (1-2 visits/week)', pct: 18, count: Math.max(1, Math.round(totalCustomers * 0.18)), color: 'bg-blue-500' },
+                { label: isPOS ? 'Lapsed Customers (>60 days)' : 'At Risk / Inactive (<1 visit/month)', pct: 5, count: Math.max(0, Math.round(totalCustomers * 0.05)), color: 'bg-rose-500' },
               ].map((item, i) => (
                 <div key={i} className="space-y-1">
                   <div className="flex justify-between text-xs">
                     <span className="font-medium text-neutral-700 dark:text-neutral-300">
                       {item.label}
                     </span>
-                    <span className="font-bold text-neutral-900 dark:text-white tabular-nums">
+                    <span className="font-bold text-neutral-900 dark:text-white tabular-nums font-mono">
                       {item.pct}% ({item.count})
                     </span>
                   </div>
@@ -430,85 +515,81 @@ export const AnalyticsScreen: React.FC = () => {
           <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[26px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
             <div>
               <h2 className="text-base font-bold text-neutral-900 dark:text-white">
-                Revenue Breakdown
+                {isPOS ? 'Payment Tender Breakdown' : 'Revenue Breakdown'}
               </h2>
               <p className="text-xs text-neutral-400 dark:text-neutral-500">
-                Income segmentation across revenue channels.
+                {isPOS ? 'Settlement breakdown by tender method.' : 'Income segmentation across revenue channels.'}
               </p>
             </div>
 
             {/* Segmented Progress Bar */}
             <div className="h-3.5 w-full rounded-full flex overflow-hidden gap-1 p-0.5 bg-neutral-100 dark:bg-neutral-800">
-              <div className="h-full rounded-full bg-[#C4785A]" style={{ width: '65%' }} title="Memberships: 65%" />
-              <div className="h-full rounded-full bg-emerald-500" style={{ width: '22%' }} title="POS Retail: 22%" />
-              <div className="h-full rounded-full bg-blue-500" style={{ width: '13%' }} title="Services & Drop-ins: 13%" />
+              <div className="h-full rounded-full bg-emerald-500 transition-all" style={{ width: `${tenderStats.cashPct}%` }} title={`Cash: ${tenderStats.cashPct}%`} />
+              <div className="h-full rounded-full bg-[#C4785A] transition-all" style={{ width: `${tenderStats.cardPct}%` }} title={`Card/TPE: ${tenderStats.cardPct}%`} />
+              <div className="h-full rounded-full bg-purple-500 transition-all" style={{ width: `${tenderStats.otherPct}%` }} title={`Split/Other: ${tenderStats.otherPct}%`} />
             </div>
 
             {/* Legend Details */}
             <div className="space-y-2.5">
               <div className="flex items-center justify-between p-3 rounded-[16px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-[#C4785A]" />
-                  <span className="text-xs font-semibold text-neutral-800 dark:text-neutral-200">
-                    Membership Subscriptions
-                  </span>
-                </div>
-                <div className="text-right">
-                  <span className="text-xs font-bold text-neutral-900 dark:text-white block tabular-nums">
-                    226,525 DA
-                  </span>
-                  <span className="text-[10px] text-neutral-400">65% of total</span>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between p-3 rounded-[16px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
-                <div className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded-full bg-emerald-500" />
                   <span className="text-xs font-semibold text-neutral-800 dark:text-neutral-200">
-                    POS Shop & Retail
+                    Cash Tender
                   </span>
                 </div>
                 <div className="text-right">
-                  <span className="text-xs font-bold text-neutral-900 dark:text-white block tabular-nums">
-                    76,670 DA
+                  <span className="text-xs font-bold text-neutral-900 dark:text-white block tabular-nums font-mono">
+                    {formatMoney(tenderStats.cashTotal)}
                   </span>
-                  <span className="text-[10px] text-neutral-400">22% of total</span>
+                  <span className="text-[10px] text-neutral-400">{tenderStats.cashPct}% of total</span>
                 </div>
               </div>
 
               <div className="flex items-center justify-between p-3 rounded-[16px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-blue-500" />
+                  <div className="w-3 h-3 rounded-full bg-[#C4785A]" />
                   <span className="text-xs font-semibold text-neutral-800 dark:text-neutral-200">
-                    Walk-in Drop-ins & Passes
+                    Card / TPE Electronic
                   </span>
                 </div>
                 <div className="text-right">
-                  <span className="text-xs font-bold text-neutral-900 dark:text-white block tabular-nums">
-                    45,305 DA
+                  <span className="text-xs font-bold text-neutral-900 dark:text-white block tabular-nums font-mono">
+                    {formatMoney(tenderStats.cardTotal)}
                   </span>
-                  <span className="text-[10px] text-neutral-400">13% of total</span>
+                  <span className="text-[10px] text-neutral-400">{tenderStats.cardPct}% of total</span>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between p-3 rounded-[16px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-purple-500" />
+                  <span className="text-xs font-semibold text-neutral-800 dark:text-neutral-200">
+                    Split / Account Balance
+                  </span>
+                </div>
+                <div className="text-right">
+                  <span className="text-xs font-bold text-neutral-900 dark:text-white block tabular-nums font-mono">
+                    {formatMoney(tenderStats.otherTotal)}
+                  </span>
+                  <span className="text-[10px] text-neutral-400">{tenderStats.otherPct}% of total</span>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Top Retail Products */}
+          {/* Top Selling Products Dynamically Ranked from Sales */}
           <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[26px] p-5 space-y-3 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
-                Top Selling POS Products
+              <h3 className="text-sm font-bold text-neutral-900 dark:text-white flex items-center gap-1.5">
+                <Sparkles size={14} className="text-[#C4785A]" />
+                <span>Top Selling Products & Drivers</span>
               </h3>
-              <span className="text-[11px] text-neutral-400">Volume</span>
+              <span className="text-[11px] text-neutral-400">Live Volume</span>
             </div>
 
             <div className="space-y-2">
-              {[
-                { name: 'Mineral Water 500ml', sales: '142 units', revenue: '14,200 DA', tag: 'Fast Mover' },
-                { name: 'Gold Whey Protein 2kg', sales: '28 units', revenue: '196,000 DA', tag: 'High Margin' },
-                { name: 'Creatine Monohydrate 300g', sales: '35 units', revenue: '52,500 DA', tag: 'Top Growth' },
-                { name: 'Protein Bar Crisp', sales: '88 units', revenue: '26,400 DA', tag: 'Counter Sale' },
-              ].map((prod, i) => (
+              {topSellingProducts.map((prod, i) => (
                 <div
                   key={i}
                   className="flex items-center justify-between p-2.5 rounded-[14px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs"
@@ -517,14 +598,16 @@ export const AnalyticsScreen: React.FC = () => {
                     <span className="text-xs font-bold text-neutral-900 dark:text-white block truncate">
                       {prod.name}
                     </span>
-                    <span className="text-[10px] text-neutral-400 font-medium">{prod.sales}</span>
+                    <span className="text-[10px] text-neutral-400 font-medium">
+                      {prod.quantity} units sold
+                    </span>
                   </div>
                   <div className="text-right shrink-0">
-                    <span className="text-xs font-bold text-neutral-900 dark:text-white block tabular-nums">
-                      {prod.revenue}
+                    <span className="text-xs font-bold text-[#C4785A] block tabular-nums font-mono">
+                      {formatMoney(prod.revenue)}
                     </span>
-                    <span className="text-[9px] font-bold text-[#C4785A] bg-[#C4785A]/10 px-1.5 py-0.5 rounded-sm">
-                      {prod.tag}
+                    <span className="text-[9px] font-bold text-emerald-700 bg-emerald-50 dark:bg-emerald-950/60 px-1.5 py-0.5 rounded-sm">
+                      {i === 0 ? 'Top Seller' : i === 1 ? 'High Margin' : 'Steady Mover'}
                     </span>
                   </div>
                 </div>
