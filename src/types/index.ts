@@ -211,8 +211,12 @@ export interface Product {
   description: string;
   price: Money;
   cost: Money;
+  costPrice?: number;
   stockQuantity: number;
   sku: string;
+  barcode?: string;
+  unit?: 'pcs' | 'kg' | 'g' | 'l' | 'ml' | 'pack' | 'box' | string;
+  taxRate?: number; // e.g. 0, 9, 19 (%)
   category:
     | 'Supplement'
     | 'Equipment'
@@ -225,12 +229,16 @@ export interface Product {
     | 'Beauty Products'
     | 'Nails & Spa'
     | 'Accessories'
+    | 'Bakery'
+    | 'Grocery'
+    | 'General'
     | 'Other'
     | (string & {});
   imageUrl?: string;
   reorderLevel: number;
   isActive: boolean;
   isPinned: boolean;
+  supplier?: string;
 }
 
 export interface SaleItem {
@@ -239,6 +247,17 @@ export interface SaleItem {
   quantity: number;
   unitPrice: number;
   totalPrice: number;
+  costPrice?: number;
+  barcode?: string;
+  unit?: string;
+  discount?: number;
+  notes?: string;
+}
+
+export interface PaymentDetail {
+  method: 'Cash' | 'Card' | 'MemberBalance' | 'BankTransfer' | 'Credit' | 'Mobile';
+  amount: number;
+  reference?: string;
 }
 
 export interface Sale {
@@ -247,12 +266,66 @@ export interface Sale {
   facilityId: string;
   memberId?: string;
   memberName?: string;
+  customerPhone?: string;
   totalAmount: number;
-  paymentMethod: 'Cash' | 'Card' | 'MemberBalance' | 'BankTransfer';
-  items: SaleItem[];
+  subtotal?: number;
   discount?: number;
+  discountAmount?: number;
+  taxAmount?: number;
+  paymentMethod: 'Cash' | 'Card' | 'MemberBalance' | 'BankTransfer' | 'Split' | 'Credit';
+  payments?: PaymentDetail[];
+  amountTendered?: number;
+  changeGiven?: number;
+  cashierName?: string;
+  items: SaleItem[];
+  notes?: string;
+  status?: 'Completed' | 'Refunded' | 'Voided';
+  refundReason?: string;
+  refundedAt?: string;
+  createdAt: string;
+}
+
+export interface ParkedOrder {
+  id: string;
+  tenantId: string;
+  facilityId: string;
+  referenceName: string;
+  customerId?: string;
+  customerName?: string;
+  customerPhone?: string;
+  items: SaleItem[];
+  discount: number;
   notes?: string;
   createdAt: string;
+  subtotal: number;
+  totalAmount: number;
+}
+
+export interface StockMovement {
+  id: string;
+  tenantId: string;
+  facilityId: string;
+  productId: string;
+  productName: string;
+  type: 'Sale' | 'Restock' | 'Damage' | 'Return' | 'Adjustment' | 'Initial';
+  quantity: number; // positive or negative change
+  previousStock: number;
+  newStock: number;
+  reason?: string;
+  createdAt: string;
+  createdBy?: string;
+}
+
+export interface ReceiptConfig {
+  headerTitle: string;
+  subHeader?: string;
+  address?: string;
+  phone?: string;
+  taxId?: string;
+  footerMessage?: string;
+  showTaxBreakdown: boolean;
+  showCashier: boolean;
+  showBarcode: boolean;
 }
 
 export interface ScheduleEvent {

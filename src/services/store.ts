@@ -35,6 +35,10 @@ import {
   DeliverableStage,
   InvoiceStatus,
   ProposalStatus,
+  ParkedOrder,
+  StockMovement,
+  ReceiptConfig,
+  PaymentDetail,
 } from '../types/index';
 import {
   INITIAL_ACCOUNT,
@@ -58,6 +62,9 @@ import {
   INITIAL_FREELANCE_PROPOSALS,
   INITIAL_FREELANCE_EXPENSES,
   INITIAL_ACTIVE_TIMER,
+  INITIAL_PARKED_ORDERS,
+  INITIAL_STOCK_MOVEMENTS,
+  DEFAULT_RECEIPT_CONFIG,
 } from './seedData';
 import { checkQuota, getCategoryTerminology, validateVoucherCode } from '../utils/rules';
 import {
@@ -129,6 +136,10 @@ interface AppState {
   freelanceProposals: FreelanceProposal[];
   freelanceExpenses: FreelanceExpense[];
   activeTimer: ActiveTimerState;
+  // POS & Inventory System
+  parkedOrders: ParkedOrder[];
+  stockMovements: StockMovement[];
+  receiptConfig: ReceiptConfig;
 }
 
 const DEFAULT_USER: CurrentUser = {
@@ -188,6 +199,9 @@ const DEFAULT_STATE: AppState = {
   freelanceProposals: INITIAL_FREELANCE_PROPOSALS,
   freelanceExpenses: INITIAL_FREELANCE_EXPENSES,
   activeTimer: INITIAL_ACTIVE_TIMER,
+  parkedOrders: INITIAL_PARKED_ORDERS,
+  stockMovements: INITIAL_STOCK_MOVEMENTS,
+  receiptConfig: DEFAULT_RECEIPT_CONFIG,
 };
 
 // Global reactive subscribers
@@ -198,8 +212,21 @@ let globalState: AppState = (() => {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const parsed = JSON.parse(raw);
-        const businesses = Array.isArray(parsed.businesses) && parsed.businesses.length > 0 ? parsed.businesses : INITIAL_BUSINESSES;
-        const branches = Array.isArray(parsed.branches) && parsed.branches.length > 0 ? parsed.branches : INITIAL_BRANCHES;
+        const rawBusinesses = Array.isArray(parsed.businesses) && parsed.businesses.length > 0 ? parsed.businesses : INITIAL_BUSINESSES;
+        const businesses = rawBusinesses.map((b: any) => {
+          if (b.id === 'biz_restaurant' && b.name === 'Bistrot Saint-Germain') {
+            return { ...b, name: 'Artis Commerce & Point of Sale', displayName: 'Artis Retail & POS Store' };
+          }
+          return b;
+        });
+
+        const rawBranches = Array.isArray(parsed.branches) && parsed.branches.length > 0 ? parsed.branches : INITIAL_BRANCHES;
+        const branches = rawBranches.map((br: any) => {
+          if (br.id === 'branch_rest_didouche' && br.name === 'Bistrot Didouche Central') {
+            return { ...br, name: 'Artis Flagship Store', code: 'POS-01' };
+          }
+          return br;
+        });
         
         // Ensure valid current business and branch IDs
         const hasValidBusiness = businesses.some((b: any) => b.id === parsed.currentBusinessId);
@@ -208,6 +235,22 @@ let globalState: AppState = (() => {
         const validBranchesForBiz = branches.filter((br: any) => br.businessId === currentBusinessId);
         const hasValidBranch = branches.some((br: any) => br.id === parsed.currentBranchId);
         const currentBranchId = hasValidBranch ? parsed.currentBranchId : (validBranchesForBiz[0]?.id || branches[0].id);
+
+        // Smart merge for products so new POS catalog items appear even if older localStorage exists
+        const storedProducts = Array.isArray(parsed.products) ? parsed.products : [];
+        const storedProdIds = new Set(storedProducts.map((p: any) => p.id));
+        const mergedProducts = [
+          ...storedProducts,
+          ...INITIAL_PRODUCTS.filter((p) => !storedProdIds.has(p.id)),
+        ];
+
+        // Smart merge for sales
+        const storedSales = Array.isArray(parsed.sales) ? parsed.sales : [];
+        const storedSaleIds = new Set(storedSales.map((s: any) => s.id));
+        const mergedSales = [
+          ...storedSales,
+          ...INITIAL_SALES.filter((s) => !storedSaleIds.has(s.id)),
+        ];
 
         return {
           ...DEFAULT_STATE,
@@ -219,8 +262,8 @@ let globalState: AppState = (() => {
           subscription: parsed.subscription?.plan ? parsed.subscription : DEFAULT_STATE.subscription,
           members: Array.isArray(parsed.members) && parsed.members.length > 0 ? parsed.members : INITIAL_MEMBERS,
           leads: Array.isArray(parsed.leads) && parsed.leads.length > 0 ? parsed.leads : INITIAL_LEADS,
-          products: Array.isArray(parsed.products) && parsed.products.length > 0 ? parsed.products : INITIAL_PRODUCTS,
-          sales: Array.isArray(parsed.sales) && parsed.sales.length > 0 ? parsed.sales : INITIAL_SALES,
+          products: mergedProducts,
+          sales: mergedSales,
           staff: Array.isArray(parsed.staff) && parsed.staff.length > 0 ? parsed.staff : INITIAL_STAFF,
           schedule: Array.isArray(parsed.schedule) && parsed.schedule.length > 0 ? parsed.schedule : INITIAL_SCHEDULE,
           devices: Array.isArray(parsed.devices) && parsed.devices.length > 0 ? parsed.devices : INITIAL_DEVICES,
@@ -233,6 +276,9 @@ let globalState: AppState = (() => {
           freelanceProposals: Array.isArray(parsed.freelanceProposals) && parsed.freelanceProposals.length > 0 ? parsed.freelanceProposals : INITIAL_FREELANCE_PROPOSALS,
           freelanceExpenses: Array.isArray(parsed.freelanceExpenses) && parsed.freelanceExpenses.length > 0 ? parsed.freelanceExpenses : INITIAL_FREELANCE_EXPENSES,
           activeTimer: parsed.activeTimer || INITIAL_ACTIVE_TIMER,
+          parkedOrders: Array.isArray(parsed.parkedOrders) ? parsed.parkedOrders : INITIAL_PARKED_ORDERS,
+          stockMovements: Array.isArray(parsed.stockMovements) ? parsed.stockMovements : INITIAL_STOCK_MOVEMENTS,
+          receiptConfig: parsed.receiptConfig || DEFAULT_RECEIPT_CONFIG,
           currentUser: parsed.currentUser || DEFAULT_USER,
           isAuthenticated: parsed.isAuthenticated !== undefined ? parsed.isAuthenticated : true,
           isOnboardingOpen: false,
@@ -567,6 +613,8 @@ export function useAtriumStore() {
   const currentPlans = (state.plansByBranch && state.plansByBranch[state.currentBranchId]) || EMPTY_PLANS;
   const currentAppointments = (state.appointments || []).filter((a) => a.facilityId === state.currentBranchId);
   const currentServices = (state.servicesCatalog || []).filter((s) => s.facilityId === state.currentBranchId);
+  const currentParkedOrders = (state.parkedOrders || []).filter((p) => p.facilityId === state.currentBranchId);
+  const currentStockMovements = (state.stockMovements || []).filter((sm) => sm.facilityId === state.currentBranchId);
 
   const selectedMember = state.selectedMemberId
     ? state.members.find((m) => m.id === state.selectedMemberId) || null
@@ -772,38 +820,97 @@ export function useAtriumStore() {
   };
 
   const processSale = (
-    items: Array<{ product: Product; quantity: number }>,
-    paymentMethod: 'Cash' | 'Card' | 'MemberBalance',
+    items: Array<{
+      product: Product;
+      quantity: number;
+      discount?: number;
+      notes?: string;
+    }>,
+    paymentMethod: 'Cash' | 'Card' | 'MemberBalance' | 'BankTransfer' | 'Split' | 'Credit' = 'Cash',
     memberId?: string,
-    notes?: string
+    notes?: string,
+    extra?: {
+      discount?: number;
+      discountAmount?: number;
+      taxAmount?: number;
+      subtotal?: number;
+      payments?: PaymentDetail[];
+      amountTendered?: number;
+      changeGiven?: number;
+      cashierName?: string;
+      customerPhone?: string;
+      customerName?: string;
+    }
   ) => {
-    const totalAmount = items.reduce((sum, item) => sum + item.product.price.amount * item.quantity, 0);
+    const rawSubtotal = items.reduce((sum, item) => {
+      const lineTotal = item.product.price.amount * item.quantity;
+      const lineDiscount = item.discount || 0;
+      return sum + Math.max(0, lineTotal - lineDiscount);
+    }, 0);
+    const subtotal = extra?.subtotal !== undefined ? extra.subtotal : rawSubtotal;
+    const discountAmount = extra?.discountAmount !== undefined ? extra.discountAmount : (extra?.discount || 0);
+    const taxAmount = extra?.taxAmount || 0;
+    const totalAmount = Math.max(0, subtotal - discountAmount + taxAmount);
+
     const member = memberId ? globalState.members.find((m) => m.id === memberId) : undefined;
+    const finalCustomerName = extra?.customerName || member?.fullName || (memberId ? undefined : 'Walk-in Customer');
 
     const sale: Sale = {
       id: `sale_${Date.now()}`,
       tenantId: state.account.id,
       facilityId: state.currentBranchId,
       memberId,
-      memberName: member?.fullName,
+      memberName: finalCustomerName,
+      customerPhone: extra?.customerPhone || member?.phoneNumber,
+      subtotal,
+      discount: extra?.discount,
+      discountAmount,
+      taxAmount,
       totalAmount,
       paymentMethod,
+      payments: extra?.payments,
+      amountTendered: extra?.amountTendered,
+      changeGiven: extra?.changeGiven,
+      cashierName: extra?.cashierName || globalState.currentUser?.fullName || 'Cashier Desk',
       items: items.map((i) => ({
         productId: i.product.id,
         productName: i.product.name,
         quantity: i.quantity,
         unitPrice: i.product.price.amount,
-        totalPrice: i.product.price.amount * i.quantity,
+        totalPrice: i.product.price.amount * i.quantity - (i.discount || 0),
+        costPrice: i.product.costPrice ?? i.product.cost?.amount,
+        barcode: i.product.barcode,
+        unit: i.product.unit,
+        discount: i.discount,
+        notes: i.notes,
       })),
       notes,
+      status: 'Completed',
       createdAt: new Date().toISOString(),
     };
 
-    // Decrement stock quantities
+    // Decrement stock quantities and record movements
+    const newMovements: StockMovement[] = [];
     const updatedProducts = globalState.products.map((p) => {
       const match = items.find((item) => item.product.id === p.id);
       if (match) {
-        return { ...p, stockQuantity: Math.max(0, p.stockQuantity - match.quantity) };
+        const prev = p.stockQuantity;
+        const next = Math.max(0, prev - match.quantity);
+        newMovements.push({
+          id: `sm_${Date.now()}_${p.id}`,
+          tenantId: state.account.id,
+          facilityId: state.currentBranchId,
+          productId: p.id,
+          productName: p.name,
+          type: 'Sale',
+          quantity: -match.quantity,
+          previousStock: prev,
+          newStock: next,
+          reason: `Register Sale #${sale.id.slice(-6).toUpperCase()}`,
+          createdAt: new Date().toISOString(),
+          createdBy: globalState.currentUser?.fullName || 'Cashier Desk',
+        });
+        return { ...p, stockQuantity: next };
       }
       return p;
     });
@@ -812,6 +919,7 @@ export function useAtriumStore() {
       ...globalState,
       products: updatedProducts,
       sales: [sale, ...globalState.sales],
+      stockMovements: [...newMovements, ...(globalState.stockMovements || [])],
     };
     notify();
 
@@ -822,6 +930,266 @@ export function useAtriumStore() {
     }
 
     return sale;
+  };
+
+  const refundSale = (saleId: string, reason?: string) => {
+    const sale = globalState.sales.find((s) => s.id === saleId);
+    if (!sale || sale.status === 'Refunded') return;
+
+    const returnMovements: StockMovement[] = [];
+    const updatedProducts = globalState.products.map((p) => {
+      const match = sale.items.find((item) => item.productId === p.id);
+      if (match) {
+        const prev = p.stockQuantity;
+        const next = prev + match.quantity;
+        returnMovements.push({
+          id: `sm_${Date.now()}_${p.id}`,
+          tenantId: state.account.id,
+          facilityId: state.currentBranchId,
+          productId: p.id,
+          productName: p.name,
+          type: 'Return',
+          quantity: match.quantity,
+          previousStock: prev,
+          newStock: next,
+          reason: `Refund #${sale.id.slice(-6).toUpperCase()}: ${reason || 'Customer Return'}`,
+          createdAt: new Date().toISOString(),
+          createdBy: globalState.currentUser?.fullName || 'Manager',
+        });
+        return { ...p, stockQuantity: next };
+      }
+      return p;
+    });
+
+    globalState = {
+      ...globalState,
+      products: updatedProducts,
+      sales: globalState.sales.map((s) =>
+        s.id === saleId
+          ? {
+              ...s,
+              status: 'Refunded' as const,
+              refundReason: reason || 'Customer Return',
+              refundedAt: new Date().toISOString(),
+            }
+          : s
+      ),
+      stockMovements: [...returnMovements, ...(globalState.stockMovements || [])],
+    };
+    notify();
+  };
+
+  const adjustStock = (
+    productId: string,
+    quantity: number,
+    mode: 'delta' | 'set',
+    reason: string,
+    type: StockMovement['type'] = 'Adjustment'
+  ) => {
+    let movement: StockMovement | null = null;
+    const updatedProducts = globalState.products.map((p) => {
+      if (p.id === productId) {
+        const prev = p.stockQuantity;
+        const next = mode === 'set' ? Math.max(0, quantity) : Math.max(0, prev + quantity);
+        const delta = next - prev;
+        movement = {
+          id: `sm_${Date.now()}_${p.id}`,
+          tenantId: state.account.id,
+          facilityId: state.currentBranchId,
+          productId: p.id,
+          productName: p.name,
+          type,
+          quantity: delta,
+          previousStock: prev,
+          newStock: next,
+          reason,
+          createdAt: new Date().toISOString(),
+          createdBy: globalState.currentUser?.fullName || 'Manager',
+        };
+        return { ...p, stockQuantity: next };
+      }
+      return p;
+    });
+
+    globalState = {
+      ...globalState,
+      products: updatedProducts,
+      stockMovements: movement ? [movement, ...(globalState.stockMovements || [])] : globalState.stockMovements,
+    };
+    notify();
+  };
+
+  const updateProduct = (productId: string, updates: Partial<Product>) => {
+    globalState = {
+      ...globalState,
+      products: globalState.products.map((p) =>
+        p.id === productId ? { ...p, ...updates } : p
+      ),
+    };
+    notify();
+  };
+
+  const deleteProduct = (productId: string) => {
+    globalState = {
+      ...globalState,
+      products: globalState.products.filter((p) => p.id !== productId),
+    };
+    notify();
+  };
+
+  const parkOrder = (
+    orderData: Omit<ParkedOrder, 'id' | 'createdAt' | 'tenantId' | 'facilityId'>
+  ) => {
+    const parked: ParkedOrder = {
+      ...orderData,
+      id: `park_${Date.now()}`,
+      tenantId: state.account.id,
+      facilityId: state.currentBranchId,
+      createdAt: new Date().toISOString(),
+    };
+    globalState = {
+      ...globalState,
+      parkedOrders: [parked, ...(globalState.parkedOrders || [])],
+    };
+    notify();
+    return parked;
+  };
+
+  const resumeParkedOrder = (orderId: string) => {
+    const target = (globalState.parkedOrders || []).find((p) => p.id === orderId);
+    if (target) {
+      globalState = {
+        ...globalState,
+        parkedOrders: (globalState.parkedOrders || []).filter((p) => p.id !== orderId),
+      };
+      notify();
+    }
+    return target;
+  };
+
+  const deleteParkedOrder = (orderId: string) => {
+    globalState = {
+      ...globalState,
+      parkedOrders: (globalState.parkedOrders || []).filter((p) => p.id !== orderId),
+    };
+    notify();
+  };
+
+  const updateReceiptConfig = (config: Partial<ReceiptConfig>) => {
+    globalState = {
+      ...globalState,
+      receiptConfig: {
+        ...(globalState.receiptConfig || DEFAULT_RECEIPT_CONFIG),
+        ...config,
+      },
+    };
+    notify();
+  };
+
+  const seedDemoInventory = (branchId?: string) => {
+    const targetBranchId = branchId || state.currentBranchId;
+    const demoItems: Product[] = [
+      {
+        id: `prod_demo_01_${Date.now()}`,
+        tenantId: state.account.id,
+        facilityId: targetBranchId,
+        name: 'Single Origin Roasted Espresso Beans (1kg)',
+        description: '100% Arabica dark roast whole beans blend',
+        price: { amount: 3200, currency: 'DZD' },
+        cost: { amount: 1900, currency: 'DZD' },
+        costPrice: 1900,
+        stockQuantity: 40,
+        sku: 'POS-COF-01',
+        barcode: '6131100200101',
+        category: 'Beverage',
+        unit: 'pack',
+        taxRate: 19,
+        reorderLevel: 10,
+        isActive: true,
+        isPinned: true,
+      },
+      {
+        id: `prod_demo_02_${Date.now()}`,
+        tenantId: state.account.id,
+        facilityId: targetBranchId,
+        name: 'Organic Extra Virgin Olive Oil (750ml)',
+        description: 'Cold-pressed first harvest from Kabylie olive groves',
+        price: { amount: 1850, currency: 'DZD' },
+        cost: { amount: 1100, currency: 'DZD' },
+        costPrice: 1100,
+        stockQuantity: 28,
+        sku: 'POS-OIL-750',
+        barcode: '6131100200102',
+        category: 'Grocery',
+        unit: 'pcs',
+        taxRate: 9,
+        reorderLevel: 8,
+        isActive: true,
+        isPinned: true,
+      },
+      {
+        id: `prod_demo_03_${Date.now()}`,
+        tenantId: state.account.id,
+        facilityId: targetBranchId,
+        name: 'French Butter Croissant (Box of 4)',
+        description: 'Freshly baked laminated dough with Normandy butter',
+        price: { amount: 480, currency: 'DZD' },
+        cost: { amount: 220, currency: 'DZD' },
+        costPrice: 220,
+        stockQuantity: 35,
+        sku: 'POS-BAK-04',
+        barcode: '6131100200104',
+        category: 'Bakery',
+        unit: 'box',
+        taxRate: 9,
+        reorderLevel: 10,
+        isActive: true,
+        isPinned: true,
+      },
+      {
+        id: `prod_demo_04_${Date.now()}`,
+        tenantId: state.account.id,
+        facilityId: targetBranchId,
+        name: 'Artisan Dark Chocolate Bar 72% (100g)',
+        description: 'Handcrafted bean-to-bar dark chocolate',
+        price: { amount: 650, currency: 'DZD' },
+        cost: { amount: 320, currency: 'DZD' },
+        costPrice: 320,
+        stockQuantity: 60,
+        sku: 'POS-CHOC-72',
+        barcode: '6131100200105',
+        category: 'Bakery',
+        unit: 'pcs',
+        taxRate: 19,
+        reorderLevel: 15,
+        isActive: true,
+        isPinned: false,
+      },
+      {
+        id: `prod_demo_05_${Date.now()}`,
+        tenantId: state.account.id,
+        facilityId: targetBranchId,
+        name: 'Cold-Pressed Citrus Juice (330ml)',
+        description: '100% natural orange and clementine juice',
+        price: { amount: 350, currency: 'DZD' },
+        cost: { amount: 160, currency: 'DZD' },
+        costPrice: 160,
+        stockQuantity: 4,
+        sku: 'POS-JUICE-330',
+        barcode: '6131100200106',
+        category: 'Beverage',
+        unit: 'pcs',
+        taxRate: 9,
+        reorderLevel: 10,
+        isActive: true,
+        isPinned: true,
+      },
+    ];
+    globalState = {
+      ...globalState,
+      products: [...demoItems, ...globalState.products],
+    };
+    notify();
   };
 
   const createAppointment = (
@@ -2536,6 +2904,9 @@ export function useAtriumStore() {
     appointments: currentAppointments,
     servicesCatalog: currentServices,
     devices: state.devices.filter((d) => d.branchId === state.currentBranchId),
+    parkedOrders: currentParkedOrders,
+    stockMovements: currentStockMovements,
+    receiptConfig: state.receiptConfig || DEFAULT_RECEIPT_CONFIG,
     selectedMember,
     isDetailOpen: state.isDetailOpen,
     // Actions
@@ -2554,7 +2925,16 @@ export function useAtriumStore() {
     updateLeadStatus,
     convertLeadToMember,
     addProduct,
+    updateProduct,
+    deleteProduct,
     processSale,
+    refundSale,
+    adjustStock,
+    parkOrder,
+    resumeParkedOrder,
+    deleteParkedOrder,
+    updateReceiptConfig,
+    seedDemoInventory,
     addStaff,
     addBusiness,
     addBranch,

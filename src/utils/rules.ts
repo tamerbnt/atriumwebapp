@@ -159,11 +159,11 @@ export const TERMINOLOGY_STORE: Record<
   pos_inventory: {
     members: { en: 'Customers', fr: 'Clients', ar: 'الزبائن' },
     memberSingle: { en: 'Customer', fr: 'Client', ar: 'زبون' },
-    registration: { en: 'Orders & Tables', fr: 'Commandes & Tables', ar: 'الطلبات والطاولات' },
-    plan: { en: 'Menu & Combos', fr: 'Menus & Formules', ar: 'القوائم والعروض' },
-    shop: { en: 'POS Register', fr: 'Caisse POS', ar: 'نقطة البيع' },
-    scheduler: { en: 'Reservations', fr: 'Réservations', ar: 'الحجوزات' },
-    facility: { en: 'Restaurant Branch', fr: 'Restaurant', ar: 'فرع المطعم' },
+    registration: { en: 'Sales & Invoices', fr: 'Ventes & Factures', ar: 'المبيعات والفواتير' },
+    plan: { en: 'Categories & Bundles', fr: 'Catégories & Lots', ar: 'التصنيفات والباقات' },
+    shop: { en: 'POS Register & Inventory', fr: 'Caisse & Stock', ar: 'نقطة البيع والمخزون' },
+    scheduler: { en: 'Shifts & Schedule', fr: 'Horaires & Équipe', ar: 'الورديات وجداول العمل' },
+    facility: { en: 'Store / Branch', fr: 'Point de vente', ar: 'الفرع / المتجر' },
   },
   project_milestone: {
     members: { en: 'Contacts & Clients', fr: 'Contacts & Clients', ar: 'جهات الاتصال' },

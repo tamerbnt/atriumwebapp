@@ -22,6 +22,10 @@ import {
   ShieldCheck,
   FileSpreadsheet,
   Scissors,
+  RotateCcw,
+  AlertCircle,
+  Clock,
+  Phone,
 } from 'lucide-react';
 import { useAtriumStore } from '../../services/store';
 import { Sale } from '../../types/index';
@@ -37,17 +41,25 @@ export const HistoryScreen: React.FC = () => {
     switchBusiness,
     switchBranch,
     setScreen,
+    refundSale,
+    receiptConfig,
   } = useAtriumStore();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchActive, setIsSearchActive] = useState(false);
-  const [methodFilter, setMethodFilter] = useState<'All' | 'Cash' | 'Card' | 'MemberBalance'>('All');
+  const [methodFilter, setMethodFilter] = useState<'All' | 'Cash' | 'Card' | 'MemberBalance' | 'Split'>('All');
+  const [statusFilter, setStatusFilter] = useState<'All' | 'Settled' | 'Refunded'>('All');
   const [selectedSale, setSelectedSale] = useState<Sale | null>(null);
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [isFacilityDropdownOpen, setIsFacilityDropdownOpen] = useState(false);
+  const [isRefundModalOpen, setIsRefundModalOpen] = useState(false);
+  const [refundReason, setRefundReason] = useState('Customer return / exchange');
+  const [refundSuccessToast, setRefundSuccessToast] = useState<string | null>(null);
 
   const filteredSales = useMemo(() => {
     return sales.filter((s) => {
+      if (statusFilter === 'Settled' && s.status === 'Refunded') return false;
+      if (statusFilter === 'Refunded' && s.status !== 'Refunded') return false;
       if (methodFilter !== 'All' && s.paymentMethod !== methodFilter) return false;
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
@@ -59,7 +71,7 @@ export const HistoryScreen: React.FC = () => {
       }
       return true;
     });
-  }, [sales, methodFilter, searchQuery]);
+  }, [sales, statusFilter, methodFilter, searchQuery]);
 
   const totalSettledAmount = useMemo(() => {
     return sales.reduce((sum, s) => sum + s.totalAmount, 0);
@@ -104,6 +116,23 @@ export const HistoryScreen: React.FC = () => {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200 relative">
+      {/* Toast Alert */}
+      {refundSuccessToast && (
+        <div className="p-3.5 bg-rose-50 dark:bg-rose-950/80 border border-rose-300 dark:border-rose-700 rounded-2xl text-rose-800 dark:text-rose-200 text-xs font-semibold flex items-center justify-between shadow-md animate-in slide-in-from-top-2">
+          <div className="flex items-center gap-2">
+            <Check size={16} className="text-rose-600" />
+            <span>{refundSuccessToast}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setRefundSuccessToast(null)}
+            className="text-rose-600 hover:text-rose-800 cursor-pointer"
+          >
+            <X size={14} />
+          </button>
+        </div>
+      )}
+
       {/* Row 0: Top Header matching Desktop App */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
@@ -307,9 +336,32 @@ export const HistoryScreen: React.FC = () => {
               )}
             </div>
 
+            {/* Status Capsules: All | Settled | Refunded */}
+            <div className="flex items-center p-0.5 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 gap-0.5 text-xs font-semibold shadow-2xs">
+              {(['All', 'Settled', 'Refunded'] as const).map((st) => {
+                const isActive = statusFilter === st;
+                return (
+                  <button
+                    key={st}
+                    type="button"
+                    onClick={() => setStatusFilter(st)}
+                    style={{
+                      backgroundColor: isActive ? (st === 'Refunded' ? '#FEE2E2' : '#FCEEE8') : 'transparent',
+                      color: isActive ? (st === 'Refunded' ? '#DC2626' : 'var(--color-accent)') : '#71717A',
+                    }}
+                    className={`px-3 py-1 rounded-full cursor-pointer transition-all ${
+                      isActive ? 'font-bold' : 'hover:text-neutral-900 dark:hover:text-white'
+                    }`}
+                  >
+                    {st}
+                  </button>
+                );
+              })}
+            </div>
+
             {/* Payment Method Capsules */}
             <div className="flex items-center p-0.5 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 gap-0.5 text-xs font-semibold shadow-2xs">
-              {(['All', 'Cash', 'Card', 'MemberBalance'] as const).map((method) => {
+              {(['All', 'Cash', 'Card', 'Split', 'MemberBalance'] as const).map((method) => {
                 const isActive = methodFilter === method;
                 const label = method === 'MemberBalance' ? 'Balance' : method;
                 return (
@@ -434,9 +486,14 @@ export const HistoryScreen: React.FC = () => {
                             {(sale.memberName || 'G').charAt(0).toUpperCase()}
                           </div>
                           <div>
-                            <span className="text-xs font-bold text-neutral-900 dark:text-white">
+                            <span className="text-xs font-bold text-neutral-900 dark:text-white block">
                               {sale.memberName || 'Guest Walk-In'}
                             </span>
+                            {sale.customerPhone && (
+                              <span className="text-[10px] text-neutral-400 block font-mono">
+                                {sale.customerPhone}
+                              </span>
+                            )}
                           </div>
                         </div>
                       </td>
@@ -461,16 +518,32 @@ export const HistoryScreen: React.FC = () => {
                       </td>
 
                       <td className="px-4 py-3">
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300">
-                          {sale.paymentMethod === 'Cash' && <Banknote size={13} className="text-emerald-600" />}
-                          {sale.paymentMethod === 'Card' && <CreditCard size={13} className="text-blue-600" />}
-                          {sale.paymentMethod === 'MemberBalance' && <User size={13} className="text-[#C4785A]" />}
-                          <span>{sale.paymentMethod}</span>
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300">
+                            {sale.paymentMethod === 'Cash' && <Banknote size={13} className="text-emerald-600" />}
+                            {sale.paymentMethod === 'Card' && <CreditCard size={13} className="text-blue-600" />}
+                            {sale.paymentMethod === 'Split' && <CreditCard size={13} className="text-purple-600" />}
+                            {sale.paymentMethod === 'MemberBalance' && <User size={13} className="text-[#C4785A]" />}
+                            <span>{sale.paymentMethod}</span>
+                          </span>
+
+                          {sale.status === 'Refunded' && (
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800">
+                              Refunded
+                            </span>
+                          )}
+                        </div>
                       </td>
 
-                      <td className="px-4 py-3 text-right text-sm font-black text-neutral-900 dark:text-white tabular-nums">
-                        {formatMoney(sale.totalAmount)}
+                      <td className="px-4 py-3 text-right tabular-nums">
+                        <div className={`text-sm font-black ${sale.status === 'Refunded' ? 'line-through text-neutral-400' : 'text-neutral-900 dark:text-white'}`}>
+                          {formatMoney(sale.totalAmount)}
+                        </div>
+                        {sale.status === 'Refunded' && (
+                          <div className="text-[10px] font-bold text-rose-600 dark:text-rose-400">
+                            0 DZD (Restocked)
+                          </div>
+                        )}
                       </td>
                     </tr>
                   ))
@@ -493,9 +566,16 @@ export const HistoryScreen: React.FC = () => {
               >
                 <div className="flex items-center justify-between mb-3">
                   <span className="font-mono text-xs font-bold text-[#C4785A]">#{sale.id}</span>
-                  <span className="text-[11px] text-neutral-400 tabular-nums">
-                    {new Date(sale.createdAt).toLocaleDateString()}
-                  </span>
+                  <div className="flex items-center gap-1.5">
+                    {sale.status === 'Refunded' && (
+                      <span className="px-1.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-rose-100 text-rose-700">
+                        Refunded
+                      </span>
+                    )}
+                    <span className="text-[11px] text-neutral-400 tabular-nums">
+                      {new Date(sale.createdAt).toLocaleDateString()}
+                    </span>
+                  </div>
                 </div>
 
                 <div className="flex items-center gap-2.5 mb-3">
@@ -523,7 +603,7 @@ export const HistoryScreen: React.FC = () => {
 
                 <div className="flex items-center justify-between pt-3 border-t border-neutral-100 dark:border-neutral-800">
                   <span className="text-xs text-neutral-400 font-medium">Settled Amount</span>
-                  <span className="text-base font-black text-neutral-900 dark:text-white tabular-nums">
+                  <span className={`text-base font-black tabular-nums ${sale.status === 'Refunded' ? 'line-through text-neutral-400' : 'text-neutral-900 dark:text-white'}`}>
                     {formatMoney(sale.totalAmount)}
                   </span>
                 </div>
@@ -535,7 +615,7 @@ export const HistoryScreen: React.FC = () => {
 
       {/* Desktop Slide-out Inspector Drawer matching MembersScreen */}
       {selectedSale && (
-        <div className="fixed inset-y-0 right-0 z-50 w-full sm:w-[420px] bg-white dark:bg-neutral-900 border-l border-neutral-200 dark:border-neutral-800 shadow-2xl flex flex-col animate-in slide-in-from-right duration-200">
+        <div className="fixed inset-y-0 right-0 z-50 w-full sm:w-[440px] bg-white dark:bg-neutral-900 border-l border-neutral-200 dark:border-neutral-800 shadow-2xl flex flex-col animate-in slide-in-from-right duration-200">
           {/* Drawer Header */}
           <div className="px-6 py-5 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -555,6 +635,19 @@ export const HistoryScreen: React.FC = () => {
 
           {/* Drawer Body */}
           <div className="flex-1 overflow-y-auto p-6 space-y-6 text-xs">
+            {/* Refunded Banner if applicable */}
+            {selectedSale.status === 'Refunded' && (
+              <div className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-900/60 space-y-1">
+                <div className="flex items-center gap-2 text-rose-800 dark:text-rose-200 font-bold">
+                  <RotateCcw size={15} className="text-rose-600" />
+                  <span>TRANSACTION REFUNDED & RESTOCKED</span>
+                </div>
+                <p className="text-[11px] text-rose-700 dark:text-rose-300">
+                  {selectedSale.notes || 'Full refund processed. Inventory levels have been automatically returned to stock.'}
+                </p>
+              </div>
+            )}
+
             {/* Top receipt overview */}
             <div className="p-4 rounded-2xl bg-[#FAF9F6] dark:bg-neutral-800/60 border border-neutral-200/80 dark:border-neutral-700/80 space-y-2">
               <div className="flex justify-between items-center">
@@ -573,6 +666,14 @@ export const HistoryScreen: React.FC = () => {
                   {selectedSale.memberName || 'Guest Walk-In'}
                 </span>
               </div>
+              {selectedSale.customerPhone && (
+                <div className="flex justify-between items-center">
+                  <span className="text-neutral-400">Phone:</span>
+                  <span className="font-mono font-semibold text-neutral-800 dark:text-neutral-200">
+                    {selectedSale.customerPhone}
+                  </span>
+                </div>
+              )}
               <div className="flex justify-between items-center">
                 <span className="text-neutral-400">Payment Tender:</span>
                 <span className="font-bold text-neutral-900 dark:text-white">
@@ -588,11 +689,11 @@ export const HistoryScreen: React.FC = () => {
             </div>
 
             {/* Stylist Attribution if present */}
-            {selectedSale.notes && (
+            {selectedSale.notes && !selectedSale.notes.includes('REFUNDED') && (
               <div className="p-3.5 rounded-2xl bg-[#FDF4F0] dark:bg-neutral-800/80 border border-[#F5E2D8] dark:border-neutral-700 space-y-1">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-[#C4785A] flex items-center gap-1">
                   <Scissors size={12} />
-                  <span>Stylist & Treatment Attribution</span>
+                  <span>Attribution / Notes</span>
                 </span>
                 <p className="text-xs font-semibold text-neutral-800 dark:text-neutral-200">
                   {selectedSale.notes}
@@ -614,6 +715,7 @@ export const HistoryScreen: React.FC = () => {
                       </div>
                       <div className="text-[11px] text-neutral-400 tabular-nums mt-0.5">
                         {item.quantity} × {formatMoney(item.unitPrice)}
+                        {item.discount ? ` (disc: -${formatMoney(item.discount)})` : ''}
                       </div>
                     </div>
                     <span className="font-black text-neutral-900 dark:text-white tabular-nums">
@@ -630,13 +732,24 @@ export const HistoryScreen: React.FC = () => {
                 <span className="text-xs font-bold text-[#C4785A]">Total Settled</span>
                 <div className="text-[11px] text-neutral-500">Includes VAT & taxes</div>
               </div>
-              <span className="text-2xl font-black text-[#C4785A] tabular-nums">
+              <span className={`text-2xl font-black tabular-nums ${selectedSale.status === 'Refunded' ? 'line-through text-neutral-400' : 'text-[#C4785A]'}`}>
                 {formatMoney(selectedSale.totalAmount)}
               </span>
             </div>
 
-            {/* Print & Action Buttons */}
+            {/* Action Buttons: Refund & Print */}
             <div className="space-y-2 pt-2">
+              {selectedSale.status !== 'Refunded' && (
+                <button
+                  type="button"
+                  onClick={() => setIsRefundModalOpen(true)}
+                  className="w-full h-10 rounded-full border border-rose-200 dark:border-rose-800 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-900/40 text-xs font-bold text-rose-700 dark:text-rose-300 flex items-center justify-center gap-2 cursor-pointer transition-colors shadow-2xs"
+                >
+                  <RotateCcw size={14} />
+                  <span>Process Refund & Restock Items</span>
+                </button>
+              )}
+
               <button
                 type="button"
                 onClick={() => window.print()}
@@ -653,6 +766,78 @@ export const HistoryScreen: React.FC = () => {
                 className="w-full h-10 rounded-full text-xs font-bold text-white flex items-center justify-center cursor-pointer hover:opacity-90 transition-opacity shadow-xs"
               >
                 Close Inspector
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Refund Confirmation Modal */}
+      {isRefundModalOpen && selectedSale && (
+        <div className="fixed inset-0 z-60 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-neutral-900 rounded-3xl max-w-md w-full p-6 space-y-5 border border-neutral-200 dark:border-neutral-800 shadow-2xl animate-in zoom-in-95 duration-150">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-rose-100 dark:bg-rose-950 text-rose-600 flex items-center justify-center">
+                <RotateCcw size={20} />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-neutral-900 dark:text-white">
+                  Confirm Transaction Refund
+                </h3>
+                <p className="text-xs text-neutral-500">
+                  Sale #{selectedSale.id} • {formatMoney(selectedSale.totalAmount)}
+                </p>
+              </div>
+            </div>
+
+            <div className="p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-xs text-amber-800 dark:text-amber-200 flex items-start gap-2.5">
+              <AlertCircle size={16} className="text-amber-600 shrink-0 mt-0.5" />
+              <span>
+                Refunding will return all {selectedSale.items.reduce((s, i) => s + i.quantity, 0)} items back to available branch stock and create an audit log.
+              </span>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
+                Reason for Refund / Return
+              </label>
+              <select
+                value={refundReason}
+                onChange={(e) => setRefundReason(e.target.value)}
+                className="w-full h-11 px-3.5 text-xs rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 font-semibold"
+              >
+                <option value="Customer return / exchange">Customer return / exchange</option>
+                <option value="Wrong item rung up by cashier">Wrong item rung up by cashier</option>
+                <option value="Defective or damaged product">Defective or damaged product</option>
+                <option value="Customer changed mind before leaving">Customer changed mind before leaving</option>
+                <option value="Pricing / discount adjustment">Pricing / discount adjustment</option>
+              </select>
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setIsRefundModalOpen(false)}
+                className="h-10 px-4 text-xs font-semibold text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  refundSale(selectedSale.id, refundReason);
+                  setRefundSuccessToast(`Refunded Sale #${selectedSale.id}. Items returned to inventory.`);
+                  setSelectedSale({
+                    ...selectedSale,
+                    status: 'Refunded',
+                    notes: `REFUNDED: ${refundReason}`,
+                  });
+                  setIsRefundModalOpen(false);
+                  setTimeout(() => setRefundSuccessToast(null), 5000);
+                }}
+                className="h-10 px-5 text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 rounded-full shadow-xs"
+              >
+                Confirm Refund & Restock
               </button>
             </div>
           </div>
