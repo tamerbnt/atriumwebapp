@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   TrendingUp,
   Clock,
@@ -82,25 +82,34 @@ export const FreelanceDashboardView: React.FC = () => {
     : (freelanceClients[0]?.hourlyRate || 85);
 
   // Active deliverables count & scope creep check
-  let activeDeliverablesCount = 0;
-  let scopeCreepCount = 0;
-  let highestOverrunDeliverable: { title: string; projectTitle: string; diffHours: number } | null = null;
-  freelanceProjects.forEach((proj) => {
-    (proj.deliverables || []).forEach((d) => {
-      if (!d.isCompleted) activeDeliverablesCount++;
-      if (d.loggedHours > d.estimatedHours) {
-        scopeCreepCount++;
-        const diff = Number((d.loggedHours - d.estimatedHours).toFixed(1));
-        if (!highestOverrunDeliverable || diff > highestOverrunDeliverable.diffHours) {
-          highestOverrunDeliverable = {
-            title: d.title,
-            projectTitle: proj.title,
-            diffHours: diff,
-          };
+  const { activeDeliverablesCount, scopeCreepCount, highestOverrunDeliverable } = useMemo(() => {
+    let active = 0;
+    let creep = 0;
+    let highest: { title: string; projectTitle: string; diffHours: number } | null = null;
+
+    for (const proj of freelanceProjects) {
+      for (const d of proj.deliverables || []) {
+        if (!d.isCompleted) active++;
+        if (d.loggedHours > d.estimatedHours) {
+          creep++;
+          const diff = Number((d.loggedHours - d.estimatedHours).toFixed(1));
+          if (!highest || diff > highest.diffHours) {
+            highest = {
+              title: d.title,
+              projectTitle: proj.title,
+              diffHours: diff,
+            };
+          }
         }
       }
-    });
-  });
+    }
+
+    return {
+      activeDeliverablesCount: active,
+      scopeCreepCount: creep,
+      highestOverrunDeliverable: highest,
+    };
+  }, [freelanceProjects]);
 
   return (
     <div className="space-y-8 animate-in fade-in duration-200">
@@ -571,7 +580,7 @@ export const FreelanceDashboardView: React.FC = () => {
                 </div>
               </div>
             );
-          })}
+          }))}
         </div>
       </div>
 

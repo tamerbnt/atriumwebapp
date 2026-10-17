@@ -25,18 +25,18 @@ import {
 
 export const INITIAL_PLANS: SubscriptionPlan[] = [
   {
-    id: 'plan_trial',
-    name: 'Free Trial',
+    id: 'plan_free_web',
+    name: 'Free Web',
     tierRank: 0,
     maxBusinesses: 1,
     maxBranches: 1,
     maxDevices: 1,
-    maxStaff: 3,
+    maxStaff: 5,
     crossBranchReports: false,
     sharedMembers: false,
     isFreeTier: true,
-    trialDays: 30,
-    priceLabel: 'Free (30 Days)',
+    trialDays: 0,
+    priceLabel: 'Free Forever',
   },
   {
     id: 'plan_starter',

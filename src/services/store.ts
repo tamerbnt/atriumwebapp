@@ -114,6 +114,8 @@ interface AppState {
   isAuthenticated: boolean;
   isOnboardingOpen: boolean;
   isFastSwitchOpen: boolean;
+  isDesktopUpgradeModalOpen: boolean;
+  desktopUpgradeReason: 'branch_limit' | 'business_limit' | 'general';
   // Supabase Integration & Sync
   supabaseStatus: SupabaseStatus;
   isSyncing: boolean;
@@ -143,10 +145,10 @@ const DEFAULT_STATE: AppState = {
   subscription: {
     id: 'sub_active',
     accountId: INITIAL_ACCOUNT.id,
-    planId: 'plan_trial',
-    status: 'trial',
-    isLifetime: false,
-    trialEndsAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+    planId: 'plan_free_web',
+    status: 'active',
+    isLifetime: true,
+    activatedByVoucher: 'WEB-FREE-EDITION',
     plan: INITIAL_PLANS[0],
   },
   businesses: INITIAL_BUSINESSES,
@@ -172,6 +174,8 @@ const DEFAULT_STATE: AppState = {
   isAuthenticated: true,
   isOnboardingOpen: false,
   isFastSwitchOpen: false,
+  isDesktopUpgradeModalOpen: false,
+  desktopUpgradeReason: 'general',
   supabaseStatus: isSupabaseConfigured() ? 'connecting' : 'unconfigured',
   isSyncing: false,
   lastSyncedAt: null,
@@ -233,6 +237,8 @@ let globalState: AppState = (() => {
           isAuthenticated: parsed.isAuthenticated !== undefined ? parsed.isAuthenticated : true,
           isOnboardingOpen: false,
           isFastSwitchOpen: false,
+          isDesktopUpgradeModalOpen: false,
+          desktopUpgradeReason: 'general',
           supabaseStatus: isSupabaseConfigured() ? 'connecting' : 'unconfigured',
           isSyncing: false,
         };
@@ -946,7 +952,8 @@ export function useAtriumStore() {
 
   const addBranch = (name: string, code: string, address?: string, phone?: string) => {
     if (!branchQuota.isAllowed) {
-      throw new Error(`Branch limit reached for ${plan.name} plan. Redeem a lifetime voucher to upgrade.`);
+      openDesktopUpgradeModal('branch_limit');
+      throw new Error(`Branch limit reached for ${plan.name}. Upgrade to Atrium Desktop to unlock multi-branch management.`);
     }
 
     const newBranch: Branch = {
@@ -1232,6 +1239,23 @@ export function useAtriumStore() {
     notify();
   };
 
+  const openDesktopUpgradeModal = (reason: 'branch_limit' | 'business_limit' | 'general' = 'general') => {
+    globalState = {
+      ...globalState,
+      isDesktopUpgradeModalOpen: true,
+      desktopUpgradeReason: reason,
+    };
+    notify();
+  };
+
+  const closeDesktopUpgradeModal = () => {
+    globalState = {
+      ...globalState,
+      isDesktopUpgradeModalOpen: false,
+    };
+    notify();
+  };
+
   const completeOnboarding = (params: OnboardingParams) => {
     const accountId = `acc_${Date.now()}`;
     const businessId = `biz_${Date.now()}`;
@@ -1272,9 +1296,9 @@ export function useAtriumStore() {
       createdAt: new Date().toISOString(),
     };
 
-    let chosenPlan = INITIAL_PLANS[0]; // Free Trial default
-    let isLifetime = false;
-    let activatedVoucher: string | undefined = undefined;
+    let chosenPlan = INITIAL_PLANS[0]; // Free Web default
+    let isLifetime = true;
+    let activatedVoucher: string | undefined = 'WEB-FREE-EDITION';
 
     if (params.voucherCode) {
       const vRes = validateVoucherCode(params.voucherCode);
@@ -1294,7 +1318,6 @@ export function useAtriumStore() {
       planId: chosenPlan.id,
       status: 'active',
       isLifetime,
-      trialEndsAt: isLifetime ? undefined : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
       activatedByVoucher: activatedVoucher,
       plan: chosenPlan,
     };
@@ -1471,8 +1494,8 @@ export function useAtriumStore() {
       ...globalState,
       account: newAccount,
       subscription: newSubscription,
-      businesses: [newBusiness, ...globalState.businesses],
-      branches: [newBranch, ...globalState.branches],
+      businesses: [newBusiness],
+      branches: [newBranch],
       currentBusinessId: businessId,
       currentBranchId: branchId,
       plansByBranch: {
@@ -1860,7 +1883,7 @@ export function useAtriumStore() {
 
         const newTotalEstimated = updatedDeliverables.reduce((acc, curr) => acc + (curr.estimatedHours || 0), 0);
         const allCompleted = updatedDeliverables.length > 0 && updatedDeliverables.every((d) => d.isCompleted);
-        const nextProjectStage = allCompleted && p.stage !== 'Completed' ? 'Completed' : p.stage;
+        const nextProjectStage: DeliverableStage = allCompleted && p.stage !== 'Approved' && p.stage !== 'Billed' ? 'Approved' : p.stage;
 
         return {
           ...p,
@@ -2419,6 +2442,8 @@ export function useAtriumStore() {
     isAuthenticated: state.isAuthenticated,
     isOnboardingOpen: state.isOnboardingOpen,
     isFastSwitchOpen: state.isFastSwitchOpen,
+    isDesktopUpgradeModalOpen: state.isDesktopUpgradeModalOpen,
+    desktopUpgradeReason: state.desktopUpgradeReason,
     // Lists
     members: currentMembers,
     leads: currentLeads,
@@ -2502,5 +2527,7 @@ export function useAtriumStore() {
     openFastSwitch,
     closeFastSwitch,
     completeOnboarding,
+    openDesktopUpgradeModal,
+    closeDesktopUpgradeModal,
   };
 }

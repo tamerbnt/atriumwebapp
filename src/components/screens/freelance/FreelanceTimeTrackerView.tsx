@@ -15,10 +15,13 @@ import {
   Coffee,
   X,
   Search,
+  Edit2,
+  Trash2,
+  AlertTriangle,
 } from 'lucide-react';
 import { useAtriumStore } from '../../../services/store';
 import { formatDuration, formatCurrencyAmount } from '../../../utils/rules';
-import { FreelanceClient, FreelanceProject, CurrencyCode } from '../../../types/index';
+import { FreelanceClient, FreelanceProject, CurrencyCode, TimeLogEntry } from '../../../types/index';
 
 export const FreelanceTimeTrackerView: React.FC = () => {
   const {
@@ -32,6 +35,8 @@ export const FreelanceTimeTrackerView: React.FC = () => {
     stopTimer,
     resetTimer,
     logTimeEntry,
+    updateTimeLog,
+    deleteTimeLog,
     billUnbilledHours,
     setScreen,
   } = useAtriumStore();
@@ -58,6 +63,19 @@ export const FreelanceTimeTrackerView: React.FC = () => {
     isBillable: true,
   });
 
+  // Edit Log State
+  const [logToEdit, setLogToEdit] = useState<TimeLogEntry | null>(null);
+  const [editLogForm, setEditLogForm] = useState({
+    taskDescription: '',
+    hours: 0,
+    minutes: 0,
+    date: '',
+    isBillable: true,
+  });
+
+  // Delete Log State
+  const [logToDelete, setLogToDelete] = useState<TimeLogEntry | null>(null);
+
   // Client projects filtered
   const availableProjects = useMemo(() => {
     return freelanceProjects.filter((p) => p.clientId === selectedClientId);
@@ -76,20 +94,46 @@ export const FreelanceTimeTrackerView: React.FC = () => {
   const billableRatio = totalSecondsAll > 0 ? Math.round((billableSeconds / totalSecondsAll) * 100) : 100;
 
   const handleStartFocusTimer = () => {
-    const client = freelanceClients.find((c) => c.id === selectedClientId);
-    const project = freelanceProjects.find((p) => p.id === selectedProjectId);
+    if (freelanceClients.length === 0) {
+      setScreen('members');
+      return;
+    }
+    if (freelanceProjects.length === 0) {
+      setScreen('scheduler');
+      return;
+    }
+
+    const client = freelanceClients.find((c) => c.id === selectedClientId) || freelanceClients[0];
+    const project =
+      availableProjects.find((p) => p.id === selectedProjectId) ||
+      freelanceProjects.find((p) => p.clientId === client.id) ||
+      freelanceProjects[0];
 
     startTimer(
-      client?.id || 'fcli_01',
-      client?.name || 'Client',
-      project?.id || 'fproj_01',
-      project?.title || 'General Development',
+      client.id,
+      client.company || client.name,
+      project.id,
+      project.title,
       taskDescription || 'Sprint Task',
-      project?.deliverables[0]?.id,
-      project?.deliverables[0]?.title,
+      project.deliverables?.[0]?.id,
+      project.deliverables?.[0]?.title,
       isBillable,
       isPomodoro
     );
+  };
+
+  const handleEditLogSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!logToEdit || !editLogForm.taskDescription.trim()) return;
+
+    const durationSeconds = Number(editLogForm.hours) * 3600 + Number(editLogForm.minutes) * 60;
+    updateTimeLog(logToEdit.id, {
+      taskDescription: editLogForm.taskDescription,
+      durationSeconds,
+      date: editLogForm.date,
+      isBillable: editLogForm.isBillable,
+    });
+    setLogToEdit(null);
   };
 
   const handleManualLogSubmit = (e: React.FormEvent) => {
@@ -409,6 +453,7 @@ export const FreelanceTimeTrackerView: React.FC = () => {
                 <th className="pb-2.5 font-semibold text-right">Duration</th>
                 <th className="pb-2.5 font-semibold text-right">Effective Rate</th>
                 <th className="pb-2.5 font-semibold text-center">Status</th>
+                <th className="pb-2.5 font-semibold text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800/60">
@@ -459,11 +504,73 @@ export const FreelanceTimeTrackerView: React.FC = () => {
                       </span>
                     )}
                   </td>
+                  <td className="py-3 text-right">
+                    <div className="flex items-center justify-end gap-1.5">
+                      <button
+                        type="button"
+                        disabled={entry.isInvoiced}
+                        onClick={() => {
+                          setLogToEdit(entry);
+                          const totalMin = Math.round(entry.durationSeconds / 60);
+                          setEditLogForm({
+                            taskDescription: entry.taskDescription,
+                            hours: Math.floor(totalMin / 60),
+                            minutes: totalMin % 60,
+                            date: entry.date,
+                            isBillable: entry.isBillable,
+                          });
+                        }}
+                        className={`p-1.5 rounded-lg transition-colors ${
+                          entry.isInvoiced
+                            ? 'opacity-30 cursor-not-allowed text-neutral-400'
+                            : 'text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer'
+                        }`}
+                        title={entry.isInvoiced ? 'Invoiced logs cannot be edited' : 'Edit time log'}
+                      >
+                        <Edit2 size={13} />
+                      </button>
+                      <button
+                        type="button"
+                        disabled={entry.isInvoiced}
+                        onClick={() => setLogToDelete(entry)}
+                        className={`p-1.5 rounded-lg transition-colors ${
+                          entry.isInvoiced
+                            ? 'opacity-30 cursor-not-allowed text-neutral-400'
+                            : 'text-neutral-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer'
+                        }`}
+                        title={entry.isInvoiced ? 'Invoiced logs cannot be deleted' : 'Delete time log'}
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+
+        {timeLogs.length === 0 && (
+          <div className="py-12 text-center rounded-2xl border border-dashed border-neutral-200 dark:border-neutral-800 p-8 space-y-3">
+            <Clock size={32} className="mx-auto text-neutral-300 dark:text-neutral-600" />
+            <h4 className="text-sm font-bold text-neutral-900 dark:text-white">
+              No Time Entries Recorded Yet
+            </h4>
+            <p className="text-xs text-neutral-500 max-w-sm mx-auto">
+              Start the live focus stopwatch above or log historical work hours to build your billable activity ledger.
+            </p>
+            <div className="flex items-center justify-center gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setIsManualModalOpen(true)}
+                className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-200 cursor-pointer inline-flex items-center gap-1.5"
+              >
+                <Plus size={13} />
+                <span>Log Manual Time</span>
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Manual Time Entry Modal */}
@@ -612,6 +719,167 @@ export const FreelanceTimeTrackerView: React.FC = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Time Entry Modal */}
+      {logToEdit && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="bg-white dark:bg-[#1C1C1E] border border-neutral-200 dark:border-neutral-800 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
+              <div>
+                <h3 className="text-base font-bold text-neutral-900 dark:text-white">
+                  Edit Time Entry
+                </h3>
+                <p className="text-xs text-neutral-500">
+                  {logToEdit.clientName} · {logToEdit.projectTitle}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setLogToEdit(null)}
+                className="w-8 h-8 rounded-full flex items-center justify-center text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 cursor-pointer"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <form onSubmit={handleEditLogSubmit} className="space-y-3.5 text-xs">
+              <div>
+                <label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
+                  Task Summary *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={editLogForm.taskDescription}
+                  onChange={(e) =>
+                    setEditLogForm({ ...editLogForm, taskDescription: e.target.value })
+                  }
+                  className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#C4785A]"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
+                    Hours
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={editLogForm.hours}
+                    onChange={(e) =>
+                      setEditLogForm({ ...editLogForm, hours: Number(e.target.value) })
+                    }
+                    className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#C4785A]"
+                  />
+                </div>
+                <div>
+                  <label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
+                    Minutes
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="59"
+                    value={editLogForm.minutes}
+                    onChange={(e) =>
+                      setEditLogForm({ ...editLogForm, minutes: Number(e.target.value) })
+                    }
+                    className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#C4785A]"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
+                  Date
+                </label>
+                <input
+                  type="date"
+                  value={editLogForm.date}
+                  onChange={(e) => setEditLogForm({ ...editLogForm, date: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#C4785A]"
+                />
+              </div>
+
+              <div className="flex items-center gap-2 pt-2">
+                <input
+                  type="checkbox"
+                  id="billableEdit"
+                  checked={editLogForm.isBillable}
+                  onChange={(e) =>
+                    setEditLogForm({ ...editLogForm, isBillable: e.target.checked })
+                  }
+                  className="rounded text-[#C4785A]"
+                />
+                <label
+                  htmlFor="billableEdit"
+                  className="font-medium text-neutral-700 dark:text-neutral-300 cursor-pointer"
+                >
+                  Billable to client
+                </label>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
+                <button
+                  type="button"
+                  onClick={() => setLogToEdit(null)}
+                  className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl bg-[#C4785A] text-white text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
+                >
+                  Update Entry
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Time Entry Confirmation Modal */}
+      {logToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="bg-white dark:bg-[#1C1C1E] border border-neutral-200 dark:border-neutral-800 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4 animate-in zoom-in-95 duration-150">
+            <div className="flex items-center gap-3 text-rose-600 dark:text-rose-400">
+              <div className="w-10 h-10 rounded-2xl bg-rose-50 dark:bg-rose-950/60 flex items-center justify-center shrink-0 border border-rose-200 dark:border-rose-900/60">
+                <AlertTriangle size={20} />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-neutral-900 dark:text-white">Delete Time Entry</h3>
+                <p className="text-xs text-neutral-500">{logToDelete.date} · {formatDuration(logToDelete.durationSeconds)}</p>
+              </div>
+            </div>
+
+            <p className="text-xs text-neutral-600 dark:text-neutral-300 leading-relaxed">
+              Are you sure you want to delete this time entry for <strong className="text-neutral-900 dark:text-white font-semibold">"{logToDelete.taskDescription}"</strong> on <strong className="text-neutral-900 dark:text-white font-semibold">{logToDelete.projectTitle}</strong>?
+            </p>
+
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
+              <button
+                type="button"
+                onClick={() => setLogToDelete(null)}
+                className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  deleteTimeLog(logToDelete.id);
+                  setLogToDelete(null);
+                }}
+                className="px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold transition-colors cursor-pointer shadow-xs"
+              >
+                Delete Entry
+              </button>
+            </div>
           </div>
         </div>
       )}

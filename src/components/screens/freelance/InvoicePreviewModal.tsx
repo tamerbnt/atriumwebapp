@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { FreelanceInvoice } from '../../../types/index';
 import { formatCurrencyAmount } from '../../../utils/rules';
+import { useAtriumStore } from '../../../services/store';
 
 interface InvoicePreviewModalProps {
   isOpen: boolean;
@@ -26,9 +27,19 @@ export const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({
   invoice,
   onMarkPaid,
 }) => {
+  const { currentBusiness, currentUser, account } = useAtriumStore();
   const [copied, setCopied] = useState(false);
 
   if (!isOpen || !invoice) return null;
+
+  const businessName = currentBusiness?.name || 'Atlas Studio';
+  const businessEmail = currentUser?.email || account?.email || 'contact@atlas-studio.dz';
+  const businessAddress = currentBusiness?.address || 'Algiers, Algeria';
+  const beneficiaryName =
+    invoice.paymentDetails?.accountHolder ||
+    currentUser?.fullName ||
+    account?.fullName ||
+    businessName;
 
   const handleCopyRib = () => {
     if (invoice.paymentDetails?.ribOrIban) {
@@ -92,17 +103,17 @@ export const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-xl bg-[#C4785A] text-white flex items-center justify-center font-black text-sm shadow-xs">
-                  A
+                  {businessName.charAt(0).toUpperCase()}
                 </div>
                 <span className="text-xl font-bold tracking-tight text-neutral-900 dark:text-white">
-                  Atlas Studio
+                  {businessName}
                 </span>
               </div>
               <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
                 Independent Digital Practice & Architecture
               </p>
               <p className="text-[11px] text-neutral-400 mt-0.5">
-                contact@atlas-studio.dz · Algiers, Algeria
+                {businessEmail} · {businessAddress}
               </p>
             </div>
 
@@ -245,7 +256,7 @@ export const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({
                 </div>
                 <div>
                   <span className="text-[10px] uppercase text-neutral-400 block">Beneficiary</span>
-                  <span className="font-semibold text-neutral-800 dark:text-neutral-200">{invoice.paymentDetails.accountHolder}</span>
+                  <span className="font-semibold text-neutral-800 dark:text-neutral-200">{beneficiaryName}</span>
                 </div>
                 <div className="sm:col-span-2">
                   <span className="text-[10px] uppercase text-neutral-400 block">RIB / IBAN</span>

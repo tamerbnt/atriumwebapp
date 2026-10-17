@@ -77,7 +77,7 @@ export interface Device {
 
 export interface SubscriptionPlan {
   id: string;
-  name: 'Free Trial' | 'Starter' | 'Pro' | 'Enterprise';
+  name: 'Free Web' | 'Free Trial' | 'Starter' | 'Pro' | 'Enterprise';
   tierRank: 0 | 1 | 2 | 3;
   maxBusinesses: number;
   maxBranches: number;

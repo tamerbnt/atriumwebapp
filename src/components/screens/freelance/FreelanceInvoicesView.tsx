@@ -14,6 +14,8 @@ import {
   X,
   CreditCard,
   Building,
+  Trash2,
+  AlertTriangle,
 } from 'lucide-react';
 import { useAtriumStore } from '../../../services/store';
 import { formatCurrencyAmount } from '../../../utils/rules';
@@ -32,12 +34,17 @@ export const FreelanceInvoicesView: React.FC = () => {
     timeLogs,
     createFreelanceInvoice,
     updateInvoiceStatus,
+    deleteFreelanceInvoice,
     billUnbilledHours,
+    currentBusiness,
+    currentUser,
+    account,
   } = useAtriumStore();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [previewInvoice, setPreviewInvoice] = useState<FreelanceInvoice | null>(null);
+  const [invoiceToDelete, setInvoiceToDelete] = useState<FreelanceInvoice | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   // New Invoice Form
@@ -132,7 +139,7 @@ export const FreelanceInvoicesView: React.FC = () => {
           currency === 'DZD'
             ? 'Algérie Poste / BaridiMob & BEA'
             : 'Banque Extérieure d\'Algérie (BEA) / Euro Wire',
-        accountHolder: 'Amine Bentouati',
+        accountHolder: currentUser?.fullName || account?.fullName || currentBusiness?.name || 'Amine Bentouati',
         ribOrIban:
           currency === 'DZD'
             ? '007 99999 0001234567 89'
@@ -347,6 +354,17 @@ export const FreelanceInvoicesView: React.FC = () => {
                           <span>Send</span>
                         </button>
                       )}
+
+                      {inv.status !== 'Paid' && (
+                        <button
+                          type="button"
+                          onClick={() => setInvoiceToDelete(inv)}
+                          className="h-7 w-7 rounded-lg text-neutral-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 flex items-center justify-center transition-colors cursor-pointer"
+                          title="Void / Delete invoice"
+                        >
+                          <Trash2 size={12} />
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>
@@ -356,8 +374,22 @@ export const FreelanceInvoicesView: React.FC = () => {
         </div>
 
         {filteredInvoices.length === 0 && (
-          <div className="py-12 text-center text-neutral-400 text-xs">
-            No invoices found for this selection.
+          <div className="py-12 text-center rounded-2xl border border-dashed border-neutral-200 dark:border-neutral-800 p-8 space-y-3">
+            <FileText size={32} className="mx-auto text-neutral-300 dark:text-neutral-600" />
+            <h4 className="text-sm font-bold text-neutral-900 dark:text-white">
+              No Invoices Generated Yet
+            </h4>
+            <p className="text-xs text-neutral-500 max-w-sm mx-auto">
+              Draft professional multi-currency invoices manually or convert unbilled logged hours with one click.
+            </p>
+            <button
+              type="button"
+              onClick={() => setIsCreateModalOpen(true)}
+              className="mt-2 px-4 py-2 rounded-xl bg-[#C4785A] text-white text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer inline-flex items-center gap-1.5 shadow-xs"
+            >
+              <Plus size={14} />
+              <span>Create First Invoice</span>
+            </button>
           </div>
         )}
       </div>
@@ -535,6 +567,52 @@ export const FreelanceInvoicesView: React.FC = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete / Void Invoice Confirmation Modal */}
+      {invoiceToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="bg-white dark:bg-[#1C1C1E] border border-neutral-200 dark:border-neutral-800 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4 animate-in zoom-in-95 duration-150">
+            <div className="flex items-center gap-3 text-rose-600 dark:text-rose-400">
+              <div className="w-10 h-10 rounded-2xl bg-rose-50 dark:bg-rose-950/60 flex items-center justify-center shrink-0 border border-rose-200 dark:border-rose-900/60">
+                <AlertTriangle size={20} />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-neutral-900 dark:text-white">Void / Delete Invoice</h3>
+                <p className="text-xs text-neutral-500">Invoice #{invoiceToDelete.invoiceNumber}</p>
+              </div>
+            </div>
+
+            <p className="text-xs text-neutral-600 dark:text-neutral-300 leading-relaxed">
+              Are you sure you want to delete invoice <strong className="text-neutral-900 dark:text-white font-semibold">#{invoiceToDelete.invoiceNumber}</strong> for <strong className="text-neutral-900 dark:text-white font-semibold">{invoiceToDelete.clientName}</strong>?
+            </p>
+
+            <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 text-xs text-amber-800 dark:text-amber-300">
+              <span className="font-semibold block mb-0.5">Time Log Reversal:</span>
+              Any unbilled time logs associated with this invoice will automatically revert to unbilled so they can be re-itemized.
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
+              <button
+                type="button"
+                onClick={() => setInvoiceToDelete(null)}
+                className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  deleteFreelanceInvoice(invoiceToDelete.id);
+                  setInvoiceToDelete(null);
+                }}
+                className="px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold transition-colors cursor-pointer shadow-xs"
+              >
+                Delete Invoice
+              </button>
+            </div>
           </div>
         </div>
       )}

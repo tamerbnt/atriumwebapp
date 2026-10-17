@@ -18,6 +18,20 @@ export const authService = {
     };
   },
 
+  async signInWithGoogle(): Promise<{ error: Error | null }> {
+    const client = getSupabaseClient();
+    if (!client) {
+      return { error: new Error('Supabase is not configured') };
+    }
+    const { error } = await client.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: window.location.origin,
+      },
+    });
+    return { error: error ? new Error(error.message) : null };
+  },
+
   async signUp(email: string, password: string, fullName: string): Promise<{ user: User | null; session: Session | null; error: Error | null }> {
     const client = getSupabaseClient();
     if (!client) {

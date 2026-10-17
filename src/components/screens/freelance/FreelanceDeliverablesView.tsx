@@ -451,6 +451,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
           );
         })}
       </div>
+      )}
 
       {/* Add Deliverable Modal */}
       {isAddDeliverableModalOpen && (
