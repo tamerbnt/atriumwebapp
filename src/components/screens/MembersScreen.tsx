@@ -100,6 +100,22 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
     });
   }, [members, statusFilter, planFilter, searchQuery]);
 
+  const isPOS = currentBusiness.category === 'pos_inventory';
+  const isSalon = currentBusiness.category === 'appointment_service';
+
+  const customerSalesMetrics = useMemo(() => {
+    const memberSalesMap: Record<string, number> = {};
+    let totalSpend = 0;
+    sales.forEach((s) => {
+      if (s.memberId) {
+        memberSalesMap[s.memberId] = (memberSalesMap[s.memberId] || 0) + s.totalAmount;
+        totalSpend += s.totalAmount;
+      }
+    });
+    const purchasingCount = Object.keys(memberSalesMap).length;
+    return { memberSalesMap, totalSpend, purchasingCount };
+  }, [sales]);
+
   const activeMembersCount = useMemo(() => {
     return members.filter((m) => m.status === 'Active').length;
   }, [members]);
@@ -281,38 +297,37 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
             </div>
           </div>
 
-          {/* Tile 2: Renewal Churn Risk — Pure White Card */}
+          {/* Tile 2: Customer Spend Volume or Renewal Churn Risk */}
           <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
             <div>
               <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
-                Renewal & Retention Alert
+                {isPOS ? 'Customer Ledger Volume' : 'Renewal & Retention Alert'}
               </span>
               <div className="mt-1">
                 <span className="text-[10px] font-bold text-[#C4785A] bg-[#C4785A]/10 px-2 py-0.5 rounded-full">
-                  {expiringCount} expirent bientôt
+                  {isPOS ? 'Total Account Spend' : `${expiringCount} expirent bientôt`}
                 </span>
               </div>
             </div>
-            <div className="text-3xl font-black text-neutral-900 dark:text-white tabular-nums">
-              {expiringCount}
+            <div className="text-3xl font-black text-neutral-900 dark:text-white tabular-nums font-mono">
+              {isPOS ? formatMoney(customerSalesMetrics.totalSpend) : expiringCount}
             </div>
           </div>
 
-          {/* Tile 3: Monthly Inflow (Dark Obsidian Card #18181B) */}
+          {/* Tile 3: Active Purchasing Customers or Monthly Inflow */}
           <div className="p-5 rounded-[20px] bg-[#18181B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
             <div>
               <span className="text-xs font-medium text-neutral-300">
-                Monthly Inflow
+                {isPOS ? 'Active Purchasing Customers' : 'Monthly Inflow'}
               </span>
               <div className="text-[11px] text-[#C4785A] font-semibold mt-0.5">
-                New packages & client profiles this month
+                {isPOS ? 'Profiles with settled POS order history' : 'New packages & client profiles this month'}
               </div>
             </div>
             <div className="text-2xl font-black text-white tabular-nums">
-              +{displayMembers.length}{' '}
-              <span className="text-xs font-normal text-neutral-400">
-                {terminology.members.toLowerCase()}
-              </span>
+              {isPOS
+                ? `${customerSalesMetrics.purchasingCount} clients`
+                : `+${displayMembers.length} ${terminology.members.toLowerCase()}`}
             </div>
           </div>
         </div>
@@ -787,79 +802,131 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
                   </div>
                 </div>
 
-                {/* Appointment & Treatment Ledger for Client */}
-                <div className="space-y-2.5 text-xs">
-                  <div className="flex items-center justify-between">
-                    <h4 className="text-[11px] font-bold uppercase tracking-wider text-neutral-400 flex items-center gap-1.5">
-                      <Scissors size={12} className="text-[#C4785A]" />
-                      <span>Bookings & Treatments</span>
-                    </h4>
-                    <button
-                      type="button"
-                      onClick={() => setIsBookModalOpen(true)}
-                      className="text-[11px] font-bold text-[#C4785A] hover:underline cursor-pointer"
-                    >
-                      + Book Service
-                    </button>
-                  </div>
+                {/* POS Receipt Ledger for Customer or Appointments for Salon */}
+                {isPOS ? (
+                  <div className="space-y-2.5 text-xs">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-[11px] font-bold uppercase tracking-wider text-neutral-400 flex items-center gap-1.5">
+                        <Receipt size={12} className="text-[#C4785A]" />
+                        <span>POS Orders & Receipts</span>
+                      </h4>
+                      <span className="text-[10px] font-bold text-neutral-400">
+                        {sales.filter((s) => s.memberId === selectedMember.id).length} orders
+                      </span>
+                    </div>
 
-                  {(() => {
-                    const clientApts = appointments.filter((a) => a.clientId === selectedMember.id);
-                    if (clientApts.length === 0) {
+                    {(() => {
+                      const customerSales = sales.filter((s) => s.memberId === selectedMember.id);
+                      if (customerSales.length === 0) {
+                        return (
+                          <div className="p-3 rounded-xl border border-dashed border-neutral-200 dark:border-neutral-800 text-center text-neutral-400">
+                            <p className="text-[11px]">No purchases recorded for this customer yet.</p>
+                          </div>
+                        );
+                      }
+
                       return (
-                        <div className="p-3 rounded-xl border border-dashed border-neutral-200 dark:border-neutral-800 text-center text-neutral-400">
-                          <p className="text-[11px]">No treatments booked yet.</p>
-                          <button
-                            type="button"
-                            onClick={() => setIsBookModalOpen(true)}
-                            className="mt-1 text-[11px] font-bold text-[#C4785A] cursor-pointer"
-                          >
-                            Schedule first appointment →
-                          </button>
+                        <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                          {customerSales.map((sale) => (
+                            <div
+                              key={sale.id}
+                              className="p-2.5 rounded-xl border border-neutral-100 dark:border-neutral-800/80 bg-neutral-50/60 dark:bg-neutral-800/40 text-xs flex flex-col gap-1"
+                            >
+                              <div className="flex items-center justify-between">
+                                <span className="font-bold text-neutral-900 dark:text-white font-mono truncate">
+                                  #{sale.id.slice(-6).toUpperCase()}
+                                </span>
+                                <span className="font-bold text-emerald-600 font-mono">
+                                  {formatMoney(sale.totalAmount)}
+                                </span>
+                              </div>
+                              <div className="text-[11px] text-neutral-500 truncate">
+                                {sale.items.map((it) => `${it.quantity}x ${it.productName}`).join(', ')}
+                              </div>
+                              <div className="flex items-center justify-between text-[10px] text-neutral-400 pt-0.5 border-t border-neutral-200/50 dark:border-neutral-700/50">
+                                <span>{new Date(sale.createdAt).toLocaleDateString()}</span>
+                                <span className="font-medium text-neutral-600 dark:text-neutral-300">{sale.paymentMethod}</span>
+                              </div>
+                            </div>
+                          ))}
                         </div>
                       );
-                    }
+                    })()}
+                  </div>
+                ) : (
+                  <div className="space-y-2.5 text-xs">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-[11px] font-bold uppercase tracking-wider text-neutral-400 flex items-center gap-1.5">
+                        <Scissors size={12} className="text-[#C4785A]" />
+                        <span>Bookings & Treatments</span>
+                      </h4>
+                      <button
+                        type="button"
+                        onClick={() => setIsBookModalOpen(true)}
+                        className="text-[11px] font-bold text-[#C4785A] hover:underline cursor-pointer"
+                      >
+                        + Book Service
+                      </button>
+                    </div>
 
-                    return (
-                      <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
-                        {clientApts.map((apt) => (
-                          <div
-                            key={apt.id}
-                            className="p-2.5 rounded-xl border border-neutral-100 dark:border-neutral-800/80 bg-neutral-50/60 dark:bg-neutral-800/40 text-xs flex flex-col gap-1"
-                          >
-                            <div className="flex items-center justify-between">
-                              <span className="font-bold text-neutral-900 dark:text-white truncate">
-                                {apt.serviceName}
-                              </span>
-                              <span
-                                className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md ${
-                                  apt.status === 'InChair'
-                                    ? 'bg-amber-500 text-white'
-                                    : apt.status === 'Completed'
-                                    ? 'bg-emerald-600 text-white'
-                                    : apt.status === 'Cancelled'
-                                    ? 'bg-neutral-400 text-white'
-                                    : 'bg-indigo-600 text-white'
-                                }`}
-                              >
-                                {apt.status === 'InChair' ? 'In Chair' : apt.status}
-                              </span>
-                            </div>
-                            <div className="flex items-center justify-between text-[11px] text-neutral-500">
-                              <span>
-                                {apt.date} • {apt.startTime} ({apt.durationMinutes}m)
-                              </span>
-                              <span className="font-bold text-[#C4785A]">{formatMoney(apt.price)}</span>
-                            </div>
-                            <div className="text-[10px] text-neutral-400 flex items-center gap-1">
-                              <span>Stylist: {apt.staffName}</span>
-                            </div>
+                    {(() => {
+                      const clientApts = appointments.filter((a) => a.clientId === selectedMember.id);
+                      if (clientApts.length === 0) {
+                        return (
+                          <div className="p-3 rounded-xl border border-dashed border-neutral-200 dark:border-neutral-800 text-center text-neutral-400">
+                            <p className="text-[11px]">No treatments booked yet.</p>
+                            <button
+                              type="button"
+                              onClick={() => setIsBookModalOpen(true)}
+                              className="mt-1 text-[11px] font-bold text-[#C4785A] cursor-pointer"
+                            >
+                              Schedule first appointment →
+                            </button>
                           </div>
-                        ))}
-                      </div>
-                    );
-                  })()}
-                </div>
+                        );
+                      }
+
+                      return (
+                        <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                          {clientApts.map((apt) => (
+                            <div
+                              key={apt.id}
+                              className="p-2.5 rounded-xl border border-neutral-100 dark:border-neutral-800/80 bg-neutral-50/60 dark:bg-neutral-800/40 text-xs flex flex-col gap-1"
+                            >
+                              <div className="flex items-center justify-between">
+                                <span className="font-bold text-neutral-900 dark:text-white truncate">
+                                  {apt.serviceName}
+                                </span>
+                                <span
+                                  className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md ${
+                                    apt.status === 'InChair'
+                                      ? 'bg-amber-500 text-white'
+                                      : apt.status === 'Completed'
+                                      ? 'bg-emerald-600 text-white'
+                                      : apt.status === 'Cancelled'
+                                      ? 'bg-neutral-400 text-white'
+                                      : 'bg-indigo-600 text-white'
+                                  }`}
+                                >
+                                  {apt.status === 'InChair' ? 'In Chair' : apt.status}
+                                </span>
+                              </div>
+                              <div className="flex items-center justify-between text-[11px] text-neutral-500">
+                                <span>
+                                  {apt.date} • {apt.startTime} ({apt.durationMinutes}m)
+                                </span>
+                                <span className="font-bold text-[#C4785A]">{formatMoney(apt.price)}</span>
+                              </div>
+                              <div className="text-[10px] text-neutral-400 flex items-center gap-1">
+                                <span>Stylist: {apt.staffName}</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    })()}
+                  </div>
+                )}
 
                 {/* Contact Information */}
                 <div className="space-y-2 text-xs">

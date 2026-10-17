@@ -36,11 +36,14 @@ export const SchedulerScreen: React.FC = () => {
     switchBusiness,
     switchBranch,
     terminology,
+    staff,
   } = useAtriumStore();
 
   if (currentBusiness.category === 'appointment_service') {
     return <StylistScheduleView />;
   }
+
+  const isPOS = currentBusiness.category === 'pos_inventory';
 
   const [selectedDay, setSelectedDay] = useState<number>(1); // Monday default
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -52,13 +55,13 @@ export const SchedulerScreen: React.FC = () => {
   const [selectedEvent, setSelectedEvent] = useState<ScheduleEvent | null>(null);
 
   // New session modal fields
-  const [newTitle, setNewTitle] = useState('');
-  const [newCategory, setNewCategory] = useState('Fitness');
-  const [newTrainer, setNewTrainer] = useState('Coach Karim');
-  const [newRoom, setNewRoom] = useState('Studio A');
+  const [newTitle, setNewTitle] = useState(isPOS ? 'Morning Cashier & Floor Roster' : 'Morning Workout');
+  const [newCategory, setNewCategory] = useState(isPOS ? 'Morning Shift' : 'Fitness');
+  const [newTrainer, setNewTrainer] = useState(staff[0]?.fullName || (isPOS ? 'Amine Bentouati' : 'Coach Karim'));
+  const [newRoom, setNewRoom] = useState(isPOS ? 'Register Counter 01' : 'Studio A');
   const [newStartTime, setNewStartTime] = useState('09:00');
-  const [newEndTime, setNewEndTime] = useState('10:00');
-  const [newCapacity, setNewCapacity] = useState(20);
+  const [newEndTime, setNewEndTime] = useState('17:00');
+  const [newCapacity, setNewCapacity] = useState(isPOS ? 4 : 20);
 
   const days = [
     { id: 1, label: 'Monday', short: 'Mon' },
@@ -89,7 +92,9 @@ export const SchedulerScreen: React.FC = () => {
     return schedule.reduce((acc, s) => acc + s.enrolledCount, 0);
   }, [schedule]);
 
-  const categories = ['All', 'CrossFit', 'Yoga', 'Boxing', 'Pilates', 'HIIT', 'Fitness'];
+  const categories = isPOS
+    ? ['All', 'Morning Shift', 'Midday Rush', 'Closing Shift', 'Stock Restock', 'Delivery Intake']
+    : ['All', 'CrossFit', 'Yoga', 'Boxing', 'Pilates', 'HIIT', 'Fitness'];
 
   const handleExportCSV = () => {
     const dayLabel = days.find((d) => d.id === selectedDay)?.label || 'All';
@@ -238,25 +243,29 @@ export const SchedulerScreen: React.FC = () => {
             </div>
             <div className="text-3xl font-black text-neutral-900 dark:text-white tabular-nums">
               {schedule.length}{' '}
-              <span className="text-xs font-normal text-neutral-400">cours au programme</span>
+              <span className="text-xs font-normal text-neutral-400">
+                {isPOS ? 'shifts au planning' : 'cours au programme'}
+              </span>
             </div>
           </div>
 
-          {/* Tile 2: Enrolled Athletes — Pure White Card */}
+          {/* Tile 2: Weekly Staff Coverage or Enrolled Athletes */}
           <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
             <div>
               <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
-                Enrolled Athletes Total
+                {isPOS ? 'Weekly Staff Coverage' : 'Enrolled Athletes Total'}
               </span>
               <div className="mt-1">
                 <span className="text-[10px] font-bold text-[#C4785A] bg-[#C4785A]/10 px-2 py-0.5 rounded-full">
-                  82% Taux de Remplissage
+                  {isPOS ? '100% Register Coverage' : '82% Taux de Remplissage'}
                 </span>
               </div>
             </div>
             <div className="text-3xl font-black text-neutral-900 dark:text-white tabular-nums">
-              {totalEnrolled}{' '}
-              <span className="text-xs font-normal text-neutral-400">réservations</span>
+              {isPOS ? `${schedule.length * 8}h` : totalEnrolled}{' '}
+              <span className="text-xs font-normal text-neutral-400">
+                {isPOS ? 'heures programmées' : 'réservations'}
+              </span>
             </div>
           </div>
 
@@ -264,16 +273,16 @@ export const SchedulerScreen: React.FC = () => {
           <div className="p-5 rounded-[20px] bg-[#18181B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
             <div>
               <span className="text-xs font-medium text-neutral-300">
-                Peak Floor Capacity
+                {isPOS ? 'Peak Register Rush' : 'Peak Floor Capacity'}
               </span>
               <div className="text-[11px] text-[#C4785A] font-semibold mt-0.5">
-                Heures de Pointe Salle Principale
+                {isPOS ? 'Pointes midi & sortie de bureaux' : 'Heures de Pointe Salle Principale'}
               </div>
             </div>
             <div className="text-2xl font-black text-white tabular-nums">
-              18:00 - 20:30{' '}
+              12:00 - 18:30{' '}
               <span className="text-xs font-normal text-neutral-400">
-                CrossFit & Boxe
+                {isPOS ? 'Caisse & Étage' : 'CrossFit & Boxe'}
               </span>
             </div>
           </div>

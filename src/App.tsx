@@ -108,6 +108,8 @@ export default function App() {
       }
     }
 
+    const isPOS = currentBusiness?.category === 'pos_inventory';
+
     switch (activeScreen) {
       case 'dashboard':
         return <DashboardScreen onAddMember={handleOpenAddMember} />;
@@ -121,11 +123,11 @@ export default function App() {
           />
         );
       case 'registrations':
-        return <RegistrationsScreen onAddLead={() => setIsLeadModalOpen(true)} />;
+        return isPOS ? <ShopScreen /> : <RegistrationsScreen onAddLead={() => setIsLeadModalOpen(true)} />;
       case 'shop':
         return <ShopScreen />;
       case 'scheduler':
-        return <SchedulerScreen />;
+        return isPOS ? <ShopScreen /> : <SchedulerScreen />;
       case 'finance':
         return <FinanceStaffScreen />;
       case 'history':
@@ -133,7 +135,7 @@ export default function App() {
       case 'settings':
         return <SettingsScreen onOpenVoucherModal={() => setIsVoucherModalOpen(true)} />;
       default:
-        return <DashboardScreen onAddMember={handleOpenAddMember} />;
+        return isPOS ? <ShopScreen /> : <DashboardScreen onAddMember={handleOpenAddMember} />;
     }
   };
 

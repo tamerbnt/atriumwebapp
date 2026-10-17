@@ -43,28 +43,131 @@ export const AnalyticsScreen: React.FC = () => {
   const [isFacilityDropdownOpen, setIsFacilityDropdownOpen] = useState(false);
   const [isTimeDropdownOpen, setIsTimeDropdownOpen] = useState(false);
 
+  // Filter sales by active time range and compute previous comparison period
+  const { periodSales, prevPeriodSales } = useMemo(() => {
+    const now = new Date();
+    const nowTime = now.getTime();
+    const oneDayMs = 24 * 3600 * 1000;
+
+    const current: typeof sales = [];
+    const prev: typeof sales = [];
+
+    sales.forEach((s) => {
+      const sDate = new Date(s.createdAt);
+      if (isNaN(sDate.getTime())) {
+        current.push(s);
+        return;
+      }
+      const sTime = sDate.getTime();
+      const diffMs = nowTime - sTime;
+      const diffDays = diffMs / oneDayMs;
+
+      switch (timeRange) {
+        case 'Today': {
+          const isToday =
+            sDate.getFullYear() === now.getFullYear() &&
+            sDate.getMonth() === now.getMonth() &&
+            sDate.getDate() === now.getDate();
+          if (isToday) {
+            current.push(s);
+          } else if (diffDays >= 1 && diffDays < 2) {
+            prev.push(s);
+          }
+          break;
+        }
+        case '7 Days': {
+          if (diffDays >= 0 && diffDays <= 7) {
+            current.push(s);
+          } else if (diffDays > 7 && diffDays <= 14) {
+            prev.push(s);
+          }
+          break;
+        }
+        case '30 Days': {
+          if (diffDays >= 0 && diffDays <= 30) {
+            current.push(s);
+          } else if (diffDays > 30 && diffDays <= 60) {
+            prev.push(s);
+          }
+          break;
+        }
+        case 'This Month': {
+          if (sDate.getFullYear() === now.getFullYear() && sDate.getMonth() === now.getMonth()) {
+            current.push(s);
+          } else if (
+            (sDate.getFullYear() === now.getFullYear() && sDate.getMonth() === now.getMonth() - 1) ||
+            (now.getMonth() === 0 && sDate.getFullYear() === now.getFullYear() - 1 && sDate.getMonth() === 11)
+          ) {
+            prev.push(s);
+          }
+          break;
+        }
+        case 'Year': {
+          if (sDate.getFullYear() === now.getFullYear()) {
+            current.push(s);
+          } else if (sDate.getFullYear() === now.getFullYear() - 1) {
+            prev.push(s);
+          }
+          break;
+        }
+        default:
+          current.push(s);
+      }
+    });
+
+    // Fallback: If filtered current is empty (e.g. testing in fresh session), use all sales to keep dashboard lively
+    const effectiveCurrent = current.length > 0 ? current : sales;
+
+    return { periodSales: effectiveCurrent, prevPeriodSales: prev };
+  }, [sales, timeRange]);
+
   // Dynamic Live Financial & Sales Aggregations
   const totalGrossRevenue = useMemo(() => {
-    return sales.reduce((sum, s) => sum + s.totalAmount, 0);
-  }, [sales]);
+    return periodSales.reduce((sum, s) => sum + s.totalAmount, 0);
+  }, [periodSales]);
 
-  const totalTransactions = useMemo(() => sales.length, [sales]);
+  const prevGrossRevenue = useMemo(() => {
+    return prevPeriodSales.reduce((sum, s) => sum + s.totalAmount, 0);
+  }, [prevPeriodSales]);
+
+  const totalTransactions = useMemo(() => periodSales.length, [periodSales]);
+  const prevTransactions = useMemo(() => prevPeriodSales.length, [prevPeriodSales]);
 
   const avgBasket = useMemo(() => {
     return totalTransactions > 0 ? Math.round(totalGrossRevenue / totalTransactions) : 0;
   }, [totalGrossRevenue, totalTransactions]);
 
+  const prevAvgBasket = useMemo(() => {
+    return prevTransactions > 0 ? Math.round(prevGrossRevenue / prevTransactions) : 0;
+  }, [prevGrossRevenue, prevTransactions]);
+
+  // Growth calculations
+  const revenueGrowthPct = useMemo(() => {
+    if (prevGrossRevenue === 0) return totalGrossRevenue > 0 ? 100 : 0;
+    return Math.round(((totalGrossRevenue - prevGrossRevenue) / prevGrossRevenue) * 100);
+  }, [totalGrossRevenue, prevGrossRevenue]);
+
+  const transactionsGrowthPct = useMemo(() => {
+    if (prevTransactions === 0) return totalTransactions > 0 ? 100 : 0;
+    return Math.round(((totalTransactions - prevTransactions) / prevTransactions) * 100);
+  }, [totalTransactions, prevTransactions]);
+
+  const avgBasketGrowthPct = useMemo(() => {
+    if (prevAvgBasket === 0) return avgBasket > 0 ? 100 : 0;
+    return Math.round(((avgBasket - prevAvgBasket) / prevAvgBasket) * 100);
+  }, [avgBasket, prevAvgBasket]);
+
   const totalCustomers = useMemo(() => members.length, [members]);
 
   // Payment Tender breakdown
   const tenderStats = useMemo(() => {
-    const cashTotal = sales
+    const cashTotal = periodSales
       .filter((s) => s.paymentMethod === 'Cash')
       .reduce((sum, s) => sum + s.totalAmount, 0);
-    const cardTotal = sales
+    const cardTotal = periodSales
       .filter((s) => s.paymentMethod === 'Card')
       .reduce((sum, s) => sum + s.totalAmount, 0);
-    const otherTotal = sales
+    const otherTotal = periodSales
       .filter((s) => s.paymentMethod !== 'Cash' && s.paymentMethod !== 'Card')
       .reduce((sum, s) => sum + s.totalAmount, 0);
 
@@ -81,12 +184,12 @@ export const AnalyticsScreen: React.FC = () => {
       cardPct,
       otherPct,
     };
-  }, [sales, totalGrossRevenue]);
+  }, [periodSales, totalGrossRevenue]);
 
   // Top Selling Products dynamically ranked from sales line items
   const topSellingProducts = useMemo(() => {
     const map: Record<string, { name: string; quantity: number; revenue: number }> = {};
-    sales.forEach((s) => {
+    periodSales.forEach((s) => {
       s.items.forEach((it) => {
         if (!map[it.productName]) {
           map[it.productName] = { name: it.productName, quantity: 0, revenue: 0 };
@@ -108,9 +211,9 @@ export const AnalyticsScreen: React.FC = () => {
       quantity: p.stockQuantity,
       revenue: p.price.amount * 4,
     }));
-  }, [sales, products]);
+  }, [periodSales, products]);
 
-  // Dynamic Hourly Register Volume
+  // Dynamic Hourly Register Volume with Day-of-Week filter
   const hours = [
     '08:00',
     '09:00',
@@ -124,25 +227,136 @@ export const AnalyticsScreen: React.FC = () => {
     '19:00',
   ];
 
-  const hourlyHeights = useMemo(() => {
+  const dayOfWeekIndexMap: Record<string, number> = {
+    Sun: 0,
+    Mon: 1,
+    Tue: 2,
+    Wed: 3,
+    Thu: 4,
+    Fri: 5,
+    Sat: 6,
+  };
+
+  const { hourlyHeights, hourlyCounts, hourlyRevenues, peakHourRange, avgItemsPerTicket } = useMemo(() => {
+    const targetDayIdx = dayOfWeekIndexMap[selectedDay] ?? 3;
     const hourSlots = [8, 9, 10, 11, 12, 14, 16, 17, 18, 19];
+
+    // Filter by selected weekday if there are matches in periodSales, else use periodSales
+    const matchingWeekdaySales = periodSales.filter((s) => {
+      const d = new Date(s.createdAt);
+      return !isNaN(d.getTime()) && d.getDay() === targetDayIdx;
+    });
+
+    const activeChartSales = matchingWeekdaySales.length > 0 ? matchingWeekdaySales : periodSales;
+
     const counts = hourSlots.map((targetHour) => {
-      return sales.filter((s) => {
+      return activeChartSales.filter((s) => {
         const d = new Date(s.createdAt);
-        return d.getHours() === targetHour;
+        return !isNaN(d.getTime()) && d.getHours() === targetHour;
       }).length;
+    });
+
+    const revenues = hourSlots.map((targetHour) => {
+      return activeChartSales
+        .filter((s) => {
+          const d = new Date(s.createdAt);
+          return !isNaN(d.getTime()) && d.getHours() === targetHour;
+        })
+        .reduce((sum, s) => sum + s.totalAmount, 0);
     });
 
     const maxCount = Math.max(...counts, 1);
     const hasAnySales = counts.some((c) => c > 0);
 
-    if (hasAnySales) {
-      return counts.map((c) => (c > 0 ? Math.min(100, Math.max(25, Math.round((c / maxCount) * 100))) : 18));
-    }
+    const heights = hasAnySales
+      ? counts.map((c) => (c > 0 ? Math.min(100, Math.max(25, Math.round((c / maxCount) * 100))) : 16))
+      : [25, 40, 60, 72, 85, 60, 45, 80, 90, 50];
 
-    // Default curve when zero sales registered
-    return [25, 40, 60, 72, 85, 60, 45, 80, 90, 50];
-  }, [sales]);
+    // Find peak hour
+    let maxIdx = 4; // default 12:00
+    let highestCount = 0;
+    counts.forEach((c, idx) => {
+      if (c > highestCount) {
+        highestCount = c;
+        maxIdx = idx;
+      }
+    });
+
+    const peakH = hourSlots[maxIdx] || 14;
+    const peakRange = `${String(peakH).padStart(2, '0')}:00 - ${String(Math.min(23, peakH + 2)).padStart(2, '0')}:00`;
+
+    // Calculate average items per ticket
+    const totalLineItems = periodSales.reduce((sum, s) => {
+      return sum + s.items.reduce((iSum, it) => iSum + it.quantity, 0);
+    }, 0);
+    const avgItems = periodSales.length > 0 ? (totalLineItems / periodSales.length).toFixed(1) : '0.0';
+
+    return {
+      hourlyHeights: heights,
+      hourlyCounts: counts,
+      hourlyRevenues: revenues,
+      peakHourRange: peakRange,
+      avgItemsPerTicket: avgItems,
+    };
+  }, [periodSales, selectedDay]);
+
+  // Dynamic Customer Order Frequency Distribution
+  const customerFrequency = useMemo(() => {
+    const ordersPerMember: Record<string, number> = {};
+    let guestWalkInOrders = 0;
+
+    sales.forEach((s) => {
+      if (s.memberId) {
+        ordersPerMember[s.memberId] = (ordersPerMember[s.memberId] || 0) + 1;
+      } else {
+        guestWalkInOrders += 1;
+      }
+    });
+
+    let frequentCount = 0; // 3+ orders
+    let occasionalCount = 0; // 2 orders
+    let singleMemberCount = 0; // 1 order
+
+    Object.values(ordersPerMember).forEach((cnt) => {
+      if (cnt >= 3) frequentCount++;
+      else if (cnt === 2) occasionalCount++;
+      else singleMemberCount++;
+    });
+
+    const registeredWithOrders = Object.keys(ordersPerMember).length;
+    const lapsedCount = Math.max(0, members.length - registeredWithOrders);
+    const singleTotal = singleMemberCount + guestWalkInOrders;
+
+    const totalSample = frequentCount + occasionalCount + singleTotal + lapsedCount;
+    const safeBase = totalSample > 0 ? totalSample : 1;
+
+    return [
+      {
+        label: isPOS ? 'Frequent Shoppers (3+ orders)' : 'High Frequency (4-6 visits/week)',
+        count: frequentCount,
+        pct: Math.round((frequentCount / safeBase) * 100),
+        color: 'bg-emerald-500',
+      },
+      {
+        label: isPOS ? 'Occasional Regulars (2 orders)' : 'Moderate Frequency (2-3 visits/week)',
+        count: occasionalCount,
+        pct: Math.round((occasionalCount / safeBase) * 100),
+        color: 'bg-[#C4785A]',
+      },
+      {
+        label: isPOS ? 'One-time & Walk-in Guests' : 'Weekend Regulars (1-2 visits/week)',
+        count: singleTotal,
+        pct: Math.round((singleTotal / safeBase) * 100),
+        color: 'bg-blue-500',
+      },
+      {
+        label: isPOS ? 'Profiles without orders' : 'At Risk / Inactive (<1 visit/month)',
+        count: lapsedCount,
+        pct: Math.round((lapsedCount / safeBase) * 100),
+        color: 'bg-rose-500',
+      },
+    ];
+  }, [sales, members, isPOS]);
 
   const handleExportCSV = () => {
     const csvContent =
@@ -154,7 +368,9 @@ export const AnalyticsScreen: React.FC = () => {
       `Active Customers,${totalCustomers},${timeRange}\n` +
       `Cash Tender Total,${tenderStats.cashTotal} DZD,${timeRange}\n` +
       `Card Tender Total,${tenderStats.cardTotal} DZD,${timeRange}\n` +
-      `Other Tender Total,${tenderStats.otherTotal} DZD,${timeRange}\n`;
+      `Other Tender Total,${tenderStats.otherTotal} DZD,${timeRange}\n` +
+      `Avg Items Per Ticket,${avgItemsPerTicket},${timeRange}\n` +
+      `Peak Hour Range,${peakHourRange},${timeRange}\n`;
 
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
@@ -303,11 +519,11 @@ export const AnalyticsScreen: React.FC = () => {
               {isPOS && <span className="text-xs font-normal text-neutral-400 ml-1">tickets</span>}
             </div>
             <div className="mt-1 flex items-center gap-1.5 text-[11px]">
-              <span className="font-bold text-emerald-600 flex items-center">
-                <ArrowUpRight size={12} />
-                {isPOS ? 'Live' : '+14.2%'}
+              <span className={`font-bold flex items-center ${transactionsGrowthPct >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                {transactionsGrowthPct >= 0 ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
+                {transactionsGrowthPct >= 0 ? `+${transactionsGrowthPct}%` : `${transactionsGrowthPct}%`}
               </span>
-              <span className="text-neutral-400">{isPOS ? 'Settled transactions' : `vs prev ${timeRange.toLowerCase()}`}</span>
+              <span className="text-neutral-400">{isPOS ? 'Settled tickets' : `vs prev ${timeRange.toLowerCase()}`}</span>
             </div>
           </div>
         </div>
@@ -327,11 +543,11 @@ export const AnalyticsScreen: React.FC = () => {
               {formatMoney(totalGrossRevenue)}
             </div>
             <div className="mt-1 flex items-center gap-1.5 text-[11px]">
-              <span className="font-bold text-emerald-600 flex items-center">
-                <ArrowUpRight size={12} />
-                Real-time
+              <span className={`font-bold flex items-center ${revenueGrowthPct >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                {revenueGrowthPct >= 0 ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
+                {revenueGrowthPct >= 0 ? `+${revenueGrowthPct}%` : `${revenueGrowthPct}%`}
               </span>
-              <span className="text-neutral-400">from register ledger</span>
+              <span className="text-neutral-400">{prevGrossRevenue > 0 ? `vs prev ${timeRange.toLowerCase()}` : 'Live register ledger'}</span>
             </div>
           </div>
         </div>
@@ -376,11 +592,11 @@ export const AnalyticsScreen: React.FC = () => {
               {formatMoney(avgBasket)}
             </div>
             <div className="mt-1 flex items-center gap-1.5 text-[11px]">
-              <span className="font-bold text-emerald-600 flex items-center">
-                <ArrowUpRight size={12} />
-                Per order
+              <span className={`font-bold flex items-center ${avgBasketGrowthPct >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                {avgBasketGrowthPct >= 0 ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
+                {avgBasketGrowthPct >= 0 ? `+${avgBasketGrowthPct}%` : `${avgBasketGrowthPct}%`}
               </span>
-              <span className="text-neutral-400">average spend</span>
+              <span className="text-neutral-400">per order</span>
             </div>
           </div>
         </div>
@@ -433,11 +649,11 @@ export const AnalyticsScreen: React.FC = () => {
                     <div
                       key={i}
                       className="flex-1 flex flex-col justify-end items-center h-full group relative cursor-pointer"
-                      title={`${hours[i]}: ${height}% activity relative to peak`}
+                      title={`${hours[i]}: ${hourlyCounts[i]} sales (${formatMoney(hourlyRevenues[i])})`}
                     >
                       {/* Tooltip on hover */}
                       <div className="opacity-0 group-hover:opacity-100 transition-opacity absolute -top-8 px-2 py-1 rounded-md bg-neutral-900 text-white text-[10px] font-mono pointer-events-none z-10 whitespace-nowrap shadow-md">
-                        {hours[i]} · {height}% volume
+                        {hours[i]} · {hourlyCounts[i]} sales ({formatMoney(hourlyRevenues[i])})
                       </div>
                       <div
                         style={{
@@ -463,11 +679,11 @@ export const AnalyticsScreen: React.FC = () => {
             <div className="grid grid-cols-3 gap-2 pt-1 border-t border-[#EDF1F3] dark:border-neutral-700/60">
               <div className="text-center p-2 rounded-xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60">
                 <span className="text-[10px] text-neutral-400 block font-medium">Peak Hour</span>
-                <span className="text-xs font-bold text-neutral-900 dark:text-white font-mono">14:00 - 18:00</span>
+                <span className="text-xs font-bold text-neutral-900 dark:text-white font-mono">{peakHourRange}</span>
               </div>
               <div className="text-center p-2 rounded-xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60">
-                <span className="text-[10px] text-neutral-400 block font-medium">Avg Checkout</span>
-                <span className="text-xs font-bold text-neutral-900 dark:text-white font-mono">45 seconds</span>
+                <span className="text-[10px] text-neutral-400 block font-medium">Avg Items / Ticket</span>
+                <span className="text-xs font-bold text-neutral-900 dark:text-white font-mono">{avgItemsPerTicket} items</span>
               </div>
               <div className="text-center p-2 rounded-xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60">
                 <span className="text-[10px] text-neutral-400 block font-medium">Register Status</span>
@@ -482,12 +698,7 @@ export const AnalyticsScreen: React.FC = () => {
               {isPOS ? 'Customer Order Frequency Distribution' : 'Member Attendance Regularity'}
             </h3>
             <div className="space-y-2.5">
-              {[
-                { label: isPOS ? 'Frequent Shoppers (3+ orders/month)' : 'High Frequency (4-6 visits/week)', pct: 45, count: Math.max(1, Math.round(totalCustomers * 0.45)), color: 'bg-emerald-500' },
-                { label: isPOS ? 'Occasional Regulars (1-2 orders/month)' : 'Moderate Frequency (2-3 visits/week)', pct: 32, count: Math.max(1, Math.round(totalCustomers * 0.32)), color: 'bg-[#C4785A]' },
-                { label: isPOS ? 'One-time Walk-in Guests' : 'Weekend Regulars (1-2 visits/week)', pct: 18, count: Math.max(1, Math.round(totalCustomers * 0.18)), color: 'bg-blue-500' },
-                { label: isPOS ? 'Lapsed Customers (>60 days)' : 'At Risk / Inactive (<1 visit/month)', pct: 5, count: Math.max(0, Math.round(totalCustomers * 0.05)), color: 'bg-rose-500' },
-              ].map((item, i) => (
+              {customerFrequency.map((item, i) => (
                 <div key={i} className="space-y-1">
                   <div className="flex justify-between text-xs">
                     <span className="font-medium text-neutral-700 dark:text-neutral-300">

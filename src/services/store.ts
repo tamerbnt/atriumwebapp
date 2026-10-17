@@ -252,6 +252,22 @@ let globalState: AppState = (() => {
           ...INITIAL_SALES.filter((s) => !storedSaleIds.has(s.id)),
         ];
 
+        // Smart merge for members
+        const storedMembers = Array.isArray(parsed.members) ? parsed.members : [];
+        const storedMemberIds = new Set(storedMembers.map((m: any) => m.id));
+        const mergedMembers = [
+          ...storedMembers,
+          ...INITIAL_MEMBERS.filter((m) => !storedMemberIds.has(m.id)),
+        ];
+
+        // Smart merge for staff
+        const storedStaff = Array.isArray(parsed.staff) ? parsed.staff : [];
+        const storedStaffIds = new Set(storedStaff.map((s: any) => s.id));
+        const mergedStaff = [
+          ...storedStaff,
+          ...INITIAL_STAFF.filter((s) => !storedStaffIds.has(s.id)),
+        ];
+
         return {
           ...DEFAULT_STATE,
           ...parsed,
@@ -260,11 +276,11 @@ let globalState: AppState = (() => {
           currentBusinessId,
           currentBranchId,
           subscription: parsed.subscription?.plan ? parsed.subscription : DEFAULT_STATE.subscription,
-          members: Array.isArray(parsed.members) && parsed.members.length > 0 ? parsed.members : INITIAL_MEMBERS,
+          members: mergedMembers,
           leads: Array.isArray(parsed.leads) && parsed.leads.length > 0 ? parsed.leads : INITIAL_LEADS,
           products: mergedProducts,
           sales: mergedSales,
-          staff: Array.isArray(parsed.staff) && parsed.staff.length > 0 ? parsed.staff : INITIAL_STAFF,
+          staff: mergedStaff,
           schedule: Array.isArray(parsed.schedule) && parsed.schedule.length > 0 ? parsed.schedule : INITIAL_SCHEDULE,
           devices: Array.isArray(parsed.devices) && parsed.devices.length > 0 ? parsed.devices : INITIAL_DEVICES,
           appointments: Array.isArray(parsed.appointments) && parsed.appointments.length > 0 ? parsed.appointments : INITIAL_APPOINTMENTS,
@@ -647,10 +663,28 @@ export function useAtriumStore() {
   const switchFacility = (businessId: string, branchId?: string) => {
     const targetBranches = state.branches.filter((b) => b.businessId === businessId);
     const targetBranchId = branchId || (targetBranches[0]?.id ?? state.branches[0].id);
+    const targetBusiness = state.businesses.find((b) => b.id === businessId);
+
+    let nextScreen = globalState.activeScreen;
+    if (targetBusiness?.category === 'pos_inventory') {
+      if (nextScreen === 'scheduler' || nextScreen === 'registrations') {
+        nextScreen = 'shop';
+      }
+    } else if (targetBusiness?.category === 'freelance_solo') {
+      if (nextScreen === 'history') {
+        nextScreen = 'dashboard';
+      }
+    } else if (targetBusiness?.category === 'appointment_service') {
+      if (nextScreen === 'registrations') {
+        nextScreen = 'scheduler';
+      }
+    }
+
     globalState = {
       ...globalState,
       currentBusinessId: businessId,
       currentBranchId: targetBranchId,
+      activeScreen: nextScreen,
       selectedMemberId: null,
       isDetailOpen: false,
     };
@@ -1843,66 +1877,111 @@ export function useAtriumStore() {
       },
     ];
 
-    const sampleMembers: Member[] = [
-      {
-        id: `mem_${Date.now()}_1`,
-        tenantId: accountId,
-        facilityId: branchId,
-        fullName: 'Amira Cherif',
-        email: 'amira.cherif@gmail.com',
-        phoneNumber: '+213 550 11 22 33',
-        cardId: 'RFID-100201',
-        status: 'Active',
-        startDate: new Date().toISOString().split('T')[0],
-        expirationDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        membershipPlanId: samplePlans[0].id,
-        membershipPlanName: samplePlans[0].name,
-        remainingSessions: 24,
-        gender: 'Female',
-        source: 'Instagram',
-        notes: 'Welcome member. Prefers morning slots.',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      },
-      {
-        id: `mem_${Date.now()}_2`,
-        tenantId: accountId,
-        facilityId: branchId,
-        fullName: 'Sara Bouzid',
-        email: 'sara.b@yahoo.fr',
-        phoneNumber: '+213 661 44 55 66',
-        cardId: 'RFID-100202',
-        status: 'Active',
-        startDate: new Date().toISOString().split('T')[0],
-        expirationDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        membershipPlanId: samplePlans[1].id,
-        membershipPlanName: samplePlans[1].name,
-        remainingSessions: 999,
-        gender: 'Female',
-        source: 'Referral',
-        notes: 'VIP client. Enrolled in auto-renewal.',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      },
-    ];
+    const sampleMembers: Member[] = params.category === 'pos_inventory'
+      ? [
+          {
+            id: `mem_${Date.now()}_1`,
+            tenantId: accountId,
+            facilityId: branchId,
+            fullName: 'Karim Bouzid',
+            email: 'karim.bouzid@gmail.com',
+            phoneNumber: '+213 551 22 33 44',
+            cardId: 'CUST-001',
+            status: 'Active',
+            startDate: new Date().toISOString().split('T')[0],
+            expirationDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+            membershipPlanId: samplePlans[0].id,
+            membershipPlanName: samplePlans[0].name,
+            remainingSessions: 999,
+            gender: 'Male',
+            source: 'Walk-in',
+            notes: 'Regular retail customer. VIP cash/card buyer.',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+          {
+            id: `mem_${Date.now()}_2`,
+            tenantId: accountId,
+            facilityId: branchId,
+            fullName: 'Amira Benali',
+            email: 'amira.benali@outlook.com',
+            phoneNumber: '+213 770 45 67 89',
+            cardId: 'CUST-002',
+            status: 'Active',
+            startDate: new Date().toISOString().split('T')[0],
+            expirationDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+            membershipPlanId: samplePlans[1].id,
+            membershipPlanName: samplePlans[1].name,
+            remainingSessions: 999,
+            gender: 'Female',
+            source: 'Referral',
+            notes: 'Commercial account. Regular weekly orders.',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+        ]
+      : [
+          {
+            id: `mem_${Date.now()}_1`,
+            tenantId: accountId,
+            facilityId: branchId,
+            fullName: 'Amira Cherif',
+            email: 'amira.cherif@gmail.com',
+            phoneNumber: '+213 550 11 22 33',
+            cardId: 'RFID-100201',
+            status: 'Active',
+            startDate: new Date().toISOString().split('T')[0],
+            expirationDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+            membershipPlanId: samplePlans[0].id,
+            membershipPlanName: samplePlans[0].name,
+            remainingSessions: 24,
+            gender: 'Female',
+            source: 'Instagram',
+            notes: 'Welcome member. Prefers morning slots.',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+          {
+            id: `mem_${Date.now()}_2`,
+            tenantId: accountId,
+            facilityId: branchId,
+            fullName: 'Sara Bouzid',
+            email: 'sara.b@yahoo.fr',
+            phoneNumber: '+213 661 44 55 66',
+            cardId: 'RFID-100202',
+            status: 'Active',
+            startDate: new Date().toISOString().split('T')[0],
+            expirationDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+            membershipPlanId: samplePlans[1].id,
+            membershipPlanName: samplePlans[1].name,
+            remainingSessions: 999,
+            gender: 'Female',
+            source: 'Referral',
+            notes: 'VIP client. Enrolled in auto-renewal.',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+        ];
 
-    const sampleLeads: RegistrationLead[] = [
-      {
-        id: `lead_${Date.now()}`,
-        tenantId: accountId,
-        facilityId: branchId,
-        fullName: 'Yacine Brahimi',
-        email: 'yacine.b@gmail.com',
-        phoneNumber: '+213 770 99 88 77',
-        source: 'Website',
-        status: 'Pending',
-        preferredPlanId: samplePlans[0].id,
-        preferredPlanName: samplePlans[0].name,
-        notes: 'Requested facility tour and pricing inquiry.',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      },
-    ];
+    const sampleLeads: RegistrationLead[] = params.category === 'pos_inventory'
+      ? []
+      : [
+          {
+            id: `lead_${Date.now()}`,
+            tenantId: accountId,
+            facilityId: branchId,
+            fullName: 'Yacine Brahimi',
+            email: 'yacine.b@gmail.com',
+            phoneNumber: '+213 770 99 88 77',
+            source: 'Website',
+            status: 'Pending',
+            preferredPlanId: samplePlans[0].id,
+            preferredPlanName: samplePlans[0].name,
+            notes: 'Requested facility tour and pricing inquiry.',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+        ];
 
     const sampleProducts: Product[] = [
       {
@@ -1958,7 +2037,7 @@ export function useAtriumStore() {
       currentUser: newCurrentUser,
       isAuthenticated: true,
       isOnboardingOpen: false,
-      activeScreen: 'dashboard',
+      activeScreen: params.category === 'pos_inventory' ? 'shop' : 'dashboard',
     };
 
     notify();

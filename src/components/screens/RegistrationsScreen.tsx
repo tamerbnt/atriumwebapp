@@ -42,7 +42,10 @@ export const RegistrationsScreen: React.FC<RegistrationsScreenProps> = ({ onAddL
     terminology,
     updateLeadStatus,
     convertLeadToMember,
+    currentBusiness,
   } = useAtriumStore();
+
+  const isPOS = currentBusiness?.category === 'pos_inventory';
 
   const [statusFilter, setStatusFilter] = useState<'All' | 'Pending' | 'Approved' | 'Declined'>('All');
   const [searchQuery, setSearchQuery] = useState('');
@@ -228,11 +231,11 @@ export const RegistrationsScreen: React.FC<RegistrationsScreenProps> = ({ onAddL
           <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
             <div>
               <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
-                Active Intake Pipeline
+                {isPOS ? 'Pending Wholesale & Inquiries' : 'Active Intake Pipeline'}
               </span>
               <div className="mt-1">
                 <span className="text-[10px] font-bold text-amber-700 bg-amber-100 dark:bg-amber-950/40 px-2 py-0.5 rounded-full">
-                  ↗ {pendingCount} En Attente
+                  ↗ {pendingCount} {isPOS ? 'Inquiries' : 'En Attente'}
                 </span>
               </div>
             </div>
@@ -245,7 +248,7 @@ export const RegistrationsScreen: React.FC<RegistrationsScreenProps> = ({ onAddL
           <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
             <div>
               <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
-                Converted Members
+                {isPOS ? 'Converted Customer Accounts' : 'Converted Members'}
               </span>
               <div className="mt-1">
                 <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
@@ -262,10 +265,10 @@ export const RegistrationsScreen: React.FC<RegistrationsScreenProps> = ({ onAddL
           <div className="p-5 rounded-[20px] bg-[#18181B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
             <div>
               <span className="text-xs font-medium text-neutral-300">
-                Intake Response SLA
+                {isPOS ? 'Order Intake & Lead SLA' : 'Intake Response SLA'}
               </span>
               <div className="text-[11px] text-[#C4785A] font-semibold mt-0.5">
-                Self-service Kiosk & Mobile Web
+                {isPOS ? 'Direct counter & wholesale inquiry speed' : 'Self-service Kiosk & Mobile Web'}
               </div>
             </div>
             <div className="text-2xl font-black text-white tabular-nums">

@@ -32,120 +32,223 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const { activeScreen, setScreen, terminology, currentBusiness } = useAtriumStore();
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const isFreelance = currentBusiness?.category === 'freelance_solo';
+  const category = currentBusiness?.category || 'pos_inventory';
 
-  const dockNavItems: Array<{
+  let dockNavItems: Array<{
     id: ActiveScreen;
     icon: React.ReactNode;
     title: string;
     label: string;
-  }> = isFreelance
-    ? [
-        {
-          id: 'dashboard',
-          icon: <Home size={19} />,
-          title: 'Solo Command Dashboard',
-          label: 'Home',
-        },
-        {
-          id: 'members',
-          icon: <Users size={19} />,
-          title: 'Clients CRM & 360° Inspector',
-          label: 'Clients',
-        },
-        {
-          id: 'scheduler',
-          icon: <Kanban size={19} />,
-          title: 'Deliverables & Deadlines Kanban',
-          label: 'Deliverables',
-        },
-        {
-          id: 'analytics',
-          icon: <Clock size={19} />,
-          title: 'Time Tracker & Pomodoro',
-          label: 'Time Tracker',
-        },
-        {
-          id: 'registrations',
-          icon: <ClipboardList size={19} />,
-          title: 'Proposals & Inquiries',
-          label: 'Proposals',
-        },
-        {
-          id: 'shop',
-          icon: <FileText size={19} />,
-          title: 'Invoices & Billing Hub',
-          label: 'Invoices',
-        },
-        {
-          id: 'finance',
-          icon: <Wallet size={19} />,
-          title: 'Tax Reserves & Net Profit',
-          label: 'Finance',
-        },
-        {
-          id: 'settings',
-          icon: <Settings size={19} />,
-          title: 'Settings & Workspace',
-          label: 'Settings',
-        },
-      ]
-    : [
-        {
-          id: 'dashboard',
-          icon: <Home size={19} />,
-          title: 'Home Dashboard',
-          label: 'Home',
-        },
-        {
-          id: 'analytics',
-          icon: <BarChart2 size={19} />,
-          title: 'Facility Analytics',
-          label: 'Analytics',
-        },
-        {
-          id: 'members',
-          icon: <Users size={19} />,
-          title: `${terminology.members} Directory`,
-          label: terminology.members,
-        },
-        {
-          id: 'registrations',
-          icon: <ClipboardList size={19} />,
-          title: `${terminology.registration} & Intake`,
-          label: terminology.registration,
-        },
-        {
-          id: 'history',
-          icon: <History size={19} />,
-          title: 'Operations History',
-          label: 'History',
-        },
-        {
-          id: 'shop',
-          icon: <ShoppingBag size={19} />,
-          title: `${terminology.shop} & Products`,
-          label: terminology.shop,
-        },
-        {
-          id: 'scheduler',
-          icon: <Calendar size={19} />,
-          title: terminology.scheduler,
-          label: terminology.scheduler,
-        },
-        {
-          id: 'finance',
-          icon: <Wallet size={19} />,
-          title: 'Finance & Staff',
-          label: 'Finance',
-        },
-        {
-          id: 'settings',
-          icon: <Settings size={19} />,
-          title: 'Settings & License',
-          label: 'Settings',
-        },
-      ];
+  }>;
+
+  if (category === 'freelance_solo') {
+    dockNavItems = [
+      {
+        id: 'dashboard',
+        icon: <Home size={19} />,
+        title: 'Solo Command Dashboard',
+        label: 'Home',
+      },
+      {
+        id: 'members',
+        icon: <Users size={19} />,
+        title: 'Clients CRM & 360° Inspector',
+        label: 'Clients',
+      },
+      {
+        id: 'scheduler',
+        icon: <Kanban size={19} />,
+        title: 'Deliverables & Deadlines Kanban',
+        label: 'Deliverables',
+      },
+      {
+        id: 'analytics',
+        icon: <Clock size={19} />,
+        title: 'Time Tracker & Pomodoro',
+        label: 'Time Tracker',
+      },
+      {
+        id: 'registrations',
+        icon: <ClipboardList size={19} />,
+        title: 'Proposals & Inquiries',
+        label: 'Proposals',
+      },
+      {
+        id: 'shop',
+        icon: <FileText size={19} />,
+        title: 'Invoices & Billing Hub',
+        label: 'Invoices',
+      },
+      {
+        id: 'finance',
+        icon: <Wallet size={19} />,
+        title: 'Tax Reserves & Net Profit',
+        label: 'Finance',
+      },
+      {
+        id: 'settings',
+        icon: <Settings size={19} />,
+        title: 'Settings & Workspace',
+        label: 'Settings',
+      },
+    ];
+  } else if (category === 'pos_inventory') {
+    // Dedicated POS & Inventory Architecture: Register is primary workstation
+    dockNavItems = [
+      {
+        id: 'shop',
+        icon: <ShoppingBag size={19} />,
+        title: 'POS Register & Inventory',
+        label: 'Register & Stock',
+      },
+      {
+        id: 'dashboard',
+        icon: <Home size={19} />,
+        title: 'Register Sales Pulse & Overview',
+        label: 'Home',
+      },
+      {
+        id: 'history',
+        icon: <History size={19} />,
+        title: 'Sales Receipts & Cash Ledger',
+        label: 'Sales Ledger',
+      },
+      {
+        id: 'members',
+        icon: <Users size={19} />,
+        title: 'Customer Directory & Accounts',
+        label: 'Customers',
+      },
+      {
+        id: 'analytics',
+        icon: <BarChart2 size={19} />,
+        title: 'Sales Velocity & Product Margins',
+        label: 'Analytics',
+      },
+      {
+        id: 'finance',
+        icon: <Wallet size={19} />,
+        title: 'Cash Flow & Staff Payroll',
+        label: 'Finance',
+      },
+      {
+        id: 'settings',
+        icon: <Settings size={19} />,
+        title: 'Store Settings & Hardware',
+        label: 'Settings',
+      },
+    ];
+  } else if (category === 'appointment_service') {
+    // Dedicated Salon & Spa Architecture: Bookings & Clients are primary
+    dockNavItems = [
+      {
+        id: 'dashboard',
+        icon: <Home size={19} />,
+        title: 'Salon Pulse Dashboard',
+        label: 'Home',
+      },
+      {
+        id: 'scheduler',
+        icon: <Calendar size={19} />,
+        title: 'Stylist & Treatment Calendar',
+        label: 'Bookings',
+      },
+      {
+        id: 'members',
+        icon: <Users size={19} />,
+        title: 'Clients & Treatment History',
+        label: 'Clients',
+      },
+      {
+        id: 'shop',
+        icon: <ShoppingBag size={19} />,
+        title: 'Services & Beauty Products',
+        label: 'Services',
+      },
+      {
+        id: 'history',
+        icon: <History size={19} />,
+        title: 'Visits & Billing Ledger',
+        label: 'History',
+      },
+      {
+        id: 'analytics',
+        icon: <BarChart2 size={19} />,
+        title: 'Chair Utilization & Performance',
+        label: 'Analytics',
+      },
+      {
+        id: 'finance',
+        icon: <Wallet size={19} />,
+        title: 'Staff Commissions & Payroll',
+        label: 'Finance',
+      },
+      {
+        id: 'settings',
+        icon: <Settings size={19} />,
+        title: 'Salon Settings & Locations',
+        label: 'Settings',
+      },
+    ];
+  } else {
+    // Membership / Gym & Fitness Architecture
+    dockNavItems = [
+      {
+        id: 'dashboard',
+        icon: <Home size={19} />,
+        title: 'Home Dashboard',
+        label: 'Home',
+      },
+      {
+        id: 'analytics',
+        icon: <BarChart2 size={19} />,
+        title: 'Facility Analytics',
+        label: 'Analytics',
+      },
+      {
+        id: 'members',
+        icon: <Users size={19} />,
+        title: `${terminology.members} Directory`,
+        label: terminology.members,
+      },
+      {
+        id: 'registrations',
+        icon: <ClipboardList size={19} />,
+        title: `${terminology.registration} & Intake`,
+        label: terminology.registration,
+      },
+      {
+        id: 'history',
+        icon: <History size={19} />,
+        title: 'Operations History',
+        label: 'History',
+      },
+      {
+        id: 'shop',
+        icon: <ShoppingBag size={19} />,
+        title: `${terminology.shop} & Products`,
+        label: terminology.shop,
+      },
+      {
+        id: 'scheduler',
+        icon: <Calendar size={19} />,
+        title: terminology.scheduler,
+        label: terminology.scheduler,
+      },
+      {
+        id: 'finance',
+        icon: <Wallet size={19} />,
+        title: 'Finance & Staff',
+        label: 'Finance',
+      },
+      {
+        id: 'settings',
+        icon: <Settings size={19} />,
+        title: 'Settings & License',
+        label: 'Settings',
+      },
+    ];
+  }
 
   return (
     <>

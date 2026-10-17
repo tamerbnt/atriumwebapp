@@ -271,21 +271,6 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
 
   const activeTips = isSalon ? salonTips : isPOS ? posTips : gymTips;
 
-  // Pillar chart mock data matching desktop screenshot
-  const pillarHeights = [38, 55, 75, 70, 95, 62, 40, 78, 30, 48];
-  const pillarColors = [
-    '#C4785A',
-    '#C4785A',
-    '#C4785A',
-    '#C4785A',
-    '#C4785A',
-    '#E59E80',
-    '#EADCD2',
-    '#EADCD2',
-    '#EADCD2',
-    '#EADCD2',
-  ];
-
   const pillarHours = [
     '08:00',
     '09:00',
@@ -298,6 +283,89 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
     '18:00',
     '19:00',
   ];
+
+  // Dynamic pillar chart calculations from real sales/appointments
+  const { pillarHeights, pillarColors, pillarTooltips } = useMemo(() => {
+    const hourSlots = [8, 9, 10, 11, 12, 14, 16, 17, 18, 19];
+
+    if (isPOS) {
+      // Find today's sales or recent sales
+      const now = new Date();
+      const todaySales = sales.filter((s) => {
+        const d = new Date(s.createdAt);
+        return (
+          !isNaN(d.getTime()) &&
+          d.getFullYear() === now.getFullYear() &&
+          d.getMonth() === now.getMonth() &&
+          d.getDate() === now.getDate()
+        );
+      });
+
+      const effectiveSales = todaySales.length > 0 ? todaySales : sales;
+      const counts = hourSlots.map((h) => {
+        return effectiveSales.filter((s) => new Date(s.createdAt).getHours() === h).length;
+      });
+      const revenues = hourSlots.map((h) => {
+        return effectiveSales
+          .filter((s) => new Date(s.createdAt).getHours() === h)
+          .reduce((sum, s) => sum + s.totalAmount, 0);
+      });
+
+      const maxCount = Math.max(...counts, 1);
+      const hasAny = counts.some((c) => c > 0);
+
+      const heights = hasAny
+        ? counts.map((c) => (c > 0 ? Math.min(100, Math.max(25, Math.round((c / maxCount) * 100))) : 16))
+        : [35, 50, 70, 65, 90, 60, 40, 75, 30, 45];
+
+      const colors = heights.map((h) => (h >= 75 ? '#C4785A' : h >= 45 ? '#E59E80' : '#EADCD2'));
+      const tooltips = hourSlots.map(
+        (_, i) => `${pillarHours[i]}: ${counts[i]} sales (${formatMoney(revenues[i])})`
+      );
+
+      return { pillarHeights: heights, pillarColors: colors, pillarTooltips: tooltips };
+    }
+
+    if (isSalon) {
+      const counts = hourSlots.map((h) => {
+        return salonMetrics.activeApts.filter((a) => {
+          const hour = parseInt(a.startTime.split(':')[0], 10);
+          return hour === h;
+        }).length;
+      });
+      const maxCount = Math.max(...counts, 1);
+      const hasAny = counts.some((c) => c > 0);
+
+      const heights = hasAny
+        ? counts.map((c) => (c > 0 ? Math.min(100, Math.max(25, Math.round((c / maxCount) * 100))) : 18))
+        : [30, 60, 80, 70, 85, 65, 45, 90, 40, 50];
+
+      const colors = heights.map((h) => (h >= 75 ? '#C4785A' : h >= 45 ? '#E59E80' : '#EADCD2'));
+      const tooltips = hourSlots.map((_, i) => `${pillarHours[i]}: ${counts[i]} salon bookings`);
+
+      return { pillarHeights: heights, pillarColors: colors, pillarTooltips: tooltips };
+    }
+
+    // Default gym flow
+    const defaultHeights = [38, 55, 75, 70, 95, 62, 40, 78, 30, 48];
+    const defaultColors = [
+      '#C4785A',
+      '#C4785A',
+      '#C4785A',
+      '#C4785A',
+      '#C4785A',
+      '#E59E80',
+      '#EADCD2',
+      '#EADCD2',
+      '#EADCD2',
+      '#EADCD2',
+    ];
+    const defaultTooltips = hourSlots.map(
+      (_, i) => `${pillarHours[i]}: ${Math.round((defaultHeights[i] / 100) * 18)} visitors`
+    );
+
+    return { pillarHeights: defaultHeights, pillarColors: defaultColors, pillarTooltips: defaultTooltips };
+  }, [sales, isPOS, isSalon, salonMetrics]);
 
   const gymActivities = [
     {
@@ -787,8 +855,8 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                 {pillarHeights.map((height, i) => (
                   <div
                     key={i}
-                    className="flex-1 flex flex-col justify-end items-center h-full group relative"
-                    title={`${pillarHours[i]}: ${Math.round((height / 100) * 12)} bookings`}
+                    className="flex-1 flex flex-col justify-end items-center h-full group relative cursor-pointer"
+                    title={pillarTooltips[i]}
                   >
                     <div
                       style={{
@@ -1121,8 +1189,8 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                     </div>
                   </div>
                   <div>
-                    <div className="text-xl font-black text-neutral-900 dark:text-white tabular-nums">
-                      0 DA
+                    <div className="text-xl font-black text-neutral-900 dark:text-white tabular-nums font-mono">
+                      {formatMoney(sales.reduce((sum, s) => sum + s.totalAmount, 0))}
                     </div>
                     <div className="w-full h-0.5 bg-[#C4785A] mt-2.5 rounded-full opacity-80" />
                   </div>
