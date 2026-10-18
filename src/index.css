@@ -216,7 +216,7 @@
     text-shadow: none;
   }
   50% {
-    transform: scaleX(1.42) scaleY(1);
+    transform: scaleX(2.15) scaleY(1);
     opacity: 1;
     color: #FFFFFF;
     filter: drop-shadow(0 0 16px rgba(255, 255, 255, 0.85));
@@ -224,31 +224,35 @@
   }
 }
 
-/* 5 Cubes Emblem Pop in Lockup */
-@keyframes cubes-lockup-pop {
+/* 5 Cubes Logo Glides in from the Right to its needed place */
+@keyframes logo-enter-from-right {
   0% {
     opacity: 0;
-    transform: scale(0.5) translateY(12px);
+    transform: translateX(280px) scale(0.9);
   }
-  60% {
+  70% {
     opacity: 1;
-    transform: scale(1.08) translateY(-2px);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
-
-/* Text slide next to logo in Lockup */
-@keyframes text-lockup-slide {
-  0% {
-    opacity: 0;
-    transform: translateX(-16px) scale(0.95);
+    transform: translateX(-8px) scale(1.03);
   }
   100% {
     opacity: 1;
     transform: translateX(0) scale(1);
+  }
+}
+
+/* Staggered Letter-by-Letter Entrance for ATRIUM */
+@keyframes letter-stagger-pop {
+  0% {
+    opacity: 0;
+    transform: translateY(22px) scale(0.75);
+  }
+  65% {
+    opacity: 1;
+    transform: translateY(-4px) scale(1.08);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }
 
@@ -273,6 +277,67 @@
   100% {
     opacity: 1;
     transform: translateY(0px) scale(1);
+  }
+}
+
+/* ============================================================
+   Universal Print Media Stylesheet
+   Ensures pristine paper printing for Invoices, Certificates & Receipts
+   ============================================================ */
+@media print {
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Hide all app chrome: dock sidebar, topbar header, toasts, floating stopwatch, action buttons */
+  aside,
+  header,
+  nav,
+  button,
+  .no-print,
+  [data-no-print="true"],
+  .pointer-events-none.fixed,
+  .toast-container {
+    display: none !important;
+  }
+
+  body,
+  html,
+  #root {
+    background: #FFFFFF !important;
+    color: #000000 !important;
+    overflow: visible !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Expand modal viewport and printable document to pure clean paper */
+  .fixed.inset-0 {
+    position: static !important;
+    background: transparent !important;
+    padding: 0 !important;
+  }
+
+  .printable-document {
+    box-shadow: none !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    page-break-inside: avoid;
+    background: #FFFFFF !important;
+    color: #000000 !important;
+  }
+
+  .printable-document:not(.preserve-border) {
+    border: none !important;
+  }
+
+  @page {
+    margin: 10mm;
+    size: auto;
   }
 }
 

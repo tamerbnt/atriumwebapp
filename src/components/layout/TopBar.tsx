@@ -22,6 +22,7 @@ import {
   Check,
   Laptop,
   Plus,
+  Search,
 } from 'lucide-react';
 import { useAtriumStore } from '../../services/store';
 import { formatDuration } from '../../utils/rules';
@@ -29,11 +30,13 @@ import { formatDuration } from '../../utils/rules';
 interface TopBarProps {
   onOpenVoucherModal: () => void;
   onToggleMobileMenu?: () => void;
+  onOpenCommandPalette?: () => void;
 }
 
 export const TopBar: React.FC<TopBarProps> = ({
   onOpenVoucherModal,
   onToggleMobileMenu,
+  onOpenCommandPalette,
 }) => {
   const {
     activeScreen,
@@ -70,9 +73,19 @@ export const TopBar: React.FC<TopBarProps> = ({
 
   const isFreelance = currentBusiness?.category === 'freelance_solo';
   const isRental = currentBusiness?.category === 'rental_booking';
+  const isEducation = currentBusiness?.category === 'education_cohort';
+  const isPOS = currentBusiness?.category === 'pos_inventory';
 
   const getBreadcrumb = () => {
-    const homeLabel = isFreelance ? 'Solo Command' : isRental ? 'Venue Operations' : 'Home';
+    const homeLabel = isFreelance
+      ? 'Solo Command'
+      : isRental
+      ? 'Venue Operations'
+      : isEducation
+      ? 'Academy Pulse'
+      : isPOS
+      ? 'Store Register'
+      : 'Home';
 
     switch (activeScreen) {
       case 'dashboard':
@@ -97,7 +110,13 @@ export const TopBar: React.FC<TopBarProps> = ({
             </button>
             <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
             <span className="text-neutral-900 dark:text-white font-semibold">
-              {isFreelance ? 'Time Tracker & Pomodoro' : isRental ? 'Occupancy Analytics' : 'Analytics'}
+              {isFreelance
+                ? 'Time Tracker & Pomodoro'
+                : isRental
+                ? 'Occupancy Analytics'
+                : isEducation
+                ? 'Attendance & Grades'
+                : 'Analytics'}
             </span>
           </nav>
         );
@@ -122,7 +141,7 @@ export const TopBar: React.FC<TopBarProps> = ({
                 onClick={() => selectMember(null)}
                 className="text-neutral-400 hover:text-[#C4785A] font-medium transition-colors cursor-pointer"
               >
-                {isRental ? 'Renters' : terminology.members}
+                {isFreelance ? 'Clients' : isRental ? 'Renters' : isEducation ? 'Students' : isPOS ? 'Customers' : terminology.members}
               </button>
               <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
               <span className="text-neutral-900 dark:text-white font-semibold truncate max-w-[130px] sm:max-w-[200px]">
@@ -143,7 +162,15 @@ export const TopBar: React.FC<TopBarProps> = ({
             </button>
             <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
             <span className="text-neutral-900 dark:text-white font-semibold">
-              {isRental ? 'Renters & Client Directory' : terminology.members}
+              {isFreelance
+                ? 'Clients & Retainers'
+                : isRental
+                ? 'Renters & Client Directory'
+                : isEducation
+                ? 'Students & Guardians CRM'
+                : isPOS
+                ? 'Customer Directory'
+                : terminology.members}
             </span>
           </nav>
         );
@@ -164,6 +191,10 @@ export const TopBar: React.FC<TopBarProps> = ({
                 ? 'Proposals & Inquiries'
                 : isRental
                 ? 'Reservations & Event Inquiries'
+                : isEducation
+                ? 'Admissions & Inquiries Funnel'
+                : isPOS
+                ? 'Sales & Receipts'
                 : `${terminology.registration} & Intake`}
             </span>
           </nav>
@@ -185,6 +216,10 @@ export const TopBar: React.FC<TopBarProps> = ({
                 ? 'Invoices & Billing Hub'
                 : isRental
                 ? 'Spaces & Asset Inventory'
+                : isEducation
+                ? 'Cohorts & Programs Hub'
+                : isPOS
+                ? 'POS Register & Inventory'
                 : `${terminology.shop} & Products`}
             </span>
           </nav>
@@ -202,7 +237,15 @@ export const TopBar: React.FC<TopBarProps> = ({
             </button>
             <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
             <span className="text-neutral-900 dark:text-white font-semibold">
-              {isRental ? 'Occupancy Matrix & Timeline' : terminology.scheduler}
+              {isFreelance
+                ? 'Deliverables & Deadlines'
+                : isRental
+                ? 'Occupancy Matrix & Timeline'
+                : isEducation
+                ? 'Conflict-Free Timetable & Rooms'
+                : isPOS
+                ? 'Store Shifts & Staff Roster'
+                : terminology.scheduler}
             </span>
           </nav>
         );
@@ -223,6 +266,8 @@ export const TopBar: React.FC<TopBarProps> = ({
                 ? 'Tax Reserves & Net Profit'
                 : isRental
                 ? 'Caution Escrow & Rental Revenue'
+                : isEducation
+                ? 'Tuition Billing & Aging AR'
                 : 'Finance & Staff'}
             </span>
           </nav>
@@ -236,11 +281,19 @@ export const TopBar: React.FC<TopBarProps> = ({
               className="text-neutral-400 hover:text-[#C4785A] font-medium transition-colors flex items-center gap-1 cursor-pointer"
             >
               <Home size={12} />
-              <span>{isFreelance ? 'Solo Command' : 'Home'}</span>
+              <span>{homeLabel}</span>
             </button>
             <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
             <span className="text-neutral-900 dark:text-white font-semibold">
-              {isFreelance ? 'Time Logs & Chronometer' : 'Operations History'}
+              {isFreelance
+                ? 'Time Logs & Chronometer'
+                : isEducation
+                ? 'Roll Call & Attendance Log'
+                : isRental
+                ? 'Booking Logs & Audit Trail'
+                : isPOS
+                ? 'Register Journal & Sales'
+                : 'Operations History'}
             </span>
           </nav>
         );
@@ -253,7 +306,7 @@ export const TopBar: React.FC<TopBarProps> = ({
               className="text-neutral-400 hover:text-[#C4785A] font-medium transition-colors flex items-center gap-1 cursor-pointer"
             >
               <Home size={12} />
-              <span>{isFreelance ? 'Solo Command' : 'Home'}</span>
+              <span>{homeLabel}</span>
             </button>
             <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
             <span className="text-neutral-900 dark:text-white font-semibold">
@@ -424,7 +477,23 @@ export const TopBar: React.FC<TopBarProps> = ({
       )}
 
       {/* Right Controls */}
-      <div className="flex items-center gap-3 shrink-0">
+      <div className="flex items-center gap-2.5 shrink-0">
+        {/* Quick Universal Command Palette Button */}
+        {onOpenCommandPalette && (
+          <button
+            type="button"
+            onClick={onOpenCommandPalette}
+            className="h-8 px-2.5 rounded-full bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 flex items-center gap-1.5 cursor-pointer hover:bg-neutral-200/70 dark:hover:bg-neutral-700 transition-colors text-xs text-neutral-600 dark:text-neutral-300 shadow-2xs"
+            title="Quick Search screens, records & actions (Ctrl+K or /)"
+          >
+            <Search size={13} className="text-[#C4785A]" />
+            <span className="hidden xl:inline text-[11px] font-medium text-neutral-400">Search...</span>
+            <kbd className="hidden sm:inline px-1.5 py-0.5 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded text-[9px] font-mono text-neutral-400 shadow-2xs">
+              ⌘K
+            </kbd>
+          </button>
+        )}
+
         {/* Sun / Moon Theme Capsule */}
         <button
           type="button"

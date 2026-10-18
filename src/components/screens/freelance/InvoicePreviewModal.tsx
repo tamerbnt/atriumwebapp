@@ -55,9 +55,9 @@ export const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-150">
-      <div className="bg-white dark:bg-[#1C1C1E] border border-neutral-200 dark:border-neutral-800 rounded-3xl max-w-2xl w-full max-h-[92vh] flex flex-col shadow-2xl overflow-hidden">
+      <div className="bg-white dark:bg-[#1C1C1E] border border-neutral-200 dark:border-neutral-800 rounded-3xl max-w-2xl w-full max-h-[92vh] flex flex-col shadow-2xl overflow-hidden printable-document">
         {/* Modal Top Bar */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-100 dark:border-neutral-800">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-100 dark:border-neutral-800 no-print">
           <div className="flex items-center gap-2">
             <span className="text-sm font-bold text-neutral-900 dark:text-white">
               Invoice #{invoice.invoiceNumber}

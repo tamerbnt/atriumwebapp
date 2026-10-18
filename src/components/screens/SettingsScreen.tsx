@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   Settings,
   Building2,
@@ -17,9 +17,11 @@ import {
   RotateCw,
   Laptop,
   FileDown,
+  FileUp,
   Printer,
   WifiOff,
   Download,
+  HardDrive,
 } from 'lucide-react';
 import { useAtriumStore } from '../../services/store';
 import { Modal } from '../ui/Modal';
@@ -55,7 +57,19 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
     isSupabaseConfigured,
     lastSyncedAt,
     syncErrorMessage,
+    exportDatabase,
+    importDatabase,
   } = useAtriumStore();
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isRestoreModalOpen, setIsRestoreModalOpen] = useState(false);
+  const [pendingBackupContent, setPendingBackupContent] = useState<string | null>(null);
+  const [pendingBackupMeta, setPendingBackupMeta] = useState<{
+    exportedAt: string;
+    businessesCount: number;
+    primaryBusiness: string;
+    membersCount: number;
+  } | null>(null);
 
   const [isAddBranchOpen, setIsAddBranchOpen] = useState(false);
   const [branchName, setBranchName] = useState('');
@@ -72,46 +86,63 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
 
   const handleExportDataBackup = () => {
     try {
-      const backupPayload = {
-        exportedAt: new Date().toISOString(),
-        user: currentUser,
-        account,
-        business: currentBusiness,
-        subscription,
-        statistics: {
-          membersCount: members.length,
-          productsCount: products.length,
-          freelanceClientsCount: freelanceClients.length,
-          invoicesCount: freelanceInvoices.length,
-          salesCount: sales.length,
-          branchesCount: branches.length,
-        },
-        data: {
-          branches,
-          members,
-          products,
-          freelanceClients,
-          freelanceInvoices,
-          sales,
-          devices,
-        },
-      };
-
-      const blob = new Blob([JSON.stringify(backupPayload, null, 2)], { type: 'application/json' });
+      const fullJson = exportDatabase();
+      const blob = new Blob([fullJson], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `atrium-${currentBusiness.name.toLowerCase().replace(/\s+/g, '_')}-workspace-backup.json`;
+      const dateStr = new Date().toISOString().split('T')[0];
+      a.download = `atrium_full_backup_${currentBusiness.name.toLowerCase().replace(/\s+/g, '_')}_${dateStr}.json`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
-      setExportedStatus('Workspace JSON backup downloaded successfully!');
+      setExportedStatus('Complete database JSON backup downloaded successfully!');
       setTimeout(() => setExportedStatus(null), 4000);
     } catch (err) {
       console.warn('Backup export failed:', err);
     }
+  };
+
+  const handleFileSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const text = event.target?.result as string;
+        const parsed = JSON.parse(text);
+        if (!parsed || !Array.isArray(parsed.businesses) || !parsed.account) {
+          alert('Invalid Atrium backup file format. Expected a valid database export.');
+          return;
+        }
+        setPendingBackupContent(text);
+        setPendingBackupMeta({
+          exportedAt: parsed.exportedAt || 'Unknown Date',
+          businessesCount: parsed.businesses?.length || 0,
+          primaryBusiness: parsed.businesses?.[0]?.name || 'Unknown Business',
+          membersCount: parsed.members?.length || 0,
+        });
+        setIsRestoreModalOpen(true);
+      } catch (err) {
+        alert('Could not parse backup file. Please ensure it is a valid JSON export.');
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  };
+
+  const handleConfirmRestore = () => {
+    if (!pendingBackupContent) return;
+    const success = importDatabase(pendingBackupContent);
+    if (success) {
+      setExportedStatus('Database restored successfully from backup!');
+      setTimeout(() => setExportedStatus(null), 4000);
+    }
+    setIsRestoreModalOpen(false);
+    setPendingBackupContent(null);
+    setPendingBackupMeta(null);
   };
 
   const handleOpenAddBranch = () => {
@@ -172,14 +203,32 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".json"
+            onChange={handleFileSelected}
+            className="hidden"
+          />
+
           <button
             type="button"
             onClick={handleExportDataBackup}
             className="h-10 px-3.5 rounded-xl bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer border border-neutral-200 dark:border-neutral-700"
-            title="Download full JSON workspace backup"
+            title="Download complete JSON database backup"
           >
             <FileDown size={14} className="text-[#C4785A]" />
             <span>Export Backup</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="h-10 px-3.5 rounded-xl bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer border border-neutral-200 dark:border-neutral-700"
+            title="Restore database from a JSON backup file"
+          >
+            <FileUp size={14} className="text-[#C4785A]" />
+            <span>Restore Backup</span>
           </button>
 
           <button
@@ -197,7 +246,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             className="h-10 px-4 rounded-xl bg-[#FDF4F0] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 text-[#C4785A] text-xs font-bold flex items-center gap-2 hover:bg-[#FBECE6] dark:hover:bg-neutral-700/80 transition-colors cursor-pointer"
           >
             <Sparkles size={14} />
-            <span>New Business Setup Wizard</span>
+            <span>Relaunch Setup Wizard</span>
           </button>
         </div>
       </div>
@@ -758,6 +807,80 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             </button>
           </div>
         </form>
+      </Modal>
+
+      {/* Restore Database Modal */}
+      <Modal
+        isOpen={isRestoreModalOpen}
+        onClose={() => {
+          setIsRestoreModalOpen(false);
+          setPendingBackupContent(null);
+          setPendingBackupMeta(null);
+        }}
+        title="Restore Database from Backup"
+        subtitle="Review backup contents before overwriting workspace data"
+      >
+        <div className="space-y-4">
+          <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300 text-xs flex items-start gap-3">
+            <AlertTriangle size={18} className="text-amber-600 shrink-0 mt-0.5" />
+            <div>
+              <p className="font-bold">Caution: State Overwrite</p>
+              <p className="mt-1 opacity-90">
+                Restoring this backup file will replace your current businesses, branches, members, and transactions with the backup snapshot.
+              </p>
+            </div>
+          </div>
+
+          {pendingBackupMeta && (
+            <div className="p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 space-y-2 text-xs">
+              <div className="flex justify-between py-1 border-b border-neutral-200 dark:border-neutral-700">
+                <span className="text-neutral-500">Backup Export Date:</span>
+                <span className="font-semibold text-neutral-900 dark:text-white">
+                  {new Date(pendingBackupMeta.exportedAt).toLocaleString()}
+                </span>
+              </div>
+              <div className="flex justify-between py-1 border-b border-neutral-200 dark:border-neutral-700">
+                <span className="text-neutral-500">Primary Business:</span>
+                <span className="font-semibold text-neutral-900 dark:text-white">
+                  {pendingBackupMeta.primaryBusiness}
+                </span>
+              </div>
+              <div className="flex justify-between py-1 border-b border-neutral-200 dark:border-neutral-700">
+                <span className="text-neutral-500">Total Businesses:</span>
+                <span className="font-semibold text-neutral-900 dark:text-white">
+                  {pendingBackupMeta.businessesCount}
+                </span>
+              </div>
+              <div className="flex justify-between py-1">
+                <span className="text-neutral-500">Members / Contacts:</span>
+                <span className="font-semibold text-neutral-900 dark:text-white">
+                  {pendingBackupMeta.membersCount} records
+                </span>
+              </div>
+            </div>
+          )}
+
+          <div className="flex justify-end gap-3 pt-3">
+            <button
+              type="button"
+              onClick={() => {
+                setIsRestoreModalOpen(false);
+                setPendingBackupContent(null);
+                setPendingBackupMeta(null);
+              }}
+              className="h-10 px-4 text-xs font-semibold text-neutral-500 cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleConfirmRestore}
+              className="h-10 px-5 text-xs font-semibold text-white bg-rose-600 hover:bg-rose-700 rounded-full cursor-pointer shadow-xs transition-colors"
+            >
+              Confirm &amp; Restore Database
+            </button>
+          </div>
+        </div>
       </Modal>
     </div>
   );

@@ -222,7 +222,7 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
             </form>
           ) : (
             /* Printable Preview */
-            <div className="max-w-2xl mx-auto p-8 rounded-2xl border-4 border-double border-[#C4785A]/40 bg-gradient-to-br from-[#FDF4F0]/40 via-white to-[#FDF4F0]/20 dark:from-neutral-900 dark:via-[#18181B] dark:to-neutral-900 shadow-xl relative overflow-hidden">
+            <div className="printable-document preserve-border max-w-2xl mx-auto p-8 rounded-2xl border-4 border-double border-[#C4785A]/40 bg-gradient-to-br from-[#FDF4F0]/40 via-white to-[#FDF4F0]/20 dark:from-neutral-900 dark:via-[#18181B] dark:to-neutral-900 shadow-xl relative overflow-hidden">
               {/* Watermark in BG */}
               <div className="absolute right-4 bottom-4 opacity-5 pointer-events-none text-[#C4785A]">
                 <GraduationCap size={240} />

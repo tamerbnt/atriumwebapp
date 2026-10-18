@@ -9,34 +9,51 @@ export interface AtriumMonolithProps {
 }
 
 /**
- * Authentic 5-Cubes Architectural Logo (Quincunx 3x3 layout: 4 Corners + 1 Center)
+ * Authentic 5-Cubes Architectural Logo (Quincunx layout: 4 Corner Cubes + 1 Central Cube)
+ * - Corner cubes are bigger and positioned closer to the central cube.
+ * - The central cube is larger and blank from the inside (hollow open frame).
  */
 export const FiveCubesLogo: React.FC<{
   size?: number;
   cubeColor?: string;
   className?: string;
-}> = ({ size = 48, cubeColor = '#D3542E', className = '' }) => {
+}> = ({ size, cubeColor = '#000000', className = '' }) => {
+  const style = size ? { width: size, height: size } : undefined;
   return (
-    <div
-      style={{ width: size, height: size }}
-      className={`grid grid-cols-3 grid-rows-3 gap-[10%] p-[8%] shrink-0 ${className}`}
+    <svg
+      viewBox="0 0 100 100"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      style={style}
+      className={`shrink-0 ${
+        size ? '' : 'w-16 h-16 sm:w-22 sm:h-22 md:w-26 md:h-26'
+      } ${className}`}
       aria-label="Atrium 5 Cubes Logo"
     >
-      {/* Row 1: Left & Right cubes */}
-      <div className="rounded-[22%] shadow-xs" style={{ backgroundColor: cubeColor }} />
-      <div />
-      <div className="rounded-[22%] shadow-xs" style={{ backgroundColor: cubeColor }} />
+      {/* Top-Left Cube (Solid, Bigger, Closer to center) */}
+      <rect x="2" y="2" width="26" height="26" rx="6.5" fill={cubeColor} />
 
-      {/* Row 2: Center cube */}
-      <div />
-      <div className="rounded-[22%] shadow-xs" style={{ backgroundColor: cubeColor }} />
-      <div />
+      {/* Top-Right Cube (Solid, Bigger, Closer to center) */}
+      <rect x="72" y="2" width="26" height="26" rx="6.5" fill={cubeColor} />
 
-      {/* Row 3: Left & Right cubes */}
-      <div className="rounded-[22%] shadow-xs" style={{ backgroundColor: cubeColor }} />
-      <div />
-      <div className="rounded-[22%] shadow-xs" style={{ backgroundColor: cubeColor }} />
-    </div>
+      {/* Central Cube (Noticeably Bigger, Blank/Hollow from the Inside) */}
+      <rect
+        x="28.5"
+        y="28.5"
+        width="43"
+        height="43"
+        rx="9.5"
+        fill="none"
+        stroke={cubeColor}
+        strokeWidth="6.5"
+      />
+
+      {/* Bottom-Left Cube (Solid, Bigger, Closer to center) */}
+      <rect x="2" y="72" width="26" height="26" rx="6.5" fill={cubeColor} />
+
+      {/* Bottom-Right Cube (Solid, Bigger, Closer to center) */}
+      <rect x="72" y="72" width="26" height="26" rx="6.5" fill={cubeColor} />
+    </svg>
   );
 };
 
@@ -48,11 +65,15 @@ export const AtriumMonolith: React.FC<AtriumMonolithProps> = ({
   replayKey = 0,
 }) => {
   // Motion Timeline:
-  // 0.0s – 1.6s: 'wave' (side-to-side loop passing through letters: touches two letters with light, X-axis only)
-  // 1.6s – 2.4s: 'lockup' (5 cubes logo pops in on left, ATRIUM text sits neatly on right, NO subtitle)
-  // 2.4s – 2.8s: 'fadeout' (smooth fadeout, card smoothly begins arrival)
-  // 2.8s+: unmounted completely (returns null, nothing appears on background)
-  const [phase, setPhase] = useState<'wave' | 'lockup' | 'fadeout'>('wave');
+  // 1. 0.0s – 1.8s: 'wave' -> Kinetic letter loop sweeps across ATRIUM.
+  //    - Letters untouched by light are SOLID OPAQUE BLACK (#000000, opacity 1, zero gray).
+  //    - Letters touched by light turn glowing white and stretch strictly horizontally (LEFT & RIGHT ONLY on X-axis, scaleX up to 2.20),
+  //      while maintaining the exact same height as non-looped letters (scaleY = 1 locked, zero translateY).
+  // 2. 1.8s – 2.35s: 'logo' -> After the letters loop finishes, the 5 Cubes Logo glides in FROM THE RIGHT to the needed place (NO CONTAINER BOX).
+  // 3. 2.35s – 3.3s: 'lockup' -> THEN the ATRIUM text enters LETTER BY LETTER next to the logo.
+  // 4. 3.3s – 3.7s: 'fadeout' -> Smooth fadeout, onboarding card begins its smooth arrival.
+  // 5. 3.7s+: unmounted completely (returns null, nothing stays on background).
+  const [phase, setPhase] = useState<'wave' | 'logo' | 'lockup' | 'fadeout'>('wave');
   const letterRefs = useRef<(HTMLSpanElement | null)[]>([]);
 
   // Keyboard shortcut (Escape to skip intro)
@@ -72,77 +93,78 @@ export const AtriumMonolith: React.FC<AtriumMonolithProps> = ({
 
     setPhase('wave');
 
-    // 1.6s: Logo pops in, text sits next to it
+    // 1.8s: Letters loop ends -> The 5 Cubes Logo arrives FROM THE RIGHT into its needed place
+    const tLogo = setTimeout(() => {
+      setPhase('logo');
+    }, 1800);
+
+    // 2.35s: Logo is now in place -> ATRIUM text enters LETTER BY LETTER
     const tLockup = setTimeout(() => {
       setPhase('lockup');
-    }, 1600);
+    }, 2350);
 
-    // 2.4s: Intro fades out, card starts smooth arrival
+    // 3.3s: Smooth fadeout starts, card begins smooth arrival
     const tFadeout = setTimeout(() => {
       setPhase('fadeout');
       onCardArrivalStart?.();
-    }, 2400);
+    }, 3300);
 
-    // 2.8s: Intro sequence completely completes
+    // 3.7s: Intro sequence completely completes
     const tComplete = setTimeout(() => {
       onIntroComplete?.();
-    }, 2800);
+    }, 3700);
 
     return () => {
+      clearTimeout(tLogo);
       clearTimeout(tLockup);
       clearTimeout(tFadeout);
       clearTimeout(tComplete);
     };
   }, [isIntroActive, replayKey, onCardArrivalStart, onIntroComplete]);
 
-  // Real-time animation loop for Stage 1:
+  // Real-time animation loop for Stage 1 (Kinetic Typography Wave):
   // - Sweeps side-to-side across ATRIUM letters
-  // - Touches exactly two letters at a time with luminous light
-  // - Strict X-axis only distortion (scaleX 0.72 -> 1.42, scaleY is strictly 1.0, NO translateY)
+  // - Touches exactly two letters at a time with luminous white light
+  // - All untouched letters are 100% SOLID BLACK (#000000, opacity 1, zero gray)
+  // - STRICT X-AXIS ONLY: scales purely left and right (scaleX 0.72 -> 2.20 in an exaggerated way)
+  // - STRICT SAME HEIGHT: scaleY is strictly 1.0, zero translateY, identical height to non-looped letters
   useEffect(() => {
     if (!isIntroActive || phase !== 'wave') return;
 
     let animId: number;
     const startTime = performance.now();
-    const cycleDuration = 1350; // 1.35s full ping-pong period
+    const cycleDuration = 1250; // 1.25s full ping-pong period
 
     const frame = (now: number) => {
       const elapsed = now - startTime;
       const progress = (elapsed % cycleDuration) / cycleDuration;
-      // Ping-pong between 0.5 (letters A & T) and 4.5 (letters U & M)
-      // waveNorm: 0 at t=0, 1 at t=0.5, 0 at t=1.0
+      // Ping-pong between letters A & T (0.5) and U & M (4.5)
       const waveNorm = 0.5 - 0.5 * Math.cos(progress * 2 * Math.PI);
-      const beamCenter = 0.5 + waveNorm * 4.0; // Sweeps from 0.5 to 4.5 and back
+      const beamCenter = 0.5 + waveNorm * 4.0;
 
-      // Effective beam touch radius = 1.15
-      // When beamCenter is at 0.5:
-      // Letter 0 (A) dist = 0.5 -> intensity = 0.565
-      // Letter 1 (T) dist = 0.5 -> intensity = 0.565
-      // Letter 2 (R) dist = 1.5 -> intensity = 0 (untouched)
-      // Thus exactly two letters are touched simultaneously by the light!
+      // Effective beam touch radius = 1.25
       letterRefs.current.forEach((el, i) => {
         if (!el) return;
         const dist = Math.abs(i - beamCenter);
-        const rawIntensity = Math.max(0, Math.min(1, (1.15 - dist) / 1.15));
+        const rawIntensity = Math.max(0, Math.min(1, (1.25 - dist) / 1.25));
         // Smoothstep curve for velvety organic falloff
         const intensity = rawIntensity * rawIntensity * (3 - 2 * rawIntensity);
 
-        // Strict Requirement 2: X-AXIS ONLY (no Y-axis scaling, zero translateY)
-        const scaleX = 0.72 + intensity * 0.70; // 0.72 when untouched, 1.42 when touched
+        // Strict Requirement: Grow left and right ONLY, with exaggerated scaleX, and identical height (scaleY = 1)
+        const scaleX = 0.72 + intensity * 1.48; // 0.72 when untouched, up to 2.20 when touched
         el.style.transform = `scaleX(${scaleX.toFixed(3)}) scaleY(1)`;
 
-        // Strict Requirement 1: Put light on the touched two letters
-        const opacity = 0.38 + intensity * 0.62;
-        el.style.opacity = opacity.toFixed(3);
+        // User explicit requirement: untouched letters must be SOLID BLACK (never gray!)
+        el.style.opacity = '1';
 
-        if (intensity > 0.08) {
+        if (intensity > 0.12) {
           // Touched: Illuminated with radiant warm white light & soft bloom
-          el.style.color = intensity > 0.35 ? '#FFFFFF' : '#FCE7DF';
-          el.style.textShadow = `0 0 ${(intensity * 20).toFixed(1)}px rgba(255, 255, 255, 0.95), 0 0 ${(intensity * 38).toFixed(1)}px rgba(255, 225, 195, 0.65)`;
-          el.style.filter = `drop-shadow(0 0 ${(intensity * 14).toFixed(1)}px rgba(255, 255, 255, 0.85))`;
+          el.style.color = intensity > 0.45 ? '#FFFFFF' : '#FFF0EA';
+          el.style.textShadow = `0 0 ${(intensity * 26).toFixed(1)}px rgba(255, 255, 255, 0.98), 0 0 ${(intensity * 46).toFixed(1)}px rgba(255, 225, 195, 0.75)`;
+          el.style.filter = `drop-shadow(0 0 ${(intensity * 16).toFixed(1)}px rgba(255, 255, 255, 0.9))`;
         } else {
-          // Untouched: Dark tone, no light, no shadow
-          el.style.color = '#18181B';
+          // Untouched: SOLID DEEP BLACK, NO GRAY, FULL OPAQUE
+          el.style.color = '#000000';
           el.style.textShadow = 'none';
           el.style.filter = 'none';
         }
@@ -155,9 +177,6 @@ export const AtriumMonolith: React.FC<AtriumMonolithProps> = ({
     return () => cancelAnimationFrame(animId);
   }, [isIntroActive, phase, replayKey]);
 
-  // CRITICAL REQUIREMENT:
-  // "the moment the motion ends the atrium logo and text shouldn't appear on the background"
-  // "it keeps on runging on the background the moment i don't want that"
   if (!isIntroActive) {
     return null;
   }
@@ -171,31 +190,31 @@ export const AtriumMonolith: React.FC<AtriumMonolithProps> = ({
         phase === 'fadeout' ? 'opacity-0' : 'opacity-100'
       }`}
     >
-      {/* STAGE 1: TWO-LETTER LIGHT LOOP SWEEP (X-AXIS ONLY) (0.0s – 1.6s) */}
-      {/* Sweeps side to side, touches 2 letters at a time, illuminates with light, scales on X-axis only */}
+      {/* STAGE 1: LETTERS LOOP SWEEP (SOLID BLACK UNTOUCHED, GROWS LEFT & RIGHT ONLY, EXAGGERATED STRETCH, SAME HEIGHT) */}
       {phase === 'wave' && (
-        <div className="flex flex-col items-center justify-center text-center">
-          <div className="flex items-center justify-center gap-2 sm:gap-4 md:gap-6 select-none overflow-visible">
+        <div className="flex flex-col items-center justify-center text-center animate-in fade-in duration-200">
+          <div className="flex items-center justify-center gap-2 sm:gap-4 md:gap-6 select-none overflow-visible h-32 sm:h-44 md:h-52">
             {letters.map((char, index) => (
               <span
                 key={char + index}
                 ref={(el) => {
                   letterRefs.current[index] = el;
                 }}
-                className="text-7xl sm:text-9xl md:text-[140px] font-black tracking-normal inline-block select-none transform-gpu origin-center will-change-transform"
+                className="text-7xl sm:text-9xl md:text-[140px] font-black tracking-normal inline-flex items-center justify-center select-none transform-gpu origin-center will-change-transform leading-none h-full"
                 style={{
                   fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
-                  // Initial state: A & T touched with light on X axis
-                  transform: index <= 1 ? 'scaleX(1.36) scaleY(1)' : 'scaleX(0.72) scaleY(1)',
-                  opacity: index <= 1 ? 1 : 0.38,
-                  color: index <= 1 ? '#FFFFFF' : '#18181B',
+                  // Initial state: A & T touched with light on X axis, remaining letters are SOLID BLACK
+                  transform: index <= 1 ? 'scaleX(2.15) scaleY(1)' : 'scaleX(0.72) scaleY(1)',
+                  opacity: 1,
+                  color: index <= 1 ? '#FFFFFF' : '#000000',
+                  lineHeight: 1,
                   textShadow:
                     index <= 1
-                      ? '0 0 20px rgba(255, 255, 255, 0.95), 0 0 38px rgba(255, 225, 195, 0.65)'
+                      ? '0 0 24px rgba(255, 255, 255, 0.98), 0 0 44px rgba(255, 225, 195, 0.75)'
                       : 'none',
                   filter:
                     index <= 1
-                      ? 'drop-shadow(0 0 14px rgba(255, 255, 255, 0.85))'
+                      ? 'drop-shadow(0 0 16px rgba(255, 255, 255, 0.9))'
                       : 'none',
                 }}
               >
@@ -206,31 +225,43 @@ export const AtriumMonolith: React.FC<AtriumMonolithProps> = ({
         </div>
       )}
 
-      {/* STAGE 2: 5 CUBES LOGO + ATRIUM TEXT LOCKUP (1.6s – 2.4s) */}
-      {/* Authentic 5 cubes logo on left, ATRIUM text next to it. NO 'by stoa studio' or subtitles! */}
-      {(phase === 'lockup' || phase === 'fadeout') && (
-        <div className="flex items-center justify-center gap-4 sm:gap-7 select-none animate-in fade-in zoom-in-95 duration-200">
-          {/* Authentic 5-Cubes Logo Badge */}
+      {/* STAGE 2: 5 CUBES LOGO GLIDES IN FROM THE RIGHT TO THE NEEDED PLACE (NO CONTAINER BOX) */}
+      {/* STAGE 3: THEN THE ATRIUM TEXT ENTERS LETTER BY LETTER */}
+      {(phase === 'logo' || phase === 'lockup' || phase === 'fadeout') && (
+        <div className="flex items-center justify-center gap-4 sm:gap-7 select-none transition-all duration-300">
+          {/* Authentic 5-Cubes Logo - Glides in from the right to the needed place (NO CONTAINER BOX) */}
           <div
-            className="p-2 sm:p-3 rounded-2xl sm:rounded-3xl bg-[#18181B] flex items-center justify-center shadow-2xl"
+            className="shrink-0"
             style={{
-              animation: 'cubes-lockup-pop 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) both',
+              animation: 'logo-enter-from-right 0.55s cubic-bezier(0.16, 1, 0.3, 1) both',
             }}
           >
-            <FiveCubesLogo size={60} cubeColor="#D3542E" />
+            <FiveCubesLogo
+              cubeColor="#000000"
+              className="w-16 h-16 sm:w-22 sm:h-22 md:w-26 md:h-26"
+            />
           </div>
 
-          {/* Clean ATRIUM Wordmark */}
-          <h1
-            className="text-6xl sm:text-8xl md:text-9xl font-black tracking-tight text-[#18181B] select-none"
-            style={{
-              fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
-              animation: 'text-lockup-slide 0.45s cubic-bezier(0.16, 1, 0.3, 1) both',
-              textShadow: '0 12px 24px rgba(0, 0, 0, 0.18)',
-            }}
-          >
-            ATRIUM
-          </h1>
+          {/* Full normal ATRIUM text enters LETTER BY LETTER after logo arrives in place */}
+          {(phase === 'lockup' || phase === 'fadeout') && (
+            <div className="flex items-center select-none leading-none">
+              {letters.map((char, index) => (
+                <span
+                  key={char + index}
+                  className="text-6xl sm:text-8xl md:text-9xl font-black tracking-tight text-black select-none leading-none inline-block transform-gpu"
+                  style={{
+                    fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+                    animation: 'letter-stagger-pop 0.38s cubic-bezier(0.175, 0.885, 0.32, 1.275) both',
+                    animationDelay: `${index * 75}ms`,
+                    transformOrigin: 'center center',
+                    textShadow: '0 8px 24px rgba(0, 0, 0, 0.14)',
+                  }}
+                >
+                  {char}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
@@ -240,7 +271,7 @@ export const AtriumMonolith: React.FC<AtriumMonolithProps> = ({
           <button
             type="button"
             onClick={onSkip}
-            className="text-xs text-[#18181B] hover:text-white flex items-center gap-2 py-1.5 px-3.5 rounded-full bg-black/10 hover:bg-black/30 border border-black/20 backdrop-blur-md cursor-pointer transition-all active:scale-95 shadow-sm font-semibold"
+            className="text-xs text-[#000000] hover:text-white flex items-center gap-2 py-1.5 px-3.5 rounded-full bg-black/10 hover:bg-black/30 border border-black/20 backdrop-blur-md cursor-pointer transition-all active:scale-95 shadow-sm font-semibold"
           >
             <span>Skip Intro</span>
             <span className="text-[10px] opacity-60">ESC</span>

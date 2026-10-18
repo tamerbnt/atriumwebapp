@@ -39,6 +39,7 @@ import { EducationAdmissionsView } from './components/screens/education/Educatio
 import { EducationAttendanceView } from './components/screens/education/EducationAttendanceView';
 import { EducationFinanceView } from './components/screens/education/EducationFinanceView';
 import { DesktopUpgradeModal } from './components/modals/DesktopUpgradeModal';
+import { CommandPaletteModal } from './components/modals/CommandPaletteModal';
 import { ToastContainer } from './components/common/ToastContainer';
 
 export default function App() {
@@ -58,14 +59,38 @@ export default function App() {
     closeDesktopUpgradeModal,
   } = useAtriumStore();
 
-  // Onboarding wizard with ATRIUM Monolith plays on launch or when onboarding is requested
-  const [showPowerOnboarding, setShowPowerOnboarding] = useState(true);
+  // Onboarding wizard plays on initial boot or when explicitly requested
+  const [showPowerOnboarding, setShowPowerOnboarding] = useState<boolean>(() => {
+    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+      return localStorage.getItem('atrium_has_onboarded_v1') !== 'true';
+    }
+    return true;
+  });
 
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [isVoucherModalOpen, setIsVoucherModalOpen] = useState(false);
   const [isMemberModalOpen, setIsMemberModalOpen] = useState(false);
   const [memberToEdit, setMemberToEdit] = useState<Member | null>(null);
   const [isLeadModalOpen, setIsLeadModalOpen] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+
+  // Global keyboard shortcuts (Ctrl+K, Cmd+K, '/')
+  useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsCommandPaletteOpen((prev) => !prev);
+      } else if (
+        e.key === '/' &&
+        !['INPUT', 'TEXTAREA', 'SELECT'].includes((e.target as HTMLElement)?.tagName)
+      ) {
+        e.preventDefault();
+        setIsCommandPaletteOpen(true);
+      }
+    };
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, []);
 
   // Sync theme & RTL on boot
   useEffect(() => {
@@ -205,18 +230,20 @@ export default function App() {
     }
   };
 
-  // Launch powerful onboarding screen every time on app load or when onboarding is requested
+  const handleCompleteOrSkipOnboarding = () => {
+    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+      localStorage.setItem('atrium_has_onboarded_v1', 'true');
+    }
+    setShowPowerOnboarding(false);
+    closeOnboarding();
+  };
+
+  // Launch onboarding screen on first boot or when explicitly requested
   if (showPowerOnboarding || isOnboardingOpen) {
     return (
       <PowerOnboardingScreen
-        onComplete={() => {
-          setShowPowerOnboarding(false);
-          closeOnboarding();
-        }}
-        onSkipToDashboard={() => {
-          setShowPowerOnboarding(false);
-          closeOnboarding();
-        }}
+        onComplete={handleCompleteOrSkipOnboarding}
+        onSkipToDashboard={handleCompleteOrSkipOnboarding}
       />
     );
   }
@@ -245,6 +272,7 @@ export default function App() {
         <TopBar
           onOpenVoucherModal={() => setIsVoucherModalOpen(true)}
           onToggleMobileMenu={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
+          onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
         />
 
         {/* Dynamic Screen Viewport wrapped in pure white desktop container */}
@@ -256,6 +284,11 @@ export default function App() {
       </div>
 
       {/* Global Modals */}
+      <CommandPaletteModal
+        isOpen={isCommandPaletteOpen}
+        onClose={() => setIsCommandPaletteOpen(false)}
+      />
+
       <VoucherModal
         isOpen={isVoucherModalOpen}
         onClose={() => setIsVoucherModalOpen(false)}

@@ -18,6 +18,7 @@ import { useAtriumStore } from '../../services/store';
 import { authService } from '../../lib/supabase/services/authService';
 
 import { GoogleOAuthGuideModal } from '../modals/GoogleOAuthGuideModal';
+import { FiveCubesLogo } from './AtriumMonolith';
 
 interface LoginScreenProps {
   onStartOnboarding: () => void;
@@ -117,18 +118,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
       <div className="relative w-full max-w-[480px] rounded-[28px] bg-[#1E1B19]/95 border border-[#3E3832]/80 shadow-2xl p-7 sm:p-9 text-white backdrop-blur-xl animate-in fade-in zoom-in-95 duration-200">
         {/* Atrium Brand Emblem */}
         <div className="flex flex-col items-center text-center mb-6">
-          <div className="w-14 h-14 rounded-2xl bg-[#2A2420] border border-[#483B33] flex items-center justify-center p-3 mb-3.5 shadow-md">
-            <div className="grid grid-cols-3 grid-rows-3 gap-1 w-6 h-6">
-              <div className="w-1.5 h-1.5 rounded-[2px] bg-[#C4785A]" />
-              <div />
-              <div className="w-1.5 h-1.5 rounded-[2px] bg-[#C4785A]" />
-              <div />
-              <div className="w-1.5 h-1.5 rounded-[2px] bg-[#C4785A]" />
-              <div />
-              <div className="w-1.5 h-1.5 rounded-[2px] bg-[#C4785A]" />
-              <div />
-              <div className="w-1.5 h-1.5 rounded-[2px] bg-[#C4785A]" />
-            </div>
+          <div className="w-14 h-14 rounded-2xl bg-[#2A2420] border border-[#483B33] flex items-center justify-center p-2.5 mb-3.5 shadow-md">
+            <FiveCubesLogo size={28} cubeColor="#C4785A" />
           </div>
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-black tracking-tight text-white">ATRIUM</h1>

@@ -268,10 +268,19 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
           <div>
             <div className="flex items-center justify-between pb-4 border-b border-neutral-100">
               <div className="flex items-center gap-3">
-                {/* 5-Cubes Modernist Terracotta Logo */}
-                <div className="w-11 h-11 rounded-2xl bg-[#D3542E] flex items-center justify-center p-1.5 shadow-xs text-white">
+                {/* 5-Cubes Modernist Terracotta Logo (Click to Replay Intro) */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIntroPhase('intro');
+                    setCardVisible(false);
+                    setReplayKey((k) => k + 1);
+                  }}
+                  title="Click to replay motion intro"
+                  className="w-11 h-11 rounded-2xl bg-[#D3542E] flex items-center justify-center p-1.5 shadow-xs text-white hover:scale-105 active:scale-95 transition-transform cursor-pointer"
+                >
                   <FiveCubesLogo size={28} cubeColor="white" />
-                </div>
+                </button>
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="text-base font-black tracking-tight text-neutral-900">

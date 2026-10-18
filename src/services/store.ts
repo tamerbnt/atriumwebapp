@@ -4132,6 +4132,58 @@ export function useAtriumStore() {
     notify();
   };
 
+  const exportDatabase = (): string => {
+    return JSON.stringify(
+      {
+        ...globalState,
+        exportedAt: new Date().toISOString(),
+        version: 'atrium_v2_full',
+      },
+      null,
+      2
+    );
+  };
+
+  const importDatabase = (jsonString: string): boolean => {
+    try {
+      const parsed = JSON.parse(jsonString);
+      if (
+        !parsed ||
+        typeof parsed !== 'object' ||
+        !Array.isArray(parsed.businesses) ||
+        !Array.isArray(parsed.branches) ||
+        !parsed.account
+      ) {
+        showToast({
+          type: 'error',
+          title: 'Invalid Backup File',
+          message: 'The selected file is missing essential Atrium database structures.',
+        });
+        return false;
+      }
+
+      globalState = {
+        ...DEFAULT_STATE,
+        ...parsed,
+        toasts: [],
+      };
+      notify();
+      showToast({
+        type: 'success',
+        title: 'Database Restored Successfully',
+        message: `Restored ${parsed.businesses.length} businesses, ${parsed.branches.length} branches, and all workspace records.`,
+      });
+      return true;
+    } catch (err: any) {
+      showToast({
+        type: 'error',
+        title: 'Restore Failed',
+        message: err?.message || 'Failed to parse JSON backup file.',
+      });
+      return false;
+    }
+  };
+
   return {
     account: state.account,
     subscription: state.subscription,
@@ -4238,6 +4290,8 @@ export function useAtriumStore() {
     revokeDevice,
     redeemVoucher,
     resetAllData,
+    exportDatabase,
+    importDatabase,
     // Appointment Actions
     createAppointment,
     updateAppointmentStatus,
