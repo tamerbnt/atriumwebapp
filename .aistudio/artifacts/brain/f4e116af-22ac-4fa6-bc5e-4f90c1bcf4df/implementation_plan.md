@@ -1,138 +1,95 @@
-# Atrium ERP & CRM — Production-Readiness Master Plan
+# Atrium Motion Identity: Quincunx Convergence Prelude
 
-A comprehensive architectural and user-experience plan to elevate Atrium ERP & CRM into a 100% production-ready web platform across all active business verticals (Gym, Salon/Clinic, Retail POS, Rentals & Venues, Education & Academies, and Freelancers & Solo Practitioners).
-
-***
-
-## User Review & Critical Decisions
-
-> [!IMPORTANT]
-> The project milestone vertical (`project_milestone`) is intentionally deferred for a later phase as agreed. All 6 other core business verticals are active and supported.
-> 
-> Please review the 6 production upgrade pillars below before proceeding:
-
-*   **Pillar 1: Returning User Lifecycle**: Store an explicit `atrium_has_onboarded` flag in local storage upon completing or skipping onboarding. Returning users on browser reload boot directly to their active Dashboard, while an on-demand "Relaunch Setup Wizard" button remains accessible in Settings.
-*   **Pillar 2: Disaster Recovery & Data Portability**: Provide a 1-click **JSON Database Export** and **JSON Restore / Import** in Settings, allowing operators to back up and restore their entire business database across devices.
-*   **Pillar 3: TopBar Breadcrumb Synchronization**: Extend breadcrumbs in `TopBar.tsx` so Education (`education_cohort`) and Retail POS (`pos_inventory`) reflect authentic vertical terminology rather than falling back to gym defaults.
-*   **Pillar 4: Pristine Print Output (`@media print`)**: Guarantee clean, borderless, paper-ready printing for Invoices, Student Graduation Certificates, and POS Cash Receipts by stripping app chrome, sidebars, and modal buttons during print.
-*   **Pillar 5: Form Validation & Tactile Error Feedback**: Implement defensive input validation for client, student, invoice, and booking forms with informative toast feedback rather than silent submissions.
-*   **Pillar 6: Universal Command Palette (`Ctrl + K` / `/`)**: Add a global keyboard-driven search modal that allows front-desk operators to search across clients, students, bookings, invoices, and app screens from anywhere.
+An architectural and motion design implementation plan to engineer a luxury geometric prelude before the kinetic typography loop in Atrium's intro sequence.
 
 ***
 
-## 1. Overview & Core Concept
+## User Review & Critical Choices Confirmed
 
-Atrium ERP & CRM is designed to operate as a high-density, multi-tenant business operating system running seamlessly in the browser with an Apple Spatial aesthetic. For an ERP to be truly production-ready, it must handle the mundane, daily realities of running a business: accidental page refreshes, power cuts, browser cache resets, tax audit requirements, physical paper invoicing, and rapid front-desk keyboard workflows.
-
-### Target Audience & Personas
-1.  **Gym & Fitness Operators**: Rapid RFID check-in, quota monitoring, class scheduling.
-2.  **Salon & Spa Owners**: Multi-stylist column schedule, package checkouts, repeat client history.
-3.  **Retail & Shop Cashiers**: Fast barcode search, cart operations, split cash/card payments, receipt printing.
-4.  **Venue & Coworking Managers**: Hourly occupancy timeline, security deposit tracking, space reservations.
-5.  **Academy & Tutoring Directors**: 360° student records, conflict-free room timetables, 1-click roll call attendance, cryptographic certificates, multi-installment tuition aging.
-6.  **Freelancers & Solo Practitioners**: Live floating Pomodoro stopwatch, scope creep warnings, 1-click time-to-invoice generation, multi-currency retainers.
+Based on your selection, we will implement:
+*   **Chosen Concept**: **Quincunx Convergence (5-Cube Architectural Assembly)** — Four solid geometric cubes glide inward from the deep corners along razor-thin blueprint coordinate lines, converging around an expanding hollow central frame cube. The assembly snaps into the official Atrium quincunx geometry, emits a subtle optical pulse, and seamlessly expands outward into the horizontal baseline for the "ATRIUM" kinetic typography loop.
+*   **Pacing & Timing**: **Cinematic 2.0 seconds** (1.8s–2.2s range), paced to feel authoritative, deliberate, and exquisitely engineered without delaying access to the platform.
 
 ***
 
-## 2. User Experience & Visual Design
+## 1. Motion Choreography & Phase Timeline
 
-### 2.1 Returning User Boot Experience
-*   **First Visit**: Motion typographic intro loop (`AtriumMonolith`), followed by the 5-cubes architectural logo glide and letter-by-letter lockup, presenting the sleek 2-step onboarding card.
-*   **Post-Onboarding Visit (Daily Reality)**: On browser reload or return, Atrium immediately restores the last active business and branch directly onto the primary Dashboard canvas. No wizard popups, no intro delays, and zero friction for daily work.
-*   **On-Demand Relaunch**: Operators who wish to review the setup wizard can click "Relaunch Setup Wizard" inside the Settings tab or Business Switcher.
-
-### 2.2 Backup & Disaster Recovery Center (Settings)
-*   **Location**: `SettingsScreen.tsx` under a new dedicated **"Data Backup & Disaster Recovery"** card.
-*   **Export Flow**: 1-click button generates a formatted JSON backup named `atrium_backup_[BusinessName]_[ISO_Date].json` containing businesses, branches, members, products, bookings, attendance, cohorts, invoices, time logs, and settings.
-*   **Import / Restore Flow**: Drag-and-drop or file picker modal. Previews backup metadata (Creation Date, Total Records, Business Category) before applying. Includes a safe confirmation modal to prevent accidental data overwrites, followed by instant reactive store hydration.
-
-### 2.3 Universal Command Palette (`Ctrl + K` / `/`)
-*   **Trigger**: Global shortcut `Ctrl + K` (Windows/Linux), `Cmd + K` (macOS), or pressing `/` when no input is focused. Also accessible via a search capsule in the TopBar.
-*   **Visual Style**: Floating spatial acrylic modal centered on viewport with fuzzy search input.
-*   **Search Scope**:
-    *   *Navigation Targets*: Jump directly to Timetable, Clients, POS Register, Invoices, Finance, Settings.
-    *   *CRM Records*: Search by name, phone, or email across active Members, Clients, Renters, or Students.
-    *   *Financial Items*: Jump directly to Invoices, Receipts, or Proposals.
-
-### 2.4 Print Media Styling (`@media print`)
-*   **Invoice Preview Modal**: Prints clean A4 invoice with sender details, client VAT/tax info, itemized table, total summary, payment terms, and QR code, hiding browser scrollbars and modal controls.
-*   **Student Certificate Modal**: Prints high-resolution, landscape-oriented parchment certificate with gold border, student name, cohort title, completion date, and verification hash.
-*   **POS Cash Register Receipt**: Formats to standard 80mm thermal receipt width when triggered from Shop or Transaction History.
-
-***
-
-## 3. Key Product Decisions & Trade-Offs
-
-### Decision 1: Client-Side JSON Backup vs. Cloud-Only Export
-*   *Chosen Approach*: Client-side JSON file download + reactive hydration, supplemented by Supabase cloud sync if configured.
-*   *Why*: Many business owners using local web apps do not have cloud databases connected initially. Client-side JSON gives them immediate 100% ownership of their operational records without server dependencies.
-
-### Decision 2: LocalStorage Onboarding State Flag
-*   *Chosen Approach*: Key `atrium_has_onboarded_v1` in `localStorage`.
-*   *Why*: Eliminates the frustrating bug where refreshing the browser repeatedly traps the owner in the onboarding wizard. Allows instant, sub-50ms boot directly to the main stage.
-
-### Decision 3: Defensive Form Validation with User Feedback
-*   *Chosen Approach*: Inline requirement checks (name, contact, non-zero invoice rates) with immediate toast notifications (`toastService`).
-*   *Why*: Silent form failures frustrate users, while raw browser alerts (`alert()`) break iframe sandboxing. Polished toast notifications preserve the Apple Spatial look while informing operators of missing fields.
-
-***
-
-## 4. Technical Architecture & Data Strategy
+The entire intro sequence will be orchestrated into five harmonious phases totaling ~5.8 seconds, with the **Skip Intro** (`ESC` or button) available at every millisecond:
 
 ```
-┌────────────────────────────────────────────────────────────────────────┐
-│                        Atrium Web Application                          │
-├────────────────────────────────────────────────────────────────────────┤
-│                                                                        │
-│  ┌───────────────────────┐             ┌────────────────────────────┐  │
-│  │   Boot Orchestrator   │             │   Command Palette (Ctrl+K) │  │
-│  │ (hasOnboarded Check)  │             │   Global Search & Jumper   │  │
-│  └──────────┬────────────┘             └─────────────┬──────────────┘  │
-│             │                                        │                 │
-│             ▼                                        ▼                 │
-│  ┌──────────────────────────────────────────────────────────────────┐  │
-│  │                       TopBar & Dock Sidebar                      │  │
-│  │     (Dynamic Breadcrumbs: Gym, Salon, POS, Venue, Education)     │  │
-│  └──────────────────────────────────┬───────────────────────────────┘  │
-│                                     │                                  │
-│             ┌───────────────────────┴───────────────────────┐          │
-│             ▼                                               ▼          │
-│  ┌─────────────────────────┐                 ┌──────────────────────┐  │
-│  │  Active Vertical Canvas │                 │   Settings Screen    │  │
-│  │ • Education: Cohorts/AR │                 │ • Backup Export JSON │  │
-│  │ • Freelance: Timer/Inv  │                 │ • Restore Backup     │  │
-│  │ • Venue: Timeline/Slots │                 │ • Lifetime Vouchers  │  │
-│  │ • Salon: Stylist Grid   │                 │ • Facility Switcher  │  │
-│  │ • POS: Register/Stock   │                 └──────────────────────┘  │
-│  │ • Gym: Check-in/Members │                                           │
-│  └──────────┬──────────────┘                                           │
-│             │                                                          │
-│             ▼                                                          │
-│  ┌──────────────────────────────────────────────────────────────────┐  │
-│  │                      Print Engine (@media print)                 │  │
-│  │  • Freelance Invoices  • Education Certificates  • POS Receipts │  │
-│  └──────────────────────────────────────────────────────────────────┘  │
-│                                                                        │
-│  ┌──────────────────────────────────────────────────────────────────┐  │
-│  │                    Unified Reactive Store                        │  │
-│  │    (localStorage: atrium_erp_desktop_v2 + Supabase Sync Relay)   │  │
-│  └──────────────────────────────────────────────────────────────────┘  │
-└────────────────────────────────────────────────────────────────────────┘
+[0.0s ─────── 2.0s]        [2.0s ─────── 4.4s]        [4.4s ──── 5.1s]     [5.1s ──── 5.8s]     [5.8s+]
+Phase 0 & 1: Prelude       Phase 2: Kinetic Wave      Phase 3: Logo Glide  Phase 4: Lockup      Onboarding Card
+Quincunx Convergence       ATRIUM Typography Loop     Mark enters right    Letters pop in       Smooth arrival
 ```
 
-### Component & State Interaction Specifications
+### Phase Breakdown
 
-1.  **`src/App.tsx` Lifecycle**:
-    *   Read `localStorage.getItem('atrium_has_onboarded_v1')`.
-    *   If `'true'`, set `showPowerOnboarding` to `false` on initial mount.
-    *   Provide `relaunchOnboarding` method to reopen wizard from settings or topbar.
-2.  **`src/components/screens/SettingsScreen.tsx`**:
-    *   Add `handleExportDatabase()`: gathers full `globalState` snapshot, sanitizes, and downloads as JSON blob.
-    *   Add `handleImportDatabase(file: File)`: reads JSON, validates required root keys (`businesses`, `branches`, `account`), restores state, and alerts user via toast.
-3.  **`src/components/layout/TopBar.tsx`**:
-    *   Update `getBreadcrumb()` with dedicated cases for `education_cohort` and `pos_inventory`.
-4.  **`src/components/modals/CommandPaletteModal.tsx`**:
-    *   New high-velocity search modal listening to `keydown` (`k` with `ctrlKey`/`metaKey` or `/`).
-    *   Filters across navigation items and active business records with arrow key navigation and Enter to select.
-5.  **`src/index.css` Print Styles**:
-    *   Add global `@media print` rules enforcing clean backgrounds, zero dock/topbar display, zero backdrop blurs, and 100% width on printing canvases.
+#### Phase 0: The Void & Axis Guidelines (0.0s – 0.7s)
+*   Canvas opens in absolute pitch black (`#000000`).
+*   Faint, ultra-crisp hairline blueprint coordinate lines (`stroke: rgba(255, 255, 255, 0.07)`) and subtle corner registration tick-marks trace along golden-ratio diagonal axes.
+*   Four solid corner cubes (exact corner squares of the Atrium mark) glide inward from off-center along the diagonals with smooth exponential deceleration (`cubic-bezier(0.16, 1, 0.3, 1)`).
+
+#### Phase 1: Hollow Core Ignition & Magnetic Snap (0.7s – 1.4s)
+*   At the central nexus, the larger central cube blossoms outward from scale 0.2 to scale 1.0 with a crisp hollow frame (`stroke: #FFFFFF`, stroke width `6.5px`, `fill: none`).
+*   The four solid corner cubes magnetically lock into their exact quincunx stations (quincunx layout: 4 solid corner cubes + 1 large central hollow frame cube).
+*   The blueprint guideline hairlines contract and dissolve into the cube boundaries.
+
+#### Phase 2: The Alignment Pulse & Horizontal Aperture (1.4s – 2.0s)
+*   Upon perfect geometric alignment, the 5-cube constellation emits a subtle optical pulse (a soft, luxury radial flash of white light with zero glare slop).
+*   The central hollow frame softly parts, and the constellation elements smoothly glide horizontally outward to form the baseline anchors for the 6 letters: **`A  T  R  I  U  M`**.
+*   Fluidly hands off to the kinetic typography loop at the 2.0s mark.
+
+#### Phase 3: The Kinetic Typography Wave (2.0s – 4.4s)
+*   The kinetic typography wave sweeps across **ATRIUM**.
+*   Letters outside the light loop stay tight, shrunken, and solid opaque black (`#000000`).
+*   The active letter illuminated by the loop expands outward with luminous warmth and wide tracking.
+
+#### Phase 4: Monolith Identity Lockup & Smooth Transition (4.4s – 5.8s)
+*   The full 5-cubes mark glides in from the right.
+*   The letters pop in letter-by-letter with an 85ms stagger cadence.
+*   Brief 400ms brand hold, followed by a 500ms fadeout welcoming the interactive onboarding card.
+
+***
+
+## 2. Technical Architecture & Component Changes
+
+### Component: `src/components/auth/AtriumMonolith.tsx`
+
+1.  **Extended Phase State Machine**:
+    ```typescript
+    type IntroPhase = 'prelude' | 'wave' | 'logo' | 'lockup' | 'fading' | 'idle';
+    ```
+2.  **Prelude Geometric Renderer**:
+    *   Create a specialized SVG geometric stage for the prelude:
+        *   `DiagonalGuideLines`: 4 hairline vectors connecting corner anchors to the center with animated stroke-dashoffset or opacity.
+        *   `CornerCube`: 4 dynamic `<rect>` elements moving along vectors `(-dx, -dy) -> (2, 2)`, `(dx, -dy) -> (72, 2)`, etc.
+        *   `CenterHollowCube`: Dynamic `<rect fill="none" stroke="#ffffff">` scaling with spring easing.
+        *   `OpticalPulseRing`: Micro-radial expansion ring on alignment.
+3.  **Timing State Synchronization**:
+    *   `tPreludeEnd`: `2000ms`
+    *   `tWaveEnd`: `4400ms`
+    *   `tLogoEnd`: `5100ms`
+    *   `tLockupEnd`: `5800ms`
+    *   `onCardArrivalStart`: Triggered at `5300ms` for seamless cross-fade overlap.
+    *   `onIntroComplete`: Triggered at `5800ms`.
+4.  **Instant Skip & Escape Handling**:
+    *   Pressing `ESC` or clicking the top-right `Skip Intro` button instantly clears all phase timeouts, cancels animation frames, and triggers `onCardArrivalStart` / `onIntroComplete` without lag.
+
+### Styles: `src/index.css`
+
+*   Add refined keyframe animations for the geometric prelude:
+    *   `@keyframes prelude-axis-trace`: Smooth hairline guideline reveal.
+    *   `@keyframes prelude-cube-converge`: Exponential deceleration translation.
+    *   `@keyframes prelude-core-bloom`: Smooth scale and hollow frame stroke illumination.
+    *   `@keyframes prelude-aperture-burst`: Clean optical bloom fading quickly to transparent.
+
+***
+
+## 3. Verification & Acceptance Criteria
+
+1.  **Visual Precision**: The 4 corner solid cubes and 1 central hollow cube match the exact proportions and corner radii of the Atrium 5-cubes logo.
+2.  **Pacing**: Prelude runs for exactly 2.0s before smoothly opening into the typography wave.
+3.  **Seamless Handoff**: No flickering, jump cuts, or layout shifts between the geometric prelude and the typography wave.
+4.  **Skip Functionality**: Clicking `Skip Intro` or pressing `ESC` skips both the prelude and the wave immediately.
+5.  **Replay Capability**: Clicking "Replay Motion Intro" restarts the entire sequence from Phase 0 with the geometric prelude.
+6.  **Zero Build & Lint Errors**: Full compilation and test suite pass cleanly.

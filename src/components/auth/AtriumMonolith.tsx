@@ -57,6 +57,222 @@ export const FiveCubesLogo: React.FC<{
   );
 };
 
+/**
+ * Stage 1: 'Quincunx Convergence' 5-Cube Architectural Assembly Prelude
+ * - Clean Pure White Canvas (#FFFFFF)
+ * - 4 Solid Corner Cubes glide along diagonal trajectory axes to converge into Quincunx
+ * - 1 Central Larger Hollow Cube unfolds and locks with Swiss coordinate crosshairs
+ * - Duration: Exactly 2.0s
+ */
+export const QuincunxConvergencePrelude: React.FC<{ isPortalActive?: boolean; className?: string }> = ({
+  isPortalActive = false,
+  className = '',
+}) => {
+  return (
+    <div className={`relative w-full h-full flex flex-col items-center justify-center select-none bg-white ${className}`}>
+      {/* Subtle modern architectural dot grid */}
+      <div
+        className="absolute inset-0 pointer-events-none opacity-[0.05]"
+        style={{
+          backgroundImage: 'radial-gradient(#D3542E 1.5px, transparent 1.5px)',
+          backgroundSize: '24px 24px',
+        }}
+      />
+
+      {/* Central Geometry Canvas */}
+      <div className="relative z-10 flex items-center justify-center w-64 h-64 sm:w-80 sm:h-80 md:w-96 md:h-96">
+        <svg
+          viewBox="-50 -50 200 200"
+          className="w-full h-full overflow-visible"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          {/* Minimal Swiss Modernist Coordinate Grid & Diagonal Trajectory Axes */}
+          <g
+            style={{
+              animation: 'modern-swiss-grid-fade 2.0s cubic-bezier(0.16, 1, 0.3, 1) both',
+            }}
+          >
+            {/* Center Hairline Axes */}
+            <line x1="-40" y1="50" x2="140" y2="50" stroke="#D3542E" strokeWidth="0.75" strokeDasharray="3 4" opacity="0.22" />
+            <line x1="50" y1="-40" x2="50" y2="140" stroke="#D3542E" strokeWidth="0.75" strokeDasharray="3 4" opacity="0.22" />
+
+            {/* Diagonal Assembly Trajectory Axes */}
+            <line x1="-30" y1="-30" x2="130" y2="130" stroke="#D3542E" strokeWidth="0.5" strokeDasharray="2 4" opacity="0.18" />
+            <line x1="130" y1="-30" x2="-30" y2="130" stroke="#D3542E" strokeWidth="0.5" strokeDasharray="2 4" opacity="0.18" />
+
+            {/* Corner Registration Crosshair Ticks (+) in Terracotta */}
+            <path d="M -20 15 L -10 15 M -15 10 L -15 20" stroke="#D3542E" strokeWidth="1.2" opacity="0.38" />
+            <path d="M 110 15 L 120 15 M 115 10 L 115 20" stroke="#D3542E" strokeWidth="1.2" opacity="0.38" />
+            <path d="M -20 85 L -10 85 M -15 80 L -15 90" stroke="#D3542E" strokeWidth="1.2" opacity="0.38" />
+            <path d="M 110 85 L 120 85 M 115 80 L 115 90" stroke="#D3542E" strokeWidth="1.2" opacity="0.38" />
+
+            {/* Outer Alignment Perimeter */}
+            <rect x="-2" y="-2" width="104" height="104" rx="12" stroke="#D3542E" strokeWidth="0.75" strokeDasharray="4 6" opacity="0.22" />
+          </g>
+
+          {/* Minimal Terracotta Pulse Ring at Quincunx Convergence Lock */}
+          <rect
+            x="24"
+            y="24"
+            width="52"
+            height="52"
+            rx="12"
+            fill="none"
+            stroke="#D3542E"
+            strokeWidth="2"
+            style={{
+              transformOrigin: '50px 50px',
+              animation: 'quincunx-pulse-ring 2.0s cubic-bezier(0.16, 1, 0.3, 1) both',
+            }}
+          />
+
+          {/* THE 5 QUINCUNX CONVERGENCE CUBES */}
+          {/* Top-Left Cube: Glides along diagonal axis to Quincunx lock */}
+          <g
+            style={{
+              transformOrigin: '15px 15px',
+              animation: 'quincunx-cube-tl 2.0s cubic-bezier(0.16, 1, 0.3, 1) both',
+            }}
+          >
+            <rect
+              x="2"
+              y="2"
+              width="26"
+              height="26"
+              rx="6.5"
+              fill="#D3542E"
+              style={{
+                filter: 'drop-shadow(0 4px 12px rgba(211, 84, 46, 0.22))',
+              }}
+            />
+          </g>
+
+          {/* Top-Right Cube: Glides along diagonal axis to Quincunx lock */}
+          <g
+            style={{
+              transformOrigin: '85px 15px',
+              animation: 'quincunx-cube-tr 2.0s cubic-bezier(0.16, 1, 0.3, 1) both',
+            }}
+          >
+            <rect
+              x="72"
+              y="2"
+              width="26"
+              height="26"
+              rx="6.5"
+              fill="#D3542E"
+              style={{
+                filter: 'drop-shadow(0 4px 12px rgba(211, 84, 46, 0.22))',
+              }}
+            />
+          </g>
+
+          {/* Bottom-Left Cube: Glides along diagonal axis to Quincunx lock */}
+          <g
+            style={{
+              transformOrigin: '15px 85px',
+              animation: 'quincunx-cube-bl 2.0s cubic-bezier(0.16, 1, 0.3, 1) both',
+            }}
+          >
+            <rect
+              x="2"
+              y="72"
+              width="26"
+              height="26"
+              rx="6.5"
+              fill="#D3542E"
+              style={{
+                filter: 'drop-shadow(0 4px 12px rgba(211, 84, 46, 0.22))',
+              }}
+            />
+          </g>
+
+          {/* Bottom-Right Cube: Glides along diagonal axis to Quincunx lock */}
+          <g
+            style={{
+              transformOrigin: '85px 85px',
+              animation: 'quincunx-cube-br 2.0s cubic-bezier(0.16, 1, 0.3, 1) both',
+            }}
+          >
+            <rect
+              x="72"
+              y="72"
+              width="26"
+              height="26"
+              rx="6.5"
+              fill="#D3542E"
+              style={{
+                filter: 'drop-shadow(0 4px 12px rgba(211, 84, 46, 0.22))',
+              }}
+            />
+          </g>
+
+          {/* Central Larger Hollow Cube: Elastic unfolding and lock */}
+          <g
+            style={{
+              transformOrigin: '50px 50px',
+              animation: 'quincunx-center-hollow 2.0s cubic-bezier(0.16, 1, 0.3, 1) both',
+            }}
+          >
+            <rect
+              x="28.5"
+              y="28.5"
+              width="43"
+              height="43"
+              rx="9.5"
+              fill="none"
+              stroke="#D3542E"
+              strokeWidth="6.5"
+              style={{
+                filter: 'drop-shadow(0 4px 14px rgba(211, 84, 46, 0.25))',
+              }}
+            />
+          </g>
+        </svg>
+      </div>
+
+      {/* STAGE 2: DEDICATED CINEMATIC PORTAL WIPE OVERLAY (White -> Terracotta) */}
+      {/* Originates from converged central cube at 2.0s to flood viewport into signature terracotta */}
+      {isPortalActive && (
+        <div className="absolute inset-0 pointer-events-none flex items-center justify-center overflow-hidden z-20">
+          {/* Secondary Concentric Shockwave Ring */}
+          <div
+            className="absolute w-44 h-44 rounded-[44px] border-2 border-[#D3542E]"
+            style={{
+              animation: 'cool-portal-ring 0.65s cubic-bezier(0.16, 1, 0.3, 1) both',
+            }}
+          />
+
+          {/* Full-Screen Terracotta Rounded Diamond Portal Monolith */}
+          <div
+            className="w-32 h-32 bg-[#D3542E] shadow-2xl"
+            style={{
+              animation: 'cool-terracotta-portal-wipe 0.65s cubic-bezier(0.22, 1, 0.36, 1) both',
+            }}
+          />
+        </div>
+      )}
+
+      {/* Modernist Typographic Caption */}
+      <div
+        className="relative z-10 mt-6 flex flex-col items-center gap-1.5 select-none text-center"
+        style={{
+          animation: 'modern-swiss-grid-fade 2.0s cubic-bezier(0.16, 1, 0.3, 1) both',
+        }}
+      >
+        <div className="flex items-center gap-2 text-[11px] sm:text-xs font-mono font-bold tracking-[0.28em] text-[#D3542E] uppercase">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#D3542E] animate-ping inline-block" />
+          <span>QUINCUNX CONVERGENCE · 05 ARCHITECTURAL ASSEMBLY</span>
+        </div>
+        <div className="text-[9px] sm:text-[10px] font-mono tracking-[0.38em] text-[#D3542E]/60 uppercase">
+          2.0S PRELUDE // WHITE CANVAS
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export const AtriumMonolith: React.FC<AtriumMonolithProps> = ({
   isIntroActive,
   onCardArrivalStart,
@@ -64,16 +280,14 @@ export const AtriumMonolith: React.FC<AtriumMonolithProps> = ({
   onSkip,
   replayKey = 0,
 }) => {
-  // Motion Timeline:
-  // 1. 0.0s – 1.8s: 'wave' -> Kinetic letter loop sweeps across ATRIUM.
-  //    - Letters untouched by light are SOLID OPAQUE BLACK (#000000, opacity 1, zero gray).
-  //    - Letters touched by light turn glowing white and stretch strictly horizontally (LEFT & RIGHT ONLY on X-axis, scaleX up to 2.20),
-  //      while maintaining the exact same height as non-looped letters (scaleY = 1 locked, zero translateY).
-  // 2. 1.8s – 2.35s: 'logo' -> After the letters loop finishes, the 5 Cubes Logo glides in FROM THE RIGHT to the needed place (NO CONTAINER BOX).
-  // 3. 2.35s – 3.3s: 'lockup' -> THEN the ATRIUM text enters LETTER BY LETTER next to the logo.
-  // 4. 3.3s – 3.7s: 'fadeout' -> Smooth fadeout, onboarding card begins its smooth arrival.
-  // 5. 3.7s+: unmounted completely (returns null, nothing stays on background).
-  const [phase, setPhase] = useState<'wave' | 'logo' | 'lockup' | 'fadeout'>('wave');
+  // Master Unified 4-Stage Sequential Intro Architecture:
+  // (1) 0.0s – 2.0s: 'quincunx' -> 2.0s 'Quincunx Convergence' geometric prelude on white background.
+  // (2) 2.0s – 2.65s: 'portal' -> Dedicated cinematic portal wipe into the terracotta background.
+  // (3) 2.65s – 5.4s: 'wave' -> 'Atrium' kinetic loop (slowed single pass -> expands to un-shrunk normal size).
+  // (4) 5.4s – 7.1s: 'revelation' -> Un-shrunk logo revelation scene (5-cubes logo docks beside normal-size ATRIUM).
+  // (5) 7.1s – 7.7s: 'fadeout' -> Smooth fadeout into onboarding card.
+  // Sequential triggers with ZERO repeat cycles.
+  const [phase, setPhase] = useState<'quincunx' | 'portal' | 'wave' | 'revelation' | 'fadeout'>('quincunx');
   const letterRefs = useRef<(HTMLSpanElement | null)[]>([]);
 
   // Keyboard shortcut (Escape to skip intro)
@@ -91,90 +305,186 @@ export const AtriumMonolith: React.FC<AtriumMonolithProps> = ({
   useEffect(() => {
     if (!isIntroActive) return;
 
-    setPhase('wave');
+    // (1) Start immediately with Quincunx Convergence on white
+    setPhase('quincunx');
 
-    // 1.8s: Letters loop ends -> The 5 Cubes Logo arrives FROM THE RIGHT into its needed place
-    const tLogo = setTimeout(() => {
-      setPhase('logo');
-    }, 1800);
+    // (2) 2.0s: Dedicated cinematic portal wipe into terracotta background
+    const tPortal = setTimeout(() => {
+      setPhase('portal');
+    }, 2000);
 
-    // 2.35s: Logo is now in place -> ATRIUM text enters LETTER BY LETTER
-    const tLockup = setTimeout(() => {
-      setPhase('lockup');
-    }, 2350);
+    // (3) 2.65s: 'Atrium' kinetic loop (slowed) begins on terracotta
+    const tWave = setTimeout(() => {
+      setPhase('wave');
+    }, 2650);
 
-    // 3.3s: Smooth fadeout starts, card begins smooth arrival
+    // (4) 5.4s: Un-shrunk logo revelation scene (logo docks beside un-shrunk ATRIUM)
+    const tRevelation = setTimeout(() => {
+      setPhase('revelation');
+    }, 5400);
+
+    // 7.1s: Smooth fadeout starts, card begins smooth arrival
     const tFadeout = setTimeout(() => {
       setPhase('fadeout');
       onCardArrivalStart?.();
-    }, 3300);
+    }, 7100);
 
-    // 3.7s: Intro sequence completely completes
+    // 7.7s: Intro sequence completely completes
     const tComplete = setTimeout(() => {
       onIntroComplete?.();
-    }, 3700);
+    }, 7700);
 
     return () => {
-      clearTimeout(tLogo);
-      clearTimeout(tLockup);
+      clearTimeout(tPortal);
+      clearTimeout(tWave);
+      clearTimeout(tRevelation);
       clearTimeout(tFadeout);
       clearTimeout(tComplete);
     };
   }, [isIntroActive, replayKey, onCardArrivalStart, onIntroComplete]);
 
-  // Real-time animation loop for Stage 1 (Kinetic Typography Wave):
-  // - Sweeps side-to-side across ATRIUM letters
-  // - Touches exactly two letters at a time with luminous white light
-  // - All untouched letters are 100% SOLID BLACK (#000000, opacity 1, zero gray)
-  // - STRICT X-AXIS ONLY: scales purely left and right (scaleX 0.72 -> 2.20 in an exaggerated way)
-  // - STRICT SAME HEIGHT: scaleY is strictly 1.0, zero translateY, identical height to non-looped letters
+  // Real-time animation loop for Stage 2 (Kinetic Typography Wave):
+  // - HAPPENS ONCE ONLY: Enters from the left, sweeps slowly and gracefully across A-T-R-I-U-M, and exits to the right.
+  // - Background is Terracotta (#D3542E).
+  // - Letters outside the beam are shrunk (scaleX: 0.32) during the sweep.
+  // - Letters touched by the beam illuminate in glowing radiant white (#FFFFFF) & stretch horizontally (scaleX up to 2.25).
+  // - AT THE END OF THE LOOP EFFECT: Letters smoothly expand back to NORMAL SIZE (scaleX: 1.0) and normal spacing,
+  //   so the text appears in its normal size right when the loop finishes, perfectly ready for the logo to enter next to it!
+  const baseWidthsRef = useRef<number[] | null>(null);
+
   useEffect(() => {
     if (!isIntroActive || phase !== 'wave') return;
 
     let animId: number;
     const startTime = performance.now();
-    const cycleDuration = 1250; // 1.25s full ping-pong period
+    const sweepDuration = 2600; // 2.6s slower, luxurious, unhurried single pass across
+
+    const measureBaseWidths = () => {
+      const measured = letterRefs.current.map((el) => (el ? el.offsetWidth : 0));
+      if (measured.length === 6 && measured.every((w) => w > 10)) {
+        return measured;
+      }
+      // Accurate proportional widths for ATRIUM (Inter Black font)
+      const h = letterRefs.current[0]?.offsetHeight || 120;
+      return [0.82 * h, 0.72 * h, 0.78 * h, 0.32 * h, 0.78 * h, 0.98 * h];
+    };
+
+    const handleResize = () => {
+      baseWidthsRef.current = null;
+    };
+    window.addEventListener('resize', handleResize);
 
     const frame = (now: number) => {
-      const elapsed = now - startTime;
-      const progress = (elapsed % cycleDuration) / cycleDuration;
-      // Ping-pong between letters A & T (0.5) and U & M (4.5)
-      const waveNorm = 0.5 - 0.5 * Math.cos(progress * 2 * Math.PI);
-      const beamCenter = 0.5 + waveNorm * 4.0;
+      if (!baseWidthsRef.current || baseWidthsRef.current.some((w) => w === 0)) {
+        baseWidthsRef.current = measureBaseWidths();
+      }
+      const baseWidths = baseWidthsRef.current;
 
-      // Effective beam touch radius = 1.25
+      const elapsed = now - startTime;
+      // Single pass progress: 0.0 to 1.0 (NO modulo % looping - happens once only)
+      const rawProgress = Math.min(1, Math.max(0, elapsed / sweepDuration));
+
+      // Cinematic easeInOut curve for single sweep
+      const easeProgress =
+        rawProgress < 0.5
+          ? 2 * rawProgress * rawProgress
+          : 1 - Math.pow(-2 * rawProgress + 2, 2) / 2;
+
+      // Beam center sweeps from off-left (-1.4) to off-right (7.2)
+      const beamCenter = -1.4 + easeProgress * 8.6;
+
+      // As the loop effect finishes (rawProgress 0.68 -> 0.95), letters smoothly expand from shrunk back to NORMAL SIZE!
+      const normProgress = Math.max(0, Math.min(1, (rawProgress - 0.68) / 0.27));
+      const easeNorm =
+        normProgress < 0.5
+          ? 2 * normProgress * normProgress
+          : 1 - Math.pow(-2 * normProgress + 2, 2) / 2;
+
+      // Base scale: smoothly transitions from shrunk (0.32) to full normal size (1.0)!
+      const currentBaseScale = 0.32 + easeNorm * (1.0 - 0.32);
+
+      // Minimum gap smoothly opens up to normal tracking (0.5px -> 3.5px)
+      const currentMinGap = 0.5 + easeNorm * 3.0;
+      const extraGap = 10.0 * (1 - easeNorm);
+
+      // 1. Calculate intensity and scaleX for all 6 letters
+      const intensities: number[] = new Array(6);
+      const scaleXs: number[] = new Array(6);
+      const visualWidths: number[] = new Array(6);
+
+      for (let i = 0; i < 6; i++) {
+        const dist = Math.abs(i - beamCenter);
+        const rawIntensity = Math.max(0, Math.min(1, (1.3 - dist) / 0.8));
+        const intensity = rawIntensity * rawIntensity * (3 - 2 * rawIntensity);
+        intensities[i] = intensity;
+
+        // Letters touched by beam grow up to 2.25; outside letters follow currentBaseScale (0.32 -> 1.0)
+        const scaleX = currentBaseScale + intensity * (2.25 - currentBaseScale);
+        scaleXs[i] = scaleX;
+        visualWidths[i] = baseWidths[i] * scaleX;
+      }
+
+      // 2. Dynamic gaps between letters
+      const gaps: number[] = new Array(5);
+      for (let i = 0; i < 5; i++) {
+        gaps[i] = currentMinGap + Math.max(intensities[i], intensities[i + 1]) * extraGap;
+      }
+
+      // 3. Compute dynamic target visual centers
+      const targetCenters: number[] = new Array(6);
+      targetCenters[0] = visualWidths[0] / 2;
+      for (let i = 1; i < 6; i++) {
+        targetCenters[i] =
+          targetCenters[i - 1] + visualWidths[i - 1] / 2 + gaps[i - 1] + visualWidths[i] / 2;
+      }
+      const totalVisualWidth = targetCenters[5] + visualWidths[5] / 2;
+      const visualCenterOffset = totalVisualWidth / 2;
+
+      // 4. Compute unscaled base centers in container (gap-0)
+      const baseCenters: number[] = new Array(6);
+      baseCenters[0] = baseWidths[0] / 2;
+      for (let i = 1; i < 6; i++) {
+        baseCenters[i] = baseCenters[i - 1] + baseWidths[i - 1] / 2 + baseWidths[i] / 2;
+      }
+      const totalBaseWidth = baseCenters[5] + baseWidths[5] / 2;
+      const baseCenterOffset = totalBaseWidth / 2;
+
+      // 5. Apply translate3d + scaleX to position each letter perfectly
       letterRefs.current.forEach((el, i) => {
         if (!el) return;
-        const dist = Math.abs(i - beamCenter);
-        const rawIntensity = Math.max(0, Math.min(1, (1.25 - dist) / 1.25));
-        // Smoothstep curve for velvety organic falloff
-        const intensity = rawIntensity * rawIntensity * (3 - 2 * rawIntensity);
+        const targetX = targetCenters[i] - visualCenterOffset;
+        const baseX = baseCenters[i] - baseCenterOffset;
+        const translateX = targetX - baseX;
+        const intensity = intensities[i];
 
-        // Strict Requirement: Grow left and right ONLY, with exaggerated scaleX, and identical height (scaleY = 1)
-        const scaleX = 0.72 + intensity * 1.48; // 0.72 when untouched, up to 2.20 when touched
-        el.style.transform = `scaleX(${scaleX.toFixed(3)}) scaleY(1)`;
-
-        // User explicit requirement: untouched letters must be SOLID BLACK (never gray!)
+        el.style.transform = `translate3d(${translateX.toFixed(2)}px, 0, 0) scaleX(${scaleXs[i].toFixed(3)}) scaleY(1)`;
         el.style.opacity = '1';
 
         if (intensity > 0.12) {
-          // Touched: Illuminated with radiant warm white light & soft bloom
-          el.style.color = intensity > 0.45 ? '#FFFFFF' : '#FFF0EA';
-          el.style.textShadow = `0 0 ${(intensity * 26).toFixed(1)}px rgba(255, 255, 255, 0.98), 0 0 ${(intensity * 46).toFixed(1)}px rgba(255, 225, 195, 0.75)`;
-          el.style.filter = `drop-shadow(0 0 ${(intensity * 16).toFixed(1)}px rgba(255, 255, 255, 0.9))`;
+          // Touched: Illuminated with radiant glowing white light & soft bloom
+          el.style.color = intensity > 0.4 ? '#FFFFFF' : '#FFF0EA';
+          el.style.textShadow = `0 0 ${(intensity * 32).toFixed(1)}px rgba(255, 255, 255, 0.98), 0 0 ${(intensity * 56).toFixed(1)}px rgba(255, 225, 195, 0.85)`;
+          el.style.filter = `drop-shadow(0 0 ${(intensity * 20).toFixed(1)}px rgba(255, 255, 255, 0.95))`;
         } else {
-          // Untouched: SOLID DEEP BLACK, NO GRAY, FULL OPAQUE
+          // Untouched / outside loop: SOLID DEEP BLACK, NO GRAY, SHRUNK & STICKING TO NEIGHBORS
           el.style.color = '#000000';
           el.style.textShadow = 'none';
           el.style.filter = 'none';
         }
       });
 
-      animId = requestAnimationFrame(frame);
+      if (rawProgress < 1) {
+        animId = requestAnimationFrame(frame);
+      }
     };
 
-    animId = requestAnimationFrame(frame);
-    return () => cancelAnimationFrame(animId);
+    // Run first frame immediately
+    frame(performance.now());
+
+    return () => {
+      cancelAnimationFrame(animId);
+      window.removeEventListener('resize', handleResize);
+    };
   }, [isIntroActive, phase, replayKey]);
 
   if (!isIntroActive) {
@@ -186,36 +496,52 @@ export const AtriumMonolith: React.FC<AtriumMonolithProps> = ({
   return (
     <div
       key={replayKey}
-      className={`fixed inset-0 z-30 pointer-events-none select-none flex items-center justify-center bg-[#D3542E] transition-opacity duration-300 ${
-        phase === 'fadeout' ? 'opacity-0' : 'opacity-100'
-      }`}
+      className={`fixed inset-0 z-30 pointer-events-none select-none flex items-center justify-center transition-colors duration-200 ${
+        phase === 'quincunx' ? 'bg-white' : 'bg-[#D3542E]'
+      } ${phase === 'fadeout' ? 'opacity-0' : 'opacity-100'}`}
     >
-      {/* STAGE 1: LETTERS LOOP SWEEP (SOLID BLACK UNTOUCHED, GROWS LEFT & RIGHT ONLY, EXAGGERATED STRETCH, SAME HEIGHT) */}
-      {phase === 'wave' && (
-        <div className="flex flex-col items-center justify-center text-center animate-in fade-in duration-200">
-          <div className="flex items-center justify-center gap-2 sm:gap-4 md:gap-6 select-none overflow-visible h-32 sm:h-44 md:h-52">
+      {/* STAGE (1): 2.0s 'QUINCUNX CONVERGENCE' GEOMETRIC PRELUDE & STAGE (2): CINEMATIC PORTAL WIPE */}
+      {(phase === 'quincunx' || phase === 'portal') && (
+        <div className="w-full h-full flex flex-col items-center justify-center text-center">
+          <QuincunxConvergencePrelude isPortalActive={phase === 'portal'} />
+        </div>
+      )}
+
+      {/* STAGE (3): 'ATRIUM' KINETIC LOOP (SLOWED) & STAGE (4): UN-SHRUNK LOGO REVELATION SCENE */}
+      {(phase === 'wave' || phase === 'revelation' || phase === 'fadeout') && (
+        <div className="flex items-center justify-center gap-4 sm:gap-7 select-none transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]">
+          {/* Authentic 5-Cubes Logo in Solid Black: Enters smoothly beside un-shrunk text for Stage 4 */}
+          <div
+            className={`shrink-0 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+              phase === 'revelation' || phase === 'fadeout'
+                ? 'opacity-100 translate-x-0 scale-100 max-w-[120px] pointer-events-auto'
+                : 'opacity-0 -translate-x-12 scale-75 max-w-0 pointer-events-none overflow-hidden -mr-4 sm:-mr-7'
+            }`}
+          >
+            <FiveCubesLogo
+              cubeColor="#000000"
+              className="w-16 h-16 sm:w-22 sm:h-22 md:w-26 md:h-26"
+            />
+          </div>
+
+          {/* ATRIUM Text: Stays continuously mounted with zero disconnect! */}
+          <div className="flex items-center justify-center gap-0 select-none overflow-visible leading-none">
             {letters.map((char, index) => (
               <span
                 key={char + index}
                 ref={(el) => {
                   letterRefs.current[index] = el;
                 }}
-                className="text-7xl sm:text-9xl md:text-[140px] font-black tracking-normal inline-flex items-center justify-center select-none transform-gpu origin-center will-change-transform leading-none h-full"
+                className="text-6xl sm:text-8xl md:text-9xl font-black tracking-tight text-black inline-flex items-center justify-center select-none transform-gpu origin-center will-change-transform leading-none"
                 style={{
                   fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
-                  // Initial state: A & T touched with light on X axis, remaining letters are SOLID BLACK
-                  transform: index <= 1 ? 'scaleX(2.15) scaleY(1)' : 'scaleX(0.72) scaleY(1)',
+                  // Initial state: letters start shrunk (scaleX: 0.32), expand to un-shrunk normal size (1.0) at loop end
+                  transform: 'scaleX(0.32) scaleY(1)',
                   opacity: 1,
-                  color: index <= 1 ? '#FFFFFF' : '#000000',
+                  color: '#000000',
                   lineHeight: 1,
-                  textShadow:
-                    index <= 1
-                      ? '0 0 24px rgba(255, 255, 255, 0.98), 0 0 44px rgba(255, 225, 195, 0.75)'
-                      : 'none',
-                  filter:
-                    index <= 1
-                      ? 'drop-shadow(0 0 16px rgba(255, 255, 255, 0.9))'
-                      : 'none',
+                  textShadow: 'none',
+                  filter: 'none',
                 }}
               >
                 {char}
@@ -225,53 +551,17 @@ export const AtriumMonolith: React.FC<AtriumMonolithProps> = ({
         </div>
       )}
 
-      {/* STAGE 2: 5 CUBES LOGO GLIDES IN FROM THE RIGHT TO THE NEEDED PLACE (NO CONTAINER BOX) */}
-      {/* STAGE 3: THEN THE ATRIUM TEXT ENTERS LETTER BY LETTER */}
-      {(phase === 'logo' || phase === 'lockup' || phase === 'fadeout') && (
-        <div className="flex items-center justify-center gap-4 sm:gap-7 select-none transition-all duration-300">
-          {/* Authentic 5-Cubes Logo - Glides in from the right to the needed place (NO CONTAINER BOX) */}
-          <div
-            className="shrink-0"
-            style={{
-              animation: 'logo-enter-from-right 0.55s cubic-bezier(0.16, 1, 0.3, 1) both',
-            }}
-          >
-            <FiveCubesLogo
-              cubeColor="#000000"
-              className="w-16 h-16 sm:w-22 sm:h-22 md:w-26 md:h-26"
-            />
-          </div>
-
-          {/* Full normal ATRIUM text enters LETTER BY LETTER after logo arrives in place */}
-          {(phase === 'lockup' || phase === 'fadeout') && (
-            <div className="flex items-center select-none leading-none">
-              {letters.map((char, index) => (
-                <span
-                  key={char + index}
-                  className="text-6xl sm:text-8xl md:text-9xl font-black tracking-tight text-black select-none leading-none inline-block transform-gpu"
-                  style={{
-                    fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
-                    animation: 'letter-stagger-pop 0.38s cubic-bezier(0.175, 0.885, 0.32, 1.275) both',
-                    animationDelay: `${index * 75}ms`,
-                    transformOrigin: 'center center',
-                    textShadow: '0 8px 24px rgba(0, 0, 0, 0.14)',
-                  }}
-                >
-                  {char}
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
       {/* Skip Intro Button */}
       {onSkip && phase !== 'fadeout' && (
         <div className="absolute bottom-6 right-6 pointer-events-auto z-40 animate-in fade-in duration-200">
           <button
             type="button"
             onClick={onSkip}
-            className="text-xs text-[#000000] hover:text-white flex items-center gap-2 py-1.5 px-3.5 rounded-full bg-black/10 hover:bg-black/30 border border-black/20 backdrop-blur-md cursor-pointer transition-all active:scale-95 shadow-sm font-semibold"
+            className={`text-xs flex items-center gap-2 py-1.5 px-3.5 rounded-full border backdrop-blur-md cursor-pointer transition-all active:scale-95 shadow-sm font-semibold ${
+              phase === 'quincunx'
+                ? 'text-[#D3542E] hover:text-[#B8401C] bg-neutral-100 hover:bg-neutral-200 border-neutral-300'
+                : 'text-black hover:text-white bg-black/10 hover:bg-black/30 border-black/20'
+            }`}
           >
             <span>Skip Intro</span>
             <span className="text-[10px] opacity-60">ESC</span>

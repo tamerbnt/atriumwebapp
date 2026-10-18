@@ -236,7 +236,11 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
   // UNIFIED ATRIUM MONOLITH SYSTEM: INTRO & 3D LIVING WATERMARK
   // ============================================================
   return (
-    <div className="min-h-screen w-screen bg-[#D3542E] text-white flex flex-col items-center justify-center overflow-hidden relative select-none">
+    <div
+      className={`min-h-screen w-screen text-white flex flex-col items-center justify-center overflow-hidden relative select-none transition-colors duration-300 ${
+        introPhase === 'intro' ? 'bg-white' : 'bg-[#D3542E]'
+      }`}
+    >
       {/* 1. KINETIC GEOMETRIC & TYPOGRAPHY SYSTEM (SOLID TERRACOTTA) */}
       <AtriumMonolith
         isIntroActive={introPhase === 'intro'}
