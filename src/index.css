@@ -194,3 +194,88 @@
   background-clip: text;
   animation: specular-sweep 4s linear infinite;
 }
+
+/* ============================================================
+   "ATRIUM Kinetic Typography & 5 Cubes Logo Intro"
+   Side-to-Side Swell Wave Loop -> Authentic 5 Cubes Logo Lockup
+   Solid Terracotta Background (#D3542E) - Zero Geometrics
+   ============================================================ */
+
+.bg-terracotta {
+  background-color: #D3542E;
+}
+
+/* Kinetic Typographic Wave (Side-to-side loop passing through letters)
+   Touches two letters with light, X-axis only (no Y scaling, zero translateY) */
+@keyframes letter-loop-wave {
+  0%, 100% {
+    transform: scaleX(0.72) scaleY(1);
+    opacity: 0.38;
+    color: #18181B;
+    filter: none;
+    text-shadow: none;
+  }
+  50% {
+    transform: scaleX(1.42) scaleY(1);
+    opacity: 1;
+    color: #FFFFFF;
+    filter: drop-shadow(0 0 16px rgba(255, 255, 255, 0.85));
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.95), 0 0 38px rgba(255, 225, 195, 0.65);
+  }
+}
+
+/* 5 Cubes Emblem Pop in Lockup */
+@keyframes cubes-lockup-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.5) translateY(12px);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.08) translateY(-2px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Text slide next to logo in Lockup */
+@keyframes text-lockup-slide {
+  0% {
+    opacity: 0;
+    transform: translateX(-16px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+/* Smooth Fadeout of Intro Stage — Nothing stays on background */
+@keyframes intro-stage-fadeout {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.96) translateY(-14px);
+  }
+}
+
+/* Floating White Card Smooth Arrival */
+@keyframes card-arrival-smooth {
+  0% {
+    opacity: 0;
+    transform: translateY(50px) scale(0.97);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0px) scale(1);
+  }
+}
+
+
+
+

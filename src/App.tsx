@@ -58,8 +58,8 @@ export default function App() {
     closeDesktopUpgradeModal,
   } = useAtriumStore();
 
-  // Onboarding wizard can be opened on demand via openOnboarding or new business setup
-  const [showPowerOnboarding, setShowPowerOnboarding] = useState(false);
+  // Onboarding wizard with ATRIUM Monolith plays on launch or when onboarding is requested
+  const [showPowerOnboarding, setShowPowerOnboarding] = useState(true);
 
   const [isVoucherModalOpen, setIsVoucherModalOpen] = useState(false);
   const [isMemberModalOpen, setIsMemberModalOpen] = useState(false);

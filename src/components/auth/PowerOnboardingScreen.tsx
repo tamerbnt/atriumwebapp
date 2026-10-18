@@ -43,6 +43,7 @@ import {
   POPULAR_BUSINESS_SEARCHES,
   BusinessMatchResult,
 } from '../../utils/businessMapping';
+import { AtriumMonolith, FiveCubesLogo } from './AtriumMonolith';
 
 interface PowerOnboardingScreenProps {
   onComplete: () => void;
@@ -57,24 +58,19 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
 
   const [currentStep, setCurrentStep] = useState<1 | 2>(1);
   const [introPhase, setIntroPhase] = useState<'intro' | 'revealed'>('intro');
-  const [introProgress, setIntroProgress] = useState(0);
+  const [cardVisible, setCardVisible] = useState(false);
+  const [replayKey, setReplayKey] = useState(0);
 
-  // Play motion design intro upon launch, then seamlessly reveal onboarding card
+  // Allow ESC to instantly skip intro to revealed onboarding card
   useEffect(() => {
-    if (introPhase === 'intro') {
-      const start = Date.now();
-      const duration = 2400;
-      const interval = setInterval(() => {
-        const elapsed = Date.now() - start;
-        const p = Math.min(100, Math.round((elapsed / duration) * 100));
-        setIntroProgress(p);
-        if (elapsed >= duration) {
-          clearInterval(interval);
-          setIntroPhase('revealed');
-        }
-      }, 25);
-      return () => clearInterval(interval);
-    }
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && introPhase === 'intro') {
+        setCardVisible(true);
+        setIntroPhase('revealed');
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, [introPhase]);
 
   // Step 1: Owner Account & Google Auth
@@ -237,134 +233,44 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
   ];
 
   // ============================================================
-  // STAGE 1: CINEMATIC MOTION DESIGN INTRO (UPON LAUNCH)
-  // ============================================================
-  if (introPhase === 'intro') {
-    return (
-      <div className="min-h-screen w-screen bg-[#140804] text-white flex flex-col items-center justify-center overflow-hidden relative select-none">
-        {/* Dynamic Multi-Mesh Terracotta Gradient Background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[#120603] via-[#35130A] to-[#140804]" />
-
-        {/* Animated Radial Terracotta Glow Wells */}
-        <div className="absolute -top-40 -left-40 w-[700px] h-[700px] bg-[#8C3119]/40 rounded-full blur-[140px] pointer-events-none animate-terracotta-mesh" />
-        <div className="absolute -bottom-40 -right-40 w-[750px] h-[750px] bg-[#C4785A]/35 rounded-full blur-[150px] pointer-events-none animate-terracotta-mesh-rev" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[650px] h-[650px] bg-[#EA580C]/20 rounded-full blur-[130px] pointer-events-none" />
-
-        {/* Architectural Subtle Grid Overlay */}
-        <div
-          className="absolute inset-0 opacity-[0.06] pointer-events-none"
-          style={{
-            backgroundImage: `radial-gradient(rgba(255, 255, 255, 0.5) 1px, transparent 1px)`,
-            backgroundSize: '32px 32px',
-          }}
-        />
-
-        {/* Center Kinetic Typography & Logo Container */}
-        <div className="relative z-10 flex flex-col items-center text-center max-w-2xl px-6">
-          {/* Glowing 4-Square Terracotta Logo */}
-          <div className="w-16 h-16 rounded-3xl bg-[#2A160F] border border-[#C4785A]/50 shadow-2xl flex items-center justify-center p-3 mb-8 animate-[glyph-pop_0.6s_cubic-bezier(0.16,1,0.3,1)_both]">
-            <div className="grid grid-cols-2 gap-1.5 w-7 h-7">
-              <div className="w-3 h-3 rounded-xs bg-[#C4785A] shadow-xs" />
-              <div className="w-3 h-3 rounded-xs bg-[#EA580C] shadow-xs" />
-              <div className="w-3 h-3 rounded-xs bg-[#EA580C] shadow-xs" />
-              <div className="w-3 h-3 rounded-xs bg-[#C4785A] shadow-xs" />
-            </div>
-          </div>
-
-          {/* Kinetic "ATRIUM" Staggered Typography with Specular Shimmer */}
-          <div className="flex items-center justify-center gap-1.5 sm:gap-3 mb-4">
-            {['A', 'T', 'R', 'I', 'U', 'M'].map((letter, i) => (
-              <span
-                key={letter}
-                style={{ animationDelay: `${i * 120}ms` }}
-                className="text-5xl sm:text-7xl lg:text-8xl font-black tracking-[0.16em] sm:tracking-[0.24em] shimmer-text-sweep animate-[glyph-pop_0.8s_cubic-bezier(0.16,1,0.3,1)_both] select-none drop-shadow-2xl"
-              >
-                {letter}
-              </span>
-            ))}
-          </div>
-
-          {/* Tagline Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#C4785A]/20 border border-[#C4785A]/40 text-[#FDBA74] text-xs font-bold uppercase tracking-widest mt-2 animate-in fade-in duration-700 delay-300 shadow-xs">
-            <Sparkles size={13} className="text-[#EA580C]" />
-            <span>The Business Management OS for Modern Facilities</span>
-          </div>
-
-          {/* Precision Loading Progress Indicator */}
-          <div className="w-64 sm:w-80 mt-10 space-y-2.5 animate-in fade-in duration-500 delay-500">
-            <div className="h-1.5 w-full bg-[#2A160F] rounded-full overflow-hidden border border-[#C4785A]/30 p-0.5">
-              <div
-                className="h-full bg-gradient-to-r from-[#C4785A] via-[#EA580C] to-[#FED7AA] rounded-full transition-all duration-75"
-                style={{ width: `${introProgress}%` }}
-              />
-            </div>
-            <div className="flex items-center justify-between text-[11px] font-mono text-[#FDBA74]/80">
-              <span>Initializing Workspace...</span>
-              <span>{introProgress}%</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Skip to Setup Action Button */}
-        <div className="absolute bottom-8 right-8 z-20">
-          <button
-            type="button"
-            onClick={() => setIntroPhase('revealed')}
-            className="text-xs text-[#FDBA74] hover:text-white flex items-center gap-2 py-2 px-4 rounded-full bg-[#2A160F]/80 hover:bg-[#3E1C11] border border-[#C4785A]/40 cursor-pointer transition-all shadow-lg active:scale-95"
-          >
-            <span>Skip to Setup</span>
-            <ArrowRight size={13} />
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  // ============================================================
-  // STAGE 2: ONBOARDING CARD ON LIVING TERRACOTTA BACKDROP
+  // UNIFIED ATRIUM MONOLITH SYSTEM: INTRO & 3D LIVING WATERMARK
   // ============================================================
   return (
-    <div className="min-h-screen w-screen bg-[#140804] text-white flex flex-col lg:flex-row overflow-hidden relative select-none">
-      {/* Dynamic Multi-Mesh Terracotta Gradient Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[#120603] via-[#35130A] to-[#140804] pointer-events-none" />
-
-      {/* Animated Radial Terracotta Glow Wells */}
-      <div className="absolute -top-32 -right-32 w-[750px] h-[750px] bg-[#8C3119]/40 rounded-full blur-[140px] pointer-events-none animate-terracotta-mesh" />
-      <div className="absolute -bottom-32 left-1/4 w-[650px] h-[650px] bg-[#C4785A]/30 rounded-full blur-[140px] pointer-events-none animate-terracotta-mesh-rev" />
-      <div className="absolute top-1/3 right-1/3 w-[500px] h-[500px] bg-[#EA580C]/15 rounded-full blur-[120px] pointer-events-none" />
-
-      {/* Architectural Subtle Grid Overlay */}
-      <div
-        className="absolute inset-0 opacity-[0.06] pointer-events-none"
-        style={{
-          backgroundImage: `radial-gradient(rgba(255, 255, 255, 0.45) 1px, transparent 1px)`,
-          backgroundSize: '36px 36px',
+    <div className="min-h-screen w-screen bg-[#D3542E] text-white flex flex-col items-center justify-center overflow-hidden relative select-none">
+      {/* 1. KINETIC GEOMETRIC & TYPOGRAPHY SYSTEM (SOLID TERRACOTTA) */}
+      <AtriumMonolith
+        isIntroActive={introPhase === 'intro'}
+        onCardArrivalStart={() => setCardVisible(true)}
+        onIntroComplete={() => {
+          setCardVisible(true);
+          setIntroPhase('revealed');
         }}
+        onSkip={() => {
+          setCardVisible(true);
+          setIntroPhase('revealed');
+        }}
+        replayKey={replayKey}
       />
 
-      {/* Floating Ambient Kinetic "ATRIUM" Watermark in Background Canvas */}
-      <div className="absolute right-10 -bottom-8 pointer-events-none select-none z-0 hidden lg:block opacity-[0.07] animate-ambient-float">
-        <span className="text-[170px] xl:text-[230px] font-black tracking-[0.25em] text-white drop-shadow-2xl">
-          ATRIUM
-        </span>
-      </div>
-
-      {/* LEFT: FLOATING PURE WHITE CARD (ANIMATED ASCENT) */}
-      <div className="w-full lg:w-[560px] xl:w-[600px] p-4 sm:p-6 lg:p-7 shrink-0 flex flex-col justify-center z-20 animate-in fade-in slide-in-from-bottom-8 duration-700">
-        <div className="bg-white text-neutral-900 rounded-[32px] p-6 sm:p-8 shadow-2xl border border-neutral-100 flex flex-col justify-between max-h-[calc(100vh-48px)] overflow-y-auto">
+      {/* 2. SPATIAL FLOATING ONBOARDING CARD & BRAND SHOWCASE */}
+      <div
+        className={`relative z-20 w-full min-h-screen flex flex-col lg:flex-row items-center justify-center p-4 sm:p-6 lg:p-8 transition-all duration-700 ease-[cubic-bezier(0.19,1,0.22,1)] ${
+          cardVisible
+            ? 'opacity-100 translate-y-0 pointer-events-auto'
+            : 'opacity-0 translate-y-[50px] pointer-events-none'
+        }`}
+      >
+        {/* LEFT: FLOATING PURE WHITE ONBOARDING CARD */}
+        <div className="w-full lg:w-[560px] xl:w-[600px] p-2 sm:p-4 shrink-0 flex flex-col justify-center">
+          <div className="bg-white text-neutral-900 rounded-[32px] p-6 sm:p-8 shadow-[0_30px_70px_rgba(0,0,0,0.55)] border border-neutral-100 flex flex-col justify-between max-h-[calc(100vh-48px)] overflow-y-auto">
 
           {/* Card Top: Atrium Brand Logo Emblem */}
           <div>
             <div className="flex items-center justify-between pb-4 border-b border-neutral-100">
               <div className="flex items-center gap-3">
-                {/* 4-Square Terracotta Logo */}
-                <div className="w-11 h-11 rounded-2xl bg-[#2A2420] flex items-center justify-center p-2.5 shadow-xs">
-                  <div className="grid grid-cols-2 gap-1 w-5 h-5">
-                    <div className="w-2 h-2 rounded-xs bg-[#C4785A]" />
-                    <div className="w-2 h-2 rounded-xs bg-[#C4785A]" />
-                    <div className="w-2 h-2 rounded-xs bg-[#C4785A]" />
-                    <div className="w-2 h-2 rounded-xs bg-[#C4785A]" />
-                  </div>
+                {/* 5-Cubes Modernist Terracotta Logo */}
+                <div className="w-11 h-11 rounded-2xl bg-[#D3542E] flex items-center justify-center p-1.5 shadow-xs text-white">
+                  <FiveCubesLogo size={28} cubeColor="white" />
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
@@ -820,12 +726,12 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
       </div>
 
       {/* RIGHT: POWERFUL BRAND SHOWCASE & SPATIAL VISUAL CANVAS */}
-      <div className="flex-1 p-6 sm:p-10 lg:p-14 flex flex-col justify-between overflow-y-auto z-10 hidden md:flex">
+      <div className="flex-1 p-6 sm:p-10 lg:p-14 flex flex-col justify-between overflow-y-auto z-10 hidden md:flex text-[#18181B]">
         {/* Top Tagline */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-xs font-bold tracking-widest uppercase text-neutral-400">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="text-xs font-bold tracking-widest uppercase text-[#18181B]/75">
               Atrium Cloud Web Edition (Free)
             </span>
           </div>
@@ -834,19 +740,20 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
             <button
               type="button"
               onClick={() => {
-                setIntroProgress(0);
+                setCardVisible(false);
+                setReplayKey((k) => k + 1);
                 setIntroPhase('intro');
               }}
-              className="text-xs text-[#FDBA74] hover:text-white flex items-center gap-1.5 py-1.5 px-3 rounded-full bg-[#2A160F]/80 hover:bg-[#3E1C11] border border-[#C4785A]/40 cursor-pointer transition-all shadow-xs"
+              className="text-xs text-[#18181B] hover:text-white flex items-center gap-1.5 py-1.5 px-3.5 rounded-full bg-black/10 hover:bg-black/30 border border-black/20 cursor-pointer transition-all shadow-xs font-semibold"
             >
-              <RotateCcw size={12} className="text-[#EA580C]" />
-              <span>Replay Intro</span>
+              <RotateCcw size={12} className="text-[#18181B]" />
+              <span>Replay Motion</span>
             </button>
 
             <button
               type="button"
               onClick={onSkipToDashboard}
-              className="text-xs text-neutral-300 hover:text-white flex items-center gap-1.5 py-1.5 px-3 rounded-full bg-[#2A160F]/60 border border-[#C4785A]/30 cursor-pointer transition-colors"
+              className="text-xs text-[#18181B] hover:text-white flex items-center gap-1.5 py-1.5 px-3.5 rounded-full bg-black/10 hover:bg-black/20 border border-black/20 cursor-pointer transition-colors font-medium"
             >
               <span>Open Existing Workspace (Tamer)</span>
               <ArrowRight size={13} />
@@ -856,57 +763,58 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
 
         {/* Hero Copy */}
         <div className="my-auto py-8 max-w-xl space-y-5">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#C4785A]/20 border border-[#C4785A]/40 text-[#FDBA74] text-xs font-bold">
-            <Sparkles size={13} className="text-[#EA580C]" />
-            <span>Forever Free Web Edition — 1 Business & 1 Branch</span>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-black/10 border border-black/15 text-[#18181B] text-xs font-bold">
+            <Sparkles size={13} className="text-[#18181B]" />
+            <span>Forever Free Web Edition — 1 Business &amp; 1 Branch</span>
           </div>
 
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white leading-tight">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-[#18181B] leading-tight">
             The Business Management OS for Modern Facilities.
           </h1>
 
-          <p className="text-sm sm:text-base text-neutral-300/80 leading-relaxed font-normal">
+          <p className="text-sm sm:text-base text-[#18181B]/85 leading-relaxed font-medium">
             Whether running a solo practice, aesthetic salon, fast-casual restaurant, or athletic gym, Atrium Web is 100% free forever for your main facility. Seamlessly upgrade to the Desktop app when you expand to multi-location chains.
           </p>
 
           {/* Spatial Cards Showcase */}
           <div className="grid grid-cols-2 gap-3.5 pt-3">
             {/* Tile 1: Supabase Realtime Cloud Sync */}
-            <div className="p-4 rounded-2xl bg-[#22100A]/70 border border-[#C4785A]/30 backdrop-blur-md space-y-2 shadow-lg">
-              <div className="flex items-center justify-between text-neutral-300 text-xs">
-                <span className="font-medium">Cloud Architecture</span>
-                <Cloud size={14} className="text-emerald-400" />
+            <div className="p-4 rounded-2xl bg-white/95 text-neutral-900 border border-white/60 shadow-xl space-y-2">
+              <div className="flex items-center justify-between text-neutral-500 text-xs">
+                <span className="font-semibold">Cloud Architecture</span>
+                <Cloud size={14} className="text-emerald-600" />
               </div>
-              <div className="text-2xl font-black text-white tabular-nums tracking-tight">
-                Live Sync <span className="text-xs text-[#FDBA74] font-semibold">PostgreSQL</span>
+              <div className="text-2xl font-black text-neutral-900 tabular-nums tracking-tight">
+                Live Sync <span className="text-xs text-[#D3542E] font-bold">PostgreSQL</span>
               </div>
-              <span className="text-[11px] font-semibold text-emerald-400 block">
+              <span className="text-[11px] font-semibold text-emerald-700 block">
                 Automatic Web-to-Desktop Sync
               </span>
             </div>
 
             {/* Tile 2: Upgrade to Desktop Anytime */}
-            <div className="p-4 rounded-2xl bg-[#22100A]/70 border border-[#C4785A]/30 backdrop-blur-md space-y-2 shadow-lg">
-              <div className="flex items-center justify-between text-neutral-300 text-xs">
-                <span className="font-medium">Multi-Branch Growth</span>
-                <Laptop size={14} className="text-[#EA580C]" />
+            <div className="p-4 rounded-2xl bg-white/95 text-neutral-900 border border-white/60 shadow-xl space-y-2">
+              <div className="flex items-center justify-between text-neutral-500 text-xs">
+                <span className="font-semibold">Multi-Branch Growth</span>
+                <Laptop size={14} className="text-[#D3542E]" />
               </div>
-              <div className="text-xs font-mono font-bold text-neutral-200">
+              <div className="text-sm font-black text-neutral-900">
                 Atrium Desktop Edition
               </div>
-              <span className="text-[11px] font-semibold text-[#FDBA74] block">
-                Multi-Branch Chains & POS Hardware
+              <span className="text-[11px] font-semibold text-[#D3542E] block">
+                Multi-Branch Chains &amp; POS Hardware
               </span>
             </div>
           </div>
         </div>
 
         {/* Bottom Social Proof / Spec Badge */}
-        <div className="pt-6 border-t border-neutral-900 flex items-center justify-between text-xs text-neutral-500">
-          <span>Engineered with Apple Spatial & Clean Architecture precision</span>
+        <div className="pt-6 border-t border-black/15 flex items-center justify-between text-xs text-[#18181B]/70 font-medium">
+          <span>Engineered with Apple Spatial &amp; Clean Architecture precision</span>
           <span>English • Français • العربية</span>
         </div>
       </div>
+    </div>
 
       {/* Google OAuth & 403 Troubleshooting Modal */}
       <GoogleOAuthGuideModal

@@ -382,12 +382,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
             }`}
             title="Atrium Business Platform"
           >
-            {/* 4-square geometric logo emblem matching desktop */}
-            <div className="grid grid-cols-2 gap-1 w-5 h-5 shrink-0">
-              <div className="w-1.5 h-1.5 rounded-xs bg-[#C4785A]" />
-              <div className="w-1.5 h-1.5 rounded-xs bg-[#C4785A]" />
-              <div className="w-1.5 h-1.5 rounded-xs bg-[#C4785A]" />
-              <div className="w-1.5 h-1.5 rounded-xs bg-[#C4785A]" />
+            {/* 5-cubes geometric logo emblem matching desktop */}
+            <div className="grid grid-cols-3 grid-rows-3 gap-0.5 w-5 h-5 shrink-0 p-0.5">
+              <div className="w-1 h-1 rounded-[1.5px] bg-[#C4785A]" />
+              <div />
+              <div className="w-1 h-1 rounded-[1.5px] bg-[#C4785A]" />
+              <div />
+              <div className="w-1 h-1 rounded-[1.5px] bg-[#C4785A]" />
+              <div />
+              <div className="w-1 h-1 rounded-[1.5px] bg-[#C4785A]" />
+              <div />
+              <div className="w-1 h-1 rounded-[1.5px] bg-[#C4785A]" />
             </div>
 
             {isExpanded && (

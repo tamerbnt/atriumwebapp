@@ -565,6 +565,21 @@ export const TopBar: React.FC<TopBarProps> = ({
                   }}
                   className="w-full px-4 py-2 text-left text-xs text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center gap-2.5 cursor-pointer"
                 >
+                  <Sparkles size={14} className="text-[#C4785A]" />
+                  <div className="flex flex-col">
+                    <span className="font-semibold">ATRIUM Monolith Cinema</span>
+                    <span className="text-[10px] text-neutral-400">Replay Kinetic Typographic Intro</span>
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setUserMenuOpen(false);
+                    openOnboarding();
+                  }}
+                  className="w-full px-4 py-2 text-left text-xs text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center gap-2.5 cursor-pointer"
+                >
                   <Sparkles size={14} className="text-amber-500" />
                   <span>New Business Onboarding Wizard</span>
                 </button>
