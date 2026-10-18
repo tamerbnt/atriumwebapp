@@ -12,11 +12,13 @@ import {
   X,
   FileCheck,
   Info,
+  Cloud,
 } from 'lucide-react';
 import { useAtriumStore } from '../../../services/store';
 import { RentableUnit, RentalBooking, RentableUnitType } from '../../../types/index';
 import { formatCurrencyAmount } from '../../../utils/rules';
 import { BookingModal } from './BookingModal';
+import { VenueCloudSyncModal } from './VenueCloudSyncModal';
 
 export const VenueTimelineView: React.FC = () => {
   const {
@@ -32,6 +34,7 @@ export const VenueTimelineView: React.FC = () => {
   );
   const [selectedTypeFilter, setSelectedTypeFilter] = useState<'All' | RentableUnitType>('All');
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const [isCloudSyncModalOpen, setIsCloudSyncModalOpen] = useState(false);
   const [modalInitialUnitId, setModalInitialUnitId] = useState<string | undefined>(undefined);
   const [modalInitialHour, setModalInitialHour] = useState<string | undefined>(undefined);
   const [inspectedBooking, setInspectedBooking] = useState<RentalBooking | null>(null);
@@ -127,6 +130,16 @@ export const VenueTimelineView: React.FC = () => {
               <ChevronRight size={16} />
             </button>
           </div>
+
+          <button
+            onClick={() => setIsCloudSyncModalOpen(true)}
+            className="px-3 py-2 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-xs font-semibold text-neutral-800 dark:text-neutral-200 rounded-xl transition-colors flex items-center gap-1.5"
+            title="Inspect Supabase live tables and row writes"
+          >
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <Cloud size={14} className="text-purple-600 dark:text-purple-400" />
+            Supabase Cloud
+          </button>
 
           <button
             onClick={() => {
@@ -376,6 +389,12 @@ export const VenueTimelineView: React.FC = () => {
         initialUnitId={modalInitialUnitId}
         initialDate={selectedDate}
         initialStartTime={modalInitialHour}
+      />
+
+      {/* Supabase Cloud Verification Modal */}
+      <VenueCloudSyncModal
+        isOpen={isCloudSyncModalOpen}
+        onClose={() => setIsCloudSyncModalOpen(false)}
       />
     </div>
   );

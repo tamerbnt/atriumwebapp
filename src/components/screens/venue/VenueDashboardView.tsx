@@ -14,11 +14,13 @@ import {
   TrendingUp,
   MapPin,
   FileCheck,
+  Cloud,
 } from 'lucide-react';
 import { useAtriumStore } from '../../../services/store';
 import { RentableUnit, RentalBooking } from '../../../types/index';
 import { formatCurrencyAmount } from '../../../utils/rules';
 import { BookingModal } from './BookingModal';
+import { VenueCloudSyncModal } from './VenueCloudSyncModal';
 
 export const VenueDashboardView: React.FC = () => {
   const {
@@ -33,6 +35,7 @@ export const VenueDashboardView: React.FC = () => {
   } = useAtriumStore();
 
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const [isCloudSyncModalOpen, setIsCloudSyncModalOpen] = useState(false);
   const [selectedUnitForBooking, setSelectedUnitForBooking] = useState<string | undefined>(undefined);
   const [activeBookingDetail, setActiveBookingDetail] = useState<RentalBooking | null>(null);
 
@@ -84,6 +87,15 @@ export const VenueDashboardView: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-3">
+          <button
+            onClick={() => setIsCloudSyncModalOpen(true)}
+            className="px-3.5 py-2.5 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-xs font-semibold text-neutral-800 dark:text-neutral-200 rounded-xl transition-colors flex items-center gap-2"
+            title="Inspect Supabase live tables and row writes"
+          >
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <Cloud size={15} className="text-purple-600 dark:text-purple-400" />
+            Supabase Cloud
+          </button>
           <button
             onClick={() => setScreen('scheduler')}
             className="px-4 py-2.5 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-xs font-semibold text-neutral-800 dark:text-neutral-200 rounded-xl transition-colors flex items-center gap-2"
@@ -433,6 +445,12 @@ export const VenueDashboardView: React.FC = () => {
         isOpen={isBookingModalOpen}
         onClose={() => setIsBookingModalOpen(false)}
         initialUnitId={selectedUnitForBooking}
+      />
+
+      {/* Supabase Cloud Sync Diagnostics Modal */}
+      <VenueCloudSyncModal
+        isOpen={isCloudSyncModalOpen}
+        onClose={() => setIsCloudSyncModalOpen(false)}
       />
     </div>
   );

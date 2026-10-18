@@ -32,6 +32,7 @@ import { VenueInventoryView } from './components/screens/venue/VenueInventoryVie
 import { VenueRentersView } from './components/screens/venue/VenueRentersView';
 import { VenueFinanceView } from './components/screens/venue/VenueFinanceView';
 import { DesktopUpgradeModal } from './components/modals/DesktopUpgradeModal';
+import { ToastContainer } from './components/common/ToastContainer';
 
 export default function App() {
   const {
@@ -255,6 +256,9 @@ export default function App() {
         onOpenVoucherModal={() => setIsVoucherModalOpen(true)}
         reason={desktopUpgradeReason}
       />
+
+      {/* Global Notifications Toast Container */}
+      <ToastContainer />
     </div>
   );
 }

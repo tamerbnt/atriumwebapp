@@ -17,6 +17,7 @@ import {
 import { useAtriumStore } from '../../../services/store';
 import { rentalService } from '../../../lib/supabase/services/rentalService';
 import { isSupabaseConfigured } from '../../../lib/supabase/client';
+import { RentalBooking } from '../../../types/index';
 
 interface VenueCloudSyncModalProps {
   isOpen: boolean;
@@ -104,25 +105,71 @@ VALUES ('00000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-0000000
 ON CONFLICT (id) DO NOTHING;
 `;
 
+  const [latestBooking, setLatestBooking] = useState<RentalBooking | null>(null);
+
   const refreshCloudCounts = async () => {
     if (!isSupabaseConfigured()) return;
     setIsLoading(true);
     try {
-      const branchId = '00000000-0000-4000-8000-000000000001';
-      const [u, b, r, d] = await Promise.all([
-        rentalService.fetchUnits(branchId),
-        rentalService.fetchBookings(branchId),
-        rentalService.fetchRenters(branchId),
-        rentalService.fetchDeposits(branchId),
-      ]);
-      setCloudCounts({
-        units: u.length,
-        bookings: b.length,
-        renters: r.length,
-        deposits: d.length,
+      const summary = await rentalService.fetchCloudSummary();
+      setCloudCounts(summary.counts);
+      if (summary.latestBooking) {
+        setLatestBooking(summary.latestBooking);
+      }
+    } catch (err: any) {
+      console.warn('Failed to refresh cloud counts:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSyncAllLocalToCloud = async () => {
+    if (!isSupabaseConfigured()) {
+      showToast({
+        type: 'warning',
+        title: 'Supabase Offline',
+        message: 'Cannot sync while disconnected from Supabase.',
+        syncStatus: 'error',
       });
-    } catch {
-      // ignore
+      return;
+    }
+
+    setIsLoading(true);
+    let successCount = 0;
+
+    try {
+      // 1. Sync Units
+      for (const u of rentableUnits) {
+        const res = await rentalService.upsertUnit(u);
+        if (res.success) successCount++;
+      }
+      // 2. Sync Renters
+      for (const r of rentalRenters) {
+        const res = await rentalService.upsertRenter(r);
+        if (res.success) successCount++;
+      }
+      // 3. Sync Bookings
+      for (const b of rentalBookings) {
+        const res = await rentalService.upsertBooking(b);
+        if (res.success) successCount++;
+      }
+
+      await refreshCloudCounts();
+
+      showToast({
+        type: 'success',
+        title: 'Cloud Sync Successful',
+        message: `Successfully synchronized ${successCount} rental records into Supabase.`,
+        syncStatus: 'synced',
+        duration: 5000,
+      });
+    } catch (err: any) {
+      showToast({
+        type: 'error',
+        title: 'Sync Interrupted',
+        message: err?.message || 'Some records could not be synced.',
+        syncStatus: 'error',
+      });
     } finally {
       setIsLoading(false);
     }
@@ -183,8 +230,16 @@ ON CONFLICT (id) DO NOTHING;
       depositStatus: 'Held',
       paidAmount: 75000,
       balanceDue: 0,
-      addons: [{ name: 'LED Stage Lighting', price: 15000 }],
       contractSigned: true,
+      addons: [
+        {
+          id: 'addon-test-1',
+          name: 'LED Stage Lighting',
+          unitPrice: 15000,
+          quantity: 1,
+          totalPrice: 15000,
+        },
+      ],
       notes: 'Test booking created to verify live Supabase table insertion',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -284,43 +339,105 @@ ON CONFLICT (id) DO NOTHING;
 
           {/* Local vs Cloud Matrix */}
           <div>
-            <h3 className="text-xs font-bold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider mb-3">
-              Rental Category Data Overview
-            </h3>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-xs font-bold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider">
+                Rental Database Tables & Live Row Counts
+              </h3>
+              <button
+                onClick={handleSyncAllLocalToCloud}
+                disabled={isLoading}
+                className="text-xs text-[var(--color-accent)] hover:underline font-semibold flex items-center gap-1"
+              >
+                <Layers size={13} />
+                Upload All Local Data to Supabase
+              </button>
+            </div>
+
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <div className="p-3.5 rounded-xl bg-neutral-50 dark:bg-neutral-800/30 border border-neutral-200 dark:border-neutral-800">
-                <span className="text-[11px] font-medium text-neutral-500">Rentable Units</span>
-                <div className="text-xl font-bold text-neutral-900 dark:text-white mt-1">
-                  {rentableUnits.length}
+              <div className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-800">
+                <span className="text-[11px] font-medium text-neutral-500">Rentable Spaces</span>
+                <div className="flex items-baseline gap-2 mt-1">
+                  <span className="text-xl font-bold text-neutral-900 dark:text-white tabular-nums">
+                    {rentableUnits.length}
+                  </span>
+                  <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
+                    ({cloudCounts.units !== null ? `${cloudCounts.units} in Cloud` : 'checking...'})
+                  </span>
                 </div>
-                <span className="text-[10px] text-neutral-400">table: rentable_units</span>
+                <span className="text-[10px] text-neutral-400 font-mono block mt-1">rentable_units</span>
               </div>
 
-              <div className="p-3.5 rounded-xl bg-neutral-50 dark:bg-neutral-800/30 border border-neutral-200 dark:border-neutral-800">
+              <div className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-800">
                 <span className="text-[11px] font-medium text-neutral-500">Reservations</span>
-                <div className="text-xl font-bold text-neutral-900 dark:text-white mt-1">
-                  {rentalBookings.length}
+                <div className="flex items-baseline gap-2 mt-1">
+                  <span className="text-xl font-bold text-neutral-900 dark:text-white tabular-nums">
+                    {rentalBookings.length}
+                  </span>
+                  <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
+                    ({cloudCounts.bookings !== null ? `${cloudCounts.bookings} in Cloud` : 'checking...'})
+                  </span>
                 </div>
-                <span className="text-[10px] text-neutral-400">table: rental_bookings</span>
+                <span className="text-[10px] text-neutral-400 font-mono block mt-1">rental_bookings</span>
               </div>
 
-              <div className="p-3.5 rounded-xl bg-neutral-50 dark:bg-neutral-800/30 border border-neutral-200 dark:border-neutral-800">
-                <span className="text-[11px] font-medium text-neutral-500">Renters</span>
-                <div className="text-xl font-bold text-neutral-900 dark:text-white mt-1">
-                  {rentalRenters.length}
+              <div className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-800">
+                <span className="text-[11px] font-medium text-neutral-500">Renters & Clients</span>
+                <div className="flex items-baseline gap-2 mt-1">
+                  <span className="text-xl font-bold text-neutral-900 dark:text-white tabular-nums">
+                    {rentalRenters.length}
+                  </span>
+                  <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
+                    ({cloudCounts.renters !== null ? `${cloudCounts.renters} in Cloud` : 'checking...'})
+                  </span>
                 </div>
-                <span className="text-[10px] text-neutral-400">table: rental_renters</span>
+                <span className="text-[10px] text-neutral-400 font-mono block mt-1">rental_renters</span>
               </div>
 
-              <div className="p-3.5 rounded-xl bg-neutral-50 dark:bg-neutral-800/30 border border-neutral-200 dark:border-neutral-800">
+              <div className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-800">
                 <span className="text-[11px] font-medium text-neutral-500">Caution Escrow</span>
-                <div className="text-xl font-bold text-neutral-900 dark:text-white mt-1">
-                  {securityDeposits.length}
+                <div className="flex items-baseline gap-2 mt-1">
+                  <span className="text-xl font-bold text-neutral-900 dark:text-white tabular-nums">
+                    {securityDeposits.length}
+                  </span>
+                  <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
+                    ({cloudCounts.deposits !== null ? `${cloudCounts.deposits} in Cloud` : 'checking...'})
+                  </span>
                 </div>
-                <span className="text-[10px] text-neutral-400">table: security_deposits</span>
+                <span className="text-[10px] text-neutral-400 font-mono block mt-1">security_deposits</span>
               </div>
             </div>
           </div>
+
+          {/* Latest Row Found In Supabase */}
+          {latestBooking && (
+            <div className="p-4 rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800/60">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+                  <h4 className="text-xs font-bold text-emerald-900 dark:text-emerald-300 uppercase tracking-wider">
+                    Verified Row Confirmed In Supabase Table
+                  </h4>
+                </div>
+                <span className="text-[11px] font-mono text-emerald-700 dark:text-emerald-400 bg-emerald-100/70 dark:bg-emerald-900/50 px-2 py-0.5 rounded-md">
+                  table: rental_bookings
+                </span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs text-neutral-800 dark:text-neutral-200 mt-2">
+                <div>
+                  <span className="text-neutral-500 dark:text-neutral-400 text-[11px] block">Event & Renter:</span>
+                  <span className="font-semibold">{latestBooking.purpose}</span> · {latestBooking.renterName}
+                </div>
+                <div>
+                  <span className="text-neutral-500 dark:text-neutral-400 text-[11px] block">Space & Amount:</span>
+                  <span className="font-medium">{latestBooking.unitName}</span> · <span className="font-bold tabular-nums">{latestBooking.totalAmount} {latestBooking.currency}</span>
+                </div>
+                <div>
+                  <span className="text-neutral-500 dark:text-neutral-400 text-[11px] block">Created In Supabase:</span>
+                  <span className="font-mono text-[11px]">{new Date(latestBooking.createdAt).toLocaleString()}</span>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Live Action Test */}
           <div className="p-4 rounded-2xl bg-purple-50/50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-900/50">

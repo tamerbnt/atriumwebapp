@@ -16,11 +16,13 @@ import {
   DollarSign,
   AlertCircle,
   X,
+  Cloud,
 } from 'lucide-react';
 import { useAtriumStore } from '../../../services/store';
 import { RentalBooking, BookingStatus } from '../../../types/index';
 import { formatCurrencyAmount } from '../../../utils/rules';
 import { BookingModal } from './BookingModal';
+import { VenueCloudSyncModal } from './VenueCloudSyncModal';
 
 export const VenueBookingsView: React.FC = () => {
   const {
@@ -33,6 +35,7 @@ export const VenueBookingsView: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<string>('All');
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const [isCloudSyncModalOpen, setIsCloudSyncModalOpen] = useState(false);
   const [bookingToEdit, setBookingToEdit] = useState<RentalBooking | null>(null);
   const [printedBooking, setPrintedBooking] = useState<RentalBooking | null>(null);
 
@@ -76,13 +79,24 @@ export const VenueBookingsView: React.FC = () => {
           </p>
         </div>
 
-        <button
-          onClick={handleNewBooking}
-          className="px-5 py-2.5 bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white text-xs font-semibold rounded-xl shadow-xs transition-colors flex items-center gap-2 self-start sm:self-auto"
-        >
-          <Plus size={16} />
-          New Reservation
-        </button>
+        <div className="flex items-center gap-3 self-start sm:self-auto">
+          <button
+            onClick={() => setIsCloudSyncModalOpen(true)}
+            className="px-3.5 py-2.5 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-xs font-semibold text-neutral-800 dark:text-neutral-200 rounded-xl transition-colors flex items-center gap-2"
+            title="Inspect Supabase live tables and row writes"
+          >
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <Cloud size={15} className="text-purple-600 dark:text-purple-400" />
+            Supabase Cloud
+          </button>
+          <button
+            onClick={handleNewBooking}
+            className="px-5 py-2.5 bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white text-xs font-semibold rounded-xl shadow-xs transition-colors flex items-center gap-2"
+          >
+            <Plus size={16} />
+            New Reservation
+          </button>
+        </div>
       </div>
 
       {/* Filter Tabs & Search */}
@@ -376,6 +390,12 @@ export const VenueBookingsView: React.FC = () => {
         isOpen={isBookingModalOpen}
         onClose={() => setIsBookingModalOpen(false)}
         bookingToEdit={bookingToEdit}
+      />
+
+      {/* Supabase Cloud Verification Modal */}
+      <VenueCloudSyncModal
+        isOpen={isCloudSyncModalOpen}
+        onClose={() => setIsCloudSyncModalOpen(false)}
       />
     </div>
   );

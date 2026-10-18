@@ -44,6 +44,24 @@ import {
   RentalRenter,
   SecurityDepositRecord,
   BookingAddon,
+  ToastNotification,
+  ToastType,
+  ToastSyncStatus,
+  EduCourse,
+  EduClassroom,
+  EduCohort,
+  EduStudent,
+  EduEnrollment,
+  EduSession,
+  EduAttendance,
+  EduGrade,
+  EduCertificate,
+  EduAdmissionLead,
+  AdmissionStage,
+  CohortStatus,
+  StudentStatus,
+  AttendanceStatus,
+  EnrollmentPaymentStatus,
 } from '../types/index';
 import {
   INITIAL_ACCOUNT,
@@ -74,6 +92,16 @@ import {
   INITIAL_RENTAL_BOOKINGS,
   INITIAL_RENTAL_RENTERS,
   INITIAL_SECURITY_DEPOSITS,
+  INITIAL_EDU_COURSES,
+  INITIAL_EDU_CLASSROOMS,
+  INITIAL_EDU_COHORTS,
+  INITIAL_EDU_STUDENTS,
+  INITIAL_EDU_ENROLLMENTS,
+  INITIAL_EDU_SESSIONS,
+  INITIAL_EDU_ATTENDANCE,
+  INITIAL_EDU_GRADES,
+  INITIAL_EDU_CERTIFICATES,
+  INITIAL_EDU_ADMISSIONS,
 } from './seedData';
 import { checkQuota, getCategoryTerminology, validateVoucherCode } from '../utils/rules';
 import {
@@ -155,6 +183,19 @@ interface AppState {
   rentalBookings: RentalBooking[];
   rentalRenters: RentalRenter[];
   securityDeposits: SecurityDepositRecord[];
+  // Education & Training (Category 15)
+  eduCourses: EduCourse[];
+  eduClassrooms: EduClassroom[];
+  eduCohorts: EduCohort[];
+  eduStudents: EduStudent[];
+  eduEnrollments: EduEnrollment[];
+  eduSessions: EduSession[];
+  eduAttendance: EduAttendance[];
+  eduGrades: EduGrade[];
+  eduCertificates: EduCertificate[];
+  eduAdmissions: EduAdmissionLead[];
+  // Toast notifications
+  toasts: ToastNotification[];
 }
 
 const DEFAULT_USER: CurrentUser = {
@@ -222,6 +263,18 @@ const DEFAULT_STATE: AppState = {
   rentalBookings: INITIAL_RENTAL_BOOKINGS,
   rentalRenters: INITIAL_RENTAL_RENTERS,
   securityDeposits: INITIAL_SECURITY_DEPOSITS,
+  // Education & Training
+  eduCourses: INITIAL_EDU_COURSES,
+  eduClassrooms: INITIAL_EDU_CLASSROOMS,
+  eduCohorts: INITIAL_EDU_COHORTS,
+  eduStudents: INITIAL_EDU_STUDENTS,
+  eduEnrollments: INITIAL_EDU_ENROLLMENTS,
+  eduSessions: INITIAL_EDU_SESSIONS,
+  eduAttendance: INITIAL_EDU_ATTENDANCE,
+  eduGrades: INITIAL_EDU_GRADES,
+  eduCertificates: INITIAL_EDU_CERTIFICATES,
+  eduAdmissions: INITIAL_EDU_ADMISSIONS,
+  toasts: [],
 };
 
 // Global reactive subscribers
@@ -319,6 +372,16 @@ let globalState: AppState = (() => {
           rentalBookings: Array.isArray(parsed.rentalBookings) && parsed.rentalBookings.length > 0 ? parsed.rentalBookings : INITIAL_RENTAL_BOOKINGS,
           rentalRenters: Array.isArray(parsed.rentalRenters) && parsed.rentalRenters.length > 0 ? parsed.rentalRenters : INITIAL_RENTAL_RENTERS,
           securityDeposits: Array.isArray(parsed.securityDeposits) && parsed.securityDeposits.length > 0 ? parsed.securityDeposits : INITIAL_SECURITY_DEPOSITS,
+          eduCourses: Array.isArray(parsed.eduCourses) && parsed.eduCourses.length > 0 ? parsed.eduCourses : INITIAL_EDU_COURSES,
+          eduClassrooms: Array.isArray(parsed.eduClassrooms) && parsed.eduClassrooms.length > 0 ? parsed.eduClassrooms : INITIAL_EDU_CLASSROOMS,
+          eduCohorts: Array.isArray(parsed.eduCohorts) && parsed.eduCohorts.length > 0 ? parsed.eduCohorts : INITIAL_EDU_COHORTS,
+          eduStudents: Array.isArray(parsed.eduStudents) && parsed.eduStudents.length > 0 ? parsed.eduStudents : INITIAL_EDU_STUDENTS,
+          eduEnrollments: Array.isArray(parsed.eduEnrollments) && parsed.eduEnrollments.length > 0 ? parsed.eduEnrollments : INITIAL_EDU_ENROLLMENTS,
+          eduSessions: Array.isArray(parsed.eduSessions) && parsed.eduSessions.length > 0 ? parsed.eduSessions : INITIAL_EDU_SESSIONS,
+          eduAttendance: Array.isArray(parsed.eduAttendance) && parsed.eduAttendance.length > 0 ? parsed.eduAttendance : INITIAL_EDU_ATTENDANCE,
+          eduGrades: Array.isArray(parsed.eduGrades) && parsed.eduGrades.length > 0 ? parsed.eduGrades : INITIAL_EDU_GRADES,
+          eduCertificates: Array.isArray(parsed.eduCertificates) && parsed.eduCertificates.length > 0 ? parsed.eduCertificates : INITIAL_EDU_CERTIFICATES,
+          eduAdmissions: Array.isArray(parsed.eduAdmissions) && parsed.eduAdmissions.length > 0 ? parsed.eduAdmissions : INITIAL_EDU_ADMISSIONS,
           currentUser: parsed.currentUser || DEFAULT_USER,
           isAuthenticated: parsed.isAuthenticated !== undefined ? parsed.isAuthenticated : true,
           isOnboardingOpen: false,
@@ -444,6 +507,47 @@ function ensureTimerTick(isRunning: boolean, isPaused: boolean) {
       clearInterval(activeTimerInterval);
       activeTimerInterval = null;
     }
+  }
+}
+
+export function dismissToast(id: string) {
+  globalState = {
+    ...globalState,
+    toasts: (globalState.toasts || []).filter((t) => t.id !== id),
+  };
+  notify();
+}
+
+export function showToast(toastInput: {
+  type: ToastType;
+  title: string;
+  message: string;
+  duration?: number;
+  syncStatus?: ToastSyncStatus;
+  table?: string;
+}) {
+  const id = `toast-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+  const newToast: ToastNotification = {
+    id,
+    type: toastInput.type,
+    title: toastInput.title,
+    message: toastInput.message,
+    duration: toastInput.duration ?? 4500,
+    syncStatus: toastInput.syncStatus,
+    table: toastInput.table,
+    createdAt: Date.now(),
+  };
+
+  globalState = {
+    ...globalState,
+    toasts: [...(globalState.toasts || []), newToast],
+  };
+  notify();
+
+  if (newToast.duration && newToast.duration > 0) {
+    setTimeout(() => {
+      dismissToast(id);
+    }, newToast.duration);
   }
 }
 
@@ -3039,7 +3143,36 @@ export function useAtriumStore() {
     notify();
 
     if (isSupabaseConfigured()) {
-      rentalService.upsertBooking(newBooking).catch((err) => console.warn('[store] Supabase upsertBooking notice:', err));
+      rentalService
+        .upsertBooking(newBooking)
+        .then((res) => {
+          if (res.success) {
+            showToast({
+              type: 'success',
+              title: 'Reservation Saved to Cloud',
+              message: `Booking for ${newBooking.renterName} in "${newBooking.unitName}" successfully written to Supabase ("rental_bookings").`,
+              syncStatus: 'synced',
+              table: 'rental_bookings',
+            });
+          } else {
+            showToast({
+              type: 'warning',
+              title: 'Saved Locally (Cloud Alert)',
+              message: `Booking saved in offline storage. Supabase notice: ${res.error || 'Check table schema/permissions'}`,
+              syncStatus: 'error',
+              table: 'rental_bookings',
+            });
+          }
+        })
+        .catch((err) => {
+          showToast({
+            type: 'warning',
+            title: 'Saved Locally',
+            message: `Booking stored locally. Network notice: ${err?.message || 'Offline mode'}`,
+            syncStatus: 'local',
+          });
+        });
+
       if (newDeposit) {
         rentalService.upsertDeposit(newDeposit).catch((err) => console.warn('[store] Supabase upsertDeposit notice:', err));
       }
@@ -3047,6 +3180,13 @@ export function useAtriumStore() {
       if (chgUnit) {
         rentalService.upsertUnit(chgUnit).catch((err) => console.warn('[store] Supabase upsertUnit notice:', err));
       }
+    } else {
+      showToast({
+        type: 'success',
+        title: 'Reservation Saved',
+        message: `Booking for ${newBooking.renterName} in "${newBooking.unitName}" saved to local storage.`,
+        syncStatus: 'local',
+      });
     }
 
     return newBooking;
@@ -3064,11 +3204,39 @@ export function useAtriumStore() {
 
     const target = updatedBookings.find((b) => b.id === id);
     if (target && isSupabaseConfigured()) {
-      rentalService.upsertBooking(target).catch((err) => console.warn('[store] Supabase updateRentalBooking notice:', err));
+      rentalService
+        .upsertBooking(target)
+        .then((res) => {
+          if (res.success) {
+            showToast({
+              type: 'success',
+              title: 'Reservation Updated & Synced',
+              message: `Changes for "${target.renterName}" written to Supabase cloud.`,
+              syncStatus: 'synced',
+              table: 'rental_bookings',
+            });
+          } else {
+            showToast({
+              type: 'info',
+              title: 'Reservation Updated',
+              message: `Changes saved locally. Cloud notice: ${res.error || 'Pending sync'}`,
+              syncStatus: 'local',
+            });
+          }
+        })
+        .catch((err) => console.warn('[store] Supabase updateRentalBooking notice:', err));
+    } else if (target) {
+      showToast({
+        type: 'info',
+        title: 'Reservation Updated',
+        message: `Changes for "${target.renterName}" saved to local storage.`,
+        syncStatus: 'local',
+      });
     }
   };
 
   const deleteRentalBooking = (id: string) => {
+    const target = globalState.rentalBookings.find((b) => b.id === id);
     globalState = {
       ...globalState,
       rentalBookings: globalState.rentalBookings.filter((b) => b.id !== id),
@@ -3076,7 +3244,24 @@ export function useAtriumStore() {
     notify();
 
     if (isSupabaseConfigured()) {
-      rentalService.deleteBooking(id).catch((err) => console.warn('[store] Supabase deleteRentalBooking notice:', err));
+      rentalService
+        .deleteBooking(id)
+        .then((res) => {
+          showToast({
+            type: 'info',
+            title: 'Reservation Removed',
+            message: res.success ? `Booking for "${target?.renterName || 'guest'}" deleted from Supabase cloud.` : 'Booking removed from local storage.',
+            syncStatus: res.success ? 'synced' : 'local',
+          });
+        })
+        .catch((err) => console.warn('[store] Supabase deleteRentalBooking notice:', err));
+    } else {
+      showToast({
+        type: 'info',
+        title: 'Reservation Removed',
+        message: 'Booking removed from local storage.',
+        syncStatus: 'local',
+      });
     }
   };
 
@@ -3104,6 +3289,14 @@ export function useAtriumStore() {
       const u = updatedUnits.find((x) => x.id === booking.unitId);
       if (u) rentalService.upsertUnit(u).catch(console.warn);
     }
+
+    showToast({
+      type: 'success',
+      title: 'Guest Checked In',
+      message: `${booking.renterName} checked into "${booking.unitName}". Space is now marked Occupied.`,
+      syncStatus: isSupabaseConfigured() ? 'synced' : 'local',
+      table: 'rental_bookings',
+    });
   };
 
   const checkOutBooking = (id: string) => {
@@ -3130,6 +3323,14 @@ export function useAtriumStore() {
       const u = updatedUnits.find((x) => x.id === booking.unitId);
       if (u) rentalService.upsertUnit(u).catch(console.warn);
     }
+
+    showToast({
+      type: 'info',
+      title: 'Handover & Check-Out Complete',
+      message: `"${booking.unitName}" has been freed and marked Available for new bookings.`,
+      syncStatus: isSupabaseConfigured() ? 'synced' : 'local',
+      table: 'rental_bookings',
+    });
   };
 
   const createRentableUnit = (
@@ -3150,7 +3351,34 @@ export function useAtriumStore() {
     notify();
 
     if (isSupabaseConfigured()) {
-      rentalService.upsertUnit(newUnit).catch((err) => console.warn('[store] Supabase upsertUnit notice:', err));
+      rentalService
+        .upsertUnit(newUnit)
+        .then((res) => {
+          if (res.success) {
+            showToast({
+              type: 'success',
+              title: 'Space Added & Synced',
+              message: `"${newUnit.name}" (${newUnit.code}) written to Supabase ("rentable_units").`,
+              syncStatus: 'synced',
+              table: 'rentable_units',
+            });
+          } else {
+            showToast({
+              type: 'warning',
+              title: 'Space Added Locally',
+              message: `"${newUnit.name}" saved locally. Supabase notice: ${res.error || 'Pending'}`,
+              syncStatus: 'error',
+            });
+          }
+        })
+        .catch((err) => console.warn('[store] Supabase upsertUnit notice:', err));
+    } else {
+      showToast({
+        type: 'info',
+        title: 'Space Added',
+        message: `"${newUnit.name}" (${newUnit.code}) saved locally.`,
+        syncStatus: 'local',
+      });
     }
 
     return newUnit;
@@ -3166,11 +3394,32 @@ export function useAtriumStore() {
 
     const target = updatedUnits.find((u) => u.id === id);
     if (target && isSupabaseConfigured()) {
-      rentalService.upsertUnit(target).catch((err) => console.warn('[store] Supabase updateRentableUnit notice:', err));
+      rentalService
+        .upsertUnit(target)
+        .then((res) => {
+          if (res.success) {
+            showToast({
+              type: 'success',
+              title: 'Space Updated & Synced',
+              message: `Changes to "${target.name}" synced to Supabase ("rentable_units").`,
+              syncStatus: 'synced',
+              table: 'rentable_units',
+            });
+          }
+        })
+        .catch((err) => console.warn('[store] Supabase updateRentableUnit notice:', err));
+    } else if (target) {
+      showToast({
+        type: 'info',
+        title: 'Space Updated',
+        message: `"${target.name}" updated locally.`,
+        syncStatus: 'local',
+      });
     }
   };
 
   const deleteRentableUnit = (id: string) => {
+    const target = globalState.rentableUnits.find((u) => u.id === id);
     globalState = {
       ...globalState,
       rentableUnits: globalState.rentableUnits.filter((u) => u.id !== id),
@@ -3178,7 +3427,24 @@ export function useAtriumStore() {
     notify();
 
     if (isSupabaseConfigured()) {
-      rentalService.deleteUnit(id).catch((err) => console.warn('[store] Supabase deleteRentableUnit notice:', err));
+      rentalService
+        .deleteUnit(id)
+        .then((res) => {
+          showToast({
+            type: 'info',
+            title: 'Space Removed',
+            message: res.success ? `"${target?.name || 'Unit'}" removed from Supabase cloud.` : 'Space removed from local view.',
+            syncStatus: res.success ? 'synced' : 'local',
+          });
+        })
+        .catch((err) => console.warn('[store] Supabase deleteRentableUnit notice:', err));
+    } else {
+      showToast({
+        type: 'info',
+        title: 'Space Removed',
+        message: 'Space removed from local view.',
+        syncStatus: 'local',
+      });
     }
   };
 
@@ -3202,7 +3468,34 @@ export function useAtriumStore() {
     notify();
 
     if (isSupabaseConfigured()) {
-      rentalService.upsertRenter(newRenter).catch((err) => console.warn('[store] Supabase upsertRenter notice:', err));
+      rentalService
+        .upsertRenter(newRenter)
+        .then((res) => {
+          if (res.success) {
+            showToast({
+              type: 'success',
+              title: 'Renter Created & Synced',
+              message: `"${newRenter.fullName}" written to Supabase ("rental_renters").`,
+              syncStatus: 'synced',
+              table: 'rental_renters',
+            });
+          } else {
+            showToast({
+              type: 'warning',
+              title: 'Renter Saved Locally',
+              message: `"${newRenter.fullName}" saved locally. Supabase notice: ${res.error || 'Pending'}`,
+              syncStatus: 'error',
+            });
+          }
+        })
+        .catch((err) => console.warn('[store] Supabase upsertRenter notice:', err));
+    } else {
+      showToast({
+        type: 'info',
+        title: 'Renter Added',
+        message: `"${newRenter.fullName}" saved locally.`,
+        syncStatus: 'local',
+      });
     }
 
     return newRenter;
@@ -3218,11 +3511,32 @@ export function useAtriumStore() {
 
     const target = updatedRenters.find((r) => r.id === id);
     if (target && isSupabaseConfigured()) {
-      rentalService.upsertRenter(target).catch((err) => console.warn('[store] Supabase updateRentalRenter notice:', err));
+      rentalService
+        .upsertRenter(target)
+        .then((res) => {
+          if (res.success) {
+            showToast({
+              type: 'success',
+              title: 'Renter Profile Synced',
+              message: `Changes to "${target.fullName}" synced to Supabase ("rental_renters").`,
+              syncStatus: 'synced',
+              table: 'rental_renters',
+            });
+          }
+        })
+        .catch((err) => console.warn('[store] Supabase updateRentalRenter notice:', err));
+    } else if (target) {
+      showToast({
+        type: 'info',
+        title: 'Renter Updated',
+        message: `Profile for "${target.fullName}" saved locally.`,
+        syncStatus: 'local',
+      });
     }
   };
 
   const deleteRentalRenter = (id: string) => {
+    const target = globalState.rentalRenters.find((r) => r.id === id);
     globalState = {
       ...globalState,
       rentalRenters: globalState.rentalRenters.filter((r) => r.id !== id),
@@ -3230,7 +3544,24 @@ export function useAtriumStore() {
     notify();
 
     if (isSupabaseConfigured()) {
-      rentalService.deleteRenter(id).catch((err) => console.warn('[store] Supabase deleteRentalRenter notice:', err));
+      rentalService
+        .deleteRenter(id)
+        .then((res) => {
+          showToast({
+            type: 'info',
+            title: 'Renter Removed',
+            message: res.success ? `"${target?.fullName || 'Renter'}" removed from Supabase cloud.` : 'Renter removed from local directory.',
+            syncStatus: res.success ? 'synced' : 'local',
+          });
+        })
+        .catch((err) => console.warn('[store] Supabase deleteRentalRenter notice:', err));
+    } else {
+      showToast({
+        type: 'info',
+        title: 'Renter Removed',
+        message: 'Renter removed from directory.',
+        syncStatus: 'local',
+      });
     }
   };
 
@@ -3262,6 +3593,14 @@ export function useAtriumStore() {
         if (bk) rentalService.upsertBooking(bk).catch(console.warn);
       }
     }
+
+    showToast({
+      type: 'success',
+      title: 'Security Caution Refunded',
+      message: `Deposit for "${target?.renterName || 'Client'}" has been released back to renter.`,
+      syncStatus: isSupabaseConfigured() ? 'synced' : 'local',
+      table: 'security_deposits',
+    });
   };
 
   const deductSecurityDeposit = (depositId: string, reason: string, deductedAmount?: number) => {
@@ -3300,7 +3639,16 @@ export function useAtriumStore() {
         if (bk) rentalService.upsertBooking(bk).catch(console.warn);
       }
     }
+
+    showToast({
+      type: 'warning',
+      title: 'Caution Escrow Deducted',
+      message: `Deposit retained. Reason: ${reason}.`,
+      syncStatus: isSupabaseConfigured() ? 'synced' : 'local',
+      table: 'security_deposits',
+    });
   };
+
 
   const resetAllData = () => {
     globalState = DEFAULT_STATE;
@@ -3465,5 +3813,9 @@ export function useAtriumStore() {
     completeOnboarding,
     openDesktopUpgradeModal,
     closeDesktopUpgradeModal,
+    // Toast Notifications
+    toasts: state.toasts || [],
+    showToast,
+    dismissToast,
   };
 }

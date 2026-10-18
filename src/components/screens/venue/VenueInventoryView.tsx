@@ -24,6 +24,7 @@ export const VenueInventoryView: React.FC = () => {
     createRentableUnit,
     updateRentableUnit,
     deleteRentableUnit,
+    showToast,
   } = useAtriumStore();
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -88,7 +89,22 @@ export const VenueInventoryView: React.FC = () => {
 
   const handleSaveUnit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !code.trim()) return;
+    if (!name.trim()) {
+      showToast({
+        type: 'warning',
+        title: 'Missing Space Name',
+        message: 'Please provide a name for this unit (e.g. Grand Ballroom, Studio A).',
+      });
+      return;
+    }
+    if (!code.trim()) {
+      showToast({
+        type: 'warning',
+        title: 'Missing Space Code',
+        message: 'Please provide a unique reference code (e.g. HALL-01).',
+      });
+      return;
+    }
 
     const amenities = amenitiesStr
       .split(',')

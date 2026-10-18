@@ -26,6 +26,7 @@ export const VenueRentersView: React.FC = () => {
     createRentalRenter,
     updateRentalRenter,
     deleteRentalRenter,
+    showToast,
   } = useAtriumStore();
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -83,7 +84,22 @@ export const VenueRentersView: React.FC = () => {
 
   const handleSaveRenter = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!fullName.trim() || !phone.trim()) return;
+    if (!fullName.trim()) {
+      showToast({
+        type: 'warning',
+        title: 'Missing Full Name',
+        message: 'Please enter the renter full name or organizer contact.',
+      });
+      return;
+    }
+    if (!phone.trim()) {
+      showToast({
+        type: 'warning',
+        title: 'Missing Telephone',
+        message: 'Please enter a telephone number for booking confirmations.',
+      });
+      return;
+    }
 
     if (renterToEdit) {
       updateRentalRenter(renterToEdit.id, {

@@ -39,6 +39,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     createRentalBooking,
     updateRentalBooking,
     createRentalRenter,
+    showToast,
   } = useAtriumStore();
 
   const todayStr = initialDate || new Date().toISOString().split('T')[0];
@@ -186,7 +187,30 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!renterName.trim() || !purpose.trim() || !selectedUnit) return;
+    if (!renterName.trim()) {
+      showToast({
+        type: 'warning',
+        title: 'Missing Renter Name',
+        message: 'Please provide the client name or organization for this reservation.',
+      });
+      return;
+    }
+    if (!purpose.trim()) {
+      showToast({
+        type: 'warning',
+        title: 'Missing Event Purpose',
+        message: 'Please describe the event or rental purpose.',
+      });
+      return;
+    }
+    if (!selectedUnit) {
+      showToast({
+        type: 'warning',
+        title: 'No Space Selected',
+        message: 'Please pick an available room, hall, or court.',
+      });
+      return;
+    }
 
     let targetRenterId = selectedRenterId;
     if (!targetRenterId) {

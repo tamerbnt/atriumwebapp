@@ -722,3 +722,194 @@ export interface ToastNotification {
   createdAt: number;
 }
 
+// ==========================================
+// Education, Academy & Training Types (Category 15)
+// ==========================================
+
+export interface EduCourse {
+  id: string;
+  tenantId: string;
+  facilityId: string;
+  title: string;
+  code: string;
+  category: 'Language' | 'Technology' | 'Academic' | 'Vocational' | 'Arts' | 'Driving' | 'Sports' | string;
+  description: string;
+  durationWeeks: number;
+  totalHours: number;
+  defaultPrice: number;
+  currency: string;
+  createdAt: string;
+}
+
+export interface EduClassroom {
+  id: string;
+  tenantId: string;
+  facilityId: string;
+  name: string;
+  capacity: number;
+  hasProjector: boolean;
+  hasComputers: boolean;
+  colorHex: string;
+  createdAt: string;
+}
+
+export type CohortStatus = 'Upcoming' | 'Enrolling' | 'InProgress' | 'Completed' | 'Archived';
+
+export interface EduCohort {
+  id: string;
+  tenantId: string;
+  facilityId: string;
+  courseId: string;
+  courseTitle: string;
+  instructorId: string;
+  instructorName: string;
+  classroomId?: string;
+  classroomName?: string;
+  name: string; // e.g. "IELTS Advanced - Batch 04"
+  startDate: string; // YYYY-MM-DD
+  endDate: string;   // YYYY-MM-DD
+  maxStudents: number;
+  enrolledCount: number;
+  tuitionFee: number;
+  currency: string;
+  scheduleSummary: string; // e.g. "Mon & Wed 18:00 - 20:00"
+  status: CohortStatus;
+  syllabusMilestones?: { title: string; completed: boolean }[];
+  createdAt: string;
+}
+
+export type StudentStatus = 'Active' | 'Suspended' | 'Graduated' | 'Alumni' | 'Applicant';
+
+export interface EduStudent {
+  id: string;
+  tenantId: string;
+  facilityId: string;
+  fullName: string;
+  email?: string;
+  phone: string;
+  guardianName?: string;
+  guardianPhone?: string;
+  guardianRelation?: 'Father' | 'Mother' | 'Sponsor' | 'Self' | string;
+  birthDate?: string;
+  rfidBadgeCode?: string;
+  schoolGrade?: string; // e.g. "Terminal (BAC)", "Adult Learner", "High School"
+  status: StudentStatus;
+  attendanceRatePercent?: number;
+  notes?: string;
+  createdAt: string;
+}
+
+export type EnrollmentPaymentStatus = 'Paid' | 'Partial' | 'Pending' | 'Overdue';
+
+export interface EduEnrollment {
+  id: string;
+  tenantId: string;
+  facilityId: string;
+  studentId: string;
+  studentName: string;
+  cohortId: string;
+  cohortName: string;
+  enrolledAt: string;
+  agreedTuition: number;
+  discountAmount: number;
+  discountReason?: string;
+  paidAmount: number;
+  balanceDue: number;
+  currency: string;
+  paymentStatus: EnrollmentPaymentStatus;
+  status: 'Active' | 'Dropped' | 'Completed';
+  installments?: {
+    dueDate: string;
+    amount: number;
+    isPaid: boolean;
+    paidAt?: string;
+  }[];
+}
+
+export interface EduSession {
+  id: string;
+  tenantId: string;
+  facilityId: string;
+  cohortId: string;
+  cohortName: string;
+  classroomId?: string;
+  classroomName?: string;
+  instructorId: string;
+  instructorName: string;
+  date: string; // YYYY-MM-DD
+  startTime: string; // "09:00"
+  endTime: string;   // "11:00"
+  topic?: string;
+  status: 'Scheduled' | 'InProgress' | 'Completed' | 'Cancelled';
+  createdAt: string;
+}
+
+export type AttendanceStatus = 'Present' | 'Absent' | 'Late' | 'Excused';
+
+export interface EduAttendance {
+  id: string;
+  tenantId: string;
+  facilityId: string;
+  sessionId: string;
+  cohortId: string;
+  studentId: string;
+  studentName: string;
+  status: AttendanceStatus;
+  minutesLate?: number;
+  excuseNote?: string;
+  recordedAt: string;
+}
+
+export interface EduGrade {
+  id: string;
+  tenantId: string;
+  facilityId: string;
+  cohortId: string;
+  studentId: string;
+  studentName: string;
+  assessmentTitle: string; // e.g. "Midterm Exam", "Final Project"
+  score: number;
+  maxScore: number;
+  weightPercent: number;
+  teacherRemarks?: string;
+  gradedAt: string;
+}
+
+export interface EduCertificate {
+  id: string;
+  tenantId: string;
+  facilityId: string;
+  certificateNumber: string;
+  studentId: string;
+  studentName: string;
+  cohortId: string;
+  courseTitle: string;
+  issueDate: string;
+  averageGradeScore?: number;
+  honors?: string;
+  signatoryName: string;
+  signatoryTitle: string;
+  verificationHash: string;
+  createdAt: string;
+}
+
+export type AdmissionStage = 'Inquiry' | 'PlacementTest' | 'TrialClass' | 'Admitted' | 'Enrolled' | 'Declined';
+
+export interface EduAdmissionLead {
+  id: string;
+  tenantId: string;
+  facilityId: string;
+  studentName: string;
+  email?: string;
+  phone: string;
+  desiredCourseId: string;
+  desiredCourseTitle: string;
+  stage: AdmissionStage;
+  guardianName?: string;
+  placementScore?: string;
+  source?: string;
+  notes?: string;
+  createdAt: string;
+}
+
+

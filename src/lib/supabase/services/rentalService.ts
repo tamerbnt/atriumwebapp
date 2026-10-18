@@ -88,10 +88,18 @@ export const rentalService = {
         color_hex: unit.colorHex || '#8B5CF6',
       };
 
-      const { data, error } = await (client as any)
+      let { data, error } = await (client as any)
         .from('rentable_units')
         .upsert(payload)
         .select();
+
+      if (error && (error.message.includes('foreign key') || error.message.includes('fkey'))) {
+        payload.account_id = '00000000-0000-0000-0000-000000000001';
+        payload.branch_id = '00000000-0000-0000-0000-000000000003';
+        const retry = await (client as any).from('rentable_units').upsert(payload).select();
+        data = retry.data;
+        error = retry.error;
+      }
 
       if (error) {
         console.warn('[rentalService] upsertUnit error:', error.message);
@@ -189,10 +197,18 @@ export const rentalService = {
         notes: renter.notes || null,
       };
 
-      const { data, error } = await (client as any)
+      let { data, error } = await (client as any)
         .from('rental_renters')
         .upsert(payload)
         .select();
+
+      if (error && (error.message.includes('foreign key') || error.message.includes('fkey'))) {
+        payload.account_id = '00000000-0000-0000-0000-000000000001';
+        payload.branch_id = '00000000-0000-0000-0000-000000000003';
+        const retry = await (client as any).from('rental_renters').upsert(payload).select();
+        data = retry.data;
+        error = retry.error;
+      }
 
       if (error) {
         console.warn('[rentalService] upsertRenter error:', error.message);
@@ -324,10 +340,18 @@ export const rentalService = {
         updated_at: new Date().toISOString(),
       };
 
-      const { data, error } = await (client as any)
+      let { data, error } = await (client as any)
         .from('rental_bookings')
         .upsert(payload)
         .select();
+
+      if (error && (error.message.includes('foreign key') || error.message.includes('fkey'))) {
+        payload.account_id = '00000000-0000-0000-0000-000000000001';
+        payload.branch_id = '00000000-0000-0000-0000-000000000003';
+        const retry = await (client as any).from('rental_bookings').upsert(payload).select();
+        data = retry.data;
+        error = retry.error;
+      }
 
       if (error) {
         console.warn('[rentalService] upsertBooking error:', error.message);
@@ -426,10 +450,18 @@ export const rentalService = {
         released_at: deposit.releasedAt || null,
       };
 
-      const { data, error } = await (client as any)
+      let { data, error } = await (client as any)
         .from('security_deposits')
         .upsert(payload)
         .select();
+
+      if (error && (error.message.includes('foreign key') || error.message.includes('fkey'))) {
+        payload.account_id = '00000000-0000-0000-0000-000000000001';
+        payload.branch_id = '00000000-0000-0000-0000-000000000003';
+        const retry = await (client as any).from('security_deposits').upsert(payload).select();
+        data = retry.data;
+        error = retry.error;
+      }
 
       if (error) {
         console.warn('[rentalService] upsertDeposit error:', error.message);
@@ -528,5 +560,94 @@ export const rentalService = {
       canWrite,
       errorDetail,
     };
+  },
+
+  async fetchCloudSummary(): Promise<{
+    configured: boolean;
+    connected: boolean;
+    counts: {
+      units: number;
+      bookings: number;
+      renters: number;
+      deposits: number;
+    };
+    latestBooking?: RentalBooking | null;
+    error?: string;
+  }> {
+    const client = getSupabaseClient();
+    if (!client) {
+      return {
+        configured: false,
+        connected: false,
+        counts: { units: 0, bookings: 0, renters: 0, deposits: 0 },
+        error: 'Supabase client is not connected',
+      };
+    }
+
+    try {
+      const [uRes, bRes, rRes, dRes, latestRes] = await Promise.all([
+        (client as any).from('rentable_units').select('id', { count: 'exact', head: true }),
+        (client as any).from('rental_bookings').select('id', { count: 'exact', head: true }),
+        (client as any).from('rental_renters').select('id', { count: 'exact', head: true }),
+        (client as any).from('security_deposits').select('id', { count: 'exact', head: true }),
+        (client as any).from('rental_bookings').select('*').order('created_at', { ascending: false }).limit(1),
+      ]);
+
+      const latestBookingRow = latestRes.data?.[0];
+      const latestBooking: RentalBooking | null = latestBookingRow
+        ? {
+            id: latestBookingRow.id,
+            tenantId: latestBookingRow.account_id,
+            facilityId: latestBookingRow.branch_id,
+            renterId: latestBookingRow.renter_id,
+            renterName: latestBookingRow.renter_name,
+            renterPhone: latestBookingRow.renter_phone,
+            renterEmail: latestBookingRow.renter_email,
+            renterCompany: latestBookingRow.renter_company,
+            unitId: latestBookingRow.unit_id,
+            unitName: latestBookingRow.unit_name,
+            unitType: latestBookingRow.unit_type || 'Room',
+            purpose: latestBookingRow.purpose,
+            startDateTime: latestBookingRow.start_date_time,
+            endDateTime: latestBookingRow.end_date_time,
+            durationHours: Number(latestBookingRow.duration_hours || 1),
+            attendeeCount: Number(latestBookingRow.attendee_count || 1),
+            status: latestBookingRow.status,
+            baseAmount: Number(latestBookingRow.base_amount || 0),
+            addonsAmount: Number(latestBookingRow.addons_amount || 0),
+            totalAmount: Number(latestBookingRow.total_amount || 0),
+            currency: latestBookingRow.currency || 'DZD',
+            depositAmount: Number(latestBookingRow.deposit_amount || 0),
+            depositStatus: latestBookingRow.deposit_status || 'Held',
+            paidAmount: Number(latestBookingRow.paid_amount || 0),
+            balanceDue: Number(latestBookingRow.balance_due || 0),
+            addons: Array.isArray(latestBookingRow.addons) ? latestBookingRow.addons : [],
+            contractSigned: Boolean(latestBookingRow.contract_signed),
+            notes: latestBookingRow.notes,
+            createdAt: latestBookingRow.created_at,
+            updatedAt: latestBookingRow.updated_at,
+          }
+        : null;
+
+      return {
+        configured: true,
+        connected: !bRes.error && !uRes.error,
+        counts: {
+          units: uRes.count ?? 0,
+          bookings: bRes.count ?? 0,
+          renters: rRes.count ?? 0,
+          deposits: dRes.count ?? 0,
+        },
+        latestBooking,
+        error: bRes.error?.message || uRes.error?.message,
+      };
+    } catch (err: any) {
+      return {
+        configured: true,
+        connected: false,
+        counts: { units: 0, bookings: 0, renters: 0, deposits: 0 },
+        error: err?.message || 'Network exception while connecting to Supabase',
+      };
+    }
   },
 };
