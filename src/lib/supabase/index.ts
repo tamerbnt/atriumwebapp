@@ -10,3 +10,4 @@ export * from './services/realtimeService';
 export * from './services/freelanceService';
 export * from './services/appointmentService';
 export * from './services/posService';
+export * from './services/rentalService';

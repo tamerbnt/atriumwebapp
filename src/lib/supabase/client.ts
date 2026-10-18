@@ -23,6 +23,21 @@ export const isUuid = (id: string | null | undefined): boolean => {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
 };
 
+export const toValidUuid = (
+  id: string | null | undefined,
+  fallbackSeed = '00000000-0000-4000-8000-000000000001'
+): string => {
+  if (id && isUuid(id)) return id;
+  if (!id) return fallbackSeed;
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) {
+    hash = ((hash << 5) - hash) + id.charCodeAt(i);
+    hash |= 0;
+  }
+  const hex = Math.abs(hash).toString(16).padStart(8, '0');
+  return `00000000-${hex.slice(0, 4)}-4000-8000-${hex.padEnd(12, '0').slice(0, 12)}`;
+};
+
 export type SupabaseConnectionState = 'connected' | 'connecting' | 'offline' | 'unconfigured';
 
 let cachedClient: SupabaseClient<Database> | null = null;

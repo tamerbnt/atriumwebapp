@@ -5,6 +5,8 @@ export interface RealtimeSubscriptionCallbacks {
   onMemberChange?: (payload: any) => void;
   onLeadChange?: (payload: any) => void;
   onBranchChange?: (payload: any) => void;
+  onRentalBookingChange?: (payload: any) => void;
+  onRentableUnitChange?: (payload: any) => void;
 }
 
 let activeChannel: RealtimeChannel | null = null;
@@ -56,6 +58,30 @@ export const realtimeService = {
           },
           (payload) => {
             if (callbacks.onLeadChange) callbacks.onLeadChange(payload);
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'rental_bookings',
+            filter: `branch_id=eq.${branchId}`,
+          },
+          (payload) => {
+            if (callbacks.onRentalBookingChange) callbacks.onRentalBookingChange(payload);
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'rentable_units',
+            filter: `branch_id=eq.${branchId}`,
+          },
+          (payload) => {
+            if (callbacks.onRentableUnitChange) callbacks.onRentableUnitChange(payload);
           }
         )
         .subscribe((status) => {

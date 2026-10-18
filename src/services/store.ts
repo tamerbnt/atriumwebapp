@@ -39,6 +39,11 @@ import {
   StockMovement,
   ReceiptConfig,
   PaymentDetail,
+  RentableUnit,
+  RentalBooking,
+  RentalRenter,
+  SecurityDepositRecord,
+  BookingAddon,
 } from '../types/index';
 import {
   INITIAL_ACCOUNT,
@@ -65,6 +70,10 @@ import {
   INITIAL_PARKED_ORDERS,
   INITIAL_STOCK_MOVEMENTS,
   DEFAULT_RECEIPT_CONFIG,
+  INITIAL_RENTABLE_UNITS,
+  INITIAL_RENTAL_BOOKINGS,
+  INITIAL_RENTAL_RENTERS,
+  INITIAL_SECURITY_DEPOSITS,
 } from './seedData';
 import { checkQuota, getCategoryTerminology, validateVoucherCode } from '../utils/rules';
 import {
@@ -78,6 +87,7 @@ import {
   freelanceService,
   appointmentService,
   posService,
+  rentalService,
 } from '../lib/supabase/index';
 
 const STORAGE_KEY = 'atrium_erp_desktop_v2';
@@ -140,6 +150,11 @@ interface AppState {
   parkedOrders: ParkedOrder[];
   stockMovements: StockMovement[];
   receiptConfig: ReceiptConfig;
+  // Rentals & Venue Management (Category 14)
+  rentableUnits: RentableUnit[];
+  rentalBookings: RentalBooking[];
+  rentalRenters: RentalRenter[];
+  securityDeposits: SecurityDepositRecord[];
 }
 
 const DEFAULT_USER: CurrentUser = {
@@ -202,6 +217,11 @@ const DEFAULT_STATE: AppState = {
   parkedOrders: INITIAL_PARKED_ORDERS,
   stockMovements: INITIAL_STOCK_MOVEMENTS,
   receiptConfig: DEFAULT_RECEIPT_CONFIG,
+  // Rentals & Venue Management
+  rentableUnits: INITIAL_RENTABLE_UNITS,
+  rentalBookings: INITIAL_RENTAL_BOOKINGS,
+  rentalRenters: INITIAL_RENTAL_RENTERS,
+  securityDeposits: INITIAL_SECURITY_DEPOSITS,
 };
 
 // Global reactive subscribers
@@ -295,6 +315,10 @@ let globalState: AppState = (() => {
           parkedOrders: Array.isArray(parsed.parkedOrders) ? parsed.parkedOrders : INITIAL_PARKED_ORDERS,
           stockMovements: Array.isArray(parsed.stockMovements) ? parsed.stockMovements : INITIAL_STOCK_MOVEMENTS,
           receiptConfig: parsed.receiptConfig || DEFAULT_RECEIPT_CONFIG,
+          rentableUnits: Array.isArray(parsed.rentableUnits) && parsed.rentableUnits.length > 0 ? parsed.rentableUnits : INITIAL_RENTABLE_UNITS,
+          rentalBookings: Array.isArray(parsed.rentalBookings) && parsed.rentalBookings.length > 0 ? parsed.rentalBookings : INITIAL_RENTAL_BOOKINGS,
+          rentalRenters: Array.isArray(parsed.rentalRenters) && parsed.rentalRenters.length > 0 ? parsed.rentalRenters : INITIAL_RENTAL_RENTERS,
+          securityDeposits: Array.isArray(parsed.securityDeposits) && parsed.securityDeposits.length > 0 ? parsed.securityDeposits : INITIAL_SECURITY_DEPOSITS,
           currentUser: parsed.currentUser || DEFAULT_USER,
           isAuthenticated: parsed.isAuthenticated !== undefined ? parsed.isAuthenticated : true,
           isOnboardingOpen: false,
@@ -471,6 +495,10 @@ export function useAtriumStore() {
         freelanceInvoices,
         freelanceProposals,
         freelanceExpenses,
+        rentableUnits,
+        rentalBookings,
+        rentalRenters,
+        securityDeposits,
       ] = await Promise.all([
         tenantService.fetchBusinesses(accountId),
         tenantService.fetchBranches(accountId),
@@ -486,6 +514,10 @@ export function useAtriumStore() {
         freelanceService.fetchInvoices(globalState.currentBranchId),
         freelanceService.fetchProposals(globalState.currentBranchId),
         freelanceService.fetchExpenses(globalState.currentBranchId),
+        rentalService.fetchUnits(globalState.currentBranchId),
+        rentalService.fetchBookings(globalState.currentBranchId),
+        rentalService.fetchRenters(globalState.currentBranchId),
+        rentalService.fetchDeposits(globalState.currentBranchId),
       ]);
 
       const updates: Partial<AppState> = {
@@ -534,6 +566,22 @@ export function useAtriumStore() {
       }
       if (freelanceExpenses.length > 0) {
         updates.freelanceExpenses = freelanceExpenses;
+      }
+      if (rentableUnits.length > 0) {
+        const otherUnits = globalState.rentableUnits.filter((u) => u.facilityId !== globalState.currentBranchId);
+        updates.rentableUnits = [...rentableUnits, ...otherUnits];
+      }
+      if (rentalBookings.length > 0) {
+        const otherBookings = globalState.rentalBookings.filter((b) => b.facilityId !== globalState.currentBranchId);
+        updates.rentalBookings = [...rentalBookings, ...otherBookings];
+      }
+      if (rentalRenters.length > 0) {
+        const otherRenters = globalState.rentalRenters.filter((r) => r.facilityId !== globalState.currentBranchId);
+        updates.rentalRenters = [...rentalRenters, ...otherRenters];
+      }
+      if (securityDeposits.length > 0) {
+        const otherDeposits = globalState.securityDeposits.filter((d) => d.facilityId !== globalState.currentBranchId);
+        updates.securityDeposits = [...securityDeposits, ...otherDeposits];
       }
 
       globalState = {
@@ -631,6 +679,16 @@ export function useAtriumStore() {
   const currentServices = (state.servicesCatalog || []).filter((s) => s.facilityId === state.currentBranchId);
   const currentParkedOrders = (state.parkedOrders || []).filter((p) => p.facilityId === state.currentBranchId);
   const currentStockMovements = (state.stockMovements || []).filter((sm) => sm.facilityId === state.currentBranchId);
+  const currentFreelanceClients = (state.freelanceClients || []).filter((c) => c.facilityId === state.currentBranchId);
+  const currentFreelanceProjects = (state.freelanceProjects || []).filter((p) => p.facilityId === state.currentBranchId);
+  const currentTimeLogs = (state.timeLogs || []).filter((t) => t.facilityId === state.currentBranchId);
+  const currentFreelanceInvoices = (state.freelanceInvoices || []).filter((i) => i.facilityId === state.currentBranchId);
+  const currentFreelanceProposals = (state.freelanceProposals || []).filter((pr) => pr.facilityId === state.currentBranchId);
+  const currentFreelanceExpenses = (state.freelanceExpenses || []).filter((e) => e.facilityId === state.currentBranchId);
+  const currentRentableUnits = (state.rentableUnits || []).filter((u) => u.facilityId === state.currentBranchId);
+  const currentRentalBookings = (state.rentalBookings || []).filter((b) => b.facilityId === state.currentBranchId);
+  const currentRentalRenters = (state.rentalRenters || []).filter((r) => r.facilityId === state.currentBranchId);
+  const currentSecurityDeposits = (state.securityDeposits || []).filter((d) => d.facilityId === state.currentBranchId);
 
   const selectedMember = state.selectedMemberId
     ? state.members.find((m) => m.id === state.selectedMemberId) || null
@@ -2926,6 +2984,324 @@ export function useAtriumStore() {
     notify();
   };
 
+  // ==========================================
+  // Rentals & Venue Management Actions
+  // ==========================================
+
+  const createRentalBooking = (
+    bookingData: Omit<RentalBooking, 'id' | 'tenantId' | 'facilityId' | 'createdAt' | 'updatedAt'>
+  ) => {
+    const bookingId = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `bk_${Date.now()}`;
+    const newBooking: RentalBooking = {
+      ...bookingData,
+      id: bookingId,
+      tenantId: state.account.id,
+      facilityId: state.currentBranchId,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    // Auto-create or link deposit record if deposit > 0
+    let newDeposit: SecurityDepositRecord | null = null;
+    if (newBooking.depositAmount > 0 && newBooking.depositStatus === 'Held') {
+      const depositId = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `dep_${Date.now()}`;
+      newDeposit = {
+        id: depositId,
+        tenantId: state.account.id,
+        facilityId: state.currentBranchId,
+        bookingId: newBooking.id,
+        renterName: newBooking.renterName,
+        unitName: newBooking.unitName,
+        amount: newBooking.depositAmount,
+        currency: newBooking.currency,
+        paymentMethod: 'Cash',
+        status: 'Held',
+        collectedAt: new Date().toISOString(),
+      };
+    }
+
+    // Update unit status if checked in
+    const updatedUnits = globalState.rentableUnits.map((u) => {
+      if (u.id === newBooking.unitId && newBooking.status === 'CheckedIn') {
+        return { ...u, status: 'Occupied' as const };
+      }
+      return u;
+    });
+
+    globalState = {
+      ...globalState,
+      rentalBookings: [newBooking, ...globalState.rentalBookings],
+      securityDeposits: newDeposit
+        ? [newDeposit, ...globalState.securityDeposits]
+        : globalState.securityDeposits,
+      rentableUnits: updatedUnits,
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      rentalService.upsertBooking(newBooking).catch((err) => console.warn('[store] Supabase upsertBooking notice:', err));
+      if (newDeposit) {
+        rentalService.upsertDeposit(newDeposit).catch((err) => console.warn('[store] Supabase upsertDeposit notice:', err));
+      }
+      const chgUnit = updatedUnits.find((u) => u.id === newBooking.unitId);
+      if (chgUnit) {
+        rentalService.upsertUnit(chgUnit).catch((err) => console.warn('[store] Supabase upsertUnit notice:', err));
+      }
+    }
+
+    return newBooking;
+  };
+
+  const updateRentalBooking = (id: string, updates: Partial<RentalBooking>) => {
+    const updatedBookings = globalState.rentalBookings.map((b) =>
+      b.id === id ? { ...b, ...updates, updatedAt: new Date().toISOString() } : b
+    );
+    globalState = {
+      ...globalState,
+      rentalBookings: updatedBookings,
+    };
+    notify();
+
+    const target = updatedBookings.find((b) => b.id === id);
+    if (target && isSupabaseConfigured()) {
+      rentalService.upsertBooking(target).catch((err) => console.warn('[store] Supabase updateRentalBooking notice:', err));
+    }
+  };
+
+  const deleteRentalBooking = (id: string) => {
+    globalState = {
+      ...globalState,
+      rentalBookings: globalState.rentalBookings.filter((b) => b.id !== id),
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      rentalService.deleteBooking(id).catch((err) => console.warn('[store] Supabase deleteRentalBooking notice:', err));
+    }
+  };
+
+  const checkInBooking = (id: string) => {
+    const booking = globalState.rentalBookings.find((b) => b.id === id);
+    if (!booking) return;
+
+    const updatedBookings = globalState.rentalBookings.map((b) =>
+      b.id === id ? { ...b, status: 'CheckedIn' as const, updatedAt: new Date().toISOString() } : b
+    );
+    const updatedUnits = globalState.rentableUnits.map((u) =>
+      u.id === booking.unitId ? { ...u, status: 'Occupied' as const } : u
+    );
+
+    globalState = {
+      ...globalState,
+      rentalBookings: updatedBookings,
+      rentableUnits: updatedUnits,
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      const b = updatedBookings.find((x) => x.id === id);
+      if (b) rentalService.upsertBooking(b).catch(console.warn);
+      const u = updatedUnits.find((x) => x.id === booking.unitId);
+      if (u) rentalService.upsertUnit(u).catch(console.warn);
+    }
+  };
+
+  const checkOutBooking = (id: string) => {
+    const booking = globalState.rentalBookings.find((b) => b.id === id);
+    if (!booking) return;
+
+    const updatedBookings = globalState.rentalBookings.map((b) =>
+      b.id === id ? { ...b, status: 'Completed' as const, updatedAt: new Date().toISOString() } : b
+    );
+    const updatedUnits = globalState.rentableUnits.map((u) =>
+      u.id === booking.unitId ? { ...u, status: 'Available' as const } : u
+    );
+
+    globalState = {
+      ...globalState,
+      rentalBookings: updatedBookings,
+      rentableUnits: updatedUnits,
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      const b = updatedBookings.find((x) => x.id === id);
+      if (b) rentalService.upsertBooking(b).catch(console.warn);
+      const u = updatedUnits.find((x) => x.id === booking.unitId);
+      if (u) rentalService.upsertUnit(u).catch(console.warn);
+    }
+  };
+
+  const createRentableUnit = (
+    unitData: Omit<RentableUnit, 'id' | 'tenantId' | 'facilityId' | 'createdAt'>
+  ) => {
+    const unitId = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `unit_${Date.now()}`;
+    const newUnit: RentableUnit = {
+      ...unitData,
+      id: unitId,
+      tenantId: state.account.id,
+      facilityId: state.currentBranchId,
+      createdAt: new Date().toISOString(),
+    };
+    globalState = {
+      ...globalState,
+      rentableUnits: [newUnit, ...globalState.rentableUnits],
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      rentalService.upsertUnit(newUnit).catch((err) => console.warn('[store] Supabase upsertUnit notice:', err));
+    }
+
+    return newUnit;
+  };
+
+  const updateRentableUnit = (id: string, updates: Partial<RentableUnit>) => {
+    const updatedUnits = globalState.rentableUnits.map((u) => (u.id === id ? { ...u, ...updates } : u));
+    globalState = {
+      ...globalState,
+      rentableUnits: updatedUnits,
+    };
+    notify();
+
+    const target = updatedUnits.find((u) => u.id === id);
+    if (target && isSupabaseConfigured()) {
+      rentalService.upsertUnit(target).catch((err) => console.warn('[store] Supabase updateRentableUnit notice:', err));
+    }
+  };
+
+  const deleteRentableUnit = (id: string) => {
+    globalState = {
+      ...globalState,
+      rentableUnits: globalState.rentableUnits.filter((u) => u.id !== id),
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      rentalService.deleteUnit(id).catch((err) => console.warn('[store] Supabase deleteRentableUnit notice:', err));
+    }
+  };
+
+  const createRentalRenter = (
+    renterData: Omit<RentalRenter, 'id' | 'tenantId' | 'facilityId' | 'totalBookings' | 'totalSpent' | 'createdAt'>
+  ) => {
+    const renterId = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `rnt_${Date.now()}`;
+    const newRenter: RentalRenter = {
+      ...renterData,
+      id: renterId,
+      tenantId: state.account.id,
+      facilityId: state.currentBranchId,
+      totalBookings: 0,
+      totalSpent: 0,
+      createdAt: new Date().toISOString(),
+    };
+    globalState = {
+      ...globalState,
+      rentalRenters: [newRenter, ...globalState.rentalRenters],
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      rentalService.upsertRenter(newRenter).catch((err) => console.warn('[store] Supabase upsertRenter notice:', err));
+    }
+
+    return newRenter;
+  };
+
+  const updateRentalRenter = (id: string, updates: Partial<RentalRenter>) => {
+    const updatedRenters = globalState.rentalRenters.map((r) => (r.id === id ? { ...r, ...updates } : r));
+    globalState = {
+      ...globalState,
+      rentalRenters: updatedRenters,
+    };
+    notify();
+
+    const target = updatedRenters.find((r) => r.id === id);
+    if (target && isSupabaseConfigured()) {
+      rentalService.upsertRenter(target).catch((err) => console.warn('[store] Supabase updateRentalRenter notice:', err));
+    }
+  };
+
+  const deleteRentalRenter = (id: string) => {
+    globalState = {
+      ...globalState,
+      rentalRenters: globalState.rentalRenters.filter((r) => r.id !== id),
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      rentalService.deleteRenter(id).catch((err) => console.warn('[store] Supabase deleteRentalRenter notice:', err));
+    }
+  };
+
+  const releaseSecurityDeposit = (depositId: string) => {
+    const updatedDeposits = globalState.securityDeposits.map((d) =>
+      d.id === depositId
+        ? { ...d, status: 'Released' as const, releasedAt: new Date().toISOString() }
+        : d
+    );
+    const target = globalState.securityDeposits.find((d) => d.id === depositId);
+    let updatedBookings = globalState.rentalBookings;
+    if (target?.bookingId) {
+      updatedBookings = updatedBookings.map((b) =>
+        b.id === target.bookingId ? { ...b, depositStatus: 'Refunded' as const } : b
+      );
+    }
+    globalState = {
+      ...globalState,
+      securityDeposits: updatedDeposits,
+      rentalBookings: updatedBookings,
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      const dep = updatedDeposits.find((d) => d.id === depositId);
+      if (dep) rentalService.upsertDeposit(dep).catch(console.warn);
+      if (target?.bookingId) {
+        const bk = updatedBookings.find((b) => b.id === target.bookingId);
+        if (bk) rentalService.upsertBooking(bk).catch(console.warn);
+      }
+    }
+  };
+
+  const deductSecurityDeposit = (depositId: string, reason: string, deductedAmount?: number) => {
+    const target = globalState.securityDeposits.find((d) => d.id === depositId);
+    if (!target) return;
+
+    const updatedDeposits = globalState.securityDeposits.map((d) =>
+      d.id === depositId
+        ? {
+            ...d,
+            status: 'Deducted' as const,
+            deductionReason: reason,
+            amount: deductedAmount !== undefined ? deductedAmount : d.amount,
+            releasedAt: new Date().toISOString(),
+          }
+        : d
+    );
+    let updatedBookings = globalState.rentalBookings;
+    if (target.bookingId) {
+      updatedBookings = updatedBookings.map((b) =>
+        b.id === target.bookingId ? { ...b, depositStatus: 'Retained' as const } : b
+      );
+    }
+    globalState = {
+      ...globalState,
+      securityDeposits: updatedDeposits,
+      rentalBookings: updatedBookings,
+    };
+    notify();
+
+    if (isSupabaseConfigured()) {
+      const dep = updatedDeposits.find((d) => d.id === depositId);
+      if (dep) rentalService.upsertDeposit(dep).catch(console.warn);
+      if (target?.bookingId) {
+        const bk = updatedBookings.find((b) => b.id === target.bookingId);
+        if (bk) rentalService.upsertBooking(bk).catch(console.warn);
+      }
+    }
+  };
+
   const resetAllData = () => {
     globalState = DEFAULT_STATE;
     notify();
@@ -2957,13 +3333,13 @@ export function useAtriumStore() {
     syncErrorMessage: state.syncErrorMessage,
     isSupabaseConfigured: isSupabaseConfigured(),
     syncWithSupabase,
-    // Freelancer Collections
-    freelanceClients: state.freelanceClients,
-    freelanceProjects: state.freelanceProjects,
-    timeLogs: state.timeLogs,
-    freelanceInvoices: state.freelanceInvoices,
-    freelanceProposals: state.freelanceProposals,
-    freelanceExpenses: state.freelanceExpenses,
+    // Freelancer Collections (Strictly Scoped by Active Branch)
+    freelanceClients: currentFreelanceClients,
+    freelanceProjects: currentFreelanceProjects,
+    timeLogs: currentTimeLogs,
+    freelanceInvoices: currentFreelanceInvoices,
+    freelanceProposals: currentFreelanceProposals,
+    freelanceExpenses: currentFreelanceExpenses,
     activeTimer: state.activeTimer,
     // Auth State
     currentUser: state.currentUser,
@@ -2986,6 +3362,11 @@ export function useAtriumStore() {
     parkedOrders: currentParkedOrders,
     stockMovements: currentStockMovements,
     receiptConfig: state.receiptConfig || DEFAULT_RECEIPT_CONFIG,
+    // Rentals & Venue Collections (Strictly Scoped by Active Branch)
+    rentableUnits: currentRentableUnits,
+    rentalBookings: currentRentalBookings,
+    rentalRenters: currentRentalRenters,
+    securityDeposits: currentSecurityDeposits,
     selectedMember,
     isDetailOpen: state.isDetailOpen,
     // Actions
@@ -3058,6 +3439,20 @@ export function useAtriumStore() {
     convertProposalToProject,
     addFreelanceExpense,
     deleteFreelanceExpense,
+    // Rentals & Venue Actions
+    createRentalBooking,
+    updateRentalBooking,
+    deleteRentalBooking,
+    checkInBooking,
+    checkOutBooking,
+    createRentableUnit,
+    updateRentableUnit,
+    deleteRentableUnit,
+    createRentalRenter,
+    updateRentalRenter,
+    deleteRentalRenter,
+    releaseSecurityDeposit,
+    deductSecurityDeposit,
     // Auth Actions
     login,
     loginWithPin,

@@ -15,6 +15,8 @@ import {
   Clock,
   FileText,
   Kanban,
+  DoorOpen,
+  ShieldCheck,
 } from 'lucide-react';
 import { useAtriumStore, ActiveScreen } from '../../services/store';
 
@@ -187,6 +189,52 @@ export const Sidebar: React.FC<SidebarProps> = ({
         id: 'settings',
         icon: <Settings size={19} />,
         title: 'Salon Settings & Locations',
+        label: 'Settings',
+      },
+    ];
+  } else if (category === 'rental_booking') {
+    // Dedicated Rentals, Venues & Space Bookings Architecture
+    dockNavItems = [
+      {
+        id: 'dashboard',
+        icon: <Home size={19} />,
+        title: 'Venue & Space Operations Pulse',
+        label: 'Home',
+      },
+      {
+        id: 'scheduler',
+        icon: <Calendar size={19} />,
+        title: 'Occupancy Matrix & Timeline',
+        label: 'Timeline',
+      },
+      {
+        id: 'registrations',
+        icon: <ClipboardList size={19} />,
+        title: 'Reservations & Event Inquiries',
+        label: 'Reservations',
+      },
+      {
+        id: 'shop',
+        icon: <DoorOpen size={19} />,
+        title: 'Spaces & Asset Inventory',
+        label: 'Spaces & Units',
+      },
+      {
+        id: 'members',
+        icon: <Users size={19} />,
+        title: 'Renters & Client Directory',
+        label: 'Renters',
+      },
+      {
+        id: 'finance',
+        icon: <ShieldCheck size={19} />,
+        title: 'Caution Escrow & Rental Revenue',
+        label: 'Caution & Revenue',
+      },
+      {
+        id: 'settings',
+        icon: <Settings size={19} />,
+        title: 'Venue Locations & Settings',
         label: 'Settings',
       },
     ];

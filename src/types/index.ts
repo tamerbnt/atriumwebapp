@@ -606,3 +606,119 @@ export interface ActiveTimerState {
   startedAt: string | null;
 }
 
+// ==========================================
+// Rentals & Venue Management Types
+// ==========================================
+
+export type RentableUnitType = 'Hall' | 'Room' | 'Court' | 'Studio' | 'Desk' | 'Equipment';
+export type RentableUnitStatus = 'Available' | 'Occupied' | 'Maintenance';
+
+export interface RentableUnit {
+  id: string;
+  tenantId: string;
+  facilityId: string;
+  name: string;
+  code: string;
+  type: RentableUnitType;
+  capacity: number;
+  surfaceAreaSqm?: number;
+  hourlyRate: number;
+  dailyRate: number;
+  currency: 'DZD' | 'EUR' | 'USD' | string;
+  amenities: string[];
+  status: RentableUnitStatus;
+  description: string;
+  colorHex?: string;
+  createdAt: string;
+}
+
+export type BookingStatus = 'Tentative' | 'Confirmed' | 'CheckedIn' | 'Completed' | 'Cancelled';
+export type DepositStatus = 'Pending' | 'Held' | 'Refunded' | 'Retained';
+
+export interface BookingAddon {
+  id: string;
+  name: string;
+  unitPrice: number;
+  quantity: number;
+  totalPrice: number;
+}
+
+export interface RentalBooking {
+  id: string;
+  tenantId: string;
+  facilityId: string;
+  renterId: string;
+  renterName: string;
+  renterPhone: string;
+  renterEmail?: string;
+  renterCompany?: string;
+  unitId: string;
+  unitName: string;
+  unitType: RentableUnitType;
+  purpose: string;
+  startDateTime: string; // ISO 8601
+  endDateTime: string;   // ISO 8601
+  durationHours: number;
+  attendeeCount: number;
+  status: BookingStatus;
+  baseAmount: number;
+  addonsAmount: number;
+  totalAmount: number;
+  currency: 'DZD' | 'EUR' | 'USD' | string;
+  depositAmount: number; // Caution / security deposit
+  depositStatus: DepositStatus;
+  paidAmount: number;
+  balanceDue: number;
+  addons: BookingAddon[];
+  contractSigned: boolean;
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface RentalRenter {
+  id: string;
+  tenantId: string;
+  facilityId: string;
+  fullName: string;
+  companyName?: string;
+  email: string;
+  phone: string;
+  idDocNumber?: string;
+  totalBookings: number;
+  totalSpent: number;
+  currency: 'DZD' | 'EUR' | 'USD' | string;
+  notes?: string;
+  createdAt: string;
+}
+
+export interface SecurityDepositRecord {
+  id: string;
+  tenantId: string;
+  facilityId: string;
+  bookingId: string;
+  renterName: string;
+  unitName: string;
+  amount: number;
+  currency: 'DZD' | 'EUR' | 'USD' | string;
+  paymentMethod: 'Cash' | 'Card' | 'Check';
+  status: 'Held' | 'Released' | 'Deducted';
+  deductionReason?: string;
+  collectedAt: string;
+  releasedAt?: string;
+}
+
+export type ToastType = 'success' | 'error' | 'info' | 'warning';
+export type ToastSyncStatus = 'synced' | 'local' | 'error';
+
+export interface ToastNotification {
+  id: string;
+  type: ToastType;
+  title: string;
+  message: string;
+  duration?: number;
+  syncStatus?: ToastSyncStatus;
+  table?: string;
+  createdAt: number;
+}
+

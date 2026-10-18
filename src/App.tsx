@@ -25,6 +25,12 @@ import { FreelanceTimeTrackerView } from './components/screens/freelance/Freelan
 import { FreelanceInvoicesView } from './components/screens/freelance/FreelanceInvoicesView';
 import { FreelanceProposalsView } from './components/screens/freelance/FreelanceProposalsView';
 import { FreelanceFinanceView } from './components/screens/freelance/FreelanceFinanceView';
+import { VenueDashboardView } from './components/screens/venue/VenueDashboardView';
+import { VenueTimelineView } from './components/screens/venue/VenueTimelineView';
+import { VenueBookingsView } from './components/screens/venue/VenueBookingsView';
+import { VenueInventoryView } from './components/screens/venue/VenueInventoryView';
+import { VenueRentersView } from './components/screens/venue/VenueRentersView';
+import { VenueFinanceView } from './components/screens/venue/VenueFinanceView';
 import { DesktopUpgradeModal } from './components/modals/DesktopUpgradeModal';
 
 export default function App() {
@@ -105,6 +111,32 @@ export default function App() {
           return <SettingsScreen onOpenVoucherModal={() => setIsVoucherModalOpen(true)} />;
         default:
           return <FreelanceDashboardView />;
+      }
+    }
+
+    const isRental = currentBusiness?.category === 'rental_booking';
+    if (isRental) {
+      switch (activeScreen) {
+        case 'dashboard':
+          return <VenueDashboardView />;
+        case 'scheduler':
+          return <VenueTimelineView />;
+        case 'registrations':
+          return <VenueBookingsView />;
+        case 'shop':
+          return <VenueInventoryView />;
+        case 'members':
+          return <VenueRentersView />;
+        case 'finance':
+          return <VenueFinanceView />;
+        case 'history':
+          return <VenueBookingsView />;
+        case 'analytics':
+          return <VenueDashboardView />;
+        case 'settings':
+          return <SettingsScreen onOpenVoucherModal={() => setIsVoucherModalOpen(true)} />;
+        default:
+          return <VenueDashboardView />;
       }
     }
 

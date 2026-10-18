@@ -336,6 +336,91 @@ CREATE TABLE IF NOT EXISTS public.freelance_expenses (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 
+-- Rentals & Venue Management Tables (Category 14)
+CREATE TABLE IF NOT EXISTS public.rentable_units (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  account_id uuid NOT NULL REFERENCES public.accounts(id) ON DELETE CASCADE,
+  branch_id uuid NOT NULL REFERENCES public.branches(id) ON DELETE CASCADE,
+  name text NOT NULL,
+  code text NOT NULL,
+  type text NOT NULL DEFAULT 'Room', -- 'Hall', 'Room', 'Court', 'Studio', 'Desk', 'Equipment'
+  capacity int NOT NULL DEFAULT 10,
+  surface_area_sqm numeric,
+  hourly_rate numeric NOT NULL DEFAULT 0,
+  daily_rate numeric NOT NULL DEFAULT 0,
+  currency text NOT NULL DEFAULT 'DZD',
+  amenities text[] NOT NULL DEFAULT '{}',
+  status text NOT NULL DEFAULT 'Available', -- 'Available', 'Occupied', 'Maintenance'
+  description text,
+  color_hex text DEFAULT '#8B5CF6',
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS public.rental_renters (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  account_id uuid NOT NULL REFERENCES public.accounts(id) ON DELETE CASCADE,
+  branch_id uuid NOT NULL REFERENCES public.branches(id) ON DELETE CASCADE,
+  full_name text NOT NULL,
+  company_name text,
+  email text NOT NULL,
+  phone text NOT NULL,
+  id_doc_number text,
+  total_bookings int NOT NULL DEFAULT 0,
+  total_spent numeric NOT NULL DEFAULT 0,
+  currency text NOT NULL DEFAULT 'DZD',
+  notes text,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS public.rental_bookings (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  account_id uuid NOT NULL REFERENCES public.accounts(id) ON DELETE CASCADE,
+  branch_id uuid NOT NULL REFERENCES public.branches(id) ON DELETE CASCADE,
+  renter_id text NOT NULL,
+  renter_name text NOT NULL,
+  renter_phone text NOT NULL,
+  renter_email text,
+  renter_company text,
+  unit_id text NOT NULL,
+  unit_name text NOT NULL,
+  unit_type text NOT NULL DEFAULT 'Room',
+  purpose text NOT NULL,
+  start_date_time timestamptz NOT NULL,
+  end_date_time timestamptz NOT NULL,
+  duration_hours numeric NOT NULL DEFAULT 1,
+  attendee_count int NOT NULL DEFAULT 1,
+  status text NOT NULL DEFAULT 'Confirmed', -- 'Tentative', 'Confirmed', 'CheckedIn', 'Completed', 'Cancelled'
+  base_amount numeric NOT NULL DEFAULT 0,
+  addons_amount numeric NOT NULL DEFAULT 0,
+  total_amount numeric NOT NULL DEFAULT 0,
+  currency text NOT NULL DEFAULT 'DZD',
+  deposit_amount numeric NOT NULL DEFAULT 0,
+  deposit_status text NOT NULL DEFAULT 'Held', -- 'Pending', 'Held', 'Refunded', 'Retained'
+  paid_amount numeric NOT NULL DEFAULT 0,
+  balance_due numeric NOT NULL DEFAULT 0,
+  addons jsonb NOT NULL DEFAULT '[]'::jsonb,
+  contract_signed bool NOT NULL DEFAULT true,
+  notes text,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS public.security_deposits (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  account_id uuid NOT NULL REFERENCES public.accounts(id) ON DELETE CASCADE,
+  branch_id uuid NOT NULL REFERENCES public.branches(id) ON DELETE CASCADE,
+  booking_id text NOT NULL,
+  renter_name text NOT NULL,
+  unit_name text NOT NULL,
+  amount numeric NOT NULL DEFAULT 0,
+  currency text NOT NULL DEFAULT 'DZD',
+  payment_method text NOT NULL DEFAULT 'Cash', -- 'Cash', 'Card', 'Check'
+  status text NOT NULL DEFAULT 'Held', -- 'Held', 'Released', 'Deducted'
+  deduction_reason text,
+  collected_at timestamptz NOT NULL DEFAULT now(),
+  released_at timestamptz
+);
+
 -- 4. Stored Procedures & RPCs
 
 -- Onboard Owner Account
@@ -608,6 +693,10 @@ ALTER TABLE public.freelance_time_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.freelance_invoices ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.freelance_proposals ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.freelance_expenses ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.rentable_units ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.rental_renters ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.rental_bookings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.security_deposits ENABLE ROW LEVEL SECURITY;
 
 DO $$ BEGIN
   CREATE POLICY "Public read for subscription plans" ON public.subscription_plans FOR SELECT USING (true);
@@ -626,5 +715,9 @@ DO $$ BEGIN
   CREATE POLICY "Allow all access to freelance_invoices" ON public.freelance_invoices FOR ALL USING (true);
   CREATE POLICY "Allow all access to freelance_proposals" ON public.freelance_proposals FOR ALL USING (true);
   CREATE POLICY "Allow all access to freelance_expenses" ON public.freelance_expenses FOR ALL USING (true);
+  CREATE POLICY "Allow all access to rentable_units" ON public.rentable_units FOR ALL USING (true);
+  CREATE POLICY "Allow all access to rental_renters" ON public.rental_renters FOR ALL USING (true);
+  CREATE POLICY "Allow all access to rental_bookings" ON public.rental_bookings FOR ALL USING (true);
+  CREATE POLICY "Allow all access to security_deposits" ON public.security_deposits FOR ALL USING (true);
 EXCEPTION WHEN duplicate_object THEN null;
 END $$;

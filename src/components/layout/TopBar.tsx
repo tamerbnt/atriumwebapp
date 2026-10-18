@@ -69,15 +69,18 @@ export const TopBar: React.FC<TopBarProps> = ({
   const [facilityDropdownOpen, setFacilityDropdownOpen] = useState(false);
 
   const isFreelance = currentBusiness?.category === 'freelance_solo';
+  const isRental = currentBusiness?.category === 'rental_booking';
 
   const getBreadcrumb = () => {
+    const homeLabel = isFreelance ? 'Solo Command' : isRental ? 'Venue Operations' : 'Home';
+
     switch (activeScreen) {
       case 'dashboard':
         return (
           <div className="flex items-center gap-1.5 text-xs">
             <span className="font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-1.5">
               <Home size={13} className="text-[#C4785A]" />
-              {isFreelance ? 'Solo Command' : 'Home'}
+              {homeLabel}
             </span>
           </div>
         );
@@ -90,11 +93,11 @@ export const TopBar: React.FC<TopBarProps> = ({
               className="text-neutral-400 hover:text-[#C4785A] font-medium transition-colors flex items-center gap-1 cursor-pointer"
             >
               <Home size={12} />
-              <span>{isFreelance ? 'Solo Command' : 'Home'}</span>
+              <span>{homeLabel}</span>
             </button>
             <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
             <span className="text-neutral-900 dark:text-white font-semibold">
-              {isFreelance ? 'Time Tracker & Pomodoro' : 'Analytics'}
+              {isFreelance ? 'Time Tracker & Pomodoro' : isRental ? 'Occupancy Analytics' : 'Analytics'}
             </span>
           </nav>
         );
@@ -111,7 +114,7 @@ export const TopBar: React.FC<TopBarProps> = ({
                 className="text-neutral-400 hover:text-[#C4785A] font-medium transition-colors flex items-center gap-1 cursor-pointer"
               >
                 <Home size={12} />
-                <span>{isFreelance ? 'Solo Command' : 'Home'}</span>
+                <span>{homeLabel}</span>
               </button>
               <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
               <button
@@ -119,7 +122,7 @@ export const TopBar: React.FC<TopBarProps> = ({
                 onClick={() => selectMember(null)}
                 className="text-neutral-400 hover:text-[#C4785A] font-medium transition-colors cursor-pointer"
               >
-                {terminology.members}
+                {isRental ? 'Renters' : terminology.members}
               </button>
               <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
               <span className="text-neutral-900 dark:text-white font-semibold truncate max-w-[130px] sm:max-w-[200px]">
@@ -136,10 +139,12 @@ export const TopBar: React.FC<TopBarProps> = ({
               className="text-neutral-400 hover:text-[#C4785A] font-medium transition-colors flex items-center gap-1 cursor-pointer"
             >
               <Home size={12} />
-              <span>{isFreelance ? 'Solo Command' : 'Home'}</span>
+              <span>{homeLabel}</span>
             </button>
             <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
-            <span className="text-neutral-900 dark:text-white font-semibold">{terminology.members}</span>
+            <span className="text-neutral-900 dark:text-white font-semibold">
+              {isRental ? 'Renters & Client Directory' : terminology.members}
+            </span>
           </nav>
         );
       case 'registrations':
@@ -151,11 +156,15 @@ export const TopBar: React.FC<TopBarProps> = ({
               className="text-neutral-400 hover:text-[#C4785A] font-medium transition-colors flex items-center gap-1 cursor-pointer"
             >
               <Home size={12} />
-              <span>{isFreelance ? 'Solo Command' : 'Home'}</span>
+              <span>{homeLabel}</span>
             </button>
             <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
             <span className="text-neutral-900 dark:text-white font-semibold">
-              {isFreelance ? 'Proposals & Inquiries' : `${terminology.registration} & Intake`}
+              {isFreelance
+                ? 'Proposals & Inquiries'
+                : isRental
+                ? 'Reservations & Event Inquiries'
+                : `${terminology.registration} & Intake`}
             </span>
           </nav>
         );
@@ -168,11 +177,15 @@ export const TopBar: React.FC<TopBarProps> = ({
               className="text-neutral-400 hover:text-[#C4785A] font-medium transition-colors flex items-center gap-1 cursor-pointer"
             >
               <Home size={12} />
-              <span>{isFreelance ? 'Solo Command' : 'Home'}</span>
+              <span>{homeLabel}</span>
             </button>
             <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
             <span className="text-neutral-900 dark:text-white font-semibold">
-              {isFreelance ? 'Invoices & Billing Hub' : `${terminology.shop} & Products`}
+              {isFreelance
+                ? 'Invoices & Billing Hub'
+                : isRental
+                ? 'Spaces & Asset Inventory'
+                : `${terminology.shop} & Products`}
             </span>
           </nav>
         );
@@ -185,10 +198,12 @@ export const TopBar: React.FC<TopBarProps> = ({
               className="text-neutral-400 hover:text-[#C4785A] font-medium transition-colors flex items-center gap-1 cursor-pointer"
             >
               <Home size={12} />
-              <span>{isFreelance ? 'Solo Command' : 'Home'}</span>
+              <span>{homeLabel}</span>
             </button>
             <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
-            <span className="text-neutral-900 dark:text-white font-semibold">{terminology.scheduler}</span>
+            <span className="text-neutral-900 dark:text-white font-semibold">
+              {isRental ? 'Occupancy Matrix & Timeline' : terminology.scheduler}
+            </span>
           </nav>
         );
       case 'finance':
@@ -200,11 +215,15 @@ export const TopBar: React.FC<TopBarProps> = ({
               className="text-neutral-400 hover:text-[#C4785A] font-medium transition-colors flex items-center gap-1 cursor-pointer"
             >
               <Home size={12} />
-              <span>{isFreelance ? 'Solo Command' : 'Home'}</span>
+              <span>{homeLabel}</span>
             </button>
             <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
             <span className="text-neutral-900 dark:text-white font-semibold">
-              {isFreelance ? 'Tax Reserves & Net Profit' : 'Finance & Staff'}
+              {isFreelance
+                ? 'Tax Reserves & Net Profit'
+                : isRental
+                ? 'Caution Escrow & Rental Revenue'
+                : 'Finance & Staff'}
             </span>
           </nav>
         );
