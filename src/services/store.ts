@@ -793,6 +793,16 @@ export function useAtriumStore() {
   const currentRentalBookings = (state.rentalBookings || []).filter((b) => b.facilityId === state.currentBranchId);
   const currentRentalRenters = (state.rentalRenters || []).filter((r) => r.facilityId === state.currentBranchId);
   const currentSecurityDeposits = (state.securityDeposits || []).filter((d) => d.facilityId === state.currentBranchId);
+  const currentEduCourses = (state.eduCourses || []).filter((c) => c.facilityId === state.currentBranchId);
+  const currentEduClassrooms = (state.eduClassrooms || []).filter((cr) => cr.facilityId === state.currentBranchId);
+  const currentEduCohorts = (state.eduCohorts || []).filter((ch) => ch.facilityId === state.currentBranchId);
+  const currentEduStudents = (state.eduStudents || []).filter((s) => s.facilityId === state.currentBranchId);
+  const currentEduEnrollments = (state.eduEnrollments || []).filter((e) => e.facilityId === state.currentBranchId);
+  const currentEduSessions = (state.eduSessions || []).filter((se) => se.facilityId === state.currentBranchId);
+  const currentEduAttendance = (state.eduAttendance || []).filter((at) => at.facilityId === state.currentBranchId);
+  const currentEduGrades = (state.eduGrades || []).filter((g) => g.facilityId === state.currentBranchId);
+  const currentEduCertificates = (state.eduCertificates || []).filter((ce) => ce.facilityId === state.currentBranchId);
+  const currentEduAdmissions = (state.eduAdmissions || []).filter((ad) => ad.facilityId === state.currentBranchId);
 
   const selectedMember = state.selectedMemberId
     ? state.members.find((m) => m.id === state.selectedMemberId) || null
@@ -3650,6 +3660,473 @@ export function useAtriumStore() {
   };
 
 
+  // ==========================================
+  // Education & Academy Actions (Category 15)
+  // ==========================================
+
+  const addEduStudent = (studentData: Omit<EduStudent, 'id' | 'tenantId' | 'facilityId' | 'createdAt'>) => {
+    const newStudent: EduStudent = {
+      ...studentData,
+      id: `std_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      tenantId: state.account.id,
+      facilityId: state.currentBranchId,
+      createdAt: new Date().toISOString(),
+    };
+    globalState = {
+      ...globalState,
+      eduStudents: [newStudent, ...(globalState.eduStudents || [])],
+    };
+    notify();
+    showToast({
+      type: 'success',
+      title: 'Student Enrolled',
+      message: `${newStudent.fullName} added to student directory.`,
+      syncStatus: isSupabaseConfigured() ? 'synced' : 'local',
+      table: 'edu_students',
+    });
+    return newStudent;
+  };
+
+  const updateEduStudent = (studentId: string, updates: Partial<EduStudent>) => {
+    globalState = {
+      ...globalState,
+      eduStudents: (globalState.eduStudents || []).map((s) =>
+        s.id === studentId ? { ...s, ...updates } : s
+      ),
+    };
+    notify();
+    showToast({
+      type: 'info',
+      title: 'Student Updated',
+      message: `Student profile updated successfully.`,
+      syncStatus: isSupabaseConfigured() ? 'synced' : 'local',
+      table: 'edu_students',
+    });
+  };
+
+  const deleteEduStudent = (studentId: string) => {
+    const student = (globalState.eduStudents || []).find((s) => s.id === studentId);
+    globalState = {
+      ...globalState,
+      eduStudents: (globalState.eduStudents || []).filter((s) => s.id !== studentId),
+      eduEnrollments: (globalState.eduEnrollments || []).filter((e) => e.studentId !== studentId),
+      eduAttendance: (globalState.eduAttendance || []).filter((a) => a.studentId !== studentId),
+      eduGrades: (globalState.eduGrades || []).filter((g) => g.studentId !== studentId),
+    };
+    notify();
+    showToast({
+      type: 'warning',
+      title: 'Student Removed',
+      message: `${student?.fullName || 'Student'} deleted from directory.`,
+      syncStatus: isSupabaseConfigured() ? 'synced' : 'local',
+      table: 'edu_students',
+    });
+  };
+
+  const addEduCohort = (cohortData: Omit<EduCohort, 'id' | 'tenantId' | 'facilityId' | 'createdAt' | 'enrolledCount'>) => {
+    const newCohort: EduCohort = {
+      ...cohortData,
+      id: `cohort_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      tenantId: state.account.id,
+      facilityId: state.currentBranchId,
+      enrolledCount: 0,
+      createdAt: new Date().toISOString(),
+    };
+    globalState = {
+      ...globalState,
+      eduCohorts: [newCohort, ...(globalState.eduCohorts || [])],
+    };
+    notify();
+    showToast({
+      type: 'success',
+      title: 'Cohort Created',
+      message: `Batch "${newCohort.name}" initialized.`,
+      syncStatus: isSupabaseConfigured() ? 'synced' : 'local',
+      table: 'edu_cohorts',
+    });
+    return newCohort;
+  };
+
+  const updateEduCohort = (cohortId: string, updates: Partial<EduCohort>) => {
+    globalState = {
+      ...globalState,
+      eduCohorts: (globalState.eduCohorts || []).map((ch) =>
+        ch.id === cohortId ? { ...ch, ...updates } : ch
+      ),
+    };
+    notify();
+  };
+
+  const deleteEduCohort = (cohortId: string) => {
+    globalState = {
+      ...globalState,
+      eduCohorts: (globalState.eduCohorts || []).filter((ch) => ch.id !== cohortId),
+      eduSessions: (globalState.eduSessions || []).filter((s) => s.cohortId !== cohortId),
+    };
+    notify();
+    showToast({
+      type: 'warning',
+      title: 'Cohort Deleted',
+      message: 'Cohort and syllabus schedule removed.',
+      syncStatus: isSupabaseConfigured() ? 'synced' : 'local',
+      table: 'edu_cohorts',
+    });
+  };
+
+  const addEduSession = (sessionData: Omit<EduSession, 'id' | 'tenantId' | 'facilityId' | 'createdAt'>) => {
+    const newSession: EduSession = {
+      ...sessionData,
+      id: `sess_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      tenantId: state.account.id,
+      facilityId: state.currentBranchId,
+      createdAt: new Date().toISOString(),
+    };
+    globalState = {
+      ...globalState,
+      eduSessions: [...(globalState.eduSessions || []), newSession],
+    };
+    notify();
+    showToast({
+      type: 'success',
+      title: 'Class Scheduled',
+      message: `Session for ${newSession.cohortName} booked on ${newSession.date}.`,
+      syncStatus: isSupabaseConfigured() ? 'synced' : 'local',
+      table: 'edu_sessions',
+    });
+    return newSession;
+  };
+
+  const updateEduSession = (sessionId: string, updates: Partial<EduSession>) => {
+    globalState = {
+      ...globalState,
+      eduSessions: (globalState.eduSessions || []).map((se) =>
+        se.id === sessionId ? { ...se, ...updates } : se
+      ),
+    };
+    notify();
+  };
+
+  const deleteEduSession = (sessionId: string) => {
+    globalState = {
+      ...globalState,
+      eduSessions: (globalState.eduSessions || []).filter((se) => se.id !== sessionId),
+    };
+    notify();
+  };
+
+  const batchRecordAttendance = (
+    sessionId: string,
+    cohortId: string,
+    records: { studentId: string; studentName: string; status: AttendanceStatus; minutesLate?: number; excuseNote?: string }[]
+  ) => {
+    const nowIso = new Date().toISOString();
+    const newRecords: EduAttendance[] = records.map((r) => ({
+      id: `att_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      tenantId: state.account.id,
+      facilityId: state.currentBranchId,
+      sessionId,
+      cohortId,
+      studentId: r.studentId,
+      studentName: r.studentName,
+      status: r.status,
+      minutesLate: r.minutesLate,
+      excuseNote: r.excuseNote,
+      recordedAt: nowIso,
+    }));
+
+    const existing = (globalState.eduAttendance || []).filter((a) => a.sessionId !== sessionId);
+    const updatedAttendance = [...newRecords, ...existing];
+
+    const updatedSessions = (globalState.eduSessions || []).map((s) =>
+      s.id === sessionId ? { ...s, status: 'Completed' as const } : s
+    );
+
+    const updatedStudents = (globalState.eduStudents || []).map((st) => {
+      const studentRecords = updatedAttendance.filter((a) => a.studentId === st.id);
+      if (studentRecords.length === 0) return st;
+      const presentCount = studentRecords.filter((a) => a.status === 'Present' || a.status === 'Late').length;
+      const rate = Math.round((presentCount / studentRecords.length) * 1000) / 10;
+      return { ...st, attendanceRatePercent: rate };
+    });
+
+    globalState = {
+      ...globalState,
+      eduAttendance: updatedAttendance,
+      eduSessions: updatedSessions,
+      eduStudents: updatedStudents,
+    };
+    notify();
+
+    const presentTally = records.filter((r) => r.status === 'Present' || r.status === 'Late').length;
+    showToast({
+      type: 'success',
+      title: 'Roll Call Submitted',
+      message: `${presentTally}/${records.length} students logged present.`,
+      syncStatus: isSupabaseConfigured() ? 'synced' : 'local',
+      table: 'edu_attendance',
+    });
+  };
+
+  const recordEduGrade = (gradeData: Omit<EduGrade, 'id' | 'tenantId' | 'facilityId' | 'gradedAt'>) => {
+    const newGrade: EduGrade = {
+      ...gradeData,
+      id: `grd_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      tenantId: state.account.id,
+      facilityId: state.currentBranchId,
+      gradedAt: new Date().toISOString(),
+    };
+    globalState = {
+      ...globalState,
+      eduGrades: [newGrade, ...(globalState.eduGrades || [])],
+    };
+    notify();
+    showToast({
+      type: 'success',
+      title: 'Grade Recorded',
+      message: `${newGrade.studentName}: ${newGrade.score}/${newGrade.maxScore} on ${newGrade.assessmentTitle}.`,
+      syncStatus: isSupabaseConfigured() ? 'synced' : 'local',
+      table: 'edu_grades',
+    });
+    return newGrade;
+  };
+
+  const deleteEduGrade = (gradeId: string) => {
+    globalState = {
+      ...globalState,
+      eduGrades: (globalState.eduGrades || []).filter((g) => g.id !== gradeId),
+    };
+    notify();
+  };
+
+  const recordTuitionPayment = (
+    enrollmentId: string,
+    installmentIndex: number,
+    amount: number,
+    paymentMethod: string = 'Cash'
+  ) => {
+    const nowIso = new Date().toISOString();
+    globalState = {
+      ...globalState,
+      eduEnrollments: (globalState.eduEnrollments || []).map((en) => {
+        if (en.id !== enrollmentId) return en;
+        const newPaid = Math.min(en.agreedTuition, (en.paidAmount || 0) + amount);
+        const newBalance = Math.max(0, en.agreedTuition - newPaid);
+        const newStatus: EnrollmentPaymentStatus = newBalance === 0 ? 'Paid' : 'Partial';
+
+        const updatedInstallments = (en.installments || []).map((inst, idx) => {
+          if (idx === installmentIndex) {
+            return { ...inst, isPaid: true, paidAt: nowIso };
+          }
+          return inst;
+        });
+
+        return {
+          ...en,
+          paidAmount: newPaid,
+          balanceDue: newBalance,
+          paymentStatus: newStatus,
+          installments: updatedInstallments,
+        };
+      }),
+    };
+    notify();
+    showToast({
+      type: 'success',
+      title: 'Tuition Payment Logged',
+      message: `Recorded payment of ${amount.toLocaleString()} DZD via ${paymentMethod}.`,
+      syncStatus: isSupabaseConfigured() ? 'synced' : 'local',
+      table: 'edu_enrollments',
+    });
+  };
+
+  const addEduEnrollment = (enrollmentData: Omit<EduEnrollment, 'id' | 'tenantId' | 'facilityId' | 'enrolledAt'>) => {
+    const newEnrollment: EduEnrollment = {
+      ...enrollmentData,
+      id: `enr_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      tenantId: state.account.id,
+      facilityId: state.currentBranchId,
+      enrolledAt: new Date().toISOString(),
+    };
+
+    const updatedCohorts = (globalState.eduCohorts || []).map((c) =>
+      c.id === newEnrollment.cohortId
+        ? { ...c, enrolledCount: (c.enrolledCount || 0) + 1 }
+        : c
+    );
+
+    globalState = {
+      ...globalState,
+      eduEnrollments: [newEnrollment, ...(globalState.eduEnrollments || [])],
+      eduCohorts: updatedCohorts,
+    };
+    notify();
+    showToast({
+      type: 'success',
+      title: 'Enrollment Confirmed',
+      message: `${newEnrollment.studentName} enrolled in ${newEnrollment.cohortName}.`,
+      syncStatus: isSupabaseConfigured() ? 'synced' : 'local',
+      table: 'edu_enrollments',
+    });
+    return newEnrollment;
+  };
+
+  const addEduAdmissionLead = (leadData: Omit<EduAdmissionLead, 'id' | 'tenantId' | 'facilityId' | 'createdAt'>) => {
+    const newLead: EduAdmissionLead = {
+      ...leadData,
+      id: `lead_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      tenantId: state.account.id,
+      facilityId: state.currentBranchId,
+      createdAt: new Date().toISOString(),
+    };
+    globalState = {
+      ...globalState,
+      eduAdmissions: [newLead, ...(globalState.eduAdmissions || [])],
+    };
+    notify();
+    showToast({
+      type: 'success',
+      title: 'Prospect Added',
+      message: `${newLead.studentName} logged in admissions pipeline.`,
+      syncStatus: isSupabaseConfigured() ? 'synced' : 'local',
+      table: 'edu_admissions',
+    });
+    return newLead;
+  };
+
+  const updateAdmissionStage = (leadId: string, stage: AdmissionStage) => {
+    globalState = {
+      ...globalState,
+      eduAdmissions: (globalState.eduAdmissions || []).map((l) =>
+        l.id === leadId ? { ...l, stage } : l
+      ),
+    };
+    notify();
+  };
+
+  const convertAdmissionToStudent = (leadId: string, cohortId: string) => {
+    const lead = (globalState.eduAdmissions || []).find((l) => l.id === leadId);
+    const cohort = (globalState.eduCohorts || []).find((c) => c.id === cohortId);
+    if (!lead || !cohort) return;
+
+    const newStudent: EduStudent = {
+      id: `std_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      tenantId: state.account.id,
+      facilityId: state.currentBranchId,
+      fullName: lead.studentName,
+      email: lead.email,
+      phone: lead.phone,
+      guardianName: lead.guardianName,
+      status: 'Active',
+      attendanceRatePercent: 100,
+      createdAt: new Date().toISOString(),
+    };
+
+    const tuition = cohort.tuitionFee;
+    const tranche1 = Math.round(tuition * 0.5);
+    const tranche2 = tuition - tranche1;
+
+    const newEnrollment: EduEnrollment = {
+      id: `enr_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      tenantId: state.account.id,
+      facilityId: state.currentBranchId,
+      studentId: newStudent.id,
+      studentName: newStudent.fullName,
+      cohortId: cohort.id,
+      cohortName: cohort.name,
+      enrolledAt: new Date().toISOString(),
+      agreedTuition: tuition,
+      discountAmount: 0,
+      paidAmount: 0,
+      balanceDue: tuition,
+      currency: cohort.currency,
+      paymentStatus: 'Pending',
+      status: 'Active',
+      installments: [
+        { dueDate: cohort.startDate, amount: tranche1, isPaid: false },
+        { dueDate: cohort.endDate, amount: tranche2, isPaid: false },
+      ],
+    };
+
+    globalState = {
+      ...globalState,
+      eduStudents: [newStudent, ...(globalState.eduStudents || [])],
+      eduEnrollments: [newEnrollment, ...(globalState.eduEnrollments || [])],
+      eduCohorts: (globalState.eduCohorts || []).map((c) =>
+        c.id === cohort.id ? { ...c, enrolledCount: (c.enrolledCount || 0) + 1 } : c
+      ),
+      eduAdmissions: (globalState.eduAdmissions || []).map((l) =>
+        l.id === leadId ? { ...l, stage: 'Enrolled' as const } : l
+      ),
+    };
+    notify();
+    showToast({
+      type: 'success',
+      title: 'Student Enrolled',
+      message: `${newStudent.fullName} admitted & enrolled in ${cohort.name}!`,
+      syncStatus: isSupabaseConfigured() ? 'synced' : 'local',
+      table: 'edu_students',
+    });
+  };
+
+  const issueEduCertificate = (certData: Omit<EduCertificate, 'id' | 'tenantId' | 'facilityId' | 'createdAt' | 'certificateNumber' | 'verificationHash'>) => {
+    const certNum = `ATRIUM-CERT-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
+    const hash = '0x' + Array.from({ length: 16 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
+    const newCert: EduCertificate = {
+      ...certData,
+      id: `cert_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      tenantId: state.account.id,
+      facilityId: state.currentBranchId,
+      certificateNumber: certNum,
+      verificationHash: hash,
+      createdAt: new Date().toISOString(),
+    };
+    globalState = {
+      ...globalState,
+      eduCertificates: [newCert, ...(globalState.eduCertificates || [])],
+    };
+    notify();
+    showToast({
+      type: 'success',
+      title: 'Certificate Issued',
+      message: `Issued #${certNum} for ${newCert.studentName}.`,
+      syncStatus: isSupabaseConfigured() ? 'synced' : 'local',
+      table: 'edu_certificates',
+    });
+    return newCert;
+  };
+
+  const addEduClassroom = (classroomData: Omit<EduClassroom, 'id' | 'tenantId' | 'facilityId' | 'createdAt'>) => {
+    const newRoom: EduClassroom = {
+      ...classroomData,
+      id: `room_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      tenantId: state.account.id,
+      facilityId: state.currentBranchId,
+      createdAt: new Date().toISOString(),
+    };
+    globalState = {
+      ...globalState,
+      eduClassrooms: [...(globalState.eduClassrooms || []), newRoom],
+    };
+    notify();
+    return newRoom;
+  };
+
+  const addEduCourse = (courseData: Omit<EduCourse, 'id' | 'tenantId' | 'facilityId' | 'createdAt'>) => {
+    const newCourse: EduCourse = {
+      ...courseData,
+      id: `course_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      tenantId: state.account.id,
+      facilityId: state.currentBranchId,
+      createdAt: new Date().toISOString(),
+    };
+    globalState = {
+      ...globalState,
+      eduCourses: [newCourse, ...(globalState.eduCourses || [])],
+    };
+    notify();
+    return newCourse;
+  };
+
   const resetAllData = () => {
     globalState = DEFAULT_STATE;
     notify();
@@ -3715,6 +4192,17 @@ export function useAtriumStore() {
     rentalBookings: currentRentalBookings,
     rentalRenters: currentRentalRenters,
     securityDeposits: currentSecurityDeposits,
+    // Education & Academy Collections (Strictly Scoped by Active Branch)
+    eduCourses: currentEduCourses,
+    eduClassrooms: currentEduClassrooms,
+    eduCohorts: currentEduCohorts,
+    eduStudents: currentEduStudents,
+    eduEnrollments: currentEduEnrollments,
+    eduSessions: currentEduSessions,
+    eduAttendance: currentEduAttendance,
+    eduGrades: currentEduGrades,
+    eduCertificates: currentEduCertificates,
+    eduAdmissions: currentEduAdmissions,
     selectedMember,
     isDetailOpen: state.isDetailOpen,
     // Actions
@@ -3801,6 +4289,27 @@ export function useAtriumStore() {
     deleteRentalRenter,
     releaseSecurityDeposit,
     deductSecurityDeposit,
+    // Education & Academy Actions
+    addEduStudent,
+    updateEduStudent,
+    deleteEduStudent,
+    addEduCohort,
+    updateEduCohort,
+    deleteEduCohort,
+    addEduSession,
+    updateEduSession,
+    deleteEduSession,
+    batchRecordAttendance,
+    recordEduGrade,
+    deleteEduGrade,
+    recordTuitionPayment,
+    addEduEnrollment,
+    addEduAdmissionLead,
+    updateAdmissionStage,
+    convertAdmissionToStudent,
+    issueEduCertificate,
+    addEduClassroom,
+    addEduCourse,
     // Auth Actions
     login,
     loginWithPin,

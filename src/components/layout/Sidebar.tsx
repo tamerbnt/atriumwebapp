@@ -17,6 +17,9 @@ import {
   Kanban,
   DoorOpen,
   ShieldCheck,
+  GraduationCap,
+  Award,
+  BookOpen,
 } from 'lucide-react';
 import { useAtriumStore, ActiveScreen } from '../../services/store';
 
@@ -235,6 +238,58 @@ export const Sidebar: React.FC<SidebarProps> = ({
         id: 'settings',
         icon: <Settings size={19} />,
         title: 'Venue Locations & Settings',
+        label: 'Settings',
+      },
+    ];
+  } else if (category === 'education_cohort') {
+    // Dedicated Education, Academy & Tutoring Architecture
+    dockNavItems = [
+      {
+        id: 'dashboard',
+        icon: <Home size={19} />,
+        title: 'Academy Pulse Dashboard',
+        label: 'Pulse',
+      },
+      {
+        id: 'scheduler',
+        icon: <Calendar size={19} />,
+        title: 'Timetable & Classrooms Matrix',
+        label: 'Timetable',
+      },
+      {
+        id: 'members',
+        icon: <Users size={19} />,
+        title: 'Students & Guardians CRM Directory',
+        label: 'Students',
+      },
+      {
+        id: 'shop',
+        icon: <GraduationCap size={19} />,
+        title: 'Cohorts, Courses & Syllabi Hub',
+        label: 'Cohorts',
+      },
+      {
+        id: 'registrations',
+        icon: <ClipboardList size={19} />,
+        title: 'Admissions & Inquiries Funnel',
+        label: 'Admissions',
+      },
+      {
+        id: 'analytics',
+        icon: <Award size={19} />,
+        title: 'Roll Call Attendance & Gradebook Matrix',
+        label: 'Attendance & Grades',
+      },
+      {
+        id: 'finance',
+        icon: <Wallet size={19} />,
+        title: 'Tuition, Installments & Aging AR Radar',
+        label: 'Tuition & Billing',
+      },
+      {
+        id: 'settings',
+        icon: <Settings size={19} />,
+        title: 'Academy Setup & Certificates',
         label: 'Settings',
       },
     ];

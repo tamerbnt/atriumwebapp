@@ -31,6 +31,13 @@ import { VenueBookingsView } from './components/screens/venue/VenueBookingsView'
 import { VenueInventoryView } from './components/screens/venue/VenueInventoryView';
 import { VenueRentersView } from './components/screens/venue/VenueRentersView';
 import { VenueFinanceView } from './components/screens/venue/VenueFinanceView';
+import { EducationDashboardView } from './components/screens/education/EducationDashboardView';
+import { EducationTimetableView } from './components/screens/education/EducationTimetableView';
+import { EducationStudentsView } from './components/screens/education/EducationStudentsView';
+import { EducationCohortsView } from './components/screens/education/EducationCohortsView';
+import { EducationAdmissionsView } from './components/screens/education/EducationAdmissionsView';
+import { EducationAttendanceView } from './components/screens/education/EducationAttendanceView';
+import { EducationFinanceView } from './components/screens/education/EducationFinanceView';
 import { DesktopUpgradeModal } from './components/modals/DesktopUpgradeModal';
 import { ToastContainer } from './components/common/ToastContainer';
 
@@ -138,6 +145,32 @@ export default function App() {
           return <SettingsScreen onOpenVoucherModal={() => setIsVoucherModalOpen(true)} />;
         default:
           return <VenueDashboardView />;
+      }
+    }
+
+    const isEducation = currentBusiness?.category === 'education_cohort';
+    if (isEducation) {
+      switch (activeScreen) {
+        case 'dashboard':
+          return <EducationDashboardView />;
+        case 'scheduler':
+          return <EducationTimetableView />;
+        case 'members':
+          return <EducationStudentsView />;
+        case 'shop':
+          return <EducationCohortsView />;
+        case 'registrations':
+          return <EducationAdmissionsView />;
+        case 'analytics':
+          return <EducationAttendanceView />;
+        case 'finance':
+          return <EducationFinanceView />;
+        case 'history':
+          return <EducationAttendanceView />;
+        case 'settings':
+          return <SettingsScreen onOpenVoucherModal={() => setIsVoucherModalOpen(true)} />;
+        default:
+          return <EducationDashboardView />;
       }
     }
 

@@ -766,6 +766,7 @@ export interface EduCohort {
   classroomId?: string;
   classroomName?: string;
   name: string; // e.g. "IELTS Advanced - Batch 04"
+  cohortCode?: string;
   startDate: string; // YYYY-MM-DD
   endDate: string;   // YYYY-MM-DD
   maxStudents: number;
