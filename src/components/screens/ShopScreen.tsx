@@ -39,7 +39,7 @@ import {
   FileText,
   Phone,
 } from 'lucide-react';
-import { useAtriumStore } from '../../services/store';
+import { useAtriumStore, showToast } from '../../services/store';
 import { Product, PaymentDetail, ParkedOrder, StockMovement, ReceiptConfig } from '../../types/index';
 import { formatMoney } from '../../utils/rules';
 import { Modal } from '../ui/Modal';
@@ -295,21 +295,33 @@ export const ShopScreen: React.FC = () => {
       setBarcodeQuery('');
     } else {
       if (soundEnabled) playBeep(330, 0.2); // error low beep
-      alert(`No product found with Barcode or SKU: "${barcodeQuery}"`);
+      showToast({
+        type: 'warning',
+        title: 'Product Not Found',
+        message: `No item found matching Barcode or SKU "${barcodeQuery}".`,
+      });
     }
   };
 
   // Add to cart
   const addToCart = (product: Product) => {
     if (product.stockQuantity <= 0) {
-      alert(`"${product.name}" is currently OUT OF STOCK.`);
+      showToast({
+        type: 'warning',
+        title: 'Out of Stock',
+        message: `"${product.name}" is currently sold out and unavailable.`,
+      });
       return;
     }
     setCart((prev) => {
       const existing = prev.find((item) => item.product.id === product.id);
       if (existing) {
         if (existing.quantity >= product.stockQuantity) {
-          alert(`Cannot add more than available stock (${product.stockQuantity} units).`);
+          showToast({
+            type: 'warning',
+            title: 'Max Stock Reached',
+            message: `Cannot exceed available inventory limit (${product.stockQuantity} units).`,
+          });
           return prev;
         }
         return prev.map((item) =>
@@ -329,7 +341,11 @@ export const ShopScreen: React.FC = () => {
           if (item.product.id === productId) {
             const newQty = item.quantity + delta;
             if (newQty > item.product.stockQuantity) {
-              alert(`Max available stock is ${item.product.stockQuantity}`);
+              showToast({
+                type: 'warning',
+                title: 'Inventory Cap',
+                message: `Maximum in-stock count for this item is ${item.product.stockQuantity} units.`,
+              });
               return item;
             }
             return newQty > 0 ? { ...item, quantity: newQty } : null;
@@ -398,7 +414,11 @@ export const ShopScreen: React.FC = () => {
     if (cart.length === 0) return;
 
     if (checkoutMode === 'split' && splitRemaining !== 0) {
-      alert(`Split payments total must match order total exactly. Remaining: ${splitRemaining} DA`);
+      showToast({
+        type: 'warning',
+        title: 'Payment Mismatch',
+        message: `Split payments total must equal the cart total exactly. Remaining balance: ${splitRemaining} DA`,
+      });
       return;
     }
 
@@ -469,7 +489,11 @@ export const ShopScreen: React.FC = () => {
     setHoldOrderRefName('');
     setHoldOrderNotes('');
     setIsHoldOrderModalOpen(false);
-    alert(`Order held successfully. You can resume it anytime from the "Held Orders" tab.`);
+    showToast({
+      type: 'info',
+      title: 'Order Parked',
+      message: 'Order held successfully. You can resume it anytime from the Held Orders tab.',
+    });
   };
 
   // Resume parked order

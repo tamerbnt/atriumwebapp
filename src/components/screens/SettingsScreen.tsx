@@ -23,7 +23,7 @@ import {
   Download,
   HardDrive,
 } from 'lucide-react';
-import { useAtriumStore } from '../../services/store';
+import { useAtriumStore, showToast } from '../../services/store';
 import { Modal } from '../ui/Modal';
 import { validateVoucherCode } from '../../utils/rules';
 
@@ -98,10 +98,19 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
+      showToast({
+        type: 'success',
+        title: 'Backup Exported',
+        message: `Database backup for ${currentBusiness.name} downloaded as JSON.`,
+      });
       setExportedStatus('Complete database JSON backup downloaded successfully!');
       setTimeout(() => setExportedStatus(null), 4000);
-    } catch (err) {
-      console.warn('Backup export failed:', err);
+    } catch (err: any) {
+      showToast({
+        type: 'error',
+        title: 'Export Failed',
+        message: err?.message || 'Could not generate backup file.',
+      });
     }
   };
 
@@ -114,7 +123,11 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
         const text = event.target?.result as string;
         const parsed = JSON.parse(text);
         if (!parsed || !Array.isArray(parsed.businesses) || !parsed.account) {
-          alert('Invalid Atrium backup file format. Expected a valid database export.');
+          showToast({
+            type: 'error',
+            title: 'Invalid Backup File',
+            message: 'Expected a valid Atrium JSON database export containing businesses and account schemas.',
+          });
           return;
         }
         setPendingBackupContent(text);
@@ -126,7 +139,11 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
         });
         setIsRestoreModalOpen(true);
       } catch (err) {
-        alert('Could not parse backup file. Please ensure it is a valid JSON export.');
+        showToast({
+          type: 'error',
+          title: 'Corrupted Backup File',
+          message: 'Could not parse JSON. Please ensure the file was not modified or corrupted.',
+        });
       }
     };
     reader.readAsText(file);
@@ -137,8 +154,19 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
     if (!pendingBackupContent) return;
     const success = importDatabase(pendingBackupContent);
     if (success) {
+      showToast({
+        type: 'success',
+        title: 'Database Restored',
+        message: 'All records, settings, and business states restored successfully.',
+      });
       setExportedStatus('Database restored successfully from backup!');
       setTimeout(() => setExportedStatus(null), 4000);
+    } else {
+      showToast({
+        type: 'error',
+        title: 'Restoration Failed',
+        message: 'Database could not be imported. Incompatible backup format.',
+      });
     }
     setIsRestoreModalOpen(false);
     setPendingBackupContent(null);
@@ -457,6 +485,100 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
           <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/60 text-xs text-rose-700 dark:text-rose-300 flex items-center gap-2">
             <AlertTriangle size={15} className="shrink-0" />
             <span>{syncErrorMessage}</span>
+          </div>
+        )}
+      </div>
+
+      {/* Row 1.8: Data Portability & Disaster Recovery Center */}
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[26px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-[#FDF4F0] dark:bg-[#2A2420] text-[#C4785A] flex items-center justify-center shrink-0 border border-[#F5E2D8] dark:border-[#4A3B33]">
+              <HardDrive size={20} />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-base font-bold text-neutral-900 dark:text-white">
+                  Data Backup & Disaster Recovery Center
+                </h3>
+                <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400">
+                  Local Snapshot Ready
+                </span>
+              </div>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
+                Download a 100% portable JSON snapshot of your entire workspace or restore past records onto any device.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={handleExportDataBackup}
+              className="h-9 px-3.5 rounded-xl bg-neutral-900 hover:bg-neutral-800 dark:bg-white dark:hover:bg-neutral-100 text-white dark:text-neutral-900 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+            >
+              <FileDown size={14} />
+              <span>Export Full JSON</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="h-9 px-3.5 rounded-xl bg-white dark:bg-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-700/80 text-neutral-800 dark:text-neutral-200 border border-neutral-300 dark:border-neutral-700 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
+            >
+              <FileUp size={14} className="text-[#C4785A]" />
+              <span>Restore Backup</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Live Storage Breakdown */}
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 pt-1">
+          <div className="p-3 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60">
+            <span className="text-[10px] uppercase font-bold text-neutral-400 block tracking-wider">Tenants</span>
+            <span className="text-base font-extrabold text-neutral-900 dark:text-white mt-0.5 block">
+              {businesses.length} Business{businesses.length !== 1 ? 'es' : ''}
+            </span>
+            <span className="text-[10px] text-neutral-400 block mt-0.5">{branches.length} Branches</span>
+          </div>
+
+          <div className="p-3 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60">
+            <span className="text-[10px] uppercase font-bold text-neutral-400 block tracking-wider">CRM Clients</span>
+            <span className="text-base font-extrabold text-[#C4785A] mt-0.5 block">
+              {members.length + (freelanceClients?.length || 0)} Contacts
+            </span>
+            <span className="text-[10px] text-neutral-400 block mt-0.5">Active ledger profiles</span>
+          </div>
+
+          <div className="p-3 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60">
+            <span className="text-[10px] uppercase font-bold text-neutral-400 block tracking-wider">Inventory</span>
+            <span className="text-base font-extrabold text-neutral-900 dark:text-white mt-0.5 block">
+              {products.length} Items
+            </span>
+            <span className="text-[10px] text-neutral-400 block mt-0.5">SKUs & packages</span>
+          </div>
+
+          <div className="p-3 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60">
+            <span className="text-[10px] uppercase font-bold text-neutral-400 block tracking-wider">Transactions</span>
+            <span className="text-base font-extrabold text-neutral-900 dark:text-white mt-0.5 block">
+              {sales.length + (freelanceInvoices?.length || 0)} Records
+            </span>
+            <span className="text-[10px] text-neutral-400 block mt-0.5">Orders & invoices</span>
+          </div>
+
+          <div className="p-3 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 col-span-2 sm:col-span-1">
+            <span className="text-[10px] uppercase font-bold text-neutral-400 block tracking-wider">Storage Engine</span>
+            <span className="text-base font-extrabold text-emerald-600 dark:text-emerald-400 mt-0.5 block">
+              Encrypted
+            </span>
+            <span className="text-[10px] text-neutral-400 block mt-0.5">LocalStorage v2</span>
+          </div>
+        </div>
+
+        {exportedStatus && (
+          <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-xs text-emerald-700 dark:text-emerald-300 flex items-center gap-2">
+            <CheckCircle2 size={15} className="shrink-0 text-emerald-600 dark:text-emerald-400" />
+            <span>{exportedStatus}</span>
           </div>
         )}
       </div>
