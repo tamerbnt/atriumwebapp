@@ -379,18 +379,16 @@ export const FreelanceTimeTrackerView: React.FC = () => {
               </select>
             </div>
 
-            <div>
-              <label className="text-[11px] font-semibold text-neutral-400 block mb-1">
-                Task Brief
-              </label>
-              <input
-                type="text"
-                value={taskDescription}
-                onChange={(e) => setTaskDescription(e.target.value)}
+              <LabelInput
+                field="Task"
+                label="Task Brief — What are you working on?"
                 placeholder="What are you working on?"
-                className="w-full px-3 py-2 rounded-xl bg-neutral-800 text-white border border-neutral-700 focus:outline-none"
+                value={taskDescription}
+                onChange={setTaskDescription}
+                width="100%"
+                height={46}
+                corner={14}
               />
-            </div>
 
             <div className="flex items-center justify-between sm:justify-end gap-4 pt-4 sm:pt-0">
               <label className="flex items-center gap-2 cursor-pointer text-neutral-300">

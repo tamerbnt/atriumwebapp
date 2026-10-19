@@ -20,6 +20,8 @@ import {
   Download,
   Eye,
 } from 'lucide-react';
+import { LabelInput } from '../../ui/LabelInput';
+import { Seek } from '../../ui/Seek';
 
 interface ProjectCreaViewProps {
   initialTab?: 'demandes' | 'kanban' | 'production' | 'upload' | 'briefs';
@@ -498,16 +500,16 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block mb-1">
-                  Nom du Livrable Graphique (ex: Rollup_85x200, Kakemono_Entree, Stand_Parapluie)
-                </label>
-                <input
-                  type="text"
+                <LabelInput
+                  field="ArtworkTitle"
+                  label="Nom du Livrable Graphique *"
                   required
                   placeholder="BAT_Rollup_BabEzzouar_85x200"
                   value={artworkTitle}
-                  onChange={(e) => setArtworkTitle(e.target.value)}
-                  className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-[#C4785A]"
+                  onChange={setArtworkTitle}
+                  width="100%"
+                  height={46}
+                  corner={14}
                 />
               </div>
 
@@ -573,14 +575,15 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
 
               {/* URL Preview */}
               <div>
-                <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block mb-1">
-                  URL de Prévisualisation du BAT (Aperçu HD)
-                </label>
-                <input
+                <LabelInput
+                  field="PreviewUrl"
+                  label="URL de Prévisualisation du BAT (Aperçu HD)"
                   type="url"
                   value={previewUrl}
-                  onChange={(e) => setPreviewUrl(e.target.value)}
-                  className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
+                  onChange={setPreviewUrl}
+                  width="100%"
+                  height={46}
+                  corner={14}
                 />
               </div>
 

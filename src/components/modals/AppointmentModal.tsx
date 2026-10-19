@@ -441,16 +441,17 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
         </div>
 
         {/* Date, Time & Duration Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div className="space-y-1">
-            <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300 flex items-center gap-1.5">
-              <Calendar size={14} /> Date
-            </label>
-            <input
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
+          <div>
+            <LabelInput
+              field="AppointmentDate"
+              label="Appointment Date"
               type="date"
               value={date}
-              onChange={(e) => setDate(e.target.value)}
-              className="w-full h-10 px-3 text-sm rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:border-[#C4785A]"
+              onChange={setDate}
+              width="100%"
+              height={46}
+              corner={14}
             />
           </div>
 
@@ -461,7 +462,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
             <select
               value={startTime}
               onChange={(e) => setStartTime(e.target.value)}
-              className="w-full h-10 px-3 text-sm rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:border-[#C4785A]"
+              className="w-full h-11 px-3 text-sm rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:border-[#C4785A]"
             >
               {[
                 '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
@@ -480,25 +481,26 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
             <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
               Estimated End ({durationMinutes}m)
             </label>
-            <div className="w-full h-10 px-3 flex items-center bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-sm font-semibold rounded-xl">
+            <div className="w-full h-11 px-3 flex items-center bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-sm font-semibold rounded-xl">
               {calculatedEndTime}
             </div>
           </div>
         </div>
 
         {/* Price & Status */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div className="space-y-1">
-            <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300 flex items-center gap-1.5">
-              <DollarSign size={14} /> Price (DZD)
-            </label>
-            <input
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-end">
+          <div>
+            <LabelInput
+              field="Price"
+              label="Price (DZD)"
               type="number"
-              value={price}
-              onChange={(e) => setPrice(Number(e.target.value))}
               min={0}
               step={500}
-              className="w-full h-10 px-3 text-sm rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:border-[#C4785A]"
+              value={price}
+              onChange={(val) => setPrice(Number(val?.target?.value || val || 0))}
+              width="100%"
+              height={46}
+              corner={14}
             />
           </div>
 

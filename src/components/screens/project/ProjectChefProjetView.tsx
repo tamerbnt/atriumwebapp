@@ -19,6 +19,8 @@ import {
   ChevronRight,
   Printer,
 } from 'lucide-react';
+import { LabelInput } from '../../ui/LabelInput';
+import { Seek } from '../../ui/Seek';
 
 interface ProjectChefProjetViewProps {
   initialTab?: 'portfolio' | 'catalog' | 'orders' | 'bat' | 'expenses';
@@ -62,6 +64,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
   const [correctionNote, setCorrectionNote] = useState('');
   const [isCorrectionModalOpen, setIsCorrectionModalOpen] = useState(false);
 
+  const [catalogSearch, setCatalogSearch] = useState('');
   // Slide 11: Purchase Declaration Form State
   const [purchaseTitle, setPurchaseTitle] = useState('Nappe comptoir brandée');
   const [purchaseAmount, setPurchaseAmount] = useState('8400');
@@ -70,6 +73,13 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
   const [purchaseSuccessMessage, setPurchaseSuccessMessage] = useState<string | null>(null);
 
   const selectedProject = pmProjects.find((p) => p.id === selectedProjectId) || pmProjects[0];
+
+  const filteredCatalog = pmCollateralCatalog.filter((item) =>
+    !catalogSearch.trim() ||
+    item.title.toLowerCase().includes(catalogSearch.toLowerCase()) ||
+    item.category.toLowerCase().includes(catalogSearch.toLowerCase()) ||
+    item.sku.toLowerCase().includes(catalogSearch.toLowerCase())
+  );
 
   // Calculate project expenses
   const projectExpenses = pmExpenses.filter((e) => e.projectId === selectedProject?.id);
@@ -344,7 +354,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
               </div>
             </div>
 
-            <div className="p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm flex items-center justify-between">
+            <div className="p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm flex flex-wrap items-center justify-between gap-4">
               <div>
                 <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
                   Catalogue PLV, Bannières & Textile
@@ -353,17 +363,26 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                   Commandez les supports physiques pour vos activations de terrain.
                 </p>
               </div>
-              <button
-                onClick={() => setIsCartOpen(true)}
-                className="px-3 py-1.5 text-xs font-semibold text-[#C4785A] border border-[#C4785A]/30 hover:bg-[#C4785A]/10 rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer"
-              >
-                <ShoppingBag className="w-3.5 h-3.5" />
-                Voir Panier ({cartItems.length})
-              </button>
+              <div className="flex items-center gap-3">
+                <Seek
+                  value={catalogSearch}
+                  onChange={setCatalogSearch}
+                  placeholder="Rechercher PLV, rollup, dimensions..."
+                  openWidth={260}
+                  shutSize={38}
+                />
+                <button
+                  onClick={() => setIsCartOpen(true)}
+                  className="px-3 py-1.5 text-xs font-semibold text-[#C4785A] border border-[#C4785A]/30 hover:bg-[#C4785A]/10 rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer"
+                >
+                  <ShoppingBag className="w-3.5 h-3.5" />
+                  Voir Panier ({cartItems.length})
+                </button>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {pmCollateralCatalog.map((item) => (
+              {filteredCatalog.map((item) => (
                 <div
                   key={item.id}
                   className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-4 shadow-sm flex flex-col justify-between hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors"
@@ -730,31 +749,32 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
               </div>
             )}
 
-            <form onSubmit={handleDeclarePurchase} className="grid grid-cols-1 md:grid-cols-4 gap-3 pt-1">
+            <form onSubmit={handleDeclarePurchase} className="grid grid-cols-1 md:grid-cols-4 gap-3 pt-1 items-end">
               <div className="md:col-span-2">
-                <label className="text-[10px] uppercase font-bold text-zinc-500 block mb-1">
-                  Désignation du Matériel
-                </label>
-                <input
-                  type="text"
+                <LabelInput
+                  field="Designation"
+                  label="Désignation du Matériel *"
                   required
                   placeholder="Ex: Nappe comptoir brandée, Câble HDMI 15m..."
                   value={purchaseTitle}
-                  onChange={(e) => setPurchaseTitle(e.target.value)}
-                  className="w-full text-xs p-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-[#C4785A]"
+                  onChange={setPurchaseTitle}
+                  width="100%"
+                  height={46}
+                  corner={12}
                 />
               </div>
 
               <div>
-                <label className="text-[10px] uppercase font-bold text-zinc-500 block mb-1">
-                  Montant en DA
-                </label>
-                <input
+                <LabelInput
+                  field="Montant"
+                  label="Montant en DA *"
                   type="number"
                   required
                   value={purchaseAmount}
-                  onChange={(e) => setPurchaseAmount(e.target.value)}
-                  className="w-full text-xs p-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 font-mono font-bold"
+                  onChange={setPurchaseAmount}
+                  width="100%"
+                  height={46}
+                  corner={12}
                 />
               </div>
 

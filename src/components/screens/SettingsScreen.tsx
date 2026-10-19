@@ -26,6 +26,7 @@ import {
 import { useAtriumStore, showToast } from '../../services/store';
 import { Modal } from '../ui/Modal';
 import { validateVoucherCode } from '../../utils/rules';
+import { LabelInput } from '../ui/LabelInput';
 
 interface SettingsScreenProps {
   onOpenVoucherModal: () => void;

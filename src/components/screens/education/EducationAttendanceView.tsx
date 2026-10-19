@@ -460,42 +460,44 @@ export const EducationAttendanceView: React.FC = () => {
               </div>
 
               <div>
-                <label className="block font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
-                  Assessment Title *
-                </label>
-                <input
-                  type="text"
+                <LabelInput
+                  field="AssessmentTitle"
+                  label="Assessment Title *"
                   required
                   value={gradeForm.assessmentTitle}
-                  onChange={(e) => setGradeForm({ ...gradeForm, assessmentTitle: e.target.value })}
+                  onChange={(val) => setGradeForm({ ...gradeForm, assessmentTitle: String(val?.target?.value || val || '') })}
                   placeholder="e.g. Midterm Exam, Project 1, Final Defense"
-                  className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#C4785A]"
+                  width="100%"
+                  height={46}
+                  corner={14}
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
-                    Student Score *
-                  </label>
-                  <input
+                  <LabelInput
+                    field="Score"
+                    label="Student Score *"
                     type="number"
                     required
                     value={gradeForm.score}
-                    onChange={(e) => setGradeForm({ ...gradeForm, score: Number(e.target.value) })}
-                    className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white"
+                    onChange={(val) => setGradeForm({ ...gradeForm, score: Number(val?.target?.value || val || 0) })}
+                    width="100%"
+                    height={46}
+                    corner={14}
                   />
                 </div>
                 <div>
-                  <label className="block font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
-                    Max Possible Score *
-                  </label>
-                  <input
+                  <LabelInput
+                    field="MaxScore"
+                    label="Max Possible Score *"
                     type="number"
                     required
                     value={gradeForm.maxScore}
-                    onChange={(e) => setGradeForm({ ...gradeForm, maxScore: Number(e.target.value) })}
-                    className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white"
+                    onChange={(val) => setGradeForm({ ...gradeForm, maxScore: Number(val?.target?.value || val || 0) })}
+                    width="100%"
+                    height={46}
+                    corner={14}
                   />
                 </div>
               </div>

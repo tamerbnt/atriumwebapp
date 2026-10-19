@@ -2025,23 +2025,25 @@ export const ShopScreen: React.FC = () => {
               {/* Cash Change Calculator */}
               {singlePaymentMethod === 'Cash' && (
                 <div className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
-                      Amount Tendered by Customer (DA)
-                    </label>
+                  <div className="flex items-center justify-between pb-1">
+                    <span className="text-[11px] font-bold text-neutral-400">Cash Settlement</span>
                     <button
                       type="button"
                       onClick={() => setAmountTenderedInput(cartTotal.toString())}
-                      className="text-[10px] font-bold text-[#C4785A] hover:underline"
+                      className="text-[11px] font-bold text-[#C4785A] hover:underline cursor-pointer"
                     >
-                      Exact Cash
+                      Exact Cash ({formatMoney(cartTotal)})
                     </button>
                   </div>
-                  <input
+                  <LabelInput
+                    field="Tendered"
+                    label="Amount Tendered by Customer (DA)"
                     type="number"
                     value={amountTenderedInput}
-                    onChange={(e) => setAmountTenderedInput(e.target.value)}
-                    className="w-full h-11 px-3 text-lg font-mono font-black rounded-xl border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white"
+                    onChange={setAmountTenderedInput}
+                    width="100%"
+                    height={48}
+                    corner={14}
                   />
 
                   {/* Change output */}
@@ -2135,27 +2137,32 @@ export const ShopScreen: React.FC = () => {
               </select>
             </div>
 
-            <div className="space-y-1">
-              <label className="text-[11px] font-bold text-neutral-500">Customer Phone (Optional)</label>
-              <input
-                type="text"
+            <div>
+              <LabelInput
+                field="CustPhone"
+                label="Customer Phone (Optional)"
+                type="tel"
                 value={checkoutCustomerPhone}
-                onChange={(e) => setCheckoutCustomerPhone(e.target.value)}
+                onChange={setCheckoutCustomerPhone}
                 placeholder="+213 550..."
-                className="w-full h-9 px-2 text-xs rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800"
+                width="100%"
+                height={42}
+                corner={12}
               />
             </div>
           </div>
 
           {/* Notes */}
-          <div className="space-y-1">
-            <label className="text-[11px] font-bold text-neutral-500">Transaction Notes (Optional)</label>
-            <input
-              type="text"
+          <div>
+            <LabelInput
+              field="TransNotes"
+              label="Transaction Notes (Optional)"
               value={checkoutNotes}
-              onChange={(e) => setCheckoutNotes(e.target.value)}
+              onChange={setCheckoutNotes}
               placeholder="e.g. Counter #1 - SATIM Ref #9812"
-              className="w-full h-9 px-2 text-xs rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800"
+              width="100%"
+              height={42}
+              corner={12}
             />
           </div>
 
@@ -2502,30 +2509,31 @@ export const ShopScreen: React.FC = () => {
               </div>
             </div>
 
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
-                {adjustMode === 'set' ? 'New Total Physical Count' : 'Units to Adjust'}
-              </label>
-              <input
+            <div>
+              <LabelInput
+                field="AdjustQuantity"
+                label={adjustMode === 'set' ? 'New Total Physical Count *' : 'Units to Adjust *'}
                 type="number"
-                required
                 min="0"
+                required
                 value={adjustQuantity}
-                onChange={(e) => setAdjustQuantity(parseInt(e.target.value) || 0)}
-                className="w-full h-11 px-3 text-sm font-mono font-bold rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800"
+                onChange={(val) => setAdjustQuantity(Number(val?.target?.value || val || 0))}
+                width="100%"
+                height={46}
+                corner={14}
               />
             </div>
 
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
-                Audit Reason / Supplier Note
-              </label>
-              <input
-                type="text"
+            <div>
+              <LabelInput
+                field="AdjustReason"
+                label="Audit Reason / Supplier Note"
                 value={adjustReason}
-                onChange={(e) => setAdjustReason(e.target.value)}
+                onChange={setAdjustReason}
                 placeholder="e.g. Batch delivery from local wholesaler"
-                className="w-full h-11 px-3 text-sm rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800"
+                width="100%"
+                height={46}
+                corner={14}
               />
             </div>
 

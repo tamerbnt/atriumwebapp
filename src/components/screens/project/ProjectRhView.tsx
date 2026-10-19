@@ -482,7 +482,7 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                   label="Âge"
                   type="number"
                   value={age ? String(age) : ''}
-                  onChange={(v) => setAge(v ? Number(v) : '')}
+                  onChange={(v) => setAge(String(v || ''))}
                   width="100%"
                   height={46}
                   corner={14}

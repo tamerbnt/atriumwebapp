@@ -25,6 +25,8 @@ import {
   ChevronRight,
   UserPlus,
 } from 'lucide-react';
+import { LabelInput } from '../../ui/LabelInput';
+import { Seek } from '../../ui/Seek';
 
 interface ProjectSuperviseurViewProps {
   initialTab?: 'missions' | 'attendance' | 'staffing' | 'expense';
@@ -77,11 +79,22 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
   const absentCount = missionAttendances.filter((a) => a.status === 'absent').length;
   const isMissionLocked = missionAttendances.length > 0 && missionAttendances.every((a) => a.isLocked);
 
+  const [talentSearch, setTalentSearch] = useState('');
+
   // Filter talents for staffing
   const filteredTalents = pmTalents.filter((t) => {
     if (wilayaFilter !== 'all' && t.wilayaCode !== wilayaFilter) return false;
     if (t.consolidatedScore < minRatingFilter) return false;
     if (requireVehicle && !t.isVehicleOwner) return false;
+    if (talentSearch.trim()) {
+      const q = talentSearch.toLowerCase();
+      const match =
+        t.fullName.toLowerCase().includes(q) ||
+        t.phone.includes(q) ||
+        t.commune.toLowerCase().includes(q) ||
+        t.wilayaName.toLowerCase().includes(q);
+      if (!match) return false;
+    }
     return true;
   });
 
@@ -420,6 +433,14 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
           {/* Smart Filter Bar */}
           <div className="p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs flex flex-wrap items-center justify-between gap-4">
             <div className="flex flex-wrap items-center gap-3 text-xs">
+              <Seek
+                value={talentSearch}
+                onChange={setTalentSearch}
+                placeholder="Rechercher animateur, wilaya, commune..."
+                openWidth={260}
+                shutSize={38}
+              />
+
               <div>
                 <span className="text-zinc-400 block text-[10px] font-semibold mb-0.5">Wilaya</span>
                 <select
@@ -555,30 +576,31 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
 
           <form onSubmit={handleExpenseSubmit} className="space-y-4">
             <div>
-              <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block mb-1">
-                Motif de la Dépense Terrain
-              </label>
-              <input
-                type="text"
+              <LabelInput
+                field="Motif"
+                label="Motif de la Dépense Terrain *"
                 required
                 placeholder="Ex: Câble HDMI blindé pour écran stand Bab Ezzouar"
                 value={expenseTitle}
-                onChange={(e) => setExpenseTitle(e.target.value)}
-                className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-[#C4785A]"
+                onChange={setExpenseTitle}
+                width="100%"
+                height={46}
+                corner={12}
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-3 items-end">
               <div>
-                <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block mb-1">
-                  Montant en DA
-                </label>
-                <input
+                <LabelInput
+                  field="Montant"
+                  label="Montant en DA *"
                   type="number"
                   required
                   value={expenseAmount}
-                  onChange={(e) => setExpenseAmount(e.target.value)}
-                  className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 font-mono"
+                  onChange={setExpenseAmount}
+                  width="100%"
+                  height={46}
+                  corner={12}
                 />
               </div>
 
@@ -599,14 +621,15 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
             </div>
 
             <div>
-              <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block mb-1">
-                Photo du Ticket / Facturette (URL de simulation caméra)
-              </label>
-              <input
+              <LabelInput
+                field="PhotoUrl"
+                label="Photo du Ticket / Facturette (URL simulation caméra)"
                 type="url"
                 value={expensePhotoUrl}
-                onChange={(e) => setExpensePhotoUrl(e.target.value)}
-                className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
+                onChange={setExpensePhotoUrl}
+                width="100%"
+                height={46}
+                corner={12}
               />
             </div>
 

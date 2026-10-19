@@ -18,6 +18,7 @@ import { useAtriumStore } from '../../../services/store';
 import { EduSession } from '../../../types';
 import { RollCallModal } from './RollCallModal';
 import { LabelInput } from '../../ui/LabelInput';
+import { Seek } from '../../ui/Seek';
 
 export const EducationTimetableView: React.FC = () => {
   const {
@@ -47,10 +48,21 @@ export const EducationTimetableView: React.FC = () => {
     topic: '',
   });
 
+  const [sessionSearch, setSessionSearch] = useState('');
+
   // Filtered sessions
   const filteredSessions = eduSessions.filter((s) => {
     if (selectedCohortId !== 'all' && s.cohortId !== selectedCohortId) return false;
     if (selectedClassroomId !== 'all' && s.classroomId !== selectedClassroomId) return false;
+    if (sessionSearch.trim()) {
+      const q = sessionSearch.toLowerCase();
+      const match =
+        (s.topic || '').toLowerCase().includes(q) ||
+        (s.instructorName || '').toLowerCase().includes(q) ||
+        (s.cohortName || '').toLowerCase().includes(q) ||
+        (s.classroomName || '').toLowerCase().includes(q);
+      if (!match) return false;
+    }
     return true;
   });
 
@@ -172,8 +184,17 @@ export const EducationTimetableView: React.FC = () => {
           </div>
         </div>
 
-        <div className="text-xs text-neutral-500 dark:text-neutral-400">
-          Showing {filteredSessions.length} session slots
+        <div className="flex items-center gap-3">
+          <Seek
+            value={sessionSearch}
+            onChange={setSessionSearch}
+            placeholder="Search topic, coach, room..."
+            openWidth={240}
+            shutSize={38}
+          />
+          <div className="text-xs text-neutral-500 dark:text-neutral-400">
+            Showing {filteredSessions.length} session slots
+          </div>
         </div>
       </div>
 

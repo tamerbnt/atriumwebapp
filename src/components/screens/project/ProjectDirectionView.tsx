@@ -24,6 +24,8 @@ import {
   Layers,
   ArrowUpRight,
 } from 'lucide-react';
+import { LabelInput } from '../../ui/LabelInput';
+import { Seek } from '../../ui/Seek';
 
 interface ProjectDirectionViewProps {
   initialTab?: 'dashboard' | 'new_project' | 'approvals' | 'reports' | 'all' | 'payroll' | 'expenses';
@@ -61,6 +63,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
       : 'dashboard';
 
   const [approvalsTab, setApprovalsTab] = useState<'all' | 'payroll' | 'expenses'>('all');
+  const [approvalSearch, setApprovalSearch] = useState('');
   const [validatedPaieIds, setValidatedPaieIds] = useState<string[]>([]);
   const [quickBriefTitle, setQuickBriefTitle] = useState('Roadshow 5G Ouest — Rollup, A5, Kakemonos & Stands');
   const [quickBriefSuccess, setQuickBriefSuccess] = useState(false);
@@ -82,8 +85,22 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
   const totalTurnoverDzd = pmProjects.reduce((acc, p) => acc + p.budgetCapDzd, 0);
   const activeMissionsToday = pmMissions.filter((m) => m.status === 'live_today').length;
   const availableTalentsCount = pmTalents.filter((t) => t.status === 'active').length;
-  const pendingPayrollBatches = pmPayrollBatches.filter((b) => b.status === 'pending_direction_approval');
-  const pendingExpenses = pmExpenses.filter((e) => e.status === 'pending_direction_approval');
+  const pendingPayrollBatches = pmPayrollBatches.filter((b) => {
+    const matchesStatus = b.status === 'pending_direction_approval';
+    const matchesSearch = !approvalSearch.trim() ||
+      b.batchReference.toLowerCase().includes(approvalSearch.toLowerCase()) ||
+      b.missionTitle.toLowerCase().includes(approvalSearch.toLowerCase()) ||
+      b.items.some((item) => item.talentName.toLowerCase().includes(approvalSearch.toLowerCase()));
+    return matchesStatus && matchesSearch;
+  });
+  const pendingExpenses = pmExpenses.filter((e) => {
+    const matchesStatus = e.status === 'pending_direction_approval';
+    const matchesSearch = !approvalSearch.trim() ||
+      e.title.toLowerCase().includes(approvalSearch.toLowerCase()) ||
+      e.category.toLowerCase().includes(approvalSearch.toLowerCase()) ||
+      e.declaredByName.toLowerCase().includes(approvalSearch.toLowerCase());
+    return matchesStatus && matchesSearch;
+  });
   const totalPendingApprovals = pendingPayrollBatches.length + pendingExpenses.length;
 
   const handleCreateProject = (e: React.FormEvent) => {
@@ -296,12 +313,15 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
                     <span>Nouveau cahier des charges</span>
                     <span className="text-zinc-500 font-normal">Client : Ooredoo · Échéance : 20/07</span>
                   </div>
-                  <input
-                    type="text"
+                  <LabelInput
+                    field="Brief"
+                    label="Brief synthétique pour l'équipe Créa..."
                     placeholder="Brief synthétique pour l'équipe Créa..."
                     value={quickBriefTitle}
-                    onChange={(e) => setQuickBriefTitle(e.target.value)}
-                    className="w-full text-xs p-2.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none"
+                    onChange={setQuickBriefTitle}
+                    width="100%"
+                    height={46}
+                    corner={14}
                   />
                   {quickBriefSuccess && (
                     <div className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 text-xs font-semibold flex items-center gap-1.5 animate-in fade-in">
@@ -526,16 +546,16 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
           <form onSubmit={handleCreateProject} className="space-y-5">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="sm:col-span-2">
-                <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block mb-1">
-                  Titre de l'Opération / Campagne d'Activation *
-                </label>
-                <input
-                  type="text"
+                <LabelInput
+                  field="Title"
+                  label="Titre de l'Opération / Campagne d'Activation *"
                   required
                   placeholder="Ex: Roadshow National 5G Ooredoo — Caravane des Plages 2026"
                   value={newProjectTitle}
-                  onChange={(e) => setNewProjectTitle(e.target.value)}
-                  className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-[#C4785A]"
+                  onChange={setNewProjectTitle}
+                  width="100%"
+                  height={48}
+                  corner={14}
                 />
               </div>
 
@@ -557,38 +577,41 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block mb-1">
-                  Plafond Budgétaire Global (Budget Cap en DA)
-                </label>
-                <input
+                <LabelInput
+                  field="BudgetCap"
+                  label="Plafond Budgétaire Global (Budget Cap DA)"
                   type="number"
                   value={newProjectBudgetCap}
-                  onChange={(e) => setNewProjectBudgetCap(e.target.value)}
-                  className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 font-mono"
+                  onChange={setNewProjectBudgetCap}
+                  width="100%"
+                  height={48}
+                  corner={14}
                 />
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block mb-1">
-                  Plafond Dépenses Terrain (Seuil Verrouillé)
-                </label>
-                <input
+                <LabelInput
+                  field="MaxField"
+                  label="Plafond Dépenses Terrain (Seuil Verrouillé DA)"
                   type="number"
                   value={newProjectMaxField}
-                  onChange={(e) => setNewProjectMaxField(e.target.value)}
-                  className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 font-mono"
+                  onChange={setNewProjectMaxField}
+                  width="100%"
+                  height={48}
+                  corner={14}
                 />
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block mb-1">
-                  Marge Brute Cible (%)
-                </label>
-                <input
+                <LabelInput
+                  field="Margin"
+                  label="Marge Brute Cible (%)"
                   type="number"
                   value={newProjectMargin}
-                  onChange={(e) => setNewProjectMargin(e.target.value)}
-                  className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 font-mono"
+                  onChange={setNewProjectMargin}
+                  width="100%"
+                  height={48}
+                  corner={14}
                 />
               </div>
 
@@ -607,26 +630,28 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block mb-1">
-                  Date de Lancement Campagne
-                </label>
-                <input
+                <LabelInput
+                  field="StartDate"
+                  label="Date de Lancement Campagne"
                   type="date"
                   value={newProjectStartDate}
-                  onChange={(e) => setNewProjectStartDate(e.target.value)}
-                  className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
+                  onChange={setNewProjectStartDate}
+                  width="100%"
+                  height={48}
+                  corner={14}
                 />
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block mb-1">
-                  Date de Clôture Terrain
-                </label>
-                <input
+                <LabelInput
+                  field="EndDate"
+                  label="Date de Clôture Terrain"
                   type="date"
                   value={newProjectEndDate}
-                  onChange={(e) => setNewProjectEndDate(e.target.value)}
-                  className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
+                  onChange={setNewProjectEndDate}
+                  width="100%"
+                  height={48}
+                  corner={14}
                 />
               </div>
 
@@ -698,41 +723,50 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
               </p>
             </div>
 
-            {/* Filter Pills */}
-            <div className="flex items-center gap-1.5 p-1 bg-zinc-100 dark:bg-zinc-800 rounded-xl text-xs">
-              <button
-                type="button"
-                onClick={() => setApprovalsTab('all')}
-                className={`px-3 py-1.5 rounded-lg font-semibold transition-colors cursor-pointer ${
-                  approvalsTab === 'all'
-                    ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 shadow-xs'
-                    : 'text-zinc-500 hover:text-zinc-900'
-                }`}
-              >
-                Tous ({totalPendingApprovals})
-              </button>
-              <button
-                type="button"
-                onClick={() => setApprovalsTab('payroll')}
-                className={`px-3 py-1.5 rounded-lg font-semibold transition-colors cursor-pointer ${
-                  approvalsTab === 'payroll'
-                    ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 shadow-xs'
-                    : 'text-zinc-500 hover:text-zinc-900'
-                }`}
-              >
-                Lots Paie ({pendingPayrollBatches.length})
-              </button>
-              <button
-                type="button"
-                onClick={() => setApprovalsTab('expenses')}
-                className={`px-3 py-1.5 rounded-lg font-semibold transition-colors cursor-pointer ${
-                  approvalsTab === 'expenses'
-                    ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 shadow-xs'
-                    : 'text-zinc-500 hover:text-zinc-900'
-                }`}
-              >
-                Achats Terrain ({pendingExpenses.length})
-              </button>
+            {/* Search & Filter Pills */}
+            <div className="flex flex-wrap items-center gap-2">
+              <Seek
+                value={approvalSearch}
+                onChange={setApprovalSearch}
+                placeholder="Rechercher lot ou dépense..."
+                openWidth={260}
+                shutSize={38}
+              />
+              <div className="flex items-center gap-1.5 p-1 bg-zinc-100 dark:bg-zinc-800 rounded-xl text-xs">
+                <button
+                  type="button"
+                  onClick={() => setApprovalsTab('all')}
+                  className={`px-3 py-1.5 rounded-lg font-semibold transition-colors cursor-pointer ${
+                    approvalsTab === 'all'
+                      ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 shadow-xs'
+                      : 'text-zinc-500 hover:text-zinc-900'
+                  }`}
+                >
+                  Tous ({totalPendingApprovals})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setApprovalsTab('payroll')}
+                  className={`px-3 py-1.5 rounded-lg font-semibold transition-colors cursor-pointer ${
+                    approvalsTab === 'payroll'
+                      ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 shadow-xs'
+                      : 'text-zinc-500 hover:text-zinc-900'
+                  }`}
+                >
+                  Lots Paie ({pendingPayrollBatches.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setApprovalsTab('expenses')}
+                  className={`px-3 py-1.5 rounded-lg font-semibold transition-colors cursor-pointer ${
+                    approvalsTab === 'expenses'
+                      ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 shadow-xs'
+                      : 'text-zinc-500 hover:text-zinc-900'
+                  }`}
+                >
+                  Achats Terrain ({pendingExpenses.length})
+                </button>
+              </div>
             </div>
           </div>
 

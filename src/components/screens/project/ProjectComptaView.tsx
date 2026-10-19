@@ -26,6 +26,7 @@ import {
   ArrowRight,
   ExternalLink,
 } from 'lucide-react';
+import { Seek } from '../../ui/Seek';
 
 interface ProjectComptaViewProps {
   initialTab?: 'payroll' | 'ccp' | 'expenses' | 'stock';
@@ -151,6 +152,15 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
     },
   ]);
 
+  const [payrollSearch, setPayrollSearch] = useState('');
+
+  const filteredPayrollRows = individualPayrollRows.filter((r) =>
+    !payrollSearch.trim() ||
+    r.animatorName.toLowerCase().includes(payrollSearch.toLowerCase()) ||
+    r.missionTitle.toLowerCase().includes(payrollSearch.toLowerCase()) ||
+    r.ccpNumber.includes(payrollSearch)
+  );
+
   const validatedDgCount = individualPayrollRows.filter((r) => r.status === 'approved_dg').length;
   const pendingBatches = pmPayrollBatches.filter((b) => b.status === 'approved_by_direction');
 
@@ -271,9 +281,18 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
                       Pointages terrain validés par la Direction. Cliquez sur un animateur pour inspecter son mandat CCP SFP 01.
                     </p>
                   </div>
-                  <span className="text-xs font-mono font-semibold text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-3 py-1 rounded-xl shrink-0">
-                    {individualPayrollRows.length} animateurs
-                  </span>
+                  <div className="flex items-center gap-3">
+                    <Seek
+                      value={payrollSearch}
+                      onChange={setPayrollSearch}
+                      placeholder="Rechercher animateur, mission, CCP..."
+                      openWidth={260}
+                      shutSize={36}
+                    />
+                    <span className="text-xs font-mono font-semibold text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-3 py-1 rounded-xl shrink-0">
+                      {filteredPayrollRows.length} animateurs
+                    </span>
+                  </div>
                 </div>
 
                 {/* Big Red Button matching Slide 10 */}
@@ -306,7 +325,7 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800/80">
-                      {individualPayrollRows.map((row) => {
+                      {filteredPayrollRows.map((row) => {
                         const isSelected = activePreviewSlip.beneficiaryName === row.animatorName;
                         return (
                           <tr

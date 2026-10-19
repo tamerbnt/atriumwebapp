@@ -15,6 +15,7 @@ import {
 import { useAtriumStore } from '../../../services/store';
 import { AdmissionStage, EduAdmissionLead } from '../../../types';
 import { Seek } from '../../ui/Seek';
+import { LabelInput } from '../../ui/LabelInput';
 
 const STAGES: { id: AdmissionStage; title: string }[] = [
   { id: 'Inquiry', title: '1. Inquiries' },
@@ -308,43 +309,45 @@ export const EducationAdmissionsView: React.FC = () => {
 
             <form onSubmit={handleCreateLead} className="space-y-4 pt-4 text-xs">
               <div>
-                <label className="block font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
-                  Candidate Name *
-                </label>
-                <input
-                  type="text"
+                <LabelInput
+                  field="studentName"
+                  label="Candidate Name *"
                   required
-                  value={formData.studentName}
-                  onChange={(e) => setFormData({ ...formData, studentName: e.target.value })}
                   placeholder="e.g. Yacine Benali"
-                  className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#C4785A]"
+                  value={formData.studentName}
+                  onChange={(val) => setFormData({ ...formData, studentName: String(val) })}
+                  width="100%"
+                  height={44}
+                  corner={12}
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
-                    Phone *
-                  </label>
-                  <input
+                  <LabelInput
+                    field="phone"
+                    label="Phone *"
                     type="tel"
                     required
-                    value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                     placeholder="0550 00 00 00"
-                    className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white"
+                    value={formData.phone}
+                    onChange={(val) => setFormData({ ...formData, phone: String(val) })}
+                    width="100%"
+                    height={44}
+                    corner={12}
                   />
                 </div>
                 <div>
-                  <label className="block font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
-                    Email
-                  </label>
-                  <input
+                  <LabelInput
+                    field="email"
+                    label="Email"
                     type="email"
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     placeholder="yacine@example.com"
-                    className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white"
+                    value={formData.email}
+                    onChange={(val) => setFormData({ ...formData, email: String(val) })}
+                    width="100%"
+                    height={44}
+                    corner={12}
                   />
                 </div>
               </div>
@@ -369,27 +372,27 @@ export const EducationAdmissionsView: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
-                    Guardian Name
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.guardianName}
-                    onChange={(e) => setFormData({ ...formData, guardianName: e.target.value })}
+                  <LabelInput
+                    field="guardianName"
+                    label="Guardian Name"
                     placeholder="Parent / Sponsor"
-                    className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white"
+                    value={formData.guardianName}
+                    onChange={(val) => setFormData({ ...formData, guardianName: String(val) })}
+                    width="100%"
+                    height={44}
+                    corner={12}
                   />
                 </div>
                 <div>
-                  <label className="block font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
-                    Acquisition Channel
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.source}
-                    onChange={(e) => setFormData({ ...formData, source: e.target.value })}
+                  <LabelInput
+                    field="source"
+                    label="Acquisition Channel"
                     placeholder="e.g. Instagram, Referral, Walk-in"
-                    className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white"
+                    value={formData.source}
+                    onChange={(val) => setFormData({ ...formData, source: String(val) })}
+                    width="100%"
+                    height={44}
+                    corner={12}
                   />
                 </div>
               </div>

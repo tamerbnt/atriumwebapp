@@ -24,8 +24,8 @@ const IN = 0.75;
 export interface LabelInputProps {
   field?: string;
   label?: string;
-  value?: string;
-  onChange?: (val: string) => void;
+  value?: string | number;
+  onChange?: (val: any) => void;
   type?: string;
   corner?: number;
   width?: number | string;
@@ -38,6 +38,9 @@ export interface LabelInputProps {
   id?: string;
   name?: string;
   required?: boolean;
+  min?: number | string;
+  max?: number | string;
+  step?: number | string;
 }
 
 export function LabelInput({
@@ -56,6 +59,9 @@ export function LabelInput({
   id: customId,
   name,
   required = false,
+  min,
+  max,
+  step,
 }: LabelInputProps) {
   const boxRef = useRef<HTMLDivElement | null>(null);
   const [measuredW, setMeasuredW] = useState<number>(typeof width === "number" ? width : 280);
@@ -119,7 +125,7 @@ export function LabelInput({
     }
   }, [field, controlledValue]);
 
-  const up = focus || (value && value.length > 0);
+  const up = focus || (value !== undefined && value !== null && String(value).length > 0);
 
   /* ── where the label sits, and the gap it leaves ─────────
      Never inside the corner's curve: the notch has to open on
@@ -158,7 +164,16 @@ export function LabelInput({
     if (controlledValue === undefined) {
       setInternalValue(val);
     }
-    onChange?.(val);
+    if (!onChange) return;
+    // Provide a hybrid that works as a primitive string AND satisfies (e) => e.target.value
+    const hybrid: any = new String(val);
+    hybrid.target = e.target;
+    hybrid.currentTarget = e.currentTarget;
+    hybrid.preventDefault = () => e.preventDefault?.();
+    hybrid.stopPropagation = () => e.stopPropagation?.();
+    hybrid.valueOf = () => val;
+    hybrid.toString = () => val;
+    onChange(hybrid);
   };
 
   return (
@@ -167,7 +182,7 @@ export function LabelInput({
       className={`lbi ${className}`}
       data-up={Boolean(up)}
       data-focus={focus}
-      data-filled={Boolean(value && value.length > 0)}
+      data-filled={Boolean(value !== undefined && value !== null && String(value).length > 0)}
       style={{ width: typeof width === "number" ? `${width}px` : width }}
     >
       <div
@@ -196,7 +211,7 @@ export function LabelInput({
           className="lbi-field"
           data-flip={flip % 2}
           type={isSecret && !show ? "password" : isSecret ? "text" : type || (field.toLowerCase().includes("email") ? "email" : "text")}
-          value={value}
+          value={value !== undefined ? String(value) : ""}
           onChange={handleInputChange}
           onFocus={() => setFocus(true)}
           onBlur={() => setFocus(false)}
@@ -205,6 +220,9 @@ export function LabelInput({
           disabled={disabled}
           autoFocus={autoFocus}
           required={required}
+          min={min}
+          max={max}
+          step={step}
           inputMode={quiet ? "none" : undefined}
           style={{ paddingRight: isSecret ? 48 : lx }}
         />

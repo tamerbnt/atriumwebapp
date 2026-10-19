@@ -411,13 +411,17 @@ export const FreelanceProposalsView: React.FC = () => {
                 <div className="space-y-2">
                   {formData.scopeItems.map((item, idx) => (
                     <div key={idx} className="flex items-center gap-2">
-                      <input
-                        type="text"
-                        value={item}
-                        onChange={(e) => handleScopeItemChange(idx, e.target.value)}
-                        placeholder="Deliverable item..."
-                        className="flex-1 px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white"
-                      />
+                      <div className="flex-1">
+                        <LabelInput
+                          field={`ScopeItem-${idx}`}
+                          label={`Deliverable Item ${idx + 1}`}
+                          value={item}
+                          onChange={(v) => handleScopeItemChange(idx, String(v?.target?.value || v || ''))}
+                          width="100%"
+                          height={44}
+                          corner={12}
+                        />
+                      </div>
                       {formData.scopeItems.length > 1 && (
                         <button
                           type="button"
@@ -572,16 +576,21 @@ export const FreelanceProposalsView: React.FC = () => {
                 </div>
                 {editFormData.scopeItems.map((item, idx) => (
                   <div key={idx} className="flex items-center gap-2">
-                    <input
-                      type="text"
-                      value={item}
-                      onChange={(e) => {
-                        const updated = [...editFormData.scopeItems];
-                        updated[idx] = e.target.value;
-                        setEditFormData({ ...editFormData, scopeItems: updated });
-                      }}
-                      className="flex-1 px-3 py-1.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white"
-                    />
+                    <div className="flex-1">
+                      <LabelInput
+                        field={`EditScopeItem-${idx}`}
+                        label={`Deliverable Item ${idx + 1}`}
+                        value={item}
+                        onChange={(v) => {
+                          const updated = [...editFormData.scopeItems];
+                          updated[idx] = String(v?.target?.value || v || '');
+                          setEditFormData({ ...editFormData, scopeItems: updated });
+                        }}
+                        width="100%"
+                        height={44}
+                        corner={12}
+                      />
+                    </div>
                     {editFormData.scopeItems.length > 1 && (
                       <button
                         type="button"

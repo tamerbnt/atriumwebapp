@@ -16,6 +16,7 @@ import {
 import { useAtriumStore } from '../../../services/store';
 import { formatCurrencyAmount } from '../../../utils/rules';
 import { FreelanceExpense, ExpenseCategory, CurrencyCode } from '../../../types/index';
+import { LabelInput } from '../../ui/LabelInput';
 
 export const FreelanceFinanceView: React.FC = () => {
   const {
@@ -317,16 +318,16 @@ export const FreelanceFinanceView: React.FC = () => {
             <form onSubmit={handleCreateExpense} className="space-y-3.5 text-xs">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
-                    Vendor *
-                  </label>
-                  <input
-                    type="text"
+                  <LabelInput
+                    field="Vendor"
+                    label="Vendor *"
                     required
                     placeholder="e.g. OpenAI / Claude"
                     value={vendor}
-                    onChange={(e) => setVendor(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white"
+                    onChange={setVendor}
+                    width="100%"
+                    height={46}
+                    corner={14}
                   />
                 </div>
                 <div>
@@ -349,31 +350,32 @@ export const FreelanceFinanceView: React.FC = () => {
               </div>
 
               <div>
-                <label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
-                  Description *
-                </label>
-                <input
-                  type="text"
+                <LabelInput
+                  field="Description"
+                  label="Description *"
                   required
                   placeholder="e.g. API usage and inference tokens for client prototypes"
                   value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white"
+                  onChange={setDescription}
+                  width="100%"
+                  height={46}
+                  corner={14}
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-3 items-end">
                 <div>
-                  <label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
-                    Amount *
-                  </label>
-                  <input
+                  <LabelInput
+                    field="Amount"
+                    label="Amount *"
                     type="number"
                     min="1"
                     required
                     value={amount}
-                    onChange={(e) => setAmount(Number(e.target.value))}
-                    className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white"
+                    onChange={(val) => setAmount(Number(val?.target?.value || val || 0))}
+                    width="100%"
+                    height={46}
+                    corner={14}
                   />
                 </div>
                 <div>
