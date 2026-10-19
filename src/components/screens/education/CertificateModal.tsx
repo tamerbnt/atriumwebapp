@@ -11,6 +11,7 @@ import {
 import { useAtriumStore } from '../../../services/store';
 import { EduCertificate } from '../../../types';
 import { LabelInput } from '../../ui/LabelInput';
+import { LabelSelect } from '../../ui/LabelSelect';
 
 interface CertificateModalProps {
   certificate?: EduCertificate | null;
@@ -118,37 +119,40 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
             /* Creation Form */
             <form onSubmit={handleIssue} className="space-y-4 max-w-xl mx-auto py-2">
               <div>
-                <label className="block font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
-                  Recipient Student *
-                </label>
-                <select
+              <div>
+                <LabelSelect
+                  field="RecipientStudent"
+                  label="Recipient Student *"
                   value={studentId}
-                  onChange={(e) => setStudentId(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#C4785A]"
-                >
-                  {eduStudents.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.fullName} ({s.schoolGrade || s.phone})
-                    </option>
-                  ))}
-                </select>
+                  onChange={(val) => setStudentId(val?.target?.value ?? String(val))}
+                  options={eduStudents.map((s) => ({
+                    value: s.id,
+                    label: s.fullName,
+                    sublabel: s.schoolGrade || s.phone,
+                  }))}
+                  searchable
+                  width="100%"
+                  height={46}
+                  corner={14}
+                />
               </div>
 
               <div>
-                <label className="block font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
-                  Completed Cohort / Course *
-                </label>
-                <select
+                <LabelSelect
+                  field="CompletedCohort"
+                  label="Completed Cohort / Course *"
                   value={cohortId}
-                  onChange={(e) => setCohortId(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#C4785A]"
-                >
-                  {eduCohorts.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name} · {c.courseTitle}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(val) => setCohortId(val?.target?.value ?? String(val))}
+                  options={eduCohorts.map((c) => ({
+                    value: c.id,
+                    label: c.name,
+                    sublabel: c.courseTitle,
+                  }))}
+                  searchable
+                  width="100%"
+                  height={46}
+                  corner={14}
+                />
               </div>
 
               <div className="grid grid-cols-2 gap-4">

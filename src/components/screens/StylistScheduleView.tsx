@@ -28,6 +28,7 @@ import { Appointment, AppointmentStatus, StaffMember } from '../../types/index';
 import { AppointmentModal } from '../modals/AppointmentModal';
 import { formatMoney } from '../../utils/rules';
 import { Seek } from '../ui/Seek';
+import { LabelSelect } from '../ui/LabelSelect';
 
 const TIME_SLOTS = [
   '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
@@ -392,18 +393,23 @@ export const StylistScheduleView: React.FC = () => {
             </div>
 
             {/* Stylist Dropdown */}
-            <select
+            <LabelSelect
+              field="Stylist"
+              label="Stylist"
               value={selectedStylistId}
-              onChange={(e) => setSelectedStylistId(e.target.value)}
-              className="h-8 px-2.5 text-xs rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-700 dark:text-neutral-300 focus:outline-none"
-            >
-              <option value="All">All Stylists ({salonStylists.length})</option>
-              {salonStylists.map((st) => (
-                <option key={st.id} value={st.id}>
-                  {st.fullName} ({st.role})
-                </option>
-              ))}
-            </select>
+              onChange={(val) => setSelectedStylistId(val?.target?.value ?? String(val))}
+              options={[
+                { value: 'All', label: `All Stylists (${salonStylists.length})` },
+                ...salonStylists.map((st) => ({
+                  value: st.id,
+                  label: st.fullName,
+                  sublabel: st.role,
+                })),
+              ]}
+              width={180}
+              height={36}
+              corner={14}
+            />
           </div>
 
           {/* Seek Kinetic Search */}

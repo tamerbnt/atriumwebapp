@@ -34,6 +34,7 @@ import { calculateDaysRemaining, formatMoney } from '../../utils/rules';
 import { AppointmentModal } from '../modals/AppointmentModal';
 import { Seek } from '../ui/Seek';
 import { ActionNode } from '../ui/ActionNode';
+import { LabelSelect } from '../ui/LabelSelect';
 
 interface MembersScreenProps {
   onAddMember: () => void;
@@ -388,18 +389,19 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
             </div>
 
             {/* Plan Filter Dropdown */}
-            <select
+            <LabelSelect
+              field="Plan"
+              label="Filter Plan"
               value={planFilter}
-              onChange={(e) => setPlanFilter(e.target.value)}
-              className="h-9 px-3 text-xs rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 font-semibold text-neutral-700 dark:text-neutral-300 cursor-pointer focus:outline-none shadow-2xs"
-            >
-              <option value="All">All Plans</option>
-              {plans.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
-                </option>
-              ))}
-            </select>
+              onChange={(val) => setPlanFilter(val?.target?.value ?? String(val))}
+              options={[
+                { value: 'All', label: 'All Plans' },
+                ...plans.map((p) => ({ value: p.id, label: p.name })),
+              ]}
+              width={160}
+              height={36}
+              corner={18}
+            />
 
             {/* Export Data Button with Tray Icon */}
             <button

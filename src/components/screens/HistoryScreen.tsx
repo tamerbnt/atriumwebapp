@@ -31,6 +31,7 @@ import { useAtriumStore } from '../../services/store';
 import { Sale } from '../../types/index';
 import { formatMoney } from '../../utils/rules';
 import { Seek } from '../ui/Seek';
+import { LabelSelect } from '../ui/LabelSelect';
 
 export const HistoryScreen: React.FC = () => {
   const {
@@ -772,21 +773,23 @@ export const HistoryScreen: React.FC = () => {
               </span>
             </div>
 
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
-                Reason for Refund / Return
-              </label>
-              <select
+            <div>
+              <LabelSelect
+                field="RefundReason"
+                label="Reason for Refund / Return *"
                 value={refundReason}
-                onChange={(e) => setRefundReason(e.target.value)}
-                className="w-full h-11 px-3.5 text-xs rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 font-semibold"
-              >
-                <option value="Customer return / exchange">Customer return / exchange</option>
-                <option value="Wrong item rung up by cashier">Wrong item rung up by cashier</option>
-                <option value="Defective or damaged product">Defective or damaged product</option>
-                <option value="Customer changed mind before leaving">Customer changed mind before leaving</option>
-                <option value="Pricing / discount adjustment">Pricing / discount adjustment</option>
-              </select>
+                onChange={(val) => setRefundReason(val?.target?.value ?? String(val))}
+                options={[
+                  'Customer return / exchange',
+                  'Wrong item rung up by cashier',
+                  'Defective or damaged product',
+                  'Customer changed mind before leaving',
+                  'Pricing / discount adjustment',
+                ]}
+                width="100%"
+                height={46}
+                corner={14}
+              />
             </div>
 
             <div className="flex items-center justify-end gap-3 pt-2">

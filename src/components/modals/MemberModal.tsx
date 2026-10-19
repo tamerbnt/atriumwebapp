@@ -3,6 +3,7 @@ import { useAtriumStore } from '../../services/store';
 import { Member, Gender } from '../../types/index';
 import { Modal } from '../ui/Modal';
 import { LabelInput } from '../ui/LabelInput';
+import { LabelSelect } from '../ui/LabelSelect';
 
 interface MemberModalProps {
   isOpen: boolean;
@@ -162,25 +163,16 @@ export const MemberModal: React.FC<MemberModalProps> = ({
             />
 
             <div className="grid grid-cols-2 gap-2">
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
-                  Gender
-                </label>
-                <select
-                  value={gender}
-                  onChange={(e) => setGender(e.target.value as Gender)}
-                  style={{
-                    backgroundColor: 'var(--color-surface-bg)',
-                    borderColor: 'var(--color-border)',
-                    borderRadius: 'var(--radius-input)',
-                  }}
-                  className="w-full h-11 px-3 text-sm border focus:outline-none focus:border-[#C4785A] text-neutral-900 dark:text-white"
-                >
-                  <option value="Male">Male</option>
-                  <option value="Female">Female</option>
-                  <option value="Other">Other</option>
-                </select>
-              </div>
+              <LabelSelect
+                field="Gender"
+                label="Gender"
+                value={gender}
+                onChange={(val) => setGender(val?.target?.value ?? val)}
+                options={['Male', 'Female', 'Other']}
+                width="100%"
+                height={48}
+                corner={14}
+              />
 
               <LabelInput
                 field="BirthDate"
@@ -202,27 +194,20 @@ export const MemberModal: React.FC<MemberModalProps> = ({
             {terminology.plan} & Access Credentials
           </h4>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
-                Plan Package *
-              </label>
-              <select
-                value={planId}
-                onChange={(e) => setPlanId(e.target.value)}
-                style={{
-                  backgroundColor: 'var(--color-surface-bg)',
-                  borderColor: 'var(--color-border)',
-                  borderRadius: 'var(--radius-input)',
-                }}
-                className="w-full h-11 px-3 text-sm border focus:outline-none focus:border-[#C4785A] text-neutral-900 dark:text-white"
-              >
-                {plans.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name} ({p.durationDays}d)
-                  </option>
-                ))}
-              </select>
-            </div>
+            <LabelSelect
+              field="PlanPackage"
+              label="Plan Package *"
+              value={planId}
+              onChange={(val) => setPlanId(val?.target?.value ?? val)}
+              options={plans.map((p) => ({
+                value: p.id,
+                label: p.name,
+                sublabel: `${p.durationDays} days · ${p.price.toLocaleString()} DA`,
+              }))}
+              width="100%"
+              height={48}
+              corner={14}
+            />
 
             <LabelInput
               field="StartDate"
@@ -277,28 +262,23 @@ export const MemberModal: React.FC<MemberModalProps> = ({
               corner={14}
             />
 
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
-                Acquisition Channel
-              </label>
-              <select
-                value={source}
-                onChange={(e) => setSource(e.target.value)}
-                style={{
-                  backgroundColor: 'var(--color-surface-bg)',
-                  borderColor: 'var(--color-border)',
-                  borderRadius: 'var(--radius-input)',
-                }}
-                className="w-full h-11 px-3 text-sm border focus:outline-none focus:border-[#C4785A] text-neutral-900 dark:text-white"
-              >
-                <option value="Walk-in">Walk-in</option>
-                <option value="Instagram">Instagram</option>
-                <option value="Facebook">Facebook</option>
-                <option value="Referral">Friend Referral</option>
-                <option value="Website">Official Website</option>
-                <option value="VIP Partner">VIP Partner</option>
-              </select>
-            </div>
+            <LabelSelect
+              field="AcquisitionChannel"
+              label="Acquisition Channel"
+              value={source}
+              onChange={(val) => setSource(val?.target?.value ?? val)}
+              options={[
+                'Walk-in',
+                'Instagram',
+                'Facebook',
+                'Referral',
+                'Website',
+                'VIP Partner',
+              ]}
+              width="100%"
+              height={48}
+              corner={14}
+            />
           </div>
 
           <div className="space-y-1">

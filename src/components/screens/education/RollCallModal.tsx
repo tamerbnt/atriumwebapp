@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { useAtriumStore } from '../../../services/store';
 import { AttendanceStatus, EduSession } from '../../../types';
+import { LabelSelect } from '../../ui/LabelSelect';
 
 interface RollCallModalProps {
   session?: EduSession | null;
@@ -171,38 +172,40 @@ export const RollCallModal: React.FC<RollCallModalProps> = ({
 
         {/* Filters & Tally */}
         <div className="px-6 py-3 border-b border-neutral-100 dark:border-neutral-800 bg-white dark:bg-neutral-900 flex flex-wrap items-center justify-between gap-3 text-xs">
-          <div className="flex items-center gap-2 flex-1 min-w-[240px]">
-            <select
+          <div className="flex items-center gap-3 flex-1 min-w-[240px]">
+            <LabelSelect
+              field="Cohort"
+              label="Cohort"
               value={selectedCohortId}
-              onChange={(e) => {
-                setSelectedCohortId(e.target.value);
-                const nextCohortSessions = eduSessions.filter((s) => s.cohortId === e.target.value);
+              onChange={(val) => {
+                const nextCohortId = val?.target?.value ?? String(val);
+                setSelectedCohortId(nextCohortId);
+                const nextCohortSessions = eduSessions.filter((s) => s.cohortId === nextCohortId);
                 setSelectedSessionId(nextCohortSessions[0]?.id || '');
               }}
-              className="px-3 py-1.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-800 dark:text-neutral-200 font-semibold focus:outline-none"
-            >
-              {eduCohorts.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name} ({c.cohortCode || c.courseTitle})
-                </option>
-              ))}
-            </select>
+              options={eduCohorts.map((c) => ({
+                value: c.id,
+                label: c.name,
+                sublabel: c.cohortCode || c.courseTitle,
+              }))}
+              width={220}
+              height={40}
+              corner={12}
+            />
 
-            <select
+            <LabelSelect
+              field="Session"
+              label="Session"
               value={selectedSessionId}
-              onChange={(e) => setSelectedSessionId(e.target.value)}
-              className="px-3 py-1.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-800 dark:text-neutral-200 font-semibold focus:outline-none"
-            >
-              {cohortSessions.length === 0 ? (
-                <option value="">No sessions scheduled</option>
-              ) : (
-                cohortSessions.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.date} ({s.startTime} - {s.endTime})
-                  </option>
-                ))
-              )}
-            </select>
+              onChange={(val) => setSelectedSessionId(val?.target?.value ?? String(val))}
+              options={cohortSessions.length === 0 ? [{ value: '', label: 'No sessions scheduled' }] : cohortSessions.map((s) => ({
+                value: s.id,
+                label: `${s.date} (${s.startTime} - ${s.endTime})`,
+              }))}
+              width={260}
+              height={40}
+              corner={12}
+            />
           </div>
 
           <div className="flex items-center gap-3">

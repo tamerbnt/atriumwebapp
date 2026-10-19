@@ -16,6 +16,7 @@ import { useAtriumStore } from '../../../services/store';
 import { RentableUnit, RentalBooking, BookingAddon, BookingStatus, DepositStatus } from '../../../types/index';
 import { formatCurrencyAmount } from '../../../utils/rules';
 import { LabelInput } from '../../ui/LabelInput';
+import { LabelSelect } from '../../ui/LabelSelect';
 
 interface BookingModalProps {
   isOpen: boolean;
@@ -334,21 +335,22 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
-                  Bookable Space / Asset
-                </label>
-                <select
+                <LabelSelect
+                  field="BookableSpace"
+                  label="Bookable Space / Asset *"
                   value={selectedUnitId}
-                  onChange={(e) => setSelectedUnitId(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm text-neutral-900 dark:text-white focus:outline-hidden focus:border-[var(--color-accent)]"
+                  onChange={(val) => setSelectedUnitId(val?.target?.value ?? String(val))}
+                  options={rentableUnits.map((u) => ({
+                    value: u.id,
+                    label: u.name,
+                    sublabel: `${u.type} · Cap: ${u.capacity} · ${formatCurrencyAmount(u.hourlyRate, u.currency)}/h`,
+                  }))}
+                  searchable
+                  width="100%"
+                  height={46}
+                  corner={14}
                   required
-                >
-                  {rentableUnits.map((u) => (
-                    <option key={u.id} value={u.id}>
-                      {u.name} ({u.type} · Cap: {u.capacity} · {formatCurrencyAmount(u.hourlyRate, u.currency)}/h)
-                    </option>
-                  ))}
-                </select>
+                />
               </div>
 
               <LabelInput
@@ -388,21 +390,24 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
             {rentalRenters.length > 0 && !bookingToEdit && (
               <div>
-                <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
-                  Pick Existing Renter (or type a new one below)
-                </label>
-                <select
+                <LabelSelect
+                  field="ExistingRenter"
+                  label="Pick Existing Renter (or type a new one below)"
                   value={selectedRenterId}
-                  onChange={(e) => handleSelectRenter(e.target.value)}
-                  className="w-full px-3.5 py-2 bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700 rounded-xl text-xs text-neutral-800 dark:text-neutral-200"
-                >
-                  <option value="">-- Add New Renter / Walk-in --</option>
-                  {rentalRenters.map((r) => (
-                    <option key={r.id} value={r.id}>
-                      {r.fullName} {r.companyName ? `(${r.companyName})` : ''} · {r.phone}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(val) => handleSelectRenter(val?.target?.value ?? String(val))}
+                  options={[
+                    { value: '', label: '-- Add New Renter / Walk-in --' },
+                    ...rentalRenters.map((r) => ({
+                      value: r.id,
+                      label: `${r.fullName} ${r.companyName ? `(${r.companyName})` : ''}`,
+                      sublabel: r.phone,
+                    })),
+                  ]}
+                  searchable
+                  width="100%"
+                  height={46}
+                  corner={14}
+                />
               </div>
             )}
 
@@ -482,20 +487,22 @@ export const BookingModal: React.FC<BookingModalProps> = ({
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
-                  Reservation Status
-                </label>
-                <select
+                <LabelSelect
+                  field="ReservationStatus"
+                  label="Reservation Status"
                   value={status}
-                  onChange={(e) => setStatus(e.target.value as BookingStatus)}
-                  className="w-full px-3.5 py-2.5 bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm text-neutral-900 dark:text-white focus:outline-hidden focus:border-[var(--color-accent)]"
-                >
-                  <option value="Confirmed">Confirmed</option>
-                  <option value="CheckedIn">Checked In / In-Use</option>
-                  <option value="Tentative">Tentative / Inquiry</option>
-                  <option value="Completed">Completed</option>
-                  <option value="Cancelled">Cancelled</option>
-                </select>
+                  onChange={(val) => setStatus((val?.target?.value ?? String(val)) as BookingStatus)}
+                  options={[
+                    { value: 'Confirmed', label: 'Confirmed' },
+                    { value: 'CheckedIn', label: 'Checked In / In-Use' },
+                    { value: 'Tentative', label: 'Tentative / Inquiry' },
+                    { value: 'Completed', label: 'Completed' },
+                    { value: 'Cancelled', label: 'Cancelled' },
+                  ]}
+                  width="100%"
+                  height={46}
+                  corner={14}
+                />
               </div>
             </div>
           </div>
@@ -590,19 +597,21 @@ export const BookingModal: React.FC<BookingModalProps> = ({
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
-                  Caution Escrow Status
-                </label>
-                <select
+                <LabelSelect
+                  field="EscrowStatus"
+                  label="Caution Escrow Status"
                   value={depositStatus}
-                  onChange={(e) => setDepositStatus(e.target.value as DepositStatus)}
-                  className="w-full px-3.5 py-2.5 bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm text-neutral-900 dark:text-white focus:outline-hidden"
-                >
-                  <option value="Held">Held (Collected)</option>
-                  <option value="Pending">Pending (Not Collected)</option>
-                  <option value="Refunded">Refunded</option>
-                  <option value="Retained">Retained for Damages</option>
-                </select>
+                  onChange={(val) => setDepositStatus((val?.target?.value ?? String(val)) as DepositStatus)}
+                  options={[
+                    { value: 'Held', label: 'Held (Collected)' },
+                    { value: 'Pending', label: 'Pending (Not Collected)' },
+                    { value: 'Refunded', label: 'Refunded' },
+                    { value: 'Retained', label: 'Retained for Damages' },
+                  ]}
+                  width="100%"
+                  height={46}
+                  corner={14}
+                />
               </div>
 
               <div>

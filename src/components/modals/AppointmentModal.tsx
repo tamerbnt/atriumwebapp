@@ -20,6 +20,7 @@ import { useAtriumStore } from '../../services/store';
 import { Appointment, AppointmentStatus, ServiceItem } from '../../types/index';
 import { Modal } from '../ui/Modal';
 import { LabelInput } from '../ui/LabelInput';
+import { LabelSelect } from '../ui/LabelSelect';
 import { formatMoney } from '../../utils/rules';
 
 interface AppointmentModalProps {
@@ -351,17 +352,21 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
             </div>
 
             {bookingMode === 'registered' ? (
-              <select
+              <LabelSelect
+                field="SelectClient"
+                label="Registered Client *"
                 value={selectedClientId}
-                onChange={(e) => setSelectedClientId(e.target.value)}
-                className="w-full h-11 px-3 text-sm rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:border-[#C4785A]"
-              >
-                {members.map((client) => (
-                  <option key={client.id} value={client.id}>
-                    {client.fullName} • {client.phoneNumber} ({client.membershipPlanName || 'Standard Client'})
-                  </option>
-                ))}
-              </select>
+                onChange={(val) => setSelectedClientId(val?.target?.value ?? val)}
+                searchable
+                options={members.map((client) => ({
+                  value: client.id,
+                  label: client.fullName,
+                  sublabel: `${client.phoneNumber} · ${client.membershipPlanName || 'Standard Client'}`,
+                }))}
+                width="100%"
+                height={48}
+                corner={14}
+              />
             ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200/50 dark:border-amber-900/30 rounded-xl">
               <LabelInput
@@ -403,41 +408,40 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
         )}
 
         {/* Treatment / Service Selection */}
-        <div className="space-y-1">
-          <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300 flex items-center gap-1.5">
-            <Scissors size={14} className="text-[#C4785A]" />
-            Treatment / Service *
-          </label>
-          <select
+        <div>
+          <LabelSelect
+            field="TreatmentService"
+            label="Treatment / Service *"
             value={selectedServiceId}
-            onChange={(e) => handleServiceChange(e.target.value)}
-            className="w-full h-11 px-3 text-sm rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:border-[#C4785A]"
-          >
-            {servicesCatalog.map((service) => (
-              <option key={service.id} value={service.id}>
-                [{service.category}] {service.name} • {service.durationMinutes} mins • {formatMoney(service.price)}
-              </option>
-            ))}
-          </select>
+            onChange={(val) => handleServiceChange(val?.target?.value ?? String(val))}
+            options={servicesCatalog.map((service) => ({
+              value: service.id,
+              label: service.name,
+              sublabel: `[${service.category}] ${service.durationMinutes} mins · ${formatMoney(service.price)}`,
+            }))}
+            searchable
+            width="100%"
+            height={46}
+            corner={14}
+          />
         </div>
 
         {/* Assigned Stylist & Practitioner */}
-        <div className="space-y-1">
-          <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300 flex items-center gap-1.5">
-            <User size={14} className="text-[#C4785A]" />
-            Assigned Stylist / Practitioner *
-          </label>
-          <select
+        <div>
+          <LabelSelect
+            field="AssignedStylist"
+            label="Assigned Stylist / Practitioner *"
             value={selectedStaffId}
-            onChange={(e) => setSelectedStaffId(e.target.value)}
-            className="w-full h-11 px-3 text-sm rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:border-[#C4785A]"
-          >
-            {staff.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.fullName} ({s.role})
-              </option>
-            ))}
-          </select>
+            onChange={(val) => setSelectedStaffId(val?.target?.value ?? String(val))}
+            options={staff.map((s) => ({
+              value: s.id,
+              label: s.fullName,
+              sublabel: s.role,
+            }))}
+            width="100%"
+            height={46}
+            corner={14}
+          />
         </div>
 
         {/* Date, Time & Duration Grid */}
@@ -455,26 +459,22 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
             />
           </div>
 
-          <div className="space-y-1">
-            <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300 flex items-center gap-1.5">
-              <Clock size={14} /> Start Time
-            </label>
-            <select
+          <div>
+            <LabelSelect
+              field="StartTime"
+              label="Start Time"
               value={startTime}
-              onChange={(e) => setStartTime(e.target.value)}
-              className="w-full h-11 px-3 text-sm rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:border-[#C4785A]"
-            >
-              {[
+              onChange={(val) => setStartTime(val?.target?.value ?? String(val))}
+              options={[
                 '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
                 '12:00', '12:30', '13:00', '13:30', '14:00', '14:30',
                 '15:00', '15:30', '16:00', '16:30', '17:00', '17:30',
                 '18:00', '18:30', '19:00', '19:30'
-              ].map((time) => (
-                <option key={time} value={time}>
-                  {time}
-                </option>
-              ))}
-            </select>
+              ]}
+              width="100%"
+              height={46}
+              corner={14}
+            />
           </div>
 
           <div className="space-y-1">
@@ -504,21 +504,23 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
             />
           </div>
 
-          <div className="space-y-1">
-            <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
-              Booking Status
-            </label>
-            <select
+          <div>
+            <LabelSelect
+              field="BookingStatus"
+              label="Booking Status"
               value={status}
-              onChange={(e) => setStatus(e.target.value as AppointmentStatus)}
-              className="w-full h-10 px-3 text-sm rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:border-[#C4785A]"
-            >
-              <option value="Confirmed">Confirmed</option>
-              <option value="InChair">In Chair (Active Treatment)</option>
-              <option value="Completed">Completed</option>
-              <option value="Cancelled">Cancelled</option>
-              <option value="NoShow">No Show</option>
-            </select>
+              onChange={(val) => setStatus((val?.target?.value ?? String(val)) as AppointmentStatus)}
+              options={[
+                { value: 'Confirmed', label: 'Confirmed' },
+                { value: 'InChair', label: 'In Chair (Active Treatment)' },
+                { value: 'Completed', label: 'Completed' },
+                { value: 'Cancelled', label: 'Cancelled' },
+                { value: 'NoShow', label: 'No Show' },
+              ]}
+              width="100%"
+              height={46}
+              corner={14}
+            />
           </div>
         </div>
 

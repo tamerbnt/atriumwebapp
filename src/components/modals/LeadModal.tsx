@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAtriumStore } from '../../services/store';
 import { Modal } from '../ui/Modal';
 import { LabelInput } from '../ui/LabelInput';
+import { LabelSelect } from '../ui/LabelSelect';
 
 interface LeadModalProps {
   isOpen: boolean;
@@ -86,51 +87,41 @@ export const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose }) => {
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-1">
-            <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
-              Interested {terminology.plan}
-            </label>
-            <select
-              value={preferredPlanId}
-              onChange={(e) => setPreferredPlanId(e.target.value)}
-              style={{
-                backgroundColor: 'var(--color-surface-bg)',
-                borderColor: 'var(--color-border)',
-                borderRadius: 'var(--radius-input)',
-              }}
-              className="w-full h-11 px-3 text-sm border focus:outline-none focus:border-[#C4785A] text-neutral-900 dark:text-white"
-            >
-              <option value="">Undecided / Inquiry</option>
-              {plans.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
-                </option>
-              ))}
-            </select>
-          </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <LabelSelect
+            field="InterestedPlan"
+            label={`Interested ${terminology.plan}`}
+            value={preferredPlanId}
+            onChange={(val) => setPreferredPlanId(val?.target?.value ?? val)}
+            options={[
+              { value: '', label: 'Undecided / Inquiry' },
+              ...plans.map((p) => ({
+                value: p.id,
+                label: p.name,
+                sublabel: `${p.durationDays} days · ${p.price.toLocaleString()} DA`,
+              })),
+            ]}
+            width="100%"
+            height={46}
+            corner={14}
+          />
 
-          <div className="space-y-1">
-            <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
-              Acquisition Source
-            </label>
-            <select
-              value={source}
-              onChange={(e) => setSource(e.target.value)}
-              style={{
-                backgroundColor: 'var(--color-surface-bg)',
-                borderColor: 'var(--color-border)',
-                borderRadius: 'var(--radius-input)',
-              }}
-              className="w-full h-11 px-3 text-sm border focus:outline-none focus:border-[#C4785A] text-neutral-900 dark:text-white"
-            >
-              <option value="Walk-in">Walk-in Visit</option>
-              <option value="Instagram">Instagram Direct Message</option>
-              <option value="Facebook">Facebook Lead Ad</option>
-              <option value="Friend Referral">Friend Referral</option>
-              <option value="Website Form">Online Self-Service Form</option>
-            </select>
-          </div>
+          <LabelSelect
+            field="AcquisitionSource"
+            label="Acquisition Source"
+            value={source}
+            onChange={(val) => setSource(val?.target?.value ?? val)}
+            options={[
+              { value: 'Walk-in', label: 'Walk-in Visit' },
+              { value: 'Instagram', label: 'Instagram Direct Message' },
+              { value: 'Facebook', label: 'Facebook Lead Ad' },
+              { value: 'Friend Referral', label: 'Friend Referral' },
+              { value: 'Website Form', label: 'Online Self-Service Form' },
+            ]}
+            width="100%"
+            height={46}
+            corner={14}
+          />
         </div>
 
         <div className="space-y-1">

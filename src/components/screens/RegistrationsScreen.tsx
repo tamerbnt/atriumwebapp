@@ -25,6 +25,7 @@ import { RegistrationLead } from '../../types/index';
 import { Avatar } from '../ui/Avatar';
 import { Modal } from '../ui/Modal';
 import { Seek } from '../ui/Seek';
+import { LabelSelect } from '../ui/LabelSelect';
 
 interface RegistrationsScreenProps {
   onAddLead: () => void;
@@ -332,18 +333,19 @@ export const RegistrationsScreen: React.FC<RegistrationsScreenProps> = ({ onAddL
             </div>
 
             {/* Plan Filter Dropdown */}
-            <select
+            <LabelSelect
+              field="Plan"
+              label="Filter Plan"
               value={planFilter}
-              onChange={(e) => setPlanFilter(e.target.value)}
-              className="h-9 px-3 text-xs rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 font-semibold text-neutral-700 dark:text-neutral-300 cursor-pointer focus:outline-none shadow-2xs"
-            >
-              <option value="All">All Plans</option>
-              {plans.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
-                </option>
-              ))}
-            </select>
+              onChange={(val) => setPlanFilter(val?.target?.value ?? String(val))}
+              options={[
+                { value: 'All', label: 'All Plans' },
+                ...plans.map((p) => ({ value: p.id, label: p.name })),
+              ]}
+              width={160}
+              height={36}
+              corner={18}
+            />
 
             {/* Export Data Button */}
             <button
@@ -758,21 +760,22 @@ export const RegistrationsScreen: React.FC<RegistrationsScreenProps> = ({ onAddL
               </div>
             </div>
 
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
-                Select Membership Plan
-              </label>
-              <select
+            <div>
+              <LabelSelect
+                field="MembershipPlan"
+                label="Select Membership Plan *"
                 value={selectedPlanId}
-                onChange={(e) => setSelectedPlanId(e.target.value)}
-                className="w-full h-11 px-3 text-sm rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:border-[#C4785A] text-neutral-900 dark:text-white"
-              >
-                {plans.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name} ({p.durationDays} days · {p.price.amount} {p.price.currency})
-                  </option>
-                ))}
-              </select>
+                onChange={(val) => setSelectedPlanId(val?.target?.value ?? String(val))}
+                options={plans.map((p) => ({
+                  value: p.id,
+                  label: p.name,
+                  sublabel: `${p.durationDays} days · ${p.price.amount} ${p.price.currency}`,
+                }))}
+                searchable
+                width="100%"
+                height={46}
+                corner={14}
+              />
             </div>
 
             <div className="p-3 rounded-2xl bg-[#C4785A]/10 border border-[#C4785A]/20 text-xs text-[#C4785A]">
