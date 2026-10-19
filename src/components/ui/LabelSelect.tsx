@@ -151,7 +151,7 @@ export const LabelSelect: React.FC<LabelSelectProps> = ({
 
   // Focus search input when popover opens
   useEffect(() => {
-    if (isOpen && (searchable || normalizedOptions.length >= 8)) {
+    if (isOpen && (searchable || normalizedOptions.length >= 6)) {
       setTimeout(() => {
         searchInputRef.current?.focus();
       }, 40);
@@ -348,8 +348,8 @@ export const LabelSelect: React.FC<LabelSelectProps> = ({
               maxHeight: '230px',
             }}
           >
-            {/* Inline Quick Search if searchable or list has >= 8 items */}
-            {(searchable || normalizedOptions.length >= 8) && (
+            {/* Inline Quick Search if searchable or list has >= 6 items */}
+            {(searchable || normalizedOptions.length >= 6) && (
               <div className="p-2 border-b border-neutral-100 dark:border-zinc-800 bg-neutral-50/50 dark:bg-zinc-900/50">
                 <div className="relative flex items-center">
                   <Search

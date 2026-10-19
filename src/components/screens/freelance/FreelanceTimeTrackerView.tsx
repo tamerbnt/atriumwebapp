@@ -372,43 +372,38 @@ export const FreelanceTimeTrackerView: React.FC = () => {
         {/* Configuration Bar below timer */}
         {!activeTimer.isRunning && (
           <div className="mt-8 pt-6 border-t border-neutral-800/80 grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
-            <div>
-              <label className="text-[11px] font-semibold text-neutral-400 block mb-1">
-                Client Target
-              </label>
-              <select
-                value={selectedClientId}
-                onChange={(e) => {
-                  setSelectedClientId(e.target.value);
-                  const firstProj = freelanceProjects.find((p) => p.clientId === e.target.value);
-                  if (firstProj) setSelectedProjectId(firstProj.id);
-                }}
-                className="w-full px-3 py-2 rounded-xl bg-neutral-800 text-white border border-neutral-700 focus:outline-none"
-              >
-                {freelanceClients.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name} ({c.company || 'Private'})
-                  </option>
-                ))}
-              </select>
-            </div>
+            <LabelSelect
+              field="Client"
+              label="Client Target"
+              value={selectedClientId}
+              onChange={(val) => {
+                const cId = val?.target?.value ?? String(val);
+                setSelectedClientId(cId);
+                const firstProj = freelanceProjects.find((p) => p.clientId === cId);
+                if (firstProj) setSelectedProjectId(firstProj.id);
+              }}
+              options={freelanceClients.map((c) => ({
+                value: c.id,
+                label: `${c.name} (${c.company || 'Private'})`,
+              }))}
+              placeholder="Select Client..."
+              height={46}
+              corner={14}
+            />
 
-            <div>
-              <label className="text-[11px] font-semibold text-neutral-400 block mb-1">
-                Active Project
-              </label>
-              <select
-                value={selectedProjectId}
-                onChange={(e) => setSelectedProjectId(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-neutral-800 text-white border border-neutral-700 focus:outline-none"
-              >
-                {availableProjects.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.title}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <LabelSelect
+              field="Project"
+              label="Active Project"
+              value={selectedProjectId}
+              onChange={(val) => setSelectedProjectId(val?.target?.value ?? String(val))}
+              options={availableProjects.map((p) => ({
+                value: p.id,
+                label: p.title,
+              }))}
+              placeholder="Select Project..."
+              height={46}
+              corner={14}
+            />
 
               <LabelInput
                 field="Task"

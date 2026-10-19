@@ -26,6 +26,7 @@ import { formatMoney } from '../../../utils/rules';
 import { CertificateModal } from './CertificateModal';
 import { Seek } from '../../ui/Seek';
 import { LabelInput } from '../../ui/LabelInput';
+import { LabelSelect } from '../../ui/LabelSelect';
 
 type FilterKey = 'all' | 'active' | 'minors' | 'overdue' | 'graduated';
 
@@ -948,41 +949,43 @@ export const EducationStudentsView: React.FC = () => {
                   onChange={(e) => setFormData({ ...formData, schoolGrade: e.target.value })}
                   placeholder="e.g. 3AS Math / Adult"
                 />
-                <div>
-                  <label className="block font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
-                    Enrollment Status
-                  </label>
-                  <select
-                    value={formData.status}
-                    onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
-                    className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#C4785A]"
-                  >
-                    <option value="Active">Active</option>
-                    <option value="Applicant">Applicant</option>
-                    <option value="Graduated">Graduated</option>
-                    <option value="Suspended">Suspended</option>
-                  </select>
-                </div>
+                <LabelSelect
+                  label="Enrollment Status"
+                  value={formData.status}
+                  onChange={(val) =>
+                    setFormData({
+                      ...formData,
+                      status: (val?.target?.value ?? String(val)) as any,
+                    })
+                  }
+                  options={[
+                    { value: 'Active', label: 'Active' },
+                    { value: 'Applicant', label: 'Applicant' },
+                    { value: 'Graduated', label: 'Graduated' },
+                    { value: 'Suspended', label: 'Suspended' },
+                  ]}
+                />
               </div>
 
               {!studentToEdit && eduCohorts.length > 0 && (
-                <div>
-                  <label className="block font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
-                    Initial Cohort Enrollment
-                  </label>
-                  <select
-                    value={formData.initialCohortId}
-                    onChange={(e) => setFormData({ ...formData, initialCohortId: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#C4785A]"
-                  >
-                    <option value="">No immediate cohort assignment</option>
-                    {eduCohorts.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.name} ({c.cohortCode || c.courseTitle})
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                <LabelSelect
+                  label="Initial Cohort Enrollment"
+                  value={formData.initialCohortId}
+                  onChange={(val) =>
+                    setFormData({
+                      ...formData,
+                      initialCohortId: val?.target?.value ?? String(val),
+                    })
+                  }
+                  options={[
+                    { value: '', label: 'No immediate cohort assignment' },
+                    ...eduCohorts.map((c) => ({
+                      value: c.id,
+                      label: `${c.name} (${c.cohortCode || c.courseTitle})`,
+                    })),
+                  ]}
+                  placeholder="Select Cohort..."
+                />
               )}
 
               {/* Guardian checkbox & inputs */}
@@ -1007,23 +1010,22 @@ export const EducationStudentsView: React.FC = () => {
                         onChange={(e) => setFormData({ ...formData, guardianName: e.target.value })}
                         placeholder="e.g. Karim Mansouri"
                       />
-                      <div>
-                        <label className="block font-medium text-neutral-600 dark:text-neutral-400 mb-1">
-                          Guardian Relationship
-                        </label>
-                        <select
-                          value={formData.guardianRelation}
-                          onChange={(e) =>
-                            setFormData({ ...formData, guardianRelation: e.target.value })
-                          }
-                          className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white"
-                        >
-                          <option value="Father">Father</option>
-                          <option value="Mother">Mother</option>
-                          <option value="Guardian">Guardian</option>
-                          <option value="Sibling">Sibling</option>
-                        </select>
-                      </div>
+                      <LabelSelect
+                        label="Guardian Relationship"
+                        value={formData.guardianRelation}
+                        onChange={(val) =>
+                          setFormData({
+                            ...formData,
+                            guardianRelation: val?.target?.value ?? String(val),
+                          })
+                        }
+                        options={[
+                          { value: 'Father', label: 'Father' },
+                          { value: 'Mother', label: 'Mother' },
+                          { value: 'Guardian', label: 'Guardian' },
+                          { value: 'Sibling', label: 'Sibling' },
+                        ]}
+                      />
                     </div>
                     <LabelInput
                       id="guardian-phone"

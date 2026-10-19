@@ -26,6 +26,8 @@ import {
   CurrencyCode,
 } from '../../../types/index';
 import { LabelInput } from '../../ui/LabelInput';
+import { LabelSelect } from '../../ui/LabelSelect';
+import { FilterSelect } from '../../ui/FilterSelect';
 import { Seek } from '../../ui/Seek';
 
 const STAGES: { id: DeliverableStage; label: string; countColor: string }[] = [
@@ -437,23 +439,18 @@ export const FreelanceDeliverablesView: React.FC = () => {
                         </div>
 
                         {/* Move Stage Selector */}
-                        <select
+                        <FilterSelect
                           value={deliverable.stage}
-                          onChange={(e) =>
+                          onChange={(val) =>
                             updateDeliverableStage(
                               project.id,
                               deliverable.id,
-                              e.target.value as DeliverableStage
+                              (val?.target?.value ?? String(val)) as DeliverableStage
                             )
                           }
-                          className="h-7 px-1.5 text-[10px] font-medium rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-700 dark:text-neutral-300 focus:outline-none cursor-pointer"
-                        >
-                          {STAGES.map((s) => (
-                            <option key={s.id} value={s.id}>
-                              Move → {s.label}
-                            </option>
-                          ))}
-                        </select>
+                          options={STAGES.map((s) => ({ value: s.id, label: `Move → ${s.label}` }))}
+                          placeholder="Move Stage..."
+                        />
                       </div>
                     </div>
                   );
@@ -489,22 +486,16 @@ export const FreelanceDeliverablesView: React.FC = () => {
             </div>
 
             <form onSubmit={handleCreateDeliverable} className="space-y-3.5 text-xs">
-              <div>
-                <label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
-                  Target Project *
-                </label>
-                <select
-                  value={targetProjectId}
-                  onChange={(e) => setTargetProjectId(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white"
-                >
-                  {freelanceProjects.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.title} ({p.clientName})
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <LabelSelect
+                label="Target Project *"
+                value={targetProjectId}
+                onChange={(val) => setTargetProjectId(val?.target?.value ?? String(val))}
+                options={freelanceProjects.map((p) => ({
+                  value: p.id,
+                  label: `${p.title} (${p.clientName})`,
+                }))}
+                placeholder="Select Target Project..."
+              />
 
               <LabelInput
                 id="deliverable-title"
@@ -587,41 +578,36 @@ export const FreelanceDeliverablesView: React.FC = () => {
 
             <form onSubmit={handleCreateProject} className="space-y-3.5 text-xs">
               <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
-                    Client *
-                  </label>
-                  <select
-                    value={newProjectData.clientId}
-                    onChange={(e) => setNewProjectData({ ...newProjectData, clientId: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white"
-                  >
-                    {freelanceClients.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.name} ({c.company || 'Private'})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
-                    Pricing Model
-                  </label>
-                  <select
-                    value={newProjectData.pricingModel}
-                    onChange={(e) =>
-                      setNewProjectData({
-                        ...newProjectData,
-                        pricingModel: e.target.value as PricingModel,
-                      })
-                    }
-                    className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white"
-                  >
-                    <option value="Fixed">Fixed Milestone</option>
-                    <option value="Hourly">Hourly Time & Materials</option>
-                    <option value="Retainer">Monthly Retainer</option>
-                  </select>
-                </div>
+                <LabelSelect
+                  label="Client *"
+                  value={newProjectData.clientId}
+                  onChange={(val) =>
+                    setNewProjectData({
+                      ...newProjectData,
+                      clientId: val?.target?.value ?? String(val),
+                    })
+                  }
+                  options={freelanceClients.map((c) => ({
+                    value: c.id,
+                    label: `${c.name} (${c.company || 'Private'})`,
+                  }))}
+                  placeholder="Select Client..."
+                />
+                <LabelSelect
+                  label="Pricing Model"
+                  value={newProjectData.pricingModel}
+                  onChange={(val) =>
+                    setNewProjectData({
+                      ...newProjectData,
+                      pricingModel: (val?.target?.value ?? String(val)) as PricingModel,
+                    })
+                  }
+                  options={[
+                    { value: 'Fixed', label: 'Fixed Milestone' },
+                    { value: 'Hourly', label: 'Hourly Time & Materials' },
+                    { value: 'Retainer', label: 'Monthly Retainer' },
+                  ]}
+                />
               </div>
 
               <LabelInput
@@ -649,25 +635,17 @@ export const FreelanceDeliverablesView: React.FC = () => {
               </div>
 
               <div className="grid grid-cols-3 gap-3">
-                <div>
-                  <label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
-                    Currency
-                  </label>
-                  <select
-                    value={newProjectData.currency}
-                    onChange={(e) =>
-                      setNewProjectData({
-                        ...newProjectData,
-                        currency: e.target.value as CurrencyCode,
-                      })
-                    }
-                    className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white"
-                  >
-                    <option value="DZD">DZD</option>
-                    <option value="EUR">EUR</option>
-                    <option value="USD">USD</option>
-                  </select>
-                </div>
+                <LabelSelect
+                  label="Currency"
+                  value={newProjectData.currency}
+                  onChange={(val) =>
+                    setNewProjectData({
+                      ...newProjectData,
+                      currency: (val?.target?.value ?? String(val)) as CurrencyCode,
+                    })
+                  }
+                  options={['DZD', 'EUR', 'USD']}
+                />
                 <div>
                   <LabelInput
                     id="new-project-budget"

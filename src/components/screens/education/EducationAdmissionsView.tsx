@@ -16,6 +16,7 @@ import { useAtriumStore } from '../../../services/store';
 import { AdmissionStage, EduAdmissionLead } from '../../../types';
 import { Seek } from '../../ui/Seek';
 import { LabelInput } from '../../ui/LabelInput';
+import { LabelSelect } from '../../ui/LabelSelect';
 
 const STAGES: { id: AdmissionStage; title: string }[] = [
   { id: 'Inquiry', title: '1. Inquiries' },
@@ -252,22 +253,16 @@ export const EducationAdmissionsView: React.FC = () => {
                 You are about to register <strong className="text-neutral-900 dark:text-white">{conversionLead.studentName}</strong> into the student CRM and create an active enrollment record.
               </p>
 
-              <div>
-                <label className="block font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
-                  Select Starting Cohort Batch *
-                </label>
-                <select
-                  value={targetCohortId}
-                  onChange={(e) => setTargetCohortId(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#C4785A]"
-                >
-                  {eduCohorts.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name} ({c.cohortCode || c.courseTitle})
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <LabelSelect
+                label="Starting Cohort Batch *"
+                value={targetCohortId}
+                onChange={(val) => setTargetCohortId(val?.target?.value ?? String(val))}
+                options={eduCohorts.map((c) => ({
+                  value: c.id,
+                  label: `${c.name} (${c.cohortCode || c.courseTitle})`,
+                }))}
+                placeholder="Select Starting Cohort..."
+              />
 
               <div className="flex items-center justify-end gap-3 pt-3 border-t border-neutral-100 dark:border-neutral-800">
                 <button
@@ -352,23 +347,21 @@ export const EducationAdmissionsView: React.FC = () => {
                 </div>
               </div>
 
-              <div>
-                <label className="block font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
-                  Desired Course *
-                </label>
-                <select
-                  required
-                  value={formData.desiredCourseId}
-                  onChange={(e) => setFormData({ ...formData, desiredCourseId: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white"
-                >
-                  {eduCourses.map((co) => (
-                    <option key={co.id} value={co.id}>
-                      {co.title} ({co.category})
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <LabelSelect
+                label="Desired Course *"
+                value={formData.desiredCourseId}
+                onChange={(val) =>
+                  setFormData({
+                    ...formData,
+                    desiredCourseId: val?.target?.value ?? String(val),
+                  })
+                }
+                options={eduCourses.map((co) => ({
+                  value: co.id,
+                  label: `${co.title} (${co.category})`,
+                }))}
+                placeholder="Select Desired Course..."
+              />
 
               <div className="grid grid-cols-2 gap-3">
                 <div>

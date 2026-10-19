@@ -20,6 +20,7 @@ import { useAtriumStore } from '../../../services/store';
 import { formatCurrencyAmount } from '../../../utils/rules';
 import { FreelanceProposal, PricingModel, CurrencyCode } from '../../../types/index';
 import { LabelInput } from '../../ui/LabelInput';
+import { LabelSelect } from '../../ui/LabelSelect';
 import { Seek } from '../../ui/Seek';
 
 export const FreelanceProposalsView: React.FC = () => {
@@ -437,20 +438,17 @@ export const FreelanceProposalsView: React.FC = () => {
               </div>
 
               <div className="grid grid-cols-3 gap-3">
-                <div>
-                  <label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
-                    Currency
-                  </label>
-                  <select
-                    value={formData.currency}
-                    onChange={(e) => setFormData({ ...formData, currency: e.target.value as CurrencyCode })}
-                    className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white"
-                  >
-                    <option value="DZD">DZD</option>
-                    <option value="EUR">EUR</option>
-                    <option value="USD">USD</option>
-                  </select>
-                </div>
+                <LabelSelect
+                  label="Currency"
+                  value={formData.currency}
+                  onChange={(val) =>
+                    setFormData({
+                      ...formData,
+                      currency: (val?.target?.value ?? String(val)) as CurrencyCode,
+                    })
+                  }
+                  options={['DZD', 'EUR', 'USD']}
+                />
                 <div>
                   <LabelInput
                     id="draft-budget"
@@ -610,20 +608,17 @@ export const FreelanceProposalsView: React.FC = () => {
               </div>
 
               <div className="grid grid-cols-3 gap-3">
-                <div>
-                  <label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
-                    Currency
-                  </label>
-                  <select
-                    value={editFormData.currency}
-                    onChange={(e) => setEditFormData({ ...editFormData, currency: e.target.value as CurrencyCode })}
-                    className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white"
-                  >
-                    <option value="DZD">DZD</option>
-                    <option value="EUR">EUR</option>
-                    <option value="USD">USD</option>
-                  </select>
-                </div>
+                <LabelSelect
+                  label="Currency"
+                  value={editFormData.currency}
+                  onChange={(val) =>
+                    setEditFormData({
+                      ...editFormData,
+                      currency: (val?.target?.value ?? String(val)) as CurrencyCode,
+                    })
+                  }
+                  options={['DZD', 'EUR', 'USD']}
+                />
                 <div>
                   <LabelInput
                     id="edit-budget"

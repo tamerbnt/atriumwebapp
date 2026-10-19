@@ -25,6 +25,7 @@ import { FreelanceClient, FreelanceClientStatus, CurrencyCode } from '../../../t
 import { Seek } from '../../ui/Seek';
 import { ActionNode } from '../../ui/ActionNode';
 import { LabelInput } from '../../ui/LabelInput';
+import { LabelSelect } from '../../ui/LabelSelect';
 
 export const FreelanceClientsView: React.FC = () => {
   const {
@@ -700,20 +701,24 @@ export const FreelanceClientsView: React.FC = () => {
               </div>
 
               <div className="grid grid-cols-3 gap-3">
-                <div>
-                  <label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
-                    Currency
-                  </label>
-                  <select
-                    value={formData.currency}
-                    onChange={(e) => setFormData({ ...formData, currency: e.target.value as CurrencyCode })}
-                    className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#C4785A]"
-                  >
-                    <option value="DZD">DZD (DA)</option>
-                    <option value="EUR">EUR (€)</option>
-                    <option value="USD">USD ($)</option>
-                  </select>
-                </div>
+                <LabelSelect
+                  field="Currency"
+                  label="Currency"
+                  value={formData.currency}
+                  onChange={(val) =>
+                    setFormData({
+                      ...formData,
+                      currency: (val?.target?.value ?? String(val)) as CurrencyCode,
+                    })
+                  }
+                  options={[
+                    { value: 'DZD', label: 'DZD (DA)' },
+                    { value: 'EUR', label: 'EUR (€)' },
+                    { value: 'USD', label: 'USD ($)' },
+                  ]}
+                  height={46}
+                  corner={14}
+                />
                 <LabelInput
                   field="HourlyRate"
                   label="Hourly Rate"
@@ -724,21 +729,25 @@ export const FreelanceClientsView: React.FC = () => {
                   height={46}
                   corner={14}
                 />
-                <div>
-                  <label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
-                    Status
-                  </label>
-                  <select
-                    value={formData.status}
-                    onChange={(e) => setFormData({ ...formData, status: e.target.value as FreelanceClientStatus })}
-                    className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#C4785A]"
-                  >
-                    <option value="ActiveRetainer">Active Retainer</option>
-                    <option value="ProjectBased">Project-Based</option>
-                    <option value="Prospect">Prospect</option>
-                    <option value="Archived">Archived</option>
-                  </select>
-                </div>
+                <LabelSelect
+                  field="Status"
+                  label="Client Status"
+                  value={formData.status}
+                  onChange={(val) =>
+                    setFormData({
+                      ...formData,
+                      status: (val?.target?.value ?? String(val)) as FreelanceClientStatus,
+                    })
+                  }
+                  options={[
+                    { value: 'ActiveRetainer', label: 'Active Retainer' },
+                    { value: 'ProjectBased', label: 'Project-Based' },
+                    { value: 'Prospect', label: 'Prospect' },
+                    { value: 'Archived', label: 'Archived' },
+                  ]}
+                  height={46}
+                  corner={14}
+                />
               </div>
 
               {formData.status === 'ActiveRetainer' && (

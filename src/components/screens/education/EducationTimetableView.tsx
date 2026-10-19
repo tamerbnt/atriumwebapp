@@ -18,6 +18,8 @@ import { useAtriumStore } from '../../../services/store';
 import { EduSession } from '../../../types';
 import { RollCallModal } from './RollCallModal';
 import { LabelInput } from '../../ui/LabelInput';
+import { LabelSelect } from '../../ui/LabelSelect';
+import { FilterSelect } from '../../ui/FilterSelect';
 import { Seek } from '../../ui/Seek';
 
 export const EducationTimetableView: React.FC = () => {
@@ -151,37 +153,28 @@ export const EducationTimetableView: React.FC = () => {
       {/* Filter and Selection Strip */}
       <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-900/40 border border-[#EDF1F3] dark:border-neutral-800">
         <div className="flex flex-wrap items-center gap-2.5">
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-medium text-neutral-500">Cohort:</span>
-            <select
-              value={selectedCohortId}
-              onChange={(e) => setSelectedCohortId(e.target.value)}
-              className="text-xs font-semibold text-neutral-800 dark:text-neutral-200 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#C4785A] cursor-pointer"
-            >
-              <option value="all">All Cohorts ({eduCohorts.length})</option>
-              {eduCohorts.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
-          </div>
+          <FilterSelect
+            label="Cohort"
+            value={selectedCohortId}
+            onChange={(val) => setSelectedCohortId(val?.target?.value ?? String(val))}
+            options={[
+              { value: 'all', label: `All Cohorts (${eduCohorts.length})` },
+              ...eduCohorts.map((c) => ({ value: c.id, label: c.name })),
+            ]}
+          />
 
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-medium text-neutral-500">Classroom:</span>
-            <select
-              value={selectedClassroomId}
-              onChange={(e) => setSelectedClassroomId(e.target.value)}
-              className="text-xs font-semibold text-neutral-800 dark:text-neutral-200 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#C4785A] cursor-pointer"
-            >
-              <option value="all">All Rooms ({eduClassrooms.length})</option>
-              {eduClassrooms.map((r) => (
-                <option key={r.id} value={r.id}>
-                  {r.name} (Cap: {r.capacity})
-                </option>
-              ))}
-            </select>
-          </div>
+          <FilterSelect
+            label="Classroom"
+            value={selectedClassroomId}
+            onChange={(val) => setSelectedClassroomId(val?.target?.value ?? String(val))}
+            options={[
+              { value: 'all', label: `All Rooms (${eduClassrooms.length})` },
+              ...eduClassrooms.map((r) => ({
+                value: r.id,
+                label: `${r.name} (Cap: ${r.capacity})`,
+              })),
+            ]}
+          />
         </div>
 
         <div className="flex items-center gap-3">

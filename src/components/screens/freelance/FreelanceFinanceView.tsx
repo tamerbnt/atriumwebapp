@@ -17,6 +17,7 @@ import { useAtriumStore } from '../../../services/store';
 import { formatCurrencyAmount } from '../../../utils/rules';
 import { FreelanceExpense, ExpenseCategory, CurrencyCode } from '../../../types/index';
 import { LabelInput } from '../../ui/LabelInput';
+import { LabelSelect } from '../../ui/LabelSelect';
 
 export const FreelanceFinanceView: React.FC = () => {
   const {
@@ -330,23 +331,24 @@ export const FreelanceFinanceView: React.FC = () => {
                     corner={14}
                   />
                 </div>
-                <div>
-                  <label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
-                    Category
-                  </label>
-                  <select
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value as ExpenseCategory)}
-                    className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white"
-                  >
-                    <option value="Software">Software & SaaS</option>
-                    <option value="Office">Office & Coworking</option>
-                    <option value="Hardware">Hardware</option>
-                    <option value="Subcontractor">Subcontractor</option>
-                    <option value="Travel">Travel</option>
-                    <option value="Other">Other</option>
-                  </select>
-                </div>
+                <LabelSelect
+                  field="Category"
+                  label="Category *"
+                  value={category}
+                  onChange={(val) =>
+                    setCategory((val?.target?.value ?? String(val)) as ExpenseCategory)
+                  }
+                  options={[
+                    { value: 'Software', label: 'Software & SaaS' },
+                    { value: 'Office', label: 'Office & Coworking' },
+                    { value: 'Hardware', label: 'Hardware' },
+                    { value: 'Subcontractor', label: 'Subcontractor' },
+                    { value: 'Travel', label: 'Travel' },
+                    { value: 'Other', label: 'Other' },
+                  ]}
+                  height={46}
+                  corner={14}
+                />
               </div>
 
               <div>
@@ -378,20 +380,21 @@ export const FreelanceFinanceView: React.FC = () => {
                     corner={14}
                   />
                 </div>
-                <div>
-                  <label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
-                    Currency
-                  </label>
-                  <select
-                    value={currency}
-                    onChange={(e) => setCurrency(e.target.value as CurrencyCode)}
-                    className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white"
-                  >
-                    <option value="EUR">EUR (€)</option>
-                    <option value="USD">USD ($)</option>
-                    <option value="DZD">DZD (DA)</option>
-                  </select>
-                </div>
+                <LabelSelect
+                  field="Currency"
+                  label="Currency"
+                  value={currency}
+                  onChange={(val) =>
+                    setCurrency((val?.target?.value ?? String(val)) as CurrencyCode)
+                  }
+                  options={[
+                    { value: 'EUR', label: 'EUR (€)' },
+                    { value: 'USD', label: 'USD ($)' },
+                    { value: 'DZD', label: 'DZD (DA)' },
+                  ]}
+                  height={46}
+                  corner={14}
+                />
               </div>
 
               <div className="flex items-center gap-2 pt-1">
