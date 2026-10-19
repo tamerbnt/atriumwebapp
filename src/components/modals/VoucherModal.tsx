@@ -11,7 +11,7 @@ interface VoucherModalProps {
 }
 
 export const VoucherModal: React.FC<VoucherModalProps> = ({ isOpen, onClose }) => {
-  const { subscription, redeemVoucher } = useAtriumStore();
+  const { subscription, redeemVoucher, showToast } = useAtriumStore();
   const [code, setCode] = useState('');
   const [resultMessage, setResultMessage] = useState<{
     success: boolean;
@@ -34,6 +34,11 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({ isOpen, onClose }) =
       setCode('');
     } else {
       setResultMessage({ success: false, text: res.message });
+      showToast({
+        type: 'error',
+        title: 'Voucher Invalid',
+        message: res.message || 'Please verify the 20-digit code and try again.',
+      });
     }
   };
 

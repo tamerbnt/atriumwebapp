@@ -1086,6 +1086,11 @@
   letter-spacing: 0em;
 }
 
+.tst-act:hover {
+  background: var(--color-accent, #C4785A);
+  color: #ffffff;
+}
+
 .tst-act:active { scale: 0.96; }
 
 .tst-x {

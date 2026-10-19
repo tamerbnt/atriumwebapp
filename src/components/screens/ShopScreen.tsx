@@ -454,7 +454,7 @@ export const ShopScreen: React.FC = () => {
     showToast({
       type: 'success',
       title: 'Payment Settled',
-      message: `Receipt #${sale.id.slice(-6).toUpperCase()} processed (${sale.total.amount.toLocaleString()} ${sale.total.currency || 'DZD'}).`,
+      message: `Receipt #${sale.id.slice(-6).toUpperCase()} processed (${sale.totalAmount.toLocaleString()} DZD).`,
       category: 'pos_inventory',
       action: {
         label: 'Receipt',

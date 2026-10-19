@@ -168,11 +168,32 @@ export const FreelanceTimeTrackerView: React.FC = () => {
       isBillable: true,
     });
     setIsManualModalOpen(false);
+
+    showToast({
+      type: 'success',
+      title: 'Time Logged',
+      message: `${manualForm.hours}h ${manualForm.minutes}m logged to "${project?.title || 'Project'}".`,
+      category: 'freelance_solo',
+      action: {
+        label: 'Invoice',
+        onClick: () => setScreen('shop'),
+      },
+    });
   };
 
   const handleBillClientUnbilled = (clientId: string) => {
     try {
-      billUnbilledHours(clientId, 0);
+      const inv = billUnbilledHours(clientId, 0);
+      showToast({
+        type: 'success',
+        title: 'Invoice Generated',
+        message: `Drafted invoice for ${inv?.clientName || 'Client'} from unbilled hours.`,
+        category: 'freelance_solo',
+        action: {
+          label: 'Preview',
+          onClick: () => setScreen('shop'),
+        },
+      });
       setScreen('shop');
     } catch (err: any) {
       console.error('Error billing hours:', err?.message || err);

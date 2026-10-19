@@ -32,6 +32,7 @@ export const RollCallModal: React.FC<RollCallModalProps> = ({
     eduAttendance,
     batchRecordAttendance,
     showToast,
+    setScreen,
   } = useAtriumStore();
 
   const [selectedCohortId, setSelectedCohortId] = useState<string>(
@@ -131,7 +132,9 @@ export const RollCallModal: React.FC<RollCallModalProps> = ({
       category: 'education_cohort',
       action: {
         label: 'Gradebook',
-        onClick: () => {},
+        onClick: () => {
+          setScreen('analytics');
+        },
       },
     });
     onClose();

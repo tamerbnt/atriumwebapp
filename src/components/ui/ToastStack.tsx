@@ -38,6 +38,39 @@ export const CATEGORY_NOTIFICATION_POOLS: Record<
   string,
   Omit<StackToastItem, "id">[]
 > = {
+  membership_session: [
+    {
+      kind: "success",
+      title: "Member Checked In",
+      body: "Walid Mesbah (RFID-8842) verified & access granted.",
+      action: "Profile",
+    },
+    {
+      kind: "warning",
+      title: "Low Session Balance",
+      body: "Amine K. has 1 session remaining on 10-Session Pass.",
+      action: "Renew",
+    },
+    {
+      kind: "info",
+      title: "CrossFit Batch Booked",
+      body: "16 athletes checked in for 18:00 WOD session.",
+      action: "Roster",
+    },
+    {
+      kind: "warning",
+      title: "Plan Expiring in 3 Days",
+      body: "Sarah B. Gold Membership renewal approaching.",
+      action: "Extend",
+    },
+    {
+      kind: "success",
+      title: "Locker Assigned",
+      body: "Locker #42 assigned to Amine K. for today's session.",
+    },
+  ],
+
+  // Alias for backward compatibility
   membership_fitness: [
     {
       kind: "success",
@@ -232,6 +265,33 @@ export const CATEGORY_NOTIFICATION_POOLS: Record<
     },
   ],
 
+  project_milestone: [
+    {
+      kind: "success",
+      title: "Milestone Delivered",
+      body: "Phase 2 UI Architecture approved by client stakeholder.",
+      action: "Deliverables",
+    },
+    {
+      kind: "warning",
+      title: "Budget Threshold (80%)",
+      body: "Fintech Mobile Redesign has reached 80% allocated hours.",
+      action: "Scope",
+    },
+    {
+      kind: "info",
+      title: "Sprint Retrospective Logged",
+      body: "Sprint #14 velocity closed with 42 story points completed.",
+      action: "Sprint",
+    },
+    {
+      kind: "success",
+      title: "Retainer Payment Received",
+      body: "Monthly agency retainer settled for October (380,000 DZD).",
+      action: "Invoice",
+    },
+  ],
+
   default_global: [
     {
       kind: "success",
@@ -279,8 +339,11 @@ export const ToastStack: React.FC<ToastStackProps> = ({
     setScreen,
   } = useAtriumStore();
 
-  const category = currentBusiness?.category || "membership_fitness";
-  const pool = CATEGORY_NOTIFICATION_POOLS[category] || CATEGORY_NOTIFICATION_POOLS.default_global;
+  const category = currentBusiness?.category || "membership_session";
+  const pool =
+    CATEGORY_NOTIFICATION_POOLS[category] ||
+    CATEGORY_NOTIFICATION_POOLS.membership_session ||
+    CATEGORY_NOTIFICATION_POOLS.default_global;
 
   const nextIdRef = useRef(100);
   const root = useRef<HTMLDivElement | null>(null);
@@ -299,7 +362,10 @@ export const ToastStack: React.FC<ToastStackProps> = ({
 
   // When business vertical changes, refresh the pool with category-dedicated notifications
   useEffect(() => {
-    const freshPool = CATEGORY_NOTIFICATION_POOLS[category] || CATEGORY_NOTIFICATION_POOLS.default_global;
+    const freshPool =
+      CATEGORY_NOTIFICATION_POOLS[category] ||
+      CATEGORY_NOTIFICATION_POOLS.membership_session ||
+      CATEGORY_NOTIFICATION_POOLS.default_global;
     setStack(
       freshPool.slice(0, SHOWN).map((item, idx) => ({
         ...item,
@@ -309,14 +375,13 @@ export const ToastStack: React.FC<ToastStackProps> = ({
   }, [category]);
 
   // Synchronize with store toasts when a user or system event triggers showToast
-  const lastProcessedStoreToastId = useRef<string | null>(null);
+  const processedIdsRef = useRef<Set<string>>(new Set());
   useEffect(() => {
     if (storeToasts && storeToasts.length > 0) {
-      const latest = storeToasts[storeToasts.length - 1];
-      if (latest && latest.id !== lastProcessedStoreToastId.current) {
-        lastProcessedStoreToastId.current = latest.id;
-
-        const newToast: StackToastItem = {
+      const newToasts = storeToasts.filter((t) => !processedIdsRef.current.has(t.id));
+      if (newToasts.length > 0) {
+        newToasts.forEach((t) => processedIdsRef.current.add(t.id));
+        const newItems: StackToastItem[] = newToasts.map((latest) => ({
           id: latest.id,
           kind: latest.type as ToastKind,
           title: latest.title,
@@ -324,19 +389,33 @@ export const ToastStack: React.FC<ToastStackProps> = ({
           action: latest.action?.label,
           onAction: latest.action?.onClick,
           category: latest.category || category,
-        };
+        }));
 
         setStack((prev) => {
-          const rest = prev.filter((t) => t.id !== latest.id);
-          return [newToast, ...rest].slice(0, 5);
+          const newIds = new Set(newItems.map((n) => n.id));
+          const rest = prev.filter((t) => !newIds.has(t.id));
+          return [...newItems.reverse(), ...rest].slice(0, 5);
         });
       }
     }
   }, [storeToasts, category]);
 
+  // Keyboard accessibility: Escape collapses fanned open stack
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && open) {
+        setOpen(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [open]);
+
   // Auto-dismiss the front toast every 6 seconds, pausing on hover/focus
   useEffect(() => {
-    const timer = setInterval(() => {
+    if (open) return; // Never auto-dismiss while user is inspecting fanned cards
+
+    const timer = setTimeout(() => {
       if (isHoveredRef.current || open) {
         return; // Hover pause
       }
@@ -360,23 +439,23 @@ export const ToastStack: React.FC<ToastStackProps> = ({
       });
     }, AUTO_DISMISS_MS);
 
-    return () => clearInterval(timer);
-  }, [open, pool]);
+    return () => clearTimeout(timer);
+  }, [stack, open, pool]);
 
   const listH = SHOWN * H + (SHOWN - 1) * gap;
-  const stackH = H + (SHOWN - 1) * peek;
   const FH = listH;
 
+  /* Bottom-anchored positioning: Card 0 (front) stays fixed at the bottom baseline (FH - H)
+     both when closed and open. Cards 1 & 2 fan gracefully upward on hover without cursor jumping. */
   const place = (k: number) => {
+    const baseBottom = FH - H;
     if (open) {
-      /* The list: front at bottom, previous stacked above it */
-      const top = (FH - listH) / 2;
-      return { y: top + (SHOWN - 1 - k) * (H + gap), scale: 1 };
+      /* Fanned open: Cards fan upwards with clean 10px spacing */
+      return { y: baseBottom - k * (H + gap), scale: 1 };
     }
-    /* The stack: front at bottom, earlier toasts tucked behind with peek sliver */
-    const top = (FH - stackH) / 2;
+    /* Stacked at rest: Cards tuck behind with subtle 14px peek and slight scale */
     const d = Math.min(k, SHOWN - 1);
-    return { y: top + (SHOWN - 1 - d) * peek, scale: 1 - d * 0.05 };
+    return { y: baseBottom - d * peek, scale: 1 - d * 0.05 };
   };
 
   const dismiss = (id: string) => {
@@ -389,7 +468,7 @@ export const ToastStack: React.FC<ToastStackProps> = ({
         const rest = s.filter((t) => t.id !== id);
         const n = nextIdRef.current++;
         const fresh = { ...pool[n % pool.length], id: `fresh-${n}` };
-        return [fresh, ...rest].slice(0, SHOWN);
+        return [...rest, fresh].slice(0, SHOWN);
       });
       setLeaving(null);
     }, 220);
@@ -513,7 +592,10 @@ export const ToastStack: React.FC<ToastStackProps> = ({
                   type="button"
                   className="tst-act"
                   tabIndex={open || front ? 0 : -1}
-                  onClick={() => handleAction(t)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleAction(t);
+                  }}
                   title={`Trigger ${t.action}`}
                 >
                   {t.action}
@@ -526,7 +608,10 @@ export const ToastStack: React.FC<ToastStackProps> = ({
                 className="tst-x"
                 aria-label={`Dismiss ${t.title}`}
                 tabIndex={open || front ? 0 : -1}
-                onClick={() => dismiss(t.id)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  dismiss(t.id);
+                }}
               >
                 <X size={15} strokeWidth={2.2} aria-hidden="true" />
               </button>

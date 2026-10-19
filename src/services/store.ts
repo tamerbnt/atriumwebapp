@@ -859,6 +859,9 @@ export function useAtriumStore() {
       }
     }
 
+    const prevBusinessId = state.currentBusinessId;
+    const prevBranchId = state.currentBranchId;
+
     globalState = {
       ...globalState,
       currentBusinessId: businessId,
@@ -868,6 +871,19 @@ export function useAtriumStore() {
       isDetailOpen: false,
     };
     notify();
+
+    showToast({
+      type: 'info',
+      title: 'Facility Switched',
+      message: `Active workspace changed to ${targetBusiness?.name || 'facility'}.`,
+      category: targetBusiness?.category,
+      action: {
+        label: 'Undo Switch',
+        onClick: () => {
+          switchFacility(prevBusinessId, prevBranchId);
+        },
+      },
+    });
   };
 
   const switchBusiness = (businessId: string) => {
@@ -909,6 +925,29 @@ export function useAtriumStore() {
     };
     notify();
 
+    const currentBiz = globalState.businesses.find((b) => b.id === globalState.currentBusinessId);
+    const cat = currentBiz?.category || 'membership_session';
+    const terms = getCategoryTerminology(cat, globalState.language || 'en');
+
+    showToast({
+      type: 'success',
+      title: `${terms.memberSingle} Enrolled`,
+      message: `${member.fullName} registered successfully into ${member.membershipPlanName || 'Standard Plan'}.`,
+      category: cat,
+      action: {
+        label: 'Profile',
+        onClick: () => {
+          globalState = {
+            ...globalState,
+            selectedMemberId: member.id,
+            isDetailOpen: true,
+            activeScreen: 'members',
+          };
+          notify();
+        },
+      },
+    });
+
     if (isSupabaseConfigured()) {
       memberService.createMember(member).catch((err) => {
         console.warn('[store] Failed to save member to Supabase:', err);
@@ -919,6 +958,7 @@ export function useAtriumStore() {
   };
 
   const updateMember = (id: string, updates: Partial<Member>) => {
+    const target = globalState.members.find((m) => m.id === id);
     globalState = {
       ...globalState,
       members: globalState.members.map((m) =>
@@ -927,10 +967,18 @@ export function useAtriumStore() {
     };
     notify();
 
+    const currentBiz = globalState.businesses.find((b) => b.id === globalState.currentBusinessId);
+    const cat = currentBiz?.category || 'membership_session';
+    showToast({
+      type: 'info',
+      title: 'Profile Updated',
+      message: `Changes for ${updates.fullName || target?.fullName || 'member'} saved.`,
+      category: cat,
+    });
+
     if (isSupabaseConfigured()) {
-      const target = globalState.members.find((m) => m.id === id);
       if (target) {
-        memberService.updateMember(target).catch((err) => {
+        memberService.updateMember({ ...target, ...updates }).catch((err) => {
           console.warn('[store] Failed to update member in Supabase:', err);
         });
       }
@@ -938,6 +986,7 @@ export function useAtriumStore() {
   };
 
   const deleteMember = (id: string) => {
+    const target = globalState.members.find((m) => m.id === id);
     globalState = {
       ...globalState,
       members: globalState.members.filter((m) => m.id !== id),
@@ -945,6 +994,16 @@ export function useAtriumStore() {
       isDetailOpen: globalState.selectedMemberId === id ? false : globalState.isDetailOpen,
     };
     notify();
+
+    const currentBiz = globalState.businesses.find((b) => b.id === globalState.currentBusinessId);
+    const cat = currentBiz?.category || 'membership_session';
+    const terms = getCategoryTerminology(cat, globalState.language || 'en');
+    showToast({
+      type: 'warning',
+      title: `${terms.memberSingle} Removed`,
+      message: `${target?.fullName || 'Record'} has been removed from active registry.`,
+      category: cat,
+    });
 
     if (isSupabaseConfigured()) {
       memberService.deleteMember(id).catch((err) => {
@@ -1230,6 +1289,23 @@ export function useAtriumStore() {
       stockMovements: movement ? [movement, ...(globalState.stockMovements || [])] : globalState.stockMovements,
     };
     notify();
+
+    if (movement) {
+      const mv: StockMovement = movement;
+      showToast({
+        type: 'info',
+        title: 'Inventory Adjusted',
+        message: `${mv.productName} updated: ${mv.previousStock} → ${mv.newStock} (${reason}).`,
+        category: 'pos_inventory',
+        action: {
+          label: 'Inventory',
+          onClick: () => {
+            globalState = { ...globalState, activeScreen: 'shop' };
+            notify();
+          },
+        },
+      });
+    }
   };
 
   const updateProduct = (productId: string, updates: Partial<Product>) => {
@@ -1243,11 +1319,19 @@ export function useAtriumStore() {
   };
 
   const deleteProduct = (productId: string) => {
+    const target = globalState.products.find((p) => p.id === productId);
     globalState = {
       ...globalState,
       products: globalState.products.filter((p) => p.id !== productId),
     };
     notify();
+
+    showToast({
+      type: 'warning',
+      title: 'Product Removed',
+      message: `${target?.name || 'Item'} removed from store inventory.`,
+      category: 'pos_inventory',
+    });
   };
 
   const parkOrder = (
@@ -1421,6 +1505,20 @@ export function useAtriumStore() {
     };
     notify();
 
+    showToast({
+      type: 'success',
+      title: 'Booking Confirmed',
+      message: `${newApt.clientName} with ${newApt.staffName} at ${newApt.startTime}.`,
+      category: 'appointment_service',
+      action: {
+        label: 'Schedule',
+        onClick: () => {
+          globalState = { ...globalState, activeScreen: 'scheduler' };
+          notify();
+        },
+      },
+    });
+
     if (isSupabaseConfigured()) {
       appointmentService.upsertAppointment(newApt).catch((err) => {
         console.warn('[store] Failed to save appointment to Supabase:', err);
@@ -1431,6 +1529,7 @@ export function useAtriumStore() {
   };
 
   const updateAppointmentStatus = (id: string, status: AppointmentStatus) => {
+    const apt = (globalState.appointments || []).find((a) => a.id === id);
     globalState = {
       ...globalState,
       appointments: (globalState.appointments || []).map((a) =>
@@ -1438,6 +1537,29 @@ export function useAtriumStore() {
       ),
     };
     notify();
+
+    if (status === 'InChair') {
+      showToast({
+        type: 'info',
+        title: 'Client In Chair',
+        message: `${apt?.clientName || 'Client'} service started with ${apt?.staffName || 'Stylist'}.`,
+        category: 'appointment_service',
+        action: {
+          label: 'Timer',
+          onClick: () => {
+            globalState = { ...globalState, activeScreen: 'scheduler' };
+            notify();
+          },
+        },
+      });
+    } else if (status === 'Cancelled') {
+      showToast({
+        type: 'warning',
+        title: 'Booking Cancelled',
+        message: `Appointment for ${apt?.clientName || 'Client'} cancelled.`,
+        category: 'appointment_service',
+      });
+    }
 
     if (isSupabaseConfigured()) {
       appointmentService.updateStatus(id, status).catch((err) => {
@@ -1454,6 +1576,7 @@ export function useAtriumStore() {
     staffId?: string,
     staffName?: string
   ) => {
+    const apt = (globalState.appointments || []).find((a) => a.id === id);
     globalState = {
       ...globalState,
       appointments: (globalState.appointments || []).map((a) => {
@@ -1470,6 +1593,13 @@ export function useAtriumStore() {
       }),
     };
     notify();
+
+    showToast({
+      type: 'info',
+      title: 'Appointment Rescheduled',
+      message: `${apt?.clientName || 'Client'} appointment moved to ${date} at ${startTime}.`,
+      category: 'appointment_service',
+    });
 
     if (isSupabaseConfigured()) {
       const target = globalState.appointments?.find((a) => a.id === id);
@@ -1539,6 +1669,18 @@ export function useAtriumStore() {
       sales: [sale, ...globalState.sales],
     };
     notify();
+
+    showToast({
+      type: 'success',
+      title: 'Sent to Checkout',
+      message: `${apt.serviceName} billed for ${apt.clientName} (${apt.price.toLocaleString()} DZD).`,
+      category: 'appointment_service',
+      action: {
+        label: 'Receipt',
+        onClick: () => window.print?.(),
+      },
+    });
+
     return sale;
   };
 
@@ -1707,6 +1849,19 @@ export function useAtriumStore() {
     };
     notify();
 
+    showToast({
+      type: 'success',
+      title: 'Perpetual License Active',
+      message: `Lifetime ${matchingPlan.name} entitlement unlocked successfully.`,
+      action: {
+        label: 'Entitlements',
+        onClick: () => {
+          globalState = { ...globalState, activeScreen: 'settings' };
+          notify();
+        },
+      },
+    });
+
     if (isSupabaseConfigured()) {
       licenseService.redeemVoucher(globalState.account.id, code).catch((err) => {
         console.warn('[store] Supabase redeem_license_voucher notice:', err);
@@ -1732,6 +1887,20 @@ export function useAtriumStore() {
       products: [newProduct, ...globalState.products],
     };
     notify();
+
+    showToast({
+      type: 'success',
+      title: 'Product Created',
+      message: `${newProduct.name} added to inventory (${newProduct.stockQuantity} in stock).`,
+      category: 'pos_inventory',
+      action: {
+        label: 'Register',
+        onClick: () => {
+          globalState = { ...globalState, activeScreen: 'shop' };
+          notify();
+        },
+      },
+    });
 
     if (isSupabaseConfigured()) {
       posService.upsertProduct(newProduct).catch((err) => {
@@ -2352,6 +2521,24 @@ export function useAtriumStore() {
         },
       };
       notify();
+
+      const hours = Math.floor(newEntry.durationSeconds / 3600);
+      const mins = Math.floor((newEntry.durationSeconds % 3600) / 60);
+      const timeStr = hours > 0 ? `${hours}h ${mins}m` : `${mins}m ${newEntry.durationSeconds % 60}s`;
+      showToast({
+        type: 'success',
+        title: 'Time Logged',
+        message: `${timeStr} recorded for "${newEntry.projectTitle || 'Project'}".`,
+        category: 'freelance_solo',
+        action: {
+          label: 'Invoice',
+          onClick: () => {
+            globalState = { ...globalState, activeScreen: 'shop' };
+            notify();
+          },
+        },
+      });
+
       return newEntry;
     } else {
       globalState = {
@@ -2863,6 +3050,20 @@ export function useAtriumStore() {
     };
     notify();
 
+    showToast({
+      type: 'success',
+      title: 'Invoice Created',
+      message: `Invoice #${newInv.invoiceNumber} for ${newInv.clientName} (${newInv.totalAmount.toLocaleString()} ${newInv.currency}) drafted.`,
+      category: 'freelance_solo',
+      action: {
+        label: 'Preview',
+        onClick: () => {
+          globalState = { ...globalState, activeScreen: 'shop' };
+          notify();
+        },
+      },
+    });
+
     if (isSupabaseConfigured()) {
       freelanceService.upsertInvoice(newInv).catch((err) => {
         console.warn('[store] Supabase upsertInvoice notice:', err);
@@ -2889,6 +3090,26 @@ export function useAtriumStore() {
     notify();
 
     const target = updatedInvoices.find((inv) => inv.id === invoiceId);
+    if (target && status === 'Paid') {
+      showToast({
+        type: 'success',
+        title: 'Invoice Settled',
+        message: `Client ${target.clientName} paid Invoice #${target.invoiceNumber} (${target.totalAmount.toLocaleString()} ${target.currency}).`,
+        category: 'freelance_solo',
+        action: {
+          label: 'Receipt',
+          onClick: () => window.print?.(),
+        },
+      });
+    } else if (target && status === 'Sent') {
+      showToast({
+        type: 'info',
+        title: 'Invoice Dispatched',
+        message: `Invoice #${target.invoiceNumber} marked Sent to ${target.clientName}.`,
+        category: 'freelance_solo',
+      });
+    }
+
     if (target && isSupabaseConfigured()) {
       freelanceService.upsertInvoice(target).catch((err) => {
         console.warn('[store] Supabase updateInvoice notice:', err);
@@ -3059,6 +3280,20 @@ export function useAtriumStore() {
       ),
     };
     notify();
+
+    showToast({
+      type: 'success',
+      title: 'Proposal Converted',
+      message: `Proposal "${prop.title}" accepted; project initialized with ${newProject.deliverables.length} deliverables.`,
+      category: 'freelance_solo',
+      action: {
+        label: 'Kanban',
+        onClick: () => {
+          globalState = { ...globalState, activeScreen: 'scheduler' };
+          notify();
+        },
+      },
+    });
 
     if (isSupabaseConfigured()) {
       freelanceService.upsertProject(newProject).catch((err) => {
@@ -3617,6 +3852,14 @@ export function useAtriumStore() {
       message: `Deposit for "${target?.renterName || 'Client'}" has been released back to renter.`,
       syncStatus: isSupabaseConfigured() ? 'synced' : 'local',
       table: 'security_deposits',
+      category: 'rental_booking',
+      action: {
+        label: 'Deposit Log',
+        onClick: () => {
+          globalState = { ...globalState, activeScreen: 'finance' };
+          notify();
+        },
+      },
     });
   };
 
@@ -3943,6 +4186,11 @@ export function useAtriumStore() {
       message: `Recorded payment of ${amount.toLocaleString()} DZD via ${paymentMethod}.`,
       syncStatus: isSupabaseConfigured() ? 'synced' : 'local',
       table: 'edu_enrollments',
+      category: 'education_cohort',
+      action: {
+        label: 'Receipt',
+        onClick: () => window.print?.(),
+      },
     });
   };
 
@@ -4072,6 +4320,14 @@ export function useAtriumStore() {
       message: `${newStudent.fullName} admitted & enrolled in ${cohort.name}!`,
       syncStatus: isSupabaseConfigured() ? 'synced' : 'local',
       table: 'edu_students',
+      category: 'education_cohort',
+      action: {
+        label: 'Cohorts',
+        onClick: () => {
+          globalState = { ...globalState, activeScreen: 'shop' };
+          notify();
+        },
+      },
     });
   };
 
@@ -4095,9 +4351,14 @@ export function useAtriumStore() {
     showToast({
       type: 'success',
       title: 'Certificate Issued',
-      message: `Issued #${certNum} for ${newCert.studentName}.`,
+      message: `Accredited diploma #${certNum} issued for ${newCert.studentName}.`,
       syncStatus: isSupabaseConfigured() ? 'synced' : 'local',
       table: 'edu_certificates',
+      category: 'education_cohort',
+      action: {
+        label: 'View Cert',
+        onClick: () => window.print?.(),
+      },
     });
     return newCert;
   };
