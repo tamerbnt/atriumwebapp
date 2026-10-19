@@ -88,9 +88,9 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
   const pendingPayrollBatches = pmPayrollBatches.filter((b) => {
     const matchesStatus = b.status === 'pending_direction_approval';
     const matchesSearch = !approvalSearch.trim() ||
-      b.batchReference.toLowerCase().includes(approvalSearch.toLowerCase()) ||
-      b.missionTitle.toLowerCase().includes(approvalSearch.toLowerCase()) ||
-      b.items.some((item) => item.talentName.toLowerCase().includes(approvalSearch.toLowerCase()));
+      b.batchNumber.toLowerCase().includes(approvalSearch.toLowerCase()) ||
+      b.projectTitle.toLowerCase().includes(approvalSearch.toLowerCase()) ||
+      b.missionCode.toLowerCase().includes(approvalSearch.toLowerCase());
     return matchesStatus && matchesSearch;
   });
   const pendingExpenses = pmExpenses.filter((e) => {
@@ -98,7 +98,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
     const matchesSearch = !approvalSearch.trim() ||
       e.title.toLowerCase().includes(approvalSearch.toLowerCase()) ||
       e.category.toLowerCase().includes(approvalSearch.toLowerCase()) ||
-      e.declaredByName.toLowerCase().includes(approvalSearch.toLowerCase());
+      e.declaredByUserName.toLowerCase().includes(approvalSearch.toLowerCase());
     return matchesStatus && matchesSearch;
   });
   const totalPendingApprovals = pendingPayrollBatches.length + pendingExpenses.length;

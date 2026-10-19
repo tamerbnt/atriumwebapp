@@ -880,22 +880,23 @@ export const ShopScreen: React.FC = () => {
             {/* Barcode / SKU Instant Scanner Bar */}
             <form
               onSubmit={handleBarcodeSubmit}
-              className="p-3 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-2xs flex items-center gap-2"
+              className="p-1 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-2xs flex items-center gap-2"
             >
-              <div className="w-9 h-9 rounded-xl bg-orange-50 dark:bg-orange-950/50 text-[#C4785A] flex items-center justify-center shrink-0">
-                <Barcode size={18} />
+              <div className="flex-1">
+                <LabelInput
+                  field="Barcode"
+                  label="Scan or type Barcode / SKU and hit Enter..."
+                  value={barcodeQuery}
+                  onChange={(val) => setBarcodeQuery(val?.target?.value ?? String(val))}
+                  width="100%"
+                  height={44}
+                  corner={14}
+                  prefix={<Barcode size={18} className="text-[#C4785A]" />}
+                />
               </div>
-              <input
-                ref={scannerInputRef}
-                type="text"
-                value={barcodeQuery}
-                onChange={(e) => setBarcodeQuery(e.target.value)}
-                placeholder="Scan or type Barcode / SKU and hit Enter..."
-                className="flex-1 bg-transparent border-0 text-sm font-mono text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none"
-              />
               <button
                 type="submit"
-                className="px-3.5 py-1.5 rounded-xl bg-[#C4785A] text-white text-xs font-bold hover:opacity-90 cursor-pointer transition-opacity"
+                className="px-4 py-2.5 rounded-xl bg-[#C4785A] text-white text-xs font-bold hover:opacity-90 cursor-pointer transition-opacity shrink-0 mr-2"
               >
                 Scan Add
               </button>
@@ -2086,17 +2087,22 @@ export const ShopScreen: React.FC = () => {
                       <option value="Credit">Credit</option>
                     </select>
 
-                    <input
-                      type="number"
-                      value={sp.amount || ''}
-                      onChange={(e) => {
-                        const newArr = [...splitPayments];
-                        newArr[idx].amount = parseFloat(e.target.value) || 0;
-                        setSplitPayments(newArr);
-                      }}
-                      placeholder="Amount (DA)"
-                      className="flex-1 h-10 px-3 text-xs font-mono font-bold rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800"
-                    />
+                    <div className="flex-1">
+                      <LabelInput
+                        field="Amount"
+                        label="Amount (DA)"
+                        type="number"
+                        value={sp.amount || ''}
+                        onChange={(val) => {
+                          const newArr = [...splitPayments];
+                          newArr[idx].amount = parseFloat(val?.target?.value ?? val) || 0;
+                          setSplitPayments(newArr);
+                        }}
+                        width="100%"
+                        height={40}
+                        corner={12}
+                      />
+                    </div>
 
                     {splitPayments.length > 1 && (
                       <button

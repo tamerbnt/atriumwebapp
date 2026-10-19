@@ -536,25 +536,36 @@ export const BookingModal: React.FC<BookingModalProps> = ({
               </div>
             )}
 
-            <div className="flex items-center gap-2">
-              <input
-                type="text"
-                placeholder="e.g. 4K Projector / AV Technician / Coffee Catering"
-                value={newAddonName}
-                onChange={(e) => setNewAddonName(e.target.value)}
-                className="flex-1 px-3 py-2 bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700 rounded-xl text-xs text-neutral-900 dark:text-white focus:outline-hidden"
-              />
-              <input
-                type="number"
-                placeholder="Price"
-                value={newAddonPrice}
-                onChange={(e) => setNewAddonPrice(Number(e.target.value))}
-                className="w-28 px-3 py-2 bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700 rounded-xl text-xs text-neutral-900 dark:text-white focus:outline-hidden tabular-nums"
-              />
+            <div className="flex flex-col sm:flex-row items-center gap-2">
+              <div className="flex-1 w-full">
+                <LabelInput
+                  field="AddonName"
+                  label="Option / Service Name"
+                  placeholder="e.g. 4K Projector / Catering"
+                  value={newAddonName}
+                  onChange={setNewAddonName}
+                  width="100%"
+                  height={42}
+                  corner={12}
+                />
+              </div>
+              <div className="w-full sm:w-32">
+                <LabelInput
+                  field="AddonPrice"
+                  label="Price"
+                  type="number"
+                  placeholder="0"
+                  value={newAddonPrice || ''}
+                  onChange={(val) => setNewAddonPrice(Number(val?.target?.value ?? val))}
+                  width="100%"
+                  height={42}
+                  corner={12}
+                />
+              </div>
               <button
                 type="button"
                 onClick={handleAddAddon}
-                className="px-3.5 py-2 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 rounded-xl text-xs font-medium text-neutral-800 dark:text-neutral-200 transition-colors flex items-center gap-1.5 shrink-0"
+                className="w-full sm:w-auto h-[42px] px-3.5 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 rounded-xl text-xs font-medium text-neutral-800 dark:text-neutral-200 transition-colors flex items-center justify-center gap-1.5 shrink-0 mt-3 sm:mt-0 cursor-pointer"
               >
                 <Plus size={14} /> Add Option
               </button>

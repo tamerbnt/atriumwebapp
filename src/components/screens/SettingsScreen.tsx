@@ -761,80 +761,53 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             </div>
           )}
 
-          <div className="space-y-1">
-            <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
-              Branch Name *
-            </label>
-            <input
-              type="text"
+          <LabelInput
+            field="BranchName"
+            label="Branch Name *"
+            required
+            value={branchName}
+            onChange={setBranchName}
+            placeholder="e.g. Apex West Sidi Yahia"
+            width="100%"
+            height={48}
+            corner={14}
+          />
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <LabelInput
+              field="BranchCode"
+              label="Branch Code *"
               required
-              value={branchName}
-              onChange={(e) => setBranchName(e.target.value)}
-              placeholder="e.g. Apex West Sidi Yahia"
-              style={{
-                backgroundColor: 'var(--color-surface-bg)',
-                borderColor: 'var(--color-border)',
-                borderRadius: 'var(--radius-input)',
-              }}
-              className="w-full h-11 px-3 text-sm border focus:outline-none focus:border-[#C4785A] text-neutral-900 dark:text-white"
+              value={branchCode}
+              onChange={setBranchCode}
+              placeholder="e.g. APX-WEST"
+              width="100%"
+              height={48}
+              corner={14}
+            />
+            <LabelInput
+              field="BranchPhone"
+              label="Phone"
+              type="tel"
+              value={branchPhone}
+              onChange={setBranchPhone}
+              placeholder="+213 21 00 00 00"
+              width="100%"
+              height={48}
+              corner={14}
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
-                Branch Code *
-              </label>
-              <input
-                type="text"
-                required
-                value={branchCode}
-                onChange={(e) => setBranchCode(e.target.value)}
-                placeholder="e.g. APX-WEST"
-                style={{
-                  backgroundColor: 'var(--color-surface-bg)',
-                  borderColor: 'var(--color-border)',
-                  borderRadius: 'var(--radius-input)',
-                }}
-                className="w-full h-11 px-3 text-sm border focus:outline-none focus:border-[#C4785A] text-neutral-900 dark:text-white uppercase font-mono"
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
-                Phone
-              </label>
-              <input
-                type="tel"
-                value={branchPhone}
-                onChange={(e) => setBranchPhone(e.target.value)}
-                placeholder="+213 21 00 00 00"
-                style={{
-                  backgroundColor: 'var(--color-surface-bg)',
-                  borderColor: 'var(--color-border)',
-                  borderRadius: 'var(--radius-input)',
-                }}
-                className="w-full h-11 px-3 text-sm border focus:outline-none focus:border-[#C4785A] text-neutral-900 dark:text-white"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-1">
-            <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
-              Physical Address
-            </label>
-            <input
-              type="text"
-              value={branchAddress}
-              onChange={(e) => setBranchAddress(e.target.value)}
-              placeholder="Boulevard, City, Wilaya"
-              style={{
-                backgroundColor: 'var(--color-surface-bg)',
-                borderColor: 'var(--color-border)',
-                borderRadius: 'var(--radius-input)',
-              }}
-              className="w-full h-11 px-3 text-sm border focus:outline-none focus:border-[#C4785A] text-neutral-900 dark:text-white"
-            />
-          </div>
+          <LabelInput
+            field="BranchAddress"
+            label="Physical Address"
+            value={branchAddress}
+            onChange={setBranchAddress}
+            placeholder="Boulevard, City, Wilaya"
+            width="100%"
+            height={48}
+            corner={14}
+          />
 
           <div className="flex justify-end gap-3 pt-3">
             <button
@@ -872,43 +845,29 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             </div>
           )}
 
-          <div className="space-y-1">
-            <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
-              Terminal Friendly Label *
-            </label>
-            <input
-              type="text"
-              required
-              value={deviceLabel}
-              onChange={(e) => setDeviceLabel(e.target.value)}
-              placeholder="e.g. Reception Desk 2 (POS)"
-              style={{
-                backgroundColor: 'var(--color-surface-bg)',
-                borderColor: 'var(--color-border)',
-                borderRadius: 'var(--radius-input)',
-              }}
-              className="w-full h-11 px-3 text-sm border focus:outline-none focus:border-[#C4785A] text-neutral-900 dark:text-white"
-            />
-          </div>
+          <LabelInput
+            field="DeviceLabel"
+            label="Terminal Friendly Label *"
+            required
+            value={deviceLabel}
+            onChange={setDeviceLabel}
+            placeholder="e.g. Reception Desk 2 (POS)"
+            width="100%"
+            height={48}
+            corner={14}
+          />
 
-          <div className="space-y-1">
-            <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
-              Hardware ID *
-            </label>
-            <input
-              type="text"
-              required
-              value={deviceHwId}
-              onChange={(e) => setDeviceHwId(e.target.value)}
-              placeholder="e.g. HW-POS-ALGIERS-03"
-              style={{
-                backgroundColor: 'var(--color-surface-bg)',
-                borderColor: 'var(--color-border)',
-                borderRadius: 'var(--radius-input)',
-              }}
-              className="w-full h-11 px-3 text-sm border focus:outline-none focus:border-[#C4785A] text-neutral-900 dark:text-white font-mono uppercase"
-            />
-          </div>
+          <LabelInput
+            field="HardwareId"
+            label="Hardware ID *"
+            required
+            value={deviceHwId}
+            onChange={setDeviceHwId}
+            placeholder="e.g. HW-POS-ALGIERS-03"
+            width="100%"
+            height={48}
+            corner={14}
+          />
 
           <div className="flex justify-end gap-3 pt-3">
             <button

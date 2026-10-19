@@ -33,6 +33,7 @@ import {
 import { useAtriumStore } from '../../services/store';
 import { formatDuration } from '../../utils/rules';
 import { PMRole } from '../../types/index';
+import { Seek } from '../ui/Seek';
 
 interface TopBarProps {
   onOpenVoucherModal: () => void;
@@ -79,6 +80,7 @@ export const TopBar: React.FC<TopBarProps> = ({
 
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [facilityDropdownOpen, setFacilityDropdownOpen] = useState(false);
+  const [topBarSearch, setTopBarSearch] = useState('');
 
   const isFreelance = currentBusiness?.category === 'freelance_solo';
   const isRental = currentBusiness?.category === 'rental_booking';
@@ -556,20 +558,18 @@ export const TopBar: React.FC<TopBarProps> = ({
 
       {/* Right Controls */}
       <div className="flex items-center gap-2.5 shrink-0">
-        {/* Quick Universal Command Palette Button */}
+        {/* Expanding Search Lens / Command Palette Trigger */}
         {onOpenCommandPalette && (
-          <button
-            type="button"
-            onClick={onOpenCommandPalette}
-            className="h-8 px-2.5 rounded-full bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 flex items-center gap-1.5 cursor-pointer hover:bg-neutral-200/70 dark:hover:bg-neutral-700 transition-colors text-xs text-neutral-600 dark:text-neutral-300 shadow-2xs"
-            title="Quick Search screens, records & actions (Ctrl+K or /)"
-          >
-            <Search size={13} className="text-[#C4785A]" />
-            <span className="hidden xl:inline text-[11px] font-medium text-neutral-400">Search...</span>
-            <kbd className="hidden sm:inline px-1.5 py-0.5 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded text-[9px] font-mono text-neutral-400 shadow-2xs">
-              ⌘K
-            </kbd>
-          </button>
+          <Seek
+            value={topBarSearch}
+            onChange={setTopBarSearch}
+            placeholder="Search (Ctrl+K)..."
+            openWidth={230}
+            shutSize={34}
+            onSearch={() => {
+              onOpenCommandPalette();
+            }}
+          />
         )}
 
         {/* Sun / Moon Theme Capsule */}

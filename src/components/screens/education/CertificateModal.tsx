@@ -152,19 +152,18 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
-                    Cumulative Grade (%)
-                  </label>
-                  <input
-                    type="number"
-                    min="50"
-                    max="100"
-                    value={averageGrade}
-                    onChange={(e) => setAverageGrade(parseInt(e.target.value) || 0)}
-                    className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#C4785A]"
-                  />
-                </div>
+                <LabelInput
+                  field="CumulativeGrade"
+                  label="Cumulative Grade (%)"
+                  type="number"
+                  min={50}
+                  max={100}
+                  value={averageGrade}
+                  onChange={(val) => setAverageGrade(parseInt(val?.target?.value ?? val) || 0)}
+                  width="100%"
+                  height={46}
+                  corner={14}
+                />
                   <LabelInput
                     field="Honors"
                     label="Honors & Distinctions"

@@ -27,6 +27,7 @@ import {
   CurrencyCode,
 } from '../../../types/index';
 import { Seek } from '../../ui/Seek';
+import { LabelInput } from '../../ui/LabelInput';
 
 export const FreelanceInvoicesView: React.FC = () => {
   const {
@@ -447,32 +448,30 @@ export const FreelanceInvoicesView: React.FC = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
-                    Payment Due Date *
-                  </label>
-                  <input
-                    type="date"
-                    required
-                    value={dueDate}
-                    onChange={(e) => setDueDate(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white"
-                  />
-                </div>
-                <div>
-                  <label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
-                    Tax / VAT Rate (%)
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    max="100"
-                    value={taxPercent}
-                    onChange={(e) => setTaxPercent(Number(e.target.value))}
-                    className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white"
-                  />
-                </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <LabelInput
+                  field="DueDate"
+                  label="Payment Due Date *"
+                  type="date"
+                  required
+                  value={dueDate}
+                  onChange={setDueDate}
+                  width="100%"
+                  height={46}
+                  corner={14}
+                />
+                <LabelInput
+                  field="TaxPercent"
+                  label="Tax / VAT Rate (%)"
+                  type="number"
+                  min={0}
+                  max={100}
+                  value={taxPercent}
+                  onChange={(val) => setTaxPercent(Number(val?.target?.value ?? val))}
+                  width="100%"
+                  height={46}
+                  corner={14}
+                />
               </div>
 
               {/* Line Items Builder */}

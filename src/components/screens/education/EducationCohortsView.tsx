@@ -21,6 +21,7 @@ import { useAtriumStore } from '../../../services/store';
 import { CohortStatus, EduCohort } from '../../../types';
 import { formatMoney } from '../../../utils/rules';
 import { Seek } from '../../ui/Seek';
+import { LabelInput } from '../../ui/LabelInput';
 import { ActionNode } from '../../ui/ActionNode';
 
 type CourseCat = 'All' | 'Language' | 'Technology' | 'Academic' | 'Arts';
@@ -523,19 +524,17 @@ export const EducationCohortsView: React.FC = () => {
                 </select>
               </div>
 
-              <div>
-                <label className="block font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
-                  Cohort Name / Batch Title *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="e.g. Full-Stack Dev - Autumn Batch"
-                  className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#C4785A]"
-                />
-              </div>
+              <LabelInput
+                field="CohortName"
+                label="Cohort Name / Batch Title *"
+                required
+                value={formData.name}
+                onChange={(val) => setFormData({ ...formData, name: val?.target?.value ?? val })}
+                placeholder="e.g. Full-Stack Dev - Autumn Batch"
+                width="100%"
+                height={46}
+                corner={14}
+              />
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
@@ -573,71 +572,65 @@ export const EducationCohortsView: React.FC = () => {
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
-                    Start Date
-                  </label>
-                  <input
-                    type="date"
-                    required
-                    value={formData.startDate}
-                    onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white"
-                  />
-                </div>
-                <div>
-                  <label className="block font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
-                    End Date
-                  </label>
-                  <input
-                    type="date"
-                    required
-                    value={formData.endDate}
-                    onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white"
-                  />
-                </div>
+                <LabelInput
+                  field="StartDate"
+                  label="Start Date *"
+                  type="date"
+                  required
+                  value={formData.startDate}
+                  onChange={(val) => setFormData({ ...formData, startDate: val?.target?.value ?? val })}
+                  width="100%"
+                  height={46}
+                  corner={14}
+                />
+                <LabelInput
+                  field="EndDate"
+                  label="End Date *"
+                  type="date"
+                  required
+                  value={formData.endDate}
+                  onChange={(val) => setFormData({ ...formData, endDate: val?.target?.value ?? val })}
+                  width="100%"
+                  height={46}
+                  corner={14}
+                />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
-                    Tuition Fee (DZD)
-                  </label>
-                  <input
-                    type="number"
-                    required
-                    value={formData.tuitionFee}
-                    onChange={(e) => setFormData({ ...formData, tuitionFee: Number(e.target.value) })}
-                    className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white"
-                  />
-                </div>
-                <div>
-                  <label className="block font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
-                    Seat Limit
-                  </label>
-                  <input
-                    type="number"
-                    required
-                    value={formData.maxStudents}
-                    onChange={(e) => setFormData({ ...formData, maxStudents: Number(e.target.value) })}
-                    className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
-                  Schedule Summary
-                </label>
-                <input
-                  type="text"
-                  value={formData.scheduleSummary}
-                  onChange={(e) => setFormData({ ...formData, scheduleSummary: e.target.value })}
-                  placeholder="e.g. Sat & Tue 14:00 - 16:30"
-                  className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white"
+                <LabelInput
+                  field="TuitionFee"
+                  label="Tuition Fee (DZD) *"
+                  type="number"
+                  required
+                  value={formData.tuitionFee}
+                  onChange={(val) => setFormData({ ...formData, tuitionFee: Number(val?.target?.value ?? val) })}
+                  width="100%"
+                  height={46}
+                  corner={14}
+                />
+                <LabelInput
+                  field="SeatLimit"
+                  label="Seat Limit *"
+                  type="number"
+                  required
+                  value={formData.maxStudents}
+                  onChange={(val) => setFormData({ ...formData, maxStudents: Number(val?.target?.value ?? val) })}
+                  width="100%"
+                  height={46}
+                  corner={14}
                 />
               </div>
+
+              <LabelInput
+                field="ScheduleSummary"
+                label="Schedule Summary"
+                value={formData.scheduleSummary}
+                onChange={(val) => setFormData({ ...formData, scheduleSummary: val?.target?.value ?? val })}
+                placeholder="e.g. Sat & Tue 14:00 - 16:30"
+                width="100%"
+                height={46}
+                corner={14}
+              />
 
               <div className="flex items-center justify-end gap-3 pt-4 border-t border-neutral-100 dark:border-neutral-800">
                 <button

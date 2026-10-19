@@ -41,6 +41,11 @@ export interface LabelInputProps {
   min?: number | string;
   max?: number | string;
   step?: number | string;
+  prefix?: React.ReactNode;
+  suffix?: React.ReactNode;
+  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+  onFocus?: (e: React.FocusEvent<HTMLInputElement>) => void;
+  onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
 }
 
 export function LabelInput({
@@ -62,6 +67,11 @@ export function LabelInput({
   min,
   max,
   step,
+  prefix,
+  suffix,
+  onKeyDown,
+  onFocus: explicitOnFocus,
+  onBlur: explicitOnBlur,
 }: LabelInputProps) {
   const boxRef = useRef<HTMLDivElement | null>(null);
   const [measuredW, setMeasuredW] = useState<number>(typeof width === "number" ? width : 280);
@@ -125,7 +135,14 @@ export function LabelInput({
     }
   }, [field, controlledValue]);
 
-  const up = focus || (value !== undefined && value !== null && String(value).length > 0);
+  const isDateTime =
+    type === "date" ||
+    type === "time" ||
+    type === "datetime-local" ||
+    type === "month" ||
+    type === "week";
+
+  const up = focus || isDateTime || (value !== undefined && value !== null && String(value).length > 0);
 
   /* ── where the label sits, and the gap it leaves ─────────
      Never inside the corner's curve: the notch has to open on
@@ -204,6 +221,12 @@ export function LabelInput({
           ))}
         </label>
 
+        {prefix && (
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 z-10 flex items-center pointer-events-none text-neutral-400">
+            {prefix}
+          </div>
+        )}
+
         <input
           ref={input}
           id={id}
@@ -213,8 +236,15 @@ export function LabelInput({
           type={isSecret && !show ? "password" : isSecret ? "text" : type || (field.toLowerCase().includes("email") ? "email" : "text")}
           value={value !== undefined ? String(value) : ""}
           onChange={handleInputChange}
-          onFocus={() => setFocus(true)}
-          onBlur={() => setFocus(false)}
+          onFocus={(e) => {
+            setFocus(true);
+            explicitOnFocus?.(e);
+          }}
+          onBlur={(e) => {
+            setFocus(false);
+            explicitOnBlur?.(e);
+          }}
+          onKeyDown={onKeyDown}
           autoComplete="off"
           spellCheck={false}
           disabled={disabled}
@@ -224,8 +254,17 @@ export function LabelInput({
           max={max}
           step={step}
           inputMode={quiet ? "none" : undefined}
-          style={{ paddingRight: isSecret ? 48 : lx }}
+          style={{
+            paddingLeft: prefix ? lx + 16 : lx,
+            paddingRight: isSecret ? 48 : suffix ? 44 : lx,
+          }}
         />
+
+        {suffix && !isSecret && (
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 z-10 flex items-center text-neutral-400">
+            {suffix}
+          </div>
+        )}
 
         {isSecret && (
           <button

@@ -711,6 +711,30 @@
   outline: none;
 }
 
+.lbi-field[type="date"],
+.lbi-field[type="time"],
+.lbi-field[type="datetime-local"],
+.lbi-field[type="number"] {
+  font-variant-numeric: tabular-nums;
+}
+
+.lbi-field::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.6;
+  margin-right: 12px;
+  filter: invert(0.35);
+  transition: opacity 160ms ease, filter 160ms ease;
+}
+
+.lbi-field:hover::-webkit-calendar-picker-indicator {
+  opacity: 0.9;
+}
+
+[data-theme="dark"] .lbi-field::-webkit-calendar-picker-indicator,
+.dark .lbi-field::-webkit-calendar-picker-indicator {
+  filter: invert(0.85);
+}
+
 .lbi-field[data-flip="1"] { animation: lbi-flip-a 260ms ease-out; }
 .lbi-field[data-flip="0"] { animation: lbi-flip-b 260ms ease-out; }
 

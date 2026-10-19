@@ -67,6 +67,17 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
   const [hasBleedIncluded, setHasBleedIncluded] = useState(true);
   const [previewUrl, setPreviewUrl] = useState('https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=600&auto=format&fit=crop&q=80');
   const [uploadSuccess, setUploadSuccess] = useState(false);
+  const [creaSearch, setCreaSearch] = useState('');
+
+  const filteredPmProjects = pmProjects.filter(
+    (p) => !creaSearch.trim() || p.title.toLowerCase().includes(creaSearch.toLowerCase()) || p.clientName.toLowerCase().includes(creaSearch.toLowerCase())
+  );
+  const filteredPmPrintOrders = pmPrintOrders.filter(
+    (o) => !creaSearch.trim() || o.projectTitle.toLowerCase().includes(creaSearch.toLowerCase()) || o.orderNumber.toLowerCase().includes(creaSearch.toLowerCase())
+  );
+  const filteredPmBatDeliverables = pmBatDeliverables.filter(
+    (b) => !creaSearch.trim() || b.title.toLowerCase().includes(creaSearch.toLowerCase()) || b.projectTitle.toLowerCase().includes(creaSearch.toLowerCase())
+  );
 
   const selectedProject = pmProjects.find((p) => p.id === selectedProjectId) || pmProjects[0];
 
@@ -150,6 +161,15 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
           </h1>
         </div>
 
+        <div className="flex items-center gap-3">
+          <Seek
+            value={creaSearch}
+            onChange={setCreaSearch}
+            placeholder="Rechercher BAT ou livrable..."
+            openWidth={260}
+            shutSize={38}
+          />
+        </div>
       </div>
 
 
@@ -167,12 +187,12 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                   Reçues
                 </span>
                 <span className="text-xs font-mono font-semibold px-2 py-0.5 rounded-full bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
-                  {pmPrintOrders.filter((o) => o.status === 'sent_to_crea').length + pmProjects.length}
+                  {filteredPmPrintOrders.filter((o) => o.status === 'sent_to_crea').length + filteredPmProjects.length}
                 </span>
               </div>
 
               <div className="space-y-3">
-                {pmProjects.map((p) => (
+                {filteredPmProjects.map((p) => (
                   <div
                     key={p.id}
                     className="p-3.5 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-xs space-y-2 hover:border-[#C4785A]/50 transition-colors"
@@ -198,7 +218,7 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                   </div>
                 ))}
 
-                {pmPrintOrders
+                {filteredPmPrintOrders
                   .filter((o) => o.status === 'sent_to_crea')
                   .map((order) => (
                     <div
@@ -236,12 +256,12 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                   En production
                 </span>
                 <span className="text-xs font-mono font-semibold px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300">
-                  {pmBatDeliverables.filter((b) => b.approvalStatus === 'pending_review').length}
+                  {filteredPmBatDeliverables.filter((b) => b.approvalStatus === 'pending_review').length}
                 </span>
               </div>
 
               <div className="space-y-3">
-                {pmBatDeliverables
+                {filteredPmBatDeliverables
                   .filter((b) => b.approvalStatus === 'pending_review')
                   .map((bat) => (
                     <div
@@ -286,12 +306,12 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                   Livrées
                 </span>
                 <span className="text-xs font-mono font-semibold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300">
-                  {pmBatDeliverables.filter((b) => b.approvalStatus === 'approved').length}
+                  {filteredPmBatDeliverables.filter((b) => b.approvalStatus === 'approved').length}
                 </span>
               </div>
 
               <div className="space-y-3">
-                {pmBatDeliverables
+                {filteredPmBatDeliverables
                   .filter((b) => b.approvalStatus === 'approved')
                   .map((bat) => (
                     <div
