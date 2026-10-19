@@ -777,112 +777,116 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
 
       {/* RIGHT: BRAND SHOWCASE */}
       <div
-        className={`flex-1 p-6 sm:p-10 lg:py-10 lg:pr-10 lg:pl-16 xl:py-12 xl:pr-14 xl:pl-20 h-full max-h-screen flex flex-col justify-between overflow-hidden z-10 hidden md:flex text-[#18181B] transition-all duration-800 ease-[cubic-bezier(0.16,1,0.3,1)] delay-150 ${
+        className={`flex-1 p-6 sm:p-10 lg:py-10 lg:pr-10 lg:pl-28 xl:py-12 xl:pr-16 xl:pl-36 2xl:pl-48 h-full max-h-screen flex flex-col justify-center overflow-hidden z-10 hidden md:flex text-[#18181B] transition-all duration-800 ease-[cubic-bezier(0.16,1,0.3,1)] delay-150 ${
           cardVisible
             ? 'opacity-100 translate-y-0 pointer-events-auto'
             : 'opacity-0 translate-y-8 pointer-events-none'
         }`}
       >
-        {/* Top Tagline */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-xs font-bold tracking-widest uppercase text-[#18181B]/75">
-              Atrium Cloud Web Edition (Free)
-            </span>
+        <div className="w-full max-w-2xl lg:ml-auto xl:mr-6 2xl:mr-12 flex flex-col justify-between h-full py-1">
+          {/* Top Tagline & Unified Header Controls */}
+          <div className="flex items-center justify-between shrink-0">
+            <div className="flex items-center gap-2.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-xs sm:text-[13px] font-bold tracking-widest uppercase text-[#18181B]/80">
+                Atrium Cloud Web Edition (Free)
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2.5">
+              <button
+                type="button"
+                onClick={() => {
+                  setCardVisible(false);
+                  setReplayKey((k) => k + 1);
+                  setIntroPhase('intro');
+                }}
+                className="h-9 px-4 rounded-full bg-black/10 hover:bg-black/25 border border-black/20 text-xs font-semibold text-[#18181B] hover:text-white flex items-center gap-2 cursor-pointer transition-all shadow-xs"
+              >
+                <RotateCcw size={13} className="text-[#18181B]" />
+                <span>Replay Motion</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={onSkipToDashboard}
+                className="h-9 px-4 rounded-full bg-black/10 hover:bg-black/20 border border-black/20 text-xs font-semibold text-[#18181B] hover:text-white flex items-center gap-2 cursor-pointer transition-all shadow-xs"
+              >
+                <span>Open Existing Workspace (Tamer)</span>
+                <ArrowRight size={13} />
+              </button>
+            </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => {
-                setCardVisible(false);
-                setReplayKey((k) => k + 1);
-                setIntroPhase('intro');
-              }}
-              className="text-xs text-[#18181B] hover:text-white flex items-center gap-1.5 py-1.5 px-3.5 rounded-full bg-black/10 hover:bg-black/30 border border-black/20 cursor-pointer transition-all shadow-xs font-semibold"
-            >
-              <RotateCcw size={12} className="text-[#18181B]" />
-              <span>Replay Motion</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={onSkipToDashboard}
-              className="text-xs text-[#18181B] hover:text-white flex items-center gap-1.5 py-1.5 px-3.5 rounded-full bg-black/10 hover:bg-black/20 border border-black/20 cursor-pointer transition-colors font-medium"
-            >
-              <span>Open Existing Workspace (Tamer)</span>
-              <ArrowRight size={13} />
-            </button>
-          </div>
-        </div>
-
-        {/* Hero Copy */}
-        <div className="my-auto py-2 sm:py-2.5 max-w-xl lg:ml-6 xl:ml-10 space-y-2.5 sm:space-y-3">
-          {/* Reserved space and anchor for the left-aligned brand lockup (Hero Scale) */}
-          <div ref={heroAnchorRef} className="h-14 sm:h-16 w-full flex items-center justify-start">
-            {introPhase === 'revealed' && (
-              <div className="flex items-center gap-4 select-none">
-                <FiveCubesLogo cubeColor="#000000" size={56} className="shrink-0" />
+          {/* Hero Copy */}
+          <div className="my-auto py-2 sm:py-2.5 space-y-3.5 sm:space-y-4">
+            {/* Reserved space and anchor for the left-aligned brand lockup (Enlarged Hero Scale, Seamless Transition) */}
+            <div ref={heroAnchorRef} className="h-20 sm:h-22 w-full flex items-center justify-start">
+              <div
+                className={`flex items-center gap-4 sm:gap-5 select-none transition-opacity duration-300 ${
+                  introPhase === 'revealed' ? 'opacity-100' : 'opacity-0 pointer-events-none'
+                }`}
+              >
+                <FiveCubesLogo cubeColor="#000000" size={72} className="shrink-0" />
                 <span
-                  className="text-4xl sm:text-[46px] lg:text-[48px] font-black tracking-tight text-black leading-none"
+                  className="text-5xl sm:text-[58px] lg:text-[64px] font-black tracking-tight text-black leading-none"
                   style={{ fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif" }}
                 >
                   ATRIUM
                 </span>
               </div>
-            )}
-          </div>
-
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-black/10 border border-black/15 text-[#18181B] text-[11px] sm:text-xs font-semibold">
-            <Sparkles size={12} className="text-[#18181B]" />
-            <span>Forever Free Web Edition — 1 Business &amp; 1 Branch</span>
-          </div>
-
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#18181B] leading-snug">
-            The Business Management OS for Modern Facilities.
-          </h1>
-
-          <p className="text-[11.5px] sm:text-xs text-[#18181B]/75 leading-relaxed font-normal">
-            Whether running a solo practice, aesthetic salon, fast-casual restaurant, or athletic gym, Atrium Web is 100% free forever for your main facility. Seamlessly upgrade to the Desktop app when you expand to multi-location chains.
-          </p>
-
-          {/* Cards Showcase */}
-          <div className="grid grid-cols-2 gap-3 pt-1">
-            {/* Tile 1: Supabase Realtime Cloud Sync */}
-            <div className="p-3 sm:p-3.5 rounded-2xl bg-white/95 text-neutral-900 border border-white/60 shadow-lg space-y-1 sm:space-y-1.5">
-              <div className="flex items-center justify-between text-neutral-500 text-[11px]">
-                <span className="font-semibold">Cloud Architecture</span>
-                <Cloud size={13} className="text-emerald-600" />
-              </div>
-              <div className="text-lg sm:text-xl font-black text-neutral-900 tabular-nums tracking-tight">
-                Live Sync <span className="text-xs text-[#D3542E] font-bold">PostgreSQL</span>
-              </div>
-              <span className="text-[10px] font-semibold text-emerald-700 block">
-                Automatic Web-to-Desktop Sync
-              </span>
             </div>
 
-            {/* Tile 2: Upgrade to Desktop Anytime */}
-            <div className="p-3 sm:p-3.5 rounded-2xl bg-white/95 text-neutral-900 border border-white/60 shadow-lg space-y-1 sm:space-y-1.5">
-              <div className="flex items-center justify-between text-neutral-500 text-[11px]">
-                <span className="font-semibold">Multi-Branch Growth</span>
-                <Laptop size={13} className="text-[#D3542E]" />
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-black/10 border border-black/15 text-[#18181B] text-xs sm:text-[13px] font-semibold">
+              <Sparkles size={13} className="text-[#18181B]" />
+              <span>Forever Free Web Edition — 1 Business &amp; 1 Branch</span>
+            </div>
+
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-[#18181B] leading-tight max-w-xl">
+              The Business Management OS for Modern Facilities.
+            </h1>
+
+            <p className="text-sm sm:text-[15px] text-[#18181B]/85 leading-relaxed font-normal max-w-xl">
+              Whether running a solo practice, aesthetic salon, fast-casual restaurant, or athletic gym, Atrium Web is 100% free forever for your main facility. Seamlessly upgrade to the Desktop app when you expand to multi-location chains.
+            </p>
+
+            {/* Cards Showcase */}
+            <div className="grid grid-cols-2 gap-3.5 pt-1.5 max-w-xl">
+              {/* Tile 1: Supabase Realtime Cloud Sync */}
+              <div className="p-3.5 sm:p-4 rounded-2xl bg-white/95 text-neutral-900 border border-white/60 shadow-lg space-y-1 sm:space-y-1.5">
+                <div className="flex items-center justify-between text-neutral-500 text-[11px]">
+                  <span className="font-semibold">Cloud Architecture</span>
+                  <Cloud size={14} className="text-emerald-600" />
+                </div>
+                <div className="text-lg sm:text-xl font-black text-neutral-900 tabular-nums tracking-tight">
+                  Live Sync <span className="text-xs text-[#D3542E] font-bold">PostgreSQL</span>
+                </div>
+                <span className="text-[11px] font-semibold text-emerald-700 block">
+                  Automatic Web-to-Desktop Sync
+                </span>
               </div>
-              <div className="text-sm font-black text-neutral-900">
-                Atrium Desktop Edition
+
+              {/* Tile 2: Upgrade to Desktop Anytime */}
+              <div className="p-3.5 sm:p-4 rounded-2xl bg-white/95 text-neutral-900 border border-white/60 shadow-lg space-y-1 sm:space-y-1.5">
+                <div className="flex items-center justify-between text-neutral-500 text-[11px]">
+                  <span className="font-semibold">Multi-Branch Growth</span>
+                  <Laptop size={14} className="text-[#D3542E]" />
+                </div>
+                <div className="text-sm sm:text-base font-black text-neutral-900">
+                  Atrium Desktop Edition
+                </div>
+                <span className="text-[11px] font-semibold text-[#D3542E] block">
+                  Multi-Branch Chains &amp; POS Hardware
+                </span>
               </div>
-              <span className="text-[10px] font-semibold text-[#D3542E] block">
-                Multi-Branch Chains &amp; POS Hardware
-              </span>
             </div>
           </div>
-        </div>
 
-        {/* Bottom Specs & Languages */}
-        <div className="pt-3 pb-1 border-t border-black/15 flex items-center justify-between text-[11px] sm:text-xs text-[#18181B]/70 font-medium shrink-0">
-          <span>Atrium Web Edition • Multi-Facility ERP &amp; CRM</span>
-          <span>English • Français • العربية</span>
+          {/* Bottom Specs & Languages (Unified with column width) */}
+          <div className="pt-3.5 pb-1 border-t border-black/20 flex items-center justify-between text-xs sm:text-[13px] text-[#18181B]/80 font-medium shrink-0">
+            <span>Atrium Web Edition • Multi-Facility ERP &amp; CRM</span>
+            <span>English • Français • العربية</span>
+          </div>
         </div>
       </div>
     </div>

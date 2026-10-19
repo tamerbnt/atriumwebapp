@@ -286,7 +286,7 @@ export const AtriumMonolith: React.FC<AtriumMonolithProps> = ({
         const rect = lockupRef.current.getBoundingClientRect();
         const deltaX = anchorCoords.left - rect.left;
         const deltaY = anchorCoords.top - rect.top;
-        setGlideTransform(`translate3d(${deltaX.toFixed(1)}px, ${deltaY.toFixed(1)}px, 0) scale(0.42)`);
+        setGlideTransform(`translate3d(${deltaX.toFixed(1)}px, ${deltaY.toFixed(1)}px, 0) scale(0.55)`);
       } else {
         setGlideTransform('translate3d(0, -36vh, 0) scale(0.55)');
       }

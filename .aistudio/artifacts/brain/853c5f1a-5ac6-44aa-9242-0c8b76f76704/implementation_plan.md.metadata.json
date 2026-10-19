@@ -1,0 +1,6 @@
+{
+  "summary": "Implementation plan to eliminate the onboarding logo size jump and position shift by dynamically calculating the exact scale and delta coordinates from the target element bounding rect, matching the geometric aspect ratios, and ensuring pixel-perfect alignment.",
+  "updatedAt": "2026-10-19T00:36:35.552444332Z",
+  "requestFeedback": true,
+  "userFacing": true
+}
