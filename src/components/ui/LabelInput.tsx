@@ -54,9 +54,9 @@ export function LabelInput({
   value: controlledValue,
   onChange,
   type,
-  corner = 20,
-  width = 280,
-  height = 52,
+  corner = 12,
+  width = "100%",
+  height = 40,
   showcase = false,
   className = "",
   disabled = false,
@@ -74,7 +74,7 @@ export function LabelInput({
   onBlur: explicitOnBlur,
 }: LabelInputProps) {
   const boxRef = useRef<HTMLDivElement | null>(null);
-  const [measuredW, setMeasuredW] = useState<number>(typeof width === "number" ? width : 280);
+  const [measuredW, setMeasuredW] = useState<number>(typeof width === "number" ? width : 240);
 
   useLayoutEffect(() => {
     if (typeof width === "number") {
@@ -102,7 +102,7 @@ export function LabelInput({
     return () => observer.disconnect();
   }, [width]);
 
-  const W = measuredW;
+  const W = Math.max(80, measuredW);
   const H = height;
   const r = clamp(corner, 0, H / 2);
   const generatedId = `lbi-${useId().replace(/:/g, "")}`;
@@ -148,9 +148,9 @@ export function LabelInput({
      Never inside the corner's curve: the notch has to open on
      the straight part of the top edge, so a rounder field
      starts its label further in. */
-  const lx = Math.max(14, r + 4);
-  const x0 = Math.max(r * 0.6, lx - 5);
-  const x1 = lx + lw * S + 5;
+  const lx = Math.max(12, r + 2);
+  const x0 = Math.max(r * 0.5, lx - 4);
+  const x1 = Math.min(W - r, lx + lw * S + 4);
   const a = r - IN;
   const R = W - IN;
   const B = H - IN;
@@ -204,9 +204,14 @@ export function LabelInput({
     >
       <div
         className="lbi-box"
-        style={{ width: W, height: H, borderRadius: r, "--lbi-x": `${lx}px` } as React.CSSProperties}
+        style={{
+          width: typeof width === "number" ? `${width}px` : "100%",
+          height: H,
+          borderRadius: r,
+          "--lbi-x": `${lx}px`,
+        } as React.CSSProperties}
       >
-        <svg className="lbi-ring" width={W} height={H} viewBox={`0 0 ${W} ${H}`} aria-hidden="true">
+        <svg className="lbi-ring" width="100%" height={H} viewBox={`0 0 ${W} ${H}`} aria-hidden="true">
           <path d={right} />
           <path d={left} />
           <path className="lbi-gap" d={gapL} pathLength={1} />

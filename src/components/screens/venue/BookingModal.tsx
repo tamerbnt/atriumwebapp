@@ -347,8 +347,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                   }))}
                   searchable
                   width="100%"
-                  height={46}
-                  corner={14}
+                  height={40}
+                  corner={12}
                   required
                 />
               </div>
@@ -405,8 +405,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                   ]}
                   searchable
                   width="100%"
-                  height={46}
-                  corner={14}
+                  height={40}
+                  corner={12}
                 />
               </div>
             )}
@@ -418,8 +418,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 value={renterName}
                 onChange={setRenterName}
                 width="100%"
-                height={44}
-                corner={14}
+                height={40}
+                corner={12}
                 required
               />
 
@@ -429,8 +429,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 value={renterCompany}
                 onChange={setRenterCompany}
                 width="100%"
-                height={44}
-                corner={14}
+                height={40}
+                corner={12}
               />
 
               <LabelInput
@@ -440,8 +440,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 value={renterPhone}
                 onChange={setRenterPhone}
                 width="100%"
-                height={44}
-                corner={14}
+                height={40}
+                corner={12}
                 required
               />
 
@@ -452,8 +452,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 value={renterEmail}
                 onChange={setRenterEmail}
                 width="100%"
-                height={44}
-                corner={14}
+                height={40}
+                corner={12}
               />
 
               <div className="md:col-span-2">
@@ -500,8 +500,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                     { value: 'Cancelled', label: 'Cancelled' },
                   ]}
                   width="100%"
-                  height={46}
-                  corner={14}
+                  height={40}
+                  corner={12}
                 />
               </div>
             </div>
@@ -609,8 +609,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                     { value: 'Retained', label: 'Retained for Damages' },
                   ]}
                   width="100%"
-                  height={46}
-                  corner={14}
+                  height={40}
+                  corner={12}
                 />
               </div>
 

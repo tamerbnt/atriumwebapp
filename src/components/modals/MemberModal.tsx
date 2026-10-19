@@ -133,8 +133,8 @@ export const MemberModal: React.FC<MemberModalProps> = ({
               value={fullName}
               onChange={setFullName}
               width="100%"
-              height={48}
-              corner={14}
+              height={40}
+              corner={12}
               required
             />
 
@@ -145,8 +145,8 @@ export const MemberModal: React.FC<MemberModalProps> = ({
               onChange={setEmail}
               type="email"
               width="100%"
-              height={48}
-              corner={14}
+              height={40}
+              corner={12}
               required
             />
 
@@ -157,8 +157,8 @@ export const MemberModal: React.FC<MemberModalProps> = ({
               onChange={setPhoneNumber}
               type="tel"
               width="100%"
-              height={48}
-              corner={14}
+              height={40}
+              corner={12}
               required
             />
 
@@ -170,8 +170,8 @@ export const MemberModal: React.FC<MemberModalProps> = ({
                 onChange={(val) => setGender(val?.target?.value ?? val)}
                 options={['Male', 'Female', 'Other']}
                 width="100%"
-                height={48}
-                corner={14}
+                height={40}
+                corner={12}
               />
 
               <LabelInput
@@ -181,8 +181,8 @@ export const MemberModal: React.FC<MemberModalProps> = ({
                 value={dateOfBirth}
                 onChange={setDateOfBirth}
                 width="100%"
-                height={48}
-                corner={14}
+                height={40}
+                corner={12}
               />
             </div>
           </div>
@@ -205,8 +205,8 @@ export const MemberModal: React.FC<MemberModalProps> = ({
                 sublabel: `${p.durationDays} days · ${p.price.toLocaleString()} DA`,
               }))}
               width="100%"
-              height={48}
-              corner={14}
+              height={40}
+              corner={12}
             />
 
             <LabelInput
@@ -216,8 +216,8 @@ export const MemberModal: React.FC<MemberModalProps> = ({
               value={startDate}
               onChange={setStartDate}
               width="100%"
-              height={48}
-              corner={14}
+              height={40}
+              corner={12}
             />
 
             <LabelInput
@@ -227,8 +227,8 @@ export const MemberModal: React.FC<MemberModalProps> = ({
               onChange={setCardId}
               placeholder="RFID-XXXXXX"
               width="100%"
-              height={48}
-              corner={14}
+              height={40}
+              corner={12}
             />
           </div>
         </div>
@@ -246,8 +246,8 @@ export const MemberModal: React.FC<MemberModalProps> = ({
               onChange={setEmergencyName}
               placeholder="Contact Name"
               width="100%"
-              height={48}
-              corner={14}
+              height={40}
+              corner={12}
             />
 
             <LabelInput
@@ -258,8 +258,8 @@ export const MemberModal: React.FC<MemberModalProps> = ({
               onChange={setEmergencyPhone}
               placeholder="+213 555 00 00 00"
               width="100%"
-              height={48}
-              corner={14}
+              height={40}
+              corner={12}
             />
 
             <LabelSelect
@@ -276,8 +276,8 @@ export const MemberModal: React.FC<MemberModalProps> = ({
                 'VIP Partner',
               ]}
               width="100%"
-              height={48}
-              corner={14}
+              height={40}
+              corner={12}
             />
           </div>
 

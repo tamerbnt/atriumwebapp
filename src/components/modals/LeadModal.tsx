@@ -50,15 +50,15 @@ export const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose }) => {
       subtitle={`Log applicant lead for ${currentBranch.name}`}
       maxWidth="md"
     >
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-3.5">
         <LabelInput
           field="Prospect Name"
           label="Prospect Name *"
           value={fullName}
           onChange={setFullName}
           width="100%"
-          height={44}
-          corner={14}
+          height={40}
+          corner={12}
           required
         />
 
@@ -70,8 +70,8 @@ export const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose }) => {
             value={email}
             onChange={setEmail}
             width="100%"
-            height={44}
-            corner={14}
+            height={40}
+            corner={12}
           />
 
           <LabelInput
@@ -81,8 +81,8 @@ export const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose }) => {
             value={phoneNumber}
             onChange={setPhoneNumber}
             width="100%"
-            height={44}
-            corner={14}
+            height={40}
+            corner={12}
             required
           />
         </div>
@@ -102,8 +102,8 @@ export const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose }) => {
               })),
             ]}
             width="100%"
-            height={46}
-            corner={14}
+            height={40}
+            corner={12}
           />
 
           <LabelSelect
@@ -119,8 +119,8 @@ export const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose }) => {
               { value: 'Website Form', label: 'Online Self-Service Form' },
             ]}
             width="100%"
-            height={46}
-            corner={14}
+            height={40}
+            corner={12}
           />
         </div>
 

@@ -1766,8 +1766,8 @@ export const ShopScreen: React.FC = () => {
                 value={receiptConfig.headerTitle}
                 onChange={(v) => updateReceiptConfig({ headerTitle: v })}
                 width="100%"
-                height={46}
-                corner={14}
+                height={40}
+                corner={12}
               />
 
               <LabelInput
@@ -1776,8 +1776,8 @@ export const ShopScreen: React.FC = () => {
                 value={receiptConfig.subHeader || ''}
                 onChange={(v) => updateReceiptConfig({ subHeader: v })}
                 width="100%"
-                height={46}
-                corner={14}
+                height={40}
+                corner={12}
               />
 
               <div className="grid grid-cols-2 gap-3">
@@ -1787,8 +1787,8 @@ export const ShopScreen: React.FC = () => {
                   value={receiptConfig.phone || ''}
                   onChange={(v) => updateReceiptConfig({ phone: v })}
                   width="100%"
-                  height={46}
-                  corner={14}
+                  height={40}
+                  corner={12}
                 />
 
                 <LabelInput
@@ -1797,8 +1797,8 @@ export const ShopScreen: React.FC = () => {
                   value={receiptConfig.taxId || ''}
                   onChange={(v) => updateReceiptConfig({ taxId: v })}
                   width="100%"
-                  height={46}
-                  corner={14}
+                  height={40}
+                  corner={12}
                 />
               </div>
 
@@ -1808,8 +1808,8 @@ export const ShopScreen: React.FC = () => {
                 value={receiptConfig.address || ''}
                 onChange={(v) => updateReceiptConfig({ address: v })}
                 width="100%"
-                height={46}
-                corner={14}
+                height={40}
+                corner={12}
               />
 
               <LabelInput
@@ -1818,8 +1818,8 @@ export const ShopScreen: React.FC = () => {
                 value={receiptConfig.footerMessage || ''}
                 onChange={(v) => updateReceiptConfig({ footerMessage: v })}
                 width="100%"
-                height={46}
-                corner={14}
+                height={40}
+                corner={12}
               />
 
               <div className="pt-2 space-y-2">

@@ -364,8 +364,8 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
                   sublabel: `${client.phoneNumber} · ${client.membershipPlanName || 'Standard Client'}`,
                 }))}
                 width="100%"
-                height={48}
-                corner={14}
+                height={40}
+                corner={12}
               />
             ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200/50 dark:border-amber-900/30 rounded-xl">
@@ -375,7 +375,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
                 value={walkinName}
                 onChange={setWalkinName}
                 width="100%"
-                height={44}
+                height={40}
                 corner={12}
                 required={bookingMode === 'walkin'}
               />
@@ -386,7 +386,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
                 value={walkinPhone}
                 onChange={setWalkinPhone}
                 width="100%"
-                height={44}
+                height={40}
                 corner={12}
                 required={bookingMode === 'walkin'}
               />
@@ -421,8 +421,8 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
             }))}
             searchable
             width="100%"
-            height={46}
-            corner={14}
+            height={40}
+            corner={12}
           />
         </div>
 
@@ -439,8 +439,8 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
               sublabel: s.role,
             }))}
             width="100%"
-            height={46}
-            corner={14}
+            height={40}
+            corner={12}
           />
         </div>
 
@@ -454,8 +454,8 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
               value={date}
               onChange={setDate}
               width="100%"
-              height={46}
-              corner={14}
+              height={40}
+              corner={12}
             />
           </div>
 
@@ -472,8 +472,8 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
                 '18:00', '18:30', '19:00', '19:30'
               ]}
               width="100%"
-              height={46}
-              corner={14}
+              height={40}
+              corner={12}
             />
           </div>
 
@@ -481,7 +481,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
             <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
               Estimated End ({durationMinutes}m)
             </label>
-            <div className="w-full h-11 px-3 flex items-center bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-sm font-semibold rounded-xl">
+            <div className="w-full h-10 px-3 flex items-center bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-sm font-semibold rounded-xl">
               {calculatedEndTime}
             </div>
           </div>
@@ -499,8 +499,8 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
               value={price}
               onChange={(val) => setPrice(Number(val?.target?.value || val || 0))}
               width="100%"
-              height={46}
-              corner={14}
+              height={40}
+              corner={12}
             />
           </div>
 
@@ -518,8 +518,8 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
                 { value: 'NoShow', label: 'No Show' },
               ]}
               width="100%"
-              height={46}
-              corner={14}
+              height={40}
+              corner={12}
             />
           </div>
         </div>

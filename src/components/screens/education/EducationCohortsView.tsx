@@ -22,6 +22,7 @@ import { CohortStatus, EduCohort } from '../../../types';
 import { formatMoney } from '../../../utils/rules';
 import { Seek } from '../../ui/Seek';
 import { LabelInput } from '../../ui/LabelInput';
+import { LabelSelect } from '../../ui/LabelSelect';
 import { ActionNode } from '../../ui/ActionNode';
 
 type CourseCat = 'All' | 'Language' | 'Technology' | 'Academic' | 'Arts';
@@ -505,24 +506,22 @@ export const EducationCohortsView: React.FC = () => {
               </button>
             </div>
 
-            <form onSubmit={handleCreateCohort} className="space-y-4 pt-4 text-xs">
-              <div>
-                <label className="block font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
-                  Course Curriculum *
-                </label>
-                <select
-                  required
-                  value={formData.courseId}
-                  onChange={(e) => setFormData({ ...formData, courseId: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#C4785A]"
-                >
-                  {eduCourses.map((co) => (
-                    <option key={co.id} value={co.id}>
-                      {co.title} ({co.category})
-                    </option>
-                  ))}
-                </select>
-              </div>
+            <form onSubmit={handleCreateCohort} className="space-y-3.5 pt-4 text-xs">
+              <LabelSelect
+                field="CourseCurriculum"
+                label="Course Curriculum *"
+                value={formData.courseId}
+                onChange={(val) => setFormData({ ...formData, courseId: val?.target?.value ?? String(val) })}
+                options={eduCourses.map((co) => ({
+                  value: co.id,
+                  label: co.title,
+                  sublabel: co.category,
+                }))}
+                searchable
+                width="100%"
+                height={40}
+                corner={12}
+              />
 
               <LabelInput
                 field="CohortName"
@@ -532,43 +531,42 @@ export const EducationCohortsView: React.FC = () => {
                 onChange={(val) => setFormData({ ...formData, name: val?.target?.value ?? val })}
                 placeholder="e.g. Full-Stack Dev - Autumn Batch"
                 width="100%"
-                height={46}
-                corner={14}
+                height={40}
+                corner={12}
               />
 
               <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
-                    Instructor
-                  </label>
-                  <select
-                    value={formData.instructorId}
-                    onChange={(e) => setFormData({ ...formData, instructorId: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white"
-                  >
-                    {staff.map((s) => (
-                      <option key={s.id} value={s.id}>
-                        {s.fullName} ({s.role})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
-                    Assigned Classroom
-                  </label>
-                  <select
-                    value={formData.classroomId}
-                    onChange={(e) => setFormData({ ...formData, classroomId: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white"
-                  >
-                    {eduClassrooms.map((r) => (
-                      <option key={r.id} value={r.id}>
-                        {r.name} (Cap: {r.capacity})
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                <LabelSelect
+                  field="Instructor"
+                  label="Instructor"
+                  value={formData.instructorId}
+                  onChange={(val) => setFormData({ ...formData, instructorId: val?.target?.value ?? String(val) })}
+                  options={staff.map((s) => ({
+                    value: s.id,
+                    label: s.fullName,
+                    sublabel: s.role,
+                  }))}
+                  searchable
+                  width="100%"
+                  height={40}
+                  corner={12}
+                />
+
+                <LabelSelect
+                  field="AssignedClassroom"
+                  label="Assigned Classroom"
+                  value={formData.classroomId}
+                  onChange={(val) => setFormData({ ...formData, classroomId: val?.target?.value ?? String(val) })}
+                  options={eduClassrooms.map((r) => ({
+                    value: r.id,
+                    label: r.name,
+                    sublabel: `Cap: ${r.capacity}`,
+                  }))}
+                  searchable
+                  width="100%"
+                  height={40}
+                  corner={12}
+                />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
@@ -580,8 +578,8 @@ export const EducationCohortsView: React.FC = () => {
                   value={formData.startDate}
                   onChange={(val) => setFormData({ ...formData, startDate: val?.target?.value ?? val })}
                   width="100%"
-                  height={46}
-                  corner={14}
+                  height={40}
+                  corner={12}
                 />
                 <LabelInput
                   field="EndDate"
@@ -591,8 +589,8 @@ export const EducationCohortsView: React.FC = () => {
                   value={formData.endDate}
                   onChange={(val) => setFormData({ ...formData, endDate: val?.target?.value ?? val })}
                   width="100%"
-                  height={46}
-                  corner={14}
+                  height={40}
+                  corner={12}
                 />
               </div>
 
@@ -605,8 +603,8 @@ export const EducationCohortsView: React.FC = () => {
                   value={formData.tuitionFee}
                   onChange={(val) => setFormData({ ...formData, tuitionFee: Number(val?.target?.value ?? val) })}
                   width="100%"
-                  height={46}
-                  corner={14}
+                  height={40}
+                  corner={12}
                 />
                 <LabelInput
                   field="SeatLimit"
@@ -616,8 +614,8 @@ export const EducationCohortsView: React.FC = () => {
                   value={formData.maxStudents}
                   onChange={(val) => setFormData({ ...formData, maxStudents: Number(val?.target?.value ?? val) })}
                   width="100%"
-                  height={46}
-                  corner={14}
+                  height={40}
+                  corner={12}
                 />
               </div>
 
@@ -628,8 +626,8 @@ export const EducationCohortsView: React.FC = () => {
                 onChange={(val) => setFormData({ ...formData, scheduleSummary: val?.target?.value ?? val })}
                 placeholder="e.g. Sat & Tue 14:00 - 16:30"
                 width="100%"
-                height={46}
-                corner={14}
+                height={40}
+                corner={12}
               />
 
               <div className="flex items-center justify-end gap-3 pt-4 border-t border-neutral-100 dark:border-neutral-800">

@@ -23,6 +23,7 @@ import { useAtriumStore } from '../../../services/store';
 import { formatDuration, formatCurrencyAmount } from '../../../utils/rules';
 import { FreelanceClient, FreelanceProject, CurrencyCode, TimeLogEntry } from '../../../types/index';
 import { LabelInput } from '../../ui/LabelInput';
+import { LabelSelect } from '../../ui/LabelSelect';
 import { Seek } from '../../ui/Seek';
 
 export const FreelanceTimeTrackerView: React.FC = () => {
@@ -65,6 +66,36 @@ export const FreelanceTimeTrackerView: React.FC = () => {
     date: new Date().toISOString().split('T')[0],
     isBillable: true,
   });
+
+  const availableManualProjects = useMemo(() => {
+    if (!manualForm.clientId) return freelanceProjects;
+    const clientProjects = freelanceProjects.filter((p) => p.clientId === manualForm.clientId);
+    return clientProjects.length > 0 ? clientProjects : freelanceProjects;
+  }, [freelanceProjects, manualForm.clientId]);
+
+  const handleManualClientChange = (newClientId: string) => {
+    const nextProjects = freelanceProjects.filter((p) => p.clientId === newClientId);
+    setManualForm((prev) => ({
+      ...prev,
+      clientId: newClientId,
+      projectId: nextProjects[0]?.id || '',
+    }));
+  };
+
+  const handleOpenManualModal = () => {
+    const defaultClientId = freelanceClients[0]?.id || '';
+    const defaultProjects = freelanceProjects.filter((p) => p.clientId === defaultClientId);
+    setManualForm({
+      clientId: defaultClientId,
+      projectId: defaultProjects[0]?.id || freelanceProjects[0]?.id || '',
+      taskDescription: '',
+      hours: 2,
+      minutes: 30,
+      date: new Date().toISOString().split('T')[0],
+      isBillable: true,
+    });
+    setIsManualModalOpen(true);
+  };
 
   // Edit Log State
   const [logToEdit, setLogToEdit] = useState<TimeLogEntry | null>(null);
@@ -237,7 +268,7 @@ export const FreelanceTimeTrackerView: React.FC = () => {
         <div className="flex items-center gap-2 self-start sm:self-auto">
           <button
             type="button"
-            onClick={() => setIsManualModalOpen(true)}
+            onClick={handleOpenManualModal}
             className="h-9 px-3.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 text-xs font-semibold flex items-center gap-1.5 hover:bg-neutral-50 dark:hover:bg-neutral-700/60 transition-colors cursor-pointer shadow-2xs"
           >
             <Plus size={13} />
@@ -636,39 +667,44 @@ export const FreelanceTimeTrackerView: React.FC = () => {
             </div>
 
             <form onSubmit={handleManualLogSubmit} className="space-y-3.5 text-xs">
-              <div>
-                <label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
-                  Client *
-                </label>
-                <select
-                  value={manualForm.clientId}
-                  onChange={(e) => setManualForm({ ...manualForm, clientId: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white"
-                >
-                  {freelanceClients.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name} ({c.company || 'Private'})
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <LabelSelect
+                field="Client"
+                label="Client *"
+                placeholder="Select a client..."
+                value={manualForm.clientId}
+                onChange={(val) => handleManualClientChange(val?.target?.value ?? String(val))}
+                options={freelanceClients.map((c) => ({
+                  value: c.id,
+                  label: c.name,
+                  sublabel: c.company || 'Private Client',
+                }))}
+                searchable
+                width="100%"
+                height={40}
+                corner={12}
+              />
 
-              <div>
-                <label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
-                  Project *
-                </label>
-                <select
-                  value={manualForm.projectId}
-                  onChange={(e) => setManualForm({ ...manualForm, projectId: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white"
-                >
-                  {freelanceProjects.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.title}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <LabelSelect
+                field="Project"
+                label="Project *"
+                placeholder="Select a project..."
+                value={manualForm.projectId}
+                onChange={(val) =>
+                  setManualForm((prev) => ({
+                    ...prev,
+                    projectId: val?.target?.value ?? String(val),
+                  }))
+                }
+                options={availableManualProjects.map((p) => ({
+                  value: p.id,
+                  label: p.title,
+                  sublabel: `${p.pricingModel} · ${p.clientName}`,
+                }))}
+                searchable
+                width="100%"
+                height={40}
+                corner={12}
+              />
 
               <LabelInput
                 id="manual-task-summary"
@@ -677,8 +713,14 @@ export const FreelanceTimeTrackerView: React.FC = () => {
                 placeholder="e.g. Architectural code review & test refactoring"
                 value={manualForm.taskDescription}
                 onChange={(e) =>
-                  setManualForm({ ...manualForm, taskDescription: e.target.value })
+                  setManualForm((prev) => ({
+                    ...prev,
+                    taskDescription: e?.target?.value ?? String(e),
+                  }))
                 }
+                width="100%"
+                height={40}
+                corner={12}
               />
 
               <div className="grid grid-cols-2 gap-3">
@@ -689,8 +731,14 @@ export const FreelanceTimeTrackerView: React.FC = () => {
                   min="0"
                   value={manualForm.hours}
                   onChange={(e) =>
-                    setManualForm({ ...manualForm, hours: Number(e.target.value) })
+                    setManualForm((prev) => ({
+                      ...prev,
+                      hours: Number(e?.target?.value ?? e),
+                    }))
                   }
+                  width="100%"
+                  height={40}
+                  corner={12}
                 />
                 <LabelInput
                   id="manual-minutes"
@@ -700,8 +748,14 @@ export const FreelanceTimeTrackerView: React.FC = () => {
                   max="59"
                   value={manualForm.minutes}
                   onChange={(e) =>
-                    setManualForm({ ...manualForm, minutes: Number(e.target.value) })
+                    setManualForm((prev) => ({
+                      ...prev,
+                      minutes: Number(e?.target?.value ?? e),
+                    }))
                   }
+                  width="100%"
+                  height={40}
+                  corner={12}
                 />
               </div>
 
@@ -710,7 +764,15 @@ export const FreelanceTimeTrackerView: React.FC = () => {
                 label="Date"
                 type="date"
                 value={manualForm.date}
-                onChange={(e) => setManualForm({ ...manualForm, date: e.target.value })}
+                onChange={(e) =>
+                  setManualForm((prev) => ({
+                    ...prev,
+                    date: e?.target?.value ?? String(e),
+                  }))
+                }
+                width="100%"
+                height={40}
+                corner={12}
               />
 
               <div className="flex items-center gap-2 pt-2">
@@ -780,8 +842,14 @@ export const FreelanceTimeTrackerView: React.FC = () => {
                 required
                 value={editLogForm.taskDescription}
                 onChange={(e) =>
-                  setEditLogForm({ ...editLogForm, taskDescription: e.target.value })
+                  setEditLogForm((prev) => ({
+                    ...prev,
+                    taskDescription: e?.target?.value ?? String(e),
+                  }))
                 }
+                width="100%"
+                height={40}
+                corner={12}
               />
 
               <div className="grid grid-cols-2 gap-3">
@@ -792,8 +860,14 @@ export const FreelanceTimeTrackerView: React.FC = () => {
                   min="0"
                   value={editLogForm.hours}
                   onChange={(e) =>
-                    setEditLogForm({ ...editLogForm, hours: Number(e.target.value) })
+                    setEditLogForm((prev) => ({
+                      ...prev,
+                      hours: Number(e?.target?.value ?? e),
+                    }))
                   }
+                  width="100%"
+                  height={40}
+                  corner={12}
                 />
                 <LabelInput
                   id="edit-minutes"
@@ -803,8 +877,14 @@ export const FreelanceTimeTrackerView: React.FC = () => {
                   max="59"
                   value={editLogForm.minutes}
                   onChange={(e) =>
-                    setEditLogForm({ ...editLogForm, minutes: Number(e.target.value) })
+                    setEditLogForm((prev) => ({
+                      ...prev,
+                      minutes: Number(e?.target?.value ?? e),
+                    }))
                   }
+                  width="100%"
+                  height={40}
+                  corner={12}
                 />
               </div>
 
@@ -813,7 +893,15 @@ export const FreelanceTimeTrackerView: React.FC = () => {
                 label="Date"
                 type="date"
                 value={editLogForm.date}
-                onChange={(e) => setEditLogForm({ ...editLogForm, date: e.target.value })}
+                onChange={(e) =>
+                  setEditLogForm((prev) => ({
+                    ...prev,
+                    date: e?.target?.value ?? String(e),
+                  }))
+                }
+                width="100%"
+                height={40}
+                corner={12}
               />
 
               <div className="flex items-center gap-2 pt-2">

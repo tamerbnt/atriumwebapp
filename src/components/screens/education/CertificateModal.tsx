@@ -117,8 +117,7 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
         <div className="flex-1 overflow-y-auto p-6 space-y-6 text-xs">
           {!activeCert ? (
             /* Creation Form */
-            <form onSubmit={handleIssue} className="space-y-4 max-w-xl mx-auto py-2">
-              <div>
+            <form onSubmit={handleIssue} className="space-y-3.5 max-w-xl mx-auto py-2">
               <div>
                 <LabelSelect
                   field="RecipientStudent"
@@ -132,8 +131,8 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
                   }))}
                   searchable
                   width="100%"
-                  height={46}
-                  corner={14}
+                  height={40}
+                  corner={12}
                 />
               </div>
 
@@ -150,12 +149,12 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
                   }))}
                   searchable
                   width="100%"
-                  height={46}
-                  corner={14}
+                  height={40}
+                  corner={12}
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-3">
                 <LabelInput
                   field="CumulativeGrade"
                   label="Cumulative Grade (%)"
@@ -165,19 +164,19 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
                   value={averageGrade}
                   onChange={(val) => setAverageGrade(parseInt(val?.target?.value ?? val) || 0)}
                   width="100%"
-                  height={46}
-                  corner={14}
+                  height={40}
+                  corner={12}
                 />
-                  <LabelInput
-                    field="Honors"
-                    label="Honors & Distinctions"
-                    value={honors}
-                    onChange={setHonors}
-                    placeholder="e.g. Magna Cum Laude"
-                    width="100%"
-                    height={44}
-                    corner={14}
-                  />
+                <LabelInput
+                  field="Honors"
+                  label="Honors & Distinctions"
+                  value={honors}
+                  onChange={setHonors}
+                  placeholder="e.g. Magna Cum Laude"
+                  width="100%"
+                  height={40}
+                  corner={12}
+                />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
@@ -187,8 +186,8 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
                   value={signatoryName}
                   onChange={setSignatoryName}
                   width="100%"
-                  height={44}
-                  corner={14}
+                  height={40}
+                  corner={12}
                 />
                 <LabelInput
                   field="Signatory Title"
@@ -196,8 +195,8 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
                   value={signatoryTitle}
                   onChange={setSignatoryTitle}
                   width="100%"
-                  height={44}
-                  corner={14}
+                  height={40}
+                  corner={12}
                 />
               </div>
 

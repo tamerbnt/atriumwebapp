@@ -618,14 +618,15 @@
 .lbi {
   position: relative;
   font-family: var(--font-ui);
-  display: grid;
-  place-items: center;
-  padding-top: 12px;
+  display: block;
+  width: 100%;
+  padding-top: 6px;
 }
 
 /* no fill: the field is only its outline */
 .lbi-box {
   position: relative;
+  width: 100%;
   background: transparent;
   cursor: text;
 }
@@ -640,14 +641,14 @@
 
 .lbi-ring path {
   fill: none;
-  stroke: color-mix(in srgb, var(--fill-on, #17181a) 32%, var(--fill-slab, #ffffff));
+  stroke: color-mix(in srgb, var(--fill-on, #17181a) 28%, var(--fill-slab, #ffffff));
   stroke-width: 1;
   stroke-linecap: butt;
   transition: stroke 220ms ease, stroke-width 220ms ease;
 }
 
 .lbi[data-focus="true"] .lbi-ring path {
-  stroke: var(--ink);
+  stroke: var(--color-accent, #C4785A);
   stroke-width: 1.5;
 }
 
@@ -668,25 +669,26 @@
   position: absolute;
   left: var(--lbi-x);
   top: 50%;
-  font-size: 15px;
+  font-size: 13px;
   line-height: 1;
   letter-spacing: -0.01em;
   white-space: pre;
   color: var(--ink-4);
   transform-origin: left center;
   transform: translateY(-50%);
-  transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1), color 220ms ease;
+  transition: transform 380ms cubic-bezier(0.22, 1, 0.36, 1), color 220ms ease;
   cursor: text;
   -webkit-user-select: none;
   user-select: none;
+  pointer-events: none;
 }
 
 .lbi[data-up="true"] .lbi-label {
-  transform: translateY(-50%) translateY(-26px) scale(0.78);
+  transform: translateY(-50%) translateY(-20px) scale(0.82);
   color: var(--ink-3);
 }
 
-.lbi[data-focus="true"] .lbi-label { color: var(--fill-on, var(--ink)); }
+.lbi[data-focus="true"] .lbi-label { color: var(--color-accent, var(--fill-on, var(--ink))); }
 
 .lbi-label span { display: inline-block; }
 
@@ -705,7 +707,7 @@
   border-radius: inherit;
   background: transparent;
   font: inherit;
-  font-size: 15px;
+  font-size: 13px;
   letter-spacing: -0.01em;
   color: var(--fill-on, var(--ink));
   outline: none;

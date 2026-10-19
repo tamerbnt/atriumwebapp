@@ -28,6 +28,7 @@ import {
 } from '../../../types/index';
 import { Seek } from '../../ui/Seek';
 import { LabelInput } from '../../ui/LabelInput';
+import { LabelSelect } from '../../ui/LabelSelect';
 
 export const FreelanceInvoicesView: React.FC = () => {
   const {
@@ -413,38 +414,39 @@ export const FreelanceInvoicesView: React.FC = () => {
             <form onSubmit={handleCreateInvoiceSubmit} className="space-y-4 text-xs">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div className="sm:col-span-2">
-                  <label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
-                    Client *
-                  </label>
-                  <select
+                  <LabelSelect
+                    field="TargetClient"
+                    label="Client *"
+                    placeholder="Select client..."
                     value={targetClientId}
-                    onChange={(e) => {
-                      setTargetClientId(e.target.value);
-                      const cl = freelanceClients.find((c) => c.id === e.target.value);
+                    onChange={(val) => {
+                      const clientId = val?.target?.value ?? String(val);
+                      setTargetClientId(clientId);
+                      const cl = freelanceClients.find((c) => c.id === clientId);
                       if (cl) setCurrency(cl.currency);
                     }}
-                    className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white"
-                  >
-                    {freelanceClients.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.name} ({c.company || 'Private'}) · {c.currency}
-                      </option>
-                    ))}
-                  </select>
+                    options={freelanceClients.map((c) => ({
+                      value: c.id,
+                      label: c.name,
+                      sublabel: `${c.company || 'Private'} · ${c.currency}`,
+                    }))}
+                    searchable
+                    width="100%"
+                    height={40}
+                    corner={12}
+                  />
                 </div>
                 <div>
-                  <label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
-                    Currency
-                  </label>
-                  <select
+                  <LabelSelect
+                    field="InvoiceCurrency"
+                    label="Currency"
                     value={currency}
-                    onChange={(e) => setCurrency(e.target.value as CurrencyCode)}
-                    className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white"
-                  >
-                    <option value="DZD">DZD</option>
-                    <option value="EUR">EUR</option>
-                    <option value="USD">USD</option>
-                  </select>
+                    onChange={(val) => setCurrency((val?.target?.value ?? String(val)) as CurrencyCode)}
+                    options={['DZD', 'EUR', 'USD']}
+                    width="100%"
+                    height={40}
+                    corner={12}
+                  />
                 </div>
               </div>
 
@@ -457,8 +459,8 @@ export const FreelanceInvoicesView: React.FC = () => {
                   value={dueDate}
                   onChange={setDueDate}
                   width="100%"
-                  height={46}
-                  corner={14}
+                  height={40}
+                  corner={12}
                 />
                 <LabelInput
                   field="TaxPercent"
@@ -469,8 +471,8 @@ export const FreelanceInvoicesView: React.FC = () => {
                   value={taxPercent}
                   onChange={(val) => setTaxPercent(Number(val?.target?.value ?? val))}
                   width="100%"
-                  height={46}
-                  corner={14}
+                  height={40}
+                  corner={12}
                 />
               </div>
 

@@ -769,8 +769,8 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             onChange={setBranchName}
             placeholder="e.g. Apex West Sidi Yahia"
             width="100%"
-            height={48}
-            corner={14}
+            height={40}
+            corner={12}
           />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -782,8 +782,8 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
               onChange={setBranchCode}
               placeholder="e.g. APX-WEST"
               width="100%"
-              height={48}
-              corner={14}
+              height={40}
+              corner={12}
             />
             <LabelInput
               field="BranchPhone"
@@ -793,8 +793,8 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
               onChange={setBranchPhone}
               placeholder="+213 21 00 00 00"
               width="100%"
-              height={48}
-              corner={14}
+              height={40}
+              corner={12}
             />
           </div>
 
@@ -805,8 +805,8 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             onChange={setBranchAddress}
             placeholder="Boulevard, City, Wilaya"
             width="100%"
-            height={48}
-            corner={14}
+            height={40}
+            corner={12}
           />
 
           <div className="flex justify-end gap-3 pt-3">
@@ -853,8 +853,8 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             onChange={setDeviceLabel}
             placeholder="e.g. Reception Desk 2 (POS)"
             width="100%"
-            height={48}
-            corner={14}
+            height={40}
+            corner={12}
           />
 
           <LabelInput
@@ -865,8 +865,8 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             onChange={setDeviceHwId}
             placeholder="e.g. HW-POS-ALGIERS-03"
             width="100%"
-            height={48}
-            corner={14}
+            height={40}
+            corner={12}
           />
 
           <div className="flex justify-end gap-3 pt-3">
