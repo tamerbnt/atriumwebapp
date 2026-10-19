@@ -11,13 +11,11 @@ import {
   ArrowRight,
   Sparkles,
   CheckCircle2,
-  HelpCircle,
   Hash,
 } from 'lucide-react';
 import { useAtriumStore } from '../../services/store';
 import { authService } from '../../lib/supabase/services/authService';
 
-import { GoogleOAuthGuideModal } from '../modals/GoogleOAuthGuideModal';
 import { FiveCubesLogo } from './AtriumMonolith';
 
 interface LoginScreenProps {
@@ -35,7 +33,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
   const [error, setError] = useState<string | null>(null);
   const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
   const [rememberDevice, setRememberDevice] = useState(true);
-  const [isGoogleGuideOpen, setIsGoogleGuideOpen] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
   const handleGoogleLogin = async () => {
@@ -123,12 +120,9 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
           </div>
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-black tracking-tight text-white">ATRIUM</h1>
-            <span className="text-[10px] font-bold text-emerald-400 bg-emerald-950/60 border border-emerald-800/80 px-2 py-0.5 rounded-full uppercase">
-              Web Free Edition
-            </span>
           </div>
           <p className="text-xs text-neutral-400 mt-1">
-            Free forever for 1 business & 1 branch · Multi-branch in Desktop
+            Facility ERP &amp; Business Management
           </p>
         </div>
 
@@ -160,26 +154,16 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
           <span>{isGoogleLoading ? 'Connecting Google Account...' : 'Continue with Google'}</span>
         </button>
 
-        {/* 1-Click Fast Owner Sign-in & OAuth Guide Row */}
-        <div className="flex items-center gap-2 mb-3">
+        {/* 1-Click Fast Owner Sign-in */}
+        <div className="mb-3">
           <button
             type="button"
             onClick={() => handleFastOwnerLogin('mehdisamih79@gmail.com')}
-            className="flex-1 h-9 px-3 rounded-xl bg-[#2A2420] hover:bg-[#342D28] border border-[#483B33] text-white text-[11px] font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+            className="w-full h-9 px-3 rounded-xl bg-[#2A2420] hover:bg-[#342D28] border border-[#483B33] text-white text-[11px] font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
             title="Instant sign-in without Google OAuth"
           >
             <Sparkles size={13} className="text-[#C4785A]" />
             <span>Fast Sign-in as Owner</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setIsGoogleGuideOpen(true)}
-            className="h-9 px-3 rounded-xl bg-neutral-900/90 hover:bg-neutral-800 border border-neutral-700/80 text-neutral-300 hover:text-white text-[11px] font-semibold flex items-center justify-center gap-1 transition-colors cursor-pointer"
-            title="View Google Cloud & 403 Error Fix Guide"
-          >
-            <HelpCircle size={13} className="text-amber-400" />
-            <span>OAuth 403 Guide</span>
           </button>
         </div>
 
@@ -428,12 +412,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
         </div>
       )}
 
-      {/* Google OAuth & 403 Troubleshooting Modal */}
-      <GoogleOAuthGuideModal
-        isOpen={isGoogleGuideOpen}
-        onClose={() => setIsGoogleGuideOpen(false)}
-        onInstantLogin={handleFastOwnerLogin}
-      />
     </div>
   );
 };

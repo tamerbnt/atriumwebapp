@@ -29,7 +29,6 @@ import {
   KeyRound,
   Cloud,
   Download,
-  HelpCircle,
   Play,
   RotateCcw,
 } from 'lucide-react';
@@ -37,7 +36,6 @@ import { useAtriumStore } from '../../services/store';
 import { BusinessCategory, OnboardingParams } from '../../types/index';
 import { validateVoucherCode } from '../../utils/rules';
 import { authService } from '../../lib/supabase/services/authService';
-import { GoogleOAuthGuideModal } from '../modals/GoogleOAuthGuideModal';
 import {
   findCategoryByBusinessSearch,
   POPULAR_BUSINESS_SEARCHES,
@@ -131,7 +129,6 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
   const [phone, setPhone] = useState('+213 550 12 34 56');
   const [password, setPassword] = useState('Atrium2026!');
   const [googleLoading, setGoogleLoading] = useState(false);
-  const [isGoogleGuideOpen, setIsGoogleGuideOpen] = useState(false);
 
   // Step 2: Business & Vertical
   const [businessName, setBusinessName] = useState('Atrium Creative Studio');
@@ -145,20 +142,15 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
   const [voucherCode, setVoucherCode] = useState('');
   const [showVoucherInput, setShowVoucherInput] = useState(false);
   const [isProvisioning, setIsProvisioning] = useState(false);
-  const [googleSetupNotice, setGoogleSetupNotice] = useState<string | null>(null);
 
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
-    setGoogleSetupNotice(null);
     try {
       const res = await authService.signInWithGoogle();
       if (res?.error) {
         setFullName('Mehdi Samih');
         setEmail('mehdisamih79@gmail.com');
         setIsGoogleConnected(true);
-        setGoogleSetupNotice(
-          'Google Cloud OAuth is not completed or returned 403. You are connected instantly as Workspace Owner so you can finish setup!'
-        );
       } else {
         setIsGoogleConnected(true);
       }
@@ -316,17 +308,17 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
       <div className="relative z-20 w-full h-full max-h-screen flex flex-col lg:flex-row items-center justify-center p-4 sm:p-6 lg:p-8 overflow-hidden">
         {/* LEFT: FLOATING ONBOARDING CARD */}
         <div
-          className={`w-full lg:w-[490px] xl:w-[530px] p-2 sm:p-4 shrink-0 flex flex-col justify-center transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+          className={`w-full lg:w-[460px] xl:w-[480px] p-2 sm:p-3 shrink-0 flex flex-col justify-center transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
             introPhase === 'revealed'
               ? 'opacity-100 translate-x-0 scale-100 pointer-events-auto'
               : 'opacity-0 -translate-x-12 scale-95 pointer-events-none'
           }`}
         >
-          <div className="bg-white text-neutral-900 rounded-[32px] p-6 sm:p-8 shadow-[0_30px_70px_rgba(0,0,0,0.55)] border border-neutral-100 flex flex-col justify-between max-h-[calc(100vh-48px)] overflow-y-auto">
+          <div className="bg-white text-neutral-900 rounded-[28px] sm:rounded-[32px] p-5 sm:p-6 shadow-[0_24px_60px_rgba(0,0,0,0.45)] border border-neutral-100 flex flex-col justify-between max-h-[calc(100vh-32px)] overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
 
           {/* Card Top: Atrium Brand Logo Emblem */}
           <div>
-            <div className="flex items-center justify-between pb-4 border-b border-neutral-100">
+            <div className="flex items-center justify-between pb-3 border-b border-neutral-100">
               <div className="flex items-center gap-3">
                 {/* 5-Cubes Modernist Terracotta Logo (Click to Replay Intro) */}
                 <button
@@ -337,36 +329,31 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                     setReplayKey((k) => k + 1);
                   }}
                   title="Click to replay motion intro"
-                  className="w-11 h-11 rounded-2xl bg-[#D3542E] flex items-center justify-center p-1.5 shadow-xs text-white hover:scale-105 active:scale-95 transition-transform cursor-pointer"
+                  className="w-10 h-10 rounded-2xl bg-[#D3542E] flex items-center justify-center p-1.5 shadow-xs text-white hover:scale-105 active:scale-95 transition-transform cursor-pointer"
                 >
-                  <FiveCubesLogo size={28} cubeColor="white" />
+                  <FiveCubesLogo size={26} cubeColor="white" />
                 </button>
                 <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-base font-black tracking-tight text-neutral-900">
-                      ATRIUM
-                    </span>
-                    <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full uppercase">
-                      Free Web Edition
-                    </span>
-                  </div>
-                  <span className="text-[11px] text-neutral-400 block -mt-0.5">
-                    1 Business &amp; 1 Branch Forever Free
+                  <span className="text-base font-black tracking-tight text-neutral-900 block leading-tight">
+                    ATRIUM
+                  </span>
+                  <span className="text-[11px] text-neutral-400 font-medium block">
+                    Workspace Setup
                   </span>
                 </div>
               </div>
 
               {/* Step Pill */}
-              <div className="h-7 px-3 rounded-full bg-neutral-100 text-[11px] font-bold text-neutral-700 flex items-center gap-1">
+              <div className="h-6.5 px-2.5 rounded-full bg-neutral-100 text-[10.5px] font-bold text-neutral-700 flex items-center gap-1">
                 <span>Step {currentStep} of 2</span>
               </div>
             </div>
 
             {/* 2-Step Progress Bar */}
-            <div className="grid grid-cols-2 gap-2 my-4">
+            <div className="grid grid-cols-2 gap-2 my-2.5">
               {[
-                { n: 1, label: 'Owner Google Account' },
-                { n: 2, label: 'Business & Branch Profile' },
+                { n: 1, label: 'Owner Account' },
+                { n: 2, label: 'Business Profile' },
               ].map((s) => (
                 <div key={s.n} className="space-y-1">
                   <div
@@ -383,26 +370,26 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
 
             {/* STEP 1: CREATE ACCOUNT & GOOGLE AUTH */}
             {currentStep === 1 && (
-              <div className="space-y-3.5 py-1 animate-in fade-in duration-150">
+              <div className="space-y-2.5 py-0.5 animate-in fade-in duration-150">
                 <div>
-                  <h3 className="text-lg font-extrabold text-neutral-900">
+                  <h3 className="text-base font-extrabold text-neutral-900 tracking-tight leading-tight">
                     Create Your Atrium Account
                   </h3>
-                  <p className="text-xs text-neutral-500 mt-0.5">
-                    Sign in with Google to secure your free business partition and enable seamless cloud sync.
+                  <p className="text-[11.5px] text-neutral-500 mt-0.5">
+                    Sign in with Google or enter your owner details to launch your workspace.
                   </p>
                 </div>
 
                 {/* Primary: Google One-Click Auth Button */}
-                <div className="space-y-2.5">
+                <div className="space-y-1.5">
                   <button
                     type="button"
                     onClick={handleGoogleSignIn}
                     disabled={googleLoading}
-                    className="w-full h-12 rounded-2xl border border-neutral-300 hover:border-neutral-400 bg-white hover:bg-neutral-50 text-neutral-800 text-xs font-bold flex items-center justify-center gap-3 shadow-xs cursor-pointer transition-all active:scale-[0.99]"
+                    className="w-full h-9.5 sm:h-10 rounded-xl border border-neutral-300 hover:border-neutral-400 bg-white hover:bg-neutral-50 text-neutral-800 text-xs font-bold flex items-center justify-center gap-2.5 shadow-xs cursor-pointer transition-all active:scale-[0.99]"
                   >
                     {/* SVG Google G Logo */}
-                    <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
                       <path
                         fill="#4285F4"
                         d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -422,54 +409,26 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                     </svg>
                     <span>
                       {googleLoading
-                        ? 'Connecting Google Account...'
+                        ? 'Connecting Account...'
                         : isGoogleConnected
                         ? `Connected with Google (${email})`
                         : 'Continue with Google'}
                     </span>
-                    {isGoogleConnected && <CheckCircle2 size={16} className="text-emerald-500 ml-auto" />}
+                    {isGoogleConnected && <CheckCircle2 size={15} className="text-emerald-500 ml-auto" />}
                   </button>
 
-                  {/* Fast Action Row */}
-                  <div className="flex items-center justify-between text-xs px-1">
-                    <button
-                      type="button"
-                      onClick={() => setIsGoogleGuideOpen(true)}
-                      className="text-[#C4785A] hover:text-[#b3684a] font-semibold text-[11px] flex items-center gap-1 cursor-pointer transition-colors"
-                    >
-                      <HelpCircle size={13} />
-                      <span>Google 403 Error &amp; Cloud Setup Guide</span>
-                    </button>
-                    <span className="text-[10px] text-neutral-400 font-medium">Free forever · No credit card</span>
-                  </div>
-
-                  {googleSetupNotice && (
-                    <div className="p-3 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-900 space-y-1 animate-in fade-in">
-                      <div className="flex items-center gap-1.5 font-bold text-amber-800">
-                        <Sparkles size={14} className="text-amber-600 shrink-0" />
-                        <span>Connected Instantly as Workspace Owner</span>
-                      </div>
-                      <p className="text-[11px] text-amber-700 leading-relaxed">
-                        {googleSetupNotice}
-                      </p>
-                      <div className="text-[10px] text-neutral-500 pt-1 border-t border-amber-200/60">
-                        To enable Google OAuth popups later, visit Supabase Dashboard &gt; Authentication &gt; Providers &gt; Google.
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="relative flex py-1 items-center">
+                  <div className="relative flex py-0.5 items-center">
                     <div className="flex-grow border-t border-neutral-200"></div>
-                    <span className="flex-shrink mx-3 text-[11px] text-neutral-400 font-medium">
+                    <span className="flex-shrink mx-3 text-[10px] text-neutral-400 font-medium">
                       or customize profile details
                     </span>
                     <div className="flex-grow border-t border-neutral-200"></div>
                   </div>
                 </div>
 
-                <div className="space-y-3">
+                <div className="space-y-2">
                   <div>
-                    <label className="block text-xs font-bold text-neutral-700 mb-1">
+                    <label className="block text-[11px] font-bold text-neutral-700 mb-0.5">
                       Full Name *
                     </label>
                     <div className="relative">
@@ -478,14 +437,14 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                         value={fullName}
                         onChange={(e) => setFullName(e.target.value)}
                         placeholder="Amine Bentouati"
-                        className="w-full h-10 pl-9 pr-3 rounded-xl bg-neutral-50 border border-neutral-200 text-neutral-900 text-xs font-medium focus:bg-white focus:outline-none focus:border-[#C4785A] transition-colors"
+                        className="w-full h-8.5 pl-8.5 pr-3 rounded-xl bg-neutral-50 border border-neutral-200 text-neutral-900 text-xs font-medium focus:bg-white focus:outline-none focus:border-[#C4785A] transition-colors"
                       />
-                      <User size={14} className="absolute left-3 top-3 text-neutral-400" />
+                      <User size={13} className="absolute left-2.5 top-2.5 text-neutral-400" />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-neutral-700 mb-1">
+                    <label className="block text-[11px] font-bold text-neutral-700 mb-0.5">
                       Work Email *
                     </label>
                     <div className="relative">
@@ -494,15 +453,15 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder="owner@myfacility.dz"
-                        className="w-full h-10 pl-9 pr-3 rounded-xl bg-neutral-50 border border-neutral-200 text-neutral-900 text-xs font-medium focus:bg-white focus:outline-none focus:border-[#C4785A] transition-colors"
+                        className="w-full h-8.5 pl-8.5 pr-3 rounded-xl bg-neutral-50 border border-neutral-200 text-neutral-900 text-xs font-medium focus:bg-white focus:outline-none focus:border-[#C4785A] transition-colors"
                       />
-                      <Mail size={14} className="absolute left-3 top-3 text-neutral-400" />
+                      <Mail size={13} className="absolute left-2.5 top-2.5 text-neutral-400" />
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2.5">
+                  <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="block text-xs font-bold text-neutral-700 mb-1">
+                      <label className="block text-[11px] font-bold text-neutral-700 mb-0.5">
                         Phone Number
                       </label>
                       <div className="relative">
@@ -511,14 +470,14 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                           value={phone}
                           onChange={(e) => setPhone(e.target.value)}
                           placeholder="+213 550 00 00"
-                          className="w-full h-10 pl-8 pr-2.5 rounded-xl bg-neutral-50 border border-neutral-200 text-neutral-900 text-xs font-medium focus:bg-white focus:outline-none focus:border-[#C4785A] transition-colors"
+                          className="w-full h-8.5 pl-8 pr-2.5 rounded-xl bg-neutral-50 border border-neutral-200 text-neutral-900 text-xs font-medium focus:bg-white focus:outline-none focus:border-[#C4785A] transition-colors"
                         />
-                        <Phone size={13} className="absolute left-2.5 top-3 text-neutral-400" />
+                        <Phone size={12} className="absolute left-2.5 top-2.5 text-neutral-400" />
                       </div>
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold text-neutral-700 mb-1">
+                      <label className="block text-[11px] font-bold text-neutral-700 mb-0.5">
                         Admin Password
                       </label>
                       <div className="relative">
@@ -527,19 +486,12 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                           value={password}
                           onChange={(e) => setPassword(e.target.value)}
                           placeholder="Password"
-                          className="w-full h-10 pl-8 pr-2.5 rounded-xl bg-neutral-50 border border-neutral-200 text-neutral-900 text-xs font-medium focus:bg-white focus:outline-none focus:border-[#C4785A] transition-colors"
+                          className="w-full h-8.5 pl-8 pr-2.5 rounded-xl bg-neutral-50 border border-neutral-200 text-neutral-900 text-xs font-medium focus:bg-white focus:outline-none focus:border-[#C4785A] transition-colors"
                         />
-                        <Lock size={13} className="absolute left-2.5 top-3 text-neutral-400" />
+                        <Lock size={12} className="absolute left-2.5 top-2.5 text-neutral-400" />
                       </div>
                     </div>
                   </div>
-                </div>
-
-                <div className="p-3 rounded-xl bg-[#FDF4F0] border border-[#FBE5DC] text-xs text-[#8C3D28] flex items-center gap-2">
-                  <ShieldCheck size={16} className="text-[#C4785A] shrink-0" />
-                  <span>
-                    Your Web Edition is <strong>100% Free Forever</strong> for 1 business & 1 branch. No credit card required.
-                  </span>
                 </div>
               </div>
             )}
@@ -703,20 +655,15 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                   </div>
                 </div>
 
-                {/* Free Web Edition Confirmation & Multi-Branch Note */}
-                <div className="p-3 rounded-2xl bg-neutral-50 border border-neutral-200 text-xs space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold text-neutral-800 flex items-center gap-1.5">
-                      <CheckCircle2 size={13} className="text-emerald-500" />
-                      <span>Free Web Edition (1 Business, 1 Branch)</span>
-                    </span>
-                    <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full uppercase">
-                      No Card Needed
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-neutral-500 leading-relaxed">
-                    Need multi-branch chains or hardware POS later? Simply download <strong>Atrium Desktop</strong> and your data will automatically load via Google SSO.
-                  </p>
+                {/* Workspace Facility Note */}
+                <div className="p-2.5 rounded-xl bg-neutral-50 border border-neutral-200 text-xs flex items-center justify-between">
+                  <span className="font-semibold text-neutral-700 flex items-center gap-1.5 text-[11.5px]">
+                    <CheckCircle2 size={13} className="text-emerald-500 shrink-0" />
+                    <span>Workspace configured for your primary facility</span>
+                  </span>
+                  <span className="text-[10px] font-bold text-neutral-500 bg-neutral-200/60 px-2 py-0.5 rounded-full">
+                    Ready
+                  </span>
                 </div>
 
                 {/* Optional Desktop Voucher Toggle */}
@@ -865,7 +812,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
             >
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-black/10 border border-black/15 text-[#18181B] text-xs sm:text-[13px] font-semibold">
                 <Sparkles size={13} className="text-[#18181B]" />
-                <span>Forever Free Web Edition — 1 Business &amp; 1 Branch</span>
+                <span>Atrium Web Edition — 1 Business &amp; 1 Branch</span>
               </div>
 
               <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-[#18181B] leading-tight max-w-xl">
@@ -873,7 +820,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
               </h1>
 
               <p className="text-sm sm:text-[15px] text-[#18181B]/85 leading-relaxed font-normal max-w-xl">
-                Whether running a solo practice, aesthetic salon, fast-casual restaurant, or athletic gym, Atrium Web is 100% free forever for your main facility. Seamlessly upgrade to the Desktop app when you expand to multi-location chains.
+                Whether running a solo practice, aesthetic salon, fast-casual restaurant, or athletic gym, Atrium Web provides unified management for your facility. Seamlessly upgrade to the Desktop app when you expand to multi-location chains.
               </p>
 
               {/* Cards Showcase */}
@@ -921,16 +868,6 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
         </div>
       </div>
     </div>
-
-      {/* Google OAuth & 403 Troubleshooting Modal */}
-      <GoogleOAuthGuideModal
-        isOpen={isGoogleGuideOpen}
-        onClose={() => setIsGoogleGuideOpen(false)}
-        onInstantLogin={(em) => {
-          setEmail(em);
-          setIsGoogleConnected(true);
-        }}
-      />
     </div>
   );
 };
