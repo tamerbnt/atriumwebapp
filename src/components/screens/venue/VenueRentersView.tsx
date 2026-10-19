@@ -19,6 +19,8 @@ import { useAtriumStore } from '../../../services/store';
 import { RentalRenter } from '../../../types/index';
 import { formatCurrencyAmount } from '../../../utils/rules';
 import { BookingModal } from './BookingModal';
+import { Seek } from '../../ui/Seek';
+import { ActionNode } from '../../ui/ActionNode';
 
 export const VenueRentersView: React.FC = () => {
   const {
@@ -186,19 +188,16 @@ export const VenueRentersView: React.FC = () => {
         </div>
       </div>
 
-      {/* Search */}
-      <div className="relative max-w-md">
-        <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400" />
-        <input
-          type="text"
-          placeholder="Search renters by name, company, phone, ID number..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full pl-10 pr-4 py-2 bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700 rounded-xl text-xs text-neutral-900 dark:text-white focus:outline-hidden"
-        />
-      </div>
+      {/* Seek Kinetic Search */}
+      <Seek
+        value={searchQuery}
+        onChange={setSearchQuery}
+        placeholder="Search renters by name, company, phone, ID number..."
+        shutSize={38}
+        openWidth={300}
+      />
 
-      {/* Renter Cards Grid */}
+      {/* Renter Cards Grid with ActionNode */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         {filteredRenters.length === 0 ? (
           <div className="col-span-full p-12 text-center bg-neutral-50 dark:bg-neutral-800/30 rounded-3xl border border-neutral-200 dark:border-neutral-800">
@@ -212,97 +211,74 @@ export const VenueRentersView: React.FC = () => {
           </div>
         ) : (
           filteredRenters.map((renter) => (
-            <div
+            <ActionNode
               key={renter.id}
-              className="p-5 rounded-2xl bg-white dark:bg-neutral-800/60 border border-[#E9EEF0] dark:border-neutral-800 flex flex-col justify-between hover:border-neutral-300 dark:hover:border-neutral-700 transition-all shadow-2xs"
-            >
-              <div>
-                <div className="flex items-start justify-between mb-3">
-                  <div className="w-10 h-10 rounded-xl bg-neutral-100 dark:bg-neutral-700 flex items-center justify-center font-bold text-neutral-800 dark:text-neutral-200 text-sm">
-                    {renter.fullName.charAt(0)}
-                  </div>
-                  <span className="text-[10px] font-mono text-neutral-400 uppercase">
-                    {renter.idDocNumber || 'NO ID REGISTERED'}
-                  </span>
+              title={renter.fullName}
+              description={renter.companyName || (renter.idDocNumber ? `ID: ${renter.idDocNumber}` : 'Private Renter')}
+              tag={`${renter.totalBookings} Bookings`}
+              width="100%"
+              air={14}
+              corner={20}
+              icon={
+                <div className="w-full h-full rounded-[inherit] bg-neutral-100 dark:bg-neutral-700 flex items-center justify-center font-bold text-neutral-800 dark:text-neutral-200 text-xs">
+                  {renter.fullName.charAt(0)}
                 </div>
-
-                <h3 className="font-bold text-sm text-neutral-900 dark:text-white">
-                  {renter.fullName}
-                </h3>
-                {renter.companyName && (
-                  <div className="text-xs font-medium text-[var(--color-accent)] mt-0.5">
-                    {renter.companyName}
-                  </div>
-                )}
-
-                <div className="space-y-1 mt-3 text-xs text-neutral-500 dark:text-neutral-400">
-                  <div className="flex items-center gap-2">
-                    <Phone size={13} className="text-neutral-400" />
-                    <span className="font-mono text-neutral-700 dark:text-neutral-300">{renter.phone}</span>
-                  </div>
-                  <div className="flex items-center gap-2 truncate">
-                    <Mail size={13} className="text-neutral-400 shrink-0" />
-                    <span className="truncate">{renter.email}</span>
-                  </div>
-                </div>
-
-                {renter.notes && (
-                  <p className="mt-3 text-[11px] text-neutral-400 dark:text-neutral-500 italic line-clamp-2">
-                    "{renter.notes}"
-                  </p>
-                )}
-
-                {/* Stats */}
-                <div className="mt-4 pt-3 border-t border-neutral-100 dark:border-neutral-700/60 grid grid-cols-2 gap-2 text-xs">
-                  <div>
-                    <span className="text-neutral-400 block text-[10px] uppercase">Bookings</span>
-                    <span className="font-semibold text-neutral-900 dark:text-white tabular-nums">
-                      {renter.totalBookings} events
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-neutral-400 block text-[10px] uppercase">Total Spend</span>
-                    <span className="font-semibold text-neutral-900 dark:text-white tabular-nums">
-                      {formatCurrencyAmount(renter.totalSpent, renter.currency)}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Actions Footer */}
-              <div className="mt-4 pt-3 border-t border-neutral-100 dark:border-neutral-700/60 flex items-center justify-between">
-                <div className="flex items-center gap-1.5">
-                  <button
-                    onClick={() => handleOpenEdit(renter)}
-                    className="p-1.5 text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700"
-                    title="Edit Renter"
-                  >
-                    <Edit2 size={13} />
-                  </button>
-                  <button
-                    onClick={() => {
-                      if (confirm(`Delete renter profile for ${renter.fullName}?`)) {
-                        deleteRentalRenter(renter.id);
-                      }
-                    }}
-                    className="p-1.5 text-neutral-400 hover:text-red-500 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/40"
-                    title="Delete Renter"
-                  >
-                    <Trash2 size={13} />
-                  </button>
-                </div>
-
-                <button
-                  onClick={() => {
+              }
+              avatars={[
+                {
+                  id: renter.id,
+                  name: renter.fullName,
+                },
+              ]}
+              actions={[
+                {
+                  id: 'book',
+                  label: 'Book Space',
+                  icon: <Calendar size={13} />,
+                  onClick: () => {
                     setBookingRenterId(renter.id);
                     setIsBookingModalOpen(true);
-                  }}
-                  className="px-3 py-1.5 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-700 dark:hover:bg-neutral-600 rounded-xl text-xs font-semibold text-neutral-800 dark:text-neutral-200 transition-colors"
-                >
-                  Book Space
-                </button>
+                  },
+                  color: '#C4785A',
+                },
+                {
+                  id: 'edit',
+                  label: 'Edit Renter',
+                  icon: <Edit2 size={13} />,
+                  onClick: () => handleOpenEdit(renter),
+                },
+                {
+                  id: 'delete',
+                  label: 'Delete Renter',
+                  icon: <Trash2 size={13} />,
+                  onClick: () => {
+                    if (confirm(`Delete renter profile for ${renter.fullName}?`)) {
+                      deleteRentalRenter(renter.id);
+                    }
+                  },
+                  color: '#EF4444',
+                },
+              ]}
+            >
+              <div className="space-y-1 my-2 text-xs text-neutral-500 dark:text-neutral-400">
+                <div className="flex items-center gap-2">
+                  <Phone size={13} className="text-neutral-400" />
+                  <span className="font-mono text-neutral-700 dark:text-neutral-300">{renter.phone}</span>
+                </div>
+                <div className="flex items-center gap-2 truncate">
+                  <Mail size={13} className="text-neutral-400 shrink-0" />
+                  <span className="truncate">{renter.email}</span>
+                </div>
               </div>
-            </div>
+
+              {/* Stats */}
+              <div className="pt-2 border-t border-neutral-100 dark:border-neutral-700/60 flex items-center justify-between text-xs">
+                <span className="text-neutral-400 text-[10px] uppercase">Total Spend</span>
+                <span className="font-semibold text-neutral-900 dark:text-white tabular-nums">
+                  {formatCurrencyAmount(renter.totalSpent, renter.currency)}
+                </span>
+              </div>
+            </ActionNode>
           ))
         )}
       </div>

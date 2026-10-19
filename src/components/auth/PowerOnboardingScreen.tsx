@@ -42,6 +42,8 @@ import {
   BusinessMatchResult,
 } from '../../utils/businessMapping';
 import { AtriumMonolith, FiveCubesLogo } from './AtriumMonolith';
+import { LabelInput } from '../ui/LabelInput';
+import { Seek } from '../ui/Seek';
 
 interface PowerOnboardingScreenProps {
   onComplete: () => void;
@@ -426,71 +428,50 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <div>
-                    <label className="block text-[11px] font-bold text-neutral-700 mb-0.5">
-                      Full Name *
-                    </label>
-                    <div className="relative">
-                      <input
-                        type="text"
-                        value={fullName}
-                        onChange={(e) => setFullName(e.target.value)}
-                        placeholder="Amine Bentouati"
-                        className="w-full h-8.5 pl-8.5 pr-3 rounded-xl bg-neutral-50 border border-neutral-200 text-neutral-900 text-xs font-medium focus:bg-white focus:outline-none focus:border-[#C4785A] transition-colors"
-                      />
-                      <User size={13} className="absolute left-2.5 top-2.5 text-neutral-400" />
-                    </div>
-                  </div>
+                <div className="space-y-2.5">
+                  <LabelInput
+                    field="Full Name"
+                    label="Full Name"
+                    value={fullName}
+                    onChange={setFullName}
+                    width="100%"
+                    height={46}
+                    corner={14}
+                  />
 
-                  <div>
-                    <label className="block text-[11px] font-bold text-neutral-700 mb-0.5">
-                      Work Email *
-                    </label>
-                    <div className="relative">
-                      <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="owner@myfacility.dz"
-                        className="w-full h-8.5 pl-8.5 pr-3 rounded-xl bg-neutral-50 border border-neutral-200 text-neutral-900 text-xs font-medium focus:bg-white focus:outline-none focus:border-[#C4785A] transition-colors"
-                      />
-                      <Mail size={13} className="absolute left-2.5 top-2.5 text-neutral-400" />
-                    </div>
-                  </div>
+                  <LabelInput
+                    field="Email"
+                    label="Work Email"
+                    value={email}
+                    onChange={setEmail}
+                    type="email"
+                    width="100%"
+                    height={46}
+                    corner={14}
+                  />
 
                   <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <label className="block text-[11px] font-bold text-neutral-700 mb-0.5">
-                        Phone Number
-                      </label>
-                      <div className="relative">
-                        <input
-                          type="tel"
-                          value={phone}
-                          onChange={(e) => setPhone(e.target.value)}
-                          placeholder="+213 550 00 00"
-                          className="w-full h-8.5 pl-8 pr-2.5 rounded-xl bg-neutral-50 border border-neutral-200 text-neutral-900 text-xs font-medium focus:bg-white focus:outline-none focus:border-[#C4785A] transition-colors"
-                        />
-                        <Phone size={12} className="absolute left-2.5 top-2.5 text-neutral-400" />
-                      </div>
-                    </div>
+                    <LabelInput
+                      field="Phone"
+                      label="Phone Number"
+                      value={phone}
+                      onChange={setPhone}
+                      type="tel"
+                      width="100%"
+                      height={46}
+                      corner={14}
+                    />
 
-                    <div>
-                      <label className="block text-[11px] font-bold text-neutral-700 mb-0.5">
-                        Admin Password
-                      </label>
-                      <div className="relative">
-                        <input
-                          type="password"
-                          value={password}
-                          onChange={(e) => setPassword(e.target.value)}
-                          placeholder="Password"
-                          className="w-full h-8.5 pl-8 pr-2.5 rounded-xl bg-neutral-50 border border-neutral-200 text-neutral-900 text-xs font-medium focus:bg-white focus:outline-none focus:border-[#C4785A] transition-colors"
-                        />
-                        <Lock size={12} className="absolute left-2.5 top-2.5 text-neutral-400" />
-                      </div>
-                    </div>
+                    <LabelInput
+                      field="Password"
+                      label="Admin Password"
+                      value={password}
+                      onChange={setPassword}
+                      type="password"
+                      width="100%"
+                      height={46}
+                      corner={14}
+                    />
                   </div>
                 </div>
               </div>
@@ -508,31 +489,25 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                   </p>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <label className="block text-[11px] font-bold text-neutral-700 mb-1">
-                      Business Name *
-                    </label>
-                    <input
-                      type="text"
-                      value={businessName}
-                      onChange={(e) => setBusinessName(e.target.value)}
-                      placeholder="e.g. Atrium Studio"
-                      className="w-full h-9 px-3 rounded-xl bg-neutral-50 border border-neutral-200 text-neutral-900 text-xs font-medium focus:bg-white focus:outline-none focus:border-[#C4785A]"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[11px] font-bold text-neutral-700 mb-1">
-                      First Branch Name *
-                    </label>
-                    <input
-                      type="text"
-                      value={branchName}
-                      onChange={(e) => setBranchName(e.target.value)}
-                      placeholder="e.g. Flagship / Main"
-                      className="w-full h-9 px-3 rounded-xl bg-neutral-50 border border-neutral-200 text-neutral-900 text-xs font-medium focus:bg-white focus:outline-none focus:border-[#C4785A]"
-                    />
-                  </div>
+                <div className="space-y-2">
+                  <LabelInput
+                    field="Business"
+                    label="Business Name"
+                    value={businessName}
+                    onChange={setBusinessName}
+                    width="100%"
+                    height={46}
+                    corner={14}
+                  />
+                  <LabelInput
+                    field="Branch"
+                    label="First Branch Name"
+                    value={branchName}
+                    onChange={setBranchName}
+                    width="100%"
+                    height={46}
+                    corner={14}
+                  />
                 </div>
 
                 {/* Search Bar & Semantic Matcher */}
@@ -545,26 +520,14 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                       Auto-detects matching category
                     </span>
                   </div>
-                  <div className="relative">
-                    <Search size={14} className="absolute left-3 top-2.5 text-neutral-400 pointer-events-none" />
-                    <input
-                      type="text"
-                      value={businessSearchQuery}
-                      onChange={(e) => handleBusinessSearch(e.target.value)}
-                      placeholder="e.g. Barbershop, CrossFit, Pâtisserie, Coworking, UI Designer..."
-                      className="w-full h-9 pl-9 pr-8 rounded-xl bg-neutral-50 border border-neutral-200 text-neutral-900 text-xs font-medium focus:bg-white focus:outline-none focus:border-[#C4785A] transition-all"
-                    />
-                    {businessSearchQuery && (
-                      <button
-                        type="button"
-                        onClick={handleClearSearch}
-                        className="absolute right-2.5 top-2.5 text-neutral-400 hover:text-neutral-700 cursor-pointer"
-                        title="Clear search"
-                      >
-                        <X size={13} />
-                      </button>
-                    )}
-                  </div>
+                  <Seek
+                    value={businessSearchQuery}
+                    onChange={handleBusinessSearch}
+                    placeholder="e.g. Barbershop, CrossFit, Pâtisserie, Coworking..."
+                    shutSize={36}
+                    openWidth={380}
+                  />
+                </div>
 
                   {/* Popular Quick Suggestion Chips */}
                   <div className="flex items-center gap-1.5 overflow-x-auto pb-1 pt-0.5 text-[11px]">
@@ -604,7 +567,6 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                       </span>
                     </div>
                   )}
-                </div>
 
                 {/* 7 Verticals Compact Grid */}
                 <div className="space-y-1.5 pt-1">

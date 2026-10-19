@@ -21,6 +21,7 @@ import { RentableUnit, RentalBooking } from '../../../types/index';
 import { formatCurrencyAmount } from '../../../utils/rules';
 import { BookingModal } from './BookingModal';
 import { VenueCloudSyncModal } from './VenueCloudSyncModal';
+import { ActionNode } from '../../ui/ActionNode';
 
 export const VenueDashboardView: React.FC = () => {
   const {
@@ -200,84 +201,71 @@ export const VenueDashboardView: React.FC = () => {
             );
 
             return (
-              <div
+              <ActionNode
                 key={unit.id}
-                className="p-5 rounded-2xl bg-white dark:bg-neutral-800/60 border border-[#E9EEF0] dark:border-neutral-800 flex flex-col justify-between hover:border-neutral-300 dark:hover:border-neutral-700 transition-all shadow-2xs"
+                title={unit.name}
+                description={`${unit.code} · ${unit.type} · Cap: ${unit.capacity} pers${unit.surfaceAreaSqm ? ` · ${unit.surfaceAreaSqm} m²` : ''}`}
+                tag={unit.status}
+                width="100%"
+                air={16}
+                corner={20}
+                actions={[
+                  {
+                    id: 'book',
+                    label: 'Reserve Space',
+                    icon: <Plus size={14} />,
+                    onClick: () => handleQuickBookUnit(unit.id),
+                  },
+                  {
+                    id: 'timeline',
+                    label: 'View Timeline',
+                    icon: <Calendar size={14} />,
+                    onClick: () => setScreen('scheduler'),
+                  },
+                ]}
               >
-                <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-[11px] font-mono text-neutral-400 dark:text-neutral-500 uppercase">
-                      {unit.code} · {unit.type}
+                <div className="mt-2 pt-2 border-t border-neutral-100 dark:border-neutral-700/50 text-xs">
+                  {currentBooking ? (
+                    <div className="space-y-1">
+                      <div className="text-[11px] font-medium text-purple-600 dark:text-purple-400 flex items-center gap-1.5">
+                        <Users size={12} /> {currentBooking.renterName}
+                      </div>
+                      <div className="text-neutral-500 dark:text-neutral-400 text-[11px] truncate">
+                        {currentBooking.purpose}
+                      </div>
+                      <div className="text-neutral-400 text-[10px] tabular-nums">
+                        Until {currentBooking.endDateTime.split('T')[1]?.slice(0, 5)}
+                      </div>
+                    </div>
+                  ) : nextBooking ? (
+                    <div className="space-y-1">
+                      <div className="text-[11px] text-blue-600 dark:text-blue-400 font-medium">
+                        Next: {nextBooking.renterName}
+                      </div>
+                      <div className="text-neutral-400 text-[10px] tabular-nums">
+                        {nextBooking.startDateTime.split('T')[1]?.slice(0, 5)} - {nextBooking.endDateTime.split('T')[1]?.slice(0, 5)}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-neutral-400 text-[11px] italic">
+                      Available for booking today
+                    </div>
+                  )}
+
+                  <div className="mt-3 pt-2 flex items-center justify-between border-t border-neutral-100 dark:border-neutral-700/50">
+                    <span className="text-xs font-bold text-neutral-900 dark:text-white tabular-nums">
+                      {formatCurrencyAmount(unit.hourlyRate, unit.currency)}/h
                     </span>
-                    <span
-                      className={`px-2.5 py-1 rounded-full text-[10px] font-semibold tracking-wide uppercase ${
-                        unit.status === 'Occupied'
-                          ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300'
-                          : unit.status === 'Available'
-                          ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300'
-                          : 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300'
-                      }`}
+                    <button
+                      type="button"
+                      onClick={() => handleQuickBookUnit(unit.id)}
+                      className="px-2.5 py-1 bg-[#FDF4F0] hover:bg-[#FBE5DC] text-[#C4785A] rounded-lg text-[11px] font-bold transition-colors cursor-pointer"
                     >
-                      {unit.status}
-                    </span>
-                  </div>
-
-                  <h3 className="font-semibold text-neutral-900 dark:text-white text-sm line-clamp-1">
-                    {unit.name}
-                  </h3>
-                  <div className="text-xs text-neutral-500 dark:text-neutral-400 mt-1 flex items-center gap-2">
-                    <span>Cap: {unit.capacity} pers</span>
-                    {unit.surfaceAreaSqm && (
-                      <>
-                        <span>·</span>
-                        <span>{unit.surfaceAreaSqm} m²</span>
-                      </>
-                    )}
-                  </div>
-
-                  {/* Booking snippet */}
-                  <div className="mt-4 pt-3 border-t border-neutral-100 dark:border-neutral-700/50 text-xs">
-                    {currentBooking ? (
-                      <div className="space-y-1">
-                        <div className="text-[11px] font-medium text-purple-600 dark:text-purple-400 flex items-center gap-1.5">
-                          <Users size={12} /> {currentBooking.renterName}
-                        </div>
-                        <div className="text-neutral-500 dark:text-neutral-400 text-[11px] truncate">
-                          {currentBooking.purpose}
-                        </div>
-                        <div className="text-neutral-400 text-[10px] tabular-nums">
-                          Until {currentBooking.endDateTime.split('T')[1]?.slice(0, 5)}
-                        </div>
-                      </div>
-                    ) : nextBooking ? (
-                      <div className="space-y-1">
-                        <div className="text-[11px] text-blue-600 dark:text-blue-400 font-medium">
-                          Next: {nextBooking.renterName}
-                        </div>
-                        <div className="text-neutral-400 text-[10px] tabular-nums">
-                          {nextBooking.startDateTime.split('T')[1]?.slice(0, 5)} - {nextBooking.endDateTime.split('T')[1]?.slice(0, 5)}
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="text-neutral-400 text-[11px] italic">
-                        Available for booking today
-                      </div>
-                    )}
+                      Reserve
+                    </button>
                   </div>
                 </div>
-
-                <div className="mt-4 pt-3 flex items-center justify-between border-t border-neutral-100 dark:border-neutral-700/50">
-                  <span className="text-xs font-semibold text-neutral-900 dark:text-white tabular-nums">
-                    {formatCurrencyAmount(unit.hourlyRate, unit.currency)}/h
-                  </span>
-                  <button
-                    onClick={() => handleQuickBookUnit(unit.id)}
-                    className="px-3 py-1.5 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-700 dark:hover:bg-neutral-600 rounded-lg text-xs font-medium text-neutral-800 dark:text-neutral-200 transition-colors"
-                  >
-                    Reserve
-                  </button>
-                </div>
-              </div>
+              </ActionNode>
             );
           })}
         </div>

@@ -22,6 +22,7 @@ import { useAtriumStore } from '../../../services/store';
 import { formatDuration, formatCurrencyAmount } from '../../../utils/rules';
 import { InvoicePreviewModal } from './InvoicePreviewModal';
 import { FreelanceInvoice } from '../../../types/index';
+import { ActionNode } from '../../ui/ActionNode';
 
 export const FreelanceDashboardView: React.FC = () => {
   const {
@@ -541,46 +542,75 @@ export const FreelanceDashboardView: React.FC = () => {
             </div>
           ) : (
             freelanceClients.map((client) => {
-            const clientProjects = freelanceProjects.filter((p) => p.clientId === client.id);
-            return (
-              <div
-                key={client.id}
-                onClick={() => setScreen('members')}
-                className="p-4 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200/80 dark:border-neutral-700/60 space-y-3 cursor-pointer hover:border-[#C4785A]/60 transition-colors shadow-2xs"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-neutral-900 dark:text-white truncate">
-                    {client.company || client.name}
-                  </span>
-                  <span className="text-[10px] font-bold text-[#C4785A] bg-[#C4785A]/15 px-1.5 py-0.5 rounded">
-                    {client.currency}
-                  </span>
-                </div>
-
-                <div className="space-y-1">
-                  <div className="flex justify-between text-xs text-neutral-500">
-                    <span>Hourly Rate</span>
-                    <span className="font-semibold text-neutral-800 dark:text-neutral-200 tabular-nums">
-                      {formatCurrencyAmount(client.hourlyRate, client.currency)}/h
-                    </span>
+              const clientProjects = freelanceProjects.filter((p) => p.clientId === client.id);
+              return (
+                <ActionNode
+                  key={client.id}
+                  title={client.company || client.name}
+                  description={client.company ? `Contact: ${client.name} · ${client.email}` : client.email}
+                  tag={`${client.status === 'ActiveRetainer' ? 'Retainer' : 'Project'} · ${client.currency}`}
+                  onClick={() => setScreen('members')}
+                  width="100%"
+                  air={16}
+                  corner={20}
+                  actions={[
+                    {
+                      id: 'view',
+                      label: 'Client Details',
+                      icon: <Briefcase size={14} />,
+                      onClick: () => setScreen('members'),
+                    },
+                    {
+                      id: 'timer',
+                      label: 'Start Timer',
+                      icon: <Play size={14} />,
+                      onClick: () => {
+                        const proj = clientProjects[0];
+                        if (proj) {
+                          startTimer(
+                            client.id,
+                            client.company || client.name,
+                            proj.id,
+                            proj.title,
+                            `Session for ${client.name}`
+                          );
+                        } else {
+                          setScreen('members');
+                        }
+                      },
+                    },
+                    {
+                      id: 'invoices',
+                      label: 'Invoices Hub',
+                      icon: <FileText size={14} />,
+                      onClick: () => setScreen('shop'),
+                    },
+                  ]}
+                >
+                  <div className="space-y-1.5 mt-2 pt-2 border-t border-neutral-100 dark:border-neutral-700/60">
+                    <div className="flex justify-between text-xs text-neutral-500">
+                      <span>Hourly Rate</span>
+                      <span className="font-semibold text-neutral-800 dark:text-neutral-200 tabular-nums">
+                        {formatCurrencyAmount(client.hourlyRate, client.currency)}/h
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-xs text-neutral-500">
+                      <span>Lifetime Billed</span>
+                      <span className="font-semibold text-neutral-800 dark:text-neutral-200 tabular-nums">
+                        {formatCurrencyAmount(client.lifetimeBilled, client.currency)}
+                      </span>
+                    </div>
+                    <div className="text-[11px] text-neutral-400 pt-1.5 border-t border-neutral-100 dark:border-neutral-700/60 flex items-center justify-between">
+                      <span>{clientProjects.length} active projects</span>
+                      <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                        {client.status === 'ActiveRetainer' ? 'Active Retainer' : 'Active'}
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex justify-between text-xs text-neutral-500">
-                    <span>Lifetime Billed</span>
-                    <span className="font-semibold text-neutral-800 dark:text-neutral-200 tabular-nums">
-                      {formatCurrencyAmount(client.lifetimeBilled, client.currency)}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="text-[11px] text-neutral-400 pt-2 border-t border-neutral-100 dark:border-neutral-700/60 flex items-center justify-between">
-                  <span>{clientProjects.length} projects</span>
-                  <span className="font-medium text-emerald-600 dark:text-emerald-400">
-                    {client.status === 'ActiveRetainer' ? 'Active Retainer' : 'Active'}
-                  </span>
-                </div>
-              </div>
-            );
-          }))}
+                </ActionNode>
+              );
+            })
+          )}
         </div>
       </div>
 

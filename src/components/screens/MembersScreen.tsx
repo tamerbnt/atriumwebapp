@@ -32,6 +32,8 @@ import { useAtriumStore } from '../../services/store';
 import { Member, MemberStatus } from '../../types/index';
 import { calculateDaysRemaining, formatMoney } from '../../utils/rules';
 import { AppointmentModal } from '../modals/AppointmentModal';
+import { Seek } from '../ui/Seek';
+import { ActionNode } from '../ui/ActionNode';
 
 interface MembersScreenProps {
   onAddMember: () => void;
@@ -350,40 +352,14 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
 
           {/* Right Controls Bar */}
           <div className="flex flex-wrap items-center gap-2.5 ml-auto">
-            {/* Circular Search Button */}
-            <div className="relative flex items-center">
-              {isSearchActive ? (
-                <div className="flex items-center animate-in fade-in duration-150">
-                  <input
-                    type="text"
-                    autoFocus
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search name, ID..."
-                    className="h-9 px-3 text-xs rounded-full border border-[#E9EEF0] dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:border-[#C4785A] w-48 text-neutral-900 dark:text-white shadow-2xs"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsSearchActive(false);
-                      setSearchQuery('');
-                    }}
-                    className="p-1 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 ml-1 cursor-pointer"
-                  >
-                    <X size={14} />
-                  </button>
-                </div>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => setIsSearchActive(true)}
-                  className="w-9 h-9 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex items-center justify-center text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 cursor-pointer transition-colors shadow-2xs"
-                  title="Search members"
-                >
-                  <Search size={14} />
-                </button>
-              )}
-            </div>
+            {/* Seek Kinetic Search Box */}
+            <Seek
+              value={searchQuery}
+              onChange={setSearchQuery}
+              placeholder={`Search ${terminology.members.toLowerCase()}...`}
+              shutSize={36}
+              openWidth={220}
+            />
 
             {/* Status Filter Segmented Capsules matching Screenshot 881 */}
             <div className="flex items-center p-0.5 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 gap-0.5 text-xs font-semibold shadow-2xs">
@@ -625,7 +601,7 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
                 </div>
               </div>
             ) : (
-              /* Grid View Cards */
+              /* Grid View Cards with ActionNode */
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
                 {displayMembers.map((member) => {
                   const isChecked = selectedIds.includes(member.id);
@@ -635,51 +611,73 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
                   const priceDisplay = matchedPlan ? formatMoney(matchedPlan.price.amount) : '1,500.00 DA';
 
                   return (
-                    <div
+                    <ActionNode
                       key={member.id}
+                      title={member.fullName}
+                      description={`Plan: ${member.membershipPlanName || 'Standard'} · Balance: ${priceDisplay}`}
+                      tag={member.status}
+                      selected={isSelected}
                       onClick={() => selectMember(member.id)}
-                      className={`p-4 rounded-[20px] bg-white dark:bg-neutral-800 border transition-all cursor-pointer space-y-3 group shadow-2xs ${
-                        isSelected
-                          ? 'border-[#C4785A] ring-1 ring-[#C4785A]/30'
-                          : 'border-[#E9EEF0] dark:border-neutral-700/60 hover:border-[#D5DFE3]'
-                      }`}
-                    >
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-center gap-3">
-                          <div
-                            style={{ backgroundColor: avatarColor }}
-                            className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white text-sm shrink-0 shadow-2xs"
-                          >
-                            {member.fullName.charAt(0).toUpperCase()}
-                          </div>
-                          <div>
-                            <div className="text-sm font-bold text-neutral-900 dark:text-white capitalize">
-                              {member.fullName.toLowerCase()}
-                            </div>
-                            <div className="text-[11px] text-neutral-400 font-mono">
-                              ID: {member.cardId?.replace('RFID-', '') || '46466446'}
-                            </div>
-                          </div>
+                      width="100%"
+                      air={14}
+                      corner={20}
+                      icon={
+                        <div
+                          style={{ backgroundColor: avatarColor }}
+                          className="w-full h-full rounded-[inherit] flex items-center justify-center font-bold text-white text-xs"
+                        >
+                          {member.fullName.charAt(0).toUpperCase()}
                         </div>
-
-                        <input
-                          type="checkbox"
-                          checked={isChecked}
+                      }
+                      avatars={[
+                        {
+                          id: member.id,
+                          name: member.fullName,
+                          color: avatarColor,
+                        },
+                      ]}
+                      actions={[
+                        {
+                          id: 'view',
+                          label: 'Inspect Member',
+                          icon: <Eye size={14} />,
+                          onClick: () => selectMember(member.id),
+                        },
+                        {
+                          id: 'edit',
+                          label: 'Edit Member',
+                          icon: <Edit size={14} />,
+                          onClick: () => onEditMember(member),
+                        },
+                        {
+                          id: 'checkin',
+                          label: 'Check-in Member',
+                          icon: <Check size={14} />,
+                          onClick: () => {
+                            updateMember(member.id, {
+                              lastVisitDate: new Date().toISOString().split('T')[0],
+                            });
+                          },
+                        },
+                      ]}
+                    >
+                      <div className="flex items-center justify-between text-xs pt-2 mt-1 border-t border-[#EDF1F3] dark:border-neutral-700/60">
+                        <span className="text-[11px] text-neutral-400 font-mono">
+                          ID: {member.cardId?.replace('RFID-', '') || '46466446'}
+                        </span>
+                        <div
                           onClick={(e) => e.stopPropagation()}
-                          onChange={() => toggleSelectOne(member.id)}
-                          className="w-4 h-4 rounded-md border-neutral-300 text-[#C4785A] focus:ring-[#C4785A] cursor-pointer mt-1"
-                        />
+                          className="flex items-center gap-1.5"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={isChecked}
+                            onChange={() => toggleSelectOne(member.id)}
+                            className="w-4 h-4 rounded-md border-neutral-300 text-[#C4785A] focus:ring-[#C4785A] cursor-pointer"
+                          />
+                        </div>
                       </div>
-
-                      <div className="flex items-center justify-between text-xs pt-2 border-t border-[#EDF1F3] dark:border-neutral-700/60">
-                        <span className="px-2.5 py-0.5 rounded-full bg-[#FDF4F0] dark:bg-neutral-700 text-[#C4785A] text-[11px] font-bold border border-[#F5E2D8] dark:border-neutral-600 truncate max-w-[140px]">
-                          {member.membershipPlanName || 'Standard'}
-                        </span>
-                        <span className="font-bold text-neutral-900 dark:text-white tabular-nums">
-                          {priceDisplay}
-                        </span>
-                      </div>
-                    </div>
+                    </ActionNode>
                   );
                 })}
               </div>

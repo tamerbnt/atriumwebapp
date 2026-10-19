@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAtriumStore } from '../../services/store';
 import { Member, Gender } from '../../types/index';
 import { Modal } from '../ui/Modal';
+import { LabelInput } from '../ui/LabelInput';
 
 interface MemberModalProps {
   isOpen: boolean;
@@ -125,62 +126,40 @@ export const MemberModal: React.FC<MemberModalProps> = ({
             Personal Information
           </h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
-                Full Name *
-              </label>
-              <input
-                type="text"
-                required
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                placeholder="e.g. Riyad Mahrez"
-                style={{
-                  backgroundColor: 'var(--color-surface-bg)',
-                  borderColor: 'var(--color-border)',
-                  borderRadius: 'var(--radius-input)',
-                }}
-                className="w-full h-11 px-3 text-sm border focus:outline-none focus:border-[#C4785A] text-neutral-900 dark:text-white"
-              />
-            </div>
+            <LabelInput
+              field="Full Name"
+              label="Full Name"
+              value={fullName}
+              onChange={setFullName}
+              width="100%"
+              height={48}
+              corner={14}
+              required
+            />
 
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
-                Email Address *
-              </label>
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="name@email.com"
-                style={{
-                  backgroundColor: 'var(--color-surface-bg)',
-                  borderColor: 'var(--color-border)',
-                  borderRadius: 'var(--radius-input)',
-                }}
-                className="w-full h-11 px-3 text-sm border focus:outline-none focus:border-[#C4785A] text-neutral-900 dark:text-white"
-              />
-            </div>
+            <LabelInput
+              field="Email"
+              label="Email Address"
+              value={email}
+              onChange={setEmail}
+              type="email"
+              width="100%"
+              height={48}
+              corner={14}
+              required
+            />
 
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
-                Phone Number *
-              </label>
-              <input
-                type="tel"
-                required
-                value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value)}
-                placeholder="+213 550 11 22 33"
-                style={{
-                  backgroundColor: 'var(--color-surface-bg)',
-                  borderColor: 'var(--color-border)',
-                  borderRadius: 'var(--radius-input)',
-                }}
-                className="w-full h-11 px-3 text-sm border focus:outline-none focus:border-[#C4785A] text-neutral-900 dark:text-white"
-              />
-            </div>
+            <LabelInput
+              field="Phone"
+              label="Phone Number"
+              value={phoneNumber}
+              onChange={setPhoneNumber}
+              type="tel"
+              width="100%"
+              height={48}
+              corner={14}
+              required
+            />
 
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-1">

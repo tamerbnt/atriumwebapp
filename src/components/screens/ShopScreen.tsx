@@ -43,6 +43,7 @@ import { useAtriumStore, showToast } from '../../services/store';
 import { Product, PaymentDetail, ParkedOrder, StockMovement, ReceiptConfig } from '../../types/index';
 import { formatMoney } from '../../utils/rules';
 import { Modal } from '../ui/Modal';
+import { Seek } from '../ui/Seek';
 
 interface CartItem {
   product: Product;
@@ -891,25 +892,14 @@ export const ShopScreen: React.FC = () => {
             {/* Filter Bar & Quick Custom Item */}
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-2 flex-1 min-w-[200px]">
-                <div className="relative flex-1">
-                  <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search catalog by name or code..."
-                    className="w-full pl-9 pr-3 py-2 text-xs rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:border-[#C4785A]"
-                  />
-                  {searchQuery && (
-                    <button
-                      type="button"
-                      onClick={() => setSearchQuery('')}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
-                    >
-                      <X size={12} />
-                    </button>
-                  )}
-                </div>
+                {/* Seek Kinetic Search Box */}
+                <Seek
+                  value={searchQuery}
+                  onChange={setSearchQuery}
+                  placeholder="Search catalog by name or code..."
+                  shutSize={36}
+                  openWidth={260}
+                />
 
                 <button
                   type="button"

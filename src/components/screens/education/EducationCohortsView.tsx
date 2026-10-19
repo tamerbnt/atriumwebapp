@@ -15,10 +15,13 @@ import {
   Trash2,
   Edit3,
   Check,
+  Eye,
 } from 'lucide-react';
 import { useAtriumStore } from '../../../services/store';
 import { CohortStatus, EduCohort } from '../../../types';
 import { formatMoney } from '../../../utils/rules';
+import { Seek } from '../../ui/Seek';
+import { ActionNode } from '../../ui/ActionNode';
 
 type CourseCat = 'All' | 'Language' | 'Technology' | 'Academic' | 'Arts';
 
@@ -36,6 +39,7 @@ export const EducationCohortsView: React.FC = () => {
   } = useAtriumStore();
 
   const [categoryFilter, setCategoryFilter] = useState<CourseCat>('All');
+  const [searchQuery, setSearchQuery] = useState('');
   const [selectedCohort, setSelectedCohort] = useState<EduCohort | null>(null);
   const [isAddCohortModalOpen, setIsAddCohortModalOpen] = useState(false);
 
@@ -54,9 +58,19 @@ export const EducationCohortsView: React.FC = () => {
   });
 
   const filteredCohorts = eduCohorts.filter((c) => {
-    if (categoryFilter === 'All') return true;
-    const course = eduCourses.find((co) => co.id === c.courseId);
-    return course?.category === categoryFilter;
+    if (categoryFilter !== 'All') {
+      const course = eduCourses.find((co) => co.id === c.courseId);
+      if (course?.category !== categoryFilter) return false;
+    }
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      const matchesName = c.name.toLowerCase().includes(q);
+      const matchesCode = (c.cohortCode || '').toLowerCase().includes(q);
+      const matchesInstructor = (c.instructorName || '').toLowerCase().includes(q);
+      const matchesCourse = (c.courseTitle || '').toLowerCase().includes(q);
+      if (!matchesName && !matchesCode && !matchesInstructor && !matchesCourse) return false;
+    }
+    return true;
   });
 
   const totalSeats = eduCohorts.reduce((sum, c) => sum + c.maxStudents, 0);
@@ -203,31 +217,41 @@ export const EducationCohortsView: React.FC = () => {
         </div>
       </div>
 
-      {/* Segmented Category Filter Tabs */}
-      <div className="flex items-center gap-1 p-1 bg-neutral-100 dark:bg-neutral-800/80 rounded-xl self-start sm:self-auto overflow-x-auto">
-        {[
-          { id: 'All', label: 'All Categories' },
-          { id: 'Language', label: 'Languages' },
-          { id: 'Technology', label: 'Technology & Code' },
-          { id: 'Academic', label: 'Academic & BAC' },
-          { id: 'Arts', label: 'Arts & Music' },
-        ].map((tab) => (
-          <button
-            key={tab.id}
-            type="button"
-            onClick={() => setCategoryFilter(tab.id as CourseCat)}
-            className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors whitespace-nowrap cursor-pointer ${
-              categoryFilter === tab.id
-                ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-2xs font-semibold'
-                : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
+      {/* Search & Segmented Category Filter Bar */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <Seek
+          value={searchQuery}
+          onChange={setSearchQuery}
+          placeholder="Search cohorts by name, code, instructor..."
+          shutSize={36}
+          openWidth={260}
+        />
+
+        <div className="flex items-center gap-1 p-1 bg-neutral-100 dark:bg-neutral-800/80 rounded-xl self-start sm:self-auto overflow-x-auto">
+          {[
+            { id: 'All', label: 'All Categories' },
+            { id: 'Language', label: 'Languages' },
+            { id: 'Technology', label: 'Technology & Code' },
+            { id: 'Academic', label: 'Academic & BAC' },
+            { id: 'Arts', label: 'Arts & Music' },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setCategoryFilter(tab.id as CourseCat)}
+              className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors whitespace-nowrap cursor-pointer ${
+                categoryFilter === tab.id
+                  ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-2xs font-semibold'
+                  : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* Cohort Cards Grid */}
+      {/* Cohort Cards Grid with ActionNode */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filteredCohorts.map((cohort) => {
           const occupancyPercent = Math.min(
@@ -236,91 +260,83 @@ export const EducationCohortsView: React.FC = () => {
           );
           const isSelected = selectedCohort?.id === cohort.id;
 
+          const cohortEnrollments = eduEnrollments.filter((e) => e.cohortId === cohort.id);
+          const studentAvatars = cohortEnrollments.map((enr) => {
+            const student = eduStudents.find((s) => s.id === enr.studentId);
+            return {
+              id: enr.id,
+              name: student?.fullName || enr.studentName,
+              color: '#C4785A',
+            };
+          });
+
           return (
-            <div
+            <ActionNode
               key={cohort.id}
+              title={cohort.name}
+              description={`${cohort.courseTitle} · ${cohort.scheduleSummary}`}
+              tag={`${cohort.cohortCode || 'COHORT'} · ${cohort.status}`}
+              selected={isSelected}
               onClick={() => setSelectedCohort(cohort)}
-              className={`p-5 rounded-2xl border transition-all cursor-pointer relative overflow-hidden group shadow-2xs flex flex-col justify-between ${
-                isSelected
-                  ? 'border-[#C4785A] bg-[#FCEEE8]/20 dark:bg-neutral-800/80'
-                  : 'border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/60 hover:border-[#C4785A]/40'
-              }`}
+              width="100%"
+              air={16}
+              corner={20}
+              avatars={studentAvatars}
+              moreAvatarsCount={
+                cohort.enrolledCount > studentAvatars.length
+                  ? cohort.enrolledCount - studentAvatars.length
+                  : undefined
+              }
+              actions={[
+                {
+                  id: 'inspect',
+                  label: 'Inspect Cohort',
+                  icon: <Eye size={14} />,
+                  onClick: () => setSelectedCohort(cohort),
+                },
+                {
+                  id: 'edit',
+                  label: 'Edit Cohort',
+                  icon: <Edit3 size={14} />,
+                  onClick: () => {
+                    setSelectedCohort(cohort);
+                  },
+                },
+                {
+                  id: 'delete',
+                  label: 'Delete Cohort',
+                  icon: <Trash2 size={14} />,
+                  onClick: () => {
+                    if (confirm(`Delete cohort ${cohort.name}?`)) {
+                      deleteEduCohort(cohort.id);
+                    }
+                  },
+                },
+              ]}
             >
-              <div>
-                {/* Top Badges */}
-                <div className="flex items-center justify-between gap-2 mb-2">
-                  <span className="text-[11px] font-bold text-[#C4785A] uppercase tracking-wider">
-                    {cohort.cohortCode || cohort.courseTitle}
-                  </span>
-                  <span
-                    className={`text-[10px] uppercase font-semibold px-2 py-0.5 rounded-md ${
-                      cohort.status === 'InProgress'
-                        ? 'bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300'
-                        : cohort.status === 'Completed'
-                        ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300'
-                        : 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300'
-                    }`}
-                  >
-                    {cohort.status}
+              <div className="space-y-2 mt-2 pt-2 border-t border-[#EDF1F3] dark:border-neutral-800">
+                <div className="flex items-center justify-between text-xs text-neutral-500 dark:text-neutral-400">
+                  <div className="flex items-center gap-1.5">
+                    <Calendar size={12} className="text-neutral-400" />
+                    <span>{cohort.startDate} — {cohort.endDate}</span>
+                  </div>
+                  <span className="font-bold text-neutral-900 dark:text-white tabular-nums">
+                    {formatMoney(cohort.tuitionFee)}
                   </span>
                 </div>
 
-                <h3 className="text-sm font-bold text-neutral-900 dark:text-white group-hover:text-[#C4785A] transition-colors">
-                  {cohort.name}
-                </h3>
-
-                <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
-                  {cohort.courseTitle}
-                </p>
-
-                <div className="mt-3 pt-3 border-t border-neutral-100 dark:border-neutral-800/80 space-y-1.5 text-xs text-neutral-500 dark:text-neutral-400">
-                  <div className="flex items-center gap-2">
-                    <Calendar size={13} className="text-neutral-400 shrink-0" />
-                    <span>
-                      {cohort.startDate} — {cohort.endDate}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Clock size={13} className="text-neutral-400 shrink-0" />
-                    <span className="truncate">{cohort.scheduleSummary}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <MapPin size={13} className="text-neutral-400 shrink-0" />
-                    <span className="truncate">
-                      {cohort.classroomName || 'Main Studio'} · Instructor: {cohort.instructorName}
-                    </span>
-                  </div>
+                <div className="flex items-center justify-between text-[11px] text-neutral-500">
+                  <span>{cohort.enrolledCount} of {cohort.maxStudents} Seats</span>
+                  <span className="text-[#C4785A] font-bold tabular-nums">{occupancyPercent}%</span>
                 </div>
-
-                {/* Seat Capacity Progress */}
-                <div className="mt-4 pt-3 border-t border-neutral-100 dark:border-neutral-800/80">
-                  <div className="flex justify-between text-xs font-medium mb-1.5">
-                    <span className="text-neutral-600 dark:text-neutral-400">
-                      {cohort.enrolledCount} of {cohort.maxStudents} Seats
-                    </span>
-                    <span className="text-[#C4785A] font-bold tabular-nums">
-                      {occupancyPercent}% Full
-                    </span>
-                  </div>
-                  <div className="w-full h-2 rounded-full bg-neutral-100 dark:bg-neutral-800 overflow-hidden">
-                    <div
-                      className="h-full bg-[#C4785A] rounded-full transition-all"
-                      style={{ width: `${occupancyPercent}%` }}
-                    />
-                  </div>
+                <div className="w-full h-1.5 rounded-full bg-neutral-100 dark:bg-neutral-800 overflow-hidden">
+                  <div
+                    className="h-full bg-[#C4785A] rounded-full transition-all"
+                    style={{ width: `${occupancyPercent}%` }}
+                  />
                 </div>
               </div>
-
-              {/* Bottom Trigger */}
-              <div className="mt-4 pt-3 border-t border-neutral-100 dark:border-neutral-800/80 flex items-center justify-between text-xs">
-                <span className="font-semibold text-neutral-900 dark:text-white">
-                  {formatMoney(cohort.tuitionFee)}
-                </span>
-                <span className="text-[#C4785A] font-medium flex items-center gap-1 group-hover:underline">
-                  Inspect Cohort <ChevronRight size={13} />
-                </span>
-              </div>
-            </div>
+            </ActionNode>
           );
         })}
       </div>

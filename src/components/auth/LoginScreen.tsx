@@ -17,6 +17,7 @@ import { useAtriumStore } from '../../services/store';
 import { authService } from '../../lib/supabase/services/authService';
 
 import { FiveCubesLogo } from './AtriumMonolith';
+import { LabelInput } from '../ui/LabelInput';
 
 interface LoginScreenProps {
   onStartOnboarding: () => void;
@@ -218,26 +219,23 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
 
         {/* PASSWORD FORM */}
         {authMode === 'password' ? (
-          <form onSubmit={handlePasswordSubmit} className="space-y-4">
-            <div>
-              <label className="block text-xs font-medium text-neutral-300 mb-1.5">
-                Work Email
-              </label>
-              <div className="relative">
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="name@business.dz"
-                  className="w-full h-11 pl-10 pr-4 rounded-xl bg-neutral-900/90 border border-neutral-700/80 text-white placeholder-neutral-500 text-xs focus:outline-none focus:border-[#C4785A] transition-colors"
-                />
-                <Mail size={15} className="absolute left-3.5 top-3 text-neutral-500" />
-              </div>
+          <form onSubmit={handlePasswordSubmit} className="space-y-3">
+            <div className="flex justify-center w-full">
+              <LabelInput
+                field="Email"
+                label="Work Email"
+                value={email}
+                onChange={setEmail}
+                type="email"
+                width={360}
+                height={50}
+                corner={16}
+              />
             </div>
 
-            <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label className="text-xs font-medium text-neutral-300">Password</label>
+            <div className="flex flex-col items-center w-full">
+              <div className="flex items-center justify-between w-full max-w-[360px] px-1 mb-1">
+                <span className="text-[11px] text-neutral-400">Security Credential</span>
                 <button
                   type="button"
                   onClick={() => setForgotPasswordOpen(true)}
@@ -246,23 +244,16 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
                   Forgot password?
                 </button>
               </div>
-              <div className="relative">
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter your password"
-                  className="w-full h-11 pl-10 pr-10 rounded-xl bg-neutral-900/90 border border-neutral-700/80 text-white placeholder-neutral-500 text-xs focus:outline-none focus:border-[#C4785A] transition-colors"
-                />
-                <Lock size={15} className="absolute left-3.5 top-3 text-neutral-500" />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3.5 top-3 text-neutral-400 hover:text-white cursor-pointer"
-                >
-                  {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
-                </button>
-              </div>
+              <LabelInput
+                field="Password"
+                label="Password"
+                value={password}
+                onChange={setPassword}
+                type="password"
+                width={360}
+                height={50}
+                corner={16}
+              />
             </div>
 
             <div className="flex items-center justify-between pt-1">

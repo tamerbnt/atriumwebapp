@@ -27,6 +27,7 @@ import { useAtriumStore } from '../../services/store';
 import { Appointment, AppointmentStatus, StaffMember } from '../../types/index';
 import { AppointmentModal } from '../modals/AppointmentModal';
 import { formatMoney } from '../../utils/rules';
+import { Seek } from '../ui/Seek';
 
 const TIME_SLOTS = [
   '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
@@ -405,17 +406,14 @@ export const StylistScheduleView: React.FC = () => {
             </select>
           </div>
 
-          {/* Quick Search */}
-          <div className="relative min-w-[200px]">
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Filter by client, treatment..."
-              className="w-full h-8 pl-8 pr-3 text-xs rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:border-[#C4785A]"
-            />
-          </div>
+          {/* Seek Kinetic Search */}
+          <Seek
+            value={searchQuery}
+            onChange={setSearchQuery}
+            placeholder="Filter by client, treatment..."
+            shutSize={34}
+            openWidth={230}
+          />
         </div>
 
         {/* Daily KPI Badges */}

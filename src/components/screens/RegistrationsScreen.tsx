@@ -24,6 +24,7 @@ import { useAtriumStore } from '../../services/store';
 import { RegistrationLead } from '../../types/index';
 import { Avatar } from '../ui/Avatar';
 import { Modal } from '../ui/Modal';
+import { Seek } from '../ui/Seek';
 
 interface RegistrationsScreenProps {
   onAddLead: () => void;
@@ -298,40 +299,14 @@ export const RegistrationsScreen: React.FC<RegistrationsScreenProps> = ({ onAddL
 
           {/* Right Controls Bar */}
           <div className="flex flex-wrap items-center gap-2.5 ml-auto">
-            {/* Circular Search Button */}
-            <div className="relative flex items-center">
-              {isSearchActive ? (
-                <div className="flex items-center animate-in fade-in duration-150">
-                  <input
-                    type="text"
-                    autoFocus
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search applicant name, phone, email..."
-                    className="h-9 px-3 text-xs rounded-full border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 focus:outline-none focus:border-[#C4785A] w-52 text-neutral-900 dark:text-white"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsSearchActive(false);
-                      setSearchQuery('');
-                    }}
-                    className="p-1 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 ml-1 cursor-pointer"
-                  >
-                    <X size={14} />
-                  </button>
-                </div>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => setIsSearchActive(true)}
-                  className="w-9 h-9 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex items-center justify-center text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 cursor-pointer transition-colors shadow-2xs"
-                  title="Search registrations"
-                >
-                  <Search size={14} />
-                </button>
-              )}
-            </div>
+            {/* Seek Kinetic Search Box */}
+            <Seek
+              value={searchQuery}
+              onChange={setSearchQuery}
+              placeholder="Search applicant name, phone, email..."
+              shutSize={36}
+              openWidth={240}
+            />
 
             {/* Status Filter Capsules */}
             <div className="flex items-center p-0.5 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 gap-0.5 text-xs font-semibold shadow-2xs">

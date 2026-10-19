@@ -22,6 +22,8 @@ import {
 import { useAtriumStore } from '../../../services/store';
 import { formatCurrencyAmount, formatDuration } from '../../../utils/rules';
 import { FreelanceClient, FreelanceClientStatus, CurrencyCode } from '../../../types/index';
+import { Seek } from '../../ui/Seek';
+import { ActionNode } from '../../ui/ActionNode';
 
 export const FreelanceClientsView: React.FC = () => {
   const {
@@ -276,16 +278,14 @@ export const FreelanceClientsView: React.FC = () => {
 
       {/* Search & Segmented Filter Bar */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-        <div className="relative flex-1 max-w-md">
-          <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400" />
-          <input
-            type="text"
-            placeholder="Search clients by name, company, email..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 text-xs rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white placeholder-neutral-400 focus:outline-none focus:ring-1 focus:ring-[#C4785A]"
-          />
-        </div>
+        {/* Seek Kinetic Search Box */}
+        <Seek
+          value={searchQuery}
+          onChange={setSearchQuery}
+          placeholder="Search clients by name, company, email..."
+          shutSize={36}
+          openWidth={260}
+        />
 
         {/* Segmented Filter Control */}
         <div className="flex items-center gap-1 p-1 bg-neutral-100 dark:bg-neutral-800/80 rounded-xl self-start sm:self-auto overflow-x-auto">
@@ -311,140 +311,101 @@ export const FreelanceClientsView: React.FC = () => {
         </div>
       </div>
 
-      {/* Clients Data Grid / Cards */}
+      {/* Clients Data Grid / Cards with ActionNode */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filteredClients.map((client) => {
           const unbilled = getClientUnbilledTime(client.id);
           const clientProjects = freelanceProjects.filter((p) => p.clientId === client.id);
 
           return (
-            <div
+            <ActionNode
               key={client.id}
+              title={client.name}
+              description={client.company || 'Private Client Account'}
+              tag={
+                client.status === 'ActiveRetainer'
+                  ? 'Retainer'
+                  : client.status === 'ProjectBased'
+                  ? 'Project'
+                  : client.status
+              }
+              width="100%"
+              air={14}
+              corner={20}
               onClick={() => setSelectedClient(client)}
-              className="p-5 rounded-2xl bg-white dark:bg-neutral-900/60 border border-neutral-200 dark:border-neutral-800 hover:border-[#C4785A]/40 transition-all cursor-pointer shadow-2xs group flex flex-col justify-between"
+              icon={
+                <div className="w-full h-full rounded-[inherit] bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center font-bold text-xs text-neutral-800 dark:text-neutral-200">
+                  {client.name.charAt(0)}
+                </div>
+              }
+              avatars={[
+                {
+                  id: client.id,
+                  name: client.name,
+                },
+              ]}
+              actions={[
+                {
+                  id: 'timer',
+                  label: 'Start Live Timer',
+                  icon: <Play size={13} />,
+                  onClick: () => handleQuickStartTimer(client),
+                  color: '#C4785A',
+                },
+                ...(unbilled.count > 0
+                  ? [
+                      {
+                        id: 'bill',
+                        label: `Bill Unbilled (${unbilled.hours}h)`,
+                        icon: <FileText size={13} />,
+                        onClick: () => handleQuickBill(client),
+                      },
+                    ]
+                  : []),
+                {
+                  id: 'edit',
+                  label: 'Edit Client',
+                  icon: <Edit2 size={13} />,
+                  onClick: () => handleOpenEditModal(client),
+                },
+              ]}
             >
-              <div>
-                {/* Client Header Info */}
-                <div className="flex items-start justify-between gap-3 mb-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 flex items-center justify-center font-bold text-sm shrink-0 border border-neutral-200 dark:border-neutral-700">
-                      {client.name.charAt(0)}
-                    </div>
-                    <div className="min-w-0">
-                      <h3 className="text-sm font-bold text-neutral-900 dark:text-white truncate group-hover:text-[#C4785A] transition-colors">
-                        {client.name}
-                      </h3>
-                      <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate">
-                        {client.company || 'Private Client'}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Clean unboxed status metadata */}
-                  <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400 shrink-0">
-                    {client.status === 'ActiveRetainer'
-                      ? 'Retainer'
-                      : client.status === 'ProjectBased'
-                      ? 'Project'
-                      : client.status}
+              {/* Rates & Retainer Details */}
+              <div className="py-2 my-1 border-t border-neutral-100 dark:border-neutral-800/80 space-y-1 text-xs">
+                <div className="flex items-center justify-between text-neutral-600 dark:text-neutral-400">
+                  <span>Rate:</span>
+                  <span className="font-semibold text-neutral-900 dark:text-white tabular-nums">
+                    {formatCurrencyAmount(client.hourlyRate, client.currency)}/hr
                   </span>
                 </div>
-
-                {/* Rates & Retainer Details */}
-                <div className="py-2.5 my-2 border-y border-neutral-100 dark:border-neutral-800/80 space-y-1.5 text-xs">
+                {client.monthlyRetainerHours && client.monthlyRetainerHours > 0 ? (
                   <div className="flex items-center justify-between text-neutral-600 dark:text-neutral-400">
-                    <span>Rate & Currency:</span>
+                    <span>Retainer:</span>
                     <span className="font-semibold text-neutral-900 dark:text-white tabular-nums">
-                      {formatCurrencyAmount(client.hourlyRate, client.currency)}/hr
+                      {client.monthlyRetainerHours}h ({formatCurrencyAmount(client.monthlyRetainerAmount || 0, client.currency)})
                     </span>
                   </div>
-
-                  {client.monthlyRetainerHours && client.monthlyRetainerHours > 0 ? (
-                    <div className="flex items-center justify-between text-neutral-600 dark:text-neutral-400">
-                      <span>Monthly Quota:</span>
-                      <span className="font-semibold text-neutral-900 dark:text-white tabular-nums">
-                        {client.monthlyRetainerHours}h ({formatCurrencyAmount(client.monthlyRetainerAmount || 0, client.currency)})
-                      </span>
-                    </div>
-                  ) : null}
-
-                  <div className="flex items-center justify-between text-neutral-600 dark:text-neutral-400">
-                    <span>Active Projects:</span>
-                    <span className="font-semibold text-neutral-900 dark:text-white tabular-nums">
-                      {clientProjects.length}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Unbilled Alert Strip if any */}
-                {unbilled.amount > 0 && (
-                  <div className="p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 mb-3 flex items-center justify-between text-xs">
-                    <div className="text-amber-800 dark:text-amber-300">
-                      <span className="font-semibold tabular-nums">{unbilled.hours} hrs</span> unbilled
-                    </div>
-                    <span className="font-bold text-amber-900 dark:text-amber-200 tabular-nums">
-                      {formatCurrencyAmount(unbilled.amount, client.currency)}
-                    </span>
-                  </div>
-                )}
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex items-center justify-between gap-2 pt-2 border-t border-neutral-100 dark:border-neutral-800/80">
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleQuickStartTimer(client);
-                  }}
-                  className="px-2.5 py-1.5 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-[#C4785A] hover:text-white text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
-                  title="Start live timer for this client"
-                >
-                  <Play size={12} />
-                  <span>Start Timer</span>
-                </button>
-
-                {unbilled.count > 0 && (
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleQuickBill(client);
-                    }}
-                    className="px-2.5 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 text-neutral-800 dark:text-neutral-200 text-xs font-semibold flex items-center gap-1 transition-colors cursor-pointer"
-                    title="1-Click Bill unbilled hours"
-                  >
-                    <FileText size={12} />
-                    <span>Bill ({unbilled.hours}h)</span>
-                  </button>
-                )}
-
-                <div className="flex items-center gap-1 ml-auto">
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleOpenEditModal(client);
-                    }}
-                    className="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
-                    title="Edit client"
-                  >
-                    <Edit2 size={13} />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setClientToDelete(client);
-                    }}
-                    className="p-1.5 rounded-lg text-neutral-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
-                    title="Delete client"
-                  >
-                    <Trash2 size={13} />
-                  </button>
+                ) : null}
+                <div className="flex items-center justify-between text-neutral-600 dark:text-neutral-400">
+                  <span>Active Projects:</span>
+                  <span className="font-semibold text-neutral-900 dark:text-white tabular-nums">
+                    {clientProjects.length}
+                  </span>
                 </div>
               </div>
-            </div>
+
+              {/* Unbilled Alert Strip */}
+              {unbilled.amount > 0 && (
+                <div className="mt-2 p-2 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 flex items-center justify-between text-[11px]">
+                  <span className="text-amber-800 dark:text-amber-300 font-medium">
+                    {unbilled.hours} hrs unbilled
+                  </span>
+                  <span className="font-bold text-amber-900 dark:text-amber-200 tabular-nums">
+                    {formatCurrencyAmount(unbilled.amount, client.currency)}
+                  </span>
+                </div>
+              )}
+            </ActionNode>
           );
         })}
       </div>
