@@ -62,13 +62,22 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
   const [replayKey, setReplayKey] = useState(0);
 
   const heroAnchorRef = React.useRef<HTMLDivElement>(null);
+  const targetLockupRef = React.useRef<HTMLDivElement>(null);
   const [anchorCoords, setAnchorCoords] = useState<{ left: number; top: number } | null>(null);
+  const [targetRect, setTargetRect] = useState<{ left: number; top: number; width: number; height: number } | null>(null);
 
   useEffect(() => {
     const updateAnchor = () => {
-      if (heroAnchorRef.current) {
-        const rect = heroAnchorRef.current.getBoundingClientRect();
-        if (rect.left > 0) {
+      const el = targetLockupRef.current || heroAnchorRef.current;
+      if (el) {
+        const rect = el.getBoundingClientRect();
+        if (rect.left > 0 && rect.width > 0) {
+          setTargetRect({
+            left: rect.left,
+            top: rect.top,
+            width: rect.width,
+            height: rect.height,
+          });
           setAnchorCoords({ left: rect.left, top: rect.top });
         }
       }
@@ -83,11 +92,12 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
     const t4 = setTimeout(updateAnchor, 1200);
 
     let ro: ResizeObserver | null = null;
-    if (typeof ResizeObserver !== 'undefined' && heroAnchorRef.current) {
+    const observeTarget = targetLockupRef.current || heroAnchorRef.current;
+    if (typeof ResizeObserver !== 'undefined' && observeTarget) {
       ro = new ResizeObserver(() => {
         updateAnchor();
       });
-      ro.observe(heroAnchorRef.current);
+      ro.observe(observeTarget);
     }
 
     window.addEventListener('resize', updateAnchor);
@@ -272,6 +282,20 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
     },
   ];
 
+  const handleCardArrivalStart = React.useCallback(() => {
+    setCardVisible(true);
+  }, []);
+
+  const handleIntroComplete = React.useCallback(() => {
+    setCardVisible(true);
+    setIntroPhase('revealed');
+  }, []);
+
+  const handleSkipIntro = React.useCallback(() => {
+    setCardVisible(true);
+    setIntroPhase('revealed');
+  }, []);
+
   // ============================================================
   // UNIFIED ATRIUM MONOLITH SYSTEM: INTRO & CONTINUITY GLIDE
   // ============================================================
@@ -280,16 +304,11 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
       {/* 1. KINETIC GEOMETRIC & TYPOGRAPHY SYSTEM (SOLID TERRACOTTA) */}
       <AtriumMonolith
         isIntroActive={introPhase === 'intro'}
+        targetRect={targetRect}
         anchorCoords={anchorCoords}
-        onCardArrivalStart={() => setCardVisible(true)}
-        onIntroComplete={() => {
-          setCardVisible(true);
-          setIntroPhase('revealed');
-        }}
-        onSkip={() => {
-          setCardVisible(true);
-          setIntroPhase('revealed');
-        }}
+        onCardArrivalStart={handleCardArrivalStart}
+        onIntroComplete={handleIntroComplete}
+        onSkip={handleSkipIntro}
         replayKey={replayKey}
       />
 
@@ -297,10 +316,10 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
       <div className="relative z-20 w-full h-full max-h-screen flex flex-col lg:flex-row items-center justify-center p-4 sm:p-6 lg:p-8 overflow-hidden">
         {/* LEFT: FLOATING ONBOARDING CARD */}
         <div
-          className={`w-full lg:w-[490px] xl:w-[530px] p-2 sm:p-4 shrink-0 flex flex-col justify-center transition-all duration-900 ease-[cubic-bezier(0.16,1,0.3,1)] ${
-            cardVisible
+          className={`w-full lg:w-[490px] xl:w-[530px] p-2 sm:p-4 shrink-0 flex flex-col justify-center transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+            introPhase === 'revealed'
               ? 'opacity-100 translate-x-0 scale-100 pointer-events-auto'
-              : 'opacity-0 -translate-x-16 scale-95 pointer-events-none'
+              : 'opacity-0 -translate-x-12 scale-95 pointer-events-none'
           }`}
         >
           <div className="bg-white text-neutral-900 rounded-[32px] p-6 sm:p-8 shadow-[0_30px_70px_rgba(0,0,0,0.55)] border border-neutral-100 flex flex-col justify-between max-h-[calc(100vh-48px)] overflow-y-auto">
@@ -776,16 +795,14 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
       </div>
 
       {/* RIGHT: BRAND SHOWCASE */}
-      <div
-        className={`flex-1 p-6 sm:p-10 lg:py-10 lg:pr-10 lg:pl-28 xl:py-12 xl:pr-16 xl:pl-36 2xl:pl-48 h-full max-h-screen flex flex-col justify-center overflow-hidden z-10 hidden md:flex text-[#18181B] transition-all duration-800 ease-[cubic-bezier(0.16,1,0.3,1)] delay-150 ${
-          cardVisible
-            ? 'opacity-100 translate-y-0 pointer-events-auto'
-            : 'opacity-0 translate-y-8 pointer-events-none'
-        }`}
-      >
+      <div className="flex-1 p-6 sm:p-10 lg:py-10 lg:pr-10 lg:pl-28 xl:py-12 xl:pr-16 xl:pl-36 2xl:pl-48 h-full max-h-screen flex flex-col justify-center overflow-hidden z-10 hidden md:flex text-[#18181B]">
         <div className="w-full max-w-2xl lg:ml-auto xl:mr-6 2xl:mr-12 flex flex-col justify-between h-full py-1">
-          {/* Top Tagline & Unified Header Controls */}
-          <div className="flex items-center justify-between shrink-0">
+          {/* Top Tagline & Unified Header Controls (Reveals on Docking) */}
+          <div
+            className={`flex items-center justify-between shrink-0 transition-opacity duration-700 ${
+              introPhase === 'revealed' ? 'opacity-100' : 'opacity-0 pointer-events-none'
+            }`}
+          >
             <div className="flex items-center gap-2.5">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
               <span className="text-xs sm:text-[13px] font-bold tracking-widest uppercase text-[#18181B]/80">
@@ -797,9 +814,9 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
               <button
                 type="button"
                 onClick={() => {
+                  setIntroPhase('intro');
                   setCardVisible(false);
                   setReplayKey((k) => k + 1);
-                  setIntroPhase('intro');
                 }}
                 className="h-9 px-4 rounded-full bg-black/10 hover:bg-black/25 border border-black/20 text-xs font-semibold text-[#18181B] hover:text-white flex items-center gap-2 cursor-pointer transition-all shadow-xs"
               >
@@ -818,12 +835,13 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
             </div>
           </div>
 
-          {/* Hero Copy */}
-          <div className="my-auto py-2 sm:py-2.5 space-y-3.5 sm:space-y-4">
+          {/* Hero Copy Column */}
+          <div className="my-auto py-2 sm:py-2.5">
             {/* Reserved space and anchor for the left-aligned brand lockup (Enlarged Hero Scale, Seamless Transition) */}
             <div ref={heroAnchorRef} className="h-20 sm:h-22 w-full flex items-center justify-start">
               <div
-                className={`flex items-center gap-4 sm:gap-5 select-none transition-opacity duration-300 ${
+                ref={targetLockupRef}
+                className={`flex items-center gap-5 select-none transition-opacity duration-300 ${
                   introPhase === 'revealed' ? 'opacity-100' : 'opacity-0 pointer-events-none'
                 }`}
               >
@@ -837,53 +855,66 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
               </div>
             </div>
 
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-black/10 border border-black/15 text-[#18181B] text-xs sm:text-[13px] font-semibold">
-              <Sparkles size={13} className="text-[#18181B]" />
-              <span>Forever Free Web Edition — 1 Business &amp; 1 Branch</span>
-            </div>
-
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-[#18181B] leading-tight max-w-xl">
-              The Business Management OS for Modern Facilities.
-            </h1>
-
-            <p className="text-sm sm:text-[15px] text-[#18181B]/85 leading-relaxed font-normal max-w-xl">
-              Whether running a solo practice, aesthetic salon, fast-casual restaurant, or athletic gym, Atrium Web is 100% free forever for your main facility. Seamlessly upgrade to the Desktop app when you expand to multi-location chains.
-            </p>
-
-            {/* Cards Showcase */}
-            <div className="grid grid-cols-2 gap-3.5 pt-1.5 max-w-xl">
-              {/* Tile 1: Supabase Realtime Cloud Sync */}
-              <div className="p-3.5 sm:p-4 rounded-2xl bg-white/95 text-neutral-900 border border-white/60 shadow-lg space-y-1 sm:space-y-1.5">
-                <div className="flex items-center justify-between text-neutral-500 text-[11px]">
-                  <span className="font-semibold">Cloud Architecture</span>
-                  <Cloud size={14} className="text-emerald-600" />
-                </div>
-                <div className="text-lg sm:text-xl font-black text-neutral-900 tabular-nums tracking-tight">
-                  Live Sync <span className="text-xs text-[#D3542E] font-bold">PostgreSQL</span>
-                </div>
-                <span className="text-[11px] font-semibold text-emerald-700 block">
-                  Automatic Web-to-Desktop Sync
-                </span>
+            {/* Cascade Text & Feature Cards (Glides upward smoothly from beneath the docked logo) */}
+            <div
+              className={`space-y-3.5 sm:space-y-4 pt-1 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                introPhase === 'revealed'
+                  ? 'opacity-100 translate-y-0 pointer-events-auto'
+                  : 'opacity-0 translate-y-6 pointer-events-none'
+              }`}
+            >
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-black/10 border border-black/15 text-[#18181B] text-xs sm:text-[13px] font-semibold">
+                <Sparkles size={13} className="text-[#18181B]" />
+                <span>Forever Free Web Edition — 1 Business &amp; 1 Branch</span>
               </div>
 
-              {/* Tile 2: Upgrade to Desktop Anytime */}
-              <div className="p-3.5 sm:p-4 rounded-2xl bg-white/95 text-neutral-900 border border-white/60 shadow-lg space-y-1 sm:space-y-1.5">
-                <div className="flex items-center justify-between text-neutral-500 text-[11px]">
-                  <span className="font-semibold">Multi-Branch Growth</span>
-                  <Laptop size={14} className="text-[#D3542E]" />
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-[#18181B] leading-tight max-w-xl">
+                The Business Management OS for Modern Facilities.
+              </h1>
+
+              <p className="text-sm sm:text-[15px] text-[#18181B]/85 leading-relaxed font-normal max-w-xl">
+                Whether running a solo practice, aesthetic salon, fast-casual restaurant, or athletic gym, Atrium Web is 100% free forever for your main facility. Seamlessly upgrade to the Desktop app when you expand to multi-location chains.
+              </p>
+
+              {/* Cards Showcase */}
+              <div className="grid grid-cols-2 gap-3.5 pt-1.5 max-w-xl">
+                {/* Tile 1: Supabase Realtime Cloud Sync */}
+                <div className="p-3.5 sm:p-4 rounded-2xl bg-white/95 text-neutral-900 border border-white/60 shadow-lg space-y-1 sm:space-y-1.5">
+                  <div className="flex items-center justify-between text-neutral-500 text-[11px]">
+                    <span className="font-semibold">Cloud Architecture</span>
+                    <Cloud size={14} className="text-emerald-600" />
+                  </div>
+                  <div className="text-lg sm:text-xl font-black text-neutral-900 tabular-nums tracking-tight">
+                    Live Sync <span className="text-xs text-[#D3542E] font-bold">PostgreSQL</span>
+                  </div>
+                  <span className="text-[11px] font-semibold text-emerald-700 block">
+                    Automatic Web-to-Desktop Sync
+                  </span>
                 </div>
-                <div className="text-sm sm:text-base font-black text-neutral-900">
-                  Atrium Desktop Edition
+
+                {/* Tile 2: Upgrade to Desktop Anytime */}
+                <div className="p-3.5 sm:p-4 rounded-2xl bg-white/95 text-neutral-900 border border-white/60 shadow-lg space-y-1 sm:space-y-1.5">
+                  <div className="flex items-center justify-between text-neutral-500 text-[11px]">
+                    <span className="font-semibold">Multi-Branch Growth</span>
+                    <Laptop size={14} className="text-[#D3542E]" />
+                  </div>
+                  <div className="text-sm sm:text-base font-black text-neutral-900">
+                    Atrium Desktop Edition
+                  </div>
+                  <span className="text-[11px] font-semibold text-[#D3542E] block">
+                    Multi-Branch Chains &amp; POS Hardware
+                  </span>
                 </div>
-                <span className="text-[11px] font-semibold text-[#D3542E] block">
-                  Multi-Branch Chains &amp; POS Hardware
-                </span>
               </div>
             </div>
           </div>
 
-          {/* Bottom Specs & Languages (Unified with column width) */}
-          <div className="pt-3.5 pb-1 border-t border-black/20 flex items-center justify-between text-xs sm:text-[13px] text-[#18181B]/80 font-medium shrink-0">
+          {/* Bottom Specs & Languages (Reveals on Docking) */}
+          <div
+            className={`pt-3.5 pb-1 border-t border-black/20 flex items-center justify-between text-xs sm:text-[13px] text-[#18181B]/80 font-medium shrink-0 transition-opacity duration-700 ${
+              introPhase === 'revealed' ? 'opacity-100' : 'opacity-0 pointer-events-none'
+            }`}
+          >
             <span>Atrium Web Edition • Multi-Facility ERP &amp; CRM</span>
             <span>English • Français • العربية</span>
           </div>

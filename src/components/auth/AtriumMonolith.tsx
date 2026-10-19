@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 
 export interface AtriumMonolithProps {
   isIntroActive: boolean;
+  targetRect?: { left: number; top: number; width: number; height: number } | null;
   anchorCoords?: { left: number; top: number } | null;
   onCardArrivalStart?: () => void;
   onIntroComplete?: () => void;
@@ -261,6 +262,7 @@ export const QuincunxConvergencePrelude: React.FC<{ isPortalActive?: boolean; cl
 
 export const AtriumMonolith: React.FC<AtriumMonolithProps> = ({
   isIntroActive,
+  targetRect,
   anchorCoords,
   onCardArrivalStart,
   onIntroComplete,
@@ -279,21 +281,35 @@ export const AtriumMonolith: React.FC<AtriumMonolithProps> = ({
   const letterRefs = useRef<(HTMLSpanElement | null)[]>([]);
   const [glideTransform, setGlideTransform] = useState<string | null>(null);
 
-  // When glide starts, measure current centered rect and compute exact pixel translation to anchorCoords
+  // When glide starts, measure current centered rect and compute exact pixel translation and dynamic scale
   useEffect(() => {
     if (phase === 'glide' && lockupRef.current) {
-      if (typeof window !== 'undefined' && window.innerWidth >= 1024 && anchorCoords) {
-        const rect = lockupRef.current.getBoundingClientRect();
-        const deltaX = anchorCoords.left - rect.left;
-        const deltaY = anchorCoords.top - rect.top;
-        setGlideTransform(`translate3d(${deltaX.toFixed(1)}px, ${deltaY.toFixed(1)}px, 0) scale(0.55)`);
+      const currentTarget =
+        targetRect || (anchorCoords ? { left: anchorCoords.left, top: anchorCoords.top, width: 340, height: 72 } : null);
+
+      if (typeof window !== 'undefined' && window.innerWidth >= 1024 && currentTarget) {
+        const sourceRect = lockupRef.current.getBoundingClientRect();
+        if (sourceRect.height > 0 && currentTarget.height > 0) {
+          // Dynamic scale calculated directly from target height vs source height
+          const exactScale = currentTarget.height / sourceRect.height;
+          const deltaX = currentTarget.left - sourceRect.left;
+          const deltaY = currentTarget.top - sourceRect.top;
+          setGlideTransform(`translate3d(${deltaX.toFixed(2)}px, ${deltaY.toFixed(2)}px, 0) scale(${exactScale.toFixed(4)})`);
+        } else {
+          setGlideTransform('translate3d(0, -36vh, 0) scale(0.5)');
+        }
       } else {
-        setGlideTransform('translate3d(0, -36vh, 0) scale(0.55)');
+        setGlideTransform('translate3d(0, -36vh, 0) scale(0.5)');
       }
     } else if (phase === 'quincunx' || phase === 'portal' || phase === 'wave' || phase === 'revelation') {
       setGlideTransform(null);
     }
-  }, [phase, anchorCoords]);
+  }, [phase, targetRect, anchorCoords]);
+
+  const callbacksRef = useRef({ onCardArrivalStart, onIntroComplete, onSkip });
+  useEffect(() => {
+    callbacksRef.current = { onCardArrivalStart, onIntroComplete, onSkip };
+  });
 
   const resetLettersToNormal = () => {
     letterRefs.current.forEach((el) => {
@@ -309,9 +325,9 @@ export const AtriumMonolith: React.FC<AtriumMonolithProps> = ({
   const handleSkip = () => {
     resetLettersToNormal();
     setPhase('settled');
-    onCardArrivalStart?.();
-    onIntroComplete?.();
-    onSkip?.();
+    callbacksRef.current.onCardArrivalStart?.();
+    callbacksRef.current.onIntroComplete?.();
+    callbacksRef.current.onSkip?.();
   };
 
   // Keyboard shortcut (Escape to skip intro)
@@ -351,16 +367,15 @@ export const AtriumMonolith: React.FC<AtriumMonolithProps> = ({
       setPhase('revelation');
     }, 3850);
 
-    // (5) 4.75s: Continuity glide! Logo + ATRIUM glides to the right, card arrives on left
+    // (5) 4.75s: Continuity glide! Logo + ATRIUM glides to the right across clean terracotta
     const tGlide = setTimeout(() => {
       setPhase('glide');
-      onCardArrivalStart?.();
     }, 4750);
 
     // (6) 5.65s: Transition completely settles
     const tComplete = setTimeout(() => {
       setPhase('settled');
-      onIntroComplete?.();
+      callbacksRef.current.onIntroComplete?.();
     }, 5650);
 
     return () => {
@@ -370,7 +385,7 @@ export const AtriumMonolith: React.FC<AtriumMonolithProps> = ({
       clearTimeout(tGlide);
       clearTimeout(tComplete);
     };
-  }, [isIntroActive, replayKey, onCardArrivalStart, onIntroComplete]);
+  }, [isIntroActive, replayKey]);
 
   // Real-time animation loop for Stage 2 (Kinetic Typography Wave):
   // - HAPPENS ONCE ONLY: Enters from the left, sweeps slowly and gracefully across A-T-R-I-U-M, and exits to the right.
@@ -540,7 +555,7 @@ export const AtriumMonolith: React.FC<AtriumMonolithProps> = ({
       {(phase === 'wave' || phase === 'revelation' || phase === 'glide' || phase === 'settled') && (
         <div
           ref={lockupRef}
-          className={`flex items-center justify-start gap-4 sm:gap-7 select-none transition-opacity duration-300 ${
+          className={`flex items-center justify-start gap-10 select-none transition-opacity duration-300 ${
             phase === 'settled' ? 'opacity-0 pointer-events-none' : 'opacity-100'
           }`}
           style={{
@@ -553,13 +568,14 @@ export const AtriumMonolith: React.FC<AtriumMonolithProps> = ({
           <div
             className={`shrink-0 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
               phase === 'revelation' || phase === 'glide' || phase === 'settled'
-                ? 'opacity-100 translate-x-0 scale-100 max-w-[140px] pointer-events-auto'
-                : 'opacity-0 -translate-x-12 scale-75 max-w-0 pointer-events-none overflow-hidden -mr-4 sm:-mr-7'
+                ? 'opacity-100 translate-x-0 scale-100 max-w-[180px] pointer-events-auto'
+                : 'opacity-0 -translate-x-12 scale-75 max-w-0 pointer-events-none overflow-hidden -mr-10'
             }`}
           >
             <FiveCubesLogo
               cubeColor="#000000"
-              className="w-16 h-16 sm:w-22 sm:h-22 md:w-26 md:h-26"
+              size={144}
+              className="shrink-0"
             />
           </div>
 
