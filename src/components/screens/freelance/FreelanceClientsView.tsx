@@ -24,6 +24,7 @@ import { formatCurrencyAmount, formatDuration } from '../../../utils/rules';
 import { FreelanceClient, FreelanceClientStatus, CurrencyCode } from '../../../types/index';
 import { Seek } from '../../ui/Seek';
 import { ActionNode } from '../../ui/ActionNode';
+import { LabelInput } from '../../ui/LabelInput';
 
 export const FreelanceClientsView: React.FC = () => {
   const {
@@ -649,59 +650,53 @@ export const FreelanceClientsView: React.FC = () => {
 
             <form onSubmit={handleSubmitClient} className="space-y-4 text-xs">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
-                    Contact Name *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    placeholder="e.g. Karim Mansouri"
-                    className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#C4785A]"
-                  />
-                </div>
-                <div>
-                  <label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
-                    Company / Brand
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.company}
-                    onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-                    placeholder="e.g. TechNova SAS"
-                    className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#C4785A]"
-                  />
-                </div>
+                <LabelInput
+                  field="ClientName"
+                  label="Contact Name *"
+                  required
+                  value={formData.name}
+                  onChange={(v) => setFormData({ ...formData, name: v })}
+                  placeholder="e.g. Karim Mansouri"
+                  width="100%"
+                  height={46}
+                  corner={14}
+                />
+                <LabelInput
+                  field="Company"
+                  label="Company / Brand"
+                  value={formData.company}
+                  onChange={(v) => setFormData({ ...formData, company: v })}
+                  placeholder="e.g. TechNova SAS"
+                  width="100%"
+                  height={46}
+                  corner={14}
+                />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
-                    Email Address *
-                  </label>
-                  <input
-                    type="email"
-                    required
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    placeholder="client@company.com"
-                    className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#C4785A]"
-                  />
-                </div>
-                <div>
-                  <label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
-                    Phone / WhatsApp
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    placeholder="+213 550 00 00 00"
-                    className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#C4785A]"
-                  />
-                </div>
+                <LabelInput
+                  field="ClientEmail"
+                  label="Email Address *"
+                  type="email"
+                  required
+                  value={formData.email}
+                  onChange={(v) => setFormData({ ...formData, email: v })}
+                  placeholder="client@company.com"
+                  width="100%"
+                  height={46}
+                  corner={14}
+                />
+                <LabelInput
+                  field="ClientPhone"
+                  label="Phone / WhatsApp"
+                  type="tel"
+                  value={formData.phone}
+                  onChange={(v) => setFormData({ ...formData, phone: v })}
+                  placeholder="+213 550 00 00 00"
+                  width="100%"
+                  height={46}
+                  corner={14}
+                />
               </div>
 
               <div className="grid grid-cols-3 gap-3">
@@ -719,17 +714,16 @@ export const FreelanceClientsView: React.FC = () => {
                     <option value="USD">USD ($)</option>
                   </select>
                 </div>
-                <div>
-                  <label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
-                    Hourly Rate
-                  </label>
-                  <input
-                    type="number"
-                    value={formData.hourlyRate}
-                    onChange={(e) => setFormData({ ...formData, hourlyRate: Number(e.target.value) })}
-                    className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#C4785A]"
-                  />
-                </div>
+                <LabelInput
+                  field="HourlyRate"
+                  label="Hourly Rate"
+                  type="number"
+                  value={formData.hourlyRate ? String(formData.hourlyRate) : ''}
+                  onChange={(v) => setFormData({ ...formData, hourlyRate: Number(v) || 0 })}
+                  width="100%"
+                  height={46}
+                  corner={14}
+                />
                 <div>
                   <label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
                     Status
@@ -749,30 +743,28 @@ export const FreelanceClientsView: React.FC = () => {
 
               {formData.status === 'ActiveRetainer' && (
                 <div className="grid grid-cols-2 gap-3 p-3 rounded-xl bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200/60 dark:border-amber-900/40">
-                  <div>
-                    <label className="font-semibold text-amber-900 dark:text-amber-200 block mb-1">
-                      Monthly Retainer Hours
-                    </label>
-                    <input
-                      type="number"
-                      value={formData.monthlyRetainerHours}
-                      onChange={(e) => setFormData({ ...formData, monthlyRetainerHours: Number(e.target.value) })}
-                      placeholder="e.g. 20"
-                      className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none"
-                    />
-                  </div>
-                  <div>
-                    <label className="font-semibold text-amber-900 dark:text-amber-200 block mb-1">
-                      Monthly Flat Fee
-                    </label>
-                    <input
-                      type="number"
-                      value={formData.monthlyRetainerAmount}
-                      onChange={(e) => setFormData({ ...formData, monthlyRetainerAmount: Number(e.target.value) })}
-                      placeholder="e.g. 1500"
-                      className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none"
-                    />
-                  </div>
+                  <LabelInput
+                    field="RetainerHours"
+                    label="Monthly Retainer Hours"
+                    type="number"
+                    value={formData.monthlyRetainerHours ? String(formData.monthlyRetainerHours) : ''}
+                    onChange={(v) => setFormData({ ...formData, monthlyRetainerHours: Number(v) || 0 })}
+                    placeholder="e.g. 20"
+                    width="100%"
+                    height={46}
+                    corner={14}
+                  />
+                  <LabelInput
+                    field="FlatFee"
+                    label="Monthly Flat Fee"
+                    type="number"
+                    value={formData.monthlyRetainerAmount ? String(formData.monthlyRetainerAmount) : ''}
+                    onChange={(v) => setFormData({ ...formData, monthlyRetainerAmount: Number(v) || 0 })}
+                    placeholder="e.g. 1500"
+                    width="100%"
+                    height={46}
+                    corner={14}
+                  />
                 </div>
               )}
 

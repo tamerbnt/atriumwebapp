@@ -19,6 +19,7 @@ import { useAtriumStore } from '../../../services/store';
 import { SecurityDepositRecord } from '../../../types/index';
 import { formatCurrencyAmount } from '../../../utils/rules';
 import { Seek } from '../../ui/Seek';
+import { LabelInput } from '../../ui/LabelInput';
 
 export const VenueFinanceView: React.FC = () => {
   const {
@@ -290,16 +291,14 @@ export const VenueFinanceView: React.FC = () => {
               </p>
 
               <div>
-                <label className="block font-medium text-neutral-700 dark:text-neutral-300 mb-1">
-                  Amount to Retain ({deductionTarget.currency})
-                </label>
-                <input
+                <LabelInput
+                  id="deduction-amount"
+                  label={`Amount to Retain (${deductionTarget.currency})`}
                   type="number"
                   max={deductionTarget.amount}
                   min={100}
                   value={deductionAmount}
                   onChange={(e) => setDeductionAmount(Number(e.target.value))}
-                  className="w-full px-3 py-2 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl tabular-nums font-mono"
                   required
                 />
                 <span className="text-[10px] text-neutral-400 mt-1 block">

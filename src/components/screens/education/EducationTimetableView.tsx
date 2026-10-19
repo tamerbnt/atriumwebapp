@@ -17,6 +17,7 @@ import {
 import { useAtriumStore } from '../../../services/store';
 import { EduSession } from '../../../types';
 import { RollCallModal } from './RollCallModal';
+import { LabelInput } from '../../ui/LabelInput';
 
 export const EducationTimetableView: React.FC = () => {
   const {
@@ -343,58 +344,41 @@ export const EducationTimetableView: React.FC = () => {
                 </div>
               </div>
 
-              <div>
-                <label className="block font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
-                  Session Date *
-                </label>
-                <input
-                  type="date"
-                  required
-                  value={formData.date}
-                  onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#C4785A]"
-                />
-              </div>
+              <LabelInput
+                id="session-date"
+                label="Session Date"
+                type="date"
+                required
+                value={formData.date}
+                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+              />
 
               <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
-                    Start Time *
-                  </label>
-                  <input
-                    type="time"
-                    required
-                    value={formData.startTime}
-                    onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#C4785A]"
-                  />
-                </div>
-                <div>
-                  <label className="block font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
-                    End Time *
-                  </label>
-                  <input
-                    type="time"
-                    required
-                    value={formData.endTime}
-                    onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#C4785A]"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
-                  Topic / Lesson Plan Summary
-                </label>
-                <input
-                  type="text"
-                  value={formData.topic}
-                  onChange={(e) => setFormData({ ...formData, topic: e.target.value })}
-                  placeholder="e.g. Chapter 4: Calculus Limits & Functions"
-                  className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#C4785A]"
+                <LabelInput
+                  id="session-start-time"
+                  label="Start Time"
+                  type="time"
+                  required
+                  value={formData.startTime}
+                  onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
+                />
+                <LabelInput
+                  id="session-end-time"
+                  label="End Time"
+                  type="time"
+                  required
+                  value={formData.endTime}
+                  onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
                 />
               </div>
+
+              <LabelInput
+                id="session-topic"
+                label="Topic / Lesson Plan Summary"
+                placeholder="e.g. Chapter 4: Calculus Limits & Functions"
+                value={formData.topic}
+                onChange={(e) => setFormData({ ...formData, topic: e.target.value })}
+              />
 
               <div className="flex items-center justify-end gap-3 pt-4 border-t border-neutral-100 dark:border-neutral-800">
                 <button

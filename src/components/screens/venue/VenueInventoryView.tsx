@@ -18,6 +18,7 @@ import { RentableUnit, RentableUnitType, RentableUnitStatus } from '../../../typ
 import { formatCurrencyAmount } from '../../../utils/rules';
 import { BookingModal } from './BookingModal';
 import { Seek } from '../../ui/Seek';
+import { LabelInput } from '../../ui/LabelInput';
 
 export const VenueInventoryView: React.FC = () => {
   const {
@@ -358,28 +359,22 @@ export const VenueInventoryView: React.FC = () => {
             <form onSubmit={handleSaveUnit} className="space-y-4 text-xs">
               <div className="grid grid-cols-2 gap-3">
                 <div className="col-span-2">
-                  <label className="block font-medium text-neutral-700 dark:text-neutral-300 mb-1">
-                    Space Name *
-                  </label>
-                  <input
-                    type="text"
+                  <LabelInput
+                    id="space-name"
+                    label="Space Name"
                     placeholder="e.g. Daylight Cyclorama Studio"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full px-3 py-2 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block font-medium text-neutral-700 dark:text-neutral-300 mb-1">
-                    Unit Code (e.g. STU-02) *
-                  </label>
-                  <input
-                    type="text"
+                  <LabelInput
+                    id="space-code"
+                    label="Unit Code (e.g. STU-02)"
                     value={code}
                     onChange={(e) => setCode(e.target.value)}
-                    className="w-full px-3 py-2 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl font-mono uppercase"
                     required
                   />
                 </div>
@@ -403,65 +398,54 @@ export const VenueInventoryView: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block font-medium text-neutral-700 dark:text-neutral-300 mb-1">
-                    Guest Capacity (Max)
-                  </label>
-                  <input
+                  <LabelInput
+                    id="space-capacity"
+                    label="Guest Capacity (Max)"
                     type="number"
                     value={capacity}
                     onChange={(e) => setCapacity(Number(e.target.value))}
-                    className="w-full px-3 py-2 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block font-medium text-neutral-700 dark:text-neutral-300 mb-1">
-                    Surface Area (m²)
-                  </label>
-                  <input
+                  <LabelInput
+                    id="space-surface"
+                    label="Surface Area (m²)"
                     type="number"
                     value={surfaceAreaSqm}
                     onChange={(e) => setSurfaceAreaSqm(Number(e.target.value))}
-                    className="w-full px-3 py-2 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-medium text-neutral-700 dark:text-neutral-300 mb-1">
-                    Hourly Rate (DZD) *
-                  </label>
-                  <input
+                  <LabelInput
+                    id="space-hourly-rate"
+                    label="Hourly Rate (DZD)"
                     type="number"
                     value={hourlyRate}
                     onChange={(e) => setHourlyRate(Number(e.target.value))}
-                    className="w-full px-3 py-2 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl font-mono"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block font-medium text-neutral-700 dark:text-neutral-300 mb-1">
-                    Full Day Rate (DZD)
-                  </label>
-                  <input
+                  <LabelInput
+                    id="space-daily-rate"
+                    label="Full Day Rate (DZD)"
                     type="number"
                     value={dailyRate}
                     onChange={(e) => setDailyRate(Number(e.target.value))}
-                    className="w-full px-3 py-2 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl font-mono"
                   />
                 </div>
 
                 <div className="col-span-2">
-                  <label className="block font-medium text-neutral-700 dark:text-neutral-300 mb-1">
-                    Amenities (comma-separated)
-                  </label>
-                  <input
-                    type="text"
+                  <LabelInput
+                    id="space-amenities"
+                    label="Amenities (comma-separated)"
                     placeholder="e.g. Line array sound, 4K screen, Dressing room, Catering kitchen"
                     value={amenitiesStr}
                     onChange={(e) => setAmenitiesStr(e.target.value)}
-                    className="w-full px-3 py-2 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl"
                   />
                 </div>
 

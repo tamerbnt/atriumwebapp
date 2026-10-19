@@ -164,6 +164,7 @@ export type ActiveScreen =
   // PM Direction Screens
   | 'pm_dir_dashboard'
   | 'pm_dir_new_project'
+  | 'pm_dir_projects'
   | 'pm_dir_approvals'
   | 'pm_dir_reports'
   // PM Chef de Projet Screens

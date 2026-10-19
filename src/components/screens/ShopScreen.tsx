@@ -44,6 +44,7 @@ import { Product, PaymentDetail, ParkedOrder, StockMovement, ReceiptConfig } fro
 import { formatMoney } from '../../utils/rules';
 import { Modal } from '../ui/Modal';
 import { Seek } from '../ui/Seek';
+import { LabelInput } from '../ui/LabelInput';
 
 interface CartItem {
   product: Product;
@@ -1758,79 +1759,67 @@ export const ShopScreen: React.FC = () => {
             </div>
 
             <div className="space-y-3 text-xs">
-              <div className="space-y-1">
-                <label className="font-bold text-neutral-700 dark:text-neutral-300">
-                  Store / Header Title
-                </label>
-                <input
-                  type="text"
-                  value={receiptConfig.headerTitle}
-                  onChange={(e) => updateReceiptConfig({ headerTitle: e.target.value })}
-                  className="w-full h-10 px-3 rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800"
-                />
-              </div>
+              <LabelInput
+                field="StoreTitle"
+                label="Store / Header Title"
+                value={receiptConfig.headerTitle}
+                onChange={(v) => updateReceiptConfig({ headerTitle: v })}
+                width="100%"
+                height={46}
+                corner={14}
+              />
 
-              <div className="space-y-1">
-                <label className="font-bold text-neutral-700 dark:text-neutral-300">
-                  Tagline / Subheader
-                </label>
-                <input
-                  type="text"
-                  value={receiptConfig.subHeader || ''}
-                  onChange={(e) => updateReceiptConfig({ subHeader: e.target.value })}
-                  className="w-full h-10 px-3 rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800"
-                />
-              </div>
+              <LabelInput
+                field="Tagline"
+                label="Tagline / Subheader"
+                value={receiptConfig.subHeader || ''}
+                onChange={(v) => updateReceiptConfig({ subHeader: v })}
+                width="100%"
+                height={46}
+                corner={14}
+              />
 
               <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label className="font-bold text-neutral-700 dark:text-neutral-300">
-                    Store Phone
-                  </label>
-                  <input
-                    type="text"
-                    value={receiptConfig.phone || ''}
-                    onChange={(e) => updateReceiptConfig({ phone: e.target.value })}
-                    className="w-full h-10 px-3 rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800"
-                  />
-                </div>
+                <LabelInput
+                  field="Phone"
+                  label="Store Phone"
+                  value={receiptConfig.phone || ''}
+                  onChange={(v) => updateReceiptConfig({ phone: v })}
+                  width="100%"
+                  height={46}
+                  corner={14}
+                />
 
-                <div className="space-y-1">
-                  <label className="font-bold text-neutral-700 dark:text-neutral-300">
-                    Tax ID (NIF / RC)
-                  </label>
-                  <input
-                    type="text"
-                    value={receiptConfig.taxId || ''}
-                    onChange={(e) => updateReceiptConfig({ taxId: e.target.value })}
-                    className="w-full h-10 px-3 rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <label className="font-bold text-neutral-700 dark:text-neutral-300">
-                  Store Physical Address
-                </label>
-                <input
-                  type="text"
-                  value={receiptConfig.address || ''}
-                  onChange={(e) => updateReceiptConfig({ address: e.target.value })}
-                  className="w-full h-10 px-3 rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800"
+                <LabelInput
+                  field="TaxId"
+                  label="Tax ID (NIF / RC)"
+                  value={receiptConfig.taxId || ''}
+                  onChange={(v) => updateReceiptConfig({ taxId: v })}
+                  width="100%"
+                  height={46}
+                  corner={14}
                 />
               </div>
 
-              <div className="space-y-1">
-                <label className="font-bold text-neutral-700 dark:text-neutral-300">
-                  Receipt Footer Note
-                </label>
-                <input
-                  type="text"
-                  value={receiptConfig.footerMessage || ''}
-                  onChange={(e) => updateReceiptConfig({ footerMessage: e.target.value })}
-                  className="w-full h-10 px-3 rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800"
-                />
-              </div>
+              <LabelInput
+                field="Address"
+                label="Store Physical Address"
+                value={receiptConfig.address || ''}
+                onChange={(v) => updateReceiptConfig({ address: v })}
+                width="100%"
+                height={46}
+                corner={14}
+              />
+
+              <LabelInput
+                field="Footer"
+                label="Receipt Footer Note"
+                value={receiptConfig.footerMessage || ''}
+                onChange={(v) => updateReceiptConfig({ footerMessage: v })}
+                width="100%"
+                height={46}
+                corner={14}
+              />
 
               <div className="pt-2 space-y-2">
                 <label className="flex items-center gap-2 cursor-pointer font-bold text-neutral-700 dark:text-neutral-300">
@@ -2350,47 +2339,41 @@ export const ShopScreen: React.FC = () => {
         subtitle="Ring up an unlisted article or custom-priced service on the fly"
       >
         <form onSubmit={handleAddCustomItem} className="space-y-4">
-          <div className="space-y-1">
-            <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
-              Item Name / Description *
-            </label>
-            <input
-              type="text"
-              required
-              value={customItemName}
-              onChange={(e) => setCustomItemName(e.target.value)}
-              placeholder="e.g. Special Fresh Order / Custom Repair"
-              className="w-full h-11 px-3 text-sm rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800"
-            />
-          </div>
+          <LabelInput
+            field="CustomItemName"
+            label="Item Name / Description *"
+            required
+            value={customItemName}
+            onChange={setCustomItemName}
+            placeholder="e.g. Special Fresh Order / Custom Repair"
+            width="100%"
+            height={46}
+            corner={14}
+          />
 
           <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
-                Price (DZD) *
-              </label>
-              <input
-                type="number"
-                required
-                min="1"
-                value={customItemPrice}
-                onChange={(e) => setCustomItemPrice(parseFloat(e.target.value) || 0)}
-                className="w-full h-11 px-3 text-sm font-mono font-bold rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800"
-              />
-            </div>
+            <LabelInput
+              field="CustomPrice"
+              label="Price (DZD) *"
+              type="number"
+              required
+              value={customItemPrice ? String(customItemPrice) : ''}
+              onChange={(v) => setCustomItemPrice(parseFloat(v) || 0)}
+              width="100%"
+              height={46}
+              corner={14}
+            />
 
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
-                Category
-              </label>
-              <input
-                type="text"
-                value={customItemCategory}
-                onChange={(e) => setCustomItemCategory(e.target.value)}
-                placeholder="General"
-                className="w-full h-11 px-3 text-sm rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800"
-              />
-            </div>
+            <LabelInput
+              field="CustomCategory"
+              label="Category"
+              value={customItemCategory}
+              onChange={setCustomItemCategory}
+              placeholder="General"
+              width="100%"
+              height={46}
+              corner={14}
+            />
           </div>
 
           <div className="flex justify-end gap-3 pt-3">
@@ -2421,31 +2404,27 @@ export const ShopScreen: React.FC = () => {
         subtitle="Save this cart and free the register for waiting customers"
       >
         <form onSubmit={handleHoldOrder} className="space-y-4">
-          <div className="space-y-1">
-            <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
-              Reference / Customer Tag
-            </label>
-            <input
-              type="text"
-              value={holdOrderRefName}
-              onChange={(e) => setHoldOrderRefName(e.target.value)}
-              placeholder="e.g. Customer in Red Jacket / Table 4 / Phone order"
-              className="w-full h-11 px-3 text-sm rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800"
-            />
-          </div>
+          <LabelInput
+            field="HoldRef"
+            label="Reference / Customer Tag"
+            value={holdOrderRefName}
+            onChange={setHoldOrderRefName}
+            placeholder="e.g. Customer in Red Jacket / Table 4 / Phone order"
+            width="100%"
+            height={46}
+            corner={14}
+          />
 
-          <div className="space-y-1">
-            <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
-              Reason / Notes
-            </label>
-            <input
-              type="text"
-              value={holdOrderNotes}
-              onChange={(e) => setHoldOrderNotes(e.target.value)}
-              placeholder="e.g. Fetching wallet from car"
-              className="w-full h-11 px-3 text-sm rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800"
-            />
-          </div>
+          <LabelInput
+            field="HoldNotes"
+            label="Reason / Notes"
+            value={holdOrderNotes}
+            onChange={setHoldOrderNotes}
+            placeholder="e.g. Fetching wallet from car"
+            width="100%"
+            height={46}
+            corner={14}
+          />
 
           <div className="flex justify-end gap-3 pt-3">
             <button
@@ -2585,19 +2564,17 @@ export const ShopScreen: React.FC = () => {
         subtitle={`Registered in store: ${currentBranch.name}`}
       >
         <form onSubmit={handleSaveProduct} className="space-y-4">
-          <div className="space-y-1">
-            <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
-              Product Title / Name *
-            </label>
-            <input
-              type="text"
-              required
-              value={formName}
-              onChange={(e) => setFormName(e.target.value)}
-              placeholder="e.g. Artisanal Espresso Beans 1kg"
-              className="w-full h-11 px-3 text-sm rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800"
-            />
-          </div>
+          <LabelInput
+            field="ProductName"
+            label="Product Title / Name *"
+            required
+            value={formName}
+            onChange={setFormName}
+            placeholder="e.g. Artisanal Espresso Beans 1kg"
+            width="100%"
+            height={46}
+            corner={14}
+          />
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
@@ -2640,88 +2617,76 @@ export const ShopScreen: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
-                SKU Identifier
-              </label>
-              <input
-                type="text"
-                value={formSku}
-                onChange={(e) => setFormSku(e.target.value)}
-                className="w-full h-11 px-3 text-sm font-mono rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800"
-              />
-            </div>
+            <LabelInput
+              field="Sku"
+              label="SKU Identifier"
+              value={formSku}
+              onChange={setFormSku}
+              width="100%"
+              height={46}
+              corner={14}
+            />
 
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
-                Barcode / EAN-13
-              </label>
-              <input
-                type="text"
-                value={formBarcode}
-                onChange={(e) => setFormBarcode(e.target.value)}
-                placeholder="6131100..."
-                className="w-full h-11 px-3 text-sm font-mono rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800"
-              />
-            </div>
+            <LabelInput
+              field="Barcode"
+              label="Barcode / EAN-13"
+              value={formBarcode}
+              onChange={setFormBarcode}
+              placeholder="6131100..."
+              width="100%"
+              height={46}
+              corner={14}
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
-                Retail Selling Price (DZD) *
-              </label>
-              <input
-                type="number"
-                required
-                min="1"
-                value={formPrice}
-                onChange={(e) => setFormPrice(parseFloat(e.target.value) || 0)}
-                className="w-full h-11 px-3 text-sm font-mono font-bold rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800"
-              />
-            </div>
+            <LabelInput
+              field="Price"
+              label="Retail Selling Price (DZD) *"
+              type="number"
+              required
+              value={formPrice ? String(formPrice) : ''}
+              onChange={(v) => setFormPrice(parseFloat(v) || 0)}
+              width="100%"
+              height={46}
+              corner={14}
+            />
 
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
-                Cost Price (DZD)
-              </label>
-              <input
-                type="number"
-                min="0"
-                value={formCost}
-                onChange={(e) => setFormCost(parseFloat(e.target.value) || 0)}
-                className="w-full h-11 px-3 text-sm font-mono rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800"
-              />
-            </div>
+            <LabelInput
+              field="Cost"
+              label="Cost Price (DZD)"
+              type="number"
+              value={formCost ? String(formCost) : ''}
+              onChange={(v) => setFormCost(parseFloat(v) || 0)}
+              width="100%"
+              height={46}
+              corner={14}
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
-                Initial Stock Units
-              </label>
-              <input
-                type="number"
-                required
-                min="0"
-                value={formStock}
-                onChange={(e) => setFormStock(parseInt(e.target.value) || 0)}
-                className="w-full h-11 px-3 text-sm font-mono rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800"
-              />
-            </div>
+            <LabelInput
+              field="Stock"
+              label="Initial Stock Units *"
+              type="number"
+              required
+              value={formStock !== undefined ? String(formStock) : ''}
+              onChange={(v) => setFormStock(parseInt(v) || 0)}
+              width="100%"
+              height={46}
+              corner={14}
+            />
 
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
-                Low Stock Reorder Alert Level
-              </label>
-              <input
-                type="number"
-                min="1"
-                value={formReorder}
-                onChange={(e) => setFormReorder(parseInt(e.target.value) || 5)}
-                className="w-full h-11 px-3 text-sm font-mono rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800"
-              />
-            </div>
+            <LabelInput
+              field="Reorder"
+              label="Low Stock Reorder Alert Level"
+              type="number"
+              value={formReorder !== undefined ? String(formReorder) : ''}
+              onChange={(v) => setFormReorder(parseInt(v) || 5)}
+              width="100%"
+              height={46}
+              corner={14}
+            />
           </div>
 
           <div className="flex justify-end gap-3 pt-3">

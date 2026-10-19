@@ -18,6 +18,7 @@ import { useAtriumStore } from '../../../services/store';
 import { formatMoney } from '../../../utils/rules';
 import { EduEnrollment } from '../../../types';
 import { Seek } from '../../ui/Seek';
+import { LabelInput } from '../../ui/LabelInput';
 
 type PaymentFilterKey = 'all' | 'pending' | 'partial' | 'overdue' | 'paid';
 
@@ -360,19 +361,16 @@ export const EducationFinanceView: React.FC = () => {
                 </div>
               </div>
 
-              <div>
-                <label className="block font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
-                  Payment Amount (DZD) *
-                </label>
-                <input
-                  type="number"
-                  min="1"
-                  max={selectedEnrollmentForPayment.balanceDue}
-                  value={paymentAmount}
-                  onChange={(e) => setPaymentAmount(parseInt(e.target.value) || 0)}
-                  className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white font-bold text-[#C4785A] focus:outline-none focus:ring-1 focus:ring-[#C4785A]"
-                />
-              </div>
+              <LabelInput
+                id="payment-amount"
+                label="Payment Amount (DZD)"
+                type="number"
+                min="1"
+                max={selectedEnrollmentForPayment.balanceDue}
+                value={paymentAmount}
+                onChange={(e) => setPaymentAmount(parseInt(e.target.value) || 0)}
+                required
+              />
 
               <div>
                 <label className="block font-semibold text-neutral-700 dark:text-neutral-300 mb-1">

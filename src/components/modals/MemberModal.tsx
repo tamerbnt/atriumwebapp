@@ -182,22 +182,16 @@ export const MemberModal: React.FC<MemberModalProps> = ({
                 </select>
               </div>
 
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
-                  Date of Birth
-                </label>
-                <input
-                  type="date"
-                  value={dateOfBirth}
-                  onChange={(e) => setDateOfBirth(e.target.value)}
-                  style={{
-                    backgroundColor: 'var(--color-surface-bg)',
-                    borderColor: 'var(--color-border)',
-                    borderRadius: 'var(--radius-input)',
-                  }}
-                  className="w-full h-11 px-3 text-sm border focus:outline-none focus:border-[#C4785A] text-neutral-900 dark:text-white"
-                />
-              </div>
+              <LabelInput
+                field="BirthDate"
+                label="Date of Birth"
+                type="date"
+                value={dateOfBirth}
+                onChange={setDateOfBirth}
+                width="100%"
+                height={48}
+                corner={14}
+              />
             </div>
           </div>
         </div>
@@ -230,40 +224,27 @@ export const MemberModal: React.FC<MemberModalProps> = ({
               </select>
             </div>
 
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
-                Start Date
-              </label>
-              <input
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                style={{
-                  backgroundColor: 'var(--color-surface-bg)',
-                  borderColor: 'var(--color-border)',
-                  borderRadius: 'var(--radius-input)',
-                }}
-                className="w-full h-11 px-3 text-sm border focus:outline-none focus:border-[#C4785A] text-neutral-900 dark:text-white"
-              />
-            </div>
+            <LabelInput
+              field="StartDate"
+              label="Start Date"
+              type="date"
+              value={startDate}
+              onChange={setStartDate}
+              width="100%"
+              height={48}
+              corner={14}
+            />
 
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
-                RFID / Barcode Card
-              </label>
-              <input
-                type="text"
-                value={cardId}
-                onChange={(e) => setCardId(e.target.value)}
-                placeholder="RFID-XXXXXX"
-                style={{
-                  backgroundColor: 'var(--color-surface-bg)',
-                  borderColor: 'var(--color-border)',
-                  borderRadius: 'var(--radius-input)',
-                }}
-                className="w-full h-11 px-3 text-sm font-mono border focus:outline-none focus:border-[#C4785A] text-neutral-900 dark:text-white uppercase"
-              />
-            </div>
+            <LabelInput
+              field="CardId"
+              label="RFID / Barcode Card"
+              value={cardId}
+              onChange={setCardId}
+              placeholder="RFID-XXXXXX"
+              width="100%"
+              height={48}
+              corner={14}
+            />
           </div>
         </div>
 
@@ -273,41 +254,28 @@ export const MemberModal: React.FC<MemberModalProps> = ({
             Emergency & Notes
           </h4>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
-                Emergency Contact
-              </label>
-              <input
-                type="text"
-                value={emergencyName}
-                onChange={(e) => setEmergencyName(e.target.value)}
-                placeholder="Name"
-                style={{
-                  backgroundColor: 'var(--color-surface-bg)',
-                  borderColor: 'var(--color-border)',
-                  borderRadius: 'var(--radius-input)',
-                }}
-                className="w-full h-11 px-3 text-sm border focus:outline-none focus:border-[#C4785A] text-neutral-900 dark:text-white"
-              />
-            </div>
+            <LabelInput
+              field="EmergencyContact"
+              label="Emergency Contact"
+              value={emergencyName}
+              onChange={setEmergencyName}
+              placeholder="Contact Name"
+              width="100%"
+              height={48}
+              corner={14}
+            />
 
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
-                Emergency Phone
-              </label>
-              <input
-                type="tel"
-                value={emergencyPhone}
-                onChange={(e) => setEmergencyPhone(e.target.value)}
-                placeholder="+213 555 00 00 00"
-                style={{
-                  backgroundColor: 'var(--color-surface-bg)',
-                  borderColor: 'var(--color-border)',
-                  borderRadius: 'var(--radius-input)',
-                }}
-                className="w-full h-11 px-3 text-sm border focus:outline-none focus:border-[#C4785A] text-neutral-900 dark:text-white"
-              />
-            </div>
+            <LabelInput
+              field="EmergencyPhone"
+              label="Emergency Phone"
+              type="tel"
+              value={emergencyPhone}
+              onChange={setEmergencyPhone}
+              placeholder="+213 555 00 00 00"
+              width="100%"
+              height={48}
+              corner={14}
+            />
 
             <div className="space-y-1">
               <label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">

@@ -14,6 +14,8 @@ import {
 } from 'lucide-react';
 import { useAtriumStore } from '../../../services/store';
 import { RollCallModal } from './RollCallModal';
+import { Seek } from '../../ui/Seek';
+import { LabelInput } from '../../ui/LabelInput';
 
 type ModeKey = 'attendance' | 'gradebook';
 
@@ -35,6 +37,7 @@ export const EducationAttendanceView: React.FC = () => {
   );
   const [isRollCallOpen, setIsRollCallOpen] = useState(false);
   const [isGradeModalOpen, setIsGradeModalOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Grade Form State
   const [gradeForm, setGradeForm] = useState({
@@ -54,6 +57,14 @@ export const EducationAttendanceView: React.FC = () => {
   );
   const cohortStudentIds = cohortEnrollments.map((e) => e.studentId);
   const cohortStudents = eduStudents.filter((s) => cohortStudentIds.includes(s.id));
+
+  const filteredCohortStudents = React.useMemo(() => {
+    if (!searchQuery.trim()) return cohortStudents;
+    const q = searchQuery.toLowerCase();
+    return cohortStudents.filter(
+      (s) => s.fullName.toLowerCase().includes(q) || s.phone?.includes(q)
+    );
+  }, [cohortStudents, searchQuery]);
 
   // Attendance for this cohort
   const cohortAttendance = eduAttendance.filter((a) => a.cohortId === selectedCohortId);
@@ -118,6 +129,11 @@ export const EducationAttendanceView: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2.5 flex-wrap">
+          <Seek
+            value={searchQuery}
+            onChange={setSearchQuery}
+            placeholder="Search students in cohort..."
+          />
           <select
             value={selectedCohortId}
             onChange={(e) => setSelectedCohortId(e.target.value)}
@@ -236,7 +252,7 @@ export const EducationAttendanceView: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800/80">
-              {cohortStudents.map((st) => {
+              {filteredCohortStudents.map((st) => {
                 const studentRecords = cohortAttendance.filter((a) => a.studentId === st.id);
                 const presents = studentRecords.filter((a) => a.status === 'Present' || a.status === 'Late').length;
                 const total = studentRecords.length;

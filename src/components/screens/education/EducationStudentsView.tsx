@@ -25,6 +25,7 @@ import { EduStudent, StudentStatus } from '../../../types';
 import { formatMoney } from '../../../utils/rules';
 import { CertificateModal } from './CertificateModal';
 import { Seek } from '../../ui/Seek';
+import { LabelInput } from '../../ui/LabelInput';
 
 type FilterKey = 'all' | 'active' | 'minors' | 'overdue' | 'graduated';
 
@@ -910,61 +911,43 @@ export const EducationStudentsView: React.FC = () => {
             </div>
 
             <form onSubmit={handleSaveStudent} className="space-y-4 pt-4 text-xs">
-              <div>
-                <label className="block font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
-                  Full Name *
-                </label>
-                <input
-                  type="text"
+              <LabelInput
+                id="student-fullname"
+                label="Full Name"
+                required
+                value={formData.fullName}
+                onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                placeholder="e.g. Amine Mansouri"
+              />
+
+              <div className="grid grid-cols-2 gap-3">
+                <LabelInput
+                  id="student-phone"
+                  label="Phone Number"
+                  type="tel"
                   required
-                  value={formData.fullName}
-                  onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                  placeholder="e.g. Amine Mansouri"
-                  className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#C4785A]"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  placeholder="0550 12 34 56"
+                />
+                <LabelInput
+                  id="student-email"
+                  label="Email Address"
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  placeholder="amine@example.com"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
-                    Phone Number *
-                  </label>
-                  <input
-                    type="tel"
-                    required
-                    value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    placeholder="0550 12 34 56"
-                    className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#C4785A]"
-                  />
-                </div>
-                <div>
-                  <label className="block font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
-                    Email Address
-                  </label>
-                  <input
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    placeholder="amine@example.com"
-                    className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#C4785A]"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
-                    Grade / Level
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.schoolGrade}
-                    onChange={(e) => setFormData({ ...formData, schoolGrade: e.target.value })}
-                    placeholder="e.g. 3AS Math / Adult"
-                    className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#C4785A]"
-                  />
-                </div>
+                <LabelInput
+                  id="student-grade"
+                  label="Grade / Level"
+                  value={formData.schoolGrade}
+                  onChange={(e) => setFormData({ ...formData, schoolGrade: e.target.value })}
+                  placeholder="e.g. 3AS Math / Adult"
+                />
                 <div>
                   <label className="block font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
                     Enrollment Status
@@ -1017,18 +1000,13 @@ export const EducationStudentsView: React.FC = () => {
                 {formData.isMinor && (
                   <div className="space-y-3 pt-2">
                     <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="block font-medium text-neutral-600 dark:text-neutral-400 mb-1">
-                          Guardian Name
-                        </label>
-                        <input
-                          type="text"
-                          value={formData.guardianName}
-                          onChange={(e) => setFormData({ ...formData, guardianName: e.target.value })}
-                          placeholder="e.g. Karim Mansouri"
-                          className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white"
-                        />
-                      </div>
+                      <LabelInput
+                        id="guardian-name"
+                        label="Guardian Name"
+                        value={formData.guardianName}
+                        onChange={(e) => setFormData({ ...formData, guardianName: e.target.value })}
+                        placeholder="e.g. Karim Mansouri"
+                      />
                       <div>
                         <label className="block font-medium text-neutral-600 dark:text-neutral-400 mb-1">
                           Guardian Relationship
@@ -1047,18 +1025,14 @@ export const EducationStudentsView: React.FC = () => {
                         </select>
                       </div>
                     </div>
-                    <div>
-                      <label className="block font-medium text-neutral-600 dark:text-neutral-400 mb-1">
-                        Guardian Phone (Emergency Contact)
-                      </label>
-                      <input
-                        type="tel"
-                        value={formData.guardianPhone}
-                        onChange={(e) => setFormData({ ...formData, guardianPhone: e.target.value })}
-                        placeholder="0661 98 76 54"
-                        className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white"
-                      />
-                    </div>
+                    <LabelInput
+                      id="guardian-phone"
+                      label="Guardian Phone (Emergency Contact)"
+                      type="tel"
+                      value={formData.guardianPhone}
+                      onChange={(e) => setFormData({ ...formData, guardianPhone: e.target.value })}
+                      placeholder="0661 98 76 54"
+                    />
                   </div>
                 )}
               </div>

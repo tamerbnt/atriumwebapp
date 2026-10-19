@@ -27,6 +27,7 @@ import { StaffMember, StaffRole } from '../../types/index';
 import { Avatar } from '../ui/Avatar';
 import { Modal } from '../ui/Modal';
 import { Seek } from '../ui/Seek';
+import { LabelInput } from '../ui/LabelInput';
 import { formatMoney } from '../../utils/rules';
 
 export const FinanceStaffScreen: React.FC = () => {
@@ -705,47 +706,43 @@ export const FinanceStaffScreen: React.FC = () => {
             </div>
           )}
 
-          <div className="space-y-1">
-            <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
-              Full Name *
-            </label>
-            <input
-              type="text"
-              required
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              placeholder="e.g. Farida Oulmou"
-              className="w-full h-11 px-3 text-sm rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:border-[#C4785A] text-neutral-900 dark:text-white"
-            />
-          </div>
+          <LabelInput
+            field="StaffName"
+            label="Full Name *"
+            required
+            value={fullName}
+            onChange={setFullName}
+            placeholder="e.g. Farida Oulmou"
+            width="100%"
+            height={46}
+            corner={14}
+          />
 
           <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
-                Email Address *
-              </label>
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="staff@atrium.dz"
-                className="w-full h-11 px-3 text-sm rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:border-[#C4785A] text-neutral-900 dark:text-white"
-              />
-            </div>
+            <LabelInput
+              field="StaffEmail"
+              label="Email Address *"
+              type="email"
+              required
+              value={email}
+              onChange={setEmail}
+              placeholder="staff@atrium.dz"
+              width="100%"
+              height={46}
+              corner={14}
+            />
 
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
-                Phone Number
-              </label>
-              <input
-                type="tel"
-                value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value)}
-                placeholder="+213 555 00 11 22"
-                className="w-full h-11 px-3 text-sm rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:border-[#C4785A] text-neutral-900 dark:text-white"
-              />
-            </div>
+            <LabelInput
+              field="StaffPhone"
+              label="Phone Number"
+              type="tel"
+              value={phoneNumber}
+              onChange={setPhoneNumber}
+              placeholder="+213 555 00 11 22"
+              width="100%"
+              height={46}
+              corner={14}
+            />
           </div>
 
           <div className="grid grid-cols-3 gap-3">
@@ -767,31 +764,27 @@ export const FinanceStaffScreen: React.FC = () => {
               </select>
             </div>
 
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
-                Monthly Salary (DZD)
-              </label>
-              <input
-                type="number"
-                value={salary}
-                onChange={(e) => setSalary(Number(e.target.value))}
-                className="w-full h-11 px-3 text-sm rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:border-[#C4785A] text-neutral-900 dark:text-white"
-              />
-            </div>
+            <LabelInput
+              field="Salary"
+              label="Monthly Salary (DZD)"
+              type="number"
+              value={salary ? String(salary) : ''}
+              onChange={(v) => setSalary(Number(v) || 0)}
+              width="100%"
+              height={46}
+              corner={14}
+            />
 
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
-                Payday (1-31)
-              </label>
-              <input
-                type="number"
-                min={1}
-                max={31}
-                value={paymentDay}
-                onChange={(e) => setPaymentDay(Number(e.target.value))}
-                className="w-full h-11 px-3 text-sm rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:border-[#C4785A] text-neutral-900 dark:text-white"
-              />
-            </div>
+            <LabelInput
+              field="Payday"
+              label="Payday (1-31)"
+              type="number"
+              value={paymentDay ? String(paymentDay) : ''}
+              onChange={(v) => setPaymentDay(Number(v) || 1)}
+              width="100%"
+              height={46}
+              corner={14}
+            />
           </div>
 
           <div className="flex justify-end gap-3 pt-3">

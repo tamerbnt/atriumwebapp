@@ -22,6 +22,8 @@ import {
 import { useAtriumStore } from '../../../services/store';
 import { formatDuration, formatCurrencyAmount } from '../../../utils/rules';
 import { FreelanceClient, FreelanceProject, CurrencyCode, TimeLogEntry } from '../../../types/index';
+import { LabelInput } from '../../ui/LabelInput';
+import { Seek } from '../../ui/Seek';
 
 export const FreelanceTimeTrackerView: React.FC = () => {
   const {
@@ -76,11 +78,25 @@ export const FreelanceTimeTrackerView: React.FC = () => {
 
   // Delete Log State
   const [logToDelete, setLogToDelete] = useState<TimeLogEntry | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Client projects filtered
   const availableProjects = useMemo(() => {
     return freelanceProjects.filter((p) => p.clientId === selectedClientId);
   }, [freelanceProjects, selectedClientId]);
+
+  // Search filtered time logs
+  const filteredLogs = useMemo(() => {
+    if (!searchQuery.trim()) return timeLogs;
+    const q = searchQuery.toLowerCase();
+    return timeLogs.filter(
+      (entry) =>
+        entry.taskDescription.toLowerCase().includes(q) ||
+        entry.clientName.toLowerCase().includes(q) ||
+        entry.projectTitle.toLowerCase().includes(q) ||
+        (entry.deliverableTitle && entry.deliverableTitle.toLowerCase().includes(q))
+    );
+  }, [timeLogs, searchQuery]);
 
   // Aggregate metrics
   const totalSecondsAll = timeLogs.reduce((sum, l) => sum + l.durationSeconds, 0);
@@ -448,21 +464,30 @@ export const FreelanceTimeTrackerView: React.FC = () => {
 
       {/* Time Entries Timesheet Table */}
       <div className="p-5 rounded-2xl bg-white dark:bg-neutral-900/60 border border-neutral-200 dark:border-neutral-800 space-y-4 shadow-2xs">
-        <div className="flex items-center justify-between">
-          <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
-            Activity Ledger & Time Entries ({timeLogs.length})
-          </h3>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
+              Activity Ledger & Time Entries ({filteredLogs.length})
+            </h3>
+          </div>
 
-          {unbilledLogs.length > 0 && (
-            <button
-              type="button"
-              onClick={() => handleBillClientUnbilled(unbilledLogs[0].clientId)}
-              className="h-8 px-3 rounded-lg bg-[#C4785A] text-white text-xs font-semibold flex items-center gap-1.5 hover:opacity-90 transition-opacity cursor-pointer shadow-2xs"
-            >
-              <FileText size={12} />
-              <span>Bill Unbilled Hours ({unbilledHours}h)</span>
-            </button>
-          )}
+          <div className="flex items-center gap-3">
+            <Seek
+              value={searchQuery}
+              onChange={setSearchQuery}
+              placeholder="Search logs by task, client, project..."
+            />
+            {unbilledLogs.length > 0 && (
+              <button
+                type="button"
+                onClick={() => handleBillClientUnbilled(unbilledLogs[0].clientId)}
+                className="h-8 px-3 rounded-lg bg-[#C4785A] text-white text-xs font-semibold flex items-center gap-1.5 hover:opacity-90 transition-opacity cursor-pointer shadow-2xs shrink-0"
+              >
+                <FileText size={12} />
+                <span>Bill Unbilled Hours ({unbilledHours}h)</span>
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="overflow-x-auto">
@@ -479,7 +504,7 @@ export const FreelanceTimeTrackerView: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800/60">
-              {timeLogs.map((entry) => (
+              {filteredLogs.map((entry) => (
                 <tr
                   key={entry.id}
                   className="hover:bg-neutral-50/80 dark:hover:bg-neutral-800/40 transition-colors"
@@ -647,65 +672,48 @@ export const FreelanceTimeTrackerView: React.FC = () => {
                 </select>
               </div>
 
-              <div>
-                <label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
-                  Task Summary *
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Architectural code review & test refactoring"
-                  value={manualForm.taskDescription}
-                  onChange={(e) =>
-                    setManualForm({ ...manualForm, taskDescription: e.target.value })
-                  }
-                  className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white"
-                />
-              </div>
+              <LabelInput
+                id="manual-task-summary"
+                label="Task Summary"
+                required
+                placeholder="e.g. Architectural code review & test refactoring"
+                value={manualForm.taskDescription}
+                onChange={(e) =>
+                  setManualForm({ ...manualForm, taskDescription: e.target.value })
+                }
+              />
 
               <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
-                    Hours
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={manualForm.hours}
-                    onChange={(e) =>
-                      setManualForm({ ...manualForm, hours: Number(e.target.value) })
-                    }
-                    className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white"
-                  />
-                </div>
-                <div>
-                  <label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
-                    Minutes
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    max="59"
-                    value={manualForm.minutes}
-                    onChange={(e) =>
-                      setManualForm({ ...manualForm, minutes: Number(e.target.value) })
-                    }
-                    className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
-                  Date
-                </label>
-                <input
-                  type="date"
-                  value={manualForm.date}
-                  onChange={(e) => setManualForm({ ...manualForm, date: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white"
+                <LabelInput
+                  id="manual-hours"
+                  label="Hours"
+                  type="number"
+                  min="0"
+                  value={manualForm.hours}
+                  onChange={(e) =>
+                    setManualForm({ ...manualForm, hours: Number(e.target.value) })
+                  }
+                />
+                <LabelInput
+                  id="manual-minutes"
+                  label="Minutes"
+                  type="number"
+                  min="0"
+                  max="59"
+                  value={manualForm.minutes}
+                  onChange={(e) =>
+                    setManualForm({ ...manualForm, minutes: Number(e.target.value) })
+                  }
                 />
               </div>
+
+              <LabelInput
+                id="manual-date"
+                label="Date"
+                type="date"
+                value={manualForm.date}
+                onChange={(e) => setManualForm({ ...manualForm, date: e.target.value })}
+              />
 
               <div className="flex items-center gap-2 pt-2">
                 <input
@@ -768,64 +776,47 @@ export const FreelanceTimeTrackerView: React.FC = () => {
             </div>
 
             <form onSubmit={handleEditLogSubmit} className="space-y-3.5 text-xs">
-              <div>
-                <label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
-                  Task Summary *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={editLogForm.taskDescription}
-                  onChange={(e) =>
-                    setEditLogForm({ ...editLogForm, taskDescription: e.target.value })
-                  }
-                  className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#C4785A]"
-                />
-              </div>
+              <LabelInput
+                id="edit-task-summary"
+                label="Task Summary"
+                required
+                value={editLogForm.taskDescription}
+                onChange={(e) =>
+                  setEditLogForm({ ...editLogForm, taskDescription: e.target.value })
+                }
+              />
 
               <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
-                    Hours
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={editLogForm.hours}
-                    onChange={(e) =>
-                      setEditLogForm({ ...editLogForm, hours: Number(e.target.value) })
-                    }
-                    className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#C4785A]"
-                  />
-                </div>
-                <div>
-                  <label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
-                    Minutes
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    max="59"
-                    value={editLogForm.minutes}
-                    onChange={(e) =>
-                      setEditLogForm({ ...editLogForm, minutes: Number(e.target.value) })
-                    }
-                    className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#C4785A]"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
-                  Date
-                </label>
-                <input
-                  type="date"
-                  value={editLogForm.date}
-                  onChange={(e) => setEditLogForm({ ...editLogForm, date: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#C4785A]"
+                <LabelInput
+                  id="edit-hours"
+                  label="Hours"
+                  type="number"
+                  min="0"
+                  value={editLogForm.hours}
+                  onChange={(e) =>
+                    setEditLogForm({ ...editLogForm, hours: Number(e.target.value) })
+                  }
+                />
+                <LabelInput
+                  id="edit-minutes"
+                  label="Minutes"
+                  type="number"
+                  min="0"
+                  max="59"
+                  value={editLogForm.minutes}
+                  onChange={(e) =>
+                    setEditLogForm({ ...editLogForm, minutes: Number(e.target.value) })
+                  }
                 />
               </div>
+
+              <LabelInput
+                id="edit-date"
+                label="Date"
+                type="date"
+                value={editLogForm.date}
+                onChange={(e) => setEditLogForm({ ...editLogForm, date: e.target.value })}
+              />
 
               <div className="flex items-center gap-2 pt-2">
                 <input

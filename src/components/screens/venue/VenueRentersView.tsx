@@ -20,6 +20,7 @@ import { RentalRenter } from '../../../types/index';
 import { formatCurrencyAmount } from '../../../utils/rules';
 import { BookingModal } from './BookingModal';
 import { Seek } from '../../ui/Seek';
+import { LabelInput } from '../../ui/LabelInput';
 import { ActionNode } from '../../ui/ActionNode';
 
 export const VenueRentersView: React.FC = () => {
@@ -299,73 +300,51 @@ export const VenueRentersView: React.FC = () => {
               </button>
             </div>
 
-            <form onSubmit={handleSaveRenter} className="space-y-3 text-xs">
-              <div>
-                <label className="block font-medium text-neutral-700 dark:text-neutral-300 mb-1">
-                  Full Name *
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. Amina Kaci"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  className="w-full px-3 py-2 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-xs"
-                  required
-                />
-              </div>
+            <form onSubmit={handleSaveRenter} className="space-y-3.5 text-xs">
+              <LabelInput
+                id="renter-fullname"
+                label="Full Name"
+                placeholder="e.g. Amina Kaci"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                required
+              />
 
-              <div>
-                <label className="block font-medium text-neutral-700 dark:text-neutral-300 mb-1">
-                  Company / Organization Name
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. Kaci Events & Communications"
-                  value={companyName}
-                  onChange={(e) => setCompanyName(e.target.value)}
-                  className="w-full px-3 py-2 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-xs"
-                />
-              </div>
+              <LabelInput
+                id="renter-company"
+                label="Company / Organization Name"
+                placeholder="e.g. Kaci Events & Communications"
+                value={companyName}
+                onChange={(e) => setCompanyName(e.target.value)}
+              />
 
-              <div>
-                <label className="block font-medium text-neutral-700 dark:text-neutral-300 mb-1">
-                  Phone Number *
-                </label>
-                <input
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <LabelInput
+                  id="renter-phone"
+                  label="Phone Number"
                   type="tel"
                   placeholder="+213 552 11 22 33"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  className="w-full px-3 py-2 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-xs"
                   required
                 />
-              </div>
-
-              <div>
-                <label className="block font-medium text-neutral-700 dark:text-neutral-300 mb-1">
-                  Email Address
-                </label>
-                <input
+                <LabelInput
+                  id="renter-email"
+                  label="Email Address"
                   type="email"
                   placeholder="contact@events.dz"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-3 py-2 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-xs"
                 />
               </div>
 
-              <div>
-                <label className="block font-medium text-neutral-700 dark:text-neutral-300 mb-1">
-                  National ID / Passport Number
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. ID-DZ-9912048"
-                  value={idDocNumber}
-                  onChange={(e) => setIdDocNumber(e.target.value)}
-                  className="w-full px-3 py-2 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-xs font-mono"
-                />
-              </div>
+              <LabelInput
+                id="renter-id-doc"
+                label="National ID / Passport Number"
+                placeholder="e.g. ID-DZ-9912048"
+                value={idDocNumber}
+                onChange={(e) => setIdDocNumber(e.target.value)}
+              />
 
               <div>
                 <label className="block font-medium text-neutral-700 dark:text-neutral-300 mb-1">

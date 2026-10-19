@@ -25,6 +25,8 @@ import {
   PricingModel,
   CurrencyCode,
 } from '../../../types/index';
+import { LabelInput } from '../../ui/LabelInput';
+import { Seek } from '../../ui/Seek';
 
 const STAGES: { id: DeliverableStage; label: string; countColor: string }[] = [
   { id: 'Briefing', label: 'Briefing & Spec', countColor: 'text-neutral-500' },
@@ -49,6 +51,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
   } = useAtriumStore();
 
   const [selectedProjectId, setSelectedProjectId] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState('');
   const [isAddDeliverableModalOpen, setIsAddDeliverableModalOpen] = useState(false);
   const [isAddProjectModalOpen, setIsAddProjectModalOpen] = useState(false);
   const [deliverableToEdit, setDeliverableToEdit] = useState<{
@@ -105,12 +108,20 @@ export const FreelanceDeliverablesView: React.FC = () => {
 
     activeProjects.forEach((project) => {
       project.deliverables.forEach((deliv) => {
-        list.push({ deliverable: deliv, project });
+        if (
+          !searchQuery.trim() ||
+          deliv.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          deliv.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          project.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          project.clientName.toLowerCase().includes(searchQuery.toLowerCase())
+        ) {
+          list.push({ deliverable: deliv, project });
+        }
       });
     });
 
     return list;
-  }, [activeProjects]);
+  }, [activeProjects, searchQuery]);
 
   const handleCreateDeliverable = (e: React.FormEvent) => {
     e.preventDefault();
@@ -216,8 +227,8 @@ export const FreelanceDeliverablesView: React.FC = () => {
         </div>
       </div>
 
-      {/* Filter by Project Bar */}
-      <div className="flex items-center justify-between gap-4">
+      {/* Filter by Project Bar & Seek Search */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-2 overflow-x-auto pb-1 max-w-full">
           <span className="text-xs text-neutral-400 font-medium shrink-0 flex items-center gap-1">
             <Filter size={12} />
@@ -251,20 +262,27 @@ export const FreelanceDeliverablesView: React.FC = () => {
           ))}
         </div>
 
-        {selectedProjectId !== 'all' && (
-          <button
-            type="button"
-            onClick={() => {
-              const targetProj = freelanceProjects.find((p) => p.id === selectedProjectId);
-              if (targetProj) setProjectToDelete(targetProj);
-            }}
-            className="px-2.5 py-1.5 rounded-lg border border-rose-200 dark:border-rose-900/60 text-rose-600 dark:text-rose-400 text-xs font-semibold flex items-center gap-1 hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer shrink-0"
-            title="Delete this project"
-          >
-            <Trash2 size={12} />
-            <span>Delete Project</span>
-          </button>
-        )}
+        <div className="flex items-center gap-2 shrink-0">
+          <Seek
+            value={searchQuery}
+            onChange={setSearchQuery}
+            placeholder="Search deliverables, tasks, briefs..."
+          />
+          {selectedProjectId !== 'all' && (
+            <button
+              type="button"
+              onClick={() => {
+                const targetProj = freelanceProjects.find((p) => p.id === selectedProjectId);
+                if (targetProj) setProjectToDelete(targetProj);
+              }}
+              className="px-2.5 py-1.5 rounded-lg border border-rose-200 dark:border-rose-900/60 text-rose-600 dark:text-rose-400 text-xs font-semibold flex items-center gap-1 hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer shrink-0"
+              title="Delete this project"
+            >
+              <Trash2 size={12} />
+              <span>Delete Project</span>
+            </button>
+          )}
+        </div>
       </div>
 
       {freelanceProjects.length === 0 ? (
@@ -488,19 +506,14 @@ export const FreelanceDeliverablesView: React.FC = () => {
                 </select>
               </div>
 
-              <div>
-                <label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
-                  Deliverable Title *
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Design System Tokens & Color Guidelines"
-                  value={deliverableTitle}
-                  onChange={(e) => setDeliverableTitle(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white"
-                />
-              </div>
+              <LabelInput
+                id="deliverable-title"
+                label="Deliverable Title"
+                required
+                placeholder="e.g. Design System Tokens & Color Guidelines"
+                value={deliverableTitle}
+                onChange={(e) => setDeliverableTitle(e.target.value)}
+              />
 
               <div>
                 <label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
@@ -516,31 +529,23 @@ export const FreelanceDeliverablesView: React.FC = () => {
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
-                    Estimated Hours *
-                  </label>
-                  <input
-                    type="number"
-                    min="1"
-                    required
-                    value={estimatedHours}
-                    onChange={(e) => setEstimatedHours(Number(e.target.value))}
-                    className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white"
-                  />
-                </div>
-                <div>
-                  <label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
-                    Due Date *
-                  </label>
-                  <input
-                    type="date"
-                    required
-                    value={dueDate}
-                    onChange={(e) => setDueDate(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white"
-                  />
-                </div>
+                <LabelInput
+                  id="deliverable-estimated-hours"
+                  label="Estimated Hours"
+                  type="number"
+                  min="1"
+                  required
+                  value={estimatedHours}
+                  onChange={(e) => setEstimatedHours(Number(e.target.value))}
+                />
+                <LabelInput
+                  id="deliverable-due-date"
+                  label="Due Date"
+                  type="date"
+                  required
+                  value={dueDate}
+                  onChange={(e) => setDueDate(e.target.value)}
+                />
               </div>
 
               <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
@@ -619,19 +624,14 @@ export const FreelanceDeliverablesView: React.FC = () => {
                 </div>
               </div>
 
-              <div>
-                <label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
-                  Project Title *
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Mobile Banking App UX Audit & Redesign"
-                  value={newProjectData.title}
-                  onChange={(e) => setNewProjectData({ ...newProjectData, title: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white"
-                />
-              </div>
+              <LabelInput
+                id="new-project-title"
+                label="Project Title"
+                required
+                placeholder="e.g. Mobile Banking App UX Audit & Redesign"
+                value={newProjectData.title}
+                onChange={(e) => setNewProjectData({ ...newProjectData, title: e.target.value })}
+              />
 
               <div>
                 <label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
@@ -669,23 +669,20 @@ export const FreelanceDeliverablesView: React.FC = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
-                    Total Budget
-                  </label>
-                  <input
+                  <LabelInput
+                    id="new-project-budget"
+                    label="Total Budget"
                     type="number"
                     value={newProjectData.budget}
                     onChange={(e) =>
                       setNewProjectData({ ...newProjectData, budget: Number(e.target.value) })
                     }
-                    className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white"
                   />
                 </div>
                 <div>
-                  <label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
-                    Est. Hours
-                  </label>
-                  <input
+                  <LabelInput
+                    id="new-project-hours"
+                    label="Est. Hours"
                     type="number"
                     value={newProjectData.estimatedHours}
                     onChange={(e) =>
@@ -694,22 +691,19 @@ export const FreelanceDeliverablesView: React.FC = () => {
                         estimatedHours: Number(e.target.value),
                       })
                     }
-                    className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
-                  Target Deadline
-                </label>
-                <input
+                <LabelInput
+                  id="new-project-deadline"
+                  label="Target Deadline"
                   type="date"
                   value={newProjectData.deadline}
                   onChange={(e) =>
                     setNewProjectData({ ...newProjectData, deadline: e.target.value })
                   }
-                  className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white"
                 />
               </div>
 

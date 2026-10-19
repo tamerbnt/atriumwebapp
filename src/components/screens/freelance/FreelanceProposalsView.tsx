@@ -19,6 +19,8 @@ import {
 import { useAtriumStore } from '../../../services/store';
 import { formatCurrencyAmount } from '../../../utils/rules';
 import { FreelanceProposal, PricingModel, CurrencyCode } from '../../../types/index';
+import { LabelInput } from '../../ui/LabelInput';
+import { Seek } from '../../ui/Seek';
 
 export const FreelanceProposalsView: React.FC = () => {
   const {
@@ -61,6 +63,20 @@ export const FreelanceProposalsView: React.FC = () => {
     estimatedTimelineWeeks: 4,
     validUntil: new Date(Date.now() + 21 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
   });
+
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredProposals = React.useMemo(() => {
+    if (!searchQuery.trim()) return freelanceProposals;
+    const q = searchQuery.toLowerCase();
+    return freelanceProposals.filter(
+      (p) =>
+        p.title.toLowerCase().includes(q) ||
+        p.clientName.toLowerCase().includes(q) ||
+        p.clientCompany?.toLowerCase().includes(q) ||
+        p.overview.toLowerCase().includes(q)
+    );
+  }, [freelanceProposals, searchQuery]);
 
   const handleScopeItemChange = (index: number, val: string) => {
     const next = [...formData.scopeItems];
@@ -166,19 +182,26 @@ export const FreelanceProposalsView: React.FC = () => {
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={() => setIsDraftModalOpen(true)}
-          className="h-10 px-4 rounded-xl bg-[#C4785A] text-white text-xs font-semibold flex items-center gap-1.5 hover:opacity-90 transition-opacity cursor-pointer shadow-xs self-start sm:self-auto"
-        >
-          <Plus size={14} />
-          <span>Draft Proposal</span>
-        </button>
+        <div className="flex items-center gap-3 self-start sm:self-auto">
+          <Seek
+            value={searchQuery}
+            onChange={setSearchQuery}
+            placeholder="Search proposals by title, client..."
+          />
+          <button
+            type="button"
+            onClick={() => setIsDraftModalOpen(true)}
+            className="h-10 px-4 rounded-xl bg-[#C4785A] text-white text-xs font-semibold flex items-center gap-1.5 hover:opacity-90 transition-opacity cursor-pointer shadow-xs shrink-0"
+          >
+            <Plus size={14} />
+            <span>Draft Proposal</span>
+          </button>
+        </div>
       </div>
 
       {/* Proposals Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        {freelanceProposals.map((proposal) => (
+        {filteredProposals.map((proposal) => (
           <div
             key={proposal.id}
             className="p-6 rounded-2xl bg-white dark:bg-neutral-900/60 border border-neutral-200 dark:border-neutral-800 shadow-2xs space-y-4 hover:border-[#C4785A]/40 transition-all flex flex-col justify-between"
@@ -321,60 +344,41 @@ export const FreelanceProposalsView: React.FC = () => {
 
             <form onSubmit={handleSubmitProposal} className="space-y-3.5 text-xs">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
-                    Client Contact *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Dr. Sofiane Cherbal"
-                    value={formData.clientName}
-                    onChange={(e) => setFormData({ ...formData, clientName: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white"
-                  />
-                </div>
-                <div>
-                  <label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
-                    Company Name
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="e.g. BioHealth Labs"
-                    value={formData.clientCompany}
-                    onChange={(e) => setFormData({ ...formData, clientCompany: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
-                  Client Email *
-                </label>
-                <input
-                  type="email"
+                <LabelInput
+                  id="draft-client-name"
+                  label="Client Contact"
                   required
-                  placeholder="contact@company.com"
-                  value={formData.clientEmail}
-                  onChange={(e) => setFormData({ ...formData, clientEmail: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white"
+                  placeholder="e.g. Dr. Sofiane Cherbal"
+                  value={formData.clientName}
+                  onChange={(e) => setFormData({ ...formData, clientName: e.target.value })}
+                />
+                <LabelInput
+                  id="draft-client-company"
+                  label="Company Name"
+                  placeholder="e.g. BioHealth Labs"
+                  value={formData.clientCompany}
+                  onChange={(e) => setFormData({ ...formData, clientCompany: e.target.value })}
                 />
               </div>
 
-              <div>
-                <label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
-                  Engagement Title *
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Laboratory Sample Tracking Portal & UI Architecture"
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white"
-                />
-              </div>
+              <LabelInput
+                id="draft-client-email"
+                label="Client Email"
+                type="email"
+                required
+                placeholder="contact@company.com"
+                value={formData.clientEmail}
+                onChange={(e) => setFormData({ ...formData, clientEmail: e.target.value })}
+              />
+
+              <LabelInput
+                id="draft-proposal-title"
+                label="Engagement Title"
+                required
+                placeholder="e.g. Laboratory Sample Tracking Portal & UI Architecture"
+                value={formData.title}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              />
 
               <div>
                 <label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
@@ -444,38 +448,32 @@ export const FreelanceProposalsView: React.FC = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
-                    Budget
-                  </label>
-                  <input
+                  <LabelInput
+                    id="draft-budget"
+                    label="Budget"
                     type="number"
                     value={formData.proposedBudget}
                     onChange={(e) => setFormData({ ...formData, proposedBudget: Number(e.target.value) })}
-                    className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white"
                   />
                 </div>
                 <div>
-                  <label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
-                    Est. Weeks
-                  </label>
-                  <input
+                  <LabelInput
+                    id="draft-weeks"
+                    label="Est. Weeks"
                     type="number"
                     value={formData.estimatedTimelineWeeks}
                     onChange={(e) => setFormData({ ...formData, estimatedTimelineWeeks: Number(e.target.value) })}
-                    className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
-                  Valid Until Date
-                </label>
-                <input
+                <LabelInput
+                  id="draft-valid-until"
+                  label="Valid Until Date"
                   type="date"
                   value={formData.validUntil}
                   onChange={(e) => setFormData({ ...formData, validUntil: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white"
                 />
               </div>
 
@@ -518,43 +516,28 @@ export const FreelanceProposalsView: React.FC = () => {
 
             <form onSubmit={handleEditProposalSubmit} className="space-y-4 text-xs">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
-                    Client Name *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={editFormData.clientName}
-                    onChange={(e) => setEditFormData({ ...editFormData, clientName: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white"
-                  />
-                </div>
-                <div>
-                  <label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
-                    Client Company
-                  </label>
-                  <input
-                    type="text"
-                    value={editFormData.clientCompany}
-                    onChange={(e) => setEditFormData({ ...editFormData, clientCompany: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
-                  Proposal Title *
-                </label>
-                <input
-                  type="text"
+                <LabelInput
+                  id="edit-client-name"
+                  label="Client Name"
                   required
-                  value={editFormData.title}
-                  onChange={(e) => setEditFormData({ ...editFormData, title: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white"
+                  value={editFormData.clientName}
+                  onChange={(e) => setEditFormData({ ...editFormData, clientName: e.target.value })}
+                />
+                <LabelInput
+                  id="edit-client-company"
+                  label="Client Company"
+                  value={editFormData.clientCompany}
+                  onChange={(e) => setEditFormData({ ...editFormData, clientCompany: e.target.value })}
                 />
               </div>
+
+              <LabelInput
+                id="edit-proposal-title"
+                label="Proposal Title"
+                required
+                value={editFormData.title}
+                onChange={(e) => setEditFormData({ ...editFormData, title: e.target.value })}
+              />
 
               <div>
                 <label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
@@ -633,38 +616,32 @@ export const FreelanceProposalsView: React.FC = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
-                    Budget
-                  </label>
-                  <input
+                  <LabelInput
+                    id="edit-budget"
+                    label="Budget"
                     type="number"
                     value={editFormData.proposedBudget}
                     onChange={(e) => setEditFormData({ ...editFormData, proposedBudget: Number(e.target.value) })}
-                    className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white"
                   />
                 </div>
                 <div>
-                  <label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
-                    Est. Weeks
-                  </label>
-                  <input
+                  <LabelInput
+                    id="edit-weeks"
+                    label="Est. Weeks"
                     type="number"
                     value={editFormData.estimatedTimelineWeeks}
                     onChange={(e) => setEditFormData({ ...editFormData, estimatedTimelineWeeks: Number(e.target.value) })}
-                    className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
-                  Valid Until Date
-                </label>
-                <input
+                <LabelInput
+                  id="edit-valid-until"
+                  label="Valid Until Date"
                   type="date"
                   value={editFormData.validUntil}
                   onChange={(e) => setEditFormData({ ...editFormData, validUntil: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white"
                 />
               </div>
 

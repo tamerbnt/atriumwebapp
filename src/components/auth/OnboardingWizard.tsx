@@ -31,6 +31,8 @@ import {
   POPULAR_BUSINESS_SEARCHES,
   BusinessMatchResult,
 } from '../../utils/businessMapping';
+import { LabelInput } from '../ui/LabelInput';
+import { Seek } from '../ui/Seek';
 
 interface OnboardingWizardProps {
   isOpen: boolean;
@@ -277,69 +279,45 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ isOpen, onCl
         {currentStep === 1 && (
           <div className="space-y-4 py-2 animate-in fade-in duration-150">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-              <div>
-                <label className="block text-xs font-semibold text-neutral-300 mb-1">
-                  Full Name *
-                </label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    placeholder="e.g. Amine Bentouati"
-                    className="w-full h-11 pl-9 pr-3 rounded-xl bg-neutral-900/90 border border-neutral-700/80 text-white text-xs focus:outline-none focus:border-[#C4785A]"
-                  />
-                  <User size={14} className="absolute left-3 top-3.5 text-neutral-500" />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-neutral-300 mb-1">
-                  Work Email *
-                </label>
-                <div className="relative">
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="owner@mybusiness.dz"
-                    className="w-full h-11 pl-9 pr-3 rounded-xl bg-neutral-900/90 border border-neutral-700/80 text-white text-xs focus:outline-none focus:border-[#C4785A]"
-                  />
-                  <Mail size={14} className="absolute left-3 top-3.5 text-neutral-500" />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-neutral-300 mb-1">
-                  Phone Number
-                </label>
-                <div className="relative">
-                  <input
-                    type="tel"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="+213 550 00 00 00"
-                    className="w-full h-11 pl-9 pr-3 rounded-xl bg-neutral-900/90 border border-neutral-700/80 text-white text-xs focus:outline-none focus:border-[#C4785A]"
-                  />
-                  <Phone size={14} className="absolute left-3 top-3.5 text-neutral-500" />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-neutral-300 mb-1">
-                  Owner Terminal Password
-                </label>
-                <div className="relative">
-                  <input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Create a strong password"
-                    className="w-full h-11 pl-9 pr-3 rounded-xl bg-neutral-900/90 border border-neutral-700/80 text-white text-xs focus:outline-none focus:border-[#C4785A]"
-                  />
-                  <Lock size={14} className="absolute left-3 top-3.5 text-neutral-500" />
-                </div>
-              </div>
+              <LabelInput
+                field="Full Name"
+                label="Full Name"
+                value={fullName}
+                onChange={setFullName}
+                width="100%"
+                height={46}
+                corner={14}
+              />
+              <LabelInput
+                field="Email"
+                label="Work Email"
+                value={email}
+                onChange={setEmail}
+                type="email"
+                width="100%"
+                height={46}
+                corner={14}
+              />
+              <LabelInput
+                field="Phone"
+                label="Phone Number"
+                value={phone}
+                onChange={setPhone}
+                type="tel"
+                width="100%"
+                height={46}
+                corner={14}
+              />
+              <LabelInput
+                field="Password"
+                label="Terminal Password"
+                value={password}
+                onChange={setPassword}
+                type="password"
+                width="100%"
+                height={46}
+                corner={14}
+              />
             </div>
 
             <div className="p-3 rounded-xl bg-neutral-900/80 border border-neutral-800 text-xs text-neutral-400 flex items-center gap-2 mt-2">
@@ -355,31 +333,24 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ isOpen, onCl
         {currentStep === 2 && (
           <div className="space-y-4 py-2 animate-in fade-in duration-150">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-semibold text-neutral-300 mb-1">
-                  Business / Brand Name *
-                </label>
-                <input
-                  type="text"
-                  value={businessName}
-                  onChange={(e) => setBusinessName(e.target.value)}
-                  placeholder="e.g. Atrium Fitness Club"
-                  className="w-full h-10 px-3 rounded-xl bg-neutral-900/90 border border-neutral-700/80 text-white text-xs focus:outline-none focus:border-[#C4785A]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-neutral-300 mb-1">
-                  First Branch Location Name *
-                </label>
-                <input
-                  type="text"
-                  value={branchName}
-                  onChange={(e) => setBranchName(e.target.value)}
-                  placeholder="e.g. Hydra Main Branch"
-                  className="w-full h-10 px-3 rounded-xl bg-neutral-900/90 border border-neutral-700/80 text-white text-xs focus:outline-none focus:border-[#C4785A]"
-                />
-              </div>
+              <LabelInput
+                field="Business"
+                label="Business / Brand Name"
+                value={businessName}
+                onChange={setBusinessName}
+                width="100%"
+                height={46}
+                corner={14}
+              />
+              <LabelInput
+                field="Branch"
+                label="First Branch Location"
+                value={branchName}
+                onChange={setBranchName}
+                width="100%"
+                height={46}
+                corner={14}
+              />
             </div>
 
             {/* Search Bar & Semantic Matcher */}
@@ -392,26 +363,13 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ isOpen, onCl
                   Auto-maps to vertical
                 </span>
               </div>
-              <div className="relative">
-                <Search size={14} className="absolute left-3.5 top-3 text-neutral-500 pointer-events-none" />
-                <input
-                  type="text"
-                  value={businessSearchQuery}
-                  onChange={(e) => handleBusinessSearch(e.target.value)}
-                  placeholder="e.g. Barbershop, CrossFit, Pâtisserie, Coworking, UI Designer..."
-                  className="w-full h-10 pl-9 pr-8 rounded-xl bg-neutral-900/90 border border-neutral-700/80 text-white text-xs placeholder:text-neutral-500 focus:outline-none focus:border-[#C4785A] transition-all"
-                />
-                {businessSearchQuery && (
-                  <button
-                    type="button"
-                    onClick={handleClearSearch}
-                    className="absolute right-3 top-3 text-neutral-500 hover:text-white cursor-pointer"
-                    title="Clear search"
-                  >
-                    <X size={14} />
-                  </button>
-                )}
-              </div>
+              <Seek
+                value={businessSearchQuery}
+                onChange={handleBusinessSearch}
+                placeholder="e.g. Barbershop, CrossFit, Pâtisserie, Coworking, UI Designer..."
+                openWidth={380}
+                shutSize={38}
+              />
 
               {/* Popular Quick Suggestion Chips */}
               <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
@@ -508,19 +466,15 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ isOpen, onCl
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-neutral-300 mb-1">
-                Facility Address (Optional)
-              </label>
-              <div className="relative">
-                <input
-                  type="text"
-                  value={branchAddress}
-                  onChange={(e) => setBranchAddress(e.target.value)}
-                  placeholder="Street address, city"
-                  className="w-full h-10 pl-8 pr-3 rounded-xl bg-neutral-900/90 border border-neutral-700/80 text-white text-xs focus:outline-none focus:border-[#C4785A]"
-                />
-                <MapPin size={13} className="absolute left-3 top-3 text-neutral-500" />
-              </div>
+              <LabelInput
+                field="Address"
+                label="Facility Address (Optional)"
+                value={branchAddress}
+                onChange={setBranchAddress}
+                width="100%"
+                height={46}
+                corner={14}
+              />
             </div>
           </div>
         )}
@@ -591,19 +545,16 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ isOpen, onCl
             {/* Voucher Code Input Block */}
             {licenseOption === 'voucher' && (
               <div className="p-4 rounded-2xl bg-neutral-900/90 border border-neutral-800 space-y-3 animate-in fade-in">
-                <label className="block text-xs font-semibold text-neutral-300">
-                  Enter 24-character Voucher Code
-                </label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={voucherCode}
-                    onChange={(e) => handleVoucherChange(e.target.value)}
-                    placeholder="ATR-PRO-LIFE-XXXX-XXXX"
-                    className="w-full h-11 pl-10 pr-4 rounded-xl bg-black/60 border border-neutral-700 text-white font-mono text-xs uppercase tracking-wider focus:outline-none focus:border-[#C4785A]"
-                  />
-                  <KeyRound size={15} className="absolute left-3.5 top-3.5 text-neutral-500" />
-                </div>
+                <LabelInput
+                  field="Voucher"
+                  label="Voucher Code"
+                  value={voucherCode}
+                  onChange={handleVoucherChange}
+                  placeholder="ATR-PRO-LIFE-XXXX-XXXX"
+                  width="100%"
+                  height={46}
+                  corner={14}
+                />
 
                 {voucherCode && (
                   <div className="flex items-center justify-between text-xs">

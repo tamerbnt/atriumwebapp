@@ -3,6 +3,8 @@ import { useAtriumStore } from '../../../services/store';
 import { PMTalent } from '../../../types/index';
 import { ALGERIAN_WILAYAS, validateCcpAccount } from '../../../utils/algerianPtt';
 import { MobilePhoneSimulator } from './MobilePhoneSimulator';
+import { LabelInput } from '../../ui/LabelInput';
+import { Seek } from '../../ui/Seek';
 import {
   Users,
   Search,
@@ -198,16 +200,13 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
           {/* Search & Filter Bar */}
           <div className="p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs flex flex-wrap items-center justify-between gap-4">
             <div className="flex flex-wrap items-center gap-3 text-xs flex-1 max-w-xl">
-              <div className="relative flex-1 min-w-[200px]">
-                <Search className="w-4 h-4 absolute left-3 top-2.5 text-zinc-400" />
-                <input
-                  type="text"
-                  placeholder="Rechercher par nom, téléphone, numéro CCP..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-[#C4785A]"
-                />
-              </div>
+              <Seek
+                value={searchTerm}
+                onChange={setSearchTerm}
+                placeholder="Rechercher par nom, téléphone, numéro CCP..."
+                openWidth={360}
+                shutSize={38}
+              />
 
               <select
                 value={selectedWilaya}
@@ -453,46 +452,41 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
             )}
 
             <form onSubmit={(e) => handleCreateTalent(e, 'portal')} className="space-y-3">
-              <div>
-                <label className="text-[11px] font-semibold text-zinc-700 dark:text-zinc-300 block mb-1">
-                  Nom et Prénom *
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Ex: Yasmine Belkacem"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800"
-                />
-              </div>
+              <LabelInput
+                field="Nom"
+                label="Nom et Prénom *"
+                value={fullName}
+                onChange={setFullName}
+                required
+                placeholder="Ex: Yasmine Belkacem"
+                width="100%"
+                height={46}
+                corner={14}
+              />
 
               <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="text-[11px] font-semibold text-zinc-700 dark:text-zinc-300 block mb-1">
-                    Numéro de Téléphone *
-                  </label>
-                  <input
-                    type="tel"
-                    required
-                    placeholder="+213 661 ..."
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-[11px] font-semibold text-zinc-700 dark:text-zinc-300 block mb-1">
-                    Âge
-                  </label>
-                  <input
-                    type="number"
-                    value={age}
-                    onChange={(e) => setAge(e.target.value)}
-                    className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800"
-                  />
-                </div>
+                <LabelInput
+                  field="Telephone"
+                  label="Numéro de Téléphone *"
+                  type="tel"
+                  required
+                  placeholder="+213 661 ..."
+                  value={phone}
+                  onChange={setPhone}
+                  width="100%"
+                  height={46}
+                  corner={14}
+                />
+                <LabelInput
+                  field="Age"
+                  label="Âge"
+                  type="number"
+                  value={age ? String(age) : ''}
+                  onChange={(v) => setAge(v ? Number(v) : '')}
+                  width="100%"
+                  height={46}
+                  corner={14}
+                />
               </div>
 
               <div className="grid grid-cols-2 gap-2">
@@ -513,17 +507,15 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                   </select>
                 </div>
 
-                <div>
-                  <label className="text-[11px] font-semibold text-zinc-700 dark:text-zinc-300 block mb-1">
-                    Commune
-                  </label>
-                  <input
-                    type="text"
-                    value={commune}
-                    onChange={(e) => setCommune(e.target.value)}
-                    className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800"
-                  />
-                </div>
+                <LabelInput
+                  field="Commune"
+                  label="Commune"
+                  value={commune}
+                  onChange={setCommune}
+                  width="100%"
+                  height={46}
+                  corner={14}
+                />
               </div>
 
               {/* CCP Info */}
@@ -533,42 +525,45 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                 </span>
                 <div className="grid grid-cols-3 gap-2">
                   <div className="col-span-2">
-                    <label className="text-[10px] text-zinc-500 block mb-0.5">N° Compte CCP</label>
-                    <input
-                      type="text"
-                      required
+                    <LabelInput
+                      field="CCP"
+                      label="N° Compte CCP *"
                       placeholder="0012345678"
                       value={ccpNumber}
-                      onChange={(e) => setCcpNumber(e.target.value)}
-                      className="w-full px-2.5 py-1.5 text-xs font-mono rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800"
+                      onChange={setCcpNumber}
+                      required
+                      width="100%"
+                      height={44}
+                      corner={12}
                     />
                   </div>
                   <div>
-                    <label className="text-[10px] text-zinc-500 block mb-0.5">Clé (2 chiffres)</label>
-                    <input
-                      type="text"
-                      required
+                    <LabelInput
+                      field="Cle"
+                      label="Clé *"
                       placeholder="45"
                       value={ccpKey}
-                      onChange={(e) => setCcpKey(e.target.value)}
-                      className="w-full px-2.5 py-1.5 text-xs font-mono rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800"
+                      onChange={setCcpKey}
+                      required
+                      width="100%"
+                      height={44}
+                      corner={12}
                     />
                   </div>
                 </div>
               </div>
 
               {/* Selfie / Portrait Upload */}
-              <div>
-                <label className="text-[11px] font-semibold text-zinc-700 dark:text-zinc-300 block mb-1">
-                  Photo Portrait / Casting Selfie (Lien image)
-                </label>
-                <input
-                  type="url"
-                  value={photoUrl}
-                  onChange={(e) => setPhotoUrl(e.target.value)}
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800"
-                />
-              </div>
+              <LabelInput
+                field="Photo"
+                label="Photo Portrait / Casting Selfie (Lien image)"
+                type="url"
+                value={photoUrl}
+                onChange={setPhotoUrl}
+                width="100%"
+                height={46}
+                corner={14}
+              />
 
               <button
                 type="submit"
@@ -597,76 +592,76 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
           </div>
 
           <form onSubmit={(e) => handleCreateTalent(e, 'walkin')} className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="col-span-2">
-                <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block mb-1">
-                  Nom et Prénom du Candidat *
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Ex: Karim Bensalem"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
-                />
-              </div>
+            <div className="space-y-3">
+              <LabelInput
+                field="Nom"
+                label="Nom et Prénom du Candidat *"
+                required
+                placeholder="Ex: Karim Bensalem"
+                value={fullName}
+                onChange={setFullName}
+                width="100%"
+                height={46}
+                corner={14}
+              />
 
-              <div>
-                <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block mb-1">
-                  Téléphone Mobile *
-                </label>
-                <input
+              <div className="grid grid-cols-2 gap-3">
+                <LabelInput
+                  field="Telephone"
+                  label="Téléphone Mobile *"
                   type="tel"
                   required
                   placeholder="+213 550 ..."
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800"
+                  onChange={setPhone}
+                  width="100%"
+                  height={46}
+                  corner={14}
                 />
+
+                <div>
+                  <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block mb-1">
+                    Wilaya de Résidence
+                  </label>
+                  <select
+                    value={wilayaCode}
+                    onChange={(e) => setWilayaCode(e.target.value)}
+                    className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800"
+                  >
+                    {ALGERIAN_WILAYAS.map((w) => (
+                      <option key={w.code} value={w.code}>
+                        {w.code} - {w.nameFr}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
-              <div>
-                <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block mb-1">
-                  Wilaya de Résidence
-                </label>
-                <select
-                  value={wilayaCode}
-                  onChange={(e) => setWilayaCode(e.target.value)}
-                  className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800"
-                >
-                  {ALGERIAN_WILAYAS.map((w) => (
-                    <option key={w.code} value={w.code}>
-                      {w.code} - {w.nameFr}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block mb-1">
-                  N° Compte CCP (10 chiffres)
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={ccpNumber}
-                  onChange={(e) => setCcpNumber(e.target.value)}
-                  className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 font-mono"
-                />
-              </div>
-
-              <div>
-                <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block mb-1">
-                  Clé Algérie Poste (2 chiffres)
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={ccpKey}
-                  onChange={(e) => setCcpKey(e.target.value)}
-                  className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 font-mono"
-                />
+              <div className="grid grid-cols-3 gap-3">
+                <div className="col-span-2">
+                  <LabelInput
+                    field="CCP"
+                    label="N° Compte CCP (10 chiffres) *"
+                    required
+                    value={ccpNumber}
+                    onChange={setCcpNumber}
+                    width="100%"
+                    height={46}
+                    corner={14}
+                  />
+                </div>
+                <div>
+                  <LabelInput
+                    field="Cle"
+                    label="Clé (2 chiffres) *"
+                    required
+                    value={ccpKey}
+                    onChange={setCcpKey}
+                    width="100%"
+                    height={46}
+                    corner={14}
+                  />
+                </div>
               </div>
             </div>
 

@@ -351,44 +351,32 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 </select>
               </div>
 
-              <div>
-                <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
-                  Reservation Date
-                </label>
-                <input
-                  type="date"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm text-neutral-900 dark:text-white focus:outline-hidden focus:border-[var(--color-accent)]"
-                  required
-                />
-              </div>
+              <LabelInput
+                id="booking-start-date"
+                label="Reservation Date"
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                required
+              />
 
-              <div>
-                <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
-                  Start Time
-                </label>
-                <input
-                  type="time"
-                  value={startTime}
-                  onChange={(e) => setStartTime(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm text-neutral-900 dark:text-white focus:outline-hidden focus:border-[var(--color-accent)]"
-                  required
-                />
-              </div>
+              <LabelInput
+                id="booking-start-time"
+                label="Start Time"
+                type="time"
+                value={startTime}
+                onChange={(e) => setStartTime(e.target.value)}
+                required
+              />
 
-              <div>
-                <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
-                  End Time (Est. Duration: {durationHours}h)
-                </label>
-                <input
-                  type="time"
-                  value={endTime}
-                  onChange={(e) => setEndTime(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm text-neutral-900 dark:text-white focus:outline-hidden focus:border-[var(--color-accent)]"
-                  required
-                />
-              </div>
+              <LabelInput
+                id="booking-end-time"
+                label={`End Time (Est. Duration: ${durationHours}h)`}
+                type="time"
+                value={endTime}
+                onChange={(e) => setEndTime(e.target.value)}
+                required
+              />
             </div>
           </div>
 
@@ -477,16 +465,14 @@ export const BookingModal: React.FC<BookingModalProps> = ({
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
-                  Expected Attendees
-                </label>
-                <input
+                <LabelInput
+                  id="booking-attendees"
+                  label="Expected Attendees"
                   type="number"
                   min="1"
                   max={selectedUnit?.capacity ? selectedUnit.capacity + 50 : 500}
                   value={attendeeCount}
                   onChange={(e) => setAttendeeCount(Number(e.target.value))}
-                  className="w-full px-3.5 py-2.5 bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm text-neutral-900 dark:text-white focus:outline-hidden focus:border-[var(--color-accent)]"
                 />
                 {selectedUnit?.capacity && attendeeCount > selectedUnit.capacity && (
                   <p className="text-[11px] text-amber-500 mt-1">
@@ -583,14 +569,12 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
-                  Security Deposit (Caution)
-                </label>
-                <input
+                <LabelInput
+                  id="booking-deposit"
+                  label="Security Deposit (Caution)"
                   type="number"
                   value={depositAmount}
                   onChange={(e) => setDepositAmount(Number(e.target.value))}
-                  className="w-full px-3.5 py-2.5 bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm text-neutral-900 dark:text-white focus:outline-hidden tabular-nums"
                 />
               </div>
 
@@ -611,14 +595,12 @@ export const BookingModal: React.FC<BookingModalProps> = ({
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
-                  Amount Paid So Far
-                </label>
-                <input
+                <LabelInput
+                  id="booking-paid-amount"
+                  label="Amount Paid So Far"
                   type="number"
                   value={paidAmount}
                   onChange={(e) => setPaidAmount(Number(e.target.value))}
-                  className="w-full px-3.5 py-2.5 bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm text-neutral-900 dark:text-white focus:outline-hidden tabular-nums"
                 />
               </div>
             </div>

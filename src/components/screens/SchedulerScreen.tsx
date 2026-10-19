@@ -24,6 +24,7 @@ import { useAtriumStore } from '../../services/store';
 import { ScheduleEvent } from '../../types/index';
 import { Modal } from '../ui/Modal';
 import { Seek } from '../ui/Seek';
+import { LabelInput } from '../ui/LabelInput';
 import { StylistScheduleView } from './StylistScheduleView';
 
 export const SchedulerScreen: React.FC = () => {
@@ -705,18 +706,17 @@ export const SchedulerScreen: React.FC = () => {
         subtitle={`Add class or appointment to ${currentBranch?.name || 'Atrium 1'}`}
       >
         <div className="space-y-4">
-          <div className="space-y-1">
-            <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
-              Session Title *
-            </label>
-            <input
-              type="text"
-              value={newTitle}
-              onChange={(e) => setNewTitle(e.target.value)}
-              placeholder="e.g. Boxing Fundamentals or Pilates Morning"
-              className="w-full h-11 px-3 text-sm rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:border-[#C4785A] text-neutral-900 dark:text-white"
-            />
-          </div>
+          <LabelInput
+            field="SessionTitle"
+            label="Session Title *"
+            required
+            value={newTitle}
+            onChange={setNewTitle}
+            placeholder="e.g. Boxing Fundamentals or Pilates Morning"
+            width="100%"
+            height={46}
+            corner={14}
+          />
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
@@ -737,68 +737,61 @@ export const SchedulerScreen: React.FC = () => {
               </select>
             </div>
 
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
-                Max Capacity
-              </label>
-              <input
-                type="number"
-                value={newCapacity}
-                onChange={(e) => setNewCapacity(Number(e.target.value))}
-                className="w-full h-11 px-3 text-sm rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:border-[#C4785A] text-neutral-900 dark:text-white"
-              />
-            </div>
+            <LabelInput
+              field="Capacity"
+              label="Max Capacity"
+              type="number"
+              value={newCapacity ? String(newCapacity) : ''}
+              onChange={(v) => setNewCapacity(Number(v) || 0)}
+              width="100%"
+              height={46}
+              corner={14}
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
-                Start Time
-              </label>
-              <input
-                type="time"
-                value={newStartTime}
-                onChange={(e) => setNewStartTime(e.target.value)}
-                className="w-full h-11 px-3 text-sm rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:border-[#C4785A] text-neutral-900 dark:text-white"
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
-                End Time
-              </label>
-              <input
-                type="time"
-                value={newEndTime}
-                onChange={(e) => setNewEndTime(e.target.value)}
-                className="w-full h-11 px-3 text-sm rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:border-[#C4785A] text-neutral-900 dark:text-white"
-              />
-            </div>
+            <LabelInput
+              field="StartTime"
+              label="Start Time"
+              type="time"
+              value={newStartTime}
+              onChange={setNewStartTime}
+              width="100%"
+              height={46}
+              corner={14}
+            />
+            <LabelInput
+              field="EndTime"
+              label="End Time"
+              type="time"
+              value={newEndTime}
+              onChange={setNewEndTime}
+              width="100%"
+              height={46}
+              corner={14}
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
-                Assigned Coach
-              </label>
-              <input
-                type="text"
-                value={newTrainer}
-                onChange={(e) => setNewTrainer(e.target.value)}
-                className="w-full h-11 px-3 text-sm rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:border-[#C4785A] text-neutral-900 dark:text-white"
-              />
-            </div>
+            <LabelInput
+              field="Trainer"
+              label="Assigned Coach"
+              value={newTrainer}
+              onChange={setNewTrainer}
+              width="100%"
+              height={46}
+              corner={14}
+            />
 
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
-                Room / Area
-              </label>
-              <input
-                type="text"
-                value={newRoom}
-                onChange={(e) => setNewRoom(e.target.value)}
-                className="w-full h-11 px-3 text-sm rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:border-[#C4785A] text-neutral-900 dark:text-white"
-              />
-            </div>
+            <LabelInput
+              field="Room"
+              label="Room / Area"
+              value={newRoom}
+              onChange={setNewRoom}
+              width="100%"
+              height={46}
+              corner={14}
+            />
           </div>
 
           <div className="flex justify-end gap-3 pt-3">
