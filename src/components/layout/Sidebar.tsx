@@ -78,7 +78,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           label: 'Cahiers des charges',
         },
         {
-          id: 'pm_cp_projects',
+          id: 'pm_dir_projects',
           icon: <Kanban size={19} />,
           title: 'Projets · Vue globale agence',
           label: 'Projets',
@@ -609,6 +609,78 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </button>
         </div>
 
+        {/* Role Switcher in Sidebar for NCH Market Activator */}
+        {category === 'project_milestone' && (
+          <div className="w-full mt-3 mb-2 pt-2.5 border-t border-white/10 relative">
+            {isExpanded ? (
+              <div className="space-y-1.5 px-0.5">
+                <div className="flex items-center justify-between text-[10px] uppercase font-bold tracking-wider text-zinc-400 px-1">
+                  <span>Rôle Actif</span>
+                  <span className="text-[#C4785A] font-mono">
+                    {activePmRole === 'direction' ? 'DG' : activePmRole === 'chef_projet' ? 'CDP' : activePmRole === 'crea' ? 'CR' : activePmRole === 'superviseur' ? 'SUP' : activePmRole === 'rh' ? 'RH' : 'CPT'}
+                  </span>
+                </div>
+                <div className="grid grid-cols-3 gap-1">
+                  {[
+                    { id: 'direction' as const, label: 'Direction Générale', badge: 'DG', screen: 'pm_dir_dashboard' as const, sub: 'dashboard' },
+                    { id: 'chef_projet' as const, label: 'Chef de Projet', badge: 'CDP', screen: 'pm_cp_projects' as const, sub: 'portfolio' },
+                    { id: 'crea' as const, label: 'Studio Créa', badge: 'CR', screen: 'pm_crea_kanban' as const, sub: 'demandes' },
+                    { id: 'superviseur' as const, label: 'Superviseur Terrain', badge: 'SUP', screen: 'pm_sup_missions' as const, sub: 'missions' },
+                    { id: 'rh' as const, label: 'Ressources Humaines', badge: 'RH', screen: 'pm_rh_talents' as const, sub: 'talents' },
+                    { id: 'compta' as const, label: 'Comptabilité & Paie', badge: 'CPT', screen: 'pm_compta_payroll' as const, sub: 'payroll' },
+                  ].map((r) => {
+                    const isRoleActive = activePmRole === r.id;
+                    return (
+                      <button
+                        key={r.id}
+                        type="button"
+                        onClick={() => {
+                          setActivePmRole(r.id);
+                          setScreen(r.screen);
+                          setActivePmSubScreen(r.sub);
+                        }}
+                        className={`py-1 px-1.5 rounded-lg text-center transition-all cursor-pointer font-bold text-[10px] ${
+                          isRoleActive
+                            ? 'bg-[#C4785A] text-white shadow-xs scale-102 ring-1 ring-[#C4785A]/50'
+                            : 'bg-white/5 text-zinc-400 hover:bg-white/10 hover:text-white'
+                        }`}
+                        title={r.label}
+                      >
+                        {r.badge}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const roles: Array<{ id: typeof activePmRole; screen: ActiveScreen; sub: string }> = [
+                      { id: 'direction', screen: 'pm_dir_dashboard', sub: 'dashboard' },
+                      { id: 'chef_projet', screen: 'pm_cp_projects', sub: 'portfolio' },
+                      { id: 'crea', screen: 'pm_crea_kanban', sub: 'demandes' },
+                      { id: 'superviseur', screen: 'pm_sup_missions', sub: 'missions' },
+                      { id: 'rh', screen: 'pm_rh_talents', sub: 'talents' },
+                      { id: 'compta', screen: 'pm_compta_payroll', sub: 'payroll' },
+                    ];
+                    const currIdx = roles.findIndex((r) => r.id === activePmRole);
+                    const next = roles[(currIdx + 1) % roles.length];
+                    setActivePmRole(next.id);
+                    setScreen(next.screen);
+                    setActivePmSubScreen(next.sub);
+                  }}
+                  className="w-9 h-9 rounded-xl bg-[#C4785A]/20 border border-[#C4785A]/40 text-[#C4785A] hover:bg-[#C4785A] hover:text-white flex items-center justify-center font-bold text-[11px] transition-all cursor-pointer shadow-xs active:scale-95"
+                  title={`Rôle: ${activePmRole} (Cliquer pour changer de rôle)`}
+                >
+                  {activePmRole === 'direction' ? 'DG' : activePmRole === 'chef_projet' ? 'CDP' : activePmRole === 'crea' ? 'CR' : activePmRole === 'superviseur' ? 'SUP' : activePmRole === 'rh' ? 'RH' : 'CPT'}
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Center Vertical Dock Navigation */}
         <nav className="flex flex-col items-center gap-2.5 my-auto w-full">
           {dockNavItems.map((item, index) => {
@@ -627,6 +699,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     } else if (item.id === 'pm_dir_new_project') {
                       setActivePmRole('direction');
                       setActivePmSubScreen('new_project');
+                    } else if (item.id === 'pm_dir_projects') {
+                      setActivePmRole('direction');
+                      setActivePmSubScreen('dashboard');
                     } else if (item.id === 'pm_dir_approvals') {
                       setActivePmRole('direction');
                       setActivePmSubScreen('approvals');

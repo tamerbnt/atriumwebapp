@@ -148,78 +148,9 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
           </h1>
         </div>
 
-        {/* Global Action Button */}
-        <div className="flex items-center gap-2">
-          {activeTab === 'kanban' ? (
-            <button
-              onClick={() => setActiveTab('upload')}
-              className="px-3.5 py-1.5 text-xs font-semibold text-white bg-[#C4785A] hover:bg-[#b3684a] rounded-xl flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
-            >
-              <UploadCloud className="w-4 h-4" />
-              Déposer une Épreuve BAT
-            </button>
-          ) : (
-            <button
-              onClick={() => setActiveTab('kanban')}
-              className="px-3.5 py-1.5 text-xs font-semibold text-zinc-700 dark:text-zinc-300 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 rounded-xl flex items-center gap-1.5 transition-colors cursor-pointer"
-            >
-              <Layers className="w-4 h-4" />
-              Retour au Kanban
-            </button>
-          )}
-        </div>
       </div>
 
-      {/* Screen Tabs */}
-      <div className="flex items-center gap-2 border-b border-zinc-200 dark:border-zinc-800 pb-2 overflow-x-auto">
-        <button
-          onClick={() => setActiveTab('demandes')}
-          className={`px-3.5 py-2 text-xs font-semibold rounded-xl flex items-center gap-2 whitespace-nowrap transition-colors cursor-pointer ${
-            activeTab === 'demandes' || activeTab === 'kanban'
-              ? 'bg-[#C4785A] text-white shadow-xs'
-              : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
-          }`}
-        >
-          <Layers className="w-4 h-4" />
-          3.1 Demandes & Briefs
-        </button>
 
-        <button
-          onClick={() => setActiveTab('production')}
-          className={`px-3.5 py-2 text-xs font-semibold rounded-xl flex items-center gap-2 whitespace-nowrap transition-colors cursor-pointer ${
-            activeTab === 'production'
-              ? 'bg-[#C4785A] text-white shadow-xs'
-              : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
-          }`}
-        >
-          <Sparkles className="w-4 h-4" />
-          3.2 Production
-        </button>
-
-        <button
-          onClick={() => setActiveTab('upload')}
-          className={`px-3.5 py-2 text-xs font-semibold rounded-xl flex items-center gap-2 whitespace-nowrap transition-colors cursor-pointer ${
-            activeTab === 'upload'
-              ? 'bg-[#C4785A] text-white shadow-xs'
-              : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
-          }`}
-        >
-          <UploadCloud className="w-4 h-4" />
-          3.3 Livrables BAT
-        </button>
-
-        <button
-          onClick={() => setActiveTab('briefs')}
-          className={`px-3.5 py-2 text-xs font-semibold rounded-xl flex items-center gap-2 whitespace-nowrap transition-colors cursor-pointer ${
-            activeTab === 'briefs'
-              ? 'bg-[#C4785A] text-white shadow-xs'
-              : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
-          }`}
-        >
-          <FileText className="w-4 h-4" />
-          3.4 Cahiers des charges
-        </button>
-      </div>
 
       {/* SCREEN 3.1 & 3.2: KANBAN BOARD WITH SLIDE 7 LIVRABLE PRÊT INSPECTOR */}
       {(activeTab === 'kanban' || activeTab === 'demandes' || activeTab === 'production') && (
@@ -260,16 +191,7 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                     </div>
                     <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between text-xs">
                       <span className="text-zinc-400 text-[10px]">{p.clientName}</span>
-                      <button
-                        onClick={() => {
-                          setSelectedProjectId(p.id);
-                          setArtworkTitle(`KV_${p.title.replace(/\s+/g, '_')}`);
-                          setActiveTab('upload');
-                        }}
-                        className="text-[#C4785A] hover:underline font-semibold flex items-center gap-1 text-[11px] cursor-pointer"
-                      >
-                        Démarrer <ArrowRight className="w-3 h-3" />
-                      </button>
+                      <span className="text-[#C4785A] font-semibold text-[11px]">En attente création</span>
                     </div>
                   </div>
                 ))}
@@ -297,17 +219,7 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                       </div>
                       <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between text-xs">
                         <span className="font-mono text-[11px] text-zinc-500">{order.totalCostDzd.toLocaleString()} DA</span>
-                        <button
-                          onClick={() => {
-                            setSelectedProjectId(order.projectId);
-                            setSelectedOrderId(order.id);
-                            setArtworkTitle(`BAT_${order.orderNumber}`);
-                            setActiveTab('upload');
-                          }}
-                          className="text-blue-600 dark:text-blue-400 font-semibold flex items-center gap-1 text-[11px] cursor-pointer"
-                        >
-                          Créer BAT <ArrowRight className="w-3 h-3" />
-                        </button>
+                        <span className="text-blue-600 dark:text-blue-400 font-semibold text-[11px]">Ordre reçu</span>
                       </div>
                     </div>
                   ))}

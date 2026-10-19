@@ -176,15 +176,6 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
         </div>
 
         <div className="flex items-center gap-2">
-          {currentScreen !== 'new_project' && (
-            <button
-              onClick={() => setActivePmSubScreen('new_project')}
-              className="px-3.5 py-1.5 text-xs font-semibold text-white bg-[#C4785A] hover:bg-[#b3684a] rounded-xl flex items-center gap-1.5 transition-all shadow-sm hover:shadow active:scale-95 cursor-pointer"
-            >
-              <Plus className="w-4 h-4" />
-              Nouveau Projet
-            </button>
-          )}
           <button
             onClick={handleExportCsv}
             className="px-3 py-1.5 text-xs font-semibold text-zinc-700 dark:text-zinc-300 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 rounded-xl flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer"
@@ -195,65 +186,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
         </div>
       </div>
 
-      {/* Role Navigation Tabs */}
-      <div className="flex items-center gap-2 border-b border-zinc-200 dark:border-zinc-800 pb-2">
-        <button
-          type="button"
-          onClick={() => setActivePmSubScreen('dashboard')}
-          className={`px-3.5 py-2 text-xs font-semibold rounded-xl flex items-center gap-2 transition-colors cursor-pointer ${
-            currentScreen === 'dashboard'
-              ? 'bg-[#C4785A] text-white shadow-xs'
-              : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
-          }`}
-        >
-          <TrendingUp className="w-4 h-4" />
-          1.1 Command Center
-        </button>
 
-        <button
-          type="button"
-          onClick={() => setActivePmSubScreen('new_project')}
-          className={`px-3.5 py-2 text-xs font-semibold rounded-xl flex items-center gap-2 transition-colors cursor-pointer ${
-            currentScreen === 'new_project'
-              ? 'bg-[#C4785A] text-white shadow-xs'
-              : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
-          }`}
-        >
-          <FileText className="w-4 h-4" />
-          1.2 Cadrage & Cahier des Charges
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setActivePmSubScreen('approvals')}
-          className={`px-3.5 py-2 text-xs font-semibold rounded-xl flex items-center gap-2 transition-colors cursor-pointer ${
-            currentScreen === 'approvals'
-              ? 'bg-[#C4785A] text-white shadow-xs'
-              : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
-          }`}
-        >
-          <ShieldCheck className="w-4 h-4" />
-          1.3 Double-Lock Approbations
-          {totalPendingApprovals > 0 && (
-            <span className="ml-1 px-1.5 py-0.5 rounded-full bg-amber-500 text-white text-[10px] font-bold">
-              {totalPendingApprovals}
-            </span>
-          )}
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setActivePmSubScreen('reports')}
-          className={`px-3.5 py-2 text-xs font-semibold rounded-xl flex items-center gap-2 transition-colors cursor-pointer ${
-            currentScreen === 'reports'
-              ? 'bg-[#C4785A] text-white shadow-xs'
-              : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
-          }`}
-        >
-          <Layers className="w-4 h-4" />
-          1.4 Rapports & Marges
-        </button>
-      </div>
 
       {/* SCREEN 1.1: COMMAND CENTER */}
       {currentScreen === 'dashboard' && (
@@ -729,10 +662,13 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
             <div className="pt-4 border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-end gap-3">
               <button
                 type="button"
-                onClick={() => setActivePmSubScreen('dashboard')}
+                onClick={() => {
+                  setNewProjectTitle('');
+                  setNewProjectScope('');
+                }}
                 className="px-4 py-2 text-xs font-semibold text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 cursor-pointer"
               >
-                Annuler
+                Réinitialiser
               </button>
               <button
                 type="submit"

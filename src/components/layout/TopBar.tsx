@@ -491,46 +491,7 @@ export const TopBar: React.FC<TopBarProps> = ({
         </div>
       </div>
 
-      {/* Center: Interactive Agency 6-Role Switcher for Project & Milestone */}
-      {isProjectMilestone && (
-        <div className="flex items-center gap-1 p-1 bg-neutral-100/90 dark:bg-neutral-800/90 border border-neutral-200/80 dark:border-neutral-700/80 rounded-full shadow-2xs">
-          {[
-            { id: 'direction' as PMRole, label: 'Direction', badge: 'DG', screen: 'pm_dir_dashboard' as const, icon: <TrendingUp size={12} /> },
-            { id: 'chef_projet' as PMRole, label: 'Chef Projet', badge: 'PM', screen: 'pm_cp_projects' as const, icon: <Layers size={12} /> },
-            { id: 'crea' as PMRole, label: 'Studio Créa', badge: 'CR', screen: 'pm_crea_kanban' as const, icon: <Sparkles size={12} /> },
-            { id: 'superviseur' as PMRole, label: 'Superviseur', badge: 'SP', screen: 'pm_sup_missions' as const, icon: <Radio size={12} /> },
-            { id: 'rh' as PMRole, label: 'RH & Casting', badge: 'RH', screen: 'pm_rh_talents' as const, icon: <Users size={12} /> },
-            { id: 'compta' as PMRole, label: 'Compta & CCP', badge: 'CP', screen: 'pm_compta_payroll' as const, icon: <CreditCard size={12} /> },
-          ].map((r) => {
-            const isActive = activePmRole === r.id;
-            return (
-              <button
-                key={r.id}
-                type="button"
-                onClick={() => {
-                  setActivePmRole(r.id);
-                  setScreen(r.screen);
-                }}
-                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${
-                  isActive
-                    ? 'bg-white dark:bg-neutral-900 text-[#C4785A] shadow-xs scale-102 border border-[#C4785A]/30'
-                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200 hover:bg-neutral-200/60 dark:hover:bg-neutral-700/60'
-                }`}
-                title={`Switch active perspective to ${r.label}`}
-              >
-                <span className={`text-[10px] font-bold px-1 py-0.2 rounded ${
-                  isActive
-                    ? 'bg-[#C4785A] text-white'
-                    : 'bg-neutral-200 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300'
-                }`}>
-                  {r.badge}
-                </span>
-                <span className="hidden xl:inline">{r.label}</span>
-              </button>
-            );
-          })}
-        </div>
-      )}
+
 
       {/* Center: Live Floating Stopwatch Pill */}
       {!isProjectMilestone && (activeTimer.isRunning || currentBusiness.category === 'freelance_solo') && (

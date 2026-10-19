@@ -32,10 +32,13 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
     pmPrintOrders,
     pmBatDeliverables,
     pmExpenses,
+    pmEquipmentStock,
     addPmPrintOrder,
     reviewPmBatDeliverable,
+    addPmExpense,
     activePmSubScreen,
     setActivePmSubScreen,
+    showToast,
   } = useAtriumStore();
 
   const activeTab: 'portfolio' | 'catalog' | 'orders' | 'bat' | 'expenses' =
@@ -58,6 +61,13 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
   const [activeBatId, setActiveBatId] = useState<string | null>(null);
   const [correctionNote, setCorrectionNote] = useState('');
   const [isCorrectionModalOpen, setIsCorrectionModalOpen] = useState(false);
+
+  // Slide 11: Purchase Declaration Form State
+  const [purchaseTitle, setPurchaseTitle] = useState('Nappe comptoir brandée');
+  const [purchaseAmount, setPurchaseAmount] = useState('8400');
+  const [purchaseCategory, setPurchaseCategory] = useState<'materials' | 'catering' | 'transport'>('materials');
+  const [purchaseReceiptScan, setPurchaseReceiptScan] = useState('facture_scan.jpg');
+  const [purchaseSuccessMessage, setPurchaseSuccessMessage] = useState<string | null>(null);
 
   const selectedProject = pmProjects.find((p) => p.id === selectedProjectId) || pmProjects[0];
 
@@ -131,6 +141,38 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
     }
   };
 
+  const handleDeclarePurchase = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!purchaseTitle || !purchaseAmount || !selectedProject) return;
+
+    addPmExpense({
+      tenantId: 'acc_01',
+      facilityId: 'branch_agency_main',
+      projectId: selectedProject.id,
+      projectTitle: selectedProject.title,
+      declaredByUserId: 'stf_pm_01',
+      declaredByUserName: 'K. Yacine (CDP)',
+      declaredByRole: 'chef_projet',
+      title: purchaseTitle,
+      category: purchaseCategory,
+      amountDzd: Number(purchaseAmount),
+      receiptPhotoUrl: 'https://images.unsplash.com/photo-1554415707-9e49fe74a64c?w=500&auto=format&fit=crop&q=80',
+      fiscalNif: '001916001234567',
+      hasFiscalInvoice: true,
+    });
+
+    const msg = `Achat "${purchaseTitle}" déclaré avec succès ! L'actif a été codé automatiquement dans le stock indirect (NCH-A-00xxx).`;
+    setPurchaseSuccessMessage(msg);
+    if (showToast) {
+      showToast({
+        title: 'Achat déclaré & codé en stock',
+        message: msg,
+        type: 'success',
+      });
+    }
+    setTimeout(() => setPurchaseSuccessMessage(null), 4000);
+  };
+
   return (
     <div className="space-y-6">
       {/* Top Header & Sub-Navigation */}
@@ -173,76 +215,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
         </div>
       </div>
 
-      {/* Navigation Tabs */}
-      <div className="flex items-center gap-2 border-b border-zinc-200 dark:border-zinc-800 pb-2 overflow-x-auto">
-        <button
-          onClick={() => setActiveTab('portfolio')}
-          className={`px-3.5 py-2 text-xs font-semibold rounded-xl flex items-center gap-2 whitespace-nowrap transition-colors cursor-pointer ${
-            activeTab === 'portfolio'
-              ? 'bg-[#C4785A] text-white shadow-sm'
-              : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
-          }`}
-        >
-          <FolderKanban className="w-4 h-4" />
-          2.1 Mes projets
-        </button>
 
-        <button
-          onClick={() => setActiveTab('catalog')}
-          className={`px-3.5 py-2 text-xs font-semibold rounded-xl flex items-center gap-2 whitespace-nowrap transition-colors cursor-pointer ${
-            activeTab === 'catalog'
-              ? 'bg-[#C4785A] text-white shadow-sm'
-              : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
-          }`}
-        >
-          <ShoppingBag className="w-4 h-4" />
-          2.2 Commander (PLV & Print)
-          {cartItems.length > 0 && (
-            <span className="ml-1 px-1.5 py-0.5 rounded-full bg-white text-[#C4785A] text-[10px] font-bold">
-              {cartItems.length}
-            </span>
-          )}
-        </button>
-
-        <button
-          onClick={() => setActiveTab('orders')}
-          className={`px-3.5 py-2 text-xs font-semibold rounded-xl flex items-center gap-2 whitespace-nowrap transition-colors cursor-pointer ${
-            activeTab === 'orders'
-              ? 'bg-[#C4785A] text-white shadow-sm'
-              : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
-          }`}
-        >
-          <Sparkles className="w-4 h-4" />
-          2.3 Suivi commandes
-          <span className="ml-1 px-1.5 py-0.5 rounded-full bg-zinc-200 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-300 text-[10px] font-mono">
-            {pmPrintOrders.length}
-          </span>
-        </button>
-
-        <button
-          onClick={() => setActiveTab('bat')}
-          className={`px-3.5 py-2 text-xs font-semibold rounded-xl flex items-center gap-2 whitespace-nowrap transition-colors cursor-pointer ${
-            activeTab === 'bat'
-              ? 'bg-[#C4785A] text-white shadow-sm'
-              : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
-          }`}
-        >
-          <FileCheck2 className="w-4 h-4" />
-          2.4 Fichiers reçus & BAT
-        </button>
-
-        <button
-          onClick={() => setActiveTab('expenses')}
-          className={`px-3.5 py-2 text-xs font-semibold rounded-xl flex items-center gap-2 whitespace-nowrap transition-colors cursor-pointer ${
-            activeTab === 'expenses'
-              ? 'bg-[#C4785A] text-white shadow-sm'
-              : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
-          }`}
-        >
-          <DollarSign className="w-4 h-4" />
-          2.5 Achats & Dépenses
-        </button>
-      </div>
 
       {/* TAB 1: Portfolio & Milestones */}
       {activeTab === 'portfolio' && selectedProject && (
@@ -346,6 +319,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
       {activeTab === 'catalog' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Products Grid (2 Cols) */}
+          <div className="lg:col-span-2 space-y-4">
             {/* Le Circuit Fichier Banner (Slide 6) */}
             <div className="p-4 bg-zinc-50 dark:bg-zinc-800/40 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-2">
               <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 block">
@@ -528,27 +502,17 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
       {/* TAB 2.3: Suivi des Commandes Print (Slide 6) */}
       {activeTab === 'orders' && (
         <div className="space-y-4">
-          <div className="p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm flex items-center justify-between">
-            <div>
-              <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                Suivi des Ordres de Fabrication & Commandes Print
-              </h3>
-              <p className="text-xs text-zinc-500">
-                Suivez en temps réel la prise en charge de vos commandes par le Studio Créa jusqu'au BAT final.
-              </p>
-            </div>
-            <button
-              onClick={() => setActiveTab('catalog')}
-              className="px-3.5 py-1.5 text-xs font-semibold text-white bg-[#C4785A] hover:bg-[#b3684a] rounded-xl flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              Nouvelle Commande
-            </button>
+          <div className="p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
+            <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+              Suivi des Ordres de Fabrication & Commandes Print
+            </h3>
+            <p className="text-xs text-zinc-500">
+              Suivez en temps réel la prise en charge de vos commandes par le Studio Créa jusqu'au BAT final.
+            </p>
           </div>
 
           <div className="space-y-3">
             {pmPrintOrders.map((order) => {
-              const isDelivered = order.status === 'bat_approved' || order.status === 'printed';
               return (
                 <div
                   key={order.id}
@@ -591,13 +555,6 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                         {order.totalCostDzd.toLocaleString()} DA
                       </span>
                     </div>
-
-                    <button
-                      onClick={() => setActiveTab('bat')}
-                      className="px-3.5 py-1.5 text-xs font-semibold text-zinc-700 dark:text-zinc-200 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-xl transition-colors cursor-pointer"
-                    >
-                      Voir les BAT ➔
-                    </button>
                   </div>
                 </div>
               );
@@ -711,72 +668,172 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
         </div>
       )}
 
-      {/* TAB 4: Project Field Expenses */}
+      {/* TAB 4: Project Field Expenses & Slide 11 Purchase Declaration */}
       {activeTab === 'expenses' && (
-        <div className="p-6 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm space-y-4">
-          <div className="flex items-center justify-between">
+        <div className="space-y-6">
+          {/* Header & Budget Card */}
+          <div className="p-5 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                Frais et Achats de Terrain — {selectedProject?.title}
-              </h3>
-              <p className="text-xs text-zinc-500">
-                Plafond alloué au terrain: {fieldExpensesLimit.toLocaleString()} DA
+              <div className="flex items-center gap-2">
+                <DollarSign className="w-4 h-4 text-[#C4785A]" />
+                <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-100">
+                  Achats Projet & Déclaration Entrée Stock Indirect (Slide 11)
+                </h3>
+              </div>
+              <p className="text-xs text-zinc-500 mt-0.5">
+                Projet actif : <strong>{selectedProject?.title}</strong> · Plafond terrain : {fieldExpensesLimit.toLocaleString()} DA
               </p>
             </div>
-            <div className="text-right">
-              <span className="text-xs text-zinc-400 block">Total Consommé</span>
-              <span className="font-mono text-base font-bold text-zinc-900 dark:text-zinc-100 tabular-nums">
-                {totalExpensesSpent.toLocaleString()} DA
-              </span>
+
+            <div className="flex items-center gap-6">
+              <div className="text-right">
+                <span className="text-xs text-zinc-400 block">Total Consommé</span>
+                <span className="font-mono text-base font-bold text-zinc-900 dark:text-zinc-100 tabular-nums">
+                  {totalExpensesSpent.toLocaleString()} DA
+                </span>
+              </div>
+              <div className="w-24">
+                <div className="flex justify-between text-[10px] text-zinc-500 font-mono mb-1">
+                  <span>Conso</span>
+                  <span>{burnRatePercent}%</span>
+                </div>
+                <div className="h-2 w-full bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+                  <div
+                    style={{ width: `${burnRatePercent}%` }}
+                    className={`h-full rounded-full ${
+                      isOverThreshold ? 'bg-red-500' : 'bg-[#C4785A]'
+                    }`}
+                  />
+                </div>
+              </div>
             </div>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 font-semibold">
-                <tr>
-                  <th className="p-3 rounded-l-lg">Désignation</th>
-                  <th className="p-3">Catégorie</th>
-                  <th className="p-3">Déclaré Par</th>
-                  <th className="p-3">Statut Direction</th>
-                  <th className="p-3 text-right rounded-r-lg">Montant DZD</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
-                {projectExpenses.map((exp) => (
-                  <tr key={exp.id} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/40">
-                    <td className="p-3 font-medium text-zinc-900 dark:text-zinc-100">
-                      {exp.title}
-                      {exp.hasFiscalInvoice && (
-                        <span className="ml-2 text-[10px] text-emerald-600 font-bold uppercase">Facture NIF</span>
-                      )}
-                    </td>
-                    <td className="p-3 text-zinc-500 capitalize">{exp.category}</td>
-                    <td className="p-3 text-zinc-600 dark:text-zinc-400">{exp.declaredByUserName}</td>
-                    <td className="p-3">
-                      <span
-                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                          exp.status === 'approved_by_direction'
-                            ? 'bg-emerald-100 text-emerald-700'
-                            : exp.status === 'rejected'
-                            ? 'bg-red-100 text-red-700'
-                            : 'bg-amber-100 text-amber-700'
-                        }`}
-                      >
-                        {exp.status === 'approved_by_direction'
-                          ? 'APPROUVÉ DG'
-                          : exp.status === 'rejected'
-                          ? 'REJETÉ'
-                          : 'EN ATTENTE DG'}
-                      </span>
-                    </td>
-                    <td className="p-3 text-right font-mono font-bold text-zinc-900 dark:text-zinc-100 tabular-nums">
-                      {exp.amountDzd.toLocaleString()} DA
-                    </td>
+          {/* Slide 11 Purchase Declaration Card */}
+          <div className="p-5 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+                  <Plus className="w-4 h-4 text-[#DC2626]" />
+                  Déclarer un Achat de Terrain (Création automatique de code stock NCH-A-00xxx)
+                </h4>
+                <p className="text-xs text-zinc-500">
+                  Tout achat matériel déclaré par le Chef de Projet ou Superviseur est immédiatement codé et tracé à vie dans l'inventaire indirect.
+                </p>
+              </div>
+            </div>
+
+            {purchaseSuccessMessage && (
+              <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl text-xs font-semibold text-emerald-800 dark:text-emerald-300 flex items-center gap-2 animate-in fade-in">
+                <CheckCircle className="w-4 h-4 text-emerald-600" />
+                {purchaseSuccessMessage}
+              </div>
+            )}
+
+            <form onSubmit={handleDeclarePurchase} className="grid grid-cols-1 md:grid-cols-4 gap-3 pt-1">
+              <div className="md:col-span-2">
+                <label className="text-[10px] uppercase font-bold text-zinc-500 block mb-1">
+                  Désignation du Matériel
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Ex: Nappe comptoir brandée, Câble HDMI 15m..."
+                  value={purchaseTitle}
+                  onChange={(e) => setPurchaseTitle(e.target.value)}
+                  className="w-full text-xs p-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-[#C4785A]"
+                />
+              </div>
+
+              <div>
+                <label className="text-[10px] uppercase font-bold text-zinc-500 block mb-1">
+                  Montant en DA
+                </label>
+                <input
+                  type="number"
+                  required
+                  value={purchaseAmount}
+                  onChange={(e) => setPurchaseAmount(e.target.value)}
+                  className="w-full text-xs p-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 font-mono font-bold"
+                />
+              </div>
+
+              <div>
+                <label className="text-[10px] uppercase font-bold text-zinc-500 block mb-1">
+                  Justificatif Scan
+                </label>
+                <div className="flex items-center gap-1.5 p-2 rounded-xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-xs text-zinc-600 dark:text-zinc-400">
+                  <span className="font-mono text-emerald-600 font-bold text-[11px] truncate">
+                    {purchaseReceiptScan} ✓
+                  </span>
+                </div>
+              </div>
+
+              <div className="md:col-span-4 flex justify-end">
+                <button
+                  type="submit"
+                  className="py-2.5 px-5 bg-[#C4785A] hover:bg-[#b3684a] text-white rounded-xl text-xs font-bold shadow-xs transition-all flex items-center gap-2 cursor-pointer"
+                >
+                  <Send className="w-3.5 h-3.5" />
+                  Déclarer & Coder l'Actif en Stock →
+                </button>
+              </div>
+            </form>
+          </div>
+
+          {/* Project Expenses Ledger Table */}
+          <div className="p-5 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs space-y-3">
+            <h4 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+              Journal des Achats du Projet ({projectExpenses.length})
+            </h4>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-zinc-50 dark:bg-zinc-800 text-zinc-500 uppercase tracking-wider text-[10px] font-semibold">
+                  <tr>
+                    <th className="p-3 rounded-l-lg">Désignation</th>
+                    <th className="p-3">Catégorie</th>
+                    <th className="p-3">Déclaré Par</th>
+                    <th className="p-3">Statut Direction</th>
+                    <th className="p-3 text-right rounded-r-lg">Montant DZD</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
+                  {projectExpenses.map((exp) => (
+                    <tr key={exp.id} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/40">
+                      <td className="p-3 font-medium text-zinc-900 dark:text-zinc-100">
+                        {exp.title}
+                        {exp.hasFiscalInvoice && (
+                          <span className="ml-2 text-[10px] text-emerald-600 font-bold uppercase">Facture NIF</span>
+                        )}
+                      </td>
+                      <td className="p-3 text-zinc-500 capitalize">{exp.category}</td>
+                      <td className="p-3 text-zinc-600 dark:text-zinc-400">{exp.declaredByUserName}</td>
+                      <td className="p-3">
+                        <span
+                          className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                            exp.status === 'approved_by_direction'
+                              ? 'bg-emerald-100 text-emerald-700'
+                              : exp.status === 'rejected'
+                              ? 'bg-red-100 text-red-700'
+                              : 'bg-amber-100 text-amber-700'
+                          }`}
+                        >
+                          {exp.status === 'approved_by_direction'
+                            ? 'APPROUVÉ DG'
+                            : exp.status === 'rejected'
+                            ? 'REJETÉ'
+                            : 'EN ATTENTE DG'}
+                        </span>
+                      </td>
+                      <td className="p-3 text-right font-mono font-bold text-zinc-900 dark:text-zinc-100 tabular-nums">
+                        {exp.amountDzd.toLocaleString()} DA
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}

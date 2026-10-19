@@ -190,56 +190,7 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
         </div>
       </div>
 
-      {/* Screen Tabs */}
-      <div className="flex items-center gap-2 border-b border-zinc-200 dark:border-zinc-800 pb-2 overflow-x-auto">
-        <button
-          onClick={() => setActiveTab('talents')}
-          className={`px-3.5 py-2 text-xs font-semibold rounded-xl flex items-center gap-2 whitespace-nowrap transition-colors cursor-pointer ${
-            activeTab === 'talents'
-              ? 'bg-[#C4785A] text-white shadow-xs'
-              : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
-          }`}
-        >
-          <Users className="w-4 h-4" />
-          5.1 Vivier National ({pmTalents.length})
-        </button>
 
-        <button
-          onClick={() => setActiveTab('dossier')}
-          className={`px-3.5 py-2 text-xs font-semibold rounded-xl flex items-center gap-2 whitespace-nowrap transition-colors cursor-pointer ${
-            activeTab === 'dossier'
-              ? 'bg-[#C4785A] text-white shadow-xs'
-              : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
-          }`}
-        >
-          <FileText className="w-4 h-4" />
-          5.2 Dossier Talent 360°
-        </button>
-
-        <button
-          onClick={() => setActiveTab('portal')}
-          className={`px-3.5 py-2 text-xs font-semibold rounded-xl flex items-center gap-2 whitespace-nowrap transition-colors cursor-pointer ${
-            activeTab === 'portal'
-              ? 'bg-[#C4785A] text-white shadow-xs'
-              : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
-          }`}
-        >
-          <GraduationCap className="w-4 h-4" />
-          5.3A Portail Public (/cvs/create)
-        </button>
-
-        <button
-          onClick={() => setActiveTab('walkin')}
-          className={`px-3.5 py-2 text-xs font-semibold rounded-xl flex items-center gap-2 whitespace-nowrap transition-colors cursor-pointer ${
-            activeTab === 'walkin'
-              ? 'bg-[#C4785A] text-white shadow-xs'
-              : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
-          }`}
-        >
-          <DoorOpen className="w-4 h-4" />
-          5.3B Saisie Express Agence
-        </button>
-      </div>
 
       {/* SCREEN 5.1: TALENT POOL DIRECTORY */}
       {activeTab === 'talents' && (

@@ -170,65 +170,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
         </div>
       </div>
 
-      {/* 4 Dedicated Screens Navigation */}
-      <div className="flex items-center gap-2 border-b border-zinc-200 dark:border-zinc-800 pb-2 overflow-x-auto">
-        <button
-          onClick={() => setActiveTab('missions')}
-          className={`px-3.5 py-2 text-xs font-semibold rounded-xl flex items-center gap-2 whitespace-nowrap transition-colors cursor-pointer ${
-            activeTab === 'missions'
-              ? 'bg-[#C4785A] text-white shadow-xs'
-              : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
-          }`}
-        >
-          <Radio className="w-4 h-4" />
-          4.2 Missions Terrain ({pmMissions.length})
-        </button>
 
-        <button
-          onClick={() => setActiveTab('attendance')}
-          className={`px-3.5 py-2 text-xs font-semibold rounded-xl flex items-center gap-2 whitespace-nowrap transition-colors cursor-pointer ${
-            activeTab === 'attendance'
-              ? 'bg-[#C4785A] text-white shadow-xs'
-              : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
-          }`}
-        >
-          <Clock className="w-4 h-4" />
-          4.3 Pointage Mobile Direct
-          {isMissionLocked ? (
-            <span className="ml-1 px-1.5 py-0.5 rounded-full bg-emerald-500 text-white text-[10px] font-bold">
-              Verrouillé
-            </span>
-          ) : (
-            <span className="ml-1 px-1.5 py-0.5 rounded-full bg-amber-500 text-white text-[10px] font-bold">
-              En direct
-            </span>
-          )}
-        </button>
-
-        <button
-          onClick={() => setActiveTab('staffing')}
-          className={`px-3.5 py-2 text-xs font-semibold rounded-xl flex items-center gap-2 whitespace-nowrap transition-colors cursor-pointer ${
-            activeTab === 'staffing'
-              ? 'bg-[#C4785A] text-white shadow-xs'
-              : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
-          }`}
-        >
-          <Users className="w-4 h-4" />
-          4.1 Casting & Staffing
-        </button>
-
-        <button
-          onClick={() => setActiveTab('expense')}
-          className={`px-3.5 py-2 text-xs font-semibold rounded-xl flex items-center gap-2 whitespace-nowrap transition-colors cursor-pointer ${
-            activeTab === 'expense'
-              ? 'bg-[#C4785A] text-white shadow-xs'
-              : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
-          }`}
-        >
-          <Camera className="w-4 h-4" />
-          4.4 Déclarer Dépense Terrain
-        </button>
-      </div>
 
       {/* SCREEN 4.2: MISSION OPERATIONS HUB */}
       {activeTab === 'missions' && (

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAtriumStore } from '../../../services/store';
-import { PMCcpSlip, PMExpense } from '../../../types/index';
+import { PMCcpSlip, PMExpense, PMEquipmentStock } from '../../../types/index';
 import { CcpSlipModal } from './CcpSlipModal';
 import {
   CreditCard,
@@ -18,6 +18,13 @@ import {
   Sparkles,
   QrCode,
   ShieldCheck,
+  RefreshCw,
+  Calendar,
+  Check,
+  Tag,
+  History,
+  ArrowRight,
+  ExternalLink,
 } from 'lucide-react';
 
 interface ProjectComptaViewProps {
@@ -35,6 +42,7 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
     updatePmEquipmentStatus,
     activePmSubScreen,
     setActivePmSubScreen,
+    showToast,
   } = useAtriumStore();
 
   const activeTab: 'payroll' | 'ccp' | 'expenses' | 'stock' =
@@ -52,8 +60,120 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
 
   const [selectedSlip, setSelectedSlip] = useState<PMCcpSlip | null>(null);
   const [selectedExpense, setSelectedExpense] = useState<PMExpense | null>(pmExpenses[0] || null);
+  const [selectedStockAssetId, setSelectedStockAssetId] = useState<string>(
+    pmEquipmentStock[0]?.id || 'eq_00'
+  );
+  const [stockCategoryFilter, setStockCategoryFilter] = useState<string>('all');
+  const [batchGeneratedSuccess, setBatchGeneratedSuccess] = useState(false);
 
+  // Active selected animator slip for Slide 10 right-hand preview
+  const defaultSlip: PMCcpSlip = pmCcpSlips[0] || {
+    id: 'slip_demo',
+    tenantId: 'acc_01',
+    facilityId: 'branch_agency_main',
+    batchId: 'batch_01',
+    talentId: 'talent_01',
+    beneficiaryName: 'Meriem Boukhalfa',
+    ccpNumber: '33 18 81',
+    ccpKey: '50',
+    wilayaName: 'Alger (16)',
+    amountDzd: 18000,
+    amountInWordsFr: 'Dix-huit mille dinars algériens et zéro centime',
+    amountInWordsAr: 'ثمانية عشر ألف دينار جزائري ولا سنتيم',
+    transactionReference: 'Paie MIS-142 - Animation GMS Bab Ezzouar',
+    isPrinted: false,
+    createdAt: new Date().toISOString(),
+  };
+
+  const [activePreviewSlip, setActivePreviewSlip] = useState<PMCcpSlip>(defaultSlip);
+
+  // Mock list of individual animators for Slide 10 "Paies — Juillet" Ledger
+  const [individualPayrollRows, setIndividualPayrollRows] = useState([
+    {
+      id: 'pay_row_01',
+      animatorName: 'Meriem Boukhalfa',
+      initials: 'MB',
+      missionTitle: 'MIS-142 · Animation Carrefour Bab Ezzouar',
+      daysWorked: 5,
+      amountDzd: 18000,
+      ccpNumber: '33 18 81',
+      ccpKey: '50',
+      wilaya: 'Alger',
+      status: 'approved_dg', // Validée DG
+    },
+    {
+      id: 'pay_row_02',
+      animatorName: 'Yasmine Belkacem',
+      initials: 'YB',
+      missionTitle: 'MIS-142 · Animation Carrefour Bab Ezzouar',
+      daysWorked: 4,
+      amountDzd: 14400,
+      ccpNumber: '00 12 34 56',
+      ccpKey: '45',
+      wilaya: 'Alger',
+      status: 'approved_dg', // Validée DG
+    },
+    {
+      id: 'pay_row_03',
+      animatorName: 'Ryad Sofiane Boumedienne',
+      initials: 'RB',
+      missionTitle: 'MIS-142 · Animation Carrefour Bab Ezzouar',
+      daysWorked: 5,
+      amountDzd: 22500,
+      ccpNumber: '00 98 76 54',
+      ccpKey: '12',
+      wilaya: 'Alger',
+      status: 'approved_dg', // Validée DG
+    },
+    {
+      id: 'pay_row_04',
+      animatorName: 'Amina Saadi',
+      initials: 'AS',
+      missionTitle: 'MIS-143 · Roadshow Ooredoo Oran',
+      daysWorked: 3,
+      amountDzd: 10800,
+      ccpNumber: '00 44 55 66',
+      ccpKey: '78',
+      wilaya: 'Oran',
+      status: 'pending_dg', // En attente
+    },
+    {
+      id: 'pay_row_05',
+      animatorName: 'Karim Mansouri',
+      initials: 'KM',
+      missionTitle: 'MIS-143 · Roadshow Ooredoo Oran',
+      daysWorked: 3,
+      amountDzd: 12000,
+      ccpNumber: '00 77 88 99',
+      ccpKey: '33',
+      wilaya: 'Oran',
+      status: 'pending_dg', // En attente
+    },
+  ]);
+
+  const validatedDgCount = individualPayrollRows.filter((r) => r.status === 'approved_dg').length;
   const pendingBatches = pmPayrollBatches.filter((b) => b.status === 'approved_by_direction');
+
+  // Currently selected stock asset for Slide 11
+  const selectedStockAsset =
+    pmEquipmentStock.find((eq) => eq.id === selectedStockAssetId) ||
+    pmEquipmentStock[0];
+
+  const handleGenerateAllCcpBatch = () => {
+    // Generate slips for all approved batches
+    pendingBatches.forEach((batch) => {
+      generatePmCcpSlipsForBatch(batch.id);
+    });
+    setBatchGeneratedSuccess(true);
+    if (showToast) {
+      showToast({
+        title: 'Bordereaux CCP SFP 01 générés',
+        message: `${validatedDgCount} mandats de virement postaux fusionnés et prêts pour impression guichet.`,
+        type: 'success',
+      });
+    }
+    setTimeout(() => setBatchGeneratedSuccess(false), 3500);
+  };
 
 
   return (
@@ -85,146 +205,346 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
         </div>
       </div>
 
-      {/* Financial Sub-Navigation Tabs */}
-      <div className="flex items-center gap-2 border-b border-zinc-200 dark:border-zinc-800 pb-2">
-        <button
-          onClick={() => setActiveTab('payroll')}
-          className={`px-3.5 py-2 text-xs font-semibold rounded-xl flex items-center gap-2 transition-colors ${
-            activeTab === 'payroll'
-              ? 'bg-[#C4785A] text-white shadow-sm'
-              : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
-          }`}
-        >
-          <FileSpreadsheet className="w-4 h-4" />
-          Lots de Paie (Clôtures Superviseur)
-          {pendingBatches.length > 0 && (
-            <span className="ml-1 px-1.5 py-0.5 rounded-full bg-emerald-500 text-white text-[10px] font-bold">
-              {pendingBatches.length} Prêts
-            </span>
-          )}
-        </button>
 
-        <button
-          onClick={() => setActiveTab('ccp')}
-          className={`px-3.5 py-2 text-xs font-semibold rounded-xl flex items-center gap-2 transition-colors ${
-            activeTab === 'ccp'
-              ? 'bg-[#C4785A] text-white shadow-sm'
-              : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
-          }`}
-        >
-          <CreditCard className="w-4 h-4" />
-          Générateur Mandats CCP (SFP 01)
-          <span className="ml-1 px-1.5 py-0.5 rounded-full bg-zinc-200 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-300 text-[10px] font-mono">
-            {pmCcpSlips.length}
-          </span>
-        </button>
 
-        <button
-          onClick={() => setActiveTab('expenses')}
-          className={`px-3.5 py-2 text-xs font-semibold rounded-xl flex items-center gap-2 transition-colors ${
-            activeTab === 'expenses'
-              ? 'bg-[#C4785A] text-white shadow-sm'
-              : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
-          }`}
-        >
-          <Receipt className="w-4 h-4" />
-          Audit Justificatifs & Factures
-        </button>
-
-        <button
-          onClick={() => setActiveTab('stock')}
-          className={`px-3.5 py-2 text-xs font-semibold rounded-xl flex items-center gap-2 transition-colors ${
-            activeTab === 'stock'
-              ? 'bg-[#C4785A] text-white shadow-sm'
-              : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
-          }`}
-        >
-          <Boxes className="w-4 h-4" />
-          Parc Matériel & Inventaire
-        </button>
-      </div>
-
-      {/* TAB 1: Automated Payroll Hub */}
+      {/* TAB 1: Automated Payroll Hub matching Slide 10 */}
       {activeTab === 'payroll' && (
-        <div className="space-y-4">
-          <div className="p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm flex items-center justify-between">
-            <div>
-              <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                Lots de Paie Validés par la Direction
-              </h3>
-              <p className="text-xs text-zinc-500">
-                Chaque lot issu d'un pointage mobile verrouillé et signé par la Direction peut générer ses bordereaux postaux en 1 clic.
-              </p>
+        <div className="space-y-6">
+          {/* Top KPI Strip */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs">
+              <span className="text-[10px] uppercase font-bold text-zinc-400 block mb-1">
+                PÉRIODE ACTIVE
+              </span>
+              <span className="text-xl font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5">
+                <Calendar className="w-4 h-4 text-[#C4785A]" />
+                Juillet 2026
+              </span>
+            </div>
+
+            <div className="p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs">
+              <span className="text-[10px] uppercase font-bold text-zinc-400 block mb-1">
+                VALIDÉES DIRECTION (DG)
+              </span>
+              <span className="text-xl font-mono font-bold text-emerald-600 flex items-center gap-2 tabular-nums">
+                {validatedDgCount} paies
+                <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-sans font-bold">
+                  Prêtes
+                </span>
+              </span>
+            </div>
+
+            <div className="p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs">
+              <span className="text-[10px] uppercase font-bold text-zinc-400 block mb-1">
+                EN ATTENTE SIGNATURE
+              </span>
+              <span className="text-xl font-mono font-bold text-amber-600 flex items-center gap-2 tabular-nums">
+                {individualPayrollRows.length - validatedDgCount} paies
+                <span className="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-sans font-bold">
+                  Attente DG
+                </span>
+              </span>
+            </div>
+
+            <div className="p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs">
+              <span className="text-[10px] uppercase font-bold text-zinc-400 block mb-1">
+                MASSE SALARIALE NETTE
+              </span>
+              <span className="text-xl font-mono font-bold text-zinc-900 dark:text-zinc-100 tabular-nums">
+                {individualPayrollRows.reduce((acc, r) => acc + r.amountDzd, 0).toLocaleString()} DA
+              </span>
             </div>
           </div>
 
-          <div className="space-y-3">
-            {pmPayrollBatches.map((batch) => {
-              const isApproved = batch.status === 'approved_by_direction' || batch.status === 'ccp_generated' || batch.status === 'disbursed';
-              return (
-                <div
-                  key={batch.id}
-                  className="p-5 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4"
+          {/* Slide 10 Main Split Grid: Left Paies Ledger & Right Embedded SFP 01 Check */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            {/* Left 7 Cols: Paies - Juillet & Big Red Button */}
+            <div className="lg:col-span-7 space-y-4">
+              {/* Header Card */}
+              <div className="p-5 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                  <div>
+                    <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-100">
+                      Paies — Juillet 2026
+                    </h3>
+                    <p className="text-xs text-zinc-500">
+                      Pointages terrain validés par la Direction. Cliquez sur un animateur pour inspecter son mandat CCP SFP 01.
+                    </p>
+                  </div>
+                  <span className="text-xs font-mono font-semibold text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-3 py-1 rounded-xl shrink-0">
+                    {individualPayrollRows.length} animateurs
+                  </span>
+                </div>
+
+                {/* Big Red Button matching Slide 10 */}
+                <button
+                  type="button"
+                  onClick={handleGenerateAllCcpBatch}
+                  className="w-full py-3.5 px-4 bg-[#DC2626] hover:bg-red-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm hover:shadow flex items-center justify-center gap-2 cursor-pointer active:scale-98"
                 >
-                  <div className="space-y-1.5">
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono font-bold text-xs text-zinc-900 dark:text-zinc-100">
-                        {batch.batchNumber}
-                      </span>
-                      <span className="text-zinc-300">·</span>
-                      <span className="text-xs font-semibold text-[#C4785A]">
-                        {batch.missionCode} — {batch.projectTitle}
-                      </span>
-                      <span
-                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                          batch.status === 'ccp_generated'
-                            ? 'bg-blue-100 text-blue-700'
-                            : batch.status === 'approved_by_direction'
-                            ? 'bg-emerald-100 text-emerald-700'
-                            : 'bg-amber-100 text-amber-700'
-                        }`}
-                      >
-                        {batch.status === 'ccp_generated'
-                          ? 'CCP GÉNÉRÉ'
-                          : batch.status === 'approved_by_direction'
-                          ? 'VALIDÉ PAR DG (PRÊT)'
-                          : 'EN ATTENTE VISA DG'}
+                  <RefreshCw className="w-4 h-4" />
+                  ⟳ Générer les CCP ({validatedDgCount}) → un PDF fusionné, prêt à imprimer
+                </button>
+
+                {batchGeneratedSuccess && (
+                  <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl text-xs font-semibold text-emerald-800 dark:text-emerald-300 flex items-center gap-2 animate-in fade-in">
+                    <CheckCircle className="w-4 h-4 text-emerald-600" />
+                    Mandats CCP générés avec succès ! Fichiers conformes SFP 01 prêts pour virement postal.
+                  </div>
+                )}
+
+                {/* Table of Individual Animateurs (Slide 10 Layout) */}
+                <div className="overflow-x-auto pt-1">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-zinc-50 dark:bg-zinc-800/60 text-zinc-500 font-semibold uppercase tracking-wider text-[10px]">
+                      <tr>
+                        <th className="p-3 rounded-l-lg">ANIMATEUR</th>
+                        <th className="p-3">MISSION</th>
+                        <th className="p-3 text-center">JOURS</th>
+                        <th className="p-3 text-right">MONTANT</th>
+                        <th className="p-3 text-right rounded-r-lg">STATUT</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800/80">
+                      {individualPayrollRows.map((row) => {
+                        const isSelected = activePreviewSlip.beneficiaryName === row.animatorName;
+                        return (
+                          <tr
+                            key={row.id}
+                            onClick={() => {
+                              setActivePreviewSlip({
+                                id: row.id,
+                                tenantId: 'acc_01',
+                                facilityId: 'branch_agency_main',
+                                batchId: 'batch_01',
+                                talentId: 'talent_01',
+                                beneficiaryName: row.animatorName,
+                                ccpNumber: row.ccpNumber,
+                                ccpKey: row.ccpKey,
+                                wilayaName: `${row.wilaya} (16)`,
+                                amountDzd: row.amountDzd,
+                                amountInWordsFr:
+                                  row.amountDzd === 18000
+                                    ? 'Dix-huit mille dinars algériens et zéro centime'
+                                    : row.amountDzd === 14400
+                                    ? 'Quatorze mille quatre cents dinars algériens et zéro centime'
+                                    : row.amountDzd === 22500
+                                    ? 'Vingt-deux mille cinq cents dinars algériens et zéro centime'
+                                    : row.amountDzd === 10800
+                                    ? 'Dix mille huit cents dinars algériens et zéro centime'
+                                    : 'Douze mille dinars algériens et zéro centime',
+                                amountInWordsAr:
+                                  row.amountDzd === 18000
+                                    ? 'ثمانية عشر ألف دينار جزائري ولا سنتيم'
+                                    : 'أربعة عشر ألف وأربعمائة دينار جزائري ولا سنتيم',
+                                transactionReference: `Paie ${row.missionTitle}`,
+                                isPrinted: false,
+                                createdAt: new Date().toISOString(),
+                              });
+                            }}
+                            className={`cursor-pointer transition-colors ${
+                              isSelected
+                                ? 'bg-red-50/70 dark:bg-red-950/20 font-semibold'
+                                : 'hover:bg-zinc-50 dark:hover:bg-zinc-800/40'
+                            }`}
+                          >
+                            <td className="p-3">
+                              <div className="flex items-center gap-2">
+                                <div className="w-7 h-7 rounded-full bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center font-bold text-[10px] text-zinc-700 dark:text-zinc-200">
+                                  {row.initials}
+                                </div>
+                                <span className="font-semibold text-zinc-900 dark:text-zinc-100">
+                                  {row.animatorName}
+                                </span>
+                              </div>
+                            </td>
+                            <td className="p-3 text-zinc-600 dark:text-zinc-400 max-w-[180px] truncate">
+                              {row.missionTitle}
+                            </td>
+                            <td className="p-3 text-center font-mono font-medium">
+                              {row.daysWorked}j
+                            </td>
+                            <td className="p-3 text-right font-mono font-bold text-zinc-900 dark:text-zinc-100 tabular-nums">
+                              {row.amountDzd.toLocaleString()} DA
+                            </td>
+                            <td className="p-3 text-right">
+                              {row.status === 'approved_dg' ? (
+                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
+                                  <Check className="w-3 h-3" />
+                                  Validée DG
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300">
+                                  <Lock className="w-3 h-3" />
+                                  En attente
+                                </span>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Lots de Paie Validés (Summary Cards) */}
+              <div className="p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs space-y-3">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 block">
+                  LOTS DE PAIE TRANSMIS PAR LES SUPERVISEURS (MOBILE)
+                </span>
+                <div className="space-y-2">
+                  {pmPayrollBatches.map((batch) => (
+                    <div
+                      key={batch.id}
+                      className="p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/30 flex items-center justify-between text-xs"
+                    >
+                      <div>
+                        <span className="font-mono font-bold text-zinc-900 dark:text-zinc-100">
+                          {batch.batchNumber}
+                        </span>
+                        <span className="text-zinc-400 mx-1.5">·</span>
+                        <span className="text-zinc-600 dark:text-zinc-400 font-medium">
+                          {batch.missionCode} — {batch.projectTitle}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="font-mono font-bold text-zinc-900 dark:text-zinc-100">
+                          {batch.totalAmountDzd.toLocaleString()} DA
+                        </span>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+                          Signé DG ✓
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Right 5 Cols: Authentic Algérie Poste SFP 01 Postal Check Preview */}
+            <div className="lg:col-span-5 space-y-4">
+              <div className="p-5 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs sticky top-6 space-y-4">
+                <div className="flex items-center justify-between pb-3 border-b border-zinc-200 dark:border-zinc-800">
+                  <div className="flex items-center gap-2">
+                    <CreditCard className="w-4 h-4 text-[#C4785A]" />
+                    <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+                      Bordereau Algérie Poste (SFP 01)
+                    </h3>
+                  </div>
+                  <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300">
+                    APERÇU OFFICIEL
+                  </span>
+                </div>
+
+                {/* SFP 01 Postal Check Canvas */}
+                <div className="bg-[#FFFBEB] dark:bg-amber-950/20 border-2 border-dashed border-[#FCD34D] dark:border-amber-800 rounded-2xl p-5 text-zinc-900 dark:text-zinc-100 space-y-3.5 shadow-sm">
+                  {/* Header Republic & Ministry */}
+                  <div className="flex justify-between items-start pb-2.5 border-b border-amber-300 dark:border-amber-900/60">
+                    <div>
+                      <p className="font-bold text-[9px] uppercase tracking-wider text-amber-900 dark:text-amber-300">
+                        RÉPUBLIQUE ALGÉRIENNE DÉMOCRATIQUE ET POPULAIRE
+                      </p>
+                      <p className="text-[10px] font-bold text-zinc-800 dark:text-zinc-200">
+                        MINISTÈRE DE LA POSTE ET DES TÉLÉCOMMUNICATIONS
+                      </p>
+                      <p className="text-[9px] font-semibold text-[#C4785A] mt-0.5">
+                        ALGÉRIE POSTE · OPÉRATIONS FINANCIÈRES
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <span className="inline-block border border-amber-400 bg-white dark:bg-zinc-900 px-2.5 py-0.5 font-mono font-bold text-xs rounded text-amber-900 dark:text-amber-200 shadow-2xs">
+                        SFP 01
                       </span>
                     </div>
-                    <p className="text-xs text-zinc-500">
-                      Bénéficiaires : {batch.totalBeneficiaries} animateurs · Pointages verrouillés
+                  </div>
+
+                  {/* Account and Amount Box */}
+                  <div className="p-3 bg-white dark:bg-zinc-900/90 rounded-xl border border-amber-200 dark:border-amber-900/50 space-y-2">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-zinc-500 font-semibold text-[10px] uppercase">
+                        N° Compte CCP & Clé
+                      </span>
+                      <span className="font-mono font-bold text-zinc-900 dark:text-zinc-100 text-sm">
+                        {activePreviewSlip.ccpNumber} — Clé {activePreviewSlip.ccpKey}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs pt-1.5 border-t border-zinc-100 dark:border-zinc-800">
+                      <span className="text-zinc-500 font-semibold text-[10px] uppercase">
+                        Montant à Virer
+                      </span>
+                      <span className="font-mono font-extrabold text-base text-emerald-700 dark:text-emerald-400 tabular-nums">
+                        {activePreviewSlip.amountDzd.toLocaleString()} DA
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Beneficiary Details */}
+                  <div className="space-y-1 text-xs">
+                    <span className="text-[10px] uppercase font-semibold text-zinc-500 block">
+                      Bénéficiaire du Virement
+                    </span>
+                    <p className="font-bold text-sm text-zinc-900 dark:text-zinc-100">
+                      {activePreviewSlip.beneficiaryName}
+                    </p>
+                    <p className="text-[11px] text-zinc-500">
+                      Wilaya de rattachement : {activePreviewSlip.wilayaName}
                     </p>
                   </div>
 
-                  <div className="flex items-center gap-4 shrink-0">
-                    <div className="text-right">
-                      <span className="text-xs text-zinc-400 block">Total Dinar</span>
-                      <span className="font-mono font-bold text-lg text-zinc-900 dark:text-zinc-100 tabular-nums">
-                        {batch.totalAmountDzd.toLocaleString()} DA
-                      </span>
-                    </div>
-
-                    {isApproved ? (
-                      <button
-                        onClick={() => {
-                          generatePmCcpSlipsForBatch(batch.id);
-                          setActiveTab('ccp');
-                        }}
-                        className="px-4 py-2 text-xs font-semibold text-white bg-[#C4785A] hover:bg-[#b3684a] rounded-xl transition-all shadow-sm flex items-center gap-1.5"
-                      >
-                        <CreditCard className="w-3.5 h-3.5" />
-                        Générer Bordereaux SFP 01 (1-Clic) →
-                      </button>
-                    ) : (
-                      <div className="px-3.5 py-2 text-xs font-medium text-amber-700 bg-amber-50 dark:bg-amber-950/40 rounded-xl flex items-center gap-1.5 border border-amber-200">
-                        <Lock className="w-3.5 h-3.5" />
-                        Verrouillé (Attente DG)
-                      </div>
+                  {/* Legal Transcription in Words */}
+                  <div className="p-2.5 rounded-lg bg-amber-100/60 dark:bg-amber-900/30 border border-amber-200/80 dark:border-amber-900/50 space-y-1">
+                    <span className="text-[9px] uppercase font-bold text-amber-900 dark:text-amber-300 block">
+                      Somme en toutes lettres (Mention Légale)
+                    </span>
+                    <p className="font-serif italic text-xs text-zinc-800 dark:text-zinc-200 leading-snug">
+                      « {activePreviewSlip.amountInWordsFr} »
+                    </p>
+                    {activePreviewSlip.amountInWordsAr && (
+                      <p className="text-[11px] text-zinc-700 dark:text-zinc-300 font-arabic text-right leading-relaxed pt-0.5">
+                        « {activePreviewSlip.amountInWordsAr} »
+                      </p>
                     )}
                   </div>
+
+                  {/* Postal Stamps & Motif */}
+                  <div className="pt-2 border-t border-amber-300 dark:border-amber-900/60 flex items-center justify-between text-[10px] text-zinc-500">
+                    <div>
+                      <span className="block font-semibold">Motif :</span>
+                      <span>{activePreviewSlip.transactionReference}</span>
+                    </div>
+                    <div className="w-16 h-12 rounded border border-dashed border-amber-400 flex items-center justify-center text-[8px] text-amber-800 dark:text-amber-300 text-center font-bold uppercase">
+                      Cachet PTT
+                    </div>
+                  </div>
                 </div>
-              );
-            })}
+
+                {/* SFP 01 Action Buttons */}
+                <div className="flex items-center gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedSlip(activePreviewSlip);
+                    }}
+                    className="flex-1 py-2.5 px-3 bg-[#C4785A] hover:bg-[#b3684a] text-white rounded-xl text-xs font-semibold shadow-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                  >
+                    <Printer className="w-3.5 h-3.5" />
+                    Imprimer Format SFP 01
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      alert(`Téléchargement du bordereau SFP 01 pour ${activePreviewSlip.beneficiaryName} (Format normalisé Algérie Poste).`);
+                    }}
+                    className="p-2.5 text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
+                    title="Télécharger PDF"
+                  >
+                    <Download className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -399,72 +719,265 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
         </div>
       )}
 
-      {/* TAB 4: Equipment & Collateral Stock Tracker */}
+      {/* TAB 4: Equipment & Indirect Stock Lifecycle Tracker (Slide 11 Exact Match) */}
       {activeTab === 'stock' && (
-        <div className="p-6 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm space-y-4">
-          <div className="flex items-center justify-between">
+        <div className="space-y-6">
+          {/* Header & Filter Capsules */}
+          <div className="p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                Parc Matériel Agence & Équipements Réutilisables
-              </h3>
-              <p className="text-xs text-zinc-500">
-                Suivi des structures métalliques, sonos, valises comptoirs et jupes imprimées.
+              <div className="flex items-center gap-2">
+                <Boxes className="w-4 h-4 text-[#C4785A]" />
+                <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+                  Parc Matériel & Stock Indirect — Tracé à Vie (Slide 11)
+                </h3>
+              </div>
+              <p className="text-xs text-zinc-500 mt-0.5">
+                Chaque achat de terrain est automatiquement codé (NCH-A-00xxx) et bénéficie d'une traçabilité de cycle de vie.
               </p>
+            </div>
+
+            {/* Filter Capsules */}
+            <div className="flex flex-wrap items-center gap-1.5 text-xs">
+              {[
+                { id: 'all', label: `Tous (${pmEquipmentStock.length})` },
+                { id: 'indirect', label: 'Achats Terrain (NCH-A)' },
+                { id: 'in_stock', label: 'En Dépôt' },
+                { id: 'deployed', label: 'En Mission' },
+              ].map((capsule) => (
+                <button
+                  key={capsule.id}
+                  onClick={() => setStockCategoryFilter(capsule.id)}
+                  className={`px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+                    stockCategoryFilter === capsule.id
+                      ? 'bg-[#C4785A] text-white shadow-xs'
+                      : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200'
+                  }`}
+                >
+                  {capsule.label}
+                </button>
+              ))}
             </div>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 font-semibold">
-                <tr>
-                  <th className="p-3 rounded-l-lg">Code Actif</th>
-                  <th className="p-3">Désignation</th>
-                  <th className="p-3">Catégorie</th>
-                  <th className="p-3">Statut & Garde Actuelle</th>
-                  <th className="p-3">État Matériel</th>
-                  <th className="p-3 text-right rounded-r-lg">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
-                {pmEquipmentStock.map((eq) => (
-                  <tr key={eq.id} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/40">
-                    <td className="p-3 font-mono font-bold text-[#C4785A]">{eq.assetCode}</td>
-                    <td className="p-3 font-semibold text-zinc-900 dark:text-zinc-100">{eq.title}</td>
-                    <td className="p-3 text-zinc-500 capitalize">{eq.category.replace('_', ' ')}</td>
-                    <td className="p-3">
-                      <div className="space-y-0.5">
-                        <span
-                          className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                            eq.currentStatus === 'deployed_on_mission'
-                              ? 'bg-amber-100 text-amber-700'
-                              : 'bg-emerald-100 text-emerald-700'
+          {/* Slide 11 Main Split Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            {/* Left 6 Cols: Assets List */}
+            <div className="lg:col-span-6 space-y-3">
+              <div className="flex items-center justify-between text-xs text-zinc-400 px-1">
+                <span>MATÉRIEL ENREGISTRÉ</span>
+                <span>{pmEquipmentStock.length} articles</span>
+              </div>
+
+              <div className="space-y-2.5">
+                {pmEquipmentStock
+                  .filter((eq) => {
+                    if (stockCategoryFilter === 'indirect') return eq.assetCode.startsWith('NCH-A');
+                    if (stockCategoryFilter === 'in_stock') return eq.currentStatus === 'in_stock';
+                    if (stockCategoryFilter === 'deployed') return eq.currentStatus === 'deployed_on_mission';
+                    return true;
+                  })
+                  .map((eq) => {
+                    const isSelected = selectedStockAsset?.id === eq.id;
+                    const isIndirect = eq.assetCode.startsWith('NCH-A');
+                    return (
+                      <div
+                        key={eq.id}
+                        onClick={() => setSelectedStockAssetId(eq.id)}
+                        className={`p-4 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between gap-3 ${
+                          isSelected
+                            ? 'border-[#C4785A] bg-[#C4785A]/5 shadow-sm ring-1 ring-[#C4785A]/30'
+                            : 'border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:border-zinc-300'
+                        }`}
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="font-mono font-bold text-xs text-[#C4785A]">
+                                {eq.assetCode}
+                              </span>
+                              {isIndirect && (
+                                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300">
+                                  STOCK INDIRECT (TERRAIN)
+                                </span>
+                              )}
+                            </div>
+                            <h4 className="font-semibold text-sm text-zinc-900 dark:text-zinc-100 mt-1">
+                              {eq.title}
+                            </h4>
+                            <p className="text-xs text-zinc-500 mt-0.5 capitalize">
+                              Catégorie : {eq.category.replace('_', ' ')}
+                            </p>
+                          </div>
+
+                          <span
+                            className={`text-[10px] font-bold px-2.5 py-1 rounded-full shrink-0 ${
+                              eq.currentStatus === 'deployed_on_mission'
+                                ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
+                                : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
+                            }`}
+                          >
+                            {eq.currentStatus === 'deployed_on_mission' ? 'DÉPLOYÉ TERRAIN' : 'EN DÉPÔT'}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center justify-between pt-2 border-t border-zinc-100 dark:border-zinc-800/80 text-xs">
+                          <span className="font-mono font-bold text-zinc-900 dark:text-zinc-100">
+                            {eq.acquisitionCostDzd.toLocaleString()} DA
+                          </span>
+                          <span className="text-[11px] text-zinc-400 flex items-center gap-1">
+                            <History className="w-3.5 h-3.5" />
+                            {eq.history?.length || 2} étapes de vie
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
+            </div>
+
+            {/* Right 6 Cols: Slide 11 Dedicated Indirect Stock Lifecycle Timeline */}
+            <div className="lg:col-span-6 space-y-4">
+              <div className="p-5 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs sticky top-6 space-y-5">
+                <div className="flex items-center justify-between pb-3 border-b border-zinc-200 dark:border-zinc-800">
+                  <div>
+                    <span className="text-[10px] font-mono font-bold text-[#C4785A] uppercase tracking-wider block">
+                      CYCLE DE VIE DÉTAILLÉ (SLIDE 11)
+                    </span>
+                    <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-100">
+                      {selectedStockAsset?.assetCode} · {selectedStockAsset?.title}
+                    </h3>
+                  </div>
+                  <span className="text-xs font-mono font-bold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800">
+                    {selectedStockAsset?.acquisitionCostDzd.toLocaleString()} DA
+                  </span>
+                </div>
+
+                {/* Acquisition Metadata */}
+                <div className="p-3 bg-zinc-50 dark:bg-zinc-800/50 rounded-xl border border-zinc-200/80 dark:border-zinc-800 text-xs space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-zinc-500 font-medium">Origine acquisition :</span>
+                    <span className="font-semibold text-zinc-900 dark:text-zinc-100">
+                      Acheté et déclaré sur le terrain
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-zinc-500 font-medium">Justificatif fiscal :</span>
+                    <span className="text-emerald-600 font-mono font-bold text-[11px]">
+                      facture_scan.jpg ✓ Scannée
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-zinc-500 font-medium">Statut actuel :</span>
+                    <span className="font-semibold text-emerald-600">
+                      Disponible — état : bon
+                    </span>
+                  </div>
+                </div>
+
+                {/* Vertical Timeline matching Slide 11 */}
+                <div className="space-y-4 pt-1">
+                  <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider block">
+                    Historique Chronologique des Affectations
+                  </span>
+
+                  <div className="relative pl-6 space-y-6 before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-zinc-200 dark:before:bg-zinc-800">
+                    {/* Render exact Slide 11 timeline steps if available or default */}
+                    {(selectedStockAsset?.history || [
+                      { date: '12/03', stage: 'Acheté & codé', detail: `${selectedStockAsset?.title} — ${selectedStockAsset?.acquisitionCostDzd.toLocaleString()} DA` },
+                      { date: '15/03', stage: 'Affecté', detail: 'Roadshow Ooredoo — Oran' },
+                      { date: '02/04', stage: 'Retour stock', detail: 'État contrôlé : bon' },
+                      { date: '10/05', stage: 'Affecté', detail: 'Salon SITEV — Alger' },
+                      { date: 'Auj.', stage: 'En stock', detail: 'Disponible — état : bon' },
+                    ]).map((step, idx) => (
+                      <div key={idx} className="relative group">
+                        {/* Milestone Node */}
+                        <div
+                          className={`absolute -left-6 top-0.5 w-5 h-5 rounded-full border-2 bg-white dark:bg-zinc-900 flex items-center justify-center transition-all ${
+                            step.stage === 'En stock'
+                              ? 'border-emerald-500 text-emerald-500'
+                              : step.stage === 'Affecté'
+                              ? 'border-[#C4785A] text-[#C4785A]'
+                              : step.stage === 'Acheté & codé'
+                              ? 'border-blue-500 text-blue-500'
+                              : 'border-zinc-400 text-zinc-400'
                           }`}
                         >
-                          {eq.currentStatus === 'deployed_on_mission' ? 'DÉPLOYÉ SUR SITE' : 'EN STOCK DÉPÔT'}
-                        </span>
-                        {eq.currentCustodianName && (
-                          <span className="text-[11px] text-zinc-500 block">
-                            Dépositaire: {eq.currentCustodianName}
-                          </span>
-                        )}
+                          <div
+                            className={`w-2 h-2 rounded-full ${
+                              step.stage === 'En stock'
+                                ? 'bg-emerald-500'
+                                : step.stage === 'Affecté'
+                                ? 'bg-[#C4785A]'
+                                : step.stage === 'Acheté & codé'
+                                ? 'bg-blue-500'
+                                : 'bg-zinc-400'
+                            }`}
+                          />
+                        </div>
+
+                        {/* Content */}
+                        <div className="space-y-0.5">
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono font-bold text-xs text-zinc-900 dark:text-zinc-100">
+                              {step.date}
+                            </span>
+                            <span
+                              className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                                step.stage === 'En stock'
+                                  ? 'bg-emerald-100 text-emerald-800'
+                                  : step.stage === 'Affecté'
+                                  ? 'bg-amber-100 text-amber-800'
+                                  : step.stage === 'Acheté & codé'
+                                  ? 'bg-blue-100 text-blue-800'
+                                  : 'bg-zinc-100 text-zinc-800'
+                              }`}
+                            >
+                              {step.stage}
+                            </span>
+                          </div>
+                          <p className="text-xs text-zinc-600 dark:text-zinc-400">
+                            {step.detail}
+                          </p>
+                        </div>
                       </div>
-                    </td>
-                    <td className="p-3">
-                      <span className="text-xs text-emerald-600 font-medium">Bon état général</span>
-                    </td>
-                    <td className="p-3 text-right">
-                      <button
-                        onClick={() => alert(`Code-barre pour ${eq.assetCode}: ${eq.qrLabelCode}`)}
-                        className="px-2.5 py-1 text-xs text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg inline-flex items-center gap-1"
-                      >
-                        <QrCode className="w-3.5 h-3.5" />
-                        Label QR
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Action Controls for Asset Management */}
+                <div className="pt-3 border-t border-zinc-200 dark:border-zinc-800 flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      updatePmEquipmentStatus(selectedStockAsset.id, 'deployed_on_mission', 'good');
+                      alert(`Matériel ${selectedStockAsset.assetCode} affecté à la mission terrain en cours.`);
+                    }}
+                    className="flex-1 py-2 px-3 text-xs font-semibold text-white bg-[#C4785A] hover:bg-[#b3684a] rounded-xl transition-colors flex items-center justify-center gap-1.5 shadow-xs cursor-pointer"
+                  >
+                    <ArrowRight className="w-3.5 h-3.5" />
+                    Affecter à une Mission
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      updatePmEquipmentStatus(selectedStockAsset.id, 'in_stock');
+                      alert(`Retour en stock enregistré pour ${selectedStockAsset.assetCode}. État contrôlé : bon.`);
+                    }}
+                    className="py-2 px-3 text-xs font-semibold text-zinc-700 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 rounded-xl transition-colors cursor-pointer"
+                  >
+                    Retour Stock
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => alert(`Code QR imprimable généré pour ${selectedStockAsset.assetCode} : ${selectedStockAsset.qrLabelCode}`)}
+                    className="p-2 text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
+                    title="Imprimer Étiquette QR Code"
+                  >
+                    <QrCode className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}
