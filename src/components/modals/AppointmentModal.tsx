@@ -19,6 +19,7 @@ import {
 import { useAtriumStore } from '../../services/store';
 import { Appointment, AppointmentStatus, ServiceItem } from '../../types/index';
 import { Modal } from '../ui/Modal';
+import { LabelInput } from '../ui/LabelInput';
 import { formatMoney } from '../../utils/rules';
 
 interface AppointmentModalProps {
@@ -362,34 +363,29 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
                 ))}
               </select>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200/50 dark:border-amber-900/30 rounded-xl">
-                <div>
-                  <label className="text-[11px] font-semibold text-neutral-600 dark:text-neutral-400 block mb-1">
-                    Walk-in Client Name *
-                  </label>
-                  <input
-                    type="text"
-                    required={bookingMode === 'walkin'}
-                    value={walkinName}
-                    onChange={(e) => setWalkinName(e.target.value)}
-                    placeholder="e.g. Rania Cherif"
-                    className="w-full h-9 px-3 text-sm rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:border-[#C4785A]"
-                  />
-                </div>
-                <div>
-                  <label className="text-[11px] font-semibold text-neutral-600 dark:text-neutral-400 block mb-1">
-                    Phone Number *
-                  </label>
-                  <input
-                    type="tel"
-                    required={bookingMode === 'walkin'}
-                    value={walkinPhone}
-                    onChange={(e) => setWalkinPhone(e.target.value)}
-                    placeholder="+213 550 00 00 00"
-                    className="w-full h-9 px-3 text-sm rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:border-[#C4785A]"
-                  />
-                </div>
-              </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200/50 dark:border-amber-900/30 rounded-xl">
+              <LabelInput
+                field="Walk-in Client Name"
+                label="Walk-in Client Name *"
+                value={walkinName}
+                onChange={setWalkinName}
+                width="100%"
+                height={44}
+                corner={12}
+                required={bookingMode === 'walkin'}
+              />
+              <LabelInput
+                field="Phone Number"
+                label="Phone Number *"
+                type="tel"
+                value={walkinPhone}
+                onChange={setWalkinPhone}
+                width="100%"
+                height={44}
+                corner={12}
+                required={bookingMode === 'walkin'}
+              />
+            </div>
             )}
           </div>
         )}

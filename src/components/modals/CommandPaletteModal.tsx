@@ -64,12 +64,16 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
 
   const [query, setQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [isBusy, setIsBusy] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const busyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (isOpen) {
       setQuery('');
       setSelectedIndex(0);
+      setIsBusy(false);
       setTimeout(() => inputRef.current?.focus(), 50);
     }
   }, [isOpen]);
@@ -300,26 +304,58 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
         className="w-full max-w-xl rounded-3xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-2xl overflow-hidden flex flex-col max-h-[80vh] animate-in zoom-in-95 duration-150"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Search Input Bar */}
-        <div className="p-4 border-b border-neutral-100 dark:border-neutral-800 flex items-center gap-3">
-          <Search size={18} className="text-[#C4785A] shrink-0" />
+        {/* Kinetic Search Input Bar */}
+        <div
+          className={`p-3.5 sm:p-4 border-b transition-colors flex items-center gap-3 ${
+            isFocused
+              ? 'border-[#C4785A]/40 bg-[#FDF4F0]/40 dark:bg-neutral-800/40'
+              : 'border-neutral-100 dark:border-neutral-800 bg-transparent'
+          }`}
+        >
+          <div
+            className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-transform ${
+              isBusy ? 'scale-110 text-neutral-900 dark:text-white' : 'text-[#C4785A]'
+            }`}
+          >
+            <Search size={18} strokeWidth={isBusy ? 2.4 : 2} />
+          </div>
           <input
             ref={inputRef}
             type="text"
             value={query}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
             onChange={(e) => {
-              setQuery(e.target.value);
+              const val = e.target.value;
+              setQuery(val);
               setSelectedIndex(0);
+              setIsBusy(true);
+              if (busyTimerRef.current) clearTimeout(busyTimerRef.current);
+              busyTimerRef.current = setTimeout(() => setIsBusy(false), 240);
             }}
             placeholder="Type a screen, client, student, invoice, or action..."
             className="w-full bg-transparent text-sm text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none"
           />
+          {query.length > 0 && (
+            <button
+              type="button"
+              onClick={() => {
+                setQuery('');
+                inputRef.current?.focus();
+              }}
+              className="p-1 rounded-full text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 transition-colors"
+              title="Clear query"
+            >
+              <X size={15} />
+            </button>
+          )}
           <button
             type="button"
             onClick={onClose}
-            className="p-1 rounded-lg text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 transition-colors"
+            className="p-1 rounded-lg text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 transition-colors ml-1"
+            title="Close (Esc)"
           >
-            <X size={16} />
+            <span className="text-[11px] font-mono px-1.5 py-0.5 rounded border border-neutral-200 dark:border-neutral-700">ESC</span>
           </button>
         </div>
 

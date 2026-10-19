@@ -450,6 +450,17 @@ export const ShopScreen: React.FC = () => {
     setSelectedCustomerId('');
     setCheckoutNotes('');
     setIsCheckoutModalOpen(false);
+
+    showToast({
+      type: 'success',
+      title: 'Payment Settled',
+      message: `Receipt #${sale.id.slice(-6).toUpperCase()} processed (${sale.total.amount.toLocaleString()} ${sale.total.currency || 'DZD'}).`,
+      category: 'pos_inventory',
+      action: {
+        label: 'Receipt',
+        onClick: () => window.print?.(),
+      },
+    });
   };
 
   // Hold current order

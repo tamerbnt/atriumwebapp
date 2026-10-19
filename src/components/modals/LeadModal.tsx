@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAtriumStore } from '../../services/store';
 import { Modal } from '../ui/Modal';
+import { LabelInput } from '../ui/LabelInput';
 
 interface LeadModalProps {
   isOpen: boolean;
@@ -49,62 +50,40 @@ export const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose }) => {
       maxWidth="md"
     >
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="space-y-1">
-          <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
-            Prospect Name *
-          </label>
-          <input
-            type="text"
-            required
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
-            placeholder="e.g. Walid Mesbah"
-            style={{
-              backgroundColor: 'var(--color-surface-bg)',
-              borderColor: 'var(--color-border)',
-              borderRadius: 'var(--radius-input)',
-            }}
-            className="w-full h-11 px-3 text-sm border focus:outline-none focus:border-[#C4785A] text-neutral-900 dark:text-white"
+        <LabelInput
+          field="Prospect Name"
+          label="Prospect Name *"
+          value={fullName}
+          onChange={setFullName}
+          width="100%"
+          height={44}
+          corner={14}
+          required
+        />
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <LabelInput
+            field="Email"
+            label="Email Address"
+            type="email"
+            value={email}
+            onChange={setEmail}
+            width="100%"
+            height={44}
+            corner={14}
           />
-        </div>
 
-        <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-1">
-            <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
-              Email Address
-            </label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="prospect@email.com"
-              style={{
-                backgroundColor: 'var(--color-surface-bg)',
-                borderColor: 'var(--color-border)',
-                borderRadius: 'var(--radius-input)',
-              }}
-              className="w-full h-11 px-3 text-sm border focus:outline-none focus:border-[#C4785A] text-neutral-900 dark:text-white"
-            />
-          </div>
-
-          <div className="space-y-1">
-            <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
-              Phone Number *
-            </label>
-            <input
-              type="tel"
-              required
-              value={phoneNumber}
-              onChange={(e) => setPhoneNumber(e.target.value)}
-              placeholder="+213 555 12 34 56"
-              style={{
-                backgroundColor: 'var(--color-surface-bg)',
-                borderColor: 'var(--color-border)',
-                borderRadius: 'var(--radius-input)',
-              }}
-              className="w-full h-11 px-3 text-sm border focus:outline-none focus:border-[#C4785A] text-neutral-900 dark:text-white"
-            />
-          </div>
+          <LabelInput
+            field="Phone Number"
+            label="Phone Number *"
+            type="tel"
+            value={phoneNumber}
+            onChange={setPhoneNumber}
+            width="100%"
+            height={44}
+            corner={14}
+            required
+          />
         </div>
 
         <div className="grid grid-cols-2 gap-3">

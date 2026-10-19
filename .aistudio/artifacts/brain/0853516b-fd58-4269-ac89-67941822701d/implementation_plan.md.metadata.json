@@ -1,0 +1,6 @@
+{
+  "summary": "Comprehensive architectural and implementation plan for Atrium's category-dedicated notification engine powered by the kinetic ToastStack. Covers category-specific operational events, completion toasts, low-stock/escrow/attendance warnings, interactive action handlers, and bottom-right 3-card stack physics with hover fanning.",
+  "updatedAt": "2026-10-19T15:35:04.443053898Z",
+  "requestFeedback": true,
+  "userFacing": true
+}

@@ -64,6 +64,7 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
     updateMember,
     deleteMember,
     setScreen,
+    showToast,
   } = useAtriumStore();
 
   const [statusFilter, setStatusFilter] = useState<'All' | 'Active' | 'Expiring' | 'Expired' | 'Archived'>('All');
@@ -656,6 +657,16 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
                           onClick: () => {
                             updateMember(member.id, {
                               lastVisitDate: new Date().toISOString().split('T')[0],
+                            });
+                            showToast({
+                              type: 'success',
+                              title: 'Member Checked In',
+                              message: `${member.fullName} (${member.cardId || 'Access Granted'}) session recorded.`,
+                              category: currentBusiness?.category,
+                              action: {
+                                label: 'Inspect',
+                                onClick: () => selectMember(member.id),
+                              },
                             });
                           },
                         },

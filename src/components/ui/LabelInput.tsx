@@ -57,7 +57,36 @@ export function LabelInput({
   name,
   required = false,
 }: LabelInputProps) {
-  const W = typeof width === "number" ? width : 280;
+  const boxRef = useRef<HTMLDivElement | null>(null);
+  const [measuredW, setMeasuredW] = useState<number>(typeof width === "number" ? width : 280);
+
+  useLayoutEffect(() => {
+    if (typeof width === "number") {
+      setMeasuredW(width);
+      return;
+    }
+    if (boxRef.current) {
+      const rect = boxRef.current.getBoundingClientRect();
+      if (rect.width > 0) {
+        setMeasuredW(Math.round(rect.width));
+      }
+    }
+  }, [width]);
+
+  useEffect(() => {
+    if (typeof width === "number" || !boxRef.current) return;
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.contentRect.width > 0) {
+          setMeasuredW(Math.round(entry.contentRect.width));
+        }
+      }
+    });
+    observer.observe(boxRef.current);
+    return () => observer.disconnect();
+  }, [width]);
+
+  const W = measuredW;
   const H = height;
   const r = clamp(corner, 0, H / 2);
   const generatedId = `lbi-${useId().replace(/:/g, "")}`;
@@ -134,6 +163,7 @@ export function LabelInput({
 
   return (
     <div
+      ref={boxRef}
       className={`lbi ${className}`}
       data-up={Boolean(up)}
       data-focus={focus}

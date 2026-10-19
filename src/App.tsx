@@ -40,7 +40,7 @@ import { EducationAttendanceView } from './components/screens/education/Educatio
 import { EducationFinanceView } from './components/screens/education/EducationFinanceView';
 import { DesktopUpgradeModal } from './components/modals/DesktopUpgradeModal';
 import { CommandPaletteModal } from './components/modals/CommandPaletteModal';
-import { ToastContainer } from './components/common/ToastContainer';
+import { ToastStack } from './components/ui/ToastStack';
 
 export default function App() {
   const {
@@ -323,8 +323,8 @@ export default function App() {
         reason={desktopUpgradeReason}
       />
 
-      {/* Global Notifications Toast Container */}
-      <ToastContainer />
+      {/* Kinetic Category-Dedicated ToastStack */}
+      <ToastStack />
     </div>
   );
 }

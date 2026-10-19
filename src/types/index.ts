@@ -136,6 +136,7 @@ export interface Member {
   emergencyContactPhone?: string;
   notes?: string;
   segmentData?: Record<string, any>;
+  lastVisitDate?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -719,6 +720,11 @@ export interface ToastNotification {
   duration?: number;
   syncStatus?: ToastSyncStatus;
   table?: string;
+  category?: BusinessCategory;
+  action?: {
+    label: string;
+    onClick: () => void;
+  };
   createdAt: number;
 }
 

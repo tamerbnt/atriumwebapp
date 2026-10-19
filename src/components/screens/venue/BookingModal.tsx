@@ -15,6 +15,7 @@ import {
 import { useAtriumStore } from '../../../services/store';
 import { RentableUnit, RentalBooking, BookingAddon, BookingStatus, DepositStatus } from '../../../types/index';
 import { formatCurrencyAmount } from '../../../utils/rules';
+import { LabelInput } from '../../ui/LabelInput';
 
 interface BookingModalProps {
   isOpen: boolean;
@@ -286,6 +287,17 @@ export const BookingModal: React.FC<BookingModalProps> = ({
       });
     }
 
+    showToast({
+      type: 'success',
+      title: bookingToEdit ? 'Reservation Updated' : 'Venue Reserved',
+      message: `${selectedUnit.name} reserved for ${renterName.trim()} (${startDate}).`,
+      category: 'rental_booking',
+      action: {
+        label: 'Contract',
+        onClick: () => window.print?.(),
+      },
+    });
+
     onClose();
   };
 
@@ -406,71 +418,60 @@ export const BookingModal: React.FC<BookingModalProps> = ({
               </div>
             )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
-                  Renter Full Name *
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. Amina Kaci"
-                  value={renterName}
-                  onChange={(e) => setRenterName(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm text-neutral-900 dark:text-white focus:outline-hidden focus:border-[var(--color-accent)]"
-                  required
-                />
-              </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <LabelInput
+                field="Renter Full Name"
+                label="Renter Full Name *"
+                value={renterName}
+                onChange={setRenterName}
+                width="100%"
+                height={44}
+                corner={14}
+                required
+              />
 
-              <div>
-                <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
-                  Company / Organization
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. Kaci Events & Communications"
-                  value={renterCompany}
-                  onChange={(e) => setRenterCompany(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm text-neutral-900 dark:text-white focus:outline-hidden focus:border-[var(--color-accent)]"
-                />
-              </div>
+              <LabelInput
+                field="Company"
+                label="Company / Organization"
+                value={renterCompany}
+                onChange={setRenterCompany}
+                width="100%"
+                height={44}
+                corner={14}
+              />
 
-              <div>
-                <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
-                  Phone Number *
-                </label>
-                <input
-                  type="tel"
-                  placeholder="+213 552 11 22 33"
-                  value={renterPhone}
-                  onChange={(e) => setRenterPhone(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm text-neutral-900 dark:text-white focus:outline-hidden focus:border-[var(--color-accent)]"
-                  required
-                />
-              </div>
+              <LabelInput
+                field="Phone Number"
+                label="Phone Number *"
+                type="tel"
+                value={renterPhone}
+                onChange={setRenterPhone}
+                width="100%"
+                height={44}
+                corner={14}
+                required
+              />
 
-              <div>
-                <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
-                  Email Address
-                </label>
-                <input
-                  type="email"
-                  placeholder="contact@events.dz"
-                  value={renterEmail}
-                  onChange={(e) => setRenterEmail(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm text-neutral-900 dark:text-white focus:outline-hidden focus:border-[var(--color-accent)]"
-                />
-              </div>
+              <LabelInput
+                field="Email Address"
+                label="Email Address"
+                type="email"
+                value={renterEmail}
+                onChange={setRenterEmail}
+                width="100%"
+                height={44}
+                corner={14}
+              />
 
               <div className="md:col-span-2">
-                <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
-                  Event Title / Booking Purpose *
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. National Tech & Innovation Summit Gala / Fashion Commercial Shoot"
+                <LabelInput
+                  field="Event Title"
+                  label="Event Title / Booking Purpose *"
                   value={purpose}
-                  onChange={(e) => setPurpose(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm text-neutral-900 dark:text-white focus:outline-hidden focus:border-[var(--color-accent)]"
+                  onChange={setPurpose}
+                  width="100%"
+                  height={44}
+                  corner={14}
                   required
                 />
               </div>

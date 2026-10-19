@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Shield, Sparkles, CheckCircle2, AlertCircle, KeyRound, Copy } from 'lucide-react';
 import { useAtriumStore } from '../../services/store';
 import { Modal } from '../ui/Modal';
+import { LabelInput } from '../ui/LabelInput';
 import { validateVoucherCode } from '../../utils/rules';
 
 interface VoucherModalProps {
@@ -71,31 +72,19 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({ isOpen, onClose }) =
         </div>
 
         {/* Form input */}
-        <form onSubmit={handleRedeem} className="space-y-3">
-          <div className="space-y-1">
-            <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
-              Voucher Code
-            </label>
-            <div className="relative">
-              <KeyRound
-                size={16}
-                className="absolute left-3.5 top-3.5 text-neutral-400"
-              />
-              <input
-                type="text"
-                required
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-                placeholder="ATR-PRO-LIFE-XXXX-XXXX"
-                style={{
-                  backgroundColor: 'var(--color-surface-bg)',
-                  borderColor: 'var(--color-border)',
-                  borderRadius: 'var(--radius-input)',
-                }}
-                className="w-full h-11 pl-10 pr-3 text-sm font-mono uppercase tracking-wider border focus:outline-none focus:border-[#C4785A] text-neutral-900 dark:text-white shadow-2xs"
-              />
-            </div>
-            <span className="text-[11px] text-neutral-400 block mt-1">
+        <form onSubmit={handleRedeem} className="space-y-4">
+          <div className="space-y-1.5">
+            <LabelInput
+              field="Voucher Code"
+              label="Enter 20-digit Voucher Code"
+              value={code}
+              onChange={(val) => setCode(val.toUpperCase())}
+              width="100%"
+              height={44}
+              corner={14}
+              required
+            />
+            <span className="text-[11px] text-neutral-400 block px-1">
               Format: ATR-[STARTER|PRO|ENTERPRISE]-LIFE-XXXX-XXXX
             </span>
           </div>

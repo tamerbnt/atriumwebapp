@@ -39,6 +39,7 @@ export const FreelanceTimeTrackerView: React.FC = () => {
     deleteTimeLog,
     billUnbilledHours,
     setScreen,
+    showToast,
   } = useAtriumStore();
 
   const [selectedClientId, setSelectedClientId] = useState<string>(

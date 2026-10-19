@@ -525,6 +525,11 @@ export function showToast(toastInput: {
   duration?: number;
   syncStatus?: ToastSyncStatus;
   table?: string;
+  category?: BusinessCategory;
+  action?: {
+    label: string;
+    onClick: () => void;
+  };
 }) {
   const id = `toast-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
   const newToast: ToastNotification = {
@@ -532,9 +537,11 @@ export function showToast(toastInput: {
     type: toastInput.type,
     title: toastInput.title,
     message: toastInput.message,
-    duration: toastInput.duration ?? 4500,
+    duration: toastInput.duration ?? 6000,
     syncStatus: toastInput.syncStatus,
     table: toastInput.table,
+    category: toastInput.category,
+    action: toastInput.action,
     createdAt: Date.now(),
   };
 

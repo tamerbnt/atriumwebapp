@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { useAtriumStore } from '../../../services/store';
 import { AdmissionStage, EduAdmissionLead } from '../../../types';
+import { Seek } from '../../ui/Seek';
 
 const STAGES: { id: AdmissionStage; title: string }[] = [
   { id: 'Inquiry', title: '1. Inquiries' },
@@ -117,16 +118,13 @@ export const EducationAdmissionsView: React.FC = () => {
       </div>
 
       {/* Search Bar */}
-      <div className="relative max-w-md">
-        <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400" />
-        <input
-          type="text"
-          placeholder="Search leads by student, phone, desired course..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full pl-9 pr-4 py-2 text-xs rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white placeholder-neutral-400 focus:outline-none focus:ring-1 focus:ring-[#C4785A]"
-        />
-      </div>
+      <Seek
+        value={searchQuery}
+        onChange={setSearchQuery}
+        placeholder="Search leads by student, phone, desired course..."
+        openWidth={320}
+        shutSize={40}
+      />
 
       {/* Kanban Pipeline Board */}
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 items-start">

@@ -31,6 +31,7 @@ export const RollCallModal: React.FC<RollCallModalProps> = ({
     eduEnrollments,
     eduAttendance,
     batchRecordAttendance,
+    showToast,
   } = useAtriumStore();
 
   const [selectedCohortId, setSelectedCohortId] = useState<string>(
@@ -123,6 +124,16 @@ export const RollCallModal: React.FC<RollCallModalProps> = ({
     });
 
     batchRecordAttendance(selectedSessionId, selectedCohortId, records);
+    showToast({
+      type: 'success',
+      title: 'Roll Call Logged',
+      message: `Attendance saved for ${activeCohort?.name || 'Cohort'} (${presentCount}/${studentsInCohort.length} present).`,
+      category: 'education_cohort',
+      action: {
+        label: 'Gradebook',
+        onClick: () => {},
+      },
+    });
     onClose();
   };
 

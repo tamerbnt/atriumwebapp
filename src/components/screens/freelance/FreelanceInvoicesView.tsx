@@ -26,6 +26,7 @@ import {
   InvoiceStatus,
   CurrencyCode,
 } from '../../../types/index';
+import { Seek } from '../../ui/Seek';
 
 export const FreelanceInvoicesView: React.FC = () => {
   const {
@@ -225,16 +226,13 @@ export const FreelanceInvoicesView: React.FC = () => {
 
       {/* Filter and Search Bar */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-        <div className="relative flex-1 max-w-md">
-          <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400" />
-          <input
-            type="text"
-            placeholder="Search by invoice #, client, company..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 text-xs rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white placeholder-neutral-400 focus:outline-none focus:ring-1 focus:ring-[#C4785A]"
-          />
-        </div>
+        <Seek
+          value={searchQuery}
+          onChange={setSearchQuery}
+          placeholder="Search by invoice #, client, company..."
+          openWidth={300}
+          shutSize={40}
+        />
 
         {/* Segmented Filter Control */}
         <div className="flex items-center gap-1 p-1 bg-neutral-100 dark:bg-neutral-800/80 rounded-xl self-start sm:self-auto overflow-x-auto">

@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { useAtriumStore } from '../../../services/store';
 import { EduCertificate } from '../../../types';
+import { LabelInput } from '../../ui/LabelInput';
 
 interface CertificateModalProps {
   certificate?: EduCertificate | null;
@@ -164,43 +165,37 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
                     className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#C4785A]"
                   />
                 </div>
-                <div>
-                  <label className="block font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
-                    Honors & Distinctions
-                  </label>
-                  <input
-                    type="text"
+                  <LabelInput
+                    field="Honors"
+                    label="Honors & Distinctions"
                     value={honors}
-                    onChange={(e) => setHonors(e.target.value)}
+                    onChange={setHonors}
                     placeholder="e.g. Magna Cum Laude"
-                    className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#C4785A]"
+                    width="100%"
+                    height={44}
+                    corner={14}
                   />
-                </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
-                    Signatory Name
-                  </label>
-                  <input
-                    type="text"
-                    value={signatoryName}
-                    onChange={(e) => setSignatoryName(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#C4785A]"
-                  />
-                </div>
-                <div>
-                  <label className="block font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
-                    Signatory Title
-                  </label>
-                  <input
-                    type="text"
-                    value={signatoryTitle}
-                    onChange={(e) => setSignatoryTitle(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#C4785A]"
-                  />
-                </div>
+              <div className="grid grid-cols-2 gap-3">
+                <LabelInput
+                  field="Signatory Name"
+                  label="Signatory Name"
+                  value={signatoryName}
+                  onChange={setSignatoryName}
+                  width="100%"
+                  height={44}
+                  corner={14}
+                />
+                <LabelInput
+                  field="Signatory Title"
+                  label="Signatory Title"
+                  value={signatoryTitle}
+                  onChange={setSignatoryTitle}
+                  width="100%"
+                  height={44}
+                  corner={14}
+                />
               </div>
 
               <div className="pt-4 flex justify-end gap-3 border-t border-neutral-100 dark:border-neutral-800">
