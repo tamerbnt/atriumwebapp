@@ -164,3 +164,45 @@ test('Free Web Tier enforces 1 business and 1 branch limit while Desktop expands
   assert.equal(desktopProBranchQuota.remaining, 4);
 });
 
+test('Algerian PTT CCP account and key validation', async () => {
+  const { validateCcpAccount, ALGERIAN_WILAYAS } = await import('./algerianPtt.ts');
+
+  // Verify 58 Wilayas are covered
+  assert.equal(ALGERIAN_WILAYAS.length, 58);
+  assert.equal(ALGERIAN_WILAYAS[0].nameFr, 'Adrar');
+  assert.equal(ALGERIAN_WILAYAS[15].nameFr, 'Alger');
+  assert.equal(ALGERIAN_WILAYAS[57].nameFr, 'In Guezzam');
+
+  // Valid CCP accounts
+  const validCheck1 = validateCcpAccount('0012345678', '45');
+  assert.equal(validCheck1.isValid, true);
+
+  const validCheck2 = validateCcpAccount('9876543', '08');
+  assert.equal(validCheck2.isValid, true);
+
+  // Invalid CCP accounts
+  const invalidAcc = validateCcpAccount('', '45');
+  assert.equal(invalidAcc.isValid, false);
+
+  const invalidKey = validateCcpAccount('12345678', '');
+  assert.equal(invalidKey.isValid, false);
+});
+
+test('Algerian Dinar Legal Number-to-Words for SFP 01 postal transfers', async () => {
+  const { numberToWordsFrench, numberToWordsArabic } = await import('./algerianPtt.ts');
+
+  // French
+  const frWords1 = numberToWordsFrench(24500);
+  assert.ok(frWords1.toLowerCase().includes('vingt-quatre mille cinq cents dinars algériens'));
+
+  const frWords2 = numberToWordsFrench(0);
+  assert.ok(frWords2.toLowerCase().includes('zéro dinar algérien'));
+
+  // Arabic
+  const arWords1 = numberToWordsArabic(5000);
+  assert.ok(arWords1.includes('دينار جزائري'));
+
+  const arWords2 = numberToWordsArabic(0);
+  assert.ok(arWords2.includes('صفر'));
+});
+

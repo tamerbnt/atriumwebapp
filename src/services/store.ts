@@ -62,6 +62,20 @@ import {
   StudentStatus,
   AttendanceStatus,
   EnrollmentPaymentStatus,
+  PMRole,
+  PMClient,
+  PMProject,
+  PMMilestone,
+  PMCollateralItem,
+  PMPrintOrder,
+  PMBatDeliverable,
+  PMTalent,
+  PMMission,
+  PMAttendance,
+  PMExpense,
+  PMPayrollBatch,
+  PMCcpSlip,
+  PMEquipmentStock,
 } from '../types/index';
 import {
   INITIAL_ACCOUNT,
@@ -102,8 +116,23 @@ import {
   INITIAL_EDU_GRADES,
   INITIAL_EDU_CERTIFICATES,
   INITIAL_EDU_ADMISSIONS,
+  INITIAL_PM_CLIENTS,
+  INITIAL_PM_PROJECTS,
+  INITIAL_PM_MILESTONES,
+  INITIAL_PM_COLLATERAL_CATALOG,
+  INITIAL_PM_PRINT_ORDERS,
+  INITIAL_PM_BAT_DELIVERABLES,
+  INITIAL_PM_TALENTS,
+  INITIAL_PM_MISSIONS,
+  INITIAL_PM_ATTENDANCES,
+  INITIAL_PM_EXPENSES,
+  INITIAL_PM_PAYROLL_BATCHES,
+  INITIAL_PM_CCP_SLIPS,
+  INITIAL_PM_EQUIPMENT_STOCK,
 } from './seedData';
 import { checkQuota, getCategoryTerminology, validateVoucherCode } from '../utils/rules';
+import { numberToWordsFrench, numberToWordsArabic } from '../utils/algerianPtt';
+
 import {
   isSupabaseConfigured,
   authService,
@@ -116,7 +145,9 @@ import {
   appointmentService,
   posService,
   rentalService,
+  projectMilestoneService,
 } from '../lib/supabase/index';
+
 
 const STORAGE_KEY = 'atrium_erp_desktop_v2';
 
@@ -129,7 +160,34 @@ export type ActiveScreen =
   | 'scheduler'
   | 'finance'
   | 'history'
-  | 'settings';
+  | 'settings'
+  // PM Direction Screens
+  | 'pm_dir_dashboard'
+  | 'pm_dir_new_project'
+  | 'pm_dir_approvals'
+  // PM Chef de Projet Screens
+  | 'pm_cp_projects'
+  | 'pm_cp_catalog'
+  | 'pm_cp_deliverables'
+  | 'pm_cp_expenses'
+  // PM Créa Screens
+  | 'pm_crea_kanban'
+  | 'pm_crea_upload'
+  // PM Superviseur Screens
+  | 'pm_sup_missions'
+  | 'pm_sup_attendance'
+  | 'pm_sup_staffing'
+  | 'pm_sup_expenses'
+  // PM RH Screens
+  | 'pm_rh_talents'
+  | 'pm_rh_dossier'
+  | 'pm_rh_portal'
+  | 'pm_rh_walkin'
+  // PM Compta Screens
+  | 'pm_compta_payroll'
+  | 'pm_compta_ccp'
+  | 'pm_compta_expenses'
+  | 'pm_compta_stock';
 
 export type SupabaseStatus = 'connected' | 'connecting' | 'offline' | 'unconfigured';
 
@@ -194,6 +252,22 @@ interface AppState {
   eduGrades: EduGrade[];
   eduCertificates: EduCertificate[];
   eduAdmissions: EduAdmissionLead[];
+  // Project & Milestone (Category 13)
+  activePmRole: PMRole;
+  activePmSubScreen: string;
+  pmClients: PMClient[];
+  pmProjects: PMProject[];
+  pmMilestones: PMMilestone[];
+  pmCollateralCatalog: PMCollateralItem[];
+  pmPrintOrders: PMPrintOrder[];
+  pmBatDeliverables: PMBatDeliverable[];
+  pmTalents: PMTalent[];
+  pmMissions: PMMission[];
+  pmAttendances: PMAttendance[];
+  pmExpenses: PMExpense[];
+  pmPayrollBatches: PMPayrollBatch[];
+  pmCcpSlips: PMCcpSlip[];
+  pmEquipmentStock: PMEquipmentStock[];
   // Toast notifications
   toasts: ToastNotification[];
 }
@@ -274,6 +348,22 @@ const DEFAULT_STATE: AppState = {
   eduGrades: INITIAL_EDU_GRADES,
   eduCertificates: INITIAL_EDU_CERTIFICATES,
   eduAdmissions: INITIAL_EDU_ADMISSIONS,
+  // Project & Milestone
+  activePmRole: 'direction',
+  activePmSubScreen: 'dashboard',
+  pmClients: INITIAL_PM_CLIENTS,
+  pmProjects: INITIAL_PM_PROJECTS,
+  pmMilestones: INITIAL_PM_MILESTONES,
+  pmCollateralCatalog: INITIAL_PM_COLLATERAL_CATALOG,
+  pmPrintOrders: INITIAL_PM_PRINT_ORDERS,
+  pmBatDeliverables: INITIAL_PM_BAT_DELIVERABLES,
+  pmTalents: INITIAL_PM_TALENTS,
+  pmMissions: INITIAL_PM_MISSIONS,
+  pmAttendances: INITIAL_PM_ATTENDANCES,
+  pmExpenses: INITIAL_PM_EXPENSES,
+  pmPayrollBatches: INITIAL_PM_PAYROLL_BATCHES,
+  pmCcpSlips: INITIAL_PM_CCP_SLIPS,
+  pmEquipmentStock: INITIAL_PM_EQUIPMENT_STOCK,
   toasts: [],
 };
 
@@ -382,6 +472,21 @@ let globalState: AppState = (() => {
           eduGrades: Array.isArray(parsed.eduGrades) && parsed.eduGrades.length > 0 ? parsed.eduGrades : INITIAL_EDU_GRADES,
           eduCertificates: Array.isArray(parsed.eduCertificates) && parsed.eduCertificates.length > 0 ? parsed.eduCertificates : INITIAL_EDU_CERTIFICATES,
           eduAdmissions: Array.isArray(parsed.eduAdmissions) && parsed.eduAdmissions.length > 0 ? parsed.eduAdmissions : INITIAL_EDU_ADMISSIONS,
+          // PM Hydration
+          activePmRole: parsed.activePmRole || 'direction',
+          pmClients: Array.isArray(parsed.pmClients) && parsed.pmClients.length > 0 ? parsed.pmClients : INITIAL_PM_CLIENTS,
+          pmProjects: Array.isArray(parsed.pmProjects) && parsed.pmProjects.length > 0 ? parsed.pmProjects : INITIAL_PM_PROJECTS,
+          pmMilestones: Array.isArray(parsed.pmMilestones) && parsed.pmMilestones.length > 0 ? parsed.pmMilestones : INITIAL_PM_MILESTONES,
+          pmCollateralCatalog: Array.isArray(parsed.pmCollateralCatalog) && parsed.pmCollateralCatalog.length > 0 ? parsed.pmCollateralCatalog : INITIAL_PM_COLLATERAL_CATALOG,
+          pmPrintOrders: Array.isArray(parsed.pmPrintOrders) && parsed.pmPrintOrders.length > 0 ? parsed.pmPrintOrders : INITIAL_PM_PRINT_ORDERS,
+          pmBatDeliverables: Array.isArray(parsed.pmBatDeliverables) && parsed.pmBatDeliverables.length > 0 ? parsed.pmBatDeliverables : INITIAL_PM_BAT_DELIVERABLES,
+          pmTalents: Array.isArray(parsed.pmTalents) && parsed.pmTalents.length > 0 ? parsed.pmTalents : INITIAL_PM_TALENTS,
+          pmMissions: Array.isArray(parsed.pmMissions) && parsed.pmMissions.length > 0 ? parsed.pmMissions : INITIAL_PM_MISSIONS,
+          pmAttendances: Array.isArray(parsed.pmAttendances) && parsed.pmAttendances.length > 0 ? parsed.pmAttendances : INITIAL_PM_ATTENDANCES,
+          pmExpenses: Array.isArray(parsed.pmExpenses) && parsed.pmExpenses.length > 0 ? parsed.pmExpenses : INITIAL_PM_EXPENSES,
+          pmPayrollBatches: Array.isArray(parsed.pmPayrollBatches) && parsed.pmPayrollBatches.length > 0 ? parsed.pmPayrollBatches : INITIAL_PM_PAYROLL_BATCHES,
+          pmCcpSlips: Array.isArray(parsed.pmCcpSlips) && parsed.pmCcpSlips.length > 0 ? parsed.pmCcpSlips : INITIAL_PM_CCP_SLIPS,
+          pmEquipmentStock: Array.isArray(parsed.pmEquipmentStock) && parsed.pmEquipmentStock.length > 0 ? parsed.pmEquipmentStock : INITIAL_PM_EQUIPMENT_STOCK,
           currentUser: parsed.currentUser || DEFAULT_USER,
           isAuthenticated: parsed.isAuthenticated !== undefined ? parsed.isAuthenticated : true,
           isOnboardingOpen: false,
@@ -4395,6 +4500,472 @@ export function useAtriumStore() {
     return newCourse;
   };
 
+  // ============================================================
+  // Project & Milestone Actions (ProjectMilestone)
+  // ============================================================
+  const setActivePmRole = (role: PMRole) => {
+    let defaultSubScreen = 'dashboard';
+    if (role === 'direction') defaultSubScreen = 'dashboard';
+    else if (role === 'chef_projet') defaultSubScreen = 'portfolio';
+    else if (role === 'crea') defaultSubScreen = 'kanban';
+    else if (role === 'superviseur') defaultSubScreen = 'missions';
+    else if (role === 'rh') defaultSubScreen = 'talents';
+    else if (role === 'compta') defaultSubScreen = 'payroll';
+
+    globalState = { ...globalState, activePmRole: role, activePmSubScreen: defaultSubScreen };
+    notify();
+  };
+
+  const setActivePmSubScreen = (subScreen: string) => {
+    globalState = { ...globalState, activePmSubScreen: subScreen };
+    notify();
+  };
+
+  const addPmProject = (projectData: Omit<PMProject, 'id' | 'createdAt' | 'updatedAt'>) => {
+    const newProj: PMProject = {
+      ...projectData,
+      id: `proj_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    globalState = {
+      ...globalState,
+      pmProjects: [newProj, ...(globalState.pmProjects || [])],
+    };
+    notify();
+    projectMilestoneService.upsertProject(newProj).catch(() => {});
+    showToast({
+      type: 'success',
+      title: 'Projet Initié',
+      message: `${newProj.title} créé avec un plafond budgétaire de ${newProj.budgetCapDzd.toLocaleString()} DA.`,
+      syncStatus: isSupabaseConfigured() ? 'synced' : 'local',
+      category: 'project_milestone',
+    });
+    return newProj;
+  };
+
+  const updatePmProjectStatus = (projectId: string, status: PMProject['status']) => {
+    globalState = {
+      ...globalState,
+      pmProjects: (globalState.pmProjects || []).map((p) =>
+        p.id === projectId ? { ...p, status, updatedAt: new Date().toISOString() } : p
+      ),
+    };
+    notify();
+    const updated = globalState.pmProjects.find((p) => p.id === projectId);
+    if (updated) projectMilestoneService.upsertProject(updated).catch(() => {});
+  };
+
+  const addPmPrintOrder = (orderData: Omit<PMPrintOrder, 'id' | 'createdAt'>) => {
+    const newOrder: PMPrintOrder = {
+      ...orderData,
+      id: `po_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      createdAt: new Date().toISOString(),
+    };
+    globalState = {
+      ...globalState,
+      pmPrintOrders: [newOrder, ...(globalState.pmPrintOrders || [])],
+    };
+    notify();
+    projectMilestoneService.createPrintOrder(newOrder).catch(() => {});
+    showToast({
+      type: 'success',
+      title: 'Bon de Commande Impression Transmis',
+      message: `${newOrder.orderNumber} transmis à la Créa (${newOrder.items.length} références).`,
+      syncStatus: isSupabaseConfigured() ? 'synced' : 'local',
+      category: 'project_milestone',
+    });
+    return newOrder;
+  };
+
+  const updatePmPrintOrderStatus = (orderId: string, status: PMPrintOrder['status']) => {
+    globalState = {
+      ...globalState,
+      pmPrintOrders: (globalState.pmPrintOrders || []).map((o) =>
+        o.id === orderId ? { ...o, status } : o
+      ),
+    };
+    notify();
+  };
+
+  const addPmBatDeliverable = (batData: Omit<PMBatDeliverable, 'id' | 'createdAt'>) => {
+    const newBat: PMBatDeliverable = {
+      ...batData,
+      id: `bat_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      createdAt: new Date().toISOString(),
+    };
+    globalState = {
+      ...globalState,
+      pmBatDeliverables: [newBat, ...(globalState.pmBatDeliverables || [])],
+    };
+    notify();
+    projectMilestoneService.upsertBatDeliverable(newBat).catch(() => {});
+    showToast({
+      type: 'success',
+      title: 'Livrable BAT Déposé',
+      message: `${newBat.title} (${newBat.versionCode}) soumis pour validation technique.`,
+      syncStatus: isSupabaseConfigured() ? 'synced' : 'local',
+      category: 'project_milestone',
+    });
+    return newBat;
+  };
+
+  const reviewPmBatDeliverable = (batId: string, status: 'approved' | 'revision_requested', comments?: string) => {
+    globalState = {
+      ...globalState,
+      pmBatDeliverables: (globalState.pmBatDeliverables || []).map((b) =>
+        b.id === batId
+          ? {
+              ...b,
+              approvalStatus: status,
+              revisionComments: comments || b.revisionComments,
+            }
+          : b
+      ),
+    };
+    notify();
+    const updated = globalState.pmBatDeliverables.find((b) => b.id === batId);
+    if (updated) projectMilestoneService.upsertBatDeliverable(updated).catch(() => {});
+    showToast({
+      type: status === 'approved' ? 'success' : 'warning',
+      title: status === 'approved' ? 'BAT Validé Bon à Tirer' : 'Corrections Demandées',
+      message: status === 'approved' ? 'Livrable prêt pour impression et déblocage imprimeur.' : 'Remarques transmises au Studio Créa.',
+      category: 'project_milestone',
+    });
+  };
+
+  const addPmTalent = (talentData: Omit<PMTalent, 'id' | 'createdAt' | 'consolidatedScore'>) => {
+    const score = Number(((talentData.initialHrScore + talentData.averageMissionRating) / 2).toFixed(2));
+    const newTalent: PMTalent = {
+      ...talentData,
+      id: `talent_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      consolidatedScore: score,
+      createdAt: new Date().toISOString(),
+    };
+    globalState = {
+      ...globalState,
+      pmTalents: [newTalent, ...(globalState.pmTalents || [])],
+    };
+    notify();
+    projectMilestoneService.upsertTalent(newTalent).catch(() => {});
+    showToast({
+      type: 'success',
+      title: 'Profil Candidat Enregistré',
+      message: `${newTalent.fullName} (Wilaya ${newTalent.wilayaCode} - ${newTalent.wilayaName}) inscrit avec CCP ${newTalent.ccpNumber}.`,
+      syncStatus: isSupabaseConfigured() ? 'synced' : 'local',
+      category: 'project_milestone',
+    });
+    return newTalent;
+  };
+
+  const updatePmTalentStatus = (talentId: string, status: PMTalent['status']) => {
+    globalState = {
+      ...globalState,
+      pmTalents: (globalState.pmTalents || []).map((t) =>
+        t.id === talentId ? { ...t, status } : t
+      ),
+    };
+    notify();
+    const updated = globalState.pmTalents.find((t) => t.id === talentId);
+    if (updated) projectMilestoneService.upsertTalent(updated).catch(() => {});
+  };
+
+  const addPmMission = (missionData: Omit<PMMission, 'id' | 'createdAt'>) => {
+    const newMission: PMMission = {
+      ...missionData,
+      id: `mis_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      createdAt: new Date().toISOString(),
+    };
+    globalState = {
+      ...globalState,
+      pmMissions: [newMission, ...(globalState.pmMissions || [])],
+    };
+    notify();
+    projectMilestoneService.upsertMission(newMission).catch(() => {});
+    showToast({
+      type: 'success',
+      title: 'Mission Terrain Planifiée',
+      message: `${newMission.code}: ${newMission.title} à ${newMission.venueName}.`,
+      syncStatus: isSupabaseConfigured() ? 'synced' : 'local',
+      category: 'project_milestone',
+    });
+    return newMission;
+  };
+
+  const updatePmAttendanceStatus = (
+    attendanceId: string,
+    status: PMAttendance['status'],
+    minutesLate?: number,
+    shiftRating?: number
+  ) => {
+    globalState = {
+      ...globalState,
+      pmAttendances: (globalState.pmAttendances || []).map((a) => {
+        if (a.id === attendanceId) {
+          const grossPayableDzd = ['present', 'late', 'replacement'].includes(status) ? a.dayRateDzd : 0;
+          return {
+            ...a,
+            status,
+            minutesLate: minutesLate !== undefined ? minutesLate : a.minutesLate,
+            shiftRating: shiftRating !== undefined ? shiftRating : a.shiftRating,
+            grossPayableDzd,
+            checkInTime: a.checkInTime || new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+          };
+        }
+        return a;
+      }),
+    };
+    notify();
+  };
+
+  const closePmRollCall = (missionId: string) => {
+    const mission = (globalState.pmMissions || []).find((m) => m.id === missionId);
+    if (!mission) return;
+
+    const missionAtts = (globalState.pmAttendances || []).filter((a) => a.missionId === missionId);
+    let totalDzd = 0;
+    let count = 0;
+
+    const lockedAtts = (globalState.pmAttendances || []).map((a) => {
+      if (a.missionId === missionId) {
+        if (['present', 'late', 'replacement'].includes(a.status)) {
+          totalDzd += a.grossPayableDzd;
+          count += 1;
+        }
+        return { ...a, isLocked: true, lockedAt: new Date().toISOString() };
+      }
+      return a;
+    });
+
+    const batchNumber = `PAY-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.floor(10 + Math.random() * 90)}`;
+    const newBatch: PMPayrollBatch = {
+      id: `batch_${Date.now()}`,
+      tenantId: mission.tenantId,
+      facilityId: mission.facilityId,
+      projectId: mission.projectId,
+      projectTitle: mission.projectTitle,
+      missionId: mission.id,
+      missionCode: mission.code,
+      batchNumber,
+      totalBeneficiaries: count,
+      totalAmountDzd: totalDzd,
+      status: 'pending_direction_approval',
+      createdAt: new Date().toISOString(),
+    };
+
+    globalState = {
+      ...globalState,
+      pmAttendances: lockedAtts,
+      pmPayrollBatches: [newBatch, ...(globalState.pmPayrollBatches || [])],
+    };
+    notify();
+
+    projectMilestoneService.closeRollCall(missionId, mission.supervisorId, missionAtts).catch(() => {});
+
+    showToast({
+      type: 'success',
+      title: 'Pointage Clôturé & Verrouillé',
+      message: `${count} animateurs pointés pour ${totalDzd.toLocaleString()} DA. Lot de paie ${batchNumber} en attente DG.`,
+      category: 'project_milestone',
+    });
+  };
+
+  const addPmExpense = (expenseData: Omit<PMExpense, 'id' | 'createdAt' | 'status'>) => {
+    const newExp: PMExpense = {
+      ...expenseData,
+      id: `exp_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      status: 'pending_direction_approval',
+      createdAt: new Date().toISOString(),
+    };
+    globalState = {
+      ...globalState,
+      pmExpenses: [newExp, ...(globalState.pmExpenses || [])],
+    };
+    notify();
+    projectMilestoneService.upsertExpense(newExp).catch(() => {});
+    showToast({
+      type: 'warning',
+      title: 'Frais de Terrain Soumis',
+      message: `${newExp.amountDzd.toLocaleString()} DA (${newExp.title}) en attente de validation DG.`,
+      category: 'project_milestone',
+    });
+    return newExp;
+  };
+
+  const approvePmExpense = (expenseId: string, notes?: string) => {
+    globalState = {
+      ...globalState,
+      pmExpenses: (globalState.pmExpenses || []).map((e) =>
+        e.id === expenseId
+          ? {
+              ...e,
+              status: 'approved_by_direction',
+              directionApprovedAt: new Date().toISOString(),
+              directionNotes: notes || e.directionNotes,
+            }
+          : e
+      ),
+    };
+    notify();
+    projectMilestoneService.approveDisbursement('expense', expenseId, state.currentUser.id, notes).catch(() => {});
+    showToast({
+      type: 'success',
+      title: 'Frais Validé par la Direction',
+      message: 'Autorisation de décaissement transmise à la Comptabilité.',
+      category: 'project_milestone',
+    });
+  };
+
+  const rejectPmExpense = (expenseId: string, notes?: string) => {
+    globalState = {
+      ...globalState,
+      pmExpenses: (globalState.pmExpenses || []).map((e) =>
+        e.id === expenseId
+          ? {
+              ...e,
+              status: 'rejected',
+              directionNotes: notes || 'Rejeté par la Direction.',
+            }
+          : e
+      ),
+    };
+    notify();
+    showToast({
+      type: 'error',
+      title: 'Frais Rejeté',
+      message: notes || 'Le remboursement a été refusé.',
+      category: 'project_milestone',
+    });
+  };
+
+  const approvePmPayrollBatch = (batchId: string) => {
+    globalState = {
+      ...globalState,
+      pmPayrollBatches: (globalState.pmPayrollBatches || []).map((b) =>
+        b.id === batchId
+          ? {
+              ...b,
+              status: 'approved_by_direction',
+              directionApprovedAt: new Date().toISOString(),
+            }
+          : b
+      ),
+    };
+    notify();
+    projectMilestoneService.approveDisbursement('payroll_batch', batchId, state.currentUser.id).catch(() => {});
+    showToast({
+      type: 'success',
+      title: 'Lot de Paie Validé (Double-Clé)',
+      message: 'Déblocage accordé pour l\'émission des bordereaux CCP SFP 01 en Comptabilité.',
+      category: 'project_milestone',
+    });
+  };
+
+  const generatePmCcpSlipsForBatch = (batchId: string) => {
+    const batch = (globalState.pmPayrollBatches || []).find((b) => b.id === batchId);
+    if (!batch) return;
+
+    const attendances = (globalState.pmAttendances || []).filter((a) => a.missionId === batch.missionId);
+    const talentsMap = new Map((globalState.pmTalents || []).map((t) => [t.id, t]));
+
+    const newSlips: PMCcpSlip[] = [];
+    for (const att of attendances) {
+      if (!['present', 'late', 'replacement'].includes(att.status)) continue;
+      const talent = talentsMap.get(att.talentId);
+      if (!talent) continue;
+
+      const amt = att.grossPayableDzd || 3500;
+      newSlips.push({
+        id: `slip_${att.id}_${Date.now()}`,
+        tenantId: batch.tenantId,
+        facilityId: batch.facilityId,
+        batchId: batch.id,
+        talentId: talent.id,
+        beneficiaryName: talent.fullName,
+        ccpNumber: talent.ccpNumber,
+        ccpKey: talent.ccpKey,
+        wilayaName: talent.wilayaName,
+        amountDzd: amt,
+        amountInWordsFr: numberToWordsFrench(amt),
+        amountInWordsAr: numberToWordsArabic(amt),
+        transactionReference: `Paie ${batch.missionCode} - ${batch.projectTitle}`,
+        isPrinted: false,
+        createdAt: new Date().toISOString(),
+      });
+    }
+
+    globalState = {
+      ...globalState,
+      pmCcpSlips: [...newSlips, ...(globalState.pmCcpSlips || [])],
+      pmPayrollBatches: (globalState.pmPayrollBatches || []).map((b) =>
+        b.id === batchId ? { ...b, status: 'ccp_generated', ccpGeneratedAt: new Date().toISOString() } : b
+      ),
+    };
+    notify();
+
+    projectMilestoneService.generateCcpBatchSlips(batch, attendances, talentsMap).catch(() => {});
+
+    showToast({
+      type: 'success',
+      title: 'Bordereaux CCP SFP 01 Générés',
+      message: `${newSlips.length} mandats postaux prêts pour impression et virement Algérie Poste.`,
+      category: 'project_milestone',
+    });
+  };
+
+  const markPmCcpSlipPrinted = (slipId: string) => {
+    globalState = {
+      ...globalState,
+      pmCcpSlips: (globalState.pmCcpSlips || []).map((s) =>
+        s.id === slipId ? { ...s, isPrinted: true, printedAt: new Date().toISOString() } : s
+      ),
+    };
+    notify();
+  };
+
+  const addPmEquipmentStock = (itemData: Omit<PMEquipmentStock, 'id' | 'createdAt'>) => {
+    const newItem: PMEquipmentStock = {
+      ...itemData,
+      id: `eq_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      createdAt: new Date().toISOString(),
+    };
+    globalState = {
+      ...globalState,
+      pmEquipmentStock: [newItem, ...(globalState.pmEquipmentStock || [])],
+    };
+    notify();
+    projectMilestoneService.upsertEquipmentStock(newItem).catch(() => {});
+    showToast({
+      type: 'success',
+      title: 'Matériel Enregistré',
+      message: `${newItem.assetCode}: ${newItem.title} ajouté à l\'inventaire d\'agence.`,
+      category: 'project_milestone',
+    });
+    return newItem;
+  };
+
+  const updatePmEquipmentStatus = (
+    assetId: string,
+    status: PMEquipmentStock['currentStatus'],
+    conditionReport?: PMEquipmentStock['conditionReport']
+  ) => {
+    globalState = {
+      ...globalState,
+      pmEquipmentStock: (globalState.pmEquipmentStock || []).map((eq) =>
+        eq.id === assetId
+          ? {
+              ...eq,
+              currentStatus: status,
+              conditionReport: conditionReport || eq.conditionReport,
+            }
+          : eq
+      ),
+    };
+    notify();
+    const updated = globalState.pmEquipmentStock.find((e) => e.id === assetId);
+    if (updated) projectMilestoneService.upsertEquipmentStock(updated).catch(() => {});
+  };
+
   const resetAllData = () => {
     globalState = DEFAULT_STATE;
     notify();
@@ -4632,6 +5203,43 @@ export function useAtriumStore() {
     issueEduCertificate,
     addEduClassroom,
     addEduCourse,
+    // Project & Milestone State & Actions
+    activePmRole: state.activePmRole || 'direction',
+    setActivePmRole,
+    activePmSubScreen: state.activePmSubScreen || 'dashboard',
+    setActivePmSubScreen,
+    pmClients: state.pmClients || [],
+    pmProjects: state.pmProjects || [],
+    pmMilestones: state.pmMilestones || [],
+    pmCollateralCatalog: state.pmCollateralCatalog || [],
+    pmPrintOrders: state.pmPrintOrders || [],
+    pmBatDeliverables: state.pmBatDeliverables || [],
+    pmTalents: state.pmTalents || [],
+    pmMissions: state.pmMissions || [],
+    pmAttendances: state.pmAttendances || [],
+    pmExpenses: state.pmExpenses || [],
+    pmPayrollBatches: state.pmPayrollBatches || [],
+    pmCcpSlips: state.pmCcpSlips || [],
+    pmEquipmentStock: state.pmEquipmentStock || [],
+    addPmProject,
+    updatePmProjectStatus,
+    addPmPrintOrder,
+    updatePmPrintOrderStatus,
+    addPmBatDeliverable,
+    reviewPmBatDeliverable,
+    addPmTalent,
+    updatePmTalentStatus,
+    addPmMission,
+    updatePmAttendanceStatus,
+    closePmRollCall,
+    addPmExpense,
+    approvePmExpense,
+    rejectPmExpense,
+    approvePmPayrollBatch,
+    generatePmCcpSlipsForBatch,
+    markPmCcpSlipPrinted,
+    addPmEquipmentStock,
+    updatePmEquipmentStatus,
     // Auth Actions
     login,
     loginWithPin,

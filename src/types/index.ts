@@ -919,4 +919,305 @@ export interface EduAdmissionLead {
   createdAt: string;
 }
 
+// ============================================================================
+// Project & Milestone (ProjectMilestone) — NCH Market Activator Types
+// ============================================================================
+
+export type PMRole =
+  | 'direction'    // General Management & Executive Leadership
+  | 'chef_projet'  // Project Manager
+  | 'crea'         // Creative & Graphic Design Studio
+  | 'superviseur'  // Field Operations Supervisor
+  | 'rh'           // HR & Talent Pool Management
+  | 'compta';      // Accounting, Payroll & Stock
+
+export interface PMClient {
+  id: string;
+  tenantId: string;
+  facilityId: string;
+  name: string;
+  logoUrl?: string;
+  contactPerson: string;
+  email: string;
+  phone: string;
+  wilaya: string;
+  address?: string;
+  isActive: boolean;
+  createdAt: string;
+}
+
+export type PMProjectStatus =
+  | 'framing'      // En cadrage
+  | 'crea_active'  // Créa en cours
+  | 'print_ready'  // Prêt pour impression
+  | 'field_active' // En exécution terrain
+  | 'closed';      // Clôturé
+
+export interface PMProject {
+  id: string;
+  tenantId: string;
+  facilityId: string;
+  clientId: string;
+  clientName: string;
+  title: string;
+  scopeOfWork: string; // Cahier des charges
+  budgetCapDzd: number;
+  maxFieldExpensesDzd: number;
+  targetGrossMarginPercent: number;
+  startDate: string;
+  endDate: string;
+  kvDeadline: string;
+  printDeadline: string;
+  executionStartDate: string;
+  projectManagerId: string;
+  projectManagerName: string;
+  leadCreativeId: string;
+  leadCreativeName: string;
+  status: PMProjectStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PMMilestone {
+  id: string;
+  projectId: string;
+  title: string;
+  phase: 'brief' | 'concept_kv' | 'client_signoff' | 'print_order' | 'bat_production' | 'field_rollcall' | 'ccp_payroll';
+  targetDate: string;
+  completedAt?: string;
+  isCompleted: boolean;
+  assignedRole: PMRole;
+}
+
+export interface PMCollateralItem {
+  id: string;
+  sku: string;
+  title: string;
+  category: 'banner' | 'flyer' | 'pos_display' | 'apparel' | 'stand' | 'podium';
+  dimensions: string;
+  material: string;
+  unitCostDzd: number;
+  imageUrl?: string;
+  isCustomizable: boolean;
+}
+
+export interface PMPrintOrder {
+  id: string;
+  tenantId: string;
+  facilityId: string;
+  projectId: string;
+  projectTitle: string;
+  orderNumber: string;
+  items: Array<{
+    collateralItemId: string;
+    itemTitle: string;
+    quantity: number;
+    unitPriceDzd: number;
+    finishOption?: string;
+    notes?: string;
+  }>;
+  totalCostDzd: number;
+  status: 'sent_to_crea' | 'bat_in_progress' | 'bat_approved' | 'in_print' | 'delivered';
+  createdAt: string;
+}
+
+export interface PMBatDeliverable {
+  id: string;
+  tenantId: string;
+  facilityId: string;
+  projectId: string;
+  projectTitle: string;
+  printOrderId?: string;
+  title: string;
+  fileFormat: 'pdf' | 'ai' | 'psd' | 'tiff' | 'png' | 'mp4';
+  colorSpace: 'CMJN' | 'RVB';
+  resolutionDpi: number; // e.g. 300
+  bleedMm: number; // e.g. 3
+  hasBleedIncluded: boolean;
+  version: number;
+  versionCode: string; // e.g. "v1", "v2"
+  previewUrl: string;
+  masterSourceUrl?: string;
+  fileSizeBytes: number;
+  uploadedByCreativeId: string;
+  uploadedByCreativeName: string;
+  approvalStatus: 'pending_review' | 'approved' | 'revision_requested';
+  revisionComments?: string;
+  createdAt: string;
+}
+
+export interface PMTalent {
+  id: string;
+  tenantId: string;
+  facilityId: string;
+  fullName: string;
+  gender: 'Male' | 'Female';
+  birthDate: string;
+  age: number;
+  phone: string;
+  email?: string;
+  wilayaCode: string;
+  wilayaName: string;
+  commune: string;
+  hasDriverLicense: boolean;
+  isVehicleOwner: boolean;
+  desiredRoles: string[]; // ['Animator', 'Hostess', 'Supervisor', 'MysteryShopper']
+  languages: string[]; // ['Arabic', 'French', 'English', 'Berber']
+  portraitPhotoUrl?: string;
+  fullBodyPhotoUrl?: string;
+  cvDocumentUrl?: string;
+  cniDocumentUrl?: string;
+  ccpNumber: string; // 10 digits
+  ccpKey: string;    // 2 digits
+  initialHrScore: number; // 1 - 5
+  averageMissionRating: number; // 1 - 5
+  consolidatedScore: number; // (Initial + Avg) / 2
+  completedMissionsCount: number;
+  absencesCount: number;
+  isHrVerified: boolean;
+  status: 'active' | 'in_review' | 'paused' | 'blacklisted';
+  hrNotes?: string;
+  createdAt: string;
+}
+
+export interface PMMission {
+  id: string;
+  tenantId: string;
+  facilityId: string;
+  projectId: string;
+  projectTitle: string;
+  clientName: string;
+  code: string; // e.g. "MIS-104"
+  title: string;
+  activationType: 'GMS_InStore' | 'Roadshow' | 'Street_Marketing' | 'Sampling' | 'Mall_Expo' | 'Custom';
+  venueName: string;
+  address: string;
+  wilayaCode: string;
+  wilayaName: string;
+  startDate: string;
+  endDate: string;
+  dailyStartHour: string; // "09:00"
+  dailyEndHour: string;   // "18:00"
+  supervisorId: string;
+  supervisorName: string;
+  requiredStaffCount: number;
+  status: 'upcoming' | 'live_today' | 'completed' | 'cancelled';
+  createdAt: string;
+}
+
+export interface PMMissionStaff {
+  id: string;
+  missionId: string;
+  talentId: string;
+  talentName: string;
+  talentPhoto?: string;
+  phone: string;
+  dayRateDzd: number;
+  assignedRoleTitle: string;
+  invitationStatus: 'confirmed' | 'standby' | 'declined';
+}
+
+export type AttendanceRollStatus = 'present' | 'late' | 'absent' | 'replacement';
+
+export interface PMAttendance {
+  id: string;
+  tenantId: string;
+  facilityId: string;
+  missionId: string;
+  talentId: string;
+  talentName: string;
+  talentPhoto?: string;
+  date: string;
+  checkInTime?: string;
+  status: AttendanceRollStatus;
+  minutesLate?: number;
+  replacementForTalentId?: string;
+  replacementTalentName?: string;
+  shiftRating: number; // 1 to 5 stars
+  dayRateDzd: number;
+  grossPayableDzd: number;
+  isLocked: boolean;
+  lockedAt?: string;
+  supervisorNotes?: string;
+}
+
+export interface PMExpense {
+  id: string;
+  tenantId: string;
+  facilityId: string;
+  projectId: string;
+  projectTitle: string;
+  missionId?: string;
+  missionCode?: string;
+  title: string;
+  category: 'transport' | 'catering' | 'materials' | 'venue_rental' | 'emergency_supplies' | 'equipment';
+  amountDzd: number;
+  declaredByUserId: string;
+  declaredByUserName: string;
+  declaredByRole: PMRole;
+  receiptPhotoUrl?: string;
+  hasFiscalInvoice: boolean;
+  fiscalNif?: string;
+  status: 'pending_direction_approval' | 'approved_by_direction' | 'rejected' | 'audited_and_paid';
+  directionApprovedAt?: string;
+  directionNotes?: string;
+  isEquipmentAutoCreated?: boolean;
+  createdAt: string;
+}
+
+export interface PMPayrollBatch {
+  id: string;
+  tenantId: string;
+  facilityId: string;
+  projectId: string;
+  projectTitle: string;
+  missionId: string;
+  missionCode: string;
+  batchNumber: string;
+  totalBeneficiaries: number;
+  totalAmountDzd: number;
+  status: 'pending_direction_approval' | 'approved_by_direction' | 'ccp_generated' | 'disbursed';
+  directionApprovedAt?: string;
+  ccpGeneratedAt?: string;
+  disbursedAt?: string;
+  createdAt: string;
+}
+
+export interface PMCcpSlip {
+  id: string;
+  tenantId: string;
+  facilityId: string;
+  batchId: string;
+  talentId: string;
+  beneficiaryName: string;
+  ccpNumber: string;
+  ccpKey: string;
+  wilayaName: string;
+  amountDzd: number;
+  amountInWordsFr: string;
+  amountInWordsAr: string;
+  transactionReference: string;
+  isPrinted: boolean;
+  printedAt?: string;
+  createdAt: string;
+}
+
+export interface PMEquipmentStock {
+  id: string;
+  tenantId: string;
+  facilityId: string;
+  assetCode: string; // e.g. "NCH-EQ-00214"
+  title: string;
+  category: 'rollup_base' | 'umbrella_stand' | 'counter_desk' | 'sound_system' | 'uniform' | 'display_stand';
+  acquisitionCostDzd: number;
+  currentStatus: 'in_stock' | 'deployed_on_mission' | 'in_maintenance' | 'decommissioned';
+  currentCustodianId?: string;
+  currentCustodianName?: string;
+  assignedMissionId?: string;
+  conditionReport: 'good' | 'minor_wear' | 'damaged';
+  qrLabelCode: string;
+  createdAt: string;
+}
+
+
 

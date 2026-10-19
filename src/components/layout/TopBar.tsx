@@ -23,9 +23,16 @@ import {
   Laptop,
   Plus,
   Search,
+  TrendingUp,
+  Layers,
+  Radio,
+  Users,
+  CreditCard,
+  Briefcase,
 } from 'lucide-react';
 import { useAtriumStore } from '../../services/store';
 import { formatDuration } from '../../utils/rules';
+import { PMRole } from '../../types/index';
 
 interface TopBarProps {
   onOpenVoucherModal: () => void;
@@ -66,6 +73,8 @@ export const TopBar: React.FC<TopBarProps> = ({
     resumeTimer,
     stopTimer,
     openDesktopUpgradeModal,
+    activePmRole,
+    setActivePmRole,
   } = useAtriumStore();
 
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -75,9 +84,12 @@ export const TopBar: React.FC<TopBarProps> = ({
   const isRental = currentBusiness?.category === 'rental_booking';
   const isEducation = currentBusiness?.category === 'education_cohort';
   const isPOS = currentBusiness?.category === 'pos_inventory';
+  const isProjectMilestone = currentBusiness?.category === 'project_milestone';
 
   const getBreadcrumb = () => {
-    const homeLabel = isFreelance
+    const homeLabel = isProjectMilestone
+      ? 'NCH Activator'
+      : isFreelance
       ? 'Solo Command'
       : isRental
       ? 'Venue Operations'
@@ -110,7 +122,9 @@ export const TopBar: React.FC<TopBarProps> = ({
             </button>
             <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
             <span className="text-neutral-900 dark:text-white font-semibold">
-              {isFreelance
+              {isProjectMilestone
+                ? 'Superviseur Terrain (Live Missions)'
+                : isFreelance
                 ? 'Time Tracker & Pomodoro'
                 : isRental
                 ? 'Occupancy Analytics'
@@ -314,6 +328,68 @@ export const TopBar: React.FC<TopBarProps> = ({
             </span>
           </nav>
         );
+      case 'pm_dir_dashboard':
+      case 'pm_dir_new_project':
+      case 'pm_dir_approvals':
+      case 'pm_cp_projects':
+      case 'pm_cp_catalog':
+      case 'pm_cp_deliverables':
+      case 'pm_cp_expenses':
+      case 'pm_crea_kanban':
+      case 'pm_crea_upload':
+      case 'pm_sup_missions':
+      case 'pm_sup_attendance':
+      case 'pm_sup_staffing':
+      case 'pm_sup_expenses':
+      case 'pm_rh_talents':
+      case 'pm_rh_dossier':
+      case 'pm_rh_portal':
+      case 'pm_rh_walkin':
+      case 'pm_compta_payroll':
+      case 'pm_compta_ccp':
+      case 'pm_compta_expenses':
+      case 'pm_compta_stock': {
+        const pmScreenTitles: Record<string, { role: string; screen: string }> = {
+          pm_dir_dashboard: { role: 'Direction', screen: 'Command Center' },
+          pm_dir_new_project: { role: 'Direction', screen: 'Cadrage & Cahier des Charges' },
+          pm_dir_approvals: { role: 'Direction', screen: 'Double-Lock Approbations' },
+          pm_cp_projects: { role: 'Chef de Projet', screen: 'Portefeuille & Jalons' },
+          pm_cp_catalog: { role: 'Chef de Projet', screen: 'Catalogue Print & PLV' },
+          pm_cp_deliverables: { role: 'Chef de Projet', screen: 'BAT & Livrables' },
+          pm_cp_expenses: { role: 'Chef de Projet', screen: 'Budget & Dépenses' },
+          pm_crea_kanban: { role: 'Studio Créa', screen: 'Kanban de Production' },
+          pm_crea_upload: { role: 'Studio Créa', screen: 'Validateur BAT & Specs' },
+          pm_sup_missions: { role: 'Superviseur', screen: 'Missions Terrain' },
+          pm_sup_attendance: { role: 'Superviseur', screen: 'Pointage Mobile Direct' },
+          pm_sup_staffing: { role: 'Superviseur', screen: 'Casting & Staffing' },
+          pm_sup_expenses: { role: 'Superviseur', screen: 'Déclaration Dépense' },
+          pm_rh_talents: { role: 'RH & Casting', screen: 'Vivier Talents (58 Wilayas)' },
+          pm_rh_dossier: { role: 'RH & Casting', screen: 'Dossier Talent 360°' },
+          pm_rh_portal: { role: 'RH & Casting', screen: 'Portail Candidat Public' },
+          pm_rh_walkin: { role: 'RH & Casting', screen: 'Saisie Express Agence' },
+          pm_compta_payroll: { role: 'Comptabilité', screen: 'Hub Paies Automatisé' },
+          pm_compta_ccp: { role: 'Comptabilité', screen: 'Bordereaux CCP (SFP 01)' },
+          pm_compta_expenses: { role: 'Comptabilité', screen: 'Audit Factures & NIF' },
+          pm_compta_stock: { role: 'Comptabilité', screen: 'Stock Matériel & QR' },
+        };
+        const info = pmScreenTitles[activeScreen] || { role: 'Projets & Jalons', screen: activeScreen };
+        return (
+          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs">
+            <button
+              type="button"
+              onClick={() => setScreen('dashboard')}
+              className="text-neutral-400 hover:text-[#C4785A] font-medium transition-colors flex items-center gap-1 cursor-pointer"
+            >
+              <Home size={12} />
+              <span>{homeLabel}</span>
+            </button>
+            <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
+            <span className="text-neutral-500 font-medium">{info.role}</span>
+            <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
+            <span className="text-neutral-900 dark:text-white font-semibold">{info.screen}</span>
+          </nav>
+        );
+      }
       default:
         return (
           <span className="text-xs font-semibold text-neutral-800 dark:text-neutral-200 capitalize">
@@ -415,8 +491,49 @@ export const TopBar: React.FC<TopBarProps> = ({
         </div>
       </div>
 
+      {/* Center: Interactive Agency 6-Role Switcher for Project & Milestone */}
+      {isProjectMilestone && (
+        <div className="flex items-center gap-1 p-1 bg-neutral-100/90 dark:bg-neutral-800/90 border border-neutral-200/80 dark:border-neutral-700/80 rounded-full shadow-2xs">
+          {[
+            { id: 'direction' as PMRole, label: 'Direction', badge: 'DG', screen: 'pm_dir_dashboard' as const, icon: <TrendingUp size={12} /> },
+            { id: 'chef_projet' as PMRole, label: 'Chef Projet', badge: 'PM', screen: 'pm_cp_projects' as const, icon: <Layers size={12} /> },
+            { id: 'crea' as PMRole, label: 'Studio Créa', badge: 'CR', screen: 'pm_crea_kanban' as const, icon: <Sparkles size={12} /> },
+            { id: 'superviseur' as PMRole, label: 'Superviseur', badge: 'SP', screen: 'pm_sup_missions' as const, icon: <Radio size={12} /> },
+            { id: 'rh' as PMRole, label: 'RH & Casting', badge: 'RH', screen: 'pm_rh_talents' as const, icon: <Users size={12} /> },
+            { id: 'compta' as PMRole, label: 'Compta & CCP', badge: 'CP', screen: 'pm_compta_payroll' as const, icon: <CreditCard size={12} /> },
+          ].map((r) => {
+            const isActive = activePmRole === r.id;
+            return (
+              <button
+                key={r.id}
+                type="button"
+                onClick={() => {
+                  setActivePmRole(r.id);
+                  setScreen(r.screen);
+                }}
+                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+                  isActive
+                    ? 'bg-white dark:bg-neutral-900 text-[#C4785A] shadow-xs scale-102 border border-[#C4785A]/30'
+                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200 hover:bg-neutral-200/60 dark:hover:bg-neutral-700/60'
+                }`}
+                title={`Switch active perspective to ${r.label}`}
+              >
+                <span className={`text-[10px] font-bold px-1 py-0.2 rounded ${
+                  isActive
+                    ? 'bg-[#C4785A] text-white'
+                    : 'bg-neutral-200 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300'
+                }`}>
+                  {r.badge}
+                </span>
+                <span className="hidden xl:inline">{r.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+
       {/* Center: Live Floating Stopwatch Pill */}
-      {(activeTimer.isRunning || currentBusiness.category === 'freelance_solo') && (
+      {!isProjectMilestone && (activeTimer.isRunning || currentBusiness.category === 'freelance_solo') && (
         <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-neutral-100 dark:bg-neutral-800/90 border border-neutral-200/80 dark:border-neutral-700/80 text-xs shadow-2xs">
           {activeTimer.isRunning ? (
             <>

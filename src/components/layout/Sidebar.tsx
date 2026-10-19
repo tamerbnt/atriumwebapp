@@ -20,6 +20,13 @@ import {
   GraduationCap,
   Award,
   BookOpen,
+  TrendingUp,
+  Sparkles,
+  Radio,
+  Layers,
+  Boxes,
+  CreditCard,
+  Receipt,
 } from 'lucide-react';
 import { useAtriumStore, ActiveScreen } from '../../services/store';
 import { FiveCubesLogo } from '../auth/AtriumMonolith';
@@ -35,7 +42,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
   isOpenMobile = false,
   onCloseMobile,
 }) => {
-  const { activeScreen, setScreen, terminology, currentBusiness } = useAtriumStore();
+  const {
+    activeScreen,
+    setScreen,
+    terminology,
+    currentBusiness,
+    activePmRole,
+    setActivePmRole,
+    setActivePmSubScreen,
+  } = useAtriumStore();
   const [isExpanded, setIsExpanded] = useState(false);
 
   const category = currentBusiness?.category || 'pos_inventory';
@@ -47,7 +62,190 @@ export const Sidebar: React.FC<SidebarProps> = ({
     label: string;
   }>;
 
-  if (category === 'freelance_solo') {
+  if (category === 'project_milestone') {
+    if (activePmRole === 'direction') {
+      dockNavItems = [
+        {
+          id: 'pm_dir_dashboard',
+          icon: <TrendingUp size={19} />,
+          title: 'Command Center · Direction (P&L, Marge & Volume)',
+          label: 'Command Center',
+        },
+        {
+          id: 'pm_dir_new_project',
+          icon: <FileText size={19} />,
+          title: 'Cadrage Projet & Cahier des Charges',
+          label: 'Nouveau Projet',
+        },
+        {
+          id: 'pm_dir_approvals',
+          icon: <ShieldCheck size={19} />,
+          title: 'Double-Lock Approbations (Paies & Dépenses)',
+          label: 'Approbations',
+        },
+        {
+          id: 'settings',
+          icon: <Settings size={19} />,
+          title: 'Paramètres Agence & Configuration',
+          label: 'Paramètres',
+        },
+      ];
+    } else if (activePmRole === 'chef_projet') {
+      dockNavItems = [
+        {
+          id: 'pm_cp_projects',
+          icon: <Kanban size={19} />,
+          title: 'Portefeuille & Jalons de Campagne',
+          label: 'Projets & Jalons',
+        },
+        {
+          id: 'pm_cp_catalog',
+          icon: <ShoppingBag size={19} />,
+          title: 'Catalogue Print & PLV Interne (Banderoles, Kakémonos)',
+          label: 'Catalogue Print',
+        },
+        {
+          id: 'pm_cp_deliverables',
+          icon: <Sparkles size={19} />,
+          title: 'Livrables & Approbations BAT Créa (CMJN / 300 DPI)',
+          label: 'BAT & Preuves',
+        },
+        {
+          id: 'pm_cp_expenses',
+          icon: <Wallet size={19} />,
+          title: 'Budget & Dépenses Terrain (Seuil Alerte 85%)',
+          label: 'Budget Dépenses',
+        },
+        {
+          id: 'settings',
+          icon: <Settings size={19} />,
+          title: 'Paramètres Agence',
+          label: 'Paramètres',
+        },
+      ];
+    } else if (activePmRole === 'crea') {
+      dockNavItems = [
+        {
+          id: 'pm_crea_kanban',
+          icon: <Layers size={19} />,
+          title: 'Kanban de Production Graphique (Briefs, En cours, Prêts)',
+          label: 'Kanban Créa',
+        },
+        {
+          id: 'pm_crea_upload',
+          icon: <Sparkles size={19} />,
+          title: 'Validateur & Upload BAT (CMJN / 300 DPI / Bords perdus)',
+          label: 'Upload & BAT',
+        },
+        {
+          id: 'settings',
+          icon: <Settings size={19} />,
+          title: 'Paramètres Agence',
+          label: 'Paramètres',
+        },
+      ];
+    } else if (activePmRole === 'superviseur') {
+      dockNavItems = [
+        {
+          id: 'pm_sup_missions',
+          icon: <Radio size={19} />,
+          title: 'Missions Terrain (Activations Live Bab Ezzouar & Wilayas)',
+          label: 'Missions Live',
+        },
+        {
+          id: 'pm_sup_attendance',
+          icon: <Clock size={19} />,
+          title: 'Pointage Mobile Direct (Appel Smartphone On-Site)',
+          label: 'Pointage Mobile',
+        },
+        {
+          id: 'pm_sup_staffing',
+          icon: <Users size={19} />,
+          title: 'Casting & Constitution d\'Équipe Terrain',
+          label: 'Staffing Équipe',
+        },
+        {
+          id: 'pm_sup_expenses',
+          icon: <FileText size={19} />,
+          title: 'Déclaration Achats & Tickets Caisse Terrain',
+          label: 'Frais Terrain',
+        },
+        {
+          id: 'settings',
+          icon: <Settings size={19} />,
+          title: 'Paramètres Agence',
+          label: 'Paramètres',
+        },
+      ];
+    } else if (activePmRole === 'rh') {
+      dockNavItems = [
+        {
+          id: 'pm_rh_talents',
+          icon: <Users size={19} />,
+          title: 'Vivier National (58 Wilayas, Notations & Fiabilité)',
+          label: 'Vivier Talents',
+        },
+        {
+          id: 'pm_rh_dossier',
+          icon: <FileText size={19} />,
+          title: 'Dossier Talent 360° & Coordonnées CCP',
+          label: 'Dossier 360°',
+        },
+        {
+          id: 'pm_rh_portal',
+          icon: <GraduationCap size={19} />,
+          title: 'Portail Candidat Public (Mobile /cvs/create)',
+          label: 'Portail Public',
+        },
+        {
+          id: 'pm_rh_walkin',
+          icon: <DoorOpen size={19} />,
+          title: 'Saisie Express Candidat Agence (Walk-in)',
+          label: 'Saisie Express',
+        },
+        {
+          id: 'settings',
+          icon: <Settings size={19} />,
+          title: 'Paramètres Agence',
+          label: 'Paramètres',
+        },
+      ];
+    } else {
+      // compta
+      dockNavItems = [
+        {
+          id: 'pm_compta_payroll',
+          icon: <Wallet size={19} />,
+          title: 'Hub Paies Automatisé (Pipeline Superviseur ➔ Payé)',
+          label: 'Hub Paies',
+        },
+        {
+          id: 'pm_compta_ccp',
+          icon: <CreditCard size={19} />,
+          title: 'Générateur Bordereaux CCP (SFP 01 en Lettres FR & AR)',
+          label: 'Bordereaux CCP',
+        },
+        {
+          id: 'pm_compta_expenses',
+          icon: <Receipt size={19} />,
+          title: 'Audit Dépenses, Scanner Factures & Contrôle NIF',
+          label: 'Audit Dépenses',
+        },
+        {
+          id: 'pm_compta_stock',
+          icon: <Boxes size={19} />,
+          title: 'Stock Matériel & Étiquettes QR (Rollups, Stands)',
+          label: 'Stock Matériel',
+        },
+        {
+          id: 'settings',
+          icon: <Settings size={19} />,
+          title: 'Paramètres Agence',
+          label: 'Paramètres',
+        },
+      ];
+    }
+  } else if (category === 'freelance_solo') {
     dockNavItems = [
       {
         id: 'dashboard',
@@ -420,7 +618,76 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <button
                 key={index}
                 type="button"
-                onClick={() => setScreen(item.id)}
+                onClick={() => {
+                  setScreen(item.id);
+                  if (category === 'project_milestone') {
+                    if (item.id === 'pm_dir_dashboard' || item.id === 'dashboard') {
+                      setActivePmRole('direction');
+                      setActivePmSubScreen('dashboard');
+                    } else if (item.id === 'pm_dir_new_project') {
+                      setActivePmRole('direction');
+                      setActivePmSubScreen('new_project');
+                    } else if (item.id === 'pm_dir_approvals') {
+                      setActivePmRole('direction');
+                      setActivePmSubScreen('approvals');
+                    } else if (item.id === 'pm_cp_projects' || item.id === 'scheduler') {
+                      setActivePmRole('chef_projet');
+                      setActivePmSubScreen('portfolio');
+                    } else if (item.id === 'pm_cp_catalog') {
+                      setActivePmRole('chef_projet');
+                      setActivePmSubScreen('catalog');
+                    } else if (item.id === 'pm_cp_deliverables') {
+                      setActivePmRole('chef_projet');
+                      setActivePmSubScreen('bat');
+                    } else if (item.id === 'pm_cp_expenses') {
+                      setActivePmRole('chef_projet');
+                      setActivePmSubScreen('expenses');
+                    } else if (item.id === 'pm_crea_kanban' || item.id === 'registrations') {
+                      setActivePmRole('crea');
+                      setActivePmSubScreen('kanban');
+                    } else if (item.id === 'pm_crea_upload') {
+                      setActivePmRole('crea');
+                      setActivePmSubScreen('upload');
+                    } else if (item.id === 'pm_sup_missions' || item.id === 'analytics') {
+                      setActivePmRole('superviseur');
+                      setActivePmSubScreen('missions');
+                    } else if (item.id === 'pm_sup_attendance') {
+                      setActivePmRole('superviseur');
+                      setActivePmSubScreen('attendance');
+                    } else if (item.id === 'pm_sup_staffing') {
+                      setActivePmRole('superviseur');
+                      setActivePmSubScreen('staffing');
+                    } else if (item.id === 'pm_sup_expenses') {
+                      setActivePmRole('superviseur');
+                      setActivePmSubScreen('expense');
+                    } else if (item.id === 'pm_rh_talents' || item.id === 'members') {
+                      setActivePmRole('rh');
+                      setActivePmSubScreen('talents');
+                    } else if (item.id === 'pm_rh_dossier') {
+                      setActivePmRole('rh');
+                      setActivePmSubScreen('dossier');
+                    } else if (item.id === 'pm_rh_portal') {
+                      setActivePmRole('rh');
+                      setActivePmSubScreen('portal');
+                    } else if (item.id === 'pm_rh_walkin') {
+                      setActivePmRole('rh');
+                      setActivePmSubScreen('walkin');
+                    } else if (item.id === 'pm_compta_payroll' || item.id === 'finance') {
+                      setActivePmRole('compta');
+                      setActivePmSubScreen('payroll');
+                    } else if (item.id === 'pm_compta_ccp') {
+                      setActivePmRole('compta');
+                      setActivePmSubScreen('ccp');
+                    } else if (item.id === 'pm_compta_expenses') {
+                      setActivePmRole('compta');
+                      setActivePmSubScreen('expenses');
+                    } else if (item.id === 'pm_compta_stock') {
+                      setActivePmRole('compta');
+                      setActivePmSubScreen('stock');
+                    }
+                  }
+                  if (onCloseMobile) onCloseMobile();
+                }}
                 title={item.title}
                 style={{
                   backgroundColor: isActive ? 'var(--color-accent)' : 'transparent',

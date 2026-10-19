@@ -38,6 +38,12 @@ import { EducationCohortsView } from './components/screens/education/EducationCo
 import { EducationAdmissionsView } from './components/screens/education/EducationAdmissionsView';
 import { EducationAttendanceView } from './components/screens/education/EducationAttendanceView';
 import { EducationFinanceView } from './components/screens/education/EducationFinanceView';
+import { ProjectDirectionView } from './components/screens/project/ProjectDirectionView';
+import { ProjectChefProjetView } from './components/screens/project/ProjectChefProjetView';
+import { ProjectCreaView } from './components/screens/project/ProjectCreaView';
+import { ProjectSuperviseurView } from './components/screens/project/ProjectSuperviseurView';
+import { ProjectRhView } from './components/screens/project/ProjectRhView';
+import { ProjectComptaView } from './components/screens/project/ProjectComptaView';
 import { DesktopUpgradeModal } from './components/modals/DesktopUpgradeModal';
 import { CommandPaletteModal } from './components/modals/CommandPaletteModal';
 import { ToastStack } from './components/ui/ToastStack';
@@ -120,8 +126,34 @@ export default function App() {
   };
 
   const isFreelance = currentBusiness?.category === 'freelance_solo';
+  const isProjectMilestone = currentBusiness?.category === 'project_milestone';
 
   const renderActiveScreen = () => {
+    if (isProjectMilestone) {
+      switch (activeScreen) {
+        case 'dashboard':
+          return <ProjectDirectionView />;
+        case 'scheduler':
+          return <ProjectChefProjetView />;
+        case 'registrations':
+          return <ProjectCreaView />;
+        case 'analytics':
+          return <ProjectSuperviseurView />;
+        case 'members':
+          return <ProjectRhView />;
+        case 'finance':
+          return <ProjectComptaView />;
+        case 'shop':
+          return <ProjectComptaView />;
+        case 'history':
+          return <ProjectSuperviseurView />;
+        case 'settings':
+          return <SettingsScreen onOpenVoucherModal={() => setIsVoucherModalOpen(true)} />;
+        default:
+          return <ProjectDirectionView />;
+      }
+    }
+
     if (isFreelance) {
       switch (activeScreen) {
         case 'dashboard':

@@ -11,3 +11,5 @@ export * from './services/freelanceService';
 export * from './services/appointmentService';
 export * from './services/posService';
 export * from './services/rentalService';
+export * from './services/projectMilestoneService';
+
