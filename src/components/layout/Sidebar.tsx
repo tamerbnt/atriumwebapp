@@ -68,25 +68,37 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {
           id: 'pm_dir_dashboard',
           icon: <TrendingUp size={19} />,
-          title: 'Command Center · Direction (P&L, Marge & Volume)',
-          label: 'Command Center',
+          title: 'Tableau de bord · Direction Générale',
+          label: 'Tableau de bord',
         },
         {
           id: 'pm_dir_new_project',
           icon: <FileText size={19} />,
-          title: 'Cadrage Projet & Cahier des Charges',
-          label: 'Nouveau Projet',
+          title: 'Cahiers des charges · Injection & Cadrage',
+          label: 'Cahiers des charges',
+        },
+        {
+          id: 'pm_cp_projects',
+          icon: <Kanban size={19} />,
+          title: 'Projets · Vue globale agence',
+          label: 'Projets',
         },
         {
           id: 'pm_dir_approvals',
           icon: <ShieldCheck size={19} />,
-          title: 'Double-Lock Approbations (Paies & Dépenses)',
-          label: 'Approbations',
+          title: 'Validations paie · Double-lock validation',
+          label: 'Validations paie',
+        },
+        {
+          id: 'pm_dir_reports',
+          icon: <BarChart2 size={19} />,
+          title: 'Rapports d\'activité et marges',
+          label: 'Rapports',
         },
         {
           id: 'settings',
           icon: <Settings size={19} />,
-          title: 'Paramètres Agence & Configuration',
+          title: 'Paramètres agence',
           label: 'Paramètres',
         },
       ];
@@ -95,32 +107,32 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {
           id: 'pm_cp_projects',
           icon: <Kanban size={19} />,
-          title: 'Portefeuille & Jalons de Campagne',
-          label: 'Projets & Jalons',
+          title: 'Mes projets · Portefeuille & Jalons',
+          label: 'Mes projets',
         },
         {
           id: 'pm_cp_catalog',
           icon: <ShoppingBag size={19} />,
-          title: 'Catalogue Print & PLV Interne (Banderoles, Kakémonos)',
-          label: 'Catalogue Print',
+          title: 'Commander · Catalogue print & numérique',
+          label: 'Commander',
         },
         {
-          id: 'pm_cp_deliverables',
+          id: 'pm_cp_orders',
           icon: <Sparkles size={19} />,
-          title: 'Livrables & Approbations BAT Créa (CMJN / 300 DPI)',
-          label: 'BAT & Preuves',
+          title: 'Suivi commandes & BAT Créa',
+          label: 'Suivi commandes',
+        },
+        {
+          id: 'pm_cp_files',
+          icon: <FileText size={19} />,
+          title: 'Fichiers reçus · BAT prêts pour impression',
+          label: 'Fichiers reçus',
         },
         {
           id: 'pm_cp_expenses',
           icon: <Wallet size={19} />,
-          title: 'Budget & Dépenses Terrain (Seuil Alerte 85%)',
-          label: 'Budget Dépenses',
-        },
-        {
-          id: 'settings',
-          icon: <Settings size={19} />,
-          title: 'Paramètres Agence',
-          label: 'Paramètres',
+          title: 'Achats · Déclaration des achats projet',
+          label: 'Achats',
         },
       ];
     } else if (activePmRole === 'crea') {
@@ -128,20 +140,26 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {
           id: 'pm_crea_kanban',
           icon: <Layers size={19} />,
-          title: 'Kanban de Production Graphique (Briefs, En cours, Prêts)',
-          label: 'Kanban Créa',
+          title: 'Demandes & Briefs reçus',
+          label: 'Demandes',
+        },
+        {
+          id: 'pm_crea_production',
+          icon: <Sparkles size={19} />,
+          title: 'Production · Kanban de création',
+          label: 'Production',
         },
         {
           id: 'pm_crea_upload',
-          icon: <Sparkles size={19} />,
-          title: 'Validateur & Upload BAT (CMJN / 300 DPI / Bords perdus)',
-          label: 'Upload & BAT',
+          icon: <FileText size={19} />,
+          title: 'Livrables · Upload BAT & Validateur',
+          label: 'Livrables',
         },
         {
-          id: 'settings',
-          icon: <Settings size={19} />,
-          title: 'Paramètres Agence',
-          label: 'Paramètres',
+          id: 'pm_crea_briefs',
+          icon: <FileText size={19} />,
+          title: 'Cahiers des charges liés',
+          label: 'Cahiers des charges',
         },
       ];
     } else if (activePmRole === 'superviseur') {
@@ -149,32 +167,26 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {
           id: 'pm_sup_missions',
           icon: <Radio size={19} />,
-          title: 'Missions Terrain (Activations Live Bab Ezzouar & Wilayas)',
-          label: 'Missions Live',
-        },
-        {
-          id: 'pm_sup_attendance',
-          icon: <Clock size={19} />,
-          title: 'Pointage Mobile Direct (Appel Smartphone On-Site)',
-          label: 'Pointage Mobile',
+          title: 'Mes missions · Activations terrain',
+          label: 'Mes missions',
         },
         {
           id: 'pm_sup_staffing',
           icon: <Users size={19} />,
-          title: 'Casting & Constitution d\'Équipe Terrain',
-          label: 'Staffing Équipe',
+          title: 'Équipes · Composer son équipe',
+          label: 'Équipes',
+        },
+        {
+          id: 'pm_sup_attendance',
+          icon: <Clock size={19} />,
+          title: 'Pointage · Pointage du jour sur mobile',
+          label: 'Pointage',
         },
         {
           id: 'pm_sup_expenses',
           icon: <FileText size={19} />,
-          title: 'Déclaration Achats & Tickets Caisse Terrain',
-          label: 'Frais Terrain',
-        },
-        {
-          id: 'settings',
-          icon: <Settings size={19} />,
-          title: 'Paramètres Agence',
-          label: 'Paramètres',
+          title: 'Notes & Frais terrain',
+          label: 'Notes',
         },
       ];
     } else if (activePmRole === 'rh') {
@@ -182,32 +194,26 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {
           id: 'pm_rh_talents',
           icon: <Users size={19} />,
-          title: 'Vivier National (58 Wilayas, Notations & Fiabilité)',
-          label: 'Vivier Talents',
+          title: 'Vivier & Candidats 58 Wilayas',
+          label: 'Vivier & Talents',
         },
         {
           id: 'pm_rh_dossier',
           icon: <FileText size={19} />,
-          title: 'Dossier Talent 360° & Coordonnées CCP',
+          title: 'Dossier 360° & Fiche talent',
           label: 'Dossier 360°',
         },
         {
           id: 'pm_rh_portal',
           icon: <GraduationCap size={19} />,
-          title: 'Portail Candidat Public (Mobile /cvs/create)',
-          label: 'Portail Public',
+          title: 'Pré-inscription en ligne (cvs/create)',
+          label: 'Pré-inscription',
         },
         {
           id: 'pm_rh_walkin',
           icon: <DoorOpen size={19} />,
-          title: 'Saisie Express Candidat Agence (Walk-in)',
-          label: 'Saisie Express',
-        },
-        {
-          id: 'settings',
-          icon: <Settings size={19} />,
-          title: 'Paramètres Agence',
-          label: 'Paramètres',
+          title: 'Création directe agence (1 min)',
+          label: 'Création agence',
         },
       ];
     } else {
@@ -216,32 +222,26 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {
           id: 'pm_compta_payroll',
           icon: <Wallet size={19} />,
-          title: 'Hub Paies Automatisé (Pipeline Superviseur ➔ Payé)',
-          label: 'Hub Paies',
+          title: 'Paies · Validation & Montants terrain',
+          label: 'Paies',
         },
         {
           id: 'pm_compta_ccp',
           icon: <CreditCard size={19} />,
-          title: 'Générateur Bordereaux CCP (SFP 01 en Lettres FR & AR)',
-          label: 'Bordereaux CCP',
+          title: 'CCP générés · Formulaires SFP 01 en 1 clic',
+          label: 'CCP générés',
         },
         {
           id: 'pm_compta_expenses',
           icon: <Receipt size={19} />,
-          title: 'Audit Dépenses, Scanner Factures & Contrôle NIF',
-          label: 'Audit Dépenses',
+          title: 'Dépenses & Justificatifs scannés',
+          label: 'Dépenses',
         },
         {
           id: 'pm_compta_stock',
           icon: <Boxes size={19} />,
-          title: 'Stock Matériel & Étiquettes QR (Rollups, Stands)',
-          label: 'Stock Matériel',
-        },
-        {
-          id: 'settings',
-          icon: <Settings size={19} />,
-          title: 'Paramètres Agence',
-          label: 'Paramètres',
+          title: 'Stock · Codé et tracé à vie (NCH-A-00xxx)',
+          label: 'Stock',
         },
       ];
     }
@@ -630,13 +630,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     } else if (item.id === 'pm_dir_approvals') {
                       setActivePmRole('direction');
                       setActivePmSubScreen('approvals');
+                    } else if (item.id === 'pm_dir_reports') {
+                      setActivePmRole('direction');
+                      setActivePmSubScreen('reports');
                     } else if (item.id === 'pm_cp_projects' || item.id === 'scheduler') {
                       setActivePmRole('chef_projet');
                       setActivePmSubScreen('portfolio');
                     } else if (item.id === 'pm_cp_catalog') {
                       setActivePmRole('chef_projet');
                       setActivePmSubScreen('catalog');
-                    } else if (item.id === 'pm_cp_deliverables') {
+                    } else if (item.id === 'pm_cp_orders') {
+                      setActivePmRole('chef_projet');
+                      setActivePmSubScreen('orders');
+                    } else if (item.id === 'pm_cp_files' || item.id === 'pm_cp_deliverables') {
                       setActivePmRole('chef_projet');
                       setActivePmSubScreen('bat');
                     } else if (item.id === 'pm_cp_expenses') {
@@ -644,10 +650,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       setActivePmSubScreen('expenses');
                     } else if (item.id === 'pm_crea_kanban' || item.id === 'registrations') {
                       setActivePmRole('crea');
-                      setActivePmSubScreen('kanban');
+                      setActivePmSubScreen('demandes');
+                    } else if (item.id === 'pm_crea_production') {
+                      setActivePmRole('crea');
+                      setActivePmSubScreen('production');
                     } else if (item.id === 'pm_crea_upload') {
                       setActivePmRole('crea');
                       setActivePmSubScreen('upload');
+                    } else if (item.id === 'pm_crea_briefs') {
+                      setActivePmRole('crea');
+                      setActivePmSubScreen('briefs');
                     } else if (item.id === 'pm_sup_missions' || item.id === 'analytics') {
                       setActivePmRole('superviseur');
                       setActivePmSubScreen('missions');
@@ -710,10 +722,29 @@ export const Sidebar: React.FC<SidebarProps> = ({
           })}
         </nav>
 
+        {/* Bottom User Role Badge for NCH Market Activator matching slide footers */}
+        {category === 'project_milestone' && (
+          <div className={`mt-2 pt-2 border-t border-white/10 w-full flex items-center ${isExpanded ? 'px-2 gap-2.5 justify-start' : 'justify-center'}`}>
+            <div className="w-7 h-7 rounded-lg bg-[#C4785A] text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
+              {activePmRole === 'direction' ? 'D' : activePmRole === 'chef_projet' ? 'Y' : activePmRole === 'crea' ? 'M' : activePmRole === 'superviseur' ? 'S' : activePmRole === 'rh' ? 'R' : 'N'}
+            </div>
+            {isExpanded && (
+              <div className="flex flex-col min-w-0 text-left">
+                <span className="text-[11px] font-bold text-white truncate leading-tight">
+                  {activePmRole === 'direction' ? 'Mme D. — DG' : activePmRole === 'chef_projet' ? 'K. Yacine — CDP' : activePmRole === 'crea' ? 'S. Meriem — DA' : activePmRole === 'superviseur' ? 'R. Sofiane — SUP' : activePmRole === 'rh' ? 'N. Ryma — RH' : 'F. Nassima — CPT'}
+                </span>
+                <span className="text-[9px] text-[#A1A1AA] truncate">
+                  NCH Platform
+                </span>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Bottom Logo Script */}
         <div className="text-center pt-2">
           <span className="text-[9px] font-serif text-[#C4785A]/70 tracking-widest uppercase block select-none">
-            {isExpanded ? 'ATRIUM ERP' : 'atrium'}
+            {isExpanded ? 'NCH PLATFORM' : 'nch'}
           </span>
         </div>
       </aside>

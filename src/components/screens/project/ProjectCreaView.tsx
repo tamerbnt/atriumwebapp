@@ -22,7 +22,7 @@ import {
 } from 'lucide-react';
 
 interface ProjectCreaViewProps {
-  initialTab?: 'kanban' | 'upload';
+  initialTab?: 'demandes' | 'kanban' | 'production' | 'upload' | 'briefs';
 }
 
 export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) => {
@@ -32,16 +32,27 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
     pmBatDeliverables,
     addPmBatDeliverable,
     updatePmPrintOrderStatus,
+    reviewPmBatDeliverable,
     activePmSubScreen,
     setActivePmSubScreen,
   } = useAtriumStore();
 
-  const activeTab: 'kanban' | 'upload' =
-    activePmSubScreen === 'upload' || initialTab === 'upload' ? 'upload' : 'kanban';
+  const activeTab: 'demandes' | 'kanban' | 'production' | 'upload' | 'briefs' =
+    activePmSubScreen === 'upload' || activePmSubScreen === 'livrables' || initialTab === 'upload'
+      ? 'upload'
+      : activePmSubScreen === 'production' || initialTab === 'production'
+      ? 'production'
+      : activePmSubScreen === 'briefs' || initialTab === 'briefs'
+      ? 'briefs'
+      : activePmSubScreen === 'demandes' || initialTab === 'demandes'
+      ? 'demandes'
+      : 'kanban';
 
-  const setActiveTab = (tab: 'kanban' | 'upload') => {
+  const setActiveTab = (tab: 'demandes' | 'kanban' | 'production' | 'upload' | 'briefs') => {
     setActivePmSubScreen(tab);
   };
+
+  const [returnedToCdpSuccess, setReturnedToCdpSuccess] = useState(false);
 
   const [selectedProjectId, setSelectedProjectId] = useState(pmProjects[0]?.id || '');
   const [selectedOrderId, setSelectedOrderId] = useState<string>('');
@@ -160,225 +171,375 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
       </div>
 
       {/* Screen Tabs */}
-      <div className="flex items-center gap-2 border-b border-zinc-200 dark:border-zinc-800 pb-2">
+      <div className="flex items-center gap-2 border-b border-zinc-200 dark:border-zinc-800 pb-2 overflow-x-auto">
         <button
-          onClick={() => setActiveTab('kanban')}
-          className={`px-3.5 py-2 text-xs font-semibold rounded-xl flex items-center gap-2 transition-colors cursor-pointer ${
-            activeTab === 'kanban'
+          onClick={() => setActiveTab('demandes')}
+          className={`px-3.5 py-2 text-xs font-semibold rounded-xl flex items-center gap-2 whitespace-nowrap transition-colors cursor-pointer ${
+            activeTab === 'demandes' || activeTab === 'kanban'
               ? 'bg-[#C4785A] text-white shadow-xs'
               : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
           }`}
         >
           <Layers className="w-4 h-4" />
-          3.1 Kanban de Production
+          3.1 Demandes & Briefs
+        </button>
+
+        <button
+          onClick={() => setActiveTab('production')}
+          className={`px-3.5 py-2 text-xs font-semibold rounded-xl flex items-center gap-2 whitespace-nowrap transition-colors cursor-pointer ${
+            activeTab === 'production'
+              ? 'bg-[#C4785A] text-white shadow-xs'
+              : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
+          }`}
+        >
+          <Sparkles className="w-4 h-4" />
+          3.2 Production
         </button>
 
         <button
           onClick={() => setActiveTab('upload')}
-          className={`px-3.5 py-2 text-xs font-semibold rounded-xl flex items-center gap-2 transition-colors cursor-pointer ${
+          className={`px-3.5 py-2 text-xs font-semibold rounded-xl flex items-center gap-2 whitespace-nowrap transition-colors cursor-pointer ${
             activeTab === 'upload'
               ? 'bg-[#C4785A] text-white shadow-xs'
               : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
           }`}
         >
           <UploadCloud className="w-4 h-4" />
-          3.2 Uploader & Validateur BAT (CMJN / 300 DPI)
+          3.3 Livrables BAT
+        </button>
+
+        <button
+          onClick={() => setActiveTab('briefs')}
+          className={`px-3.5 py-2 text-xs font-semibold rounded-xl flex items-center gap-2 whitespace-nowrap transition-colors cursor-pointer ${
+            activeTab === 'briefs'
+              ? 'bg-[#C4785A] text-white shadow-xs'
+              : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
+          }`}
+        >
+          <FileText className="w-4 h-4" />
+          3.4 Cahiers des charges
         </button>
       </div>
 
-      {/* SCREEN 3.1: KANBAN BOARD */}
-      {activeTab === 'kanban' && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Column 1: Received Briefs & Print Orders */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-zinc-200 dark:border-zinc-800">
-              <span className="text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 flex items-center gap-2">
-                <Clock className="w-4 h-4 text-zinc-500" />
-                Briefs & Commandes Reçus
-              </span>
-              <span className="text-xs font-mono font-semibold px-2 py-0.5 rounded-full bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
-                {pmPrintOrders.filter((o) => o.status === 'sent_to_crea').length + pmProjects.length}
-              </span>
-            </div>
+      {/* SCREEN 3.1 & 3.2: KANBAN BOARD WITH SLIDE 7 LIVRABLE PRÊT INSPECTOR */}
+      {(activeTab === 'kanban' || activeTab === 'demandes' || activeTab === 'production') && (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Left 8 Cols: 3-Column Production Board */}
+          <div className="lg:col-span-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Column 1: Received Briefs & Print Orders */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between pb-2 border-b border-zinc-200 dark:border-zinc-800">
+                <span className="text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 flex items-center gap-1.5">
+                  <Clock className="w-3.5 h-3.5 text-zinc-500" />
+                  Reçues
+                </span>
+                <span className="text-xs font-mono font-semibold px-2 py-0.5 rounded-full bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
+                  {pmPrintOrders.filter((o) => o.status === 'sent_to_crea').length + pmProjects.length}
+                </span>
+              </div>
 
-            <div className="space-y-3">
-              {pmProjects.map((p) => (
-                <div
-                  key={p.id}
-                  className="p-4 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-xs space-y-3 hover:border-[#C4785A]/50 transition-colors"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#C4785A]/15 text-[#C4785A]">
-                      KEY VISUAL & CADRAGE
-                    </span>
-                    <span className="text-[10px] text-zinc-400 font-mono">Délai: {p.startDate}</span>
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                      {p.title}
-                    </h3>
-                    <p className="text-xs text-zinc-500 line-clamp-2 mt-1">
-                      {p.scopeOfWork}
-                    </p>
-                  </div>
-                  <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between text-xs">
-                    <span className="text-zinc-400">Client: {p.clientName}</span>
-                    <button
-                      onClick={() => {
-                        setSelectedProjectId(p.id);
-                        setArtworkTitle(`KV_${p.title.replace(/\s+/g, '_')}`);
-                        setActiveTab('upload');
-                      }}
-                      className="text-[#C4785A] hover:underline font-semibold flex items-center gap-1 cursor-pointer"
-                    >
-                      Démarrer BAT <ArrowRight className="w-3 h-3" />
-                    </button>
-                  </div>
-                </div>
-              ))}
-
-              {pmPrintOrders
-                .filter((o) => o.status === 'sent_to_crea')
-                .map((order) => (
+              <div className="space-y-3">
+                {pmProjects.map((p) => (
                   <div
-                    key={order.id}
-                    className="p-4 bg-white dark:bg-zinc-900 rounded-xl border border-blue-200 dark:border-blue-900/50 shadow-xs space-y-3"
+                    key={p.id}
+                    className="p-3.5 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-xs space-y-2 hover:border-[#C4785A]/50 transition-colors"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300">
-                        COMMANDE PRINT
+                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#C4785A]/15 text-[#C4785A]">
+                        BRIEF · KV
                       </span>
-                      <span className="text-[10px] font-mono text-zinc-500">{order.orderNumber}</span>
+                      <span className="text-[10px] text-zinc-400 font-mono">{p.startDate}</span>
                     </div>
                     <div>
-                      <h3 className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
-                        {order.projectTitle}
-                      </h3>
-                      <p className="text-xs text-zinc-500 mt-1">
-                        {order.items.map((i) => `${i.quantity}x ${i.itemTitle}`).join(', ')}
+                      <h4 className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
+                        {p.title}
+                      </h4>
+                      <p className="text-[11px] text-zinc-500 line-clamp-2 mt-0.5">
+                        {p.scopeOfWork}
                       </p>
                     </div>
                     <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between text-xs">
-                      <span className="font-mono text-zinc-500">{order.totalCostDzd.toLocaleString()} DA</span>
+                      <span className="text-zinc-400 text-[10px]">{p.clientName}</span>
                       <button
                         onClick={() => {
-                          setSelectedProjectId(order.projectId);
-                          setSelectedOrderId(order.id);
-                          setArtworkTitle(`BAT_${order.orderNumber}`);
+                          setSelectedProjectId(p.id);
+                          setArtworkTitle(`KV_${p.title.replace(/\s+/g, '_')}`);
                           setActiveTab('upload');
                         }}
-                        className="text-blue-600 dark:text-blue-400 font-semibold flex items-center gap-1 cursor-pointer"
+                        className="text-[#C4785A] hover:underline font-semibold flex items-center gap-1 text-[11px] cursor-pointer"
                       >
-                        Créer le BAT <ArrowRight className="w-3 h-3" />
+                        Démarrer <ArrowRight className="w-3 h-3" />
                       </button>
                     </div>
                   </div>
                 ))}
-            </div>
-          </div>
 
-          {/* Column 2: In Progress */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-zinc-200 dark:border-zinc-800">
-              <span className="text-xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 flex items-center gap-2">
-                <Palette className="w-4 h-4 text-amber-500" />
-                En Production Créa
-              </span>
-              <span className="text-xs font-mono font-semibold px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300">
-                {pmBatDeliverables.filter((b) => b.approvalStatus === 'pending_review').length}
-              </span>
-            </div>
-
-            <div className="space-y-3">
-              {pmBatDeliverables
-                .filter((b) => b.approvalStatus === 'pending_review')
-                .map((bat) => (
-                  <div
-                    key={bat.id}
-                    className="p-4 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-xs space-y-3"
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300">
-                        {bat.versionCode.toUpperCase()} · EN REVUE
-                      </span>
-                      <span className="text-[10px] text-zinc-400">{bat.fileFormat.toUpperCase()} · {bat.colorSpace}</span>
-                    </div>
-
-                    <div className="aspect-video bg-zinc-100 dark:bg-zinc-800 rounded-lg overflow-hidden relative">
-                      <img src={bat.previewUrl} alt={bat.title} className="w-full h-full object-cover" />
-                      <div className="absolute top-2 right-2 px-1.5 py-0.5 rounded bg-black/70 text-white text-[9px] font-mono">
-                        {bat.resolutionDpi} DPI
+                {pmPrintOrders
+                  .filter((o) => o.status === 'sent_to_crea')
+                  .map((order) => (
+                    <div
+                      key={order.id}
+                      className="p-3.5 bg-white dark:bg-zinc-900 rounded-xl border border-blue-200 dark:border-blue-900/50 shadow-xs space-y-2"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300">
+                          PRINT
+                        </span>
+                        <span className="text-[10px] font-mono text-zinc-500">{order.orderNumber}</span>
+                      </div>
+                      <div>
+                        <h4 className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
+                          {order.projectTitle}
+                        </h4>
+                        <p className="text-[11px] text-zinc-500 mt-0.5">
+                          {order.items.map((i) => `${i.quantity}x ${i.itemTitle}`).join(', ')}
+                        </p>
+                      </div>
+                      <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between text-xs">
+                        <span className="font-mono text-[11px] text-zinc-500">{order.totalCostDzd.toLocaleString()} DA</span>
+                        <button
+                          onClick={() => {
+                            setSelectedProjectId(order.projectId);
+                            setSelectedOrderId(order.id);
+                            setArtworkTitle(`BAT_${order.orderNumber}`);
+                            setActiveTab('upload');
+                          }}
+                          className="text-blue-600 dark:text-blue-400 font-semibold flex items-center gap-1 text-[11px] cursor-pointer"
+                        >
+                          Créer BAT <ArrowRight className="w-3 h-3" />
+                        </button>
                       </div>
                     </div>
-
-                    <div>
-                      <h4 className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 truncate">
-                        {bat.title}
-                      </h4>
-                      <p className="text-[11px] text-zinc-500">{bat.projectTitle}</p>
-                    </div>
-
-                    <div className="text-[11px] text-zinc-400 flex items-center justify-between pt-2 border-t border-zinc-100 dark:border-zinc-800">
-                      <span>{bat.uploadedByCreativeName}</span>
-                      <span className="text-emerald-600 font-medium">Bords 3mm inclus</span>
-                    </div>
-                  </div>
-                ))}
-            </div>
-          </div>
-
-          {/* Column 3: Validated & Print Ready BAT */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-zinc-200 dark:border-zinc-800">
-              <span className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 flex items-center gap-2">
-                <CheckCircle className="w-4 h-4 text-emerald-500" />
-                BAT Validés & Prêts Print
-              </span>
-              <span className="text-xs font-mono font-semibold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300">
-                {pmBatDeliverables.filter((b) => b.approvalStatus === 'approved').length}
-              </span>
+                  ))}
+              </div>
             </div>
 
-            <div className="space-y-3">
-              {pmBatDeliverables
-                .filter((b) => b.approvalStatus === 'approved')
-                .map((bat) => (
-                  <div
-                    key={bat.id}
-                    className="p-4 bg-white dark:bg-zinc-900 rounded-xl border border-emerald-200 dark:border-emerald-900/50 shadow-xs space-y-3"
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300">
-                        BAT BON À TIRER VALIDÉ
-                      </span>
-                      <span className="text-[10px] font-mono text-zinc-500">{bat.versionCode}</span>
-                    </div>
+            {/* Column 2: In Progress */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between pb-2 border-b border-zinc-200 dark:border-zinc-800">
+                <span className="text-xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
+                  <Palette className="w-3.5 h-3.5 text-amber-500" />
+                  En production
+                </span>
+                <span className="text-xs font-mono font-semibold px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300">
+                  {pmBatDeliverables.filter((b) => b.approvalStatus === 'pending_review').length}
+                </span>
+              </div>
 
-                    <div className="aspect-video bg-zinc-100 dark:bg-zinc-800 rounded-lg overflow-hidden relative">
-                      <img src={bat.previewUrl} alt={bat.title} className="w-full h-full object-cover" />
-                      <div className="absolute inset-0 bg-emerald-500/10 flex items-center justify-center">
-                        <span className="px-3 py-1 bg-white dark:bg-zinc-900 rounded-full text-xs font-bold text-emerald-600 shadow-md">
-                          PRÊT IMPRESSION
+              <div className="space-y-3">
+                {pmBatDeliverables
+                  .filter((b) => b.approvalStatus === 'pending_review')
+                  .map((bat) => (
+                    <div
+                      key={bat.id}
+                      className="p-3.5 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-xs space-y-2.5"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300">
+                          {bat.versionCode.toUpperCase()} · EN PRODUCTION
+                        </span>
+                        <span className="text-[10px] text-zinc-400">{bat.fileFormat.toUpperCase()} · {bat.colorSpace}</span>
+                      </div>
+
+                      <div className="aspect-video bg-zinc-100 dark:bg-zinc-800 rounded-lg overflow-hidden relative">
+                        <img src={bat.previewUrl} alt={bat.title} className="w-full h-full object-cover" />
+                        <div className="absolute top-1.5 right-1.5 px-1 py-0.5 rounded bg-black/70 text-white text-[9px] font-mono">
+                          {bat.resolutionDpi} DPI
+                        </div>
+                      </div>
+
+                      <div>
+                        <h4 className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 truncate">
+                          {bat.title}
+                        </h4>
+                        <p className="text-[11px] text-zinc-500">{bat.projectTitle}</p>
+                      </div>
+
+                      <div className="text-[10px] text-zinc-400 flex items-center justify-between pt-1.5 border-t border-zinc-100 dark:border-zinc-800">
+                        <span>{bat.uploadedByCreativeName}</span>
+                        <span className="text-emerald-600 font-medium">Bords 3mm</span>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </div>
+
+            {/* Column 3: Validated & Delivered BAT */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between pb-2 border-b border-zinc-200 dark:border-zinc-800">
+                <span className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
+                  <CheckCircle className="w-3.5 h-3.5 text-emerald-500" />
+                  Livrées
+                </span>
+                <span className="text-xs font-mono font-semibold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300">
+                  {pmBatDeliverables.filter((b) => b.approvalStatus === 'approved').length}
+                </span>
+              </div>
+
+              <div className="space-y-3">
+                {pmBatDeliverables
+                  .filter((b) => b.approvalStatus === 'approved')
+                  .map((bat) => (
+                    <div
+                      key={bat.id}
+                      className="p-3.5 bg-white dark:bg-zinc-900 rounded-xl border border-emerald-200 dark:border-emerald-900/50 shadow-xs space-y-2.5"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300">
+                          BAT VALIDÉ
+                        </span>
+                        <span className="text-[10px] font-mono text-zinc-500">{bat.versionCode}</span>
+                      </div>
+
+                      <div className="aspect-video bg-zinc-100 dark:bg-zinc-800 rounded-lg overflow-hidden relative">
+                        <img src={bat.previewUrl} alt={bat.title} className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-emerald-500/10 flex items-center justify-center">
+                          <span className="px-2.5 py-0.5 bg-white dark:bg-zinc-900 rounded-full text-[10px] font-bold text-emerald-600 shadow-xs">
+                            PRÊT IMPRESSION
+                          </span>
+                        </div>
+                      </div>
+
+                      <div>
+                        <h4 className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 truncate">
+                          {bat.title}
+                        </h4>
+                        <p className="text-[11px] text-zinc-500">{bat.projectTitle}</p>
+                      </div>
+
+                      <div className="pt-1.5 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between text-[10px]">
+                        <span className="text-zinc-400">300 DPI · CMJN</span>
+                        <span className="text-emerald-600 font-semibold flex items-center gap-1">
+                          <CheckCircle className="w-3 h-3" /> Transmis
                         </span>
                       </div>
                     </div>
-
-                    <div>
-                      <h4 className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 truncate">
-                        {bat.title}
-                      </h4>
-                      <p className="text-[11px] text-zinc-500">{bat.projectTitle}</p>
-                    </div>
-
-                    <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between text-xs">
-                      <span className="text-[10px] text-zinc-400">300 DPI · CMJN</span>
-                      <span className="text-emerald-600 font-semibold flex items-center gap-1">
-                        <CheckCircle className="w-3.5 h-3.5" /> Transmis Imprimeur
-                      </span>
-                    </div>
-                  </div>
-                ))}
+                  ))}
+              </div>
             </div>
+          </div>
+
+          {/* Right 4 Cols: Slide 7 "Livrable Prêt" Panel */}
+          <div className="lg:col-span-4 space-y-4">
+            <div className="p-6 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm sticky top-6 space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-zinc-200 dark:border-zinc-800">
+                <span className="text-xs font-bold uppercase tracking-wider text-[#DC2626]">
+                  Livrable prêt
+                </span>
+                <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">
+                  BAT Final
+                </span>
+              </div>
+
+              {/* Deliverable File Info */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-bold text-sm text-zinc-900 dark:text-zinc-100">
+                    BAT_rollup_ooredoo.pdf
+                  </h4>
+                </div>
+                <div className="flex items-center gap-2 text-xs text-zinc-500">
+                  <span className="font-mono">24,8 Mo</span>
+                  <span>·</span>
+                  <span className="px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 font-bold text-[10px]">
+                    HD
+                  </span>
+                  <span className="px-1.5 py-0.5 rounded bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 font-bold text-[10px]">
+                    CMJN
+                  </span>
+                  <span>·</span>
+                  <span className="text-emerald-600 font-semibold text-[11px]">300 DPI</span>
+                </div>
+              </div>
+
+              {/* Thumbnail Display */}
+              <div className="aspect-[4/3] rounded-xl overflow-hidden bg-zinc-100 dark:bg-zinc-800 relative border border-zinc-200 dark:border-zinc-700/60">
+                <img
+                  src="https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=600&auto=format&fit=crop&q=80"
+                  alt="BAT Preview"
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute bottom-2 left-2 right-2 p-2 rounded-lg bg-black/75 backdrop-blur-xs text-white text-[11px]">
+                  <span>Fonds perdus 3mm inclus · Prêt pour flashage</span>
+                </div>
+              </div>
+
+              {returnedToCdpSuccess && (
+                <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-xs font-semibold flex items-center gap-2 animate-in fade-in">
+                  <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>BAT renvoyé au Chef de Projet pour validation et transmission à l'imprimeur !</span>
+                </div>
+              )}
+
+              {/* Big Red Button - Slide 7 Exact */}
+              <button
+                type="button"
+                onClick={() => {
+                  reviewPmBatDeliverable('bat_01', 'approved');
+                  setReturnedToCdpSuccess(true);
+                  setTimeout(() => setReturnedToCdpSuccess(false), 3500);
+                }}
+                className="w-full py-3 text-xs font-bold text-white bg-[#DC2626] hover:bg-red-700 rounded-xl transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer active:scale-98"
+              >
+                <ArrowRight className="w-4 h-4" />
+                Renvoyer au chef de projet
+              </button>
+              <p className="text-[11px] text-zinc-400 text-center leading-relaxed">
+                Le CDP recevra le fichier HD dans son espace pour envoi direct à l'imprimeur.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* SCREEN 3.4: CAHIERS DES CHARGES LIÉS (Slide 7) */}
+      {activeTab === 'briefs' && (
+        <div className="space-y-4">
+          <div className="p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm flex items-center justify-between">
+            <div>
+              <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                Cahiers des Charges & Spécifications Graphiques
+              </h3>
+              <p className="text-xs text-zinc-500">
+                Briefs injectés par la Direction et les Chefs de Projets pour cadrage des Key Visuals (KV).
+              </p>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            {pmProjects.map((p) => (
+              <div
+                key={p.id}
+                className="p-5 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4"
+              >
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-xs text-[#C4785A] uppercase">{p.clientName}</span>
+                    <span className="text-zinc-300">·</span>
+                    <span className="font-semibold text-sm text-zinc-900 dark:text-zinc-100">{p.title}</span>
+                  </div>
+                  <p className="text-xs text-zinc-500 max-w-2xl">{p.scopeOfWork}</p>
+                  <div className="flex items-center gap-4 text-[11px] text-zinc-400 pt-1">
+                    <span>Échéance KV: <strong>{p.kvDeadline || p.startDate}</strong></span>
+                    <span>Échéance Print: <strong>{p.printDeadline || p.startDate}</strong></span>
+                    <span>CDP: <strong>{p.projectManagerName}</strong></span>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedProjectId(p.id);
+                    setArtworkTitle(`KV_${p.title.replace(/\s+/g, '_')}`);
+                    setActiveTab('upload');
+                  }}
+                  className="px-4 py-2 text-xs font-semibold text-white bg-[#C4785A] hover:bg-[#b3684a] rounded-xl transition-all shadow-xs flex items-center gap-1.5 cursor-pointer shrink-0"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  Démarrer Production KV ➔
+                </button>
+              </div>
+            ))}
           </div>
         </div>
       )}

@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 
 interface ProjectChefProjetViewProps {
-  initialTab?: 'portfolio' | 'catalog' | 'bat' | 'expenses';
+  initialTab?: 'portfolio' | 'catalog' | 'orders' | 'bat' | 'expenses';
 }
 
 export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ initialTab }) => {
@@ -38,16 +38,18 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
     setActivePmSubScreen,
   } = useAtriumStore();
 
-  const activeTab: 'portfolio' | 'catalog' | 'bat' | 'expenses' =
+  const activeTab: 'portfolio' | 'catalog' | 'orders' | 'bat' | 'expenses' =
     (activePmSubScreen === 'catalog' || initialTab === 'catalog')
       ? 'catalog'
-      : (activePmSubScreen === 'bat' || initialTab === 'bat')
+      : (activePmSubScreen === 'orders' || initialTab === 'orders')
+      ? 'orders'
+      : (activePmSubScreen === 'bat' || activePmSubScreen === 'files' || initialTab === 'bat')
       ? 'bat'
       : (activePmSubScreen === 'expenses' || initialTab === 'expenses')
       ? 'expenses'
       : 'portfolio';
 
-  const setActiveTab = (tab: 'portfolio' | 'catalog' | 'bat' | 'expenses') => {
+  const setActiveTab = (tab: 'portfolio' | 'catalog' | 'orders' | 'bat' | 'expenses') => {
     setActivePmSubScreen(tab);
   };
   const [selectedProjectId, setSelectedProjectId] = useState(pmProjects[0]?.id || '');
@@ -142,7 +144,15 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
             <span className="text-xs text-zinc-500">Supervision de Campagnes & Matériel</span>
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
-            Gestion de Projet, Catalog & BAT
+            {activeTab === 'catalog'
+              ? `Commander — ${selectedProject?.title}`
+              : activeTab === 'portfolio'
+              ? `Mes projets — ${selectedProject?.title}`
+              : activeTab === 'orders'
+              ? `Suivi commandes — ${selectedProject?.title}`
+              : activeTab === 'bat'
+              ? `Fichiers reçus & BAT — ${selectedProject?.title}`
+              : `Achats & Frais — ${selectedProject?.title}`}
           </h1>
         </div>
 
@@ -164,29 +174,29 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
       </div>
 
       {/* Navigation Tabs */}
-      <div className="flex items-center gap-2 border-b border-zinc-200 dark:border-zinc-800 pb-2">
+      <div className="flex items-center gap-2 border-b border-zinc-200 dark:border-zinc-800 pb-2 overflow-x-auto">
         <button
           onClick={() => setActiveTab('portfolio')}
-          className={`px-3.5 py-2 text-xs font-semibold rounded-xl flex items-center gap-2 transition-colors ${
+          className={`px-3.5 py-2 text-xs font-semibold rounded-xl flex items-center gap-2 whitespace-nowrap transition-colors cursor-pointer ${
             activeTab === 'portfolio'
               ? 'bg-[#C4785A] text-white shadow-sm'
               : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
           }`}
         >
           <FolderKanban className="w-4 h-4" />
-          Milestones & Portfolio
+          2.1 Mes projets
         </button>
 
         <button
           onClick={() => setActiveTab('catalog')}
-          className={`px-3.5 py-2 text-xs font-semibold rounded-xl flex items-center gap-2 transition-colors ${
+          className={`px-3.5 py-2 text-xs font-semibold rounded-xl flex items-center gap-2 whitespace-nowrap transition-colors cursor-pointer ${
             activeTab === 'catalog'
               ? 'bg-[#C4785A] text-white shadow-sm'
               : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
           }`}
         >
           <ShoppingBag className="w-4 h-4" />
-          Catalogue PLV & Commandes Print
+          2.2 Commander (PLV & Print)
           {cartItems.length > 0 && (
             <span className="ml-1 px-1.5 py-0.5 rounded-full bg-white text-[#C4785A] text-[10px] font-bold">
               {cartItems.length}
@@ -195,27 +205,42 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
         </button>
 
         <button
+          onClick={() => setActiveTab('orders')}
+          className={`px-3.5 py-2 text-xs font-semibold rounded-xl flex items-center gap-2 whitespace-nowrap transition-colors cursor-pointer ${
+            activeTab === 'orders'
+              ? 'bg-[#C4785A] text-white shadow-sm'
+              : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
+          }`}
+        >
+          <Sparkles className="w-4 h-4" />
+          2.3 Suivi commandes
+          <span className="ml-1 px-1.5 py-0.5 rounded-full bg-zinc-200 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-300 text-[10px] font-mono">
+            {pmPrintOrders.length}
+          </span>
+        </button>
+
+        <button
           onClick={() => setActiveTab('bat')}
-          className={`px-3.5 py-2 text-xs font-semibold rounded-xl flex items-center gap-2 transition-colors ${
+          className={`px-3.5 py-2 text-xs font-semibold rounded-xl flex items-center gap-2 whitespace-nowrap transition-colors cursor-pointer ${
             activeTab === 'bat'
               ? 'bg-[#C4785A] text-white shadow-sm'
               : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
           }`}
         >
           <FileCheck2 className="w-4 h-4" />
-          Validation des BAT (Bon à Tirer)
+          2.4 Fichiers reçus & BAT
         </button>
 
         <button
           onClick={() => setActiveTab('expenses')}
-          className={`px-3.5 py-2 text-xs font-semibold rounded-xl flex items-center gap-2 transition-colors ${
+          className={`px-3.5 py-2 text-xs font-semibold rounded-xl flex items-center gap-2 whitespace-nowrap transition-colors cursor-pointer ${
             activeTab === 'expenses'
               ? 'bg-[#C4785A] text-white shadow-sm'
               : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
           }`}
         >
           <DollarSign className="w-4 h-4" />
-          Budget & Frais Terrain
+          2.5 Achats & Dépenses
         </button>
       </div>
 
@@ -321,7 +346,30 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
       {activeTab === 'catalog' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Products Grid (2 Cols) */}
-          <div className="lg:col-span-2 space-y-4">
+            {/* Le Circuit Fichier Banner (Slide 6) */}
+            <div className="p-4 bg-zinc-50 dark:bg-zinc-800/40 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-2">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 block">
+                LE CIRCUIT FICHIER
+              </span>
+              <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                <span className="px-2.5 py-1 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 shadow-xs">
+                  1. Le CDP commande
+                </span>
+                <span className="text-zinc-400">➔</span>
+                <span className="px-2.5 py-1 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 shadow-xs">
+                  2. La Créa produit
+                </span>
+                <span className="text-zinc-400">➔</span>
+                <span className="px-2.5 py-1 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 shadow-xs">
+                  3. Retour au CDP
+                </span>
+                <span className="text-zinc-400">➔</span>
+                <span className="px-2.5 py-1 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 shadow-xs">
+                  4. Transmission imprimeur
+                </span>
+              </div>
+            </div>
+
             <div className="p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm flex items-center justify-between">
               <div>
                 <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
@@ -333,7 +381,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
               </div>
               <button
                 onClick={() => setIsCartOpen(true)}
-                className="px-3 py-1.5 text-xs font-semibold text-[#C4785A] border border-[#C4785A]/30 hover:bg-[#C4785A]/10 rounded-lg flex items-center gap-1.5 transition-colors"
+                className="px-3 py-1.5 text-xs font-semibold text-[#C4785A] border border-[#C4785A]/30 hover:bg-[#C4785A]/10 rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer"
               >
                 <ShoppingBag className="w-3.5 h-3.5" />
                 Voir Panier ({cartItems.length})
@@ -376,7 +424,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                     </span>
                     <button
                       onClick={() => handleAddToCart(item)}
-                      className="px-3 py-1.5 text-xs font-semibold text-white bg-[#C4785A] hover:bg-[#b3684a] rounded-lg transition-colors flex items-center gap-1 shadow-sm"
+                      className="px-3 py-1.5 text-xs font-semibold text-white bg-[#C4785A] hover:bg-[#b3684a] rounded-lg transition-colors flex items-center gap-1 shadow-sm cursor-pointer"
                     >
                       <Plus className="w-3.5 h-3.5" />
                       Ajouter
@@ -387,17 +435,17 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
             </div>
           </div>
 
-          {/* Sticky Cart Drawer (1 Col) */}
+          {/* Sticky Cart Drawer (1 Col) - Slide 6 Exact Match */}
           <div className="space-y-4">
             <div className="p-6 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm sticky top-6">
               <div className="flex items-center justify-between pb-3 border-b border-zinc-200 dark:border-zinc-800 mb-4">
                 <div className="flex items-center gap-2">
-                  <ShoppingBag className="w-4 h-4 text-[#C4785A]" />
+                  <ShoppingBag className="w-4 h-4 text-[#DC2626]" />
                   <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                    Bon de Commande Impression
+                    Ma commande
                   </h3>
                 </div>
-                <span className="text-xs text-zinc-400 font-mono">{cartItems.length} articles</span>
+                <span className="text-xs text-zinc-400 font-mono">{cartItems.length} article(s)</span>
               </div>
 
               {cartItems.length === 0 ? (
@@ -405,7 +453,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                   <ShoppingBag className="w-8 h-8 mx-auto text-zinc-300 dark:text-zinc-700" />
                   <p className="text-xs">Le panier est vide.</p>
                   <p className="text-[11px] text-zinc-400">
-                    Ajoutez des bannières ou PLV pour transmettre l'ordre au Studio Créa.
+                    Sélectionnez vos bannières, roll-up ou comptoirs PLV pour transmettre la commande au Studio Créa.
                   </p>
                 </div>
               ) : (
@@ -425,20 +473,20 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                         <div className="flex items-center gap-1.5 shrink-0">
                           <button
                             onClick={() => handleUpdateQuantity(item.id, -1)}
-                            className="w-6 h-6 rounded bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center font-bold"
+                            className="w-6 h-6 rounded bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center font-bold cursor-pointer"
                           >
                             -
                           </button>
                           <span className="font-mono font-bold px-1">{quantity}</span>
                           <button
                             onClick={() => handleUpdateQuantity(item.id, 1)}
-                            className="w-6 h-6 rounded bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center font-bold"
+                            className="w-6 h-6 rounded bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center font-bold cursor-pointer"
                           >
                             +
                           </button>
                           <button
                             onClick={() => handleRemoveFromCart(item.id)}
-                            className="text-red-500 hover:text-red-700 p-1"
+                            className="text-red-500 hover:text-red-700 p-1 cursor-pointer"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
@@ -449,9 +497,9 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
 
                   <div className="pt-3 border-t border-zinc-200 dark:border-zinc-800 space-y-3">
                     <div className="flex justify-between text-xs">
-                      <span className="text-zinc-500">Imputation Projet :</span>
+                      <span className="text-zinc-500">Imputation :</span>
                       <span className="font-semibold text-zinc-900 dark:text-zinc-100 truncate max-w-[160px]">
-                        {selectedProject?.title}
+                        Projet : {selectedProject?.title}
                       </span>
                     </div>
 
@@ -464,15 +512,96 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
 
                     <button
                       onClick={handleTransmitToCrea}
-                      className="w-full py-2 text-xs font-semibold text-white bg-[#C4785A] hover:bg-[#b3684a] rounded-xl transition-all shadow-sm flex items-center justify-center gap-2"
+                      className="w-full py-2.5 text-xs font-bold text-white bg-[#DC2626] hover:bg-red-700 rounded-xl transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer"
                     >
                       <Send className="w-3.5 h-3.5" />
-                      Transmettre à la Créa →
+                      Envoyer à la Créa →
                     </button>
                   </div>
                 </div>
               )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* TAB 2.3: Suivi des Commandes Print (Slide 6) */}
+      {activeTab === 'orders' && (
+        <div className="space-y-4">
+          <div className="p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm flex items-center justify-between">
+            <div>
+              <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                Suivi des Ordres de Fabrication & Commandes Print
+              </h3>
+              <p className="text-xs text-zinc-500">
+                Suivez en temps réel la prise en charge de vos commandes par le Studio Créa jusqu'au BAT final.
+              </p>
+            </div>
+            <button
+              onClick={() => setActiveTab('catalog')}
+              className="px-3.5 py-1.5 text-xs font-semibold text-white bg-[#C4785A] hover:bg-[#b3684a] rounded-xl flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              Nouvelle Commande
+            </button>
+          </div>
+
+          <div className="space-y-3">
+            {pmPrintOrders.map((order) => {
+              const isDelivered = order.status === 'bat_approved' || order.status === 'printed';
+              return (
+                <div
+                  key={order.id}
+                  className="p-5 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4"
+                >
+                  <div className="space-y-1.5">
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono font-bold text-xs text-zinc-900 dark:text-zinc-100">
+                        {order.orderNumber}
+                      </span>
+                      <span className="text-zinc-300">·</span>
+                      <span className="text-xs font-semibold text-[#C4785A]">
+                        {order.projectTitle}
+                      </span>
+                      <span
+                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                          order.status === 'sent_to_crea'
+                            ? 'bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300'
+                            : order.status === 'bat_in_progress'
+                            ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300'
+                            : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300'
+                        }`}
+                      >
+                        {order.status === 'sent_to_crea'
+                          ? 'TRANSMIS AU STUDIO CRÉA'
+                          : order.status === 'bat_in_progress'
+                          ? 'EN PRODUCTION CRÉA'
+                          : 'BAT VALIDÉ / IMPRESSION'}
+                      </span>
+                    </div>
+                    <p className="text-xs text-zinc-600 dark:text-zinc-400">
+                      Articles : {order.items.map((i) => `${i.quantity}x ${i.itemTitle}`).join(', ')}
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-4 shrink-0">
+                    <div className="text-right">
+                      <span className="text-xs text-zinc-400 block">Total Fabrication</span>
+                      <span className="font-mono font-bold text-base text-zinc-900 dark:text-zinc-100 tabular-nums">
+                        {order.totalCostDzd.toLocaleString()} DA
+                      </span>
+                    </div>
+
+                    <button
+                      onClick={() => setActiveTab('bat')}
+                      className="px-3.5 py-1.5 text-xs font-semibold text-zinc-700 dark:text-zinc-200 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-xl transition-colors cursor-pointer"
+                    >
+                      Voir les BAT ➔
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}

@@ -131,26 +131,89 @@ export default function App() {
   const renderActiveScreen = () => {
     if (isProjectMilestone) {
       switch (activeScreen) {
+        // Role 1: Direction (4 screens)
+        case 'pm_dir_dashboard':
+          return <ProjectDirectionView initialTab="dashboard" />;
+        case 'pm_dir_new_project':
+          return <ProjectDirectionView initialTab="new_project" />;
+        case 'pm_dir_approvals':
+          return <ProjectDirectionView initialTab="approvals" />;
+        case 'pm_dir_reports':
+          return <ProjectDirectionView initialTab="reports" />;
+
+        // Role 2: Chef de Projet (5 screens)
+        case 'pm_cp_projects':
+          return <ProjectChefProjetView initialTab="portfolio" />;
+        case 'pm_cp_catalog':
+          return <ProjectChefProjetView initialTab="catalog" />;
+        case 'pm_cp_orders':
+          return <ProjectChefProjetView initialTab="orders" />;
+        case 'pm_cp_files':
+        case 'pm_cp_deliverables':
+          return <ProjectChefProjetView initialTab="bat" />;
+        case 'pm_cp_expenses':
+          return <ProjectChefProjetView initialTab="expenses" />;
+
+        // Role 3: Créa Studio (4 screens)
+        case 'pm_crea_kanban':
+          return <ProjectCreaView initialTab="kanban" />;
+        case 'pm_crea_production':
+          return <ProjectCreaView initialTab="production" />;
+        case 'pm_crea_upload':
+          return <ProjectCreaView initialTab="upload" />;
+        case 'pm_crea_briefs':
+          return <ProjectCreaView initialTab="briefs" />;
+
+        // Role 4: Superviseur Terrain (4 screens)
+        case 'pm_sup_missions':
+          return <ProjectSuperviseurView initialTab="missions" />;
+        case 'pm_sup_attendance':
+          return <ProjectSuperviseurView initialTab="attendance" />;
+        case 'pm_sup_staffing':
+          return <ProjectSuperviseurView initialTab="staffing" />;
+        case 'pm_sup_expenses':
+          return <ProjectSuperviseurView initialTab="expense" />;
+
+        // Role 5: Ressources Humaines (4 screens)
+        case 'pm_rh_talents':
+          return <ProjectRhView initialTab="talents" />;
+        case 'pm_rh_dossier':
+          return <ProjectRhView initialTab="dossier" />;
+        case 'pm_rh_portal':
+          return <ProjectRhView initialTab="portal" />;
+        case 'pm_rh_walkin':
+          return <ProjectRhView initialTab="walkin" />;
+
+        // Role 6: Comptabilité & Finance (4 screens)
+        case 'pm_compta_payroll':
+          return <ProjectComptaView initialTab="payroll" />;
+        case 'pm_compta_ccp':
+          return <ProjectComptaView initialTab="ccp" />;
+        case 'pm_compta_expenses':
+          return <ProjectComptaView initialTab="expenses" />;
+        case 'pm_compta_stock':
+          return <ProjectComptaView initialTab="stock" />;
+
+        // Standard Navigation Mappings
         case 'dashboard':
-          return <ProjectDirectionView />;
+          return <ProjectDirectionView initialTab="dashboard" />;
         case 'scheduler':
-          return <ProjectChefProjetView />;
+          return <ProjectChefProjetView initialTab="portfolio" />;
         case 'registrations':
-          return <ProjectCreaView />;
+          return <ProjectCreaView initialTab="kanban" />;
         case 'analytics':
-          return <ProjectSuperviseurView />;
+          return <ProjectSuperviseurView initialTab="missions" />;
         case 'members':
-          return <ProjectRhView />;
+          return <ProjectRhView initialTab="talents" />;
         case 'finance':
-          return <ProjectComptaView />;
         case 'shop':
-          return <ProjectComptaView />;
+          return <ProjectComptaView initialTab="payroll" />;
         case 'history':
-          return <ProjectSuperviseurView />;
+          return <ProjectSuperviseurView initialTab="attendance" />;
         case 'settings':
           return <SettingsScreen onOpenVoucherModal={() => setIsVoucherModalOpen(true)} />;
         default:
-          return <ProjectDirectionView />;
+          return <ProjectDirectionView initialTab="dashboard" />;
       }
     }
 

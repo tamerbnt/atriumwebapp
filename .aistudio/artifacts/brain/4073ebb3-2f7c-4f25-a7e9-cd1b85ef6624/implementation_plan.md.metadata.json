@@ -1,0 +1,6 @@
+{
+  "summary": "Comprehensive audit and architectural overhaul plan for the Project & Milestone category to achieve 100% fidelity with the official 13-page NCH Market Activator presentation. Identifies every missing role feature, audits the 7-step end-to-end data flow (Cahier des charges -> KV Créa -> Client validation -> CDP Commander -> Créa Production -> Terrain & Pointage -> Direction validation -> Compta CCP SFP 01), aligns sidebar navigation to exact slide terminology, and automates indirect stock traceability from field purchase declarations.",
+  "updatedAt": "2026-10-19T17:48:29.197969533Z",
+  "requestFeedback": true,
+  "userFacing": true
+}

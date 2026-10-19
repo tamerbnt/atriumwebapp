@@ -1178,6 +1178,7 @@ export interface PMPayrollBatch {
   totalAmountDzd: number;
   status: 'pending_direction_approval' | 'approved_by_direction' | 'ccp_generated' | 'disbursed';
   directionApprovedAt?: string;
+  directionApprovedBy?: string;
   ccpGeneratedAt?: string;
   disbursedAt?: string;
   createdAt: string;
@@ -1216,6 +1217,11 @@ export interface PMEquipmentStock {
   assignedMissionId?: string;
   conditionReport: 'good' | 'minor_wear' | 'damaged';
   qrLabelCode: string;
+  history?: Array<{
+    date: string;
+    stage: 'Acheté & codé' | 'Affecté' | 'Retour stock' | 'En stock';
+    detail: string;
+  }>;
   createdAt: string;
 }
 

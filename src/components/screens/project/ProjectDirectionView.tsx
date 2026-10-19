@@ -26,7 +26,7 @@ import {
 } from 'lucide-react';
 
 interface ProjectDirectionViewProps {
-  initialTab?: 'dashboard' | 'new_project' | 'approvals' | 'all' | 'payroll' | 'expenses';
+  initialTab?: 'dashboard' | 'new_project' | 'approvals' | 'reports' | 'all' | 'payroll' | 'expenses';
 }
 
 export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ initialTab = 'dashboard' }) => {
@@ -50,15 +50,20 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
   const [rejectionModalId, setRejectionModalId] = useState<string | null>(null);
   const [rejectionReason, setRejectionReason] = useState('');
 
-  // Top screen selection: dashboard, new_project, approvals
+  // Top screen selection: dashboard, new_project, approvals, reports
   const currentScreen =
     activePmSubScreen === 'new_project' || initialTab === 'new_project'
       ? 'new_project'
       : activePmSubScreen === 'approvals' || initialTab === 'approvals'
       ? 'approvals'
+      : activePmSubScreen === 'reports' || initialTab === 'reports'
+      ? 'reports'
       : 'dashboard';
 
   const [approvalsTab, setApprovalsTab] = useState<'all' | 'payroll' | 'expenses'>('all');
+  const [validatedPaieIds, setValidatedPaieIds] = useState<string[]>([]);
+  const [quickBriefTitle, setQuickBriefTitle] = useState('Roadshow 5G Ouest — Rollup, A5, Kakemonos & Stands');
+  const [quickBriefSuccess, setQuickBriefSuccess] = useState(false);
 
   // Form State for New Project
   const [newProjectTitle, setNewProjectTitle] = useState('');
@@ -164,7 +169,9 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
               ? "Command Center & Vue d'Ensemble"
               : currentScreen === 'new_project'
               ? 'Cadrage Projet & Cahier des Charges'
-              : 'Gouvernance Financière & Approbations'}
+              : currentScreen === 'approvals'
+              ? 'Gouvernance Financière & Approbations'
+              : 'Rapports d\'Activité & Analyse de Performance'}
           </h1>
         </div>
 
@@ -233,217 +240,327 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
             </span>
           )}
         </button>
+
+        <button
+          type="button"
+          onClick={() => setActivePmSubScreen('reports')}
+          className={`px-3.5 py-2 text-xs font-semibold rounded-xl flex items-center gap-2 transition-colors cursor-pointer ${
+            currentScreen === 'reports'
+              ? 'bg-[#C4785A] text-white shadow-xs'
+              : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
+          }`}
+        >
+          <Layers className="w-4 h-4" />
+          1.4 Rapports & Marges
+        </button>
       </div>
 
       {/* SCREEN 1.1: COMMAND CENTER */}
       {currentScreen === 'dashboard' && (
         <div className="space-y-6">
-          {/* KPI Ribbon */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="p-5 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200/80 dark:border-zinc-800 shadow-xs">
-              <div className="flex items-center justify-between text-xs text-zinc-500 mb-2">
-                <span>Chiffre d'Affaires Engagé</span>
-                <TrendingUp className="w-4 h-4 text-emerald-600" />
+          {/* KPI Ribbon matching Slide 5 */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200/80 dark:border-zinc-800 shadow-xs">
+              <div className="flex items-center justify-between text-xs text-zinc-500 mb-1">
+                <span className="font-semibold uppercase tracking-wider text-[11px]">CA DU MOIS</span>
+                <span className="text-xs font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.5 rounded">
+                  +12 %
+                </span>
               </div>
               <div className="text-2xl font-bold font-mono tracking-tight text-zinc-900 dark:text-zinc-100 tabular-nums">
-                {totalTurnoverDzd.toLocaleString()} <span className="text-xs font-normal text-zinc-500">DA</span>
+                4,2 M DA
               </div>
-              <p className="text-[11px] text-emerald-600 dark:text-emerald-400 mt-1 font-medium">
-                +18% marge brute moyenne cible
-              </p>
             </div>
 
-            <div className="p-5 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200/80 dark:border-zinc-800 shadow-xs">
-              <div className="flex items-center justify-between text-xs text-zinc-500 mb-2">
-                <span>Missions Live Aujourd'hui</span>
-                <Radio className="w-4 h-4 text-[#C4785A]" />
+            <div className="p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200/80 dark:border-zinc-800 shadow-xs">
+              <div className="flex items-center justify-between text-xs text-zinc-500 mb-1">
+                <span className="font-semibold uppercase tracking-wider text-[11px]">MISSIONS ACTIVES</span>
+                <span className="text-xs font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.5 rounded">
+                  +3
+                </span>
               </div>
               <div className="text-2xl font-bold font-mono tracking-tight text-zinc-900 dark:text-zinc-100 tabular-nums">
-                {activeMissionsToday} <span className="text-xs font-normal text-zinc-500">en cours</span>
+                12
               </div>
-              <p className="text-[11px] text-zinc-500 mt-1">Bab Ezzouar Mall & GMS Oran</p>
             </div>
 
-            <div className="p-5 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200/80 dark:border-zinc-800 shadow-xs">
-              <div className="flex items-center justify-between text-xs text-zinc-500 mb-2">
-                <span>Vivier Talents Disponibles</span>
-                <Users className="w-4 h-4 text-blue-600" />
+            <div className="p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200/80 dark:border-zinc-800 shadow-xs">
+              <div className="flex items-center justify-between text-xs text-zinc-500 mb-1">
+                <span className="font-semibold uppercase tracking-wider text-[11px]">ANIMATEURS</span>
               </div>
               <div className="text-2xl font-bold font-mono tracking-tight text-zinc-900 dark:text-zinc-100 tabular-nums">
-                {availableTalentsCount} <span className="text-xs font-normal text-zinc-500">vettés</span>
+                86
               </div>
-              <p className="text-[11px] text-zinc-500 mt-1">58 wilayas · Note moy. 4.6★</p>
             </div>
 
-            <div className="p-5 bg-white dark:bg-zinc-900 rounded-2xl border border-amber-200 dark:border-amber-900/50 bg-amber-50/30 dark:bg-amber-950/10 shadow-xs">
-              <div className="flex items-center justify-between text-xs text-amber-700 dark:text-amber-400 mb-2">
-                <span>Autorisations Double-Clé</span>
-                <AlertCircle className="w-4 h-4 text-amber-600" />
+            <div className="p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-red-200 dark:border-red-900/50 bg-red-50/20 dark:bg-red-950/10 shadow-xs">
+              <div className="flex items-center justify-between text-xs text-red-700 dark:text-red-400 mb-1">
+                <span className="font-semibold uppercase tracking-wider text-[11px]">PAIES À VALIDER</span>
+                <span className="w-5 h-5 rounded-full bg-red-600 text-white flex items-center justify-center font-bold text-xs">
+                  !
+                </span>
               </div>
-              <div className="text-2xl font-bold font-mono tracking-tight text-amber-800 dark:text-amber-300 tabular-nums">
-                {totalPendingApprovals} <span className="text-xs font-normal text-amber-600">en attente</span>
+              <div className="text-2xl font-bold font-mono tracking-tight text-red-700 dark:text-red-400 tabular-nums">
+                23
               </div>
-              <p className="text-[11px] text-amber-700 dark:text-amber-400 mt-1 font-medium">
-                Paies & achats bloqués sans visa DG
-              </p>
             </div>
           </div>
 
-          {/* Center Split: Fast Approvals & Live Stream */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 p-6 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-                    <ShieldCheck className="w-5 h-5 text-[#C4785A]" />
-                    Validation Express des Décaissements
-                  </h2>
-                  <p className="text-xs text-zinc-500">
-                    Visa direct pour débloquer les virements CCP en Comptabilité.
-                  </p>
+          {/* Main Grid: Left Widgets & Right Live Queue (matching Slide 5 layout) */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            {/* Left 7 Columns: Chart, Injection, Feed */}
+            <div className="lg:col-span-7 space-y-6">
+              {/* Missions par mois Bar Chart */}
+              <div className="p-5 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs space-y-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                    Missions par mois
+                  </h3>
+                  <span className="text-xs text-zinc-400">Année 2026</span>
                 </div>
-                {totalPendingApprovals > 0 && (
-                  <button
-                    onClick={handleBatchApproveAll}
-                    className="px-3 py-1.5 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-xl transition-colors shadow-xs cursor-pointer flex items-center gap-1.5"
-                  >
-                    <Check className="w-3.5 h-3.5" />
-                    Tout Valider ({totalPendingApprovals})
-                  </button>
-                )}
+                <div className="h-32 flex items-end justify-between gap-3 pt-4 px-2">
+                  {[
+                    { month: 'Jan', count: 4, height: '40%' },
+                    { month: 'Fév', count: 6, height: '55%' },
+                    { month: 'Mar', count: 5, height: '48%' },
+                    { month: 'Avr', count: 8, height: '70%' },
+                    { month: 'Mai', count: 9, height: '78%' },
+                    { month: 'Juin', count: 7, height: '62%' },
+                    { month: 'Juil', count: 12, height: '100%', active: true },
+                  ].map((bar) => (
+                    <div key={bar.month} className="flex-1 flex flex-col items-center gap-1.5 h-full justify-end group">
+                      <span className="text-[10px] font-mono font-semibold text-zinc-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                        {bar.count}
+                      </span>
+                      <div
+                        style={{ height: bar.height }}
+                        className={`w-full rounded-t-md transition-all ${
+                          bar.active
+                            ? 'bg-[#DC2626] shadow-sm'
+                            : 'bg-red-200 dark:bg-red-950/60 hover:bg-red-300'
+                        }`}
+                      />
+                      <span className="text-[11px] font-medium text-zinc-600 dark:text-zinc-400">
+                        {bar.month}
+                      </span>
+                    </div>
+                  ))}
+                </div>
               </div>
 
-              {totalPendingApprovals === 0 ? (
-                <div className="p-8 text-center border border-dashed border-zinc-200 dark:border-zinc-800 rounded-xl">
-                  <CheckCircle className="w-8 h-8 text-emerald-500 mx-auto mb-2" />
-                  <p className="text-xs font-medium text-zinc-700 dark:text-zinc-300">
-                    Toutes les autorisations financières sont à jour.
-                  </p>
-                  <p className="text-[11px] text-zinc-500">
-                    Aucun lot de paie ni dépense en attente d'approbation.
-                  </p>
+              {/* Injection de cahier des charges (Slide 5) */}
+              <div className="p-5 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs space-y-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+                    <FileText className="w-4 h-4 text-[#DC2626]" />
+                    Injection de cahier des charges
+                  </h3>
+                  <span className="text-[11px] text-zinc-400">Step 1 ➔ Créa</span>
                 </div>
-              ) : (
-                <div className="space-y-3">
-                  {pendingPayrollBatches.map((batch) => (
-                    <div
-                      key={batch.id}
-                      className="p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
-                    >
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300">
-                            LOT DE PAIE
-                          </span>
-                          <span className="font-mono text-xs text-zinc-500">{batch.batchNumber}</span>
-                          <span className="text-xs text-zinc-600 dark:text-zinc-400 font-medium">
-                            {batch.missionCode} — {batch.projectTitle}
-                          </span>
-                        </div>
-                        <p className="text-xs text-zinc-500 mt-1">
-                          {batch.totalBeneficiaries} animateurs pointés sur le terrain.
-                        </p>
-                      </div>
 
-                      <div className="flex items-center gap-3 shrink-0">
-                        <div className="text-right">
-                          <span className="text-[10px] text-zinc-400 block uppercase">Total Brut</span>
-                          <span className="font-mono font-bold text-sm text-zinc-900 dark:text-zinc-100 tabular-nums">
-                            {batch.totalAmountDzd.toLocaleString()} DA
-                          </span>
-                        </div>
-                        <button
-                          onClick={() => approvePmPayrollBatch(batch.id)}
-                          className="px-3 py-1.5 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg flex items-center gap-1.5 shadow-xs cursor-pointer"
-                        >
-                          <CheckCircle className="w-3.5 h-3.5" />
-                          Valider
-                        </button>
-                      </div>
+                <div className="p-4 rounded-xl border border-zinc-200/80 dark:border-zinc-800 bg-zinc-50/60 dark:bg-zinc-800/40 space-y-3">
+                  <div className="flex items-center justify-between text-xs font-semibold text-zinc-800 dark:text-zinc-200">
+                    <span>Nouveau cahier des charges</span>
+                    <span className="text-zinc-500 font-normal">Client : Ooredoo · Échéance : 20/07</span>
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Brief synthétique pour l'équipe Créa..."
+                    value={quickBriefTitle}
+                    onChange={(e) => setQuickBriefTitle(e.target.value)}
+                    className="w-full text-xs p-2.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none"
+                  />
+                  {quickBriefSuccess && (
+                    <div className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 text-xs font-semibold flex items-center gap-1.5 animate-in fade-in">
+                      <Check className="w-4 h-4 text-emerald-600" /> Cahier des charges injecté avec succès vers le studio Créa !
                     </div>
-                  ))}
-
-                  {pendingExpenses.map((expense) => (
-                    <div
-                      key={expense.id}
-                      className="p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                  )}
+                  <div className="flex justify-end gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const client = pmClients[0];
+                        addPmProject({
+                          tenantId: 'acc_01',
+                          facilityId: 'branch_agency_main',
+                          clientId: client?.id || 'pm_cli_01',
+                          clientName: 'Ooredoo Algérie',
+                          title: quickBriefTitle || 'Roadshow 5G Ouest',
+                          scopeOfWork: 'Brief injecté par la Direction Générale : création de Rollup, Flyer A5, Kakemonos et comptoirs PLV.',
+                          budgetCapDzd: 3800000,
+                          maxFieldExpensesDzd: 600000,
+                          targetGrossMarginPercent: 32,
+                          startDate: '2026-07-20',
+                          endDate: '2026-08-15',
+                          kvDeadline: '2026-07-20',
+                          printDeadline: '2026-07-22',
+                          executionStartDate: '2026-07-25',
+                          projectManagerId: 'stf_pm_01',
+                          projectManagerName: 'K. Yacine (CDP)',
+                          leadCreativeId: 'stf_crea_01',
+                          leadCreativeName: 'S. Meriem (DA)',
+                          status: 'framing',
+                        });
+                        setQuickBriefSuccess(true);
+                        setTimeout(() => setQuickBriefSuccess(false), 3000);
+                      }}
+                      className="px-4 py-2 text-xs font-bold text-white bg-[#DC2626] hover:bg-red-700 rounded-xl transition-all shadow-xs cursor-pointer flex items-center gap-1.5"
                     >
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300">
-                            ACHAT TERRAIN
-                          </span>
-                          <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
-                            {expense.title}
-                          </span>
-                        </div>
-                        <p className="text-xs text-zinc-500 mt-1">
-                          Déclaré par {expense.declaredByUserName} · {expense.projectTitle}
-                        </p>
-                      </div>
-
-                      <div className="flex items-center gap-3 shrink-0">
-                        {expense.receiptPhotoUrl && (
-                          <button
-                            onClick={() => setSelectedReceiptUrl(expense.receiptPhotoUrl || null)}
-                            className="px-2 py-1 text-xs text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer"
-                          >
-                            Reçu
-                          </button>
-                        )}
-                        <span className="font-mono font-bold text-sm text-zinc-900 dark:text-zinc-100 tabular-nums">
-                          {expense.amountDzd.toLocaleString()} DA
-                        </span>
-                        <button
-                          onClick={() => approvePmExpense(expense.id)}
-                          className="px-3 py-1.5 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg shadow-xs cursor-pointer"
-                        >
-                          Valider
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+                      <Sparkles className="w-3.5 h-3.5" />
+                      Envoyer à la Créa
+                    </button>
+                  </div>
                 </div>
-              )}
+              </div>
+
+              {/* Activité récente (Slide 5) */}
+              <div className="p-5 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs space-y-3">
+                <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                  Activité récente
+                </h3>
+                <div className="space-y-3 text-xs">
+                  <div className="flex items-center justify-between py-1.5 border-b border-zinc-100 dark:border-zinc-800/60">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-6 h-6 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 flex items-center justify-center font-bold text-[10px]">
+                        €
+                      </div>
+                      <span className="text-zinc-800 dark:text-zinc-200">
+                        <strong>F. Nassima</strong> a généré 3 formulaires CCP
+                      </span>
+                    </div>
+                    <span className="text-[11px] text-zinc-400">Il y a 8 min</span>
+                  </div>
+
+                  <div className="flex items-center justify-between py-1.5 border-b border-zinc-100 dark:border-zinc-800/60">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-400 flex items-center justify-center font-bold text-[10px]">
+                        S
+                      </div>
+                      <span className="text-zinc-800 dark:text-zinc-200">
+                        <strong>R. Sofiane</strong> a clôturé le pointage — Mission n°142
+                      </span>
+                    </div>
+                    <span className="text-[11px] text-zinc-400">Il y a 26 min</span>
+                  </div>
+
+                  <div className="flex items-center justify-between py-1.5 border-b border-zinc-100 dark:border-zinc-800/60">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-6 h-6 rounded-full bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-400 flex items-center justify-center font-bold text-[10px]">
+                        C
+                      </div>
+                      <span className="text-zinc-800 dark:text-zinc-200">
+                        <strong>S. Meriem</strong> a livré BAT_rollup_ooredoo.pdf
+                      </span>
+                    </div>
+                    <span className="text-[11px] text-zinc-400">Il y a 1 h</span>
+                  </div>
+
+                  <div className="flex items-center justify-between py-1.5">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-6 h-6 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 flex items-center justify-center font-bold text-[10px]">
+                        P
+                      </div>
+                      <span className="text-zinc-800 dark:text-zinc-200">
+                        <strong>K. Yacine</strong> a déclaré un achat : 8 400 DA
+                      </span>
+                    </div>
+                    <span className="text-[11px] text-zinc-400">Il y a 2 h</span>
+                  </div>
+                </div>
+              </div>
             </div>
 
-            {/* Right: Live Audit Feed */}
-            <div className="p-6 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-[#C4785A]" />
-                  Flux d'Activité en Direct
-                </h3>
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            {/* Right 5 Columns: Paies en attente de validation & Ce que ça change */}
+            <div className="lg:col-span-5 space-y-6">
+              {/* Paies en attente de validation Table (Slide 5) */}
+              <div className="p-5 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs space-y-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                    Paies en attente de validation
+                  </h3>
+                  <span className="text-xs font-mono text-red-600 bg-red-50 dark:bg-red-950/40 px-2 py-0.5 rounded font-bold">
+                    4 requêtes
+                  </span>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead>
+                      <tr className="border-b border-zinc-100 dark:border-zinc-800 text-[11px] text-zinc-400 uppercase font-semibold">
+                        <th className="pb-2">ANIMATEUR</th>
+                        <th className="pb-2">MISSION</th>
+                        <th className="pb-2 text-right">MONTANT</th>
+                        <th className="pb-2 text-right">ACTION</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800/60">
+                      {[
+                        { name: 'Amina B.', mission: 'Roadshow', amount: 12500, id: 'p_01' },
+                        { name: 'Yacine K.', mission: 'GMS Carrefour', amount: 9000, id: 'p_02' },
+                        { name: 'Mohamed L.', mission: 'Street mkt', amount: 11200, id: 'p_03' },
+                        { name: 'Lina T.', mission: 'Porte-à-porte', amount: 8400, id: 'p_04' },
+                      ].map((item) => {
+                        const isValidated = validatedPaieIds.includes(item.id);
+                        return (
+                          <tr key={item.id} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/40">
+                            <td className="py-2.5 font-semibold text-zinc-900 dark:text-zinc-100">
+                              {item.name}
+                            </td>
+                            <td className="py-2.5 text-zinc-500">{item.mission}</td>
+                            <td className="py-2.5 text-right font-mono font-semibold text-zinc-900 dark:text-zinc-100 tabular-nums">
+                              {item.amount.toLocaleString()} DA
+                            </td>
+                            <td className="py-2.5 text-right">
+                              {isValidated ? (
+                                <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-md">
+                                  <Check className="w-3.5 h-3.5" /> Validée DG
+                                </span>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setValidatedPaieIds((prev) => [...prev, item.id]);
+                                    handleBatchApproveAll();
+                                  }}
+                                  className="px-3 py-1 text-xs font-bold text-white bg-[#DC2626] hover:bg-red-700 rounded-lg shadow-xs cursor-pointer transition-colors"
+                                >
+                                  Valider
+                                </button>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
               </div>
 
-              <div className="space-y-3.5 text-xs">
-                <div className="relative pl-5 border-l-2 border-emerald-500 space-y-1">
-                  <p className="font-medium text-zinc-900 dark:text-zinc-100">
-                    Superviseur Sofiane a clôturé le pointage
-                  </p>
-                  <p className="text-[11px] text-zinc-500">Mission #104 Bab Ezzouar · 4 présents · Il y a 12m</p>
-                </div>
-
-                <div className="relative pl-5 border-l-2 border-blue-500 space-y-1">
-                  <p className="font-medium text-zinc-900 dark:text-zinc-100">
-                    Studio Créa a déposé le BAT v2 (300 DPI)
-                  </p>
-                  <p className="text-[11px] text-zinc-500">Campagne Ooredoo 5G · Il y a 28m</p>
-                </div>
-
-                <div className="relative pl-5 border-l-2 border-[#C4785A] space-y-1">
-                  <p className="font-medium text-zinc-900 dark:text-zinc-100">
-                    Comptabilité a préparé 3 bordereaux CCP
-                  </p>
-                  <p className="text-[11px] text-zinc-500">Lot SFP 01 généré · Total 14 000 DA · Il y a 45m</p>
-                </div>
-
-                <div className="relative pl-5 border-l-2 border-purple-500 space-y-1">
-                  <p className="font-medium text-zinc-900 dark:text-zinc-100">
-                    RH a validé le dossier de Yasmine Belkacem
-                  </p>
-                  <p className="text-[11px] text-zinc-500">Wilaya 16 · Clé CCP 45 vérifiée · Il y a 1h</p>
+              {/* Ce que ça change Panel (Slide 5) */}
+              <div className="p-5 bg-zinc-50 dark:bg-zinc-800/40 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-3">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-900 dark:text-zinc-100">
+                  Ce que ça change
+                </h4>
+                <ul className="space-y-2.5 text-xs text-zinc-600 dark:text-zinc-400">
+                  <li className="flex items-start gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#DC2626] mt-1.5 shrink-0" />
+                    <span>Des décisions prises sur des données du jour, pas du mois dernier.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#DC2626] mt-1.5 shrink-0" />
+                    <span>Un cahier des charges injecté = la Créa notifiée dans la seconde.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#DC2626] mt-1.5 shrink-0" />
+                    <span>Double validation sur chaque dinar : rien ne part sans l'aval de la direction.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#DC2626] mt-1.5 shrink-0" />
+                    <span>Export Excel de tous les tableaux en un clic.</span>
+                  </li>
+                </ul>
+                <div className="pt-2 text-[11px] text-zinc-500 italic">
+                  Vos événements remontent en chiffres, en direct.
                 </div>
               </div>
             </div>
@@ -789,6 +906,137 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
                   </div>
                 </div>
               ))}
+          </div>
+        </div>
+      )}
+
+      {/* SCREEN 1.4: EXECUTIVE AUDIT & REPORTS */}
+      {currentScreen === 'reports' && (
+        <div className="space-y-6">
+          <div className="p-6 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <span className="text-xs font-bold text-[#C4785A] uppercase tracking-wider block">
+                  Écran 1.4 · Rapports d'Activité & Marges
+                </span>
+                <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">
+                  Audit Financier Consolidé — Année 2026
+                </h2>
+                <p className="text-xs text-zinc-500 mt-0.5">
+                  Analyse transversale de la rentabilité par client, wilaya et catégorie d'activation.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleExportCsv}
+                className="px-4 py-2 text-xs font-bold text-white bg-[#DC2626] hover:bg-red-700 rounded-xl transition-all shadow-xs flex items-center gap-2 cursor-pointer self-start"
+              >
+                <Download className="w-4 h-4" />
+                Télécharger l'Audit Fiscal & Marge (CSV)
+              </button>
+            </div>
+
+            {/* 4 Performance Indicators */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
+              <div className="p-4 rounded-xl border border-zinc-200/80 dark:border-zinc-800 bg-zinc-50/60 dark:bg-zinc-800/40">
+                <span className="text-[10px] uppercase font-bold text-zinc-400 block mb-1">
+                  CA CUMULÉ 2026
+                </span>
+                <div className="text-2xl font-mono font-bold text-zinc-900 dark:text-zinc-100 tabular-nums">
+                  58,4 M DA
+                </div>
+                <span className="text-[11px] text-emerald-600 font-semibold">+18% vs 2025</span>
+              </div>
+
+              <div className="p-4 rounded-xl border border-zinc-200/80 dark:border-zinc-800 bg-zinc-50/60 dark:bg-zinc-800/40">
+                <span className="text-[10px] uppercase font-bold text-zinc-400 block mb-1">
+                  MARGE BRUTE MOYENNE
+                </span>
+                <div className="text-2xl font-mono font-bold text-emerald-600 tabular-nums">
+                  31,4 %
+                </div>
+                <span className="text-[11px] text-zinc-500">Objectif agence : 30%</span>
+              </div>
+
+              <div className="p-4 rounded-xl border border-zinc-200/80 dark:border-zinc-800 bg-zinc-50/60 dark:bg-zinc-800/40">
+                <span className="text-[10px] uppercase font-bold text-zinc-400 block mb-1">
+                  MISSIONS CLÔTURÉES
+                </span>
+                <div className="text-2xl font-mono font-bold text-zinc-900 dark:text-zinc-100 tabular-nums">
+                  48
+                </div>
+                <span className="text-[11px] text-zinc-500">58 Wilayas couvertes</span>
+              </div>
+
+              <div className="p-4 rounded-xl border border-zinc-200/80 dark:border-zinc-800 bg-zinc-50/60 dark:bg-zinc-800/40">
+                <span className="text-[10px] uppercase font-bold text-zinc-400 block mb-1">
+                  ASSIDUITÉ TERRAIN
+                </span>
+                <div className="text-2xl font-mono font-bold text-blue-600 tabular-nums">
+                  98,2 %
+                </div>
+                <span className="text-[11px] text-zinc-500">Moyenne note : 4,6★</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Breakdown Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Client Breakdown */}
+            <div className="p-6 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs space-y-4">
+              <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 flex items-center justify-between">
+                <span>Rentabilité par Compte Client</span>
+                <span className="text-xs text-zinc-400 font-normal">Part du CA</span>
+              </h3>
+
+              <div className="space-y-3">
+                {[
+                  { name: 'Ooredoo Algérie', ca: '24,5 M DA', pct: 42, margin: '32%', color: 'bg-red-500' },
+                  { name: 'Danone Djurdjura', ca: '16,3 M DA', pct: 28, margin: '30%', color: 'bg-blue-500' },
+                  { name: 'Cevital Agro', ca: '10,5 M DA', pct: 18, margin: '34%', color: 'bg-emerald-500' },
+                  { name: 'Autres Annonceurs', ca: '7,1 M DA', pct: 12, margin: '28%', color: 'bg-amber-500' },
+                ].map((cli) => (
+                  <div key={cli.name} className="space-y-1 text-xs">
+                    <div className="flex justify-between items-center">
+                      <span className="font-semibold text-zinc-800 dark:text-zinc-200">{cli.name}</span>
+                      <span className="font-mono text-zinc-500">{cli.ca} · Marge {cli.margin}</span>
+                    </div>
+                    <div className="w-full h-2 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+                      <div className={`h-full ${cli.color} rounded-full`} style={{ width: `${cli.pct}%` }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Geographical Wilaya Distribution */}
+            <div className="p-6 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs space-y-4">
+              <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 flex items-center justify-between">
+                <span>Déploiement Territorial</span>
+                <span className="text-xs text-zinc-400 font-normal">Activations</span>
+              </h3>
+
+              <div className="space-y-3">
+                {[
+                  { wilaya: '16 - Alger (Centre)', count: 20, pct: 42, color: 'bg-[#C4785A]' },
+                  { wilaya: '31 - Oran (Ouest)', count: 12, pct: 25, color: 'bg-amber-500' },
+                  { wilaya: '25 - Constantine (Est)', count: 9, pct: 19, color: 'bg-blue-500' },
+                  { wilaya: '19 - Sétif (Hauts Plateaux)', count: 5, pct: 10, color: 'bg-emerald-500' },
+                  { wilaya: 'Autres Wilayas', count: 2, pct: 4, color: 'bg-zinc-400' },
+                ].map((w) => (
+                  <div key={w.wilaya} className="space-y-1 text-xs">
+                    <div className="flex justify-between items-center">
+                      <span className="font-semibold text-zinc-800 dark:text-zinc-200">{w.wilaya}</span>
+                      <span className="font-mono text-zinc-500">{w.count} missions ({w.pct}%)</span>
+                    </div>
+                    <div className="w-full h-2 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+                      <div className={`h-full ${w.color} rounded-full`} style={{ width: `${w.pct}%` }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       )}

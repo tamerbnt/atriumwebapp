@@ -165,14 +165,19 @@ export type ActiveScreen =
   | 'pm_dir_dashboard'
   | 'pm_dir_new_project'
   | 'pm_dir_approvals'
+  | 'pm_dir_reports'
   // PM Chef de Projet Screens
   | 'pm_cp_projects'
   | 'pm_cp_catalog'
+  | 'pm_cp_orders'
+  | 'pm_cp_files'
   | 'pm_cp_deliverables'
   | 'pm_cp_expenses'
   // PM Créa Screens
   | 'pm_crea_kanban'
+  | 'pm_crea_production'
   | 'pm_crea_upload'
+  | 'pm_crea_briefs'
   // PM Superviseur Screens
   | 'pm_sup_missions'
   | 'pm_sup_attendance'
@@ -922,7 +927,80 @@ export function useAtriumStore() {
 
   // Actions
   const setScreen = (activeScreen: ActiveScreen) => {
-    globalState = { ...globalState, activeScreen };
+    let nextRole = globalState.activePmRole;
+    let nextSubScreen = globalState.activePmSubScreen;
+
+    if (activeScreen === 'pm_dir_dashboard') {
+      nextRole = 'direction';
+      nextSubScreen = 'dashboard';
+    } else if (activeScreen === 'pm_dir_new_project') {
+      nextRole = 'direction';
+      nextSubScreen = 'new_project';
+    } else if (activeScreen === 'pm_dir_approvals') {
+      nextRole = 'direction';
+      nextSubScreen = 'approvals';
+    } else if (activeScreen === 'pm_cp_projects') {
+      nextRole = 'chef_projet';
+      nextSubScreen = 'portfolio';
+    } else if (activeScreen === 'pm_cp_catalog') {
+      nextRole = 'chef_projet';
+      nextSubScreen = 'catalog';
+    } else if (activeScreen === 'pm_cp_deliverables') {
+      nextRole = 'chef_projet';
+      nextSubScreen = 'bat';
+    } else if (activeScreen === 'pm_cp_expenses') {
+      nextRole = 'chef_projet';
+      nextSubScreen = 'expenses';
+    } else if (activeScreen === 'pm_crea_kanban') {
+      nextRole = 'crea';
+      nextSubScreen = 'kanban';
+    } else if (activeScreen === 'pm_crea_upload') {
+      nextRole = 'crea';
+      nextSubScreen = 'upload';
+    } else if (activeScreen === 'pm_sup_missions') {
+      nextRole = 'superviseur';
+      nextSubScreen = 'missions';
+    } else if (activeScreen === 'pm_sup_attendance') {
+      nextRole = 'superviseur';
+      nextSubScreen = 'attendance';
+    } else if (activeScreen === 'pm_sup_staffing') {
+      nextRole = 'superviseur';
+      nextSubScreen = 'staffing';
+    } else if (activeScreen === 'pm_sup_expenses') {
+      nextRole = 'superviseur';
+      nextSubScreen = 'expense';
+    } else if (activeScreen === 'pm_rh_talents') {
+      nextRole = 'rh';
+      nextSubScreen = 'talents';
+    } else if (activeScreen === 'pm_rh_dossier') {
+      nextRole = 'rh';
+      nextSubScreen = 'dossier';
+    } else if (activeScreen === 'pm_rh_portal') {
+      nextRole = 'rh';
+      nextSubScreen = 'portal';
+    } else if (activeScreen === 'pm_rh_walkin') {
+      nextRole = 'rh';
+      nextSubScreen = 'walkin';
+    } else if (activeScreen === 'pm_compta_payroll') {
+      nextRole = 'compta';
+      nextSubScreen = 'payroll';
+    } else if (activeScreen === 'pm_compta_ccp') {
+      nextRole = 'compta';
+      nextSubScreen = 'ccp';
+    } else if (activeScreen === 'pm_compta_expenses') {
+      nextRole = 'compta';
+      nextSubScreen = 'expenses';
+    } else if (activeScreen === 'pm_compta_stock') {
+      nextRole = 'compta';
+      nextSubScreen = 'stock';
+    }
+
+    globalState = {
+      ...globalState,
+      activeScreen,
+      activePmRole: nextRole,
+      activePmSubScreen: nextSubScreen,
+    };
     notify();
   };
 
@@ -4505,19 +4583,79 @@ export function useAtriumStore() {
   // ============================================================
   const setActivePmRole = (role: PMRole) => {
     let defaultSubScreen = 'dashboard';
-    if (role === 'direction') defaultSubScreen = 'dashboard';
-    else if (role === 'chef_projet') defaultSubScreen = 'portfolio';
-    else if (role === 'crea') defaultSubScreen = 'kanban';
-    else if (role === 'superviseur') defaultSubScreen = 'missions';
-    else if (role === 'rh') defaultSubScreen = 'talents';
-    else if (role === 'compta') defaultSubScreen = 'payroll';
+    let defaultScreen: ActiveScreen = 'pm_dir_dashboard';
 
-    globalState = { ...globalState, activePmRole: role, activePmSubScreen: defaultSubScreen };
+    if (role === 'direction') {
+      defaultSubScreen = 'dashboard';
+      defaultScreen = 'pm_dir_dashboard';
+    } else if (role === 'chef_projet') {
+      defaultSubScreen = 'portfolio';
+      defaultScreen = 'pm_cp_projects';
+    } else if (role === 'crea') {
+      defaultSubScreen = 'kanban';
+      defaultScreen = 'pm_crea_kanban';
+    } else if (role === 'superviseur') {
+      defaultSubScreen = 'missions';
+      defaultScreen = 'pm_sup_missions';
+    } else if (role === 'rh') {
+      defaultSubScreen = 'talents';
+      defaultScreen = 'pm_rh_talents';
+    } else if (role === 'compta') {
+      defaultSubScreen = 'payroll';
+      defaultScreen = 'pm_compta_payroll';
+    }
+
+    globalState = {
+      ...globalState,
+      activePmRole: role,
+      activePmSubScreen: defaultSubScreen,
+      activeScreen: defaultScreen,
+    };
     notify();
   };
 
   const setActivePmSubScreen = (subScreen: string) => {
-    globalState = { ...globalState, activePmSubScreen: subScreen };
+    let nextScreen = globalState.activeScreen;
+    const role = globalState.activePmRole;
+
+    if (role === 'direction') {
+      if (subScreen === 'dashboard') nextScreen = 'pm_dir_dashboard';
+      else if (subScreen === 'new_project') nextScreen = 'pm_dir_new_project';
+      else if (subScreen === 'approvals') nextScreen = 'pm_dir_approvals';
+      else if (subScreen === 'reports') nextScreen = 'pm_dir_reports';
+    } else if (role === 'chef_projet') {
+      if (subScreen === 'portfolio') nextScreen = 'pm_cp_projects';
+      else if (subScreen === 'catalog') nextScreen = 'pm_cp_catalog';
+      else if (subScreen === 'orders') nextScreen = 'pm_cp_orders';
+      else if (subScreen === 'files' || subScreen === 'bat') nextScreen = 'pm_cp_files';
+      else if (subScreen === 'expenses') nextScreen = 'pm_cp_expenses';
+    } else if (role === 'crea') {
+      if (subScreen === 'demandes' || subScreen === 'kanban') nextScreen = 'pm_crea_kanban';
+      else if (subScreen === 'production') nextScreen = 'pm_crea_production';
+      else if (subScreen === 'upload' || subScreen === 'livrables') nextScreen = 'pm_crea_upload';
+      else if (subScreen === 'briefs') nextScreen = 'pm_crea_briefs';
+    } else if (role === 'superviseur') {
+      if (subScreen === 'missions') nextScreen = 'pm_sup_missions';
+      else if (subScreen === 'attendance') nextScreen = 'pm_sup_attendance';
+      else if (subScreen === 'staffing') nextScreen = 'pm_sup_staffing';
+      else if (subScreen === 'expense' || subScreen === 'expenses') nextScreen = 'pm_sup_expenses';
+    } else if (role === 'rh') {
+      if (subScreen === 'talents') nextScreen = 'pm_rh_talents';
+      else if (subScreen === 'dossier') nextScreen = 'pm_rh_dossier';
+      else if (subScreen === 'portal') nextScreen = 'pm_rh_portal';
+      else if (subScreen === 'walkin') nextScreen = 'pm_rh_walkin';
+    } else if (role === 'compta') {
+      if (subScreen === 'payroll') nextScreen = 'pm_compta_payroll';
+      else if (subScreen === 'ccp') nextScreen = 'pm_compta_ccp';
+      else if (subScreen === 'expenses') nextScreen = 'pm_compta_expenses';
+      else if (subScreen === 'stock') nextScreen = 'pm_compta_stock';
+    }
+
+    globalState = {
+      ...globalState,
+      activePmSubScreen: subScreen,
+      activeScreen: nextScreen,
+    };
     notify();
   };
 
@@ -4777,16 +4915,53 @@ export function useAtriumStore() {
       status: 'pending_direction_approval',
       createdAt: new Date().toISOString(),
     };
+
+    // Slide 11: Auto-create indirect stock code and lifecycle entry
+    const nextAssetNum = 148 + (globalState.pmEquipmentStock?.length || 0);
+    const dateFormatted = new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' });
+    const newStockItem: PMEquipmentStock = {
+      id: `eq_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      tenantId: newExp.tenantId,
+      facilityId: newExp.facilityId,
+      assetCode: `NCH-A-00${nextAssetNum}`,
+      title: newExp.title,
+      category: 'counter_desk',
+      acquisitionCostDzd: newExp.amountDzd,
+      currentStatus: 'deployed_on_mission',
+      currentCustodianName: newExp.declaredByUserName,
+      conditionReport: 'good',
+      qrLabelCode: `QR-NCH-A-00${nextAssetNum}`,
+      history: [
+        {
+          date: dateFormatted,
+          stage: 'Acheté & codé',
+          detail: `${newExp.title} — ${newExp.amountDzd.toLocaleString()} DA`,
+        },
+        {
+          date: dateFormatted,
+          stage: 'Affecté',
+          detail: newExp.projectTitle || 'Roadshow Ooredoo',
+        },
+        {
+          date: 'Auj.',
+          stage: 'En stock',
+          detail: 'Disponible — état : bon',
+        },
+      ],
+      createdAt: new Date().toISOString(),
+    };
+
     globalState = {
       ...globalState,
       pmExpenses: [newExp, ...(globalState.pmExpenses || [])],
+      pmEquipmentStock: [newStockItem, ...(globalState.pmEquipmentStock || [])],
     };
     notify();
     projectMilestoneService.upsertExpense(newExp).catch(() => {});
     showToast({
       type: 'warning',
-      title: 'Frais de Terrain Soumis',
-      message: `${newExp.amountDzd.toLocaleString()} DA (${newExp.title}) en attente de validation DG.`,
+      title: 'Achat Déclaré & Stock Codé',
+      message: `${newStockItem.assetCode} (${newExp.title}) ajouté à l'inventaire et soumis à la DG.`,
       category: 'project_milestone',
     });
     return newExp;

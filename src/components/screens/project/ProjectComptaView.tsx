@@ -20,7 +20,11 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 
-export const ProjectComptaView: React.FC = () => {
+interface ProjectComptaViewProps {
+  initialTab?: 'payroll' | 'ccp' | 'expenses' | 'stock';
+}
+
+export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab }) => {
   const {
     pmPayrollBatches,
     pmCcpSlips,
@@ -29,13 +33,28 @@ export const ProjectComptaView: React.FC = () => {
     generatePmCcpSlipsForBatch,
     markPmCcpSlipPrinted,
     updatePmEquipmentStatus,
+    activePmSubScreen,
+    setActivePmSubScreen,
   } = useAtriumStore();
 
-  const [activeTab, setActiveTab] = useState<'payroll' | 'ccp' | 'expenses' | 'stock'>('payroll');
+  const activeTab: 'payroll' | 'ccp' | 'expenses' | 'stock' =
+    activePmSubScreen === 'ccp' || initialTab === 'ccp'
+      ? 'ccp'
+      : activePmSubScreen === 'expenses' || initialTab === 'expenses'
+      ? 'expenses'
+      : activePmSubScreen === 'stock' || initialTab === 'stock'
+      ? 'stock'
+      : 'payroll';
+
+  const setActiveTab = (tab: 'payroll' | 'ccp' | 'expenses' | 'stock') => {
+    setActivePmSubScreen(tab);
+  };
+
   const [selectedSlip, setSelectedSlip] = useState<PMCcpSlip | null>(null);
   const [selectedExpense, setSelectedExpense] = useState<PMExpense | null>(pmExpenses[0] || null);
 
   const pendingBatches = pmPayrollBatches.filter((b) => b.status === 'approved_by_direction');
+
 
   return (
     <div className="space-y-6">
