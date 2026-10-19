@@ -61,6 +61,46 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
   const [cardVisible, setCardVisible] = useState(false);
   const [replayKey, setReplayKey] = useState(0);
 
+  const heroAnchorRef = React.useRef<HTMLDivElement>(null);
+  const [anchorCoords, setAnchorCoords] = useState<{ left: number; top: number } | null>(null);
+
+  useEffect(() => {
+    const updateAnchor = () => {
+      if (heroAnchorRef.current) {
+        const rect = heroAnchorRef.current.getBoundingClientRect();
+        if (rect.left > 0) {
+          setAnchorCoords({ left: rect.left, top: rect.top });
+        }
+      }
+    };
+
+    updateAnchor();
+
+    // Re-measure across layout transitions and font renders
+    const t1 = setTimeout(updateAnchor, 80);
+    const t2 = setTimeout(updateAnchor, 250);
+    const t3 = setTimeout(updateAnchor, 600);
+    const t4 = setTimeout(updateAnchor, 1200);
+
+    let ro: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== 'undefined' && heroAnchorRef.current) {
+      ro = new ResizeObserver(() => {
+        updateAnchor();
+      });
+      ro.observe(heroAnchorRef.current);
+    }
+
+    window.addEventListener('resize', updateAnchor);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+      clearTimeout(t4);
+      ro?.disconnect();
+      window.removeEventListener('resize', updateAnchor);
+    };
+  }, [cardVisible, introPhase]);
+
   // Allow ESC to instantly skip intro to revealed onboarding card
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -233,17 +273,14 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
   ];
 
   // ============================================================
-  // UNIFIED ATRIUM MONOLITH SYSTEM: INTRO & 3D LIVING WATERMARK
+  // UNIFIED ATRIUM MONOLITH SYSTEM: INTRO & CONTINUITY GLIDE
   // ============================================================
   return (
-    <div
-      className={`min-h-screen w-screen text-white flex flex-col items-center justify-center overflow-hidden relative select-none transition-colors duration-300 ${
-        introPhase === 'intro' ? 'bg-white' : 'bg-[#D3542E]'
-      }`}
-    >
+    <div className="fixed inset-0 h-screen max-h-screen w-screen overflow-hidden text-white flex flex-col items-center justify-center select-none bg-[#D3542E]">
       {/* 1. KINETIC GEOMETRIC & TYPOGRAPHY SYSTEM (SOLID TERRACOTTA) */}
       <AtriumMonolith
         isIntroActive={introPhase === 'intro'}
+        anchorCoords={anchorCoords}
         onCardArrivalStart={() => setCardVisible(true)}
         onIntroComplete={() => {
           setCardVisible(true);
@@ -256,16 +293,16 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
         replayKey={replayKey}
       />
 
-      {/* 2. SPATIAL FLOATING ONBOARDING CARD & BRAND SHOWCASE */}
-      <div
-        className={`relative z-20 w-full min-h-screen flex flex-col lg:flex-row items-center justify-center p-4 sm:p-6 lg:p-8 transition-all duration-700 ease-[cubic-bezier(0.19,1,0.22,1)] ${
-          cardVisible
-            ? 'opacity-100 translate-y-0 pointer-events-auto'
-            : 'opacity-0 translate-y-[50px] pointer-events-none'
-        }`}
-      >
-        {/* LEFT: FLOATING PURE WHITE ONBOARDING CARD */}
-        <div className="w-full lg:w-[560px] xl:w-[600px] p-2 sm:p-4 shrink-0 flex flex-col justify-center">
+      {/* 2. FLOATING ONBOARDING CARD & BRAND SHOWCASE */}
+      <div className="relative z-20 w-full h-full max-h-screen flex flex-col lg:flex-row items-center justify-center p-4 sm:p-6 lg:p-8 overflow-hidden">
+        {/* LEFT: FLOATING ONBOARDING CARD */}
+        <div
+          className={`w-full lg:w-[490px] xl:w-[530px] p-2 sm:p-4 shrink-0 flex flex-col justify-center transition-all duration-900 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+            cardVisible
+              ? 'opacity-100 translate-x-0 scale-100 pointer-events-auto'
+              : 'opacity-0 -translate-x-16 scale-95 pointer-events-none'
+          }`}
+        >
           <div className="bg-white text-neutral-900 rounded-[32px] p-6 sm:p-8 shadow-[0_30px_70px_rgba(0,0,0,0.55)] border border-neutral-100 flex flex-col justify-between max-h-[calc(100vh-48px)] overflow-y-auto">
 
           {/* Card Top: Atrium Brand Logo Emblem */}
@@ -738,8 +775,14 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
         </div>
       </div>
 
-      {/* RIGHT: POWERFUL BRAND SHOWCASE & SPATIAL VISUAL CANVAS */}
-      <div className="flex-1 p-6 sm:p-10 lg:p-14 flex flex-col justify-between overflow-y-auto z-10 hidden md:flex text-[#18181B]">
+      {/* RIGHT: BRAND SHOWCASE */}
+      <div
+        className={`flex-1 p-6 sm:p-10 lg:py-10 lg:pr-10 lg:pl-16 xl:py-12 xl:pr-14 xl:pl-20 h-full max-h-screen flex flex-col justify-between overflow-hidden z-10 hidden md:flex text-[#18181B] transition-all duration-800 ease-[cubic-bezier(0.16,1,0.3,1)] delay-150 ${
+          cardVisible
+            ? 'opacity-100 translate-y-0 pointer-events-auto'
+            : 'opacity-0 translate-y-8 pointer-events-none'
+        }`}
+      >
         {/* Top Tagline */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
@@ -775,55 +818,70 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
         </div>
 
         {/* Hero Copy */}
-        <div className="my-auto py-8 max-w-xl space-y-5">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-black/10 border border-black/15 text-[#18181B] text-xs font-bold">
-            <Sparkles size={13} className="text-[#18181B]" />
+        <div className="my-auto py-2 sm:py-2.5 max-w-xl lg:ml-6 xl:ml-10 space-y-2.5 sm:space-y-3">
+          {/* Reserved space and anchor for the left-aligned brand lockup (Hero Scale) */}
+          <div ref={heroAnchorRef} className="h-14 sm:h-16 w-full flex items-center justify-start">
+            {introPhase === 'revealed' && (
+              <div className="flex items-center gap-4 select-none">
+                <FiveCubesLogo cubeColor="#000000" size={56} className="shrink-0" />
+                <span
+                  className="text-4xl sm:text-[46px] lg:text-[48px] font-black tracking-tight text-black leading-none"
+                  style={{ fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif" }}
+                >
+                  ATRIUM
+                </span>
+              </div>
+            )}
+          </div>
+
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-black/10 border border-black/15 text-[#18181B] text-[11px] sm:text-xs font-semibold">
+            <Sparkles size={12} className="text-[#18181B]" />
             <span>Forever Free Web Edition — 1 Business &amp; 1 Branch</span>
           </div>
 
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-[#18181B] leading-tight">
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#18181B] leading-snug">
             The Business Management OS for Modern Facilities.
           </h1>
 
-          <p className="text-sm sm:text-base text-[#18181B]/85 leading-relaxed font-medium">
+          <p className="text-[11.5px] sm:text-xs text-[#18181B]/75 leading-relaxed font-normal">
             Whether running a solo practice, aesthetic salon, fast-casual restaurant, or athletic gym, Atrium Web is 100% free forever for your main facility. Seamlessly upgrade to the Desktop app when you expand to multi-location chains.
           </p>
 
-          {/* Spatial Cards Showcase */}
-          <div className="grid grid-cols-2 gap-3.5 pt-3">
+          {/* Cards Showcase */}
+          <div className="grid grid-cols-2 gap-3 pt-1">
             {/* Tile 1: Supabase Realtime Cloud Sync */}
-            <div className="p-4 rounded-2xl bg-white/95 text-neutral-900 border border-white/60 shadow-xl space-y-2">
-              <div className="flex items-center justify-between text-neutral-500 text-xs">
+            <div className="p-3 sm:p-3.5 rounded-2xl bg-white/95 text-neutral-900 border border-white/60 shadow-lg space-y-1 sm:space-y-1.5">
+              <div className="flex items-center justify-between text-neutral-500 text-[11px]">
                 <span className="font-semibold">Cloud Architecture</span>
-                <Cloud size={14} className="text-emerald-600" />
+                <Cloud size={13} className="text-emerald-600" />
               </div>
-              <div className="text-2xl font-black text-neutral-900 tabular-nums tracking-tight">
+              <div className="text-lg sm:text-xl font-black text-neutral-900 tabular-nums tracking-tight">
                 Live Sync <span className="text-xs text-[#D3542E] font-bold">PostgreSQL</span>
               </div>
-              <span className="text-[11px] font-semibold text-emerald-700 block">
+              <span className="text-[10px] font-semibold text-emerald-700 block">
                 Automatic Web-to-Desktop Sync
               </span>
             </div>
 
             {/* Tile 2: Upgrade to Desktop Anytime */}
-            <div className="p-4 rounded-2xl bg-white/95 text-neutral-900 border border-white/60 shadow-xl space-y-2">
-              <div className="flex items-center justify-between text-neutral-500 text-xs">
+            <div className="p-3 sm:p-3.5 rounded-2xl bg-white/95 text-neutral-900 border border-white/60 shadow-lg space-y-1 sm:space-y-1.5">
+              <div className="flex items-center justify-between text-neutral-500 text-[11px]">
                 <span className="font-semibold">Multi-Branch Growth</span>
-                <Laptop size={14} className="text-[#D3542E]" />
+                <Laptop size={13} className="text-[#D3542E]" />
               </div>
               <div className="text-sm font-black text-neutral-900">
                 Atrium Desktop Edition
               </div>
-              <span className="text-[11px] font-semibold text-[#D3542E] block">
+              <span className="text-[10px] font-semibold text-[#D3542E] block">
                 Multi-Branch Chains &amp; POS Hardware
               </span>
             </div>
           </div>
         </div>
 
-        {/* Bottom Social Proof / Spec Badge */}
-        <div className="pt-6 border-t border-black/15 flex items-center justify-between text-xs text-[#18181B]/70 font-medium">
-          <span>Engineered with Apple Spatial &amp; Clean Architecture precision</span>
+        {/* Bottom Specs & Languages */}
+        <div className="pt-3 pb-1 border-t border-black/15 flex items-center justify-between text-[11px] sm:text-xs text-[#18181B]/70 font-medium shrink-0">
+          <span>Atrium Web Edition • Multi-Facility ERP &amp; CRM</span>
           <span>English • Français • العربية</span>
         </div>
       </div>

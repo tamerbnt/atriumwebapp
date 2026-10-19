@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 
 export interface AtriumMonolithProps {
   isIntroActive: boolean;
+  anchorCoords?: { left: number; top: number } | null;
   onCardArrivalStart?: () => void;
   onIntroComplete?: () => void;
   onSkip?: () => void;
@@ -62,7 +63,8 @@ export const FiveCubesLogo: React.FC<{
  * - Clean Pure White Canvas (#FFFFFF)
  * - 4 Solid Corner Cubes glide along diagonal trajectory axes to converge into Quincunx
  * - 1 Central Larger Hollow Cube unfolds and locks with Swiss coordinate crosshairs
- * - Duration: Exactly 2.0s
+ * - Duration: 1.2s (Fast, Crisp, High-precision)
+ * - Zero Text / Pure Geometry
  */
 export const QuincunxConvergencePrelude: React.FC<{ isPortalActive?: boolean; className?: string }> = ({
   isPortalActive = false,
@@ -90,7 +92,7 @@ export const QuincunxConvergencePrelude: React.FC<{ isPortalActive?: boolean; cl
           {/* Minimal Swiss Modernist Coordinate Grid & Diagonal Trajectory Axes */}
           <g
             style={{
-              animation: 'modern-swiss-grid-fade 2.0s cubic-bezier(0.16, 1, 0.3, 1) both',
+              animation: 'modern-swiss-grid-fade 1.2s cubic-bezier(0.16, 1, 0.3, 1) both',
             }}
           >
             {/* Center Hairline Axes */}
@@ -123,7 +125,7 @@ export const QuincunxConvergencePrelude: React.FC<{ isPortalActive?: boolean; cl
             strokeWidth="2"
             style={{
               transformOrigin: '50px 50px',
-              animation: 'quincunx-pulse-ring 2.0s cubic-bezier(0.16, 1, 0.3, 1) both',
+              animation: 'quincunx-pulse-ring 1.2s cubic-bezier(0.16, 1, 0.3, 1) both',
             }}
           />
 
@@ -132,7 +134,7 @@ export const QuincunxConvergencePrelude: React.FC<{ isPortalActive?: boolean; cl
           <g
             style={{
               transformOrigin: '15px 15px',
-              animation: 'quincunx-cube-tl 2.0s cubic-bezier(0.16, 1, 0.3, 1) both',
+              animation: 'quincunx-cube-tl 1.2s cubic-bezier(0.16, 1, 0.3, 1) both',
             }}
           >
             <rect
@@ -152,7 +154,7 @@ export const QuincunxConvergencePrelude: React.FC<{ isPortalActive?: boolean; cl
           <g
             style={{
               transformOrigin: '85px 15px',
-              animation: 'quincunx-cube-tr 2.0s cubic-bezier(0.16, 1, 0.3, 1) both',
+              animation: 'quincunx-cube-tr 1.2s cubic-bezier(0.16, 1, 0.3, 1) both',
             }}
           >
             <rect
@@ -172,7 +174,7 @@ export const QuincunxConvergencePrelude: React.FC<{ isPortalActive?: boolean; cl
           <g
             style={{
               transformOrigin: '15px 85px',
-              animation: 'quincunx-cube-bl 2.0s cubic-bezier(0.16, 1, 0.3, 1) both',
+              animation: 'quincunx-cube-bl 1.2s cubic-bezier(0.16, 1, 0.3, 1) both',
             }}
           >
             <rect
@@ -192,7 +194,7 @@ export const QuincunxConvergencePrelude: React.FC<{ isPortalActive?: boolean; cl
           <g
             style={{
               transformOrigin: '85px 85px',
-              animation: 'quincunx-cube-br 2.0s cubic-bezier(0.16, 1, 0.3, 1) both',
+              animation: 'quincunx-cube-br 1.2s cubic-bezier(0.16, 1, 0.3, 1) both',
             }}
           >
             <rect
@@ -212,7 +214,7 @@ export const QuincunxConvergencePrelude: React.FC<{ isPortalActive?: boolean; cl
           <g
             style={{
               transformOrigin: '50px 50px',
-              animation: 'quincunx-center-hollow 2.0s cubic-bezier(0.16, 1, 0.3, 1) both',
+              animation: 'quincunx-center-hollow 1.2s cubic-bezier(0.16, 1, 0.3, 1) both',
             }}
           >
             <rect
@@ -233,7 +235,7 @@ export const QuincunxConvergencePrelude: React.FC<{ isPortalActive?: boolean; cl
       </div>
 
       {/* STAGE 2: DEDICATED CINEMATIC PORTAL WIPE OVERLAY (White -> Terracotta) */}
-      {/* Originates from converged central cube at 2.0s to flood viewport into signature terracotta */}
+      {/* Originates from converged central cube at 1.2s to flood viewport into signature terracotta */}
       {isPortalActive && (
         <div className="absolute inset-0 pointer-events-none flex items-center justify-center overflow-hidden z-20">
           {/* Secondary Concentric Shockwave Ring */}
@@ -253,92 +255,119 @@ export const QuincunxConvergencePrelude: React.FC<{ isPortalActive?: boolean; cl
           />
         </div>
       )}
-
-      {/* Modernist Typographic Caption */}
-      <div
-        className="relative z-10 mt-6 flex flex-col items-center gap-1.5 select-none text-center"
-        style={{
-          animation: 'modern-swiss-grid-fade 2.0s cubic-bezier(0.16, 1, 0.3, 1) both',
-        }}
-      >
-        <div className="flex items-center gap-2 text-[11px] sm:text-xs font-mono font-bold tracking-[0.28em] text-[#D3542E] uppercase">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#D3542E] animate-ping inline-block" />
-          <span>QUINCUNX CONVERGENCE · 05 ARCHITECTURAL ASSEMBLY</span>
-        </div>
-        <div className="text-[9px] sm:text-[10px] font-mono tracking-[0.38em] text-[#D3542E]/60 uppercase">
-          2.0S PRELUDE // WHITE CANVAS
-        </div>
-      </div>
     </div>
   );
 };
 
 export const AtriumMonolith: React.FC<AtriumMonolithProps> = ({
   isIntroActive,
+  anchorCoords,
   onCardArrivalStart,
   onIntroComplete,
   onSkip,
   replayKey = 0,
 }) => {
-  // Master Unified 4-Stage Sequential Intro Architecture:
-  // (1) 0.0s – 2.0s: 'quincunx' -> 2.0s 'Quincunx Convergence' geometric prelude on white background.
-  // (2) 2.0s – 2.65s: 'portal' -> Dedicated cinematic portal wipe into the terracotta background.
-  // (3) 2.65s – 5.4s: 'wave' -> 'Atrium' kinetic loop (slowed single pass -> expands to un-shrunk normal size).
-  // (4) 5.4s – 7.1s: 'revelation' -> Un-shrunk logo revelation scene (5-cubes logo docks beside normal-size ATRIUM).
-  // (5) 7.1s – 7.7s: 'fadeout' -> Smooth fadeout into onboarding card.
-  // Sequential triggers with ZERO repeat cycles.
-  const [phase, setPhase] = useState<'quincunx' | 'portal' | 'wave' | 'revelation' | 'fadeout'>('quincunx');
+  const lockupRef = useRef<HTMLDivElement>(null);
+  // Master Unified 6-Stage Sequential Intro Architecture:
+  // (1) 0.0s – 1.2s: 'quincunx' -> Fast 1.2s 'Quincunx Convergence' geometric prelude on pure white background.
+  // (2) 1.2s – 1.85s: 'portal' -> Dedicated cinematic portal wipe flooding screen into terracotta (#D3542E).
+  // (3) 1.85s – 3.85s: 'wave' -> 'Atrium' kinetic loop (sweeps across with light, expands to un-shrunk normal size).
+  // (4) 3.85s – 4.75s: 'revelation' -> 5-cubes logo docks beside normal-size ATRIUM at screen center.
+  // (5) 4.75s – 5.65s: 'glide' -> Continuity glide! Logo + ATRIUM glides to the right, loading onboarding card on the left.
+  // (6) >= 5.65s: 'settled' -> Intro complete, background becomes transparent, brand lockup settled in place on the right.
+  const [phase, setPhase] = useState<'quincunx' | 'portal' | 'wave' | 'revelation' | 'glide' | 'settled'>('quincunx');
   const letterRefs = useRef<(HTMLSpanElement | null)[]>([]);
+  const [glideTransform, setGlideTransform] = useState<string | null>(null);
+
+  // When glide starts, measure current centered rect and compute exact pixel translation to anchorCoords
+  useEffect(() => {
+    if (phase === 'glide' && lockupRef.current) {
+      if (typeof window !== 'undefined' && window.innerWidth >= 1024 && anchorCoords) {
+        const rect = lockupRef.current.getBoundingClientRect();
+        const deltaX = anchorCoords.left - rect.left;
+        const deltaY = anchorCoords.top - rect.top;
+        setGlideTransform(`translate3d(${deltaX.toFixed(1)}px, ${deltaY.toFixed(1)}px, 0) scale(0.42)`);
+      } else {
+        setGlideTransform('translate3d(0, -36vh, 0) scale(0.55)');
+      }
+    } else if (phase === 'quincunx' || phase === 'portal' || phase === 'wave' || phase === 'revelation') {
+      setGlideTransform(null);
+    }
+  }, [phase, anchorCoords]);
+
+  const resetLettersToNormal = () => {
+    letterRefs.current.forEach((el) => {
+      if (!el) return;
+      el.style.transform = 'scaleX(1) scaleY(1)';
+      el.style.opacity = '1';
+      el.style.color = '#000000';
+      el.style.textShadow = 'none';
+      el.style.filter = 'none';
+    });
+  };
+
+  const handleSkip = () => {
+    resetLettersToNormal();
+    setPhase('settled');
+    onCardArrivalStart?.();
+    onIntroComplete?.();
+    onSkip?.();
+  };
 
   // Keyboard shortcut (Escape to skip intro)
   useEffect(() => {
     if (!isIntroActive) return;
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && onSkip) {
-        onSkip();
+      if (e.key === 'Escape') {
+        handleSkip();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isIntroActive, onSkip]);
+  }, [isIntroActive]);
 
   useEffect(() => {
-    if (!isIntroActive) return;
+    if (!isIntroActive) {
+      setPhase('settled');
+      resetLettersToNormal();
+      return;
+    }
 
     // (1) Start immediately with Quincunx Convergence on white
     setPhase('quincunx');
 
-    // (2) 2.0s: Dedicated cinematic portal wipe into terracotta background
+    // (2) 1.2s: Dedicated cinematic portal wipe into terracotta background
     const tPortal = setTimeout(() => {
       setPhase('portal');
-    }, 2000);
+    }, 1200);
 
-    // (3) 2.65s: 'Atrium' kinetic loop (slowed) begins on terracotta
+    // (3) 1.85s: 'Atrium' kinetic sweep begins on terracotta
     const tWave = setTimeout(() => {
       setPhase('wave');
-    }, 2650);
+    }, 1850);
 
-    // (4) 5.4s: Un-shrunk logo revelation scene (logo docks beside un-shrunk ATRIUM)
+    // (4) 3.85s: 5-cubes logo docks beside ATRIUM at center
     const tRevelation = setTimeout(() => {
       setPhase('revelation');
-    }, 5400);
+    }, 3850);
 
-    // 7.1s: Smooth fadeout starts, card begins smooth arrival
-    const tFadeout = setTimeout(() => {
-      setPhase('fadeout');
+    // (5) 4.75s: Continuity glide! Logo + ATRIUM glides to the right, card arrives on left
+    const tGlide = setTimeout(() => {
+      setPhase('glide');
       onCardArrivalStart?.();
-    }, 7100);
+    }, 4750);
 
-    // 7.7s: Intro sequence completely completes
+    // (6) 5.65s: Transition completely settles
     const tComplete = setTimeout(() => {
+      setPhase('settled');
       onIntroComplete?.();
-    }, 7700);
+    }, 5650);
 
     return () => {
       clearTimeout(tPortal);
       clearTimeout(tWave);
       clearTimeout(tRevelation);
-      clearTimeout(tFadeout);
+      clearTimeout(tGlide);
       clearTimeout(tComplete);
     };
   }, [isIntroActive, replayKey, onCardArrivalStart, onIntroComplete]);
@@ -357,7 +386,7 @@ export const AtriumMonolith: React.FC<AtriumMonolithProps> = ({
 
     let animId: number;
     const startTime = performance.now();
-    const sweepDuration = 2600; // 2.6s slower, luxurious, unhurried single pass across
+    const sweepDuration = 2000; // 2.0s smooth single pass across ATRIUM
 
     const measureBaseWidths = () => {
       const measured = letterRefs.current.map((el) => (el ? el.offsetWidth : 0));
@@ -487,34 +516,44 @@ export const AtriumMonolith: React.FC<AtriumMonolithProps> = ({
     };
   }, [isIntroActive, phase, replayKey]);
 
-  if (!isIntroActive) {
-    return null;
-  }
-
   const letters = ['A', 'T', 'R', 'I', 'U', 'M'];
 
   return (
     <div
       key={replayKey}
-      className={`fixed inset-0 z-30 pointer-events-none select-none flex items-center justify-center transition-colors duration-200 ${
-        phase === 'quincunx' ? 'bg-white' : 'bg-[#D3542E]'
-      } ${phase === 'fadeout' ? 'opacity-0' : 'opacity-100'}`}
+      className={`fixed inset-0 z-30 pointer-events-none select-none flex items-center justify-center transition-colors duration-300 ${
+        phase === 'quincunx'
+          ? 'bg-white'
+          : phase === 'portal' || phase === 'wave' || phase === 'revelation'
+          ? 'bg-[#D3542E]'
+          : 'bg-transparent'
+      }`}
     >
-      {/* STAGE (1): 2.0s 'QUINCUNX CONVERGENCE' GEOMETRIC PRELUDE & STAGE (2): CINEMATIC PORTAL WIPE */}
+      {/* STAGE (1) & (2): 1.2s 'QUINCUNX CONVERGENCE' ON WHITE CANVAS + EXPANDING PORTAL WIPE TO TERRACOTTA */}
       {(phase === 'quincunx' || phase === 'portal') && (
         <div className="w-full h-full flex flex-col items-center justify-center text-center">
           <QuincunxConvergencePrelude isPortalActive={phase === 'portal'} />
         </div>
       )}
 
-      {/* STAGE (3): 'ATRIUM' KINETIC LOOP (SLOWED) & STAGE (4): UN-SHRUNK LOGO REVELATION SCENE */}
-      {(phase === 'wave' || phase === 'revelation' || phase === 'fadeout') && (
-        <div className="flex items-center justify-center gap-4 sm:gap-7 select-none transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]">
-          {/* Authentic 5-Cubes Logo in Solid Black: Enters smoothly beside un-shrunk text for Stage 4 */}
+      {/* STAGES (2, 3, 4, 5): 'ATRIUM' KINETIC SWEEP, LOGO DOCKING, AND SEAMLESS CONTINUITY GLIDE */}
+      {(phase === 'wave' || phase === 'revelation' || phase === 'glide' || phase === 'settled') && (
+        <div
+          ref={lockupRef}
+          className={`flex items-center justify-start gap-4 sm:gap-7 select-none transition-opacity duration-300 ${
+            phase === 'settled' ? 'opacity-0 pointer-events-none' : 'opacity-100'
+          }`}
+          style={{
+            transform: glideTransform ?? 'translate3d(0, 0, 0) scale(1)',
+            transformOrigin: 'left top',
+            transition: 'transform 0.9s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease',
+          }}
+        >
+          {/* Authentic 5-Cubes Logo in Solid Black: Enters beside text and glides with it to the right */}
           <div
             className={`shrink-0 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
-              phase === 'revelation' || phase === 'fadeout'
-                ? 'opacity-100 translate-x-0 scale-100 max-w-[120px] pointer-events-auto'
+              phase === 'revelation' || phase === 'glide' || phase === 'settled'
+                ? 'opacity-100 translate-x-0 scale-100 max-w-[140px] pointer-events-auto'
                 : 'opacity-0 -translate-x-12 scale-75 max-w-0 pointer-events-none overflow-hidden -mr-4 sm:-mr-7'
             }`}
           >
@@ -536,7 +575,7 @@ export const AtriumMonolith: React.FC<AtriumMonolithProps> = ({
                 style={{
                   fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
                   // Initial state: letters start shrunk (scaleX: 0.32), expand to un-shrunk normal size (1.0) at loop end
-                  transform: 'scaleX(0.32) scaleY(1)',
+                  transform: phase === 'wave' ? 'scaleX(0.32) scaleY(1)' : 'scaleX(1) scaleY(1)',
                   opacity: 1,
                   color: '#000000',
                   lineHeight: 1,
@@ -552,16 +591,12 @@ export const AtriumMonolith: React.FC<AtriumMonolithProps> = ({
       )}
 
       {/* Skip Intro Button */}
-      {onSkip && phase !== 'fadeout' && (
+      {onSkip && phase !== 'glide' && phase !== 'settled' && (
         <div className="absolute bottom-6 right-6 pointer-events-auto z-40 animate-in fade-in duration-200">
           <button
             type="button"
-            onClick={onSkip}
-            className={`text-xs flex items-center gap-2 py-1.5 px-3.5 rounded-full border backdrop-blur-md cursor-pointer transition-all active:scale-95 shadow-sm font-semibold ${
-              phase === 'quincunx'
-                ? 'text-[#D3542E] hover:text-[#B8401C] bg-neutral-100 hover:bg-neutral-200 border-neutral-300'
-                : 'text-black hover:text-white bg-black/10 hover:bg-black/30 border-black/20'
-            }`}
+            onClick={handleSkip}
+            className="text-xs flex items-center gap-2 py-1.5 px-3.5 rounded-full border border-black/20 backdrop-blur-md cursor-pointer transition-all active:scale-95 shadow-sm font-semibold text-black hover:text-white bg-black/10 hover:bg-black/30"
           >
             <span>Skip Intro</span>
             <span className="text-[10px] opacity-60">ESC</span>

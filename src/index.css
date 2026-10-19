@@ -305,10 +305,10 @@
 
 /* ============================================================
    Stage 1: 'Quincunx Convergence' 5-Cube Architectural Assembly
-   - Clean Pure White Canvas (#FFFFFF)
-   - 4 Solid Corner Cubes glide along diagonal axes
+   - Solid Terracotta Background (#D3542E)
+   - 4 Solid Black Corner Cubes glide along diagonal axes
    - 1 Central Larger Hollow Cube unfolds and locks
-   - Duration: 2.0s
+   - Duration: 1.2s (Fast, Crisp, Modernist)
    ============================================================ */
 
 /* Top-Left Cube: Glides along diagonal axis to Quincunx lock */
@@ -406,14 +406,14 @@
   }
 }
 
-/* Minimal Terracotta Shockwave Pulse at convergence lock */
+/* Minimal Pulse Ring at convergence lock */
 @keyframes quincunx-pulse-ring {
   0%, 65% {
     opacity: 0;
     transform: scale(0.4);
   }
   75% {
-    opacity: 0.9;
+    opacity: 0.65;
     transform: scale(1.05);
   }
   92% {
@@ -426,47 +426,27 @@
   }
 }
 
-/* Playful Minimal Terracotta Shockwave Pulse */
-@keyframes modern-terracotta-pulse {
-  0%, 55% {
-    opacity: 0;
-    transform: scale(0.4);
-  }
-  65% {
-    opacity: 0.9;
-    transform: scale(0.95);
-  }
-  80% {
-    opacity: 0;
-    transform: scale(2.6);
-  }
-  100% {
-    opacity: 0;
-    transform: scale(3.2);
-  }
-}
-
 /* Minimal Swiss Grid Fade */
 @keyframes modern-swiss-grid-fade {
   0% {
     opacity: 0;
     transform: scale(0.96);
   }
-  22% {
+  25% {
     opacity: 0.8;
     transform: scale(1);
   }
-  72% {
+  75% {
     opacity: 0.8;
     transform: scale(1);
   }
-  88% {
-    opacity: 0.3;
-    transform: scale(1.04);
+  90% {
+    opacity: 0.25;
+    transform: scale(1.03);
   }
   100% {
     opacity: 0;
-    transform: scale(1.1);
+    transform: scale(1.08);
   }
 }
 
