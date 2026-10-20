@@ -143,7 +143,7 @@ export const VenueDashboardView: React.FC = () => {
             {todayBookings.length}
           </div>
           <div className="text-xs text-neutral-400 dark:text-neutral-500 mt-1">
-            {activeCheckedIn.length} in-use · {confirmedUpcoming.length} upcoming
+            {activeCheckedIn.length} {t('venue_kpi_in_use')} · {confirmedUpcoming.length} {t('venue_kpi_upcoming')}
           </div>
         </div>
 
@@ -156,20 +156,20 @@ export const VenueDashboardView: React.FC = () => {
             {formatCurrencyAmount(totalHeldCaution, 'DZD')}
           </div>
           <div className="text-xs text-neutral-400 dark:text-neutral-500 mt-1">
-            {securityDeposits.filter((d) => d.status === 'Held').length} active deposits held
+            {securityDeposits.filter((d) => d.status === 'Held').length} {t('venue_kpi_active_deposits')}
           </div>
         </div>
 
         <div className="p-5 rounded-2xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-800">
           <div className="flex items-center justify-between text-neutral-500 dark:text-neutral-400 mb-2">
-            <span className="text-xs font-medium uppercase tracking-wider">Today's Booked Volume</span>
+            <span className="text-xs font-medium uppercase tracking-wider">{t('venue_kpi_booked_volume')}</span>
             <TrendingUp size={18} className="text-[var(--color-accent)]" />
           </div>
           <div className="text-2xl sm:text-3xl font-bold text-neutral-900 dark:text-white tabular-nums">
             {formatCurrencyAmount(todayBookedVolume, 'DZD')}
           </div>
           <div className="text-xs text-neutral-400 dark:text-neutral-500 mt-1">
-            Space hire + equipment add-ons
+            {t('venue_kpi_booked_volume_sub')}
           </div>
         </div>
       </div>
@@ -179,17 +179,17 @@ export const VenueDashboardView: React.FC = () => {
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
-              Live Spaces & Asset Status
+              {t('venue_spaces_title')}
             </h2>
             <p className="text-xs text-neutral-500 dark:text-neutral-400">
-              Current real-time state of halls, studios, courts, and private suites
+              {t('venue_spaces_subtitle')}
             </p>
           </div>
           <button
             onClick={() => setScreen('shop')}
-            className="text-xs text-[var(--color-accent)] hover:underline font-medium flex items-center gap-1"
+            className="text-xs text-[var(--color-accent)] hover:underline font-medium flex items-center gap-1 cursor-pointer"
           >
-            Manage Catalog <ArrowRight size={13} />
+            {t('venue_btn_manage_catalog')} <ArrowRight size={13} className="rtl:rotate-180" />
           </button>
         </div>
 
@@ -202,25 +202,43 @@ export const VenueDashboardView: React.FC = () => {
               (b) => b.unitId === unit.id && b.status === 'Confirmed' && b.startDateTime.startsWith(todayStr)
             );
 
+            const localizedType =
+              unit.type === 'Hall'
+                ? t('venue_type_hall')
+                : unit.type === 'Studio'
+                ? t('venue_type_studio')
+                : unit.type === 'Room'
+                ? t('venue_type_room')
+                : unit.type === 'Court'
+                ? t('venue_type_court')
+                : t('venue_type_desk');
+
+            const localizedStatus =
+              unit.status === 'Available'
+                ? (language === 'ar' ? 'متاحة' : language === 'fr' ? 'Disponible' : 'Available')
+                : unit.status === 'Occupied'
+                ? t('venue_kpi_in_use')
+                : (language === 'ar' ? 'صيانة' : language === 'fr' ? 'Maintenance' : 'Maintenance');
+
             return (
               <ActionNode
                 key={unit.id}
                 title={unit.name}
-                description={`${unit.code} · ${unit.type} · Cap: ${unit.capacity} pers${unit.surfaceAreaSqm ? ` · ${unit.surfaceAreaSqm} m²` : ''}`}
-                tag={unit.status}
+                description={`${unit.code} · ${localizedType} · ${t('venue_card_capacity', language, { count: unit.capacity })}${unit.surfaceAreaSqm ? ` · ${t('venue_inv_surface_unit', language, { surface: unit.surfaceAreaSqm })}` : ''}`}
+                tag={localizedStatus}
                 width="100%"
                 air={16}
                 corner={20}
                 actions={[
                   {
                     id: 'book',
-                    label: 'Reserve Space',
+                    label: t('venue_reserve_space'),
                     icon: <Plus size={14} />,
                     onClick: () => handleQuickBookUnit(unit.id),
                   },
                   {
                     id: 'timeline',
-                    label: 'View Timeline',
+                    label: t('venue_view_timeline'),
                     icon: <Calendar size={14} />,
                     onClick: () => setScreen('scheduler'),
                   },
@@ -236,13 +254,13 @@ export const VenueDashboardView: React.FC = () => {
                         {currentBooking.purpose}
                       </div>
                       <div className="text-neutral-400 text-[10px] tabular-nums">
-                        Until {currentBooking.endDateTime.split('T')[1]?.slice(0, 5)}
+                        {t('venue_until_time', language, { time: currentBooking.endDateTime.split('T')[1]?.slice(0, 5) })}
                       </div>
                     </div>
                   ) : nextBooking ? (
                     <div className="space-y-1">
                       <div className="text-[11px] text-blue-600 dark:text-blue-400 font-medium">
-                        Next: {nextBooking.renterName}
+                        {nextBooking.renterName}
                       </div>
                       <div className="text-neutral-400 text-[10px] tabular-nums">
                         {nextBooking.startDateTime.split('T')[1]?.slice(0, 5)} - {nextBooking.endDateTime.split('T')[1]?.slice(0, 5)}
@@ -250,20 +268,20 @@ export const VenueDashboardView: React.FC = () => {
                     </div>
                   ) : (
                     <div className="text-neutral-400 text-[11px] italic">
-                      Available for booking today
+                      {t('venue_available_today')}
                     </div>
                   )}
 
                   <div className="mt-3 pt-2 flex items-center justify-between border-t border-neutral-100 dark:border-neutral-700/50">
                     <span className="text-xs font-bold text-neutral-900 dark:text-white tabular-nums">
-                      {formatCurrencyAmount(unit.hourlyRate, unit.currency)}/h
+                      {formatCurrencyAmount(unit.hourlyRate, unit.currency)}{t('venue_per_hour')}
                     </span>
                     <button
                       type="button"
                       onClick={() => handleQuickBookUnit(unit.id)}
                       className="px-2.5 py-1 bg-[#FDF4F0] hover:bg-[#FBE5DC] text-[#C4785A] rounded-lg text-[11px] font-bold transition-colors cursor-pointer"
                     >
-                      Reserve
+                      {t('venue_btn_reserve')}
                     </button>
                   </div>
                 </div>
@@ -279,13 +297,13 @@ export const VenueDashboardView: React.FC = () => {
         <div className="lg:col-span-2 space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
-              Today's Schedule & Arrivals
+              {t('venue_todays_arrivals')}
             </h2>
             <button
               onClick={() => setScreen('registrations')}
-              className="text-xs text-[var(--color-accent)] hover:underline font-medium"
+              className="text-xs text-[var(--color-accent)] hover:underline font-medium cursor-pointer"
             >
-              All Reservations
+              {t('venue_all_reservations')}
             </button>
           </div>
 
@@ -294,10 +312,10 @@ export const VenueDashboardView: React.FC = () => {
               <div className="p-8 text-center bg-neutral-50 dark:bg-neutral-800/30 rounded-2xl border border-neutral-200 dark:border-neutral-800">
                 <Calendar size={28} className="mx-auto text-neutral-400 mb-2" />
                 <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                  No bookings scheduled for today
+                  {t('venue_no_bookings_today')}
                 </p>
                 <p className="text-xs text-neutral-400 mt-1">
-                  Click 'Reserve Space' above to log an event or walk-in session.
+                  {t('venue_no_bookings_today_sub')}
                 </p>
               </div>
             ) : (
@@ -330,7 +348,13 @@ export const VenueDashboardView: React.FC = () => {
                               : 'bg-neutral-100 text-neutral-700 dark:bg-neutral-700 dark:text-neutral-300'
                           }`}
                         >
-                          {b.status}
+                          {b.status === 'CheckedIn'
+                            ? t('venue_kpi_in_use')
+                            : b.status === 'Confirmed'
+                            ? t('venue_status_confirmed')
+                            : b.status === 'Tentative'
+                            ? t('venue_status_tentative')
+                            : t('venue_status_completed')}
                         </span>
                       </div>
                       <div className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5 flex items-center gap-2 flex-wrap">
@@ -339,35 +363,41 @@ export const VenueDashboardView: React.FC = () => {
                         <span>·</span>
                         <span className="text-neutral-600 dark:text-neutral-400">{b.unitName}</span>
                         <span>·</span>
-                        <span>{b.attendeeCount} guests</span>
+                        <span>{t('venue_guests_count', language, { count: b.attendeeCount })}</span>
                       </div>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-3 self-end sm:self-center">
-                    <div className="text-right">
+                    <div className="text-right rtl:text-left">
                       <div className="text-sm font-semibold text-neutral-900 dark:text-white tabular-nums">
                         {formatCurrencyAmount(b.totalAmount, b.currency)}
                       </div>
                       <div className="text-[11px] text-neutral-400">
-                        Deposit: {formatCurrencyAmount(b.depositAmount, b.currency)} ({b.depositStatus})
+                        {t('venue_col_caution')}: {formatCurrencyAmount(b.depositAmount, b.currency)} (
+                        {b.depositStatus === 'Held'
+                          ? t('venue_held_status')
+                          : b.depositStatus === 'Refunded'
+                          ? t('venue_refunded_status')
+                          : t('venue_deducted_status')}
+                        )
                       </div>
                     </div>
 
                     {b.status === 'Confirmed' && (
                       <button
                         onClick={() => checkInBooking(b.id)}
-                        className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-medium transition-colors"
+                        className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-medium transition-colors cursor-pointer"
                       >
-                        Check In
+                        {t('venue_btn_checkin_guest')}
                       </button>
                     )}
                     {b.status === 'CheckedIn' && (
                       <button
                         onClick={() => checkOutBooking(b.id)}
-                        className="px-3.5 py-1.5 bg-neutral-200 hover:bg-neutral-300 dark:bg-neutral-700 dark:hover:bg-neutral-600 text-neutral-800 dark:text-neutral-200 rounded-xl text-xs font-medium transition-colors"
+                        className="px-3.5 py-1.5 bg-neutral-200 hover:bg-neutral-300 dark:bg-neutral-700 dark:hover:bg-neutral-600 text-neutral-800 dark:text-neutral-200 rounded-xl text-xs font-medium transition-colors cursor-pointer"
                       >
-                        Check Out
+                        {t('venue_btn_checkout_space')}
                       </button>
                     )}
                   </div>
@@ -381,21 +411,21 @@ export const VenueDashboardView: React.FC = () => {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
-              Caution Watchlist
+              {t('venue_caution_watchlist')}
             </h2>
             <button
               onClick={() => setScreen('finance')}
-              className="text-xs text-[var(--color-accent)] hover:underline font-medium"
+              className="text-xs text-[var(--color-accent)] hover:underline font-medium cursor-pointer"
             >
-              Caution Ledger
+              {t('venue_btn_caution_ledger')}
             </button>
           </div>
 
           <div className="p-5 rounded-2xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-800 space-y-4">
             <div className="flex items-center gap-2 text-xs text-neutral-600 dark:text-neutral-400">
               <ShieldCheck size={16} className="text-emerald-500" />
-              <span>Deposits in Escrow:</span>
-              <span className="font-semibold text-neutral-900 dark:text-white tabular-nums ml-auto">
+              <span>{t('venue_kpi_escrow_deposits')}:</span>
+              <span className="font-semibold text-neutral-900 dark:text-white tabular-nums ml-auto rtl:mr-auto rtl:ml-0">
                 {formatCurrencyAmount(totalHeldCaution, 'DZD')}
               </span>
             </div>
@@ -410,7 +440,7 @@ export const VenueDashboardView: React.FC = () => {
                       <div className="font-medium text-neutral-900 dark:text-white">{dep.renterName}</div>
                       <div className="text-[11px] text-neutral-400 truncate max-w-[180px]">{dep.unitName}</div>
                     </div>
-                    <div className="text-right">
+                    <div className="text-right rtl:text-left">
                       <div className="font-semibold text-neutral-900 dark:text-white tabular-nums">
                         {formatCurrencyAmount(dep.amount, dep.currency)}
                       </div>
@@ -422,9 +452,9 @@ export const VenueDashboardView: React.FC = () => {
 
             <button
               onClick={() => setScreen('finance')}
-              className="w-full py-2 bg-white dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 border border-neutral-200 dark:border-neutral-700 rounded-xl text-xs font-semibold text-neutral-700 dark:text-neutral-300 transition-colors"
+              className="w-full py-2 bg-white dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 border border-neutral-200 dark:border-neutral-700 rounded-xl text-xs font-semibold text-neutral-700 dark:text-neutral-300 transition-colors cursor-pointer"
             >
-              Inspect & Release Deposits
+              {t('venue_fin_btn_release')}
             </button>
           </div>
         </div>

@@ -233,106 +233,6 @@ export const CATEGORY_NOTIFICATION_POOLS: Record<
       body: "Argan Elixir 100ml added to client receipt.",
     },
   ],
-};
-
-export const SALON_NOTIFICATION_POOLS: Record<
-  'en' | 'fr' | 'ar',
-  Omit<StackToastItem, "id">[]
-> = {
-  en: [
-    {
-      kind: "success",
-      title: "Appointment Booked",
-      body: "Karim H. reserved with Stylist Yacine for 14:30.",
-      action: "Calendar",
-    },
-    {
-      kind: "info",
-      title: "Client In Chair",
-      body: "Nadia B. color treatment & balayage in progress.",
-      action: "Timer",
-    },
-    {
-      kind: "success",
-      title: "Treatment Sent to POS",
-      body: "Service finished. 4,500 DZD billed to Register #1.",
-      action: "Pay",
-    },
-    {
-      kind: "info",
-      title: "Walk-in Queue Updated",
-      body: "Rania Cherif added to rapid intake waiting list.",
-      action: "Queue",
-    },
-    {
-      kind: "success",
-      title: "Retail Care Upsell",
-      body: "Argan Elixir 100ml added to client receipt.",
-    },
-  ],
-  fr: [
-    {
-      kind: "success",
-      title: "Rendez-vous confirmé",
-      body: "Karim H. réservé avec le coiffeur Yacine pour 14h30.",
-      action: "Planning",
-    },
-    {
-      kind: "info",
-      title: "Client au fauteuil",
-      body: "Nadia B. soin couleur & balayage en cours.",
-      action: "Chrono",
-    },
-    {
-      kind: "success",
-      title: "Prestation envoyée en caisse",
-      body: "Service terminé. 4 500 DZD facturés à la caisse #1.",
-      action: "Payer",
-    },
-    {
-      kind: "info",
-      title: "File sans rendez-vous",
-      body: "Rania Cherif ajoutée aux entrées directes du jour.",
-      action: "File",
-    },
-    {
-      kind: "success",
-      title: "Soin capillaire vendu",
-      body: "Élixir d'Argan 100ml ajouté au ticket de caisse.",
-    },
-  ],
-  ar: [
-    {
-      kind: "success",
-      title: "تم تأكيد الموعد",
-      body: "حجز كريم ح. مع مصفف الشعر ياسين للساعة 14:30.",
-      action: "الجدول",
-    },
-    {
-      kind: "info",
-      title: "العميل على الكرسي",
-      body: "جلسة عناية وبالياج للشعر جارية لنادية ب.",
-      action: "المؤقت",
-    },
-    {
-      kind: "success",
-      title: "تحويل الجلسة للدفع",
-      body: "اكتملت الخدمة. تم تسجيل 4,500 دج في الصندوق #1.",
-      action: "دفع",
-    },
-    {
-      kind: "info",
-      title: "تحديث قائمة الاستقبال",
-      body: "تمت إضافة رانية شريف إلى لائحة الانتظار المباشر.",
-      action: "القائمة",
-    },
-    {
-      kind: "success",
-      title: "مبيعات منتجات العناية",
-      body: "تمت إضافة زيت الأرغان 100 مل إلى الفاتورة.",
-    },
-  ],
-};
 
   pos_inventory: [
     {
@@ -562,19 +462,21 @@ export const ToastStack: React.FC<ToastStackProps> = ({
   const [open, setOpen] = useState(false);
   const isHoveredRef = useRef(false);
 
-  // When business vertical changes, refresh the pool with category-dedicated notifications
+  // When business vertical or language changes, refresh the pool with category-dedicated notifications
   useEffect(() => {
     const freshPool =
-      CATEGORY_NOTIFICATION_POOLS[category] ||
-      CATEGORY_NOTIFICATION_POOLS.membership_session ||
-      CATEGORY_NOTIFICATION_POOLS.default_global;
+      category === "appointment_service"
+        ? (SALON_NOTIFICATION_POOLS[language] || SALON_NOTIFICATION_POOLS.en)
+        : (CATEGORY_NOTIFICATION_POOLS[category] ||
+           CATEGORY_NOTIFICATION_POOLS.membership_session ||
+           CATEGORY_NOTIFICATION_POOLS.default_global);
     setStack(
       freshPool.slice(0, SHOWN).map((item, idx) => ({
         ...item,
-        id: `cat-${category}-${idx}-${Date.now()}`,
+        id: `cat-${category}-${language}-${idx}-${Date.now()}`,
       }))
     );
-  }, [category]);
+  }, [category, language]);
 
   // Synchronize with store toasts when a user or system event triggers showToast
   const processedIdsRef = useRef<Set<string>>(new Set());
@@ -682,30 +584,35 @@ export const ToastStack: React.FC<ToastStackProps> = ({
     } else {
       // Default contextual routing based on action label
       const act = toast.action?.toLowerCase() || "";
-      if (act.includes("receipt") || act.includes("print")) {
+      if (act.includes("receipt") || act.includes("print") || act.includes("ticket") || act.includes("وصل")) {
         window.print?.();
-      } else if (act.includes("profile") || act.includes("client")) {
+      } else if (act.includes("profile") || act.includes("client") || act.includes("fiche") || act.includes("العميل")) {
         setScreen("members");
-      } else if (act.includes("calendar") || act.includes("schedule")) {
+      } else if (act.includes("calendar") || act.includes("schedule") || act.includes("planning") || act.includes("الجدول")) {
         setScreen("scheduler");
       } else if (act.includes("gradebook") || act.includes("cert")) {
         setScreen("members");
-      } else if (act.includes("invoice") || act.includes("pay")) {
+      } else if (act.includes("invoice") || act.includes("pay") || act.includes("payer") || act.includes("دفع")) {
         setScreen("shop");
       } else if (act.includes("contract") || act.includes("escrow")) {
         setScreen("registrations");
+      } else if (act.includes("queue") || act.includes("file") || act.includes("القائمة")) {
+        setScreen("scheduler");
       }
     }
 
     // Morph the toast into a confirmed success state
+    const dispatchedTitle = language === 'ar' ? 'تم تنفيذ الإجراء' : language === 'fr' ? 'Action exécutée' : 'Action Dispatched';
+    const dispatchedBody = language === 'ar' ? `${toast.title} تمت معالجته بنجاح.` : language === 'fr' ? `${toast.title} traité avec succès.` : `${toast.title} processed successfully.`;
+
     setStack((s) =>
       s.map((t) =>
         t.id === toast.id
           ? {
               ...t,
               kind: "success",
-              title: "Action Dispatched",
-              body: `${t.title} processed successfully.`,
+              title: dispatchedTitle,
+              body: dispatchedBody,
               action: undefined,
             }
           : t

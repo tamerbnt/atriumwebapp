@@ -21,11 +21,13 @@ import {
 import { useAtriumStore } from '../../../services/store';
 import { RentalBooking, BookingStatus } from '../../../types/index';
 import { formatCurrencyAmount } from '../../../utils/rules';
+import { useTranslation } from '../../../utils/useTranslation';
 import { BookingModal } from './BookingModal';
 import { VenueCloudSyncModal } from './VenueCloudSyncModal';
 import { Seek } from '../../ui/Seek';
 
 export const VenueBookingsView: React.FC = () => {
+  const { t, language } = useTranslation();
   const {
     rentalBookings,
     checkInBooking,
@@ -73,17 +75,17 @@ export const VenueBookingsView: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-900 dark:text-white">
-            Reservations & Inquiries
+            {t('venue_bookings_page_title')}
           </h1>
           <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
-            Complete booking pipeline, confirmed events, walk-ins, and space handovers
+            {t('venue_bookings_page_sub')}
           </p>
         </div>
 
         <div className="flex items-center gap-3 self-start sm:self-auto">
           <button
             onClick={() => setIsCloudSyncModalOpen(true)}
-            className="px-3.5 py-2.5 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-xs font-semibold text-neutral-800 dark:text-neutral-200 rounded-xl transition-colors flex items-center gap-2"
+            className="px-3.5 py-2.5 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-xs font-semibold text-neutral-800 dark:text-neutral-200 rounded-xl transition-colors flex items-center gap-2 cursor-pointer"
             title="Inspect Supabase live tables and row writes"
           >
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -92,10 +94,10 @@ export const VenueBookingsView: React.FC = () => {
           </button>
           <button
             onClick={handleNewBooking}
-            className="px-5 py-2.5 bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white text-xs font-semibold rounded-xl shadow-xs transition-colors flex items-center gap-2"
+            className="px-5 py-2.5 bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white text-xs font-semibold rounded-xl shadow-xs transition-colors flex items-center gap-2 cursor-pointer"
           >
             <Plus size={16} />
-            New Reservation
+            {t('venue_btn_new_res')}
           </button>
         </div>
       </div>
@@ -105,23 +107,23 @@ export const VenueBookingsView: React.FC = () => {
         <Seek
           value={searchQuery}
           onChange={setSearchQuery}
-          placeholder="Search bookings by renter, company, space or purpose..."
+          placeholder={t('venue_search_bookings_placeholder')}
           openWidth={320}
           shutSize={40}
         />
 
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
           {[
-            { id: 'All', label: 'All Bookings' },
-            { id: 'InUse', label: 'In-Use / Checked In' },
-            { id: 'Confirmed', label: 'Confirmed' },
-            { id: 'Tentative', label: 'Inquiries / Hold' },
-            { id: 'Completed', label: 'Completed' },
+            { id: 'All', label: t('venue_filter_all') },
+            { id: 'InUse', label: t('venue_filter_in_use') },
+            { id: 'Confirmed', label: t('venue_filter_confirmed') },
+            { id: 'Tentative', label: t('venue_filter_inquiries') },
+            { id: 'Completed', label: t('venue_filter_completed') },
           ].map((tab) => (
             <button
               key={tab.id}
               onClick={() => setSelectedStatus(tab.id)}
-              className={`px-3 py-1.5 rounded-xl font-medium transition-colors whitespace-nowrap shrink-0 ${
+              className={`px-3 py-1.5 rounded-xl font-medium transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
                 selectedStatus === tab.id
                   ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900'
                   : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200'
@@ -136,23 +138,23 @@ export const VenueBookingsView: React.FC = () => {
       {/* Bookings Table View */}
       <div className="bg-white dark:bg-neutral-800/60 rounded-3xl border border-[#E9EEF0] dark:border-neutral-800 shadow-2xs overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs border-collapse">
+          <table className="w-full text-left rtl:text-right text-xs border-collapse">
             <thead>
               <tr className="border-b border-[#E9EEF0] dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-800/80 text-neutral-500 dark:text-neutral-400 font-medium">
-                <th className="py-3 px-4">Event Purpose & Renter</th>
-                <th className="py-3 px-4">Space / Unit</th>
-                <th className="py-3 px-4">Date & Time Window</th>
-                <th className="py-3 px-4">Financials & Balance</th>
-                <th className="py-3 px-4">Caution (Deposit)</th>
-                <th className="py-3 px-4">Status</th>
-                <th className="py-3 px-4 text-right">Actions</th>
+                <th className="py-3 px-4">{t('venue_col_event_renter')}</th>
+                <th className="py-3 px-4">{t('venue_col_space_unit')}</th>
+                <th className="py-3 px-4">{t('venue_col_date_window')}</th>
+                <th className="py-3 px-4">{t('venue_col_financials')}</th>
+                <th className="py-3 px-4">{t('venue_col_caution')}</th>
+                <th className="py-3 px-4">{t('venue_col_status')}</th>
+                <th className="py-3 px-4 text-right rtl:text-left">{t('venue_col_actions')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#E9EEF0] dark:divide-neutral-800">
               {filteredBookings.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="py-12 text-center text-neutral-400">
-                    No reservations found matching your criteria.
+                    {t('venue_no_bookings_match')}
                   </td>
                 </tr>
               ) : (
@@ -180,7 +182,7 @@ export const VenueBookingsView: React.FC = () => {
                         {b.unitName}
                       </div>
                       <div className="text-[11px] text-neutral-400">
-                        {b.unitType} · {b.attendeeCount} guests
+                        {b.unitType} · {t('venue_guests_count', language, { count: b.attendeeCount })}
                       </div>
                     </td>
 
@@ -202,10 +204,10 @@ export const VenueBookingsView: React.FC = () => {
                       <div className="text-[11px]">
                         {b.balanceDue > 0 ? (
                           <span className="text-amber-600 font-medium tabular-nums">
-                            Due: {formatCurrencyAmount(b.balanceDue, b.currency)}
+                            {t('venue_balance_due', language, { amount: formatCurrencyAmount(b.balanceDue, b.currency) })}
                           </span>
                         ) : (
-                          <span className="text-emerald-600 font-medium">Fully Settled</span>
+                          <span className="text-emerald-600 font-medium">{t('venue_fully_settled')}</span>
                         )}
                       </div>
                     </td>
@@ -224,7 +226,13 @@ export const VenueBookingsView: React.FC = () => {
                             : 'bg-neutral-100 text-neutral-600 dark:bg-neutral-700 dark:text-neutral-300'
                         }`}
                       >
-                        {b.depositStatus}
+                        {b.depositStatus === 'Held'
+                          ? t('venue_held_status')
+                          : b.depositStatus === 'Refunded'
+                          ? t('venue_refunded_status')
+                          : b.depositStatus === 'Deducted'
+                          ? t('venue_deducted_status')
+                          : b.depositStatus}
                       </span>
                     </td>
 
@@ -241,52 +249,58 @@ export const VenueBookingsView: React.FC = () => {
                             : 'bg-neutral-100 text-neutral-600 dark:bg-neutral-700 dark:text-neutral-300'
                         }`}
                       >
-                        {b.status === 'CheckedIn' ? 'In-Use' : b.status}
+                        {b.status === 'CheckedIn'
+                          ? t('venue_kpi_in_use')
+                          : b.status === 'Confirmed'
+                          ? t('venue_status_confirmed')
+                          : b.status === 'Tentative'
+                          ? t('venue_status_tentative')
+                          : t('venue_status_completed')}
                       </span>
                     </td>
 
                     {/* Action buttons */}
-                    <td className="py-3.5 px-4 text-right whitespace-nowrap">
-                      <div className="flex items-center justify-end gap-1.5">
+                    <td className="py-3.5 px-4 text-right rtl:text-left whitespace-nowrap">
+                      <div className="flex items-center justify-end rtl:justify-start gap-1.5">
                         {b.status === 'Confirmed' && (
                           <button
                             onClick={() => checkInBooking(b.id)}
-                            className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[11px] font-medium transition-colors"
+                            className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[11px] font-medium transition-colors cursor-pointer"
                           >
-                            Check In
+                            {t('venue_btn_checkin_guest')}
                           </button>
                         )}
                         {b.status === 'CheckedIn' && (
                           <button
                             onClick={() => checkOutBooking(b.id)}
-                            className="px-2.5 py-1 bg-neutral-800 hover:bg-neutral-900 text-white rounded-lg text-[11px] font-medium transition-colors"
+                            className="px-2.5 py-1 bg-neutral-800 hover:bg-neutral-900 text-white rounded-lg text-[11px] font-medium transition-colors cursor-pointer"
                           >
-                            Check Out
+                            {t('venue_btn_checkout_space')}
                           </button>
                         )}
 
                         <button
                           onClick={() => setPrintedBooking(b)}
-                          className="p-1.5 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800"
-                          title="Print Rental Voucher / Agreement"
+                          className="p-1.5 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+                          title={t('venue_btn_print_voucher')}
                         >
                           <Printer size={14} />
                         </button>
                         <button
                           onClick={() => handleEdit(b)}
-                          className="p-1.5 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800"
-                          title="Edit Booking"
+                          className="p-1.5 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+                          title={t('venue_btn_edit_res')}
                         >
                           <Edit2 size={14} />
                         </button>
                         <button
                           onClick={() => {
-                            if (confirm(`Cancel reservation for ${b.renterName}?`)) {
+                            if (confirm(t('venue_confirm_cancel_res', language, { renter: b.renterName }))) {
                               deleteRentalBooking(b.id);
                             }
                           }}
-                          className="p-1.5 text-neutral-400 hover:text-red-500 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/40"
-                          title="Cancel Reservation"
+                          className="p-1.5 text-neutral-400 hover:text-red-500 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/40 cursor-pointer"
+                          title={t('venue_btn_delete_res')}
                         >
                           <Trash2 size={14} />
                         </button>
@@ -307,15 +321,15 @@ export const VenueBookingsView: React.FC = () => {
             <div className="flex justify-between items-center border-b border-neutral-200 dark:border-neutral-800 pb-4">
               <div>
                 <h3 className="text-lg font-bold text-neutral-900 dark:text-white">
-                  Official Rental Voucher & Handover Pass
+                  {t('venue_voucher_title')}
                 </h3>
                 <span className="text-xs font-mono text-neutral-400">
-                  Ref: {printedBooking.id}
+                  {t('venue_voucher_ref', language, { id: printedBooking.id })}
                 </span>
               </div>
               <button
                 onClick={() => setPrintedBooking(null)}
-                className="p-1.5 text-neutral-400 hover:text-neutral-700 rounded-lg"
+                className="p-1.5 text-neutral-400 hover:text-neutral-700 rounded-lg cursor-pointer"
               >
                 <X size={18} />
               </button>
@@ -324,25 +338,25 @@ export const VenueBookingsView: React.FC = () => {
             <div className="space-y-4 text-xs">
               <div className="p-4 bg-neutral-50 dark:bg-neutral-800/50 rounded-2xl border border-neutral-200 dark:border-neutral-700/60 space-y-2">
                 <div className="flex justify-between">
-                  <span className="text-neutral-500">Renter Name:</span>
+                  <span className="text-neutral-500">{t('venue_voucher_renter_name')}</span>
                   <span className="font-semibold text-neutral-900 dark:text-white">{printedBooking.renterName}</span>
                 </div>
                 {printedBooking.renterCompany && (
                   <div className="flex justify-between">
-                    <span className="text-neutral-500">Company:</span>
+                    <span className="text-neutral-500">{t('venue_voucher_company')}</span>
                     <span className="font-medium text-neutral-800 dark:text-neutral-200">{printedBooking.renterCompany}</span>
                   </div>
                 )}
                 <div className="flex justify-between">
-                  <span className="text-neutral-500">Contact Phone:</span>
+                  <span className="text-neutral-500">{t('venue_voucher_phone')}</span>
                   <span className="font-mono text-neutral-800 dark:text-neutral-200">{printedBooking.renterPhone}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-neutral-500">Reserved Space:</span>
+                  <span className="text-neutral-500">{t('venue_voucher_space')}</span>
                   <span className="font-semibold text-neutral-900 dark:text-white">{printedBooking.unitName}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-neutral-500">Reservation Window:</span>
+                  <span className="text-neutral-500">{t('venue_voucher_window')}</span>
                   <span className="font-mono text-neutral-900 dark:text-white">
                     {printedBooking.startDateTime.replace('T', ' ').slice(0, 16)} - {printedBooking.endDateTime.split('T')[1]?.slice(0, 5)}
                   </span>
@@ -351,32 +365,38 @@ export const VenueBookingsView: React.FC = () => {
 
               <div className="p-4 bg-neutral-50 dark:bg-neutral-800/50 rounded-2xl border border-neutral-200 dark:border-neutral-700/60 space-y-2">
                 <div className="flex justify-between font-semibold text-neutral-900 dark:text-white">
-                  <span>Total Space Hire:</span>
+                  <span>{t('venue_voucher_total_hire')}</span>
                   <span className="tabular-nums">{formatCurrencyAmount(printedBooking.totalAmount, printedBooking.currency)}</span>
                 </div>
                 <div className="flex justify-between text-neutral-600 dark:text-neutral-400">
-                  <span>Security Caution Held:</span>
+                  <span>{t('venue_voucher_caution_held')}</span>
                   <span className="font-medium text-emerald-600 tabular-nums">
-                    {formatCurrencyAmount(printedBooking.depositAmount, printedBooking.currency)} ({printedBooking.depositStatus})
+                    {formatCurrencyAmount(printedBooking.depositAmount, printedBooking.currency)} (
+                    {printedBooking.depositStatus === 'Held'
+                      ? t('venue_held_status')
+                      : printedBooking.depositStatus === 'Refunded'
+                      ? t('venue_refunded_status')
+                      : t('venue_deducted_status')}
+                    )
                   </span>
                 </div>
                 <div className="flex justify-between text-neutral-600 dark:text-neutral-400">
-                  <span>Balance Due:</span>
+                  <span>{t('venue_voucher_balance_due')}</span>
                   <span className="font-medium tabular-nums">{formatCurrencyAmount(printedBooking.balanceDue, printedBooking.currency)}</span>
                 </div>
               </div>
 
               <div className="p-3 bg-neutral-100 dark:bg-neutral-800 rounded-xl text-[11px] text-neutral-500 dark:text-neutral-400 leading-relaxed">
-                By presenting this voucher, the renter certifies having accepted venue regulations, agreed to inspection upon room return, and authorized security deposit retention in case of property damages.
+                {t('venue_voucher_disclaimer')}
               </div>
             </div>
 
-            <div className="flex justify-end gap-2 pt-2 border-t border-neutral-200 dark:border-neutral-800">
+            <div className="flex justify-end rtl:justify-start gap-2 pt-2 border-t border-neutral-200 dark:border-neutral-800">
               <button
                 onClick={() => window.print()}
-                className="px-5 py-2 bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white text-xs font-semibold rounded-xl flex items-center gap-1.5"
+                className="px-5 py-2 bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white text-xs font-semibold rounded-xl flex items-center gap-1.5 cursor-pointer"
               >
-                <Printer size={14} /> Print Agreement
+                <Printer size={14} /> {t('venue_btn_print_agreement')}
               </button>
             </div>
           </div>

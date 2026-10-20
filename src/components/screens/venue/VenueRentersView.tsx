@@ -18,12 +18,14 @@ import {
 import { useAtriumStore } from '../../../services/store';
 import { RentalRenter } from '../../../types/index';
 import { formatCurrencyAmount } from '../../../utils/rules';
+import { useTranslation } from '../../../utils/useTranslation';
 import { BookingModal } from './BookingModal';
 import { Seek } from '../../ui/Seek';
 import { LabelInput } from '../../ui/LabelInput';
 import { ActionNode } from '../../ui/ActionNode';
 
 export const VenueRentersView: React.FC = () => {
+  const { t, language } = useTranslation();
   const {
     rentalRenters,
     createRentalRenter,
@@ -134,19 +136,19 @@ export const VenueRentersView: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-900 dark:text-white">
-            Renters & Client Directory
+            {t('venue_renters_page_title')}
           </h1>
           <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
-            Corporate accounts, repeat event organizers, identification records & booking history
+            {t('venue_renters_page_sub')}
           </p>
         </div>
 
         <button
           onClick={handleOpenAdd}
-          className="px-5 py-2.5 bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white text-xs font-semibold rounded-xl shadow-xs transition-colors flex items-center gap-2 self-start sm:self-auto"
+          className="px-5 py-2.5 bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white text-xs font-semibold rounded-xl shadow-xs transition-colors flex items-center gap-2 self-start sm:self-auto cursor-pointer"
         >
           <Plus size={16} />
-          Add Renter
+          {t('venue_renters_btn_add')}
         </button>
       </div>
 
@@ -154,37 +156,37 @@ export const VenueRentersView: React.FC = () => {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="p-5 rounded-2xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-800">
           <div className="text-xs font-medium text-neutral-500 uppercase tracking-wider mb-1">
-            Registered Renters
+            {t('venue_renters_kpi_total')}
           </div>
           <div className="text-2xl font-bold text-neutral-900 dark:text-white tabular-nums">
             {totalRentersCount}
           </div>
           <div className="text-xs text-neutral-400 mt-1">
-            {corporateCount} corporate organizations
+            {corporateCount} {t('venue_renters_kpi_corporate')}
           </div>
         </div>
 
         <div className="p-5 rounded-2xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-800">
           <div className="text-xs font-medium text-neutral-500 uppercase tracking-wider mb-1">
-            Corporate Share
+            {t('venue_renters_kpi_corporate')}
           </div>
           <div className="text-2xl font-bold text-neutral-900 dark:text-white tabular-nums">
             {totalRentersCount > 0 ? Math.round((corporateCount / totalRentersCount) * 100) : 0}%
           </div>
           <div className="text-xs text-neutral-400 mt-1">
-            Agencies, production studios & forums
+            {language === 'ar' ? 'الشركات، الوكالات والمؤسسات' : language === 'fr' ? 'Entreprises, agences et institutions' : 'Agencies, production studios & forums'}
           </div>
         </div>
 
         <div className="p-5 rounded-2xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-800">
           <div className="text-xs font-medium text-neutral-500 uppercase tracking-wider mb-1">
-            Lifetime Renter Value
+            {t('venue_renters_kpi_revenue')}
           </div>
           <div className="text-2xl font-bold text-neutral-900 dark:text-white tabular-nums">
             {formatCurrencyAmount(totalRevenue, 'DZD')}
           </div>
           <div className="text-xs text-neutral-400 mt-1">
-            Cumulative bookings turnover
+            {language === 'ar' ? 'إجمالي المداخيل التراكمية' : language === 'fr' ? 'Chiffre d\'affaires cumulé' : 'Cumulative bookings turnover'}
           </div>
         </div>
       </div>
@@ -193,7 +195,7 @@ export const VenueRentersView: React.FC = () => {
       <Seek
         value={searchQuery}
         onChange={setSearchQuery}
-        placeholder="Search renters by name, company, phone, ID number..."
+        placeholder={t('venue_renters_search_ph')}
         shutSize={38}
         openWidth={300}
       />
@@ -204,10 +206,10 @@ export const VenueRentersView: React.FC = () => {
           <div className="col-span-full p-12 text-center bg-neutral-50 dark:bg-neutral-800/30 rounded-3xl border border-neutral-200 dark:border-neutral-800">
             <Users size={36} className="mx-auto text-neutral-400 mb-2" />
             <h3 className="text-base font-semibold text-neutral-900 dark:text-white">
-              No renters found
+              {t('venue_renters_no_renters')}
             </h3>
             <p className="text-xs text-neutral-400 mt-1">
-              Add your first renter contact or organization using the button above.
+              {t('venue_renters_no_renters_desc')}
             </p>
           </div>
         ) : (
@@ -215,8 +217,8 @@ export const VenueRentersView: React.FC = () => {
             <ActionNode
               key={renter.id}
               title={renter.fullName}
-              description={renter.companyName || (renter.idDocNumber ? `ID: ${renter.idDocNumber}` : 'Private Renter')}
-              tag={`${renter.totalBookings} Bookings`}
+              description={renter.companyName || (renter.idDocNumber ? `ID: ${renter.idDocNumber}` : (language === 'ar' ? 'مستأجر خاص' : language === 'fr' ? 'Locataire Particulier' : 'Private Renter'))}
+              tag={t('venue_renters_card_bookings_count', language, { count: renter.totalBookings })}
               width="100%"
               air={14}
               corner={20}
@@ -234,7 +236,7 @@ export const VenueRentersView: React.FC = () => {
               actions={[
                 {
                   id: 'book',
-                  label: 'Book Space',
+                  label: t('venue_renters_btn_quick_book'),
                   icon: <Calendar size={13} />,
                   onClick: () => {
                     setBookingRenterId(renter.id);
@@ -244,16 +246,16 @@ export const VenueRentersView: React.FC = () => {
                 },
                 {
                   id: 'edit',
-                  label: 'Edit Renter',
+                  label: t('venue_renters_btn_edit'),
                   icon: <Edit2 size={13} />,
                   onClick: () => handleOpenEdit(renter),
                 },
                 {
                   id: 'delete',
-                  label: 'Delete Renter',
+                  label: t('venue_renters_btn_delete'),
                   icon: <Trash2 size={13} />,
                   onClick: () => {
-                    if (confirm(`Delete renter profile for ${renter.fullName}?`)) {
+                    if (confirm(`${t('venue_renters_btn_delete')} ${renter.fullName}?`)) {
                       deleteRentalRenter(renter.id);
                     }
                   },
@@ -274,9 +276,9 @@ export const VenueRentersView: React.FC = () => {
 
               {/* Stats */}
               <div className="pt-2 border-t border-neutral-100 dark:border-neutral-700/60 flex items-center justify-between text-xs">
-                <span className="text-neutral-400 text-[10px] uppercase">Total Spend</span>
+                <span className="text-neutral-400 text-[10px] uppercase">{t('common_total')}</span>
                 <span className="font-semibold text-neutral-900 dark:text-white tabular-nums">
-                  {formatCurrencyAmount(renter.totalSpent, renter.currency)}
+                  {t('venue_renters_card_spent', language, { amount: formatCurrencyAmount(renter.totalSpent, renter.currency) })}
                 </span>
               </div>
             </ActionNode>
@@ -290,11 +292,11 @@ export const VenueRentersView: React.FC = () => {
           <div className="bg-white dark:bg-[#18181B] rounded-[28px] border border-neutral-200 dark:border-neutral-800 shadow-2xl max-w-md w-full p-6 space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-neutral-200 dark:border-neutral-800">
               <h3 className="text-base font-bold text-neutral-900 dark:text-white">
-                {renterToEdit ? 'Edit Renter Profile' : 'New Renter & Client Registration'}
+                {renterToEdit ? t('venue_renters_modal_edit_title') : t('venue_renters_modal_add_title')}
               </h3>
               <button
                 onClick={() => setIsAddModalOpen(false)}
-                className="p-1.5 text-neutral-400 hover:text-neutral-700 rounded-lg"
+                className="p-1.5 text-neutral-400 hover:text-neutral-700 rounded-lg cursor-pointer"
               >
                 <X size={16} />
               </button>
@@ -303,7 +305,7 @@ export const VenueRentersView: React.FC = () => {
             <form onSubmit={handleSaveRenter} className="space-y-3.5 text-xs">
               <LabelInput
                 id="renter-fullname"
-                label="Full Name"
+                label={t('venue_renters_field_fullname')}
                 placeholder="e.g. Amina Kaci"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
@@ -312,7 +314,7 @@ export const VenueRentersView: React.FC = () => {
 
               <LabelInput
                 id="renter-company"
-                label="Company / Organization Name"
+                label={t('venue_renters_field_company')}
                 placeholder="e.g. Kaci Events & Communications"
                 value={companyName}
                 onChange={(e) => setCompanyName(e.target.value)}
@@ -321,7 +323,7 @@ export const VenueRentersView: React.FC = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <LabelInput
                   id="renter-phone"
-                  label="Phone Number"
+                  label={t('venue_renters_field_phone')}
                   type="tel"
                   placeholder="+213 552 11 22 33"
                   value={phone}
@@ -330,7 +332,7 @@ export const VenueRentersView: React.FC = () => {
                 />
                 <LabelInput
                   id="renter-email"
-                  label="Email Address"
+                  label={t('venue_renters_field_email')}
                   type="email"
                   placeholder="contact@events.dz"
                   value={email}
@@ -340,7 +342,7 @@ export const VenueRentersView: React.FC = () => {
 
               <LabelInput
                 id="renter-id-doc"
-                label="National ID / Passport Number"
+                label={t('venue_renters_field_id_doc')}
                 placeholder="e.g. ID-DZ-9912048"
                 value={idDocNumber}
                 onChange={(e) => setIdDocNumber(e.target.value)}
@@ -348,7 +350,7 @@ export const VenueRentersView: React.FC = () => {
 
               <div>
                 <label className="block font-medium text-neutral-700 dark:text-neutral-300 mb-1">
-                  Notes & Preferences
+                  {t('venue_renters_field_notes')}
                 </label>
                 <textarea
                   rows={2}
@@ -359,19 +361,19 @@ export const VenueRentersView: React.FC = () => {
                 />
               </div>
 
-              <div className="flex justify-end gap-2 pt-3 border-t border-neutral-200 dark:border-neutral-800">
+              <div className="flex justify-end rtl:justify-start gap-2 pt-3 border-t border-neutral-200 dark:border-neutral-800">
                 <button
                   type="button"
                   onClick={() => setIsAddModalOpen(false)}
-                  className="px-4 py-2 text-neutral-600 hover:text-neutral-900"
+                  className="px-4 py-2 text-neutral-600 hover:text-neutral-900 cursor-pointer"
                 >
-                  Cancel
+                  {t('common_cancel')}
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white font-semibold rounded-xl"
+                  className="px-5 py-2 bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white font-semibold rounded-xl cursor-pointer"
                 >
-                  {renterToEdit ? 'Save Changes' : 'Register Renter'}
+                  {t('venue_renters_save_btn')}
                 </button>
               </div>
             </form>

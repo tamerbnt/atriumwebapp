@@ -17,10 +17,12 @@ import {
 import { useAtriumStore } from '../../../services/store';
 import { RentableUnit, RentalBooking, RentableUnitType } from '../../../types/index';
 import { formatCurrencyAmount } from '../../../utils/rules';
+import { useTranslation } from '../../../utils/useTranslation';
 import { BookingModal } from './BookingModal';
 import { VenueCloudSyncModal } from './VenueCloudSyncModal';
 
 export const VenueTimelineView: React.FC = () => {
+  const { t, language } = useTranslation();
   const {
     rentableUnits,
     rentalBookings,
@@ -95,10 +97,10 @@ export const VenueTimelineView: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-900 dark:text-white">
-            Occupancy Matrix & Timeline
+            {t('venue_timeline_matrix_title')}
           </h1>
           <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
-            Horizontal scheduling grid of spaces, studios, courts & asset reservations
+            {t('venue_timeline_matrix_sub')}
           </p>
         </div>
 
@@ -107,15 +109,15 @@ export const VenueTimelineView: React.FC = () => {
           <div className="flex items-center bg-neutral-100 dark:bg-neutral-800 rounded-xl p-1 border border-neutral-200 dark:border-neutral-700">
             <button
               onClick={handlePrevDay}
-              className="p-1.5 text-neutral-600 dark:text-neutral-300 hover:bg-white dark:hover:bg-neutral-700 rounded-lg transition-colors"
+              className="p-1.5 text-neutral-600 dark:text-neutral-300 hover:bg-white dark:hover:bg-neutral-700 rounded-lg transition-colors cursor-pointer"
             >
-              <ChevronLeft size={16} />
+              <ChevronLeft size={16} className="rtl:rotate-180" />
             </button>
             <button
               onClick={handleToday}
-              className="px-3 py-1 text-xs font-semibold text-neutral-800 dark:text-neutral-200 hover:bg-white dark:hover:bg-neutral-700 rounded-lg transition-colors"
+              className="px-3 py-1 text-xs font-semibold text-neutral-800 dark:text-neutral-200 hover:bg-white dark:hover:bg-neutral-700 rounded-lg transition-colors cursor-pointer"
             >
-              Today
+              {t('venue_timeline_today')}
             </button>
             <input
               type="date"
@@ -125,20 +127,20 @@ export const VenueTimelineView: React.FC = () => {
             />
             <button
               onClick={handleNextDay}
-              className="p-1.5 text-neutral-600 dark:text-neutral-300 hover:bg-white dark:hover:bg-neutral-700 rounded-lg transition-colors"
+              className="p-1.5 text-neutral-600 dark:text-neutral-300 hover:bg-white dark:hover:bg-neutral-700 rounded-lg transition-colors cursor-pointer"
             >
-              <ChevronRight size={16} />
+              <ChevronRight size={16} className="rtl:rotate-180" />
             </button>
           </div>
 
           <button
             onClick={() => setIsCloudSyncModalOpen(true)}
-            className="px-3 py-2 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-xs font-semibold text-neutral-800 dark:text-neutral-200 rounded-xl transition-colors flex items-center gap-1.5"
+            className="px-3 py-2 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-xs font-semibold text-neutral-800 dark:text-neutral-200 rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer"
             title="Inspect Supabase live tables and row writes"
           >
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             <Cloud size={14} className="text-purple-600 dark:text-purple-400" />
-            Supabase Cloud
+            {t('venue_btn_cloud_sync')}
           </button>
 
           <button
@@ -147,27 +149,34 @@ export const VenueTimelineView: React.FC = () => {
               setModalInitialHour(undefined);
               setIsBookingModalOpen(true);
             }}
-            className="px-4 py-2.5 bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white text-xs font-semibold rounded-xl shadow-xs transition-colors flex items-center gap-2"
+            className="px-4 py-2.5 bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white text-xs font-semibold rounded-xl shadow-xs transition-colors flex items-center gap-2 cursor-pointer"
           >
             <Plus size={16} />
-            New Booking
+            {t('venue_btn_new_booking')}
           </button>
         </div>
       </div>
 
       {/* Filter Chips Bar */}
       <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
-        {(['All', 'Hall', 'Studio', 'Room', 'Court', 'Desk'] as const).map((type) => (
+        {[
+          { id: 'All' as const, label: t('venue_type_all') },
+          { id: 'Hall' as const, label: t('venue_type_hall') },
+          { id: 'Studio' as const, label: t('venue_type_studio') },
+          { id: 'Room' as const, label: t('venue_type_room') },
+          { id: 'Court' as const, label: t('venue_type_court') },
+          { id: 'Desk' as const, label: t('venue_type_desk') },
+        ].map((item) => (
           <button
-            key={type}
-            onClick={() => setSelectedTypeFilter(type)}
-            className={`px-3.5 py-1.5 rounded-xl font-medium transition-colors whitespace-nowrap shrink-0 ${
-              selectedTypeFilter === type
+            key={item.id}
+            onClick={() => setSelectedTypeFilter(item.id)}
+            className={`px-3.5 py-1.5 rounded-xl font-medium transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
+              selectedTypeFilter === item.id
                 ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900'
                 : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700'
             }`}
           >
-            {type === 'All' ? 'All Spaces' : `${type}s`}
+            {item.label}
           </button>
         ))}
       </div>
@@ -177,7 +186,7 @@ export const VenueTimelineView: React.FC = () => {
         {/* Hours Header Row */}
         <div className="flex border-b border-[#E9EEF0] dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-800/80 sticky top-0 z-10 text-[11px] font-mono text-neutral-400">
           <div className="w-56 sm:w-64 p-3 font-semibold text-neutral-700 dark:text-neutral-300 border-r border-[#E9EEF0] dark:border-neutral-800 shrink-0">
-            Space / Asset ({filteredUnits.length})
+            {t('venue_space_asset_header', language, { count: filteredUnits.length })}
           </div>
           <div className="flex-1 grid grid-cols-16 divide-x divide-neutral-200/50 dark:divide-neutral-700/50">
             {HOURS.map((hour) => (
@@ -189,10 +198,10 @@ export const VenueTimelineView: React.FC = () => {
         </div>
 
         {/* Space Rows */}
-        <div className="divide-y divide-[#E9EEF0] dark:divide-neutral-800">
+        <div className="divide-y divide-[#E9EEF0] dark:border-neutral-800">
           {filteredUnits.length === 0 ? (
             <div className="p-8 text-center text-sm text-neutral-400">
-              No spaces found matching this filter.
+              {t('venue_no_spaces_filter')}
             </div>
           ) : (
             filteredUnits.map((unit) => {
@@ -213,13 +222,23 @@ export const VenueTimelineView: React.FC = () => {
                         {unit.name}
                       </span>
                     </div>
-                    <div className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-1 flex items-center gap-1.5">
-                      <span>{unit.type}</span>
+                    <div className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-1 flex items-center gap-1.5 flex-wrap">
+                      <span>
+                        {unit.type === 'Hall'
+                          ? t('venue_type_hall')
+                          : unit.type === 'Studio'
+                          ? t('venue_type_studio')
+                          : unit.type === 'Room'
+                          ? t('venue_type_room')
+                          : unit.type === 'Court'
+                          ? t('venue_type_court')
+                          : t('venue_type_desk')}
+                      </span>
                       <span>·</span>
-                      <span>Cap: {unit.capacity}</span>
+                      <span>{t('venue_card_capacity', language, { count: unit.capacity })}</span>
                       <span>·</span>
                       <span className="tabular-nums font-medium text-neutral-700 dark:text-neutral-300">
-                        {formatCurrencyAmount(unit.hourlyRate, unit.currency)}/h
+                        {formatCurrencyAmount(unit.hourlyRate, unit.currency)}{t('venue_per_hour')}
                       </span>
                     </div>
                   </div>
@@ -231,7 +250,7 @@ export const VenueTimelineView: React.FC = () => {
                         key={hour}
                         onClick={() => handleSlotClick(unit.id, hour)}
                         className="h-full cursor-pointer hover:bg-amber-50/50 dark:hover:bg-neutral-700/30 transition-colors"
-                        title={`Click to reserve ${unit.name} at ${hour}:00`}
+                        title={t('venue_slot_tooltip', language, { name: unit.name, time: `${hour}:00` })}
                       />
                     ))}
 
@@ -289,7 +308,7 @@ export const VenueTimelineView: React.FC = () => {
             <div className="flex items-center justify-between pb-4 border-b border-[#E9EEF0] dark:border-neutral-800">
               <div>
                 <span className="text-[10px] font-mono text-neutral-400 uppercase">
-                  Reservation {inspectedBooking.id}
+                  {t('venue_inspected_res_title', language, { id: inspectedBooking.id })}
                 </span>
                 <h3 className="text-lg font-bold text-neutral-900 dark:text-white mt-0.5">
                   {inspectedBooking.purpose}
@@ -297,7 +316,7 @@ export const VenueTimelineView: React.FC = () => {
               </div>
               <button
                 onClick={() => setInspectedBooking(null)}
-                className="p-1.5 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                className="p-1.5 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
               >
                 <X size={18} />
               </button>
@@ -305,41 +324,41 @@ export const VenueTimelineView: React.FC = () => {
 
             <div className="space-y-3 text-xs">
               <div className="flex justify-between py-1 border-b border-neutral-100 dark:border-neutral-800">
-                <span className="text-neutral-500">Space Reserved:</span>
+                <span className="text-neutral-500">{t('venue_inspected_space')}</span>
                 <span className="font-semibold text-neutral-900 dark:text-white">{inspectedBooking.unitName}</span>
               </div>
               <div className="flex justify-between py-1 border-b border-neutral-100 dark:border-neutral-800">
-                <span className="text-neutral-500">Renter:</span>
+                <span className="text-neutral-500">{t('venue_inspected_renter')}</span>
                 <span className="font-semibold text-neutral-900 dark:text-white">
                   {inspectedBooking.renterName} {inspectedBooking.renterCompany && `(${inspectedBooking.renterCompany})`}
                 </span>
               </div>
               <div className="flex justify-between py-1 border-b border-neutral-100 dark:border-neutral-800">
-                <span className="text-neutral-500">Phone:</span>
+                <span className="text-neutral-500">{t('venue_inspected_phone')}</span>
                 <span className="font-mono text-neutral-900 dark:text-white">{inspectedBooking.renterPhone}</span>
               </div>
               <div className="flex justify-between py-1 border-b border-neutral-100 dark:border-neutral-800">
-                <span className="text-neutral-500">Time Window:</span>
+                <span className="text-neutral-500">{t('venue_inspected_window')}</span>
                 <span className="font-mono font-medium text-neutral-900 dark:text-white">
                   {inspectedBooking.startDateTime.replace('T', ' ').slice(0, 16)} ➔ {inspectedBooking.endDateTime.split('T')[1]?.slice(0, 5)} ({inspectedBooking.durationHours}h)
                 </span>
               </div>
               <div className="flex justify-between py-1 border-b border-neutral-100 dark:border-neutral-800">
-                <span className="text-neutral-500">Total Price:</span>
+                <span className="text-neutral-500">{t('venue_inspected_total')}</span>
                 <span className="font-bold text-sm text-neutral-900 dark:text-white tabular-nums">
                   {formatCurrencyAmount(inspectedBooking.totalAmount, inspectedBooking.currency)}
                 </span>
               </div>
               <div className="flex justify-between py-1 border-b border-neutral-100 dark:border-neutral-800">
-                <span className="text-neutral-500">Caution (Deposit):</span>
+                <span className="text-neutral-500">{t('venue_inspected_caution')}</span>
                 <span className="font-medium text-neutral-900 dark:text-white tabular-nums">
                   {formatCurrencyAmount(inspectedBooking.depositAmount, inspectedBooking.currency)} ({inspectedBooking.depositStatus})
                 </span>
               </div>
               <div className="flex justify-between py-1 border-b border-neutral-100 dark:border-neutral-800">
-                <span className="text-neutral-500">Contract Signed:</span>
+                <span className="text-neutral-500">{t('venue_inspected_contract')}</span>
                 <span className={`font-semibold ${inspectedBooking.contractSigned ? 'text-emerald-600' : 'text-amber-600'}`}>
-                  {inspectedBooking.contractSigned ? 'Yes · Signed' : 'Pending Signature'}
+                  {inspectedBooking.contractSigned ? t('venue_contract_signed_yes') : t('venue_contract_signed_no')}
                 </span>
               </div>
             </div>
@@ -352,9 +371,9 @@ export const VenueTimelineView: React.FC = () => {
                     checkInBooking(inspectedBooking.id);
                     setInspectedBooking(null);
                   }}
-                  className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold transition-colors"
+                  className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold transition-colors cursor-pointer"
                 >
-                  Check In Guest
+                  {t('venue_btn_checkin_guest')}
                 </button>
               )}
               {inspectedBooking.status === 'CheckedIn' && (
@@ -363,9 +382,9 @@ export const VenueTimelineView: React.FC = () => {
                     checkOutBooking(inspectedBooking.id);
                     setInspectedBooking(null);
                   }}
-                  className="flex-1 py-2.5 bg-neutral-800 hover:bg-neutral-900 text-white rounded-xl text-xs font-semibold transition-colors"
+                  className="flex-1 py-2.5 bg-neutral-800 hover:bg-neutral-900 text-white rounded-xl text-xs font-semibold transition-colors cursor-pointer"
                 >
-                  Check Out & Return Space
+                  {t('venue_btn_checkout_space')}
                 </button>
               )}
               <button
@@ -373,9 +392,9 @@ export const VenueTimelineView: React.FC = () => {
                   deleteRentalBooking(inspectedBooking.id);
                   setInspectedBooking(null);
                 }}
-                className="px-4 py-2.5 bg-red-50 hover:bg-red-100 text-red-600 dark:bg-red-950/40 dark:text-red-400 rounded-xl text-xs font-semibold transition-colors"
+                className="px-4 py-2.5 bg-red-50 hover:bg-red-100 text-red-600 dark:bg-red-950/40 dark:text-red-400 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
               >
-                Cancel Booking
+                {t('venue_btn_cancel_booking')}
               </button>
             </div>
           </div>
