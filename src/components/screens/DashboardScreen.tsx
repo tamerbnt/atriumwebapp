@@ -25,7 +25,7 @@ import {
   Package,
 } from 'lucide-react';
 import { useAtriumStore } from '../../services/store';
-import { formatMoney } from '../../utils/rules';
+import { formatMoney, calculateDaysRemaining } from '../../utils/rules';
 import { AppointmentModal } from '../modals/AppointmentModal';
 import { Appointment } from '../../types/index';
 import { t } from '../../utils/i18n';
@@ -1265,7 +1265,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                   </div>
                   <div>
                     <div className="text-xl font-black text-white tabular-nums">
-                      {members.filter((m) => m.status === 'Expiring').length}
+                      {members.filter((m) => m.status === 'Active' && calculateDaysRemaining(false, m.expirationDate) <= 14).length}
                     </div>
                     <div className="w-full h-0.5 bg-amber-500 mt-2.5 rounded-full opacity-80" />
                   </div>

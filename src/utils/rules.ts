@@ -139,13 +139,13 @@ export const TERMINOLOGY_STORE: Record<
   }
 > = {
   membership_session: {
-    members: { en: 'Members', fr: 'Membres', ar: 'الأعضاء' },
-    memberSingle: { en: 'Member', fr: 'Membre', ar: 'عضو' },
+    members: { en: 'Members', fr: 'Adhérents', ar: 'المشتركين' },
+    memberSingle: { en: 'Member', fr: 'Adhérent', ar: 'مشترك' },
     registration: { en: 'Registrations', fr: 'Inscriptions', ar: 'التسجيلات' },
-    plan: { en: 'Membership Plans', fr: 'Forfaits d\'adhésion', ar: 'خطط العضوية' },
-    shop: { en: 'Pro Shop', fr: 'Boutique', ar: 'المتجر الرياضي' },
-    scheduler: { en: 'Class Schedule', fr: 'Planning des cours', ar: 'جدول الحصص' },
-    facility: { en: 'Gym Branch', fr: 'Salle de sport', ar: 'فرع النادي' },
+    plan: { en: 'Membership Plans', fr: 'Abonnements', ar: 'الاشتراكات' },
+    shop: { en: 'Pro Shop', fr: 'Boutique Pro-Shop', ar: 'المتجر الرياضي' },
+    scheduler: { en: 'Class Schedule', fr: 'Planning des séances', ar: 'جدول الحصص التدريبية' },
+    facility: { en: 'Fitness Club', fr: 'Salle de sport', ar: 'القاعة الرياضية' },
   },
   appointment_service: {
     members: { en: 'Clients', fr: 'Clients', ar: 'العملاء' },

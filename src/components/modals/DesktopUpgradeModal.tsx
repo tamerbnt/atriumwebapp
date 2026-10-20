@@ -111,8 +111,8 @@ export const DesktopUpgradeModal: React.FC<DesktopUpgradeModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Atrium Desktop Edition"
-      subtitle="Expand beyond 1 branch with the high-performance desktop application"
+      title={language === 'ar' ? 'نسخة أتريوم المكتبية للكمبيوتر' : language === 'fr' ? 'Atrium Édition Bureau' : 'Atrium Desktop Edition'}
+      subtitle={language === 'ar' ? 'تجاوز حدود الفرع الواحد مع تطبيق سطح المكتب فائق الأداء' : language === 'fr' ? 'Dépassez la limite d\'une seule agence avec l\'application de bureau haute performance' : 'Expand beyond 1 branch with the high-performance desktop application'}
       maxWidth="lg"
     >
       <div className="space-y-6 select-none">
@@ -121,7 +121,14 @@ export const DesktopUpgradeModal: React.FC<DesktopUpgradeModalProps> = ({
           <div className="p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-xs text-amber-900 dark:text-amber-200 flex items-start gap-2.5">
             <Building2 size={16} className="shrink-0 text-amber-600 mt-0.5" />
             <div>
-              <span className="font-bold">Web Free Edition Limit Reached:</span> You have reached the 1 branch limit of the free web version. To add multiple branches and manage multi-location chains, download the Atrium Desktop app!
+              <span className="font-bold">
+                {language === 'ar' ? 'تم الوصول لحد النسخة المجانية:' : language === 'fr' ? 'Limite de la version Web gratuite atteinte :' : 'Web Free Edition Limit Reached:'}
+              </span>{' '}
+              {language === 'ar'
+                ? 'لقد بلغت الحد الأقصى للفرع الواحد في النسخة المجانية على الويب. لإضافة فروع متعددة وسلاسل قاعات، حمل تطبيق أتريوم المكتبي!'
+                : language === 'fr'
+                ? 'Vous avez atteint la limite d\'une seule agence de la version web gratuite. Pour ajouter plusieurs établissements et chaînes, téléchargez l\'application Atrium Bureau !'
+                : 'You have reached the 1 branch limit of the free web version. To add multiple branches and manage multi-location chains, download the Atrium Desktop app!'}
             </div>
           </div>
         )}
@@ -130,7 +137,14 @@ export const DesktopUpgradeModal: React.FC<DesktopUpgradeModalProps> = ({
           <div className="p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-xs text-amber-900 dark:text-amber-200 flex items-start gap-2.5">
             <Layers size={16} className="shrink-0 text-amber-600 mt-0.5" />
             <div>
-              <span className="font-bold">Multi-Business Management:</span> Managing multiple business verticals and enterprise multi-tenancy is exclusive to the Atrium Desktop Edition.
+              <span className="font-bold">
+                {language === 'ar' ? 'إدارة الأنشطة المتعددة:' : language === 'fr' ? 'Gestion multi-activités :' : 'Multi-Business Management:'}
+              </span>{' '}
+              {language === 'ar'
+                ? 'إدارة الأنشطة والقطاعات التجارية المتعددة ميزة حصرية لتطبيق أتريوم المكتبي.'
+                : language === 'fr'
+                ? 'La gestion de plusieurs activités et entreprises est exclusive à l\'édition Bureau d\'Atrium.'
+                : 'Managing multiple business verticals and enterprise multi-tenancy is exclusive to the Atrium Desktop Edition.'}
             </div>
           </div>
         )}
@@ -204,7 +218,7 @@ export const DesktopUpgradeModal: React.FC<DesktopUpgradeModalProps> = ({
               </li>
               <li className="flex items-center gap-1.5">
                 <CheckCircle2 size={13} className="text-emerald-500 shrink-0" />
-                <span>100% Free Forever</span>
+                <span>{language === 'ar' ? 'مجاني 100% للأبد' : language === 'fr' ? '100% Gratuit pour toujours' : '100% Free Forever'}</span>
               </li>
             </ul>
           </div>
@@ -220,19 +234,19 @@ export const DesktopUpgradeModal: React.FC<DesktopUpgradeModalProps> = ({
             <ul className="space-y-1.5 text-neutral-700 dark:text-neutral-300 text-[11px]">
               <li className="flex items-center gap-1.5">
                 <Sparkles size={13} className="text-[#C4785A] shrink-0" />
-                <span><strong>Multi-Branch</strong> Chains &amp; Brands</span>
+                <span><strong>{language === 'ar' ? 'فروع متعددة' : language === 'fr' ? 'Multi-agences' : 'Multi-Branch'}</strong> {language === 'ar' ? 'وسلاسل تجارية' : language === 'fr' ? 'Réseaux & Marques' : 'Chains & Brands'}</span>
               </li>
               <li className="flex items-center gap-1.5">
                 <Sparkles size={13} className="text-[#C4785A] shrink-0" />
-                <span><strong>Offline-First</strong> local SQLite engine</span>
+                <span><strong>{language === 'ar' ? 'مستقل عن الإنترنت' : language === 'fr' ? 'Autonome hors-ligne' : 'Offline-First'}</strong> {language === 'ar' ? 'محرك SQLite محلي' : language === 'fr' ? 'moteur local SQLite' : 'local SQLite engine'}</span>
               </li>
               <li className="flex items-center gap-1.5">
                 <Sparkles size={13} className="text-[#C4785A] shrink-0" />
-                <span>Thermal receipt printer &amp; barcode guns</span>
+                <span>{language === 'ar' ? 'طابعات حرارية وقارئ باركود' : language === 'fr' ? 'Imprimante thermique & douchette' : 'Thermal receipt printer & barcode guns'}</span>
               </li>
               <li className="flex items-center gap-1.5">
                 <Sparkles size={13} className="text-[#C4785A] shrink-0" />
-                <span>Prepaid Lifetime Cash Vouchers</span>
+                <span>{language === 'ar' ? 'قسائم ترخيص مسبقة الدفع مدى الحياة' : language === 'fr' ? 'Bons de licence perpétuelle prépayés' : 'Prepaid Lifetime Cash Vouchers'}</span>
               </li>
             </ul>
           </div>
@@ -242,7 +256,13 @@ export const DesktopUpgradeModal: React.FC<DesktopUpgradeModalProps> = ({
         <div className="p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700/60 space-y-3">
           <div className="flex items-center gap-2 text-neutral-900 dark:text-white font-bold text-xs">
             <Cloud size={16} className="text-[#C4785A]" />
-            <span>How Your Data Seamlessly Moves to the Desktop App</span>
+            <span>
+              {language === 'ar'
+                ? 'كيف تنتقل بياناتك بسلاسة إلى تطبيق سطح المكتب'
+                : language === 'fr'
+                ? 'Comment vos données se synchronisent vers l\'application Bureau'
+                : 'How Your Data Seamlessly Moves to the Desktop App'}
+            </span>
           </div>
 
           <div className="space-y-2 text-xs text-neutral-600 dark:text-neutral-300 leading-relaxed">
@@ -251,7 +271,12 @@ export const DesktopUpgradeModal: React.FC<DesktopUpgradeModalProps> = ({
                 1
               </div>
               <p>
-                <strong>Zero Manual Migration:</strong> All your current business records, clients, products, deliverables, and settings are already safely synced in your <strong>Supabase Cloud</strong> database.
+                <strong>{language === 'ar' ? 'تزامن تلقائي فوري:' : language === 'fr' ? 'Zéro migration manuelle :' : 'Zero Manual Migration:'}</strong>{' '}
+                {language === 'ar'
+                  ? 'كافة ملفات المشتركين، المنتجات، والعمليات متزامنة ومحفوظة بأمان في سحابة Supabase Cloud.'
+                  : language === 'fr'
+                  ? 'Tous vos dossiers, adhérents, produits et ventes sont déjà sauvegardés sur votre base cloud Supabase.'
+                  : 'All your current business records, clients, products, deliverables, and settings are already safely synced in your Supabase Cloud database.'}
               </p>
             </div>
             <div className="flex items-start gap-2">
@@ -259,7 +284,12 @@ export const DesktopUpgradeModal: React.FC<DesktopUpgradeModalProps> = ({
                 2
               </div>
               <p>
-                <strong>Single Sign-On:</strong> When you open the Atrium Desktop App, simply sign in with your Google account (<strong>{currentUser.email}</strong>). The desktop app instantly downloads your entire database.
+                <strong>{language === 'ar' ? 'تسجيل دخول موحد:' : language === 'fr' ? 'Connexion unique SSO :' : 'Single Sign-On:'}</strong>{' '}
+                {language === 'ar'
+                  ? `عند تشغيل التطبيق المكتبي، سجل الدخول بحسابك (${currentUser.email}) ليتم سحب قاعدة البيانات في ثوانٍ.`
+                  : language === 'fr'
+                  ? `À l'ouverture d'Atrium Bureau, connectez-vous avec votre compte Google (${currentUser.email}) pour charger l'intégralité de vos données.`
+                  : `When you open the Atrium Desktop App, simply sign in with your Google account (${currentUser.email}). The desktop app instantly downloads your entire database.`}
               </p>
             </div>
             <div className="flex items-start gap-2">
@@ -267,7 +297,12 @@ export const DesktopUpgradeModal: React.FC<DesktopUpgradeModalProps> = ({
                 3
               </div>
               <p>
-                <strong>License Voucher Activation:</strong> Enter your prepaid license voucher in Desktop to immediately unlock additional branches, team members, and POS hardware.
+                <strong>{language === 'ar' ? 'تفعيل رمز القسيمة:' : language === 'fr' ? 'Activation par bon :' : 'License Voucher Activation:'}</strong>{' '}
+                {language === 'ar'
+                  ? 'أدخل رمز القسيمة الدائمة لفتح الفروع الإضافية فوراً وإدارة الأجهزة وربط نقاط البيع.'
+                  : language === 'fr'
+                  ? 'Saisissez votre bon de licence perpétuelle dans l\'application pour débloquer les agences supplémentaires et le matériel.'
+                  : 'Enter your prepaid license voucher in Desktop to immediately unlock additional branches, team members, and POS hardware.'}
               </p>
             </div>
           </div>
@@ -275,7 +310,7 @@ export const DesktopUpgradeModal: React.FC<DesktopUpgradeModalProps> = ({
           {/* Backup Button */}
           <div className="pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-t border-neutral-200 dark:border-neutral-700">
             <span className="text-[11px] text-neutral-400">
-              Want an extra offline safety copy?
+              {language === 'ar' ? 'هل ترغب في حفظ نسخة احتياطية إضافية؟' : language === 'fr' ? 'Souhaitez-vous une copie de sauvegarde hors-ligne ?' : 'Want an extra offline safety copy?'}
             </span>
             <button
               type="button"
@@ -283,7 +318,7 @@ export const DesktopUpgradeModal: React.FC<DesktopUpgradeModalProps> = ({
               className="text-xs font-bold text-[#C4785A] hover:text-[#b3684a] flex items-center gap-1.5 transition-colors cursor-pointer"
             >
               <FileDown size={14} />
-              <span>Download Instant JSON Backup</span>
+              <span>{language === 'ar' ? 'تحميل نسخة احتياطية JSON' : language === 'fr' ? 'Télécharger une sauvegarde JSON' : 'Download Instant JSON Backup'}</span>
             </button>
           </div>
 
@@ -298,7 +333,7 @@ export const DesktopUpgradeModal: React.FC<DesktopUpgradeModalProps> = ({
         {/* Download Buttons */}
         <div className="space-y-2.5">
           <label className="block text-xs font-bold text-neutral-700 dark:text-neutral-300">
-            Download Atrium Desktop Application
+            {language === 'ar' ? 'تحميل تطبيق أتريوم المكتبي' : language === 'fr' ? 'Télécharger l\'application de bureau Atrium' : 'Download Atrium Desktop Application'}
           </label>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <button
@@ -309,7 +344,9 @@ export const DesktopUpgradeModal: React.FC<DesktopUpgradeModalProps> = ({
             >
               <Download size={16} />
               <span>
-                {downloadingPlatform === 'windows' ? 'Preparing Windows Installer...' : 'Download for Windows (.exe)'}
+                {downloadingPlatform === 'windows'
+                  ? (language === 'ar' ? 'جاري تجهيز مثبت ويندوز...' : language === 'fr' ? 'Préparation de l\'installateur Windows...' : 'Preparing Windows Installer...')
+                  : (language === 'ar' ? 'تحميل لنظام ويندوز (.exe)' : language === 'fr' ? 'Télécharger pour Windows (.exe)' : 'Download for Windows (.exe)')}
               </span>
             </button>
 
@@ -321,7 +358,9 @@ export const DesktopUpgradeModal: React.FC<DesktopUpgradeModalProps> = ({
             >
               <Download size={16} />
               <span>
-                {downloadingPlatform === 'mac' ? 'Preparing macOS Package...' : 'Download for macOS (.dmg)'}
+                {downloadingPlatform === 'mac'
+                  ? (language === 'ar' ? 'جاري تجهيز حزمة ماك...' : language === 'fr' ? 'Préparation du paquet macOS...' : 'Preparing macOS Package...')
+                  : (language === 'ar' ? 'تحميل لنظام ماك (.dmg)' : language === 'fr' ? 'Télécharger pour macOS (.dmg)' : 'Download for macOS (.dmg)')}
               </span>
             </button>
           </div>
@@ -330,7 +369,7 @@ export const DesktopUpgradeModal: React.FC<DesktopUpgradeModalProps> = ({
         {/* Bottom Voucher Prompt */}
         <div className="flex items-center justify-between pt-2 border-t border-neutral-100 dark:border-neutral-800 text-xs">
           <span className="text-neutral-500 dark:text-neutral-400">
-            Already purchased an Atrium License Voucher?
+            {language === 'ar' ? 'هل تمتلك قسيمة ترخيص مسبقاً؟' : language === 'fr' ? 'Vous possédez déjà un bon de licence ?' : 'Already purchased an Atrium License Voucher?'}
           </span>
           {onOpenVoucherModal && (
             <button
@@ -342,7 +381,7 @@ export const DesktopUpgradeModal: React.FC<DesktopUpgradeModalProps> = ({
               className="font-bold text-[#C4785A] hover:underline flex items-center gap-1 cursor-pointer"
             >
               <KeyRound size={13} />
-              <span>Redeem License Key</span>
+              <span>{language === 'ar' ? 'تفعيل رمز الترخيص' : language === 'fr' ? 'Activer la licence' : 'Redeem License Key'}</span>
             </button>
           )}
         </div>

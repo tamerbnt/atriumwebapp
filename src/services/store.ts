@@ -1133,15 +1133,16 @@ export function useAtriumStore() {
 
     const currentBiz = globalState.businesses.find((b) => b.id === globalState.currentBusinessId);
     const cat = currentBiz?.category || 'membership_session';
-    const terms = getCategoryTerminology(cat, globalState.language || 'en');
+    const lang = globalState.language || 'fr';
+    const terms = getCategoryTerminology(cat, lang);
 
     showToast({
       type: 'success',
-      title: `${terms.memberSingle} Enrolled`,
-      message: `${member.fullName} registered successfully into ${member.membershipPlanName || 'Standard Plan'}.`,
+      title: `${terms.memberSingle} : ${t('toast_member_enrolled_title', lang)}`,
+      message: `${member.fullName} ${t('toast_member_enrolled_msg', lang)} ${member.membershipPlanName || 'Standard'}.`,
       category: cat,
       action: {
-        label: 'Profile',
+        label: t('nav_members', lang),
         onClick: () => {
           globalState = {
             ...globalState,
@@ -1175,10 +1176,11 @@ export function useAtriumStore() {
 
     const currentBiz = globalState.businesses.find((b) => b.id === globalState.currentBusinessId);
     const cat = currentBiz?.category || 'membership_session';
+    const lang = globalState.language || 'fr';
     showToast({
       type: 'info',
-      title: 'Profile Updated',
-      message: `Changes for ${updates.fullName || target?.fullName || 'member'} saved.`,
+      title: t('toast_profile_updated_title', lang),
+      message: `${updates.fullName || target?.fullName || 'Record'} : ${t('toast_profile_updated_msg', lang)}`,
       category: cat,
     });
 
@@ -1203,11 +1205,12 @@ export function useAtriumStore() {
 
     const currentBiz = globalState.businesses.find((b) => b.id === globalState.currentBusinessId);
     const cat = currentBiz?.category || 'membership_session';
-    const terms = getCategoryTerminology(cat, globalState.language || 'en');
+    const lang = globalState.language || 'fr';
+    const terms = getCategoryTerminology(cat, lang);
     showToast({
       type: 'warning',
-      title: `${terms.memberSingle} Removed`,
-      message: `${target?.fullName || 'Record'} has been removed from active registry.`,
+      title: `${terms.memberSingle} : ${t('toast_member_removed_title', lang)}`,
+      message: `${target?.fullName || 'Record'} ${t('toast_member_removed_msg', lang)}`,
       category: cat,
     });
 
@@ -1239,7 +1242,8 @@ export function useAtriumStore() {
 
     // 2. Check expiration
     const daysLeft = calculateDaysRemaining(false, member.expirationDate);
-    if (daysLeft < 0) {
+    const isExpiredDate = member.expirationDate ? new Date(member.expirationDate).getTime() < Date.now() : false;
+    if (daysLeft <= 0 || member.status === 'Expired' || isExpiredDate) {
       showToast({
         type: 'warning',
         title: t('toast_checkin_expired_title', lang),
@@ -1254,7 +1258,7 @@ export function useAtriumStore() {
       showToast({
         type: 'warning',
         title: t('toast_checkin_expired_title', lang),
-        message: `${member.fullName}: ${t('schedule_field_quota', lang)} (0)`,
+        message: `${member.fullName}: ${t('toast_checkin_quota_exhausted', lang)}`,
         category: cat,
       });
       return;

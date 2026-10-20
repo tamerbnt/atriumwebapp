@@ -263,6 +263,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
     rentalRenters,
     eduStudents,
     eduCohorts,
+    language,
   ]);
 
   const filteredItems = useMemo(() => {

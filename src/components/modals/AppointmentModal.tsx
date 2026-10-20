@@ -356,7 +356,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
             {bookingMode === 'registered' ? (
               <LabelSelect
                 field="SelectClient"
-                label="Registered Client *"
+                label={t('apt_field_registered_client', language)}
                 value={selectedClientId}
                 onChange={(val) => setSelectedClientId(val?.target?.value ?? val)}
                 searchable
@@ -373,7 +373,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200/50 dark:border-amber-900/30 rounded-xl">
               <LabelInput
                 field="Walk-in Client Name"
-                label="Walk-in Client Name *"
+                label={t('apt_field_walkin_name', language)}
                 value={walkinName}
                 onChange={setWalkinName}
                 width="100%"
@@ -383,7 +383,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
               />
               <LabelInput
                 field="Phone Number"
-                label="Phone Number *"
+                label={t('apt_field_phone', language)}
                 type="tel"
                 value={walkinPhone}
                 onChange={setWalkinPhone}
@@ -400,7 +400,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
         {isEditing && (
           <div className="p-3 bg-neutral-100 dark:bg-neutral-800/80 rounded-xl flex items-center justify-between">
             <div>
-              <p className="text-xs text-neutral-500 font-medium">Booked Client</p>
+              <p className="text-xs text-neutral-500 font-medium">{t('apt_booked_client', language)}</p>
               <p className="text-sm font-bold text-neutral-900 dark:text-white">{appointment?.clientName}</p>
             </div>
             <span className="text-xs text-neutral-500 flex items-center gap-1">
@@ -413,7 +413,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
         <div>
           <LabelSelect
             field="TreatmentService"
-            label="Treatment / Service *"
+            label={t('apt_field_treatment', language)}
             value={selectedServiceId}
             onChange={(val) => handleServiceChange(val?.target?.value ?? String(val))}
             options={servicesCatalog.map((service) => ({
@@ -432,7 +432,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
         <div>
           <LabelSelect
             field="AssignedStylist"
-            label="Assigned Stylist / Practitioner *"
+            label={t('apt_field_stylist', language)}
             value={selectedStaffId}
             onChange={(val) => setSelectedStaffId(val?.target?.value ?? String(val))}
             options={staff.map((s) => ({
@@ -451,7 +451,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
           <div>
             <LabelInput
               field="AppointmentDate"
-              label="Appointment Date"
+              label={t('apt_field_date', language)}
               type="date"
               value={date}
               onChange={setDate}
@@ -464,7 +464,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
           <div>
             <LabelSelect
               field="StartTime"
-              label="Start Time"
+              label={t('apt_field_start_time', language)}
               value={startTime}
               onChange={(val) => setStartTime(val?.target?.value ?? String(val))}
               options={[
@@ -481,7 +481,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
 
           <div className="space-y-1">
             <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
-              Estimated End ({durationMinutes}m)
+              {t('apt_field_estimated_end', language)} ({durationMinutes}m)
             </label>
             <div className="w-full h-10 px-3 flex items-center bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-sm font-semibold rounded-xl">
               {calculatedEndTime}
@@ -494,7 +494,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
           <div>
             <LabelInput
               field="Price"
-              label="Price (DZD)"
+              label={t('apt_field_price', language)}
               type="number"
               min={0}
               step={500}
@@ -509,15 +509,15 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
           <div>
             <LabelSelect
               field="BookingStatus"
-              label="Booking Status"
+              label={t('apt_field_booking_status', language)}
               value={status}
               onChange={(val) => setStatus((val?.target?.value ?? String(val)) as AppointmentStatus)}
               options={[
-                { value: 'Confirmed', label: 'Confirmed' },
-                { value: 'InChair', label: 'In Chair (Active Treatment)' },
-                { value: 'Completed', label: 'Completed' },
-                { value: 'Cancelled', label: 'Cancelled' },
-                { value: 'NoShow', label: 'No Show' },
+                { value: 'Confirmed', label: t('apt_status_confirmed', language) },
+                { value: 'InChair', label: t('apt_status_inchair', language) },
+                { value: 'Completed', label: t('apt_status_completed', language) },
+                { value: 'Cancelled', label: t('apt_status_cancelled', language) },
+                { value: 'NoShow', label: t('apt_status_noshow', language) },
               ]}
               width="100%"
               height={40}
@@ -529,13 +529,13 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
         {/* Treatment Notes */}
         <div className="space-y-1">
           <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300 flex items-center gap-1.5">
-            <FileText size={14} /> Treatment & Formula Notes
+            <FileText size={14} /> {t('apt_field_notes', language)}
           </label>
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             rows={2}
-            placeholder="e.g. Tone formula 8.3 + 9.1 with 20 vol. Hair density fine, scalp sensitive."
+            placeholder={t('apt_ph_notes', language)}
             className="w-full p-2.5 text-sm rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:border-[#C4785A]"
           />
         </div>
@@ -547,13 +547,13 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
             onClick={onClose}
             className="px-4 py-2 text-sm font-medium rounded-xl text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
           >
-            Cancel
+            {t('action_cancel', language)}
           </button>
           <button
             type="submit"
             className="px-5 py-2 text-sm font-semibold rounded-xl bg-[#C4785A] hover:bg-[#b56b4f] text-white shadow-xs transition-colors cursor-pointer"
           >
-            {isEditing ? 'Save Changes' : 'Confirm Appointment'}
+            {isEditing ? t('action_save', language) : t('apt_btn_confirm', language)}
           </button>
         </div>
       </form>

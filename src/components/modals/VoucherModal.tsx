@@ -20,9 +20,18 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({ isOpen, onClose }) =
   } | null>(null);
 
   const sampleVouchers = [
-    { label: 'Starter Lifetime', code: 'ATR-STARTER-LIFE-A1B2-C3D4' },
-    { label: 'Pro Lifetime (Recommended)', code: 'ATR-PRO-LIFE-E5F6-G7H8' },
-    { label: 'Enterprise Perpetual', code: 'ATR-ENTERPRISE-LIFE-9988-7766' },
+    {
+      label: language === 'ar' ? 'باقة المبتدئ مدى الحياة' : language === 'fr' ? 'Starter Perpétuel' : 'Starter Lifetime',
+      code: 'ATR-STARTER-LIFE-A1B2-C3D4',
+    },
+    {
+      label: language === 'ar' ? 'باقة المحترف مدى الحياة (موصى به)' : language === 'fr' ? 'Pro Perpétuel (Recommandé)' : 'Pro Lifetime (Recommended)',
+      code: 'ATR-PRO-LIFE-E5F6-G7H8',
+    },
+    {
+      label: language === 'ar' ? 'باقة المؤسسات غير المحدودة' : language === 'fr' ? 'Enterprise Illimité' : 'Enterprise Perpetual',
+      code: 'ATR-ENTERPRISE-LIFE-9988-7766',
+    },
   ];
 
   const handleRedeem = (e: React.FormEvent) => {
@@ -37,8 +46,8 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({ isOpen, onClose }) =
       setResultMessage({ success: false, text: res.message });
       showToast({
         type: 'error',
-        title: 'Voucher Invalid',
-        message: res.message || 'Please verify the 20-digit code and try again.',
+        title: t('voucher_invalid_title', language),
+        message: res.message || t('voucher_invalid_msg', language),
       });
     }
   };
@@ -129,7 +138,7 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({ isOpen, onClose }) =
         {/* Preset Sample Vouchers */}
         <div className="pt-2 border-t border-[#EDF1F3] dark:border-neutral-800/80">
           <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-400 block mb-2">
-            Test Codes (Instant Lifetime Demo Activation)
+            {t('voucher_preset_title', language)}
           </span>
           <div className="space-y-1.5">
             {sampleVouchers.map((v) => (
@@ -148,7 +157,7 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({ isOpen, onClose }) =
                   </span>
                 </div>
                 <span className="text-[10px] font-bold text-neutral-400 group-hover:text-[#C4785A] uppercase tracking-wider">
-                  Fill Code
+                  {t('voucher_fill_code', language)}
                 </span>
               </button>
             ))}
