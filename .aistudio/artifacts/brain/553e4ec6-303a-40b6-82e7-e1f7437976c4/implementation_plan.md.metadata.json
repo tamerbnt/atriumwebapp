@@ -1,0 +1,6 @@
+{
+  "summary":  "Comprehensive audit and implementation plan for complete tri-lingual localization (French, Arabic, and English) across the Membership, Gym & Fitness vertical. Covers all 8 core screens (Dashboard Pulse, Members CRM & Inspector Drawer, Registrations Pipeline, POS & Pro Shop, Class Timetable Scheduler, Finance & Payroll, History & Access Turnstile Logs, and Settings), 5 nested modals (MemberModal, LeadModal, AppointmentModal, VoucherModal, FastSwitchModal), check-in / RFID access control toasts, and Algerian financial payment context (DZD, BaridiMob, Dahabia, Cash/Espèces).",
+  "updatedAt":  "2026-10-20T18:33:34.545006427Z",
+  "requestFeedback":  true,
+  "userFacing":  true
+}

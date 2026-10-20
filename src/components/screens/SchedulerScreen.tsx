@@ -243,18 +243,18 @@ export const SchedulerScreen: React.FC = () => {
           <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
             <div>
               <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
-                Weekly Scheduled Classes
+                {isPOS ? 'Weekly Scheduled Shifts' : t('schedule_weekly_classes', language)}
               </span>
               <div className="mt-1">
                 <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
-                  ↗ Planning Actif
+                  ↗ {language === 'ar' ? 'جدول نشط' : language === 'fr' ? 'Planning Actif' : 'Active Schedule'}
                 </span>
               </div>
             </div>
             <div className="text-3xl font-black text-neutral-900 dark:text-white tabular-nums">
               {schedule.length}{' '}
               <span className="text-xs font-normal text-neutral-400">
-                {isPOS ? 'shifts au planning' : 'cours au programme'}
+                {isPOS ? 'shifts' : (language === 'ar' ? 'حصص تدريبية' : language === 'fr' ? 'cours au programme' : 'scheduled classes')}
               </span>
             </div>
           </div>
@@ -263,18 +263,18 @@ export const SchedulerScreen: React.FC = () => {
           <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
             <div>
               <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
-                {isPOS ? 'Weekly Staff Coverage' : 'Enrolled Athletes Total'}
+                {isPOS ? 'Weekly Staff Coverage' : t('schedule_enrolled_athletes', language)}
               </span>
               <div className="mt-1">
                 <span className="text-[10px] font-bold text-[#C4785A] bg-[#C4785A]/10 px-2 py-0.5 rounded-full">
-                  {isPOS ? '100% Register Coverage' : '82% Taux de Remplissage'}
+                  {isPOS ? '100% Register Coverage' : (language === 'ar' ? '82% نسبة الامتلاء' : language === 'fr' ? '82% Taux de Remplissage' : '82% Capacity Ratio')}
                 </span>
               </div>
             </div>
             <div className="text-3xl font-black text-neutral-900 dark:text-white tabular-nums">
               {isPOS ? `${schedule.length * 8}h` : totalEnrolled}{' '}
               <span className="text-xs font-normal text-neutral-400">
-                {isPOS ? 'heures programmées' : 'réservations'}
+                {isPOS ? 'heures' : (language === 'ar' ? 'رياضي مسجل' : language === 'fr' ? 'réservations' : 'bookings')}
               </span>
             </div>
           </div>
@@ -283,10 +283,10 @@ export const SchedulerScreen: React.FC = () => {
           <div className="p-5 rounded-[20px] bg-[#18181B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
             <div>
               <span className="text-xs font-medium text-neutral-300">
-                {isPOS ? 'Peak Register Rush' : 'Peak Floor Capacity'}
+                {isPOS ? 'Peak Register Rush' : t('schedule_peak_capacity', language)}
               </span>
               <div className="text-[11px] text-[#C4785A] font-semibold mt-0.5">
-                {isPOS ? 'Pointes midi & sortie de bureaux' : 'Heures de Pointe Salle Principale'}
+                {isPOS ? 'Pointes midi & sortie de bureaux' : (language === 'ar' ? 'ساعات الذروة والقاعة الرئيسية' : language === 'fr' ? 'Heures de Pointe Salle Principale' : 'Peak Hours Main Arena')}
               </div>
             </div>
             <div className="text-2xl font-black text-white tabular-nums">
@@ -713,17 +713,29 @@ export const SchedulerScreen: React.FC = () => {
       <Modal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
-        title="Schedule New Session"
-        subtitle={`Add class or appointment to ${currentBranch?.name || 'Atrium 1'}`}
+        title={
+          language === 'ar'
+            ? 'إضافة حصة رياضية جديدة'
+            : language === 'fr'
+            ? 'Programmer une nouvelle séance'
+            : 'Schedule New Session'
+        }
+        subtitle={
+          language === 'ar'
+            ? `إضافة حصة أو موعد إلى فرع ${currentBranch?.name || 'الرئيسي'}`
+            : language === 'fr'
+            ? `Ajouter un cours ou rendez-vous à ${currentBranch?.name || 'Atrium 1'}`
+            : `Add class or appointment to ${currentBranch?.name || 'Atrium 1'}`
+        }
       >
         <div className="space-y-4">
           <LabelInput
             field="SessionTitle"
-            label="Session Title *"
+            label={`${language === 'ar' ? 'عنوان الحصة الرياضية' : language === 'fr' ? 'Intitulé de la séance' : 'Session Title'} *`}
             required
             value={newTitle}
             onChange={setNewTitle}
-            placeholder="e.g. Boxing Fundamentals or Pilates Morning"
+            placeholder={language === 'ar' ? 'مثال: أساسيات الملاكمة أو بيلاتيس صباحي' : 'e.g. Boxing Fundamentals or Pilates Morning'}
             width="100%"
             height={46}
             corner={14}
@@ -732,7 +744,7 @@ export const SchedulerScreen: React.FC = () => {
           <div className="grid grid-cols-2 gap-3">
             <LabelSelect
               field="Discipline"
-              label="Discipline Category"
+              label={language === 'ar' ? 'نوع النشاط الرياضي' : language === 'fr' ? 'Catégorie sportive' : 'Discipline Category'}
               value={newCategory}
               onChange={(val) => setNewCategory(typeof val === 'string' ? val : val.target?.value || val)}
               options={[
@@ -749,7 +761,7 @@ export const SchedulerScreen: React.FC = () => {
 
             <LabelInput
               field="Capacity"
-              label="Max Capacity"
+              label={t('schedule_field_quota', language)}
               type="number"
               value={newCapacity ? String(newCapacity) : ''}
               onChange={(v) => setNewCapacity(Number(v) || 0)}
@@ -762,7 +774,7 @@ export const SchedulerScreen: React.FC = () => {
           <div className="grid grid-cols-2 gap-3">
             <LabelInput
               field="StartTime"
-              label="Start Time"
+              label={language === 'ar' ? 'وقت البدء' : language === 'fr' ? 'Heure de début' : 'Start Time'}
               type="time"
               value={newStartTime}
               onChange={setNewStartTime}
@@ -772,7 +784,7 @@ export const SchedulerScreen: React.FC = () => {
             />
             <LabelInput
               field="EndTime"
-              label="End Time"
+              label={language === 'ar' ? 'وقت الانتهاء' : language === 'fr' ? 'Heure de fin' : 'End Time'}
               type="time"
               value={newEndTime}
               onChange={setNewEndTime}
@@ -785,7 +797,7 @@ export const SchedulerScreen: React.FC = () => {
           <div className="grid grid-cols-2 gap-3">
             <LabelInput
               field="Trainer"
-              label="Assigned Coach"
+              label={t('schedule_field_trainer', language)}
               value={newTrainer}
               onChange={setNewTrainer}
               width="100%"
@@ -795,7 +807,7 @@ export const SchedulerScreen: React.FC = () => {
 
             <LabelInput
               field="Room"
-              label="Room / Area"
+              label={t('schedule_field_room', language)}
               value={newRoom}
               onChange={setNewRoom}
               width="100%"
@@ -810,7 +822,7 @@ export const SchedulerScreen: React.FC = () => {
               onClick={() => setIsAddModalOpen(false)}
               className="h-10 px-4 text-xs font-semibold text-neutral-500 rounded-full hover:bg-neutral-100 cursor-pointer"
             >
-              Cancel
+              {t('action_cancel', language)}
             </button>
             <button
               type="button"
@@ -820,7 +832,7 @@ export const SchedulerScreen: React.FC = () => {
               }}
               className="h-10 px-5 text-xs font-bold text-white rounded-full cursor-pointer hover:opacity-90 shadow-xs"
             >
-              Save Schedule
+              {language === 'ar' ? 'حفظ الحصة في الجدول' : language === 'fr' ? 'Enregistrer le créneau' : 'Save Schedule'}
             </button>
           </div>
         </div>

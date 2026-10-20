@@ -388,14 +388,14 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
                   const isActive = statusFilter === filter;
                   const label =
                     filter === 'All'
-                      ? t('members_filter_all', language)
+                      ? t('member_filter_all', language)
                       : filter === 'Active'
-                      ? t('members_filter_active', language)
+                      ? t('member_filter_active', language)
                       : filter === 'Expiring'
-                      ? t('members_filter_expiring', language)
+                      ? t('member_filter_expiring', language)
                       : filter === 'Expired'
-                      ? t('members_filter_expired', language)
-                      : t('members_filter_archived', language);
+                      ? t('member_filter_expired', language)
+                      : t('member_filter_archived', language);
                   return (
                     <button
                       key={filter}
@@ -419,11 +419,11 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
             {/* Plan Filter Dropdown */}
             <LabelSelect
               field="Plan"
-              label={language === 'ar' ? 'الباقة' : language === 'fr' ? 'Forfait' : 'Filter Plan'}
+              label={t('member_filter_plan_label', language)}
               value={planFilter}
               onChange={(val) => setPlanFilter(val?.target?.value ?? String(val))}
               options={[
-                { value: 'All', label: language === 'ar' ? 'جميع الباقات' : language === 'fr' ? 'Tous les forfaits' : 'All Plans' },
+                { value: 'All', label: t('member_filter_all_plans', language) },
                 ...plans.map((p) => ({ value: p.id, label: p.name })),
               ]}
               width={160}
@@ -510,15 +510,15 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
                     <span className="text-[10px]">↕</span>
                   </div>
                   <div className="col-span-2 text-center flex items-center justify-center gap-1">
-                    <span>{terminology.plan}</span>
+                    <span>{t('member_col_plan', language)}</span>
                     <span className="text-[10px]">↕</span>
                   </div>
                   <div className="col-span-2 text-center flex items-center justify-center gap-1">
-                    <span>{t('members_status_col', language)}</span>
+                    <span>{t('member_col_access', language)}</span>
                     <span className="text-[10px]">↕</span>
                   </div>
                   <div className="col-span-2 text-right flex items-center justify-end gap-1 pr-2">
-                    <span>{currentBusiness.category === 'appointment_service' ? 'Package / Value' : t('members_balance_col', language)}</span>
+                    <span>{currentBusiness.category === 'appointment_service' ? 'Package / Value' : t('member_col_expiration', language)}</span>
                     <span className="text-[10px]">↕</span>
                   </div>
                   <div className="col-span-1"></div>
@@ -682,7 +682,7 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
                         },
                         {
                           id: 'checkin',
-                          label: 'Check-in Member',
+                          label: t('member_drawer_quick_checkin', language),
                           icon: <Check size={14} />,
                           onClick: () => {
                             updateMember(member.id, {
@@ -690,11 +690,11 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
                             });
                             showToast({
                               type: 'success',
-                              title: 'Member Checked In',
-                              message: `${member.fullName} (${member.cardId || 'Access Granted'}) session recorded.`,
+                              title: t('toast_checkin_granted_title', language),
+                              message: `${member.fullName} (${member.cardId || 'Access Granted'}) : ${t('toast_checkin_granted_msg', language)}`,
                               category: currentBusiness?.category,
                               action: {
-                                label: 'Inspect',
+                                label: language === 'ar' ? 'معاينة' : language === 'fr' ? 'Consulter' : 'Inspect',
                                 onClick: () => selectMember(member.id),
                               },
                             });
@@ -782,7 +782,7 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
                     className="p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-800 text-xs font-semibold flex flex-col items-center gap-1 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 cursor-pointer transition-colors"
                   >
                     <Edit size={14} className="text-[#C4785A]" />
-                    <span>Edit</span>
+                    <span>{t('action_edit', language)}</span>
                   </button>
                   <button
                     type="button"
@@ -797,7 +797,11 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
                     ) : (
                       <Lock size={14} className="text-amber-500" />
                     )}
-                    <span>{selectedMember.status === 'Frozen' ? 'Unfreeze' : 'Freeze'}</span>
+                    <span>
+                      {selectedMember.status === 'Frozen'
+                        ? t('member_drawer_unblock', language)
+                        : t('member_drawer_block', language)}
+                    </span>
                   </button>
                   <button
                     type="button"
@@ -805,7 +809,7 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
                     className="p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-800 text-xs font-semibold flex flex-col items-center gap-1 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 cursor-pointer transition-colors"
                   >
                     <RotateCcw size={14} className="text-blue-500" />
-                    <span>{currentBusiness.category === 'appointment_service' ? '+Pass' : '+30 Sess'}</span>
+                    <span>{currentBusiness.category === 'appointment_service' ? '+Pass' : t('member_drawer_renew', language)}</span>
                   </button>
                 </div>
 
@@ -813,30 +817,38 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
                 <div className="p-4 rounded-2xl bg-[#FAF9F6] dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-800 text-xs space-y-2">
                   <div className="flex justify-between">
                     <span className="text-neutral-400">
-                      {currentBusiness.category === 'appointment_service' ? 'Package Plan:' : 'Account Plan:'}
+                      {currentBusiness.category === 'appointment_service'
+                        ? (language === 'ar' ? 'باقة الجلسات:' : language === 'fr' ? 'Formule de soins :' : 'Package Plan:')
+                        : (language === 'ar' ? 'باقة الاشتراك:' : language === 'fr' ? 'Formule d\'abonnement :' : 'Account Plan:')}
                     </span>
                     <span className="font-bold text-neutral-900 dark:text-white truncate max-w-[180px]">
                       {selectedMember.membershipPlanName || 'Standard Package'}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-neutral-400">Expiration Date:</span>
+                    <span className="text-neutral-400">
+                      {language === 'ar' ? 'تاريخ الانتهاء:' : language === 'fr' ? 'Date d\'échéance :' : 'Expiration Date:'}
+                    </span>
                     <span className="font-semibold tabular-nums text-neutral-800 dark:text-neutral-200">
                       {selectedMember.expirationDate}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-neutral-400">Remaining Days:</span>
+                    <span className="text-neutral-400">
+                      {language === 'ar' ? 'الأيام المتبقية:' : language === 'fr' ? 'Jours restants :' : 'Remaining Days:'}
+                    </span>
                     <span className="font-bold text-[#C4785A] tabular-nums">
-                      {calculateDaysRemaining(false, selectedMember.expirationDate)} days
+                      {calculateDaysRemaining(false, selectedMember.expirationDate)} {t('member_days_unit', language)}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-neutral-400">
-                      {currentBusiness.category === 'appointment_service' ? 'Included Sessions:' : 'Remaining Sessions:'}
+                      {currentBusiness.category === 'appointment_service'
+                        ? (language === 'ar' ? 'الحصص المضمنة:' : language === 'fr' ? 'Séances incluses :' : 'Included Sessions:')
+                        : (language === 'ar' ? 'الحصص المتبقية:' : language === 'fr' ? 'Séances restantes :' : 'Remaining Sessions:')}
                     </span>
                     <span className="font-bold text-emerald-600 tabular-nums">
-                      {selectedMember.remainingSessions || 30} visits
+                      {selectedMember.remainingSessions || 30} {language === 'ar' ? 'حصة' : language === 'fr' ? 'séances' : 'visits'}
                     </span>
                   </div>
                 </div>
@@ -970,7 +982,7 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
                 {/* Contact Information */}
                 <div className="space-y-2 text-xs">
                   <h4 className="text-[11px] font-bold uppercase tracking-wider text-neutral-400">
-                    Contact & Access
+                    {language === 'ar' ? 'بيانات الاتصال والدخول' : language === 'fr' ? 'Contact & Accès' : 'Contact & Access'}
                   </h4>
                   <div className="flex items-center gap-2 text-neutral-700 dark:text-neutral-300">
                     <Phone size={13} className="text-neutral-400" />
@@ -986,11 +998,11 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
                 <div className="space-y-1.5 text-xs">
                   <div className="flex items-center justify-between">
                     <h4 className="text-[11px] font-bold uppercase tracking-wider text-neutral-400">
-                      Staff Notes
+                      {language === 'ar' ? 'ملاحظات الفريق' : language === 'fr' ? 'Notes du personnel' : 'Staff Notes'}
                     </h4>
                     {saveNoteSuccess && (
                       <span className="text-[10px] text-emerald-600 font-bold flex items-center gap-0.5">
-                        <Check size={11} /> Saved
+                        <Check size={11} /> {language === 'ar' ? 'تم الحفظ' : language === 'fr' ? 'Enregistré' : 'Saved'}
                       </span>
                     )}
                   </div>
@@ -1002,7 +1014,7 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
                       setSaveNoteSuccess(true);
                       setTimeout(() => setSaveNoteSuccess(false), 2000);
                     }}
-                    placeholder="Add private staff notes..."
+                    placeholder={language === 'ar' ? 'أضف ملاحظات خاصة حول المشترك...' : language === 'fr' ? 'Ajouter des notes internes sur l\'adhérent...' : 'Add private staff notes...'}
                     className="w-full p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-800 text-xs focus:outline-none focus:border-[#C4785A] text-neutral-900 dark:text-white resize-none"
                   />
                 </div>
@@ -1013,14 +1025,25 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
                 <button
                   type="button"
                   onClick={() => {
-                    if (confirm(`Delete ${selectedMember.fullName}?`)) {
+                    const confirmMsg = language === 'ar'
+                      ? `هل أنت متأكد من حذف ${selectedMember.fullName}؟`
+                      : language === 'fr'
+                      ? `Supprimer définitivement ${selectedMember.fullName} ?`
+                      : `Delete ${selectedMember.fullName}?`;
+                    if (confirm(confirmMsg)) {
                       deleteMember(selectedMember.id);
                     }
                   }}
                   className="text-xs font-semibold text-rose-600 hover:text-rose-700 cursor-pointer flex items-center gap-1"
                 >
                   <Trash2 size={13} />
-                  <span>Delete {terminology.memberSingle}</span>
+                  <span>
+                    {language === 'ar'
+                      ? `حذف ${terminology.memberSingle}`
+                      : language === 'fr'
+                      ? `Supprimer ${terminology.memberSingle.toLowerCase()}`
+                      : `Delete ${terminology.memberSingle}`}
+                  </span>
                 </button>
               </div>
             </aside>
@@ -1032,7 +1055,12 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
       {selectedIds.length > 0 && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-[#18181B] text-white px-5 py-2.5 rounded-full shadow-2xl flex items-center gap-4 z-50 text-xs animate-in slide-in-from-bottom-4">
           <span className="font-semibold text-neutral-300">
-            {selectedIds.length} {terminology.members.toLowerCase()} selected
+            {selectedIds.length}{' '}
+            {language === 'ar'
+              ? 'مشتركين تم تحديدهم'
+              : language === 'fr'
+              ? 'adhérents sélectionnés'
+              : `${terminology.members.toLowerCase()} selected`}
           </span>
           <div className="h-4 w-px bg-neutral-700" />
           <button
@@ -1043,7 +1071,7 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
             }}
             className="hover:text-amber-400 cursor-pointer font-medium"
           >
-            Freeze Selected
+            {language === 'ar' ? 'تجميد وحظر المحدد' : language === 'fr' ? 'Bloquer la sélection' : 'Freeze Selected'}
           </button>
           <button
             type="button"
@@ -1053,14 +1081,14 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
             }}
             className="hover:text-emerald-400 cursor-pointer font-medium"
           >
-            Activate Selected
+            {language === 'ar' ? 'تفعيل المحدد' : language === 'fr' ? 'Activer la sélection' : 'Activate Selected'}
           </button>
           <button
             type="button"
             onClick={handleExportCSV}
             className="hover:text-[#C4785A] cursor-pointer font-medium"
           >
-            Export Selected
+            {language === 'ar' ? 'تصدير المحدد' : language === 'fr' ? 'Exporter la sélection' : 'Export Selected'}
           </button>
           <button
             type="button"

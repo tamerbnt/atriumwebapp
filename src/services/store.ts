@@ -132,7 +132,7 @@ import {
 } from './seedData';
 import { checkQuota, getCategoryTerminology, validateVoucherCode } from '../utils/rules';
 import { numberToWordsFrench, numberToWordsArabic } from '../utils/algerianPtt';
-import { getInitialLanguageConfig, getSystemDefaultLanguage } from '../utils/i18n';
+import { getInitialLanguageConfig, getSystemDefaultLanguage, t } from '../utils/i18n';
 
 import {
   isSupabaseConfigured,
@@ -3201,7 +3201,7 @@ export function useAtriumStore() {
       taxPercent,
       taxAmount,
       totalAmount,
-      notes: notes || `Itemized bill for ${totalHours.toFixed(1)} hours of professional services.`,
+      notes: notes || (globalState.language === 'ar' ? `فاتورة مفصلة عن ${totalHours.toFixed(1)} ساعة من الخدمات الاحترافية.` : globalState.language === 'fr' ? `Facturation détaillée pour ${totalHours.toFixed(1)} heures de prestations professionnelles.` : `Itemized bill for ${totalHours.toFixed(1)} hours of professional services.`),
       paymentDetails: {
         bankName: 'BEA / International Wire or Algérie Poste',
         accountHolder: state.account.fullName,
@@ -3256,13 +3256,14 @@ export function useAtriumStore() {
     };
     notify();
 
+    const lang = globalState.language || 'en';
     showToast({
       type: 'success',
-      title: 'Invoice Created',
-      message: `Invoice #${newInv.invoiceNumber} for ${newInv.clientName} (${newInv.totalAmount.toLocaleString()} ${newInv.currency}) drafted.`,
+      title: t('toast_invoice_gen_title', lang),
+      message: `${t('toast_invoice_gen_msg', lang)} ${newInv.clientName} (#${newInv.invoiceNumber} - ${newInv.totalAmount.toLocaleString()} ${newInv.currency}).`,
       category: 'freelance_solo',
       action: {
-        label: 'Preview',
+        label: t('toast_invoice_preview_btn', lang),
         onClick: () => {
           globalState = { ...globalState, activeScreen: 'shop' };
           notify();
@@ -3296,22 +3297,23 @@ export function useAtriumStore() {
     notify();
 
     const target = updatedInvoices.find((inv) => inv.id === invoiceId);
+    const lang = globalState.language || 'en';
     if (target && status === 'Paid') {
       showToast({
         type: 'success',
-        title: 'Invoice Settled',
-        message: `Client ${target.clientName} paid Invoice #${target.invoiceNumber} (${target.totalAmount.toLocaleString()} ${target.currency}).`,
+        title: t('toast_invoice_settled_title', lang),
+        message: `${target.clientName} ${t('toast_invoice_settled_msg', lang)} #${target.invoiceNumber} (${target.totalAmount.toLocaleString()} ${target.currency}).`,
         category: 'freelance_solo',
         action: {
-          label: 'Receipt',
+          label: t('toast_invoice_receipt_btn', lang),
           onClick: () => window.print?.(),
         },
       });
     } else if (target && status === 'Sent') {
       showToast({
         type: 'info',
-        title: 'Invoice Dispatched',
-        message: `Invoice #${target.invoiceNumber} marked Sent to ${target.clientName}.`,
+        title: t('toast_invoice_dispatched_title', lang),
+        message: `${t('toast_invoice_dispatched_title', lang)}: #${target.invoiceNumber} ${t('toast_invoice_dispatched_msg', lang)} ${target.clientName}.`,
         category: 'freelance_solo',
       });
     }
@@ -3487,13 +3489,14 @@ export function useAtriumStore() {
     };
     notify();
 
+    const lang = globalState.language || 'en';
     showToast({
       type: 'success',
-      title: 'Proposal Converted',
-      message: `Proposal "${prop.title}" accepted; project initialized with ${newProject.deliverables.length} deliverables.`,
+      title: t('toast_prop_converted_title', lang),
+      message: `"${prop.title}" ${t('toast_prop_converted_msg', lang)} ${newProject.deliverables.length} ${t('free_prop_deliverable_item', lang)}.`,
       category: 'freelance_solo',
       action: {
-        label: 'Kanban',
+        label: t('toast_prop_kanban_btn', lang),
         onClick: () => {
           globalState = { ...globalState, activeScreen: 'scheduler' };
           notify();

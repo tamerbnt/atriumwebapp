@@ -1134,10 +1134,10 @@ export const ShopScreen: React.FC = () => {
               <div>
                 <h2 className="text-base font-black text-neutral-900 dark:text-white flex items-center gap-2">
                   <Receipt size={18} className="text-[#C4785A]" />
-                  <span>Current Register Order</span>
+                  <span>{t('pos_current_order_title', language)}</span>
                 </h2>
                 <div className="text-[11px] text-neutral-400">
-                  {cart.length} unique {cart.length === 1 ? 'item' : 'items'} · {cart.reduce((a, b) => a + b.quantity, 0)} units
+                  {cart.length} {language === 'ar' ? 'أصناف مختلفة' : language === 'fr' ? 'articles uniques' : 'unique items'} · {cart.reduce((a, b) => a + b.quantity, 0)} {language === 'ar' ? 'قطع' : language === 'fr' ? 'unités' : 'units'}
                 </div>
               </div>
 
@@ -1146,7 +1146,7 @@ export const ShopScreen: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setIsHoldOrderModalOpen(true)}
-                    title="Hold / Park this order to serve another customer"
+                    title={language === 'ar' ? 'تعليق الطلب' : language === 'fr' ? 'Mettre la commande en attente' : 'Hold / Park this order to serve another customer'}
                     className="p-1.5 rounded-lg text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/40 cursor-pointer"
                   >
                     <PauseCircle size={17} />
@@ -1154,7 +1154,7 @@ export const ShopScreen: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setCart([])}
-                    title="Clear current cart"
+                    title={language === 'ar' ? 'تفريغ السلة' : language === 'fr' ? 'Vider le panier' : 'Clear current cart'}
                     className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 cursor-pointer"
                   >
                     <Trash2 size={16} />
@@ -1166,11 +1166,11 @@ export const ShopScreen: React.FC = () => {
             {/* Customer selector (Walk-in vs Account) */}
             <LabelSelect
               field="Customer"
-              label="Customer Account / Attribution"
+              label={t('pos_customer_attribution', language)}
               value={selectedCustomerId}
               onChange={(val) => setSelectedCustomerId(typeof val === 'string' ? val : val.target?.value || val)}
               options={[
-                { value: '', label: 'Guest Walk-In Customer' },
+                { value: '', label: t('pos_guest_walkin', language) },
                 ...members.map((m) => ({
                   value: m.id,
                   label: `${m.fullName} (${m.phoneNumber})`,
@@ -1185,9 +1185,15 @@ export const ShopScreen: React.FC = () => {
               {cart.length === 0 ? (
                 <div className="py-12 text-center text-neutral-400 space-y-2">
                   <ShoppingBag size={32} className="mx-auto opacity-40" />
-                  <p className="text-xs font-semibold">Register cart is empty</p>
+                  <p className="text-xs font-semibold">
+                    {language === 'ar' ? 'سلة الكاشير فارغة' : language === 'fr' ? 'Le panier de caisse est vide' : 'Register cart is empty'}
+                  </p>
                   <p className="text-[11px] text-neutral-400 max-w-[200px] mx-auto">
-                    Click any product or scan a barcode to begin ringing up sales.
+                    {language === 'ar'
+                      ? 'انقر على أي منتج أو امسح الباركود للبدء في تسجيل المبيعات.'
+                      : language === 'fr'
+                      ? 'Cliquez sur un article ou scannez un code-barres pour commencer.'
+                      : 'Click any product or scan a barcode to begin ringing up sales.'}
                   </p>
                 </div>
               ) : (
@@ -1202,7 +1208,7 @@ export const ShopScreen: React.FC = () => {
                             {item.product.name}
                           </div>
                           <div className="text-[10px] text-neutral-400 font-mono">
-                            {formatMoney(item.product.price.amount)} each
+                            {formatMoney(item.product.price.amount)} {language === 'ar' ? 'للوحدة' : language === 'fr' ? 'l\'unité' : 'each'}
                           </div>
                         </div>
 
@@ -1212,7 +1218,7 @@ export const ShopScreen: React.FC = () => {
                           </div>
                           {item.discount > 0 && (
                             <div className="text-[10px] text-emerald-600 font-bold">
-                              -{formatMoney(item.discount)} disc
+                              -{formatMoney(item.discount)} {language === 'ar' ? 'خصم' : 'remise'}
                             </div>
                           )}
                         </div>
@@ -1244,7 +1250,7 @@ export const ShopScreen: React.FC = () => {
                           <input
                             type="number"
                             min="0"
-                            placeholder="Discount (DA)"
+                            placeholder={language === 'ar' ? 'خصم (د.ج)' : 'Remise (DA)'}
                             value={item.discount || ''}
                             onChange={(e) => updateLineDiscount(item.product.id, parseFloat(e.target.value) || 0)}
                             className="w-20 h-6 px-1.5 text-[11px] rounded border border-neutral-200 dark:border-neutral-700 bg-transparent text-right font-mono"
@@ -1269,7 +1275,7 @@ export const ShopScreen: React.FC = () => {
             {cart.length > 0 && (
               <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 space-y-1">
                 <div className="flex items-center justify-between text-[11px] font-bold text-neutral-500">
-                  <span>Cart Order Discount</span>
+                  <span>{t('pos_cart_discount_label', language)}</span>
                   <div className="flex items-center gap-1">
                     <button
                       type="button"
@@ -1278,7 +1284,7 @@ export const ShopScreen: React.FC = () => {
                         orderDiscountType === 'fixed' ? 'bg-[#C4785A] text-white' : 'text-neutral-400'
                       }`}
                     >
-                      DA
+                      {language === 'ar' ? 'د.ج' : 'DA'}
                     </button>
                     <button
                       type="button"
@@ -1297,7 +1303,7 @@ export const ShopScreen: React.FC = () => {
                   max={orderDiscountType === 'percent' ? 100 : cartSubtotal}
                   value={orderDiscountValue || ''}
                   onChange={(e) => setOrderDiscountValue(parseFloat(e.target.value) || 0)}
-                  placeholder={orderDiscountType === 'percent' ? 'Discount % (e.g. 10)' : 'Discount amount DA'}
+                  placeholder={orderDiscountType === 'percent' ? '10%' : (language === 'ar' ? 'قيمة الخصم بالدينار' : 'Montant de remise DA')}
                   className="w-full h-8 px-2 text-xs rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800 font-mono text-neutral-900 dark:text-white"
                 />
               </div>
@@ -1306,26 +1312,26 @@ export const ShopScreen: React.FC = () => {
             {/* Price Breakdown */}
             <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 space-y-1.5 text-xs">
               <div className="flex justify-between text-neutral-500">
-                <span>Subtotal</span>
+                <span>{t('pos_subtotal_label', language)}</span>
                 <span className="font-mono font-semibold">{formatMoney(cartSubtotal)}</span>
               </div>
 
               {discountAmount > 0 && (
                 <div className="flex justify-between text-emerald-600 font-bold">
-                  <span>Total Discount</span>
+                  <span>{t('pos_total_discount_label', language)}</span>
                   <span className="font-mono">-{formatMoney(discountAmount)}</span>
                 </div>
               )}
 
               {receiptConfig.showTaxBreakdown && taxAmount > 0 && (
                 <div className="flex justify-between text-neutral-500">
-                  <span>VAT / Tax (9%)</span>
+                  <span>{language === 'ar' ? 'الرسم على القيمة المضافة (9%)' : 'TVA (9%)'}</span>
                   <span className="font-mono">{formatMoney(taxAmount)}</span>
                 </div>
               )}
 
               <div className="flex justify-between items-baseline pt-2 border-t border-neutral-200 dark:border-neutral-700 text-neutral-900 dark:text-white font-black">
-                <span className="text-sm">Total Due</span>
+                <span className="text-sm">{t('pos_total_due_label', language)}</span>
                 <span className="text-2xl font-mono text-[#C4785A]">{formatMoney(cartTotal)}</span>
               </div>
             </div>
@@ -1334,7 +1340,7 @@ export const ShopScreen: React.FC = () => {
             {cart.length > 0 && (
               <div className="space-y-1.5 pt-1">
                 <div className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
-                  Quick Cash Settlement
+                  {t('pos_quick_cash_title', language)}
                 </div>
                 <div className="grid grid-cols-4 gap-1.5">
                   {[cartTotal, 1000, 2000, 5000].map((amt, idx) => {
@@ -1354,7 +1360,7 @@ export const ShopScreen: React.FC = () => {
                             : 'bg-neutral-50 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300'
                         }`}
                       >
-                        {isExact ? 'Exact' : `${amt} DA`}
+                        {isExact ? (language === 'ar' ? 'المبلغ بالضبط' : language === 'fr' ? 'Montant exact' : 'Exact') : `${amt.toLocaleString()} ${language === 'ar' ? 'د.ج' : 'DA'}`}
                       </button>
                     );
                   })}
@@ -1374,7 +1380,9 @@ export const ShopScreen: React.FC = () => {
               }`}
             >
               <Coins size={16} />
-              <span>Charge {formatMoney(cartTotal)}</span>
+              <span>
+                {language === 'ar' ? `تسوية ${formatMoney(cartTotal)}` : language === 'fr' ? `Encaisser ${formatMoney(cartTotal)}` : `Charge ${formatMoney(cartTotal)}`}
+              </span>
               <ArrowRight size={15} />
             </button>
           </div>
@@ -1961,8 +1969,14 @@ export const ShopScreen: React.FC = () => {
       <Modal
         isOpen={isCheckoutModalOpen}
         onClose={() => setIsCheckoutModalOpen(false)}
-        title="Register Checkout & Settlement"
-        subtitle={`Total to pay: ${formatMoney(cartTotal)}`}
+        title={
+          language === 'ar'
+            ? 'تسوية ودفع الحساب'
+            : language === 'fr'
+            ? 'Règlement & Encaissement Caisse'
+            : 'Register Checkout & Settlement'
+        }
+        subtitle={`${language === 'ar' ? 'المبلغ المستحق:' : language === 'fr' ? 'Total à payer :' : 'Total to pay:'} ${formatMoney(cartTotal)}`}
       >
         <div className="space-y-4">
           {/* Mode Switch: Single vs Split */}
@@ -1977,7 +1991,7 @@ export const ShopScreen: React.FC = () => {
               }`}
             >
               <Banknote size={14} />
-              <span>Single Tender</span>
+              <span>{language === 'ar' ? 'دفع كامل' : language === 'fr' ? 'Paiement unique' : 'Single Tender'}</span>
             </button>
             <button
               type="button"
@@ -1989,7 +2003,7 @@ export const ShopScreen: React.FC = () => {
               }`}
             >
               <Split size={14} />
-              <span>Split Payment</span>
+              <span>{language === 'ar' ? 'دفع مجزأ' : language === 'fr' ? 'Paiement fractionné' : 'Split Payment'}</span>
             </button>
           </div>
 
@@ -1997,11 +2011,17 @@ export const ShopScreen: React.FC = () => {
           {checkoutMode === 'single' && (
             <div className="space-y-3">
               <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
-                Payment Method
+                {language === 'ar' ? 'طريقة الدفع' : language === 'fr' ? 'Mode de règlement' : 'Payment Method'}
               </label>
               <div className="grid grid-cols-3 gap-2">
                 {(['Cash', 'Card', 'MemberBalance'] as const).map((method) => {
                   const isSelected = singlePaymentMethod === method;
+                  const label =
+                    method === 'Cash'
+                      ? t('pos_tender_cash', language)
+                      : method === 'Card'
+                      ? t('pos_tender_card', language)
+                      : (language === 'ar' ? 'رصيد المشترك' : language === 'fr' ? 'Solde adhérent' : 'Store Credit');
                   return (
                     <button
                       key={method}
@@ -2016,7 +2036,7 @@ export const ShopScreen: React.FC = () => {
                       {method === 'Cash' && <Banknote size={18} />}
                       {method === 'Card' && <CreditCard size={18} />}
                       {method === 'MemberBalance' && <User size={18} />}
-                      <span>{method === 'MemberBalance' ? 'Store Credit' : method}</span>
+                      <span>{label}</span>
                     </button>
                   );
                 })}
@@ -2026,18 +2046,20 @@ export const ShopScreen: React.FC = () => {
               {singlePaymentMethod === 'Cash' && (
                 <div className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700 space-y-2">
                   <div className="flex items-center justify-between pb-1">
-                    <span className="text-[11px] font-bold text-neutral-400">Cash Settlement</span>
+                    <span className="text-[11px] font-bold text-neutral-400">
+                      {language === 'ar' ? 'تسوية نقدية' : language === 'fr' ? 'Encaissement espèces' : 'Cash Settlement'}
+                    </span>
                     <button
                       type="button"
                       onClick={() => setAmountTenderedInput(cartTotal.toString())}
                       className="text-[11px] font-bold text-[#C4785A] hover:underline cursor-pointer"
                     >
-                      Exact Cash ({formatMoney(cartTotal)})
+                      {language === 'ar' ? `المبلغ بالضبط (${formatMoney(cartTotal)})` : language === 'fr' ? `Montant exact (${formatMoney(cartTotal)})` : `Exact Cash (${formatMoney(cartTotal)})`}
                     </button>
                   </div>
                   <LabelInput
                     field="Tendered"
-                    label="Amount Tendered by Customer (DA)"
+                    label={language === 'ar' ? 'المبلغ المدفوع من الزبون (د.ج)' : language === 'fr' ? 'Montant remis par le client (DA)' : 'Amount Tendered by Customer (DA)'}
                     type="number"
                     value={amountTenderedInput}
                     onChange={setAmountTenderedInput}
@@ -2048,7 +2070,9 @@ export const ShopScreen: React.FC = () => {
 
                   {/* Change output */}
                   <div className="flex items-center justify-between pt-1">
-                    <span className="text-xs font-bold text-neutral-500">Change Due to Customer:</span>
+                    <span className="text-xs font-bold text-neutral-500">
+                      {t('pos_change_due_label', language)} :
+                    </span>
                     <span className="text-lg font-black font-mono text-emerald-600 dark:text-emerald-400">
                       {formatMoney(changeDue)}
                     </span>
@@ -2062,7 +2086,9 @@ export const ShopScreen: React.FC = () => {
           {checkoutMode === 'split' && (
             <div className="space-y-3">
               <div className="flex items-center justify-between text-xs font-bold">
-                <span className="text-neutral-500">Total Order: {formatMoney(cartTotal)}</span>
+                <span className="text-neutral-500">
+                  {language === 'ar' ? 'إجمالي الطلب:' : language === 'fr' ? 'Total commande :' : 'Total Order:'} {formatMoney(cartTotal)}
+                </span>
                 <span className={splitRemaining === 0 ? 'text-emerald-600 font-mono' : 'text-red-500 font-mono'}>
                   {splitRemaining === 0 ? '✓ Balanced' : `Remaining: ${formatMoney(splitRemaining)}`}
                 </span>
@@ -2083,10 +2109,10 @@ export const ShopScreen: React.FC = () => {
                           setSplitPayments(newArr);
                         }}
                         options={[
-                          { value: 'Cash', label: 'Cash' },
-                          { value: 'Card', label: 'Card' },
-                          { value: 'BankTransfer', label: 'Transfer' },
-                          { value: 'Credit', label: 'Credit' },
+                          { value: 'Cash', label: t('pos_tender_cash', language) },
+                          { value: 'Card', label: t('pos_tender_card', language) },
+                          { value: 'BankTransfer', label: t('pos_tender_baridimob', language) },
+                          { value: 'Credit', label: language === 'ar' ? 'رصيد' : 'Crédit' },
                         ]}
                         height={40}
                         corner={12}
@@ -2096,7 +2122,7 @@ export const ShopScreen: React.FC = () => {
                     <div className="flex-1">
                       <LabelInput
                         field="Amount"
-                        label="Amount (DA)"
+                        label={`Amount (${language === 'ar' ? 'د.ج' : 'DA'})`}
                         type="number"
                         value={sp.amount || ''}
                         onChange={(val) => {
@@ -2128,7 +2154,7 @@ export const ShopScreen: React.FC = () => {
                   className="text-xs font-bold text-[#C4785A] hover:underline flex items-center gap-1 cursor-pointer pt-1"
                 >
                   <Plus size={13} />
-                  <span>Add Split Tender Line</span>
+                  <span>{language === 'ar' ? 'إضافة وسيلة دفع مجزأة' : language === 'fr' ? 'Ajouter une ligne de paiement' : 'Add Split Tender Line'}</span>
                 </button>
               </div>
             </div>
@@ -2139,7 +2165,7 @@ export const ShopScreen: React.FC = () => {
             <div>
               <LabelSelect
                 field="Cashier"
-                label="Cashier Attribution"
+                label={language === 'ar' ? 'المسؤول عن الصندوق' : language === 'fr' ? 'Caissier responsable' : 'Cashier Attribution'}
                 value={selectedCashierName}
                 onChange={(val) => setSelectedCashierName(typeof val === 'string' ? val : val.target?.value || val)}
                 options={staff.map((s) => ({
@@ -2154,7 +2180,7 @@ export const ShopScreen: React.FC = () => {
             <div>
               <LabelInput
                 field="CustPhone"
-                label="Customer Phone (Optional)"
+                label={language === 'ar' ? 'هاتف الزبون (اختياري)' : language === 'fr' ? 'Téléphone client (facultatif)' : 'Customer Phone (Optional)'}
                 type="tel"
                 value={checkoutCustomerPhone}
                 onChange={setCheckoutCustomerPhone}
@@ -2170,10 +2196,10 @@ export const ShopScreen: React.FC = () => {
           <div>
             <LabelInput
               field="TransNotes"
-              label="Transaction Notes (Optional)"
+              label={language === 'ar' ? 'ملاحظات العملية (اختياري)' : language === 'fr' ? 'Notes de transaction (facultatif)' : 'Transaction Notes (Optional)'}
               value={checkoutNotes}
               onChange={setCheckoutNotes}
-              placeholder="e.g. Counter #1 - SATIM Ref #9812"
+              placeholder="e.g. Counter #1 - BaridiMob Ref #9812"
               width="100%"
               height={42}
               corner={12}
@@ -2187,7 +2213,7 @@ export const ShopScreen: React.FC = () => {
               onClick={() => setIsCheckoutModalOpen(false)}
               className="h-10 px-4 text-xs font-semibold text-neutral-500 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
             >
-              Cancel
+              {t('action_cancel', language)}
             </button>
             <button
               type="button"
@@ -2195,7 +2221,13 @@ export const ShopScreen: React.FC = () => {
               className="h-10 px-6 text-xs font-bold text-white bg-[#C4785A] rounded-full flex items-center gap-2 hover:opacity-90 active:scale-98 transition-all cursor-pointer shadow-xs"
             >
               <CheckCircle2 size={15} />
-              <span>Complete Sale & Print Receipt</span>
+              <span>
+                {language === 'ar'
+                  ? 'إتمام البيع وطباعة الوصل'
+                  : language === 'fr'
+                  ? 'Valider la vente & Imprimer'
+                  : 'Complete Sale & Print Receipt'}
+              </span>
             </button>
           </div>
         </div>

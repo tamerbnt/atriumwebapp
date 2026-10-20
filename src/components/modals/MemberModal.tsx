@@ -143,7 +143,7 @@ export const MemberModal: React.FC<MemberModalProps> = ({
         {/* Section 1: Personal Info */}
         <div className="space-y-3">
           <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-400">
-            {language === 'ar' ? 'المعلومات الشخصية' : language === 'fr' ? 'Informations personnelles' : 'Personal Information'}
+            {t('member_section_personal', language)}
           </h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <LabelInput
@@ -184,10 +184,14 @@ export const MemberModal: React.FC<MemberModalProps> = ({
             <div className="grid grid-cols-2 gap-2">
               <LabelSelect
                 field="Gender"
-                label="Gender"
+                label={t('member_field_gender', language)}
                 value={gender}
                 onChange={(val) => setGender(val?.target?.value ?? val)}
-                options={['Male', 'Female', 'Other']}
+                options={[
+                  { value: 'Male', label: t('member_gender_male', language) },
+                  { value: 'Female', label: t('member_gender_female', language) },
+                  { value: 'Other', label: t('member_gender_other', language) },
+                ]}
                 width="100%"
                 height={40}
                 corner={12}
@@ -195,7 +199,7 @@ export const MemberModal: React.FC<MemberModalProps> = ({
 
               <LabelInput
                 field="BirthDate"
-                label="Date of Birth"
+                label={t('member_field_birth_date', language)}
                 type="date"
                 value={dateOfBirth}
                 onChange={setDateOfBirth}
@@ -210,18 +214,18 @@ export const MemberModal: React.FC<MemberModalProps> = ({
         {/* Section 2: Membership Details */}
         <div className="space-y-3 pt-2 border-t border-neutral-200/60 dark:border-neutral-800/80">
           <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-400">
-            {terminology.plan} & Access Credentials
+            {t('member_section_membership', language)}
           </h4>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <LabelSelect
               field="PlanPackage"
-              label="Plan Package *"
+              label={`${t('member_field_plan_package', language)} *`}
               value={planId}
               onChange={(val) => setPlanId(val?.target?.value ?? val)}
               options={plans.map((p) => ({
                 value: p.id,
                 label: p.name,
-                sublabel: `${p.durationDays} days · ${p.price.toLocaleString()} DA`,
+                sublabel: `${p.durationDays} ${t('member_days_unit', language)} · ${p.price.toLocaleString()} ${language === 'ar' ? 'د.ج' : 'DA'}`,
               }))}
               width="100%"
               height={40}
@@ -230,7 +234,7 @@ export const MemberModal: React.FC<MemberModalProps> = ({
 
             <LabelInput
               field="StartDate"
-              label="Start Date"
+              label={t('member_field_start_date', language)}
               type="date"
               value={startDate}
               onChange={setStartDate}
@@ -241,7 +245,7 @@ export const MemberModal: React.FC<MemberModalProps> = ({
 
             <LabelInput
               field="CardId"
-              label="RFID / Barcode Card"
+              label={t('member_field_rfid_card', language)}
               value={cardId}
               onChange={setCardId}
               placeholder="RFID-XXXXXX"
@@ -255,12 +259,12 @@ export const MemberModal: React.FC<MemberModalProps> = ({
         {/* Section 3: Emergency & Source */}
         <div className="space-y-3 pt-2 border-t border-neutral-200/60 dark:border-neutral-800/80">
           <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-400">
-            Emergency & Notes
+            {t('member_section_emergency', language)}
           </h4>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <LabelInput
               field="EmergencyContact"
-              label="Emergency Contact"
+              label={t('member_field_emergency_contact', language)}
               value={emergencyName}
               onChange={setEmergencyName}
               placeholder="Contact Name"
@@ -271,7 +275,7 @@ export const MemberModal: React.FC<MemberModalProps> = ({
 
             <LabelInput
               field="EmergencyPhone"
-              label="Emergency Phone"
+              label={t('member_field_emergency_phone', language)}
               type="tel"
               value={emergencyPhone}
               onChange={setEmergencyPhone}
@@ -283,16 +287,16 @@ export const MemberModal: React.FC<MemberModalProps> = ({
 
             <LabelSelect
               field="AcquisitionChannel"
-              label="Acquisition Channel"
+              label={t('member_field_acquisition', language)}
               value={source}
               onChange={(val) => setSource(val?.target?.value ?? val)}
               options={[
-                'Walk-in',
-                'Instagram',
-                'Facebook',
-                'Referral',
-                'Website',
-                'VIP Partner',
+                { value: 'Walk-in', label: t('member_channel_walkin', language) },
+                { value: 'Instagram', label: t('member_channel_instagram', language) },
+                { value: 'Facebook', label: t('member_channel_facebook', language) },
+                { value: 'Referral', label: t('member_channel_referral', language) },
+                { value: 'Website', label: t('member_channel_website', language) },
+                { value: 'VIP Partner', label: t('member_channel_partner', language) },
               ]}
               width="100%"
               height={40}
@@ -302,13 +306,13 @@ export const MemberModal: React.FC<MemberModalProps> = ({
 
           <div className="space-y-1">
             <label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
-              Private Notes
+              {t('member_field_private_notes', language)}
             </label>
             <textarea
               rows={2}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Medical alerts, preferences, personal trainer requests..."
+              placeholder={t('member_ph_medical_alerts', language)}
               style={{
                 backgroundColor: 'var(--color-surface-bg)',
                 borderColor: 'var(--color-border)',

@@ -392,7 +392,7 @@ export const FreelanceProposalsView: React.FC = () => {
 
               <LabelInput
                 id="draft-proposal-title"
-                label={language === 'ar' ? 'عنوان المشروع / المهمة' : language === 'fr' ? 'Intitulé de la Mission' : 'Engagement Title'}
+                label={t('free_prop_engagement_title', language)}
                 required
                 placeholder={t('free_prop_ph_title', language)}
                 value={formData.title}
@@ -401,11 +401,11 @@ export const FreelanceProposalsView: React.FC = () => {
 
               <div>
                 <label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
-                  {language === 'ar' ? 'ملخص تنفيذي للمشروع' : language === 'fr' ? 'Résumé Exécutif du Projet' : 'Project Executive Summary'}
+                  {t('free_prop_exec_summary', language)}
                 </label>
                 <textarea
                   rows={2}
-                  placeholder={t('free_prop_scope_ph')}
+                  placeholder={t('free_prop_scope_ph', language)}
                   value={formData.overview}
                   onChange={(e) => setFormData({ ...formData, overview: e.target.value })}
                   className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white"
@@ -416,14 +416,14 @@ export const FreelanceProposalsView: React.FC = () => {
               <div className="space-y-2 pt-2 border-t border-neutral-100 dark:border-neutral-800">
                 <div className="flex items-center justify-between">
                   <span className="font-semibold text-neutral-900 dark:text-white">
-                    {t('free_prop_scope')}
+                    {t('free_prop_scope', language)}
                   </span>
                   <button
                     type="button"
                     onClick={handleAddScopeItem}
                     className="text-[#C4785A] hover:underline font-semibold cursor-pointer"
                   >
-                    {language === 'ar' ? '+ إضافة تسليمة' : language === 'fr' ? '+ Ajouter un livrable' : '+ Add Item'}
+                    {t('free_prop_btn_add_item', language)}
                   </button>
                 </div>
 
@@ -433,7 +433,7 @@ export const FreelanceProposalsView: React.FC = () => {
                       <div className="flex-1">
                         <LabelInput
                           field={`ScopeItem-${idx}`}
-                          label={`${language === 'ar' ? 'تسليمة' : language === 'fr' ? 'Livrable' : 'Deliverable Item'} ${idx + 1}`}
+                          label={`${t('free_prop_deliverable_item', language)} ${idx + 1}`}
                           value={item}
                           onChange={(v) => handleScopeItemChange(idx, String(v?.target?.value || v || ''))}
                           width="100%"
@@ -727,7 +727,7 @@ export const FreelanceProposalsView: React.FC = () => {
                 }}
                 className="px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold transition-colors cursor-pointer shadow-xs"
               >
-                {language === 'ar' ? 'تأكيد الحذف' : language === 'fr' ? 'Confirmer la Suppression' : 'Delete Proposal'}
+                {t('free_prop_delete_modal_title', language)}
               </button>
             </div>
           </div>

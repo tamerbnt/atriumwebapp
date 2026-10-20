@@ -227,10 +227,10 @@ export const RegistrationsScreen: React.FC<RegistrationsScreenProps> = ({ onAddL
       <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[26px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
         <div>
           <h2 className="text-base font-bold text-neutral-900 dark:text-white">
-            Pipeline Velocity & Conversion Health
+            {t('reg_pipeline_health_title', language)}
           </h2>
           <p className="text-xs text-neutral-400 dark:text-neutral-500">
-            Self-service intake requests, qualified prospects, and enrollment conversion rates
+            {t('reg_pipeline_health_desc', language)}
           </p>
         </div>
 
@@ -239,11 +239,11 @@ export const RegistrationsScreen: React.FC<RegistrationsScreenProps> = ({ onAddL
           <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
             <div>
               <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
-                {isPOS ? 'Pending Wholesale & Inquiries' : 'Active Intake Pipeline'}
+                {isPOS ? 'Pending Wholesale & Inquiries' : t('reg_active_intake_label', language)}
               </span>
               <div className="mt-1">
                 <span className="text-[10px] font-bold text-amber-700 bg-amber-100 dark:bg-amber-950/40 px-2 py-0.5 rounded-full">
-                  ↗ {pendingCount} {isPOS ? 'Inquiries' : 'En Attente'}
+                  ↗ {pendingCount} {isPOS ? 'Inquiries' : (language === 'ar' ? 'في الانتظار' : language === 'fr' ? 'En attente' : 'Pending')}
                 </span>
               </div>
             </div>
@@ -256,11 +256,11 @@ export const RegistrationsScreen: React.FC<RegistrationsScreenProps> = ({ onAddL
           <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
             <div>
               <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
-                {isPOS ? 'Converted Customer Accounts' : 'Converted Members'}
+                {isPOS ? 'Converted Customer Accounts' : t('reg_converted_members_label', language)}
               </span>
               <div className="mt-1">
                 <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
-                  Conversion Réussie
+                  {language === 'ar' ? 'تحويل مؤكد' : language === 'fr' ? 'Conversion réussie' : 'Converted'}
                 </span>
               </div>
             </div>
@@ -273,16 +273,18 @@ export const RegistrationsScreen: React.FC<RegistrationsScreenProps> = ({ onAddL
           <div className="p-5 rounded-[20px] bg-[#18181B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
             <div>
               <span className="text-xs font-medium text-neutral-300">
-                {isPOS ? 'Order Intake & Lead SLA' : 'Intake Response SLA'}
+                {isPOS ? 'Order Intake & Lead SLA' : t('reg_intake_sla_label', language)}
               </span>
               <div className="text-[11px] text-[#C4785A] font-semibold mt-0.5">
-                {isPOS ? 'Direct counter & wholesale inquiry speed' : 'Self-service Kiosk & Mobile Web'}
+                {isPOS
+                  ? 'Direct counter & wholesale inquiry speed'
+                  : (language === 'ar' ? 'بوابة التسجيل الذاتي وموقع الجوال' : language === 'fr' ? 'Borne libre-service & web mobile' : 'Self-service Kiosk & Mobile Web')}
               </div>
             </div>
             <div className="text-2xl font-black text-white tabular-nums">
               &lt; 15 min{' '}
               <span className="text-xs font-normal text-neutral-400">
-                délai moyen
+                {t('reg_avg_processing_time', language)}
               </span>
             </div>
           </div>
@@ -297,7 +299,7 @@ export const RegistrationsScreen: React.FC<RegistrationsScreenProps> = ({ onAddL
           <div className="flex items-center gap-2">
             <ClipboardList size={16} className="text-neutral-500" />
             <span className="text-sm font-bold text-neutral-900 dark:text-white">
-              {terminology.registration} Requests
+              {terminology.registration} {t('reg_requests_title', language)}
             </span>
             <span className="text-xs text-neutral-400 font-semibold tabular-nums ml-1">
               {filteredLeads.length}
@@ -310,7 +312,13 @@ export const RegistrationsScreen: React.FC<RegistrationsScreenProps> = ({ onAddL
             <Seek
               value={searchQuery}
               onChange={setSearchQuery}
-              placeholder="Search applicant name, phone, email..."
+              placeholder={
+                language === 'ar'
+                  ? 'بحث باسم المتقدم، الهاتف، البريد...'
+                  : language === 'fr'
+                  ? 'Rechercher nom, tél, e-mail...'
+                  : 'Search applicant name, phone, email...'
+              }
               shutSize={36}
               openWidth={240}
             />
@@ -319,6 +327,14 @@ export const RegistrationsScreen: React.FC<RegistrationsScreenProps> = ({ onAddL
             <div className="flex items-center p-0.5 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 gap-0.5 text-xs font-semibold shadow-2xs">
               {(['All', 'Pending', 'Approved', 'Declined'] as const).map((filter) => {
                 const isActive = statusFilter === filter;
+                const label =
+                  filter === 'All'
+                    ? t('member_filter_all', language)
+                    : filter === 'Pending'
+                    ? (language === 'ar' ? 'قيد الانتظار' : language === 'fr' ? 'En attente' : 'Pending')
+                    : filter === 'Approved'
+                    ? (language === 'ar' ? 'معتمد' : language === 'fr' ? 'Approuvé' : 'Approved')
+                    : (language === 'ar' ? 'مرفوض' : language === 'fr' ? 'Refusé' : 'Declined');
                 return (
                   <button
                     key={filter}
@@ -332,7 +348,7 @@ export const RegistrationsScreen: React.FC<RegistrationsScreenProps> = ({ onAddL
                       isActive ? 'font-bold shadow-2xs' : 'hover:text-neutral-900 dark:hover:text-white'
                     }`}
                   >
-                    {filter}
+                    {label}
                   </button>
                 );
               })}
@@ -341,11 +357,11 @@ export const RegistrationsScreen: React.FC<RegistrationsScreenProps> = ({ onAddL
             {/* Plan Filter Dropdown */}
             <LabelSelect
               field="Plan"
-              label="Filter Plan"
+              label={t('member_filter_plan_label', language)}
               value={planFilter}
               onChange={(val) => setPlanFilter(val?.target?.value ?? String(val))}
               options={[
-                { value: 'All', label: 'All Plans' },
+                { value: 'All', label: t('member_filter_all_plans', language) },
                 ...plans.map((p) => ({ value: p.id, label: p.name })),
               ]}
               width={160}
@@ -657,7 +673,7 @@ export const RegistrationsScreen: React.FC<RegistrationsScreenProps> = ({ onAddL
             {/* Contact details */}
             <div className="space-y-3">
               <span className="text-xs font-bold text-neutral-900 dark:text-white uppercase tracking-wider">
-                Contact & Details
+                {language === 'ar' ? 'معلومات الاتصال والتفاصيل' : language === 'fr' ? 'Contact & Détails' : 'Contact & Details'}
               </span>
               <div className="p-4 rounded-2xl bg-white dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-700 space-y-2.5">
                 <div className="flex items-center gap-2.5">
@@ -675,15 +691,17 @@ export const RegistrationsScreen: React.FC<RegistrationsScreenProps> = ({ onAddL
                 <div className="flex items-center gap-2.5">
                   <Calendar size={14} className="text-[#C4785A]" />
                   <span className="text-neutral-800 dark:text-neutral-200">
-                    Requested start:{' '}
+                    {language === 'ar' ? 'تاريخ البدء المطلوب:' : language === 'fr' ? 'Début souhaité :' : 'Requested start:'}{' '}
                     <strong className="text-neutral-900 dark:text-white">
-                      {selectedLead.preferredStartDate || 'Immediate'}
+                      {selectedLead.preferredStartDate || (language === 'ar' ? 'فوري' : language === 'fr' ? 'Immédiat' : 'Immediate')}
                     </strong>
                   </span>
                 </div>
                 {selectedLead.notes && (
                   <div className="pt-2 border-t border-neutral-100 dark:border-neutral-700 text-neutral-500">
-                    <span className="font-semibold text-neutral-700 dark:text-neutral-300">Notes:</span>{' '}
+                    <span className="font-semibold text-neutral-700 dark:text-neutral-300">
+                      {language === 'ar' ? 'الملاحظات:' : language === 'fr' ? 'Remarques :' : 'Notes:'}
+                    </span>{' '}
                     {selectedLead.notes}
                   </div>
                 )}
@@ -693,13 +711,15 @@ export const RegistrationsScreen: React.FC<RegistrationsScreenProps> = ({ onAddL
             {/* Preferred Plan */}
             <div className="p-4 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 border border-[#E8DFD8] dark:border-neutral-700 flex justify-between items-center">
               <div>
-                <span className="text-xs font-bold text-[#C4785A]">Preferred Plan</span>
+                <span className="text-xs font-bold text-[#C4785A]">
+                  {language === 'ar' ? 'الباقة المفضلة' : language === 'fr' ? 'Formule préférée' : 'Preferred Plan'}
+                </span>
                 <div className="text-sm font-black text-neutral-900 dark:text-white mt-0.5">
                   {selectedLead.preferredPlanName || plans[0]?.name || 'Standard Package'}
                 </div>
               </div>
               <span className="text-base font-black text-[#C4785A] tabular-nums">
-                1,500 DA
+                1 500 {language === 'ar' ? 'د.ج' : 'DA'}
               </span>
             </div>
 
@@ -714,7 +734,13 @@ export const RegistrationsScreen: React.FC<RegistrationsScreenProps> = ({ onAddL
                     className="w-full h-10 rounded-full text-xs font-bold text-white flex items-center justify-center gap-2 cursor-pointer hover:opacity-90 shadow-xs"
                   >
                     <UserCheck size={16} />
-                    <span>Approve & Convert to Member</span>
+                    <span>
+                      {language === 'ar'
+                        ? 'اعتماد العضوية وتسجيل الاشتراك'
+                        : language === 'fr'
+                        ? 'Valider l\'adhésion & Inscrire'
+                        : 'Approve & Convert to Member'}
+                    </span>
                   </button>
                   <button
                     type="button"
@@ -724,7 +750,7 @@ export const RegistrationsScreen: React.FC<RegistrationsScreenProps> = ({ onAddL
                     }}
                     className="w-full h-10 rounded-full border border-neutral-300 dark:border-neutral-700 text-xs font-bold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20 cursor-pointer transition-colors"
                   >
-                    Decline Registration
+                    {language === 'ar' ? 'رفض الطلب' : language === 'fr' ? 'Refuser la demande' : 'Decline Registration'}
                   </button>
                 </>
               ) : (
@@ -734,7 +760,7 @@ export const RegistrationsScreen: React.FC<RegistrationsScreenProps> = ({ onAddL
                   style={{ backgroundColor: 'var(--color-accent)' }}
                   className="w-full h-10 rounded-full text-xs font-bold text-white flex items-center justify-center cursor-pointer hover:opacity-90 shadow-xs"
                 >
-                  Close Dossier
+                  {language === 'ar' ? 'إغلاق الملف' : language === 'fr' ? 'Fermer le dossier' : 'Close Dossier'}
                 </button>
               )}
             </div>
@@ -746,22 +772,40 @@ export const RegistrationsScreen: React.FC<RegistrationsScreenProps> = ({ onAddL
       <Modal
         isOpen={conversionLead !== null}
         onClose={() => setConversionLead(null)}
-        title="Convert Lead to Active Member"
-        subtitle={`Promote ${conversionLead?.fullName} to official member status in ${currentBranch?.name || 'Atrium 1'}`}
+        title={
+          language === 'ar'
+            ? 'اعتماد العضوية وتسجيل المشترك'
+            : language === 'fr'
+            ? 'Valider l\'adhésion et créer l\'adhérent'
+            : 'Convert Lead to Active Member'
+        }
+        subtitle={
+          language === 'ar'
+            ? `ترقية ${conversionLead?.fullName} إلى مشترك رسمي في ${currentBranch?.name || 'الفرع'}`
+            : language === 'fr'
+            ? `Finaliser l'inscription de ${conversionLead?.fullName} au sein de ${currentBranch?.name || 'Atrium 1'}`
+            : `Promote ${conversionLead?.fullName} to official member status in ${currentBranch?.name || 'Atrium 1'}`
+        }
       >
         {conversionLead && (
           <div className="space-y-4">
             <div className="p-3.5 rounded-2xl bg-neutral-100 dark:bg-neutral-800/60 text-xs space-y-1">
               <div>
-                <strong className="text-neutral-900 dark:text-white">Applicant:</strong>{' '}
+                <strong className="text-neutral-900 dark:text-white">
+                  {language === 'ar' ? 'المتقدم:' : language === 'fr' ? 'Candidat :' : 'Applicant:'}
+                </strong>{' '}
                 {conversionLead.fullName}
               </div>
               <div>
-                <strong className="text-neutral-900 dark:text-white">Phone:</strong>{' '}
+                <strong className="text-neutral-900 dark:text-white">
+                  {language === 'ar' ? 'الهاتف:' : language === 'fr' ? 'Téléphone :' : 'Phone:'}
+                </strong>{' '}
                 {conversionLead.phoneNumber} · {conversionLead.email}
               </div>
               <div>
-                <strong className="text-neutral-900 dark:text-white">Source:</strong>{' '}
+                <strong className="text-neutral-900 dark:text-white">
+                  {language === 'ar' ? 'القناة:' : language === 'fr' ? 'Canal :' : 'Source:'}
+                </strong>{' '}
                 {conversionLead.source}
               </div>
             </div>
@@ -769,13 +813,13 @@ export const RegistrationsScreen: React.FC<RegistrationsScreenProps> = ({ onAddL
             <div>
               <LabelSelect
                 field="MembershipPlan"
-                label="Select Membership Plan *"
+                label={`${t('member_field_plan_package', language)} *`}
                 value={selectedPlanId}
                 onChange={(val) => setSelectedPlanId(val?.target?.value ?? String(val))}
                 options={plans.map((p) => ({
                   value: p.id,
                   label: p.name,
-                  sublabel: `${p.durationDays} days · ${p.price.amount} ${p.price.currency}`,
+                  sublabel: `${p.durationDays} ${t('member_days_unit', language)} · ${p.price.amount.toLocaleString()} ${language === 'ar' ? 'د.ج' : 'DA'}`,
                 }))}
                 searchable
                 width="100%"
@@ -785,7 +829,11 @@ export const RegistrationsScreen: React.FC<RegistrationsScreenProps> = ({ onAddL
             </div>
 
             <div className="p-3 rounded-2xl bg-[#C4785A]/10 border border-[#C4785A]/20 text-xs text-[#C4785A]">
-              Upon confirmation, a unique RFID card credential will be generated automatically, the lead will be marked Approved, and the member will be enrolled immediately.
+              {language === 'ar'
+                ? 'عند التأكيد، سيتم إنشاء معرف بطاقة RFID تلقائياً، واعتماد الطلب، وتسجيل المشترك مباشرة.'
+                : language === 'fr'
+                ? 'Dès validation, un badge RFID unique sera attribué, le dossier sera approuvé et l\'adhérent actif immédiatement.'
+                : 'Upon confirmation, a unique RFID card credential will be generated automatically, the lead will be marked Approved, and the member will be enrolled immediately.'}
             </div>
 
             <div className="flex items-center justify-end gap-3 pt-3">
@@ -794,7 +842,7 @@ export const RegistrationsScreen: React.FC<RegistrationsScreenProps> = ({ onAddL
                 onClick={() => setConversionLead(null)}
                 className="h-10 px-4 text-xs font-semibold text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full transition-colors cursor-pointer"
               >
-                Cancel
+                {t('action_cancel', language)}
               </button>
               <button
                 type="button"
@@ -805,7 +853,13 @@ export const RegistrationsScreen: React.FC<RegistrationsScreenProps> = ({ onAddL
                 className="h-10 px-5 text-xs font-bold text-white rounded-full flex items-center gap-2 hover:opacity-90 active:scale-98 transition-all cursor-pointer shadow-xs"
               >
                 <Check size={15} />
-                <span>Confirm & Create Member</span>
+                <span>
+                  {language === 'ar'
+                    ? 'تأكيد وإنشاء المشترك'
+                    : language === 'fr'
+                    ? 'Confirmer & Créer l\'adhérent'
+                    : 'Confirm & Create Member'}
+                </span>
               </button>
             </div>
           </div>

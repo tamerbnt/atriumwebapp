@@ -296,13 +296,13 @@ export const FreelanceTimeTrackerView: React.FC = () => {
               <span>
                 {activeTimer.isRunning
                   ? activeTimer.isPaused
-                    ? (language === 'ar' ? 'المؤقت متوقف مؤقتاً' : language === 'fr' ? 'Chronomètre en pause' : 'Timer Paused')
-                    : (language === 'ar' ? 'جلسة عمل جارية' : language === 'fr' ? 'Session active en cours' : 'Live Session in Progress')
-                  : (language === 'ar' ? 'جاهز للتسجيل' : language === 'fr' ? 'Prêt à enregistrer' : 'Ready to Track')}
+                    ? t('free_time_timer_paused_status', language)
+                    : t('free_time_live_session_status', language)
+                  : t('free_time_ready_status', language)}
               </span>
               {activeTimer.isPomodoro && (
                 <span className="text-amber-400">
-                  · Pomodoro {activeTimer.pomodoroMode === 'work' ? (language === 'ar' ? 'تركيز (25 د)' : language === 'fr' ? 'Sprint (25 min)' : 'Sprint (25m)') : (language === 'ar' ? 'استراحة (5 د)' : language === 'fr' ? 'Pause (5 min)' : 'Rest (5m)')}
+                  · Pomodoro {activeTimer.pomodoroMode === 'work' ? t('free_time_pomodoro_sprint', language) : t('free_time_pomodoro_rest', language)}
                 </span>
               )}
             </div>
@@ -313,7 +313,7 @@ export const FreelanceTimeTrackerView: React.FC = () => {
 
             {activeTimer.isRunning && (
               <div className="text-xs text-neutral-300 font-medium">
-                {language === 'ar' ? 'العمل لصالح' : language === 'fr' ? 'Travail pour' : 'Working on'}{' '}
+                {t('free_time_working_on_label', language)}{' '}
                 <strong className="text-white">{activeTimer.clientName}</strong> ·{' '}
                 <span className="text-neutral-400">{activeTimer.taskDescription}</span>
               </div>
@@ -357,7 +357,7 @@ export const FreelanceTimeTrackerView: React.FC = () => {
                   type="button"
                   onClick={stopTimer}
                   className="h-12 px-6 rounded-2xl bg-rose-600 text-white text-xs font-bold flex items-center gap-2 hover:bg-rose-700 transition-colors cursor-pointer"
-                  title={language === 'ar' ? 'إيقاف وحفظ جلسة الوقت في السجل' : language === 'fr' ? 'Arrêter et enregistrer au journal' : 'Stop and save time log into history'}
+                  title={t('free_time_stop_save_tt', language)}
                 >
                   <Square size={16} className="fill-current" />
                   <span>{t('free_time_timer_stop', language)}</span>
@@ -367,7 +367,7 @@ export const FreelanceTimeTrackerView: React.FC = () => {
                   type="button"
                   onClick={resetTimer}
                   className="h-12 w-12 rounded-2xl bg-neutral-800 text-neutral-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
-                  title={language === 'ar' ? 'تجاهل الوقت المنقضي' : language === 'fr' ? 'Réinitialiser le chrono' : 'Discard elapsed time'}
+                  title={t('free_time_discard_tt', language)}
                 >
                   <RotateCcw size={16} />
                 </button>
@@ -391,23 +391,23 @@ export const FreelanceTimeTrackerView: React.FC = () => {
               }}
               options={freelanceClients.map((c) => ({
                 value: c.id,
-                label: `${c.name} (${c.company || (language === 'ar' ? 'خاص' : 'Private')})`,
+                label: `${c.name} (${c.company || t('free_clients_private_badge', language)})`,
               }))}
-              placeholder={language === 'ar' ? 'اختر العميل...' : language === 'fr' ? 'Sélectionner un client...' : 'Select Client...'}
+              placeholder={t('free_deliv_ph_select_client', language)}
               height={46}
               corner={14}
             />
 
             <LabelSelect
               field="Project"
-              label={language === 'ar' ? 'المشروع النشط' : language === 'fr' ? 'Projet Actif' : 'Active Project'}
+              label={t('free_time_project_label', language)}
               value={selectedProjectId}
               onChange={(val) => setSelectedProjectId(val?.target?.value ?? String(val))}
               options={availableProjects.map((p) => ({
                 value: p.id,
                 label: p.title,
               }))}
-              placeholder={language === 'ar' ? 'اختر المشروع...' : language === 'fr' ? 'Sélectionner un projet...' : 'Select Project...'}
+              placeholder={t('free_time_ph_select_project', language)}
               height={46}
               corner={14}
             />
@@ -415,7 +415,7 @@ export const FreelanceTimeTrackerView: React.FC = () => {
               <LabelInput
                 field="Task"
                 label={t('free_time_working_on', language)}
-                placeholder={language === 'ar' ? 'على ماذا تعمل الآن؟' : language === 'fr' ? 'Sur quoi travaillez-vous ?' : 'What are you working on?'}
+                placeholder={t('free_time_live_what_working_on', language)}
                 value={taskDescription}
                 onChange={setTaskDescription}
                 width="100%"
@@ -452,28 +452,28 @@ export const FreelanceTimeTrackerView: React.FC = () => {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="p-4 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-900/40 border border-[#EDF1F3] dark:border-neutral-800">
           <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400 block mb-1">
-            {language === 'ar' ? 'إجمالي الساعات المسجلة' : language === 'fr' ? 'Total des heures enregistrées' : 'Total Hours Logged'}
+            {t('free_time_total_hours_logged', language)}
           </span>
           <div className="flex items-baseline gap-2">
             <span className="text-2xl font-extrabold text-neutral-900 dark:text-white tabular-nums">
               {(totalSecondsAll / 3600).toFixed(1)}h
             </span>
             <span className="text-xs text-neutral-500">
-              {timeLogs.length} {language === 'ar' ? 'جلسة مسجلة' : language === 'fr' ? 'sessions enregistrées' : 'tracked sessions'}
+              {timeLogs.length} {t('free_time_tracked_sessions_unit', language)}
             </span>
           </div>
         </div>
 
         <div className="p-4 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-900/40 border border-[#EDF1F3] dark:border-neutral-800">
           <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400 block mb-1">
-            {language === 'ar' ? 'نسبة الفوترة والكفاءة' : language === 'fr' ? 'Ratio d\'efficacité facturable' : 'Billable Efficiency Ratio'}
+            {t('free_time_billable_ratio', language)}
           </span>
           <div className="flex items-baseline gap-2">
             <span className="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400 tabular-nums">
               {billableRatio}%
             </span>
             <span className="text-xs text-neutral-500">
-              {(billableSeconds / 3600).toFixed(1)}h {language === 'ar' ? 'ساعة مفوترة' : language === 'fr' ? 'heures facturables' : 'billable'}
+              {(billableSeconds / 3600).toFixed(1)}h {t('free_time_billable_hours_unit', language)}
             </span>
           </div>
         </div>
@@ -487,7 +487,7 @@ export const FreelanceTimeTrackerView: React.FC = () => {
               {unbilledHours}h
             </span>
             <span className="text-xs text-neutral-500">
-              {language === 'ar' ? 'بانتظار إصدار الفاتورة' : language === 'fr' ? 'en attente de facturation' : 'awaiting invoice conversion'}
+              {t('free_time_awaiting_invoice', language)}
             </span>
           </div>
         </div>
@@ -506,7 +506,7 @@ export const FreelanceTimeTrackerView: React.FC = () => {
             <Seek
               value={searchQuery}
               onChange={setSearchQuery}
-              placeholder={language === 'ar' ? 'البحث بالنشاط، العميل، المشروع...' : language === 'fr' ? 'Rechercher par tâche, client, projet...' : 'Search logs by task, client, project...'}
+              placeholder={t('free_time_ph_search_logs', language)}
             />
             {unbilledLogs.length > 0 && (
               <button
@@ -526,7 +526,7 @@ export const FreelanceTimeTrackerView: React.FC = () => {
             <thead>
               <tr className="border-b border-neutral-200 dark:border-neutral-800 text-neutral-400 uppercase text-[10px] tracking-wider font-semibold">
                 <th className={`pb-2.5 font-semibold ${isRtl ? 'text-right' : 'text-left'}`}>{t('common_date', language)}</th>
-                <th className={`pb-2.5 font-semibold ${isRtl ? 'text-right' : 'text-left'}`}>{t('free_invoice_client', language)} & {language === 'ar' ? 'المشروع' : language === 'fr' ? 'Projet' : 'Project'}</th>
+                <th className={`pb-2.5 font-semibold ${isRtl ? 'text-right' : 'text-left'}`}>{t('free_invoice_client', language)} & {t('free_time_project_label', language)}</th>
                 <th className={`pb-2.5 font-semibold ${isRtl ? 'text-right' : 'text-left'}`}>{t('free_time_field_notes', language)}</th>
                 <th className={`pb-2.5 font-semibold ${isRtl ? 'text-left' : 'text-right'}`}>{t('free_time_duration', language)}</th>
                 <th className={`pb-2.5 font-semibold ${isRtl ? 'text-left' : 'text-right'}`}>{t('free_time_rate', language)}</th>
@@ -557,7 +557,7 @@ export const FreelanceTimeTrackerView: React.FC = () => {
                     </span>
                     {entry.deliverableTitle && (
                       <span className="text-[10px] text-[#C4785A]">
-                        {language === 'ar' ? 'المهمة:' : language === 'fr' ? 'Jalon :' : 'Milestone:'} {entry.deliverableTitle}
+                        {t('free_time_milestone_prefix', language)}: {entry.deliverableTitle}
                       </span>
                     )}
                   </td>
@@ -574,7 +574,7 @@ export const FreelanceTimeTrackerView: React.FC = () => {
                       </span>
                     ) : entry.isBillable ? (
                       <span className="text-[11px] font-medium text-amber-600 dark:text-amber-400">
-                        {language === 'ar' ? 'غير مفوتر' : language === 'fr' ? 'Non facturé' : 'Unbilled'}
+                        {t('free_time_unbilled_badge', language)}
                       </span>
                     ) : (
                       <span className="text-[11px] font-medium text-neutral-400">
@@ -603,7 +603,7 @@ export const FreelanceTimeTrackerView: React.FC = () => {
                             ? 'opacity-30 cursor-not-allowed text-neutral-400'
                             : 'text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer'
                         }`}
-                        title={entry.isInvoiced ? (language === 'ar' ? 'لا يمكن تعديل السجلات المفوترة' : language === 'fr' ? 'Impossible de modifier une entrée facturée' : 'Invoiced logs cannot be edited') : (language === 'ar' ? 'تعديل السجل' : language === 'fr' ? 'Modifier l\'entrée' : 'Edit time log')}
+                        title={entry.isInvoiced ? t('free_time_no_edit_invoiced_tt', language) : t('free_time_edit_log_tt', language)}
                       >
                         <Edit2 size={13} />
                       </button>
@@ -616,7 +616,7 @@ export const FreelanceTimeTrackerView: React.FC = () => {
                             ? 'opacity-30 cursor-not-allowed text-neutral-400'
                             : 'text-neutral-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer'
                         }`}
-                        title={entry.isInvoiced ? (language === 'ar' ? 'لا يمكن حذف السجلات المفوترة' : language === 'fr' ? 'Impossible de supprimer une entrée facturée' : 'Invoiced logs cannot be deleted') : (language === 'ar' ? 'حذف السجل' : language === 'fr' ? 'Supprimer l\'entrée' : 'Delete time log')}
+                        title={entry.isInvoiced ? t('free_time_no_delete_invoiced_tt', language) : t('free_time_delete_log_tt', language)}
                       >
                         <Trash2 size={13} />
                       </button>
@@ -672,13 +672,13 @@ export const FreelanceTimeTrackerView: React.FC = () => {
               <LabelSelect
                 field="Client"
                 label={`${t('free_invoice_client', language)} *`}
-                placeholder={language === 'ar' ? 'اختر العميل...' : language === 'fr' ? 'Sélectionner un client...' : 'Select a client...'}
+                placeholder={t('free_time_ph_select_client', language)}
                 value={manualForm.clientId}
                 onChange={(val) => handleManualClientChange(val?.target?.value ?? String(val))}
                 options={freelanceClients.map((c) => ({
                   value: c.id,
                   label: c.name,
-                  sublabel: c.company || (language === 'ar' ? 'عميل خاص' : 'Private Client'),
+                  sublabel: c.company || t('free_clients_private_badge', language),
                 }))}
                 searchable
                 width="100%"
@@ -688,8 +688,8 @@ export const FreelanceTimeTrackerView: React.FC = () => {
 
               <LabelSelect
                 field="Project"
-                label={`${language === 'ar' ? 'المشروع' : language === 'fr' ? 'Projet' : 'Project'} *`}
-                placeholder={language === 'ar' ? 'اختر المشروع...' : language === 'fr' ? 'Sélectionner un projet...' : 'Select a project...'}
+                label={`${t('free_time_project_label', language)} *`}
+                placeholder={t('free_time_ph_select_project', language)}
                 value={manualForm.projectId}
                 onChange={(val) =>
                   setManualForm((prev) => ({
@@ -712,7 +712,7 @@ export const FreelanceTimeTrackerView: React.FC = () => {
                 id="manual-task-summary"
                 label={t('free_time_field_notes', language)}
                 required
-                placeholder={language === 'ar' ? 'مثال: مراجعة المعمارية البرمجية والاختبارات' : language === 'fr' ? 'Ex : Revue de code et tests unitaires' : 'e.g. Architectural code review & test refactoring'}
+                placeholder={t('free_time_ph_task_summary', language)}
                 value={manualForm.taskDescription}
                 onChange={(e) =>
                   setManualForm((prev) => ({
@@ -822,7 +822,7 @@ export const FreelanceTimeTrackerView: React.FC = () => {
             <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
               <div>
                 <h3 className="text-base font-bold text-neutral-900 dark:text-white">
-                  {language === 'ar' ? 'تعديل تسجيل الوقت' : language === 'fr' ? 'Modifier l\'entrée de temps' : 'Edit Time Entry'}
+                  {t('free_time_edit_modal_title', language)}
                 </h3>
                 <p className="text-xs text-neutral-500">
                   {logToEdit.clientName} · {logToEdit.projectTitle}
@@ -954,18 +954,14 @@ export const FreelanceTimeTrackerView: React.FC = () => {
               </div>
               <div>
                 <h3 className="text-base font-bold text-neutral-900 dark:text-white">
-                  {language === 'ar' ? 'حذف تسجيل الوقت' : language === 'fr' ? 'Supprimer l\'entrée de temps' : 'Delete Time Entry'}
+                  {t('free_time_delete_modal_title', language)}
                 </h3>
                 <p className="text-xs text-neutral-500">{logToDelete.date} · {formatDuration(logToDelete.durationSeconds)}</p>
               </div>
             </div>
 
             <p className="text-xs text-neutral-600 dark:text-neutral-300 leading-relaxed">
-              {language === 'ar'
-                ? `هل أنت متأكد من رغبتك في حذف تسجيل الوقت "${logToDelete.taskDescription}" ضمن مشروع ${logToDelete.projectTitle}؟`
-                : language === 'fr'
-                ? `Êtes-vous sûr de vouloir supprimer l'entrée de temps "${logToDelete.taskDescription}" pour le projet ${logToDelete.projectTitle} ?`
-                : `Are you sure you want to delete this time entry for "${logToDelete.taskDescription}" on ${logToDelete.projectTitle}?`}
+              {t('free_time_delete_modal_confirm', language)} "{logToDelete.taskDescription}" ({logToDelete.projectTitle})?
             </p>
 
             <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">

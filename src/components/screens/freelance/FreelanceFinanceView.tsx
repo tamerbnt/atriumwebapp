@@ -229,7 +229,7 @@ export const FreelanceFinanceView: React.FC = () => {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-neutral-800 text-xs">
           <div>
             <span className="text-neutral-400 block">
-              {language === 'ar' ? 'إجمالي الإيرادات المعادلة' : language === 'fr' ? 'Revenu brut équivalent' : 'Gross Revenue Equiv.'}
+              {t('free_fin_gross_revenue_equiv', language)}
             </span>
             <span className="text-base font-bold font-mono text-white tabular-nums">
               €{currencyTotals.totalEurEquiv.toLocaleString()}
@@ -243,7 +243,7 @@ export const FreelanceFinanceView: React.FC = () => {
           </div>
           <div>
             <span className="text-neutral-400 block">
-              {language === 'ar' ? 'صافي العائد بالساعة (EHR)' : language === 'fr' ? 'Rendement horaire net (EHR)' : 'Net Hourly Yield (EHR)'}
+              {t('free_fin_net_hourly_yield', language)}
             </span>
             <span className="text-base font-bold font-mono text-emerald-400 tabular-nums">
               €{netEhr}{t('free_dash_per_hour', language)} ({t('free_fin_gross_label', language)} €{grossEhr}{t('free_dash_per_hour', language)})
@@ -256,10 +256,10 @@ export const FreelanceFinanceView: React.FC = () => {
       <div className="p-5 rounded-2xl bg-white dark:bg-neutral-900/60 border border-neutral-200 dark:border-neutral-800 shadow-2xs space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
-            {language === 'ar' ? 'نفقات التشغيل والاشتراكات البرمجية' : language === 'fr' ? 'Charges opérationnelles & Abonnements' : 'Operational Overhead & Subscriptions'} ({freelanceExpenses.length})
+            {t('free_fin_operational_overhead', language)} ({freelanceExpenses.length})
           </h3>
           <span className="text-xs text-neutral-500">
-            {language === 'ar' ? 'التكلفة الإجمالية' : language === 'fr' ? 'Coût mensuel total' : 'Total monthly cost'}: ~€{totalExpensesEurEquiv.toLocaleString()}
+            {t('free_fin_total_monthly_cost', language)}: ~€{totalExpensesEurEquiv.toLocaleString()}
           </span>
         </div>
 
@@ -267,9 +267,9 @@ export const FreelanceFinanceView: React.FC = () => {
           <table className="w-full text-left text-xs">
             <thead>
               <tr className="border-b border-neutral-200 dark:border-neutral-800 text-neutral-400 uppercase text-[10px] tracking-wider font-semibold">
-                <th className={`pb-3 font-semibold ${isRtl ? 'text-right' : 'text-left'}`}>{language === 'ar' ? 'المورد / الخدمة' : language === 'fr' ? 'Fournisseur / Service' : 'Vendor / Service'}</th>
+                <th className={`pb-3 font-semibold ${isRtl ? 'text-right' : 'text-left'}`}>{t('free_fin_vendor_service', language)}</th>
                 <th className={`pb-3 font-semibold ${isRtl ? 'text-right' : 'text-left'}`}>{t('free_fin_expense_category', language)}</th>
-                <th className={`pb-3 font-semibold ${isRtl ? 'text-right' : 'text-left'}`}>{language === 'ar' ? 'الوصف' : language === 'fr' ? 'Description' : 'Description'}</th>
+                <th className={`pb-3 font-semibold ${isRtl ? 'text-right' : 'text-left'}`}>{t('common_notes', language)}</th>
                 <th className={`pb-3 font-semibold ${isRtl ? 'text-left' : 'text-right'}`}>{t('common_amount', language)}</th>
                 <th className="pb-3 font-semibold text-center">{t('free_fin_deductible', language)}</th>
                 <th className={`pb-3 font-semibold ${isRtl ? 'text-left' : 'text-right'}`}>{t('common_action', language)}</th>
@@ -292,9 +292,9 @@ export const FreelanceFinanceView: React.FC = () => {
                       : exp.category === 'Office'
                       ? t('free_fin_expense_workspace', language)
                       : exp.category === 'Subcontractor'
-                      ? (language === 'ar' ? 'مقاول من الباطن' : language === 'fr' ? 'Sous-traitance' : 'Subcontractor')
+                      ? t('free_fin_expense_subcontractor', language)
                       : exp.category === 'Travel'
-                      ? (language === 'ar' ? 'سفريات ومهمات' : language === 'fr' ? 'Déplacements' : 'Travel')
+                      ? t('free_fin_expense_travel', language)
                       : t('free_fin_expense_other', language)}
                   </td>
                   <td className="py-3 text-neutral-500 max-w-xs truncate">
@@ -360,7 +360,7 @@ export const FreelanceFinanceView: React.FC = () => {
                 <div>
                   <LabelInput
                     field="Vendor"
-                    label={`${language === 'ar' ? 'المورد' : language === 'fr' ? 'Fournisseur' : 'Vendor'} *`}
+                    label={`${t('free_fin_vendor_label', language)} *`}
                     required
                     placeholder={t('free_fin_ph_vendor', language)}
                     value={vendor}
@@ -381,8 +381,8 @@ export const FreelanceFinanceView: React.FC = () => {
                     { value: 'Software', label: t('free_fin_expense_software', language) },
                     { value: 'Office', label: t('free_fin_expense_workspace', language) },
                     { value: 'Hardware', label: t('free_fin_expense_hardware', language) },
-                    { value: 'Subcontractor', label: language === 'ar' ? 'مقاول من الباطن' : language === 'fr' ? 'Sous-traitance' : 'Subcontractor' },
-                    { value: 'Travel', label: language === 'ar' ? 'سفريات' : language === 'fr' ? 'Déplacements' : 'Travel' },
+                    { value: 'Subcontractor', label: t('free_fin_expense_subcontractor', language) },
+                    { value: 'Travel', label: t('free_fin_expense_travel', language) },
                     { value: 'Other', label: t('free_fin_expense_other', language) },
                   ]}
                   height={46}
@@ -395,7 +395,7 @@ export const FreelanceFinanceView: React.FC = () => {
                   field="Description"
                   label={`${t('free_fin_expense_desc', language)} *`}
                   required
-                  placeholder={language === 'ar' ? 'مثال: اشتراك في خدمات الذكاء الاصطناعي والحوسبة' : language === 'fr' ? 'Ex : Tokens API et hébergement prototype client' : 'e.g. API usage and inference tokens for client prototypes'}
+                  placeholder={t('free_fin_ph_expense_desc_full', language)}
                   value={description}
                   onChange={setDescription}
                   width="100%"
