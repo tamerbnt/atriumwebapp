@@ -129,6 +129,7 @@ import {
   INITIAL_PM_PAYROLL_BATCHES,
   INITIAL_PM_CCP_SLIPS,
   INITIAL_PM_EQUIPMENT_STOCK,
+} from './seedData';
 import { checkQuota, getCategoryTerminology, validateVoucherCode } from '../utils/rules';
 import { numberToWordsFrench, numberToWordsArabic } from '../utils/algerianPtt';
 import { getInitialLanguageConfig, getSystemDefaultLanguage } from '../utils/i18n';

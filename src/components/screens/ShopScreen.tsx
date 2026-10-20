@@ -47,6 +47,7 @@ import { Seek } from '../ui/Seek';
 import { LabelInput } from '../ui/LabelInput';
 import { LabelSelect } from '../ui/LabelSelect';
 import { FilterSelect } from '../ui/FilterSelect';
+import { t } from '../../utils/i18n';
 
 interface CartItem {
   product: Product;
@@ -102,6 +103,7 @@ export const ShopScreen: React.FC = () => {
     updateReceiptConfig,
     seedDemoInventory,
     openDesktopUpgradeModal,
+    language,
   } = useAtriumStore();
 
   // Active top-level subtab
@@ -795,7 +797,7 @@ export const ShopScreen: React.FC = () => {
             }`}
           >
             <Coins size={15} />
-            <span>POS Register</span>
+            <span>{t('nav_pos_register', language)}</span>
             {cart.length > 0 && (
               <span className="ml-1 px-1.5 py-0.2 rounded-full bg-white text-[#C4785A] text-[10px] font-black">
                 {cart.reduce((a, b) => a + b.quantity, 0)}
@@ -813,7 +815,7 @@ export const ShopScreen: React.FC = () => {
             }`}
           >
             <PauseCircle size={15} />
-            <span>Held Orders</span>
+            <span>{t('shop_park_order', language)}</span>
             {parkedOrders.length > 0 && (
               <span className={`ml-1 px-2 py-0.5 rounded-full text-[10px] font-black ${
                 activeTab === 'parked' ? 'bg-white text-[#C4785A]' : 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
@@ -833,10 +835,10 @@ export const ShopScreen: React.FC = () => {
             }`}
           >
             <Package size={15} />
-            <span>Inventory & Stock</span>
+            <span>{t('shop_inventory_count', language)}</span>
             {inventoryStats.lowStockItems > 0 && (
               <span className="ml-1 px-1.5 py-0.5 rounded-full bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300 text-[10px] font-black">
-                {inventoryStats.lowStockItems} low
+                {inventoryStats.lowStockItems}
               </span>
             )}
           </button>
@@ -851,7 +853,7 @@ export const ShopScreen: React.FC = () => {
             }`}
           >
             <Settings2 size={15} />
-            <span>Receipt & Register Setup</span>
+            <span>{t('shop_receipt_printed', language)}</span>
           </button>
         </div>
 

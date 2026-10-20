@@ -99,14 +99,14 @@ export const TopBar: React.FC<TopBarProps> = ({
     const homeLabel = isProjectMilestone
       ? 'NCH Activator'
       : isFreelance
-      ? 'Solo Command'
+      ? t('nav_solo_home', language)
       : isRental
-      ? 'Venue Operations'
+      ? t('nav_venue_dashboard', language)
       : isEducation
-      ? 'Academy Pulse'
+      ? t('nav_edu_dashboard', language)
       : isPOS
-      ? 'Store Register'
-      : 'Home';
+      ? t('nav_pos_register', language)
+      : t('nav_home', language);
 
     switch (activeScreen) {
       case 'dashboard':

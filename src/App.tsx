@@ -110,6 +110,18 @@ export default function App() {
     document.documentElement.setAttribute('lang', language);
   }, [theme, language]);
 
+  // Natively follow system default language changes if auto mode is enabled
+  useEffect(() => {
+    const handleSystemLanguageChange = () => {
+      const state = useAtriumStore.getState();
+      if (state.isLanguageAuto) {
+        state.setSystemDefaultLanguage();
+      }
+    };
+    window.addEventListener('languagechange', handleSystemLanguageChange);
+    return () => window.removeEventListener('languagechange', handleSystemLanguageChange);
+  }, []);
+
   // Close mobile sidebar on screen change
   useEffect(() => {
     setIsMobileSidebarOpen(false);

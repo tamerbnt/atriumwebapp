@@ -398,6 +398,68 @@ const TRANSLATIONS_EN = {
   voucher_redeem_btn: 'Validate & Redeem Voucher',
   desktop_title: 'Atrium Native Desktop Edition',
   desktop_desc: 'Run natively on macOS, Windows, and Linux with local offline SQLite database and direct USB hardware printing.',
+
+  // Quick Actions & Widgets
+  dash_quick_action_member: 'New Client',
+  dash_quick_action_scan: 'Scan Badge',
+  dash_quick_action_pos: 'POS Ticket',
+  dash_quick_action_appointment: 'Book Appointment',
+  dash_quick_action_walkin: 'Walk-in Entry',
+  dash_tab_all: 'All',
+  dash_tab_entries: 'Check-ins',
+  dash_tab_sales: 'Sales',
+  dash_tab_appointments: 'Appointments',
+  dash_salon_chairs: 'Stylist Chairs',
+  dash_salon_in_chair: 'In Chair',
+  dash_salon_booked: 'Booked',
+  dash_salon_available: 'Available',
+  dash_quick_checkout: 'Quick Checkout',
+  dash_tip_title: 'Atrium Tip',
+  dash_tip_rfid: 'Configure RFID key fobs or NFC cards for rapid 1-second front desk access.',
+  dash_tip_alerts: 'Enable automated SMS/WhatsApp renewal alerts 3 days prior to expiration.',
+  dash_tip_walkin: 'Track daily visitors who are not members using the Walk-in quick action module.',
+
+  // Members View
+  members_view_list: 'List View',
+  members_view_grid: 'Grid View',
+  members_renew: 'Renew',
+  members_lock_card: 'Lock Card',
+  members_unlock_card: 'Unlock Card',
+  members_save_notes: 'Save Notes',
+  members_emergency_contact: 'Emergency Contact',
+  members_account_balance: 'Account Balance',
+  members_export_csv: 'Export CSV',
+  members_search_cmd: 'Search members (Ctrl+K)',
+
+  // Fast Switch & Command Palette
+  fast_switch_title: 'Switch Facility',
+  fast_switch_subtitle: 'Instantly jump between your businesses and operating branches',
+  fast_switch_business: 'Business',
+  fast_switch_branch: 'Facility Branch',
+  cmd_palette_placeholder: 'Search commands, clients, orders... (Ctrl+K)',
+  cmd_palette_navigation: 'Quick Navigation',
+  cmd_palette_actions: 'Quick Actions',
+  cmd_palette_no_results: 'No matching commands found',
+
+  // Registrations & Leads
+  reg_title: 'Registrations & Intake Funnel',
+  reg_subtitle: 'Manage walk-in leads, prospective clients, and conversion stages',
+  reg_add_lead: 'Add New Prospect',
+  reg_filter_all: 'All Prospects',
+  reg_filter_active: 'Contacted',
+  reg_filter_pending: 'Trial Booked',
+  reg_filter_converted: 'Enrolled / Member',
+  reg_convert_btn: 'Convert to Member',
+
+  // Modals & Prompts
+  modal_add_client: 'Register Client',
+  modal_edit_client: 'Edit Client Profile',
+  modal_book_appointment: 'Book Appointment',
+  modal_client_name: 'Client Name',
+  modal_stylist_name: 'Staff / Stylist',
+  modal_service_name: 'Service Item',
+  modal_time: 'Time',
+  modal_notes_ph: 'Add internal operational notes...',
 };
 
 const TRANSLATIONS_FR: typeof TRANSLATIONS_EN = {
@@ -745,6 +807,68 @@ const TRANSLATIONS_FR: typeof TRANSLATIONS_EN = {
   voucher_redeem_btn: 'Valider et activer le voucher',
   desktop_title: 'Atrium Édition Native Desktop',
   desktop_desc: 'Exécution locale rapide sur macOS, Windows et Linux avec base SQLite hors-ligne et impression directe des tickets de caisse en USB.',
+
+  // Quick Actions & Widgets
+  dash_quick_action_member: 'Nouveau client',
+  dash_quick_action_scan: 'Scanner badge',
+  dash_quick_action_pos: 'Ticket de caisse',
+  dash_quick_action_appointment: 'Nouveau RDV',
+  dash_quick_action_walkin: 'Passage direct',
+  dash_tab_all: 'Tous',
+  dash_tab_entries: 'Passages',
+  dash_tab_sales: 'Ventes',
+  dash_tab_appointments: 'Rendez-vous',
+  dash_salon_chairs: 'Postes & Coiffeurs',
+  dash_salon_in_chair: 'En fauteuil',
+  dash_salon_booked: 'Réservé',
+  dash_salon_available: 'Disponible',
+  dash_quick_checkout: 'Encaisser',
+  dash_tip_title: 'Conseil Atrium',
+  dash_tip_rfid: 'Configurez des badges RFID ou cartes NFC pour un accès rapide en 1 seconde à l\'accueil.',
+  dash_tip_alerts: 'Activez les alertes automatiques SMS/WhatsApp de renouvellement 3 jours avant expiration.',
+  dash_tip_walkin: 'Enregistrez les visiteurs d\'un jour non-adhérents grâce au module de passage direct.',
+
+  // Members View
+  members_view_list: 'Vue Liste',
+  members_view_grid: 'Vue Grille',
+  members_renew: 'Renouveler',
+  members_lock_card: 'Verrouiller carte',
+  members_unlock_card: 'Déverrouiller',
+  members_save_notes: 'Enregistrer les notes',
+  members_emergency_contact: 'Contact d\'urgence',
+  members_account_balance: 'Solde du compte',
+  members_export_csv: 'Exporter CSV',
+  members_search_cmd: 'Rechercher des membres (Ctrl+K)',
+
+  // Fast Switch & Command Palette
+  fast_switch_title: 'Changer d\'établissement',
+  fast_switch_subtitle: 'Basculez instantanément entre vos commerces et succursales',
+  fast_switch_business: 'Entreprise',
+  fast_switch_branch: 'Succursale',
+  cmd_palette_placeholder: 'Rechercher une action, écran, client, commande... (Ctrl+K)',
+  cmd_palette_navigation: 'Navigation rapide',
+  cmd_palette_actions: 'Actions rapides',
+  cmd_palette_no_results: 'Aucune commande correspondante',
+
+  // Registrations & Leads
+  reg_title: 'Inscriptions & Tunnel de conversion',
+  reg_subtitle: 'Gérez les prospects, demandes d\'adhésion et étapes d\'admission',
+  reg_add_lead: 'Nouveau prospect',
+  reg_filter_all: 'Tous les prospects',
+  reg_filter_active: 'Contactés',
+  reg_filter_pending: 'Essai planifié',
+  reg_filter_converted: 'Inscrit / Adhérent',
+  reg_convert_btn: 'Convertir en adhérent',
+
+  // Modals & Prompts
+  modal_add_client: 'Enregistrer un client',
+  modal_edit_client: 'Modifier la fiche client',
+  modal_book_appointment: 'Nouveau rendez-vous',
+  modal_client_name: 'Nom du client',
+  modal_stylist_name: 'Collaborateur / Intervenant',
+  modal_service_name: 'Prestation demandée',
+  modal_time: 'Horaire',
+  modal_notes_ph: 'Ajouter des notes internes...',
 };
 
 const TRANSLATIONS_AR: typeof TRANSLATIONS_EN = {
@@ -1092,6 +1216,68 @@ const TRANSLATIONS_AR: typeof TRANSLATIONS_EN = {
   voucher_redeem_btn: 'تأكيد وتفعيل القسيمة',
   desktop_title: 'تطبيق Atrium الحاسوبي المكتبي',
   desktop_desc: 'يعمل محلياً بسرعة فائقة على macOS وWindows وLinux مع قاعدة بيانات SQLite دون انقطاع وطباعة وصولات USB المباشرة.',
+
+  // Quick Actions & Widgets
+  dash_quick_action_member: 'تسجيل عميل جديد',
+  dash_quick_action_scan: 'مسح بطاقة الدخول',
+  dash_quick_action_pos: 'تذكرة بيع جديدة',
+  dash_quick_action_appointment: 'حجز موعد جديد',
+  dash_quick_action_walkin: 'دخول فوري مباشر',
+  dash_tab_all: 'الكل',
+  dash_tab_entries: 'الدخول',
+  dash_tab_sales: 'المبيعات',
+  dash_tab_appointments: 'المواعيد',
+  dash_salon_chairs: 'كراسي ومصففو الشعر',
+  dash_salon_in_chair: 'في الجلسة',
+  dash_salon_booked: 'محجوز',
+  dash_salon_available: 'متاح',
+  dash_quick_checkout: 'إنهاء الحساب والقبض',
+  dash_tip_title: 'نصيحة أيتريوم',
+  dash_tip_rfid: 'قم بتهيئة شارات RFID أو بطاقات NFC لتمكين الدخول السريع في ثانية واحدة عند مكتب الاستقبال.',
+  dash_tip_alerts: 'فعّل التنبيهات التلقائية عبر الرسائل القصيرة أو واتساب للتجديد قبل 3 أيام من انتهاء الاشتراك.',
+  dash_tip_walkin: 'سجّل الزائرين اليوميين من غير المشتركين بسهولة عبر وحدة الدخول المباشر.',
+
+  // Members View
+  members_view_list: 'عرض القائمة',
+  members_view_grid: 'عرض الشبكة',
+  members_renew: 'تجديد الاشتراك',
+  members_lock_card: 'تجميد البطاقة',
+  members_unlock_card: 'إلغاء التجميد',
+  members_save_notes: 'حفظ الملاحظات',
+  members_emergency_contact: 'جهة الاتصال في حالات الطوارئ',
+  members_account_balance: 'رصيد الحساب',
+  members_export_csv: 'تصدير ملف CSV',
+  members_search_cmd: 'البحث عن المشتركين (Ctrl+K)',
+
+  // Fast Switch & Command Palette
+  fast_switch_title: 'تبديل المنشأة أو الفرع',
+  fast_switch_subtitle: 'التنقل الفوري بين أنشطتك التجارية ومواقع الفروع المختلفة',
+  fast_switch_business: 'المنشأة التجارية',
+  fast_switch_branch: 'فرع التشغيل',
+  cmd_palette_placeholder: 'ابحث عن إجراء، عميل، طلب، فاتورة... (Ctrl+K)',
+  cmd_palette_navigation: 'التنقل السريع',
+  cmd_palette_actions: 'الإجراءات السريعة',
+  cmd_palette_no_results: 'لم يتم العثور على إجراءات مطابقة',
+
+  // Registrations & Leads
+  reg_title: 'التسجيلات واستقطاب العملاء',
+  reg_subtitle: 'إدارة المهتمين والزبائن المحتملين ومراحل تحويلهم إلى مشتركين دائمين',
+  reg_add_lead: 'إضافة زبون محتمل',
+  reg_filter_all: 'جميع المهتمين',
+  reg_filter_active: 'تم التواصل معهم',
+  reg_filter_pending: 'حصة تجريبية مجدولة',
+  reg_filter_converted: 'مشترك مسجل رسمياً',
+  reg_convert_btn: 'تحويل إلى مشترك رسمي',
+
+  // Modals & Prompts
+  modal_add_client: 'تسجيل عميل جديد',
+  modal_edit_client: 'تعديل بيانات العميل',
+  modal_book_appointment: 'حجز موعد جديد',
+  modal_client_name: 'اسم العميل',
+  modal_stylist_name: 'الموظف / مقدم الخدمة',
+  modal_service_name: 'نوع الخدمة',
+  modal_time: 'توقيت الموعد',
+  modal_notes_ph: 'أضف ملاحظات تشغيلية داخلية...',
 };
 
 export const DICTIONARY: Record<SupportedLanguage, typeof TRANSLATIONS_EN> = {

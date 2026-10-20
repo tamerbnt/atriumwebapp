@@ -28,6 +28,7 @@ import { useAtriumStore } from '../../services/store';
 import { formatMoney } from '../../utils/rules';
 import { AppointmentModal } from '../modals/AppointmentModal';
 import { Appointment } from '../../types/index';
+import { t } from '../../utils/i18n';
 
 interface DashboardScreenProps {
   onAddMember: () => void;
@@ -50,6 +51,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
     staff,
     members,
     terminology,
+    language,
     switchBusiness,
     switchBranch,
     setScreen,
@@ -159,115 +161,115 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
     setTimeout(() => setCheckoutToast(null), 4000);
   };
 
-  const gymTips = [
+  const gymTips = useMemo(() => [
     {
-      step: 'STEP 1 / 5',
-      title: 'Conseil Atrium',
-      text: 'Configure RFID key fobs or NFC cards for rapid 1-second front desk access.',
-      buttonText: 'Configurer RFID',
+      step: language === 'ar' ? 'الخطوة 1 / 5' : language === 'fr' ? 'ÉTAPE 1 / 5' : 'STEP 1 / 5',
+      title: t('dash_tip_title', language),
+      text: t('dash_tip_rfid', language),
+      buttonText: language === 'ar' ? 'تهيئة RFID' : language === 'fr' ? 'Configurer RFID' : 'Configure RFID',
       action: onAddMember,
     },
     {
-      step: 'STEP 2 / 5',
-      title: 'Conseil Atrium',
-      text: 'Enable automated SMS/WhatsApp renewal alerts 3 days prior to expiration.',
-      buttonText: 'Gérer les alertes',
+      step: language === 'ar' ? 'الخطوة 2 / 5' : language === 'fr' ? 'ÉTAPE 2 / 5' : 'STEP 2 / 5',
+      title: t('dash_tip_title', language),
+      text: t('dash_tip_alerts', language),
+      buttonText: language === 'ar' ? 'إدارة التنبيهات' : language === 'fr' ? 'Gérer les alertes' : 'Manage Alerts',
       action: () => setScreen('members'),
     },
     {
-      step: 'STEP 3 / 5',
-      title: 'Conseil Atrium',
-      text: "Track daily visitors who aren't members using the Walk-in quick action module.",
-      buttonText: 'Enregistrer un passage',
+      step: language === 'ar' ? 'الخطوة 3 / 5' : language === 'fr' ? 'ÉTAPE 3 / 5' : 'STEP 3 / 5',
+      title: t('dash_tip_title', language),
+      text: t('dash_tip_walkin', language),
+      buttonText: language === 'ar' ? 'تسجيل دخول' : language === 'fr' ? 'Enregistrer un passage' : 'Record Walk-in',
       action: () => {
         setPeopleInside((p) => Math.min(100, p + 1));
         setEntreesJour((e) => e + 1);
       },
     },
     {
-      step: 'STEP 4 / 5',
-      title: 'Conseil Atrium',
-      text: 'Review daily POS product inventory to optimize supplement and retail margins.',
-      buttonText: 'Ouvrir la Boutique',
+      step: language === 'ar' ? 'الخطوة 4 / 5' : language === 'fr' ? 'ÉTAPE 4 / 5' : 'STEP 4 / 5',
+      title: t('dash_tip_title', language),
+      text: language === 'ar' ? 'راجع مخزون منتجات نقطة البيع لتعزيز هوامش المبيعات والمكملات.' : language === 'fr' ? 'Analysez le stock des produits en boutique pour optimiser vos marges.' : 'Review daily POS product inventory to optimize supplement and retail margins.',
+      buttonText: language === 'ar' ? 'فتح المتجر' : language === 'fr' ? 'Ouvrir la Boutique' : 'Open Shop',
       action: () => setScreen('shop'),
     },
     {
-      step: 'STEP 5 / 5',
-      title: 'Conseil Atrium',
-      text: 'Activate your perpetual cash voucher to unlock multi-branch management.',
-      buttonText: 'Activer la Licence',
+      step: language === 'ar' ? 'الخطوة 5 / 5' : language === 'fr' ? 'ÉTAPE 5 / 5' : 'STEP 5 / 5',
+      title: t('dash_tip_title', language),
+      text: language === 'ar' ? 'فعّل قسيمة الشراء الدائمة لفتح إدارة الفروع المتعددة.' : language === 'fr' ? 'Activez votre bon de licence perpétuelle pour débloquer le multi-agences.' : 'Activate your perpetual cash voucher to unlock multi-branch management.',
+      buttonText: language === 'ar' ? 'تفعيل الترخيص' : language === 'fr' ? 'Activer la Licence' : 'Activate License',
       action: onOpenVoucherModal || onAddMember,
     },
-  ];
+  ], [language, onAddMember, onOpenVoucherModal, setScreen]);
 
-  const salonTips = [
+  const salonTips = useMemo(() => [
     {
-      step: 'STEP 1 / 5',
-      title: 'Salon Master Tip',
-      text: 'Send automated SMS reminders 2 hours before scheduled hair coloring & spa appointments.',
-      buttonText: 'Open Stylist Scheduler',
+      step: language === 'ar' ? 'الخطوة 1 / 5' : language === 'fr' ? 'ÉTAPE 1 / 5' : 'STEP 1 / 5',
+      title: language === 'ar' ? 'نصيحة الصالون' : language === 'fr' ? 'Conseil Salon' : 'Salon Master Tip',
+      text: language === 'ar' ? 'أرسل تنبيهات SMS آلية قبل ساعتين من موعد الصبغة وجلسات العناية.' : language === 'fr' ? 'Envoyez des SMS de rappel 2h avant les rendez-vous coloration & spa.' : 'Send automated SMS reminders 2 hours before scheduled hair coloring & spa appointments.',
+      buttonText: language === 'ar' ? 'جدول المصففين' : language === 'fr' ? 'Planning des coiffeurs' : 'Open Stylist Scheduler',
       action: () => setScreen('scheduler'),
     },
     {
-      step: 'STEP 2 / 5',
-      title: 'Salon Master Tip',
-      text: 'Boost average ticket size by upselling post-balayage hair serums directly at chair checkout.',
-      buttonText: 'Manage Beauty Store',
+      step: language === 'ar' ? 'الخطوة 2 / 5' : language === 'fr' ? 'ÉTAPE 2 / 5' : 'STEP 2 / 5',
+      title: language === 'ar' ? 'نصيحة الصالون' : language === 'fr' ? 'Conseil Salon' : 'Salon Master Tip',
+      text: language === 'ar' ? 'ارفع متوسط قيمة الفاتورة ببيع سيروم العناية فور الانتهاء من التصفيف عند الكرسي.' : language === 'fr' ? 'Augmentez le panier moyen en proposant des soins capillaires lors de l\'encaissement au fauteuil.' : 'Boost average ticket size by upselling post-treatment serums directly at chair checkout.',
+      buttonText: language === 'ar' ? 'متجر الصالون' : language === 'fr' ? 'Boutique soins' : 'Manage Beauty Store',
       action: () => setScreen('shop'),
     },
     {
-      step: 'STEP 3 / 5',
-      title: 'Salon Master Tip',
-      text: 'Configure chair assignment and commission tiers in Finance & Staff for senior colorists.',
-      buttonText: 'View Staff & Payroll',
+      step: language === 'ar' ? 'الخطوة 3 / 5' : language === 'fr' ? 'ÉTAPE 3 / 5' : 'STEP 3 / 5',
+      title: language === 'ar' ? 'نصيحة الصالون' : language === 'fr' ? 'Conseil Salon' : 'Salon Master Tip',
+      text: language === 'ar' ? 'حدد نسب العمولات وتوزيع الكراسي للمصففين في شاشة المالية والفريق.' : language === 'fr' ? 'Définissez les commissions et attributions de fauteuils dans Finances & Équipe.' : 'Configure chair assignment and commission tiers in Finance & Staff for senior colorists.',
+      buttonText: language === 'ar' ? 'الفريق والرواتب' : language === 'fr' ? 'Équipe & Paie' : 'View Staff & Payroll',
       action: () => setScreen('finance'),
     },
     {
-      step: 'STEP 4 / 5',
-      title: 'Salon Master Tip',
-      text: 'Review client past treatment history before starting high-lift lightening and keratin smoothing.',
-      buttonText: 'Client Directory',
+      step: language === 'ar' ? 'الخطوة 4 / 5' : language === 'fr' ? 'ÉTAPE 4 / 5' : 'STEP 4 / 5',
+      title: language === 'ar' ? 'نصيحة الصالون' : language === 'fr' ? 'Conseil Salon' : 'Salon Master Tip',
+      text: language === 'ar' ? 'اطلع على سجل علاجات العميل السابقة قبل البدء بجلسات الكيراتين وسحب اللون.' : language === 'fr' ? 'Consultez l\'historique des soins du client avant de débuter un lissage ou décoloration.' : 'Review client past treatment history before starting high-lift lightening and keratin smoothing.',
+      buttonText: language === 'ar' ? 'دليل العملاء' : language === 'fr' ? 'Fichier clients' : 'Client Directory',
       action: () => setScreen('members'),
     },
     {
-      step: 'STEP 5 / 5',
-      title: 'Salon Master Tip',
-      text: 'Add multi-service bridal packages in registration plans to streamline event bookings.',
-      buttonText: 'Registration Pipeline',
+      step: language === 'ar' ? 'الخطوة 5 / 5' : language === 'fr' ? 'ÉTAPE 5 / 5' : 'STEP 5 / 5',
+      title: language === 'ar' ? 'نصيحة الصالون' : language === 'fr' ? 'Conseil Salon' : 'Salon Master Tip',
+      text: language === 'ar' ? 'أضف باقات العرائس المتعددة الخدمات لتسهيل حجوزات المناسبات.' : language === 'fr' ? 'Créez des forfaits mariée multi-prestations pour simplifier la réservation d\'événements.' : 'Add multi-service bridal packages in registration plans to streamline event bookings.',
+      buttonText: language === 'ar' ? 'باقات الخدمات' : language === 'fr' ? 'Forfaits services' : 'Registration Pipeline',
       action: () => setScreen('registrations'),
     },
-  ];
+  ], [language, setScreen]);
 
-  const posTips = [
+  const posTips = useMemo(() => [
     {
-      step: 'STEP 1 / 4',
-      title: 'POS Acceleration',
-      text: 'Scan hardware barcodes directly from USB or Bluetooth laser scanners for instant 1-touch cart additions.',
-      buttonText: 'Open POS Register',
+      step: language === 'ar' ? 'الخطوة 1 / 4' : language === 'fr' ? 'ÉTAPE 1 / 4' : 'STEP 1 / 4',
+      title: language === 'ar' ? 'تسريع نقطة البيع' : language === 'fr' ? 'Accélération Caisse' : 'POS Acceleration',
+      text: language === 'ar' ? 'امسح الباركود مباشرة بقارئ الليزر USB أو البلوتوث لإضافة العناصر بلمسة واحدة.' : language === 'fr' ? 'Scannez directement avec douchette USB/Bluetooth pour ajouter les articles au ticket.' : 'Scan hardware barcodes directly from USB or Bluetooth laser scanners for instant 1-touch cart additions.',
+      buttonText: language === 'ar' ? 'فتح الكاشير' : language === 'fr' ? 'Ouvrir la caisse' : 'Open POS Register',
       action: () => setScreen('shop'),
     },
     {
-      step: 'STEP 2 / 4',
-      title: 'Stock Protection',
-      text: 'Set reorder alert levels for every SKU to receive proactive depletion warnings before running out of stock.',
-      buttonText: 'Manage Inventory',
+      step: language === 'ar' ? 'الخطوة 2 / 4' : language === 'fr' ? 'ÉTAPE 2 / 4' : 'STEP 2 / 4',
+      title: language === 'ar' ? 'حماية المخزون' : language === 'fr' ? 'Gestion Stock' : 'Stock Protection',
+      text: language === 'ar' ? 'حدد مستوى إعادة الطلب لكل صنف لتلقي تنبيهات استباقية قبل نفاد الكمية.' : language === 'fr' ? 'Définissez le seuil d\'alerte pour chaque référence afin d\'éviter les ruptures de stock.' : 'Set reorder alert levels for every SKU to receive proactive depletion warnings before running out of stock.',
+      buttonText: language === 'ar' ? 'إدارة المخزون' : language === 'fr' ? 'Gérer le stock' : 'Manage Inventory',
       action: () => setScreen('shop'),
     },
     {
-      step: 'STEP 3 / 4',
-      title: 'Cash Drawer Security',
-      text: 'Review daily cash tenders and change calculations to ensure register drawer counts balance at shift close.',
-      buttonText: 'Review History',
+      step: language === 'ar' ? 'الخطوة 3 / 4' : language === 'fr' ? 'ÉTAPE 3 / 4' : 'STEP 3 / 4',
+      title: language === 'ar' ? 'صندوق النقدية' : language === 'fr' ? 'Sécurité Tiroir-Caisse' : 'Cash Drawer Security',
+      text: language === 'ar' ? 'راجع المقبوضات النقدية اليومية وحسابات الفكة لضمان تطابق الصندوق عند الإغلاق.' : language === 'fr' ? 'Vérifiez les encaissements espèces et le rendu monnaie pour équilibrer le tiroir-caisse.' : 'Review daily cash tenders and change calculations to ensure register drawer counts balance at shift close.',
+      buttonText: language === 'ar' ? 'مراجعة السجل' : language === 'fr' ? 'Consulter journal' : 'Review History',
       action: () => setScreen('history'),
     },
     {
-      step: 'STEP 4 / 4',
-      title: 'Receipt Customization',
-      text: 'Add your fiscal NIF/RC numbers and customized thank-you messages to thermal checkout slips.',
-      buttonText: 'Setup Receipts',
+      step: language === 'ar' ? 'الخطوة 4 / 4' : language === 'fr' ? 'ÉTAPE 4 / 4' : 'STEP 4 / 4',
+      title: language === 'ar' ? 'تخصيص الوصل' : language === 'fr' ? 'Personnalisation Ticket' : 'Receipt Customization',
+      text: language === 'ar' ? 'أضف أرقام التعريف الجبائي والسجل التجاري ورسائل الشكر على وصولات القبض.' : language === 'fr' ? 'Ajoutez vos NIF/RC et messages de bienvenue personnalisés sur vos tickets de caisse.' : 'Add your fiscal NIF/RC numbers and customized thank-you messages to thermal checkout slips.',
+      buttonText: language === 'ar' ? 'إعداد الوصل' : language === 'fr' ? 'Paramétrer ticket' : 'Setup Receipts',
       action: () => setScreen('shop'),
     },
-  ];
+  ], [language, setScreen]);
 
   const activeTips = isSalon ? salonTips : isPOS ? posTips : gymTips;
 
@@ -498,19 +500,19 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white">
-              Welcome back, Tamer!
+              {language === 'ar' ? 'مرحباً بك مجدداً، تامر!' : language === 'fr' ? 'Bienvenue, Tamer !' : 'Welcome back, Tamer!'}
             </h1>
             {isSalon && (
               <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#FDF4F0] text-[#C4785A] border border-[#F5E2D8] flex items-center gap-1">
                 <Scissors size={12} />
-                <span>Salon & Spa Edition</span>
+                <span>{language === 'ar' ? 'نسخة الصالون والسبا' : language === 'fr' ? 'Édition Salon & Spa' : 'Salon & Spa Edition'}</span>
               </span>
             )}
           </div>
           <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
             {isSalon
-              ? `Real-time chair occupancy, appointments & retail revenue for ${currentBranch?.name || 'Luxe Beauty Lounge'}`
-              : `Here is what's happening at your facility today.`}
+              ? (language === 'ar' ? `إشغال الكراسي والمواعيد ومبيعات التجزئة لـ ${currentBranch?.name || 'الفرع الرئيسي'}` : language === 'fr' ? `Occupation en direct, rendez-vous et ventes pour ${currentBranch?.name || 'Salon Principal'}` : `Real-time chair occupancy, appointments & retail revenue for ${currentBranch?.name || 'Luxe Beauty Lounge'}`)
+              : (language === 'ar' ? 'إليك نظرة شاملة على العمليات اليومية في منشأتك.' : language === 'fr' ? 'Voici le point sur l\'activité de votre établissement aujourd\'hui.' : `Here is what's happening at your facility today.`)}
           </p>
         </div>
 
@@ -538,7 +540,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
             {isFacilityDropdownOpen && (
               <div className="absolute right-0 mt-2 w-64 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
                 <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
-                  Switch Facility / Vertical
+                  {t('fast_switch_title', language)}
                 </div>
                 {businesses.map((biz) => {
                   const isCurrent = biz.id === currentBusinessId;
@@ -581,7 +583,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
               className="h-10 px-5 rounded-full text-xs font-bold text-white flex items-center gap-2 cursor-pointer hover:opacity-90 active:scale-98 transition-all shadow-xs"
             >
               <Plus size={15} strokeWidth={2.5} />
-              <span>Quick Actions</span>
+              <span>{t('dash_quick_actions', language)}</span>
             </button>
 
             {/* Quick Actions Dropdown Menu */}
@@ -749,18 +751,18 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
             <div className="flex items-start justify-between">
               <div>
                 <h2 className="text-base font-bold text-neutral-900 dark:text-white">
-                  {isSalon ? 'Salon Daily Pulse' : isPOS ? 'Register Sales Summary' : 'Summary'}
+                  {isSalon ? (language === 'ar' ? 'نبض الصالون اليومي' : language === 'fr' ? 'Activité du Jour · Salon' : 'Salon Daily Pulse') : isPOS ? (language === 'ar' ? 'ملخص مبيعات الكاشير' : language === 'fr' ? 'Résumé des Ventes Caisse' : 'Register Sales Summary') : (language === 'ar' ? 'ملخص الأداء' : language === 'fr' ? 'Résumé de l\'activité' : 'Summary')}
                 </h2>
                 <p className="text-xs text-neutral-400 dark:text-neutral-500">
                   {isSalon
-                    ? 'Live bookings, chairs & intake metrics'
+                    ? (language === 'ar' ? 'مؤشرات الحجوزات المباشرة والكراسي' : language === 'fr' ? 'Réservations en direct, fauteuils & indicateurs' : 'Live bookings, chairs & intake metrics')
                     : isPOS
-                    ? 'Real-time sales revenue, ticket counts & stock alerts'
-                    : 'Track live facility performance.'}
+                    ? (language === 'ar' ? 'إيرادات المبيعات وتذاكر الكاشير وتنبيهات المخزون' : language === 'fr' ? 'Chiffre d\'affaires en direct, tickets & alertes stock' : 'Real-time sales revenue, ticket counts & stock alerts')
+                    : (language === 'ar' ? 'متابعة أداء المنشأة المباشر.' : language === 'fr' ? 'Suivez la performance en direct de votre établissement.' : 'Track live facility performance.')}
                 </p>
               </div>
               <div className="h-7 px-3 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 text-[11px] font-semibold text-neutral-700 dark:text-neutral-300 flex items-center gap-1 cursor-pointer shadow-2xs">
-                <span>Daily</span>
+                <span>{language === 'ar' ? 'يومي' : language === 'fr' ? 'Quotidien' : 'Daily'}</span>
                 <ChevronDown size={12} className="text-neutral-400" />
               </div>
             </div>
@@ -771,22 +773,22 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                 <div className="bg-white dark:bg-neutral-800 rounded-[20px] p-4 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
                   <div className="flex items-center gap-1.5 text-xs text-[#64748B] dark:text-neutral-400 font-medium">
                     <Scissors size={13} className="text-[#C4785A]" />
-                    <span>In Chair Now</span>
+                    <span>{t('dash_salon_in_chair', language)}</span>
                   </div>
                   <div className="text-2xl font-black tracking-tight text-neutral-900 dark:text-white mt-1 tabular-nums flex items-baseline gap-1.5">
                     {salonMetrics.inChairCount}
-                    <span className="text-xs font-semibold text-amber-500 animate-pulse">active</span>
+                    <span className="text-xs font-semibold text-amber-500 animate-pulse">{language === 'ar' ? 'نشط' : language === 'fr' ? 'en cours' : 'active'}</span>
                   </div>
                 </div>
 
                 <div className="bg-white dark:bg-neutral-800 rounded-[20px] p-4 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
                   <div className="flex items-center gap-1.5 text-xs text-[#64748B] dark:text-neutral-400 font-medium">
                     <Calendar size={13} className="text-emerald-500" />
-                    <span>Total Bookings</span>
+                    <span>{t('dash_tab_appointments', language)}</span>
                   </div>
                   <div className="text-2xl font-black tracking-tight text-neutral-900 dark:text-white mt-1 tabular-nums">
                     {salonMetrics.todayCount}{' '}
-                    <span className="text-xs font-semibold text-neutral-400">clients</span>
+                    <span className="text-xs font-semibold text-neutral-400">{terminology.members.toLowerCase()}</span>
                   </div>
                 </div>
               </div>
@@ -795,7 +797,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                 <div className="bg-white dark:bg-neutral-800 rounded-[20px] p-4 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
                   <div className="flex items-center gap-1.5 text-xs text-[#64748B] dark:text-neutral-400 font-medium">
                     <TrendingUp size={13} className="text-[#C4785A]" />
-                    <span>POS Daily Sales</span>
+                    <span>{t('dash_kpi_revenue', language)}</span>
                   </div>
                   <div className="text-2xl font-black tracking-tight text-emerald-600 dark:text-emerald-400 mt-1 tabular-nums font-mono">
                     {formatMoney(posMetrics.totalRev)}
@@ -805,11 +807,11 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                 <div className="bg-white dark:bg-neutral-800 rounded-[20px] p-4 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
                   <div className="flex items-center gap-1.5 text-xs text-[#64748B] dark:text-neutral-400 font-medium">
                     <ShoppingCart size={13} className="text-emerald-500" />
-                    <span>Transactions</span>
+                    <span>{t('dash_tab_sales', language)}</span>
                   </div>
                   <div className="text-2xl font-black tracking-tight text-neutral-900 dark:text-white mt-1 tabular-nums">
                     {posMetrics.totalTransactions}{' '}
-                    <span className="text-xs font-semibold text-neutral-400">tickets</span>
+                    <span className="text-xs font-semibold text-neutral-400">{language === 'ar' ? 'تذكرة' : language === 'fr' ? 'tickets' : 'tickets'}</span>
                   </div>
                 </div>
               </div>
@@ -818,7 +820,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                 <div className="bg-white dark:bg-neutral-800 rounded-[20px] p-4 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
                   <div className="flex items-center gap-1.5 text-xs text-[#64748B] dark:text-neutral-400 font-medium">
                     <ArrowDown size={13} className="text-[#C4785A]" />
-                    <span>People Inside</span>
+                    <span>{t('dash_people_inside', language)}</span>
                   </div>
                   <div className="text-2xl font-black tracking-tight text-neutral-900 dark:text-white mt-1 tabular-nums">
                     {peopleInside}{' '}
@@ -829,11 +831,11 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                 <div className="bg-white dark:bg-neutral-800 rounded-[20px] p-4 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
                   <div className="flex items-center gap-1.5 text-xs text-[#64748B] dark:text-neutral-400 font-medium">
                     <ArrowUp size={13} className="text-emerald-500" />
-                    <span>Entrées Jour</span>
+                    <span>{t('dash_daily_entries', language)}</span>
                   </div>
                   <div className="text-2xl font-black tracking-tight text-neutral-900 dark:text-white mt-1 tabular-nums">
                     {entreesJour}{' '}
-                    <span className="text-xs font-semibold text-neutral-400">entrées</span>
+                    <span className="text-xs font-semibold text-neutral-400">{language === 'ar' ? 'دخول' : language === 'fr' ? 'entrées' : 'check-ins'}</span>
                   </div>
                 </div>
               </div>

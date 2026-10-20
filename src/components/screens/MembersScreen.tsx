@@ -35,6 +35,7 @@ import { AppointmentModal } from '../modals/AppointmentModal';
 import { Seek } from '../ui/Seek';
 import { ActionNode } from '../ui/ActionNode';
 import { LabelSelect } from '../ui/LabelSelect';
+import { t } from '../../utils/i18n';
 
 interface MembersScreenProps {
   onAddMember: () => void;
@@ -54,6 +55,7 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
     currentBusinessId,
     currentBranch,
     terminology,
+    language,
     appointments,
     sales,
     switchBusiness,
@@ -196,7 +198,11 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
               {terminology.members}
             </h1>
             <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
-              Browse, filter, and manage {terminology.members.toLowerCase()} profiles, packages, and visit history
+              {language === 'ar'
+                ? `إدارة وتصفية ملفات ${terminology.members} والباقات وسجل الزيارات`
+                : language === 'fr'
+                ? `Gérer et filtrer les profils, forfaits et historique des ${terminology.members.toLowerCase()}`
+                : `Browse, filter, and manage ${terminology.members.toLowerCase()} profiles, packages, and visit history`}
             </p>
           </div>
         </div>
@@ -225,7 +231,7 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
             {isFacilityDropdownOpen && (
               <div className="absolute right-0 mt-2 w-64 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
                 <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
-                  Switch Facility
+                  {t('fast_switch_title', language)}
                 </div>
                 {businesses.map((biz) => {
                   const isCurrent = biz.id === currentBusinessId;
@@ -267,7 +273,7 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
             className="h-10 px-5 rounded-full text-xs font-bold text-white flex items-center gap-2 cursor-pointer hover:opacity-90 active:scale-98 transition-all shadow-xs"
           >
             <Plus size={15} strokeWidth={2.5} />
-            <span>Add {terminology.memberSingle}</span>
+            <span>{t('action_add', language)} {terminology.memberSingle}</span>
           </button>
         </div>
       </div>
@@ -276,10 +282,14 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
       <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[26px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
         <div>
           <h2 className="text-base font-bold text-neutral-900 dark:text-white">
-            {terminology.members} & Retention Health
+            {terminology.members} & {language === 'ar' ? 'مؤشرات التجديد' : language === 'fr' ? 'Rétention & Renouvellements' : 'Retention Health'}
           </h2>
           <p className="text-xs text-neutral-400 dark:text-neutral-500">
-            Active {terminology.members.toLowerCase()} pipeline, renewal retention, and intake volume
+            {language === 'ar'
+              ? `متابعة اشتراكات ${terminology.members} ومعدلات التجديد وحجم التسجيلات`
+              : language === 'fr'
+              ? `Pipeline des ${terminology.members.toLowerCase()}, taux de renouvellement et adhésions`
+              : `Active ${terminology.members.toLowerCase()} pipeline, renewal retention, and intake volume`}
           </p>
         </div>
 
@@ -288,11 +298,11 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
           <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
             <div>
               <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
-                Active {terminology.members} Base
+                {language === 'ar' ? `قاعدة ${terminology.members} النشطة` : language === 'fr' ? `Base active ${terminology.members.toLowerCase()}` : `Active ${terminology.members} Base`}
               </span>
               <div className="mt-1">
                 <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
-                  ↗ 100% Actifs
+                  ↗ 100% {language === 'ar' ? 'نشط' : language === 'fr' ? 'Actifs' : 'Active'}
                 </span>
               </div>
             </div>
@@ -305,11 +315,15 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
           <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
             <div>
               <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
-                {isPOS ? 'Customer Ledger Volume' : 'Renewal & Retention Alert'}
+                {isPOS
+                  ? (language === 'ar' ? 'حجم مشتريات الزبائن' : language === 'fr' ? 'Volume d\'achats clients' : 'Customer Ledger Volume')
+                  : (language === 'ar' ? 'تنبيهات انتهاء الاشتراك' : language === 'fr' ? 'Alertes de renouvellement' : 'Renewal & Retention Alert')}
               </span>
               <div className="mt-1">
                 <span className="text-[10px] font-bold text-[#C4785A] bg-[#C4785A]/10 px-2 py-0.5 rounded-full">
-                  {isPOS ? 'Total Account Spend' : `${expiringCount} expirent bientôt`}
+                  {isPOS
+                    ? (language === 'ar' ? 'إجمالي المشتريات' : language === 'fr' ? 'Total des achats' : 'Total Account Spend')
+                    : `${expiringCount} ${language === 'ar' ? 'تنتهي قريباً' : language === 'fr' ? 'expirent bientôt' : 'expiring soon'}`}
                 </span>
               </div>
             </div>
@@ -322,15 +336,19 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
           <div className="p-5 rounded-[20px] bg-[#18181B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
             <div>
               <span className="text-xs font-medium text-neutral-300">
-                {isPOS ? 'Active Purchasing Customers' : 'Monthly Inflow'}
+                {isPOS
+                  ? (language === 'ar' ? 'الزبائن المشترون النشطون' : language === 'fr' ? 'Clients acheteurs actifs' : 'Active Purchasing Customers')
+                  : (language === 'ar' ? 'الوافدون الجدد شهرياً' : language === 'fr' ? 'Adhésions du mois' : 'Monthly Inflow')}
               </span>
               <div className="text-[11px] text-[#C4785A] font-semibold mt-0.5">
-                {isPOS ? 'Profiles with settled POS order history' : 'New packages & client profiles this month'}
+                {isPOS
+                  ? (language === 'ar' ? 'حسابات تمت تسوية طلباتها' : language === 'fr' ? 'Profils avec historique de commandes' : 'Profiles with settled POS order history')
+                  : (language === 'ar' ? 'باقات وحسابات جديدة هذا الشهر' : language === 'fr' ? 'Nouveaux forfaits et profils ce mois-ci' : 'New packages & client profiles this month')}
               </div>
             </div>
             <div className="text-2xl font-black text-white tabular-nums">
               {isPOS
-                ? `${customerSalesMetrics.purchasingCount} clients`
+                ? `${customerSalesMetrics.purchasingCount} ${language === 'ar' ? 'زبون' : language === 'fr' ? 'clients' : 'customers'}`
                 : `+${displayMembers.length} ${terminology.members.toLowerCase()}`}
             </div>
           </div>
@@ -358,7 +376,7 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
             <Seek
               value={searchQuery}
               onChange={setSearchQuery}
-              placeholder={`Search ${terminology.members.toLowerCase()}...`}
+              placeholder={language === 'ar' ? `البحث في ${terminology.members}...` : language === 'fr' ? `Rechercher ${terminology.members.toLowerCase()}...` : `Search ${terminology.members.toLowerCase()}...`}
               shutSize={36}
               openWidth={220}
             />
@@ -368,6 +386,16 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
               {(['All', 'Active', 'Expiring', 'Expired', 'Archived'] as const).map(
                 (filter) => {
                   const isActive = statusFilter === filter;
+                  const label =
+                    filter === 'All'
+                      ? t('members_filter_all', language)
+                      : filter === 'Active'
+                      ? t('members_filter_active', language)
+                      : filter === 'Expiring'
+                      ? t('members_filter_expiring', language)
+                      : filter === 'Expired'
+                      ? t('members_filter_expired', language)
+                      : t('members_filter_archived', language);
                   return (
                     <button
                       key={filter}
@@ -381,7 +409,7 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
                         isActive ? 'font-bold' : 'hover:text-neutral-900 dark:hover:text-white'
                       }`}
                     >
-                      {filter}
+                      {label}
                     </button>
                   );
                 }
@@ -391,11 +419,11 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
             {/* Plan Filter Dropdown */}
             <LabelSelect
               field="Plan"
-              label="Filter Plan"
+              label={language === 'ar' ? 'الباقة' : language === 'fr' ? 'Forfait' : 'Filter Plan'}
               value={planFilter}
               onChange={(val) => setPlanFilter(val?.target?.value ?? String(val))}
               options={[
-                { value: 'All', label: 'All Plans' },
+                { value: 'All', label: language === 'ar' ? 'جميع الباقات' : language === 'fr' ? 'Tous les forfaits' : 'All Plans' },
                 ...plans.map((p) => ({ value: p.id, label: p.name })),
               ]}
               width={160}
@@ -411,7 +439,7 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
               title="Download CSV export"
             >
               <Download size={13} />
-              <span>Export Data</span>
+              <span>{t('members_export_csv', language)}</span>
             </button>
 
             {/* View Mode Toggle: Grid & List */}
@@ -486,11 +514,11 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
                     <span className="text-[10px]">↕</span>
                   </div>
                   <div className="col-span-2 text-center flex items-center justify-center gap-1">
-                    <span>Status</span>
+                    <span>{t('members_status_col', language)}</span>
                     <span className="text-[10px]">↕</span>
                   </div>
                   <div className="col-span-2 text-right flex items-center justify-end gap-1 pr-2">
-                    <span>{currentBusiness.category === 'appointment_service' ? 'Package / Value' : 'Balance'}</span>
+                    <span>{currentBusiness.category === 'appointment_service' ? 'Package / Value' : t('members_balance_col', language)}</span>
                     <span className="text-[10px]">↕</span>
                   </div>
                   <div className="col-span-1"></div>
