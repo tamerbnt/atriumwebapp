@@ -297,15 +297,15 @@ export const LabelSelect: React.FC<LabelSelectProps> = ({
           onClick={() => {
             if (!disabled) setIsOpen((prev) => !prev);
           }}
-          className="w-full h-full flex items-center justify-between text-left focus:outline-none cursor-pointer bg-transparent transition-opacity"
+          className="w-full h-full flex items-center justify-between text-left rtl:text-right focus:outline-none cursor-pointer bg-transparent transition-opacity"
           style={{
-            paddingLeft: prefix ? lx + 16 : lx,
-            paddingRight: Math.max(10, r),
+            paddingInlineStart: prefix ? lx + 16 : lx,
+            paddingInlineEnd: Math.max(10, r),
           }}
           aria-haspopup="listbox"
           aria-expanded={isOpen}
         >
-          <div className="flex items-center gap-2 truncate pr-2">
+          <div className="flex items-center gap-2 truncate pr-2 rtl:pr-0 rtl:pl-2">
             {prefix && (
               <span className="shrink-0 text-neutral-400">{prefix}</span>
             )}
@@ -354,7 +354,7 @@ export const LabelSelect: React.FC<LabelSelectProps> = ({
                 <div className="relative flex items-center">
                   <Search
                     size={13}
-                    className="absolute left-2.5 text-neutral-400 pointer-events-none"
+                    className="absolute left-2.5 rtl:left-auto rtl:right-2.5 text-neutral-400 pointer-events-none"
                   />
                   <input
                     ref={searchInputRef}
@@ -365,13 +365,13 @@ export const LabelSelect: React.FC<LabelSelectProps> = ({
                       setHighlightedIndex(0);
                     }}
                     placeholder="Search options..."
-                    className="w-full h-7 pl-7 pr-7 text-xs bg-white dark:bg-zinc-800 border border-neutral-200 dark:border-zinc-700 rounded-lg text-neutral-900 dark:text-neutral-100 focus:outline-none focus:border-[#C4785A]"
+                    className="w-full h-7 pl-7 pr-7 rtl:pr-7 rtl:pl-7 text-xs bg-white dark:bg-zinc-800 border border-neutral-200 dark:border-zinc-700 rounded-lg text-neutral-900 dark:text-neutral-100 focus:outline-none focus:border-[#C4785A]"
                   />
                   {searchQuery && (
                     <button
                       type="button"
                       onClick={() => setSearchQuery('')}
-                      className="absolute right-2 text-neutral-400 hover:text-neutral-600 p-0.5"
+                      className="absolute right-2 rtl:right-auto rtl:left-2 text-neutral-400 hover:text-neutral-600 p-0.5 cursor-pointer"
                     >
                       <X size={12} />
                     </button>

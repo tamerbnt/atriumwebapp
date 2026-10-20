@@ -514,7 +514,7 @@ export const ToastStack: React.FC<ToastStackProps> = ({
   return (
     <aside
       aria-label="Category notifications dock"
-      className={`fixed bottom-5 right-5 z-[99999] pointer-events-auto select-none ${className}`}
+      className={`fixed bottom-5 right-5 rtl:right-auto rtl:left-5 z-[99999] pointer-events-auto select-none ${className}`}
     >
       <div
         ref={root}

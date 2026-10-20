@@ -775,6 +775,25 @@
 .lbi-eye[data-show="true"] svg:first-child { opacity: 0; scale: 0.7; filter: blur(2px); }
 .lbi-eye[data-show="true"] svg:last-child { opacity: 1; scale: 1; filter: none; }
 
+/* LabelInput RTL mirroring */
+[dir="rtl"] .lbi-label {
+  left: auto;
+  right: var(--lbi-x);
+  transform-origin: right center;
+}
+[dir="rtl"] .lbi-field {
+  padding: 0 var(--lbi-x) 0 0;
+  text-align: right;
+}
+[dir="rtl"] .lbi-field::-webkit-calendar-picker-indicator {
+  margin-right: 0;
+  margin-left: 12px;
+}
+[dir="rtl"] .lbi-eye {
+  right: auto;
+  left: 10px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .lbi-ring path,
   .lbi-gap,

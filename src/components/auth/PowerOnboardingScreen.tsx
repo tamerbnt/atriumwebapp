@@ -40,6 +40,7 @@ import { authService } from '../../lib/supabase/services/authService';
 import {
   findCategoryByBusinessSearch,
   getPopularBusinessSearches,
+  POPULAR_BUSINESS_SEARCHES,
   BusinessMatchResult,
 } from '../../utils/businessMapping';
 import { t } from '../../utils/i18n';

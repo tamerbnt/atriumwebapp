@@ -21,10 +21,12 @@ import {
 } from 'lucide-react';
 import { useAtriumStore } from '../../../services/store';
 import { formatMoney } from '../../../utils/rules';
+import { useTranslation } from '../../../utils/useTranslation';
 import { RollCallModal } from './RollCallModal';
 import { EduSession } from '../../../types';
 
 export const EducationDashboardView: React.FC = () => {
+  const { t, language, isRtl } = useTranslation();
   const {
     currentBusiness,
     currentBranch,
@@ -85,14 +87,14 @@ export const EducationDashboardView: React.FC = () => {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white">
-              Academy Pulse & Operations
+              {t('nav_edu_dashboard')}
             </h1>
             <span className="text-[11px] font-bold px-2 py-0.5 rounded-md bg-[#C4785A]/15 text-[#C4785A] uppercase tracking-wider">
-              Category 15 · Education
+              Category 15 · {t('onboard_categories_label')}
             </span>
           </div>
           <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
-            {currentBusiness?.displayName || 'Atlas Academy'} · {currentBranch?.name || 'Campus'} — Live cohort timetables, 1-click roll call attendance & tuition collections
+            {currentBusiness?.displayName || 'Atlas Academy'} · {currentBranch?.name || 'Campus'} — {t('edu_timetable_subtitle')}
           </p>
         </div>
 
@@ -113,9 +115,9 @@ export const EducationDashboardView: React.FC = () => {
             </button>
 
             {isFacilityDropdownOpen && (
-              <div className="absolute right-0 mt-2 w-64 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
+              <div className={`absolute ${isRtl ? 'left-0' : 'right-0'} mt-2 w-64 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150`}>
                 <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
-                  Switch Facility / Vertical
+                  {t('topbar_fast_switch')}
                 </div>
                 {businesses.map((biz) => {
                   const isCurrent = biz.id === currentBusinessId;
@@ -129,7 +131,7 @@ export const EducationDashboardView: React.FC = () => {
                         if (matchingBranch) switchBranch(matchingBranch.id);
                         setIsFacilityDropdownOpen(false);
                       }}
-                      className={`w-full px-3 py-2 text-left flex items-center justify-between text-xs transition-colors cursor-pointer ${
+                      className={`w-full px-3 py-2 text-left rtl:text-right flex items-center justify-between text-xs transition-colors cursor-pointer ${
                         isCurrent
                           ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold'
                           : 'text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50'
@@ -153,7 +155,7 @@ export const EducationDashboardView: React.FC = () => {
             className="h-10 px-4 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 text-xs font-semibold flex items-center gap-1.5 hover:bg-neutral-50 dark:hover:bg-neutral-700/60 transition-colors cursor-pointer shadow-2xs"
           >
             <Calendar size={14} />
-            <span>Timetable</span>
+            <span>{t('nav_edu_timetable')}</span>
           </button>
           <button
             type="button"
@@ -161,7 +163,7 @@ export const EducationDashboardView: React.FC = () => {
             className="h-10 px-4 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 text-xs font-semibold flex items-center gap-1.5 hover:bg-neutral-50 dark:hover:bg-neutral-700/60 transition-colors cursor-pointer shadow-2xs"
           >
             <Plus size={14} />
-            <span>Enroll Student</span>
+            <span>{t('edu_btn_new_student')}</span>
           </button>
           <button
             type="button"
@@ -172,7 +174,7 @@ export const EducationDashboardView: React.FC = () => {
             className="h-10 px-4 rounded-xl bg-[#C4785A] text-white text-xs font-semibold flex items-center gap-1.5 hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
           >
             <CheckCircle2 size={15} />
-            <span>Take Roll Call</span>
+            <span>{t('edu_btn_roll_call')}</span>
           </button>
         </div>
       </div>
@@ -182,7 +184,7 @@ export const EducationDashboardView: React.FC = () => {
         {/* Metric 1 */}
         <div className="p-4 sm:p-5 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-900/40 border border-[#EDF1F3] dark:border-neutral-800 shadow-2xs flex flex-col justify-between">
           <div className="flex items-center justify-between text-neutral-500 dark:text-neutral-400 text-xs font-semibold">
-            <span>Active Learners</span>
+            <span>{t('edu_kpi_total_students')}</span>
             <Users size={16} className="text-[#C4785A]" />
           </div>
           <div className="my-2">
@@ -190,13 +192,13 @@ export const EducationDashboardView: React.FC = () => {
               {activeStudentsCount}
             </span>
             <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium block mt-0.5">
-              Across {eduCohorts.length} active cohorts
+              {eduCohorts.length} {t('edu_kpi_active_cohorts')}
             </span>
           </div>
           <div className="text-[11px] text-neutral-400 pt-2 border-t border-neutral-200/60 dark:border-neutral-700/60 flex items-center justify-between">
-            <span>Enrolled Capacity</span>
+            <span>{t('common_total')}</span>
             <span className="font-semibold text-neutral-700 dark:text-neutral-300">
-              {eduCohorts.reduce((sum, c) => sum + c.enrolledCount, 0)} Seats
+              {eduCohorts.reduce((sum, c) => sum + c.enrolledCount, 0)}
             </span>
           </div>
         </div>
@@ -204,7 +206,7 @@ export const EducationDashboardView: React.FC = () => {
         {/* Metric 2 */}
         <div className="p-4 sm:p-5 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-900/40 border border-[#EDF1F3] dark:border-neutral-800 shadow-2xs flex flex-col justify-between">
           <div className="flex items-center justify-between text-neutral-500 dark:text-neutral-400 text-xs font-semibold">
-            <span>Campus Attendance</span>
+            <span>{t('edu_kpi_attendance_rate')}</span>
             <CheckCircle2 size={16} className="text-emerald-500" />
           </div>
           <div className="my-2">
@@ -212,19 +214,19 @@ export const EducationDashboardView: React.FC = () => {
               {averageAttendanceRate}%
             </span>
             <span className="text-[11px] text-neutral-500 dark:text-neutral-400 font-medium block mt-0.5">
-              {presentRecords} verified check-ins
+              {presentRecords} {t('edu_roll_call_present')}
             </span>
           </div>
           <div className="text-[11px] text-neutral-400 pt-2 border-t border-neutral-200/60 dark:border-neutral-700/60 flex items-center justify-between">
-            <span>Target Benchmark</span>
-            <span className="font-semibold text-emerald-600 dark:text-emerald-400">&ge; 90% Rate</span>
+            <span>{t('common_status')}</span>
+            <span className="font-semibold text-emerald-600 dark:text-emerald-400">&ge; 90%</span>
           </div>
         </div>
 
         {/* Metric 3 */}
         <div className="p-4 sm:p-5 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-900/40 border border-[#EDF1F3] dark:border-neutral-800 shadow-2xs flex flex-col justify-between">
           <div className="flex items-center justify-between text-neutral-500 dark:text-neutral-400 text-xs font-semibold">
-            <span>Settled Tuition</span>
+            <span>{t('edu_kpi_tuition_collected')}</span>
             <DollarSign size={16} className="text-blue-500" />
           </div>
           <div className="my-2">
@@ -232,11 +234,11 @@ export const EducationDashboardView: React.FC = () => {
               {formatMoney(totalPaid)}
             </span>
             <span className="text-[11px] text-blue-600 dark:text-blue-400 font-medium block mt-0.5">
-              {tuitionRate}% collection velocity
+              {tuitionRate}%
             </span>
           </div>
           <div className="text-[11px] text-neutral-400 pt-2 border-t border-neutral-200/60 dark:border-neutral-700/60 flex items-center justify-between">
-            <span>Contracted Billed</span>
+            <span>{t('edu_finance_title')}</span>
             <span className="font-semibold text-neutral-700 dark:text-neutral-300">
               {formatMoney(totalBilled)}
             </span>
@@ -246,7 +248,7 @@ export const EducationDashboardView: React.FC = () => {
         {/* Metric 4 */}
         <div className="p-4 sm:p-5 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-900/40 border border-[#EDF1F3] dark:border-neutral-800 shadow-2xs flex flex-col justify-between">
           <div className="flex items-center justify-between text-neutral-500 dark:text-neutral-400 text-xs font-semibold">
-            <span>Aging Overdue AR</span>
+            <span>{t('edu_kpi_pending_receivables')}</span>
             <AlertCircle size={16} className="text-rose-500" />
           </div>
           <div className="my-2">
@@ -254,12 +256,12 @@ export const EducationDashboardView: React.FC = () => {
               {formatMoney(outstandingTuition)}
             </span>
             <span className="text-[11px] text-rose-500 font-medium block mt-0.5">
-              {overdueEnrollments.length} accounts pending
+              {overdueEnrollments.length} {t('edu_tuition_overdue')}
             </span>
           </div>
           <div className="text-[11px] text-neutral-400 pt-2 border-t border-neutral-200/60 dark:border-neutral-700/60 flex items-center justify-between">
-            <span>Installments Due</span>
-            <span className="font-semibold text-neutral-700 dark:text-neutral-300">Term 2026</span>
+            <span>{t('common_status')}</span>
+            <span className="font-semibold text-neutral-700 dark:text-neutral-300">{t('edu_tuition_partial')}</span>
           </div>
         </div>
       </div>
@@ -272,17 +274,17 @@ export const EducationDashboardView: React.FC = () => {
             <div>
               <h2 className="text-base font-bold text-neutral-900 dark:text-white flex items-center gap-2">
                 <Calendar size={17} className="text-[#C4785A]" />
-                Today's Scheduled Classes
+                {t('edu_kpi_today_classes')}
               </h2>
               <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                Live classroom sessions, instructor allocations & roll call launchpad
+                {t('edu_timetable_subtitle')}
               </p>
             </div>
             <button
               onClick={() => setScreen('scheduler')}
               className="text-xs font-medium text-[#C4785A] hover:underline flex items-center gap-1 cursor-pointer"
             >
-              Master Timetable <ArrowRight size={13} />
+              {t('nav_edu_timetable')} <ArrowRight size={13} className={isRtl ? 'rotate-180' : ''} />
             </button>
           </div>
 
@@ -308,11 +310,11 @@ export const EducationDashboardView: React.FC = () => {
                         {session.classroomName || 'Room A-101'}
                       </span>
                       <span>·</span>
-                      <span>Instructor: {session.instructorName}</span>
+                      <span>{session.instructorName}</span>
                     </div>
                     {session.topic && (
                       <div className="text-xs font-medium text-[#C4785A] mt-1">
-                        Topic: {session.topic}
+                        {session.topic}
                       </div>
                     )}
                   </div>
@@ -327,7 +329,7 @@ export const EducationDashboardView: React.FC = () => {
                     className="h-8 px-3 rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-[#C4785A] hover:text-white text-neutral-700 dark:text-neutral-300 text-xs font-semibold transition-colors flex items-center gap-1.5 cursor-pointer"
                   >
                     <CheckCircle2 size={13} />
-                    <span>Roll Call</span>
+                    <span>{t('edu_btn_roll_call')}</span>
                   </button>
                 </div>
               </div>
@@ -340,10 +342,10 @@ export const EducationDashboardView: React.FC = () => {
           <div>
             <h2 className="text-base font-bold text-neutral-900 dark:text-white flex items-center gap-2">
               <AlertCircle size={17} className="text-rose-500" />
-              Learner Attention Radar
+              {t('edu_attendance_title')}
             </h2>
             <p className="text-xs text-neutral-500 dark:text-neutral-400">
-              Low attendance learners and overdue tuition accounts
+              {t('edu_attendance_subtitle')}
             </p>
           </div>
 
@@ -352,9 +354,9 @@ export const EducationDashboardView: React.FC = () => {
             <div>
               <div className="text-xs font-semibold text-neutral-600 dark:text-neutral-300 flex items-center justify-between mb-2">
                 <span className="flex items-center gap-1.5 text-rose-600 dark:text-rose-400 font-bold">
-                  <AlertCircle size={13} /> Attendance &lt; 85%
+                  <AlertCircle size={13} /> {t('edu_kpi_attendance_rate')} &lt; 85%
                 </span>
-                <span className="text-neutral-500 text-[11px]">{studentsNeedingAttention.length} students</span>
+                <span className="text-neutral-500 text-[11px]">{studentsNeedingAttention.length}</span>
               </div>
               <div className="space-y-2">
                 {studentsNeedingAttention.slice(0, 3).map((st) => (
@@ -367,7 +369,7 @@ export const EducationDashboardView: React.FC = () => {
                         {st.fullName}
                       </div>
                       <div className="text-[11px] text-neutral-400">
-                        Guardian: {st.guardianName || 'Direct'}
+                        {st.guardianName || 'Direct'}
                       </div>
                     </div>
                     <span className="font-bold text-rose-600 dark:text-rose-400 tabular-nums text-xs">
@@ -381,18 +383,18 @@ export const EducationDashboardView: React.FC = () => {
             {/* Overdue Tuition Alert */}
             <div className="border-t border-neutral-200 dark:border-neutral-800 pt-3">
               <div className="text-xs font-bold text-neutral-900 dark:text-white flex items-center justify-between">
-                <span>Pending Tuition Cashflow</span>
+                <span>{t('edu_kpi_pending_receivables')}</span>
                 <span className="text-[#C4785A] font-extrabold">{formatMoney(outstandingTuition)}</span>
               </div>
               <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
-                {overdueEnrollments.length} learner installments ready for collection this term.
+                {overdueEnrollments.length} {t('edu_tuition_overdue')}
               </p>
               <button
                 type="button"
                 onClick={() => setScreen('finance')}
                 className="mt-3 w-full py-2 text-xs font-semibold text-center text-neutral-800 dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-700/60 rounded-xl transition-colors cursor-pointer shadow-2xs"
               >
-                Inspect Tuition Ledger →
+                {t('edu_finance_title')} →
               </button>
             </div>
           </div>
@@ -405,17 +407,17 @@ export const EducationDashboardView: React.FC = () => {
           <div>
             <h2 className="text-base font-bold text-neutral-900 dark:text-white flex items-center gap-2">
               <BookOpen size={17} className="text-[#C4785A]" />
-              Active Cohorts & Capacity Progress
+              {t('edu_kpi_active_cohorts')}
             </h2>
             <p className="text-xs text-neutral-500 dark:text-neutral-400">
-              Seat occupancy, syllabus milestones & instructor allocations
+              {t('edu_cohort_progress', 'Seat occupancy & milestones')}
             </p>
           </div>
           <button
             onClick={() => setScreen('shop')}
             className="text-xs font-medium text-[#C4785A] hover:underline flex items-center gap-1 cursor-pointer"
           >
-            Manage Cohorts <ChevronRight size={14} />
+            {t('nav_edu_cohorts')} <ChevronRight size={14} className={isRtl ? 'rotate-180' : ''} />
           </button>
         </div>
 

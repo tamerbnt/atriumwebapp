@@ -27,12 +27,14 @@ import {
 import { LabelInput } from '../../ui/LabelInput';
 import { Seek } from '../../ui/Seek';
 import { LabelSelect } from '../../ui/LabelSelect';
+import { useTranslation } from '../../../utils/useTranslation';
 
 interface ProjectDirectionViewProps {
   initialTab?: 'dashboard' | 'new_project' | 'approvals' | 'reports' | 'all' | 'payroll' | 'expenses';
 }
 
 export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ initialTab = 'dashboard' }) => {
+  const { t, language, isRtl } = useTranslation();
   const {
     pmProjects,
     pmMissions,
@@ -177,19 +179,19 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
         <div>
           <div className="flex items-center gap-2">
             <span className="text-xs font-semibold uppercase tracking-wider text-[#C4785A]">
-              Rôle 1 · Direction Générale
+              {t('pm_role_direction_badge')}
             </span>
             <span className="text-zinc-400">·</span>
-            <span className="text-xs text-zinc-500">Executive Command Center</span>
+            <span className="text-xs text-zinc-500">{t('pm_dir_title')}</span>
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
             {currentScreen === 'dashboard'
-              ? "Command Center & Vue d'Ensemble"
+              ? t('pm_dir_title')
               : currentScreen === 'new_project'
-              ? 'Cadrage Projet & Cahier des Charges'
+              ? t('pm_btn_new_project')
               : currentScreen === 'approvals'
-              ? 'Gouvernance Financière & Approbations'
-              : 'Rapports d\'Activité & Analyse de Performance'}
+              ? t('pm_btn_approve_payroll')
+              : t('nav_pm_dir_reports')}
           </h1>
         </div>
 
@@ -199,7 +201,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
             className="px-3 py-1.5 text-xs font-semibold text-zinc-700 dark:text-zinc-300 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 rounded-xl flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer"
           >
             <Download className="w-3.5 h-3.5" />
-            Export Audit CSV
+            {t('common_export')} CSV
           </button>
         </div>
       </div>
@@ -213,7 +215,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200/80 dark:border-zinc-800 shadow-xs">
               <div className="flex items-center justify-between text-xs text-zinc-500 mb-1">
-                <span className="font-semibold uppercase tracking-wider text-[11px]">CA DU MOIS</span>
+                <span className="font-semibold uppercase tracking-wider text-[11px]">{t('pm_kpi_budget_committed')}</span>
                 <span className="text-xs font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.5 rounded">
                   +12 %
                 </span>
@@ -225,34 +227,34 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
 
             <div className="p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200/80 dark:border-zinc-800 shadow-xs">
               <div className="flex items-center justify-between text-xs text-zinc-500 mb-1">
-                <span className="font-semibold uppercase tracking-wider text-[11px]">MISSIONS ACTIVES</span>
+                <span className="font-semibold uppercase tracking-wider text-[11px]">{t('pm_kpi_active_projects')}</span>
                 <span className="text-xs font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.5 rounded">
                   +3
                 </span>
               </div>
               <div className="text-2xl font-bold font-mono tracking-tight text-zinc-900 dark:text-zinc-100 tabular-nums">
-                12
+                {pmProjects.length || 12}
               </div>
             </div>
 
             <div className="p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200/80 dark:border-zinc-800 shadow-xs">
               <div className="flex items-center justify-between text-xs text-zinc-500 mb-1">
-                <span className="font-semibold uppercase tracking-wider text-[11px]">ANIMATEURS</span>
+                <span className="font-semibold uppercase tracking-wider text-[11px]">{t('pm_kpi_field_talents')}</span>
               </div>
               <div className="text-2xl font-bold font-mono tracking-tight text-zinc-900 dark:text-zinc-100 tabular-nums">
-                86
+                {pmTalents.length || 86}
               </div>
             </div>
 
             <div className="p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-red-200 dark:border-red-900/50 bg-red-50/20 dark:bg-red-950/10 shadow-xs">
               <div className="flex items-center justify-between text-xs text-red-700 dark:text-red-400 mb-1">
-                <span className="font-semibold uppercase tracking-wider text-[11px]">PAIES À VALIDER</span>
+                <span className="font-semibold uppercase tracking-wider text-[11px]">{t('pm_kpi_payroll_due')}</span>
                 <span className="w-5 h-5 rounded-full bg-red-600 text-white flex items-center justify-center font-bold text-xs">
                   !
                 </span>
               </div>
               <div className="text-2xl font-bold font-mono tracking-tight text-red-700 dark:text-red-400 tabular-nums">
-                23
+                {pendingPayrollBatches.length || 23}
               </div>
             </div>
           </div>

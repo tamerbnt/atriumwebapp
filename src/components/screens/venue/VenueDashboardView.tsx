@@ -19,11 +19,13 @@ import {
 import { useAtriumStore } from '../../../services/store';
 import { RentableUnit, RentalBooking } from '../../../types/index';
 import { formatCurrencyAmount } from '../../../utils/rules';
+import { useTranslation } from '../../../utils/useTranslation';
 import { BookingModal } from './BookingModal';
 import { VenueCloudSyncModal } from './VenueCloudSyncModal';
 import { ActionNode } from '../../ui/ActionNode';
 
 export const VenueDashboardView: React.FC = () => {
+  const { t, language, isRtl } = useTranslation();
   const {
     currentBusiness,
     currentBranch,
@@ -80,17 +82,17 @@ export const VenueDashboardView: React.FC = () => {
             <span>{currentBranch?.name || 'Central Complex'}</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-900 dark:text-white">
-            Venue & Space Operations
+            {t('nav_venue_dashboard')}
           </h1>
           <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
-            Live occupancy matrix, arrival check-ins, security caution escrow & space turnover
+            {t('venue_timeline_subtitle')}
           </p>
         </div>
 
         <div className="flex items-center gap-3">
           <button
             onClick={() => setIsCloudSyncModalOpen(true)}
-            className="px-3.5 py-2.5 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-xs font-semibold text-neutral-800 dark:text-neutral-200 rounded-xl transition-colors flex items-center gap-2"
+            className="px-3.5 py-2.5 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-xs font-semibold text-neutral-800 dark:text-neutral-200 rounded-xl transition-colors flex items-center gap-2 cursor-pointer"
             title="Inspect Supabase live tables and row writes"
           >
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -99,20 +101,20 @@ export const VenueDashboardView: React.FC = () => {
           </button>
           <button
             onClick={() => setScreen('scheduler')}
-            className="px-4 py-2.5 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-xs font-semibold text-neutral-800 dark:text-neutral-200 rounded-xl transition-colors flex items-center gap-2"
+            className="px-4 py-2.5 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-xs font-semibold text-neutral-800 dark:text-neutral-200 rounded-xl transition-colors flex items-center gap-2 cursor-pointer"
           >
             <Calendar size={15} />
-            Occupancy Matrix
+            {t('nav_venue_timeline')}
           </button>
           <button
             onClick={() => {
               setSelectedUnitForBooking(undefined);
               setIsBookingModalOpen(true);
             }}
-            className="px-5 py-2.5 bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white text-xs font-semibold rounded-xl shadow-xs transition-colors flex items-center gap-2"
+            className="px-5 py-2.5 bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white text-xs font-semibold rounded-xl shadow-xs transition-colors flex items-center gap-2 cursor-pointer"
           >
             <Plus size={16} />
-            Reserve Space
+            {t('venue_btn_new_booking')}
           </button>
         </div>
       </div>
@@ -121,20 +123,20 @@ export const VenueDashboardView: React.FC = () => {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <div className="p-5 rounded-2xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-800">
           <div className="flex items-center justify-between text-neutral-500 dark:text-neutral-400 mb-2">
-            <span className="text-xs font-medium uppercase tracking-wider">Live Space Occupancy</span>
+            <span className="text-xs font-medium uppercase tracking-wider">{t('venue_kpi_occupancy')}</span>
             <DoorOpen size={18} className="text-purple-500" />
           </div>
           <div className="text-2xl sm:text-3xl font-bold text-neutral-900 dark:text-white tabular-nums">
             {occupancyPercentage}%
           </div>
           <div className="text-xs text-neutral-400 dark:text-neutral-500 mt-1">
-            {occupiedUnits} occupied · {availableUnits} vacant of {totalUnits} units
+            {occupiedUnits} {t('venue_status_confirmed')} · {availableUnits} {t('common_all')}
           </div>
         </div>
 
         <div className="p-5 rounded-2xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-800">
           <div className="flex items-center justify-between text-neutral-500 dark:text-neutral-400 mb-2">
-            <span className="text-xs font-medium uppercase tracking-wider">Today's Arrivals</span>
+            <span className="text-xs font-medium uppercase tracking-wider">{t('venue_kpi_upcoming_events')}</span>
             <Calendar size={18} className="text-blue-500" />
           </div>
           <div className="text-2xl sm:text-3xl font-bold text-neutral-900 dark:text-white tabular-nums">
@@ -147,7 +149,7 @@ export const VenueDashboardView: React.FC = () => {
 
         <div className="p-5 rounded-2xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-800">
           <div className="flex items-center justify-between text-neutral-500 dark:text-neutral-400 mb-2">
-            <span className="text-xs font-medium uppercase tracking-wider">Security Caution Escrow</span>
+            <span className="text-xs font-medium uppercase tracking-wider">{t('venue_kpi_escrow_deposits')}</span>
             <ShieldCheck size={18} className="text-emerald-500" />
           </div>
           <div className="text-2xl sm:text-3xl font-bold text-neutral-900 dark:text-white tabular-nums">

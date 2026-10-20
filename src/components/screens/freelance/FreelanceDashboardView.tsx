@@ -20,11 +20,13 @@ import {
 } from 'lucide-react';
 import { useAtriumStore } from '../../../services/store';
 import { formatDuration, formatCurrencyAmount } from '../../../utils/rules';
+import { useTranslation } from '../../../utils/useTranslation';
 import { InvoicePreviewModal } from './InvoicePreviewModal';
 import { FreelanceInvoice } from '../../../types/index';
 import { ActionNode } from '../../ui/ActionNode';
 
 export const FreelanceDashboardView: React.FC = () => {
+  const { t, language, isRtl } = useTranslation();
   const {
     freelanceClients,
     freelanceProjects,
@@ -118,13 +120,13 @@ export const FreelanceDashboardView: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-neutral-200 dark:border-neutral-800">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white flex items-center gap-2">
-            Solo Practice Command Center
+            {t('nav_solo_home')}
             <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-[#C4785A]/15 text-[#C4785A] uppercase tracking-wider">
-              Category 16 · Freelance
+              Category 16 · {t('onboard_categories_label')}
             </span>
           </h1>
           <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
-            Real-time billable pipeline, active deliverables, multi-currency invoices & focus timer
+            {t('free_finance_subtitle')}
           </p>
         </div>
 
@@ -144,9 +146,9 @@ export const FreelanceDashboardView: React.FC = () => {
             </button>
 
             {isFacilityDropdownOpen && (
-              <div className="absolute right-0 mt-2 w-64 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
+              <div className={`absolute ${isRtl ? 'left-0' : 'right-0'} mt-2 w-64 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150`}>
                 <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
-                  Switch Facility / Vertical
+                  {t('topbar_fast_switch')}
                 </div>
                 {businesses.map((biz) => {
                   const isCurrent = biz.id === currentBusinessId;
@@ -160,7 +162,7 @@ export const FreelanceDashboardView: React.FC = () => {
                         if (matchingBranch) switchBranch(matchingBranch.id);
                         setIsFacilityDropdownOpen(false);
                       }}
-                      className={`w-full px-3 py-2 text-left flex items-center justify-between text-xs transition-colors cursor-pointer ${
+                      className={`w-full px-3 py-2 text-left rtl:text-right flex items-center justify-between text-xs transition-colors cursor-pointer ${
                         isCurrent
                           ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold'
                           : 'text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50'
@@ -184,7 +186,7 @@ export const FreelanceDashboardView: React.FC = () => {
             className="h-10 px-4 rounded-full bg-[#C4785A] text-white text-xs font-bold flex items-center gap-1.5 hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
           >
             <Plus size={14} />
-            <span>New Deliverable</span>
+            <span>{t('free_btn_new_deliverable')}</span>
           </button>
           <button
             type="button"
@@ -192,7 +194,7 @@ export const FreelanceDashboardView: React.FC = () => {
             className="h-10 px-4 rounded-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 text-xs font-bold flex items-center gap-1.5 hover:bg-neutral-50 dark:hover:bg-neutral-700/60 transition-colors cursor-pointer shadow-2xs"
           >
             <FileText size={14} />
-            <span>Create Invoice</span>
+            <span>{t('free_btn_create_invoice')}</span>
           </button>
         </div>
       </div>
@@ -202,7 +204,7 @@ export const FreelanceDashboardView: React.FC = () => {
         {/* Metric 1: Invoiced Pipeline */}
         <div className="p-5 rounded-[24px] bg-[#F8F9FA] dark:bg-neutral-800/40 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs flex flex-col justify-between">
           <div className="flex items-center justify-between text-neutral-500 dark:text-neutral-400 text-xs font-semibold">
-            <span>Invoiced Pipeline</span>
+            <span>{t('free_kpi_invoiced_ytd')}</span>
             <DollarSign size={16} className="text-[#C4785A]" />
           </div>
           <div className="my-2">
@@ -210,11 +212,11 @@ export const FreelanceDashboardView: React.FC = () => {
               {formattedPipeline}
             </span>
             <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium block mt-0.5">
-              {paidInvoices.length} paid · {pendingInvoices.length} pending settlement
+              {paidInvoices.length} {t('free_invoice_status_paid')} · {pendingInvoices.length} {t('free_invoice_status_sent')}
             </span>
           </div>
           <div className="text-[11px] text-neutral-400 pt-2 border-t border-neutral-200/60 dark:border-neutral-700/60 flex items-center justify-between">
-            <span>Multi-currency</span>
+            <span>{t('free_invoice_total')}</span>
             <span className="font-semibold text-neutral-700 dark:text-neutral-300">EUR · USD · DZD</span>
           </div>
         </div>
@@ -222,7 +224,7 @@ export const FreelanceDashboardView: React.FC = () => {
         {/* Metric 2: Effective Hourly Rate */}
         <div className="p-5 rounded-[24px] bg-[#F8F9FA] dark:bg-neutral-800/40 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs flex flex-col justify-between">
           <div className="flex items-center justify-between text-neutral-500 dark:text-neutral-400 text-xs font-semibold">
-            <span>Effective Hourly Rate (EHR)</span>
+            <span>{t('free_kpi_effective_rate')}</span>
             <TrendingUp size={16} className="text-emerald-500" />
           </div>
           <div className="my-2">
@@ -234,7 +236,7 @@ export const FreelanceDashboardView: React.FC = () => {
             </span>
           </div>
           <div className="text-[11px] text-neutral-400 pt-2 border-t border-neutral-200/60 dark:border-neutral-700/60 flex items-center justify-between">
-            <span>Tracked profitability</span>
+            <span>{t('free_finance_title')}</span>
             <span className="font-semibold text-neutral-700 dark:text-neutral-300">
               {ehrRate >= 85 ? 'High Tier' : 'Standard Tier'}
             </span>
@@ -244,12 +246,12 @@ export const FreelanceDashboardView: React.FC = () => {
         {/* Metric 3: Active Deliverables & Scope Creep */}
         <div className="p-5 rounded-[24px] bg-[#F8F9FA] dark:bg-neutral-800/40 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs flex flex-col justify-between">
           <div className="flex items-center justify-between text-neutral-500 dark:text-neutral-400 text-xs font-semibold">
-            <span>Active Deliverables</span>
+            <span>{t('free_kpi_active_projects')}</span>
             <Briefcase size={16} className="text-blue-500" />
           </div>
           <div className="my-2">
             <span className="text-2xl font-black text-neutral-900 dark:text-white tabular-nums tracking-tight">
-              {activeDeliverablesCount} Active
+              {activeDeliverablesCount} {t('common_all')}
             </span>
             <span
               className={`text-[11px] font-medium block mt-0.5 ${
@@ -262,7 +264,7 @@ export const FreelanceDashboardView: React.FC = () => {
             </span>
           </div>
           <div className="text-[11px] text-neutral-400 pt-2 border-t border-neutral-200/60 dark:border-neutral-700/60 flex items-center justify-between">
-            <span>{freelanceProjects.length} client projects</span>
+            <span>{freelanceProjects.length} {t('free_kpi_active_projects')}</span>
             <button
               onClick={() => setScreen('scheduler')}
               className="font-semibold text-[#C4785A] hover:underline cursor-pointer"
@@ -275,7 +277,7 @@ export const FreelanceDashboardView: React.FC = () => {
         {/* Metric 4: Weekly Billable Gauge */}
         <div className="p-5 rounded-[24px] bg-[#F8F9FA] dark:bg-neutral-800/40 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs flex flex-col justify-between">
           <div className="flex items-center justify-between text-neutral-500 dark:text-neutral-400 text-xs font-semibold">
-            <span>Weekly Workload Target</span>
+            <span>{t('free_kpi_unbilled_hours')}</span>
             <Clock size={16} className="text-purple-500" />
           </div>
           <div className="my-2">
@@ -296,7 +298,7 @@ export const FreelanceDashboardView: React.FC = () => {
             </div>
           </div>
           <div className="text-[11px] text-neutral-400 pt-2 border-t border-neutral-200/60 dark:border-neutral-700/60 flex items-center justify-between">
-            <span>Capacity status</span>
+            <span>{t('common_status')}</span>
             <span className="font-semibold text-emerald-600 dark:text-emerald-400">Optimal Pace</span>
           </div>
         </div>
@@ -328,7 +330,7 @@ export const FreelanceDashboardView: React.FC = () => {
                 onClick={() => setPreviewInvoice(overdueInvoices[0])}
                 className="px-3 py-1.5 rounded-full bg-amber-600 hover:bg-amber-700 text-white font-bold transition-colors cursor-pointer"
               >
-                Inspect Overdue Invoice
+                {t('free_btn_preview_invoice')}
               </button>
             )}
           </div>
@@ -342,7 +344,7 @@ export const FreelanceDashboardView: React.FC = () => {
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-neutral-400 flex items-center gap-1.5">
               <Flame size={14} className="text-[#C4785A]" />
-              Focus Sprint Timer
+              {t('free_timer_title')}
             </span>
             <span className="text-[11px] font-semibold text-neutral-500">
               {activeTimer.isPomodoro ? 'Pomodoro (25m)' : 'Standard Chrono'}
@@ -357,7 +359,7 @@ export const FreelanceDashboardView: React.FC = () => {
               {activeTimer.projectTitle ? (
                 <span>{activeTimer.projectTitle} · <strong className="text-neutral-800 dark:text-neutral-200">{activeTimer.taskDescription || 'Sprint Task'}</strong></span>
               ) : (
-                <span>No active task selected</span>
+                <span>{t('free_timer_task_ph')}</span>
               )}
             </div>
           </div>
@@ -389,7 +391,7 @@ export const FreelanceDashboardView: React.FC = () => {
               >
                 <Play size={14} />
                 <span>
-                  {freelanceProjects.length === 0 ? 'Create Project to Track' : 'Start Focus Sprint'}
+                  {freelanceProjects.length === 0 ? t('free_btn_new_deliverable') : t('free_timer_start')}
                 </span>
               </button>
             ) : activeTimer.isPaused ? (
@@ -399,7 +401,7 @@ export const FreelanceDashboardView: React.FC = () => {
                 className="h-10 px-5 rounded-full bg-emerald-600 text-white text-xs font-bold flex items-center gap-2 hover:bg-emerald-700 transition-colors cursor-pointer shadow-xs"
               >
                 <Play size={14} />
-                <span>Resume Timer</span>
+                <span>{t('free_timer_resume')}</span>
               </button>
             ) : (
               <button
@@ -408,7 +410,7 @@ export const FreelanceDashboardView: React.FC = () => {
                 className="h-10 px-5 rounded-full bg-amber-600 text-white text-xs font-bold flex items-center gap-2 hover:bg-amber-700 transition-colors cursor-pointer shadow-xs"
               >
                 <Pause size={14} />
-                <span>Pause Timer</span>
+                <span>{t('free_timer_pause')}</span>
               </button>
             )}
 

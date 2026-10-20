@@ -1,6 +1,7 @@
 import React from 'react';
 import { PMCcpSlip } from '../../../types/index';
 import { Printer, X, CheckCircle, ShieldCheck } from 'lucide-react';
+import { useTranslation } from '../../../utils/useTranslation';
 
 interface CcpSlipModalProps {
   isOpen: boolean;
@@ -15,6 +16,7 @@ export const CcpSlipModal: React.FC<CcpSlipModalProps> = ({
   onClose,
   onMarkPrinted,
 }) => {
+  const { t, language, isRtl } = useTranslation();
   if (!isOpen || !slip) return null;
 
   const handlePrint = () => {
@@ -45,14 +47,14 @@ export const CcpSlipModal: React.FC<CcpSlipModalProps> = ({
           <div className="flex items-center gap-2">
             <button
               onClick={handlePrint}
-              className="px-3.5 py-1.5 text-xs font-semibold text-white bg-[#C4785A] hover:bg-[#b3684a] rounded-lg flex items-center gap-1.5 transition-colors shadow-sm"
+              className="px-3.5 py-1.5 text-xs font-semibold text-white bg-[#C4785A] hover:bg-[#b3684a] rounded-lg flex items-center gap-1.5 transition-colors shadow-sm cursor-pointer"
             >
               <Printer className="w-3.5 h-3.5" />
-              Imprimer (Format A4)
+              {t('common_print')} (A4)
             </button>
             <button
               onClick={onClose}
-              className="p-1.5 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 rounded-lg transition-colors"
+              className="p-1.5 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 rounded-lg transition-colors cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
