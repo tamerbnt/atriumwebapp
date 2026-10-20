@@ -22,8 +22,10 @@ import { FreelanceProposal, PricingModel, CurrencyCode } from '../../../types/in
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { Seek } from '../../ui/Seek';
+import { useTranslation } from '../../../utils/useTranslation';
 
 export const FreelanceProposalsView: React.FC = () => {
+  const { t, language, isRtl } = useTranslation();
   const {
     freelanceProposals,
     createFreelanceProposal,
@@ -172,14 +174,18 @@ export const FreelanceProposalsView: React.FC = () => {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white">
-              Inquiries & Proposals Pipeline
+              {t('free_prop_title')}
             </h1>
             <span className="text-xs text-neutral-500">
-              Intake briefs, scope definition & 1-click project onboarding
+              {t('free_prop_subtitle')}
             </span>
           </div>
           <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
-            Turn qualified incoming leads into signed engagements and actionable Kanban milestones
+            {language === 'ar'
+              ? 'تحويل طلبات العملاء إلى عروض أسعار دقيقة ومشاريع معتمدة على لوحة كانبان'
+              : language === 'fr'
+              ? 'Transformez les demandes qualifiées en devis signés et jalons Kanban'
+              : 'Turn qualified incoming leads into signed engagements and actionable Kanban milestones'}
           </p>
         </div>
 
@@ -187,7 +193,13 @@ export const FreelanceProposalsView: React.FC = () => {
           <Seek
             value={searchQuery}
             onChange={setSearchQuery}
-            placeholder="Search proposals by title, client..."
+            placeholder={
+              language === 'ar'
+                ? 'بحث عن عروض الأسعار حسب العنوان أو العميل...'
+                : language === 'fr'
+                ? 'Rechercher devis par titre, client...'
+                : 'Search proposals by title, client...'
+            }
           />
           <button
             type="button"
@@ -195,7 +207,7 @@ export const FreelanceProposalsView: React.FC = () => {
             className="h-10 px-4 rounded-xl bg-[#C4785A] text-white text-xs font-semibold flex items-center gap-1.5 hover:opacity-90 transition-opacity cursor-pointer shadow-xs shrink-0"
           >
             <Plus size={14} />
-            <span>Draft Proposal</span>
+            <span>{t('free_prop_btn_new')}</span>
           </button>
         </div>
       </div>
@@ -224,7 +236,7 @@ export const FreelanceProposalsView: React.FC = () => {
                     type="button"
                     onClick={() => handleOpenEditModal(proposal)}
                     className="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
-                    title="Edit proposal"
+                    title={language === 'ar' ? 'تعديل عرض السعر' : language === 'fr' ? 'Modifier le devis' : 'Edit proposal'}
                   >
                     <Edit2 size={13} />
                   </button>
@@ -232,7 +244,7 @@ export const FreelanceProposalsView: React.FC = () => {
                     type="button"
                     onClick={() => setProposalToDelete(proposal)}
                     className="p-1.5 rounded-lg text-neutral-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
-                    title="Delete proposal"
+                    title={language === 'ar' ? 'حذف عرض السعر' : language === 'fr' ? 'Supprimer le devis' : 'Delete proposal'}
                   >
                     <Trash2 size={13} />
                   </button>
@@ -246,10 +258,10 @@ export const FreelanceProposalsView: React.FC = () => {
                     }`}
                   >
                     {proposal.status === 'Accepted'
-                      ? 'Signed & Active'
-                      : proposal.status === 'Pending'
-                      ? 'Awaiting Review'
-                      : proposal.status}
+                      ? (language === 'ar' ? 'موقّع ونشط' : language === 'fr' ? 'Signé & Actif' : 'Signed & Active')
+                      : proposal.status === 'Declined'
+                      ? t('free_prop_status_rejected')
+                      : (language === 'ar' ? 'بانتظار المراجعة' : language === 'fr' ? 'En attente' : 'Awaiting Review')}
                   </span>
                 </div>
               </div>
@@ -262,7 +274,7 @@ export const FreelanceProposalsView: React.FC = () => {
               {/* Deliverable Scope Bullets */}
               <div className="mt-4 pt-3 border-t border-neutral-100 dark:border-neutral-800/80 space-y-1.5 text-xs">
                 <span className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider block mb-1">
-                  Scope Deliverables ({proposal.scopeItems.length})
+                  {t('free_prop_scope')} ({proposal.scopeItems.length})
                 </span>
                 {proposal.scopeItems.slice(0, 4).map((item, idx) => (
                   <div key={idx} className="flex items-start gap-2 text-neutral-700 dark:text-neutral-300">
@@ -277,13 +289,13 @@ export const FreelanceProposalsView: React.FC = () => {
             <div className="pt-4 border-t border-neutral-100 dark:border-neutral-800/80 flex items-center justify-between gap-2">
               <div>
                 <span className="text-[10px] text-neutral-400 uppercase tracking-wider block">
-                  Proposed Value
+                  {t('free_prop_total_quote')}
                 </span>
                 <span className="text-lg font-black text-[#C4785A] tabular-nums block">
                   {formatCurrencyAmount(proposal.proposedBudget, proposal.currency)}
                 </span>
                 <span className="text-[11px] text-neutral-500">
-                  {proposal.estimatedTimelineWeeks} weeks · Valid to {proposal.validUntil}
+                  {proposal.estimatedTimelineWeeks} {language === 'ar' ? 'أسابيع' : language === 'fr' ? 'semaines' : 'weeks'} · {t('free_prop_valid_until')} {proposal.validUntil}
                 </span>
               </div>
 
@@ -295,12 +307,12 @@ export const FreelanceProposalsView: React.FC = () => {
                   title="Client accepted: spawn project deliverables and deposit invoice"
                 >
                   <CheckCircle size={13} />
-                  <span>Convert to Project</span>
+                  <span>{t('free_prop_btn_convert')}</span>
                 </button>
               ) : (
                 <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
                   <CheckCircle size={13} />
-                  <span>Active in Workspace</span>
+                  <span>{language === 'ar' ? 'مشروع نشط في مساحة العمل' : language === 'fr' ? 'Projet Actif en Espace' : 'Active in Workspace'}</span>
                 </span>
               )}
             </div>
@@ -311,9 +323,11 @@ export const FreelanceProposalsView: React.FC = () => {
       {freelanceProposals.length === 0 && (
         <div className="p-12 text-center rounded-2xl border border-dashed border-neutral-200 dark:border-neutral-800 bg-[#F8F9FA] dark:bg-neutral-900/40 space-y-3">
           <FileText size={32} className="mx-auto text-neutral-300 dark:text-neutral-600" />
-          <h3 className="text-base font-bold text-neutral-900 dark:text-white">No Project Proposals Yet</h3>
+          <h3 className="text-base font-bold text-neutral-900 dark:text-white">
+            {t('free_prop_empty_title')}
+          </h3>
           <p className="text-xs text-neutral-500 max-w-sm mx-auto">
-            Draft a client proposal with itemized scope and budget. Once approved, convert it into an active project and deliverables in one click.
+            {t('free_prop_empty_desc')}
           </p>
           <button
             type="button"
@@ -321,7 +335,7 @@ export const FreelanceProposalsView: React.FC = () => {
             className="px-4 py-2 rounded-xl bg-[#C4785A] text-white text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer inline-flex items-center gap-1.5 shadow-xs"
           >
             <Plus size={14} />
-            <span>Draft First Proposal</span>
+            <span>{t('free_prop_btn_new')}</span>
           </button>
         </div>
       )}
@@ -332,7 +346,7 @@ export const FreelanceProposalsView: React.FC = () => {
           <div className="bg-white dark:bg-[#1C1C1E] border border-neutral-200 dark:border-neutral-800 rounded-3xl max-w-xl w-full p-6 shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
               <h3 className="text-base font-bold text-neutral-900 dark:text-white">
-                Draft Project Proposal
+                {t('free_prop_modal_new_title')}
               </h3>
               <button
                 type="button"
@@ -347,7 +361,7 @@ export const FreelanceProposalsView: React.FC = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <LabelInput
                   id="draft-client-name"
-                  label="Client Contact"
+                  label={t('free_clients_field_contact')}
                   required
                   placeholder="e.g. Dr. Sofiane Cherbal"
                   value={formData.clientName}
@@ -355,7 +369,7 @@ export const FreelanceProposalsView: React.FC = () => {
                 />
                 <LabelInput
                   id="draft-client-company"
-                  label="Company Name"
+                  label={t('free_clients_field_company')}
                   placeholder="e.g. BioHealth Labs"
                   value={formData.clientCompany}
                   onChange={(e) => setFormData({ ...formData, clientCompany: e.target.value })}
@@ -364,7 +378,7 @@ export const FreelanceProposalsView: React.FC = () => {
 
               <LabelInput
                 id="draft-client-email"
-                label="Client Email"
+                label={t('free_clients_field_email')}
                 type="email"
                 required
                 placeholder="contact@company.com"
@@ -374,7 +388,7 @@ export const FreelanceProposalsView: React.FC = () => {
 
               <LabelInput
                 id="draft-proposal-title"
-                label="Engagement Title"
+                label={language === 'ar' ? 'عنوان المشروع / المهمة' : language === 'fr' ? 'Intitulé de la Mission' : 'Engagement Title'}
                 required
                 placeholder="e.g. Laboratory Sample Tracking Portal & UI Architecture"
                 value={formData.title}
@@ -383,11 +397,11 @@ export const FreelanceProposalsView: React.FC = () => {
 
               <div>
                 <label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
-                  Project Executive Summary
+                  {language === 'ar' ? 'ملخص تنفيذي للمشروع' : language === 'fr' ? 'Résumé Exécutif du Projet' : 'Project Executive Summary'}
                 </label>
                 <textarea
                   rows={2}
-                  placeholder="Describe context, objectives, methodology and deliverables..."
+                  placeholder={t('free_prop_scope_ph')}
                   value={formData.overview}
                   onChange={(e) => setFormData({ ...formData, overview: e.target.value })}
                   className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white"
@@ -398,14 +412,14 @@ export const FreelanceProposalsView: React.FC = () => {
               <div className="space-y-2 pt-2 border-t border-neutral-100 dark:border-neutral-800">
                 <div className="flex items-center justify-between">
                   <span className="font-semibold text-neutral-900 dark:text-white">
-                    Deliverable Scope Items
+                    {t('free_prop_scope')}
                   </span>
                   <button
                     type="button"
                     onClick={handleAddScopeItem}
                     className="text-[#C4785A] hover:underline font-semibold cursor-pointer"
                   >
-                    + Add Item
+                    {language === 'ar' ? '+ إضافة تسليمة' : language === 'fr' ? '+ Ajouter un livrable' : '+ Add Item'}
                   </button>
                 </div>
 
@@ -415,7 +429,7 @@ export const FreelanceProposalsView: React.FC = () => {
                       <div className="flex-1">
                         <LabelInput
                           field={`ScopeItem-${idx}`}
-                          label={`Deliverable Item ${idx + 1}`}
+                          label={`${language === 'ar' ? 'تسليمة' : language === 'fr' ? 'Livrable' : 'Deliverable Item'} ${idx + 1}`}
                           value={item}
                           onChange={(v) => handleScopeItemChange(idx, String(v?.target?.value || v || ''))}
                           width="100%"
@@ -439,7 +453,7 @@ export const FreelanceProposalsView: React.FC = () => {
 
               <div className="grid grid-cols-3 gap-3">
                 <LabelSelect
-                  label="Currency"
+                  label={t('free_invoices_currency')}
                   value={formData.currency}
                   onChange={(val) =>
                     setFormData({
@@ -452,7 +466,7 @@ export const FreelanceProposalsView: React.FC = () => {
                 <div>
                   <LabelInput
                     id="draft-budget"
-                    label="Budget"
+                    label={language === 'ar' ? 'الميزانية' : language === 'fr' ? 'Budget' : 'Budget'}
                     type="number"
                     value={formData.proposedBudget}
                     onChange={(e) => setFormData({ ...formData, proposedBudget: Number(e.target.value) })}
@@ -461,7 +475,7 @@ export const FreelanceProposalsView: React.FC = () => {
                 <div>
                   <LabelInput
                     id="draft-weeks"
-                    label="Est. Weeks"
+                    label={language === 'ar' ? 'المدة (أسابيع)' : language === 'fr' ? 'Délai (sem.)' : 'Est. Weeks'}
                     type="number"
                     value={formData.estimatedTimelineWeeks}
                     onChange={(e) => setFormData({ ...formData, estimatedTimelineWeeks: Number(e.target.value) })}
@@ -472,7 +486,7 @@ export const FreelanceProposalsView: React.FC = () => {
               <div>
                 <LabelInput
                   id="draft-valid-until"
-                  label="Valid Until Date"
+                  label={t('free_prop_valid_until')}
                   type="date"
                   value={formData.validUntil}
                   onChange={(e) => setFormData({ ...formData, validUntil: e.target.value })}
@@ -485,13 +499,13 @@ export const FreelanceProposalsView: React.FC = () => {
                   onClick={() => setIsDraftModalOpen(false)}
                   className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
                 >
-                  Cancel
+                  {t('free_clients_cancel')}
                 </button>
                 <button
                   type="submit"
                   className="px-5 py-2 rounded-xl bg-[#C4785A] text-white text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
                 >
-                  Save Proposal
+                  {language === 'ar' ? 'حفظ عرض السعر' : language === 'fr' ? 'Enregistrer le Devis' : 'Save Proposal'}
                 </button>
               </div>
             </form>
@@ -505,7 +519,7 @@ export const FreelanceProposalsView: React.FC = () => {
           <div className="bg-white dark:bg-[#1C1C1E] border border-neutral-200 dark:border-neutral-800 rounded-3xl max-w-xl w-full p-6 shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
               <h3 className="text-base font-bold text-neutral-900 dark:text-white">
-                Edit Proposal Scope & Terms
+                {language === 'ar' ? 'تعديل عرض السعر ونطاق العمل' : language === 'fr' ? 'Modifier le Devis & Périmètre' : 'Edit Proposal Scope & Terms'}
               </h3>
               <button
                 type="button"
@@ -520,14 +534,14 @@ export const FreelanceProposalsView: React.FC = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <LabelInput
                   id="edit-client-name"
-                  label="Client Name"
+                  label={t('free_clients_field_contact')}
                   required
                   value={editFormData.clientName}
                   onChange={(e) => setEditFormData({ ...editFormData, clientName: e.target.value })}
                 />
                 <LabelInput
                   id="edit-client-company"
-                  label="Client Company"
+                  label={t('free_clients_field_company')}
                   value={editFormData.clientCompany}
                   onChange={(e) => setEditFormData({ ...editFormData, clientCompany: e.target.value })}
                 />
@@ -535,7 +549,7 @@ export const FreelanceProposalsView: React.FC = () => {
 
               <LabelInput
                 id="edit-proposal-title"
-                label="Proposal Title"
+                label={language === 'ar' ? 'عنوان المشروع / المهمة' : language === 'fr' ? 'Intitulé de la Mission' : 'Proposal Title'}
                 required
                 value={editFormData.title}
                 onChange={(e) => setEditFormData({ ...editFormData, title: e.target.value })}
@@ -543,7 +557,7 @@ export const FreelanceProposalsView: React.FC = () => {
 
               <div>
                 <label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
-                  Executive Overview
+                  {language === 'ar' ? 'ملخص تنفيذي للمشروع' : language === 'fr' ? 'Résumé Exécutif du Projet' : 'Executive Overview'}
                 </label>
                 <textarea
                   rows={2}
@@ -557,7 +571,7 @@ export const FreelanceProposalsView: React.FC = () => {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <label className="font-semibold text-neutral-700 dark:text-neutral-300">
-                    Scope Deliverables & Work Streams
+                    {t('free_prop_scope')}
                   </label>
                   <button
                     type="button"
@@ -569,7 +583,7 @@ export const FreelanceProposalsView: React.FC = () => {
                     }
                     className="text-[11px] font-semibold text-[#C4785A] hover:underline cursor-pointer"
                   >
-                    + Add Item
+                    {language === 'ar' ? '+ إضافة تسليمة' : language === 'fr' ? '+ Ajouter un livrable' : '+ Add Item'}
                   </button>
                 </div>
                 {editFormData.scopeItems.map((item, idx) => (
@@ -577,7 +591,7 @@ export const FreelanceProposalsView: React.FC = () => {
                     <div className="flex-1">
                       <LabelInput
                         field={`EditScopeItem-${idx}`}
-                        label={`Deliverable Item ${idx + 1}`}
+                        label={`${language === 'ar' ? 'تسليمة' : language === 'fr' ? 'Livrable' : 'Deliverable Item'} ${idx + 1}`}
                         value={item}
                         onChange={(v) => {
                           const updated = [...editFormData.scopeItems];
@@ -609,7 +623,7 @@ export const FreelanceProposalsView: React.FC = () => {
 
               <div className="grid grid-cols-3 gap-3">
                 <LabelSelect
-                  label="Currency"
+                  label={t('free_invoices_currency')}
                   value={editFormData.currency}
                   onChange={(val) =>
                     setEditFormData({
@@ -622,7 +636,7 @@ export const FreelanceProposalsView: React.FC = () => {
                 <div>
                   <LabelInput
                     id="edit-budget"
-                    label="Budget"
+                    label={language === 'ar' ? 'الميزانية' : language === 'fr' ? 'Budget' : 'Budget'}
                     type="number"
                     value={editFormData.proposedBudget}
                     onChange={(e) => setEditFormData({ ...editFormData, proposedBudget: Number(e.target.value) })}
@@ -631,7 +645,7 @@ export const FreelanceProposalsView: React.FC = () => {
                 <div>
                   <LabelInput
                     id="edit-weeks"
-                    label="Est. Weeks"
+                    label={language === 'ar' ? 'المدة (أسابيع)' : language === 'fr' ? 'Délai (sem.)' : 'Est. Weeks'}
                     type="number"
                     value={editFormData.estimatedTimelineWeeks}
                     onChange={(e) => setEditFormData({ ...editFormData, estimatedTimelineWeeks: Number(e.target.value) })}
@@ -642,7 +656,7 @@ export const FreelanceProposalsView: React.FC = () => {
               <div>
                 <LabelInput
                   id="edit-valid-until"
-                  label="Valid Until Date"
+                  label={t('free_prop_valid_until')}
                   type="date"
                   value={editFormData.validUntil}
                   onChange={(e) => setEditFormData({ ...editFormData, validUntil: e.target.value })}
@@ -655,13 +669,13 @@ export const FreelanceProposalsView: React.FC = () => {
                   onClick={() => setProposalToEdit(null)}
                   className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
                 >
-                  Cancel
+                  {t('free_clients_cancel')}
                 </button>
                 <button
                   type="submit"
                   className="px-5 py-2 rounded-xl bg-[#C4785A] text-white text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
                 >
-                  Save Changes
+                  {language === 'ar' ? 'حفظ التعديلات' : language === 'fr' ? 'Enregistrer les Modifications' : 'Save Changes'}
                 </button>
               </div>
             </form>
@@ -678,13 +692,19 @@ export const FreelanceProposalsView: React.FC = () => {
                 <AlertTriangle size={20} />
               </div>
               <div>
-                <h3 className="text-base font-bold text-neutral-900 dark:text-white">Delete Proposal</h3>
+                <h3 className="text-base font-bold text-neutral-900 dark:text-white">
+                  {language === 'ar' ? 'حذف عرض السعر' : language === 'fr' ? 'Supprimer le Devis' : 'Delete Proposal'}
+                </h3>
                 <p className="text-xs text-neutral-500">{proposalToDelete.clientName}</p>
               </div>
             </div>
 
             <p className="text-xs text-neutral-600 dark:text-neutral-300 leading-relaxed">
-              Are you sure you want to delete proposal <strong className="text-neutral-900 dark:text-white font-semibold">"{proposalToDelete.title}"</strong>? This will remove the proposal draft from your pipeline.
+              {language === 'ar'
+                ? `هل أنت متأكد من رغبتك في حذف عرض السعر "${proposalToDelete.title}"؟ سيتم حذف هذا العرض نهائياً من خط العمل.`
+                : language === 'fr'
+                ? `Êtes-vous sûr de vouloir supprimer le devis "${proposalToDelete.title}" ? Cette action retirera le devis de votre pipeline.`
+                : `Are you sure you want to delete proposal "${proposalToDelete.title}"? This will remove the proposal draft from your pipeline.`}
             </p>
 
             <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
@@ -693,7 +713,7 @@ export const FreelanceProposalsView: React.FC = () => {
                 onClick={() => setProposalToDelete(null)}
                 className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
               >
-                Cancel
+                {t('free_clients_cancel')}
               </button>
               <button
                 type="button"
@@ -703,7 +723,7 @@ export const FreelanceProposalsView: React.FC = () => {
                 }}
                 className="px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold transition-colors cursor-pointer shadow-xs"
               >
-                Delete Proposal
+                {language === 'ar' ? 'تأكيد الحذف' : language === 'fr' ? 'Confirmer la Suppression' : 'Delete Proposal'}
               </button>
             </div>
           </div>

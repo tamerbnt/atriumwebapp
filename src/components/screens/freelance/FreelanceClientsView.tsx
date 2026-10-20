@@ -26,8 +26,10 @@ import { Seek } from '../../ui/Seek';
 import { ActionNode } from '../../ui/ActionNode';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
+import { useTranslation } from '../../../utils/useTranslation';
 
 export const FreelanceClientsView: React.FC = () => {
+  const { t, language, isRtl } = useTranslation();
   const {
     freelanceClients,
     freelanceProjects,
@@ -212,14 +214,14 @@ export const FreelanceClientsView: React.FC = () => {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white">
-              Clients & Retainers CRM
+              {t('free_clients_crm_title', language)}
             </h1>
             <span className="text-xs text-neutral-500 dark:text-neutral-400">
-              {totalClientsCount} accounts · {activeRetainersCount} monthly retainers
+              {totalClientsCount} {t('free_clients_accounts', language)} · {activeRetainersCount} {t('free_clients_active_retainers', language)}
             </span>
           </div>
           <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
-            Manage contract rates, billable unbilled balance, client currencies, and engagement history
+            {t('free_clients_crm_subtitle', language)}
           </p>
         </div>
 
@@ -229,7 +231,7 @@ export const FreelanceClientsView: React.FC = () => {
           className="h-10 px-4 rounded-xl bg-[#C4785A] text-white text-xs font-semibold flex items-center gap-1.5 hover:opacity-90 transition-opacity cursor-pointer shadow-xs self-start sm:self-auto"
         >
           <Plus size={14} />
-          <span>Add New Client</span>
+          <span>{t('free_clients_add_new', language)}</span>
         </button>
       </div>
 
@@ -237,42 +239,42 @@ export const FreelanceClientsView: React.FC = () => {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="p-4 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-900/40 border border-[#EDF1F3] dark:border-neutral-800">
           <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400 block mb-1">
-            Total Client Network
+            {t('free_clients_total_network', language)}
           </span>
           <div className="flex items-baseline gap-2">
             <span className="text-2xl font-extrabold text-neutral-900 dark:text-white tabular-nums">
               {totalClientsCount}
             </span>
             <span className="text-xs text-neutral-500">
-              {activeRetainersCount} active retainers
+              {activeRetainersCount} {t('free_clients_active_retainers', language)}
             </span>
           </div>
         </div>
 
         <div className="p-4 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-900/40 border border-[#EDF1F3] dark:border-neutral-800">
           <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400 block mb-1">
-            Active Retainers Volume
+            {t('free_kpi_active_clients', language)}
           </span>
           <div className="flex items-baseline gap-2">
             <span className="text-2xl font-extrabold text-neutral-900 dark:text-white tabular-nums">
               {activeRetainersCount}
             </span>
             <span className="text-xs text-neutral-500">
-              recurring contracts
+              {t('free_clients_active_retainers', language)}
             </span>
           </div>
         </div>
 
         <div className="p-4 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-900/40 border border-[#EDF1F3] dark:border-neutral-800">
           <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400 block mb-1">
-            Global Settled Volume
+            {t('free_kpi_invoiced_ytd', language)}
           </span>
           <div className="flex items-baseline gap-2">
             <span className="text-2xl font-extrabold text-[#C4785A] tabular-nums">
               {totalBilledEquiv.toLocaleString()}
             </span>
             <span className="text-xs text-neutral-500">
-              across all currencies
+              DZD
             </span>
           </div>
         </div>
@@ -284,7 +286,7 @@ export const FreelanceClientsView: React.FC = () => {
         <Seek
           value={searchQuery}
           onChange={setSearchQuery}
-          placeholder="Search clients by name, company, email..."
+          placeholder={t('free_search_clients_ph', language)}
           shutSize={36}
           openWidth={260}
         />
@@ -292,10 +294,10 @@ export const FreelanceClientsView: React.FC = () => {
         {/* Segmented Filter Control */}
         <div className="flex items-center gap-1 p-1 bg-neutral-100 dark:bg-neutral-800/80 rounded-xl self-start sm:self-auto overflow-x-auto">
           {[
-            { id: 'all', label: 'All Clients' },
-            { id: 'activeretainer', label: 'Retainers' },
-            { id: 'projectbased', label: 'Project-Based' },
-            { id: 'prospect', label: 'Prospects' },
+            { id: 'all', label: t('free_clients_all_statuses', language) },
+            { id: 'activeretainer', label: t('free_clients_status_active_retainer', language) },
+            { id: 'projectbased', label: t('free_clients_status_project_based', language) },
+            { id: 'prospect', label: t('free_clients_status_prospect', language) },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -326,9 +328,9 @@ export const FreelanceClientsView: React.FC = () => {
               description={client.company || 'Private Client Account'}
               tag={
                 client.status === 'ActiveRetainer'
-                  ? 'Retainer'
+                  ? t('free_clients_status_active_retainer', language)
                   : client.status === 'ProjectBased'
-                  ? 'Project'
+                  ? t('free_clients_status_project_based', language)
                   : client.status
               }
               width="100%"
@@ -349,7 +351,7 @@ export const FreelanceClientsView: React.FC = () => {
               actions={[
                 {
                   id: 'timer',
-                  label: 'Start Live Timer',
+                  label: t('free_timer_start', language),
                   icon: <Play size={13} />,
                   onClick: () => handleQuickStartTimer(client),
                   color: '#C4785A',
@@ -358,7 +360,7 @@ export const FreelanceClientsView: React.FC = () => {
                   ? [
                       {
                         id: 'bill',
-                        label: `Bill Unbilled (${unbilled.hours}h)`,
+                        label: `${t('free_clients_quick_bill', language)} (${unbilled.hours}h)`,
                         icon: <FileText size={13} />,
                         onClick: () => handleQuickBill(client),
                       },
@@ -366,7 +368,7 @@ export const FreelanceClientsView: React.FC = () => {
                   : []),
                 {
                   id: 'edit',
-                  label: 'Edit Client',
+                  label: t('free_clients_edit', language),
                   icon: <Edit2 size={13} />,
                   onClick: () => handleOpenEditModal(client),
                 },
@@ -375,21 +377,21 @@ export const FreelanceClientsView: React.FC = () => {
               {/* Rates & Retainer Details */}
               <div className="py-2 my-1 border-t border-neutral-100 dark:border-neutral-800/80 space-y-1 text-xs">
                 <div className="flex items-center justify-between text-neutral-600 dark:text-neutral-400">
-                  <span>Rate:</span>
+                  <span>{t('free_clients_hourly_rate', language)}:</span>
                   <span className="font-semibold text-neutral-900 dark:text-white tabular-nums">
                     {formatCurrencyAmount(client.hourlyRate, client.currency)}/hr
                   </span>
                 </div>
                 {client.monthlyRetainerHours && client.monthlyRetainerHours > 0 ? (
                   <div className="flex items-center justify-between text-neutral-600 dark:text-neutral-400">
-                    <span>Retainer:</span>
+                    <span>{t('free_clients_retainer_hours', language)}:</span>
                     <span className="font-semibold text-neutral-900 dark:text-white tabular-nums">
                       {client.monthlyRetainerHours}h ({formatCurrencyAmount(client.monthlyRetainerAmount || 0, client.currency)})
                     </span>
                   </div>
                 ) : null}
                 <div className="flex items-center justify-between text-neutral-600 dark:text-neutral-400">
-                  <span>Active Projects:</span>
+                  <span>{t('free_kpi_active_projects', language)}:</span>
                   <span className="font-semibold text-neutral-900 dark:text-white tabular-nums">
                     {clientProjects.length}
                   </span>
@@ -400,7 +402,7 @@ export const FreelanceClientsView: React.FC = () => {
               {unbilled.amount > 0 && (
                 <div className="mt-2 p-2 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 flex items-center justify-between text-[11px]">
                   <span className="text-amber-800 dark:text-amber-300 font-medium">
-                    {unbilled.hours} hrs unbilled
+                    {unbilled.hours}h {t('free_kpi_unbilled_hours', language)}
                   </span>
                   <span className="font-bold text-amber-900 dark:text-amber-200 tabular-nums">
                     {formatCurrencyAmount(unbilled.amount, client.currency)}
@@ -415,10 +417,10 @@ export const FreelanceClientsView: React.FC = () => {
       {filteredClients.length === 0 && (
         <div className="p-12 text-center rounded-2xl border border-dashed border-neutral-200 dark:border-neutral-800">
           <p className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">
-            No clients match your filter criteria
+            {t('free_clients_no_clients', language)}
           </p>
           <p className="text-xs text-neutral-500 mt-1">
-            Try adjusting your search query or add your first client.
+            {t('free_clients_no_clients_desc', language)}
           </p>
           <button
             type="button"
@@ -426,7 +428,7 @@ export const FreelanceClientsView: React.FC = () => {
             className="mt-4 px-4 py-2 rounded-xl bg-[#C4785A] text-white text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer inline-flex items-center gap-1.5"
           >
             <Plus size={14} />
-            <span>Add Client</span>
+            <span>{t('free_clients_add_new', language)}</span>
           </button>
         </div>
       )}
@@ -610,20 +612,20 @@ export const FreelanceClientsView: React.FC = () => {
                 className="flex-1 py-2.5 rounded-xl bg-[#C4785A] text-white text-xs font-semibold flex items-center justify-center gap-1.5 hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
               >
                 <Play size={13} />
-                <span>Start Live Focus Timer</span>
+                <span>{t('free_timer_start', language)}</span>
               </button>
               <button
                 type="button"
                 onClick={() => handleOpenEditModal(selectedClient)}
                 className="px-3 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
               >
-                Edit
+                {t('free_clients_edit', language)}
               </button>
               <button
                 type="button"
                 onClick={() => setClientToDelete(selectedClient)}
                 className="p-2.5 rounded-xl border border-rose-200 dark:border-rose-900/60 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
-                title="Delete client"
+                title={t('free_clients_delete', language)}
               >
                 <Trash2 size={15} />
               </button>
@@ -637,9 +639,14 @@ export const FreelanceClientsView: React.FC = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
           <div className="bg-white dark:bg-[#1C1C1E] border border-neutral-200 dark:border-neutral-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-5 animate-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
-              <h3 className="text-base font-bold text-neutral-900 dark:text-white">
-                {clientToEdit ? 'Edit Client Profile' : 'Add New Client'}
-              </h3>
+              <div>
+                <h3 className="text-base font-bold text-neutral-900 dark:text-white">
+                  {clientToEdit ? t('free_clients_modal_title_edit', language) : t('free_clients_modal_title_add', language)}
+                </h3>
+                <p className="text-xs text-neutral-500 mt-0.5">
+                  {t('free_clients_modal_desc', language)}
+                </p>
+              </div>
               <button
                 type="button"
                 onClick={() => setIsAddModalOpen(false)}
@@ -653,7 +660,7 @@ export const FreelanceClientsView: React.FC = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <LabelInput
                   field="ClientName"
-                  label="Contact Name *"
+                  label={`${t('free_clients_full_name', language)} *`}
                   required
                   value={formData.name}
                   onChange={(v) => setFormData({ ...formData, name: v })}
@@ -664,7 +671,7 @@ export const FreelanceClientsView: React.FC = () => {
                 />
                 <LabelInput
                   field="Company"
-                  label="Company / Brand"
+                  label={t('free_clients_company', language)}
                   value={formData.company}
                   onChange={(v) => setFormData({ ...formData, company: v })}
                   placeholder="e.g. TechNova SAS"
@@ -677,7 +684,7 @@ export const FreelanceClientsView: React.FC = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <LabelInput
                   field="ClientEmail"
-                  label="Email Address *"
+                  label={`${t('free_clients_email', language)} *`}
                   type="email"
                   required
                   value={formData.email}
@@ -689,7 +696,7 @@ export const FreelanceClientsView: React.FC = () => {
                 />
                 <LabelInput
                   field="ClientPhone"
-                  label="Phone / WhatsApp"
+                  label={t('free_clients_phone', language)}
                   type="tel"
                   value={formData.phone}
                   onChange={(v) => setFormData({ ...formData, phone: v })}
@@ -703,7 +710,7 @@ export const FreelanceClientsView: React.FC = () => {
               <div className="grid grid-cols-3 gap-3">
                 <LabelSelect
                   field="Currency"
-                  label="Currency"
+                  label={t('free_clients_currency', language)}
                   value={formData.currency}
                   onChange={(val) =>
                     setFormData({
@@ -721,7 +728,7 @@ export const FreelanceClientsView: React.FC = () => {
                 />
                 <LabelInput
                   field="HourlyRate"
-                  label="Hourly Rate"
+                  label={t('free_clients_hourly_rate', language)}
                   type="number"
                   value={formData.hourlyRate ? String(formData.hourlyRate) : ''}
                   onChange={(v) => setFormData({ ...formData, hourlyRate: Number(v) || 0 })}
@@ -731,7 +738,7 @@ export const FreelanceClientsView: React.FC = () => {
                 />
                 <LabelSelect
                   field="Status"
-                  label="Client Status"
+                  label={t('free_clients_status', language)}
                   value={formData.status}
                   onChange={(val) =>
                     setFormData({
@@ -740,10 +747,10 @@ export const FreelanceClientsView: React.FC = () => {
                     })
                   }
                   options={[
-                    { value: 'ActiveRetainer', label: 'Active Retainer' },
-                    { value: 'ProjectBased', label: 'Project-Based' },
-                    { value: 'Prospect', label: 'Prospect' },
-                    { value: 'Archived', label: 'Archived' },
+                    { value: 'ActiveRetainer', label: t('free_clients_status_active_retainer', language) },
+                    { value: 'ProjectBased', label: t('free_clients_status_project_based', language) },
+                    { value: 'Prospect', label: t('free_clients_status_prospect', language) },
+                    { value: 'Archived', label: t('free_clients_status_archived', language) },
                   ]}
                   height={46}
                   corner={14}
@@ -754,7 +761,7 @@ export const FreelanceClientsView: React.FC = () => {
                 <div className="grid grid-cols-2 gap-3 p-3 rounded-xl bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200/60 dark:border-amber-900/40">
                   <LabelInput
                     field="RetainerHours"
-                    label="Monthly Retainer Hours"
+                    label={t('free_clients_retainer_hours', language)}
                     type="number"
                     value={formData.monthlyRetainerHours ? String(formData.monthlyRetainerHours) : ''}
                     onChange={(v) => setFormData({ ...formData, monthlyRetainerHours: Number(v) || 0 })}
@@ -765,7 +772,7 @@ export const FreelanceClientsView: React.FC = () => {
                   />
                   <LabelInput
                     field="FlatFee"
-                    label="Monthly Flat Fee"
+                    label={t('free_clients_flat_fee', language)}
                     type="number"
                     value={formData.monthlyRetainerAmount ? String(formData.monthlyRetainerAmount) : ''}
                     onChange={(v) => setFormData({ ...formData, monthlyRetainerAmount: Number(v) || 0 })}
@@ -779,13 +786,13 @@ export const FreelanceClientsView: React.FC = () => {
 
               <div>
                 <label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
-                  Private Notes & Scope Guidelines
+                  {t('free_clients_notes', language)}
                 </label>
                 <textarea
                   rows={2}
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  placeholder="Key contacts, payment terms, VAT rules, repository links..."
+                  placeholder={t('free_clients_notes_ph', language)}
                   className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#C4785A]"
                 />
               </div>
@@ -796,13 +803,13 @@ export const FreelanceClientsView: React.FC = () => {
                   onClick={() => setIsAddModalOpen(false)}
                   className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
                 >
-                  Cancel
+                  {t('free_clients_cancel', language)}
                 </button>
                 <button
                   type="submit"
                   className="px-5 py-2 rounded-xl bg-[#C4785A] text-white text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
                 >
-                  {clientToEdit ? 'Save Changes' : 'Create Client'}
+                  {clientToEdit ? t('free_clients_save_changes', language) : t('free_clients_create_btn', language)}
                 </button>
               </div>
             </form>
@@ -819,13 +826,13 @@ export const FreelanceClientsView: React.FC = () => {
                 <AlertTriangle size={20} />
               </div>
               <div>
-                <h3 className="text-base font-bold text-neutral-900 dark:text-white">Delete Client</h3>
-                <p className="text-xs text-neutral-500">This action cannot be undone.</p>
+                <h3 className="text-base font-bold text-neutral-900 dark:text-white">{t('free_clients_delete', language)}</h3>
+                <p className="text-xs text-neutral-500">{t('free_clients_delete_warning', language)}</p>
               </div>
             </div>
 
             <p className="text-xs text-neutral-600 dark:text-neutral-300">
-              Are you sure you want to delete <strong className="text-neutral-900 dark:text-white font-semibold">{clientToDelete.name}</strong> ({clientToDelete.company || 'Private Client'})?
+              {t('free_clients_delete_confirm', language)} <strong className="text-neutral-900 dark:text-white font-semibold">{clientToDelete.name}</strong> ({clientToDelete.company || 'Private Client'})?
             </p>
 
             <label className="flex items-start gap-2.5 p-3 rounded-xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-xs text-neutral-700 dark:text-neutral-300 cursor-pointer">
@@ -836,9 +843,9 @@ export const FreelanceClientsView: React.FC = () => {
                 className="mt-0.5 rounded text-[#C4785A] focus:ring-[#C4785A]"
               />
               <div>
-                <span className="font-semibold block text-neutral-900 dark:text-white">Cascade delete associated records</span>
+                <span className="font-semibold block text-neutral-900 dark:text-white">{t('free_clients_cascade_delete', language)}</span>
                 <span className="text-[11px] text-neutral-500 dark:text-neutral-400 block mt-0.5">
-                  Also removes projects, deliverables, unbilled time logs, and proposals attached to this client.
+                  {t('free_clients_cascade_desc', language)}
                 </span>
               </div>
             </label>
@@ -852,7 +859,7 @@ export const FreelanceClientsView: React.FC = () => {
                 }}
                 className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
               >
-                Cancel
+                {t('free_clients_cancel', language)}
               </button>
               <button
                 type="button"
@@ -868,7 +875,7 @@ export const FreelanceClientsView: React.FC = () => {
                 }}
                 className="px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold transition-colors cursor-pointer shadow-xs"
               >
-                Delete Client
+                {t('free_clients_delete', language)}
               </button>
             </div>
           </div>

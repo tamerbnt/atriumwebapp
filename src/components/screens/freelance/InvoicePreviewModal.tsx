@@ -13,6 +13,7 @@ import {
 import { FreelanceInvoice } from '../../../types/index';
 import { formatCurrencyAmount } from '../../../utils/rules';
 import { useAtriumStore } from '../../../services/store';
+import { useTranslation } from '../../../utils/useTranslation';
 
 interface InvoicePreviewModalProps {
   isOpen: boolean;
@@ -27,6 +28,7 @@ export const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({
   invoice,
   onMarkPaid,
 }) => {
+  const { t, language, isRtl } = useTranslation();
   const { currentBusiness, currentUser, account } = useAtriumStore();
   const [copied, setCopied] = useState(false);
 
@@ -60,7 +62,7 @@ export const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({
         <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-100 dark:border-neutral-800 no-print">
           <div className="flex items-center gap-2">
             <span className="text-sm font-bold text-neutral-900 dark:text-white">
-              Invoice #{invoice.invoiceNumber}
+              {t('free_inv_doc_invoice', language)} #{invoice.invoiceNumber}
             </span>
             <span
               className={`text-[11px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${
@@ -73,7 +75,13 @@ export const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({
                   : 'bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300'
               }`}
             >
-              {invoice.status}
+              {invoice.status === 'Paid'
+                ? t('free_invoice_status_paid', language)
+                : invoice.status === 'Overdue'
+                ? t('free_invoice_status_overdue', language)
+                : invoice.status === 'Sent'
+                ? t('free_invoice_status_sent', language)
+                : t('free_invoice_status_draft', language)}
             </span>
           </div>
 
@@ -84,7 +92,7 @@ export const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({
               className="h-8 px-3 rounded-full border border-neutral-200 dark:border-neutral-700 text-xs font-semibold flex items-center gap-1.5 text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
             >
               <Printer size={13} />
-              <span>Print / PDF</span>
+              <span>{t('free_inv_doc_print', language)}</span>
             </button>
             <button
               type="button"
@@ -110,25 +118,25 @@ export const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({
                 </span>
               </div>
               <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
-                Independent Digital Practice & Architecture
+                {t('free_clients_crm_title', language)}
               </p>
               <p className="text-[11px] text-neutral-400 mt-0.5">
                 {businessEmail} · {businessAddress}
               </p>
             </div>
 
-            <div className="text-left sm:text-right space-y-1">
+            <div className={`space-y-1 ${isRtl ? 'sm:text-left text-right' : 'sm:text-right text-left'}`}>
               <span className="text-xs font-semibold text-neutral-400 uppercase tracking-wider block">
-                Invoice Total
+                {t('free_invoice_total', language)}
               </span>
               <span className="text-2xl font-black text-neutral-900 dark:text-white tabular-nums block text-[#C4785A]">
                 {formatCurrencyAmount(invoice.totalAmount, invoice.currency)}
               </span>
-              <div className="text-xs text-neutral-500 dark:text-neutral-400 flex items-center sm:justify-end gap-2 pt-1">
-                <span>Issued: {invoice.issueDate}</span>
+              <div className={`text-xs text-neutral-500 dark:text-neutral-400 flex items-center gap-2 pt-1 ${isRtl ? 'sm:justify-start' : 'sm:justify-end'}`}>
+                <span>{t('free_inv_table_date', language)}: {invoice.issueDate}</span>
                 <span aria-hidden="true">·</span>
                 <span className="font-semibold text-neutral-800 dark:text-neutral-200">
-                  Due: {invoice.dueDate}
+                  {t('free_inv_table_due', language)}: {invoice.dueDate}
                 </span>
               </div>
             </div>
@@ -138,7 +146,7 @@ export const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 bg-[#F8F9FA] dark:bg-neutral-900/40 p-4 rounded-2xl border border-[#EDF1F3] dark:border-neutral-800/80">
             <div>
               <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block mb-1">
-                Billed To
+                {t('free_inv_doc_bill_to', language)}
               </span>
               <span className="text-sm font-bold text-neutral-900 dark:text-white block">
                 {invoice.clientName}
@@ -155,14 +163,14 @@ export const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({
 
             <div>
               <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block mb-1">
-                Payment Terms & Currency
+                {t('free_inv_notes_terms', language)}
               </span>
               <span className="text-xs text-neutral-700 dark:text-neutral-300 block">
-                Net 15 Days · Settlement Currency: <strong className="text-neutral-900 dark:text-white">{invoice.currency}</strong>
+                Net 15 · <strong className="text-neutral-900 dark:text-white">{invoice.currency}</strong>
               </span>
               {invoice.paidAt && (
                 <span className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold block mt-1">
-                  Settled on {new Date(invoice.paidAt).toLocaleDateString()}
+                  ✓ {t('free_inv_doc_paid_badge', language)} ({new Date(invoice.paidAt).toLocaleDateString()})
                 </span>
               )}
             </div>
@@ -171,31 +179,31 @@ export const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({
           {/* Line Items Table */}
           <div className="space-y-3">
             <span className="text-xs font-bold uppercase tracking-wider text-neutral-400 block">
-              Deliverables & Billable Services
+              {t('free_deliv_title', language)}
             </span>
             <div className="border border-neutral-200 dark:border-neutral-800 rounded-2xl overflow-hidden">
-              <table className="w-full text-left border-collapse text-xs">
+              <table className="w-full border-collapse text-xs">
                 <thead>
                   <tr className="bg-neutral-50 dark:bg-neutral-800/50 border-b border-neutral-200 dark:border-neutral-800 text-neutral-500 dark:text-neutral-400 font-semibold">
-                    <th className="py-2.5 px-4">Description</th>
-                    <th className="py-2.5 px-4 text-right">Hours / Qty</th>
-                    <th className="py-2.5 px-4 text-right">Rate</th>
-                    <th className="py-2.5 px-4 text-right">Total</th>
+                    <th className={`py-2.5 px-4 ${isRtl ? 'text-right' : 'text-left'}`}>{t('free_inv_item_desc', language)}</th>
+                    <th className={`py-2.5 px-4 ${isRtl ? 'text-left' : 'text-right'}`}>{t('free_inv_item_qty', language)}</th>
+                    <th className={`py-2.5 px-4 ${isRtl ? 'text-left' : 'text-right'}`}>{t('free_inv_item_rate', language)}</th>
+                    <th className={`py-2.5 px-4 ${isRtl ? 'text-left' : 'text-right'}`}>{t('free_inv_item_total', language)}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800/60 font-medium">
                   {invoice.items.map((item) => (
                     <tr key={item.id} className="hover:bg-neutral-50/50 dark:hover:bg-neutral-800/30">
-                      <td className="py-3 px-4 text-neutral-900 dark:text-neutral-100">
+                      <td className={`py-3 px-4 text-neutral-900 dark:text-neutral-100 ${isRtl ? 'text-right' : 'text-left'}`}>
                         {item.description}
                       </td>
-                      <td className="py-3 px-4 text-right tabular-nums text-neutral-600 dark:text-neutral-400">
+                      <td className={`py-3 px-4 tabular-nums text-neutral-600 dark:text-neutral-400 ${isRtl ? 'text-left' : 'text-right'}`}>
                         {item.quantity}
                       </td>
-                      <td className="py-3 px-4 text-right tabular-nums text-neutral-600 dark:text-neutral-400">
+                      <td className={`py-3 px-4 tabular-nums text-neutral-600 dark:text-neutral-400 ${isRtl ? 'text-left' : 'text-right'}`}>
                         {formatCurrencyAmount(item.unitRate, invoice.currency)}
                       </td>
-                      <td className="py-3 px-4 text-right tabular-nums font-bold text-neutral-900 dark:text-white">
+                      <td className={`py-3 px-4 tabular-nums font-bold text-neutral-900 dark:text-white ${isRtl ? 'text-left' : 'text-right'}`}>
                         {formatCurrencyAmount(item.total, invoice.currency)}
                       </td>
                     </tr>
@@ -205,24 +213,24 @@ export const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({
             </div>
 
             {/* Subtotal & Total Ledger */}
-            <div className="flex justify-end pt-2">
+            <div className={`flex ${isRtl ? 'justify-start' : 'justify-end'} pt-2`}>
               <div className="w-64 space-y-1.5 text-xs">
                 <div className="flex justify-between text-neutral-500">
-                  <span>Subtotal</span>
+                  <span>{t('free_inv_doc_subtotal', language)}</span>
                   <span className="tabular-nums font-semibold text-neutral-800 dark:text-neutral-200">
                     {formatCurrencyAmount(invoice.subtotal, invoice.currency)}
                   </span>
                 </div>
                 {invoice.taxPercent > 0 && (
                   <div className="flex justify-between text-neutral-500">
-                    <span>Tax ({invoice.taxPercent}%)</span>
+                    <span>{t('free_inv_doc_tax', language)} ({invoice.taxPercent}%)</span>
                     <span className="tabular-nums font-semibold text-neutral-800 dark:text-neutral-200">
                       {formatCurrencyAmount(invoice.taxAmount, invoice.currency)}
                     </span>
                   </div>
                 )}
                 <div className="flex justify-between pt-2 border-t border-neutral-200 dark:border-neutral-800 text-sm font-black text-neutral-900 dark:text-white">
-                  <span>Total Due</span>
+                  <span>{t('free_inv_doc_grand_total', language)}</span>
                   <span className="text-[#C4785A] tabular-nums">
                     {formatCurrencyAmount(invoice.totalAmount, invoice.currency)}
                   </span>
@@ -237,7 +245,7 @@ export const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-neutral-900 dark:text-white flex items-center gap-1.5">
                   <CreditCard size={14} className="text-[#C4785A]" />
-                  Bank Wire & Settlement Instructions
+                  {t('free_inv_doc_rib_label', language)}
                 </span>
                 <button
                   type="button"
@@ -245,21 +253,21 @@ export const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({
                   className="text-[11px] font-semibold text-[#C4785A] hover:underline flex items-center gap-1 cursor-pointer"
                 >
                   {copied ? <Check size={12} /> : <Copy size={12} />}
-                  <span>{copied ? 'Copied' : 'Copy RIB / IBAN'}</span>
+                  <span>{copied ? t('free_inv_doc_rib_copied', language) : t('free_inv_doc_copy_rib', language)}</span>
                 </button>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-neutral-600 dark:text-neutral-400">
                 <div>
-                  <span className="text-[10px] uppercase text-neutral-400 block">Bank</span>
+                  <span className="text-[10px] uppercase text-neutral-400 block">{t('free_inv_doc_bank', language)}</span>
                   <span className="font-semibold text-neutral-800 dark:text-neutral-200">{invoice.paymentDetails.bankName}</span>
                 </div>
                 <div>
-                  <span className="text-[10px] uppercase text-neutral-400 block">Beneficiary</span>
+                  <span className="text-[10px] uppercase text-neutral-400 block">{t('free_inv_doc_account_holder', language)}</span>
                   <span className="font-semibold text-neutral-800 dark:text-neutral-200">{beneficiaryName}</span>
                 </div>
                 <div className="sm:col-span-2">
-                  <span className="text-[10px] uppercase text-neutral-400 block">RIB / IBAN</span>
+                  <span className="text-[10px] uppercase text-neutral-400 block">{t('free_inv_doc_rib_iban', language)}</span>
                   <span className="font-mono text-xs font-bold text-neutral-900 dark:text-white tabular-nums tracking-wide">
                     {invoice.paymentDetails.ribOrIban}
                   </span>
@@ -270,15 +278,21 @@ export const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({
 
           {invoice.notes && (
             <p className="text-[11px] text-neutral-400 italic">
-              Note: {invoice.notes}
+              {invoice.notes}
             </p>
           )}
+
+          <div className="text-center pt-4 border-t border-dashed border-neutral-200 dark:border-neutral-800">
+            <p className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
+              {t('free_inv_doc_thank_you', language)}
+            </p>
+          </div>
         </div>
 
         {/* Modal Footer */}
         <div className="px-6 py-4 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between bg-neutral-50/50 dark:bg-neutral-900/30">
           <span className="text-xs text-neutral-500 dark:text-neutral-400">
-            Invoice #{invoice.invoiceNumber}
+            {t('free_inv_doc_invoice', language)} #{invoice.invoiceNumber}
           </span>
           <div className="flex items-center gap-2">
             {invoice.status !== 'Paid' && onMarkPaid && (
@@ -290,7 +304,7 @@ export const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({
                 }}
                 className="h-9 px-4 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-colors cursor-pointer shadow-xs"
               >
-                Mark as Settled / Paid
+                {t('free_inv_doc_mark_paid_btn', language)}
               </button>
             )}
             <button
@@ -298,7 +312,7 @@ export const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({
               onClick={onClose}
               className="h-9 px-4 rounded-full border border-neutral-200 dark:border-neutral-700 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-200 cursor-pointer"
             >
-              Close
+              {t('free_clients_cancel', language)}
             </button>
           </div>
         </div>

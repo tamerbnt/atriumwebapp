@@ -1,145 +1,116 @@
-# Full Tri-Lingual Localization & RTL Architecture (Arabic, French, English)
+# Complete Freelance Suite Localization & Multi-Vertical Rollout Plan
 
-Comprehensive plan to complete the localization of Atrium ERP & CRM across all 7 vertical suites, application modals, kinetic controls, notifications, and bidirectional RTL layouts with zero feature loss.
+Execute complete tri-lingual localization (French, Arabic, and English) across the entire Freelance Project vertical—including all views, forms, modals, and dynamic printable invoice documents—followed by staged localization across the remaining vertical suites (Education, Venue, Project / NCH Activator).
 
 ---
 
-## User Review & Critical Decisions
+### User Review & Critical Decisions
 
 > [!IMPORTANT]
-> The following architectural decisions were confirmed based on the initial assessment and your requirements:
-
-- **Vertical Screen Coverage**: All vertical suites (**Education & Academy**, **Freelancer & Solo Practice**, **Venue & Rentals**, and **Project & Milestone / NCH Activator**) will be localized in full into English, French, and Arabic.
-- **NCH Activator Trilingual Support**: The Project & Milestone vertical will be converted from hardcoded French into full tri-lingual capability, allowing seamless on-the-fly toggling between French (agency standard), Algerian Arabic, and English.
-- **Realistic Bilingual Algerian Seed Data**: Demo records (e.g. member names, course titles, service items) will retain authentic Algerian multilingual character (mix of French and Arabic commercial designations) so the application feels immediately production-ready.
-- **Bidirectional RTL Mirroring**: Arabic mode (`dir="rtl"`) will enforce proper typography with the Cairo font family, mirrored table headers, directional chevrons, and input padding.
+> The following decisions were clarified and confirmed for this phase:
+> - **Sequenced Rollout Order**: Prioritize and completely localize the **Freelance Suite** first across all sub-views and modals, followed by the remaining verticals (Education, Venue, Project / NCH Activator).
+> - **Dynamic Invoice & Printable Document Localization**: The printable invoice (`InvoicePreviewModal`), receipts, and financial slips will dynamically adapt to the currently selected active language (FR, AR, EN), ensuring accurate cultural formatting (currency tokens, date stamps, RIB/CCP account lines, and RTL/LTR alignments).
+> - **Bilingual Algerian Seed Data Preservation**: Realistic client names, Algerian wilaya locations, currencies (DZD / EUR / USD), and client industry scopes will remain realistic and functional.
 
 ---
 
-## 1. Overview & Core Concept
+### 1. Overview & Core Concept
 
-Atrium is a multi-tenant business OS tailored for North African and international commercial environments. The goal of this implementation is to elevate the platform from a partially localized prototype (where core screens were translated but vertical extensions remained hardcoded) into a cohesive, production-grade tri-lingual experience.
+Atrium's Freelance vertical provides independent consultants, developers, and agency solos with end-to-end tooling: client CRM, Kanban deliverables, time tracking, proposal quotations, and invoicing.
 
-### Key Value
-- **Zero Language Gaps**: Every navigation label, table column header, status badge, action button, validation tooltip, and notification banner will dynamically react to the active language (`en`, `fr`, `ar`).
-- **Seamless Cultural & Ergonomic Fit**: Algerian business workflows naturally blend French and Arabic. The UI will support both fluent Arabic with proper RTL typography and standardized French commercial terminology.
-- **Type-Safe Dictionary Architecture**: Strict TypeScript key checking will ensure that missing translations in French or Arabic are flagged at compile time, eliminating undefined text or runtime crashes.
+While the primary navigation and Dashboard summary currently support language switching, all core working screens, nested modals, and documents remained hardcoded in English. This implementation bridges that gap by connecting every Freelance component to Atrium's tri-lingual translation engine (`useTranslation` and `src/utils/i18n.ts`), while introducing dynamic document layouts that seamlessly flip between LTR (English/French) and RTL (Arabic).
 
 ---
 
-## 2. User Experience & Visual Design
+### 2. User Experience & Visual Design
 
-### Typography & Bi-Directionality (LTR vs RTL)
-- **English & French (`ltr`)**: Clean, modern display and tabular layout powered by **Inter**, with crisp tabular numerals (`tabular-nums`) for currency (DZD, EUR, USD) and timestamps.
-- **Arabic (`rtl`)**: Automatically switches the document font to **Cairo** (`[dir="rtl"] { font-family: 'Cairo', sans-serif; }`), providing legibility for Arabic glyphs, diacritics, and commercial phrasing.
-- **Kinetic Icon & Layout Mirroring**:
-  - Chevron navigation (`ChevronRight` vs `ChevronLeft`) automatically inverts direction based on `isRtl`.
-  - Floating badges, search lenses (`Seek`), and notched label inputs (`LabelInput`) maintain precise padding on the inline-start axis.
-  - Dropdowns and popovers pivot from the appropriate anchor corner (`right-0` vs `left-0`).
+#### Key User Flows & Screen Touchpoints
 
-### Layout & Component Styling Patterns
-```
-┌────────────────────────────────────────────────────────────────────────┐
-│ TopBar [Search lens] [Theme Toggle] [🌐 Language: العربية 🇩🇿 ▼]       │
-├─────────────┬──────────────────────────────────────────────────────────┤
-│ Sidebar     │ Active Vertical Viewport (e.g., Education / Cohorts)     │
-│             │                                                          │
-│ [Dashboard] │  ┌────────────────────────────────────────────────────┐  │
-│ [Timetable] │  │ 🎓 لوحة تحكم الأكاديمية (Academy Pulse)            │  │
-│ [Students]  │  ├────────────────────────────────────────────────────┤  │
-│ [Cohorts]   │  │ إجمالي الطلاب: 142 | الحصص النشطة: 12             │  │
-│ [Finance]   │  │ [بحث عن دفعة...]   [+ إضافة فوج جديد]              │  │
-│             │  └────────────────────────────────────────────────────┘  │
-└─────────────┴──────────────────────────────────────────────────────────┘
-```
+1. **Clients & Retainers CRM (`FreelanceClientsView.tsx`)**:
+   - Headers, counters, and table headers translated into French and Arabic.
+   - **Add / Edit Client Modal**: Form labels, currency pickers, monthly retainer fee inputs, and scope guidelines textarea localized with appropriate text direction.
+   - **Delete Confirmation Modal**: Warning typography, destructive action buttons, and cascade deletion options translated with clean spacing.
 
----
+2. **Deliverables & Sprint Kanban (`FreelanceDeliverablesView.tsx`)**:
+   - Kanban column headers (`Briefing & Spec`, `In Progress`, `In Review`, `Delivered`), status chips, and priority tags localized.
+   - **Create Deliverable Modal**: Stage selectors, pricing model pickers, due date indicators, and milestone attachments localized.
+   - **Deliverable Detail Drawer**: Action buttons, task status toggles, and billable duration tags localized.
 
-## 3. Key Product Decisions & Trade-Offs
+3. **Invoicing & Billing Center (`FreelanceInvoicesView.tsx`)**:
+   - Filter capsules (`All`, `Draft`, `Sent`, `Paid`, `Overdue`), invoice counters, and action nodes translated.
+   - **Create Invoice Modal**: Itemized row descriptors, rate calculation fields, tax rates, and client linkers fully localized.
+   - **Mark as Paid Confirmation**: Toast triggers and payment status badges localized.
 
-### 1. Dictionary Architecture (`src/utils/i18n.ts`)
-- **Chosen Approach**: Consolidate vertical translations into domain-scoped blocks within the master dictionary (`src/utils/i18n.ts`) sharing the typed `TranslationKey` definition, backed by `useTranslation()`.
-- **Why**: Keeps bundles zero-request (no asynchronous network waterfall for JSON translation chunks), maintains instant switching with zero flicker, and leverages TypeScript's `typeof TRANSLATIONS_EN` to enforce 100% parity across `TRANSLATIONS_FR` and `TRANSLATIONS_AR`.
-- **Alternative Considered**: Multiple nested JSON files per module. Rejected because async chunk loading causes text layout shifts during language switches.
+4. **Printable Document & RIB Preview (`InvoicePreviewModal.tsx`)**:
+   - Seamlessly reacts to the active language switcher.
+   - When Arabic is active: Header layout mirrors with RTL flow, invoice items table aligns right, and currency suffixes format correctly (`د.ج` / `EUR` / `USD`).
+   - When French or English is active: Standard clean left-aligned typography with proper localized date formats and payment terms.
+   - Quick "Copy RIB" button and "Print Document" actions localized with tactile micro-feedback.
 
-### 2. Form Notched Labels (`LabelInput` & `LabelSelect`)
-- **Chosen Approach**: Ensure all floating label notches and clear buttons account for `dir="rtl"`.
-- **Why**: Notched inputs with floating border labels can clip Arabic text or calculate incorrect notch cutouts if border inline-start coordinates are not RTL-aware.
+5. **Focus Stopwatch & Time Tracker (`FreelanceTimeTrackerView.tsx`)**:
+   - Live timer controls (`Start`, `Pause`, `Resume`, `Stop & Save`), billable toggles, and Pomodoro controls.
+   - Manual log creation modal, task descriptors, and daily time tally strip localized.
 
-### 3. Toast Notifications & System Alerts
-- **Chosen Approach**: Standardize `addToast` calls to accept translation keys or localized strings generated via `t()`, ensuring checkout success, low-stock alerts, and approval notices appear in the user's selected language.
+6. **Solo Finance & Net Profit (`FreelanceFinanceView.tsx`)**:
+   - Tax reserve estimations, business expense breakdown, and expense category selectors localized.
+   - **Add Expense Modal**: Category drop-downs, receipt notes, and amount inputs localized.
 
 ---
 
-## 4. Technical Architecture & Data Strategy
+### 3. Key Product Decisions & Trade-Offs
 
-### System Component & Localization Hierarchy
+- **Decision 1: Direct Component Integration with `useTranslation`**
+  - *Chosen Approach*: Import and use `{ t, language, isRtl } = useTranslation()` in each screen and modal component, leveraging standard translation keys already defined in `i18n.ts` and supplementing any missing keys.
+  - *Why*: Eliminates duplicated hardcoded strings, ensures reactive language switching without page reloads, and respects global RTL layout attributes.
+- **Decision 2: Adaptive Printable Document vs. Static Bilingual PDF**
+  - *Chosen Approach*: Make the printable modal react dynamically to the app's current language (`language === 'ar' ? ...`), allowing the user to print client-facing invoices in French, Arabic, or English on demand.
+  - *Why*: Freelancers in Algeria and MENA frequently deal with both local clients (requiring Arabic or French invoices) and international clients (requiring English).
+- **Decision 3: Architectural Staging (Freelance First, then Remaining Verticals)**
+  - *Chosen Approach*: Group implementation into Phase 1 (Freelance screens + modals + printable invoice) followed by Phase 2 (Education, Venue, Project suites).
+  - *Why*: Prevents regression, ensures deep validation on the specific screens the user is actively testing, and allows iterative verification.
+
+---
+
+### 4. Technical Architecture & Component Flow
 
 ```
-                    ┌─────────────────────────┐
-                    │   Browser / OS Locale   │
-                    └────────────┬────────────┘
-                                 │
-                                 ▼
-                    ┌─────────────────────────┐
-                    │    Atrium Store State   │
-                    │   language: 'en'|'fr'|'ar│
-                    │   isLanguageAuto: bool  │
-                    └────────────┬────────────┘
-                                 │
-         ┌───────────────────────┴───────────────────────┐
-         ▼                                               ▼
-┌──────────────────┐                           ┌──────────────────┐
-│ document element │                           │ useTranslation() │
-│  dir: 'ltr'|'rtl'│                           │  t(key, fallback)│
-│  lang: en|fr|ar  │                           │  isRtl, language │
-└──────────────────┘                           └─────────┬────────┘
-                                                         │
-         ┌───────────────────┬───────────────────┬───────┴───────────┬───────────────────┐
-         ▼                   ▼                   ▼                   ▼                   ▼
-┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐
-│ Education Suite │ │ Freelance Suite │ │   Venue Suite   │ │ Project (NCH)   │ │ Kinetic Inputs  │
-│ (9 Screens &    │ │ (8 Screens &    │ │ (8 Screens &    │ │ (8 Screens &    │ │ & ToastStack    │
-│  Modals)        │ │  Modals)        │ │  Modals)        │ │  Modals)        │ │                 │
-└─────────────────┘ └─────────────────┘ └─────────────────┘ └─────────────────┘ └─────────────────┘
+┌────────────────────────────────────────────────────────┐
+│                   TopBar & App State                   │
+│         [Language Selector: EN | FR | AR]              │
+└──────────────────────────┬─────────────────────────────┘
+                           │ Active Language & dir (RTL/LTR)
+                           ▼
+┌────────────────────────────────────────────────────────┐
+│               Atrium i18n Core Engine                  │
+│       src/utils/i18n.ts & src/utils/useTranslation     │
+└──────────────────────────┬─────────────────────────────┘
+                           │
+      ┌────────────────────┴────────────────────┐
+      ▼                                         ▼
+┌───────────────────────────────┐ ┌───────────────────────────────┐
+│       Freelance Views         │ │       Freelance Modals        │
+│ ───────────────────────────── │ │ ───────────────────────────── │
+│ • FreelanceClientsView        │ │ • Add / Edit Client Modal     │
+│ • FreelanceDeliverablesView   │ │ • Delete Client Cascade Modal │
+│ • FreelanceInvoicesView       │ │ • Create Deliverable Modal    │
+│ • FreelanceTimeTrackerView    │ │ • Create Invoice Modal        │
+│ • FreelanceFinanceView        │ │ • InvoicePreviewModal (Print) │
+│ • FreelanceProposalsView      │ │ • Manual Time Log Modal       │
+└───────────────────────────────┘ └───────────────────────────────┘
 ```
 
-### Phased Implementation Breakdown
+#### Deliverable Checklist for Freelance Phase
 
-#### Phase 1: Dictionary Expansion (`src/utils/i18n.ts`)
-- Add structured translation keys for:
-  - **Education vertical**: `edu_kpi_*`, `edu_timetable_*`, `edu_students_*`, `edu_cohorts_*`, `edu_admissions_*`, `edu_attendance_*`, `edu_finance_*`, `edu_cert_*`.
-  - **Freelance vertical**: `free_kpi_*`, `free_clients_*`, `free_kanban_*`, `free_timer_*`, `free_invoice_*`, `free_proposals_*`, `free_finance_*`.
-  - **Venue & Rentals vertical**: `venue_kpi_*`, `venue_timeline_*`, `venue_bookings_*`, `venue_equipment_*`, `venue_renters_*`, `venue_finance_*`.
-  - **Project & Agency / NCH Activator**: `pm_dir_*`, `pm_cp_*`, `pm_crea_*`, `pm_sup_*`, `pm_rh_*`, `pm_compta_*`, `pm_ccp_*`.
-  - **Kinetic UI & Common States**: search placeholders, pagination, empty states, and toast messages.
-- Populate full translations for French (`TRANSLATIONS_FR`) and Arabic (`TRANSLATIONS_AR`).
-
-#### Phase 2: Education & Academy Suite Migration
-- Integrate `useTranslation()` across:
-  - `EducationDashboardView.tsx`, `EducationTimetableView.tsx`, `EducationStudentsView.tsx`
-  - `EducationCohortsView.tsx`, `EducationAdmissionsView.tsx`, `EducationAttendanceView.tsx`
-  - `EducationFinanceView.tsx`, `CertificateModal.tsx`, `RollCallModal.tsx`
-
-#### Phase 3: Freelancers & Solo Practice Suite Migration
-- Integrate `useTranslation()` across:
-  - `FreelanceDashboardView.tsx`, `FreelanceClientsView.tsx`, `FreelanceDeliverablesView.tsx`
-  - `FreelanceTimeTrackerView.tsx`, `FreelanceInvoicesView.tsx`, `FreelanceProposalsView.tsx`
-  - `FreelanceFinanceView.tsx`, `InvoicePreviewModal.tsx`
-
-#### Phase 4: Venue & Rental Suite Migration
-- Integrate `useTranslation()` across:
-  - `VenueDashboardView.tsx`, `VenueTimelineView.tsx`, `VenueBookingsView.tsx`
-  - `VenueInventoryView.tsx`, `VenueRentersView.tsx`, `VenueFinanceView.tsx`
-  - `BookingModal.tsx`, `VenueCloudSyncModal.tsx`
-
-#### Phase 5: Project & Milestone (NCH Activator) Suite Migration
-- Refactor the 8 role views and modals from hardcoded French to dynamic `t()` calls:
-  - `ProjectDirectionView.tsx`, `ProjectChefProjetView.tsx`, `ProjectCreaView.tsx`
-  - `ProjectSuperviseurView.tsx`, `ProjectRhView.tsx`, `ProjectComptaView.tsx`
-  - `CcpSlipModal.tsx`, `MobilePhoneSimulator.tsx`
-
-#### Phase 6: Kinetic Controls, ToastStack & RTL Layout Verification
-- Mirror table alignments and chevron directions for Arabic.
-- Audit input components (`LabelInput`, `LabelSelect`, `Seek`) for RTL padding and notch positioning.
-- Run type-checking (`tsc --noEmit`), unit tests (`npm test`), and compilation build (`compile_applet`).
+1. **Dictionary Completeness (`src/utils/i18n.ts`)**:
+   - Audit and confirm all form labels, placeholders, confirmation warnings, and empty states exist across `TRANSLATIONS_EN`, `TRANSLATIONS_FR`, and `TRANSLATIONS_AR`.
+2. **View Migration (`src/components/screens/freelance/`)**:
+   - Update `FreelanceClientsView.tsx` with `useTranslation` and localized modal dialogs.
+   - Update `FreelanceDeliverablesView.tsx` with Kanban column translations and deliverable creation forms.
+   - Update `FreelanceInvoicesView.tsx` with invoice filters, creation forms, and status badges.
+   - Update `InvoicePreviewModal.tsx` with RTL layout support, localized headers, and printable formatting.
+   - Update `FreelanceProposalsView.tsx` with proposal statuses, conversion modals, and currency formats.
+   - Update `FreelanceTimeTrackerView.tsx` with timer buttons, manual log dialogs, and summary tiles.
+   - Update `FreelanceFinanceView.tsx` with tax reserve calculators and expense forms.
+3. **Verification**:
+   - Run `lint_applet` and `compile_applet` to confirm 0 TypeScript or lint errors.
+   - Validate RTL layout integrity and reactive language switching across all 3 locales.

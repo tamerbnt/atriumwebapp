@@ -29,16 +29,27 @@ import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { FilterSelect } from '../../ui/FilterSelect';
 import { Seek } from '../../ui/Seek';
+import { useTranslation } from '../../../utils/useTranslation';
+import { TranslationKey } from '../../../utils/i18n';
 
-const STAGES: { id: DeliverableStage; label: string; countColor: string }[] = [
-  { id: 'Briefing', label: 'Briefing & Spec', countColor: 'text-neutral-500' },
-  { id: 'InProgress', label: 'In Progress', countColor: 'text-amber-500' },
-  { id: 'ClientReview', label: 'Client Review', countColor: 'text-blue-500' },
-  { id: 'Approved', label: 'Approved', countColor: 'text-emerald-500' },
-  { id: 'Billed', label: 'Billed & Archived', countColor: 'text-neutral-400' },
+const STAGE_KEYS: Record<DeliverableStage, TranslationKey> = {
+  Briefing: 'free_deliv_stage_briefing',
+  InProgress: 'free_deliv_stage_in_progress',
+  ClientReview: 'free_deliv_stage_review',
+  Approved: 'free_deliv_stage_delivered',
+  Billed: 'free_kanban_invoiced',
+};
+
+const STAGES: { id: DeliverableStage; countColor: string }[] = [
+  { id: 'Briefing', countColor: 'text-neutral-500' },
+  { id: 'InProgress', countColor: 'text-amber-500' },
+  { id: 'ClientReview', countColor: 'text-blue-500' },
+  { id: 'Approved', countColor: 'text-emerald-500' },
+  { id: 'Billed', countColor: 'text-neutral-400' },
 ];
 
 export const FreelanceDeliverablesView: React.FC = () => {
+  const { t, language, isRtl } = useTranslation();
   const {
     freelanceProjects,
     freelanceClients,
@@ -195,7 +206,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white">
-              Deliverables & Milestone Board
+              {t('free_deliv_title', language)}
             </h1>
             {totalScopeCreepItems > 0 && (
               <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-400 border border-rose-200 dark:border-rose-800 flex items-center gap-1">
@@ -205,7 +216,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
             )}
           </div>
           <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
-            Kanban workflow from initial briefing to final client sign-off and 1-click billing
+            {t('free_deliv_subtitle', language)}
           </p>
         </div>
 
@@ -216,7 +227,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
             className="h-9 px-3.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 text-xs font-semibold flex items-center gap-1.5 hover:bg-neutral-50 dark:hover:bg-neutral-700/60 transition-colors cursor-pointer shadow-2xs"
           >
             <Plus size={13} />
-            <span>New Project</span>
+            <span>{t('free_deliv_field_project', language)}</span>
           </button>
           <button
             type="button"
@@ -224,7 +235,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
             className="h-9 px-3.5 rounded-xl bg-[#C4785A] text-white text-xs font-semibold flex items-center gap-1.5 hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
           >
             <Plus size={13} />
-            <span>Add Deliverable</span>
+            <span>{t('free_deliv_btn_new', language)}</span>
           </button>
         </div>
       </div>
@@ -234,7 +245,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
         <div className="flex items-center gap-2 overflow-x-auto pb-1 max-w-full">
           <span className="text-xs text-neutral-400 font-medium shrink-0 flex items-center gap-1">
             <Filter size={12} />
-            Filter Project:
+            {t('common_filter', language)}:
           </span>
           <button
             type="button"
@@ -245,7 +256,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
                 : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900'
             }`}
           >
-            All Projects ({freelanceProjects.length})
+            {t('free_deliv_all_projects', language)} ({freelanceProjects.length})
           </button>
 
           {freelanceProjects.map((project) => (
@@ -268,7 +279,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
           <Seek
             value={searchQuery}
             onChange={setSearchQuery}
-            placeholder="Search deliverables, tasks, briefs..."
+            placeholder={t('free_search_deliverables_ph', language)}
           />
           {selectedProjectId !== 'all' && (
             <button
@@ -278,10 +289,10 @@ export const FreelanceDeliverablesView: React.FC = () => {
                 if (targetProj) setProjectToDelete(targetProj);
               }}
               className="px-2.5 py-1.5 rounded-lg border border-rose-200 dark:border-rose-900/60 text-rose-600 dark:text-rose-400 text-xs font-semibold flex items-center gap-1 hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer shrink-0"
-              title="Delete this project"
+              title={t('common_delete', language)}
             >
               <Trash2 size={12} />
-              <span>Delete Project</span>
+              <span>{t('common_delete', language)}</span>
             </button>
           )}
         </div>
@@ -290,9 +301,9 @@ export const FreelanceDeliverablesView: React.FC = () => {
       {freelanceProjects.length === 0 ? (
         <div className="p-12 text-center rounded-3xl border border-dashed border-neutral-200 dark:border-neutral-800 bg-[#F8F9FA] dark:bg-neutral-900/40 space-y-3">
           <Kanban size={36} className="mx-auto text-neutral-300 dark:text-neutral-600" />
-          <h3 className="text-base font-bold text-neutral-900 dark:text-white">No Projects Available</h3>
+          <h3 className="text-base font-bold text-neutral-900 dark:text-white">{t('free_deliv_empty_column', language)}</h3>
           <p className="text-xs text-neutral-500 max-w-sm mx-auto">
-            You don't have any projects registered yet. Create a project to start planning deliverables and tracking billable sprints.
+            {t('free_deliv_modal_add_desc', language)}
           </p>
           <button
             type="button"
@@ -300,7 +311,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
             className="px-4 py-2 rounded-xl bg-[#C4785A] text-white text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer inline-flex items-center gap-1.5 shadow-xs"
           >
             <Plus size={14} />
-            <span>Create First Project</span>
+            <span>{t('free_deliv_field_project', language)}</span>
           </button>
         </div>
       ) : (
@@ -319,7 +330,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
               {/* Column Header */}
               <div className="flex items-center justify-between pb-3 mb-3 border-b border-neutral-200/60 dark:border-neutral-800">
                 <span className="text-xs font-bold text-neutral-900 dark:text-white">
-                  {stage.label}
+                  {t(STAGE_KEYS[stage.id], language)}
                 </span>
                 <span className={`text-xs font-extrabold tabular-nums ${stage.countColor}`}>
                   {itemsInStage.length}
@@ -401,10 +412,10 @@ export const FreelanceDeliverablesView: React.FC = () => {
                             type="button"
                             onClick={() => handleStartTimerForDeliverable(project, deliverable)}
                             className="h-7 px-2 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-[#C4785A] hover:text-white text-[11px] font-semibold flex items-center gap-1 transition-colors cursor-pointer"
-                            title="Track time on this task"
+                            title={t('free_btn_log_time', language)}
                           >
                             <Play size={10} />
-                            <span>Track</span>
+                            <span>{t('free_btn_log_time', language)}</span>
                           </button>
                           <button
                             type="button"
@@ -418,7 +429,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
                               });
                             }}
                             className="h-7 w-7 rounded-lg text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center justify-center transition-colors cursor-pointer"
-                            title="Edit deliverable"
+                            title={t('free_deliv_edit', language)}
                           >
                             <Edit2 size={12} />
                           </button>
@@ -432,7 +443,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
                               })
                             }
                             className="h-7 w-7 rounded-lg text-neutral-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 flex items-center justify-center transition-colors cursor-pointer"
-                            title="Delete deliverable"
+                            title={t('free_deliv_delete', language)}
                           >
                             <Trash2 size={12} />
                           </button>
@@ -448,8 +459,8 @@ export const FreelanceDeliverablesView: React.FC = () => {
                               (val?.target?.value ?? String(val)) as DeliverableStage
                             )
                           }
-                          options={STAGES.map((s) => ({ value: s.id, label: `Move → ${s.label}` }))}
-                          placeholder="Move Stage..."
+                          options={STAGES.map((s) => ({ value: s.id, label: `→ ${t(STAGE_KEYS[s.id], language)}` }))}
+                          placeholder="Stage..."
                         />
                       </div>
                     </div>
@@ -458,7 +469,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
 
                 {itemsInStage.length === 0 && (
                   <div className="py-8 text-center text-neutral-400 text-xs italic">
-                    No deliverables in this stage
+                    {t('free_deliv_empty_column', language)}
                   </div>
                 )}
               </div>
@@ -473,9 +484,14 @@ export const FreelanceDeliverablesView: React.FC = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
           <div className="bg-white dark:bg-[#1C1C1E] border border-neutral-200 dark:border-neutral-800 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
-              <h3 className="text-base font-bold text-neutral-900 dark:text-white">
-                Add Deliverable Milestone
-              </h3>
+              <div>
+                <h3 className="text-base font-bold text-neutral-900 dark:text-white">
+                  {t('free_deliv_modal_add_title', language)}
+                </h3>
+                <p className="text-xs text-neutral-500 mt-0.5">
+                  {t('free_deliv_modal_add_desc', language)}
+                </p>
+              </div>
               <button
                 type="button"
                 onClick={() => setIsAddDeliverableModalOpen(false)}
@@ -487,7 +503,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
 
             <form onSubmit={handleCreateDeliverable} className="space-y-3.5 text-xs">
               <LabelSelect
-                label="Target Project *"
+                label={`${t('free_deliv_field_project', language)} *`}
                 value={targetProjectId}
                 onChange={(val) => setTargetProjectId(val?.target?.value ?? String(val))}
                 options={freelanceProjects.map((p) => ({
@@ -499,7 +515,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
 
               <LabelInput
                 id="deliverable-title"
-                label="Deliverable Title"
+                label={t('free_deliv_field_title', language)}
                 required
                 placeholder="e.g. Design System Tokens & Color Guidelines"
                 value={deliverableTitle}
@@ -508,7 +524,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
 
               <div>
                 <label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
-                  Deliverable Scope & Brief
+                  {t('free_deliv_field_tags', language)}
                 </label>
                 <textarea
                   rows={2}
@@ -522,7 +538,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
               <div className="grid grid-cols-2 gap-3">
                 <LabelInput
                   id="deliverable-estimated-hours"
-                  label="Estimated Hours"
+                  label={t('free_deliv_field_est_hours', language)}
                   type="number"
                   min="1"
                   required
@@ -531,7 +547,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
                 />
                 <LabelInput
                   id="deliverable-due-date"
-                  label="Due Date"
+                  label={t('free_deliv_field_due_date', language)}
                   type="date"
                   required
                   value={dueDate}
@@ -545,13 +561,13 @@ export const FreelanceDeliverablesView: React.FC = () => {
                   onClick={() => setIsAddDeliverableModalOpen(false)}
                   className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
                 >
-                  Cancel
+                  {t('free_clients_cancel', language)}
                 </button>
                 <button
                   type="submit"
                   className="px-5 py-2 rounded-xl bg-[#C4785A] text-white text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer"
                 >
-                  Create Deliverable
+                  {t('free_deliv_btn_new', language)}
                 </button>
               </div>
             </form>
@@ -565,7 +581,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
           <div className="bg-white dark:bg-[#1C1C1E] border border-neutral-200 dark:border-neutral-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
               <h3 className="text-base font-bold text-neutral-900 dark:text-white">
-                Launch New Client Project
+                {t('free_deliv_field_project', language)}
               </h3>
               <button
                 type="button"
@@ -579,7 +595,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
             <form onSubmit={handleCreateProject} className="space-y-3.5 text-xs">
               <div className="grid grid-cols-2 gap-3">
                 <LabelSelect
-                  label="Client *"
+                  label={`${t('free_invoice_client', language)} *`}
                   value={newProjectData.clientId}
                   onChange={(val) =>
                     setNewProjectData({
@@ -594,7 +610,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
                   placeholder="Select Client..."
                 />
                 <LabelSelect
-                  label="Pricing Model"
+                  label={t('free_deliv_field_pricing', language)}
                   value={newProjectData.pricingModel}
                   onChange={(val) =>
                     setNewProjectData({
@@ -612,7 +628,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
 
               <LabelInput
                 id="new-project-title"
-                label="Project Title"
+                label={t('free_deliv_field_title', language)}
                 required
                 placeholder="e.g. Mobile Banking App UX Audit & Redesign"
                 value={newProjectData.title}
@@ -621,7 +637,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
 
               <div>
                 <label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
-                  Project Scope & Description
+                  {t('free_deliv_field_tags', language)}
                 </label>
                 <textarea
                   rows={2}
@@ -636,7 +652,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
 
               <div className="grid grid-cols-3 gap-3">
                 <LabelSelect
-                  label="Currency"
+                  label={t('free_clients_currency', language)}
                   value={newProjectData.currency}
                   onChange={(val) =>
                     setNewProjectData({
@@ -649,7 +665,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
                 <div>
                   <LabelInput
                     id="new-project-budget"
-                    label="Total Budget"
+                    label={t('free_prop_total_quote', language)}
                     type="number"
                     value={newProjectData.budget}
                     onChange={(e) =>
@@ -660,7 +676,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
                 <div>
                   <LabelInput
                     id="new-project-hours"
-                    label="Est. Hours"
+                    label={t('free_deliv_field_est_hours', language)}
                     type="number"
                     value={newProjectData.estimatedHours}
                     onChange={(e) =>
@@ -676,7 +692,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
               <div>
                 <LabelInput
                   id="new-project-deadline"
-                  label="Target Deadline"
+                  label={t('free_deliv_field_due_date', language)}
                   type="date"
                   value={newProjectData.deadline}
                   onChange={(e) =>
@@ -691,13 +707,13 @@ export const FreelanceDeliverablesView: React.FC = () => {
                   onClick={() => setIsAddProjectModalOpen(false)}
                   className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
                 >
-                  Cancel
+                  {t('free_clients_cancel', language)}
                 </button>
                 <button
                   type="submit"
                   className="px-5 py-2 rounded-xl bg-[#C4785A] text-white text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
                 >
-                  Launch Project
+                  {t('free_deliv_field_project', language)}
                 </button>
               </div>
             </form>
