@@ -120,13 +120,13 @@ export const FreelanceDashboardView: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-neutral-200 dark:border-neutral-800">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white flex items-center gap-2">
-            {t('nav_solo_home')}
+            {t('nav_solo_home', language)}
             <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-[#C4785A]/15 text-[#C4785A] uppercase tracking-wider">
-              Category 16 · {t('onboard_categories_label')}
+              {t('free_dash_category_badge', language)}
             </span>
           </h1>
           <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
-            {t('free_finance_subtitle')}
+            {t('free_finance_subtitle', language)}
           </p>
         </div>
 
@@ -140,7 +140,7 @@ export const FreelanceDashboardView: React.FC = () => {
             >
               <Building2 size={14} className="text-[#C4785A]" />
               <span className="truncate max-w-[130px] sm:max-w-[180px]">
-                {currentBusiness?.name || 'Atlas Studio'}
+                {currentBusiness?.name || (language === 'ar' ? 'استوديو أطلس' : 'Atlas Studio')}
               </span>
               <ChevronDown size={13} className="text-neutral-400" />
             </button>
@@ -224,21 +224,21 @@ export const FreelanceDashboardView: React.FC = () => {
         {/* Metric 2: Effective Hourly Rate */}
         <div className="p-5 rounded-[24px] bg-[#F8F9FA] dark:bg-neutral-800/40 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs flex flex-col justify-between">
           <div className="flex items-center justify-between text-neutral-500 dark:text-neutral-400 text-xs font-semibold">
-            <span>{t('free_kpi_effective_rate')}</span>
+            <span>{t('free_kpi_effective_rate', language)}</span>
             <TrendingUp size={16} className="text-emerald-500" />
           </div>
           <div className="my-2">
             <span className="text-2xl font-black text-neutral-900 dark:text-white tabular-nums tracking-tight">
-              €{ehrRate} <span className="text-xs font-medium text-neutral-400">/ hr</span>
+              €{ehrRate} <span className="text-xs font-medium text-neutral-400">{t('free_dash_per_hour', language)}</span>
             </span>
             <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium block mt-0.5">
-              {ehrRate >= 75 ? '+18% vs. target baseline (€75/hr)' : 'Target baseline: €75/hr'}
+              {ehrRate >= 75 ? t('free_dash_baseline_above', language) : t('free_dash_baseline_target', language)}
             </span>
           </div>
           <div className="text-[11px] text-neutral-400 pt-2 border-t border-neutral-200/60 dark:border-neutral-700/60 flex items-center justify-between">
-            <span>{t('free_finance_title')}</span>
+            <span>{t('free_finance_title', language)}</span>
             <span className="font-semibold text-neutral-700 dark:text-neutral-300">
-              {ehrRate >= 85 ? 'High Tier' : 'Standard Tier'}
+              {ehrRate >= 85 ? t('free_dash_tier_high', language) : t('free_dash_tier_standard', language)}
             </span>
           </div>
         </div>
@@ -246,12 +246,12 @@ export const FreelanceDashboardView: React.FC = () => {
         {/* Metric 3: Active Deliverables & Scope Creep */}
         <div className="p-5 rounded-[24px] bg-[#F8F9FA] dark:bg-neutral-800/40 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs flex flex-col justify-between">
           <div className="flex items-center justify-between text-neutral-500 dark:text-neutral-400 text-xs font-semibold">
-            <span>{t('free_kpi_active_projects')}</span>
+            <span>{t('free_kpi_active_projects', language)}</span>
             <Briefcase size={16} className="text-blue-500" />
           </div>
           <div className="my-2">
             <span className="text-2xl font-black text-neutral-900 dark:text-white tabular-nums tracking-tight">
-              {activeDeliverablesCount} {t('common_all')}
+              {activeDeliverablesCount} {t('common_all', language)}
             </span>
             <span
               className={`text-[11px] font-medium block mt-0.5 ${
@@ -259,17 +259,17 @@ export const FreelanceDashboardView: React.FC = () => {
               }`}
             >
               {scopeCreepCount > 0
-                ? `⚠️ ${scopeCreepCount} deliverable exceeding estimate`
-                : 'All deliverables on schedule'}
+                ? `⚠️ ${scopeCreepCount} ${t('free_dash_scope_creep_alert', language)}`
+                : t('free_dash_all_on_schedule', language)}
             </span>
           </div>
           <div className="text-[11px] text-neutral-400 pt-2 border-t border-neutral-200/60 dark:border-neutral-700/60 flex items-center justify-between">
-            <span>{freelanceProjects.length} {t('free_kpi_active_projects')}</span>
+            <span>{freelanceProjects.length} {t('free_kpi_active_projects', language)}</span>
             <button
               onClick={() => setScreen('scheduler')}
               className="font-semibold text-[#C4785A] hover:underline cursor-pointer"
             >
-              Kanban →
+              {t('free_dash_kanban_link', language)}
             </button>
           </div>
         </div>
@@ -277,7 +277,7 @@ export const FreelanceDashboardView: React.FC = () => {
         {/* Metric 4: Weekly Billable Gauge */}
         <div className="p-5 rounded-[24px] bg-[#F8F9FA] dark:bg-neutral-800/40 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs flex flex-col justify-between">
           <div className="flex items-center justify-between text-neutral-500 dark:text-neutral-400 text-xs font-semibold">
-            <span>{t('free_kpi_unbilled_hours')}</span>
+            <span>{t('free_kpi_unbilled_hours', language)}</span>
             <Clock size={16} className="text-purple-500" />
           </div>
           <div className="my-2">
@@ -298,8 +298,8 @@ export const FreelanceDashboardView: React.FC = () => {
             </div>
           </div>
           <div className="text-[11px] text-neutral-400 pt-2 border-t border-neutral-200/60 dark:border-neutral-700/60 flex items-center justify-between">
-            <span>{t('common_status')}</span>
-            <span className="font-semibold text-emerald-600 dark:text-emerald-400">Optimal Pace</span>
+            <span>{t('common_status', language)}</span>
+            <span className="font-semibold text-emerald-600 dark:text-emerald-400">{t('free_dash_optimal_pace', language)}</span>
           </div>
         </div>
       </div>
@@ -310,15 +310,15 @@ export const FreelanceDashboardView: React.FC = () => {
           <div className="flex items-center gap-2.5">
             <AlertCircle size={18} className="text-amber-600 shrink-0" />
             <div>
-              <strong className="font-bold">Attention Required:</strong>{' '}
+              <strong className="font-bold">{t('free_dash_attention_req', language)}</strong>{' '}
               {overdueInvoices.length > 0 && (
                 <span>
-                  Invoice #{overdueInvoices[0].invoiceNumber} for {overdueInvoices[0].clientName} ({formatCurrencyAmount(overdueInvoices[0].totalAmount, overdueInvoices[0].currency)}) is overdue.{' '}
+                  {t('free_dash_overdue_prefix', language)} #{overdueInvoices[0].invoiceNumber} {language === 'ar' ? 'للعميل' : language === 'fr' ? 'pour' : 'for'} {overdueInvoices[0].clientName} ({formatCurrencyAmount(overdueInvoices[0].totalAmount, overdueInvoices[0].currency)}) {t('free_dash_overdue_suffix', language)}{' '}
                 </span>
               )}
               {scopeCreepCount > 0 && highestOverrunDeliverable && (
                 <span>
-                  Deliverable "{highestOverrunDeliverable.title}" ({highestOverrunDeliverable.projectTitle}) has exceeded estimated budget by {highestOverrunDeliverable.diffHours} hours.
+                  {language === 'ar' ? 'التسليمة' : language === 'fr' ? 'Le livrable' : 'Deliverable'} "{highestOverrunDeliverable.title}" ({highestOverrunDeliverable.projectTitle}) {t('free_dash_overrun_msg', language)} {highestOverrunDeliverable.diffHours} {t('free_dash_hours_unit', language)}.
                 </span>
               )}
             </div>
@@ -330,7 +330,7 @@ export const FreelanceDashboardView: React.FC = () => {
                 onClick={() => setPreviewInvoice(overdueInvoices[0])}
                 className="px-3 py-1.5 rounded-full bg-amber-600 hover:bg-amber-700 text-white font-bold transition-colors cursor-pointer"
               >
-                {t('free_btn_preview_invoice')}
+                {t('free_btn_preview_invoice', language)}
               </button>
             )}
           </div>
@@ -344,10 +344,10 @@ export const FreelanceDashboardView: React.FC = () => {
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-neutral-400 flex items-center gap-1.5">
               <Flame size={14} className="text-[#C4785A]" />
-              {t('free_timer_title')}
+              {t('free_timer_title', language)}
             </span>
             <span className="text-[11px] font-semibold text-neutral-500">
-              {activeTimer.isPomodoro ? 'Pomodoro (25m)' : 'Standard Chrono'}
+              {activeTimer.isPomodoro ? (language === 'ar' ? 'بومودورو (25 د)' : language === 'fr' ? 'Pomodoro (25 min)' : 'Pomodoro (25m)') : (language === 'ar' ? 'مؤقت قياسي' : language === 'fr' ? 'Chronomètre Standard' : 'Standard Chrono')}
             </span>
           </div>
 
@@ -357,9 +357,9 @@ export const FreelanceDashboardView: React.FC = () => {
             </span>
             <div className="text-xs text-neutral-500 dark:text-neutral-400 mt-2 truncate px-4">
               {activeTimer.projectTitle ? (
-                <span>{activeTimer.projectTitle} · <strong className="text-neutral-800 dark:text-neutral-200">{activeTimer.taskDescription || 'Sprint Task'}</strong></span>
+                <span>{activeTimer.projectTitle} · <strong className="text-neutral-800 dark:text-neutral-200">{activeTimer.taskDescription || t('free_time_sprint_task_default', language)}</strong></span>
               ) : (
-                <span>{t('free_timer_task_ph')}</span>
+                <span>{t('free_timer_task_ph', language)}</span>
               )}
             </div>
           </div>
@@ -382,7 +382,7 @@ export const FreelanceDashboardView: React.FC = () => {
                     client.company || client.name,
                     project.id,
                     project.title,
-                    deliverable ? `Working on ${deliverable.title}` : 'Focus Sprint Session',
+                    deliverable ? (language === 'ar' ? `العمل على ${deliverable.title}` : language === 'fr' ? `Travail sur ${deliverable.title}` : `Working on ${deliverable.title}`) : (language === 'ar' ? 'جلسة تركيز سريعة' : language === 'fr' ? 'Session focus' : 'Focus Sprint Session'),
                     deliverable?.id,
                     deliverable?.title
                   );
@@ -391,7 +391,7 @@ export const FreelanceDashboardView: React.FC = () => {
               >
                 <Play size={14} />
                 <span>
-                  {freelanceProjects.length === 0 ? t('free_btn_new_deliverable') : t('free_timer_start')}
+                  {freelanceProjects.length === 0 ? t('free_btn_new_deliverable', language) : t('free_timer_start', language)}
                 </span>
               </button>
             ) : activeTimer.isPaused ? (
@@ -401,7 +401,7 @@ export const FreelanceDashboardView: React.FC = () => {
                 className="h-10 px-5 rounded-full bg-emerald-600 text-white text-xs font-bold flex items-center gap-2 hover:bg-emerald-700 transition-colors cursor-pointer shadow-xs"
               >
                 <Play size={14} />
-                <span>{t('free_timer_resume')}</span>
+                <span>{t('free_timer_resume', language)}</span>
               </button>
             ) : (
               <button
@@ -410,7 +410,7 @@ export const FreelanceDashboardView: React.FC = () => {
                 className="h-10 px-5 rounded-full bg-amber-600 text-white text-xs font-bold flex items-center gap-2 hover:bg-amber-700 transition-colors cursor-pointer shadow-xs"
               >
                 <Pause size={14} />
-                <span>{t('free_timer_pause')}</span>
+                <span>{t('free_timer_pause', language)}</span>
               </button>
             )}
 
@@ -418,11 +418,11 @@ export const FreelanceDashboardView: React.FC = () => {
               <button
                 type="button"
                 onClick={stopTimer}
-                title="Log hours & stop timer"
+                title={t('free_dash_log_hours_tt', language)}
                 className="h-10 px-4 rounded-full border border-rose-300 dark:border-rose-800 text-rose-600 dark:text-rose-400 text-xs font-bold flex items-center gap-1.5 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
               >
                 <Square size={13} />
-                <span>Log Hours</span>
+                <span>{t('free_dash_log_hours_btn', language)}</span>
               </button>
             )}
           </div>
@@ -432,14 +432,14 @@ export const FreelanceDashboardView: React.FC = () => {
         <div className="lg:col-span-2 bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[26px] p-6 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-base font-bold text-neutral-900 dark:text-white">
-              Recent Invoices & Retainers
+              {t('free_dash_recent_invoices_title', language)}
             </h3>
             <button
               type="button"
               onClick={() => setScreen('shop')}
               className="text-xs font-bold text-[#C4785A] hover:underline cursor-pointer flex items-center gap-1"
             >
-              <span>View All Invoices</span>
+              <span>{t('free_dash_view_all_invoices', language)}</span>
               <ChevronRight size={14} />
             </button>
           </div>
@@ -448,15 +448,15 @@ export const FreelanceDashboardView: React.FC = () => {
             {freelanceInvoices.length === 0 ? (
               <div className="p-8 text-center bg-white dark:bg-neutral-800 rounded-2xl border border-dashed border-neutral-200 dark:border-neutral-700">
                 <FileText size={28} className="mx-auto text-neutral-300 dark:text-neutral-600 mb-2" />
-                <p className="text-xs font-semibold text-neutral-600 dark:text-neutral-300">No invoices generated yet</p>
-                <p className="text-[11px] text-neutral-400 mt-0.5">Bill your unbilled hours or create an invoice in the Invoicing tab.</p>
+                <p className="text-xs font-semibold text-neutral-600 dark:text-neutral-300">{t('free_dash_no_invoices', language)}</p>
+                <p className="text-[11px] text-neutral-400 mt-0.5">{t('free_dash_no_invoices_desc', language)}</p>
                 <button
                   type="button"
                   onClick={() => setScreen('shop')}
                   className="mt-3 px-3 py-1.5 rounded-full bg-[#C4785A] text-white text-[11px] font-bold hover:opacity-90 transition-opacity cursor-pointer inline-flex items-center gap-1.5"
                 >
                   <Plus size={13} />
-                  <span>Create Invoice</span>
+                  <span>{t('free_inv_btn_new', language)}</span>
                 </button>
               </div>
             ) : (
@@ -486,7 +486,7 @@ export const FreelanceDashboardView: React.FC = () => {
                         {formatCurrencyAmount(invoice.totalAmount, invoice.currency)}
                       </span>
                       <span className="text-[10px] text-neutral-400 block">
-                        Due: {invoice.dueDate}
+                        {t('free_invoice_due', language)}: {invoice.dueDate}
                       </span>
                     </div>
                     <span
@@ -498,7 +498,13 @@ export const FreelanceDashboardView: React.FC = () => {
                           : 'bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-400'
                       }`}
                     >
-                      {invoice.status}
+                      {invoice.status === 'Paid'
+                        ? t('free_inv_status_paid', language)
+                        : invoice.status === 'Overdue'
+                        ? t('free_inv_status_overdue', language)
+                        : invoice.status === 'Sent'
+                        ? t('free_inv_status_sent', language)
+                        : invoice.status}
                     </span>
                   </div>
                 </div>
@@ -513,10 +519,10 @@ export const FreelanceDashboardView: React.FC = () => {
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-base font-bold text-neutral-900 dark:text-white">
-              Client Accounts & Retainer Balances
+              {t('free_dash_client_roster_title', language)}
             </h3>
             <p className="text-xs text-neutral-400">
-              Active clients across Europe, USA, and Algeria
+              {t('free_dash_client_roster_subtitle', language)}
             </p>
           </div>
           <button
@@ -524,7 +530,7 @@ export const FreelanceDashboardView: React.FC = () => {
             onClick={() => setScreen('members')}
             className="text-xs font-bold text-[#C4785A] hover:underline cursor-pointer flex items-center gap-1"
           >
-            <span>Manage All Clients</span>
+            <span>{t('free_dash_manage_clients', language)}</span>
             <ChevronRight size={14} />
           </button>
         </div>
@@ -533,13 +539,13 @@ export const FreelanceDashboardView: React.FC = () => {
           {freelanceClients.length === 0 ? (
             <div className="col-span-full p-8 text-center bg-white dark:bg-neutral-800 rounded-2xl border border-dashed border-neutral-200 dark:border-neutral-700">
               <Building2 size={28} className="mx-auto text-neutral-300 dark:text-neutral-600 mb-2" />
-              <p className="text-xs font-semibold text-neutral-600 dark:text-neutral-300">No client accounts yet</p>
+              <p className="text-xs font-semibold text-neutral-600 dark:text-neutral-300">{t('free_dash_no_clients', language)}</p>
               <button
                 type="button"
                 onClick={() => setScreen('members')}
                 className="mt-2 text-xs font-bold text-[#C4785A] hover:underline cursor-pointer"
               >
-                + Add your first client in Clients CRM
+                {t('free_dash_add_first_client', language)}
               </button>
             </div>
           ) : (
@@ -549,8 +555,8 @@ export const FreelanceDashboardView: React.FC = () => {
                 <ActionNode
                   key={client.id}
                   title={client.company || client.name}
-                  description={client.company ? `Contact: ${client.name} · ${client.email}` : client.email}
-                  tag={`${client.status === 'ActiveRetainer' ? 'Retainer' : 'Project'} · ${client.currency}`}
+                  description={client.company ? `${language === 'ar' ? 'جهة الاتصال' : language === 'fr' ? 'Contact' : 'Contact'}: ${client.name} · ${client.email}` : client.email}
+                  tag={`${client.status === 'ActiveRetainer' ? t('free_pricing_retainer', language) : (language === 'ar' ? 'مشروع' : language === 'fr' ? 'Projet' : 'Project')} · ${client.currency}`}
                   onClick={() => setScreen('members')}
                   width="100%"
                   air={16}
@@ -558,13 +564,13 @@ export const FreelanceDashboardView: React.FC = () => {
                   actions={[
                     {
                       id: 'view',
-                      label: 'Client Details',
+                      label: t('free_dash_client_details', language),
                       icon: <Briefcase size={14} />,
                       onClick: () => setScreen('members'),
                     },
                     {
                       id: 'timer',
-                      label: 'Start Timer',
+                      label: t('free_time_timer_start', language),
                       icon: <Play size={14} />,
                       onClick: () => {
                         const proj = clientProjects[0];
@@ -574,7 +580,7 @@ export const FreelanceDashboardView: React.FC = () => {
                             client.company || client.name,
                             proj.id,
                             proj.title,
-                            `Session for ${client.name}`
+                            `${language === 'ar' ? 'جلسة لصالح' : language === 'fr' ? 'Session pour' : 'Session for'} ${client.name}`
                           );
                         } else {
                           setScreen('members');
@@ -583,7 +589,7 @@ export const FreelanceDashboardView: React.FC = () => {
                     },
                     {
                       id: 'invoices',
-                      label: 'Invoices Hub',
+                      label: t('free_dash_invoices_hub', language),
                       icon: <FileText size={14} />,
                       onClick: () => setScreen('shop'),
                     },
@@ -591,21 +597,21 @@ export const FreelanceDashboardView: React.FC = () => {
                 >
                   <div className="space-y-1.5 mt-2 pt-2 border-t border-neutral-100 dark:border-neutral-700/60">
                     <div className="flex justify-between text-xs text-neutral-500">
-                      <span>Hourly Rate</span>
+                      <span>{t('free_clients_hourly_rate', language)}</span>
                       <span className="font-semibold text-neutral-800 dark:text-neutral-200 tabular-nums">
-                        {formatCurrencyAmount(client.hourlyRate, client.currency)}/h
+                        {formatCurrencyAmount(client.hourlyRate, client.currency)}{t('free_dash_per_hour', language)}
                       </span>
                     </div>
                     <div className="flex justify-between text-xs text-neutral-500">
-                      <span>Lifetime Billed</span>
+                      <span>{t('free_clients_lifetime_billed', language)}</span>
                       <span className="font-semibold text-neutral-800 dark:text-neutral-200 tabular-nums">
                         {formatCurrencyAmount(client.lifetimeBilled, client.currency)}
                       </span>
                     </div>
                     <div className="text-[11px] text-neutral-400 pt-1.5 border-t border-neutral-100 dark:border-neutral-700/60 flex items-center justify-between">
-                      <span>{clientProjects.length} active projects</span>
+                      <span>{clientProjects.length} {t('free_dash_active_projects_count', language)}</span>
                       <span className="font-semibold text-emerald-600 dark:text-emerald-400">
-                        {client.status === 'ActiveRetainer' ? 'Active Retainer' : 'Active'}
+                        {client.status === 'ActiveRetainer' ? t('free_clients_status_active_retainer', language) : t('common_active', language)}
                       </span>
                     </div>
                   </div>

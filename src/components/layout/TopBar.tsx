@@ -134,7 +134,7 @@ export const TopBar: React.FC<TopBarProps> = ({
               {isProjectMilestone
                 ? 'Superviseur Terrain (Live Missions)'
                 : isFreelance
-                ? 'Time Tracker & Pomodoro'
+                ? t('topbar_solo_timetracker_crumb', language)
                 : isRental
                 ? 'Occupancy Analytics'
                 : isEducation
@@ -164,7 +164,7 @@ export const TopBar: React.FC<TopBarProps> = ({
                 onClick={() => selectMember(null)}
                 className="text-neutral-400 hover:text-[#C4785A] font-medium transition-colors cursor-pointer"
               >
-                {isFreelance ? 'Clients' : isRental ? 'Renters' : isEducation ? 'Students' : isPOS ? 'Customers' : terminology.members}
+                {isFreelance ? t('topbar_solo_clients_crumb', language) : isRental ? 'Renters' : isEducation ? 'Students' : isPOS ? 'Customers' : terminology.members}
               </button>
               <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
               <span className="text-neutral-900 dark:text-white font-semibold truncate max-w-[130px] sm:max-w-[200px]">
@@ -186,7 +186,7 @@ export const TopBar: React.FC<TopBarProps> = ({
             <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
             <span className="text-neutral-900 dark:text-white font-semibold">
               {isFreelance
-                ? 'Clients & Retainers'
+                ? t('topbar_solo_clients_crumb', language)
                 : isRental
                 ? 'Renters & Client Directory'
                 : isEducation
@@ -211,7 +211,7 @@ export const TopBar: React.FC<TopBarProps> = ({
             <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
             <span className="text-neutral-900 dark:text-white font-semibold">
               {isFreelance
-                ? 'Proposals & Inquiries'
+                ? t('topbar_solo_proposals_crumb', language)
                 : isRental
                 ? 'Reservations & Event Inquiries'
                 : isEducation
@@ -236,7 +236,7 @@ export const TopBar: React.FC<TopBarProps> = ({
             <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
             <span className="text-neutral-900 dark:text-white font-semibold">
               {isFreelance
-                ? 'Invoices & Billing Hub'
+                ? t('topbar_solo_invoices_crumb', language)
                 : isRental
                 ? 'Spaces & Asset Inventory'
                 : isEducation
@@ -261,7 +261,7 @@ export const TopBar: React.FC<TopBarProps> = ({
             <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
             <span className="text-neutral-900 dark:text-white font-semibold">
               {isFreelance
-                ? 'Deliverables & Deadlines'
+                ? t('topbar_solo_deliverables_crumb', language)
                 : isRental
                 ? 'Occupancy Matrix & Timeline'
                 : isEducation
@@ -286,7 +286,7 @@ export const TopBar: React.FC<TopBarProps> = ({
             <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
             <span className="text-neutral-900 dark:text-white font-semibold">
               {isFreelance
-                ? 'Tax Reserves & Net Profit'
+                ? t('topbar_solo_finance_crumb', language)
                 : isRental
                 ? 'Caution Escrow & Rental Revenue'
                 : isEducation
@@ -309,7 +309,7 @@ export const TopBar: React.FC<TopBarProps> = ({
             <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
             <span className="text-neutral-900 dark:text-white font-semibold">
               {isFreelance
-                ? 'Time Logs & Chronometer'
+                ? t('topbar_solo_history_crumb', language)
                 : isEducation
                 ? 'Roll Call & Attendance Log'
                 : isRental
@@ -333,7 +333,7 @@ export const TopBar: React.FC<TopBarProps> = ({
             </button>
             <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
             <span className="text-neutral-900 dark:text-white font-semibold">
-              {isFreelance ? 'Workspace & Settings' : 'Settings & License'}
+              {isFreelance ? t('topbar_solo_settings_crumb', language) : 'Settings & License'}
             </span>
           </nav>
         );
@@ -512,7 +512,7 @@ export const TopBar: React.FC<TopBarProps> = ({
                 type="button"
                 onClick={() => setScreen(isFreelance ? 'analytics' : 'scheduler')}
                 className="font-bold text-neutral-900 dark:text-white font-mono tabular-nums hover:text-[#C4785A] transition-colors cursor-pointer"
-                title="View active deliverable and timer"
+                title={t('topbar_tt_view_timer', language)}
               >
                 {formatDuration(activeTimer.elapsedSeconds)}
               </button>
@@ -525,7 +525,7 @@ export const TopBar: React.FC<TopBarProps> = ({
                     type="button"
                     onClick={resumeTimer}
                     className="p-1 rounded-full text-emerald-600 hover:bg-emerald-100 dark:hover:bg-emerald-950 cursor-pointer"
-                    title="Resume timer"
+                    title={t('topbar_tt_resume_timer', language)}
                   >
                     <Play size={12} className="fill-current" />
                   </button>
@@ -534,7 +534,7 @@ export const TopBar: React.FC<TopBarProps> = ({
                     type="button"
                     onClick={pauseTimer}
                     className="p-1 rounded-full text-amber-600 hover:bg-amber-100 dark:hover:bg-amber-950 cursor-pointer"
-                    title="Pause timer"
+                    title={t('topbar_tt_pause_timer', language)}
                   >
                     <Pause size={12} />
                   </button>
@@ -543,7 +543,7 @@ export const TopBar: React.FC<TopBarProps> = ({
                   type="button"
                   onClick={stopTimer}
                   className="p-1 rounded-full text-rose-600 hover:bg-rose-100 dark:hover:bg-rose-950 cursor-pointer"
-                  title="Stop and save log"
+                  title={t('topbar_tt_stop_timer', language)}
                 >
                   <Square size={11} className="fill-current" />
                 </button>
@@ -554,10 +554,10 @@ export const TopBar: React.FC<TopBarProps> = ({
               type="button"
               onClick={() => setScreen(isFreelance ? 'analytics' : 'scheduler')}
               className="flex items-center gap-1.5 text-[11px] font-semibold text-neutral-600 dark:text-neutral-300 hover:text-[#C4785A] transition-colors cursor-pointer"
-              title="Open Focus Timer"
+              title={t('topbar_tt_open_timer', language)}
             >
               <Clock size={13} className="text-[#C4785A]" />
-              <span>Start Timer</span>
+              <span>{t('topbar_btn_start_timer', language)}</span>
             </button>
           )}
         </div>

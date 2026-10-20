@@ -18,8 +18,10 @@ import { formatCurrencyAmount } from '../../../utils/rules';
 import { FreelanceExpense, ExpenseCategory, CurrencyCode } from '../../../types/index';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
+import { useTranslation } from '../../../utils/useTranslation';
 
 export const FreelanceFinanceView: React.FC = () => {
+  const { t, language, isRtl } = useTranslation();
   const {
     freelanceInvoices,
     freelanceExpenses,
@@ -105,14 +107,18 @@ export const FreelanceFinanceView: React.FC = () => {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white">
-              Financial Health, Overhead & Tax Reserves
+              {t('free_fin_title', language)}
             </h1>
             <span className="text-xs text-neutral-500">
-              Multi-currency cashflow, overhead subscriptions & net take-home forecast
+              {language === 'ar'
+                ? 'تدفقات متعددة العملات، اشتراكات التشغيل وتقدير صافي الربح'
+                : language === 'fr'
+                ? 'Flux multi-devises, abonnements récurrents & prévision du revenu net'
+                : 'Multi-currency cashflow, overhead subscriptions & net take-home forecast'}
             </span>
           </div>
           <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
-            Simulate tax provisions and understand your true Effective Hourly Rate (EHR)
+            {t('free_fin_subtitle', language)}
           </p>
         </div>
 
@@ -122,7 +128,7 @@ export const FreelanceFinanceView: React.FC = () => {
           className="h-10 px-4 rounded-xl bg-[#C4785A] text-white text-xs font-semibold flex items-center gap-1.5 hover:opacity-90 transition-opacity cursor-pointer shadow-xs self-start sm:self-auto"
         >
           <Plus size={14} />
-          <span>Add Tool / Overhead</span>
+          <span>{t('free_fin_btn_add_expense', language)}</span>
         </button>
       </div>
 
@@ -130,37 +136,43 @@ export const FreelanceFinanceView: React.FC = () => {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="p-4 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-900/40 border border-[#EDF1F3] dark:border-neutral-800">
           <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400 block mb-1">
-            EUR Collected (SEPA Wire)
+            {language === 'ar' ? 'اليورو المحصّل (حساب SEPA)' : language === 'fr' ? 'EUR Encaissé (Virement SEPA)' : 'EUR Collected (SEPA Wire)'}
           </span>
           <div className="flex items-baseline gap-2">
             <span className="text-2xl font-extrabold text-neutral-900 dark:text-white tabular-nums">
               €{currencyTotals.eur.toLocaleString()}
             </span>
-            <span className="text-xs text-neutral-500">Euro account</span>
+            <span className="text-xs text-neutral-500">
+              {language === 'ar' ? 'حساب بنكي أوروبي' : language === 'fr' ? 'Compte euro' : 'Euro account'}
+            </span>
           </div>
         </div>
 
         <div className="p-4 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-900/40 border border-[#EDF1F3] dark:border-neutral-800">
           <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400 block mb-1">
-            USD Collected (Direct Deposit)
+            {language === 'ar' ? 'الدولار المحصّل (تحويل دولي)' : language === 'fr' ? 'USD Encaissé (Dépôt Direct)' : 'USD Collected (Direct Deposit)'}
           </span>
           <div className="flex items-baseline gap-2">
             <span className="text-2xl font-extrabold text-neutral-900 dark:text-white tabular-nums">
               ${currencyTotals.usd.toLocaleString()}
             </span>
-            <span className="text-xs text-neutral-500">US bank wire</span>
+            <span className="text-xs text-neutral-500">
+              {language === 'ar' ? 'تحويل بنكي أمريكي' : language === 'fr' ? 'Virement bancaire US' : 'US bank wire'}
+            </span>
           </div>
         </div>
 
         <div className="p-4 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-900/40 border border-[#EDF1F3] dark:border-neutral-800">
           <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400 block mb-1">
-            DZD Collected (BaridiMob & Local)
+            {language === 'ar' ? 'الدينار الجزائري (بريدي موب وحساب CCP)' : language === 'fr' ? 'DZD Encaissé (BaridiMob & Local)' : 'DZD Collected (BaridiMob & Local)'}
           </span>
           <div className="flex items-baseline gap-2">
             <span className="text-2xl font-extrabold text-[#C4785A] tabular-nums">
               {currencyTotals.dzd.toLocaleString()} DZD
             </span>
-            <span className="text-xs text-neutral-500">Algerian Dinars</span>
+            <span className="text-xs text-neutral-500">
+              {language === 'ar' ? 'دينار جزائري' : language === 'fr' ? 'Dinars algériens' : 'Algerian Dinars'}
+            </span>
           </div>
         </div>
       </div>
@@ -171,15 +183,17 @@ export const FreelanceFinanceView: React.FC = () => {
           <div>
             <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-neutral-400">
               <ShieldCheck size={14} className="text-[#C4785A]" />
-              <span>Tax Reserve & Net Earnings Simulation</span>
+              <span>
+                {language === 'ar' ? 'الاحتياطي الضريبي ومحاكاة الأرباح الصافية' : language === 'fr' ? 'Provision fiscale & Simulation du bénéfice net' : 'Tax Reserve & Net Earnings Simulation'}
+              </span>
             </div>
             <h2 className="text-xl font-bold text-white mt-1">
-              Estimated Net Take-Home: <span className="text-emerald-400 font-mono tabular-nums">€{netTakeHomeEur.toLocaleString()}</span>
+              {t('free_fin_net_income', language)}: <span className="text-emerald-400 font-mono tabular-nums">€{netTakeHomeEur.toLocaleString()}</span>
             </h2>
           </div>
 
-          <div className="text-right">
-            <span className="text-xs text-neutral-400 block">Estimated Tax Provision</span>
+          <div className={isRtl ? 'text-left' : 'text-right'}>
+            <span className="text-xs text-neutral-400 block">{t('free_fin_tax_reserve', language)}</span>
             <span className="text-lg font-bold text-amber-400 font-mono tabular-nums">
               €{taxReserveAmount.toLocaleString()} ({taxRate}%)
             </span>
@@ -189,7 +203,9 @@ export const FreelanceFinanceView: React.FC = () => {
         {/* Interactive Tax Percentage Slider */}
         <div className="space-y-2">
           <div className="flex items-center justify-between text-xs text-neutral-300">
-            <span>Local / Flat Tax Rate Slider</span>
+            <span>
+              {language === 'ar' ? 'معدل الضريبة التقديري والاشتراكات' : language === 'fr' ? 'Curseur de taux d\'imposition estimé' : 'Local / Flat Tax Rate Slider'}
+            </span>
             <span className="font-bold font-mono text-[#C4785A] tabular-nums">{taxRate}%</span>
           </div>
           <input
@@ -202,31 +218,35 @@ export const FreelanceFinanceView: React.FC = () => {
             className="w-full accent-[#C4785A] h-2 bg-neutral-800 rounded-lg cursor-pointer"
           />
           <div className="flex justify-between text-[10px] text-neutral-500 font-mono">
-            <span>0% (Tax Holiday)</span>
-            <span>10% (Micro-Enterprise)</span>
-            <span>20% (Standard Solo)</span>
-            <span>35% (High Bracket)</span>
+            <span>0% ({language === 'ar' ? 'إعفاء' : 'Exempt'})</span>
+            <span>10% ({language === 'ar' ? 'مؤسسة مصغرة' : 'Auto-entrepreneur'})</span>
+            <span>20% ({language === 'ar' ? 'عادي' : 'Standard Solo'})</span>
+            <span>35% ({language === 'ar' ? 'شريحة عليا' : 'High Bracket'})</span>
           </div>
         </div>
 
         {/* 3-Column Profit Bridge Strip */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-neutral-800 text-xs">
           <div>
-            <span className="text-neutral-400 block">Gross Revenue Equiv.</span>
+            <span className="text-neutral-400 block">
+              {language === 'ar' ? 'إجمالي الإيرادات المعادلة' : language === 'fr' ? 'Revenu brut équivalent' : 'Gross Revenue Equiv.'}
+            </span>
             <span className="text-base font-bold font-mono text-white tabular-nums">
               €{currencyTotals.totalEurEquiv.toLocaleString()}
             </span>
           </div>
           <div>
-            <span className="text-neutral-400 block">Overhead & Deductions</span>
+            <span className="text-neutral-400 block">{t('free_fin_expenses_total', language)}</span>
             <span className="text-base font-bold font-mono text-rose-400 tabular-nums">
               -€{totalExpensesEurEquiv.toLocaleString()}
             </span>
           </div>
           <div>
-            <span className="text-neutral-400 block">Net Hourly Yield (EHR)</span>
+            <span className="text-neutral-400 block">
+              {language === 'ar' ? 'صافي العائد بالساعة (EHR)' : language === 'fr' ? 'Rendement horaire net (EHR)' : 'Net Hourly Yield (EHR)'}
+            </span>
             <span className="text-base font-bold font-mono text-emerald-400 tabular-nums">
-              €{netEhr}/hr (Gross €{grossEhr}/hr)
+              €{netEhr}/hr ({language === 'ar' ? 'إجمالي' : 'Gross'} €{grossEhr}/hr)
             </span>
           </div>
         </div>
@@ -236,10 +256,10 @@ export const FreelanceFinanceView: React.FC = () => {
       <div className="p-5 rounded-2xl bg-white dark:bg-neutral-900/60 border border-neutral-200 dark:border-neutral-800 shadow-2xs space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
-            Operational Overhead & Subscriptions ({freelanceExpenses.length})
+            {language === 'ar' ? 'نفقات التشغيل والاشتراكات البرمجية' : language === 'fr' ? 'Charges opérationnelles & Abonnements' : 'Operational Overhead & Subscriptions'} ({freelanceExpenses.length})
           </h3>
           <span className="text-xs text-neutral-500">
-            Total monthly cost: ~€{totalExpensesEurEquiv.toLocaleString()} equiv.
+            {language === 'ar' ? 'التكلفة الإجمالية' : language === 'fr' ? 'Coût mensuel total' : 'Total monthly cost'}: ~€{totalExpensesEurEquiv.toLocaleString()}
           </span>
         </div>
 
@@ -247,12 +267,12 @@ export const FreelanceFinanceView: React.FC = () => {
           <table className="w-full text-left text-xs">
             <thead>
               <tr className="border-b border-neutral-200 dark:border-neutral-800 text-neutral-400 uppercase text-[10px] tracking-wider font-semibold">
-                <th className="pb-3 font-semibold">Vendor / Service</th>
-                <th className="pb-3 font-semibold">Category</th>
-                <th className="pb-3 font-semibold">Description</th>
-                <th className="pb-3 font-semibold text-right">Cost</th>
-                <th className="pb-3 font-semibold text-center">Tax Deductible</th>
-                <th className="pb-3 font-semibold text-right">Action</th>
+                <th className={`pb-3 font-semibold ${isRtl ? 'text-right' : 'text-left'}`}>{language === 'ar' ? 'المورد / الخدمة' : language === 'fr' ? 'Fournisseur / Service' : 'Vendor / Service'}</th>
+                <th className={`pb-3 font-semibold ${isRtl ? 'text-right' : 'text-left'}`}>{t('free_fin_expense_category', language)}</th>
+                <th className={`pb-3 font-semibold ${isRtl ? 'text-right' : 'text-left'}`}>{language === 'ar' ? 'الوصف' : language === 'fr' ? 'Description' : 'Description'}</th>
+                <th className={`pb-3 font-semibold ${isRtl ? 'text-left' : 'text-right'}`}>{t('common_amount', language)}</th>
+                <th className="pb-3 font-semibold text-center">{t('free_fin_deductible', language)}</th>
+                <th className={`pb-3 font-semibold ${isRtl ? 'text-left' : 'text-right'}`}>{t('common_action', language)}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800/60">
@@ -265,29 +285,41 @@ export const FreelanceFinanceView: React.FC = () => {
                     {exp.vendor}
                   </td>
                   <td className="py-3 text-neutral-600 dark:text-neutral-400">
-                    {exp.category}
+                    {exp.category === 'Software'
+                      ? t('free_fin_expense_software', language)
+                      : exp.category === 'Hardware'
+                      ? t('free_fin_expense_hardware', language)
+                      : exp.category === 'Office'
+                      ? t('free_fin_expense_workspace', language)
+                      : exp.category === 'Subcontractor'
+                      ? (language === 'ar' ? 'مقاول من الباطن' : language === 'fr' ? 'Sous-traitance' : 'Subcontractor')
+                      : exp.category === 'Travel'
+                      ? (language === 'ar' ? 'سفريات ومهمات' : language === 'fr' ? 'Déplacements' : 'Travel')
+                      : t('free_fin_expense_other', language)}
                   </td>
                   <td className="py-3 text-neutral-500 max-w-xs truncate">
                     {exp.description}
                   </td>
-                  <td className="py-3 text-right font-mono font-bold text-neutral-900 dark:text-white tabular-nums">
+                  <td className={`py-3 ${isRtl ? 'text-left' : 'text-right'} font-mono font-bold text-neutral-900 dark:text-white tabular-nums`}>
                     {formatCurrencyAmount(exp.amount, exp.currency)}
                   </td>
                   <td className="py-3 text-center">
                     {exp.isTaxDeductible ? (
                       <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
-                        Yes
+                        {language === 'ar' ? 'نعم' : language === 'fr' ? 'Oui' : 'Yes'}
                       </span>
                     ) : (
-                      <span className="text-[11px] text-neutral-400">No</span>
+                      <span className="text-[11px] text-neutral-400">
+                        {language === 'ar' ? 'لا' : language === 'fr' ? 'Non' : 'No'}
+                      </span>
                     )}
                   </td>
-                  <td className="py-3 text-right">
+                  <td className={`py-3 ${isRtl ? 'text-left' : 'text-right'}`}>
                     <button
                       type="button"
                       onClick={() => deleteFreelanceExpense(exp.id)}
                       className="text-neutral-400 hover:text-rose-500 p-1 cursor-pointer transition-colors"
-                      title="Remove expense"
+                      title={language === 'ar' ? 'حذف المصروف' : language === 'fr' ? 'Supprimer la charge' : 'Remove expense'}
                     >
                       <X size={14} />
                     </button>
@@ -297,6 +329,13 @@ export const FreelanceFinanceView: React.FC = () => {
             </tbody>
           </table>
         </div>
+
+        {freelanceExpenses.length === 0 && (
+          <div className="py-10 text-center text-xs text-neutral-500 dark:text-neutral-400 border border-dashed border-neutral-200 dark:border-neutral-800 rounded-2xl p-6">
+            <p className="font-semibold">{t('free_fin_empty_expenses', language)}</p>
+            <p className="mt-1 text-[11px]">{t('free_fin_empty_expenses_desc', language)}</p>
+          </div>
+        )}
       </div>
 
       {/* Add Expense Modal */}
@@ -305,7 +344,7 @@ export const FreelanceFinanceView: React.FC = () => {
           <div className="bg-white dark:bg-[#1C1C1E] border border-neutral-200 dark:border-neutral-800 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
               <h3 className="text-base font-bold text-neutral-900 dark:text-white">
-                Add Overhead / Expense
+                {t('free_fin_modal_expense_title', language)}
               </h3>
               <button
                 type="button"
@@ -321,7 +360,7 @@ export const FreelanceFinanceView: React.FC = () => {
                 <div>
                   <LabelInput
                     field="Vendor"
-                    label="Vendor *"
+                    label={`${language === 'ar' ? 'المورد' : language === 'fr' ? 'Fournisseur' : 'Vendor'} *`}
                     required
                     placeholder="e.g. OpenAI / Claude"
                     value={vendor}
@@ -333,18 +372,18 @@ export const FreelanceFinanceView: React.FC = () => {
                 </div>
                 <LabelSelect
                   field="Category"
-                  label="Category *"
+                  label={`${t('free_fin_expense_category', language)} *`}
                   value={category}
                   onChange={(val) =>
                     setCategory((val?.target?.value ?? String(val)) as ExpenseCategory)
                   }
                   options={[
-                    { value: 'Software', label: 'Software & SaaS' },
-                    { value: 'Office', label: 'Office & Coworking' },
-                    { value: 'Hardware', label: 'Hardware' },
-                    { value: 'Subcontractor', label: 'Subcontractor' },
-                    { value: 'Travel', label: 'Travel' },
-                    { value: 'Other', label: 'Other' },
+                    { value: 'Software', label: t('free_fin_expense_software', language) },
+                    { value: 'Office', label: t('free_fin_expense_workspace', language) },
+                    { value: 'Hardware', label: t('free_fin_expense_hardware', language) },
+                    { value: 'Subcontractor', label: language === 'ar' ? 'مقاول من الباطن' : language === 'fr' ? 'Sous-traitance' : 'Subcontractor' },
+                    { value: 'Travel', label: language === 'ar' ? 'سفريات' : language === 'fr' ? 'Déplacements' : 'Travel' },
+                    { value: 'Other', label: t('free_fin_expense_other', language) },
                   ]}
                   height={46}
                   corner={14}
@@ -354,9 +393,9 @@ export const FreelanceFinanceView: React.FC = () => {
               <div>
                 <LabelInput
                   field="Description"
-                  label="Description *"
+                  label={`${t('free_fin_expense_desc', language)} *`}
                   required
-                  placeholder="e.g. API usage and inference tokens for client prototypes"
+                  placeholder={language === 'ar' ? 'مثال: اشتراك في خدمات الذكاء الاصطناعي والحوسبة' : language === 'fr' ? 'Ex : Tokens API et hébergement prototype client' : 'e.g. API usage and inference tokens for client prototypes'}
                   value={description}
                   onChange={setDescription}
                   width="100%"
@@ -369,7 +408,7 @@ export const FreelanceFinanceView: React.FC = () => {
                 <div>
                   <LabelInput
                     field="Amount"
-                    label="Amount *"
+                    label={`${t('free_fin_expense_amount', language)} *`}
                     type="number"
                     min="1"
                     required
@@ -382,7 +421,7 @@ export const FreelanceFinanceView: React.FC = () => {
                 </div>
                 <LabelSelect
                   field="Currency"
-                  label="Currency"
+                  label={t('free_clients_currency', language)}
                   value={currency}
                   onChange={(val) =>
                     setCurrency((val?.target?.value ?? String(val)) as CurrencyCode)
@@ -409,7 +448,7 @@ export const FreelanceFinanceView: React.FC = () => {
                   htmlFor="taxDeduct"
                   className="font-medium text-neutral-700 dark:text-neutral-300"
                 >
-                  Legitimate tax-deductible operational expense
+                  {t('free_fin_deductible', language)}
                 </label>
               </div>
 
@@ -419,13 +458,13 @@ export const FreelanceFinanceView: React.FC = () => {
                   onClick={() => setIsAddExpenseModalOpen(false)}
                   className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
                 >
-                  Cancel
+                  {t('common_cancel', language)}
                 </button>
                 <button
                   type="submit"
                   className="px-5 py-2 rounded-xl bg-[#C4785A] text-white text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
                 >
-                  Save Expense
+                  {t('common_save', language)}
                 </button>
               </div>
             </form>

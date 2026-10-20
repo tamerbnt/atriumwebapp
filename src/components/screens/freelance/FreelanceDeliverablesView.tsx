@@ -376,7 +376,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
                         <div className="flex items-center justify-between">
                           <span className="text-neutral-500 flex items-center gap-1">
                             <Clock size={11} />
-                            Hours:
+                            {language === 'ar' ? 'الساعات:' : language === 'fr' ? 'Heures :' : 'Hours:'}
                           </span>
                           <span
                             className={`font-semibold tabular-nums ${
@@ -392,14 +392,17 @@ export const FreelanceDeliverablesView: React.FC = () => {
                         {isCreep && (
                           <div className="px-2 py-0.5 rounded bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 text-[10px] font-semibold flex items-center gap-1">
                             <AlertTriangle size={10} />
-                            <span>Over estimate (+{(deliverable.loggedHours - deliverable.estimatedHours).toFixed(1)}h)</span>
+                            <span>
+                              {language === 'ar' ? 'تجاوز التقدير' : language === 'fr' ? 'Dépassement' : 'Over estimate'}{' '}
+                              (+{(deliverable.loggedHours - deliverable.estimatedHours).toFixed(1)}h)
+                            </span>
                           </div>
                         )}
 
                         <div className="flex items-center justify-between text-neutral-400">
                           <span className="flex items-center gap-1">
                             <Calendar size={11} />
-                            Due:
+                            {language === 'ar' ? 'الأجل:' : language === 'fr' ? 'Échéance :' : 'Due:'}
                           </span>
                           <span>{deliverable.dueDate}</span>
                         </div>
