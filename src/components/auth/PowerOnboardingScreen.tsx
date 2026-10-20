@@ -31,6 +31,7 @@ import {
   Download,
   Play,
   RotateCcw,
+  Globe,
 } from 'lucide-react';
 import { useAtriumStore } from '../../services/store';
 import { BusinessCategory, OnboardingParams } from '../../types/index';
@@ -38,9 +39,10 @@ import { validateVoucherCode } from '../../utils/rules';
 import { authService } from '../../lib/supabase/services/authService';
 import {
   findCategoryByBusinessSearch,
-  POPULAR_BUSINESS_SEARCHES,
+  getPopularBusinessSearches,
   BusinessMatchResult,
 } from '../../utils/businessMapping';
+import { t } from '../../utils/i18n';
 import { AtriumMonolith, FiveCubesLogo } from './AtriumMonolith';
 import { LabelInput } from '../ui/LabelInput';
 import { Seek } from '../ui/Seek';
@@ -54,12 +56,19 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
   onComplete,
   onSkipToDashboard,
 }) => {
-  const { completeOnboarding } = useAtriumStore();
+  const {
+    completeOnboarding,
+    language,
+    setLanguage,
+    setSystemDefaultLanguage,
+    isLanguageAuto,
+  } = useAtriumStore();
 
   const [currentStep, setCurrentStep] = useState<1 | 2>(1);
   const [introPhase, setIntroPhase] = useState<'intro' | 'revealed'>('intro');
   const [cardVisible, setCardVisible] = useState(false);
   const [replayKey, setReplayKey] = useState(0);
+  const [langMenuOpen, setLangMenuOpen] = useState(false);
 
   const heroAnchorRef = React.useRef<HTMLDivElement>(null);
   const targetLockupRef = React.useRef<HTMLDivElement>(null);

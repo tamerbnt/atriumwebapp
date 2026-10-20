@@ -23,6 +23,7 @@ import {
   Command,
 } from 'lucide-react';
 import { useAtriumStore, ActiveScreen } from '../../services/store';
+import { t } from '../../utils/i18n';
 
 export interface CommandPaletteModalProps {
   isOpen: boolean;
@@ -33,7 +34,7 @@ interface PaletteItem {
   id: string;
   title: string;
   subtitle?: string;
-  category: 'Navigation' | 'Records' | 'Actions';
+  category: string;
   icon: React.ReactNode;
   onSelect: () => void;
 }
@@ -60,6 +61,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
     openFastSwitch,
     openOnboarding,
     selectMember,
+    language,
   } = useAtriumStore();
 
   const [query, setQuery] = useState('');
@@ -83,23 +85,26 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
   const items = useMemo<PaletteItem[]>(() => {
     const list: PaletteItem[] = [];
 
+    const navCategoryLabel = language === 'ar' ? 'التنقل' : language === 'fr' ? 'Navigation' : 'Navigation';
+    const actionCategoryLabel = language === 'ar' ? 'إجراءات' : language === 'fr' ? 'Actions' : 'Actions';
+
     // 1. Navigation items
     const navItems: Array<{ id: ActiveScreen; label: string; icon: React.ReactNode }> = [
-      { id: 'dashboard', label: 'Dashboard & Command Center', icon: <Home size={15} /> },
-      { id: 'members', label: `${terminology.members} CRM & Directory`, icon: <Users size={15} /> },
-      { id: 'scheduler', label: `${terminology.scheduler} & Calendar`, icon: <Calendar size={15} /> },
+      { id: 'dashboard', label: t('nav_dashboard', language), icon: <Home size={15} /> },
+      { id: 'members', label: `${terminology.members}`, icon: <Users size={15} /> },
+      { id: 'scheduler', label: `${terminology.scheduler}`, icon: <Calendar size={15} /> },
       { id: 'shop', label: `${terminology.shop}`, icon: <ShoppingBag size={15} /> },
-      { id: 'registrations', label: `${terminology.registration} Funnel`, icon: <FileText size={15} /> },
-      { id: 'finance', label: 'Finance & Staff Management', icon: <CreditCard size={15} /> },
-      { id: 'history', label: 'Transaction History & Audit Logs', icon: <History size={15} /> },
-      { id: 'settings', label: 'Settings & License Entitlements', icon: <Settings size={15} /> },
+      { id: 'registrations', label: `${terminology.registration}`, icon: <FileText size={15} /> },
+      { id: 'finance', label: t('nav_finance', language), icon: <CreditCard size={15} /> },
+      { id: 'history', label: t('nav_history', language), icon: <History size={15} /> },
+      { id: 'settings', label: t('nav_settings', language), icon: <Settings size={15} /> },
     ];
 
     navItems.forEach((nav) => {
       list.push({
         id: `nav-${nav.id}`,
         title: nav.label,
-        category: 'Navigation',
+        category: navCategoryLabel,
         icon: nav.icon,
         onSelect: () => {
           setScreen(nav.id);
@@ -111,9 +116,9 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
     // 2. Action items
     list.push({
       id: 'action-facility',
-      title: 'Switch Facility / Branch',
-      subtitle: 'Fast tenant & location switcher',
-      category: 'Actions',
+      title: t('fast_switch_title', language),
+      subtitle: t('fast_switch_subtitle', language),
+      category: actionCategoryLabel,
       icon: <Layers size={15} className="text-[#C4785A]" />,
       onSelect: () => {
         openFastSwitch();
@@ -123,8 +128,10 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
 
     list.push({
       id: 'action-theme',
-      title: theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode',
-      category: 'Actions',
+      title: theme === 'dark'
+        ? (language === 'ar' ? 'تفعيل الوضع النهاري' : language === 'fr' ? 'Passer en mode clair' : 'Switch to Light Mode')
+        : (language === 'ar' ? 'تفعيل الوضع الليلي' : language === 'fr' ? 'Passer en mode sombre' : 'Switch to Dark Mode'),
+      category: actionCategoryLabel,
       icon: theme === 'dark' ? <Sun size={15} className="text-amber-400" /> : <Moon size={15} className="text-indigo-400" />,
       onSelect: () => {
         setTheme(theme === 'dark' ? 'light' : 'dark');
@@ -134,9 +141,9 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
 
     list.push({
       id: 'action-wizard',
-      title: 'Relaunch Setup Wizard',
-      subtitle: 'Replay brand intro and business config',
-      category: 'Actions',
+      title: t('onboarding_title', language),
+      subtitle: t('onboarding_subtitle', language),
+      category: actionCategoryLabel,
       icon: <Sparkles size={15} className="text-[#C4785A]" />,
       onSelect: () => {
         openOnboarding();
@@ -333,7 +340,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
               if (busyTimerRef.current) clearTimeout(busyTimerRef.current);
               busyTimerRef.current = setTimeout(() => setIsBusy(false), 240);
             }}
-            placeholder="Type a screen, client, student, invoice, or action..."
+            placeholder={t('cmd_palette_placeholder', language)}
             className="w-full bg-transparent text-sm text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none"
           />
           {query.length > 0 && (
@@ -363,7 +370,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
         <div className="overflow-y-auto p-2 divide-y divide-neutral-50 dark:divide-neutral-800/40">
           {filteredItems.length === 0 ? (
             <div className="py-12 text-center text-xs text-neutral-400">
-              No matching screens, records, or actions found for "{query}".
+              {t('cmd_palette_no_results', language)} {query && `"${query}"`}.
             </div>
           ) : (
             filteredItems.map((item, index) => {
@@ -421,25 +428,25 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
               <kbd className="px-1.5 py-0.5 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-md font-mono text-[9px] shadow-2xs">
                 ↑↓
               </kbd>
-              Navigate
+              {language === 'ar' ? 'تنقل' : language === 'fr' ? 'Naviguer' : 'Navigate'}
             </span>
             <span className="flex items-center gap-1">
               <kbd className="px-1.5 py-0.5 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-md font-mono text-[9px] shadow-2xs">
                 ↵
               </kbd>
-              Select
+              {language === 'ar' ? 'اختيار' : language === 'fr' ? 'Sélectionner' : 'Select'}
             </span>
             <span className="flex items-center gap-1">
               <kbd className="px-1.5 py-0.5 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-md font-mono text-[9px] shadow-2xs">
                 ESC
               </kbd>
-              Close
+              {language === 'ar' ? 'إغلاق' : language === 'fr' ? 'Fermer' : 'Close'}
             </span>
           </div>
 
           <div className="flex items-center gap-1 font-semibold text-[#C4785A]">
             <Command size={11} />
-            <span>Atrium Quick Navigator</span>
+            <span>Atrium Navigator</span>
           </div>
         </div>
       </div>

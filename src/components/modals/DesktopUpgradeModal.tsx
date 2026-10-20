@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { Modal } from '../ui/Modal';
 import { useAtriumStore } from '../../services/store';
+import { t } from '../../utils/i18n';
 
 interface DesktopUpgradeModalProps {
   isOpen: boolean;
@@ -31,7 +32,7 @@ export const DesktopUpgradeModal: React.FC<DesktopUpgradeModalProps> = ({
   onOpenVoucherModal,
   reason = 'general',
 }) => {
-  const { currentBusiness, currentBranch, currentUser, members, products, freelanceClients, freelanceInvoices, sales } = useAtriumStore();
+  const { currentBusiness, currentBranch, currentUser, members, products, freelanceClients, freelanceInvoices, sales, language } = useAtriumStore();
   const [downloadingPlatform, setDownloadingPlatform] = useState<string | null>(null);
   const [exportedStatus, setExportedStatus] = useState<string | null>(null);
 
@@ -140,15 +141,15 @@ export const DesktopUpgradeModal: React.FC<DesktopUpgradeModalProps> = ({
             <div className="space-y-1.5 max-w-md">
               <div className="flex items-center gap-2">
                 <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase bg-[#C4785A] text-white">
-                  Desktop Pro & Enterprise
+                  {t('topbar_desktop_app', language)}
                 </span>
-                <span className="text-xs text-neutral-300">Windows · macOS</span>
+                <span className="text-xs text-neutral-300">Windows · macOS · Linux</span>
               </div>
               <h3 className="text-xl font-black text-white tracking-tight">
-                Scale Your Business Beyond Limits
+                {t('upgrade_modal_title', language)}
               </h3>
               <p className="text-xs text-neutral-300 leading-relaxed">
-                The Atrium Web app is <strong>100% Free Forever</strong> for 1 business and 1 branch. Unlock multi-branch networks, hardware POS, offline resilience, and lifetime licenses in Desktop.
+                {t('upgrade_modal_subtitle', language)}
               </p>
             </div>
 
@@ -161,19 +162,19 @@ export const DesktopUpgradeModal: React.FC<DesktopUpgradeModalProps> = ({
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mt-5 pt-4 border-t border-white/10 text-[11px]">
             <div className="flex items-center gap-2 text-neutral-300">
               <Building2 size={14} className="text-[#C4785A] shrink-0" />
-              <span>Multi-Branch Chains</span>
+              <span>{t('settings_branches_title', language)}</span>
             </div>
             <div className="flex items-center gap-2 text-neutral-300">
               <Printer size={14} className="text-[#C4785A] shrink-0" />
-              <span>Thermal Receipt POS</span>
+              <span>{t('shop_print_thermal', language)}</span>
             </div>
             <div className="flex items-center gap-2 text-neutral-300">
               <WifiOff size={14} className="text-[#C4785A] shrink-0" />
-              <span>Offline-First Engine</span>
+              <span>{t('topbar_offline', language)}</span>
             </div>
             <div className="flex items-center gap-2 text-neutral-300">
               <ShieldCheck size={14} className="text-[#C4785A] shrink-0" />
-              <span>Lifetime License Keys</span>
+              <span>{t('settings_lifetime_badge', language)}</span>
             </div>
           </div>
         </div>
@@ -183,9 +184,9 @@ export const DesktopUpgradeModal: React.FC<DesktopUpgradeModalProps> = ({
           {/* Free Web Tier Card */}
           <div className="p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700/60 space-y-2.5">
             <div className="flex items-center justify-between">
-              <span className="font-extrabold text-neutral-900 dark:text-white">Free Web App</span>
+              <span className="font-extrabold text-neutral-900 dark:text-white">{t('upgrade_free_badge', language)}</span>
               <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
-                Active Now
+                {t('status_active', language)}
               </span>
             </div>
             <ul className="space-y-1.5 text-neutral-600 dark:text-neutral-300 text-[11px]">
@@ -195,15 +196,15 @@ export const DesktopUpgradeModal: React.FC<DesktopUpgradeModalProps> = ({
               </li>
               <li className="flex items-center gap-1.5">
                 <CheckCircle2 size={13} className="text-emerald-500 shrink-0" />
-                <span>Real-time Supabase Cloud Storage</span>
+                <span>{t('settings_supabase_title', language)}</span>
               </li>
               <li className="flex items-center gap-1.5">
                 <CheckCircle2 size={13} className="text-emerald-500 shrink-0" />
-                <span>Web POS, Invoicing &amp; CRM</span>
+                <span>{t('shop_title', language)}</span>
               </li>
               <li className="flex items-center gap-1.5">
                 <CheckCircle2 size={13} className="text-emerald-500 shrink-0" />
-                <span>100% Free Forever (No credit card)</span>
+                <span>100% Free Forever</span>
               </li>
             </ul>
           </div>
@@ -211,9 +212,9 @@ export const DesktopUpgradeModal: React.FC<DesktopUpgradeModalProps> = ({
           {/* Paid Desktop Lifetime Card */}
           <div className="p-4 rounded-2xl bg-[#FDF4F0] dark:bg-[#2A2420]/60 border border-[#F5E2D8] dark:border-[#4A3B33] space-y-2.5">
             <div className="flex items-center justify-between">
-              <span className="font-extrabold text-[#C4785A]">Paid Desktop App</span>
+              <span className="font-extrabold text-[#C4785A]">{t('upgrade_desktop_badge', language)}</span>
               <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#C4785A] text-white">
-                Lifetime License
+                {t('settings_lifetime_badge', language)}
               </span>
             </div>
             <ul className="space-y-1.5 text-neutral-700 dark:text-neutral-300 text-[11px]">

@@ -12,9 +12,12 @@ import {
   Sparkles,
   CheckCircle2,
   Hash,
+  Globe,
+  Check,
 } from 'lucide-react';
 import { useAtriumStore } from '../../services/store';
 import { authService } from '../../lib/supabase/services/authService';
+import { t } from '../../utils/i18n';
 
 import { FiveCubesLogo } from './AtriumMonolith';
 import { LabelInput } from '../ui/LabelInput';
@@ -24,7 +27,8 @@ interface LoginScreenProps {
 }
 
 export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) => {
-  const { login, loginWithPin, staff } = useAtriumStore();
+  const { login, loginWithPin, staff, language, setLanguage, setSystemDefaultLanguage, isLanguageAuto } = useAtriumStore();
+  const [langMenuOpen, setLangMenuOpen] = useState(false);
 
   const [authMode, setAuthMode] = useState<'password' | 'pin'>('password');
   const [email, setEmail] = useState('mehdisamih79@gmail.com');
@@ -112,6 +116,83 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
       {/* Background Subtle Ambient Glow */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#C4785A]/15 rounded-full blur-[120px] pointer-events-none" />
 
+      {/* Floating Language Switcher in Top Right */}
+      <div className="absolute top-5 right-5 z-20">
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => setLangMenuOpen(!langMenuOpen)}
+            className="h-9 px-3 rounded-full bg-neutral-900/90 border border-neutral-700/80 text-white text-xs font-semibold flex items-center gap-1.5 hover:bg-neutral-800 transition-colors cursor-pointer shadow-lg backdrop-blur-md"
+          >
+            <Globe size={14} className="text-[#C4785A]" />
+            <span className="uppercase text-[11px] font-bold">
+              {language === 'ar' ? 'العربية' : language === 'fr' ? 'Français' : 'English'}
+            </span>
+            {isLanguageAuto && (
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" title={t('topbar_auto_detected', language)} />
+            )}
+          </button>
+
+          {langMenuOpen && (
+            <div className={`absolute top-full mt-2 w-48 rounded-2xl bg-[#1E1B19] border border-neutral-700 shadow-2xl p-1.5 space-y-1 z-30 ${language === 'ar' ? 'left-0' : 'right-0'}`}>
+              <button
+                type="button"
+                onClick={() => {
+                  setSystemDefaultLanguage();
+                  setLangMenuOpen(false);
+                }}
+                className={`w-full px-2.5 py-1.5 rounded-xl text-xs flex items-center justify-between cursor-pointer transition-colors ${
+                  isLanguageAuto ? 'bg-[#C4785A]/20 text-[#C4785A] font-bold' : 'text-neutral-300 hover:bg-neutral-800'
+                }`}
+              >
+                <span>🌐 {t('settings_system_default', language)}</span>
+                {isLanguageAuto && <Check size={13} />}
+              </button>
+              <div className="h-px bg-neutral-800 my-1" />
+              <button
+                type="button"
+                onClick={() => {
+                  setLanguage('en', false);
+                  setLangMenuOpen(false);
+                }}
+                className={`w-full px-2.5 py-1.5 rounded-xl text-xs flex items-center justify-between cursor-pointer transition-colors ${
+                  !isLanguageAuto && language === 'en' ? 'bg-[#C4785A]/20 text-[#C4785A] font-bold' : 'text-neutral-300 hover:bg-neutral-800'
+                }`}
+              >
+                <span>🇺🇸 English (US)</span>
+                {!isLanguageAuto && language === 'en' && <Check size={13} />}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setLanguage('fr', false);
+                  setLangMenuOpen(false);
+                }}
+                className={`w-full px-2.5 py-1.5 rounded-xl text-xs flex items-center justify-between cursor-pointer transition-colors ${
+                  !isLanguageAuto && language === 'fr' ? 'bg-[#C4785A]/20 text-[#C4785A] font-bold' : 'text-neutral-300 hover:bg-neutral-800'
+                }`}
+              >
+                <span>🇫🇷 Français</span>
+                {!isLanguageAuto && language === 'fr' && <Check size={13} />}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setLanguage('ar', false);
+                  setLangMenuOpen(false);
+                }}
+                className={`w-full px-2.5 py-1.5 rounded-xl text-xs flex items-center justify-between cursor-pointer transition-colors ${
+                  !isLanguageAuto && language === 'ar' ? 'bg-[#C4785A]/20 text-[#C4785A] font-bold' : 'text-neutral-300 hover:bg-neutral-800'
+                }`}
+              >
+                <span>🇩🇿 العربية (RTL)</span>
+                {!isLanguageAuto && language === 'ar' && <Check size={13} />}
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* Main 480px Centered Auth Card */}
       <div className="relative w-full max-w-[480px] rounded-[28px] bg-[#1E1B19]/95 border border-[#3E3832]/80 shadow-2xl p-7 sm:p-9 text-white backdrop-blur-xl animate-in fade-in zoom-in-95 duration-200">
         {/* Atrium Brand Emblem */}
@@ -123,7 +204,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
             <h1 className="text-2xl font-black tracking-tight text-white">ATRIUM</h1>
           </div>
           <p className="text-xs text-neutral-400 mt-1">
-            Facility ERP &amp; Business Management
+            {t('login_subtitle', language)}
           </p>
         </div>
 
@@ -152,7 +233,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
               d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
             />
           </svg>
-          <span>{isGoogleLoading ? 'Connecting Google Account...' : 'Continue with Google'}</span>
+          <span>{isGoogleLoading ? '...' : t('login_with_google', language)}</span>
         </button>
 
         {/* 1-Click Fast Owner Sign-in */}
@@ -164,14 +245,14 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
             title="Instant sign-in without Google OAuth"
           >
             <Sparkles size={13} className="text-[#C4785A]" />
-            <span>Fast Sign-in as Owner</span>
+            <span>{t('login_fast_access', language)}</span>
           </button>
         </div>
 
         <div className="relative flex py-2 items-center mb-3">
           <div className="flex-grow border-t border-neutral-800"></div>
           <span className="flex-shrink mx-3 text-[10px] text-neutral-500 font-semibold uppercase tracking-wider">
-            or sign in with password / PIN
+            {language === 'ar' ? 'أو الدخول بكلمة المرور / رمز PIN' : language === 'fr' ? 'ou connexion par mot de passe / code PIN' : 'or sign in with password / PIN'}
           </span>
           <div className="flex-grow border-t border-neutral-800"></div>
         </div>
@@ -191,7 +272,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
             }`}
           >
             <Mail size={13} />
-            <span>Owner / Staff Email</span>
+            <span>{t('login_with_email', language)}</span>
           </button>
           <button
             type="button"
@@ -206,7 +287,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
             }`}
           >
             <Hash size={13} />
-            <span>Terminal PIN Pad</span>
+            <span>{t('login_with_pin', language)}</span>
           </button>
         </div>
 

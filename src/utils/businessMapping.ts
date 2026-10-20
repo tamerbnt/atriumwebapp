@@ -107,6 +107,16 @@ export const BUSINESS_KEYWORDS_MAP: Record<BusinessCategory, string[]> = {
     'dance studio',
     'ecole de danse',
     'fitness center',
+    'جيم',
+    'قاعة رياضة',
+    'نادي رياضي',
+    'كمال أجسام',
+    'فيتنس',
+    'ملاكمة',
+    'كاراتيه',
+    'سباحة',
+    'مسبح',
+    'رياضة',
   ],
 
   appointment_service: [
@@ -166,6 +176,17 @@ export const BUSINESS_KEYWORDS_MAP: Record<BusinessCategory, string[]> = {
     'institut de beaute',
     'hammam',
     'barber shop',
+    'حلاق',
+    'صالون حلاقة',
+    'حلاقة',
+    'كوافير',
+    'صالون تجميل',
+    'تجميل',
+    'سبا',
+    'مساج',
+    'عيادة',
+    'طبيب أسنان',
+    'عيادة أسنان',
   ],
 
   pos_inventory: [
@@ -228,6 +249,19 @@ export const BUSINESS_KEYWORDS_MAP: Record<BusinessCategory, string[]> = {
     'food truck',
     'ice cream',
     'glacier',
+    'مطعم',
+    'مقهى',
+    'كافيه',
+    'بيتزا',
+    'مخبزة',
+    'مخبز',
+    'حلويات',
+    'باتيسري',
+    'سوبرماركت',
+    'بقالة',
+    'متجر',
+    'محل',
+    'ملابس',
   ],
 
   project_milestone: [
@@ -274,6 +308,15 @@ export const BUSINESS_KEYWORDS_MAP: Record<BusinessCategory, string[]> = {
     'boite de comm',
     'software house',
     'it services',
+    'وكالة',
+    'وكالة تسويق',
+    'وكالة إشهار',
+    'مكتب دراسات',
+    'مكتب محاماة',
+    'محاماة',
+    'استشارات',
+    'هندسة معمارية',
+    'مكتب هندسة',
   ],
 
   rental_booking: [
@@ -313,6 +356,15 @@ export const BUSINESS_KEYWORDS_MAP: Record<BusinessCategory, string[]> = {
     'airbnb',
     'holiday rental',
     'location vacances',
+    'كراء',
+    'تأجير',
+    'مساحة عمل',
+    'مساحة عمل مشتركة',
+    'كووركينج',
+    'استوديو',
+    'قاعة حفلات',
+    'قاعة مناسبات',
+    'تأجير سيارات',
   ],
 
   education_cohort: [
@@ -353,6 +405,16 @@ export const BUSINESS_KEYWORDS_MAP: Record<BusinessCategory, string[]> = {
     'art school',
     'culinary school',
     'cours particuliers',
+    'مدرسة',
+    'معهد',
+    'أكاديمية',
+    'دروس دعم',
+    'تعليم لغات',
+    'مدرسة لغات',
+    'برمجة',
+    'تعليم السياقة',
+    'مدرسة سياقة',
+    'تدريب',
   ],
 
   freelance_solo: [
@@ -400,12 +462,17 @@ export const BUSINESS_KEYWORDS_MAP: Record<BusinessCategory, string[]> = {
     'tele-travailleur',
     'artisan',
     'artisan solo',
+    'عمل حر',
+    'مستقل',
+    'فريلانسر',
+    'مصمم',
+    'مبرمج',
+    'مطور',
+    'كاتب محتوى',
+    'مونتير',
   ],
 };
 
-/**
- * Popular quick-tap suggested search chips displayed in the onboarding search bar
- */
 export const POPULAR_BUSINESS_SEARCHES = [
   { label: 'Barbershop', query: 'barbershop', category: 'appointment_service' as BusinessCategory },
   { label: 'CrossFit / Gym', query: 'crossfit gym', category: 'membership_session' as BusinessCategory },
@@ -416,15 +483,42 @@ export const POPULAR_BUSINESS_SEARCHES = [
   { label: 'Language Academy', query: 'language school', category: 'education_cohort' as BusinessCategory },
 ];
 
+export const getPopularBusinessSearches = (lang: string = 'en') => {
+  if (lang === 'ar') {
+    return [
+      { label: 'صالون حلاقة وتجميل', query: 'صالون حلاقة', category: 'appointment_service' as BusinessCategory },
+      { label: 'قاعة رياضة وفيتنس', query: 'قاعة رياضة', category: 'membership_session' as BusinessCategory },
+      { label: 'مطعم ومقهى', query: 'مطعم مقهى', category: 'pos_inventory' as BusinessCategory },
+      { label: 'عمل حر وبرمجة', query: 'مبرمج مستقل', category: 'freelance_solo' as BusinessCategory },
+      { label: 'وكالة إشهار واستشارات', query: 'وكالة تسويق', category: 'project_milestone' as BusinessCategory },
+      { label: 'مساحة عمل واستوديو', query: 'مساحة عمل', category: 'rental_booking' as BusinessCategory },
+      { label: 'مدرسة لغات وتكوين', query: 'مدرسة لغات', category: 'education_cohort' as BusinessCategory },
+    ];
+  }
+  if (lang === 'fr') {
+    return [
+      { label: 'Salon de coiffure & Spa', query: 'salon de coiffure', category: 'appointment_service' as BusinessCategory },
+      { label: 'Salle de sport & Fitness', query: 'salle de sport', category: 'membership_session' as BusinessCategory },
+      { label: 'Café & Restaurant', query: 'cafe restaurant', category: 'pos_inventory' as BusinessCategory },
+      { label: 'Freelance Dev & Design', query: 'freelance dev', category: 'freelance_solo' as BusinessCategory },
+      { label: 'Agence Marketing & Conseil', query: 'agence marketing', category: 'project_milestone' as BusinessCategory },
+      { label: 'Coworking & Studios', query: 'coworking', category: 'rental_booking' as BusinessCategory },
+      { label: 'École de langues & Formation', query: 'ecole de langues', category: 'education_cohort' as BusinessCategory },
+    ];
+  }
+  return POPULAR_BUSINESS_SEARCHES;
+};
+
 /**
  * Normalize search string: lowercase, remove accents/diacritics and special punctuation
+ * Retains Latin alphanumeric characters and Arabic Unicode range (\u0600-\u06FF)
  */
 export function normalizeSearchToken(str: string): string {
   return str
     .toLowerCase()
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9\s]/g, ' ')
+    .replace(/[^\w\s\u0600-\u06FF]/gi, ' ')
     .replace(/\s+/g, ' ')
     .trim();
 }

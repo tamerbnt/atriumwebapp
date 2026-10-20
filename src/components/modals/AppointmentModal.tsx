@@ -22,6 +22,7 @@ import { Modal } from '../ui/Modal';
 import { LabelInput } from '../ui/LabelInput';
 import { LabelSelect } from '../ui/LabelSelect';
 import { formatMoney } from '../../utils/rules';
+import { t } from '../../utils/i18n';
 
 interface AppointmentModalProps {
   isOpen: boolean;
@@ -45,6 +46,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
     staff,
     servicesCatalog,
     currentBranch,
+    language,
     createAppointment,
     updateAppointmentStatus,
     rescheduleAppointment,
@@ -237,7 +239,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={isEditing ? 'Appointment Management' : 'Book New Salon Appointment'}
+      title={isEditing ? t('apt_modal_title_edit', language) : t('apt_modal_title_new', language)}
       subtitle={
         isEditing
           ? `Booking reference #${appointment.id.slice(-6).toUpperCase()} • ${currentBranch.name}`
@@ -256,7 +258,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
       {isEditing && (
         <div className="mb-5 p-3.5 bg-neutral-50 dark:bg-[#202024] border border-neutral-200/70 dark:border-neutral-800 rounded-2xl flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Current Status:</span>
+            <span className="text-xs font-semibold text-neutral-500 uppercase tracking-wider">{t('members_status_col', language)}:</span>
             <span
               className={`px-2.5 py-1 text-xs font-semibold rounded-full ${
                 status === 'InChair'
@@ -268,7 +270,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
                   : 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950/70 dark:text-indigo-300'
               }`}
             >
-              {status === 'InChair' ? '• In Chair (In Progress)' : status}
+              {status === 'InChair' ? `• ${t('dash_salon_in_chair', language)}` : status}
             </span>
           </div>
 
@@ -280,7 +282,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
                 className="px-3 py-1.5 text-xs font-semibold rounded-xl bg-amber-500 hover:bg-amber-600 text-white flex items-center gap-1.5 shadow-sm transition-colors cursor-pointer"
               >
                 <Play size={13} />
-                Seat Client (In Chair)
+                {t('apt_seat_client', language)}
               </button>
             )}
 
@@ -291,7 +293,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
                 className="px-3 py-1.5 text-xs font-semibold rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-1.5 shadow-sm transition-colors cursor-pointer"
               >
                 <CreditCard size={13} />
-                Checkout & Bill POS
+                {t('apt_checkout_pos', language)}
               </button>
             )}
 
@@ -301,7 +303,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
                 onClick={handleCancelBooking}
                 className="px-2.5 py-1.5 text-xs font-medium rounded-xl text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200/60 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
               >
-                Cancel
+                {t('action_cancel', language)}
               </button>
             )}
 
@@ -323,33 +325,33 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
-                Client Intake Mode
+                {language === 'ar' ? 'طريقة استقبال العميل' : language === 'fr' ? 'Mode d\'accueil client' : 'Client Intake Mode'}
               </label>
               <div className="flex items-center bg-neutral-100 dark:bg-neutral-800 p-0.5 rounded-lg text-xs font-medium">
                 <button
                   type="button"
                   onClick={() => setBookingMode('registered')}
-                  className={`px-3 py-1 rounded-md transition-all cursor-pointer ${
+                  className={`px-3 py-1 rounded-md transition-colors cursor-pointer ${
                     bookingMode === 'registered'
-                      ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white shadow-xs font-semibold'
+                      ? 'bg-white dark:bg-neutral-700 text-[#C4785A] font-bold shadow-xs'
                       : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'
                   }`}
                 >
-                  Existing Client
+                  {t('apt_registered_client', language)}
                 </button>
                 <button
                   type="button"
                   onClick={() => setBookingMode('walkin')}
-                  className={`px-3 py-1 rounded-md transition-all cursor-pointer ${
+                  className={`px-3 py-1 rounded-md transition-colors cursor-pointer ${
                     bookingMode === 'walkin'
-                      ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white shadow-xs font-semibold'
+                      ? 'bg-white dark:bg-neutral-700 text-[#C4785A] font-bold shadow-xs'
                       : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'
                   }`}
                 >
-                  Rapid Walk-in Intake
+                  {t('apt_walkin_client', language)}
                 </button>
               </div>
-            </div>
+          </div>
 
             {bookingMode === 'registered' ? (
               <LabelSelect

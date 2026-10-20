@@ -4,6 +4,7 @@ import { useAtriumStore } from '../../services/store';
 import { Modal } from '../ui/Modal';
 import { LabelInput } from '../ui/LabelInput';
 import { validateVoucherCode } from '../../utils/rules';
+import { t } from '../../utils/i18n';
 
 interface VoucherModalProps {
   isOpen: boolean;
@@ -11,7 +12,7 @@ interface VoucherModalProps {
 }
 
 export const VoucherModal: React.FC<VoucherModalProps> = ({ isOpen, onClose }) => {
-  const { subscription, redeemVoucher, showToast } = useAtriumStore();
+  const { subscription, redeemVoucher, showToast, language } = useAtriumStore();
   const [code, setCode] = useState('');
   const [resultMessage, setResultMessage] = useState<{
     success: boolean;
@@ -51,8 +52,8 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({ isOpen, onClose }) =
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Perpetual Lifetime Voucher Center"
-      subtitle="Activate your prepaid cash license voucher for Atrium SaaS"
+      title={t('voucher_title', language)}
+      subtitle={t('voucher_subtitle', language)}
       maxWidth="md"
     >
       <div className="space-y-5">
@@ -60,15 +61,15 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({ isOpen, onClose }) =
         <div className="p-4 rounded-[20px] bg-[#F8F9FA] dark:bg-neutral-800/60 border border-[#EDF1F3] dark:border-neutral-700/60 flex items-center justify-between shadow-2xs">
           <div>
             <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 block">
-              Current License Status
+              {t('settings_license_entitlement', language)}
             </span>
             <div className="text-sm font-bold text-neutral-900 dark:text-white mt-0.5">
               {subscription.plan.name} Tier Rank #{subscription.plan.tierRank}
             </div>
             <span className="text-xs text-[#C4785A] font-semibold">
               {subscription.isLifetime
-                ? 'Perpetual Lifetime License (No Expiration)'
-                : 'Free Trial Mode (30-day limit)'}
+                ? t('settings_lifetime_badge', language)
+                : t('settings_trial_badge', language)}
             </span>
           </div>
           <div className="w-10 h-10 rounded-xl bg-[#C4785A]/10 text-[#C4785A] flex items-center justify-center shrink-0">
@@ -81,7 +82,7 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({ isOpen, onClose }) =
           <div className="space-y-1.5">
             <LabelInput
               field="Voucher Code"
-              label="Enter 20-digit Voucher Code"
+              label={language === 'ar' ? 'أدخل رمز القسيمة (20 خانة)' : language === 'fr' ? 'Saisissez le code voucher à 20 chiffres' : 'Enter 20-digit Voucher Code'}
               value={code}
               onChange={(val) => setCode(val.toUpperCase())}
               width="100%"
@@ -103,7 +104,7 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({ isOpen, onClose }) =
             className="w-full h-11 text-xs font-bold text-white flex items-center justify-center gap-2 hover:opacity-90 active:scale-98 transition-all cursor-pointer shadow-xs"
           >
             <Sparkles size={16} />
-            <span>Verify & Activate Lifetime Voucher</span>
+            <span>{t('voucher_redeem_btn', language)}</span>
           </button>
         </form>
 

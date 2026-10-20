@@ -1,5 +1,4 @@
 import { SupportedLanguage } from '../types/index';
-import { useAtriumStore } from '../services/store';
 
 /**
  * Detect user's operating system / browser default language.
@@ -558,6 +557,83 @@ const TRANSLATIONS_EN = {
   shop_reorder_level: 'Reorder Threshold',
   shop_add_new_product: 'Add New Product',
   shop_print_thermal: 'Print Thermal 80mm',
+
+  // Fast Switch & Lock Screen
+  fast_switch_title_lock: 'Staff Fast Switch & Lock',
+  fast_switch_operator_security: 'Front desk operator security',
+  fast_switch_current_op: 'Active Operator',
+  fast_switch_switch_to: 'Switch Operator',
+  fast_switch_pin_label: 'Enter 4-Digit Security PIN',
+  fast_switch_pin_clear: 'Clear',
+  fast_switch_logout: 'Log Out Session',
+
+  // Upgrade & Licensing Modal
+  upgrade_modal_title: 'Scale Your Business Beyond Limits',
+  upgrade_modal_subtitle: 'The Atrium Web app is 100% Free Forever for 1 business and 1 branch. Unlock multi-branch networks, hardware POS, offline resilience, and lifetime licenses in Desktop.',
+  upgrade_free_badge: 'Free Web App',
+  upgrade_desktop_badge: 'Paid Desktop App',
+  upgrade_download_win: 'Download for Windows (.exe)',
+  upgrade_download_mac: 'Download for macOS (.dmg)',
+
+  // Login Screen
+  login_title: 'Sign in to Atrium Enterprise',
+  login_subtitle: 'Secure access for business owners and operators',
+  login_fast_access: 'Fast Demo / Owner Access',
+  login_with_google: 'Continue with Google',
+  login_with_email: 'Sign in with Work Email',
+  login_with_pin: 'Front Desk Quick PIN',
+  login_remember_me: 'Remember this workstation',
+  login_forgot_password: 'Forgot password?',
+  login_enter_email: 'Enter your work email address',
+  login_enter_password: 'Enter account password',
+  login_submit: 'Sign In to Workspace',
+
+  onboard_owner_step: 'Owner Account & Identity',
+  onboard_business_step: 'Business & First Branch',
+  onboard_search_activity: 'Search Your Business Activity',
+  onboard_popular: 'Popular Activities:',
+  onboard_launch_btn: 'Launch Atrium Enterprise',
+  onboard_auto_detect: 'Auto-detects matching vertical',
+  onboard_create_account: 'Create Your Atrium Account',
+  onboard_create_subtitle: 'Sign in with Google or enter your owner details to launch your workspace.',
+  onboard_continue_google: 'Continue with Google',
+  onboard_connecting_account: 'Connecting Account...',
+  onboard_connected_google: 'Connected with Google',
+  onboard_or_details: 'or customize profile details',
+  onboard_fullname: 'Full Name',
+  onboard_work_email: 'Work Email',
+  onboard_phone: 'Phone Number',
+  onboard_admin_password: 'Admin Password',
+  onboard_biz_setup_title: 'Business Setup & First Branch',
+  onboard_biz_setup_subtitle: 'Name your business and your primary branch. (Additional branches unlock in Desktop).',
+  onboard_biz_name: 'Business Name',
+  onboard_branch_name: 'First Branch Name',
+  onboard_categories_label: 'Industry Categories',
+  onboard_click_select: 'Click any card to select',
+  onboard_btn_continue: 'Continue',
+  onboard_btn_back: 'Back',
+  onboard_btn_launch_free: 'Launch Free Workspace',
+  onboard_btn_skip_demo: 'Skip & Open Demo',
+  onboard_auto_matched: 'Auto-matched',
+
+  // Section Banners & KPI Headers
+  reg_pipeline_health: 'Pipeline Velocity & Conversion Health',
+  reg_pipeline_subtitle: 'Self-service intake requests, qualified prospects, and enrollment conversion rates',
+  finance_workforce_banner: 'Workforce & Compensation Health',
+  finance_workforce_subtitle: 'Active team headcount, monthly salary commitments, and role access privileges',
+  history_settlement_banner: 'Financial Settlement & Audit Velocity',
+  history_settlement_subtitle: 'Reconciled payments, daily cash drawers, and electronic transactions',
+  analytics_live_intel: 'Live Operational Intel',
+  analytics_live_subtitle: 'Key operational metrics, footfall trends, and revenue intelligence',
+
+  // Appointments
+  apt_modal_title_new: 'Book New Salon Appointment',
+  apt_modal_title_edit: 'Manage Appointment',
+  apt_seat_client: 'Seat Client (In Chair)',
+  apt_checkout_pos: 'Checkout & Bill POS',
+  apt_cancel_booking: 'Cancel Appointment',
+  apt_registered_client: 'Registered Client',
+  apt_walkin_client: 'Walk-in Guest',
 };
 
 const TRANSLATIONS_FR: typeof TRANSLATIONS_EN = {
@@ -1065,6 +1141,83 @@ const TRANSLATIONS_FR: typeof TRANSLATIONS_EN = {
   shop_reorder_level: 'Seuil de réapprovisionnement',
   shop_add_new_product: 'Nouveau produit',
   shop_print_thermal: 'Imprimer ticket thermique 80mm',
+
+  // Fast Switch & Lock Screen
+  fast_switch_title_lock: 'Verrouillage & Changement de caissier',
+  fast_switch_operator_security: 'Sécurité du poste d\'accueil et caisse',
+  fast_switch_current_op: 'Opérateur en service',
+  fast_switch_switch_to: 'Changer d\'intervenant',
+  fast_switch_pin_label: 'Saisissez votre code PIN à 4 chiffres',
+  fast_switch_pin_clear: 'Effacer',
+  fast_switch_logout: 'Déconnexion session',
+
+  // Upgrade & Licensing Modal
+  upgrade_modal_title: 'Développez votre entreprise sans limites',
+  upgrade_modal_subtitle: 'L\'application Web Atrium est 100% Gratuite à vie pour 1 entreprise et 1 succursale. Débloquez les réseaux multi-succursales, la caisse POS matérielle, SQLite hors-ligne et les licences à vie sur Desktop.',
+  upgrade_free_badge: 'Application Web Gratuite',
+  upgrade_desktop_badge: 'Application Desktop Payante',
+  upgrade_download_win: 'Télécharger pour Windows (.exe)',
+  upgrade_download_mac: 'Télécharger pour macOS (.dmg)',
+
+  // Login Screen
+  login_title: 'Connexion à Atrium Enterprise',
+  login_subtitle: 'Accès sécurisé pour gérants et équipes opérationnelles',
+  login_fast_access: 'Accès Rapide Démo / Propriétaire',
+  login_with_google: 'Continuer avec Google',
+  login_with_email: 'Connexion par e-mail professionnel',
+  login_with_pin: 'Code PIN rapide Caisse',
+  login_remember_me: 'Mémoriser ce poste de travail',
+  login_forgot_password: 'Mot de passe oublié ?',
+  login_enter_email: 'Entrez votre adresse e-mail professionnelle',
+  login_enter_password: 'Entrez le mot de passe du compte',
+  login_submit: 'Accéder à l\'espace de travail',
+
+  onboard_owner_step: 'Compte Propriétaire & Identité',
+  onboard_business_step: 'Entreprise & Première Succursale',
+  onboard_search_activity: 'Rechercher votre activité commerciale',
+  onboard_popular: 'Activités fréquentes :',
+  onboard_launch_btn: 'Lancer Atrium Enterprise',
+  onboard_auto_detect: 'Détection automatique de la catégorie',
+  onboard_create_account: 'Créez votre compte Atrium',
+  onboard_create_subtitle: 'Connectez-vous avec Google ou entrez vos coordonnées pour lancer votre espace.',
+  onboard_continue_google: 'Continuer avec Google',
+  onboard_connecting_account: 'Connexion au compte...',
+  onboard_connected_google: 'Connecté avec Google',
+  onboard_or_details: 'ou renseigner les détails manuellement',
+  onboard_fullname: 'Nom complet',
+  onboard_work_email: 'Email professionnel',
+  onboard_phone: 'Numéro de téléphone',
+  onboard_admin_password: 'Mot de passe administrateur',
+  onboard_biz_setup_title: 'Configuration & Première Succursale',
+  onboard_biz_setup_subtitle: 'Nommez votre entreprise et votre succursale principale. (Les succursales supplémentaires se débloquent sur Desktop).',
+  onboard_biz_name: 'Nom de l\'établissement',
+  onboard_branch_name: 'Nom de la première succursale',
+  onboard_categories_label: 'Catégories d\'activités',
+  onboard_click_select: 'Cliquez sur une carte pour la sélectionner',
+  onboard_btn_continue: 'Continuer',
+  onboard_btn_back: 'Retour',
+  onboard_btn_launch_free: 'Lancer l\'espace gratuit',
+  onboard_btn_skip_demo: 'Passer à la démo',
+  onboard_auto_matched: 'Détecté automatiquement',
+
+  // Section Banners & KPI Headers
+  reg_pipeline_health: 'Dynamique d\'acquisition & Taux de conversion',
+  reg_pipeline_subtitle: 'Demandes d\'inscription en ligne, prospects qualifiés et taux de conversion',
+  finance_workforce_banner: 'Équipe & Masse salariale mensuelle',
+  finance_workforce_subtitle: 'Effectif actif, engagements salariaux mensuels et privilèges d\'accès',
+  history_settlement_banner: 'Règlements financiers & Piste d\'audit',
+  history_settlement_subtitle: 'Règlements réconciliés, caisses journalières et transactions électroniques',
+  analytics_live_intel: 'Intelligence opérationnelle en direct',
+  analytics_live_subtitle: 'Indicateurs clés, tendances d\'affluence et rentabilité',
+
+  // Appointments
+  apt_modal_title_new: 'Nouveau rendez-vous salon',
+  apt_modal_title_edit: 'Gérer le rendez-vous',
+  apt_seat_client: 'Installer en fauteuil (En cours)',
+  apt_checkout_pos: 'Encaisser & Facturer au POS',
+  apt_cancel_booking: 'Annuler le rendez-vous',
+  apt_registered_client: 'Client enregistré',
+  apt_walkin_client: 'Client de passage',
 };
 
 const TRANSLATIONS_AR: typeof TRANSLATIONS_EN = {
@@ -1572,6 +1725,83 @@ const TRANSLATIONS_AR: typeof TRANSLATIONS_EN = {
   shop_reorder_level: 'حد إعادة الطلب',
   shop_add_new_product: 'إضافة منتج جديد',
   shop_print_thermal: 'طباعة وصل حراري 80 ملم',
+
+  // Fast Switch & Lock Screen
+  fast_switch_title_lock: 'تبديل المشغل وقفل الشاشة',
+  fast_switch_operator_security: 'أمان مكتب الاستقبال ونقطة البيع',
+  fast_switch_current_op: 'المشغل النشط حالياً',
+  fast_switch_switch_to: 'تبديل المشغل السريع',
+  fast_switch_pin_label: 'أدخل رمز PIN السري (4 أرقام)',
+  fast_switch_pin_clear: 'مسح',
+  fast_switch_logout: 'تسجيل الخروج من الجلسة',
+
+  // Upgrade & Licensing Modal
+  upgrade_modal_title: 'طوّر أعمالك ومنشآتك بدون حدود',
+  upgrade_modal_subtitle: 'تطبيق Atrium على الويب مجاني 100% مدى الحياة لمنشأة واحدة وفرع واحد. افتح شبكات الفروع المتعددة، ونقاط البيع المادية، وقاعدة البيانات المحلية، والترخيص الدائم على تطبيق الحاسوب.',
+  upgrade_free_badge: 'تطبيق الويب المجاني',
+  upgrade_desktop_badge: 'تطبيق الحاسوب المدفوع',
+  upgrade_download_win: 'تحميل لنظام Windows (.exe)',
+  upgrade_download_mac: 'تحميل لنظام macOS (.dmg)',
+
+  // Login Screen
+  login_title: 'تسجيل الدخول إلى منظومة Atrium Enterprise',
+  login_subtitle: 'وصول آمن لملاك المنشآت وفرق التشغيل',
+  login_fast_access: 'دخول سريع تجريبي / المالك',
+  login_with_google: 'المتابعة بحساب Google',
+  login_with_email: 'تسجيل الدخول بالبريد المهني',
+  login_with_pin: 'رمز PIN السريع لنقطة الاستقبال',
+  login_remember_me: 'تذكر جهاز العمل هذا',
+  login_forgot_password: 'هل نسيت كلمة المرور؟',
+  login_enter_email: 'أدخل بريدك الإلكتروني المهني',
+  login_enter_password: 'أدخل كلمة مرور الحساب',
+  login_submit: 'الدخول إلى مساحة العمل',
+
+  onboard_owner_step: 'حساب المالك والهوية',
+  onboard_business_step: 'المنشأة والفرع الرئيسي الأول',
+  onboard_search_activity: 'ابحث عن نشاطك التجاري',
+  onboard_popular: 'الأنشطة الشائعة:',
+  onboard_launch_btn: 'بدء تشغيل منظومة Atrium',
+  onboard_auto_detect: 'كشف ذكي تلقائي للتصنيف المطابق',
+  onboard_create_account: 'إنشاء حساب Atrium الخاص بك',
+  onboard_create_subtitle: 'سجل الدخول بحساب Google أو أدخل بيانات المالك لبدء مساحة عملك.',
+  onboard_continue_google: 'المتابعة باستخدام Google',
+  onboard_connecting_account: 'جاري الاتصال بالحساب...',
+  onboard_connected_google: 'تم الاتصال بحساب Google',
+  onboard_or_details: 'أو تخصيص بيانات الحساب يدوياً',
+  onboard_fullname: 'الاسم الكامل',
+  onboard_work_email: 'البريد الإلكتروني المهني',
+  onboard_phone: 'رقم الهاتف',
+  onboard_admin_password: 'كلمة مرور المشرف',
+  onboard_biz_setup_title: 'إعداد المنشأة والفرع الأول',
+  onboard_biz_setup_subtitle: 'حدد اسم منشأتك وفرعك الرئيسي الأول (الفروع الإضافية تتاح في تطبيق الحاسوب).',
+  onboard_biz_name: 'اسم المنشأة التجارية',
+  onboard_branch_name: 'اسم الفرع الرئيسي الأول',
+  onboard_categories_label: 'تصنيفات الأنشطة التجارية',
+  onboard_click_select: 'اضغط على أي بطاقة للاختيار',
+  onboard_btn_continue: 'متابعة',
+  onboard_btn_back: 'رجوع',
+  onboard_btn_launch_free: 'بدء مساحة العمل المجانية',
+  onboard_btn_skip_demo: 'تخطي والدخول للنسخة التجريبية',
+  onboard_auto_matched: 'تم التطابق الذكي تلقائياً',
+
+  // Section Banners & KPI Headers
+  reg_pipeline_health: 'سرعة الاستقطاب وصحة التحويل',
+  reg_pipeline_subtitle: 'طلبات الاستفسار الذاتي، الزبائن المحتملون المؤهلون ونسب التحويل إلى مشتركين',
+  finance_workforce_banner: 'فريق العمل والكتلة الشهرية للأجور',
+  finance_workforce_subtitle: 'عدد الموظفين النشطين، إجمالي الرواتب الشهرية ومستويات الصلاحيات',
+  history_settlement_banner: 'التسوية المالية وسرعة التدقيق',
+  history_settlement_subtitle: 'المدفوعات المسواة، حركات الصندوق والمعاملات الإلكترونية',
+  analytics_live_intel: 'مؤشرات تشغيلية حية',
+  analytics_live_subtitle: 'المؤشرات التشغيلية الرئيسية، حركة الزبائن وبيانات المبيعات',
+
+  // Appointments
+  apt_modal_title_new: 'حجز موعد صالون جديد',
+  apt_modal_title_edit: 'إدارة الموعد',
+  apt_seat_client: 'بدء الجلسة (في الكرسي)',
+  apt_checkout_pos: 'دفع وإنهاء الحساب بنقطة البيع',
+  apt_cancel_booking: 'إلغاء الموعد',
+  apt_registered_client: 'زبون مسجل',
+  apt_walkin_client: 'زبون عابر',
 };
 
 export const DICTIONARY: Record<SupportedLanguage, typeof TRANSLATIONS_EN> = {
@@ -1594,15 +1824,5 @@ export function t(key: TranslationKey | string, lang: SupportedLanguage = 'en', 
   return fallback !== undefined ? fallback : (key as string);
 }
 
-/**
- * Convenient React hook for components to subscribe to current language and direction
- */
-export function useTranslation() {
-  const { language } = useAtriumStore();
-  return {
-    t: (key: TranslationKey | string, fallback?: string) => t(key, language, fallback),
-    language,
-    isRtl: language === 'ar',
-    dir: (language === 'ar' ? 'rtl' : 'ltr') as 'rtl' | 'ltr',
-  };
-}
+
+

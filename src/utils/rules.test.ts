@@ -139,6 +139,19 @@ test('findCategoryByBusinessSearch accurately maps user search input to correct 
   const freelanceMatch2 = findCategoryByBusinessSearch('ui ux designer');
   assert.equal(freelanceMatch2?.category, 'freelance_solo');
 
+  // Arabic keyword matching
+  const arGymMatch = findCategoryByBusinessSearch('قاعة رياضة');
+  assert.equal(arGymMatch?.category, 'membership_session');
+
+  const arSalonMatch = findCategoryByBusinessSearch('صالون حلاقة');
+  assert.equal(arSalonMatch?.category, 'appointment_service');
+
+  const arRestoMatch = findCategoryByBusinessSearch('مطعم بيتزا');
+  assert.equal(arRestoMatch?.category, 'pos_inventory');
+
+  const arEduMatch = findCategoryByBusinessSearch('مدرسة لغات');
+  assert.equal(arEduMatch?.category, 'education_cohort');
+
   // Null for empty or short queries
   assert.equal(findCategoryByBusinessSearch(''), null);
   assert.equal(findCategoryByBusinessSearch('a'), null);

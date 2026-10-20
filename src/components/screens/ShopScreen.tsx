@@ -730,14 +730,14 @@ export const ShopScreen: React.FC = () => {
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-black text-neutral-900 dark:text-white tracking-tight flex items-center gap-2.5">
               <ShoppingBag className="text-[#C4785A]" size={26} />
-              <span>Universal POS & Inventory Hub</span>
+              <span>{t('shop_hub_title', language)}</span>
             </h1>
             <span className="text-[11px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800">
-              Production Ready
+              {t('status_active', language)}
             </span>
           </div>
           <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
-            Universal counter checkout, barcode scanner, multi-tender split pay, and real-time inventory management for any retail business.
+            {t('shop_hub_desc', language)}
           </p>
         </div>
 
@@ -750,7 +750,7 @@ export const ShopScreen: React.FC = () => {
           >
             <Building2 size={15} className="text-[#C4785A]" />
             <div className="text-left">
-              <div className="text-[10px] uppercase font-bold text-neutral-400 leading-none">Active Store</div>
+              <div className="text-[10px] uppercase font-bold text-neutral-400 leading-none">{t('shop_active_store', language)}</div>
               <div className="text-xs font-bold leading-tight truncate max-w-[150px]">
                 {currentBranch?.name || 'Main Branch'}
               </div>
@@ -761,7 +761,7 @@ export const ShopScreen: React.FC = () => {
           {isFacilityDropdownOpen && (
             <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-neutral-900 rounded-2xl shadow-xl border border-neutral-200 dark:border-neutral-800 py-1.5 z-40">
               <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
-                Select Store Location
+                {t('shop_select_store', language)}
               </div>
               {branches.map((b) => (
                 <button

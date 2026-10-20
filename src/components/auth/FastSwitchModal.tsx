@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { useAtriumStore } from '../../services/store';
 import { StaffMember } from '../../types/index';
+import { t } from '../../utils/i18n';
 
 interface FastSwitchModalProps {
   isOpen: boolean;
@@ -25,7 +26,7 @@ export const FastSwitchModal: React.FC<FastSwitchModalProps> = ({
   onClose,
   onOpenOnboarding,
 }) => {
-  const { currentUser, staff, loginWithPin, logout } = useAtriumStore();
+  const { currentUser, staff, loginWithPin, logout, language } = useAtriumStore();
 
   const [selectedStaff, setSelectedStaff] = useState<StaffMember | null>(null);
   const [pinInput, setPinInput] = useState('');
@@ -82,9 +83,9 @@ export const FastSwitchModal: React.FC<FastSwitchModalProps> = ({
               <Lock size={16} />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-white">Staff Fast Switch & Lock</h3>
+              <h3 className="text-sm font-bold text-white">{t('fast_switch_title_lock', language)}</h3>
               <p className="text-[11px] text-neutral-400">
-                Front desk operator security
+                {t('fast_switch_operator_security', language)}
               </p>
             </div>
           </div>
@@ -114,14 +115,14 @@ export const FastSwitchModal: React.FC<FastSwitchModalProps> = ({
             </div>
           </div>
           <span className="text-[10px] text-emerald-400 font-semibold flex items-center gap-1">
-            <UserCheck size={13} /> Active
+            <UserCheck size={13} /> {t('fast_switch_current_op', language)}
           </span>
         </div>
 
         {/* Staff Quick Tap Switch List */}
         <div>
           <div className="text-[11px] font-bold uppercase tracking-wider text-neutral-400 mb-2">
-            Switch Terminal Operator
+            {t('fast_switch_switch_to', language)}
           </div>
           <div className="space-y-1.5 max-h-40 overflow-y-auto pr-1">
             {staff.map((stf) => {
@@ -158,7 +159,7 @@ export const FastSwitchModal: React.FC<FastSwitchModalProps> = ({
         {/* 4-Digit Quick PIN Pad */}
         <div className="pt-2 border-t border-neutral-800 space-y-2.5">
           <div className="flex items-center justify-between text-xs">
-            <span className="text-neutral-400 font-medium">Or enter 4-digit PIN:</span>
+            <span className="text-neutral-400 font-medium">{t('fast_switch_pin_label', language)}</span>
             <div className="flex items-center gap-2">
               {[0, 1, 2, 3].map((idx) => (
                 <div
@@ -191,7 +192,7 @@ export const FastSwitchModal: React.FC<FastSwitchModalProps> = ({
                 }}
                 className="h-10 rounded-xl bg-neutral-900 border border-neutral-800 text-white font-bold text-xs hover:bg-neutral-800 active:scale-95 transition-all cursor-pointer flex items-center justify-center"
               >
-                {btn}
+                {btn === 'C' ? t('fast_switch_pin_clear', language) : btn}
               </button>
             ))}
           </div>
@@ -208,7 +209,7 @@ export const FastSwitchModal: React.FC<FastSwitchModalProps> = ({
             className="text-xs text-[#C4785A] hover:underline flex items-center gap-1 cursor-pointer"
           >
             <Sparkles size={13} />
-            <span>New Business Setup</span>
+            <span>{t('onboarding_title', language)}</span>
           </button>
 
           <button
@@ -220,7 +221,7 @@ export const FastSwitchModal: React.FC<FastSwitchModalProps> = ({
             className="h-9 px-3.5 rounded-xl bg-neutral-900 border border-neutral-800 hover:bg-rose-950/40 hover:border-rose-900 text-neutral-300 hover:text-rose-400 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
           >
             <LogOut size={13} />
-            <span>Sign Out</span>
+            <span>{t('topbar_logout', language)}</span>
           </button>
         </div>
       </div>
