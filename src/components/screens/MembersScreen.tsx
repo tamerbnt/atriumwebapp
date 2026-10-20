@@ -27,6 +27,8 @@ import {
   Clock,
   Receipt,
   ShoppingCart,
+  UserCheck,
+  Activity,
 } from 'lucide-react';
 import { useAtriumStore } from '../../services/store';
 import { Member, MemberStatus } from '../../types/index';
@@ -58,6 +60,7 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
     language,
     appointments,
     sales,
+    schedule,
     switchBusiness,
     switchBranch,
     selectedMember,
@@ -66,6 +69,7 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
     closeDetail,
     updateMember,
     deleteMember,
+    checkInMember,
     setScreen,
     showToast,
   } = useAtriumStore();
@@ -79,6 +83,7 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
   const [isFacilityDropdownOpen, setIsFacilityDropdownOpen] = useState(false);
   const [saveNoteSuccess, setSaveNoteSuccess] = useState(false);
   const [isBookModalOpen, setIsBookModalOpen] = useState(false);
+  const [gymDrawerTab, setGymDrawerTab] = useState<'history' | 'sales' | 'bookings'>('history');
 
   // Desktop sample members matching screenshot amira and saraa
   const displayMembers = useMemo(() => {
@@ -518,7 +523,7 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
                     <span className="text-[10px]">↕</span>
                   </div>
                   <div className="col-span-2 text-right flex items-center justify-end gap-1 pr-2">
-                    <span>{currentBusiness.category === 'appointment_service' ? 'Package / Value' : t('member_col_expiration', language)}</span>
+                    <span>{currentBusiness.category === 'appointment_service' ? (language === 'ar' ? 'الباقة / الرصيد' : language === 'fr' ? 'Forfait / Valeur' : 'Package / Value') : t('member_col_expiration', language)}</span>
                     <span className="text-[10px]">↕</span>
                   </div>
                   <div className="col-span-1"></div>
@@ -629,11 +634,28 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
                       </div>
                     );
                   })}
+
+                  {displayMembers.length === 0 && (
+                    <div className="py-14 text-center text-xs text-neutral-400 bg-white dark:bg-neutral-800 rounded-2xl border border-dashed border-neutral-200 dark:border-neutral-700/60 p-6 space-y-2">
+                      <Users size={32} className="mx-auto text-neutral-300 dark:text-neutral-600" />
+                      <p className="font-semibold text-neutral-700 dark:text-neutral-300">
+                        {language === 'ar' ? 'لا يوجد مشتركون يطابقون خيارات البحث' : language === 'fr' ? 'Aucun adhérent ne correspond aux critères de recherche' : 'No members found matching the selected filter'}
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
             ) : (
               /* Grid View Cards with ActionNode */
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                {displayMembers.length === 0 && (
+                  <div className="col-span-full py-14 text-center text-xs text-neutral-400 bg-white dark:bg-neutral-800 rounded-2xl border border-dashed border-neutral-200 dark:border-neutral-700/60 p-6 space-y-2">
+                    <Users size={32} className="mx-auto text-neutral-300 dark:text-neutral-600" />
+                    <p className="font-semibold text-neutral-700 dark:text-neutral-300">
+                      {language === 'ar' ? 'لا يوجد مشتركون يطابقون خيارات البحث' : language === 'fr' ? 'Aucun adhérent ne correspond aux critères de recherche' : 'No members found matching the selected filter'}
+                    </p>
+                  </div>
+                )}
                 {displayMembers.map((member) => {
                   const isChecked = selectedIds.includes(member.id);
                   const isSelected = selectedMember?.id === member.id && isDetailOpen;
@@ -645,7 +667,7 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
                     <ActionNode
                       key={member.id}
                       title={member.fullName}
-                      description={`Plan: ${member.membershipPlanName || 'Standard'} · Balance: ${priceDisplay}`}
+                      description={`${language === 'ar' ? 'الباقة:' : language === 'fr' ? 'Formule :' : 'Plan:'} ${member.membershipPlanName || (language === 'ar' ? 'القياسية' : language === 'fr' ? 'Standard' : 'Standard')} · ${language === 'ar' ? 'الرصيد:' : language === 'fr' ? 'Solde :' : 'Balance:'} ${priceDisplay}`}
                       tag={member.status}
                       selected={isSelected}
                       onClick={() => selectMember(member.id)}
@@ -670,13 +692,13 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
                       actions={[
                         {
                           id: 'view',
-                          label: 'Inspect Member',
+                          label: language === 'ar' ? 'معاينة الملف' : language === 'fr' ? 'Consulter la fiche' : 'Inspect Member',
                           icon: <Eye size={14} />,
                           onClick: () => selectMember(member.id),
                         },
                         {
                           id: 'edit',
-                          label: 'Edit Member',
+                          label: t('action_edit', language),
                           icon: <Edit size={14} />,
                           onClick: () => onEditMember(member),
                         },
@@ -754,9 +776,12 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
                       <h3 className="text-base font-bold text-neutral-900 dark:text-white capitalize">
                         {selectedMember.fullName}
                       </h3>
-                      <div className="mt-1 flex items-center gap-2">
+                      <div className="mt-1 flex items-center gap-1.5 flex-wrap">
                         <span className="text-[11px] font-bold text-[#C4785A] bg-[#C4785A]/15 px-2 py-0.5 rounded-full">
-                          {selectedMember.membershipPlanName || 'Standard Package'}
+                          {selectedMember.membershipPlanName || (language === 'ar' ? 'الباقة القياسية' : language === 'fr' ? 'Formule Standard' : 'Standard Package')}
+                        </span>
+                        <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 dark:bg-emerald-950/60 dark:text-emerald-300 px-2 py-0.5 rounded-full flex items-center gap-1">
+                          <Check size={10} /> {t('member_drawer_verified', language)}
                         </span>
                         <span className="text-[11px] font-mono text-neutral-400">
                           ID: {selectedMember.cardId || '46466446'}
@@ -775,14 +800,23 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
                 </div>
 
                 {/* Quick Actions */}
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-4 gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => checkInMember(selectedMember.id)}
+                    className="p-2 rounded-xl bg-[#FDF4F0] dark:bg-neutral-800 text-xs font-semibold flex flex-col items-center gap-1 text-[#C4785A] hover:bg-[#FCEEE8] cursor-pointer transition-colors border border-[#F5E2D8] dark:border-neutral-700"
+                    title={t('member_drawer_quick_checkin', language)}
+                  >
+                    <UserCheck size={14} />
+                    <span className="text-[10px] truncate max-w-full">{t('member_drawer_quick_checkin', language)}</span>
+                  </button>
                   <button
                     type="button"
                     onClick={() => onEditMember(selectedMember)}
-                    className="p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-800 text-xs font-semibold flex flex-col items-center gap-1 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 cursor-pointer transition-colors"
+                    className="p-2 rounded-xl border border-neutral-200 dark:border-neutral-800 text-xs font-semibold flex flex-col items-center gap-1 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 cursor-pointer transition-colors"
                   >
                     <Edit size={14} className="text-[#C4785A]" />
-                    <span>{t('action_edit', language)}</span>
+                    <span className="text-[10px] truncate max-w-full">{t('action_edit', language)}</span>
                   </button>
                   <button
                     type="button"
@@ -790,14 +824,14 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
                       const next = selectedMember.status === 'Frozen' ? 'Active' : 'Frozen';
                       updateMember(selectedMember.id, { status: next });
                     }}
-                    className="p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-800 text-xs font-semibold flex flex-col items-center gap-1 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 cursor-pointer transition-colors"
+                    className="p-2 rounded-xl border border-neutral-200 dark:border-neutral-800 text-xs font-semibold flex flex-col items-center gap-1 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 cursor-pointer transition-colors"
                   >
                     {selectedMember.status === 'Frozen' ? (
                       <Unlock size={14} className="text-emerald-500" />
                     ) : (
                       <Lock size={14} className="text-amber-500" />
                     )}
-                    <span>
+                    <span className="text-[10px] truncate max-w-full">
                       {selectedMember.status === 'Frozen'
                         ? t('member_drawer_unblock', language)
                         : t('member_drawer_block', language)}
@@ -806,10 +840,10 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
                   <button
                     type="button"
                     onClick={() => updateMember(selectedMember.id, { remainingSessions: (selectedMember.remainingSessions || 0) + 30 })}
-                    className="p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-800 text-xs font-semibold flex flex-col items-center gap-1 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 cursor-pointer transition-colors"
+                    className="p-2 rounded-xl border border-neutral-200 dark:border-neutral-800 text-xs font-semibold flex flex-col items-center gap-1 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 cursor-pointer transition-colors"
                   >
                     <RotateCcw size={14} className="text-blue-500" />
-                    <span>{currentBusiness.category === 'appointment_service' ? '+Pass' : t('member_drawer_renew', language)}</span>
+                    <span className="text-[10px] truncate max-w-full">{currentBusiness.category === 'appointment_service' ? '+Pass' : t('member_drawer_renew', language)}</span>
                   </button>
                 </div>
 
@@ -822,7 +856,7 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
                         : (language === 'ar' ? 'باقة الاشتراك:' : language === 'fr' ? 'Formule d\'abonnement :' : 'Account Plan:')}
                     </span>
                     <span className="font-bold text-neutral-900 dark:text-white truncate max-w-[180px]">
-                      {selectedMember.membershipPlanName || 'Standard Package'}
+                      {selectedMember.membershipPlanName || (language === 'ar' ? 'الباقة القياسية' : language === 'fr' ? 'Formule Standard' : 'Standard Package')}
                     </span>
                   </div>
                   <div className="flex justify-between">
@@ -853,16 +887,16 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
                   </div>
                 </div>
 
-                {/* POS Receipt Ledger for Customer or Appointments for Salon */}
+                {/* Sub-tab sections depending on category */}
                 {isPOS ? (
                   <div className="space-y-2.5 text-xs">
                     <div className="flex items-center justify-between">
                       <h4 className="text-[11px] font-bold uppercase tracking-wider text-neutral-400 flex items-center gap-1.5">
                         <Receipt size={12} className="text-[#C4785A]" />
-                        <span>POS Orders & Receipts</span>
+                        <span>{language === 'ar' ? 'طلبات وإيصالات نقطة البيع' : language === 'fr' ? 'Commandes & Reçus Caisse' : 'POS Orders & Receipts'}</span>
                       </h4>
                       <span className="text-[10px] font-bold text-neutral-400">
-                        {sales.filter((s) => s.memberId === selectedMember.id).length} orders
+                        {sales.filter((s) => s.memberId === selectedMember.id).length} {language === 'ar' ? 'طلبات' : language === 'fr' ? 'commandes' : 'orders'}
                       </span>
                     </div>
 
@@ -871,7 +905,7 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
                       if (customerSales.length === 0) {
                         return (
                           <div className="p-3 rounded-xl border border-dashed border-neutral-200 dark:border-neutral-800 text-center text-neutral-400">
-                            <p className="text-[11px]">No purchases recorded for this customer yet.</p>
+                            <p className="text-[11px]">{language === 'ar' ? 'لا توجد مشتريات مسجلة لهذا العميل' : language === 'fr' ? 'Aucun achat enregistré pour ce client' : 'No purchases recorded for this customer yet.'}</p>
                           </div>
                         );
                       }
@@ -904,19 +938,19 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
                       );
                     })()}
                   </div>
-                ) : (
+                ) : isSalon ? (
                   <div className="space-y-2.5 text-xs">
                     <div className="flex items-center justify-between">
                       <h4 className="text-[11px] font-bold uppercase tracking-wider text-neutral-400 flex items-center gap-1.5">
                         <Scissors size={12} className="text-[#C4785A]" />
-                        <span>Bookings & Treatments</span>
+                        <span>{language === 'ar' ? 'الحجوزات وجلسات العناية' : language === 'fr' ? 'Rendez-vous & Soins' : 'Bookings & Treatments'}</span>
                       </h4>
                       <button
                         type="button"
                         onClick={() => setIsBookModalOpen(true)}
                         className="text-[11px] font-bold text-[#C4785A] hover:underline cursor-pointer"
                       >
-                        + Book Service
+                        {language === 'ar' ? '+ حجز موعد' : language === 'fr' ? '+ Réserver un soin' : '+ Book Service'}
                       </button>
                     </div>
 
@@ -925,13 +959,13 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
                       if (clientApts.length === 0) {
                         return (
                           <div className="p-3 rounded-xl border border-dashed border-neutral-200 dark:border-neutral-800 text-center text-neutral-400">
-                            <p className="text-[11px]">No treatments booked yet.</p>
+                            <p className="text-[11px]">{language === 'ar' ? 'لا توجد جلسات محجوزة بعد.' : language === 'fr' ? 'Aucun soin planifié pour le moment.' : 'No treatments booked yet.'}</p>
                             <button
                               type="button"
                               onClick={() => setIsBookModalOpen(true)}
                               className="mt-1 text-[11px] font-bold text-[#C4785A] cursor-pointer"
                             >
-                              Schedule first appointment →
+                              {language === 'ar' ? 'حجز أول موعد ←' : language === 'fr' ? 'Planifier le premier rendez-vous →' : 'Schedule first appointment →'}
                             </button>
                           </div>
                         );
@@ -969,13 +1003,152 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
                                 <span className="font-bold text-[#C4785A]">{formatMoney(apt.price)}</span>
                               </div>
                               <div className="text-[10px] text-neutral-400 flex items-center gap-1">
-                                <span>Stylist: {apt.staffName}</span>
+                                <span>{language === 'ar' ? 'المصفف:' : language === 'fr' ? 'Coiffeur :' : 'Stylist:'} {apt.staffName}</span>
                               </div>
                             </div>
                           ))}
                         </div>
                       );
                     })()}
+                  </div>
+                ) : (
+                  /* Dedicated Gym & Fitness Tabs: Turnstile History, Pro-Shop Sales, and Class Bookings */
+                  <div className="space-y-2.5 text-xs">
+                    <div className="flex items-center justify-between pb-1">
+                      <div className="flex items-center p-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-[10px] font-bold">
+                        <button
+                          type="button"
+                          onClick={() => setGymDrawerTab('history')}
+                          className={`px-2.5 py-1 rounded-full cursor-pointer transition-all ${
+                            gymDrawerTab === 'history'
+                              ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-xs'
+                              : 'text-neutral-500 hover:text-neutral-800'
+                          }`}
+                        >
+                          {t('member_drawer_tab_history', language)}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setGymDrawerTab('sales')}
+                          className={`px-2.5 py-1 rounded-full cursor-pointer transition-all ${
+                            gymDrawerTab === 'sales'
+                              ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-xs'
+                              : 'text-neutral-500 hover:text-neutral-800'
+                          }`}
+                        >
+                          {t('member_drawer_tab_sales', language)}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setGymDrawerTab('bookings')}
+                          className={`px-2.5 py-1 rounded-full cursor-pointer transition-all ${
+                            gymDrawerTab === 'bookings'
+                              ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-xs'
+                              : 'text-neutral-500 hover:text-neutral-800'
+                          }`}
+                        >
+                          {t('member_drawer_tab_bookings', language)}
+                        </button>
+                      </div>
+                    </div>
+
+                    {gymDrawerTab === 'history' && (
+                      <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+                        <div className="p-2.5 rounded-xl border border-neutral-100 dark:border-neutral-800/80 bg-neutral-50/60 dark:bg-neutral-800/40 text-xs flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                            <div>
+                              <div className="font-bold text-neutral-900 dark:text-white">
+                                {language === 'ar' ? 'بوابة الدخول الرئيسية A1' : language === 'fr' ? 'Portique Tourniquet A1' : 'Main Turnstile Gate A1'}
+                              </div>
+                              <div className="text-[10px] text-neutral-400">
+                                {language === 'ar' ? 'اليوم · 09:14' : language === 'fr' ? 'Aujourd\'hui · 09:14' : 'Today · 09:14'} · {selectedMember.cardId || 'RFID-994821'}
+                              </div>
+                            </div>
+                          </div>
+                          <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
+                            {language === 'ar' ? 'تم الدخول' : language === 'fr' ? 'Accès Autorisé' : 'Admitted'}
+                          </span>
+                        </div>
+                        <div className="p-2.5 rounded-xl border border-neutral-100 dark:border-neutral-800/80 bg-neutral-50/60 dark:bg-neutral-800/40 text-xs flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                            <div>
+                              <div className="font-bold text-neutral-900 dark:text-white">
+                                {language === 'ar' ? 'بوابة الدخول الرئيسية A1' : language === 'fr' ? 'Portique Tourniquet A1' : 'Main Turnstile Gate A1'}
+                              </div>
+                              <div className="text-[10px] text-neutral-400">
+                                {language === 'ar' ? 'أمس · 17:35' : language === 'fr' ? 'Hier · 17:35' : 'Yesterday · 17:35'} · {selectedMember.cardId || 'RFID-994821'}
+                              </div>
+                            </div>
+                          </div>
+                          <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
+                            {language === 'ar' ? 'تم الدخول' : language === 'fr' ? 'Accès Autorisé' : 'Admitted'}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+
+                    {gymDrawerTab === 'sales' && (
+                      <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+                        {(() => {
+                          const memberSales = sales.filter((s) => s.memberId === selectedMember.id);
+                          if (memberSales.length === 0) {
+                            return (
+                              <div className="p-3 rounded-xl border border-dashed border-neutral-200 dark:border-neutral-800 text-center text-neutral-400">
+                                <p className="text-[11px]">{language === 'ar' ? 'لا توجد مشتريات مسجلة للمشترك' : language === 'fr' ? 'Aucun achat boutique enregistré' : 'No purchases recorded for this member'}</p>
+                              </div>
+                            );
+                          }
+                          return memberSales.map((sale) => (
+                            <div
+                              key={sale.id}
+                              className="p-2.5 rounded-xl border border-neutral-100 dark:border-neutral-800/80 bg-neutral-50/60 dark:bg-neutral-800/40 text-xs flex flex-col gap-1"
+                            >
+                              <div className="flex items-center justify-between">
+                                <span className="font-bold text-neutral-900 dark:text-white font-mono">
+                                  #{sale.id.slice(-6).toUpperCase()}
+                                </span>
+                                <span className="font-bold text-emerald-600 font-mono">
+                                  {formatMoney(sale.totalAmount)}
+                                </span>
+                              </div>
+                              <div className="text-[11px] text-neutral-500 truncate">
+                                {sale.items.map((it) => `${it.quantity}x ${it.productName}`).join(', ')}
+                              </div>
+                              <div className="flex items-center justify-between text-[10px] text-neutral-400 pt-0.5 border-t border-neutral-200/50 dark:border-neutral-700/50">
+                                <span>{new Date(sale.createdAt).toLocaleDateString()}</span>
+                                <span className="font-medium text-neutral-600 dark:text-neutral-300">{sale.paymentMethod}</span>
+                              </div>
+                            </div>
+                          ));
+                        })()}
+                      </div>
+                    )}
+
+                    {gymDrawerTab === 'bookings' && (
+                      <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+                        {schedule.slice(0, 3).map((ev) => (
+                          <div
+                            key={ev.id}
+                            className="p-2.5 rounded-xl border border-neutral-100 dark:border-neutral-800/80 bg-neutral-50/60 dark:bg-neutral-800/40 text-xs flex flex-col gap-1"
+                          >
+                            <div className="flex items-center justify-between">
+                              <span className="font-bold text-neutral-900 dark:text-white">
+                                {ev.title}
+                              </span>
+                              <span className="text-[10px] font-bold text-[#C4785A] bg-[#C4785A]/10 px-2 py-0.5 rounded-full">
+                                {ev.category}
+                              </span>
+                            </div>
+                            <div className="flex items-center justify-between text-[11px] text-neutral-500">
+                              <span>{ev.startTime} - {ev.endTime} • {ev.roomOrArea}</span>
+                              <span className="text-neutral-400 font-medium">{ev.trainerOrStaff}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )}
 

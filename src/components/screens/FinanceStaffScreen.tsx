@@ -281,11 +281,11 @@ export const FinanceStaffScreen: React.FC = () => {
           <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
             <div>
               <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
-                Active Team Headcount
+                {t('finance_active_staff_count', language)}
               </span>
               <div className="mt-1">
                 <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
-                  ↗ 100% Opérationnel
+                  ↗ 100% {language === 'ar' ? 'تشغيلي' : language === 'fr' ? 'Opérationnel' : 'Operational'}
                 </span>
               </div>
             </div>
@@ -301,15 +301,15 @@ export const FinanceStaffScreen: React.FC = () => {
           <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
             <div>
               <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
-                Monthly Payroll Total
+                {t('finance_monthly_payout', language)}
               </span>
               <div className="mt-1">
                 <span className="text-[10px] font-bold text-[#C4785A] bg-[#C4785A]/10 px-2 py-0.5 rounded-full">
-                  Échéance le 28
+                  {language === 'ar' ? 'يوم الصرف: 28' : language === 'fr' ? 'Échéance le 28' : 'Due on 28th'}
                 </span>
               </div>
             </div>
-            <div className="text-3xl font-black text-neutral-900 dark:text-white tabular-nums">
+            <div className="text-3xl font-black text-neutral-900 dark:text-white tabular-nums font-mono">
               {formatMoney(totalMonthlyPayroll)}
             </div>
           </div>
@@ -318,16 +318,16 @@ export const FinanceStaffScreen: React.FC = () => {
           <div className="p-5 rounded-[20px] bg-[#18181B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
             <div>
               <span className="text-xs font-medium text-neutral-300">
-                Security Ranks Configured
+                {language === 'ar' ? 'مستويات الصلاحيات الأمنية' : language === 'fr' ? 'Niveaux de sécurité configurés' : 'Security Ranks Configured'}
               </span>
               <div className="text-[11px] text-[#C4785A] font-semibold mt-0.5">
-                Role-Based Module Permissions
+                {language === 'ar' ? 'صلاحيات الوحدات بحسب الدور' : language === 'fr' ? 'Droits d\'accès basés sur les rôles' : 'Role-Based Module Permissions'}
               </div>
             </div>
             <div className="text-2xl font-black text-white tabular-nums">
               {new Set(staff.map((s) => s.role)).size}{' '}
               <span className="text-xs font-normal text-neutral-400">
-                profils de sécurité
+                {language === 'ar' ? 'أدوار أمنية' : language === 'fr' ? 'profils de sécurité' : 'security roles'}
               </span>
             </div>
           </div>
@@ -342,7 +342,7 @@ export const FinanceStaffScreen: React.FC = () => {
           <div className="flex items-center gap-2">
             <Users size={16} className="text-neutral-500" />
             <span className="text-sm font-bold text-neutral-900 dark:text-white">
-              Staff Directory
+              {t('finance_staff_roster', language)}
             </span>
             <span className="text-xs text-neutral-400 font-semibold tabular-nums ml-1">
               {filteredStaff.length}
@@ -355,7 +355,7 @@ export const FinanceStaffScreen: React.FC = () => {
             <Seek
               value={searchQuery}
               onChange={setSearchQuery}
-              placeholder="Search staff name, role, email..."
+              placeholder={language === 'ar' ? 'البحث عن موظف بالاسم، الدور، البريد...' : language === 'fr' ? 'Rechercher un collaborateur par nom, rôle, email...' : 'Search staff name, role, email...'}
               openWidth={260}
               shutSize={38}
             />
@@ -364,6 +364,16 @@ export const FinanceStaffScreen: React.FC = () => {
             <div className="flex items-center p-0.5 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 gap-0.5 text-xs font-semibold shadow-2xs">
               {(['All', 'Manager', 'Cashier', 'Stylist', 'Staff'] as const).map((r) => {
                 const isActive = roleFilter === r;
+                const label =
+                  r === 'All'
+                    ? t('member_filter_all', language)
+                    : r === 'Manager'
+                    ? t('finance_role_manager', language)
+                    : r === 'Cashier'
+                    ? t('finance_role_cashier', language)
+                    : r === 'Stylist'
+                    ? t('finance_role_stylist', language)
+                    : t('finance_role_staff', language);
                 return (
                   <button
                     key={r}
@@ -377,7 +387,7 @@ export const FinanceStaffScreen: React.FC = () => {
                       isActive ? 'font-bold' : 'hover:text-neutral-900 dark:hover:text-white'
                     }`}
                   >
-                    {r}
+                    {label}
                   </button>
                 );
               })}
@@ -391,7 +401,7 @@ export const FinanceStaffScreen: React.FC = () => {
               title="Download CSV payroll roster"
             >
               <Download size={13} />
-              <span>Export Payroll</span>
+              <span>{language === 'ar' ? 'تصدير الأجور' : language === 'fr' ? 'Exporter les salaires' : 'Export Payroll'}</span>
             </button>
 
             {/* View Mode Toggle */}
@@ -440,19 +450,19 @@ export const FinanceStaffScreen: React.FC = () => {
             <table className="w-full border-collapse text-left">
               <thead>
                 <tr className="border-b border-neutral-200/60 dark:border-neutral-800/80 text-[11px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider h-11">
-                  <th className="px-5">Staff Member</th>
-                  <th className="px-4">Role & Security Rank</th>
-                  <th className="px-4">Monthly Salary</th>
-                  <th className="px-4">Payday of Month</th>
-                  <th className="px-4">POS PIN / RFID</th>
-                  <th className="px-4 text-right">Status</th>
+                  <th className="px-5">{language === 'ar' ? 'الموظف' : language === 'fr' ? 'Collaborateur' : 'Staff Member'}</th>
+                  <th className="px-4">{language === 'ar' ? 'الدور والرتبة' : language === 'fr' ? 'Rôle & Niveau d\'accès' : 'Role & Security Rank'}</th>
+                  <th className="px-4">{language === 'ar' ? 'الراتب الشهري' : language === 'fr' ? 'Salaire mensuel' : 'Monthly Salary'}</th>
+                  <th className="px-4">{language === 'ar' ? 'يوم الصرف' : language === 'fr' ? 'Jour de paie' : 'Payday of Month'}</th>
+                  <th className="px-4">{language === 'ar' ? 'رمز الدخول PIN' : language === 'fr' ? 'Code PIN caisse' : 'POS PIN / RFID'}</th>
+                  <th className="px-4 text-right">{language === 'ar' ? 'الحالة' : language === 'fr' ? 'Statut' : 'Status'}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-neutral-200/40 dark:divide-neutral-800/60">
                 {filteredStaff.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="py-16 text-center text-xs text-neutral-400">
-                      No staff members match the current filter.
+                      {language === 'ar' ? 'لا يوجد موظفون يطابقون خيارات البحث.' : language === 'fr' ? 'Aucun collaborateur ne correspond au filtre.' : 'No staff members match the current filter.'}
                     </td>
                   </tr>
                 ) : (

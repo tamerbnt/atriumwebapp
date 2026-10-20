@@ -369,56 +369,56 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
     return { pillarHeights: defaultHeights, pillarColors: defaultColors, pillarTooltips: defaultTooltips };
   }, [sales, isPOS, isSalon, salonMetrics]);
 
-  const gymActivities = [
+  const gymActivities = useMemo(() => [
     {
       id: 'act_01',
-      type: 'Ventes',
+      type: 'Ventes' as const,
       member: 'amira - A1',
-      operation: 'Sale (1,500 DA)',
+      operation: language === 'ar' ? 'مبيعات (1,500 د.ج)' : language === 'fr' ? 'Vente boutique (1 500 DA)' : 'Sale (1,500 DA)',
       status: 'completed',
-      time: '20h ago',
+      time: language === 'ar' ? 'منذ 20 س' : language === 'fr' ? 'Il y a 20h' : '20h ago',
     },
     {
       id: 'act_02',
-      type: 'Ventes',
-      member: 'Guest - water',
-      operation: 'Sale (100 DA)',
+      type: 'Ventes' as const,
+      member: language === 'ar' ? 'زائر - ماء' : language === 'fr' ? 'Passage - Eau' : 'Guest - water',
+      operation: language === 'ar' ? 'مبيعات (100 د.ج)' : language === 'fr' ? 'Vente boutique (100 DA)' : 'Sale (100 DA)',
       status: 'completed',
-      time: '1d ago',
+      time: language === 'ar' ? 'منذ يوم' : language === 'fr' ? 'Il y a 1j' : '1d ago',
     },
     {
       id: 'act_03',
-      type: 'Ventes',
-      member: 'Guest - water',
-      operation: 'Sale (100 DA)',
+      type: 'Ventes' as const,
+      member: language === 'ar' ? 'زائر - ماء' : language === 'fr' ? 'Passage - Eau' : 'Guest - water',
+      operation: language === 'ar' ? 'مبيعات (100 د.ج)' : language === 'fr' ? 'Vente boutique (100 DA)' : 'Sale (100 DA)',
       status: 'completed',
-      time: '2d ago',
+      time: language === 'ar' ? 'منذ يومين' : language === 'fr' ? 'Il y a 2j' : '2d ago',
     },
     {
       id: 'act_04',
-      type: 'Ventes',
-      member: 'Guest - protine',
-      operation: 'Sale (1,000 DA)',
+      type: 'Ventes' as const,
+      member: language === 'ar' ? 'زائر - بروتين' : language === 'fr' ? 'Passage - Protéine' : 'Guest - protein',
+      operation: language === 'ar' ? 'مبيعات (1,000 د.ج)' : language === 'fr' ? 'Vente boutique (1 000 DA)' : 'Sale (1,000 DA)',
       status: 'completed',
-      time: '2d ago',
+      time: language === 'ar' ? 'منذ يومين' : language === 'fr' ? 'Il y a 2j' : '2d ago',
     },
     {
       id: 'act_05',
-      type: 'Passages',
+      type: 'Passages' as const,
       member: 'amira - A1',
-      operation: 'Check-in (Entrée Badge)',
+      operation: language === 'ar' ? 'تسجيل دخول (بطاقة RFID)' : language === 'fr' ? 'Pointage (Badge RFID)' : 'Check-in (RFID Badge)',
       status: 'admitted',
-      time: '2h ago',
+      time: language === 'ar' ? 'منذ ساعتين' : language === 'fr' ? 'Il y a 2h' : '2h ago',
     },
     {
       id: 'act_06',
-      type: 'Passages',
+      type: 'Passages' as const,
       member: 'saraa - A1',
-      operation: 'Check-in (Entrée Badge)',
+      operation: language === 'ar' ? 'تسجيل دخول (بطاقة RFID)' : language === 'fr' ? 'Pointage (Badge RFID)' : 'Check-in (RFID Badge)',
       status: 'admitted',
-      time: '4h ago',
+      time: language === 'ar' ? 'منذ 4 س' : language === 'fr' ? 'Il y a 4h' : '4h ago',
     },
-  ];
+  ], [language]);
 
   // Salon dynamic activities
   const salonActivities = useMemo(() => {
@@ -1206,11 +1206,11 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                 <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[126px]">
                   <div>
                     <span className="text-[11px] font-semibold text-[#64748B] dark:text-neutral-400">
-                      Revenue Today
+                      {language === 'ar' ? 'إيرادات اليوم' : language === 'fr' ? 'Revenus du jour' : 'Revenue Today'}
                     </span>
                     <div className="mt-0.5">
                       <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
-                        ↗ 0%
+                        ↗ 100% {language === 'ar' ? 'مسدد' : language === 'fr' ? 'Encaissé' : 'Settled'}
                       </span>
                     </div>
                   </div>
@@ -1225,11 +1225,11 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                 <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[126px]">
                   <div>
                     <span className="text-[11px] font-semibold text-[#64748B] dark:text-neutral-400">
-                      Active Members
+                      {language === 'ar' ? 'المشتركون النشطون' : language === 'fr' ? 'Adhérents actifs' : 'Active Members'}
                     </span>
                     <div className="mt-0.5">
                       <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
-                        vs yesterday
+                        {language === 'ar' ? 'مقارنة بالأمس' : language === 'fr' ? 'vs hier' : 'vs yesterday'}
                       </span>
                     </div>
                   </div>
@@ -1255,17 +1255,17 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                 <div className="p-4 rounded-[20px] bg-[#18181B] border border-neutral-800 text-white flex flex-col justify-between h-[126px] shadow-sm">
                   <div>
                     <span className="text-[11px] font-medium text-neutral-300">
-                      Expiring Soon
+                      {language === 'ar' ? 'أوشكت على الانتهاء' : language === 'fr' ? 'À renouveler (<14j)' : 'Expiring Soon'}
                     </span>
                     <div className="mt-0.5">
                       <span className="text-[10px] font-bold text-amber-300 bg-amber-400/20 px-2 py-0.5 rounded-full">
-                        ↘ 0%
+                        {language === 'ar' ? 'تنبيه التجديد' : language === 'fr' ? 'Relance active' : 'Renewal Alert'}
                       </span>
                     </div>
                   </div>
                   <div>
                     <div className="text-xl font-black text-white tabular-nums">
-                      0
+                      {members.filter((m) => m.status === 'Expiring').length}
                     </div>
                     <div className="w-full h-0.5 bg-amber-500 mt-2.5 rounded-full opacity-80" />
                   </div>
@@ -1425,12 +1425,14 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-base font-bold text-neutral-900 dark:text-white">
-                  {isSalon ? 'Live Treatment & Sales Stream' : 'Recent Activity'}
+                  {isSalon
+                    ? (language === 'ar' ? 'العلاجات والمبيعات المباشرة' : language === 'fr' ? 'Soins & Ventes en direct' : 'Live Treatment & Sales Stream')
+                    : (language === 'ar' ? 'النشاط الأخير وسجل العمليات' : language === 'fr' ? 'Activité récente & Passages' : 'Recent Activity')}
                 </h3>
                 <p className="text-xs text-neutral-400 dark:text-neutral-500">
                   {isSalon
-                    ? 'Real-time appointments, in-chair statuses, and POS checkouts'
-                    : 'Track your daily operational activity.'}
+                    ? (language === 'ar' ? 'المواعيد الآنية، حالات الكراسي وإغلاق الحسابات' : language === 'fr' ? 'Rendez-vous temps réel, état des fauteuils et encaissements' : 'Real-time appointments, in-chair statuses, and POS checkouts')
+                    : (language === 'ar' ? 'متابعة حركة الدخول والمبيعات اليومية للقاعة.' : language === 'fr' ? 'Suivi en direct des passages et ventes du jour.' : 'Track your daily operational activity.')}
                 </p>
               </div>
 
@@ -1452,7 +1454,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                         salonActivityTab === tab ? 'font-bold' : 'hover:text-neutral-900 dark:hover:text-white'
                       }`}
                     >
-                      {tab === 'Rendezvous' ? 'Bookings' : tab === 'Ventes' ? 'Sales' : 'All'}
+                      {tab === 'Rendezvous' ? (language === 'ar' ? 'المواعيد' : language === 'fr' ? 'Rendez-vous' : 'Bookings') : tab === 'Ventes' ? (language === 'ar' ? 'المبيعات' : language === 'fr' ? 'Ventes' : 'Sales') : (language === 'ar' ? 'الكل' : language === 'fr' ? 'Tous' : 'All')}
                     </button>
                   ))}
                 </div>
@@ -1473,7 +1475,11 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                         activityTab === tab ? 'font-bold' : 'hover:text-neutral-900 dark:hover:text-white'
                       }`}
                     >
-                      {tab}
+                      {tab === 'Passages'
+                        ? (language === 'ar' ? 'دخول القاعة' : language === 'fr' ? 'Passages' : 'Entries')
+                        : tab === 'Ventes'
+                        ? (language === 'ar' ? 'المبيعات' : language === 'fr' ? 'Ventes' : 'Sales')
+                        : (language === 'ar' ? 'الكل' : language === 'fr' ? 'Tous' : 'All')}
                     </button>
                   ))}
                 </div>
@@ -1484,12 +1490,12 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
             <div className="space-y-2">
               <div className="grid grid-cols-12 px-4 py-2 text-[11px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">
                 <div className="col-span-5 flex items-center gap-1">
-                  <span>{isSalon ? 'Client' : 'Membre'}</span>
+                  <span>{isSalon ? (language === 'ar' ? 'العميل' : language === 'fr' ? 'Client' : 'Client') : (language === 'ar' ? 'المشترك' : language === 'fr' ? 'Adhérent' : 'Member')}</span>
                   <span className="text-[10px]">↕</span>
                 </div>
-                <div className="col-span-4">{isSalon ? 'Treatment / Service' : 'Opération'}</div>
-                <div className="col-span-1 text-center">Statut</div>
-                <div className="col-span-2 text-right">{isSalon ? 'Time / Total' : 'Heure'}</div>
+                <div className="col-span-4">{isSalon ? (language === 'ar' ? 'الخدمة / العلاج' : language === 'fr' ? 'Prestation / Soin' : 'Treatment / Service') : (language === 'ar' ? 'العملية' : language === 'fr' ? 'Opération' : 'Operation')}</div>
+                <div className="col-span-1 text-center">{language === 'ar' ? 'الحالة' : language === 'fr' ? 'Statut' : 'Status'}</div>
+                <div className="col-span-2 text-right">{isSalon ? (language === 'ar' ? 'الوقت / الإجمالي' : language === 'fr' ? 'Heure / Total' : 'Time / Total') : (language === 'ar' ? 'الوقت' : language === 'fr' ? 'Heure' : 'Time')}</div>
               </div>
 
               <div className="space-y-2">

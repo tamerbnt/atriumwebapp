@@ -231,10 +231,10 @@ export const HistoryScreen: React.FC = () => {
       <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[26px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
         <div>
           <h2 className="text-base font-bold text-neutral-900 dark:text-white">
-            Financial Settlement & Audit Velocity
+            {language === 'ar' ? 'التسويات المالية ومؤشرات التدقيق' : language === 'fr' ? 'Règlements financiers & Piste d\'audit' : 'Financial Settlement & Audit Velocity'}
           </h2>
           <p className="text-xs text-neutral-400 dark:text-neutral-500">
-            Reconciled payments, daily cash drawers, and electronic transactions
+            {language === 'ar' ? 'المدفوعات المحصلة، إغلاق الصناديق اليومية والمعاملات الإلكترونية' : language === 'fr' ? 'Paiements rapprochés, clôtures de caisse et transactions électroniques' : 'Reconciled payments, daily cash drawers, and electronic transactions'}
           </p>
         </div>
 
@@ -243,11 +243,11 @@ export const HistoryScreen: React.FC = () => {
           <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
             <div>
               <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
-                Total Reconciled Volume
+                {language === 'ar' ? 'إجمالي الحجم المحصل' : language === 'fr' ? 'Volume total rapproché' : 'Total Reconciled Volume'}
               </span>
               <div className="mt-1">
                 <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
-                  ↗ 100% Audited
+                  ↗ 100% {language === 'ar' ? 'مدقق' : language === 'fr' ? 'Audité' : 'Audited'}
                 </span>
               </div>
             </div>
@@ -260,17 +260,19 @@ export const HistoryScreen: React.FC = () => {
           <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
             <div>
               <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
-                Cash Tender Ratio
+                {language === 'ar' ? 'نسبة الدفع النقدي' : language === 'fr' ? 'Part des espèces' : 'Cash Tender Ratio'}
               </span>
               <div className="mt-1">
                 <span className="text-[10px] font-bold text-[#C4785A] bg-[#C4785A]/10 px-2 py-0.5 rounded-full">
-                  {cashShare}% Espèces
+                  {cashShare}% {language === 'ar' ? 'نقداً' : 'Espèces'}
                 </span>
               </div>
             </div>
             <div className="text-3xl font-black text-neutral-900 dark:text-white tabular-nums">
               {sales.length}{' '}
-              <span className="text-xs font-normal text-neutral-400">reçus émis</span>
+              <span className="text-xs font-normal text-neutral-400">
+                {language === 'ar' ? 'وصل صادر' : language === 'fr' ? 'reçus émis' : 'receipts issued'}
+              </span>
             </div>
           </div>
 
@@ -278,15 +280,15 @@ export const HistoryScreen: React.FC = () => {
           <div className="p-5 rounded-[20px] bg-[#18181B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
             <div>
               <span className="text-xs font-medium text-neutral-300">
-                Active Terminal State
+                {language === 'ar' ? 'حالة نقطة البيع النشطة' : language === 'fr' ? 'État du terminal actif' : 'Active Terminal State'}
               </span>
               <div className="text-[11px] text-[#C4785A] font-semibold mt-0.5">
-                Frontdesk Register POS-01
+                {language === 'ar' ? 'صندوق الاستقبال POS-01' : 'Frontdesk Register POS-01'}
               </div>
             </div>
             <div className="text-2xl font-black text-white tabular-nums flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
-              En Ligne & Synchronisé
+              {language === 'ar' ? 'متصل ومحدث' : language === 'fr' ? 'En Ligne & Synchronisé' : 'Online & Synchronized'}
             </div>
           </div>
         </div>
@@ -300,7 +302,7 @@ export const HistoryScreen: React.FC = () => {
           <div className="flex items-center gap-2">
             <Receipt size={16} className="text-neutral-500" />
             <span className="text-sm font-bold text-neutral-900 dark:text-white">
-              Transactions
+              {language === 'ar' ? 'سجل العمليات' : language === 'fr' ? 'Transactions' : 'Transactions'}
             </span>
             <span className="text-xs text-neutral-400 font-semibold tabular-nums ml-1">
               {filteredSales.length}
@@ -313,7 +315,7 @@ export const HistoryScreen: React.FC = () => {
             <Seek
               value={searchQuery}
               onChange={setSearchQuery}
-              placeholder="Search receipt ID, member, item..."
+              placeholder={language === 'ar' ? 'البحث عن رقم الوصل، المشترك، المنتج...' : language === 'fr' ? 'Rechercher ticket, client, produit...' : 'Search receipt ID, member, item...'}
               shutSize={36}
               openWidth={230}
             />
@@ -322,6 +324,12 @@ export const HistoryScreen: React.FC = () => {
             <div className="flex items-center p-0.5 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 gap-0.5 text-xs font-semibold shadow-2xs">
               {(['All', 'Settled', 'Refunded'] as const).map((st) => {
                 const isActive = statusFilter === st;
+                const label =
+                  st === 'All'
+                    ? (language === 'ar' ? 'الكل' : language === 'fr' ? 'Tous' : 'All')
+                    : st === 'Settled'
+                    ? (language === 'ar' ? 'مسدد' : language === 'fr' ? 'Encaissé' : 'Settled')
+                    : (language === 'ar' ? 'مسترجع' : language === 'fr' ? 'Remboursé' : 'Refunded');
                 return (
                   <button
                     key={st}
@@ -335,7 +343,7 @@ export const HistoryScreen: React.FC = () => {
                       isActive ? 'font-bold' : 'hover:text-neutral-900 dark:hover:text-white'
                     }`}
                   >
-                    {st}
+                    {label}
                   </button>
                 );
               })}
@@ -345,7 +353,16 @@ export const HistoryScreen: React.FC = () => {
             <div className="flex items-center p-0.5 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 gap-0.5 text-xs font-semibold shadow-2xs">
               {(['All', 'Cash', 'Card', 'Split', 'MemberBalance'] as const).map((method) => {
                 const isActive = methodFilter === method;
-                const label = method === 'MemberBalance' ? 'Balance' : method;
+                const label =
+                  method === 'All'
+                    ? (language === 'ar' ? 'الكل' : language === 'fr' ? 'Tous' : 'All')
+                    : method === 'Cash'
+                    ? (language === 'ar' ? 'نقداً' : language === 'fr' ? 'Espèces' : 'Cash')
+                    : method === 'Card'
+                    ? (language === 'ar' ? 'بطاقة CIB' : language === 'fr' ? 'Carte' : 'Card')
+                    : method === 'Split'
+                    ? (language === 'ar' ? 'مقسم' : language === 'fr' ? 'Mixte' : 'Split')
+                    : (language === 'ar' ? 'الرصيد' : language === 'fr' ? 'Solde' : 'Balance');
                 return (
                   <button
                     key={method}
@@ -373,7 +390,7 @@ export const HistoryScreen: React.FC = () => {
               title="Download CSV audit log"
             >
               <Download size={13} />
-              <span>Export Ledger</span>
+              <span>{language === 'ar' ? 'تصدير السجل' : language === 'fr' ? 'Exporter le journal' : 'Export Ledger'}</span>
             </button>
 
             {/* View Mode Toggle */}
@@ -422,19 +439,19 @@ export const HistoryScreen: React.FC = () => {
             <table className="w-full border-collapse text-left">
               <thead>
                 <tr className="border-b border-neutral-200/60 dark:border-neutral-800/80 text-[11px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider h-11">
-                  <th className="px-5">Receipt ID</th>
-                  <th className="px-4">Date & Time</th>
-                  <th className="px-4">Customer</th>
-                  <th className="px-4">Purchased Items</th>
-                  <th className="px-4">Tender Method</th>
-                  <th className="px-4 text-right">Settled Amount</th>
+                  <th className="px-5">{language === 'ar' ? 'رقم الوصل' : language === 'fr' ? 'N° Ticket' : 'Receipt ID'}</th>
+                  <th className="px-4">{language === 'ar' ? 'التاريخ والوقت' : language === 'fr' ? 'Date & Heure' : 'Date & Time'}</th>
+                  <th className="px-4">{language === 'ar' ? 'العميل / المشترك' : language === 'fr' ? 'Client / Adhérent' : 'Customer'}</th>
+                  <th className="px-4">{language === 'ar' ? 'الأصناف المشتراة' : language === 'fr' ? 'Articles achetés' : 'Purchased Items'}</th>
+                  <th className="px-4">{language === 'ar' ? 'طريقة الدفع' : language === 'fr' ? 'Mode de règlement' : 'Tender Method'}</th>
+                  <th className="px-4 text-right">{language === 'ar' ? 'المبلغ المحصل' : language === 'fr' ? 'Montant réglé' : 'Settled Amount'}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-neutral-200/40 dark:divide-neutral-800/60">
                 {filteredSales.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="py-16 text-center text-xs text-neutral-400">
-                      No transaction records match the current filter.
+                      {language === 'ar' ? 'لا توجد معاملات تطابق خيارات البحث.' : language === 'fr' ? 'Aucune transaction ne correspond au filtre.' : 'No transaction records match the current filter.'}
                     </td>
                   </tr>
                 ) : (
@@ -469,7 +486,7 @@ export const HistoryScreen: React.FC = () => {
                           </div>
                           <div>
                             <span className="text-xs font-bold text-neutral-900 dark:text-white block">
-                              {sale.memberName || 'Guest Walk-In'}
+                              {sale.memberName || (language === 'ar' ? 'زائر غير مسجل' : language === 'fr' ? 'Client de passage' : 'Guest Walk-In')}
                             </span>
                             {sale.customerPhone && (
                               <span className="text-[10px] text-neutral-400 block font-mono">
@@ -511,7 +528,7 @@ export const HistoryScreen: React.FC = () => {
 
                           {sale.status === 'Refunded' && (
                             <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800">
-                              Refunded
+                              {language === 'ar' ? 'مسترجع' : language === 'fr' ? 'Remboursé' : 'Refunded'}
                             </span>
                           )}
                         </div>
@@ -523,7 +540,7 @@ export const HistoryScreen: React.FC = () => {
                         </div>
                         {sale.status === 'Refunded' && (
                           <div className="text-[10px] font-bold text-rose-600 dark:text-rose-400">
-                            0 DZD (Restocked)
+                            0 DZD ({language === 'ar' ? 'معاد للمخزون' : language === 'fr' ? 'Réintégré' : 'Restocked'})
                           </div>
                         )}
                       </td>
@@ -551,7 +568,7 @@ export const HistoryScreen: React.FC = () => {
                   <div className="flex items-center gap-1.5">
                     {sale.status === 'Refunded' && (
                       <span className="px-1.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-rose-100 text-rose-700">
-                        Refunded
+                        {language === 'ar' ? 'مسترجع' : language === 'fr' ? 'Remboursé' : 'Refunded'}
                       </span>
                     )}
                     <span className="text-[11px] text-neutral-400 tabular-nums">
@@ -566,7 +583,7 @@ export const HistoryScreen: React.FC = () => {
                   </div>
                   <div>
                     <h3 className="text-xs font-bold text-neutral-900 dark:text-white">
-                      {sale.memberName || 'Guest Walk-In'}
+                      {sale.memberName || (language === 'ar' ? 'زائر غير مسجل' : language === 'fr' ? 'Client de passage' : 'Guest Walk-In')}
                     </h3>
                     <p className="text-[11px] text-neutral-400">{sale.paymentMethod}</p>
                   </div>
@@ -584,7 +601,9 @@ export const HistoryScreen: React.FC = () => {
                 )}
 
                 <div className="flex items-center justify-between pt-3 border-t border-neutral-100 dark:border-neutral-800">
-                  <span className="text-xs text-neutral-400 font-medium">Settled Amount</span>
+                  <span className="text-xs text-neutral-400 font-medium">
+                    {language === 'ar' ? 'المبلغ المحصل' : language === 'fr' ? 'Montant réglé' : 'Settled Amount'}
+                  </span>
                   <span className={`text-base font-black tabular-nums ${sale.status === 'Refunded' ? 'line-through text-neutral-400' : 'text-neutral-900 dark:text-white'}`}>
                     {formatMoney(sale.totalAmount)}
                   </span>
@@ -603,7 +622,7 @@ export const HistoryScreen: React.FC = () => {
             <div className="flex items-center gap-2">
               <Receipt size={17} className="text-[#C4785A]" />
               <span className="text-sm font-bold text-neutral-900 dark:text-white">
-                Receipt Audit Inspector
+                {language === 'ar' ? 'معاينة وتدقيق الوصل' : language === 'fr' ? 'Inspecteur du reçu' : 'Receipt Audit Inspector'}
               </span>
             </div>
             <button
@@ -622,10 +641,10 @@ export const HistoryScreen: React.FC = () => {
               <div className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-900/60 space-y-1">
                 <div className="flex items-center gap-2 text-rose-800 dark:text-rose-200 font-bold">
                   <RotateCcw size={15} className="text-rose-600" />
-                  <span>TRANSACTION REFUNDED & RESTOCKED</span>
+                  <span>{language === 'ar' ? 'معاملة مسترجعة ومعاد تخزينها' : language === 'fr' ? 'TRANSACTION REMBOURSÉE & RÉINTÉGRÉE' : 'TRANSACTION REFUNDED & RESTOCKED'}</span>
                 </div>
                 <p className="text-[11px] text-rose-700 dark:text-rose-300">
-                  {selectedSale.notes || 'Full refund processed. Inventory levels have been automatically returned to stock.'}
+                  {selectedSale.notes || (language === 'ar' ? 'تم استرجاع المعاملة بالكامل وإرجاع الأصناف للمخزون.' : language === 'fr' ? 'Remboursement effectué. Les articles ont été réintégrés au stock.' : 'Full refund processed. Inventory levels have been automatically returned to stock.')}
                 </p>
               </div>
             )}
@@ -633,37 +652,37 @@ export const HistoryScreen: React.FC = () => {
             {/* Top receipt overview */}
             <div className="p-4 rounded-2xl bg-[#FAF9F6] dark:bg-neutral-800/60 border border-neutral-200/80 dark:border-neutral-700/80 space-y-2">
               <div className="flex justify-between items-center">
-                <span className="text-neutral-400">Receipt Ref:</span>
+                <span className="text-neutral-400">{language === 'ar' ? 'رقم الوصل:' : language === 'fr' ? 'Réf ticket :' : 'Receipt Ref:'}</span>
                 <span className="font-mono font-bold text-[#C4785A]">#{selectedSale.id}</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-neutral-400">Timestamp:</span>
+                <span className="text-neutral-400">{language === 'ar' ? 'الوقت والتاريخ:' : language === 'fr' ? 'Date & heure :' : 'Timestamp:'}</span>
                 <span className="font-semibold text-neutral-800 dark:text-neutral-200 tabular-nums">
                   {new Date(selectedSale.createdAt).toLocaleString()}
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-neutral-400">Customer:</span>
+                <span className="text-neutral-400">{language === 'ar' ? 'العميل:' : language === 'fr' ? 'Client :' : 'Customer:'}</span>
                 <span className="font-bold text-neutral-900 dark:text-white">
-                  {selectedSale.memberName || 'Guest Walk-In'}
+                  {selectedSale.memberName || (language === 'ar' ? 'زائر غير مسجل' : language === 'fr' ? 'Client de passage' : 'Guest Walk-In')}
                 </span>
               </div>
               {selectedSale.customerPhone && (
                 <div className="flex justify-between items-center">
-                  <span className="text-neutral-400">Phone:</span>
+                  <span className="text-neutral-400">{language === 'ar' ? 'الهاتف:' : language === 'fr' ? 'Téléphone :' : 'Phone:'}</span>
                   <span className="font-mono font-semibold text-neutral-800 dark:text-neutral-200">
                     {selectedSale.customerPhone}
                   </span>
                 </div>
               )}
               <div className="flex justify-between items-center">
-                <span className="text-neutral-400">Payment Tender:</span>
+                <span className="text-neutral-400">{language === 'ar' ? 'طريقة الدفع:' : language === 'fr' ? 'Mode de règlement :' : 'Payment Tender:'}</span>
                 <span className="font-bold text-neutral-900 dark:text-white">
                   {selectedSale.paymentMethod}
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-neutral-400">Facility Station:</span>
+                <span className="text-neutral-400">{language === 'ar' ? 'نقطة البيع:' : language === 'fr' ? 'Poste de caisse :' : 'Facility Station:'}</span>
                 <span className="font-semibold text-neutral-800 dark:text-neutral-200">
                   {currentBranch?.name || 'Atrium 1'} (POS-01)
                 </span>
@@ -675,7 +694,7 @@ export const HistoryScreen: React.FC = () => {
               <div className="p-3.5 rounded-2xl bg-[#FDF4F0] dark:bg-neutral-800/80 border border-[#F5E2D8] dark:border-neutral-700 space-y-1">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-[#C4785A] flex items-center gap-1">
                   <Scissors size={12} />
-                  <span>Attribution / Notes</span>
+                  <span>{language === 'ar' ? 'الملاحظات / الإسناد' : language === 'fr' ? 'Attribution / Notes' : 'Attribution / Notes'}</span>
                 </span>
                 <p className="text-xs font-semibold text-neutral-800 dark:text-neutral-200">
                   {selectedSale.notes}
@@ -686,7 +705,7 @@ export const HistoryScreen: React.FC = () => {
             {/* Line Items breakdown */}
             <div className="space-y-2">
               <span className="text-xs font-bold text-neutral-900 dark:text-white uppercase tracking-wider">
-                Line Items ({selectedSale.items.length})
+                {language === 'ar' ? 'الأصناف المشتراة' : language === 'fr' ? 'Articles' : 'Line Items'} ({selectedSale.items.length})
               </span>
               <div className="border border-neutral-200 dark:border-neutral-800 rounded-2xl divide-y divide-neutral-200 dark:divide-neutral-800 overflow-hidden">
                 {selectedSale.items.map((item, idx) => (
@@ -711,8 +730,12 @@ export const HistoryScreen: React.FC = () => {
             {/* Grand Total */}
             <div className="p-4 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 border border-[#E8DFD8] dark:border-neutral-700 flex justify-between items-center">
               <div>
-                <span className="text-xs font-bold text-[#C4785A]">Total Settled</span>
-                <div className="text-[11px] text-neutral-500">Includes VAT & taxes</div>
+                <span className="text-xs font-bold text-[#C4785A]">
+                  {language === 'ar' ? 'إجمالي المدفوع' : language === 'fr' ? 'Total Encaissé' : 'Total Settled'}
+                </span>
+                <div className="text-[11px] text-neutral-500">
+                  {language === 'ar' ? 'شامل الرسوم والضرائب' : language === 'fr' ? 'TTC (Toutes taxes comprises)' : 'Includes VAT & taxes'}
+                </div>
               </div>
               <span className={`text-2xl font-black tabular-nums ${selectedSale.status === 'Refunded' ? 'line-through text-neutral-400' : 'text-[#C4785A]'}`}>
                 {formatMoney(selectedSale.totalAmount)}
@@ -728,7 +751,7 @@ export const HistoryScreen: React.FC = () => {
                   className="w-full h-10 rounded-full border border-rose-200 dark:border-rose-800 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-900/40 text-xs font-bold text-rose-700 dark:text-rose-300 flex items-center justify-center gap-2 cursor-pointer transition-colors shadow-2xs"
                 >
                   <RotateCcw size={14} />
-                  <span>Process Refund & Restock Items</span>
+                  <span>{language === 'ar' ? 'استرجاع الوصل وإعادة المنتجات للمخزون' : language === 'fr' ? 'Rembourser & Réintégrer au stock' : 'Process Refund & Restock Items'}</span>
                 </button>
               )}
 
@@ -738,7 +761,7 @@ export const HistoryScreen: React.FC = () => {
                 className="w-full h-10 rounded-full border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-xs font-bold text-neutral-700 dark:text-neutral-200 flex items-center justify-center gap-2 hover:bg-neutral-50 dark:hover:bg-neutral-700/50 cursor-pointer transition-colors shadow-2xs"
               >
                 <Printer size={15} />
-                <span>Print Thermal Receipt</span>
+                <span>{language === 'ar' ? 'طباعة الوصل الحراري' : language === 'fr' ? 'Imprimer le ticket thermique' : 'Print Thermal Receipt'}</span>
               </button>
 
               <button
@@ -747,7 +770,7 @@ export const HistoryScreen: React.FC = () => {
                 style={{ backgroundColor: 'var(--color-accent)' }}
                 className="w-full h-10 rounded-full text-xs font-bold text-white flex items-center justify-center cursor-pointer hover:opacity-90 transition-opacity shadow-xs"
               >
-                Close Inspector
+                {language === 'ar' ? 'إغلاق المعاينة' : language === 'fr' ? 'Fermer l\'inspecteur' : 'Close Inspector'}
               </button>
             </div>
           </div>
@@ -764,10 +787,10 @@ export const HistoryScreen: React.FC = () => {
               </div>
               <div>
                 <h3 className="text-base font-bold text-neutral-900 dark:text-white">
-                  Confirm Transaction Refund
+                  {language === 'ar' ? 'تأكيد استرجاع المعاملة' : language === 'fr' ? 'Confirmer le remboursement' : 'Confirm Transaction Refund'}
                 </h3>
                 <p className="text-xs text-neutral-500">
-                  Sale #{selectedSale.id} • {formatMoney(selectedSale.totalAmount)}
+                  {language === 'ar' ? 'معاملة' : 'Sale'} #{selectedSale.id} • {formatMoney(selectedSale.totalAmount)}
                 </p>
               </div>
             </div>
@@ -775,22 +798,26 @@ export const HistoryScreen: React.FC = () => {
             <div className="p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-xs text-amber-800 dark:text-amber-200 flex items-start gap-2.5">
               <AlertCircle size={16} className="text-amber-600 shrink-0 mt-0.5" />
               <span>
-                Refunding will return all {selectedSale.items.reduce((s, i) => s + i.quantity, 0)} items back to available branch stock and create an audit log.
+                {language === 'ar'
+                  ? `سيؤدي الاسترجاع إلى إعادة جميع الأصناف (${selectedSale.items.reduce((s, i) => s + i.quantity, 0)}) إلى مخزون الفرع المتاح وتوثيق العملية في سجل التدقيق.`
+                  : language === 'fr'
+                  ? `Ce remboursement réintégrera l'ensemble des ${selectedSale.items.reduce((s, i) => s + i.quantity, 0)} articles au stock du magasin et tracera l'opération.`
+                  : `Refunding will return all ${selectedSale.items.reduce((s, i) => s + i.quantity, 0)} items back to available branch stock and create an audit log.`}
               </span>
             </div>
 
             <div>
               <LabelSelect
                 field="RefundReason"
-                label="Reason for Refund / Return *"
+                label={`${language === 'ar' ? 'سبب الاسترجاع / الإرجاع' : language === 'fr' ? 'Motif de retour / remboursement' : 'Reason for Refund / Return'} *`}
                 value={refundReason}
                 onChange={(val) => setRefundReason(val?.target?.value ?? String(val))}
                 options={[
-                  'Customer return / exchange',
-                  'Wrong item rung up by cashier',
-                  'Defective or damaged product',
-                  'Customer changed mind before leaving',
-                  'Pricing / discount adjustment',
+                  language === 'ar' ? 'إرجاع أو استبدال من العميل' : language === 'fr' ? 'Retour ou échange client' : 'Customer return / exchange',
+                  language === 'ar' ? 'خطأ في إدخال الصنف من الكاشير' : language === 'fr' ? 'Erreur de saisie par le caissier' : 'Wrong item rung up by cashier',
+                  language === 'ar' ? 'منتج معيب أو تالف' : language === 'fr' ? 'Article défectueux ou endommagé' : 'Defective or damaged product',
+                  language === 'ar' ? 'تراجع العميل قبل المغادرة' : language === 'fr' ? 'Changement d\'avis avant départ' : 'Customer changed mind before leaving',
+                  language === 'ar' ? 'تعديل السعر أو الخصم' : language === 'fr' ? 'Ajustement de tarif ou remise' : 'Pricing / discount adjustment',
                 ]}
                 width="100%"
                 height={46}
@@ -804,13 +831,19 @@ export const HistoryScreen: React.FC = () => {
                 onClick={() => setIsRefundModalOpen(false)}
                 className="h-10 px-4 text-xs font-semibold text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full"
               >
-                Cancel
+                {t('action_cancel', language)}
               </button>
               <button
                 type="button"
                 onClick={() => {
                   refundSale(selectedSale.id, refundReason);
-                  setRefundSuccessToast(`Refunded Sale #${selectedSale.id}. Items returned to inventory.`);
+                  setRefundSuccessToast(
+                    language === 'ar'
+                      ? `تم استرجاع الوصل #${selectedSale.id} وإعادة الأصناف للمخزون.`
+                      : language === 'fr'
+                      ? `Vente #${selectedSale.id} remboursée. Articles réintégrés au stock.`
+                      : `Refunded Sale #${selectedSale.id}. Items returned to inventory.`
+                  );
                   setSelectedSale({
                     ...selectedSale,
                     status: 'Refunded',
@@ -821,7 +854,7 @@ export const HistoryScreen: React.FC = () => {
                 }}
                 className="h-10 px-5 text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 rounded-full shadow-xs"
               >
-                Confirm Refund & Restock
+                {language === 'ar' ? 'تأكيد الاسترجاع وإعادة التخزين' : language === 'fr' ? 'Confirmer le remboursement' : 'Confirm Refund & Restock'}
               </button>
             </div>
           </div>

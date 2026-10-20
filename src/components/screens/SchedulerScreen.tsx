@@ -180,7 +180,7 @@ export const SchedulerScreen: React.FC = () => {
             {isFacilityDropdownOpen && (
               <div className="absolute right-0 mt-2 w-64 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
                 <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
-                  Switch Facility
+                  {t('fast_switch_title', language)}
                 </div>
                 {businesses.map((biz) => {
                   const isCurrent = biz.id === currentBusinessId;
@@ -231,10 +231,10 @@ export const SchedulerScreen: React.FC = () => {
       <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[26px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
         <div>
           <h2 className="text-base font-bold text-neutral-900 dark:text-white">
-            {language === 'ar' ? 'مؤشرات الإشغال والنشاط الأسبوعي' : language === 'fr' ? 'Taux d\'occupation & Santé du planning' : 'Weekly Utilization & Attendance Health'}
+            {t('schedule_utilization_title', language)}
           </h2>
           <p className="text-xs text-neutral-400 dark:text-neutral-500">
-            {language === 'ar' ? 'كثافة الجداول، نسب المشتركين وأوقات الذروة' : language === 'fr' ? 'Densité du planning, ratios de présence et affluence maximale' : 'Timetable density, enrolled athlete ratios, and peak floor occupancy'}
+            {t('schedule_utilization_desc', language)}
           </p>
         </div>
 
@@ -572,7 +572,7 @@ export const SchedulerScreen: React.FC = () => {
             <div className="flex items-center gap-2">
               <Calendar size={17} className="text-[#C4785A]" />
               <span className="text-sm font-bold text-neutral-900 dark:text-white">
-                Session Inspector & Roster
+                {language === 'ar' ? 'معاينة الحصة وسجل الحضور' : language === 'fr' ? 'Inspecteur de séance & Roster' : 'Session Inspector & Roster'}
               </span>
             </div>
             <button
@@ -599,20 +599,20 @@ export const SchedulerScreen: React.FC = () => {
                 {selectedEvent.title}
               </h3>
               <p className="text-neutral-500">
-                {days.find((d) => d.id === selectedEvent.dayOfWeek)?.label} recurring session in {currentBranch?.name || 'Atrium 1'}
+                {days.find((d) => d.id === selectedEvent.dayOfWeek)?.label} · {currentBranch?.name || 'Atrium 1'}
               </p>
             </div>
 
             {/* Logistics */}
             <div className="space-y-3">
               <span className="text-xs font-bold text-neutral-900 dark:text-white uppercase tracking-wider">
-                Logistics & Personnel
+                {language === 'ar' ? 'اللوجستيات والمشرفون' : language === 'fr' ? 'Logistique & Personnel' : 'Logistics & Personnel'}
               </span>
               <div className="p-4 rounded-2xl bg-white dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-700 space-y-2.5">
                 <div className="flex items-center gap-2.5">
                   <Users size={14} className="text-[#C4785A]" />
                   <span className="text-neutral-800 dark:text-neutral-200">
-                    Lead Coach:{' '}
+                    {language === 'ar' ? 'المدرب المشرف:' : language === 'fr' ? 'Coach principal :' : 'Lead Coach:'}{' '}
                     <strong className="text-neutral-900 dark:text-white">
                       {selectedEvent.trainerOrStaff}
                     </strong>
@@ -621,7 +621,7 @@ export const SchedulerScreen: React.FC = () => {
                 <div className="flex items-center gap-2.5">
                   <MapPin size={14} className="text-[#C4785A]" />
                   <span className="text-neutral-800 dark:text-neutral-200">
-                    Zone/Studio:{' '}
+                    {language === 'ar' ? 'القاعة / المساحة:' : language === 'fr' ? 'Salle / Espace :' : 'Zone/Studio:'}{' '}
                     <strong className="text-neutral-900 dark:text-white">
                       {selectedEvent.roomOrArea}
                     </strong>
@@ -633,7 +633,9 @@ export const SchedulerScreen: React.FC = () => {
             {/* Attendance & Capacity */}
             <div className="p-4 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 border border-[#E8DFD8] dark:border-neutral-700 space-y-2">
               <div className="flex justify-between items-center">
-                <span className="text-xs font-bold text-[#C4785A]">Reserved Seats</span>
+                <span className="text-xs font-bold text-[#C4785A]">
+                  {language === 'ar' ? 'المقاعد المحجوزة' : language === 'fr' ? 'Places réservées' : 'Reserved Seats'}
+                </span>
                 <span className="text-base font-black text-[#C4785A] tabular-nums">
                   {selectedEvent.enrolledCount} / {selectedEvent.capacity}
                 </span>
@@ -652,7 +654,7 @@ export const SchedulerScreen: React.FC = () => {
             {/* Sample Athlete Roster */}
             <div className="space-y-2">
               <span className="text-xs font-bold text-neutral-900 dark:text-white uppercase tracking-wider">
-                Checked-In Athlete Roster
+                {language === 'ar' ? 'سجل حضور الرياضيين بالحصة' : language === 'fr' ? 'Liste des athlètes enregistrés' : 'Checked-In Athlete Roster'}
               </span>
               <div className="border border-neutral-200 dark:border-neutral-800 rounded-2xl divide-y divide-neutral-200 dark:divide-neutral-800 overflow-hidden">
                 <div className="p-3 flex items-center justify-between bg-white dark:bg-neutral-800/40">
@@ -666,7 +668,7 @@ export const SchedulerScreen: React.FC = () => {
                     </div>
                   </div>
                   <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
-                    Checked In
+                    {language === 'ar' ? 'حاضر' : language === 'fr' ? 'Présent' : 'Checked In'}
                   </span>
                 </div>
                 <div className="p-3 flex items-center justify-between bg-white dark:bg-neutral-800/40">
@@ -680,7 +682,7 @@ export const SchedulerScreen: React.FC = () => {
                     </div>
                   </div>
                   <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
-                    Checked In
+                    {language === 'ar' ? 'حاضر' : language === 'fr' ? 'Présent' : 'Checked In'}
                   </span>
                 </div>
               </div>
@@ -694,7 +696,7 @@ export const SchedulerScreen: React.FC = () => {
                 className="w-full h-10 rounded-full text-xs font-bold text-white flex items-center justify-center gap-2 cursor-pointer hover:opacity-90 shadow-xs"
               >
                 <UserPlus size={15} />
-                <span>Quick Check-In Athlete</span>
+                <span>{language === 'ar' ? 'تسجيل حضور رياضي سريع' : language === 'fr' ? 'Pointer un athlète rapidement' : 'Quick Check-In Athlete'}</span>
               </button>
 
               <button
@@ -702,7 +704,7 @@ export const SchedulerScreen: React.FC = () => {
                 onClick={() => setSelectedEvent(null)}
                 className="w-full h-10 rounded-full border border-neutral-300 dark:border-neutral-700 text-xs font-bold text-neutral-700 dark:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-neutral-800 cursor-pointer"
               >
-                Close Inspector
+                {language === 'ar' ? 'إغلاق المعاينة' : language === 'fr' ? 'Fermer l\'inspecteur' : 'Close Inspector'}
               </button>
             </div>
           </div>
@@ -750,10 +752,10 @@ export const SchedulerScreen: React.FC = () => {
               options={[
                 { value: 'CrossFit', label: 'CrossFit' },
                 { value: 'Yoga', label: 'Yoga' },
-                { value: 'Boxing', label: 'Boxing' },
+                { value: 'Boxing', label: language === 'ar' ? 'ملاكمة (Boxing)' : language === 'fr' ? 'Boxe' : 'Boxing' },
                 { value: 'Pilates', label: 'Pilates' },
                 { value: 'HIIT', label: 'HIIT' },
-                { value: 'Fitness', label: 'Fitness' },
+                { value: 'Fitness', label: language === 'ar' ? 'لياقة بدنية (Fitness)' : 'Fitness' },
               ]}
               height={46}
               corner={14}

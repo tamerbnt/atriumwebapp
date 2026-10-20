@@ -130,7 +130,7 @@ import {
   INITIAL_PM_CCP_SLIPS,
   INITIAL_PM_EQUIPMENT_STOCK,
 } from './seedData';
-import { checkQuota, getCategoryTerminology, validateVoucherCode } from '../utils/rules';
+import { checkQuota, getCategoryTerminology, validateVoucherCode, calculateDaysRemaining } from '../utils/rules';
 import { numberToWordsFrench, numberToWordsArabic } from '../utils/algerianPtt';
 import { getInitialLanguageConfig, getSystemDefaultLanguage, t } from '../utils/i18n';
 
@@ -1216,6 +1216,72 @@ export function useAtriumStore() {
         console.warn('[store] Failed to delete member in Supabase:', err);
       });
     }
+  };
+
+  const checkInMember = (id: string) => {
+    const member = globalState.members.find((m) => m.id === id);
+    if (!member) return;
+
+    const currentBiz = globalState.businesses.find((b) => b.id === globalState.currentBusinessId);
+    const cat = currentBiz?.category || 'membership_session';
+    const lang = globalState.language || 'fr';
+
+    // 1. Check suspended/blocked status
+    if (member.status === 'Banned' || member.status === 'Suspended' || member.status === 'Frozen') {
+      showToast({
+        type: 'error',
+        title: t('toast_checkin_blocked_title', lang),
+        message: `${member.fullName}: ${t('toast_checkin_blocked_msg', lang)}`,
+        category: cat,
+      });
+      return;
+    }
+
+    // 2. Check expiration
+    const daysLeft = calculateDaysRemaining(false, member.expirationDate);
+    if (daysLeft < 0) {
+      showToast({
+        type: 'warning',
+        title: t('toast_checkin_expired_title', lang),
+        message: `${member.fullName}: ${t('toast_checkin_expired_msg', lang)}`,
+        category: cat,
+      });
+      return;
+    }
+
+    // 3. Check remaining visits if finite
+    if (member.remainingSessions !== undefined && member.remainingSessions <= 0) {
+      showToast({
+        type: 'warning',
+        title: t('toast_checkin_expired_title', lang),
+        message: `${member.fullName}: ${t('schedule_field_quota', lang)} (0)`,
+        category: cat,
+      });
+      return;
+    }
+
+    // 4. Access Granted
+    const updatedSessions = member.remainingSessions !== undefined ? Math.max(0, member.remainingSessions - 1) : undefined;
+    globalState = {
+      ...globalState,
+      members: globalState.members.map((m) =>
+        m.id === id
+          ? {
+              ...m,
+              remainingSessions: updatedSessions !== undefined ? updatedSessions : m.remainingSessions,
+              updatedAt: new Date().toISOString(),
+            }
+          : m
+      ),
+    };
+    notify();
+
+    showToast({
+      type: 'success',
+      title: t('toast_checkin_granted_title', lang),
+      message: `${member.fullName} (${member.cardId || 'RFID'}): ${t('toast_checkin_granted_msg', lang)}`,
+      category: cat,
+    });
   };
 
   const addLead = (newLead: Omit<RegistrationLead, 'id' | 'tenantId' | 'facilityId' | 'createdAt' | 'updatedAt'>) => {
@@ -5311,6 +5377,7 @@ export function useAtriumStore() {
     addMember,
     updateMember,
     deleteMember,
+    checkInMember,
     addLead,
     updateLeadStatus,
     convertLeadToMember,

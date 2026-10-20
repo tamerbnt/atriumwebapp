@@ -377,7 +377,7 @@ export const RegistrationsScreen: React.FC<RegistrationsScreenProps> = ({ onAddL
               title="Download CSV export"
             >
               <Download size={13} />
-              <span>Export Data</span>
+              <span>{language === 'ar' ? 'تصدير البيانات' : language === 'fr' ? 'Exporter les données' : 'Export Data'}</span>
             </button>
 
             {/* View Mode Toggle */}
@@ -426,19 +426,19 @@ export const RegistrationsScreen: React.FC<RegistrationsScreenProps> = ({ onAddL
             <table className="w-full border-collapse text-left">
               <thead>
                 <tr className="border-b border-neutral-200/60 dark:border-neutral-800/80 text-[11px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider h-11">
-                  <th className="px-5">Applicant</th>
-                  <th className="px-4">Acquisition Source</th>
-                  <th className="px-4">Preferred {terminology.plan}</th>
-                  <th className="px-4">Submission Date</th>
-                  <th className="px-4">Status</th>
-                  <th className="px-4 text-right">Approval Actions</th>
+                  <th className="px-5">{language === 'ar' ? 'مقدم الطلب' : language === 'fr' ? 'Candidat / Prospect' : 'Applicant'}</th>
+                  <th className="px-4">{language === 'ar' ? 'قناة الاستقطاب' : language === 'fr' ? 'Canal d\'acquisition' : 'Acquisition Source'}</th>
+                  <th className="px-4">{language === 'ar' ? 'الباقة المفضلة' : language === 'fr' ? 'Formule souhaitée' : `Preferred ${terminology.plan}`}</th>
+                  <th className="px-4">{language === 'ar' ? 'تاريخ التقديم' : language === 'fr' ? 'Date de soumission' : 'Submission Date'}</th>
+                  <th className="px-4">{language === 'ar' ? 'الحالة' : language === 'fr' ? 'Statut' : 'Status'}</th>
+                  <th className="px-4 text-right">{language === 'ar' ? 'إجراءات الاعتماد' : language === 'fr' ? 'Actions d\'approbation' : 'Approval Actions'}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-neutral-200/40 dark:divide-neutral-800/60">
                 {filteredLeads.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="py-16 text-center text-xs text-neutral-400">
-                      No registration requests matching the current filter.
+                      {language === 'ar' ? 'لا توجد طلبات تسجيل تطابق هذا الفلتر.' : language === 'fr' ? 'Aucune demande d\'inscription ne correspond au filtre.' : 'No registration requests matching the current filter.'}
                     </td>
                   </tr>
                 ) : (
@@ -533,20 +533,20 @@ export const RegistrationsScreen: React.FC<RegistrationsScreenProps> = ({ onAddL
                               className="h-8 px-3 text-xs font-bold text-white rounded-full flex items-center gap-1.5 hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
                             >
                               <UserCheck size={14} />
-                              <span>Convert</span>
+                              <span>{language === 'ar' ? 'اعتماد' : language === 'fr' ? 'Valider' : 'Convert'}</span>
                             </button>
                             <button
                               type="button"
                               onClick={() => updateLeadStatus(lead.id, 'Declined')}
                               className="h-8 px-2 text-xs font-semibold text-neutral-400 hover:text-rose-600 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
-                              title="Decline Lead"
+                              title={language === 'ar' ? 'رفض الطلب' : language === 'fr' ? 'Refuser le dossier' : 'Decline Lead'}
                             >
                               <X size={15} />
                             </button>
                           </div>
                         ) : (
                           <span className="text-xs text-neutral-400">
-                            Processed {new Date(lead.updatedAt).toLocaleDateString()}
+                            {language === 'ar' ? 'تمت المعالجة في ' : language === 'fr' ? 'Traité le ' : 'Processed '}{new Date(lead.updatedAt).toLocaleDateString()}
                           </span>
                         )}
                       </td>
