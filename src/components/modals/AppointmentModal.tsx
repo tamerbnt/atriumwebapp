@@ -21,7 +21,7 @@ import { Appointment, AppointmentStatus, ServiceItem } from '../../types/index';
 import { Modal } from '../ui/Modal';
 import { LabelInput } from '../ui/LabelInput';
 import { LabelSelect } from '../ui/LabelSelect';
-import { formatMoney } from '../../utils/rules';
+import { formatMoney, localizeStatus } from '../../utils/rules';
 import { t } from '../../utils/i18n';
 
 interface AppointmentModalProps {
@@ -290,7 +290,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
                   : 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950/70 dark:text-indigo-300'
               }`}
             >
-              {status === 'InChair' ? `• ${t('dash_salon_in_chair', language)}` : status}
+              {status === 'InChair' ? `• ${t('dash_salon_in_chair', language)}` : localizeStatus(status, language)}
             </span>
           </div>
 

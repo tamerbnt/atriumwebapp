@@ -103,6 +103,7 @@ export const STATUS_TRANSLATIONS: Record<MemberStatus, Record<SupportedLanguage,
   Pending: { en: 'Pending', fr: 'En attente', ar: 'قيد الانتظار' },
   Lead: { en: 'Lead', fr: 'Prospect', ar: 'محتمل' },
   Banned: { en: 'Banned', fr: 'Banni', ar: 'محظور' },
+  Unknown: { en: 'Unknown', fr: 'Inconnu', ar: 'غير معروف' },
 };
 
 /**

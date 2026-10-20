@@ -118,6 +118,14 @@ export const HistoryScreen: React.FC = () => {
     }
   };
 
+  const getLocalizedPaymentMethod = (method: string) => {
+    if (method === 'Cash') return language === 'ar' ? 'نقداً' : language === 'fr' ? 'Espèces' : 'Cash';
+    if (method === 'Card') return language === 'ar' ? 'بطاقة بنكية' : language === 'fr' ? 'Carte bancaire' : 'Card';
+    if (method === 'Split') return language === 'ar' ? 'مقسم' : language === 'fr' ? 'Mixte' : 'Split';
+    if (method === 'MemberBalance') return language === 'ar' ? 'رصيد المشترك' : language === 'fr' ? 'Solde adhérent' : 'Member Balance';
+    return method;
+  };
+
   return (
     <div className="space-y-6 animate-in fade-in duration-200 relative">
       {/* Toast Alert */}
@@ -264,7 +272,7 @@ export const HistoryScreen: React.FC = () => {
               </span>
               <div className="mt-1">
                 <span className="text-[10px] font-bold text-[#C4785A] bg-[#C4785A]/10 px-2 py-0.5 rounded-full">
-                  {cashShare}% {language === 'ar' ? 'نقداً' : 'Espèces'}
+                  {cashShare}% {language === 'ar' ? 'نقداً' : language === 'fr' ? 'Espèces' : 'Cash'}
                 </span>
               </div>
             </div>
@@ -283,7 +291,7 @@ export const HistoryScreen: React.FC = () => {
                 {language === 'ar' ? 'حالة نقطة البيع النشطة' : language === 'fr' ? 'État du terminal actif' : 'Active Terminal State'}
               </span>
               <div className="text-[11px] text-[#C4785A] font-semibold mt-0.5">
-                {language === 'ar' ? 'صندوق الاستقبال POS-01' : 'Frontdesk Register POS-01'}
+                {language === 'ar' ? 'صندوق الاستقبال POS-01' : language === 'fr' ? 'Caisse d\'accueil POS-01' : 'Frontdesk Register POS-01'}
               </div>
             </div>
             <div className="text-2xl font-black text-white tabular-nums flex items-center gap-2">
@@ -523,7 +531,7 @@ export const HistoryScreen: React.FC = () => {
                             {sale.paymentMethod === 'Card' && <CreditCard size={13} className="text-blue-600" />}
                             {sale.paymentMethod === 'Split' && <CreditCard size={13} className="text-purple-600" />}
                             {sale.paymentMethod === 'MemberBalance' && <User size={13} className="text-[#C4785A]" />}
-                            <span>{sale.paymentMethod}</span>
+                            <span>{getLocalizedPaymentMethod(sale.paymentMethod)}</span>
                           </span>
 
                           {sale.status === 'Refunded' && (

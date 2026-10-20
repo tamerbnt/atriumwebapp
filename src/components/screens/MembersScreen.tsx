@@ -32,7 +32,7 @@ import {
 } from 'lucide-react';
 import { useAtriumStore } from '../../services/store';
 import { Member, MemberStatus } from '../../types/index';
-import { calculateDaysRemaining, formatMoney } from '../../utils/rules';
+import { calculateDaysRemaining, formatMoney, localizeStatus } from '../../utils/rules';
 import { AppointmentModal } from '../modals/AppointmentModal';
 import { Seek } from '../ui/Seek';
 import { ActionNode } from '../ui/ActionNode';
@@ -161,13 +161,22 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
   };
 
   const handleExportCSV = () => {
-    const headers = ['Full Name', 'Card ID', 'Plan', 'Status', 'Balance', 'Phone', 'Email', 'Expiration Date'];
+    const headers = [
+      language === 'ar' ? 'الاسم الكامل' : language === 'fr' ? 'Nom complet' : 'Full Name',
+      language === 'ar' ? 'معرف البطاقة' : language === 'fr' ? 'Identifiant carte' : 'Card ID',
+      language === 'ar' ? 'الباقة' : language === 'fr' ? 'Formule' : 'Plan',
+      language === 'ar' ? 'الحالة' : language === 'fr' ? 'Statut' : 'Status',
+      language === 'ar' ? 'الرصيد' : language === 'fr' ? 'Solde' : 'Balance',
+      language === 'ar' ? 'الهاتف' : language === 'fr' ? 'Téléphone' : 'Phone',
+      language === 'ar' ? 'البريد الإلكتروني' : language === 'fr' ? 'E-mail' : 'Email',
+      language === 'ar' ? 'تاريخ الانتهاء' : language === 'fr' ? 'Date d\'expiration' : 'Expiration Date',
+    ];
     const rows = displayMembers.map((m) => [
       `"${m.fullName}"`,
       `"${m.cardId || ''}"`,
-      `"${m.membershipPlanName || 'Standard'}"`,
-      `"${m.status}"`,
-      `"0.00 DA"`,
+      `"${m.membershipPlanName || (language === 'ar' ? 'القياسية' : language === 'fr' ? 'Standard' : 'Standard')}"`,
+      `"${localizeStatus(m.status, language)}"`,
+      `"0.00 ${language === 'ar' ? 'د.ج' : 'DA'}"`,
       `"${m.phoneNumber}"`,
       `"${m.email}"`,
       `"${m.expirationDate}"`,
@@ -606,7 +615,7 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
                                   : 'bg-rose-500'
                               }`}
                             />
-                            {member.status}
+                            {localizeStatus(member.status, language)}
                           </span>
                         </div>
 
@@ -626,7 +635,7 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
                           <button
                             type="button"
                             className="p-1.5 rounded-full text-neutral-400 hover:text-[#C4785A] hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
-                            title={`Inspect ${terminology.memberSingle.toLowerCase()} details`}
+                            title={language === 'ar' ? `معاينة تفاصيل ${terminology.memberSingle.toLowerCase()}` : language === 'fr' ? `Détails du ${terminology.memberSingle.toLowerCase()}` : `Inspect ${terminology.memberSingle.toLowerCase()} details`}
                           >
                             <Eye size={15} />
                           </button>
@@ -668,7 +677,7 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
                       key={member.id}
                       title={member.fullName}
                       description={`${language === 'ar' ? 'الباقة:' : language === 'fr' ? 'Formule :' : 'Plan:'} ${member.membershipPlanName || (language === 'ar' ? 'القياسية' : language === 'fr' ? 'Standard' : 'Standard')} · ${language === 'ar' ? 'الرصيد:' : language === 'fr' ? 'Solde :' : 'Balance:'} ${priceDisplay}`}
-                      tag={member.status}
+                      tag={localizeStatus(member.status, language)}
                       selected={isSelected}
                       onClick={() => selectMember(member.id)}
                       width="100%"
@@ -748,7 +757,7 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
 
             {/* Table Footer */}
             <div className="text-center py-3 text-xs text-neutral-400">
-              {displayMembers.length} {terminology.members.toLowerCase()} affichés
+              {displayMembers.length} {terminology.members.toLowerCase()} {language === 'ar' ? 'معروض' : language === 'fr' ? 'affichés' : 'displayed'}
             </div>
           </div>
 
@@ -993,7 +1002,7 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
                                       : 'bg-indigo-600 text-white'
                                   }`}
                                 >
-                                  {apt.status === 'InChair' ? 'In Chair' : apt.status}
+                                  {localizeStatus(apt.status, language)}
                                 </span>
                               </div>
                               <div className="flex items-center justify-between text-[11px] text-neutral-500">

@@ -26,6 +26,7 @@ import { Avatar } from '../ui/Avatar';
 import { Modal } from '../ui/Modal';
 import { Seek } from '../ui/Seek';
 import { LabelSelect } from '../ui/LabelSelect';
+import { localizeStatus } from '../../utils/rules';
 import { t } from '../../utils/i18n';
 
 interface RegistrationsScreenProps {
@@ -239,11 +240,13 @@ export const RegistrationsScreen: React.FC<RegistrationsScreenProps> = ({ onAddL
           <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
             <div>
               <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
-                {isPOS ? 'Pending Wholesale & Inquiries' : t('reg_active_intake_label', language)}
+                {isPOS
+                  ? (language === 'ar' ? 'الطلبات والاستفسارات المعلقة' : language === 'fr' ? 'Demandes et devis en attente' : 'Pending Wholesale & Inquiries')
+                  : t('reg_active_intake_label', language)}
               </span>
               <div className="mt-1">
                 <span className="text-[10px] font-bold text-amber-700 bg-amber-100 dark:bg-amber-950/40 px-2 py-0.5 rounded-full">
-                  ↗ {pendingCount} {isPOS ? 'Inquiries' : (language === 'ar' ? 'في الانتظار' : language === 'fr' ? 'En attente' : 'Pending')}
+                  ↗ {pendingCount} {isPOS ? (language === 'ar' ? 'استفسارات' : language === 'fr' ? 'Demandes' : 'Inquiries') : (language === 'ar' ? 'في الانتظار' : language === 'fr' ? 'En attente' : 'Pending')}
                 </span>
               </div>
             </div>
@@ -256,7 +259,9 @@ export const RegistrationsScreen: React.FC<RegistrationsScreenProps> = ({ onAddL
           <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
             <div>
               <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
-                {isPOS ? 'Converted Customer Accounts' : t('reg_converted_members_label', language)}
+                {isPOS
+                  ? (language === 'ar' ? 'حسابات العملاء المحولة' : language === 'fr' ? 'Comptes clients convertis' : 'Converted Customer Accounts')
+                  : t('reg_converted_members_label', language)}
               </span>
               <div className="mt-1">
                 <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
@@ -273,11 +278,13 @@ export const RegistrationsScreen: React.FC<RegistrationsScreenProps> = ({ onAddL
           <div className="p-5 rounded-[20px] bg-[#18181B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
             <div>
               <span className="text-xs font-medium text-neutral-300">
-                {isPOS ? 'Order Intake & Lead SLA' : t('reg_intake_sla_label', language)}
+                {isPOS
+                  ? (language === 'ar' ? 'معالجة الطلبات وسرعة الاستجابة' : language === 'fr' ? 'Traitement des commandes & SLA' : 'Order Intake & Lead SLA')
+                  : t('reg_intake_sla_label', language)}
               </span>
               <div className="text-[11px] text-[#C4785A] font-semibold mt-0.5">
                 {isPOS
-                  ? 'Direct counter & wholesale inquiry speed'
+                  ? (language === 'ar' ? 'سرعة معالجة الطلبات والاستفسارات' : language === 'fr' ? 'Vitesse de traitement au comptoir' : 'Direct counter & wholesale inquiry speed')
                   : (language === 'ar' ? 'بوابة التسجيل الذاتي وموقع الجوال' : language === 'fr' ? 'Borne libre-service & web mobile' : 'Self-service Kiosk & Mobile Web')}
               </div>
             </div>
@@ -516,7 +523,7 @@ export const RegistrationsScreen: React.FC<RegistrationsScreenProps> = ({ onAddL
                                 : 'bg-amber-500'
                             }`}
                           />
-                          {lead.status}
+                          {localizeStatus(lead.status, language)}
                         </span>
                       </td>
 
@@ -579,7 +586,7 @@ export const RegistrationsScreen: React.FC<RegistrationsScreenProps> = ({ onAddL
                         : 'bg-amber-50 text-amber-700'
                     }`}
                   >
-                    {lead.status}
+                    {localizeStatus(lead.status, language)}
                   </span>
                   <span className="text-[11px] text-neutral-400 tabular-nums">
                     {new Date(lead.createdAt).toLocaleDateString()}
@@ -598,13 +605,13 @@ export const RegistrationsScreen: React.FC<RegistrationsScreenProps> = ({ onAddL
 
                 <div className="text-xs space-y-1 mb-4 text-neutral-600 dark:text-neutral-400">
                   <div className="flex justify-between">
-                    <span className="text-neutral-400">Plan:</span>
+                    <span className="text-neutral-400">{language === 'ar' ? 'الباقة:' : language === 'fr' ? 'Formule :' : 'Plan:'}</span>
                     <span className="font-bold text-[#C4785A]">
-                      {lead.preferredPlanName || plans[0]?.name || 'Standard Package'}
+                      {lead.preferredPlanName || plans[0]?.name || (language === 'ar' ? 'الباقة القياسية' : language === 'fr' ? 'Formule Standard' : 'Standard Package')}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-neutral-400">Source:</span>
+                    <span className="text-neutral-400">{language === 'ar' ? 'المصدر:' : language === 'fr' ? 'Source :' : 'Source:'}</span>
                     <span>{lead.source}</span>
                   </div>
                 </div>
@@ -620,7 +627,7 @@ export const RegistrationsScreen: React.FC<RegistrationsScreenProps> = ({ onAddL
                     className="w-full h-8 rounded-full text-xs font-bold text-white flex items-center justify-center gap-1.5 hover:opacity-90 cursor-pointer shadow-xs"
                   >
                     <UserCheck size={14} />
-                    <span>Approve & Convert</span>
+                    <span>{language === 'ar' ? 'اعتماد وتحويل' : language === 'fr' ? 'Valider & Inscrire' : 'Approve & Convert'}</span>
                   </button>
                 )}
               </div>
@@ -636,7 +643,7 @@ export const RegistrationsScreen: React.FC<RegistrationsScreenProps> = ({ onAddL
             <div className="flex items-center gap-2">
               <ClipboardList size={17} className="text-[#C4785A]" />
               <span className="text-sm font-bold text-neutral-900 dark:text-white">
-                Prospect Dossier Inspector
+                {language === 'ar' ? 'معاينة ملف المرشح' : language === 'fr' ? 'Fiche du prospect' : 'Prospect Dossier Inspector'}
               </span>
             </div>
             <button
@@ -665,7 +672,7 @@ export const RegistrationsScreen: React.FC<RegistrationsScreenProps> = ({ onAddL
                       : 'bg-amber-50 text-amber-700'
                   }`}
                 >
-                  {selectedLead.status}
+                  {localizeStatus(selectedLead.status, language)}
                 </span>
               </div>
             </div>
