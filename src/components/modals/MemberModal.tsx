@@ -4,6 +4,7 @@ import { Member, Gender } from '../../types/index';
 import { Modal } from '../ui/Modal';
 import { LabelInput } from '../ui/LabelInput';
 import { LabelSelect } from '../ui/LabelSelect';
+import { t } from '../../utils/i18n';
 
 interface MemberModalProps {
   isOpen: boolean;
@@ -16,7 +17,7 @@ export const MemberModal: React.FC<MemberModalProps> = ({
   onClose,
   memberToEdit,
 }) => {
-  const { plans, currentBranch, terminology, addMember, updateMember } = useAtriumStore();
+  const { plans, currentBranch, terminology, addMember, updateMember, language } = useAtriumStore();
 
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
@@ -116,20 +117,38 @@ export const MemberModal: React.FC<MemberModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={memberToEdit ? `Edit ${terminology.memberSingle}` : `Add New ${terminology.memberSingle}`}
-      subtitle={`Enrolling into ${currentBranch.name}`}
+      title={
+        memberToEdit
+          ? language === 'ar'
+            ? `تعديل ملف ${terminology.memberSingle}`
+            : language === 'fr'
+            ? `Modifier la fiche ${terminology.memberSingle.toLowerCase()}`
+            : `Edit ${terminology.memberSingle}`
+          : language === 'ar'
+          ? `تسجيل ${terminology.memberSingle} جديد`
+          : language === 'fr'
+          ? `Nouveau ${terminology.memberSingle.toLowerCase()}`
+          : `Add New ${terminology.memberSingle}`
+      }
+      subtitle={
+        language === 'ar'
+          ? `تسجيل في فرع ${currentBranch.name}`
+          : language === 'fr'
+          ? `Inscription au sein de ${currentBranch.name}`
+          : `Enrolling into ${currentBranch.name}`
+      }
       maxWidth="lg"
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Section 1: Personal Info */}
         <div className="space-y-3">
           <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-400">
-            Personal Information
+            {language === 'ar' ? 'المعلومات الشخصية' : language === 'fr' ? 'Informations personnelles' : 'Personal Information'}
           </h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <LabelInput
               field="Full Name"
-              label="Full Name"
+              label={t('modal_name', language)}
               value={fullName}
               onChange={setFullName}
               width="100%"
@@ -140,7 +159,7 @@ export const MemberModal: React.FC<MemberModalProps> = ({
 
             <LabelInput
               field="Email"
-              label="Email Address"
+              label={t('modal_email', language)}
               value={email}
               onChange={setEmail}
               type="email"
@@ -152,7 +171,7 @@ export const MemberModal: React.FC<MemberModalProps> = ({
 
             <LabelInput
               field="Phone"
-              label="Phone Number"
+              label={t('modal_phone', language)}
               value={phoneNumber}
               onChange={setPhoneNumber}
               type="tel"
@@ -307,7 +326,7 @@ export const MemberModal: React.FC<MemberModalProps> = ({
             onClick={onClose}
             className="h-10 px-4 text-xs font-semibold text-neutral-500 hover:text-neutral-800 dark:hover:text-white cursor-pointer"
           >
-            Cancel
+            {t('action_cancel', language)}
           </button>
           <button
             type="submit"
@@ -317,7 +336,13 @@ export const MemberModal: React.FC<MemberModalProps> = ({
             }}
             className="h-10 px-6 text-xs font-semibold text-white cursor-pointer shadow-xs hover:opacity-90 active:scale-98 transition-all"
           >
-            {memberToEdit ? 'Save Changes' : `Enroll ${terminology.memberSingle}`}
+            {memberToEdit
+              ? t('action_save', language)
+              : language === 'ar'
+              ? `تسجيل ${terminology.memberSingle}`
+              : language === 'fr'
+              ? `Inscrire ${terminology.memberSingle.toLowerCase()}`
+              : `Enroll ${terminology.memberSingle}`}
           </button>
         </div>
       </form>

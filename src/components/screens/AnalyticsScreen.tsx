@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { useAtriumStore } from '../../services/store';
 import { formatMoney } from '../../utils/rules';
+import { t } from '../../utils/i18n';
 
 export const AnalyticsScreen: React.FC = () => {
   const {
@@ -33,6 +34,7 @@ export const AnalyticsScreen: React.FC = () => {
     members,
     sales,
     products,
+    language,
   } = useAtriumStore();
 
   const isPOS = currentBusiness.category === 'pos_inventory';
@@ -388,14 +390,18 @@ export const AnalyticsScreen: React.FC = () => {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white">
-              Facility Analytics
+              {t('analytics_title', language)}
             </h1>
             <span className="text-[10px] font-bold tracking-wider text-[#C4785A] bg-[#C4785A]/10 px-2.5 py-1 rounded-full uppercase">
-              Live Intel
+              {language === 'ar' ? 'مؤشرات حية' : language === 'fr' ? 'Données directes' : 'Live Intel'}
             </span>
           </div>
           <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
-            Key operational metrics, footfall trends, and revenue intelligence.
+            {language === 'ar'
+              ? `المؤشرات التشغيلية الرئيسية، حركة الزبائن وبيانات المبيعات لـ ${currentBranch?.name || 'الفرع'}`
+              : language === 'fr'
+              ? `Indicateurs de performance, fréquentation et intelligence des revenus pour ${currentBranch?.name || 'l\'établissement'}`
+              : `Key operational metrics, footfall trends, and revenue intelligence for ${currentBranch?.name || 'Main Facility'}`}
           </p>
         </div>
 
@@ -421,7 +427,7 @@ export const AnalyticsScreen: React.FC = () => {
             {isFacilityDropdownOpen && (
               <div className="absolute right-0 mt-2 w-64 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
                 <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
-                  Switch Facility
+                  {t('fast_switch_title', language)}
                 </div>
                 {businesses.map((biz) => {
                   const isCurrent = biz.id === currentBusinessId;

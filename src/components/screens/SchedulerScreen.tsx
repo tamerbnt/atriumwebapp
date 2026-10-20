@@ -28,6 +28,7 @@ import { LabelInput } from '../ui/LabelInput';
 import { LabelSelect } from '../ui/LabelSelect';
 import { FilterSelect } from '../ui/FilterSelect';
 import { StylistScheduleView } from './StylistScheduleView';
+import { t } from '../../utils/i18n';
 
 export const SchedulerScreen: React.FC = () => {
   const {
@@ -41,6 +42,7 @@ export const SchedulerScreen: React.FC = () => {
     switchBranch,
     terminology,
     staff,
+    language,
   } = useAtriumStore();
 
   if (currentBusiness.category === 'appointment_service') {
@@ -68,13 +70,13 @@ export const SchedulerScreen: React.FC = () => {
   const [newCapacity, setNewCapacity] = useState(isPOS ? 4 : 20);
 
   const days = [
-    { id: 1, label: 'Monday', short: 'Mon' },
-    { id: 2, label: 'Tuesday', short: 'Tue' },
-    { id: 3, label: 'Wednesday', short: 'Wed' },
-    { id: 4, label: 'Thursday', short: 'Thu' },
-    { id: 5, label: 'Friday', short: 'Fri' },
-    { id: 6, label: 'Saturday', short: 'Sat' },
-    { id: 0, label: 'Sunday', short: 'Sun' },
+    { id: 1, label: t('day_monday', language), short: t('day_mon', language) },
+    { id: 2, label: t('day_tuesday', language), short: t('day_tue', language) },
+    { id: 3, label: t('day_wednesday', language), short: t('day_wed', language) },
+    { id: 4, label: t('day_thursday', language), short: t('day_thu', language) },
+    { id: 5, label: t('day_friday', language), short: t('day_fri', language) },
+    { id: 6, label: t('day_saturday', language), short: t('day_sat', language) },
+    { id: 0, label: t('day_sunday', language), short: t('day_sun', language) },
   ];
 
   const currentDayEvents = useMemo(() => {
@@ -146,7 +148,11 @@ export const SchedulerScreen: React.FC = () => {
               {terminology.scheduler}
             </h1>
             <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
-              Weekly timetable, class capacities, and trainer reservations for {currentBranch?.name || 'Atrium 1'}
+              {language === 'ar'
+                ? `جدول الحصص والورديات، الطاقة الاستيعابية وحجوزات الموظفين لـ ${currentBranch?.name || 'الفرع'}`
+                : language === 'fr'
+                ? `Emploi du temps hebdomadaire, capacités des cours et réservations pour ${currentBranch?.name || 'l\'établissement'}`
+                : `Weekly timetable, class capacities, and trainer reservations for ${currentBranch?.name || 'Atrium 1'}`}
             </p>
           </div>
         </div>
@@ -216,7 +222,7 @@ export const SchedulerScreen: React.FC = () => {
             className="h-10 px-5 rounded-full text-xs font-bold text-white flex items-center gap-2 cursor-pointer hover:opacity-90 active:scale-98 transition-all shadow-xs"
           >
             <Plus size={15} strokeWidth={2.5} />
-            <span>New Session</span>
+            <span>{t('schedule_add_session', language)}</span>
           </button>
         </div>
       </div>
@@ -225,10 +231,10 @@ export const SchedulerScreen: React.FC = () => {
       <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[26px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
         <div>
           <h2 className="text-base font-bold text-neutral-900 dark:text-white">
-            Weekly Utilization & Attendance Health
+            {language === 'ar' ? 'مؤشرات الإشغال والنشاط الأسبوعي' : language === 'fr' ? 'Taux d\'occupation & Santé du planning' : 'Weekly Utilization & Attendance Health'}
           </h2>
           <p className="text-xs text-neutral-400 dark:text-neutral-500">
-            Timetable density, enrolled athlete ratios, and peak floor occupancy
+            {language === 'ar' ? 'كثافة الجداول، نسب المشتركين وأوقات الذروة' : language === 'fr' ? 'Densité du planning, ratios de présence et affluence maximale' : 'Timetable density, enrolled athlete ratios, and peak floor occupancy'}
           </p>
         </div>
 
@@ -301,10 +307,10 @@ export const SchedulerScreen: React.FC = () => {
           <div className="flex items-center gap-2">
             <Calendar size={16} className="text-neutral-500" />
             <span className="text-sm font-bold text-neutral-900 dark:text-white">
-              {days.find((d) => d.id === selectedDay)?.label} Timetable
+              {days.find((d) => d.id === selectedDay)?.label} · {t('nav_scheduler', language)}
             </span>
             <span className="text-xs text-neutral-400 font-semibold tabular-nums ml-1">
-              {currentDayEvents.length} sessions
+              {currentDayEvents.length} {language === 'ar' ? 'حصص' : language === 'fr' ? 'créneaux' : 'sessions'}
             </span>
           </div>
 
@@ -314,7 +320,13 @@ export const SchedulerScreen: React.FC = () => {
             <Seek
               value={searchQuery}
               onChange={setSearchQuery}
-              placeholder="Search session title, trainer, area..."
+              placeholder={
+                language === 'ar'
+                  ? 'ابحث عن اسم الحصة، المدرب، القاعة...'
+                  : language === 'fr'
+                  ? 'Rechercher un cours, coach, salle...'
+                  : 'Search session title, trainer, area...'
+              }
               shutSize={36}
               openWidth={230}
             />
@@ -487,19 +499,19 @@ export const SchedulerScreen: React.FC = () => {
             <table className="w-full border-collapse text-left">
               <thead>
                 <tr className="border-b border-neutral-200/60 dark:border-neutral-800/80 text-[11px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider h-11">
-                  <th className="px-5">Time Window</th>
-                  <th className="px-4">Session Title</th>
-                  <th className="px-4">Discipline</th>
-                  <th className="px-4">Lead Trainer</th>
-                  <th className="px-4">Facility Studio</th>
-                  <th className="px-4 text-right">Attendance & Capacity</th>
+                  <th className="px-5">{language === 'ar' ? 'التوقيت' : language === 'fr' ? 'Créneau' : 'Time Window'}</th>
+                  <th className="px-4">{language === 'ar' ? 'عنوان الحصة / الوردية' : language === 'fr' ? 'Titre de la session' : 'Session Title'}</th>
+                  <th className="px-4">{language === 'ar' ? 'التصنيف' : language === 'fr' ? 'Discipline' : 'Discipline'}</th>
+                  <th className="px-4">{language === 'ar' ? 'المسؤول / المدرب' : language === 'fr' ? 'Responsable' : 'Lead Trainer'}</th>
+                  <th className="px-4">{language === 'ar' ? 'القاعة / الصندوق' : language === 'fr' ? 'Salle / Caisse' : 'Facility Studio'}</th>
+                  <th className="px-4 text-right">{language === 'ar' ? 'المشاركون / الطاقة' : language === 'fr' ? 'Inscrits & Capacité' : 'Attendance & Capacity'}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-neutral-200/40 dark:divide-neutral-800/60">
                 {currentDayEvents.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="py-16 text-center text-xs text-neutral-400">
-                      No sessions planned for {days.find((d) => d.id === selectedDay)?.label}.
+                      {t('schedule_no_events', language)}
                     </td>
                   </tr>
                 ) : (

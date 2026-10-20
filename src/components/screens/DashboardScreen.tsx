@@ -601,7 +601,9 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                       className="w-full px-3.5 py-2 text-left flex items-center gap-2.5 text-xs text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50 cursor-pointer"
                     >
                       <Scissors size={14} className="text-[#C4785A]" />
-                      <span className="font-semibold">Book Salon Treatment</span>
+                      <span className="font-semibold">
+                        {language === 'ar' ? 'حجز جلسة في الصالون' : language === 'fr' ? 'Réserver un soin au salon' : 'Book Salon Treatment'}
+                      </span>
                     </button>
                     <button
                       type="button"
@@ -612,7 +614,9 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                       className="w-full px-3.5 py-2 text-left flex items-center gap-2.5 text-xs text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50 cursor-pointer"
                     >
                       <Calendar size={14} className="text-amber-500" />
-                      <span className="font-semibold">Stylist Multi-Chair Schedule</span>
+                      <span className="font-semibold">
+                        {language === 'ar' ? 'جدول المصففين والكراسي' : language === 'fr' ? 'Planning des fauteuils & coiffeurs' : 'Stylist Multi-Chair Schedule'}
+                      </span>
                     </button>
                     <button
                       type="button"
@@ -623,7 +627,9 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                       className="w-full px-3.5 py-2 text-left flex items-center gap-2.5 text-xs text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50 cursor-pointer"
                     >
                       <ShoppingCart size={14} className="text-blue-500" />
-                      <span className="font-semibold">Beauty Product Retail POS</span>
+                      <span className="font-semibold">
+                        {language === 'ar' ? 'كاشير مبيعات منتجات التجميل' : language === 'fr' ? 'Caisse boutique produits de beauté' : 'Beauty Product Retail POS'}
+                      </span>
                     </button>
                     <button
                       type="button"
@@ -634,7 +640,9 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                       className="w-full px-3.5 py-2 text-left flex items-center gap-2.5 text-xs text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50 cursor-pointer"
                     >
                       <Users size={14} className="text-emerald-500" />
-                      <span className="font-semibold">Register New Client</span>
+                      <span className="font-semibold">
+                        {language === 'ar' ? 'تسجيل عميل جديد' : language === 'fr' ? 'Enregistrer un nouveau client' : 'Register New Client'}
+                      </span>
                     </button>
                   </>
                 ) : isPOS ? (
@@ -648,7 +656,9 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                       className="w-full px-3.5 py-2 text-left flex items-center gap-2.5 text-xs text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50 cursor-pointer"
                     >
                       <ShoppingCart size={14} className="text-[#C4785A]" />
-                      <span className="font-semibold">Open POS Register</span>
+                      <span className="font-semibold">
+                        {language === 'ar' ? 'فتح شاشة الكاشير' : language === 'fr' ? 'Ouvrir la caisse POS' : 'Open POS Register'}
+                      </span>
                     </button>
                     <button
                       type="button"
@@ -659,7 +669,9 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                       className="w-full px-3.5 py-2 text-left flex items-center gap-2.5 text-xs text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50 cursor-pointer"
                     >
                       <Plus size={14} className="text-emerald-500" />
-                      <span className="font-semibold">Add / Restock Items</span>
+                      <span className="font-semibold">
+                        {language === 'ar' ? 'إضافة / توريد بضاعة للمخزون' : language === 'fr' ? 'Ajouter / Réapprovisionner du stock' : 'Add / Restock Items'}
+                      </span>
                     </button>
                     <button
                       type="button"
@@ -670,7 +682,9 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                       className="w-full px-3.5 py-2 text-left flex items-center gap-2.5 text-xs text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50 cursor-pointer"
                     >
                       <CreditCard size={14} className="text-blue-500" />
-                      <span className="font-semibold">Sales Ledger & Receipts</span>
+                      <span className="font-semibold">
+                        {language === 'ar' ? 'سجل المبيعات والوصولات' : language === 'fr' ? 'Journal des ventes & reçus' : 'Sales Ledger & Receipts'}
+                      </span>
                     </button>
                     <button
                       type="button"
@@ -681,7 +695,9 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                       className="w-full px-3.5 py-2 text-left flex items-center gap-2.5 text-xs text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50 cursor-pointer"
                     >
                       <Users size={14} className="text-indigo-500" />
-                      <span className="font-semibold">Add Customer Account</span>
+                      <span className="font-semibold">
+                        {language === 'ar' ? 'إضافة حساب زبون' : language === 'fr' ? 'Ajouter un compte client' : 'Add Customer Account'}
+                      </span>
                     </button>
                   </>
                 ) : (
@@ -695,7 +711,9 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                       className="w-full px-3.5 py-2 text-left flex items-center gap-2.5 text-xs text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50 cursor-pointer"
                     >
                       <Plus size={14} className="text-[#C4785A]" />
-                      <span className="font-semibold">Add New Member</span>
+                      <span className="font-semibold">
+                        {language === 'ar' ? `إضافة ${terminology.memberSingle} جديد` : language === 'fr' ? `Ajouter un ${terminology.memberSingle.toLowerCase()}` : `Add New ${terminology.memberSingle}`}
+                      </span>
                     </button>
                     <button
                       type="button"
@@ -707,7 +725,9 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                       className="w-full px-3.5 py-2 text-left flex items-center gap-2.5 text-xs text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50 cursor-pointer"
                     >
                       <UserCheck size={14} className="text-emerald-500" />
-                      <span className="font-semibold">Quick Walk-in Passage</span>
+                      <span className="font-semibold">
+                        {language === 'ar' ? 'تسجيل دخول سريع' : language === 'fr' ? 'Passage express' : 'Quick Walk-in Passage'}
+                      </span>
                     </button>
                     <button
                       type="button"
@@ -718,7 +738,9 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                       className="w-full px-3.5 py-2 text-left flex items-center gap-2.5 text-xs text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50 cursor-pointer"
                     >
                       <ShoppingCart size={14} className="text-blue-500" />
-                      <span className="font-semibold">Record POS Sale</span>
+                      <span className="font-semibold">
+                        {language === 'ar' ? 'تسجيل عملية بيع' : language === 'fr' ? 'Enregistrer une vente' : 'Record POS Sale'}
+                      </span>
                     </button>
                   </>
                 )}
@@ -732,7 +754,9 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                     className="w-full px-3.5 py-2 text-left flex items-center gap-2.5 text-xs text-[#C4785A] hover:bg-[#FCEEE8] dark:hover:bg-neutral-700/50 cursor-pointer border-t border-neutral-100 dark:border-neutral-700 mt-1"
                   >
                     <KeyRound size={14} />
-                    <span className="font-semibold">Redeem Lifetime Voucher</span>
+                    <span className="font-semibold">
+                      {language === 'ar' ? 'تفعيل قسيمة الترخيص مدى الحياة' : language === 'fr' ? 'Activer un bon de licence à vie' : 'Redeem Lifetime Voucher'}
+                    </span>
                   </button>
                 )}
               </div>

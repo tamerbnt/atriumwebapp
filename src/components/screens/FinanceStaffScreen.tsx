@@ -30,6 +30,7 @@ import { Seek } from '../ui/Seek';
 import { LabelInput } from '../ui/LabelInput';
 import { LabelSelect } from '../ui/LabelSelect';
 import { formatMoney } from '../../utils/rules';
+import { t } from '../../utils/i18n';
 
 export const FinanceStaffScreen: React.FC = () => {
   const {
@@ -42,6 +43,7 @@ export const FinanceStaffScreen: React.FC = () => {
     switchBranch,
     subscription,
     addStaff,
+    language,
   } = useAtriumStore();
 
   const [isAddStaffOpen, setIsAddStaffOpen] = useState(false);
@@ -181,10 +183,14 @@ export const FinanceStaffScreen: React.FC = () => {
           </div>
           <div>
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white">
-              Staff & Payroll Ledger
+              {t('finance_payroll_title', language)}
             </h1>
             <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
-              Workforce directory, role authorization ranks, and salary disbursements for {currentBranch?.name || 'Atrium 1'}
+              {language === 'ar'
+                ? `دليل الموظفين، مراتب الصلاحيات وصرف الرواتب لـ ${currentBranch?.name || 'الفرع'}`
+                : language === 'fr'
+                ? `Annuaire de l'équipe, niveaux d'accès et décaissements des salaires pour ${currentBranch?.name || 'l\'établissement'}`
+                : `Workforce directory, role authorization ranks, and salary disbursements for ${currentBranch?.name || 'Atrium 1'}`}
             </p>
           </div>
         </div>
@@ -212,7 +218,7 @@ export const FinanceStaffScreen: React.FC = () => {
             {isFacilityDropdownOpen && (
               <div className="absolute right-0 mt-2 w-64 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
                 <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
-                  Switch Facility
+                  {t('fast_switch_title', language)}
                 </div>
                 {businesses.map((biz) => {
                   const isCurrent = biz.id === currentBusinessId;
@@ -254,7 +260,7 @@ export const FinanceStaffScreen: React.FC = () => {
             className="h-10 px-5 rounded-full text-xs font-bold text-white flex items-center gap-2 cursor-pointer hover:opacity-90 active:scale-98 transition-all shadow-xs"
           >
             <Plus size={15} strokeWidth={2.5} />
-            <span>Add Staff Member</span>
+            <span>{t('finance_add_member_btn', language)}</span>
           </button>
         </div>
       </div>
@@ -263,10 +269,10 @@ export const FinanceStaffScreen: React.FC = () => {
       <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[26px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
         <div>
           <h2 className="text-base font-bold text-neutral-900 dark:text-white">
-            Workforce & Compensation Health
+            {language === 'ar' ? 'فريق العمل والكتلة الشهرية للأجور' : language === 'fr' ? 'Équipe & Masse salariale mensuelle' : 'Workforce & Compensation Health'}
           </h2>
           <p className="text-xs text-neutral-400 dark:text-neutral-500">
-            Active team headcount, monthly salary commitments, and role access privileges
+            {language === 'ar' ? 'عدد الموظفين النشطين، إجمالي الرواتب الشهرية ومستويات الصلاحيات' : language === 'fr' ? 'Effectif actif, engagements salariaux mensuels et privilèges d\'accès' : 'Active team headcount, monthly salary commitments, and role access privileges'}
           </p>
         </div>
 

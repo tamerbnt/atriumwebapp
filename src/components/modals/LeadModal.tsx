@@ -3,6 +3,7 @@ import { useAtriumStore } from '../../services/store';
 import { Modal } from '../ui/Modal';
 import { LabelInput } from '../ui/LabelInput';
 import { LabelSelect } from '../ui/LabelSelect';
+import { t } from '../../utils/i18n';
 
 interface LeadModalProps {
   isOpen: boolean;
@@ -10,7 +11,7 @@ interface LeadModalProps {
 }
 
 export const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose }) => {
-  const { plans, currentBranch, terminology, addLead } = useAtriumStore();
+  const { plans, currentBranch, terminology, addLead, language } = useAtriumStore();
 
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
@@ -46,14 +47,14 @@ export const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose }) => {
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Quick Registration Request"
-      subtitle={`Log applicant lead for ${currentBranch.name}`}
+      title={t('reg_add_lead', language)}
+      subtitle={language === 'ar' ? `تسجيل طلب استفسار جديد لـ ${currentBranch.name}` : language === 'fr' ? `Enregistrer un prospect pour ${currentBranch.name}` : `Log applicant lead for ${currentBranch.name}`}
       maxWidth="md"
     >
       <form onSubmit={handleSubmit} className="space-y-3.5">
         <LabelInput
           field="Prospect Name"
-          label="Prospect Name *"
+          label={`${t('modal_name', language)} *`}
           value={fullName}
           onChange={setFullName}
           width="100%"
@@ -65,7 +66,7 @@ export const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose }) => {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <LabelInput
             field="Email"
-            label="Email Address"
+            label={t('modal_email', language)}
             type="email"
             value={email}
             onChange={setEmail}
@@ -76,7 +77,7 @@ export const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose }) => {
 
           <LabelInput
             field="Phone Number"
-            label="Phone Number *"
+            label={`${t('modal_phone', language)} *`}
             type="tel"
             value={phoneNumber}
             onChange={setPhoneNumber}
@@ -90,15 +91,15 @@ export const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose }) => {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <LabelSelect
             field="InterestedPlan"
-            label={`Interested ${terminology.plan}`}
+            label={`${terminology.plan}`}
             value={preferredPlanId}
             onChange={(val) => setPreferredPlanId(val?.target?.value ?? val)}
             options={[
-              { value: '', label: 'Undecided / Inquiry' },
+              { value: '', label: language === 'ar' ? 'غير محدد / استفسار عام' : language === 'fr' ? 'Indécis / Renseignement' : 'Undecided / Inquiry' },
               ...plans.map((p) => ({
                 value: p.id,
                 label: p.name,
-                sublabel: `${p.durationDays} days · ${p.price.toLocaleString()} DA`,
+                sublabel: `${p.durationDays} ${language === 'ar' ? 'يوم' : language === 'fr' ? 'jours' : 'days'} · ${p.price.toLocaleString()} DA`,
               })),
             ]}
             width="100%"
@@ -108,15 +109,15 @@ export const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose }) => {
 
           <LabelSelect
             field="AcquisitionSource"
-            label="Acquisition Source"
+            label={language === 'ar' ? 'مصدر الاستقطاب' : language === 'fr' ? 'Canal d\'acquisition' : 'Acquisition Source'}
             value={source}
             onChange={(val) => setSource(val?.target?.value ?? val)}
             options={[
-              { value: 'Walk-in', label: 'Walk-in Visit' },
-              { value: 'Instagram', label: 'Instagram Direct Message' },
-              { value: 'Facebook', label: 'Facebook Lead Ad' },
-              { value: 'Friend Referral', label: 'Friend Referral' },
-              { value: 'Website Form', label: 'Online Self-Service Form' },
+              { value: 'Walk-in', label: language === 'ar' ? 'زيارة مباشرة' : language === 'fr' ? 'Visite directe' : 'Walk-in Visit' },
+              { value: 'Instagram', label: 'Instagram' },
+              { value: 'Facebook', label: 'Facebook' },
+              { value: 'Friend Referral', label: language === 'ar' ? 'توصية صديق' : language === 'fr' ? 'Recommandation' : 'Friend Referral' },
+              { value: 'Website Form', label: language === 'ar' ? 'استمارة إلكترونية' : language === 'fr' ? 'Site web' : 'Online Form' },
             ]}
             width="100%"
             height={40}
@@ -126,13 +127,19 @@ export const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose }) => {
 
         <div className="space-y-1">
           <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
-            Prospect Notes & Desires
+            {t('modal_notes', language)}
           </label>
           <textarea
             rows={2}
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            placeholder="Class preferences, goals, free trial session requested..."
+            placeholder={
+              language === 'ar'
+                ? 'أهداف المشترك، تفضيلات الحصص، رغبة في حصة تجريبية...'
+                : language === 'fr'
+                ? 'Objectifs du prospect, créneaux souhaités, demande de séance d\'essai...'
+                : 'Class preferences, goals, free trial session requested...'
+            }
             style={{
               backgroundColor: 'var(--color-surface-bg)',
               borderColor: 'var(--color-border)',
@@ -148,7 +155,7 @@ export const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose }) => {
             onClick={onClose}
             className="h-10 px-4 text-xs font-semibold text-neutral-500 cursor-pointer"
           >
-            Cancel
+            {t('action_cancel', language)}
           </button>
           <button
             type="submit"
@@ -158,7 +165,7 @@ export const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose }) => {
             }}
             className="h-10 px-5 text-xs font-semibold text-white cursor-pointer shadow-xs"
           >
-            Submit Registration
+            {t('action_save', language)}
           </button>
         </div>
       </form>

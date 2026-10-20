@@ -32,6 +32,7 @@ import { Sale } from '../../types/index';
 import { formatMoney } from '../../utils/rules';
 import { Seek } from '../ui/Seek';
 import { LabelSelect } from '../ui/LabelSelect';
+import { t } from '../../utils/i18n';
 
 export const HistoryScreen: React.FC = () => {
   const {
@@ -45,6 +46,7 @@ export const HistoryScreen: React.FC = () => {
     setScreen,
     refundSale,
     receiptConfig,
+    language,
   } = useAtriumStore();
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -143,10 +145,14 @@ export const HistoryScreen: React.FC = () => {
           </div>
           <div>
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white">
-              Operations History
+              {t('history_sales_ledger', language)}
             </h1>
             <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
-              Financial settlement, POS payment receipts, and audit trail for {currentBranch?.name || 'Atrium 1'}
+              {language === 'ar'
+                ? `المعاملات المالية المنجزة، وصولات نقطة البيع وسجل العمليات لـ ${currentBranch?.name || 'الفرع'}`
+                : language === 'fr'
+                ? `Règlements financiers, tickets de caisse POS et piste d'audit pour ${currentBranch?.name || 'l\'établissement'}`
+                : `Financial settlement, POS payment receipts, and audit trail for ${currentBranch?.name || 'Atrium 1'}`}
             </p>
           </div>
         </div>
@@ -174,7 +180,7 @@ export const HistoryScreen: React.FC = () => {
             {isFacilityDropdownOpen && (
               <div className="absolute right-0 mt-2 w-64 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
                 <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
-                  Switch Facility
+                  {t('fast_switch_title', language)}
                 </div>
                 {businesses.map((biz) => {
                   const isCurrent = biz.id === currentBusinessId;
@@ -216,7 +222,7 @@ export const HistoryScreen: React.FC = () => {
             className="h-10 px-5 rounded-full text-xs font-bold text-white flex items-center gap-2 cursor-pointer hover:opacity-90 active:scale-98 transition-all shadow-xs"
           >
             <Receipt size={15} strokeWidth={2.5} />
-            <span>New POS Register</span>
+            <span>{t('shop_title', language)}</span>
           </button>
         </div>
       </div>

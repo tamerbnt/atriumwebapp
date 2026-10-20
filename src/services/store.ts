@@ -442,9 +442,15 @@ let globalState: AppState = (() => {
           ...INITIAL_STAFF.filter((s) => !storedStaffIds.has(s.id)),
         ];
 
+        const langConfig = getInitialLanguageConfig();
+        const effectiveLanguage = langConfig.isAuto ? getSystemDefaultLanguage() : (parsed.language || langConfig.language);
+        const effectiveIsAuto = langConfig.isAuto;
+
         return {
           ...DEFAULT_STATE,
           ...parsed,
+          language: effectiveLanguage,
+          isLanguageAuto: effectiveIsAuto,
           businesses,
           branches,
           currentBusinessId,

@@ -54,6 +54,8 @@ export default function App() {
     activeScreen,
     theme,
     language,
+    isLanguageAuto,
+    setSystemDefaultLanguage,
     isAuthenticated,
     isOnboardingOpen,
     isFastSwitchOpen,
@@ -113,14 +115,13 @@ export default function App() {
   // Natively follow system default language changes if auto mode is enabled
   useEffect(() => {
     const handleSystemLanguageChange = () => {
-      const state = useAtriumStore.getState();
-      if (state.isLanguageAuto) {
-        state.setSystemDefaultLanguage();
+      if (isLanguageAuto) {
+        setSystemDefaultLanguage();
       }
     };
     window.addEventListener('languagechange', handleSystemLanguageChange);
     return () => window.removeEventListener('languagechange', handleSystemLanguageChange);
-  }, []);
+  }, [isLanguageAuto, setSystemDefaultLanguage]);
 
   // Close mobile sidebar on screen change
   useEffect(() => {
