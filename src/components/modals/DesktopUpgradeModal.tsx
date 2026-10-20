@@ -100,7 +100,13 @@ export const DesktopUpgradeModal: React.FC<DesktopUpgradeModalProps> = ({
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
-      setExportedStatus('Backup downloaded successfully! Your data is 100% safe.');
+      setExportedStatus(
+        language === 'ar'
+          ? 'تم تحميل النسخة الاحتياطية بنجاح! بياناتك آمنة ومحمية.'
+          : language === 'fr'
+          ? 'Sauvegarde téléchargée avec succès ! Vos données sont en sécurité.'
+          : 'Backup downloaded successfully! Your data is 100% safe.'
+      );
       setTimeout(() => setExportedStatus(null), 4000);
     } catch (err) {
       console.warn('Export failed', err);
@@ -206,7 +212,15 @@ export const DesktopUpgradeModal: React.FC<DesktopUpgradeModalProps> = ({
             <ul className="space-y-1.5 text-neutral-600 dark:text-neutral-300 text-[11px]">
               <li className="flex items-center gap-1.5">
                 <CheckCircle2 size={13} className="text-emerald-500 shrink-0" />
-                <span><strong>1 Business</strong> &amp; <strong>1 Branch</strong></span>
+                <span>
+                  {language === 'ar' ? (
+                    <><strong>نشاط تجاري 1</strong> و <strong>فرع 1</strong></>
+                  ) : language === 'fr' ? (
+                    <><strong>1 Entreprise</strong> &amp; <strong>1 Agence</strong></>
+                  ) : (
+                    <><strong>1 Business</strong> &amp; <strong>1 Branch</strong></>
+                  )}
+                </span>
               </li>
               <li className="flex items-center gap-1.5">
                 <CheckCircle2 size={13} className="text-emerald-500 shrink-0" />

@@ -1,14 +1,17 @@
 import React from 'react';
-import { MemberStatus } from '../../types/index';
+import { MemberStatus, SupportedLanguage } from '../../types/index';
 import { getStatusConfig } from '../../utils/rules';
+import { useAtriumStore } from '../../services/store';
 
 interface StatusBadgeProps {
   status: MemberStatus;
   size?: 'sm' | 'md';
+  lang?: SupportedLanguage;
 }
 
-export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, size = 'md' }) => {
-  const config = getStatusConfig(status);
+export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, size = 'md', lang }) => {
+  const { language } = useAtriumStore();
+  const config = getStatusConfig(status, lang || language);
 
   return (
     <span

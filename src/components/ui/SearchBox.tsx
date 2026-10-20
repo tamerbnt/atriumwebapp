@@ -1,5 +1,6 @@
 import React from 'react';
 import { Seek } from './Seek';
+import { useAtriumStore } from '../../services/store';
 
 export interface SearchBoxProps {
   value: string;
@@ -14,17 +15,20 @@ export interface SearchBoxProps {
 export const SearchBox: React.FC<SearchBoxProps> = ({
   value,
   onChange,
-  placeholder = 'Search by name, phone, email, RFID...',
+  placeholder,
   className = '',
   openWidth = 260,
   shutSize = 40,
   onSearch,
 }) => {
+  const { language } = useAtriumStore();
+  const defaultPlaceholder = language === 'ar' ? 'البحث بالاسم، الهاتف، البريد، RFID...' : language === 'fr' ? 'Rechercher par nom, tél, e-mail, RFID...' : 'Search by name, phone, email, RFID...';
+
   return (
     <Seek
       value={value}
       onChange={onChange}
-      placeholder={placeholder}
+      placeholder={placeholder || defaultPlaceholder}
       className={className}
       openWidth={openWidth}
       shutSize={shutSize}

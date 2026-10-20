@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { useAtriumStore, ActiveScreen } from '../../services/store';
 import { t } from '../../utils/i18n';
+import { localizeStatus } from '../../utils/rules';
 
 export interface CommandPaletteModalProps {
   isOpen: boolean;
@@ -225,7 +226,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
         list.push({
           id: `mem-${mem.id}`,
           title: mem.fullName,
-          subtitle: `${mem.status} • ${mem.phoneNumber || mem.email || ''}`,
+          subtitle: `${localizeStatus(mem.status, language)} • ${mem.phoneNumber || mem.email || ''}`,
           category: 'Records',
           icon: <User size={15} className="text-[#C4785A]" />,
           onSelect: () => {
@@ -240,7 +241,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
         list.push({
           id: `prod-${prod.id}`,
           title: prod.name,
-          subtitle: `Product • ${prod.price} DZD • Stock: ${prod.stockQuantity}`,
+          subtitle: `${language === 'ar' ? 'منتج' : language === 'fr' ? 'Article' : 'Product'} • ${prod.price} ${language === 'ar' ? 'د.ج' : 'DA'} • ${language === 'ar' ? 'المخزون' : language === 'fr' ? 'Stock' : 'Stock'}: ${prod.stockQuantity}`,
           category: 'Records',
           icon: <Package size={15} className="text-blue-500" />,
           onSelect: () => {
@@ -352,7 +353,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
                 inputRef.current?.focus();
               }}
               className="p-1 rounded-full text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 transition-colors"
-              title="Clear query"
+              title={language === 'ar' ? 'مسح البحث' : language === 'fr' ? 'Effacer la recherche' : 'Clear query'}
             >
               <X size={15} />
             </button>
@@ -361,7 +362,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
             type="button"
             onClick={onClose}
             className="p-1 rounded-lg text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 transition-colors ml-1"
-            title="Close (Esc)"
+            title={language === 'ar' ? 'إغلاق (Esc)' : language === 'fr' ? 'Fermer (Esc)' : 'Close (Esc)'}
           >
             <span className="text-[11px] font-mono px-1.5 py-0.5 rounded border border-neutral-200 dark:border-neutral-700">ESC</span>
           </button>
@@ -410,7 +411,15 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
 
                   <div className="flex items-center gap-2 shrink-0">
                     <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-500 uppercase">
-                      {item.category}
+                      {item.category === 'Navigation'
+                        ? (language === 'ar' ? 'تنقل' : language === 'fr' ? 'Navigation' : 'Navigation')
+                        : item.category === 'Action'
+                        ? (language === 'ar' ? 'إجراء' : language === 'fr' ? 'Action' : 'Action')
+                        : item.category === 'Appearance'
+                        ? (language === 'ar' ? 'المظهر' : language === 'fr' ? 'Apparence' : 'Appearance')
+                        : item.category === 'Records'
+                        ? (language === 'ar' ? 'السجلات' : language === 'fr' ? 'Fiches' : 'Records')
+                        : item.category}
                     </span>
                     {isSelected && (
                       <ArrowRight size={13} className="text-[#C4785A] hidden sm:block" />

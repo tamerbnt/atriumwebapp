@@ -267,7 +267,7 @@ export const MemberModal: React.FC<MemberModalProps> = ({
               label={t('member_field_emergency_contact', language)}
               value={emergencyName}
               onChange={setEmergencyName}
-              placeholder="Contact Name"
+              placeholder={language === 'ar' ? 'اسم جهة الاتصال' : language === 'fr' ? 'Nom du contact' : 'Contact Name'}
               width="100%"
               height={40}
               corner={12}

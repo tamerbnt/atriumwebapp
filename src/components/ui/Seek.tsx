@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { X } from "lucide-react";
+import { useAtriumStore } from "../../services/store";
 
 /* ══ Seek ═════════════════════════════════════════════════
    A search icon that becomes a search field, as one object.
@@ -33,13 +34,16 @@ export interface SeekProps {
 export const Seek: React.FC<SeekProps> = ({
   value,
   onChange,
-  placeholder = "Search...",
+  placeholder,
   className = "",
   openWidth = 260,
   shutSize = 40,
   onSearch,
   autoFocusOnOpen = true,
 }) => {
+  const { language } = useAtriumStore();
+  const defaultPlaceholder = language === 'ar' ? 'بحث...' : language === 'fr' ? 'Rechercher...' : 'Search...';
+  const effectivePlaceholder = placeholder !== undefined ? placeholder : defaultPlaceholder;
   const [isOpen, setIsOpen] = useState(Boolean(value && value.length > 0));
   const [isPress, setIsPress] = useState(false);
   const [isBusy, setIsBusy] = useState(false);
@@ -162,7 +166,7 @@ export const Seek: React.FC<SeekProps> = ({
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
           onFocus={() => setIsOpen(true)}
-          placeholder={placeholder}
+          placeholder={effectivePlaceholder}
           autoComplete="off"
           spellCheck={false}
           tabIndex={isOpen ? 0 : -1}

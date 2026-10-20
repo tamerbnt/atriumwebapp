@@ -6,6 +6,7 @@ import React, {
   useState,
 } from 'react';
 import { ChevronDown, Check, Search, X } from 'lucide-react';
+import { useAtriumStore } from '../../services/store';
 
 export interface SelectOption {
   value: string | number;
@@ -241,6 +242,11 @@ export const LabelSelect: React.FC<LabelSelectProps> = ({
       ? `M${x0},${IN} L${r},${IN} A${a},${a} 0 0 0 ${IN},${r} L${IN},${H - r} A${a},${a} 0 0 0 ${r},${B} L${mid},${B}`
       : `M${x0},${IN} L${IN},${IN} L${IN},${B} L${mid},${B}`;
 
+  const { language } = useAtriumStore();
+  const defaultPlaceholder = language === 'ar' ? 'اختر...' : language === 'fr' ? 'Sélectionner...' : 'Select...';
+  const defaultSearchPlaceholder = language === 'ar' ? 'بحث في الخيارات...' : language === 'fr' ? 'Rechercher...' : 'Search options...';
+  const noOptionsText = language === 'ar' ? 'لا توجد خيارات مطابقة' : language === 'fr' ? 'Aucune option trouvée' : 'No options found';
+
   return (
     <div
       ref={boxRef}
@@ -324,7 +330,7 @@ export const LabelSelect: React.FC<LabelSelectProps> = ({
               {selectedOption
                 ? selectedOption.label
                 : up
-                ? placeholder || 'Select...'
+                ? placeholder || defaultPlaceholder
                 : placeholder || ''}
             </span>
           </div>
@@ -364,7 +370,7 @@ export const LabelSelect: React.FC<LabelSelectProps> = ({
                       setSearchQuery(e.target.value);
                       setHighlightedIndex(0);
                     }}
-                    placeholder="Search options..."
+                    placeholder={defaultSearchPlaceholder}
                     className="w-full h-7 pl-7 pr-7 rtl:pr-7 rtl:pl-7 text-xs bg-white dark:bg-zinc-800 border border-neutral-200 dark:border-zinc-700 rounded-lg text-neutral-900 dark:text-neutral-100 focus:outline-none focus:border-[#C4785A]"
                   />
                   {searchQuery && (
@@ -387,7 +393,7 @@ export const LabelSelect: React.FC<LabelSelectProps> = ({
             >
               {filteredOptions.length === 0 ? (
                 <li className="px-3.5 py-3 text-center text-neutral-400 italic">
-                  No options found
+                  {noOptionsText}
                 </li>
               ) : (
                 filteredOptions.map((opt, idx) => {

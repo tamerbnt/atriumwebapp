@@ -45,7 +45,13 @@ export const FastSwitchModal: React.FC<FastSwitchModalProps> = ({
           setError(null);
           onClose();
         } else {
-          setError(res.message || 'Invalid PIN code');
+          setError(
+            language === 'ar'
+              ? 'رمز PIN غير صحيح. (جرب 1234 للمالك، 5566 للمدير، 9988 للكاشير)'
+              : language === 'fr'
+              ? 'Code PIN invalide. (Ex. 1234 Propriétaire, 5566 Gérant, 9988 Caissier)'
+              : (res.message || 'Invalid PIN code. (Try 1234 for Owner, 5566 for Manager, 9988 for Cashier)')
+          );
           setTimeout(() => setPinInput(''), 600);
         }
       }

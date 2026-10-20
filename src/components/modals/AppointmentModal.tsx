@@ -207,7 +207,13 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
     if (!appointment) return;
     updateAppointmentStatus(appointment.id, 'InChair');
     setStatus('InChair');
-    setActionSuccessMessage('Client is now seated in chair. Treatment started.');
+    setActionSuccessMessage(
+      language === 'ar'
+        ? 'تم تثبيت العميل في المقعد وبدء الجلسة.'
+        : language === 'fr'
+        ? 'Le client est installé au fauteuil. Soin démarré.'
+        : 'Client is now seated in chair. Treatment started.'
+    );
     setTimeout(() => {
       onClose();
     }, 1200);
@@ -216,7 +222,13 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
   const handleSendToPOS = () => {
     if (!appointment) return;
     checkoutAppointment(appointment.id, 'Cash');
-    setActionSuccessMessage('Appointment completed & invoice created in POS sales history!');
+    setActionSuccessMessage(
+      language === 'ar'
+        ? 'تم إنهاء الموعد وإنشاء الفاتورة في سجل المبيعات!'
+        : language === 'fr'
+        ? 'Rendez-vous terminé et facture enregistrée en caisse !'
+        : 'Appointment completed & invoice created in POS sales history!'
+    );
     setTimeout(() => {
       onClose();
     }, 1200);
@@ -242,7 +254,15 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
       title={isEditing ? t('apt_modal_title_edit', language) : t('apt_modal_title_new', language)}
       subtitle={
         isEditing
-          ? `Booking reference #${appointment.id.slice(-6).toUpperCase()} • ${currentBranch.name}`
+          ? language === 'ar'
+            ? `رقم الحجز #${appointment.id.slice(-6).toUpperCase()} • ${currentBranch.name}`
+            : language === 'fr'
+            ? `Réf réservation #${appointment.id.slice(-6).toUpperCase()} • ${currentBranch.name}`
+            : `Booking reference #${appointment.id.slice(-6).toUpperCase()} • ${currentBranch.name}`
+          : language === 'ar'
+          ? `جدولة جلسة في ${currentBranch.name}`
+          : language === 'fr'
+          ? `Planifier une séance à ${currentBranch.name}`
           : `Schedule treatment at ${currentBranch.name}`
       }
       maxWidth="lg"
@@ -311,7 +331,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
               type="button"
               onClick={handleDelete}
               className="p-1.5 text-neutral-400 hover:text-rose-500 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/50 transition-colors cursor-pointer"
-              title="Delete Record"
+              title={language === 'ar' ? 'حذف الموعد' : language === 'fr' ? 'Supprimer le rendez-vous' : 'Delete Record'}
             >
               <Trash2 size={15} />
             </button>

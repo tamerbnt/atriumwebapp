@@ -73,7 +73,7 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({ isOpen, onClose }) =
               {t('settings_license_entitlement', language)}
             </span>
             <div className="text-sm font-bold text-neutral-900 dark:text-white mt-0.5">
-              {subscription.plan.name} Tier Rank #{subscription.plan.tierRank}
+              {subscription.plan.name} {language === 'ar' ? `الرتبة #${subscription.plan.tierRank}` : language === 'fr' ? `Niveau #${subscription.plan.tierRank}` : `Tier Rank #${subscription.plan.tierRank}`}
             </div>
             <span className="text-xs text-[#C4785A] font-semibold">
               {subscription.isLifetime

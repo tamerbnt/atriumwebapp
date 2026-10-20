@@ -95,31 +95,60 @@ export function formatMoney(amount: number, currency = 'DZD'): string {
   return `${formatted} ${currency}`;
 }
 
+export const STATUS_TRANSLATIONS: Record<MemberStatus, Record<SupportedLanguage, string>> = {
+  Active: { en: 'Active', fr: 'Actif', ar: 'نشط' },
+  Expired: { en: 'Expired', fr: 'Expiré', ar: 'منتهي' },
+  Frozen: { en: 'Frozen', fr: 'Gelé', ar: 'مجمد' },
+  Suspended: { en: 'Suspended', fr: 'Suspendu', ar: 'معلق' },
+  Pending: { en: 'Pending', fr: 'En attente', ar: 'قيد الانتظار' },
+  Lead: { en: 'Lead', fr: 'Prospect', ar: 'محتمل' },
+  Banned: { en: 'Banned', fr: 'Banni', ar: 'محظور' },
+};
+
 /**
- * Status visual mapping for MemberStatus
+ * Localizes any status string into French, Arabic, or English
  */
-export function getStatusConfig(status: MemberStatus): {
+export function localizeStatus(status: string, lang: SupportedLanguage = 'en'): string {
+  const match = STATUS_TRANSLATIONS[status as MemberStatus];
+  if (match) return match[lang] || match.en;
+  if (status === 'Approved') return lang === 'ar' ? 'معتمد' : lang === 'fr' ? 'Validé' : 'Approved';
+  if (status === 'Declined') return lang === 'ar' ? 'مرفوض' : lang === 'fr' ? 'Refusé' : 'Declined';
+  if (status === 'Confirmed') return lang === 'ar' ? 'مؤكد' : lang === 'fr' ? 'Confirmé' : 'Confirmed';
+  if (status === 'InChair') return lang === 'ar' ? 'في الجلسة' : lang === 'fr' ? 'Au fauteuil' : 'In Chair';
+  if (status === 'Completed') return lang === 'ar' ? 'مكتمل' : lang === 'fr' ? 'Terminé' : 'Completed';
+  if (status === 'Cancelled') return lang === 'ar' ? 'ملغى' : lang === 'fr' ? 'Annulé' : 'Cancelled';
+  if (status === 'NoShow') return lang === 'ar' ? 'لم يحضر' : lang === 'fr' ? 'Absent' : 'No Show';
+  if (status === 'Settled') return lang === 'ar' ? 'مسدد' : lang === 'fr' ? 'Encaissé' : 'Settled';
+  if (status === 'Refunded') return lang === 'ar' ? 'مسترجع' : lang === 'fr' ? 'Remboursé' : 'Refunded';
+  return status;
+}
+
+/**
+ * Status visual mapping for MemberStatus with multilingual support
+ */
+export function getStatusConfig(status: MemberStatus, lang: SupportedLanguage = 'en'): {
   label: string;
   color: string;
   bg: string;
 } {
+  const label = STATUS_TRANSLATIONS[status] ? STATUS_TRANSLATIONS[status][lang] || STATUS_TRANSLATIONS[status].en : status;
   switch (status) {
     case 'Active':
-      return { label: 'Active', color: '#10B981', bg: '#ECFDF5' };
+      return { label, color: '#10B981', bg: '#ECFDF5' };
     case 'Expired':
-      return { label: 'Expired', color: '#EF4444', bg: '#FEF2F2' };
+      return { label, color: '#EF4444', bg: '#FEF2F2' };
     case 'Frozen':
-      return { label: 'Frozen', color: '#3B82F6', bg: '#EFF6FF' };
+      return { label, color: '#3B82F6', bg: '#EFF6FF' };
     case 'Suspended':
-      return { label: 'Suspended', color: '#F59E0B', bg: '#FFFBEB' };
+      return { label, color: '#F59E0B', bg: '#FFFBEB' };
     case 'Pending':
-      return { label: 'Pending', color: '#6B7280', bg: '#F3F4F6' };
+      return { label, color: '#6B7280', bg: '#F3F4F6' };
     case 'Lead':
-      return { label: 'Lead', color: '#8B5CF6', bg: '#F5F3FF' };
+      return { label, color: '#8B5CF6', bg: '#F5F3FF' };
     case 'Banned':
-      return { label: 'Banned', color: '#991B1B', bg: '#FEE2E2' };
+      return { label, color: '#991B1B', bg: '#FEE2E2' };
     default:
-      return { label: 'Unknown', color: '#6B7280', bg: '#F3F4F6' };
+      return { label: lang === 'ar' ? 'غير معروف' : lang === 'fr' ? 'Inconnu' : 'Unknown', color: '#6B7280', bg: '#F3F4F6' };
   }
 }
 
