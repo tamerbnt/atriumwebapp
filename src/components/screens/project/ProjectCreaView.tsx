@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { LabelInput } from '../../ui/LabelInput';
 import { Seek } from '../../ui/Seek';
+import { LabelSelect } from '../../ui/LabelSelect';
 
 interface ProjectCreaViewProps {
   initialTab?: 'demandes' | 'kanban' | 'production' | 'upload' | 'briefs';
@@ -502,22 +503,18 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
 
           <form onSubmit={handleUploadSubmit} className="space-y-5">
             <div className="space-y-4">
-              <div>
-                <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block mb-1">
-                  Projet & Campagne Associée
-                </label>
-                <select
-                  value={selectedProjectId}
-                  onChange={(e) => setSelectedProjectId(e.target.value)}
-                  className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
-                >
-                  {pmProjects.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.title} ({p.clientName})
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <LabelSelect
+                field="Project"
+                label="Projet & Campagne Associée"
+                value={selectedProjectId}
+                onChange={(val) => setSelectedProjectId(typeof val === 'string' ? val : val.target?.value || val)}
+                options={pmProjects.map((p) => ({
+                  value: p.id,
+                  label: `${p.title} (${p.clientName})`,
+                }))}
+                height={46}
+                corner={14}
+              />
 
               <div>
                 <LabelInput
@@ -540,44 +537,47 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                 </span>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div>
-                    <label className="text-[11px] text-zinc-500 block mb-1">Espace Couleur</label>
-                    <select
-                      value={colorSpace}
-                      onChange={(e) => setColorSpace(e.target.value as any)}
-                      className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 font-bold"
-                    >
-                      <option value="CMJN">CMJN / CMYK (Imprimeur)</option>
-                      <option value="RVB">RVB / RGB (Écrans)</option>
-                    </select>
-                  </div>
+                  <LabelSelect
+                    field="ColorSpace"
+                    label="Espace Couleur"
+                    value={colorSpace}
+                    onChange={(val) => setColorSpace(typeof val === 'string' ? (val as any) : (val.target?.value || val))}
+                    options={[
+                      { value: 'CMJN', label: 'CMJN / CMYK (Imprimeur)' },
+                      { value: 'RVB', label: 'RVB / RGB (Écrans)' },
+                    ]}
+                    height={42}
+                    corner={10}
+                  />
 
-                  <div>
-                    <label className="text-[11px] text-zinc-500 block mb-1">Résolution</label>
-                    <select
-                      value={resolutionDpi}
-                      onChange={(e) => setResolutionDpi(e.target.value)}
-                      className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 font-bold"
-                    >
-                      <option value="300">300 DPI HD (Obligatoire Print)</option>
-                      <option value="150">150 DPI (Grands Formats Bâche)</option>
-                      <option value="72">72 DPI (Web)</option>
-                    </select>
-                  </div>
+                  <LabelSelect
+                    field="Resolution"
+                    label="Résolution"
+                    value={resolutionDpi}
+                    onChange={(val) => setResolutionDpi(typeof val === 'string' ? val : val.target?.value || val)}
+                    options={[
+                      { value: '300', label: '300 DPI HD (Print)' },
+                      { value: '150', label: '150 DPI (Bâche)' },
+                      { value: '72', label: '72 DPI (Web)' },
+                    ]}
+                    height={42}
+                    corner={10}
+                  />
 
-                  <div>
-                    <label className="text-[11px] text-zinc-500 block mb-1">Format Fichier</label>
-                    <select
-                      value={fileFormat}
-                      onChange={(e) => setFileFormat(e.target.value as any)}
-                      className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 font-bold uppercase"
-                    >
-                      <option value="pdf">PDF Haute Définition</option>
-                      <option value="ai">Adobe Illustrator (.ai)</option>
-                      <option value="psd">Adobe Photoshop (.psd)</option>
-                      <option value="tiff">TIFF Non Compressé</option>
-                    </select>
-                  </div>
+                  <LabelSelect
+                    field="Format"
+                    label="Format Fichier"
+                    value={fileFormat}
+                    onChange={(val) => setFileFormat(typeof val === 'string' ? (val as any) : (val.target?.value || val))}
+                    options={[
+                      { value: 'pdf', label: 'PDF Haute Définition' },
+                      { value: 'ai', label: 'Adobe Illustrator (.ai)' },
+                      { value: 'psd', label: 'Adobe Photoshop (.psd)' },
+                      { value: 'tiff', label: 'TIFF Non Compressé' },
+                    ]}
+                    height={42}
+                    corner={10}
+                  />
                 </div>
 
                 <div className="pt-2">

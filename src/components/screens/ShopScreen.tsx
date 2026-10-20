@@ -45,6 +45,8 @@ import { formatMoney } from '../../utils/rules';
 import { Modal } from '../ui/Modal';
 import { Seek } from '../ui/Seek';
 import { LabelInput } from '../ui/LabelInput';
+import { LabelSelect } from '../ui/LabelSelect';
+import { FilterSelect } from '../ui/FilterSelect';
 
 interface CartItem {
   product: Product;
@@ -1160,23 +1162,21 @@ export const ShopScreen: React.FC = () => {
             </div>
 
             {/* Customer selector (Walk-in vs Account) */}
-            <div className="space-y-1">
-              <label className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
-                Customer Account / Attribution
-              </label>
-              <select
-                value={selectedCustomerId}
-                onChange={(e) => setSelectedCustomerId(e.target.value)}
-                className="w-full h-9 px-2.5 text-xs rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:border-[#C4785A]"
-              >
-                <option value="">Guest Walk-In Customer</option>
-                {members.map((m) => (
-                  <option key={m.id} value={m.id}>
-                    {m.fullName} ({m.phoneNumber})
-                  </option>
-                ))}
-              </select>
-            </div>
+            <LabelSelect
+              field="Customer"
+              label="Customer Account / Attribution"
+              value={selectedCustomerId}
+              onChange={(val) => setSelectedCustomerId(typeof val === 'string' ? val : val.target?.value || val)}
+              options={[
+                { value: '', label: 'Guest Walk-In Customer' },
+                ...members.map((m) => ({
+                  value: m.id,
+                  label: `${m.fullName} (${m.phoneNumber})`,
+                })),
+              ]}
+              height={40}
+              corner={12}
+            />
 
             {/* Cart Items List */}
             <div className="max-h-[300px] overflow-y-auto space-y-2 pr-1 divide-y divide-neutral-100 dark:divide-neutral-800/60">
@@ -1559,15 +1559,12 @@ export const ShopScreen: React.FC = () => {
               </div>
 
               {/* Category selector */}
-              <select
+              <FilterSelect
+                label="Category"
                 value={categoryFilter}
-                onChange={(e) => setCategoryFilter(e.target.value)}
-                className="h-9 px-3 text-xs rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-800 dark:text-neutral-200"
-              >
-                {categories.map((c) => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
-              </select>
+                onChange={(val) => setCategoryFilter(typeof val === 'string' ? val : val.target?.value || val)}
+                options={categories.map((c) => ({ value: c, label: c }))}
+              />
             </div>
 
             <div className="flex items-center gap-2">
@@ -2072,20 +2069,27 @@ export const ShopScreen: React.FC = () => {
               <div className="space-y-2">
                 {splitPayments.map((sp, idx) => (
                   <div key={idx} className="flex items-center gap-2">
-                    <select
-                      value={sp.method}
-                      onChange={(e) => {
-                        const newArr = [...splitPayments];
-                        newArr[idx].method = e.target.value as any;
-                        setSplitPayments(newArr);
-                      }}
-                      className="w-32 h-10 px-2 text-xs rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800"
-                    >
-                      <option value="Cash">Cash</option>
-                      <option value="Card">Card</option>
-                      <option value="BankTransfer">Transfer</option>
-                      <option value="Credit">Credit</option>
-                    </select>
+                    <div className="w-36">
+                      <LabelSelect
+                        field="Method"
+                        label="Method"
+                        value={sp.method}
+                        onChange={(val) => {
+                          const v = typeof val === 'string' ? val : val.target?.value || val;
+                          const newArr = [...splitPayments];
+                          newArr[idx].method = v as any;
+                          setSplitPayments(newArr);
+                        }}
+                        options={[
+                          { value: 'Cash', label: 'Cash' },
+                          { value: 'Card', label: 'Card' },
+                          { value: 'BankTransfer', label: 'Transfer' },
+                          { value: 'Credit', label: 'Credit' },
+                        ]}
+                        height={40}
+                        corner={12}
+                      />
+                    </div>
 
                     <div className="flex-1">
                       <LabelInput
@@ -2130,17 +2134,19 @@ export const ShopScreen: React.FC = () => {
 
           {/* Cashier Attribution & Contact Phone */}
           <div className="grid grid-cols-2 gap-3 pt-2 border-t border-neutral-100 dark:border-neutral-800">
-            <div className="space-y-1">
-              <label className="text-[11px] font-bold text-neutral-500">Cashier Attribution</label>
-              <select
+            <div>
+              <LabelSelect
+                field="Cashier"
+                label="Cashier Attribution"
                 value={selectedCashierName}
-                onChange={(e) => setSelectedCashierName(e.target.value)}
-                className="w-full h-9 px-2 text-xs rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800"
-              >
-                {staff.map((s) => (
-                  <option key={s.id} value={s.fullName}>{s.fullName} ({s.role})</option>
-                ))}
-              </select>
+                onChange={(val) => setSelectedCashierName(typeof val === 'string' ? val : val.target?.value || val)}
+                options={staff.map((s) => ({
+                  value: s.fullName,
+                  label: `${s.fullName} (${s.role})`,
+                }))}
+                height={46}
+                corner={14}
+              />
             </div>
 
             <div>
@@ -2591,43 +2597,41 @@ export const ShopScreen: React.FC = () => {
           />
 
           <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
-                Category
-              </label>
-              <select
-                value={formCategory}
-                onChange={(e) => setFormCategory(e.target.value)}
-                className="w-full h-11 px-3 text-sm rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800"
-              >
-                <option value="Beverage">Beverage</option>
-                <option value="Grocery">Grocery</option>
-                <option value="Bakery">Bakery & Food</option>
-                <option value="General">General Merchandise</option>
-                <option value="Supplement">Supplements</option>
-                <option value="Equipment">Equipment</option>
-                <option value="Clothing">Clothing & Goods</option>
-                <option value="Service">Service</option>
-              </select>
-            </div>
+            <LabelSelect
+              field="Category"
+              label="Product Category"
+              value={formCategory}
+              onChange={(val) => setFormCategory(typeof val === 'string' ? val : val.target?.value || val)}
+              options={[
+                { value: 'Beverage', label: 'Beverage' },
+                { value: 'Grocery', label: 'Grocery' },
+                { value: 'Bakery', label: 'Bakery & Food' },
+                { value: 'General', label: 'General Merchandise' },
+                { value: 'Supplement', label: 'Supplements' },
+                { value: 'Equipment', label: 'Equipment' },
+                { value: 'Clothing', label: 'Clothing & Goods' },
+                { value: 'Service', label: 'Service' },
+              ]}
+              height={46}
+              corner={14}
+            />
 
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
-                Unit of Sale
-              </label>
-              <select
-                value={formUnit}
-                onChange={(e) => setFormUnit(e.target.value)}
-                className="w-full h-11 px-3 text-sm rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800"
-              >
-                <option value="pcs">Pieces (pcs)</option>
-                <option value="pack">Pack</option>
-                <option value="box">Box</option>
-                <option value="kg">Kilogram (kg)</option>
-                <option value="g">Gram (g)</option>
-                <option value="l">Liter (l)</option>
-              </select>
-            </div>
+            <LabelSelect
+              field="Unit"
+              label="Unit of Sale"
+              value={formUnit}
+              onChange={(val) => setFormUnit(typeof val === 'string' ? val : val.target?.value || val)}
+              options={[
+                { value: 'pcs', label: 'Pieces (pcs)' },
+                { value: 'pack', label: 'Pack' },
+                { value: 'box', label: 'Box' },
+                { value: 'kg', label: 'Kilogram (kg)' },
+                { value: 'g', label: 'Gram (g)' },
+                { value: 'l', label: 'Liter (l)' },
+              ]}
+              height={46}
+              corner={14}
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-3">

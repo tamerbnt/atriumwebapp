@@ -16,6 +16,8 @@ import { useAtriumStore } from '../../../services/store';
 import { RollCallModal } from './RollCallModal';
 import { Seek } from '../../ui/Seek';
 import { LabelInput } from '../../ui/LabelInput';
+import { LabelSelect } from '../../ui/LabelSelect';
+import { FilterSelect } from '../../ui/FilterSelect';
 
 type ModeKey = 'attendance' | 'gradebook';
 
@@ -134,17 +136,15 @@ export const EducationAttendanceView: React.FC = () => {
             onChange={setSearchQuery}
             placeholder="Search students in cohort..."
           />
-          <select
+          <FilterSelect
+            label="Cohort"
             value={selectedCohortId}
-            onChange={(e) => setSelectedCohortId(e.target.value)}
-            className="h-10 px-3.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-[#C4785A] cursor-pointer shadow-2xs"
-          >
-            {eduCohorts.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name} ({c.cohortCode || c.courseTitle})
-              </option>
-            ))}
-          </select>
+            onChange={(val) => setSelectedCohortId(typeof val === 'string' ? val : val.target?.value || val)}
+            options={eduCohorts.map((c) => ({
+              value: c.id,
+              label: `${c.name} (${c.cohortCode || c.courseTitle})`,
+            }))}
+          />
 
           {activeTab === 'attendance' ? (
             <button
@@ -441,23 +441,18 @@ export const EducationAttendanceView: React.FC = () => {
             </div>
 
             <form onSubmit={handleRecordGrade} className="space-y-4 pt-4 text-xs">
-              <div>
-                <label className="block font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
-                  Student *
-                </label>
-                <select
-                  required
-                  value={gradeForm.studentId}
-                  onChange={(e) => setGradeForm({ ...gradeForm, studentId: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#C4785A]"
-                >
-                  {cohortStudents.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.fullName}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <LabelSelect
+                field="Student"
+                label="Student *"
+                value={gradeForm.studentId}
+                onChange={(val) => setGradeForm({ ...gradeForm, studentId: typeof val === 'string' ? val : val.target?.value || val })}
+                options={cohortStudents.map((s) => ({
+                  value: s.id,
+                  label: s.fullName,
+                }))}
+                height={44}
+                corner={14}
+              />
 
               <div>
                 <LabelInput

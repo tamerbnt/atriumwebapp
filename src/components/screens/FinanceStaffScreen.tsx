@@ -28,6 +28,7 @@ import { Avatar } from '../ui/Avatar';
 import { Modal } from '../ui/Modal';
 import { Seek } from '../ui/Seek';
 import { LabelInput } from '../ui/LabelInput';
+import { LabelSelect } from '../ui/LabelSelect';
 import { formatMoney } from '../../utils/rules';
 
 export const FinanceStaffScreen: React.FC = () => {
@@ -746,23 +747,22 @@ export const FinanceStaffScreen: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-3 gap-3">
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
-                Role
-              </label>
-              <select
-                value={role}
-                onChange={(e) => setRole(e.target.value as StaffRole)}
-                className="w-full h-11 px-3 text-sm rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:border-[#C4785A] text-neutral-900 dark:text-white"
-              >
-                <option value="Manager">Manager (Rank 1)</option>
-                <option value="Cashier">Cashier (Rank 2)</option>
-                <option value="Stylist">Stylist / Practitioner (Rank 3)</option>
-                <option value="Technician">Technician (Rank 3)</option>
-                <option value="Waiter">Waiter (Rank 4)</option>
-                <option value="Staff">General Staff (Rank 7)</option>
-              </select>
-            </div>
+            <LabelSelect
+              field="Role"
+              label="Staff Role"
+              value={role}
+              onChange={(val) => setRole(typeof val === 'string' ? (val as StaffRole) : (val.target?.value || val))}
+              options={[
+                { value: 'Manager', label: 'Manager (Rank 1)' },
+                { value: 'Cashier', label: 'Cashier (Rank 2)' },
+                { value: 'Stylist', label: 'Stylist / Practitioner (Rank 3)' },
+                { value: 'Technician', label: 'Technician (Rank 3)' },
+                { value: 'Waiter', label: 'Waiter (Rank 4)' },
+                { value: 'Staff', label: 'General Staff (Rank 7)' },
+              ]}
+              height={46}
+              corner={14}
+            />
 
             <LabelInput
               field="Salary"

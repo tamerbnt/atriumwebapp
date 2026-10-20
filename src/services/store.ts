@@ -129,9 +129,9 @@ import {
   INITIAL_PM_PAYROLL_BATCHES,
   INITIAL_PM_CCP_SLIPS,
   INITIAL_PM_EQUIPMENT_STOCK,
-} from './seedData';
 import { checkQuota, getCategoryTerminology, validateVoucherCode } from '../utils/rules';
 import { numberToWordsFrench, numberToWordsArabic } from '../utils/algerianPtt';
+import { getInitialLanguageConfig, getSystemDefaultLanguage } from '../utils/i18n';
 
 import {
   isSupabaseConfigured,
@@ -207,6 +207,7 @@ interface AppState {
   activeScreen: ActiveScreen;
   theme: AppTheme;
   language: SupportedLanguage;
+  isLanguageAuto: boolean;
   members: Member[];
   leads: RegistrationLead[];
   plansByBranch: Record<string, MembershipPlan[]>;
@@ -287,6 +288,8 @@ const DEFAULT_USER: CurrentUser = {
   pinCode: '1234',
 };
 
+const initialLangConfig = getInitialLanguageConfig();
+
 const DEFAULT_STATE: AppState = {
   account: INITIAL_ACCOUNT,
   subscription: {
@@ -304,7 +307,8 @@ const DEFAULT_STATE: AppState = {
   currentBranchId: 'branch_freelance_main',
   activeScreen: 'dashboard',
   theme: 'light',
-  language: 'en',
+  language: initialLangConfig.language,
+  isLanguageAuto: initialLangConfig.isAuto,
   members: INITIAL_MEMBERS,
   leads: INITIAL_LEADS,
   plansByBranch: INITIAL_PLANS_BY_BRANCH,
@@ -1016,11 +1020,22 @@ export function useAtriumStore() {
     notify();
   };
 
-  const setLanguage = (language: SupportedLanguage) => {
-    globalState = { ...globalState, language };
+  const setLanguage = (language: SupportedLanguage, isAuto = false) => {
+    try {
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem('atrium_language', language);
+        localStorage.setItem('atrium_language_mode', isAuto ? 'auto' : 'manual');
+      }
+    } catch {}
+    globalState = { ...globalState, language, isLanguageAuto: isAuto };
     document.documentElement.setAttribute('dir', language === 'ar' ? 'rtl' : 'ltr');
     document.documentElement.setAttribute('lang', language);
     notify();
+  };
+
+  const setSystemDefaultLanguage = () => {
+    const sysLang = getSystemDefaultLanguage();
+    setLanguage(sysLang, true);
   };
 
   const switchFacility = (businessId: string, branchId?: string) => {
@@ -5211,6 +5226,7 @@ export function useAtriumStore() {
     activeScreen: state.activeScreen,
     theme: state.theme,
     language: state.language,
+    isLanguageAuto: state.isLanguageAuto,
     terminology,
     quotas: {
       businesses: businessQuota,
@@ -5276,6 +5292,7 @@ export function useAtriumStore() {
     setScreen,
     setTheme,
     setLanguage,
+    setSystemDefaultLanguage,
     switchFacility,
     switchBusiness,
     switchBranch,

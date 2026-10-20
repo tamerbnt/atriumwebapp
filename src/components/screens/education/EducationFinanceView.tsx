@@ -19,6 +19,7 @@ import { formatMoney } from '../../../utils/rules';
 import { EduEnrollment } from '../../../types';
 import { Seek } from '../../ui/Seek';
 import { LabelInput } from '../../ui/LabelInput';
+import { LabelSelect } from '../../ui/LabelSelect';
 
 type PaymentFilterKey = 'all' | 'pending' | 'partial' | 'overdue' | 'paid';
 
@@ -372,21 +373,20 @@ export const EducationFinanceView: React.FC = () => {
                 required
               />
 
-              <div>
-                <label className="block font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
-                  Payment Method
-                </label>
-                <select
-                  value={paymentMethod}
-                  onChange={(e) => setPaymentMethod(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#C4785A]"
-                >
-                  <option value="Cash">Cash (Campus Bureau)</option>
-                  <option value="Card / POS">Card (CIB / Dahabia POS)</option>
-                  <option value="Bank Transfer">Bank / CCP Transfer</option>
-                  <option value="Scholarship Voucher">Scholarship Voucher</option>
-                </select>
-              </div>
+              <LabelSelect
+                field="Method"
+                label="Payment Method"
+                value={paymentMethod}
+                onChange={(val) => setPaymentMethod(typeof val === 'string' ? val : val.target?.value || val)}
+                options={[
+                  { value: 'Cash', label: 'Cash (Campus Bureau)' },
+                  { value: 'Card / POS', label: 'Card (CIB / Dahabia POS)' },
+                  { value: 'Bank Transfer', label: 'Bank / CCP Transfer' },
+                  { value: 'Scholarship Voucher', label: 'Scholarship Voucher' },
+                ]}
+                height={44}
+                corner={14}
+              />
 
               <div className="pt-2 flex justify-end gap-2 border-t border-neutral-100 dark:border-neutral-800">
                 <button

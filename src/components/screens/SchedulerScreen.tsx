@@ -25,6 +25,8 @@ import { ScheduleEvent } from '../../types/index';
 import { Modal } from '../ui/Modal';
 import { Seek } from '../ui/Seek';
 import { LabelInput } from '../ui/LabelInput';
+import { LabelSelect } from '../ui/LabelSelect';
+import { FilterSelect } from '../ui/FilterSelect';
 import { StylistScheduleView } from './StylistScheduleView';
 
 export const SchedulerScreen: React.FC = () => {
@@ -340,18 +342,15 @@ export const SchedulerScreen: React.FC = () => {
               })}
             </div>
 
-            {/* Category Dropdown */}
-            <select
+            {/* Category Filter */}
+            <FilterSelect
               value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
-              className="h-9 px-3 text-xs rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 font-semibold text-neutral-700 dark:text-neutral-300 cursor-pointer focus:outline-none shadow-2xs"
-            >
-              {categories.map((c) => (
-                <option key={c} value={c}>
-                  {c === 'All' ? 'All Disciplines' : c}
-                </option>
-              ))}
-            </select>
+              onChange={(val) => setCategoryFilter(typeof val === 'string' ? val : val.target?.value || val)}
+              options={categories.map((c) => ({
+                value: c,
+                label: c === 'All' ? 'All Disciplines' : c,
+              }))}
+            />
 
             {/* Export Data Button */}
             <button
@@ -719,23 +718,22 @@ export const SchedulerScreen: React.FC = () => {
           />
 
           <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
-                Discipline Category
-              </label>
-              <select
-                value={newCategory}
-                onChange={(e) => setNewCategory(e.target.value)}
-                className="w-full h-11 px-3 text-sm rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:outline-none focus:border-[#C4785A] text-neutral-900 dark:text-white"
-              >
-                <option value="CrossFit">CrossFit</option>
-                <option value="Yoga">Yoga</option>
-                <option value="Boxing">Boxing</option>
-                <option value="Pilates">Pilates</option>
-                <option value="HIIT">HIIT</option>
-                <option value="Fitness">Fitness</option>
-              </select>
-            </div>
+            <LabelSelect
+              field="Discipline"
+              label="Discipline Category"
+              value={newCategory}
+              onChange={(val) => setNewCategory(typeof val === 'string' ? val : val.target?.value || val)}
+              options={[
+                { value: 'CrossFit', label: 'CrossFit' },
+                { value: 'Yoga', label: 'Yoga' },
+                { value: 'Boxing', label: 'Boxing' },
+                { value: 'Pilates', label: 'Pilates' },
+                { value: 'HIIT', label: 'HIIT' },
+                { value: 'Fitness', label: 'Fitness' },
+              ]}
+              height={46}
+              corner={14}
+            />
 
             <LabelInput
               field="Capacity"

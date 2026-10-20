@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { LabelInput } from '../../ui/LabelInput';
 import { Seek } from '../../ui/Seek';
+import { LabelSelect } from '../../ui/LabelSelect';
 
 interface ProjectDirectionViewProps {
   initialTab?: 'dashboard' | 'new_project' | 'approvals' | 'reports' | 'all' | 'payroll' | 'expenses';
@@ -559,22 +560,18 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
                 />
               </div>
 
-              <div>
-                <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block mb-1">
-                  Client Annonceur
-                </label>
-                <select
-                  value={newProjectClientId}
-                  onChange={(e) => setNewProjectClientId(e.target.value)}
-                  className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
-                >
-                  {pmClients.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name} ({c.wilaya})
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <LabelSelect
+                field="Client"
+                label="Client Annonceur"
+                value={newProjectClientId}
+                onChange={(val) => setNewProjectClientId(typeof val === 'string' ? val : val.target?.value || val)}
+                options={pmClients.map((c) => ({
+                  value: c.id,
+                  label: `${c.name} (${c.wilaya})`,
+                }))}
+                height={48}
+                corner={14}
+              />
 
               <div>
                 <LabelInput
@@ -655,33 +652,31 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
                 />
               </div>
 
-              <div>
-                <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block mb-1">
-                  Chef de Projet Attitré (Lead PM)
-                </label>
-                <select
-                  value={newProjectPmId}
-                  onChange={(e) => setNewProjectPmId(e.target.value)}
-                  className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
-                >
-                  <option value="stf_pm_01">Amine Meziane (Senior PM)</option>
-                  <option value="stf_pm_02">Samy Cherif (Event Lead)</option>
-                </select>
-              </div>
+              <LabelSelect
+                field="LeadPM"
+                label="Chef de Projet Attitré (Lead PM)"
+                value={newProjectPmId}
+                onChange={(val) => setNewProjectPmId(typeof val === 'string' ? val : val.target?.value || val)}
+                options={[
+                  { value: 'stf_pm_01', label: 'Amine Meziane (Senior PM)' },
+                  { value: 'stf_pm_02', label: 'Samy Cherif (Event Lead)' },
+                ]}
+                height={48}
+                corner={14}
+              />
 
-              <div>
-                <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block mb-1">
-                  Lead Graphiste Créa Attitré
-                </label>
-                <select
-                  value={newProjectCreaId}
-                  onChange={(e) => setNewProjectCreaId(e.target.value)}
-                  className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
-                >
-                  <option value="stf_crea_01">Lina Hadj-Ali (Directrice Artistique)</option>
-                  <option value="stf_crea_02">Rachid Benali (Infographiste Print)</option>
-                </select>
-              </div>
+              <LabelSelect
+                field="LeadCrea"
+                label="Lead Graphiste Créa Attitré"
+                value={newProjectCreaId}
+                onChange={(val) => setNewProjectCreaId(typeof val === 'string' ? val : val.target?.value || val)}
+                options={[
+                  { value: 'stf_crea_01', label: 'Lina Hadj-Ali (Directrice Artistique)' },
+                  { value: 'stf_crea_02', label: 'Rachid Benali (Infographiste Print)' },
+                ]}
+                height={48}
+                corner={14}
+              />
             </div>
 
             <div className="pt-4 border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-end gap-3">

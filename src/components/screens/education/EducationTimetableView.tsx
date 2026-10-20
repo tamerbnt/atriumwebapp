@@ -305,57 +305,44 @@ export const EducationTimetableView: React.FC = () => {
             </div>
 
             <form onSubmit={handleCreateSession} className="space-y-4 pt-4 text-xs">
-              <div>
-                <label className="block font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
-                  Target Cohort *
-                </label>
-                <select
-                  required
-                  value={formData.cohortId}
-                  onChange={(e) => setFormData({ ...formData, cohortId: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#C4785A]"
-                >
-                  {eduCohorts.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name} ({c.cohortCode || c.courseTitle})
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <LabelSelect
+                field="Cohort"
+                label="Target Cohort *"
+                value={formData.cohortId}
+                onChange={(val) => setFormData({ ...formData, cohortId: typeof val === 'string' ? val : val.target?.value || val })}
+                options={eduCohorts.map((c) => ({
+                  value: c.id,
+                  label: `${c.name} (${c.cohortCode || c.courseTitle})`,
+                }))}
+                height={44}
+                corner={14}
+              />
 
               <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
-                    Classroom
-                  </label>
-                  <select
-                    value={formData.classroomId}
-                    onChange={(e) => setFormData({ ...formData, classroomId: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#C4785A]"
-                  >
-                    {eduClassrooms.map((r) => (
-                      <option key={r.id} value={r.id}>
-                        {r.name} (Cap: {r.capacity})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
-                    Instructor
-                  </label>
-                  <select
-                    value={formData.instructorId}
-                    onChange={(e) => setFormData({ ...formData, instructorId: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#C4785A]"
-                  >
-                    {staff.map((s) => (
-                      <option key={s.id} value={s.id}>
-                        {s.fullName} ({s.role})
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                <LabelSelect
+                  field="Classroom"
+                  label="Classroom"
+                  value={formData.classroomId}
+                  onChange={(val) => setFormData({ ...formData, classroomId: typeof val === 'string' ? val : val.target?.value || val })}
+                  options={eduClassrooms.map((r) => ({
+                    value: r.id,
+                    label: `${r.name} (Cap: ${r.capacity})`,
+                  }))}
+                  height={44}
+                  corner={14}
+                />
+                <LabelSelect
+                  field="Instructor"
+                  label="Instructor"
+                  value={formData.instructorId}
+                  onChange={(val) => setFormData({ ...formData, instructorId: typeof val === 'string' ? val : val.target?.value || val })}
+                  options={staff.map((s) => ({
+                    value: s.id,
+                    label: `${s.fullName} (${s.role})`,
+                  }))}
+                  height={44}
+                  corner={14}
+                />
               </div>
 
               <LabelInput

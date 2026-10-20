@@ -5,6 +5,8 @@ import { ALGERIAN_WILAYAS, validateCcpAccount } from '../../../utils/algerianPtt
 import { MobilePhoneSimulator } from './MobilePhoneSimulator';
 import { LabelInput } from '../../ui/LabelInput';
 import { Seek } from '../../ui/Seek';
+import { LabelSelect } from '../../ui/LabelSelect';
+import { FilterSelect } from '../../ui/FilterSelect';
 import {
   Users,
   Search,
@@ -208,18 +210,19 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                 shutSize={38}
               />
 
-              <select
+              <FilterSelect
+                label="Wilaya"
                 value={selectedWilaya}
-                onChange={(e) => setSelectedWilaya(e.target.value)}
-                className="px-3 py-2 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs font-semibold"
-              >
-                <option value="all">58 Wilayas (Toutes)</option>
-                <option value="16">16 - Alger</option>
-                <option value="31">31 - Oran</option>
-                <option value="25">25 - Constantine</option>
-                <option value="19">19 - Sétif</option>
-                <option value="09">09 - Blida</option>
-              </select>
+                onChange={(val) => setSelectedWilaya(typeof val === 'string' ? val : val.target?.value || val)}
+                options={[
+                  { value: 'all', label: '58 Wilayas (Toutes)' },
+                  { value: '16', label: '16 - Alger' },
+                  { value: '31', label: '31 - Oran' },
+                  { value: '25', label: '25 - Constantine' },
+                  { value: '19', label: '19 - Sétif' },
+                  { value: '09', label: '09 - Blida' },
+                ]}
+              />
             </div>
 
             <div className="text-xs font-semibold text-zinc-500">
@@ -490,22 +493,19 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
               </div>
 
               <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="text-[11px] font-semibold text-zinc-700 dark:text-zinc-300 block mb-1">
-                    Wilaya de Résidence *
-                  </label>
-                  <select
-                    value={wilayaCode}
-                    onChange={(e) => setWilayaCode(e.target.value)}
-                    className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800"
-                  >
-                    {ALGERIAN_WILAYAS.map((w) => (
-                      <option key={w.code} value={w.code}>
-                        {w.code} - {w.nameFr}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                <LabelSelect
+                  field="Wilaya"
+                  label="Wilaya de Résidence *"
+                  value={wilayaCode}
+                  onChange={(val) => setWilayaCode(typeof val === 'string' ? val : val.target?.value || val)}
+                  options={ALGERIAN_WILAYAS.map((w) => ({
+                    value: w.code,
+                    label: `${w.code} - ${w.nameFr}`,
+                  }))}
+                  height={46}
+                  corner={14}
+                  searchable
+                />
 
                 <LabelInput
                   field="Commune"
@@ -619,22 +619,19 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                   corner={14}
                 />
 
-                <div>
-                  <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block mb-1">
-                    Wilaya de Résidence
-                  </label>
-                  <select
-                    value={wilayaCode}
-                    onChange={(e) => setWilayaCode(e.target.value)}
-                    className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800"
-                  >
-                    {ALGERIAN_WILAYAS.map((w) => (
-                      <option key={w.code} value={w.code}>
-                        {w.code} - {w.nameFr}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                <LabelSelect
+                  field="Wilaya"
+                  label="Wilaya de Résidence"
+                  value={wilayaCode}
+                  onChange={(val) => setWilayaCode(typeof val === 'string' ? val : val.target?.value || val)}
+                  options={ALGERIAN_WILAYAS.map((w) => ({
+                    value: w.code,
+                    label: `${w.code} - ${w.nameFr}`,
+                  }))}
+                  height={46}
+                  corner={14}
+                  searchable
+                />
               </div>
 
               <div className="grid grid-cols-3 gap-3">

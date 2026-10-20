@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { LabelInput } from '../../ui/LabelInput';
 import { Seek } from '../../ui/Seek';
+import { FilterSelect } from '../../ui/FilterSelect';
 
 interface ProjectChefProjetViewProps {
   initialTab?: 'portfolio' | 'catalog' | 'orders' | 'bat' | 'expenses';
@@ -209,20 +210,15 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
         </div>
 
         {/* Global Project Selector */}
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-zinc-500 font-medium">Projet Actif:</span>
-          <select
-            value={selectedProjectId}
-            onChange={(e) => setSelectedProjectId(e.target.value)}
-            className="px-3 py-1.5 text-xs font-semibold rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:outline-none"
-          >
-            {pmProjects.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.title} ({p.clientName})
-              </option>
-            ))}
-          </select>
-        </div>
+        <FilterSelect
+          label="Projet Actif"
+          value={selectedProjectId}
+          onChange={(val) => setSelectedProjectId(typeof val === 'string' ? val : val.target?.value || val)}
+          options={pmProjects.map((p) => ({
+            value: p.id,
+            label: `${p.title} (${p.clientName})`,
+          }))}
+        />
       </div>
 
 

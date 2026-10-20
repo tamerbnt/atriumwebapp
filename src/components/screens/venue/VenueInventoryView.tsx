@@ -19,6 +19,7 @@ import { formatCurrencyAmount } from '../../../utils/rules';
 import { BookingModal } from './BookingModal';
 import { Seek } from '../../ui/Seek';
 import { LabelInput } from '../../ui/LabelInput';
+import { LabelSelect } from '../../ui/LabelSelect';
 
 export const VenueInventoryView: React.FC = () => {
   const {
@@ -379,23 +380,22 @@ export const VenueInventoryView: React.FC = () => {
                   />
                 </div>
 
-                <div>
-                  <label className="block font-medium text-neutral-700 dark:text-neutral-300 mb-1">
-                    Space Category
-                  </label>
-                  <select
-                    value={type}
-                    onChange={(e) => setType(e.target.value as RentableUnitType)}
-                    className="w-full px-3 py-2 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl"
-                  >
-                    <option value="Hall">Event / Banquet Hall</option>
-                    <option value="Studio">Photo / Video Studio</option>
-                    <option value="Room">Meeting / Boardroom</option>
-                    <option value="Court">Sports / Padel Court</option>
-                    <option value="Desk">Coworking Desk Pod</option>
-                    <option value="Equipment">Asset & Gear Kit</option>
-                  </select>
-                </div>
+                <LabelSelect
+                  field="Category"
+                  label="Space Category"
+                  value={type}
+                  onChange={(val) => setType(typeof val === 'string' ? (val as RentableUnitType) : (val.target?.value || val))}
+                  options={[
+                    { value: 'Hall', label: 'Event / Banquet Hall' },
+                    { value: 'Studio', label: 'Photo / Video Studio' },
+                    { value: 'Room', label: 'Meeting / Boardroom' },
+                    { value: 'Court', label: 'Sports / Padel Court' },
+                    { value: 'Desk', label: 'Coworking Desk Pod' },
+                    { value: 'Equipment', label: 'Asset & Gear Kit' },
+                  ]}
+                  height={44}
+                  corner={14}
+                />
 
                 <div>
                   <LabelInput

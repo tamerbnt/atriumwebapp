@@ -29,11 +29,13 @@ import {
   Users,
   CreditCard,
   Briefcase,
+  Globe,
 } from 'lucide-react';
-import { useAtriumStore } from '../../services/store';
+import { useAtriumStore, showToast } from '../../services/store';
 import { formatDuration } from '../../utils/rules';
-import { PMRole } from '../../types/index';
+import { PMRole, SupportedLanguage } from '../../types/index';
 import { Seek } from '../ui/Seek';
+import { t } from '../../utils/i18n';
 
 interface TopBarProps {
   onOpenVoucherModal: () => void;
@@ -53,6 +55,10 @@ export const TopBar: React.FC<TopBarProps> = ({
     selectMember,
     theme,
     setTheme,
+    language,
+    isLanguageAuto,
+    setLanguage,
+    setSystemDefaultLanguage,
     currentUser,
     terminology,
     openFastSwitch,
@@ -80,6 +86,7 @@ export const TopBar: React.FC<TopBarProps> = ({
 
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [facilityDropdownOpen, setFacilityDropdownOpen] = useState(false);
+  const [languageDropdownOpen, setLanguageDropdownOpen] = useState(false);
   const [topBarSearch, setTopBarSearch] = useState('');
 
   const isFreelance = currentBusiness?.category === 'freelance_solo';
@@ -588,6 +595,139 @@ export const TopBar: React.FC<TopBarProps> = ({
             className={`${theme === 'dark' ? 'text-blue-400 font-bold' : 'text-neutral-400'}`}
           />
         </button>
+
+        {/* Language Selector Capsule (EN / FR / عربي) */}
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => setLanguageDropdownOpen((prev) => !prev)}
+            className="h-8 px-2.5 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center gap-1.5 cursor-pointer hover:bg-neutral-200/70 dark:hover:bg-neutral-700/80 transition-colors text-xs font-semibold text-neutral-700 dark:text-neutral-300 shadow-2xs"
+            title={t('topbar_language', language)}
+          >
+            <Globe size={13} className="text-[#C4785A]" />
+            <span className="uppercase text-[11px] font-bold tracking-wider">
+              {language === 'ar' ? 'عربي' : language === 'fr' ? 'FR' : 'EN'}
+            </span>
+            {isLanguageAuto && (
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" title={t('topbar_auto_detected', language)} />
+            )}
+            <ChevronDown size={12} className={`text-neutral-400 transition-transform ${languageDropdownOpen ? 'rotate-180' : ''}`} />
+          </button>
+
+          {languageDropdownOpen && (
+            <div
+              className={`absolute top-full mt-1.5 z-50 w-48 rounded-2xl bg-white dark:bg-zinc-900 border border-neutral-200 dark:border-zinc-800 shadow-xl p-1.5 space-y-1 animate-in fade-in zoom-in-95 duration-100 ${
+                language === 'ar' ? 'left-0' : 'right-0'
+              }`}
+            >
+              <div className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+                {t('topbar_language', language)}
+              </div>
+
+              {/* System Default */}
+              <button
+                type="button"
+                onClick={() => {
+                  setSystemDefaultLanguage();
+                  setLanguageDropdownOpen(false);
+                  showToast({
+                    type: 'info',
+                    title: t('topbar_auto_detected', language),
+                    message: t('settings_lang_changed_toast', language),
+                  });
+                }}
+                className={`w-full px-2.5 py-1.5 rounded-xl text-xs flex items-center justify-between cursor-pointer transition-colors ${
+                  isLanguageAuto
+                    ? 'bg-[#C4785A]/10 text-[#C4785A] font-bold'
+                    : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-zinc-800'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="text-sm">🌐</span>
+                  <span>{t('settings_system_default', language)}</span>
+                </div>
+                {isLanguageAuto && <Check size={13} className="text-[#C4785A]" />}
+              </button>
+
+              <div className="h-px bg-neutral-100 dark:bg-zinc-800 my-1" />
+
+              {/* English */}
+              <button
+                type="button"
+                onClick={() => {
+                  setLanguage('en', false);
+                  setLanguageDropdownOpen(false);
+                  showToast({
+                    type: 'success',
+                    title: 'Language Updated',
+                    message: 'Interface display language set to English.',
+                  });
+                }}
+                className={`w-full px-2.5 py-1.5 rounded-xl text-xs flex items-center justify-between cursor-pointer transition-colors ${
+                  !isLanguageAuto && language === 'en'
+                    ? 'bg-[#C4785A]/10 text-[#C4785A] font-bold'
+                    : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-zinc-800'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="text-sm">🇺🇸</span>
+                  <span>English</span>
+                </div>
+                {!isLanguageAuto && language === 'en' && <Check size={13} className="text-[#C4785A]" />}
+              </button>
+
+              {/* French */}
+              <button
+                type="button"
+                onClick={() => {
+                  setLanguage('fr', false);
+                  setLanguageDropdownOpen(false);
+                  showToast({
+                    type: 'success',
+                    title: 'Langue modifiée',
+                    message: 'La langue d\'affichage est maintenant le Français.',
+                  });
+                }}
+                className={`w-full px-2.5 py-1.5 rounded-xl text-xs flex items-center justify-between cursor-pointer transition-colors ${
+                  !isLanguageAuto && language === 'fr'
+                    ? 'bg-[#C4785A]/10 text-[#C4785A] font-bold'
+                    : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-zinc-800'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="text-sm">🇫🇷</span>
+                  <span>Français</span>
+                </div>
+                {!isLanguageAuto && language === 'fr' && <Check size={13} className="text-[#C4785A]" />}
+              </button>
+
+              {/* Arabic */}
+              <button
+                type="button"
+                onClick={() => {
+                  setLanguage('ar', false);
+                  setLanguageDropdownOpen(false);
+                  showToast({
+                    type: 'success',
+                    title: 'تم تحديث اللغة',
+                    message: 'تم تفعيل اللغة العربية والواجهة من اليمين إلى اليسار.',
+                  });
+                }}
+                className={`w-full px-2.5 py-1.5 rounded-xl text-xs flex items-center justify-between cursor-pointer transition-colors ${
+                  !isLanguageAuto && language === 'ar'
+                    ? 'bg-[#C4785A]/10 text-[#C4785A] font-bold'
+                    : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-zinc-800'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="text-sm">🇩🇿</span>
+                  <span>العربية (RTL)</span>
+                </div>
+                {!isLanguageAuto && language === 'ar' && <Check size={13} className="text-[#C4785A]" />}
+              </button>
+            </div>
+          )}
+        </div>
 
         {/* Supabase Cloud Connection Status Badge */}
         <div

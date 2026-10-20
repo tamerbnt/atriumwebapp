@@ -22,11 +22,14 @@ import {
   WifiOff,
   Download,
   HardDrive,
+  Globe,
+  Check,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../services/store';
 import { Modal } from '../ui/Modal';
 import { validateVoucherCode } from '../../utils/rules';
 import { LabelInput } from '../ui/LabelInput';
+import { t, getSystemDefaultLanguage, SUPPORTED_LANGUAGES } from '../../utils/i18n';
 
 interface SettingsScreenProps {
   onOpenVoucherModal: () => void;
@@ -41,6 +44,10 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
     devices,
     quotas,
     currentBusiness,
+    language,
+    isLanguageAuto,
+    setLanguage,
+    setSystemDefaultLanguage,
     addBranch,
     registerDevice,
     revokeDevice,
@@ -223,10 +230,10 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
           </div>
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white">
-              System Settings & Architecture
+              {t('settings_title', language)}
             </h1>
             <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
-              Manage branches, POS devices, license vouchers, and multi-tenant security
+              {t('settings_subtitle', language)}
             </p>
           </div>
         </div>
@@ -247,7 +254,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             title="Download complete JSON database backup"
           >
             <FileDown size={14} className="text-[#C4785A]" />
-            <span>Export Backup</span>
+            <span>{t('settings_export_backup', language)}</span>
           </button>
 
           <button
@@ -257,7 +264,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             title="Restore database from a JSON backup file"
           >
             <FileUp size={14} className="text-[#C4785A]" />
-            <span>Restore Backup</span>
+            <span>{t('settings_restore_backup', language)}</span>
           </button>
 
           <button
@@ -266,7 +273,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             className="h-10 px-4 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-white text-xs font-bold flex items-center gap-2 transition-colors cursor-pointer dark:border dark:border-neutral-700 shadow-xs"
           >
             <Laptop size={14} className="text-[#C4785A]" />
-            <span>Download Desktop App</span>
+            <span>{t('topbar_desktop_app', language)}</span>
           </button>
 
           <button
@@ -275,7 +282,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             className="h-10 px-4 rounded-xl bg-[#FDF4F0] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 text-[#C4785A] text-xs font-bold flex items-center gap-2 hover:bg-[#FBECE6] dark:hover:bg-neutral-700/80 transition-colors cursor-pointer"
           >
             <Sparkles size={14} />
-            <span>Relaunch Setup Wizard</span>
+            <span>{t('action_relaunch_wizard', language)}</span>
           </button>
         </div>
       </div>
@@ -287,7 +294,188 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
         </div>
       )}
 
-      {/* Row 1: License Status Banner */}
+      {/* Row 1: Language & Regional Localization */}
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[26px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div
+              style={{ backgroundColor: 'var(--color-accent-dim)', color: 'var(--color-accent)' }}
+              className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 shadow-xs"
+            >
+              <Globe size={20} />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-base font-bold text-neutral-900 dark:text-white">
+                  {t('settings_lang_title', language)}
+                </h3>
+                <span
+                  className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
+                    isLanguageAuto
+                      ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400'
+                      : 'bg-[#FCEEE8] text-[#C4785A] dark:bg-[#C4785A]/20 dark:text-[#C4785A]'
+                  }`}
+                >
+                  {isLanguageAuto ? `${t('topbar_auto_detected', language)} (${language.toUpperCase()})` : `Manual (${language.toUpperCase()})`}
+                </span>
+              </div>
+              <p className="text-xs text-[#52525B] dark:text-neutral-400 mt-0.5">
+                {t('settings_lang_desc', language)}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 self-start sm:self-auto text-xs text-neutral-500 dark:text-neutral-400">
+            <span>{t('settings_system_detected_badge', language)}:</span>
+            <span className="font-bold text-neutral-800 dark:text-neutral-200 uppercase bg-white dark:bg-neutral-800 px-2 py-0.5 rounded-md border border-neutral-200 dark:border-neutral-700">
+              {getSystemDefaultLanguage() === 'ar' ? 'العربية (ar)' : getSystemDefaultLanguage() === 'fr' ? 'Français (fr)' : 'English (en)'}
+            </span>
+          </div>
+        </div>
+
+        {/* Language Options Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-1">
+          {/* Option 0: System Default */}
+          <button
+            type="button"
+            onClick={() => {
+              setSystemDefaultLanguage();
+              showToast({
+                type: 'info',
+                title: t('topbar_auto_detected', language),
+                message: t('settings_lang_changed_toast', language),
+              });
+            }}
+            className={`p-4 rounded-[20px] text-left transition-all border cursor-pointer relative ${
+              isLanguageAuto
+                ? 'bg-white dark:bg-neutral-800 border-[#C4785A] ring-2 ring-[#C4785A]/20 shadow-sm'
+                : 'bg-white/60 dark:bg-neutral-800/60 border-[#E9EEF0] dark:border-neutral-700/60 hover:bg-white dark:hover:bg-neutral-800'
+            }`}
+          >
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xl">🌐</span>
+              {isLanguageAuto && (
+                <span className="w-5 h-5 rounded-full bg-[#C4785A] text-white flex items-center justify-center text-xs">
+                  <Check size={12} strokeWidth={3} />
+                </span>
+              )}
+            </div>
+            <div className="font-bold text-sm text-neutral-900 dark:text-white">
+              {t('settings_system_default', language)}
+            </div>
+            <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-1">
+              {t('settings_lang_desc', language)} ({getSystemDefaultLanguage().toUpperCase()})
+            </p>
+          </button>
+
+          {/* Option 1: English */}
+          <button
+            type="button"
+            onClick={() => {
+              setLanguage('en', false);
+              showToast({
+                type: 'success',
+                title: 'Language Updated',
+                message: 'Interface display language set to English.',
+              });
+            }}
+            className={`p-4 rounded-[20px] text-left transition-all border cursor-pointer relative ${
+              !isLanguageAuto && language === 'en'
+                ? 'bg-white dark:bg-neutral-800 border-[#C4785A] ring-2 ring-[#C4785A]/20 shadow-sm'
+                : 'bg-white/60 dark:bg-neutral-800/60 border-[#E9EEF0] dark:border-neutral-700/60 hover:bg-white dark:hover:bg-neutral-800'
+            }`}
+          >
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xl">🇺🇸</span>
+              {!isLanguageAuto && language === 'en' && (
+                <span className="w-5 h-5 rounded-full bg-[#C4785A] text-white flex items-center justify-center text-xs">
+                  <Check size={12} strokeWidth={3} />
+                </span>
+              )}
+            </div>
+            <div className="font-bold text-sm text-neutral-900 dark:text-white">
+              English (US / UK)
+            </div>
+            <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-1">
+              Standard Left-to-Right (LTR)
+            </p>
+          </button>
+
+          {/* Option 2: Français */}
+          <button
+            type="button"
+            onClick={() => {
+              setLanguage('fr', false);
+              showToast({
+                type: 'success',
+                title: 'Langue modifiée',
+                message: 'La langue d\'affichage est maintenant le Français.',
+              });
+            }}
+            className={`p-4 rounded-[20px] text-left transition-all border cursor-pointer relative ${
+              !isLanguageAuto && language === 'fr'
+                ? 'bg-white dark:bg-neutral-800 border-[#C4785A] ring-2 ring-[#C4785A]/20 shadow-sm'
+                : 'bg-white/60 dark:bg-neutral-800/60 border-[#E9EEF0] dark:border-neutral-700/60 hover:bg-white dark:hover:bg-neutral-800'
+            }`}
+          >
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xl">🇫🇷</span>
+              {!isLanguageAuto && language === 'fr' && (
+                <span className="w-5 h-5 rounded-full bg-[#C4785A] text-white flex items-center justify-center text-xs">
+                  <Check size={12} strokeWidth={3} />
+                </span>
+              )}
+            </div>
+            <div className="font-bold text-sm text-neutral-900 dark:text-white">
+              Français (France / Algérie)
+            </div>
+            <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-1">
+              Mise en page standard (LTR)
+            </p>
+          </button>
+
+          {/* Option 3: العربية */}
+          <button
+            type="button"
+            onClick={() => {
+              setLanguage('ar', false);
+              showToast({
+                type: 'success',
+                title: 'تم تحديث اللغة',
+                message: 'تم تفعيل اللغة العربية والواجهة من اليمين إلى اليسار.',
+              });
+            }}
+            className={`p-4 rounded-[20px] text-left transition-all border cursor-pointer relative ${
+              !isLanguageAuto && language === 'ar'
+                ? 'bg-white dark:bg-neutral-800 border-[#C4785A] ring-2 ring-[#C4785A]/20 shadow-sm'
+                : 'bg-white/60 dark:bg-neutral-800/60 border-[#E9EEF0] dark:border-neutral-700/60 hover:bg-white dark:hover:bg-neutral-800'
+            }`}
+          >
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xl">🇩🇿</span>
+              {!isLanguageAuto && language === 'ar' && (
+                <span className="w-5 h-5 rounded-full bg-[#C4785A] text-white flex items-center justify-center text-xs">
+                  <Check size={12} strokeWidth={3} />
+                </span>
+              )}
+            </div>
+            <div className="font-bold text-sm text-neutral-900 dark:text-white">
+              العربية (الجزائر / MENA)
+            </div>
+            <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-1">
+              دعم أصيل من اليمين إلى اليسار (RTL)
+            </p>
+          </button>
+        </div>
+
+        {/* RTL Information callout */}
+        <div className="p-3.5 rounded-2xl bg-white dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700/60 flex items-center gap-3 text-xs text-neutral-600 dark:text-neutral-300">
+          <Sparkles size={16} className="text-[#C4785A] shrink-0" />
+          <span>{t('settings_rtl_notice', language)}</span>
+        </div>
+      </div>
+
+      {/* Row 2: License Status Banner */}
       <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[26px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs relative overflow-hidden">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-1">

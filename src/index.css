@@ -127,6 +127,11 @@
     -webkit-font-smoothing: antialiased;
     overflow: hidden;
   }
+
+  [dir="rtl"] body,
+  [dir="rtl"] {
+    font-family: 'Cairo', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  }
 }
 
 .tabular-nums {

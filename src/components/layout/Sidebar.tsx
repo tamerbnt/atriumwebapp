@@ -30,6 +30,7 @@ import {
 } from 'lucide-react';
 import { useAtriumStore, ActiveScreen } from '../../services/store';
 import { FiveCubesLogo } from '../auth/AtriumMonolith';
+import { t } from '../../utils/i18n';
 
 interface SidebarProps {
   onOpenVoucherModal: () => void;
@@ -50,8 +51,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
     activePmRole,
     setActivePmRole,
     setActivePmSubScreen,
+    language,
   } = useAtriumStore();
   const [isExpanded, setIsExpanded] = useState(false);
+  const isRtl = language === 'ar';
 
   const category = currentBusiness?.category || 'pos_inventory';
 

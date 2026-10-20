@@ -27,6 +27,8 @@ import {
 } from 'lucide-react';
 import { LabelInput } from '../../ui/LabelInput';
 import { Seek } from '../../ui/Seek';
+import { LabelSelect } from '../../ui/LabelSelect';
+import { FilterSelect } from '../../ui/FilterSelect';
 
 interface ProjectSuperviseurViewProps {
   initialTab?: 'missions' | 'attendance' | 'staffing' | 'expense';
@@ -167,20 +169,15 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
         </div>
 
         {/* Global Mission Selector */}
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-zinc-500 font-medium">Mission:</span>
-          <select
-            value={selectedMissionId}
-            onChange={(e) => setSelectedMissionId(e.target.value)}
-            className="px-3 py-1.5 text-xs font-semibold rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:outline-none"
-          >
-            {pmMissions.map((m) => (
-              <option key={m.id} value={m.id}>
-                {m.code} — {m.venueName} ({m.activationType})
-              </option>
-            ))}
-          </select>
-        </div>
+        <FilterSelect
+          label="Mission"
+          value={selectedMissionId}
+          onChange={(val) => setSelectedMissionId(typeof val === 'string' ? val : val.target?.value || val)}
+          options={pmMissions.map((m) => ({
+            value: m.id,
+            label: `${m.code} — ${m.venueName} (${m.activationType})`,
+          }))}
+        />
       </div>
 
 
@@ -441,32 +438,28 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
                 shutSize={38}
               />
 
-              <div>
-                <span className="text-zinc-400 block text-[10px] font-semibold mb-0.5">Wilaya</span>
-                <select
-                  value={wilayaFilter}
-                  onChange={(e) => setWilayaFilter(e.target.value)}
-                  className="px-2.5 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 font-semibold"
-                >
-                  <option value="all">58 Wilayas (Toutes)</option>
-                  <option value="16">16 - Alger</option>
-                  <option value="31">31 - Oran</option>
-                  <option value="25">25 - Constantine</option>
-                  <option value="19">19 - Sétif</option>
-                </select>
-              </div>
+              <FilterSelect
+                label="Wilaya"
+                value={wilayaFilter}
+                onChange={(val) => setWilayaFilter(typeof val === 'string' ? val : val.target?.value || val)}
+                options={[
+                  { value: 'all', label: '58 Wilayas (Toutes)' },
+                  { value: '16', label: '16 - Alger' },
+                  { value: '31', label: '31 - Oran' },
+                  { value: '25', label: '25 - Constantine' },
+                  { value: '19', label: '19 - Sétif' },
+                ]}
+              />
 
-              <div>
-                <span className="text-zinc-400 block text-[10px] font-semibold mb-0.5">Note Minimum</span>
-                <select
-                  value={minRatingFilter}
-                  onChange={(e) => setMinRatingFilter(Number(e.target.value))}
-                  className="px-2.5 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 font-semibold"
-                >
-                  <option value={4.0}>≥ 4.0 ★ (Confirmé)</option>
-                  <option value={4.5}>≥ 4.5 ★ (Élite)</option>
-                </select>
-              </div>
+              <FilterSelect
+                label="Note Min"
+                value={minRatingFilter}
+                onChange={(val) => setMinRatingFilter(Number(typeof val === 'string' || typeof val === 'number' ? val : val.target?.value || val))}
+                options={[
+                  { value: 4.0, label: '≥ 4.0 ★ (Confirmé)' },
+                  { value: 4.5, label: '≥ 4.5 ★ (Élite)' },
+                ]}
+              />
 
               <div className="flex items-center gap-2 pt-3">
                 <input
@@ -604,20 +597,19 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
                 />
               </div>
 
-              <div>
-                <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block mb-1">
-                  Catégorie
-                </label>
-                <select
-                  value={expenseCategory}
-                  onChange={(e) => setExpenseCategory(e.target.value as any)}
-                  className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
-                >
-                  <option value="materials">Matériel d'Urgence</option>
-                  <option value="catering">Restauration Animateurs</option>
-                  <option value="transport">Transport & Parking</option>
-                </select>
-              </div>
+              <LabelSelect
+                field="Category"
+                label="Catégorie"
+                value={expenseCategory}
+                onChange={(val) => setExpenseCategory(typeof val === 'string' ? (val as any) : (val.target?.value || val))}
+                options={[
+                  { value: 'materials', label: "Matériel d'Urgence" },
+                  { value: 'catering', label: 'Restauration Animateurs' },
+                  { value: 'transport', label: 'Transport & Parking' },
+                ]}
+                height={46}
+                corner={12}
+              />
             </div>
 
             <div>
