@@ -189,8 +189,8 @@ export const FreelanceClientsView: React.FC = () => {
       client.id,
       client.name,
       activeProject ? activeProject.id : 'proj_general',
-      activeProject ? activeProject.title : 'Sprint & Advisory',
-      `Focus work for ${client.name}`,
+      activeProject ? activeProject.title : t('free_inv_default_item_desc', language),
+      `${t('free_time_working_on_label', language)} ${client.name}`,
       activeProject?.deliverables[0]?.id,
       activeProject?.deliverables[0]?.title,
       true,
@@ -536,7 +536,7 @@ export const FreelanceClientsView: React.FC = () => {
                             {project.title}
                           </span>
                           <span className="text-[11px] text-neutral-500">
-                            {project.stage === 'InProgress' ? t('free_stage_in_progress', language) : project.stage === 'ClientReview' ? t('free_stage_client_review', language) : project.stage === 'Approved' ? t('free_stage_approved', language) : project.stage === 'Planning' ? t('free_stage_planning', language) : project.stage}
+                            {project.stage === 'InProgress' ? t('free_stage_in_progress', language) : project.stage === 'ClientReview' ? t('free_stage_client_review', language) : project.stage === 'Approved' ? t('free_stage_approved', language) : project.stage === 'Briefing' ? (t('pm_status_brief', language) || 'Briefing') : project.stage === 'Billed' ? (t('free_stage_completed', language) || 'Billed') : (project.stage as string)}
                           </span>
                         </div>
                         <div className="flex items-center gap-3 text-neutral-500 mt-1 text-[11px]">
@@ -765,7 +765,7 @@ export const FreelanceClientsView: React.FC = () => {
                     type="number"
                     value={formData.monthlyRetainerHours ? String(formData.monthlyRetainerHours) : ''}
                     onChange={(v) => setFormData({ ...formData, monthlyRetainerHours: Number(v) || 0 })}
-                    placeholder="e.g. 20"
+                    placeholder={t('free_clients_ph_retainer_hrs', language)}
                     width="100%"
                     height={46}
                     corner={14}
@@ -776,7 +776,7 @@ export const FreelanceClientsView: React.FC = () => {
                     type="number"
                     value={formData.monthlyRetainerAmount ? String(formData.monthlyRetainerAmount) : ''}
                     onChange={(v) => setFormData({ ...formData, monthlyRetainerAmount: Number(v) || 0 })}
-                    placeholder="e.g. 1500"
+                    placeholder={t('free_clients_ph_flat_fee', language)}
                     width="100%"
                     height={46}
                     corner={14}
@@ -832,7 +832,7 @@ export const FreelanceClientsView: React.FC = () => {
             </div>
 
             <p className="text-xs text-neutral-600 dark:text-neutral-300">
-              {t('free_clients_delete_confirm', language)} <strong className="text-neutral-900 dark:text-white font-semibold">{clientToDelete.name}</strong> ({clientToDelete.company || 'Private Client'})?
+              {t('free_clients_delete_confirm', language)} <strong className="text-neutral-900 dark:text-white font-semibold">{clientToDelete.name}</strong> ({clientToDelete.company || t('free_clients_private_badge', language)})?
             </p>
 
             <label className="flex items-start gap-2.5 p-3 rounded-xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-xs text-neutral-700 dark:text-neutral-300 cursor-pointer">

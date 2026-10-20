@@ -53,7 +53,7 @@ export const FreelanceTimeTrackerView: React.FC = () => {
   const [selectedProjectId, setSelectedProjectId] = useState<string>(
     freelanceProjects[0]?.id || ''
   );
-  const [taskDescription, setTaskDescription] = useState('Sprint execution & feature implementation');
+  const [taskDescription, setTaskDescription] = useState('');
   const [isBillable, setIsBillable] = useState(true);
   const [isPomodoro, setIsPomodoro] = useState(false);
 
@@ -164,7 +164,7 @@ export const FreelanceTimeTrackerView: React.FC = () => {
       client.company || client.name,
       project.id,
       project.title,
-      taskDescription || 'Sprint Task',
+      taskDescription || (language === 'ar' ? 'مهمة عمل' : language === 'fr' ? 'Session de travail' : 'Sprint Task'),
       project.deliverables?.[0]?.id,
       project.deliverables?.[0]?.title,
       isBillable,
@@ -196,9 +196,9 @@ export const FreelanceTimeTrackerView: React.FC = () => {
 
     logTimeEntry({
       clientId: manualForm.clientId,
-      clientName: client?.name || 'Client',
+      clientName: client?.name || (language === 'ar' ? 'العميل' : language === 'fr' ? 'Client' : 'Client'),
       projectId: manualForm.projectId,
-      projectTitle: project?.title || 'Project',
+      projectTitle: project?.title || (language === 'ar' ? 'المشروع' : language === 'fr' ? 'Projet' : 'Project'),
       taskDescription: manualForm.taskDescription,
       durationSeconds,
       isBillable: manualForm.isBillable,
@@ -220,11 +220,11 @@ export const FreelanceTimeTrackerView: React.FC = () => {
 
     showToast({
       type: 'success',
-      title: 'Time Logged',
-      message: `${manualForm.hours}h ${manualForm.minutes}m logged to "${project?.title || 'Project'}".`,
+      title: t('toast_time_logged_title', language),
+      message: `${manualForm.hours}h ${manualForm.minutes}m ${t('toast_time_logged_msg', language)} "${project?.title || t('nav_scheduler', language)}".`,
       category: 'freelance_solo',
       action: {
-        label: 'Invoice',
+        label: t('nav_shop', language),
         onClick: () => setScreen('shop'),
       },
     });
@@ -235,11 +235,11 @@ export const FreelanceTimeTrackerView: React.FC = () => {
       const inv = billUnbilledHours(clientId, 0);
       showToast({
         type: 'success',
-        title: 'Invoice Generated',
-        message: `Drafted invoice for ${inv?.clientName || 'Client'} from unbilled hours.`,
+        title: t('toast_invoice_gen_title', language),
+        message: `${t('toast_invoice_gen_msg', language)} ${inv?.clientName || ''}.`,
         category: 'freelance_solo',
         action: {
-          label: 'Preview',
+          label: t('toast_invoice_preview_btn', language),
           onClick: () => setScreen('shop'),
         },
       });
@@ -302,7 +302,7 @@ export const FreelanceTimeTrackerView: React.FC = () => {
               </span>
               {activeTimer.isPomodoro && (
                 <span className="text-amber-400">
-                  · Pomodoro {activeTimer.pomodoroMode === 'work' ? (language === 'ar' ? 'تركيز (25 د)' : 'Sprint (25m)') : (language === 'ar' ? 'استراحة (5 د)' : 'Rest (5m)')}
+                  · Pomodoro {activeTimer.pomodoroMode === 'work' ? (language === 'ar' ? 'تركيز (25 د)' : language === 'fr' ? 'Sprint (25 min)' : 'Sprint (25m)') : (language === 'ar' ? 'استراحة (5 د)' : language === 'fr' ? 'Pause (5 min)' : 'Rest (5m)')}
                 </span>
               )}
             </div>
@@ -441,7 +441,7 @@ export const FreelanceTimeTrackerView: React.FC = () => {
                   onChange={(e) => setIsPomodoro(e.target.checked)}
                   className="rounded text-amber-500 focus:ring-0"
                 />
-                <span>Pomodoro (25m)</span>
+                <span>{t('free_topbar_pomodoro', language)} (25m)</span>
               </label>
             </div>
           </div>
@@ -700,7 +700,7 @@ export const FreelanceTimeTrackerView: React.FC = () => {
                 options={availableManualProjects.map((p) => ({
                   value: p.id,
                   label: p.title,
-                  sublabel: `${p.pricingModel} · ${p.clientName}`,
+                  sublabel: `${p.pricingModel === 'Fixed' ? t('free_deliv_pricing_fixed', language) : p.pricingModel === 'Hourly' ? t('free_deliv_pricing_hourly', language) : t('free_deliv_pricing_retainer', language)} · ${p.clientName}`,
                 }))}
                 searchable
                 width="100%"

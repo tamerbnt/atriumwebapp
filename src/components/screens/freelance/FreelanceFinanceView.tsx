@@ -218,10 +218,10 @@ export const FreelanceFinanceView: React.FC = () => {
             className="w-full accent-[#C4785A] h-2 bg-neutral-800 rounded-lg cursor-pointer"
           />
           <div className="flex justify-between text-[10px] text-neutral-500 font-mono">
-            <span>0% ({language === 'ar' ? 'إعفاء' : 'Exempt'})</span>
-            <span>10% ({language === 'ar' ? 'مؤسسة مصغرة' : 'Auto-entrepreneur'})</span>
-            <span>20% ({language === 'ar' ? 'عادي' : 'Standard Solo'})</span>
-            <span>35% ({language === 'ar' ? 'شريحة عليا' : 'High Bracket'})</span>
+            <span>0% ({t('free_fin_tax_exempt_label', language)})</span>
+            <span>10% ({t('free_fin_tax_auto_entrepreneur_label', language)})</span>
+            <span>20% ({t('free_fin_tax_standard_solo_label', language)})</span>
+            <span>35% ({t('free_fin_tax_high_bracket_label', language)})</span>
           </div>
         </div>
 
@@ -246,7 +246,7 @@ export const FreelanceFinanceView: React.FC = () => {
               {language === 'ar' ? 'صافي العائد بالساعة (EHR)' : language === 'fr' ? 'Rendement horaire net (EHR)' : 'Net Hourly Yield (EHR)'}
             </span>
             <span className="text-base font-bold font-mono text-emerald-400 tabular-nums">
-              €{netEhr}/hr ({language === 'ar' ? 'إجمالي' : 'Gross'} €{grossEhr}/hr)
+              €{netEhr}{t('free_dash_per_hour', language)} ({t('free_fin_gross_label', language)} €{grossEhr}{t('free_dash_per_hour', language)})
             </span>
           </div>
         </div>
@@ -362,7 +362,7 @@ export const FreelanceFinanceView: React.FC = () => {
                     field="Vendor"
                     label={`${language === 'ar' ? 'المورد' : language === 'fr' ? 'Fournisseur' : 'Vendor'} *`}
                     required
-                    placeholder="e.g. OpenAI / Claude"
+                    placeholder={t('free_fin_ph_vendor', language)}
                     value={vendor}
                     onChange={setVendor}
                     width="100%"

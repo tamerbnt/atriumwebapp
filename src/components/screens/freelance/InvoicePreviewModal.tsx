@@ -34,9 +34,9 @@ export const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({
 
   if (!isOpen || !invoice) return null;
 
-  const businessName = currentBusiness?.name || 'Atlas Studio';
+  const businessName = currentBusiness?.name || (language === 'ar' ? 'أطلس ستوديو' : 'Atlas Studio');
   const businessEmail = currentUser?.email || account?.email || 'contact@atlas-studio.dz';
-  const businessAddress = currentBusiness?.address || 'Algiers, Algeria';
+  const businessAddress = currentBusiness?.address || (language === 'ar' ? 'الجزائر العاصمة، الجزائر' : language === 'fr' ? 'Alger, Algérie' : 'Algiers, Algeria');
   const beneficiaryName =
     invoice.paymentDetails?.accountHolder ||
     currentUser?.fullName ||
@@ -166,11 +166,11 @@ export const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({
                 {t('free_inv_notes_terms', language)}
               </span>
               <span className="text-xs text-neutral-700 dark:text-neutral-300 block">
-                Net 15 · <strong className="text-neutral-900 dark:text-white">{invoice.currency}</strong>
+                {t('free_inv_net_prefix', language)} · <strong className="text-neutral-900 dark:text-white">{invoice.currency}</strong>
               </span>
               {invoice.paidAt && (
                 <span className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold block mt-1">
-                  ✓ {t('free_inv_doc_paid_badge', language)} ({new Date(invoice.paidAt).toLocaleDateString()})
+                  ✓ {t('free_inv_doc_paid_badge', language)} ({new Date(invoice.paidAt).toLocaleDateString(language === 'ar' ? 'ar-DZ' : language === 'fr' ? 'fr-DZ' : 'en-US')})
                 </span>
               )}
             </div>

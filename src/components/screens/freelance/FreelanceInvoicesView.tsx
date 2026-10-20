@@ -61,11 +61,9 @@ export const FreelanceInvoicesView: React.FC = () => {
     new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
   );
   const [taxPercent, setTaxPercent] = useState<number>(0);
-  const [notes, setNotes] = useState(
-    'Payment due within 15 days via SEPA wire or BaridiMob. Reverse charge VAT applies.'
-  );
-  const [items, setItems] = useState<Array<{ description: string; quantity: number; unitRate: number }>>([
-    { description: 'Sprint Deliverable & Engineering Milestones', quantity: 1, unitRate: 1500 },
+  const [notes, setNotes] = useState(() => t('free_inv_default_terms', language));
+  const [items, setItems] = useState<Array<{ description: string; quantity: number; unitRate: number }>>(() => [
+    { description: t('free_inv_default_item_desc', language), quantity: 1, unitRate: 1500 },
   ]);
 
   const filteredInvoices = useMemo(() => {
@@ -291,7 +289,7 @@ export const FreelanceInvoicesView: React.FC = () => {
                       {inv.clientName}
                     </span>
                     <span className="text-[11px] text-neutral-500">
-                      {inv.clientCompany || 'Direct Client'}
+                      {inv.clientCompany || t('free_inv_direct_client', language)}
                     </span>
                   </td>
                   <td className="py-3.5 text-neutral-600 dark:text-neutral-400 text-[11px]">
@@ -430,7 +428,7 @@ export const FreelanceInvoicesView: React.FC = () => {
                   <LabelSelect
                     field="TargetClient"
                     label={`${t('free_invoice_client', language)} *`}
-                    placeholder="Select client..."
+                    placeholder={t('free_inv_ph_select_client', language)}
                     value={targetClientId}
                     onChange={(val) => {
                       const clientId = val?.target?.value ?? String(val);
@@ -441,7 +439,7 @@ export const FreelanceInvoicesView: React.FC = () => {
                     options={freelanceClients.map((c) => ({
                       value: c.id,
                       label: c.name,
-                      sublabel: `${c.company || 'Private'} · ${c.currency}`,
+                      sublabel: `${c.company || t('free_clients_private_badge', language)} · ${c.currency}`,
                     }))}
                     searchable
                     width="100%"
@@ -520,7 +518,7 @@ export const FreelanceInvoicesView: React.FC = () => {
                       <input
                         type="number"
                         min="1"
-                        placeholder="Qty"
+                        placeholder={t('free_inv_ph_qty', language)}
                         value={item.quantity}
                         onChange={(e) =>
                           handleItemChange(idx, 'quantity', Number(e.target.value))
@@ -530,7 +528,7 @@ export const FreelanceInvoicesView: React.FC = () => {
                       <input
                         type="number"
                         min="0"
-                        placeholder="Rate"
+                        placeholder={t('free_inv_ph_rate', language)}
                         value={item.unitRate}
                         onChange={(e) =>
                           handleItemChange(idx, 'unitRate', Number(e.target.value))

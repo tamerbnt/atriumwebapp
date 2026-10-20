@@ -59,7 +59,11 @@ export const FreelanceProposalsView: React.FC = () => {
     clientEmail: '',
     title: '',
     overview: '',
-    scopeItems: ['Discovery & user journey architecture', 'High-fidelity Figma UI design', 'Full-stack engineering & unit tests'],
+    scopeItems: language === 'ar'
+      ? ['دراسة المتطلبات وهندسة تجربة المستخدم', 'تصميم واجهات المستخدم عالية الدقة على Figma', 'تطوير النظام البرمجي المتكامل واختبارات الجودة']
+      : language === 'fr'
+      ? ['Cadrage & architecture du parcours utilisateur', 'Conception UI haute-fidélité sur Figma', 'Ingénierie full-stack & tests unitaires']
+      : ['Discovery & user journey architecture', 'High-fidelity Figma UI design', 'Full-stack engineering & unit tests'],
     pricingModel: 'Fixed' as PricingModel,
     proposedBudget: 250000,
     currency: 'DZD' as CurrencyCode,
@@ -304,10 +308,10 @@ export const FreelanceProposalsView: React.FC = () => {
                   type="button"
                   onClick={() => handleConvert(proposal.id)}
                   className="h-9 px-4 rounded-xl bg-emerald-600 text-white text-xs font-semibold flex items-center gap-1.5 hover:bg-emerald-700 transition-colors cursor-pointer shadow-xs"
-                  title="Client accepted: spawn project deliverables and deposit invoice"
+                  title={language === 'ar' ? 'قبول العميل: توليد تسليمات المشروع وفاتورة الدفعة الأولى' : language === 'fr' ? 'Client accepté : générer les livrables et la facture d\'acompte' : 'Client accepted: spawn project deliverables and deposit invoice'}
                 >
                   <CheckCircle size={13} />
-                  <span>{t('free_prop_btn_convert')}</span>
+                  <span>{t('free_prop_btn_convert', language)}</span>
                 </button>
               ) : (
                 <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
@@ -361,16 +365,16 @@ export const FreelanceProposalsView: React.FC = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <LabelInput
                   id="draft-client-name"
-                  label={t('free_clients_field_contact')}
+                  label={t('free_clients_field_contact', language)}
                   required
-                  placeholder="e.g. Dr. Sofiane Cherbal"
+                  placeholder={t('free_prop_ph_contact', language)}
                   value={formData.clientName}
                   onChange={(e) => setFormData({ ...formData, clientName: e.target.value })}
                 />
                 <LabelInput
                   id="draft-client-company"
-                  label={t('free_clients_field_company')}
-                  placeholder="e.g. BioHealth Labs"
+                  label={t('free_clients_field_company', language)}
+                  placeholder={t('free_prop_ph_company', language)}
                   value={formData.clientCompany}
                   onChange={(e) => setFormData({ ...formData, clientCompany: e.target.value })}
                 />
@@ -378,7 +382,7 @@ export const FreelanceProposalsView: React.FC = () => {
 
               <LabelInput
                 id="draft-client-email"
-                label={t('free_clients_field_email')}
+                label={t('free_clients_field_email', language)}
                 type="email"
                 required
                 placeholder="contact@company.com"
@@ -390,7 +394,7 @@ export const FreelanceProposalsView: React.FC = () => {
                 id="draft-proposal-title"
                 label={language === 'ar' ? 'عنوان المشروع / المهمة' : language === 'fr' ? 'Intitulé de la Mission' : 'Engagement Title'}
                 required
-                placeholder="e.g. Laboratory Sample Tracking Portal & UI Architecture"
+                placeholder={t('free_prop_ph_title', language)}
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               />
@@ -453,7 +457,7 @@ export const FreelanceProposalsView: React.FC = () => {
 
               <div className="grid grid-cols-3 gap-3">
                 <LabelSelect
-                  label={t('free_invoices_currency')}
+                  label={t('free_invoices_currency', language)}
                   value={formData.currency}
                   onChange={(val) =>
                     setFormData({

@@ -217,7 +217,9 @@ export const FreelanceDashboardView: React.FC = () => {
           </div>
           <div className="text-[11px] text-neutral-400 pt-2 border-t border-neutral-200/60 dark:border-neutral-700/60 flex items-center justify-between">
             <span>{t('free_invoice_total')}</span>
-            <span className="font-semibold text-neutral-700 dark:text-neutral-300">EUR · USD · DZD</span>
+            <span className="font-semibold text-neutral-700 dark:text-neutral-300">
+              {t('free_dash_currency_pipeline')}
+            </span>
           </div>
         </div>
 
@@ -251,7 +253,7 @@ export const FreelanceDashboardView: React.FC = () => {
           </div>
           <div className="my-2">
             <span className="text-2xl font-black text-neutral-900 dark:text-white tabular-nums tracking-tight">
-              {activeDeliverablesCount} {t('common_all', language)}
+              {activeDeliverablesCount} {t('free_dash_deliverables_count', language)}
             </span>
             <span
               className={`text-[11px] font-medium block mt-0.5 ${
@@ -318,7 +320,7 @@ export const FreelanceDashboardView: React.FC = () => {
               )}
               {scopeCreepCount > 0 && highestOverrunDeliverable && (
                 <span>
-                  {language === 'ar' ? 'التسليمة' : language === 'fr' ? 'Le livrable' : 'Deliverable'} "{highestOverrunDeliverable.title}" ({highestOverrunDeliverable.projectTitle}) {t('free_dash_overrun_msg', language)} {highestOverrunDeliverable.diffHours} {t('free_dash_hours_unit', language)}.
+                  {t('free_prop_deliverable_item', language)} "{highestOverrunDeliverable.title}" ({highestOverrunDeliverable.projectTitle}) {t('free_dash_overrun_msg', language)} {highestOverrunDeliverable.diffHours} {t('free_dash_hours_unit', language)}.
                 </span>
               )}
             </div>
@@ -347,7 +349,7 @@ export const FreelanceDashboardView: React.FC = () => {
               {t('free_timer_title', language)}
             </span>
             <span className="text-[11px] font-semibold text-neutral-500">
-              {activeTimer.isPomodoro ? (language === 'ar' ? 'بومودورو (25 د)' : language === 'fr' ? 'Pomodoro (25 min)' : 'Pomodoro (25m)') : (language === 'ar' ? 'مؤقت قياسي' : language === 'fr' ? 'Chronomètre Standard' : 'Standard Chrono')}
+              {activeTimer.isPomodoro ? `${t('free_topbar_pomodoro', language)} (25m)` : t('free_time_ready_status', language)}
             </span>
           </div>
 
@@ -555,8 +557,8 @@ export const FreelanceDashboardView: React.FC = () => {
                 <ActionNode
                   key={client.id}
                   title={client.company || client.name}
-                  description={client.company ? `${language === 'ar' ? 'جهة الاتصال' : language === 'fr' ? 'Contact' : 'Contact'}: ${client.name} · ${client.email}` : client.email}
-                  tag={`${client.status === 'ActiveRetainer' ? t('free_pricing_retainer', language) : (language === 'ar' ? 'مشروع' : language === 'fr' ? 'Projet' : 'Project')} · ${client.currency}`}
+                  description={client.company ? `${t('free_clients_field_contact', language)}: ${client.name} · ${client.email}` : client.email}
+                  tag={`${client.status === 'ActiveRetainer' ? t('free_pricing_retainer', language) : t('nav_scheduler', language)} · ${client.currency}`}
                   onClick={() => setScreen('members')}
                   width="100%"
                   air={16}
@@ -580,7 +582,7 @@ export const FreelanceDashboardView: React.FC = () => {
                             client.company || client.name,
                             proj.id,
                             proj.title,
-                            `${language === 'ar' ? 'جلسة لصالح' : language === 'fr' ? 'Session pour' : 'Session for'} ${client.name}`
+                            `${t('free_time_working_on_label', language)} ${client.name}`
                           );
                         } else {
                           setScreen('members');

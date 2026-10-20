@@ -376,7 +376,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
                         <div className="flex items-center justify-between">
                           <span className="text-neutral-500 flex items-center gap-1">
                             <Clock size={11} />
-                            {language === 'ar' ? 'الساعات:' : language === 'fr' ? 'Heures :' : 'Hours:'}
+                            {t('free_clients_ph_hours_label', language)}
                           </span>
                           <span
                             className={`font-semibold tabular-nums ${
@@ -393,7 +393,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
                           <div className="px-2 py-0.5 rounded bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 text-[10px] font-semibold flex items-center gap-1">
                             <AlertTriangle size={10} />
                             <span>
-                              {language === 'ar' ? 'تجاوز التقدير' : language === 'fr' ? 'Dépassement' : 'Over estimate'}{' '}
+                              {t('free_clients_ph_over_est_label', language)}{' '}
                               (+{(deliverable.loggedHours - deliverable.estimatedHours).toFixed(1)}h)
                             </span>
                           </div>
@@ -402,7 +402,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
                         <div className="flex items-center justify-between text-neutral-400">
                           <span className="flex items-center gap-1">
                             <Calendar size={11} />
-                            {language === 'ar' ? 'الأجل:' : language === 'fr' ? 'Échéance :' : 'Due:'}
+                            {t('free_clients_ph_due_label', language)}
                           </span>
                           <span>{deliverable.dueDate}</span>
                         </div>
@@ -463,7 +463,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
                             )
                           }
                           options={STAGES.map((s) => ({ value: s.id, label: `→ ${t(STAGE_KEYS[s.id], language)}` }))}
-                          placeholder="Stage..."
+                          placeholder={t('free_deliv_ph_stage', language)}
                         />
                       </div>
                     </div>
@@ -513,14 +513,14 @@ export const FreelanceDeliverablesView: React.FC = () => {
                   value: p.id,
                   label: `${p.title} (${p.clientName})`,
                 }))}
-                placeholder="Select Target Project..."
+                placeholder={t('free_deliv_ph_select_project', language)}
               />
 
               <LabelInput
                 id="deliverable-title"
                 label={t('free_deliv_field_title', language)}
                 required
-                placeholder="e.g. Design System Tokens & Color Guidelines"
+                placeholder={t('free_deliv_ph_title', language)}
                 value={deliverableTitle}
                 onChange={(e) => setDeliverableTitle(e.target.value)}
               />
@@ -531,7 +531,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
                 </label>
                 <textarea
                   rows={2}
-                  placeholder="Key acceptance criteria, Figma links, required formats..."
+                  placeholder={t('free_deliv_ph_desc', language)}
                   value={deliverableDescription}
                   onChange={(e) => setDeliverableDescription(e.target.value)}
                   className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white"
@@ -608,9 +608,9 @@ export const FreelanceDeliverablesView: React.FC = () => {
                   }
                   options={freelanceClients.map((c) => ({
                     value: c.id,
-                    label: `${c.name} (${c.company || 'Private'})`,
+                    label: `${c.name} (${c.company || t('free_clients_private_badge', language)})`,
                   }))}
-                  placeholder="Select Client..."
+                  placeholder={t('free_deliv_ph_select_client', language)}
                 />
                 <LabelSelect
                   label={t('free_deliv_field_pricing', language)}
@@ -622,9 +622,9 @@ export const FreelanceDeliverablesView: React.FC = () => {
                     })
                   }
                   options={[
-                    { value: 'Fixed', label: 'Fixed Milestone' },
-                    { value: 'Hourly', label: 'Hourly Time & Materials' },
-                    { value: 'Retainer', label: 'Monthly Retainer' },
+                    { value: 'Fixed', label: t('free_deliv_pricing_fixed', language) },
+                    { value: 'Hourly', label: t('free_deliv_pricing_hourly', language) },
+                    { value: 'Retainer', label: t('free_deliv_pricing_retainer', language) },
                   ]}
                 />
               </div>
@@ -633,7 +633,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
                 id="new-project-title"
                 label={t('free_deliv_field_title', language)}
                 required
-                placeholder="e.g. Mobile Banking App UX Audit & Redesign"
+                placeholder={t('free_deliv_ph_proj_title', language)}
                 value={newProjectData.title}
                 onChange={(e) => setNewProjectData({ ...newProjectData, title: e.target.value })}
               />
@@ -644,7 +644,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
                 </label>
                 <textarea
                   rows={2}
-                  placeholder="Key milestones, tech stack requirements, deliverables..."
+                  placeholder={t('free_deliv_ph_proj_desc', language)}
                   value={newProjectData.description}
                   onChange={(e) =>
                     setNewProjectData({ ...newProjectData, description: e.target.value })
