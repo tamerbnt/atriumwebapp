@@ -34,6 +34,105 @@ const ICON: Record<ToastKind, LucideIcon> = {
 // =========================================================================
 // Category-Dedicated Notification Intelligence Pools
 // =========================================================================
+export const SALON_NOTIFICATION_POOLS: Record<
+  'en' | 'fr' | 'ar',
+  Omit<StackToastItem, "id">[]
+> = {
+  en: [
+    {
+      kind: "success",
+      title: "Appointment Booked",
+      body: "Karim H. reserved with Stylist Yacine for 14:30.",
+      action: "Calendar",
+    },
+    {
+      kind: "info",
+      title: "Client In Chair",
+      body: "Nadia B. color treatment & balayage in progress.",
+      action: "Timer",
+    },
+    {
+      kind: "success",
+      title: "Treatment Sent to POS",
+      body: "Service finished. 4,500 DZD billed to Register #1.",
+      action: "Pay",
+    },
+    {
+      kind: "info",
+      title: "Walk-in Queue Updated",
+      body: "Rania Cherif added to rapid intake waiting list.",
+      action: "Queue",
+    },
+    {
+      kind: "success",
+      title: "Retail Care Upsell",
+      body: "Argan Elixir 100ml added to client receipt.",
+    },
+  ],
+  fr: [
+    {
+      kind: "success",
+      title: "Rendez-vous confirmé",
+      body: "Karim H. réservé avec le coiffeur Yacine pour 14h30.",
+      action: "Planning",
+    },
+    {
+      kind: "info",
+      title: "Client au fauteuil",
+      body: "Nadia B. soin couleur & balayage en cours.",
+      action: "Chrono",
+    },
+    {
+      kind: "success",
+      title: "Prestation envoyée en caisse",
+      body: "Service terminé. 4 500 DZD facturés à la caisse #1.",
+      action: "Payer",
+    },
+    {
+      kind: "info",
+      title: "File sans rendez-vous",
+      body: "Rania Cherif ajoutée aux entrées directes du jour.",
+      action: "File",
+    },
+    {
+      kind: "success",
+      title: "Soin capillaire vendu",
+      body: "Élixir d'Argan 100ml ajouté au ticket de caisse.",
+    },
+  ],
+  ar: [
+    {
+      kind: "success",
+      title: "تم تأكيد الموعد",
+      body: "حجز كريم ح. مع مصفف الشعر ياسين للساعة 14:30.",
+      action: "الجدول",
+    },
+    {
+      kind: "info",
+      title: "العميل على الكرسي",
+      body: "جلسة عناية وبالياج للشعر جارية لنادية ب.",
+      action: "المؤقت",
+    },
+    {
+      kind: "success",
+      title: "تحويل الجلسة للدفع",
+      body: "اكتملت الخدمة. تم تسجيل 4,500 دج في الصندوق #1.",
+      action: "دفع",
+    },
+    {
+      kind: "info",
+      title: "تحديث قائمة الاستقبال",
+      body: "تمت إضافة رانية شريف إلى لائحة الانتظار المباشر.",
+      action: "القائمة",
+    },
+    {
+      kind: "success",
+      title: "مبيعات منتجات العناية",
+      body: "تمت إضافة زيت الأرغان 100 مل إلى الفاتورة.",
+    },
+  ],
+};
+
 export const CATEGORY_NOTIFICATION_POOLS: Record<
   string,
   Omit<StackToastItem, "id">[]
@@ -112,7 +211,7 @@ export const CATEGORY_NOTIFICATION_POOLS: Record<
     },
     {
       kind: "info",
-      title: "Client Seated in Chair",
+      title: "Client In Chair",
       body: "Nadia B. color treatment & balayage in progress.",
       action: "Timer",
     },
@@ -134,6 +233,106 @@ export const CATEGORY_NOTIFICATION_POOLS: Record<
       body: "Argan Elixir 100ml added to client receipt.",
     },
   ],
+};
+
+export const SALON_NOTIFICATION_POOLS: Record<
+  'en' | 'fr' | 'ar',
+  Omit<StackToastItem, "id">[]
+> = {
+  en: [
+    {
+      kind: "success",
+      title: "Appointment Booked",
+      body: "Karim H. reserved with Stylist Yacine for 14:30.",
+      action: "Calendar",
+    },
+    {
+      kind: "info",
+      title: "Client In Chair",
+      body: "Nadia B. color treatment & balayage in progress.",
+      action: "Timer",
+    },
+    {
+      kind: "success",
+      title: "Treatment Sent to POS",
+      body: "Service finished. 4,500 DZD billed to Register #1.",
+      action: "Pay",
+    },
+    {
+      kind: "info",
+      title: "Walk-in Queue Updated",
+      body: "Rania Cherif added to rapid intake waiting list.",
+      action: "Queue",
+    },
+    {
+      kind: "success",
+      title: "Retail Care Upsell",
+      body: "Argan Elixir 100ml added to client receipt.",
+    },
+  ],
+  fr: [
+    {
+      kind: "success",
+      title: "Rendez-vous confirmé",
+      body: "Karim H. réservé avec le coiffeur Yacine pour 14h30.",
+      action: "Planning",
+    },
+    {
+      kind: "info",
+      title: "Client au fauteuil",
+      body: "Nadia B. soin couleur & balayage en cours.",
+      action: "Chrono",
+    },
+    {
+      kind: "success",
+      title: "Prestation envoyée en caisse",
+      body: "Service terminé. 4 500 DZD facturés à la caisse #1.",
+      action: "Payer",
+    },
+    {
+      kind: "info",
+      title: "File sans rendez-vous",
+      body: "Rania Cherif ajoutée aux entrées directes du jour.",
+      action: "File",
+    },
+    {
+      kind: "success",
+      title: "Soin capillaire vendu",
+      body: "Élixir d'Argan 100ml ajouté au ticket de caisse.",
+    },
+  ],
+  ar: [
+    {
+      kind: "success",
+      title: "تم تأكيد الموعد",
+      body: "حجز كريم ح. مع مصفف الشعر ياسين للساعة 14:30.",
+      action: "الجدول",
+    },
+    {
+      kind: "info",
+      title: "العميل على الكرسي",
+      body: "جلسة عناية وبالياج للشعر جارية لنادية ب.",
+      action: "المؤقت",
+    },
+    {
+      kind: "success",
+      title: "تحويل الجلسة للدفع",
+      body: "اكتملت الخدمة. تم تسجيل 4,500 دج في الصندوق #1.",
+      action: "دفع",
+    },
+    {
+      kind: "info",
+      title: "تحديث قائمة الاستقبال",
+      body: "تمت إضافة رانية شريف إلى لائحة الانتظار المباشر.",
+      action: "القائمة",
+    },
+    {
+      kind: "success",
+      title: "مبيعات منتجات العناية",
+      body: "تمت إضافة زيت الأرغان 100 مل إلى الفاتورة.",
+    },
+  ],
+};
 
   pos_inventory: [
     {
@@ -337,13 +536,16 @@ export const ToastStack: React.FC<ToastStackProps> = ({
     toasts: storeToasts,
     dismissToast: dismissStoreToast,
     setScreen,
+    language,
   } = useAtriumStore();
 
   const category = currentBusiness?.category || "membership_session";
   const pool =
-    CATEGORY_NOTIFICATION_POOLS[category] ||
-    CATEGORY_NOTIFICATION_POOLS.membership_session ||
-    CATEGORY_NOTIFICATION_POOLS.default_global;
+    category === "appointment_service"
+      ? (SALON_NOTIFICATION_POOLS[language] || SALON_NOTIFICATION_POOLS.en)
+      : (CATEGORY_NOTIFICATION_POOLS[category] ||
+         CATEGORY_NOTIFICATION_POOLS.membership_session ||
+         CATEGORY_NOTIFICATION_POOLS.default_global);
 
   const nextIdRef = useRef(100);
   const root = useRef<HTMLDivElement | null>(null);

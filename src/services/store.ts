@@ -130,9 +130,9 @@ import {
   INITIAL_PM_CCP_SLIPS,
   INITIAL_PM_EQUIPMENT_STOCK,
 } from './seedData';
-import { checkQuota, getCategoryTerminology, validateVoucherCode, calculateDaysRemaining } from '../utils/rules';
+import { checkQuota, getCategoryTerminology, validateVoucherCode, calculateDaysRemaining, formatMoney } from '../utils/rules';
 import { numberToWordsFrench, numberToWordsArabic } from '../utils/algerianPtt';
-import { getInitialLanguageConfig, getSystemDefaultLanguage, t } from '../utils/i18n';
+import { getInitialLanguageConfig, getSystemDefaultLanguage, t, getLocalizedServiceName } from '../utils/i18n';
 
 import {
   isSupabaseConfigured,
@@ -1781,13 +1781,18 @@ export function useAtriumStore() {
     };
     notify();
 
+    const lang = globalState.language || 'fr';
     showToast({
       type: 'success',
-      title: 'Booking Confirmed',
-      message: `${newApt.clientName} with ${newApt.staffName} at ${newApt.startTime}.`,
+      title: t('toast_apt_booked_title', lang),
+      message: t('toast_apt_booked_msg', lang)
+        .replace('{client}', newApt.clientName)
+        .replace('{stylist}', newApt.staffName)
+        .replace('{date}', newApt.date)
+        .replace('{time}', newApt.startTime),
       category: 'appointment_service',
       action: {
-        label: 'Schedule',
+        label: t('toast_action_schedule', lang),
         onClick: () => {
           globalState = { ...globalState, activeScreen: 'scheduler' };
           notify();
@@ -1814,14 +1819,17 @@ export function useAtriumStore() {
     };
     notify();
 
+    const lang = globalState.language || 'fr';
     if (status === 'InChair') {
       showToast({
         type: 'info',
-        title: 'Client In Chair',
-        message: `${apt?.clientName || 'Client'} service started with ${apt?.staffName || 'Stylist'}.`,
+        title: t('toast_apt_seated_title', lang),
+        message: t('toast_apt_seated_msg', lang)
+          .replace('{client}', apt?.clientName || 'Client')
+          .replace('{stylist}', apt?.staffName || 'Stylist'),
         category: 'appointment_service',
         action: {
-          label: 'Timer',
+          label: t('toast_action_timer', lang),
           onClick: () => {
             globalState = { ...globalState, activeScreen: 'scheduler' };
             notify();
@@ -1831,8 +1839,8 @@ export function useAtriumStore() {
     } else if (status === 'Cancelled') {
       showToast({
         type: 'warning',
-        title: 'Booking Cancelled',
-        message: `Appointment for ${apt?.clientName || 'Client'} cancelled.`,
+        title: t('toast_apt_cancelled_title', lang),
+        message: t('toast_apt_cancelled_msg', lang).replace('{client}', apt?.clientName || 'Client'),
         category: 'appointment_service',
       });
     }
@@ -1870,10 +1878,14 @@ export function useAtriumStore() {
     };
     notify();
 
+    const lang = globalState.language || 'fr';
     showToast({
       type: 'info',
-      title: 'Appointment Rescheduled',
-      message: `${apt?.clientName || 'Client'} appointment moved to ${date} at ${startTime}.`,
+      title: t('toast_apt_rescheduled_title', lang),
+      message: t('toast_apt_rescheduled_msg', lang)
+        .replace('{client}', apt?.clientName || 'Client')
+        .replace('{date}', date)
+        .replace('{time}', startTime),
       category: 'appointment_service',
     });
 
@@ -1946,13 +1958,18 @@ export function useAtriumStore() {
     };
     notify();
 
+    const checkoutLang = globalState.language || 'fr';
+    const localizedService = getLocalizedServiceName(apt.serviceId, apt.serviceName, checkoutLang);
     showToast({
       type: 'success',
-      title: 'Sent to Checkout',
-      message: `${apt.serviceName} billed for ${apt.clientName} (${apt.price.toLocaleString()} DZD).`,
+      title: t('toast_apt_checkout_title', checkoutLang),
+      message: t('toast_apt_checkout_msg', checkoutLang)
+        .replace('{service}', localizedService)
+        .replace('{client}', apt.clientName)
+        .replace('{price}', formatMoney(apt.price)),
       category: 'appointment_service',
       action: {
-        label: 'Receipt',
+        label: t('toast_action_receipt', checkoutLang),
         onClick: () => window.print?.(),
       },
     });

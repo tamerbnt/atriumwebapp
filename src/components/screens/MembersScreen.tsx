@@ -532,7 +532,7 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
                     <span className="text-[10px]">↕</span>
                   </div>
                   <div className="col-span-2 text-right flex items-center justify-end gap-1 pr-2">
-                    <span>{currentBusiness.category === 'appointment_service' ? (language === 'ar' ? 'الباقة / الرصيد' : language === 'fr' ? 'Forfait / Valeur' : 'Package / Value') : t('member_col_expiration', language)}</span>
+                    <span>{currentBusiness.category === 'appointment_service' ? t('salon_col_package_val', language) : t('member_col_expiration', language)}</span>
                     <span className="text-[10px]">↕</span>
                   </div>
                   <div className="col-span-1"></div>
@@ -861,11 +861,11 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
                   <div className="flex justify-between">
                     <span className="text-neutral-400">
                       {currentBusiness.category === 'appointment_service'
-                        ? (language === 'ar' ? 'باقة الجلسات:' : language === 'fr' ? 'Formule de soins :' : 'Package Plan:')
+                        ? t('salon_package_plan', language)
                         : (language === 'ar' ? 'باقة الاشتراك:' : language === 'fr' ? 'Formule d\'abonnement :' : 'Account Plan:')}
                     </span>
                     <span className="font-bold text-neutral-900 dark:text-white truncate max-w-[180px]">
-                      {selectedMember.membershipPlanName || (language === 'ar' ? 'الباقة القياسية' : language === 'fr' ? 'Formule Standard' : 'Standard Package')}
+                      {selectedMember.membershipPlanName || (currentBusiness.category === 'appointment_service' ? t('salon_standard_package', language) : (language === 'ar' ? 'الباقة القياسية' : language === 'fr' ? 'Formule Standard' : 'Standard Package'))}
                     </span>
                   </div>
                   <div className="flex justify-between">
@@ -887,11 +887,11 @@ export const MembersScreen: React.FC<MembersScreenProps> = ({
                   <div className="flex justify-between">
                     <span className="text-neutral-400">
                       {currentBusiness.category === 'appointment_service'
-                        ? (language === 'ar' ? 'الحصص المضمنة:' : language === 'fr' ? 'Séances incluses :' : 'Included Sessions:')
+                        ? t('salon_included_sessions', language)
                         : (language === 'ar' ? 'الحصص المتبقية:' : language === 'fr' ? 'Séances restantes :' : 'Remaining Sessions:')}
                     </span>
                     <span className="font-bold text-emerald-600 tabular-nums">
-                      {selectedMember.remainingSessions || 30} {language === 'ar' ? 'حصة' : language === 'fr' ? 'séances' : 'visits'}
+                      {selectedMember.remainingSessions || 30} {currentBusiness.category === 'appointment_service' ? t('salon_session_unit', language) : (language === 'ar' ? 'حصة' : language === 'fr' ? 'séances' : 'visits')}
                     </span>
                   </div>
                 </div>

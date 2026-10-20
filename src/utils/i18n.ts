@@ -1339,6 +1339,135 @@ const TRANSLATIONS_EN = {
   voucher_fill_code: 'Fill Code',
   voucher_invalid_title: 'Voucher Invalid',
   voucher_invalid_msg: 'Please verify the 20-digit code and try again.',
+
+  // Salon, Spa & Appointments Extended Suite
+  salon_schedule_title: 'Stylist Booking Schedule',
+  salon_schedule_subtitle: 'Manage client bookings, stylist chairs, treatments, and daily checkouts',
+  salon_switch_facility: 'Switch Salon Location',
+  salon_kpi_total_bookings: 'Total Appointments',
+  salon_kpi_in_chair: 'In Chair (Active)',
+  salon_kpi_completed: 'Completed Today',
+  salon_kpi_est_revenue: "Today's Est. Revenue",
+  salon_view_columns: 'Columns',
+  salon_view_list: 'List',
+  salon_view_catalog: 'Services',
+  salon_filter_stylist: 'Filter Stylist',
+  salon_filter_all_stylists: 'All Stylists',
+  salon_filter_status: 'Filter Status',
+  salon_filter_all_statuses: 'All Statuses',
+  salon_search_placeholder: 'Search client, service, stylist...',
+  salon_btn_today: 'Today',
+  salon_btn_prev_day: 'Prev Day',
+  salon_btn_next_day: 'Next Day',
+  salon_btn_new_appointment: 'New Appointment',
+  salon_btn_export_csv: 'Export CSV',
+  salon_btn_add_service: 'Add Service',
+  salon_seat_client: 'Seat Client',
+  salon_mark_completed: 'Mark Completed',
+  salon_quick_checkout: '1-Click Checkout',
+  salon_cancel_booking: 'Cancel Booking',
+  salon_reschedule: 'Reschedule',
+  salon_edit_appointment: 'Edit Details',
+  salon_catalog_title: 'Salon & Spa Service Catalog',
+  salon_catalog_subtitle: 'Curated menu of professional haircuts, coloring, styling, nails and spa packages',
+  salon_duration_mins: '{duration} mins',
+  salon_csv_filename: 'salon_appointments',
+  salon_empty_appointments: 'No appointments booked for this date',
+  salon_empty_appointments_sub: 'Click any time slot or use "New Appointment" to schedule a client.',
+  salon_empty_filter: 'No appointments match the selected filters',
+  salon_checkout_success_toast: 'Checked out {client}! Sale #{saleId} credited to {stylist}.',
+  salon_assigned_stylist: 'Stylist: {stylist}',
+  salon_service_duration: 'Duration',
+  salon_service_price: 'Price',
+  salon_service_min: 'min',
+  salon_service_details: 'Service Details',
+
+  // Salon Dashboard Chair Widgets & Tiles
+  dash_salon_chairs_title: 'Stylist Chairs & Live Workstations',
+  dash_salon_chairs_subtitle: 'Real-time status of each practitioner chair',
+  dash_salon_btn_new_booking: 'New Booking / Walk-in',
+  dash_salon_chair_label: 'Chair {number} • {stylist}',
+  dash_salon_chair_available: 'Available',
+  dash_salon_chair_in_chair: 'In Chair',
+  dash_salon_chair_booked: 'Booked',
+  dash_salon_manage_service: 'Manage Service',
+  dash_salon_seat_client_btn: 'Seat Client',
+  dash_salon_peak_hours_title: 'Peak Treatment Booking Hours',
+  dash_salon_chair_utilization: 'Chair Utilization',
+  dash_salon_daily_sales: 'Daily Salon Sales',
+  dash_salon_next_bookings: 'Next Bookings Ahead',
+  dash_salon_upcoming_badge: '{count} upcoming',
+  dash_salon_active_tag: 'active',
+
+  // Appointment Modal Additions
+  apt_field_intake_mode: 'Client Intake Mode',
+  apt_mode_registered: 'Registered Client',
+  apt_mode_walkin: 'Walk-in Guest',
+  apt_action_delete_title: 'Delete Appointment',
+  apt_delete_confirm: 'Are you sure you want to delete this appointment record?',
+  apt_validation_select_client: 'Please select a registered client or provide walk-in details.',
+  apt_validation_select_service: 'Please select a treatment service.',
+  apt_validation_select_stylist: 'Please select an assigned stylist.',
+
+  // Preset Salon Catalog Services & Descriptions
+  srv_balayage_name: 'Balayage Signature & Gloss Finish',
+  srv_balayage_desc: 'Full artisanal freehand painting with customized toning gloss & scalp massage',
+  srv_blowout_name: 'Couture Blowout & Styling',
+  srv_blowout_desc: 'Double cleanse, botanical treatment mask & sculpted round-brush blowout',
+  srv_keratin_name: 'Keratin Deep Smoothing Treatment',
+  srv_keratin_desc: 'Formaldehyde-free organic smoothing treatment lasting up to 4 months',
+  srv_manicure_name: 'Russian Gel Manicure & Nail Art',
+  srv_manicure_desc: 'Dry apparatus cuticle precision, builder gel architecture & bespoke design',
+  srv_pedicure_name: 'Luxury Spa Pedicure & Reflexology',
+  srv_pedicure_desc: 'Dead sea salt soak, exfoliating scrub, calluses treatment & foot massage',
+  srv_hydrafacial_name: 'Signature HydraFacial Glow',
+  srv_hydrafacial_desc: 'Deep vortex pore extraction, glycolic peel & hyaluronic peptide infusion',
+  srv_bridal_name: 'Royal Bridal Hair & Haute Coiffure',
+  srv_bridal_desc: 'Complete royal wedding look, tiara placement, contouring makeup & styling',
+  srv_massage_name: 'Deep Tissue Aromatherapy Massage',
+  srv_massage_desc: 'Targeted muscle relief with heated almond oil and lavender essential essences',
+
+  // Service Categories
+  srv_cat_hair: 'Hair',
+  srv_cat_nails: 'Nails',
+  srv_cat_facial: 'Facial',
+  srv_cat_massage: 'Massage',
+  srv_cat_bridal: 'Bridal',
+  srv_cat_barber: 'Barber',
+
+  // Appointment Kinetic Toasts
+  toast_apt_booked_title: 'Appointment Booked',
+  toast_apt_booked_msg: '{client} reserved with {stylist} on {date} at {time}.',
+  toast_apt_seated_title: 'Client In Chair',
+  toast_apt_seated_msg: '{client} service started with {stylist}.',
+  toast_apt_cancelled_title: 'Booking Cancelled',
+  toast_apt_cancelled_msg: 'Appointment for {client} has been cancelled.',
+  toast_apt_rescheduled_title: 'Appointment Rescheduled',
+  toast_apt_rescheduled_msg: '{client} appointment moved to {date} at {time}.',
+  toast_apt_checkout_title: 'Sent to Checkout',
+  toast_apt_checkout_msg: '{service} billed for {client} ({price}).',
+  toast_action_schedule: 'Schedule',
+  toast_action_timer: 'Timer',
+  toast_action_receipt: 'Receipt',
+  toast_action_calendar: 'Calendar',
+  toast_action_queue: 'Queue',
+  toast_action_pay: 'Pay',
+
+  // Salon additional display keys
+  salon_timeline: 'Timeline',
+  salon_chair_num: 'Chair {number}',
+  salon_booking_count_single: '{count} booking',
+  salon_booking_count_multi: '{count} bookings',
+  salon_book_slot: 'Book Slot',
+  salon_bookings_scheduled: '{count} bookings scheduled',
+  salon_stylist_label: 'Stylist: {stylist}',
+  apt_ref_sub: 'Booking reference #{id} • {branch}',
+  apt_schedule_sub: 'Schedule treatment at {branch}',
+  salon_col_package_val: 'Package / Value',
+  salon_package_plan: 'Package Plan:',
+  salon_standard_package: 'Standard Treatment Package',
+  salon_included_sessions: 'Included Treatments:',
+  salon_session_unit: 'sessions',
 };
 
 const TRANSLATIONS_FR: typeof TRANSLATIONS_EN = {
@@ -2628,6 +2757,135 @@ const TRANSLATIONS_FR: typeof TRANSLATIONS_EN = {
   voucher_fill_code: 'Remplir le code',
   voucher_invalid_title: 'Code voucher invalide',
   voucher_invalid_msg: 'Veuillez vérifier le code à 20 chiffres et réessayer.',
+
+  // Salon, Spa & Appointments Extended Suite
+  salon_schedule_title: 'Planning des réservations coiffure & soins',
+  salon_schedule_subtitle: 'Gestion des rendez-vous clients, fauteuils coiffeurs, prestations et encaissements journaliers',
+  salon_switch_facility: 'Changer de salon',
+  salon_kpi_total_bookings: 'Total rendez-vous',
+  salon_kpi_in_chair: 'Au fauteuil (En cours)',
+  salon_kpi_completed: 'Terminés aujourd\'hui',
+  salon_kpi_est_revenue: 'Chiffre estimé du jour',
+  salon_view_columns: 'Colonnes',
+  salon_view_list: 'Liste',
+  salon_view_catalog: 'Prestations',
+  salon_filter_stylist: 'Filtrer par coiffeur',
+  salon_filter_all_stylists: 'Tous les coiffeurs',
+  salon_filter_status: 'Filtrer par statut',
+  salon_filter_all_statuses: 'Tous les statuts',
+  salon_search_placeholder: 'Rechercher client, soin, coiffeur...',
+  salon_btn_today: 'Aujourd\'hui',
+  salon_btn_prev_day: 'Jour précédent',
+  salon_btn_next_day: 'Jour suivant',
+  salon_btn_new_appointment: 'Nouveau rendez-vous',
+  salon_btn_export_csv: 'Exporter CSV',
+  salon_btn_add_service: 'Ajouter une prestation',
+  salon_seat_client: 'Installer au fauteuil',
+  salon_mark_completed: 'Marquer terminé',
+  salon_quick_checkout: 'Encaissement 1-Clic',
+  salon_cancel_booking: 'Annuler le rendez-vous',
+  salon_reschedule: 'Reprogrammer',
+  salon_edit_appointment: 'Modifier les détails',
+  salon_catalog_title: 'Catalogue des prestations & soins',
+  salon_catalog_subtitle: 'Menu professionnel des coupes, colorations, lissages, onglerie et forfaits spa',
+  salon_duration_mins: '{duration} min',
+  salon_csv_filename: 'rendez_vous_salon',
+  salon_empty_appointments: 'Aucun rendez-vous planifié pour cette date',
+  salon_empty_appointments_sub: 'Cliquez sur un créneau libre ou sur "Nouveau rendez-vous" pour planifier un soin.',
+  salon_empty_filter: 'Aucun rendez-vous ne correspond aux critères sélectionnés',
+  salon_checkout_success_toast: 'Encaissement validé pour {client} ! Vente #{saleId} attribuée à {stylist}.',
+  salon_assigned_stylist: 'Coiffeur(se) : {stylist}',
+  salon_service_duration: 'Durée',
+  salon_service_price: 'Tarif',
+  salon_service_min: 'min',
+  salon_service_details: 'Détails de la prestation',
+
+  // Salon Dashboard Chair Widgets & Tiles
+  dash_salon_chairs_title: 'Fauteuils de coiffure & Postes en direct',
+  dash_salon_chairs_subtitle: 'Statut en direct de chaque fauteuil de coiffure et esthétique',
+  dash_salon_btn_new_booking: 'Nouveau rendez-vous / Passage',
+  dash_salon_chair_label: 'Fauteuil {number} • {stylist}',
+  dash_salon_chair_available: 'Disponible',
+  dash_salon_chair_in_chair: 'Au fauteuil',
+  dash_salon_chair_booked: 'Réservé',
+  dash_salon_manage_service: 'Gérer la séance',
+  dash_salon_seat_client_btn: 'Installer au fauteuil',
+  dash_salon_peak_hours_title: 'Heures de pointe des soins & coiffures',
+  dash_salon_chair_utilization: 'Taux d\'occupation fauteuils',
+  dash_salon_daily_sales: 'Recettes salon aujourd\'hui',
+  dash_salon_next_bookings: 'Prochains rendez-vous',
+  dash_salon_upcoming_badge: '{count} à venir',
+  dash_salon_active_tag: 'en cours',
+
+  // Appointment Modal Additions
+  apt_field_intake_mode: 'Mode d\'accueil client',
+  apt_mode_registered: 'Client(e) enregistré(e)',
+  apt_mode_walkin: 'Client(e) de passage',
+  apt_action_delete_title: 'Supprimer le rendez-vous',
+  apt_delete_confirm: 'Êtes-vous sûr de vouloir supprimer ce rendez-vous ?',
+  apt_validation_select_client: 'Veuillez sélectionner un(e) client(e) ou renseigner les détails du client de passage.',
+  apt_validation_select_service: 'Veuillez choisir une prestation.',
+  apt_validation_select_stylist: 'Veuillez assigner un(e) coiffeur(se).',
+
+  // Preset Salon Catalog Services & Descriptions
+  srv_balayage_name: 'Balayage Signature & Gloss Brillance',
+  srv_balayage_desc: 'Éclaircissement sur mesure à main levée, patine personnalisée et massage du cuir chevelu',
+  srv_blowout_name: 'Brushing Couture & Coiffage',
+  srv_blowout_desc: 'Double shampoing traitant, masque végétal et brushing sculpté à la brosse ronde',
+  srv_keratin_name: 'Soin Lissage Intense à la Kératine',
+  srv_keratin_desc: 'Lissage organique sans formol longue tenue jusqu\'à 4 mois',
+  srv_manicure_name: 'Manucure Russe & Nail Art',
+  srv_manicure_desc: 'Nettoyage des cuticules à la ponceuse, gainage gel et création personnalisée',
+  srv_pedicure_name: 'Pédicure Spa Luxe & Réflexologie',
+  srv_pedicure_desc: 'Bain aux sels marins, gommage exfoliant, soin des callosités et modelage',
+  srv_hydrafacial_name: 'Soin Éclat HydraFacial Signature',
+  srv_hydrafacial_desc: 'Aspiration des pores par vortex, peeling glycolique doux et infusion peptidique',
+  srv_bridal_name: 'Coiffure Mariée Royale & Haute Coiffure',
+  srv_bridal_desc: 'Mise en beauté mariage complète, pose diadème, maquillage mariée et fixation',
+  srv_massage_name: 'Massage Thérapeutique aux Huiles Essentielles',
+  srv_massage_desc: 'Soulagement musculaire ciblé à l\'huile d\'amande tiède et essence de lavande',
+
+  // Service Categories
+  srv_cat_hair: 'Coiffure & Cheveux',
+  srv_cat_nails: 'Onglerie & Mains',
+  srv_cat_facial: 'Soins visage & Peau',
+  srv_cat_massage: 'Massages & Corps',
+  srv_cat_bridal: 'Mariées & Fêtes',
+  srv_cat_barber: 'Barbier & Homme',
+
+  // Appointment Kinetic Toasts
+  toast_apt_booked_title: 'Rendez-vous confirmé',
+  toast_apt_booked_msg: '{client} avec {stylist} le {date} à {time}.',
+  toast_apt_seated_title: 'Client(e) au fauteuil',
+  toast_apt_seated_msg: 'Prestation de {client} démarrée avec {stylist}.',
+  toast_apt_cancelled_title: 'Rendez-vous annulé',
+  toast_apt_cancelled_msg: 'Le rendez-vous pour {client} a été annulé.',
+  toast_apt_rescheduled_title: 'Rendez-vous reprogrammé',
+  toast_apt_rescheduled_msg: 'Le rendez-vous de {client} a été décalé au {date} à {time}.',
+  toast_apt_checkout_title: 'Transféré en caisse',
+  toast_apt_checkout_msg: '{service} facturé pour {client} ({price}).',
+  toast_action_schedule: 'Planning',
+  toast_action_timer: 'Chrono',
+  toast_action_receipt: 'Ticket',
+  toast_action_calendar: 'Calendrier',
+  toast_action_queue: 'File d\'attente',
+  toast_action_pay: 'Payer',
+
+  // Salon additional display keys
+  salon_timeline: 'Horaire',
+  salon_chair_num: 'Fauteuil {number}',
+  salon_booking_count_single: '{count} réservation',
+  salon_booking_count_multi: '{count} réservations',
+  salon_book_slot: 'Réserver',
+  salon_bookings_scheduled: '{count} rendez-vous planifiés',
+  salon_stylist_label: 'Coiffeur(se) : {stylist}',
+  apt_ref_sub: 'Réf réservation #{id} • {branch}',
+  apt_schedule_sub: 'Planifier une séance à {branch}',
+  salon_col_package_val: 'Forfait / Valeur',
+  salon_package_plan: 'Formule de soins :',
+  salon_standard_package: 'Formule Soins Standard',
+  salon_included_sessions: 'Séances incluses :',
+  salon_session_unit: 'séances',
 };
 
 const TRANSLATIONS_AR: typeof TRANSLATIONS_EN = {
@@ -3917,6 +4175,135 @@ const TRANSLATIONS_AR: typeof TRANSLATIONS_EN = {
   voucher_fill_code: 'إدراج الكود',
   voucher_invalid_title: 'رمز القسيمة غير صالح',
   voucher_invalid_msg: 'يرجى التأكد من الرمز المكون من 20 خانة والمحاولة مجدداً.',
+
+  // Salon, Spa & Appointments Extended Suite
+  salon_schedule_title: 'جدول مواعيد صالون الحلاقة والتجميل',
+  salon_schedule_subtitle: 'إدارة حجوزات العملاء، كراسي المصففين، جلسات التجميل والمدفوعات اليومية',
+  salon_switch_facility: 'تغيير فرع الصالون',
+  salon_kpi_total_bookings: 'إجمالي المواعيد',
+  salon_kpi_in_chair: 'على الكرسي (نشط)',
+  salon_kpi_completed: 'المكتملة اليوم',
+  salon_kpi_est_revenue: 'إيرادات الجلسات المتوقعة',
+  salon_view_columns: 'أعمدة المصففين',
+  salon_view_list: 'قائمة المواعيد',
+  salon_view_catalog: 'الخدمات والباقات',
+  salon_filter_stylist: 'تصفية حسب المصفف',
+  salon_filter_all_stylists: 'جميع المصففين',
+  salon_filter_status: 'تصفية حسب الحالة',
+  salon_filter_all_statuses: 'جميع الحالات',
+  salon_search_placeholder: 'البحث عن عميل، خدمة، مصفف...',
+  salon_btn_today: 'اليوم',
+  salon_btn_prev_day: 'اليوم السابق',
+  salon_btn_next_day: 'اليوم التالي',
+  salon_btn_new_appointment: 'حجز موعد جديد',
+  salon_btn_export_csv: 'تصدير CSV',
+  salon_btn_add_service: 'إضافة خدمة جديدة',
+  salon_seat_client: 'إجلاس على الكرسي',
+  salon_mark_completed: 'تحديد كمكتمل',
+  salon_quick_checkout: 'إنهاء ودفع فوري',
+  salon_cancel_booking: 'إلغاء الموعد',
+  salon_reschedule: 'تعديل الموعد',
+  salon_edit_appointment: 'تعديل التفاصيل',
+  salon_catalog_title: 'دليل خدمات وعلاجات الصالون',
+  salon_catalog_subtitle: 'قائمة مهنية لقصات الشعر، الصبغات، فرد الكيراتين، العناية بالأظافر وجلسات السبا',
+  salon_duration_mins: '{duration} دقيقة',
+  salon_csv_filename: 'مواعيد_الصالون',
+  salon_empty_appointments: 'لا توجد مواعيد محجوزة في هذا التاريخ',
+  salon_empty_appointments_sub: 'انقر على أي فترة زمنية أو استخدم "حجز موعد جديد" لتسجيل زبون.',
+  salon_empty_filter: 'لا توجد مواعيد تطابق الفلاتر المحددة',
+  salon_checkout_success_toast: 'تم إنهاء ودفع حساب {client}! المبيعات #{saleId} لحساب المصفف {stylist}.',
+  salon_assigned_stylist: 'المصفف(ة): {stylist}',
+  salon_service_duration: 'المدة',
+  salon_service_price: 'السعر',
+  salon_service_min: 'د',
+  salon_service_details: 'تفاصيل الخدمة',
+
+  // Salon Dashboard Chair Widgets & Tiles
+  dash_salon_chairs_title: 'كراسي التصفيف ومحطات العمل الحية',
+  dash_salon_chairs_subtitle: 'الحالة المباشرة لكل كرسي مصفف وأخصائية تجميل',
+  dash_salon_btn_new_booking: 'حجز جديد / زبون عابر',
+  dash_salon_chair_label: 'كرسي {number} • {stylist}',
+  dash_salon_chair_available: 'شاغر',
+  dash_salon_chair_in_chair: 'على الكرسي',
+  dash_salon_chair_booked: 'محجوز',
+  dash_salon_manage_service: 'إدارة الجلسة',
+  dash_salon_seat_client_btn: 'إجلاس العميل',
+  dash_salon_peak_hours_title: 'أوقات ذروة حجوزات الجلسات',
+  dash_salon_chair_utilization: 'نسبة إشغال الكراسي',
+  dash_salon_daily_sales: 'مبيعات الصالون اليومية',
+  dash_salon_next_bookings: 'الحجوزات القادمة',
+  dash_salon_upcoming_badge: '{count} قادمة',
+  dash_salon_active_tag: 'نشط',
+
+  // Appointment Modal Additions
+  apt_field_intake_mode: 'طريقة استقبال العميل',
+  apt_mode_registered: 'عميل مسجل',
+  apt_mode_walkin: 'زبون عابر',
+  apt_action_delete_title: 'حذف الموعد',
+  apt_delete_confirm: 'هل أنت متأكد من حذف هذا الموعد نهائياً؟',
+  apt_validation_select_client: 'يرجى اختيار عميل مسجل أو إدخال بيانات الزبون العابر.',
+  apt_validation_select_service: 'يرجى اختيار خدمة أو جلسة علاجية.',
+  apt_validation_select_stylist: 'يرجى تعيين مصفف للشعر أو أخصائية.',
+
+  // Preset Salon Catalog Services & Descriptions
+  srv_balayage_name: 'بالياج مميز مع لمسة لمعان',
+  srv_balayage_desc: 'تفتيح احترافي للشعر باليد الحرة مع غلوس مخصص وتدليك لفروة الرأس',
+  srv_blowout_name: 'سشوار كوتور وتصفيف احترافي',
+  srv_blowout_desc: 'غسيل مزدوج، ماسك نباتي مغذي وسشوار احترافي بالفرشاة الدائرية',
+  srv_keratin_name: 'علاج فرد الشعر المكثف بالكيراتين',
+  srv_keratin_desc: 'علاج عضوي خالٍ من الفورمالديهايد لفرد وتنعيم الشعر يدوم حتى 4 أشهر',
+  srv_manicure_name: 'مانيكير روسي وتزيين أظافر احترافي',
+  srv_manicure_desc: 'تنظيف دقيق للجلد الميت بالجهاز، بناء الأظافر بالجيل وتصميم فني حسب الطلب',
+  srv_pedicure_name: 'باديكير سبا فاخر وعلاج الأقدام',
+  srv_pedicure_desc: 'حمام أملاح البحر الميت، تقشير منعم، إزالة التشققات وتدليك مريح للقدمين',
+  srv_hydrafacial_name: 'تنظيف بشرة هيدرافيشل نضارة فورية',
+  srv_hydrafacial_desc: 'تنظيف عميق للمسام بتقنية الفورتكس، تقشير لطيف وحقن حمض الهيالورونيك',
+  srv_bridal_name: 'تسريحة عروس ملكية ومكياج سهرة',
+  srv_bridal_desc: 'إطلالة زفاف ملكية كاملة، تثبيت التاج، مكياج احترافي وتسريحة فاخرة',
+  srv_massage_name: 'مساج استرخائي عميق بالزيوت العطرية',
+  srv_massage_desc: 'تخفيف التوتر العضلي بزيت اللوز الدافئ وخلاصة اللافندر الطبيعية',
+
+  // Service Categories
+  srv_cat_hair: 'شعر وتصفيف',
+  srv_cat_nails: 'أظافر ومانيكير',
+  srv_cat_facial: 'عناية بالبشرة والوجه',
+  srv_cat_massage: 'مساج واسترخاء',
+  srv_cat_bridal: 'عرائس ومناسبات',
+  srv_cat_barber: 'حلاقة رجالية وعناية',
+
+  // Appointment Kinetic Toasts
+  toast_apt_booked_title: 'تم تأكيد الموعد',
+  toast_apt_booked_msg: '{client} مع {stylist} بتاريخ {date} الساعة {time}.',
+  toast_apt_seated_title: 'تم إجلاس العميل على الكرسي',
+  toast_apt_seated_msg: 'بدأت جلسة {client} مع {stylist}.',
+  toast_apt_cancelled_title: 'تم إلغاء الموعد',
+  toast_apt_cancelled_msg: 'تم إلغاء موعد {client}.',
+  toast_apt_rescheduled_title: 'تم تعديل الموعد',
+  toast_apt_rescheduled_msg: 'تم نقل موعد {client} إلى {date} الساعة {time}.',
+  toast_apt_checkout_title: 'تم التحويل إلى الصندوق',
+  toast_apt_checkout_msg: 'تمت فوترة {service} للعميل {client} بمبلغ ({price}).',
+  toast_action_schedule: 'الجدول',
+  toast_action_timer: 'المؤقت',
+  toast_action_receipt: 'وصل',
+  toast_action_calendar: 'التقويم',
+  toast_action_queue: 'قائمة الانتظار',
+  toast_action_pay: 'دفع',
+
+  // Salon additional display keys
+  salon_timeline: 'الجدول الزمني',
+  salon_chair_num: 'كرسي {number}',
+  salon_booking_count_single: 'حجز واحد',
+  salon_booking_count_multi: '{count} حجوزات',
+  salon_book_slot: 'حجز موعد',
+  salon_bookings_scheduled: '{count} مواعيد مسجلة',
+  salon_stylist_label: 'المصفف(ة): {stylist}',
+  apt_ref_sub: 'مرجع الحجز #{id} • {branch}',
+  apt_schedule_sub: 'جدولة جلسة في {branch}',
+  salon_col_package_val: 'الباقة / الرصيد',
+  salon_package_plan: 'باقة الجلسات:',
+  salon_standard_package: 'باقة الجلسات القياسية',
+  salon_included_sessions: 'الحصص المضمنة:',
+  salon_session_unit: 'حصص',
 };
 
 export const DICTIONARY: Record<SupportedLanguage, typeof TRANSLATIONS_EN> = {
@@ -3937,6 +4324,67 @@ export function t(key: TranslationKey | string, lang: SupportedLanguage = 'en', 
   const enVal = (DICTIONARY.en as any)?.[key];
   if (enVal) return enVal;
   return fallback !== undefined ? fallback : (key as string);
+}
+
+/**
+ * Helper to localize preset salon service items dynamically
+ */
+export function getLocalizedService<T extends { id: string; name: string; description?: string; category?: string }>(
+  service: T,
+  lang: SupportedLanguage
+): T {
+  if (!service) return service;
+  const mapping: Record<string, { nameKey: TranslationKey; descKey: TranslationKey }> = {
+    srv_01: { nameKey: 'srv_balayage_name', descKey: 'srv_balayage_desc' },
+    srv_02: { nameKey: 'srv_blowout_name', descKey: 'srv_blowout_desc' },
+    srv_03: { nameKey: 'srv_keratin_name', descKey: 'srv_keratin_desc' },
+    srv_04: { nameKey: 'srv_manicure_name', descKey: 'srv_manicure_desc' },
+    srv_05: { nameKey: 'srv_pedicure_name', descKey: 'srv_pedicure_desc' },
+    srv_06: { nameKey: 'srv_hydrafacial_name', descKey: 'srv_hydrafacial_desc' },
+    srv_07: { nameKey: 'srv_bridal_name', descKey: 'srv_bridal_desc' },
+    srv_08: { nameKey: 'srv_massage_name', descKey: 'srv_massage_desc' },
+  };
+
+  const item = mapping[service.id];
+  return {
+    ...service,
+    name: item ? t(item.nameKey, lang, service.name) : service.name,
+    description: item ? t(item.descKey, lang, service.description) : service.description,
+  };
+}
+
+/**
+ * Helper to localize salon service categories
+ */
+export function getLocalizedServiceCategory(category: string, lang: SupportedLanguage): string {
+  switch (category) {
+    case 'Hair': return t('srv_cat_hair', lang, 'Hair');
+    case 'Nails': return t('srv_cat_nails', lang, 'Nails');
+    case 'Facial': return t('srv_cat_facial', lang, 'Facial');
+    case 'Massage': return t('srv_cat_massage', lang, 'Massage');
+    case 'Bridal': return t('srv_cat_bridal', lang, 'Bridal');
+    case 'Barber': return t('srv_cat_barber', lang, 'Barber');
+    default: return category;
+  }
+}
+
+/**
+ * Helper to dynamically resolve localized name of a salon treatment
+ */
+export function getLocalizedServiceName(serviceId: string | undefined, fallbackName: string, lang: SupportedLanguage): string {
+  if (!serviceId) return fallbackName;
+  const mapping: Record<string, TranslationKey> = {
+    srv_01: 'srv_balayage_name',
+    srv_02: 'srv_blowout_name',
+    srv_03: 'srv_keratin_name',
+    srv_04: 'srv_manicure_name',
+    srv_05: 'srv_pedicure_name',
+    srv_06: 'srv_hydrafacial_name',
+    srv_07: 'srv_bridal_name',
+    srv_08: 'srv_massage_name',
+  };
+  const key = mapping[serviceId];
+  return key ? t(key, lang, fallbackName) : fallbackName;
 }
 
 

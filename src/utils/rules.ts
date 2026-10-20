@@ -115,7 +115,7 @@ export function localizeStatus(status: string, lang: SupportedLanguage = 'en'): 
   if (status === 'Approved') return lang === 'ar' ? 'معتمد' : lang === 'fr' ? 'Validé' : 'Approved';
   if (status === 'Declined') return lang === 'ar' ? 'مرفوض' : lang === 'fr' ? 'Refusé' : 'Declined';
   if (status === 'Confirmed') return lang === 'ar' ? 'مؤكد' : lang === 'fr' ? 'Confirmé' : 'Confirmed';
-  if (status === 'InChair') return lang === 'ar' ? 'في الجلسة' : lang === 'fr' ? 'Au fauteuil' : 'In Chair';
+  if (status === 'InChair') return lang === 'ar' ? 'على الكرسي' : lang === 'fr' ? 'Au fauteuil' : 'In Chair';
   if (status === 'Completed') return lang === 'ar' ? 'مكتمل' : lang === 'fr' ? 'Terminé' : 'Completed';
   if (status === 'Cancelled') return lang === 'ar' ? 'ملغى' : lang === 'fr' ? 'Annulé' : 'Cancelled';
   if (status === 'NoShow') return lang === 'ar' ? 'لم يحضر' : lang === 'fr' ? 'Absent' : 'No Show';

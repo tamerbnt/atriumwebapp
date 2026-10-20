@@ -22,7 +22,7 @@ import { Modal } from '../ui/Modal';
 import { LabelInput } from '../ui/LabelInput';
 import { LabelSelect } from '../ui/LabelSelect';
 import { formatMoney, localizeStatus } from '../../utils/rules';
-import { t } from '../../utils/i18n';
+import { t, getLocalizedService, getLocalizedServiceCategory } from '../../utils/i18n';
 
 interface AppointmentModalProps {
   isOpen: boolean;
@@ -207,13 +207,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
     if (!appointment) return;
     updateAppointmentStatus(appointment.id, 'InChair');
     setStatus('InChair');
-    setActionSuccessMessage(
-      language === 'ar'
-        ? 'تم تثبيت العميل في المقعد وبدء الجلسة.'
-        : language === 'fr'
-        ? 'Le client est installé au fauteuil. Soin démarré.'
-        : 'Client is now seated in chair. Treatment started.'
-    );
+    setActionSuccessMessage(t('toast_apt_seated_title', language));
     setTimeout(() => {
       onClose();
     }, 1200);
@@ -222,13 +216,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
   const handleSendToPOS = () => {
     if (!appointment) return;
     checkoutAppointment(appointment.id, 'Cash');
-    setActionSuccessMessage(
-      language === 'ar'
-        ? 'تم إنهاء الموعد وإنشاء الفاتورة في سجل المبيعات!'
-        : language === 'fr'
-        ? 'Rendez-vous terminé et facture enregistrée en caisse !'
-        : 'Appointment completed & invoice created in POS sales history!'
-    );
+    setActionSuccessMessage(t('toast_apt_checkout_title', language));
     setTimeout(() => {
       onClose();
     }, 1200);
@@ -243,6 +231,9 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
 
   const handleDelete = () => {
     if (!appointment) return;
+    if (window.confirm && !window.confirm(t('apt_delete_confirm', language))) {
+      return;
+    }
     deleteAppointment(appointment.id);
     onClose();
   };
@@ -253,17 +244,11 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
       onClose={onClose}
       title={isEditing ? t('apt_modal_title_edit', language) : t('apt_modal_title_new', language)}
       subtitle={
-        isEditing
-          ? language === 'ar'
-            ? `رقم الحجز #${appointment.id.slice(-6).toUpperCase()} • ${currentBranch.name}`
-            : language === 'fr'
-            ? `Réf réservation #${appointment.id.slice(-6).toUpperCase()} • ${currentBranch.name}`
-            : `Booking reference #${appointment.id.slice(-6).toUpperCase()} • ${currentBranch.name}`
-          : language === 'ar'
-          ? `جدولة جلسة في ${currentBranch.name}`
-          : language === 'fr'
-          ? `Planifier une séance à ${currentBranch.name}`
-          : `Schedule treatment at ${currentBranch.name}`
+        isEditing && appointment
+          ? t('apt_ref_sub', language)
+              .replace('{id}', appointment.id.slice(-6).toUpperCase())
+              .replace('{branch}', currentBranch.name)
+          : t('apt_schedule_sub', language).replace('{branch}', currentBranch.name)
       }
       maxWidth="lg"
     >
@@ -331,7 +316,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
               type="button"
               onClick={handleDelete}
               className="p-1.5 text-neutral-400 hover:text-rose-500 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/50 transition-colors cursor-pointer"
-              title={language === 'ar' ? 'حذف الموعد' : language === 'fr' ? 'Supprimer le rendez-vous' : 'Delete Record'}
+              title={t('apt_action_delete_title', language)}
             >
               <Trash2 size={15} />
             </button>
@@ -345,7 +330,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
-                {language === 'ar' ? 'طريقة استقبال العميل' : language === 'fr' ? 'Mode d\'accueil client' : 'Client Intake Mode'}
+                {t('apt_field_intake_mode', language)}
               </label>
               <div className="flex items-center bg-neutral-100 dark:bg-neutral-800 p-0.5 rounded-lg text-xs font-medium">
                 <button
@@ -357,7 +342,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
                       : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'
                   }`}
                 >
-                  {t('apt_registered_client', language)}
+                  {t('apt_mode_registered', language)}
                 </button>
                 <button
                   type="button"
@@ -368,7 +353,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
                       : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'
                   }`}
                 >
-                  {t('apt_walkin_client', language)}
+                  {t('apt_mode_walkin', language)}
                 </button>
               </div>
           </div>
@@ -436,11 +421,14 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
             label={t('apt_field_treatment', language)}
             value={selectedServiceId}
             onChange={(val) => handleServiceChange(val?.target?.value ?? String(val))}
-            options={servicesCatalog.map((service) => ({
-              value: service.id,
-              label: service.name,
-              sublabel: `[${service.category}] ${service.durationMinutes} mins · ${formatMoney(service.price)}`,
-            }))}
+            options={servicesCatalog.map((service) => {
+              const loc = getLocalizedService(service, language);
+              return {
+                value: service.id,
+                label: loc.name,
+                sublabel: `[${getLocalizedServiceCategory(service.category, language)}] ${service.durationMinutes} mins · ${formatMoney(service.price)}`,
+              };
+            })}
             searchable
             width="100%"
             height={40}

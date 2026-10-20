@@ -25,10 +25,10 @@ import {
   Package,
 } from 'lucide-react';
 import { useAtriumStore } from '../../services/store';
-import { formatMoney, calculateDaysRemaining } from '../../utils/rules';
+import { formatMoney, calculateDaysRemaining, localizeStatus } from '../../utils/rules';
 import { AppointmentModal } from '../modals/AppointmentModal';
 import { Appointment } from '../../types/index';
-import { t } from '../../utils/i18n';
+import { t, getLocalizedServiceName } from '../../utils/i18n';
 
 interface DashboardScreenProps {
   onAddMember: () => void;
@@ -157,7 +157,11 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
 
   const handleQuickCheckout = (apt: Appointment) => {
     const sale = checkoutAppointment(apt.id, 'Cash');
-    setCheckoutToast(`Checked out ${apt.clientName}! Sale #${sale.id.slice(-6).toUpperCase()} credited to ${apt.staffName}.`);
+    const msg = t('salon_checkout_success_toast', language)
+      .replace('{client}', apt.clientName)
+      .replace('{saleId}', sale.id.slice(-6).toUpperCase())
+      .replace('{stylist}', apt.staffName);
+    setCheckoutToast(msg);
     setTimeout(() => setCheckoutToast(null), 4000);
   };
 
@@ -434,12 +438,13 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
 
     // Add recent appointments
     appointments.slice(0, 5).forEach((apt) => {
+      const localizedService = getLocalizedServiceName(apt.serviceId, apt.serviceName, language);
       list.push({
         id: apt.id,
         type: 'Rendezvous',
         client: apt.clientName,
-        operation: `${apt.serviceName} • Stylist: ${apt.staffName}`,
-        status: apt.status === 'InChair' ? 'In Chair' : apt.status,
+        operation: `${localizedService} • ${t('salon_stylist_label', language).replace('{stylist}', apt.staffName)}`,
+        status: localizeStatus(apt.status, language),
         time: `${apt.startTime} (${apt.durationMinutes}m)`,
         badgeColor:
           apt.status === 'InChair'
@@ -455,7 +460,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
       list.push({
         id: s.id,
         type: 'Ventes',
-        client: s.memberName || 'Walk-in Client',
+        client: s.memberName || t('apt_mode_walkin', language),
         operation: s.items.map((i) => `${i.quantity}x ${i.productName}`).join(', '),
         status: formatMoney(s.totalAmount),
         time: new Date(s.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -870,12 +875,12 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
               <div className="flex justify-between items-center text-[11px] font-semibold text-neutral-500 px-1">
                 <span>
                   {isSalon
-                    ? 'Peak Treatment Booking Hours'
+                    ? t('dash_salon_peak_hours_title', language)
                     : isPOS
                     ? 'Hourly Register Sales Velocity'
                     : 'Hourly Traffic Distribution'}
                 </span>
-                <span className="text-[#C4785A] font-bold">Today</span>
+                <span className="text-[#C4785A] font-bold">{t('salon_btn_today', language)}</span>
               </div>
               <div className="h-28 flex items-end justify-between gap-2.5 px-1 pt-3">
                 {pillarHeights.map((height, i) => (
@@ -909,7 +914,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
               <div className="text-[11px] font-semibold text-[#64748B] dark:text-neutral-400 flex items-center gap-1.5">
                 <Clock size={13} className="text-neutral-400" />
                 <span>
-                  {isSalon ? 'Chair Utilization' : isPOS ? 'Average Basket' : 'Moyenne Semaine'}
+                  {isSalon ? t('dash_salon_chair_utilization', language) : isPOS ? 'Average Basket' : 'Moyenne Semaine'}
                 </span>
               </div>
               <div className="mt-1 flex items-center gap-1.5">
@@ -926,7 +931,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
               <div className="text-[11px] font-semibold text-[#64748B] dark:text-neutral-400 flex items-center gap-1.5">
                 <TrendingUp size={13} className="text-neutral-400" />
                 <span>
-                  {isSalon ? 'Daily Salon Sales' : isPOS ? 'Low Stock Depletion' : 'Objectif Mensuel'}
+                  {isSalon ? t('dash_salon_daily_sales', language) : isPOS ? 'Low Stock Depletion' : 'Objectif Mensuel'}
                 </span>
               </div>
               <div className="mt-1 flex items-center gap-1.5">
@@ -1006,11 +1011,11 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-base font-bold text-neutral-900 dark:text-white">
-                  {isSalon ? 'Salon Workstation Performance' : 'Activity'}
+                  {isSalon ? t('dash_salon_chairs_title', language) : t('nav_history', language)}
                 </h2>
                 <p className="text-xs text-neutral-400 dark:text-neutral-500">
                   {isSalon
-                    ? 'Stylist productivity, active chairs & service turnover'
+                    ? t('dash_salon_chairs_subtitle', language)
                     : 'Track your daily operational activity.'}
                 </p>
               </div>
@@ -1020,7 +1025,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                   onClick={() => setScreen('scheduler')}
                   className="text-xs font-bold text-[#C4785A] hover:underline flex items-center gap-1 cursor-pointer"
                 >
-                  <span>Open Full Scheduler</span>
+                  <span>{language === 'ar' ? 'فتح جدول المواعيد كاملاً' : language === 'fr' ? 'Ouvrir le planning complet' : 'Open Full Scheduler'}</span>
                   <ChevronRight size={13} />
                 </button>
               )}
@@ -1032,11 +1037,11 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                 <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[126px]">
                   <div>
                     <span className="text-[11px] font-semibold text-[#64748B] dark:text-neutral-400">
-                      Salon Revenue Today
+                      {t('salon_kpi_est_revenue', language)}
                     </span>
                     <div className="mt-0.5">
                       <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
-                        ↗ +14.2% vs avg
+                        {language === 'ar' ? '↗ +14.2% فوق المتوسط' : language === 'fr' ? '↗ +14,2% vs moy.' : '↗ +14.2% vs avg'}
                       </span>
                     </div>
                   </div>
@@ -1052,17 +1057,17 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                 <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[126px]">
                   <div>
                     <span className="text-[11px] font-semibold text-[#64748B] dark:text-neutral-400">
-                      Active Stylists
+                      {language === 'ar' ? 'المصففون النشطون' : language === 'fr' ? 'Coiffeurs en service' : 'Active Stylists'}
                     </span>
                     <div className="mt-0.5">
                       <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
-                        {stylistChairs.filter((c) => c.status === 'InChair').length} in service
+                        {stylistChairs.filter((c) => c.status === 'InChair').length} {language === 'ar' ? 'في الخدمة' : language === 'fr' ? 'au fauteuil' : 'in service'}
                       </span>
                     </div>
                   </div>
                   <div className="relative">
                     <div className="text-xl font-black text-neutral-900 dark:text-white tabular-nums">
-                      {stylistChairs.length} Chairs
+                      {stylistChairs.length} {language === 'ar' ? 'كراسي' : language === 'fr' ? 'Fauteuils' : 'Chairs'}
                     </div>
                     {/* Stylist avatar circles */}
                     <div className="flex -space-x-1.5 mt-2">
@@ -1082,11 +1087,11 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                 <div className="p-4 rounded-[20px] bg-[#18181B] border border-neutral-800 text-white flex flex-col justify-between h-[126px] shadow-sm">
                   <div>
                     <span className="text-[11px] font-medium text-neutral-300">
-                      Next Bookings Ahead
+                      {t('dash_salon_next_bookings', language)}
                     </span>
                     <div className="mt-0.5">
                       <span className="text-[10px] font-bold text-amber-300 bg-amber-400/20 px-2 py-0.5 rounded-full">
-                        {salonMetrics.confirmedCount} upcoming
+                        {t('dash_salon_upcoming_badge', language).replace('{count}', String(salonMetrics.confirmedCount))}
                       </span>
                     </div>
                   </div>
@@ -1281,10 +1286,10 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                 <div>
                   <h3 className="text-base font-bold text-neutral-900 dark:text-white flex items-center gap-2">
                     <Scissors size={16} className="text-[#C4785A]" />
-                    <span>Stylist Chairs & Live Workstations</span>
+                    <span>{t('dash_salon_chairs_title', language)}</span>
                   </h3>
                   <p className="text-xs text-neutral-400 dark:text-neutral-500">
-                    Real-time status of each practitioner chair
+                    {t('dash_salon_chairs_subtitle', language)}
                   </p>
                 </div>
                 <button
@@ -1296,7 +1301,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                   className="px-3 py-1.5 rounded-full bg-[#C4785A] text-white text-xs font-bold hover:opacity-90 flex items-center gap-1 cursor-pointer transition-all shadow-xs"
                 >
                   <Plus size={13} />
-                  <span>New Booking / Walk-in</span>
+                  <span>{t('dash_salon_btn_new_booking', language)}</span>
                 </button>
               </div>
 
@@ -1323,7 +1328,9 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                           </div>
                           <div>
                             <span className="text-xs font-bold text-neutral-900 dark:text-white block leading-tight">
-                              Chair {chair.chairNumber} • {chair.stylist.fullName}
+                              {t('dash_salon_chair_label', language)
+                                .replace('{number}', String(chair.chairNumber))
+                                .replace('{stylist}', chair.stylist.fullName)}
                             </span>
                             <span className="text-[10px] text-neutral-400">
                               {chair.stylist.role}
@@ -1340,7 +1347,11 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                               : 'bg-emerald-600 text-white'
                           }`}
                         >
-                          {isInChair ? 'In Chair' : isBooked ? 'Booked' : 'Available'}
+                          {isInChair
+                            ? t('dash_salon_chair_in_chair', language)
+                            : isBooked
+                            ? t('dash_salon_chair_booked', language)
+                            : t('dash_salon_chair_available', language)}
                         </span>
                       </div>
 
@@ -1366,7 +1377,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                               }}
                               className="text-[11px] font-semibold text-neutral-600 hover:text-neutral-900 cursor-pointer"
                             >
-                              Manage Service
+                              {t('dash_salon_manage_service', language)}
                             </button>
                             <button
                               type="button"
@@ -1374,7 +1385,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                               className="px-2 py-0.5 rounded-md bg-[#C4785A] text-white text-[10px] font-bold hover:opacity-90 cursor-pointer flex items-center gap-1 shadow-2xs"
                             >
                               <CreditCard size={10} />
-                              <span>1-Click Checkout</span>
+                              <span>{t('salon_quick_checkout', language)}</span>
                             </button>
                           </div>
                         </div>
@@ -1384,7 +1395,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                         <div className="mt-2 p-2.5 bg-neutral-50/80 dark:bg-neutral-900/40 rounded-xl border border-neutral-200/60 dark:border-neutral-800 text-xs">
                           <div className="flex justify-between items-start">
                             <span className="font-bold text-neutral-800 dark:text-neutral-200 truncate">
-                              Next: {chair.nextBooking.clientName}
+                              {language === 'ar' ? 'التالي:' : language === 'fr' ? 'Suivant :' : 'Next:'} {chair.nextBooking.clientName}
                             </span>
                             <span className="text-[11px] font-semibold text-neutral-500">
                               {chair.nextBooking.startTime}
@@ -1399,7 +1410,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                       {!isInChair && !isBooked && (
                         <div className="mt-2 p-2.5 rounded-xl border border-dashed border-emerald-300 dark:border-emerald-800/60 text-center">
                           <p className="text-[11px] text-emerald-700 dark:text-emerald-400 font-medium">
-                            Chair is open for walk-in client
+                            {language === 'ar' ? 'الكرسي شاغر لاستقبال زبون عابر' : language === 'fr' ? 'Fauteuil libre pour un client de passage' : 'Chair is open for walk-in client'}
                           </p>
                           <button
                             type="button"
@@ -1409,7 +1420,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                             }}
                             className="mt-1 text-[11px] font-bold text-[#C4785A] hover:underline cursor-pointer"
                           >
-                            + Seat Walk-in Now
+                            + {t('dash_salon_seat_client_btn', language)}
                           </button>
                         </div>
                       )}
