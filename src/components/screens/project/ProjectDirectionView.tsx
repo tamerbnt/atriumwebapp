@@ -206,7 +206,37 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
         </div>
       </div>
 
-
+      {/* Navigation Sub-Tabs */}
+      <div className="flex border-b border-zinc-200 dark:border-zinc-800 gap-1 overflow-x-auto">
+        {[
+          { id: 'dashboard', label: t('pm_dir_tab_cockpit'), icon: TrendingUp },
+          { id: 'new_project', label: t('pm_dir_tab_new_project'), icon: Plus },
+          { id: 'approvals', label: t('pm_dir_tab_approvals'), icon: ShieldCheck, count: totalPendingApprovals },
+          { id: 'reports', label: t('pm_dir_tab_reports'), icon: Layers },
+        ].map((tab) => {
+          const Icon = tab.icon;
+          const isActive = currentScreen === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActivePmSubScreen(tab.id as any)}
+              className={`flex items-center gap-2 py-2.5 px-4 border-b-2 font-medium text-xs whitespace-nowrap transition-colors cursor-pointer ${
+                isActive
+                  ? 'border-[#C4785A] text-[#C4785A]'
+                  : 'border-transparent text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
+              }`}
+            >
+              <Icon className="w-4 h-4" />
+              <span>{tab.label}</span>
+              {tab.count !== undefined && tab.count > 0 && (
+                <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300 font-mono font-bold">
+                  {tab.count}
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
 
       {/* SCREEN 1.1: COMMAND CENTER */}
       {currentScreen === 'dashboard' && (
@@ -267,9 +297,9 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
               <div className="p-5 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs space-y-3">
                 <div className="flex items-center justify-between">
                   <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                    Missions par mois
+                    {t('pm_dir_missions_month')}
                   </h3>
-                  <span className="text-xs text-zinc-400">Année 2026</span>
+                  <span className="text-xs text-zinc-400">{t('pm_dir_year')}</span>
                 </div>
                 <div className="h-32 flex items-end justify-between gap-3 pt-4 px-2">
                   {[
@@ -306,20 +336,20 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
                 <div className="flex items-center justify-between">
                   <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
                     <FileText className="w-4 h-4 text-[#DC2626]" />
-                    Injection de cahier des charges
+                    {t('pm_dir_injection_title')}
                   </h3>
-                  <span className="text-[11px] text-zinc-400">Step 1 ➔ Créa</span>
+                  <span className="text-[11px] text-zinc-400">{t('pm_dir_step_crea')}</span>
                 </div>
 
                 <div className="p-4 rounded-xl border border-zinc-200/80 dark:border-zinc-800 bg-zinc-50/60 dark:bg-zinc-800/40 space-y-3">
                   <div className="flex items-center justify-between text-xs font-semibold text-zinc-800 dark:text-zinc-200">
-                    <span>Nouveau cahier des charges</span>
-                    <span className="text-zinc-500 font-normal">Client : Ooredoo · Échéance : 20/07</span>
+                    <span>{t('pm_dir_new_specs')}</span>
+                    <span className="text-zinc-500 font-normal">{t('pm_dir_client_deadline')}</span>
                   </div>
                   <LabelInput
                     field="Brief"
-                    label="Brief synthétique pour l'équipe Créa..."
-                    placeholder="Brief synthétique pour l'équipe Créa..."
+                    label={t('pm_dir_new_specs')}
+                    placeholder={t('pm_dir_new_specs')}
                     value={quickBriefTitle}
                     onChange={setQuickBriefTitle}
                     width="100%"
@@ -328,7 +358,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
                   />
                   {quickBriefSuccess && (
                     <div className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 text-xs font-semibold flex items-center gap-1.5 animate-in fade-in">
-                      <Check className="w-4 h-4 text-emerald-600" /> Cahier des charges injecté avec succès vers le studio Créa !
+                      <Check className="w-4 h-4 text-emerald-600" /> {t('pm_dir_injected_success')}
                     </div>
                   )}
                   <div className="flex justify-end gap-2">
@@ -363,7 +393,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
                       className="px-4 py-2 text-xs font-bold text-white bg-[#DC2626] hover:bg-red-700 rounded-xl transition-all shadow-xs cursor-pointer flex items-center gap-1.5"
                     >
                       <Sparkles className="w-3.5 h-3.5" />
-                      Envoyer à la Créa
+                      {t('pm_dir_send_crea')}
                     </button>
                   </div>
                 </div>
@@ -372,7 +402,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
               {/* Activité récente (Slide 5) */}
               <div className="p-5 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs space-y-3">
                 <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                  Activité récente
+                  {t('pm_dir_recent_activity')}
                 </h3>
                 <div className="space-y-3 text-xs">
                   <div className="flex items-center justify-between py-1.5 border-b border-zinc-100 dark:border-zinc-800/60">
@@ -432,10 +462,10 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
               <div className="p-5 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs space-y-3">
                 <div className="flex items-center justify-between">
                   <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                    Paies en attente de validation
+                    {t('pm_dir_pending_validation')}
                   </h3>
                   <span className="text-xs font-mono text-red-600 bg-red-50 dark:bg-red-950/40 px-2 py-0.5 rounded font-bold">
-                    4 requêtes
+                    {t('pm_dir_requests_count', { count: 4 })}
                   </span>
                 </div>
 
@@ -443,10 +473,10 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
                   <table className="w-full text-left text-xs">
                     <thead>
                       <tr className="border-b border-zinc-100 dark:border-zinc-800 text-[11px] text-zinc-400 uppercase font-semibold">
-                        <th className="pb-2">ANIMATEUR</th>
-                        <th className="pb-2">MISSION</th>
-                        <th className="pb-2 text-right">MONTANT</th>
-                        <th className="pb-2 text-right">ACTION</th>
+                        <th className="pb-2">{t('pm_dir_table_animator')}</th>
+                        <th className="pb-2">{t('pm_dir_table_mission')}</th>
+                        <th className="pb-2 text-right">{t('pm_dir_table_amount')}</th>
+                        <th className="pb-2 text-right">{t('pm_dir_table_action')}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800/60">
@@ -469,7 +499,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
                             <td className="py-2.5 text-right">
                               {isValidated ? (
                                 <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-md">
-                                  <Check className="w-3.5 h-3.5" /> Validée DG
+                                  <Check className="w-3.5 h-3.5" /> {t('pm_dir_status_validated_dg')}
                                 </span>
                               ) : (
                                 <button
@@ -480,7 +510,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
                                   }}
                                   className="px-3 py-1 text-xs font-bold text-white bg-[#DC2626] hover:bg-red-700 rounded-lg shadow-xs cursor-pointer transition-colors"
                                 >
-                                  Valider
+                                  {t('pm_dir_btn_validate')}
                                 </button>
                               )}
                             </td>
@@ -495,28 +525,28 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
               {/* Ce que ça change Panel (Slide 5) */}
               <div className="p-5 bg-zinc-50 dark:bg-zinc-800/40 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-3">
                 <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-900 dark:text-zinc-100">
-                  Ce que ça change
+                  {t('pm_dir_what_changes')}
                 </h4>
                 <ul className="space-y-2.5 text-xs text-zinc-600 dark:text-zinc-400">
                   <li className="flex items-start gap-2">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#DC2626] mt-1.5 shrink-0" />
-                    <span>Des décisions prises sur des données du jour, pas du mois dernier.</span>
+                    <span>{t('pm_dir_benefit_1')}</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#DC2626] mt-1.5 shrink-0" />
-                    <span>Un cahier des charges injecté = la Créa notifiée dans la seconde.</span>
+                    <span>{t('pm_dir_benefit_2')}</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#DC2626] mt-1.5 shrink-0" />
-                    <span>Double validation sur chaque dinar : rien ne part sans l'aval de la direction.</span>
+                    <span>{t('pm_dir_benefit_3')}</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#DC2626] mt-1.5 shrink-0" />
-                    <span>Export Excel de tous les tableaux en un clic.</span>
+                    <span>{t('pm_dir_benefit_4')}</span>
                   </li>
                 </ul>
                 <div className="pt-2 text-[11px] text-zinc-500 italic">
-                  Vos événements remontent en chiffres, en direct.
+                  {t('pm_dir_live_tagline')}
                 </div>
               </div>
             </div>
@@ -710,13 +740,13 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <span className="text-xs font-semibold text-[#C4785A] uppercase tracking-wide">
-                Écran 1.3 · Gouvernance Financière & Visa Double-Clé
+                {t('pm_dir_approvals_badge')}
               </span>
               <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mt-1">
-                Registre d'Autorisation des Décaissements
+                {t('pm_dir_approvals_title')}
               </h2>
               <p className="text-xs text-zinc-500">
-                Chaque ligne approuvée ici débloque le virement postal ou le remboursement en trésorerie.
+                {t('pm_dir_approvals_sub')}
               </p>
             </div>
 
@@ -725,7 +755,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
               <Seek
                 value={approvalSearch}
                 onChange={setApprovalSearch}
-                placeholder="Rechercher lot ou dépense..."
+                placeholder={t('common_search')}
                 openWidth={260}
                 shutSize={38}
               />
@@ -739,7 +769,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
                       : 'text-zinc-500 hover:text-zinc-900'
                   }`}
                 >
-                  Tous ({totalPendingApprovals})
+                  {t('pm_dir_filter_all')} ({totalPendingApprovals})
                 </button>
                 <button
                   type="button"
@@ -750,7 +780,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
                       : 'text-zinc-500 hover:text-zinc-900'
                   }`}
                 >
-                  Lots Paie ({pendingPayrollBatches.length})
+                  {t('pm_dir_filter_payroll')} ({pendingPayrollBatches.length})
                 </button>
                 <button
                   type="button"
@@ -761,7 +791,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
                       : 'text-zinc-500 hover:text-zinc-900'
                   }`}
                 >
-                  Achats Terrain ({pendingExpenses.length})
+                  {t('pm_dir_filter_expenses')} ({pendingExpenses.length})
                 </button>
               </div>
             </div>
@@ -778,7 +808,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
                       <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300">
-                        LOT DE PAIE SUPERVISEUR
+                        {t('pm_dir_payroll_badge')}
                       </span>
                       <span className="font-mono text-xs font-semibold text-zinc-700 dark:text-zinc-300">
                         {batch.batchNumber}
@@ -795,7 +825,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
 
                   <div className="flex items-center gap-4 shrink-0">
                     <div className="text-right">
-                      <span className="text-[10px] text-zinc-400 block uppercase font-medium">Montant Total</span>
+                      <span className="text-[10px] text-zinc-400 block uppercase font-medium">{t('common_amount')}</span>
                       <span className="font-mono font-bold text-lg text-zinc-900 dark:text-zinc-100 tabular-nums">
                         {batch.totalAmountDzd.toLocaleString()} DA
                       </span>
@@ -806,7 +836,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
                       className="px-4 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-xl shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
                     >
                       <CheckCircle className="w-4 h-4" />
-                      Valider pour Virement CCP
+                      {t('pm_dir_btn_validate_ccp')}
                     </button>
                   </div>
                 </div>
@@ -822,14 +852,14 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
                       <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300">
-                        ACHAT LOGISTIQUE
+                        {t('pm_dir_logistics_badge')}
                       </span>
                       <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
                         {expense.title}
                       </span>
                       {expense.hasFiscalInvoice && (
                         <span className="px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold">
-                          Facture NIF
+                          {t('pm_dir_fiscal_invoice')}
                         </span>
                       )}
                     </div>
@@ -846,11 +876,11 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
                         className="px-3 py-1.5 text-xs text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors flex items-center gap-1.5 cursor-pointer"
                       >
                         <Eye className="w-3.5 h-3.5" />
-                        Voir Reçu
+                        {t('pm_dir_see_receipt')}
                       </button>
                     )}
                     <div className="text-right">
-                      <span className="text-[10px] text-zinc-400 block uppercase font-medium">Montant</span>
+                      <span className="text-[10px] text-zinc-400 block uppercase font-medium">{t('common_amount')}</span>
                       <span className="font-mono font-bold text-base text-zinc-900 dark:text-zinc-100 tabular-nums">
                         {expense.amountDzd.toLocaleString()} DA
                       </span>
@@ -861,14 +891,14 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
                       className="px-3.5 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-xl shadow-xs transition-colors flex items-center gap-1 cursor-pointer"
                     >
                       <CheckCircle className="w-3.5 h-3.5" />
-                      Approuver
+                      {t('pm_dir_approve_btn')}
                     </button>
                     <button
                       type="button"
                       onClick={() => setRejectionModalId(expense.id)}
                       className="px-3 py-2 text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-xl border border-red-200 dark:border-red-800 transition-colors cursor-pointer"
                     >
-                      Rejeter
+                      {t('pm_dir_reject_btn')}
                     </button>
                   </div>
                 </div>

@@ -22,12 +22,14 @@ import {
 import { LabelInput } from '../../ui/LabelInput';
 import { Seek } from '../../ui/Seek';
 import { FilterSelect } from '../../ui/FilterSelect';
+import { useTranslation } from '../../../utils/useTranslation';
 
 interface ProjectChefProjetViewProps {
   initialTab?: 'portfolio' | 'catalog' | 'orders' | 'bat' | 'expenses';
 }
 
 export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ initialTab }) => {
+  const { t, language, isRtl } = useTranslation();
   const {
     pmProjects,
     pmMilestones,
@@ -191,27 +193,27 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
         <div>
           <div className="flex items-center gap-2">
             <span className="text-xs font-semibold uppercase tracking-wider text-[#C4785A]">
-              Rôle 2 · Chef de Projet
+              {t('pm_role_cp_badge')}
             </span>
             <span className="text-zinc-400">·</span>
-            <span className="text-xs text-zinc-500">Supervision de Campagnes & Matériel</span>
+            <span className="text-xs text-zinc-500">{t('pm_role_cp_sub')}</span>
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
             {activeTab === 'catalog'
-              ? `Commander — ${selectedProject?.title}`
+              ? `${t('pm_cp_tab_catalog')} — ${selectedProject?.title}`
               : activeTab === 'portfolio'
-              ? `Mes projets — ${selectedProject?.title}`
+              ? `${t('pm_cp_tab_portfolio')} — ${selectedProject?.title}`
               : activeTab === 'orders'
-              ? `Suivi commandes — ${selectedProject?.title}`
+              ? `${t('pm_cp_tab_orders')} — ${selectedProject?.title}`
               : activeTab === 'bat'
-              ? `Fichiers reçus & BAT — ${selectedProject?.title}`
-              : `Achats & Frais — ${selectedProject?.title}`}
+              ? `${t('pm_cp_tab_bat')} — ${selectedProject?.title}`
+              : `${t('pm_cp_tab_expenses')} — ${selectedProject?.title}`}
           </h1>
         </div>
 
         {/* Global Project Selector */}
         <FilterSelect
-          label="Projet Actif"
+          label={t('pm_kpi_active_projects')}
           value={selectedProjectId}
           onChange={(val) => setSelectedProjectId(typeof val === 'string' ? val : val.target?.value || val)}
           options={pmProjects.map((p) => ({
@@ -221,7 +223,38 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
         />
       </div>
 
-
+      {/* Tabs */}
+      <div className="flex border-b border-zinc-200 dark:border-zinc-800 gap-1 overflow-x-auto">
+        {[
+          { id: 'portfolio', label: t('pm_cp_tab_portfolio'), icon: FolderKanban },
+          { id: 'catalog', label: t('pm_cp_tab_catalog'), icon: ShoppingBag },
+          { id: 'orders', label: t('pm_cp_tab_orders'), icon: FileCheck2, count: pmPrintOrders.length },
+          { id: 'bat', label: t('pm_cp_tab_bat'), icon: Eye, count: pmBatDeliverables.length },
+          { id: 'expenses', label: t('pm_cp_tab_expenses'), icon: DollarSign },
+        ].map((tab) => {
+          const Icon = tab.icon;
+          const isActive = activeTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as any)}
+              className={`flex items-center gap-2 py-2.5 px-4 border-b-2 font-medium text-xs whitespace-nowrap transition-colors cursor-pointer ${
+                isActive
+                  ? 'border-[#C4785A] text-[#C4785A]'
+                  : 'border-transparent text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
+              }`}
+            >
+              <Icon className="w-4 h-4" />
+              <span>{tab.label}</span>
+              {tab.count !== undefined && tab.count > 0 && (
+                <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 font-mono">
+                  {tab.count}
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
 
       {/* TAB 1: Portfolio & Milestones */}
       {activeTab === 'portfolio' && selectedProject && (

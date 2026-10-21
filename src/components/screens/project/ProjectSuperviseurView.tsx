@@ -29,12 +29,14 @@ import { LabelInput } from '../../ui/LabelInput';
 import { Seek } from '../../ui/Seek';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { FilterSelect } from '../../ui/FilterSelect';
+import { useTranslation } from '../../../utils/useTranslation';
 
 interface ProjectSuperviseurViewProps {
   initialTab?: 'missions' | 'attendance' | 'staffing' | 'expense';
 }
 
 export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ initialTab }) => {
+  const { t, language, isRtl } = useTranslation();
   const {
     pmMissions,
     pmTalents,
@@ -152,25 +154,25 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
         <div>
           <div className="flex items-center gap-2">
             <span className="text-xs font-semibold uppercase tracking-wider text-[#C4785A]">
-              Rôle 4 · Superviseur Terrain & Déploiement
+              {t('pm_role_sup_badge')}
             </span>
             <span className="text-zinc-400">·</span>
-            <span className="text-xs text-zinc-500">Missions Live & Pointage Smartphone</span>
+            <span className="text-xs text-zinc-500">{t('pm_role_sup_sub')}</span>
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
             {activeTab === 'missions'
-              ? 'Missions Terrain & Activations'
+              ? t('pm_sup_tab_missions')
               : activeTab === 'attendance'
-              ? 'Pointage Mobile du Jour (Roll Call)'
+              ? t('pm_sup_tab_attendance')
               : activeTab === 'staffing'
-              ? "Casting & Constitution d'Équipe"
-              : 'Déclaration Dépense & Achats Terrain'}
+              ? t('pm_sup_tab_staffing')
+              : t('pm_sup_tab_expense')}
           </h1>
         </div>
 
         {/* Global Mission Selector */}
         <FilterSelect
-          label="Mission"
+          label={t('pm_sup_tab_missions')}
           value={selectedMissionId}
           onChange={(val) => setSelectedMissionId(typeof val === 'string' ? val : val.target?.value || val)}
           options={pmMissions.map((m) => ({
@@ -178,6 +180,38 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
             label: `${m.code} — ${m.venueName} (${m.activationType})`,
           }))}
         />
+      </div>
+
+      {/* Sub-Tabs */}
+      <div className="flex border-b border-zinc-200 dark:border-zinc-800 gap-1 overflow-x-auto">
+        {[
+          { id: 'missions', label: t('pm_sup_tab_missions'), icon: Radio, count: pmMissions.length },
+          { id: 'attendance', label: t('pm_sup_tab_attendance'), icon: Clock },
+          { id: 'staffing', label: t('pm_sup_tab_staffing'), icon: Users, count: pmTalents.length },
+          { id: 'expense', label: t('pm_sup_tab_expense'), icon: Plus },
+        ].map((tab) => {
+          const Icon = tab.icon;
+          const isActive = activeTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as any)}
+              className={`flex items-center gap-2 py-2.5 px-4 border-b-2 font-medium text-xs whitespace-nowrap transition-colors cursor-pointer ${
+                isActive
+                  ? 'border-[#C4785A] text-[#C4785A]'
+                  : 'border-transparent text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
+              }`}
+            >
+              <Icon className="w-4 h-4" />
+              <span>{tab.label}</span>
+              {tab.count !== undefined && tab.count > 0 && (
+                <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 font-mono">
+                  {tab.count}
+                </span>
+              )}
+            </button>
+          );
+        })}
       </div>
 
 

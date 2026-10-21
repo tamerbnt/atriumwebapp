@@ -27,12 +27,14 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { Seek } from '../../ui/Seek';
+import { useTranslation } from '../../../utils/useTranslation';
 
 interface ProjectComptaViewProps {
   initialTab?: 'payroll' | 'ccp' | 'expenses' | 'stock';
 }
 
 export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab }) => {
+  const { t, language, isRtl } = useTranslation();
   const {
     pmPayrollBatches,
     pmCcpSlips,
@@ -177,8 +179,8 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
     setBatchGeneratedSuccess(true);
     if (showToast) {
       showToast({
-        title: 'Bordereaux CCP SFP 01 générés',
-        message: `${validatedDgCount} mandats de virement postaux fusionnés et prêts pour impression guichet.`,
+        title: t('toast_ccp_generated'),
+        message: t('pm_compta_batch_success'),
         type: 'success',
       });
     }
@@ -193,13 +195,13 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
         <div>
           <div className="flex items-center gap-2">
             <span className="text-xs font-semibold uppercase tracking-wider text-[#C4785A]">
-              Rôle 6 · Comptabilité, Paie & Finance
+              {t('pm_role_compta_badge')}
             </span>
             <span className="text-zinc-400">·</span>
-            <span className="text-xs text-zinc-500">Bordereaux Algérie Poste (CCP SFP 01) & Audit Fiscal</span>
+            <span className="text-xs text-zinc-500">{t('pm_role_compta_sub')}</span>
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
-            Centre Financier, Paies Animateurs & Stocks
+            {t('pm_compta_title')}
           </h1>
         </div>
 
@@ -207,15 +209,45 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
         <div className="flex items-center gap-2">
           <button
             onClick={() => window.print?.()}
-            className="px-3.5 py-1.5 text-xs font-semibold text-zinc-700 dark:text-zinc-300 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 rounded-xl flex items-center gap-1.5 transition-colors shadow-sm"
+            className="px-3.5 py-1.5 text-xs font-semibold text-zinc-700 dark:text-zinc-300 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 rounded-xl flex items-center gap-1.5 transition-colors shadow-sm cursor-pointer"
           >
             <Printer className="w-3.5 h-3.5" />
-            Imprimer l'Audit Général
+            {t('common_print')} (Audit)
           </button>
         </div>
       </div>
 
-
+      {/* Tabs */}
+      <div className="flex border-b border-zinc-200 dark:border-zinc-800 gap-1 overflow-x-auto">
+        {[
+          { id: 'payroll', label: t('pm_compta_tab_payroll'), icon: DollarSign },
+          { id: 'ccp', label: t('pm_compta_tab_ccp'), icon: CreditCard, count: pmCcpSlips.length },
+          { id: 'expenses', label: t('pm_compta_tab_expenses'), icon: Receipt, count: pmExpenses.length },
+          { id: 'stock', label: t('pm_compta_tab_stock'), icon: Boxes, count: pmEquipmentStock.length },
+        ].map((tab) => {
+          const Icon = tab.icon;
+          const isActive = activeTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as any)}
+              className={`flex items-center gap-2 py-2.5 px-4 border-b-2 font-medium text-xs whitespace-nowrap transition-colors cursor-pointer ${
+                isActive
+                  ? 'border-[#C4785A] text-[#C4785A]'
+                  : 'border-transparent text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
+              }`}
+            >
+              <Icon className="w-4 h-4" />
+              <span>{tab.label}</span>
+              {tab.count !== undefined && (
+                <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 font-mono">
+                  {tab.count}
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
 
       {/* TAB 1: Automated Payroll Hub matching Slide 10 */}
       {activeTab === 'payroll' && (
@@ -224,7 +256,7 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs">
               <span className="text-[10px] uppercase font-bold text-zinc-400 block mb-1">
-                PÉRIODE ACTIVE
+                {t('pm_compta_kpi_active_period')}
               </span>
               <span className="text-xl font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5">
                 <Calendar className="w-4 h-4 text-[#C4785A]" />
@@ -234,31 +266,31 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
 
             <div className="p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs">
               <span className="text-[10px] uppercase font-bold text-zinc-400 block mb-1">
-                VALIDÉES DIRECTION (DG)
+                {t('pm_compta_kpi_approved_dg')}
               </span>
               <span className="text-xl font-mono font-bold text-emerald-600 flex items-center gap-2 tabular-nums">
-                {validatedDgCount} paies
+                {validatedDgCount}
                 <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-sans font-bold">
-                  Prêtes
+                  {t('pm_compta_status_validated_dg')}
                 </span>
               </span>
             </div>
 
             <div className="p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs">
               <span className="text-[10px] uppercase font-bold text-zinc-400 block mb-1">
-                EN ATTENTE SIGNATURE
+                {t('pm_compta_kpi_pending_dg')}
               </span>
               <span className="text-xl font-mono font-bold text-amber-600 flex items-center gap-2 tabular-nums">
-                {individualPayrollRows.length - validatedDgCount} paies
+                {individualPayrollRows.length - validatedDgCount}
                 <span className="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-sans font-bold">
-                  Attente DG
+                  {t('pm_compta_status_pending_dg')}
                 </span>
               </span>
             </div>
 
             <div className="p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs">
               <span className="text-[10px] uppercase font-bold text-zinc-400 block mb-1">
-                MASSE SALARIALE NETTE
+                {t('pm_compta_kpi_net_payroll')}
               </span>
               <span className="text-xl font-mono font-bold text-zinc-900 dark:text-zinc-100 tabular-nums">
                 {individualPayrollRows.reduce((acc, r) => acc + r.amountDzd, 0).toLocaleString()} DA
@@ -275,22 +307,22 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                   <div>
                     <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-100">
-                      Paies — Juillet 2026
+                      {t('pm_compta_audit_title')}
                     </h3>
                     <p className="text-xs text-zinc-500">
-                      Pointages terrain validés par la Direction. Cliquez sur un animateur pour inspecter son mandat CCP SFP 01.
+                      {t('pm_compta_audit_sub')}
                     </p>
                   </div>
                   <div className="flex items-center gap-3">
                     <Seek
                       value={payrollSearch}
                       onChange={setPayrollSearch}
-                      placeholder="Rechercher animateur, mission, CCP..."
+                      placeholder={t('common_search')}
                       openWidth={260}
                       shutSize={36}
                     />
                     <span className="text-xs font-mono font-semibold text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-3 py-1 rounded-xl shrink-0">
-                      {filteredPayrollRows.length} animateurs
+                      {filteredPayrollRows.length}
                     </span>
                   </div>
                 </div>
@@ -302,13 +334,13 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
                   className="w-full py-3.5 px-4 bg-[#DC2626] hover:bg-red-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm hover:shadow flex items-center justify-center gap-2 cursor-pointer active:scale-98"
                 >
                   <RefreshCw className="w-4 h-4" />
-                  ⟳ Générer les CCP ({validatedDgCount}) → un PDF fusionné, prêt à imprimer
+                  {t('pm_compta_btn_generate_batch', { count: validatedDgCount })}
                 </button>
 
                 {batchGeneratedSuccess && (
                   <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl text-xs font-semibold text-emerald-800 dark:text-emerald-300 flex items-center gap-2 animate-in fade-in">
                     <CheckCircle className="w-4 h-4 text-emerald-600" />
-                    Mandats CCP générés avec succès ! Fichiers conformes SFP 01 prêts pour virement postal.
+                    {t('pm_compta_batch_success')}
                   </div>
                 )}
 
@@ -317,11 +349,11 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
                   <table className="w-full text-left text-xs">
                     <thead className="bg-zinc-50 dark:bg-zinc-800/60 text-zinc-500 font-semibold uppercase tracking-wider text-[10px]">
                       <tr>
-                        <th className="p-3 rounded-l-lg">ANIMATEUR</th>
-                        <th className="p-3">MISSION</th>
-                        <th className="p-3 text-center">JOURS</th>
-                        <th className="p-3 text-right">MONTANT</th>
-                        <th className="p-3 text-right rounded-r-lg">STATUT</th>
+                        <th className="p-3 rounded-l-lg">{t('pm_compta_table_animator')}</th>
+                        <th className="p-3">{t('pm_compta_table_mission')}</th>
+                        <th className="p-3 text-center">{t('pm_compta_table_days')}</th>
+                        <th className="p-3 text-right">{t('pm_compta_table_amount')}</th>
+                        <th className="p-3 text-right rounded-r-lg">{t('pm_compta_table_status')}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800/80">
@@ -390,12 +422,12 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
                               {row.status === 'approved_dg' ? (
                                 <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
                                   <Check className="w-3 h-3" />
-                                  Validée DG
+                                  {t('pm_compta_status_validated_dg')}
                                 </span>
                               ) : (
                                 <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300">
                                   <Lock className="w-3 h-3" />
-                                  En attente
+                                  {t('pm_compta_status_pending_dg')}
                                 </span>
                               )}
                             </td>
@@ -410,7 +442,7 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
               {/* Lots de Paie Validés (Summary Cards) */}
               <div className="p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs space-y-3">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 block">
-                  LOTS DE PAIE TRANSMIS PAR LES SUPERVISEURS (MOBILE)
+                  {t('pm_compta_batches_transmitted')}
                 </span>
                 <div className="space-y-2">
                   {pmPayrollBatches.map((batch) => (
@@ -432,7 +464,7 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
                           {batch.totalAmountDzd.toLocaleString()} DA
                         </span>
                         <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
-                          Signé DG ✓
+                          {t('pm_compta_status_validated_dg')} ✓
                         </span>
                       </div>
                     </div>
@@ -448,11 +480,11 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
                   <div className="flex items-center gap-2">
                     <CreditCard className="w-4 h-4 text-[#C4785A]" />
                     <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
-                      Bordereau Algérie Poste (SFP 01)
+                      {t('pm_compta_voucher_preview_header')}
                     </h3>
                   </div>
                   <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300">
-                    APERÇU OFFICIEL
+                    {t('pm_compta_voucher_official_badge')}
                   </span>
                 </div>
 
@@ -462,13 +494,13 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
                   <div className="flex justify-between items-start pb-2.5 border-b border-amber-300 dark:border-amber-900/60">
                     <div>
                       <p className="font-bold text-[9px] uppercase tracking-wider text-amber-900 dark:text-amber-300">
-                        RÉPUBLIQUE ALGÉRIENNE DÉMOCRATIQUE ET POPULAIRE
+                        {t('pm_compta_republic_title')}
                       </p>
                       <p className="text-[10px] font-bold text-zinc-800 dark:text-zinc-200">
-                        MINISTÈRE DE LA POSTE ET DES TÉLÉCOMMUNICATIONS
+                        {t('pm_compta_ministry_title')}
                       </p>
                       <p className="text-[9px] font-semibold text-[#C4785A] mt-0.5">
-                        ALGÉRIE POSTE · OPÉRATIONS FINANCIÈRES
+                        {t('pm_compta_ptt_ops')}
                       </p>
                     </div>
                     <div className="text-right">
@@ -482,7 +514,7 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
                   <div className="p-3 bg-white dark:bg-zinc-900/90 rounded-xl border border-amber-200 dark:border-amber-900/50 space-y-2">
                     <div className="flex items-center justify-between text-xs">
                       <span className="text-zinc-500 font-semibold text-[10px] uppercase">
-                        N° Compte CCP & Clé
+                        {t('pm_compta_account_key_label')}
                       </span>
                       <span className="font-mono font-bold text-zinc-900 dark:text-zinc-100 text-sm">
                         {activePreviewSlip.ccpNumber} — Clé {activePreviewSlip.ccpKey}
@@ -491,7 +523,7 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
 
                     <div className="flex items-center justify-between text-xs pt-1.5 border-t border-zinc-100 dark:border-zinc-800">
                       <span className="text-zinc-500 font-semibold text-[10px] uppercase">
-                        Montant à Virer
+                        {t('pm_compta_amount_wire_label')}
                       </span>
                       <span className="font-mono font-extrabold text-base text-emerald-700 dark:text-emerald-400 tabular-nums">
                         {activePreviewSlip.amountDzd.toLocaleString()} DA
@@ -502,20 +534,20 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
                   {/* Beneficiary Details */}
                   <div className="space-y-1 text-xs">
                     <span className="text-[10px] uppercase font-semibold text-zinc-500 block">
-                      Bénéficiaire du Virement
+                      {t('pm_compta_beneficiary_label')}
                     </span>
                     <p className="font-bold text-sm text-zinc-900 dark:text-zinc-100">
                       {activePreviewSlip.beneficiaryName}
                     </p>
                     <p className="text-[11px] text-zinc-500">
-                      Wilaya de rattachement : {activePreviewSlip.wilayaName}
+                      {t('pm_compta_wilaya_label')} {activePreviewSlip.wilayaName}
                     </p>
                   </div>
 
                   {/* Legal Transcription in Words */}
                   <div className="p-2.5 rounded-lg bg-amber-100/60 dark:bg-amber-900/30 border border-amber-200/80 dark:border-amber-900/50 space-y-1">
                     <span className="text-[9px] uppercase font-bold text-amber-900 dark:text-amber-300 block">
-                      Somme en toutes lettres (Mention Légale)
+                      {t('pm_compta_amount_in_words_label')}
                     </span>
                     <p className="font-serif italic text-xs text-zinc-800 dark:text-zinc-200 leading-snug">
                       « {activePreviewSlip.amountInWordsFr} »
@@ -530,11 +562,11 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
                   {/* Postal Stamps & Motif */}
                   <div className="pt-2 border-t border-amber-300 dark:border-amber-900/60 flex items-center justify-between text-[10px] text-zinc-500">
                     <div>
-                      <span className="block font-semibold">Motif :</span>
+                      <span className="block font-semibold">{t('pm_compta_purpose_label')}</span>
                       <span>{activePreviewSlip.transactionReference}</span>
                     </div>
                     <div className="w-16 h-12 rounded border border-dashed border-amber-400 flex items-center justify-center text-[8px] text-amber-800 dark:text-amber-300 text-center font-bold uppercase">
-                      Cachet PTT
+                      {t('pm_compta_stamp_ptt')}
                     </div>
                   </div>
                 </div>
@@ -549,15 +581,21 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
                     className="flex-1 py-2.5 px-3 bg-[#C4785A] hover:bg-[#b3684a] text-white rounded-xl text-xs font-semibold shadow-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
                   >
                     <Printer className="w-3.5 h-3.5" />
-                    Imprimer Format SFP 01
+                    {t('pm_compta_btn_print_sfp01')}
                   </button>
                   <button
                     type="button"
                     onClick={() => {
-                      alert(`Téléchargement du bordereau SFP 01 pour ${activePreviewSlip.beneficiaryName} (Format normalisé Algérie Poste).`);
+                      if (showToast) {
+                        showToast({
+                          title: t('common_export'),
+                          message: `${activePreviewSlip.beneficiaryName} — SFP 01`,
+                          type: 'success',
+                        });
+                      }
                     }}
-                    className="p-2.5 text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
-                    title="Télécharger PDF"
+                    className="p-2.5 text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+                    title={t('common_export')}
                   >
                     <Download className="w-4 h-4" />
                   </button>
@@ -574,18 +612,18 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
           <div className="p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                Bordereaux Postaux SFP 01 Édités
+                {t('pm_compta_slips_issued_title')}
               </h3>
               <p className="text-xs text-zinc-500">
-                Montants transcrits automatiquement en lettres légales (Français et Arabe). Conformes aux guichets Algérie Poste.
+                {t('pm_compta_slips_issued_sub')}
               </p>
             </div>
             <button
               onClick={() => window.print?.()}
-              className="px-3.5 py-1.5 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-xl flex items-center gap-1.5 transition-colors shadow-sm"
+              className="px-3.5 py-1.5 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-xl flex items-center gap-1.5 transition-colors shadow-sm cursor-pointer"
             >
               <Printer className="w-3.5 h-3.5" />
-              Imprimer le Lot Complet (SFP 01)
+              {t('pm_compta_btn_print_all_slips')}
             </button>
           </div>
 
@@ -609,7 +647,7 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
                       </strong>
                     </div>
                     <div className="flex justify-between font-mono font-bold text-emerald-700 dark:text-emerald-400">
-                      <span>Montant :</span>
+                      <span>{t('common_amount')} :</span>
                       <span>{slip.amountDzd.toLocaleString()} DA</span>
                     </div>
                   </div>
@@ -621,14 +659,14 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
 
                 <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
                   <span className="text-[10px] text-zinc-400">
-                    {slip.isPrinted ? 'Imprimé ✓' : 'Prêt pour guichet'}
+                    {slip.isPrinted ? t('pm_compta_status_printed') : t('pm_compta_status_ready_counter')}
                   </span>
                   <button
                     onClick={() => setSelectedSlip(slip)}
-                    className="px-3 py-1 text-xs font-semibold text-[#C4785A] hover:bg-[#C4785A]/10 rounded-lg flex items-center gap-1 transition-colors"
+                    className="px-3 py-1 text-xs font-semibold text-[#C4785A] hover:bg-[#C4785A]/10 rounded-lg flex items-center gap-1 transition-colors cursor-pointer"
                   >
                     <Eye className="w-3.5 h-3.5" />
-                    Visualiser SFP 01
+                    {t('pm_compta_btn_view_sfp01')}
                   </button>
                 </div>
               </div>
@@ -645,10 +683,10 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
             <div className="p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm flex items-center justify-between">
               <div>
                 <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                  Journal des Dépenses de Terrain
+                  {t('pm_compta_expense_journal_title')}
                 </h3>
                 <p className="text-xs text-zinc-500">
-                  Vérification des tickets de caisse, déductions TVA et factures fiscales.
+                  {t('pm_compta_expense_journal_sub')}
                 </p>
               </div>
             </div>
@@ -671,12 +709,12 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
                       </span>
                       {exp.hasFiscalInvoice && (
                         <span className="px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 text-[10px] font-bold">
-                          FACTURE FISCALE
+                          {t('pm_compta_fiscal_invoice_badge')}
                         </span>
                       )}
                     </div>
                     <p className="text-xs text-zinc-500 mt-0.5">
-                      {exp.projectTitle} · Déclaré par {exp.declaredByUserName}
+                      {t('pm_compta_declared_by', { project: exp.projectTitle, user: exp.declaredByUserName })}
                     </p>
                   </div>
 
@@ -693,7 +731,7 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
                           : 'text-amber-600'
                       }`}
                     >
-                      {exp.status === 'approved_by_direction' ? 'Validé DG' : 'En attente DG'}
+                      {exp.status === 'approved_by_direction' ? t('pm_compta_status_validated_dg') : t('pm_compta_status_pending_dg')}
                     </span>
                   </div>
                 </div>
@@ -706,7 +744,7 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
             <div className="p-6 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm sticky top-6 space-y-4">
               <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
                 <Receipt className="w-4 h-4 text-[#C4785A]" />
-                Visualiseur de Reçu & Conformité
+                {t('pm_compta_scanner_title')}
               </h3>
 
               {selectedExpense?.receiptPhotoUrl ? (
@@ -719,18 +757,18 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
                     />
                   </div>
                   <div className="text-xs space-y-1 text-zinc-600 dark:text-zinc-400">
-                    <p>Désignation: <strong>{selectedExpense.title}</strong></p>
-                    <p>Montant: <strong className="font-mono">{selectedExpense.amountDzd.toLocaleString()} DA</strong></p>
+                    <p>{t('common_name')}: <strong>{selectedExpense.title}</strong></p>
+                    <p>{t('common_amount')}: <strong className="font-mono">{selectedExpense.amountDzd.toLocaleString()} DA</strong></p>
                     {selectedExpense.fiscalNif && (
                       <p className="font-mono text-[11px] text-emerald-600">
-                        NIF Enregistré: {selectedExpense.fiscalNif}
+                        {t('pm_compta_nif_recorded')} {selectedExpense.fiscalNif}
                       </p>
                     )}
                   </div>
                 </div>
               ) : (
                 <p className="text-xs text-zinc-400 text-center py-12">
-                  Sélectionnez une dépense pour inspecter son justificatif.
+                  {t('pm_compta_scanner_select')}
                 </p>
               )}
             </div>
@@ -747,21 +785,21 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
               <div className="flex items-center gap-2">
                 <Boxes className="w-4 h-4 text-[#C4785A]" />
                 <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
-                  Parc Matériel & Stock Indirect — Tracé à Vie (Slide 11)
+                  {t('pm_compta_stock_title')}
                 </h3>
               </div>
               <p className="text-xs text-zinc-500 mt-0.5">
-                Chaque achat de terrain est automatiquement codé (NCH-A-00xxx) et bénéficie d'une traçabilité de cycle de vie.
+                {t('pm_compta_stock_sub')}
               </p>
             </div>
 
             {/* Filter Capsules */}
             <div className="flex flex-wrap items-center gap-1.5 text-xs">
               {[
-                { id: 'all', label: `Tous (${pmEquipmentStock.length})` },
-                { id: 'indirect', label: 'Achats Terrain (NCH-A)' },
-                { id: 'in_stock', label: 'En Dépôt' },
-                { id: 'deployed', label: 'En Mission' },
+                { id: 'all', label: t('pm_compta_filter_all_stock', { count: pmEquipmentStock.length }) },
+                { id: 'indirect', label: t('pm_compta_filter_indirect') },
+                { id: 'in_stock', label: t('pm_compta_filter_in_stock') },
+                { id: 'deployed', label: t('pm_compta_filter_deployed') },
               ].map((capsule) => (
                 <button
                   key={capsule.id}
@@ -783,8 +821,8 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
             {/* Left 6 Cols: Assets List */}
             <div className="lg:col-span-6 space-y-3">
               <div className="flex items-center justify-between text-xs text-zinc-400 px-1">
-                <span>MATÉRIEL ENREGISTRÉ</span>
-                <span>{pmEquipmentStock.length} articles</span>
+                <span>{t('pm_compta_stock_registered')}</span>
+                <span>{t('pm_compta_stock_items_count', { count: pmEquipmentStock.length })}</span>
               </div>
 
               <div className="space-y-2.5">
@@ -816,7 +854,7 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
                               </span>
                               {isIndirect && (
                                 <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300">
-                                  STOCK INDIRECT (TERRAIN)
+                                  {t('pm_compta_badge_indirect')}
                                 </span>
                               )}
                             </div>
@@ -824,7 +862,7 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
                               {eq.title}
                             </h4>
                             <p className="text-xs text-zinc-500 mt-0.5 capitalize">
-                              Catégorie : {eq.category.replace('_', ' ')}
+                              {t('common_filter')} : {eq.category.replace('_', ' ')}
                             </p>
                           </div>
 
@@ -835,7 +873,7 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
                                 : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
                             }`}
                           >
-                            {eq.currentStatus === 'deployed_on_mission' ? 'DÉPLOYÉ TERRAIN' : 'EN DÉPÔT'}
+                            {eq.currentStatus === 'deployed_on_mission' ? t('pm_compta_badge_deployed') : t('pm_compta_badge_in_depot')}
                           </span>
                         </div>
 
@@ -845,7 +883,7 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
                           </span>
                           <span className="text-[11px] text-zinc-400 flex items-center gap-1">
                             <History className="w-3.5 h-3.5" />
-                            {eq.history?.length || 2} étapes de vie
+                            {eq.history?.length || 2} {t('common_actions')}
                           </span>
                         </div>
                       </div>
@@ -860,7 +898,7 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
                 <div className="flex items-center justify-between pb-3 border-b border-zinc-200 dark:border-zinc-800">
                   <div>
                     <span className="text-[10px] font-mono font-bold text-[#C4785A] uppercase tracking-wider block">
-                      CYCLE DE VIE DÉTAILLÉ (SLIDE 11)
+                      {t('pm_compta_lifecycle_title')}
                     </span>
                     <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-100">
                       {selectedStockAsset?.assetCode} · {selectedStockAsset?.title}
@@ -874,21 +912,21 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
                 {/* Acquisition Metadata */}
                 <div className="p-3 bg-zinc-50 dark:bg-zinc-800/50 rounded-xl border border-zinc-200/80 dark:border-zinc-800 text-xs space-y-1">
                   <div className="flex items-center justify-between">
-                    <span className="text-zinc-500 font-medium">Origine acquisition :</span>
+                    <span className="text-zinc-500 font-medium">{t('pm_compta_origin_acquisition')}</span>
                     <span className="font-semibold text-zinc-900 dark:text-zinc-100">
-                      Acheté et déclaré sur le terrain
+                      {t('pm_compta_origin_field_purchased')}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-zinc-500 font-medium">Justificatif fiscal :</span>
+                    <span className="text-zinc-500 font-medium">{t('pm_compta_fiscal_voucher')}</span>
                     <span className="text-emerald-600 font-mono font-bold text-[11px]">
-                      facture_scan.jpg ✓ Scannée
+                      {t('pm_compta_voucher_scanned')}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-zinc-500 font-medium">Statut actuel :</span>
+                    <span className="text-zinc-500 font-medium">{t('pm_compta_current_status')}</span>
                     <span className="font-semibold text-emerald-600">
-                      Disponible — état : bon
+                      {t('pm_compta_status_good')}
                     </span>
                   </div>
                 </div>
@@ -896,11 +934,10 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
                 {/* Vertical Timeline matching Slide 11 */}
                 <div className="space-y-4 pt-1">
                   <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider block">
-                    Historique Chronologique des Affectations
+                    {t('pm_compta_history_title')}
                   </span>
 
                   <div className="relative pl-6 space-y-6 before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-zinc-200 dark:before:bg-zinc-800">
-                    {/* Render exact Slide 11 timeline steps if available or default */}
                     {(selectedStockAsset?.history || [
                       { date: '12/03', stage: 'Acheté & codé', detail: `${selectedStockAsset?.title} — ${selectedStockAsset?.acquisitionCostDzd.toLocaleString()} DA` },
                       { date: '15/03', stage: 'Affecté', detail: 'Roadshow Ooredoo — Oran' },
@@ -969,28 +1006,48 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
                     type="button"
                     onClick={() => {
                       updatePmEquipmentStatus(selectedStockAsset.id, 'deployed_on_mission', 'good');
-                      alert(`Matériel ${selectedStockAsset.assetCode} affecté à la mission terrain en cours.`);
+                      if (showToast) {
+                        showToast({
+                          title: selectedStockAsset.assetCode,
+                          message: t('pm_compta_badge_deployed'),
+                          type: 'success',
+                        });
+                      }
                     }}
                     className="flex-1 py-2 px-3 text-xs font-semibold text-white bg-[#C4785A] hover:bg-[#b3684a] rounded-xl transition-colors flex items-center justify-center gap-1.5 shadow-xs cursor-pointer"
                   >
                     <ArrowRight className="w-3.5 h-3.5" />
-                    Affecter à une Mission
+                    {t('pm_compta_btn_assign_mission')}
                   </button>
                   <button
                     type="button"
                     onClick={() => {
                       updatePmEquipmentStatus(selectedStockAsset.id, 'in_stock');
-                      alert(`Retour en stock enregistré pour ${selectedStockAsset.assetCode}. État contrôlé : bon.`);
+                      if (showToast) {
+                        showToast({
+                          title: selectedStockAsset.assetCode,
+                          message: t('pm_compta_badge_in_depot'),
+                          type: 'info',
+                        });
+                      }
                     }}
                     className="py-2 px-3 text-xs font-semibold text-zinc-700 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 rounded-xl transition-colors cursor-pointer"
                   >
-                    Retour Stock
+                    {t('pm_compta_btn_return_stock')}
                   </button>
                   <button
                     type="button"
-                    onClick={() => alert(`Code QR imprimable généré pour ${selectedStockAsset.assetCode} : ${selectedStockAsset.qrLabelCode}`)}
-                    className="p-2 text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
-                    title="Imprimer Étiquette QR Code"
+                    onClick={() => {
+                      if (showToast) {
+                        showToast({
+                          title: t('pm_compta_btn_qr_label'),
+                          message: `${selectedStockAsset.assetCode} : ${selectedStockAsset.qrLabelCode}`,
+                          type: 'info',
+                        });
+                      }
+                    }}
+                    className="p-2 text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+                    title={t('pm_compta_btn_qr_label')}
                   >
                     <QrCode className="w-4 h-4" />
                   </button>

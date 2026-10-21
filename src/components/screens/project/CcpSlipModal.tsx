@@ -37,10 +37,10 @@ export const CcpSlipModal: React.FC<CcpSlipModalProps> = ({
             </div>
             <div>
               <h3 className="font-semibold text-zinc-900 dark:text-zinc-100 text-sm">
-                Bordereau Officiel Algérie Poste — SFP 01
+                {t('pm_ccp_modal_title')}
               </h3>
               <p className="text-xs text-zinc-500">
-                Opération Financière Postale · Mandat de Virement CCP Conforme
+                {t('pm_ccp_modal_sub')}
               </p>
             </div>
           </div>
@@ -68,20 +68,20 @@ export const CcpSlipModal: React.FC<CcpSlipModalProps> = ({
             <div className="flex justify-between items-start border-b-2 border-zinc-800 dark:border-zinc-300 pb-3 mb-4">
               <div>
                 <p className="font-bold text-xs uppercase tracking-wider text-zinc-700 dark:text-zinc-300">
-                  RÉPUBLIQUE ALGÉRIENNE DÉMOCRATIQUE ET POPULAIRE
+                  {t('pm_ccp_republic')}
                 </p>
                 <p className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
-                  MINISTÈRE DE LA POSTE ET DES TÉLÉCOMMUNICATIONS
+                  {t('pm_ccp_ministry')}
                 </p>
                 <p className="text-xs font-bold text-[#C4785A] mt-0.5">
-                  ALGÉRIE POSTE · OPÉRATIONS FINANCIÈRES SFP 01
+                  {t('pm_ccp_operations')}
                 </p>
               </div>
               <div className="text-right">
                 <span className="inline-block border-2 border-zinc-800 dark:border-zinc-200 px-3 py-1 font-mono font-bold text-xs rounded">
                   SFP 01
                 </span>
-                <p className="text-[10px] text-zinc-500 mt-1">Édition Atrium ERP</p>
+                <p className="text-[10px] text-zinc-500 mt-1">{t('pm_ccp_edition')}</p>
               </div>
             </div>
 
@@ -89,18 +89,18 @@ export const CcpSlipModal: React.FC<CcpSlipModalProps> = ({
             <div className="grid grid-cols-3 gap-3 mb-4">
               <div className="col-span-2 p-3 bg-white dark:bg-zinc-800 rounded-lg border border-zinc-300 dark:border-zinc-700">
                 <span className="text-[10px] uppercase font-semibold text-zinc-500 block">
-                  Bénéficiaire (Nom & Prénom)
+                  {t('pm_ccp_beneficiary_name')}
                 </span>
                 <span className="font-bold text-base text-zinc-900 dark:text-zinc-100 block">
                   {slip.beneficiaryName}
                 </span>
                 <span className="text-xs text-zinc-500 block mt-0.5">
-                  Wilaya de rattachement : {slip.wilayaName}
+                  {t('pm_compta_wilaya_label')} {slip.wilayaName}
                 </span>
               </div>
               <div className="p-3 bg-white dark:bg-zinc-800 rounded-lg border border-zinc-300 dark:border-zinc-700 text-right">
                 <span className="text-[10px] uppercase font-semibold text-zinc-500 block">
-                  Montant en Chiffres
+                  {t('pm_ccp_amount_digits')}
                 </span>
                 <span className="font-mono font-extrabold text-lg text-emerald-700 dark:text-emerald-400 tabular-nums">
                   {slip.amountDzd.toLocaleString()} DA
@@ -112,7 +112,7 @@ export const CcpSlipModal: React.FC<CcpSlipModalProps> = ({
             <div className="p-3 bg-white dark:bg-zinc-800 rounded-lg border border-zinc-300 dark:border-zinc-700 mb-4 flex items-center justify-between">
               <div>
                 <span className="text-[10px] uppercase font-semibold text-zinc-500 block">
-                  Numéro de Compte Courant Postal (N° CCP)
+                  {t('pm_ccp_account_number')}
                 </span>
                 <span className="font-mono font-black text-xl tracking-widest text-zinc-900 dark:text-zinc-100 tabular-nums">
                   {slip.ccpNumber}
@@ -120,7 +120,7 @@ export const CcpSlipModal: React.FC<CcpSlipModalProps> = ({
               </div>
               <div className="text-right">
                 <span className="text-[10px] uppercase font-semibold text-zinc-500 block">
-                  Clé CCP
+                  {t('pm_ccp_key')}
                 </span>
                 <span className="font-mono font-black text-xl text-[#C4785A] tracking-wider tabular-nums">
                   {slip.ccpKey}
@@ -131,7 +131,7 @@ export const CcpSlipModal: React.FC<CcpSlipModalProps> = ({
             {/* Legal Amount in Words: French */}
             <div className="mb-3 p-3 bg-white/80 dark:bg-zinc-800/80 rounded-lg border border-zinc-200 dark:border-zinc-700">
               <span className="text-[10px] uppercase font-semibold text-zinc-500 block mb-0.5">
-                Somme en toutes lettres (Français légal) :
+                {t('pm_ccp_words_fr')}
               </span>
               <p className="font-serif italic text-sm text-zinc-900 dark:text-zinc-100 leading-snug">
                 « {slip.amountInWordsFr} »
@@ -141,7 +141,7 @@ export const CcpSlipModal: React.FC<CcpSlipModalProps> = ({
             {/* Legal Amount in Words: Arabic */}
             <div className="mb-4 p-3 bg-white/80 dark:bg-zinc-800/80 rounded-lg border border-zinc-200 dark:border-zinc-700 text-right" dir="rtl">
               <span className="text-[10px] uppercase font-semibold text-zinc-500 block mb-0.5">
-                المبلغ بالأحرف كاملة (اللغة العربية القانونية) :
+                {t('pm_ccp_words_ar')}
               </span>
               <p className="font-serif text-sm font-semibold text-zinc-900 dark:text-zinc-100 leading-snug">
                 « {slip.amountInWordsAr} »
@@ -151,20 +151,20 @@ export const CcpSlipModal: React.FC<CcpSlipModalProps> = ({
             {/* Transaction Reference & Signatures */}
             <div className="grid grid-cols-2 gap-4 pt-3 border-t border-zinc-300 dark:border-zinc-700 text-xs">
               <div>
-                <span className="text-[10px] uppercase text-zinc-500 block">Motif de l'opération :</span>
+                <span className="text-[10px] uppercase text-zinc-500 block">{t('pm_ccp_purpose')}</span>
                 <p className="font-medium text-zinc-800 dark:text-zinc-200">{slip.transactionReference}</p>
                 <div className="mt-4 pt-4 border-t border-zinc-200 dark:border-zinc-700">
-                  <span className="text-[10px] text-zinc-400 block">Signature et Cachet du Donneur d'Ordre :</span>
+                  <span className="text-[10px] text-zinc-400 block">{t('pm_ccp_signature_order')}</span>
                   <div className="h-12 flex items-center gap-1.5 text-zinc-400 text-xs italic">
                     <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                    <span>Validé par Direction Générale NCH</span>
+                    <span>{t('pm_ccp_signed_dg')}</span>
                   </div>
                 </div>
               </div>
               <div className="text-right">
                 <span className="text-[10px] uppercase text-zinc-500 block">Réservé à la Poste :</span>
                 <div className="h-24 border border-zinc-300 dark:border-zinc-700 rounded bg-white/50 dark:bg-zinc-900/50 flex items-center justify-center text-[10px] text-zinc-400 mt-1">
-                  Timbre à date du bureau postal
+                  {t('pm_ccp_post_stamp_box')}
                 </div>
               </div>
             </div>
@@ -175,13 +175,13 @@ export const CcpSlipModal: React.FC<CcpSlipModalProps> = ({
         <div className="px-6 py-3 border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-between text-xs text-zinc-500 bg-zinc-50 dark:bg-zinc-800/50">
           <div className="flex items-center gap-2">
             <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
-            <span>Format standard SFP 01 conforme aux guichets Algérie Poste</span>
+            <span>{t('pm_ccp_compliance_footer')}</span>
           </div>
           <button
             onClick={onClose}
             className="px-4 py-1.5 text-xs font-medium text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 transition-colors"
           >
-            Fermer
+            {t('common_close')}
           </button>
         </div>
       </div>

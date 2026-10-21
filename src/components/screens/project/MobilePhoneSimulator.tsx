@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Smartphone, Monitor, Wifi, Battery, Signal } from 'lucide-react';
+import { useTranslation } from '../../../utils/useTranslation';
 
 interface MobilePhoneSimulatorProps {
   children: React.ReactNode;
@@ -14,9 +15,10 @@ export const MobilePhoneSimulator: React.FC<MobilePhoneSimulatorProps> = ({
   subtitle,
   defaultMode = 'mobile',
 }) => {
+  const { t, language } = useTranslation();
   const [mode, setMode] = useState<'mobile' | 'desktop'>(defaultMode);
 
-  const currentTime = new Intl.DateTimeFormat('fr-FR', {
+  const currentTime = new Intl.DateTimeFormat(language === 'ar' ? 'ar-DZ' : language === 'fr' ? 'fr-FR' : 'en-US', {
     hour: '2-digit',
     minute: '2-digit',
   }).format(new Date());
@@ -33,7 +35,7 @@ export const MobilePhoneSimulator: React.FC<MobilePhoneSimulatorProps> = ({
             <div className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
               <span>{title}</span>
               <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-[#C4785A]/20 text-[#C4785A]">
-                Mobile-First
+                {t('pm_sim_badge')}
               </span>
             </div>
             {subtitle && (
@@ -56,7 +58,7 @@ export const MobilePhoneSimulator: React.FC<MobilePhoneSimulatorProps> = ({
             }`}
           >
             <Smartphone className="w-3.5 h-3.5" />
-            <span>Mode Téléphone (390px)</span>
+            <span>{t('pm_sim_mobile_mode')}</span>
           </button>
 
           <button
@@ -69,7 +71,7 @@ export const MobilePhoneSimulator: React.FC<MobilePhoneSimulatorProps> = ({
             }`}
           >
             <Monitor className="w-3.5 h-3.5" />
-            <span>Plein Écran (Bureau)</span>
+            <span>{t('pm_sim_desktop_mode')}</span>
           </button>
         </div>
       </div>

@@ -33,18 +33,21 @@ import {
   ChevronRight,
   ShieldAlert,
 } from 'lucide-react';
+import { useTranslation } from '../../../utils/useTranslation';
 
 interface ProjectRhViewProps {
   initialTab?: 'talents' | 'dossier' | 'portal' | 'walkin';
 }
 
 export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
+  const { t, language, isRtl } = useTranslation();
   const {
     pmTalents,
     addPmTalent,
     updatePmTalentStatus,
     activePmSubScreen,
     setActivePmSubScreen,
+    showToast,
   } = useAtriumStore();
 
   const activeTab: 'talents' | 'dossier' | 'portal' | 'walkin' =

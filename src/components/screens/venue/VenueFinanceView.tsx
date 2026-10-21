@@ -18,10 +18,12 @@ import {
 import { useAtriumStore } from '../../../services/store';
 import { SecurityDepositRecord } from '../../../types/index';
 import { formatCurrencyAmount } from '../../../utils/rules';
+import { useTranslation } from '../../../utils/useTranslation';
 import { Seek } from '../../ui/Seek';
 import { LabelInput } from '../../ui/LabelInput';
 
 export const VenueFinanceView: React.FC = () => {
+  const { t, language } = useTranslation();
   const {
     securityDeposits,
     rentalBookings,
@@ -36,6 +38,7 @@ export const VenueFinanceView: React.FC = () => {
   const [deductionAmount, setDeductionAmount] = useState<number>(0);
 
   // Financial aggregates
+  const totalHeldCount = securityDeposits.filter((d) => d.status === 'Held').length;
   const totalHeld = securityDeposits
     .filter((d) => d.status === 'Held')
     .reduce((sum, d) => sum + d.amount, 0);
@@ -80,10 +83,10 @@ export const VenueFinanceView: React.FC = () => {
       {/* Header */}
       <div>
         <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-900 dark:text-white">
-          Caution Escrow & Rental Revenue
+          {t('venue_fin_page_title')}
         </h1>
         <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
-          Security deposit ledger, damage retention records, add-on sales & space receivables
+          {t('venue_fin_page_sub')}
         </p>
       </div>
 
@@ -91,53 +94,53 @@ export const VenueFinanceView: React.FC = () => {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <div className="p-5 rounded-2xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-800">
           <div className="flex items-center justify-between text-neutral-500 mb-2">
-            <span className="text-xs font-medium uppercase tracking-wider">Caution in Escrow</span>
+            <span className="text-xs font-medium uppercase tracking-wider">{t('venue_fin_kpi_escrow')}</span>
             <ShieldCheck size={18} className="text-emerald-500" />
           </div>
           <div className="text-2xl sm:text-3xl font-bold text-neutral-900 dark:text-white tabular-nums">
             {formatCurrencyAmount(totalHeld, 'DZD')}
           </div>
           <div className="text-xs text-neutral-400 mt-1">
-            Active deposits awaiting post-event inspection
+            {t('venue_fin_kpi_escrow_sub', { count: totalHeldCount })}
           </div>
         </div>
 
         <div className="p-5 rounded-2xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-800">
           <div className="flex items-center justify-between text-neutral-500 mb-2">
-            <span className="text-xs font-medium uppercase tracking-wider">Released / Refunded</span>
+            <span className="text-xs font-medium uppercase tracking-wider">{t('venue_fin_kpi_released')}</span>
             <CheckCircle2 size={18} className="text-blue-500" />
           </div>
           <div className="text-2xl sm:text-3xl font-bold text-neutral-900 dark:text-white tabular-nums">
             {formatCurrencyAmount(totalReleased, 'DZD')}
           </div>
           <div className="text-xs text-neutral-400 mt-1">
-            Successfully returned after clean handover
+            {t('venue_fin_kpi_released_sub')}
           </div>
         </div>
 
         <div className="p-5 rounded-2xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-800">
           <div className="flex items-center justify-between text-neutral-500 mb-2">
-            <span className="text-xs font-medium uppercase tracking-wider">Retained for Damages</span>
+            <span className="text-xs font-medium uppercase tracking-wider">{t('venue_fin_kpi_deducted')}</span>
             <AlertTriangle size={18} className="text-amber-500" />
           </div>
           <div className="text-2xl sm:text-3xl font-bold text-neutral-900 dark:text-white tabular-nums">
             {formatCurrencyAmount(totalDeducted, 'DZD')}
           </div>
           <div className="text-xs text-neutral-400 mt-1">
-            Property repair & equipment replacements
+            {t('venue_fin_kpi_deducted_sub')}
           </div>
         </div>
 
         <div className="p-5 rounded-2xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-800">
           <div className="flex items-center justify-between text-neutral-500 mb-2">
-            <span className="text-xs font-medium uppercase tracking-wider">Total Rental Bookings</span>
+            <span className="text-xs font-medium uppercase tracking-wider">{t('venue_fin_kpi_gross_rev')}</span>
             <TrendingUp size={18} className="text-[var(--color-accent)]" />
           </div>
           <div className="text-2xl sm:text-3xl font-bold text-neutral-900 dark:text-white tabular-nums">
             {formatCurrencyAmount(totalBookingRevenue, 'DZD')}
           </div>
           <div className="text-xs text-neutral-400 mt-1">
-            Includes {formatCurrencyAmount(totalAddonsRevenue, 'DZD')} equipment add-ons
+            {t('venue_fin_kpi_gross_rev_sub')}
           </div>
         </div>
       </div>
@@ -148,7 +151,7 @@ export const VenueFinanceView: React.FC = () => {
           <Seek
             value={searchQuery}
             onChange={setSearchQuery}
-            placeholder="Search caution deposits by renter or space..."
+            placeholder={t('venue_search_bookings_placeholder', 'Search caution deposits by renter or space...')}
             openWidth={320}
             shutSize={40}
           />
@@ -158,13 +161,19 @@ export const VenueFinanceView: React.FC = () => {
               <button
                 key={s}
                 onClick={() => setStatusFilter(s)}
-                className={`px-3 py-1.5 rounded-xl font-medium transition-colors whitespace-nowrap shrink-0 ${
+                className={`px-3 py-1.5 rounded-xl font-medium transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
                   statusFilter === s
                     ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900'
                     : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200'
                 }`}
               >
-                {s === 'All' ? 'All Caution Deposits' : s}
+                {s === 'All'
+                  ? t('venue_fin_filter_all')
+                  : s === 'Held'
+                  ? t('venue_fin_filter_held')
+                  : s === 'Released'
+                  ? t('venue_fin_filter_released')
+                  : t('venue_fin_filter_deducted')}
               </button>
             ))}
           </div>
@@ -172,22 +181,22 @@ export const VenueFinanceView: React.FC = () => {
 
         <div className="bg-white dark:bg-neutral-800/60 rounded-3xl border border-[#E9EEF0] dark:border-neutral-800 shadow-2xs overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse">
+            <table className="w-full text-left rtl:text-right text-xs border-collapse">
               <thead>
                 <tr className="border-b border-[#E9EEF0] dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-800/80 text-neutral-500 font-medium">
-                  <th className="py-3 px-4">Renter & Unit</th>
-                  <th className="py-3 px-4">Caution Amount</th>
-                  <th className="py-3 px-4">Method</th>
-                  <th className="py-3 px-4">Collected Date</th>
-                  <th className="py-3 px-4">Status & Notes</th>
-                  <th className="py-3 px-4 text-right">Escrow Action</th>
+                  <th className="py-3 px-4 rtl:text-right">{t('venue_fin_col_renter')}</th>
+                  <th className="py-3 px-4 rtl:text-right">{t('venue_fin_col_amount')}</th>
+                  <th className="py-3 px-4 rtl:text-right">{t('shop_cashier', 'Method')}</th>
+                  <th className="py-3 px-4 rtl:text-right">{t('venue_fin_col_date')}</th>
+                  <th className="py-3 px-4 rtl:text-right">{t('venue_fin_col_status')} & {t('venue_fin_col_retention_reason')}</th>
+                  <th className="py-3 px-4 text-right rtl:text-left">{t('venue_fin_col_actions')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#E9EEF0] dark:divide-neutral-800">
                 {filteredDeposits.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="py-12 text-center text-neutral-400">
-                      No security deposit records found.
+                      {t('venue_no_caution_held', 'No security deposit records found.')}
                     </td>
                   </tr>
                 ) : (
@@ -211,7 +220,11 @@ export const VenueFinanceView: React.FC = () => {
                         <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300 text-[11px]">
                           {dep.paymentMethod === 'Cash' && <Banknote size={12} />}
                           {dep.paymentMethod === 'Card' && <CreditCard size={12} />}
-                          {dep.paymentMethod}
+                          {dep.paymentMethod === 'Cash'
+                            ? (language === 'ar' ? 'نقداً' : language === 'fr' ? 'Espèces' : 'Cash')
+                            : dep.paymentMethod === 'Card'
+                            ? (language === 'ar' ? 'بطاقة' : language === 'fr' ? 'Carte' : 'Card')
+                            : dep.paymentMethod}
                         </span>
                       </td>
 
@@ -229,7 +242,11 @@ export const VenueFinanceView: React.FC = () => {
                               : 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300'
                           }`}
                         >
-                          {dep.status}
+                          {dep.status === 'Held'
+                            ? t('venue_held_status')
+                            : dep.status === 'Released'
+                            ? t('venue_refunded_status')
+                            : t('venue_deducted_status')}
                         </span>
                         {dep.deductionReason && (
                           <p className="text-[11px] text-red-500 mt-1 line-clamp-2">
@@ -238,25 +255,25 @@ export const VenueFinanceView: React.FC = () => {
                         )}
                       </td>
 
-                      <td className="py-3.5 px-4 text-right whitespace-nowrap">
+                      <td className="py-3.5 px-4 text-right rtl:text-left whitespace-nowrap">
                         {dep.status === 'Held' ? (
-                          <div className="flex items-center justify-end gap-1.5">
+                          <div className="flex items-center justify-end rtl:justify-start gap-1.5">
                             <button
                               onClick={() => releaseSecurityDeposit(dep.id)}
-                              className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[11px] font-semibold transition-colors"
+                              className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[11px] font-semibold transition-colors cursor-pointer"
                             >
-                              Release Full
+                              {t('venue_fin_btn_release')}
                             </button>
                             <button
                               onClick={() => handleOpenDeduct(dep)}
-                              className="px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 rounded-lg text-[11px] font-semibold transition-colors"
+                              className="px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 rounded-lg text-[11px] font-semibold transition-colors cursor-pointer"
                             >
-                              Deduct Damages
+                              {t('venue_fin_btn_deduct')}
                             </button>
                           </div>
                         ) : (
                           <span className="text-[11px] text-neutral-400 italic">
-                            Settled ({dep.releasedAt ? dep.releasedAt.split('T')[0] : 'Done'})
+                            {dep.releasedAt ? dep.releasedAt.split('T')[0] : t('status_completed')}
                           </span>
                         )}
                       </td>
@@ -275,11 +292,11 @@ export const VenueFinanceView: React.FC = () => {
           <div className="bg-white dark:bg-[#18181B] rounded-[28px] border border-neutral-200 dark:border-neutral-800 shadow-2xl max-w-md w-full p-6 space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-neutral-200 dark:border-neutral-800">
               <h3 className="text-base font-bold text-neutral-900 dark:text-white">
-                Retain Caution for Property Damage
+                {t('venue_fin_deduct_modal_title')}
               </h3>
               <button
                 onClick={() => setDeductionTarget(null)}
-                className="p-1.5 text-neutral-400 hover:text-neutral-700 rounded-lg"
+                className="p-1.5 text-neutral-400 hover:text-neutral-700 rounded-lg cursor-pointer"
               >
                 <X size={16} />
               </button>
@@ -287,13 +304,13 @@ export const VenueFinanceView: React.FC = () => {
 
             <form onSubmit={handleConfirmDeduct} className="space-y-3 text-xs">
               <p className="text-neutral-600 dark:text-neutral-400 leading-relaxed">
-                You are retaining part or all of the security deposit for <strong>{deductionTarget.renterName}</strong> ({deductionTarget.unitName}).
+                {t('venue_fin_deduct_modal_desc')}
               </p>
 
               <div>
                 <LabelInput
                   id="deduction-amount"
-                  label={`Amount to Retain (${deductionTarget.currency})`}
+                  label={t('venue_fin_deduct_field_amount')}
                   type="number"
                   max={deductionTarget.amount}
                   min={100}
@@ -302,17 +319,16 @@ export const VenueFinanceView: React.FC = () => {
                   required
                 />
                 <span className="text-[10px] text-neutral-400 mt-1 block">
-                  Original caution held: {formatCurrencyAmount(deductionTarget.amount, deductionTarget.currency)}
+                  {formatCurrencyAmount(deductionTarget.amount, deductionTarget.currency)}
                 </span>
               </div>
 
               <div>
                 <label className="block font-medium text-neutral-700 dark:text-neutral-300 mb-1">
-                  Damage Report & Reason *
+                  {t('venue_fin_deduct_field_reason')}
                 </label>
                 <textarea
                   rows={3}
-                  placeholder="e.g. Scratched cyclorama floor paint requiring repaint, broken strobe bulb..."
                   value={deductionReason}
                   onChange={(e) => setDeductionReason(e.target.value)}
                   className="w-full px-3 py-2 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl"
@@ -324,15 +340,15 @@ export const VenueFinanceView: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setDeductionTarget(null)}
-                  className="px-4 py-2 text-neutral-600 hover:text-neutral-900"
+                  className="px-4 py-2 text-neutral-600 hover:text-neutral-900 cursor-pointer"
                 >
-                  Cancel
+                  {t('action_cancel')}
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl"
+                  className="px-5 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl cursor-pointer"
                 >
-                  Confirm Deduction
+                  {t('venue_fin_deduct_btn_confirm')}
                 </button>
               </div>
             </form>

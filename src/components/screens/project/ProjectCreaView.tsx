@@ -23,12 +23,14 @@ import {
 import { LabelInput } from '../../ui/LabelInput';
 import { Seek } from '../../ui/Seek';
 import { LabelSelect } from '../../ui/LabelSelect';
+import { useTranslation } from '../../../utils/useTranslation';
 
 interface ProjectCreaViewProps {
   initialTab?: 'demandes' | 'kanban' | 'production' | 'upload' | 'briefs';
 }
 
 export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) => {
+  const { t, language, isRtl } = useTranslation();
   const {
     pmProjects,
     pmPrintOrders,
@@ -150,15 +152,21 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
         <div>
           <div className="flex items-center gap-2">
             <span className="text-xs font-semibold uppercase tracking-wider text-[#C4785A]">
-              Rôle 3 · Studio Créatif & Graphisme
+              {t('pm_role_crea_badge')}
             </span>
             <span className="text-zinc-400">·</span>
-            <span className="text-xs text-zinc-500">Pipeline DTP, BAT & Validations Techniques</span>
+            <span className="text-xs text-zinc-500">{t('pm_role_crea_sub')}</span>
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
             {activeTab === 'kanban'
-              ? 'Kanban de Production Créa'
-              : 'Uploader & Validateur Technique BAT'}
+              ? t('pm_crea_tab_kanban')
+              : activeTab === 'upload'
+              ? t('pm_crea_tab_upload')
+              : activeTab === 'production'
+              ? t('pm_crea_tab_production')
+              : activeTab === 'briefs'
+              ? t('pm_crea_tab_briefs')
+              : t('pm_crea_tab_demandes')}
           </h1>
         </div>
 
@@ -166,14 +174,44 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
           <Seek
             value={creaSearch}
             onChange={setCreaSearch}
-            placeholder="Rechercher BAT ou livrable..."
+            placeholder={t('common_search')}
             openWidth={260}
             shutSize={38}
           />
         </div>
       </div>
 
-
+      {/* Sub-Tabs */}
+      <div className="flex border-b border-zinc-200 dark:border-zinc-800 gap-1 overflow-x-auto">
+        {[
+          { id: 'kanban', label: t('pm_crea_tab_kanban'), icon: Layers },
+          { id: 'demandes', label: t('pm_crea_tab_demandes'), icon: Clock, count: filteredPmProjects.length },
+          { id: 'production', label: t('pm_crea_tab_production'), icon: Palette, count: filteredPmPrintOrders.length },
+          { id: 'upload', label: t('pm_crea_tab_upload'), icon: UploadCloud },
+        ].map((tab) => {
+          const Icon = tab.icon;
+          const isActive = activeTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as any)}
+              className={`flex items-center gap-2 py-2.5 px-4 border-b-2 font-medium text-xs whitespace-nowrap transition-colors cursor-pointer ${
+                isActive
+                  ? 'border-[#C4785A] text-[#C4785A]'
+                  : 'border-transparent text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
+              }`}
+            >
+              <Icon className="w-4 h-4" />
+              <span>{tab.label}</span>
+              {tab.count !== undefined && tab.count > 0 && (
+                <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 font-mono">
+                  {tab.count}
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
 
       {/* SCREEN 3.1 & 3.2: KANBAN BOARD WITH SLIDE 7 LIVRABLE PRÊT INSPECTOR */}
       {(activeTab === 'kanban' || activeTab === 'demandes' || activeTab === 'production') && (

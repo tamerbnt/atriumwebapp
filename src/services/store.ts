@@ -3838,12 +3838,18 @@ export function useAtriumStore() {
       if (u) rentalService.upsertUnit(u).catch(console.warn);
     }
 
+    const lang = globalState.language;
     showToast({
       type: 'success',
-      title: 'Guest Checked In',
-      message: `${booking.renterName} checked into "${booking.unitName}". Space is now marked Occupied.`,
+      title: lang === 'ar' ? 'تم تسجيل دخول الضيف' : lang === 'fr' ? 'Client Enregistré' : 'Guest Checked In',
+      message: lang === 'ar'
+        ? `تم تسجيل دخول ${booking.renterName} إلى "${booking.unitName}". الفضاء الآن قيد الاستخدام.`
+        : lang === 'fr'
+        ? `${booking.renterName} est installé dans « ${booking.unitName} ». L'espace est désormais occupé.`
+        : `${booking.renterName} checked into "${booking.unitName}". Space is now marked Occupied.`,
       syncStatus: isSupabaseConfigured() ? 'synced' : 'local',
       table: 'rental_bookings',
+      category: 'rental_booking',
     });
   };
 
@@ -3872,12 +3878,18 @@ export function useAtriumStore() {
       if (u) rentalService.upsertUnit(u).catch(console.warn);
     }
 
+    const lang = globalState.language;
     showToast({
       type: 'info',
-      title: 'Handover & Check-Out Complete',
-      message: `"${booking.unitName}" has been freed and marked Available for new bookings.`,
+      title: lang === 'ar' ? 'اكتمل تسليم وإخلاء القاعة' : lang === 'fr' ? 'Restitution & Sortie Terminées' : 'Handover & Check-Out Complete',
+      message: lang === 'ar'
+        ? `تم إخلاء "${booking.unitName}" بنجاح وأصبح متاحاً لحجوزات جديدة.`
+        : lang === 'fr'
+        ? `« ${booking.unitName} » a été libéré et est de nouveau disponible.`
+        : `"${booking.unitName}" has been freed and marked Available for new bookings.`,
       syncStatus: isSupabaseConfigured() ? 'synced' : 'local',
       table: 'rental_bookings',
+      category: 'rental_booking',
     });
   };
 
@@ -4142,15 +4154,20 @@ export function useAtriumStore() {
       }
     }
 
+    const lang = globalState.language;
     showToast({
       type: 'success',
-      title: 'Security Caution Refunded',
-      message: `Deposit for "${target?.renterName || 'Client'}" has been released back to renter.`,
+      title: lang === 'ar' ? 'تم استرجاع كفالة التأمين' : lang === 'fr' ? 'Caution Restituée' : 'Security Caution Refunded',
+      message: lang === 'ar'
+        ? `تم رد مبلغ الضمان الخاص بالمستأجر "${target?.renterName || 'الزبون'}".`
+        : lang === 'fr'
+        ? `Le dépôt de garantie pour « ${target?.renterName || 'Client'} » a été restitué.`
+        : `Deposit for "${target?.renterName || 'Client'}" has been released back to renter.`,
       syncStatus: isSupabaseConfigured() ? 'synced' : 'local',
       table: 'security_deposits',
       category: 'rental_booking',
       action: {
-        label: 'Deposit Log',
+        label: lang === 'ar' ? 'سجل الكفالات' : lang === 'fr' ? 'Registre Cautions' : 'Deposit Log',
         onClick: () => {
           globalState = { ...globalState, activeScreen: 'finance' };
           notify();
@@ -4196,12 +4213,18 @@ export function useAtriumStore() {
       }
     }
 
+    const lang = globalState.language;
     showToast({
       type: 'warning',
-      title: 'Caution Escrow Deducted',
-      message: `Deposit retained. Reason: ${reason}.`,
+      title: lang === 'ar' ? 'تم خصم من كفالة التأمين' : lang === 'fr' ? 'Caution Retenue pour Dégradation' : 'Caution Escrow Deducted',
+      message: lang === 'ar'
+        ? `تم احتجاز مبلغ من الكفالة. السبب: ${reason}.`
+        : lang === 'fr'
+        ? `Dépôt retenu. Motif : ${reason}.`
+        : `Deposit retained. Reason: ${reason}.`,
       syncStatus: isSupabaseConfigured() ? 'synced' : 'local',
       table: 'security_deposits',
+      category: 'rental_booking',
     });
   };
 

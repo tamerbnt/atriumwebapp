@@ -15,6 +15,7 @@ import {
 import { useAtriumStore } from '../../../services/store';
 import { RentableUnit, RentalBooking, BookingAddon, BookingStatus, DepositStatus } from '../../../types/index';
 import { formatCurrencyAmount } from '../../../utils/rules';
+import { useTranslation } from '../../../utils/useTranslation';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 
@@ -35,6 +36,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   initialDate,
   initialStartTime,
 }) => {
+  const { t, language } = useTranslation();
   const {
     rentableUnits,
     rentalRenters,
@@ -192,24 +194,24 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     if (!renterName.trim()) {
       showToast({
         type: 'warning',
-        title: 'Missing Renter Name',
-        message: 'Please provide the client name or organization for this reservation.',
+        title: language === 'ar' ? 'اسم المستأجر مفقود' : language === 'fr' ? 'Nom du locataire manquant' : 'Missing Renter Name',
+        message: language === 'ar' ? 'يرجى تقديم اسم الزبون أو الهيئة المستأجرة.' : language === 'fr' ? 'Veuillez renseigner le nom du client ou de l\'organisation.' : 'Please provide the client name or organization for this reservation.',
       });
       return;
     }
     if (!purpose.trim()) {
       showToast({
         type: 'warning',
-        title: 'Missing Event Purpose',
-        message: 'Please describe the event or rental purpose.',
+        title: language === 'ar' ? 'طبيعة المناسبة مفقودة' : language === 'fr' ? 'Motif de l\'événement manquant' : 'Missing Event Purpose',
+        message: language === 'ar' ? 'يرجى وصف طبيعة النشاط أو الفعالية.' : language === 'fr' ? 'Veuillez préciser la nature de la réservation.' : 'Please describe the event or rental purpose.',
       });
       return;
     }
     if (!selectedUnit) {
       showToast({
         type: 'warning',
-        title: 'No Space Selected',
-        message: 'Please pick an available room, hall, or court.',
+        title: language === 'ar' ? 'لم يتم اختيار فضاء' : language === 'fr' ? 'Aucun espace sélectionné' : 'No Space Selected',
+        message: language === 'ar' ? 'يرجى اختيار قاعة أو فضاء متاح.' : language === 'fr' ? 'Veuillez choisir une salle ou un espace disponible.' : 'Please pick an available room, hall, or court.',
       });
       return;
     }
@@ -290,11 +292,17 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
     showToast({
       type: 'success',
-      title: bookingToEdit ? 'Reservation Updated' : 'Venue Reserved',
-      message: `${selectedUnit.name} reserved for ${renterName.trim()} (${startDate}).`,
+      title: bookingToEdit
+        ? (language === 'ar' ? 'تم تحديث الحجز' : language === 'fr' ? 'Réservation mise à jour' : 'Reservation Updated')
+        : (language === 'ar' ? 'تم تأكيد حجز الفضاء' : language === 'fr' ? 'Espace réservé avec succès' : 'Venue Reserved'),
+      message: language === 'ar'
+        ? `تم حجز ${selectedUnit.name} لصالح ${renterName.trim()} (${startDate}).`
+        : language === 'fr'
+        ? `${selectedUnit.name} réservé pour ${renterName.trim()} (${startDate}).`
+        : `${selectedUnit.name} reserved for ${renterName.trim()} (${startDate}).`,
       category: 'rental_booking',
       action: {
-        label: 'Contract',
+        label: language === 'ar' ? 'طباعة العقد' : language === 'fr' ? 'Imprimer Contrat' : 'Print Agreement',
         onClick: () => window.print?.(),
       },
     });
@@ -311,15 +319,15 @@ export const BookingModal: React.FC<BookingModalProps> = ({
         <div className="px-6 py-5 border-b border-[#E9EEF0] dark:border-neutral-800 flex items-center justify-between shrink-0">
           <div>
             <h2 className="text-xl font-semibold text-neutral-900 dark:text-white">
-              {bookingToEdit ? 'Edit Reservation' : 'New Venue & Space Reservation'}
+              {bookingToEdit ? t('venue_modal_edit_title') : t('venue_modal_new_title')}
             </h2>
             <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
-              Configure room schedule, renter details, add-on equipment, and security deposit
+              {t('venue_modal_sub')}
             </p>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-xl text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+            className="p-2 rounded-xl text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
           >
             <X size={18} />
           </button>
@@ -330,14 +338,14 @@ export const BookingModal: React.FC<BookingModalProps> = ({
           {/* Section 1: Space & Time */}
           <div className="space-y-4">
             <h3 className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">
-              1. Space & Date Selection
+              {t('venue_modal_sec_space')}
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <LabelSelect
                   field="BookableSpace"
-                  label="Bookable Space / Asset *"
+                  label={t('venue_modal_field_space')}
                   value={selectedUnitId}
                   onChange={(val) => setSelectedUnitId(val?.target?.value ?? String(val))}
                   options={rentableUnits.map((u) => ({
@@ -355,7 +363,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
               <LabelInput
                 id="booking-start-date"
-                label="Reservation Date"
+                label={t('venue_modal_field_date')}
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
@@ -364,7 +372,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
               <LabelInput
                 id="booking-start-time"
-                label="Start Time"
+                label={t('venue_modal_field_start_time')}
                 type="time"
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
@@ -373,7 +381,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
               <LabelInput
                 id="booking-end-time"
-                label={`End Time (Est. Duration: ${durationHours}h)`}
+                label={`${t('venue_modal_field_end_time')} (${t('venue_modal_duration_label', { hours: durationHours })})`}
                 type="time"
                 value={endTime}
                 onChange={(e) => setEndTime(e.target.value)}
@@ -385,18 +393,18 @@ export const BookingModal: React.FC<BookingModalProps> = ({
           {/* Section 2: Renter & Event Details */}
           <div className="space-y-4 pt-4 border-t border-[#E9EEF0] dark:border-neutral-800">
             <h3 className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">
-              2. Renter & Event Purpose
+              {t('venue_modal_sec_renter')}
             </h3>
 
             {rentalRenters.length > 0 && !bookingToEdit && (
               <div>
                 <LabelSelect
                   field="ExistingRenter"
-                  label="Pick Existing Renter (or type a new one below)"
+                  label={t('venue_modal_select_existing')}
                   value={selectedRenterId}
                   onChange={(val) => handleSelectRenter(val?.target?.value ?? String(val))}
                   options={[
-                    { value: '', label: '-- Add New Renter / Walk-in --' },
+                    { value: '', label: t('venue_modal_renter_walkin_opt') },
                     ...rentalRenters.map((r) => ({
                       value: r.id,
                       label: `${r.fullName} ${r.companyName ? `(${r.companyName})` : ''}`,
@@ -414,7 +422,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <LabelInput
                 field="Renter Full Name"
-                label="Renter Full Name *"
+                label={t('venue_modal_field_renter_name')}
                 value={renterName}
                 onChange={setRenterName}
                 width="100%"
@@ -425,7 +433,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
               <LabelInput
                 field="Company"
-                label="Company / Organization"
+                label={t('venue_modal_field_renter_company')}
                 value={renterCompany}
                 onChange={setRenterCompany}
                 width="100%"
@@ -435,7 +443,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
               <LabelInput
                 field="Phone Number"
-                label="Phone Number *"
+                label={t('venue_modal_field_renter_phone')}
                 type="tel"
                 value={renterPhone}
                 onChange={setRenterPhone}
@@ -447,7 +455,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
               <LabelInput
                 field="Email Address"
-                label="Email Address"
+                label={t('venue_modal_field_renter_email')}
                 type="email"
                 value={renterEmail}
                 onChange={setRenterEmail}
@@ -459,7 +467,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({
               <div className="md:col-span-2">
                 <LabelInput
                   field="Event Title"
-                  label="Event Title / Booking Purpose *"
+                  label={t('venue_modal_field_purpose')}
+                  placeholder={t('venue_modal_field_purpose_ph')}
                   value={purpose}
                   onChange={setPurpose}
                   width="100%"
@@ -472,7 +481,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
               <div>
                 <LabelInput
                   id="booking-attendees"
-                  label="Expected Attendees"
+                  label={t('venue_modal_field_attendees')}
                   type="number"
                   min="1"
                   max={selectedUnit?.capacity ? selectedUnit.capacity + 50 : 500}
@@ -489,15 +498,15 @@ export const BookingModal: React.FC<BookingModalProps> = ({
               <div>
                 <LabelSelect
                   field="ReservationStatus"
-                  label="Reservation Status"
+                  label={t('venue_modal_field_status')}
                   value={status}
                   onChange={(val) => setStatus((val?.target?.value ?? String(val)) as BookingStatus)}
                   options={[
-                    { value: 'Confirmed', label: 'Confirmed' },
-                    { value: 'CheckedIn', label: 'Checked In / In-Use' },
-                    { value: 'Tentative', label: 'Tentative / Inquiry' },
-                    { value: 'Completed', label: 'Completed' },
-                    { value: 'Cancelled', label: 'Cancelled' },
+                    { value: 'Confirmed', label: t('venue_filter_confirmed') },
+                    { value: 'CheckedIn', label: t('venue_filter_in_use') },
+                    { value: 'Tentative', label: t('venue_filter_inquiries') },
+                    { value: 'Completed', label: t('venue_filter_completed') },
+                    { value: 'Cancelled', label: t('status_cancelled') },
                   ]}
                   width="100%"
                   height={40}
@@ -510,7 +519,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
           {/* Section 3: Add-on Equipment & Services */}
           <div className="space-y-4 pt-4 border-t border-[#E9EEF0] dark:border-neutral-800">
             <h3 className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">
-              3. Add-on Equipment & Services (Upsells)
+              {t('venue_modal_sec_addons')}
             </h3>
 
             {addons.length > 0 && (
@@ -533,7 +542,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                       <button
                         type="button"
                         onClick={() => handleRemoveAddon(a.id)}
-                        className="text-neutral-400 hover:text-red-500 transition-colors"
+                        className="text-neutral-400 hover:text-red-500 transition-colors cursor-pointer"
                       >
                         <Trash2 size={14} />
                       </button>
@@ -547,7 +556,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
               <div className="flex-1 w-full">
                 <LabelInput
                   field="AddonName"
-                  label="Option / Service Name"
+                  label={t('venue_modal_addon_ph_name')}
                   placeholder="e.g. 4K Projector / Catering"
                   value={newAddonName}
                   onChange={setNewAddonName}
@@ -559,7 +568,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
               <div className="w-full sm:w-32">
                 <LabelInput
                   field="AddonPrice"
-                  label="Price"
+                  label={t('venue_modal_addon_ph_price')}
                   type="number"
                   placeholder="0"
                   value={newAddonPrice || ''}
@@ -574,7 +583,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 onClick={handleAddAddon}
                 className="w-full sm:w-auto h-[42px] px-3.5 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 rounded-xl text-xs font-medium text-neutral-800 dark:text-neutral-200 transition-colors flex items-center justify-center gap-1.5 shrink-0 mt-3 sm:mt-0 cursor-pointer"
               >
-                <Plus size={14} /> Add Option
+                <Plus size={14} /> {t('venue_modal_btn_add_addon')}
               </button>
             </div>
           </div>
@@ -582,14 +591,14 @@ export const BookingModal: React.FC<BookingModalProps> = ({
           {/* Section 4: Caution, Security Deposit & Financials */}
           <div className="space-y-4 pt-4 border-t border-[#E9EEF0] dark:border-neutral-800">
             <h3 className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">
-              4. Security Deposit & Financial Settlement
+              {t('venue_modal_sec_financials')}
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <LabelInput
                   id="booking-deposit"
-                  label="Security Deposit (Caution)"
+                  label={t('venue_modal_field_deposit')}
                   type="number"
                   value={depositAmount}
                   onChange={(e) => setDepositAmount(Number(e.target.value))}
@@ -599,14 +608,14 @@ export const BookingModal: React.FC<BookingModalProps> = ({
               <div>
                 <LabelSelect
                   field="EscrowStatus"
-                  label="Caution Escrow Status"
+                  label={t('venue_modal_field_deposit_status')}
                   value={depositStatus}
                   onChange={(val) => setDepositStatus((val?.target?.value ?? String(val)) as DepositStatus)}
                   options={[
-                    { value: 'Held', label: 'Held (Collected)' },
-                    { value: 'Pending', label: 'Pending (Not Collected)' },
-                    { value: 'Refunded', label: 'Refunded' },
-                    { value: 'Retained', label: 'Retained for Damages' },
+                    { value: 'Held', label: t('venue_held_status') },
+                    { value: 'Pending', label: t('status_pending') },
+                    { value: 'Refunded', label: t('venue_refunded_status') },
+                    { value: 'Retained', label: t('venue_deducted_status') },
                   ]}
                   width="100%"
                   height={40}
@@ -617,7 +626,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
               <div>
                 <LabelInput
                   id="booking-paid-amount"
-                  label="Amount Paid So Far"
+                  label={t('venue_modal_field_paid_amount')}
                   type="number"
                   value={paidAmount}
                   onChange={(e) => setPaidAmount(Number(e.target.value))}
@@ -628,27 +637,27 @@ export const BookingModal: React.FC<BookingModalProps> = ({
             {/* Financial Summary Card */}
             <div className="p-4 bg-neutral-50 dark:bg-neutral-800/40 rounded-2xl border border-neutral-200 dark:border-neutral-700/60 space-y-2 text-xs">
               <div className="flex justify-between text-neutral-600 dark:text-neutral-400">
-                <span>Space Rental ({durationHours} hours):</span>
+                <span>{t('venue_modal_calc_space_base', { hours: durationHours })}</span>
                 <span className="font-medium text-neutral-900 dark:text-white tabular-nums">
                   {formatCurrencyAmount(baseAmount, selectedUnit?.currency)}
                 </span>
               </div>
               {addonsTotal > 0 && (
                 <div className="flex justify-between text-neutral-600 dark:text-neutral-400">
-                  <span>Add-on Equipment & Services:</span>
+                  <span>{t('venue_modal_calc_addons')}</span>
                   <span className="font-medium text-neutral-900 dark:text-white tabular-nums">
                     +{formatCurrencyAmount(addonsTotal, selectedUnit?.currency)}
                   </span>
                 </div>
               )}
               <div className="flex justify-between font-semibold text-neutral-900 dark:text-white pt-2 border-t border-neutral-200 dark:border-neutral-700">
-                <span>Total Booking Amount:</span>
+                <span>{t('venue_modal_calc_total')}</span>
                 <span className="text-sm tabular-nums">
                   {formatCurrencyAmount(totalAmount, selectedUnit?.currency)}
                 </span>
               </div>
               <div className="flex justify-between text-neutral-500 dark:text-neutral-400 text-[11px]">
-                <span>Remaining Balance Due:</span>
+                <span>{t('venue_balance_due', 'Remaining Balance Due:')}</span>
                 <span className={`font-semibold tabular-nums ${balanceDue > 0 ? 'text-amber-600' : 'text-emerald-600'}`}>
                   {formatCurrencyAmount(balanceDue, selectedUnit?.currency)}
                 </span>
@@ -663,7 +672,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 onChange={(e) => setContractSigned(e.target.checked)}
                 className="w-4 h-4 rounded-md border-neutral-300 text-[var(--color-accent)] focus:ring-[var(--color-accent)]"
               />
-              <span>Rental Terms & Liability Agreement Signed by Renter</span>
+              <span>{t('venue_modal_field_contract_signed')}</span>
             </label>
           </div>
         </form>
@@ -673,16 +682,16 @@ export const BookingModal: React.FC<BookingModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-xs font-medium text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-colors"
+            className="px-4 py-2 text-xs font-medium text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-colors cursor-pointer"
           >
-            Cancel
+            {t('action_cancel')}
           </button>
           <button
             onClick={handleSubmit}
-            className="px-6 py-2.5 bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white text-xs font-semibold rounded-xl shadow-xs transition-colors flex items-center gap-1.5"
+            className="px-6 py-2.5 bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white text-xs font-semibold rounded-xl shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
           >
             <Check size={15} />
-            {bookingToEdit ? 'Save Changes' : 'Confirm & Book Space'}
+            {bookingToEdit ? t('action_save') : t('venue_reserve_space')}
           </button>
         </div>
       </div>

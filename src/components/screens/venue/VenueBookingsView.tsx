@@ -230,7 +230,7 @@ export const VenueBookingsView: React.FC = () => {
                           ? t('venue_held_status')
                           : b.depositStatus === 'Refunded'
                           ? t('venue_refunded_status')
-                          : b.depositStatus === 'Deducted'
+                          : b.depositStatus === 'Retained' || (b.depositStatus as string) === 'Deducted'
                           ? t('venue_deducted_status')
                           : b.depositStatus}
                       </span>
