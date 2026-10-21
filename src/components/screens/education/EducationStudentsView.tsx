@@ -32,7 +32,7 @@ import { useTranslation } from '../../../utils/useTranslation';
 type FilterKey = 'all' | 'active' | 'minors' | 'overdue' | 'graduated';
 
 export const EducationStudentsView: React.FC = () => {
-  const { t, isRtl } = useTranslation();
+  const { t, isRtl, language } = useTranslation();
   const {
     terminology,
     eduStudents,

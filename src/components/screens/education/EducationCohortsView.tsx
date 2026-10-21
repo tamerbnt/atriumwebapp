@@ -29,7 +29,7 @@ import { useTranslation } from '../../../utils/useTranslation';
 type CourseCat = 'All' | 'Language' | 'Technology' | 'Academic' | 'Arts';
 
 export const EducationCohortsView: React.FC = () => {
-  const { t, isRtl } = useTranslation();
+  const { t, isRtl, language } = useTranslation();
   const {
     eduCohorts,
     eduCourses,
@@ -379,25 +379,33 @@ export const EducationCohortsView: React.FC = () => {
               {/* Quick Info Grid */}
               <div className="grid grid-cols-2 gap-3">
                 <div className="p-3 rounded-xl bg-[#F8F9FA] dark:bg-neutral-900/60 border border-[#EDF1F3] dark:border-neutral-800">
-                  <span className="text-[10px] text-neutral-400 block uppercase font-medium">Instructor</span>
+                  <span className="text-[10px] text-neutral-400 block uppercase font-medium">
+                    {language === 'ar' ? 'المدرّب / الأستاذ' : language === 'fr' ? 'Formateur' : 'Instructor'}
+                  </span>
                   <span className="font-semibold text-neutral-900 dark:text-white">
                     {selectedCohort.instructorName}
                   </span>
                 </div>
                 <div className="p-3 rounded-xl bg-[#F8F9FA] dark:bg-neutral-900/60 border border-[#EDF1F3] dark:border-neutral-800">
-                  <span className="text-[10px] text-neutral-400 block uppercase font-medium">Classroom</span>
+                  <span className="text-[10px] text-neutral-400 block uppercase font-medium">
+                    {language === 'ar' ? 'القاعة الدراسية' : language === 'fr' ? 'Salle' : 'Classroom'}
+                  </span>
                   <span className="font-semibold text-neutral-900 dark:text-white">
                     {selectedCohort.classroomName || 'Room 1'}
                   </span>
                 </div>
                 <div className="p-3 rounded-xl bg-[#F8F9FA] dark:bg-neutral-900/60 border border-[#EDF1F3] dark:border-neutral-800">
-                  <span className="text-[10px] text-neutral-400 block uppercase font-medium">Tuition Fee</span>
+                  <span className="text-[10px] text-neutral-400 block uppercase font-medium">
+                    {language === 'ar' ? 'رسوم الدورة' : language === 'fr' ? 'Frais d\'inscription' : 'Tuition Fee'}
+                  </span>
                   <span className="font-semibold text-neutral-900 dark:text-white">
                     {formatMoney(selectedCohort.tuitionFee)}
                   </span>
                 </div>
                 <div className="p-3 rounded-xl bg-[#F8F9FA] dark:bg-neutral-900/60 border border-[#EDF1F3] dark:border-neutral-800">
-                  <span className="text-[10px] text-neutral-400 block uppercase font-medium">Seats Filled</span>
+                  <span className="text-[10px] text-neutral-400 block uppercase font-medium">
+                    {language === 'ar' ? 'المقاعد المحجوزة' : language === 'fr' ? 'Places occupées' : 'Seats Filled'}
+                  </span>
                   <span className="font-semibold text-[#C4785A]">
                     {selectedCohort.enrolledCount} / {selectedCohort.maxStudents} ({Math.round((selectedCohort.enrolledCount / selectedCohort.maxStudents) * 100)}%)
                   </span>
@@ -407,7 +415,7 @@ export const EducationCohortsView: React.FC = () => {
               {/* Syllabus Milestones */}
               <div>
                 <h3 className="text-xs font-bold text-neutral-900 dark:text-white uppercase tracking-wider mb-2.5">
-                  Syllabus Milestones & Progress
+                  {language === 'ar' ? 'مراحل ومحاور المنهاج' : language === 'fr' ? 'Progression du programme' : 'Syllabus Milestones & Progress'}
                 </h3>
                 <div className="space-y-2">
                   {selectedCohort.syllabusMilestones?.map((milestone, idx) => (

@@ -481,7 +481,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
           <div className="space-y-1">
             <div className="flex items-center gap-2">
               <span className="text-xs font-bold uppercase tracking-wider text-neutral-400">
-                Active License Entitlement
+                {t('settings_license_entitlement', language)}
               </span>
               <span
                 className={`px-2 py-0.5 rounded text-[11px] font-bold ${
@@ -490,16 +490,28 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
                     : 'bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300'
                 }`}
               >
-                {subscription.isLifetime ? 'PERPETUAL LIFETIME' : '30-DAY TRIAL'}
+                {subscription.isLifetime ? t('settings_lifetime_badge', language) : t('settings_trial_badge', language)}
               </span>
             </div>
             <h2 className="text-xl font-bold text-neutral-900 dark:text-white">
-              Atrium {subscription.plan.name} Tier Rank #{subscription.plan.tierRank}
+              {language === 'ar'
+                ? `رتبة خطة أتريوم ${subscription.plan.name} #${subscription.plan.tierRank}`
+                : language === 'fr'
+                ? `Niveau Atrium ${subscription.plan.name} Rang #${subscription.plan.tierRank}`
+                : `Atrium ${subscription.plan.name} Tier Rank #${subscription.plan.tierRank}`}
             </h2>
             <p className="text-xs text-[#52525B] dark:text-neutral-400">
               {subscription.isLifetime
-                ? `Activated via voucher code ${subscription.activatedByVoucher || 'ATR-LIFE-VOUCHER'}. Perpetual updates and sync authorized.`
-                : 'Free evaluation tier. Enter your lifetime prepaid cash voucher code or upgrade on Desktop to unlock multi-branch management.'}
+                ? (language === 'ar'
+                  ? `تم التفعيل عبر قسيمة ${subscription.activatedByVoucher || 'ATR-LIFE-VOUCHER'}. تم ترخيص التحديثات الدائمة والمزامنة.`
+                  : language === 'fr'
+                  ? `Activé par bon ${subscription.activatedByVoucher || 'ATR-LIFE-VOUCHER'}. Mises à jour perpétuelles autorisées.`
+                  : `Activated via voucher code ${subscription.activatedByVoucher || 'ATR-LIFE-VOUCHER'}. Perpetual updates and sync authorized.`)
+                : (language === 'ar'
+                  ? 'فترة تقييم مجانية. أدخل رمز قسيمة الدفع المسبق الدائمة أو قم بالترقية على سطح المكتب لإدارة الفروع المتعددة.'
+                  : language === 'fr'
+                  ? 'Période d\'évaluation gratuite. Saisissez votre bon prépayé à vie ou passez sur Desktop.'
+                  : 'Free evaluation tier. Enter your lifetime prepaid cash voucher code or upgrade on Desktop to unlock multi-branch management.')}
             </p>
           </div>
 
@@ -510,7 +522,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
               className="h-10 px-4 text-xs font-bold text-neutral-800 dark:text-neutral-200 border border-neutral-300 dark:border-neutral-700 rounded-full bg-white dark:bg-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-700 flex items-center gap-2 cursor-pointer transition-colors shadow-2xs"
             >
               <Download size={14} className="text-[#C4785A]" />
-              <span>Get Desktop Edition</span>
+              <span>{t('settings_get_desktop', language)}</span>
             </button>
 
             <button
@@ -522,7 +534,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
               className="h-10 px-5 text-xs font-bold text-white flex items-center gap-2 shrink-0 rounded-full hover:opacity-90 active:scale-98 transition-all cursor-pointer shadow-xs"
             >
               <KeyRound size={15} />
-              <span>Redeem Lifetime Voucher</span>
+              <span>{t('settings_redeem_voucher', language)}</span>
             </button>
           </div>
         </div>
@@ -533,10 +545,10 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             <Laptop size={18} className="text-[#C4785A] shrink-0" />
             <div>
               <span className="font-extrabold text-neutral-900 dark:text-white">
-                Current Plan: Free Web Edition (1 Business, 1 Branch)
+                {t('settings_current_plan', language)}: {t('settings_web_limit', language)}
               </span>
               <p className="text-neutral-500 dark:text-neutral-400 text-[11px] mt-0.5">
-                Need more branches or offline mode? Upgrade with a Lifetime License on Desktop. Your cloud data automatically syncs via your Google account.
+                {t('settings_web_limit_desc', language)}
               </p>
             </div>
           </div>
@@ -545,34 +557,44 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             onClick={() => openDesktopUpgradeModal('general')}
             className="px-3.5 py-1.5 rounded-full bg-[#C4785A] text-white text-[11px] font-bold hover:bg-[#b3684a] transition-colors shrink-0 cursor-pointer self-start sm:self-auto"
           >
-            Upgrade on Desktop
+            {language === 'ar' ? 'الترقية على سطح المكتب' : language === 'fr' ? 'Passer sur Desktop' : 'Upgrade on Desktop'}
           </button>
         </div>
 
         {/* Quota gauges */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
           <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
-            <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400 block text-[11px]">Businesses Allowed</span>
+            <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400 block text-[11px]">
+              {language === 'ar' ? 'المنشآت المسموح بها' : language === 'fr' ? 'Établissements autorisés' : 'Businesses Allowed'}
+            </span>
             <span className="text-xl font-black text-neutral-900 dark:text-white tabular-nums mt-1 block">
               {businesses.length} / {subscription.plan.maxBusinesses}
             </span>
           </div>
           <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
-            <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400 block text-[11px]">Branches Allowed</span>
+            <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400 block text-[11px]">
+              {language === 'ar' ? 'الفروع المسموح بها' : language === 'fr' ? 'Succursales autorisées' : 'Branches Allowed'}
+            </span>
             <span className="text-xl font-black text-neutral-900 dark:text-white tabular-nums mt-1 block">
               {branches.length} / {subscription.plan.maxBranches}
             </span>
           </div>
           <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
-            <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400 block text-[11px]">POS Devices Allowed</span>
+            <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400 block text-[11px]">
+              {language === 'ar' ? 'أجهزة البيع المسموح بها' : language === 'fr' ? 'Terminaux POS autorisés' : 'POS Devices Allowed'}
+            </span>
             <span className="text-xl font-black text-neutral-900 dark:text-white tabular-nums mt-1 block">
               {devices.length} / {subscription.plan.maxDevices}
             </span>
           </div>
           <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
-            <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400 block text-[11px]">Cross-Branch Reports</span>
+            <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400 block text-[11px]">
+              {language === 'ar' ? 'تقارير الفروع المشتركة' : language === 'fr' ? 'Rapports multi-sites' : 'Cross-Branch Reports'}
+            </span>
             <span className="text-sm font-black text-emerald-600 dark:text-emerald-400 mt-2 block">
-              {subscription.plan.crossBranchReports ? 'Enabled' : 'Pro Tier Only'}
+              {subscription.plan.crossBranchReports
+                ? (language === 'ar' ? 'مفعل' : language === 'fr' ? 'Activé' : 'Enabled')
+                : (language === 'ar' ? 'خطة المحترفين فقط' : language === 'fr' ? 'Offre Pro uniquement' : 'Pro Tier Only')}
             </span>
           </div>
         </div>
@@ -598,7 +620,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-base font-bold text-neutral-900 dark:text-white">
-                  Supabase Cloud Database & Realtime
+                  {t('settings_supabase_title', language)}
                 </h3>
                 <span
                   className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
@@ -612,16 +634,16 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
                   }`}
                 >
                   {supabaseStatus === 'connected'
-                    ? 'Cloud Connected'
+                    ? (language === 'ar' ? 'متصل بالسحابة' : language === 'fr' ? 'Connecté au cloud' : 'Cloud Connected')
                     : supabaseStatus === 'connecting'
-                    ? 'Syncing'
+                    ? (language === 'ar' ? 'جارٍ المزامنة' : language === 'fr' ? 'Synchronisation' : 'Syncing')
                     : supabaseStatus === 'offline'
-                    ? 'Offline Fallback'
-                    : 'Hybrid / Local Engine'}
+                    ? (language === 'ar' ? 'الوضع المحلي البديل' : language === 'fr' ? 'Mode hors-ligne' : 'Offline Fallback')
+                    : (language === 'ar' ? 'محرك محلي / هجين' : language === 'fr' ? 'Moteur hybride / local' : 'Hybrid / Local Engine')}
                 </span>
               </div>
               <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
-                Multi-tenant PostgreSQL backend with 17 relational tables, 14 stored RPCs, and Row-Level Security (RLS).
+                {t('settings_supabase_subtitle', language)}
               </p>
             </div>
           </div>
@@ -633,39 +655,51 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             className="h-9 px-4 text-xs font-bold rounded-full border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-800 dark:text-white hover:bg-neutral-50 dark:hover:bg-neutral-700/60 flex items-center gap-2 cursor-pointer transition-colors shadow-2xs disabled:opacity-60"
           >
             <RotateCw size={13} className={isSyncing ? 'animate-spin text-[#C4785A]' : ''} />
-            <span>{isSyncing ? 'Syncing Tables...' : 'Sync Database Now'}</span>
+            <span>
+              {isSyncing
+                ? (language === 'ar' ? 'جارٍ مزامنة الجداول...' : language === 'fr' ? 'Synchronisation des tables...' : 'Syncing Tables...')
+                : (language === 'ar' ? 'مزامنة قاعدة البيانات الآن' : language === 'fr' ? 'Synchroniser maintenant' : 'Sync Database Now')}
+            </span>
           </button>
         </div>
 
         {/* Cloud Diagnostics */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
           <div className="p-3.5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60">
-            <span className="text-[11px] font-semibold text-neutral-400 block">Schema Architecture</span>
+            <span className="text-[11px] font-semibold text-neutral-400 block">
+              {language === 'ar' ? 'هيكلية المخطط' : language === 'fr' ? 'Architecture du schéma' : 'Schema Architecture'}
+            </span>
             <span className="text-sm font-bold text-neutral-800 dark:text-neutral-200 mt-1 block">
-              17 Tables + 14 Stored RPCs
+              {language === 'ar' ? '17 جدولا + 14 إجراء مخزن RPC' : language === 'fr' ? '17 tables + 14 fonctions RPC' : '17 Tables + 14 Stored RPCs'}
             </span>
             <span className="text-[10px] text-neutral-400 block mt-0.5">
-              Strict multi-tenant RLS isolation
+              {language === 'ar' ? 'عزل أمني صارم RLS متعدد المستأجرين' : language === 'fr' ? 'Isolation RLS multi-tenant stricte' : 'Strict multi-tenant RLS isolation'}
             </span>
           </div>
 
           <div className="p-3.5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60">
-            <span className="text-[11px] font-semibold text-neutral-400 block">Realtime WebSockets</span>
+            <span className="text-[11px] font-semibold text-neutral-400 block">
+              {language === 'ar' ? 'بث حي WebSockets' : language === 'fr' ? 'WebSockets temps réel' : 'Realtime WebSockets'}
+            </span>
             <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400 mt-1 block">
-              Active Broadcast Listener
+              {language === 'ar' ? 'مستمع بث نشط' : language === 'fr' ? 'Écouteur de diffusion actif' : 'Active Broadcast Listener'}
             </span>
             <span className="text-[10px] text-neutral-400 block mt-0.5">
-              Live updates on check-ins & sales
+              {language === 'ar' ? 'تحديثات حية للحضور والمبيعات' : language === 'fr' ? 'Mises à jour directes entrées et ventes' : 'Live updates on check-ins & sales'}
             </span>
           </div>
 
           <div className="p-3.5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60">
-            <span className="text-[11px] font-semibold text-neutral-400 block">Last Cloud Sync</span>
+            <span className="text-[11px] font-semibold text-neutral-400 block">
+              {language === 'ar' ? 'آخر مزامنة سحابية' : language === 'fr' ? 'Dernière synchronisation cloud' : 'Last Cloud Sync'}
+            </span>
             <span className="text-sm font-bold text-neutral-800 dark:text-neutral-200 mt-1 block">
-              {lastSyncedAt ? new Date(lastSyncedAt).toLocaleTimeString() : 'Ready on command'}
+              {lastSyncedAt ? new Date(lastSyncedAt).toLocaleTimeString() : (language === 'ar' ? 'جاهز عند الطلب' : language === 'fr' ? 'Prêt à la demande' : 'Ready on command')}
             </span>
             <span className="text-[10px] text-neutral-400 block mt-0.5">
-              {isSupabaseConfigured ? 'Dual-mode live cloud active' : 'Offline local storage fallback'}
+              {isSupabaseConfigured
+                ? (language === 'ar' ? 'مزامنة سحابية مزدوجة نشطة' : language === 'fr' ? 'Synchronisation cloud active' : 'Dual-mode live cloud active')
+                : (language === 'ar' ? 'وضع الحفظ المحلي البديل' : language === 'fr' ? 'Repli sur stockage local' : 'Offline local storage fallback')}
             </span>
           </div>
         </div>
@@ -688,14 +722,18 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-base font-bold text-neutral-900 dark:text-white">
-                  Data Backup & Disaster Recovery Center
+                  {language === 'ar' ? 'مركز النسخ الاحتياطي واستعادة البيانات' : language === 'fr' ? 'Centre de sauvegarde & reprise d\'activité' : 'Data Backup & Disaster Recovery Center'}
                 </h3>
                 <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400">
-                  Local Snapshot Ready
+                  {language === 'ar' ? 'لقطة محلية جاهزة' : language === 'fr' ? 'Instantané local prêt' : 'Local Snapshot Ready'}
                 </span>
               </div>
               <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
-                Download a 100% portable JSON snapshot of your entire workspace or restore past records onto any device.
+                {language === 'ar'
+                  ? 'قم بتنزيل نسخة احتياطية كاملة ومحمولة بصيغة JSON لمساحة عملك، أو استعد بياناتك السابقة على أي جهاز.'
+                  : language === 'fr'
+                  ? 'Téléchargez une sauvegarde JSON 100% portable de votre espace ou restaurez vos données sur tout appareil.'
+                  : 'Download a 100% portable JSON snapshot of your entire workspace or restore past records onto any device.'}
               </p>
             </div>
           </div>
@@ -707,7 +745,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
               className="h-9 px-3.5 rounded-xl bg-neutral-900 hover:bg-neutral-800 dark:bg-white dark:hover:bg-neutral-100 text-white dark:text-neutral-900 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
             >
               <FileDown size={14} />
-              <span>Export Full JSON</span>
+              <span>{language === 'ar' ? 'تصدير JSON كامل' : language === 'fr' ? 'Exporter JSON complet' : 'Export Full JSON'}</span>
             </button>
 
             <button
@@ -716,7 +754,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
               className="h-9 px-3.5 rounded-xl bg-white dark:bg-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-700/80 text-neutral-800 dark:text-neutral-200 border border-neutral-300 dark:border-neutral-700 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
             >
               <FileUp size={14} className="text-[#C4785A]" />
-              <span>Restore Backup</span>
+              <span>{t('settings_restore_backup', language)}</span>
             </button>
           </div>
         </div>
@@ -724,41 +762,59 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
         {/* Live Storage Breakdown */}
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 pt-1">
           <div className="p-3 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60">
-            <span className="text-[10px] uppercase font-bold text-neutral-400 block tracking-wider">Tenants</span>
-            <span className="text-base font-extrabold text-neutral-900 dark:text-white mt-0.5 block">
-              {businesses.length} Business{businesses.length !== 1 ? 'es' : ''}
+            <span className="text-[10px] uppercase font-bold text-neutral-400 block tracking-wider">
+              {language === 'ar' ? 'المنشآت' : language === 'fr' ? 'Entités' : 'Tenants'}
             </span>
-            <span className="text-[10px] text-neutral-400 block mt-0.5">{branches.length} Branches</span>
+            <span className="text-base font-extrabold text-neutral-900 dark:text-white mt-0.5 block">
+              {businesses.length} {language === 'ar' ? 'منشأة' : language === 'fr' ? 'Entreprise(s)' : `Business${businesses.length !== 1 ? 'es' : ''}`}
+            </span>
+            <span className="text-[10px] text-neutral-400 block mt-0.5">
+              {branches.length} {language === 'ar' ? 'فروع' : language === 'fr' ? 'Succursales' : 'Branches'}
+            </span>
           </div>
 
           <div className="p-3 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60">
-            <span className="text-[10px] uppercase font-bold text-neutral-400 block tracking-wider">CRM Clients</span>
+            <span className="text-[10px] uppercase font-bold text-neutral-400 block tracking-wider">
+              {language === 'ar' ? 'عملاء CRM' : language === 'fr' ? 'Clients CRM' : 'CRM Clients'}
+            </span>
             <span className="text-base font-extrabold text-[#C4785A] mt-0.5 block">
-              {members.length + (freelanceClients?.length || 0)} Contacts
+              {members.length + (freelanceClients?.length || 0)} {language === 'ar' ? 'جهة اتصال' : language === 'fr' ? 'Contacts' : 'Contacts'}
             </span>
-            <span className="text-[10px] text-neutral-400 block mt-0.5">Active ledger profiles</span>
+            <span className="text-[10px] text-neutral-400 block mt-0.5">
+              {language === 'ar' ? 'ملفات الحسابات النشطة' : language === 'fr' ? 'Profils comptables actifs' : 'Active ledger profiles'}
+            </span>
           </div>
 
           <div className="p-3 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60">
-            <span className="text-[10px] uppercase font-bold text-neutral-400 block tracking-wider">Inventory</span>
-            <span className="text-base font-extrabold text-neutral-900 dark:text-white mt-0.5 block">
-              {products.length} Items
+            <span className="text-[10px] uppercase font-bold text-neutral-400 block tracking-wider">
+              {language === 'ar' ? 'المخزون والمنتجات' : language === 'fr' ? 'Inventaire' : 'Inventory'}
             </span>
-            <span className="text-[10px] text-neutral-400 block mt-0.5">SKUs & packages</span>
+            <span className="text-base font-extrabold text-neutral-900 dark:text-white mt-0.5 block">
+              {products.length} {language === 'ar' ? 'عنصر' : language === 'fr' ? 'Articles' : 'Items'}
+            </span>
+            <span className="text-[10px] text-neutral-400 block mt-0.5">
+              {language === 'ar' ? 'البضائع والباقات' : language === 'fr' ? 'Articles & forfaits' : 'SKUs & packages'}
+            </span>
           </div>
 
           <div className="p-3 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60">
-            <span className="text-[10px] uppercase font-bold text-neutral-400 block tracking-wider">Transactions</span>
-            <span className="text-base font-extrabold text-neutral-900 dark:text-white mt-0.5 block">
-              {sales.length + (freelanceInvoices?.length || 0)} Records
+            <span className="text-[10px] uppercase font-bold text-neutral-400 block tracking-wider">
+              {language === 'ar' ? 'المعاملات' : language === 'fr' ? 'Transactions' : 'Transactions'}
             </span>
-            <span className="text-[10px] text-neutral-400 block mt-0.5">Orders & invoices</span>
+            <span className="text-base font-extrabold text-neutral-900 dark:text-white mt-0.5 block">
+              {sales.length + (freelanceInvoices?.length || 0)} {language === 'ar' ? 'سجل' : language === 'fr' ? 'Enregistrements' : 'Records'}
+            </span>
+            <span className="text-[10px] text-neutral-400 block mt-0.5">
+              {language === 'ar' ? 'الطلبات والفواتير' : language === 'fr' ? 'Commandes & factures' : 'Orders & invoices'}
+            </span>
           </div>
 
           <div className="p-3 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 col-span-2 sm:col-span-1">
-            <span className="text-[10px] uppercase font-bold text-neutral-400 block tracking-wider">Storage Engine</span>
+            <span className="text-[10px] uppercase font-bold text-neutral-400 block tracking-wider">
+              {language === 'ar' ? 'محرك التخزين' : language === 'fr' ? 'Moteur stockage' : 'Storage Engine'}
+            </span>
             <span className="text-base font-extrabold text-emerald-600 dark:text-emerald-400 mt-0.5 block">
-              Encrypted
+              {language === 'ar' ? 'مشفر محلياً' : language === 'fr' ? 'Chiffré' : 'Encrypted'}
             </span>
             <span className="text-[10px] text-neutral-400 block mt-0.5">LocalStorage v2</span>
           </div>
@@ -777,10 +833,14 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-base font-bold text-neutral-900 dark:text-white">
-              Physical Branches & Facilities
+              {t('settings_branches_title', language)}
             </h3>
             <p className="text-xs text-neutral-400 dark:text-neutral-500">
-              All physical locations under tenant business ({branches.length} registered · {subscription.plan.maxBranches} permitted on {subscription.plan.name})
+              {language === 'ar'
+                ? `جميع المواقع الفعلية المسجلة للمنشأة (${branches.length} مسجل · ${subscription.plan.maxBranches} مسموح في باقة ${subscription.plan.name})`
+                : language === 'fr'
+                ? `Tous les établissements physiques de l'entreprise (${branches.length} enregistrés · ${subscription.plan.maxBranches} autorisés avec ${subscription.plan.name})`
+                : `All physical locations under tenant business (${branches.length} registered · ${subscription.plan.maxBranches} permitted on ${subscription.plan.name})`}
             </p>
           </div>
           <button
@@ -792,7 +852,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             className="h-9 px-4 text-xs font-bold text-white flex items-center gap-1.5 rounded-full cursor-pointer hover:opacity-90 transition-opacity shadow-xs"
           >
             <Plus size={14} />
-            <span>Add Branch</span>
+            <span>{t('settings_add_branch', language)}</span>
           </button>
         </div>
 
@@ -803,10 +863,14 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
               <Building2 size={18} className="text-[#C4785A] shrink-0" />
               <div>
                 <span className="font-extrabold text-neutral-900 dark:text-white">
-                  Multi-Facility Management is an Atrium Desktop Feature
+                  {language === 'ar' ? 'إدارة الفروع المتعددة ميزة حصرية في Atrium Desktop' : language === 'fr' ? 'La gestion multi-sites est une exclusivité Atrium Desktop' : 'Multi-Facility Management is an Atrium Desktop Feature'}
                 </span>
                 <p className="text-neutral-600 dark:text-neutral-300 text-[11px] mt-0.5">
-                  Manage multiple physical branches, cross-branch memberships, and unified inventory reporting with Atrium Desktop.
+                  {language === 'ar'
+                    ? 'إدارة فروع فعلية متعددة، واشتراكات مشتركة وتقارير موحدة للمخزون عبر تطبيق Atrium المكتبي.'
+                    : language === 'fr'
+                    ? 'Gérez plusieurs succursales physiques, des abonnements multi-sites et des rapports unifiés avec Atrium Desktop.'
+                    : 'Manage multiple physical branches, cross-branch memberships, and unified inventory reporting with Atrium Desktop.'}
                 </p>
               </div>
             </div>
@@ -815,7 +879,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
               onClick={() => openDesktopUpgradeModal('branch_limit')}
               className="px-3 py-1.5 rounded-full bg-[#C4785A] text-white text-[11px] font-bold hover:bg-[#b3684a] transition-colors shrink-0 cursor-pointer self-start sm:self-auto"
             >
-              Download Atrium Desktop (Windows / Mac)
+              {language === 'ar' ? 'تحميل Atrium للكمبيوتر (Windows / Mac)' : language === 'fr' ? 'Télécharger Atrium Desktop (Windows / Mac)' : 'Download Atrium Desktop (Windows / Mac)'}
             </button>
           </div>
         )}
@@ -833,18 +897,18 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
                   </span>
                   {b.isMainBranch && (
                     <span className="text-[10px] font-bold text-[#C4785A] bg-[#C4785A]/10 px-2 py-0.5 rounded-full">
-                      Headquarters
+                      {language === 'ar' ? 'المقر الرئيسي' : language === 'fr' ? 'Siège principal' : 'Headquarters'}
                     </span>
                   )}
                 </div>
                 <div className="text-xs text-neutral-500 mt-0.5">
-                  {b.address || 'Address not configured'} · {b.phone || 'No phone'}
+                  {b.address || (language === 'ar' ? 'العنوان غير محدد' : language === 'fr' ? 'Adresse non renseignée' : 'Address not configured')} · {b.phone || (language === 'ar' ? 'بدون هاتف' : language === 'fr' ? 'Sans téléphone' : 'No phone')}
                 </div>
               </div>
 
               <span className="text-xs text-emerald-600 font-semibold flex items-center gap-1.5 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-1 rounded-full">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                Online
+                {language === 'ar' ? 'متصل' : language === 'fr' ? 'En ligne' : 'Online'}
               </span>
             </div>
           ))}
@@ -856,10 +920,10 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-base font-bold text-neutral-900 dark:text-white">
-              Authorized POS Hardware Terminals
+              {t('settings_terminals_title', language)}
             </h3>
             <p className="text-xs text-neutral-400 dark:text-neutral-500">
-              Desktop workstations, barcode scanners, and thermal receipt printers
+              {t('settings_terminals_subtitle', language)}
             </p>
           </div>
           <button
@@ -871,7 +935,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             className="h-9 px-4 text-xs font-bold text-white flex items-center gap-1.5 rounded-full cursor-pointer hover:opacity-90 transition-opacity shadow-xs"
           >
             <Plus size={14} />
-            <span>Register Device</span>
+            <span>{t('settings_register_terminal', language)}</span>
           </button>
         </div>
 
@@ -881,10 +945,18 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             <Printer size={18} className="text-[#C4785A] shrink-0" />
             <div>
               <span className="font-bold text-neutral-800 dark:text-neutral-200">
-                Hardware integration &amp; offline-first SQLite synchronization require Atrium Desktop
+                {language === 'ar'
+                  ? 'ربط العتاد وأجهزة نقاط البيع والمزامنة بدون إنترنت SQLite تتطلب تطبيق Atrium المكتبي'
+                  : language === 'fr'
+                  ? 'L\'intégration matérielle et la synchronisation SQLite hors-ligne nécessitent Atrium Desktop'
+                  : 'Hardware integration & offline-first SQLite synchronization require Atrium Desktop'}
               </span>
               <p className="text-neutral-500 dark:text-neutral-400 text-[11px] mt-0.5">
-                Thermal receipt printers (ESC/POS), cash drawers, barcode guns, and biometric fingerprint/RFID turnstiles connect natively via the desktop app.
+                {language === 'ar'
+                  ? 'طابعات الإيصالات الحرارية (ESC/POS)، أدراج النقد، قارئات الباركود والبوابات البيومترية / RFID تتصل أصلياً عبر تطبيق الحاسوب.'
+                  : language === 'fr'
+                  ? 'Imprimantes thermiques (ESC/POS), tiroirs-caisses, lecteurs code-barres et tourniquets biométriques/RFID se connectent nativement via l\'application Desktop.'
+                  : 'Thermal receipt printers (ESC/POS), cash drawers, barcode guns, and biometric fingerprint/RFID turnstiles connect natively via the desktop app.'}
               </p>
             </div>
           </div>
@@ -893,7 +965,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             onClick={() => openDesktopUpgradeModal('general')}
             className="px-3 py-1.5 rounded-full border border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-200 text-[11px] font-bold hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors shrink-0 cursor-pointer self-start sm:self-auto"
           >
-            Learn More
+            {language === 'ar' ? 'معرفة المزيد' : language === 'fr' ? 'En savoir plus' : 'Learn More'}
           </button>
         </div>
 
@@ -909,7 +981,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
                     {dev.label}
                   </div>
                   <div className="text-xs font-mono text-neutral-400">
-                    ID: {dev.hardwareId} · Registered: {new Date(dev.registeredAt).toLocaleDateString()}
+                    ID: {dev.hardwareId} · {language === 'ar' ? 'تاريخ التسجيل' : language === 'fr' ? 'Enregistré' : 'Registered'}: {new Date(dev.registeredAt).toLocaleDateString()}
                   </div>
                 </div>
               </div>
@@ -917,14 +989,14 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
               <div className="flex items-center gap-3">
                 <span className="text-xs text-emerald-600 font-semibold bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-1 rounded-full flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                  Active Terminal
+                  {language === 'ar' ? 'نقطة بيع نشطة' : language === 'fr' ? 'Terminal actif' : 'Active Terminal'}
                 </span>
                 {devices.length > 1 && (
                   <button
                     type="button"
                     onClick={() => revokeDevice(dev.id)}
                     className="text-xs text-rose-500 hover:text-rose-700 cursor-pointer p-1.5 rounded-full hover:bg-rose-50 transition-colors"
-                    title="Revoke authorization"
+                    title={language === 'ar' ? 'إلغاء الترخيص' : language === 'fr' ? 'Révoquer l\'autorisation' : 'Revoke authorization'}
                   >
                     <Trash2 size={14} />
                   </button>
@@ -939,8 +1011,14 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
       <Modal
         isOpen={isAddBranchOpen}
         onClose={() => setIsAddBranchOpen(false)}
-        title="Add Business Branch"
-        subtitle={`Expand ${currentBusiness.name} location network`}
+        title={language === 'ar' ? 'إضافة فرع تجاري جديد' : language === 'fr' ? 'Ajouter une succursale' : 'Add Business Branch'}
+        subtitle={
+          language === 'ar'
+            ? `توسيع شبكة فروع ${currentBusiness.name}`
+            : language === 'fr'
+            ? `Étendre le réseau d'implantations de ${currentBusiness.name}`
+            : `Expand ${currentBusiness.name} location network`
+        }
       >
         <form onSubmit={handleCreateBranch} className="space-y-4">
           {branchError && (
@@ -951,7 +1029,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
 
           <LabelInput
             field="BranchName"
-            label="Branch Name *"
+            label={language === 'ar' ? 'اسم الفرع *' : language === 'fr' ? 'Nom de la succursale *' : 'Branch Name *'}
             required
             value={branchName}
             onChange={setBranchName}
@@ -964,7 +1042,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <LabelInput
               field="BranchCode"
-              label="Branch Code *"
+              label={language === 'ar' ? 'رمز الفرع *' : language === 'fr' ? 'Code succursale *' : 'Branch Code *'}
               required
               value={branchCode}
               onChange={setBranchCode}
@@ -975,7 +1053,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             />
             <LabelInput
               field="BranchPhone"
-              label="Phone"
+              label={language === 'ar' ? 'الهاتف' : language === 'fr' ? 'Téléphone' : 'Phone'}
               type="tel"
               value={branchPhone}
               onChange={setBranchPhone}
@@ -988,7 +1066,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
 
           <LabelInput
             field="BranchAddress"
-            label="Physical Address"
+            label={language === 'ar' ? 'العنوان الفعلي' : language === 'fr' ? 'Adresse physique' : 'Physical Address'}
             value={branchAddress}
             onChange={setBranchAddress}
             placeholder="Boulevard, City, Wilaya"
@@ -1003,7 +1081,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
               onClick={() => setIsAddBranchOpen(false)}
               className="h-10 px-4 text-xs font-semibold text-neutral-500 cursor-pointer"
             >
-              Cancel
+              {language === 'ar' ? 'إلغاء' : language === 'fr' ? 'Annuler' : 'Cancel'}
             </button>
             <button
               type="submit"
@@ -1013,7 +1091,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
               }}
               className="h-10 px-5 text-xs font-semibold text-white cursor-pointer shadow-xs"
             >
-              Create Branch
+              {language === 'ar' ? 'إنشاء الفرع' : language === 'fr' ? 'Créer la succursale' : 'Create Branch'}
             </button>
           </div>
         </form>
@@ -1023,8 +1101,8 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
       <Modal
         isOpen={isAddDeviceOpen}
         onClose={() => setIsAddDeviceOpen(false)}
-        title="Authorize POS Hardware Terminal"
-        subtitle="Register machine hardware ID for desktop or web kiosk"
+        title={language === 'ar' ? 'مصادقة جهاز نقطة البيع' : language === 'fr' ? 'Autoriser un terminal POS' : 'Authorize POS Hardware Terminal'}
+        subtitle={language === 'ar' ? 'تسجيل معرّف الجهاز للكشك أو سطح المكتب' : language === 'fr' ? 'Enregistrer l\'identifiant matériel pour le kiosque' : 'Register machine hardware ID for desktop or web kiosk'}
       >
         <form onSubmit={handleRegisterDevice} className="space-y-4">
           {deviceError && (
@@ -1035,7 +1113,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
 
           <LabelInput
             field="DeviceLabel"
-            label="Terminal Friendly Label *"
+            label={language === 'ar' ? 'اسم المحطة أو الجهاز *' : language === 'fr' ? 'Nom convivial du terminal *' : 'Terminal Friendly Label *'}
             required
             value={deviceLabel}
             onChange={setDeviceLabel}
@@ -1047,7 +1125,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
 
           <LabelInput
             field="HardwareId"
-            label="Hardware ID *"
+            label={language === 'ar' ? 'معرّف العتاد *' : language === 'fr' ? 'Identifiant matériel *' : 'Hardware ID *'}
             required
             value={deviceHwId}
             onChange={setDeviceHwId}
@@ -1063,7 +1141,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
               onClick={() => setIsAddDeviceOpen(false)}
               className="h-10 px-4 text-xs font-semibold text-neutral-500 cursor-pointer"
             >
-              Cancel
+              {language === 'ar' ? 'إلغاء' : language === 'fr' ? 'Annuler' : 'Cancel'}
             </button>
             <button
               type="submit"
@@ -1073,7 +1151,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
               }}
               className="h-10 px-5 text-xs font-semibold text-white cursor-pointer shadow-xs"
             >
-              Authorize Terminal
+              {language === 'ar' ? 'مصادقة نقطة البيع' : language === 'fr' ? 'Autoriser le terminal' : 'Authorize Terminal'}
             </button>
           </div>
         </form>
@@ -1087,16 +1165,22 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
           setPendingBackupContent(null);
           setPendingBackupMeta(null);
         }}
-        title="Restore Database from Backup"
-        subtitle="Review backup contents before overwriting workspace data"
+        title={language === 'ar' ? 'استعادة قاعدة البيانات من النسخة الاحتياطية' : language === 'fr' ? 'Restaurer la base de données' : 'Restore Database from Backup'}
+        subtitle={language === 'ar' ? 'مراجعة محتويات النسخة قبل استبدال بيانات مساحة العمل' : language === 'fr' ? 'Vérifier le contenu avant d\'écraser les données' : 'Review backup contents before overwriting workspace data'}
       >
         <div className="space-y-4">
           <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300 text-xs flex items-start gap-3">
             <AlertTriangle size={18} className="text-amber-600 shrink-0 mt-0.5" />
             <div>
-              <p className="font-bold">Caution: State Overwrite</p>
+              <p className="font-bold">
+                {language === 'ar' ? 'تنبيه: استبدال شامل لبيانات النظام' : language === 'fr' ? 'Attention : Remplacement des données' : 'Caution: State Overwrite'}
+              </p>
               <p className="mt-1 opacity-90">
-                Restoring this backup file will replace your current businesses, branches, members, and transactions with the backup snapshot.
+                {language === 'ar'
+                  ? 'استعادة هذا الملف سيستبدل المنشآت الحالية، الفروع، الأعضاء، والمعاملات بالبيانات المحفوظة في النسخة الاحتياطية.'
+                  : language === 'fr'
+                  ? 'La restauration remplacera l\'ensemble des entités, succursales, membres et transactions actuels par les données de la sauvegarde.'
+                  : 'Restoring this backup file will replace your current businesses, branches, members, and transactions with the backup snapshot.'}
               </p>
             </div>
           </div>
@@ -1104,27 +1188,35 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
           {pendingBackupMeta && (
             <div className="p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 space-y-2 text-xs">
               <div className="flex justify-between py-1 border-b border-neutral-200 dark:border-neutral-700">
-                <span className="text-neutral-500">Backup Export Date:</span>
+                <span className="text-neutral-500">
+                  {language === 'ar' ? 'تاريخ تصدير النسخة:' : language === 'fr' ? 'Date de la sauvegarde :' : 'Backup Export Date:'}
+                </span>
                 <span className="font-semibold text-neutral-900 dark:text-white">
                   {new Date(pendingBackupMeta.exportedAt).toLocaleString()}
                 </span>
               </div>
               <div className="flex justify-between py-1 border-b border-neutral-200 dark:border-neutral-700">
-                <span className="text-neutral-500">Primary Business:</span>
+                <span className="text-neutral-500">
+                  {language === 'ar' ? 'المنشأة الرئيسية:' : language === 'fr' ? 'Entreprise principale :' : 'Primary Business:'}
+                </span>
                 <span className="font-semibold text-neutral-900 dark:text-white">
                   {pendingBackupMeta.primaryBusiness}
                 </span>
               </div>
               <div className="flex justify-between py-1 border-b border-neutral-200 dark:border-neutral-700">
-                <span className="text-neutral-500">Total Businesses:</span>
+                <span className="text-neutral-500">
+                  {language === 'ar' ? 'إجمالي المنشآت:' : language === 'fr' ? 'Total des entreprises :' : 'Total Businesses:'}
+                </span>
                 <span className="font-semibold text-neutral-900 dark:text-white">
                   {pendingBackupMeta.businessesCount}
                 </span>
               </div>
               <div className="flex justify-between py-1">
-                <span className="text-neutral-500">Members / Contacts:</span>
+                <span className="text-neutral-500">
+                  {language === 'ar' ? 'الأعضاء / جهات الاتصال:' : language === 'fr' ? 'Membres / Contacts :' : 'Members / Contacts:'}
+                </span>
                 <span className="font-semibold text-neutral-900 dark:text-white">
-                  {pendingBackupMeta.membersCount} records
+                  {pendingBackupMeta.membersCount} {language === 'ar' ? 'سجل' : language === 'fr' ? 'enregistrements' : 'records'}
                 </span>
               </div>
             </div>
@@ -1140,14 +1232,14 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
               }}
               className="h-10 px-4 text-xs font-semibold text-neutral-500 cursor-pointer"
             >
-              Cancel
+              {language === 'ar' ? 'إلغاء' : language === 'fr' ? 'Annuler' : 'Cancel'}
             </button>
             <button
               type="button"
               onClick={handleConfirmRestore}
               className="h-10 px-5 text-xs font-semibold text-white bg-rose-600 hover:bg-rose-700 rounded-full cursor-pointer shadow-xs transition-colors"
             >
-              Confirm &amp; Restore Database
+              {language === 'ar' ? 'تأكيد واستعادة قاعدة البيانات' : language === 'fr' ? 'Confirmer et restaurer la base' : 'Confirm & Restore Database'}
             </button>
           </div>
         </div>

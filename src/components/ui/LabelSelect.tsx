@@ -220,9 +220,24 @@ export const LabelSelect: React.FC<LabelSelectProps> = ({
   const r = clamp(corner, 0, H / 2);
   const up = isOpen || selectedOption !== undefined;
 
+  const { language } = useAtriumStore();
+  const defaultPlaceholder = language === 'ar' ? 'اختر...' : language === 'fr' ? 'Sélectionner...' : 'Select...';
+  const defaultSearchPlaceholder = language === 'ar' ? 'بحث في الخيارات...' : language === 'fr' ? 'Rechercher...' : 'Search options...';
+  const noOptionsText = language === 'ar' ? 'لا توجد خيارات مطابقة' : language === 'fr' ? 'Aucune option trouvée' : 'No options found';
+
+  const isRtl =
+    language === 'ar' ||
+    (typeof document !== 'undefined' && document.documentElement.dir === 'rtl') ||
+    /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/.test(label);
+  const hasArabic = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/.test(label);
+
   const lx = Math.max(12, r + 2);
-  const x0 = Math.max(r * 0.5, lx - 4);
-  const x1 = Math.min(W - r, lx + lw * S + 4);
+  const x0 = isRtl
+    ? Math.max(r * 0.5, W - lx - lw * S - 4)
+    : Math.max(r * 0.5, lx - 4);
+  const x1 = isRtl
+    ? Math.min(W - r * 0.5, W - lx + 4)
+    : Math.min(W - r, lx + lw * S + 4);
   const a = r - IN;
   const R = W - IN;
   const B = H - IN;
@@ -241,11 +256,6 @@ export const LabelSelect: React.FC<LabelSelectProps> = ({
     r > 0
       ? `M${x0},${IN} L${r},${IN} A${a},${a} 0 0 0 ${IN},${r} L${IN},${H - r} A${a},${a} 0 0 0 ${r},${B} L${mid},${B}`
       : `M${x0},${IN} L${IN},${IN} L${IN},${B} L${mid},${B}`;
-
-  const { language } = useAtriumStore();
-  const defaultPlaceholder = language === 'ar' ? 'اختر...' : language === 'fr' ? 'Sélectionner...' : 'Select...';
-  const defaultSearchPlaceholder = language === 'ar' ? 'بحث في الخيارات...' : language === 'fr' ? 'Rechercher...' : 'Search options...';
-  const noOptionsText = language === 'ar' ? 'لا توجد خيارات مطابقة' : language === 'fr' ? 'Aucune option trouvée' : 'No options found';
 
   return (
     <div
@@ -282,17 +292,26 @@ export const LabelSelect: React.FC<LabelSelectProps> = ({
           <path className="lbi-gap" d={gapR} pathLength={1} />
         </svg>
 
-        {/* Floating Kinetic Label with Hopping Letters */}
+        {/* Floating Kinetic Label with Hopping Letters/Words */}
         <label
           className="lbi-label pointer-events-none"
           htmlFor={id}
           ref={lab}
+          dir={isRtl ? 'rtl' : 'ltr'}
         >
-          {[...label].map((ch, i) => (
-            <span key={i} style={{ '--i': i } as React.CSSProperties}>
-              {ch === ' ' ? '\u00A0' : ch}
-            </span>
-          ))}
+          {hasArabic || isRtl ? (
+            label.split(/(\s+)/).map((segment, i) => (
+              <span key={i} style={{ '--i': i, display: 'inline-block' } as React.CSSProperties}>
+                {segment === ' ' ? '\u00A0' : segment}
+              </span>
+            ))
+          ) : (
+            [...label].map((ch, i) => (
+              <span key={i} style={{ '--i': i } as React.CSSProperties}>
+                {ch === ' ' ? '\u00A0' : ch}
+              </span>
+            ))
+          )}
         </label>
 
         {/* Interactive Custom Button Trigger */}
@@ -331,7 +350,7 @@ export const LabelSelect: React.FC<LabelSelectProps> = ({
                 ? selectedOption.label
                 : up
                 ? placeholder || defaultPlaceholder
-                : placeholder || ''}
+                : ''}
             </span>
           </div>
 

@@ -40,7 +40,7 @@ interface OnboardingWizardProps {
 }
 
 export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ isOpen, onClose }) => {
-  const { completeOnboarding } = useAtriumStore();
+  const { completeOnboarding, language } = useAtriumStore();
 
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3 | 4>(1);
 
@@ -224,14 +224,14 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ isOpen, onCl
               <h2 className="text-base font-bold text-white flex items-center gap-2">
                 <span>Atrium Setup Wizard</span>
                 <span className="text-[10px] font-bold text-[#C4785A] bg-[#C4785A]/15 px-2 py-0.5 rounded-full">
-                  Step {currentStep} of 4
+                  {language === 'ar' ? `المرحلة ${currentStep} من 4` : language === 'fr' ? `Étape ${currentStep} sur 4` : `Step ${currentStep} of 4`}
                 </span>
               </h2>
               <p className="text-xs text-neutral-400">
-                {currentStep === 1 && 'Create your owner administrator profile'}
-                {currentStep === 2 && 'Configure business vertical & first facility branch'}
-                {currentStep === 3 && 'Choose your license or enter cash voucher code'}
-                {currentStep === 4 && 'Confirm details and provision workspace'}
+                {currentStep === 1 && (language === 'ar' ? 'إنشاء الملف الشخصي للمالك والمسؤول' : language === 'fr' ? 'Créez votre profil d\'administrateur propriétaire' : 'Create your owner administrator profile')}
+                {currentStep === 2 && (language === 'ar' ? 'تهيئة قطاع النشاط والفرع الأول للمنشأة' : language === 'fr' ? 'Configurez l\'activité métier et le premier établissement' : 'Configure business vertical & first facility branch')}
+                {currentStep === 3 && (language === 'ar' ? 'اختر خطة الترخيص أو أدخل قسيمة الدفع المسبق' : language === 'fr' ? 'Choisissez votre licence ou saisissez votre code bon' : 'Choose your license or enter cash voucher code')}
+                {currentStep === 4 && (language === 'ar' ? 'تأكيد البيانات وتهيئة مساحة العمل' : language === 'fr' ? 'Confirmez les détails et initialisez l\'espace de travail' : 'Confirm details and provision workspace')}
               </p>
             </div>
           </div>
@@ -248,10 +248,10 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ isOpen, onCl
         {/* 4-Step Progress Indicator Bar */}
         <div className="grid grid-cols-4 gap-2 my-5">
           {[
-            { num: 1, label: 'Account' },
-            { num: 2, label: 'Business' },
-            { num: 3, label: 'License' },
-            { num: 4, label: 'Launch' },
+            { num: 1, label: language === 'ar' ? 'الحساب' : language === 'fr' ? 'Compte' : 'Account' },
+            { num: 2, label: language === 'ar' ? 'النشاط' : language === 'fr' ? 'Activité' : 'Business' },
+            { num: 3, label: language === 'ar' ? 'الترخيص' : language === 'fr' ? 'Licence' : 'License' },
+            { num: 4, label: language === 'ar' ? 'الإطلاق' : language === 'fr' ? 'Lancement' : 'Launch' },
           ].map((s) => {
             const isDone = currentStep > s.num;
             const isCurrent = currentStep === s.num;
@@ -281,7 +281,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ isOpen, onCl
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               <LabelInput
                 field="Full Name"
-                label="Full Name"
+                label={language === 'ar' ? 'الاسم الكامل' : language === 'fr' ? 'Nom complet' : 'Full Name'}
                 value={fullName}
                 onChange={setFullName}
                 width="100%"
@@ -290,7 +290,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ isOpen, onCl
               />
               <LabelInput
                 field="Email"
-                label="Work Email"
+                label={language === 'ar' ? 'البريد الإلكتروني للعمل' : language === 'fr' ? 'Email professionnel' : 'Work Email'}
                 value={email}
                 onChange={setEmail}
                 type="email"
@@ -300,7 +300,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ isOpen, onCl
               />
               <LabelInput
                 field="Phone"
-                label="Phone Number"
+                label={language === 'ar' ? 'رقم الهاتف' : language === 'fr' ? 'Numéro de téléphone' : 'Phone Number'}
                 value={phone}
                 onChange={setPhone}
                 type="tel"
@@ -310,7 +310,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ isOpen, onCl
               />
               <LabelInput
                 field="Password"
-                label="Terminal Password"
+                label={language === 'ar' ? 'كلمة المرور للمحطة' : language === 'fr' ? 'Mot de passe du terminal' : 'Terminal Password'}
                 value={password}
                 onChange={setPassword}
                 type="password"
@@ -335,7 +335,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ isOpen, onCl
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <LabelInput
                 field="Business"
-                label="Business / Brand Name"
+                label={language === 'ar' ? 'اسم المنشأة أو العلامة' : language === 'fr' ? 'Nom de l\'établissement' : 'Business / Brand Name'}
                 value={businessName}
                 onChange={setBusinessName}
                 width="100%"
@@ -344,7 +344,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ isOpen, onCl
               />
               <LabelInput
                 field="Branch"
-                label="First Branch Location"
+                label={language === 'ar' ? 'مقر الفرع الأول' : language === 'fr' ? 'Emplacement du 1er site' : 'First Branch Location'}
                 value={branchName}
                 onChange={setBranchName}
                 width="100%"
@@ -468,7 +468,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ isOpen, onCl
             <div>
               <LabelInput
                 field="Address"
-                label="Facility Address (Optional)"
+                label={language === 'ar' ? 'عنوان المنشأة (اختياري)' : language === 'fr' ? 'Adresse de l\'établissement (Facultatif)' : 'Facility Address (Optional)'}
                 value={branchAddress}
                 onChange={setBranchAddress}
                 width="100%"
@@ -493,7 +493,9 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ isOpen, onCl
                 }`}
               >
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-bold text-white">Free Trial (30 Days)</span>
+                  <span className="text-xs font-bold text-white">
+                    {language === 'ar' ? 'فترة تقييم مجانية (30 يوماً)' : language === 'fr' ? 'Essai gratuit (30 jours)' : 'Free Trial (30 Days)'}
+                  </span>
                   <div
                     className={`w-4 h-4 rounded-full border flex items-center justify-center ${
                       licenseOption === 'trial'
@@ -505,10 +507,14 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ isOpen, onCl
                   </div>
                 </div>
                 <p className="text-xs text-neutral-400 leading-relaxed">
-                  Start immediately with zero commitment. 1 Business, 1 Branch, 1 Device, and up to 3 staff members.
+                  {language === 'ar'
+                    ? 'ابدأ مباشرة بدون أي التزام. منشأة واحدة، فرع واحد، جهاز بيع واحد، وحتى 3 موظفين.'
+                    : language === 'fr'
+                    ? 'Démarrez sans engagement. 1 entreprise, 1 succursale, 1 caisse et jusqu\'à 3 collaborateurs.'
+                    : 'Start immediately with zero commitment. 1 Business, 1 Branch, 1 Device, and up to 3 staff members.'}
                 </p>
                 <div className="mt-3 text-[11px] font-bold text-emerald-400">
-                  Instant activation — No credit card required
+                  {language === 'ar' ? 'تفعيل فوري — بدون بطاقة دفع' : language === 'fr' ? 'Activation immédiate — Sans carte bancaire' : 'Instant activation — No credit card required'}
                 </div>
               </div>
 
@@ -522,7 +528,9 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ isOpen, onCl
                 }`}
               >
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-bold text-white">Prepaid Lifetime Voucher</span>
+                  <span className="text-xs font-bold text-white">
+                    {language === 'ar' ? 'قسيمة دفع مسبق مدى الحياة' : language === 'fr' ? 'Bon prépayé à vie' : 'Prepaid Lifetime Voucher'}
+                  </span>
                   <div
                     className={`w-4 h-4 rounded-full border flex items-center justify-center ${
                       licenseOption === 'voucher'
@@ -534,10 +542,14 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ isOpen, onCl
                   </div>
                 </div>
                 <p className="text-xs text-neutral-400 leading-relaxed">
-                  Redeem a cash voucher code purchased at point of sale. Unlocks perpetual lifetime access.
+                  {language === 'ar'
+                    ? 'تفعيل قسيمة تم شراؤها مسبقاً لدى نقاط التوزيع. تمنحك ترخيصاً دائماً مدى الحياة.'
+                    : language === 'fr'
+                    ? 'Activez un code acheté en point de vente. Débloque un accès perpétuel à vie.'
+                    : 'Redeem a cash voucher code purchased at point of sale. Unlocks perpetual lifetime access.'}
                 </p>
                 <div className="mt-3 text-[11px] font-bold text-[#C4785A]">
-                  Never expires — Perpetual license
+                  {language === 'ar' ? 'لا تنتهي الصلاحية — ترخيص دائم' : language === 'fr' ? 'Sans expiration — Licence perpétuelle' : 'Never expires — Perpetual license'}
                 </div>
               </div>
             </div>
@@ -547,7 +559,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ isOpen, onCl
               <div className="p-4 rounded-2xl bg-neutral-900/90 border border-neutral-800 space-y-3 animate-in fade-in">
                 <LabelInput
                   field="Voucher"
-                  label="Voucher Code"
+                  label={language === 'ar' ? 'رمز قسيمة التفعيل' : language === 'fr' ? 'Code du bon d\'activation' : 'Voucher Code'}
                   value={voucherCode}
                   onChange={handleVoucherChange}
                   placeholder="ATR-PRO-LIFE-XXXX-XXXX"
@@ -610,31 +622,43 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ isOpen, onCl
           <div className="space-y-4 py-2 animate-in fade-in duration-150">
             <div className="p-4 rounded-2xl bg-neutral-900/90 border border-neutral-800 space-y-3">
               <div className="text-xs font-bold text-neutral-400 uppercase tracking-wider">
-                Configuration Summary
+                {language === 'ar' ? 'ملخص التهيئة والإعداد' : language === 'fr' ? 'Résumé de la configuration' : 'Configuration Summary'}
               </div>
               <div className="grid grid-cols-2 gap-3 text-xs">
                 <div>
-                  <span className="text-neutral-500 block">Owner Administrator:</span>
+                  <span className="text-neutral-500 block">
+                    {language === 'ar' ? 'المالك والمسؤول:' : language === 'fr' ? 'Administrateur propriétaire :' : 'Owner Administrator:'}
+                  </span>
                   <span className="font-bold text-white">{fullName}</span>
                   <span className="text-neutral-400 text-[11px] block">{email}</span>
                 </div>
                 <div>
-                  <span className="text-neutral-500 block">Business & Vertical:</span>
+                  <span className="text-neutral-500 block">
+                    {language === 'ar' ? 'المنشأة والقطاع:' : language === 'fr' ? 'Entreprise & Activité :' : 'Business & Vertical:'}
+                  </span>
                   <span className="font-bold text-white">{businessName}</span>
                   <span className="text-[#C4785A] font-semibold text-[11px] block capitalize">
                     {category.replace('_', ' ')}
                   </span>
                 </div>
                 <div>
-                  <span className="text-neutral-500 block">First Branch:</span>
+                  <span className="text-neutral-500 block">
+                    {language === 'ar' ? 'الفرع الأول:' : language === 'fr' ? 'Première succursale :' : 'First Branch:'}
+                  </span>
                   <span className="font-bold text-white">{branchName}</span>
                 </div>
                 <div>
-                  <span className="text-neutral-500 block">License Status:</span>
+                  <span className="text-neutral-500 block">
+                    {language === 'ar' ? 'حالة الترخيص:' : language === 'fr' ? 'Statut de licence :' : 'License Status:'}
+                  </span>
                   <span className="font-bold text-emerald-400">
                     {licenseOption === 'voucher'
-                      ? `${voucherValidation.tierName || 'Pro'} Perpetual Lifetime`
-                      : 'Free Trial (30 Days)'}
+                      ? (language === 'ar'
+                        ? `${voucherValidation.tierName || 'Pro'} مدى الحياة دائم`
+                        : language === 'fr'
+                        ? `${voucherValidation.tierName || 'Pro'} Licence perpétuelle`
+                        : `${voucherValidation.tierName || 'Pro'} Perpetual Lifetime`)
+                      : (language === 'ar' ? 'فترة تجريبية (30 يوماً)' : language === 'fr' ? 'Essai gratuit (30 jours)' : 'Free Trial (30 Days)')}
                   </span>
                 </div>
               </div>
@@ -644,15 +668,33 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ isOpen, onCl
             <div className="space-y-2 text-xs text-neutral-300">
               <div className="flex items-center gap-2">
                 <Check size={14} className="text-emerald-400" />
-                <span>Multi-tenant partition initialized with primary branch assignment</span>
+                <span>
+                  {language === 'ar'
+                    ? 'تمت تهيئة قسم البيانات المخصص للمنشأة مع تعيين الفرع الرئيسي'
+                    : language === 'fr'
+                    ? 'Partition multi-locataire initialisée avec rattachement du site principal'
+                    : 'Multi-tenant partition initialized with primary branch assignment'}
+                </span>
               </div>
               <div className="flex items-center gap-2">
                 <Check size={14} className="text-emerald-400" />
-                <span>Initial category-specific membership plans and retail catalog bootstrapped</span>
+                <span>
+                  {language === 'ar'
+                    ? 'تم تجهيز خطط الاشتراكات الافتراضية وكتالوج المنتجات للقطاع المحدد'
+                    : language === 'fr'
+                    ? 'Plans d\'adhésion métier et catalogue d\'articles initialisés'
+                    : 'Initial category-specific membership plans and retail catalog bootstrapped'}
+                </span>
               </div>
               <div className="flex items-center gap-2">
                 <Check size={14} className="text-emerald-400" />
-                <span>Owner credentials and 4-digit terminal access PIN configured</span>
+                <span>
+                  {language === 'ar'
+                    ? 'تم تعيين بيانات اعتماد المالك ورمز PIN للمحطة المكون من 4 أرقام'
+                    : language === 'fr'
+                    ? 'Identifiants du propriétaire et code PIN à 4 chiffres configurés'
+                    : 'Owner credentials and 4-digit terminal access PIN configured'}
+                </span>
               </div>
             </div>
           </div>
@@ -666,8 +708,8 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ isOpen, onCl
               onClick={() => setCurrentStep((prev) => (prev - 1) as any)}
               className="h-10 px-4 rounded-xl bg-neutral-900 border border-neutral-700 text-xs font-semibold text-neutral-300 hover:text-white flex items-center gap-1.5 cursor-pointer"
             >
-              <ChevronLeft size={14} />
-              <span>Previous</span>
+              <ChevronLeft size={14} className={language === 'ar' ? 'rotate-180' : ''} />
+              <span>{language === 'ar' ? 'السابق' : language === 'fr' ? 'Précédent' : 'Previous'}</span>
             </button>
           ) : (
             <div />
@@ -679,8 +721,8 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ isOpen, onCl
               onClick={handleNext}
               className="h-10 px-5 rounded-xl bg-[#C4785A] hover:bg-[#b3684a] text-xs font-bold text-white flex items-center gap-1.5 cursor-pointer shadow-md"
             >
-              <span>Continue</span>
-              <ChevronRight size={14} />
+              <span>{language === 'ar' ? 'متابعة' : language === 'fr' ? 'Continuer' : 'Continue'}</span>
+              <ChevronRight size={14} className={language === 'ar' ? 'rotate-180' : ''} />
             </button>
           ) : (
             <button
@@ -690,7 +732,11 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ isOpen, onCl
               className="h-11 px-6 rounded-xl bg-[#C4785A] hover:bg-[#b3684a] text-xs font-bold text-white flex items-center gap-2 cursor-pointer shadow-lg disabled:opacity-50"
             >
               <Rocket size={15} />
-              <span>{isProvisioning ? 'Provisioning...' : 'Launch Atrium ERP Workspace'}</span>
+              <span>
+                {isProvisioning
+                  ? (language === 'ar' ? 'جارٍ الإطلاق...' : language === 'fr' ? 'Initialisation...' : 'Provisioning...')
+                  : (language === 'ar' ? 'إطلاق مساحة عمل Atrium ERP' : language === 'fr' ? 'Lancer l\'espace Atrium ERP' : 'Launch Atrium ERP Workspace')}
+              </span>
             </button>
           )}
         </div>

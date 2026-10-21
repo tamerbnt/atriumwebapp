@@ -725,7 +725,7 @@ export const FinanceStaffScreen: React.FC = () => {
 
           <LabelInput
             field="StaffName"
-            label="Full Name *"
+            label={`${t('modal_name', language)} *`}
             required
             value={fullName}
             onChange={setFullName}
@@ -738,7 +738,7 @@ export const FinanceStaffScreen: React.FC = () => {
           <div className="grid grid-cols-2 gap-3">
             <LabelInput
               field="StaffEmail"
-              label="Email Address *"
+              label={`${t('modal_email', language)} *`}
               type="email"
               required
               value={email}
@@ -751,7 +751,7 @@ export const FinanceStaffScreen: React.FC = () => {
 
             <LabelInput
               field="StaffPhone"
-              label="Phone Number"
+              label={t('modal_phone', language)}
               type="tel"
               value={phoneNumber}
               onChange={setPhoneNumber}
@@ -765,16 +765,16 @@ export const FinanceStaffScreen: React.FC = () => {
           <div className="grid grid-cols-3 gap-3">
             <LabelSelect
               field="Role"
-              label="Staff Role"
+              label={language === 'ar' ? 'الدور الوظيفي' : language === 'fr' ? 'Rôle' : 'Staff Role'}
               value={role}
               onChange={(val) => setRole(typeof val === 'string' ? (val as StaffRole) : (val.target?.value || val))}
               options={[
-                { value: 'Manager', label: 'Manager (Rank 1)' },
-                { value: 'Cashier', label: 'Cashier (Rank 2)' },
-                { value: 'Stylist', label: 'Stylist / Practitioner (Rank 3)' },
-                { value: 'Technician', label: 'Technician (Rank 3)' },
-                { value: 'Waiter', label: 'Waiter (Rank 4)' },
-                { value: 'Staff', label: 'General Staff (Rank 7)' },
+                { value: 'Manager', label: language === 'ar' ? 'مدير (رتبة 1)' : language === 'fr' ? 'Gérant (Rang 1)' : 'Manager (Rank 1)' },
+                { value: 'Cashier', label: language === 'ar' ? 'أمين صندوق (رتبة 2)' : language === 'fr' ? 'Caissier (Rang 2)' : 'Cashier (Rank 2)' },
+                { value: 'Stylist', label: language === 'ar' ? 'مصفف / ممارس (رتبة 3)' : language === 'fr' ? 'Praticien / Coiffeur (Rang 3)' : 'Stylist / Practitioner (Rank 3)' },
+                { value: 'Technician', label: language === 'ar' ? 'تقني (رتبة 3)' : language === 'fr' ? 'Technicien (Rang 3)' : 'Technician (Rank 3)' },
+                { value: 'Waiter', label: language === 'ar' ? 'نادل / مقدم خدمة (رتبة 4)' : language === 'fr' ? 'Serveur (Rang 4)' : 'Waiter (Rank 4)' },
+                { value: 'Staff', label: language === 'ar' ? 'موظف عام (رتبة 7)' : language === 'fr' ? 'Personnel général (Rang 7)' : 'General Staff (Rank 7)' },
               ]}
               height={46}
               corner={14}
@@ -782,7 +782,7 @@ export const FinanceStaffScreen: React.FC = () => {
 
             <LabelInput
               field="Salary"
-              label="Monthly Salary (DZD)"
+              label={language === 'ar' ? 'الراتب الشهري (دج)' : language === 'fr' ? 'Salaire mensuel (DZD)' : 'Monthly Salary (DZD)'}
               type="number"
               value={salary ? String(salary) : ''}
               onChange={(v) => setSalary(Number(v) || 0)}
@@ -793,7 +793,7 @@ export const FinanceStaffScreen: React.FC = () => {
 
             <LabelInput
               field="Payday"
-              label="Payday (1-31)"
+              label={language === 'ar' ? 'يوم الدفع (1-31)' : language === 'fr' ? 'Jour de paie (1-31)' : 'Payday (1-31)'}
               type="number"
               value={paymentDay ? String(paymentDay) : ''}
               onChange={(v) => setPaymentDay(Number(v) || 1)}

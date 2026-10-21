@@ -142,15 +142,24 @@ export function LabelInput({
     type === "month" ||
     type === "week";
 
+  const isRtl =
+    (typeof document !== "undefined" && document.documentElement.dir === "rtl") ||
+    /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/.test(label);
+  const hasArabic = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/.test(label);
+
   const up = focus || isDateTime || (value !== undefined && value !== null && String(value).length > 0);
 
   /* ── where the label sits, and the gap it leaves ─────────
      Never inside the corner's curve: the notch has to open on
      the straight part of the top edge, so a rounder field
-     starts its label further in. */
+     starts its label further in. In RTL, the notch sits near the right. */
   const lx = Math.max(12, r + 2);
-  const x0 = Math.max(r * 0.5, lx - 4);
-  const x1 = Math.min(W - r, lx + lw * S + 4);
+  const x0 = isRtl
+    ? Math.max(r * 0.5, W - lx - lw * S - 4)
+    : Math.max(r * 0.5, lx - 4);
+  const x1 = isRtl
+    ? Math.min(W - r * 0.5, W - lx + 4)
+    : Math.min(W - r, lx + lw * S + 4);
   const a = r - IN;
   const R = W - IN;
   const B = H - IN;
@@ -218,16 +227,29 @@ export function LabelInput({
           <path className="lbi-gap" d={gapR} pathLength={1} />
         </svg>
 
-        <label className="lbi-label" htmlFor={id} ref={lab}>
-          {[...label].map((ch, i) => (
-            <span key={i} style={{ "--i": i } as React.CSSProperties}>
-              {ch === " " ? "\u00A0" : ch}
-            </span>
-          ))}
+        <label
+          className="lbi-label"
+          htmlFor={id}
+          ref={lab}
+          dir={isRtl ? "rtl" : "ltr"}
+        >
+          {hasArabic || isRtl ? (
+            label.split(/(\s+)/).map((segment, i) => (
+              <span key={i} style={{ "--i": i, display: "inline-block" } as React.CSSProperties}>
+                {segment === " " ? "\u00A0" : segment}
+              </span>
+            ))
+          ) : (
+            [...label].map((ch, i) => (
+              <span key={i} style={{ "--i": i } as React.CSSProperties}>
+                {ch === " " ? "\u00A0" : ch}
+              </span>
+            ))
+          )}
         </label>
 
         {prefix && (
-          <div className="absolute left-3 top-1/2 -translate-y-1/2 z-10 flex items-center pointer-events-none text-neutral-400">
+          <div className="absolute left-3 rtl:left-auto rtl:right-3 top-1/2 -translate-y-1/2 z-10 flex items-center pointer-events-none text-neutral-400">
             {prefix}
           </div>
         )}
@@ -260,13 +282,14 @@ export function LabelInput({
           step={step}
           inputMode={quiet ? "none" : undefined}
           style={{
-            paddingLeft: prefix ? lx + 16 : lx,
-            paddingRight: isSecret ? 48 : suffix ? 44 : lx,
+            paddingLeft: isRtl ? (isSecret ? 48 : suffix ? 44 : lx) : (prefix ? lx + 16 : lx),
+            paddingRight: isRtl ? (prefix ? lx + 16 : lx) : (isSecret ? 48 : suffix ? 44 : lx),
+            textAlign: isRtl ? "right" : "left",
           }}
         />
 
         {suffix && !isSecret && (
-          <div className="absolute right-3 top-1/2 -translate-y-1/2 z-10 flex items-center text-neutral-400">
+          <div className="absolute right-3 rtl:right-auto rtl:left-3 top-1/2 -translate-y-1/2 z-10 flex items-center text-neutral-400">
             {suffix}
           </div>
         )}

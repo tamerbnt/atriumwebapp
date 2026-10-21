@@ -441,7 +441,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                 <div className="space-y-2.5">
                   <LabelInput
                     field="Full Name"
-                    label="Full Name"
+                    label={language === 'ar' ? 'الاسم الكامل' : language === 'fr' ? 'Nom complet' : 'Full Name'}
                     value={fullName}
                     onChange={setFullName}
                     width="100%"
@@ -451,7 +451,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
 
                   <LabelInput
                     field="Email"
-                    label="Work Email"
+                    label={language === 'ar' ? 'البريد الإلكتروني للعمل' : language === 'fr' ? 'Email professionnel' : 'Work Email'}
                     value={email}
                     onChange={setEmail}
                     type="email"
@@ -463,7 +463,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                   <div className="grid grid-cols-2 gap-2">
                     <LabelInput
                       field="Phone"
-                      label="Phone Number"
+                      label={language === 'ar' ? 'رقم الهاتف' : language === 'fr' ? 'Numéro de téléphone' : 'Phone Number'}
                       value={phone}
                       onChange={setPhone}
                       type="tel"
@@ -474,7 +474,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
 
                     <LabelInput
                       field="Password"
-                      label="Admin Password"
+                      label={language === 'ar' ? 'كلمة مرور المشرف' : language === 'fr' ? 'Mot de passe administrateur' : 'Admin Password'}
                       value={password}
                       onChange={setPassword}
                       type="password"
@@ -492,17 +492,21 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
               <div className="space-y-3 py-1 animate-in fade-in duration-150">
                 <div>
                   <h3 className="text-lg font-extrabold text-neutral-900">
-                    Business Setup & First Branch
+                    {language === 'ar' ? 'إعداد المنشأة والفرع الأول' : language === 'fr' ? 'Configuration de l\'entreprise et 1er site' : 'Business Setup & First Branch'}
                   </h3>
                   <p className="text-xs text-neutral-500 mt-0.5">
-                    Name your business and your primary branch. (Additional branches unlock in Desktop).
+                    {language === 'ar'
+                      ? 'حدد اسم منشأتك وفرعك الرئيسي. (تفتح الفروع الإضافية في إصدار سطح المكتب).'
+                      : language === 'fr'
+                      ? 'Nommez votre entreprise et votre site principal. (Les sites supplémentaires se débloquent sur Desktop).'
+                      : 'Name your business and your primary branch. (Additional branches unlock in Desktop).'}
                   </p>
                 </div>
 
                 <div className="space-y-2">
                   <LabelInput
                     field="Business"
-                    label="Business Name"
+                    label={language === 'ar' ? 'اسم المنشأة أو العلامة' : language === 'fr' ? 'Nom de l\'établissement' : 'Business Name'}
                     value={businessName}
                     onChange={setBusinessName}
                     width="100%"
@@ -511,7 +515,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                   />
                   <LabelInput
                     field="Branch"
-                    label="First Branch Name"
+                    label={language === 'ar' ? 'اسم الفرع الأول' : language === 'fr' ? 'Nom du premier site' : 'First Branch Name'}
                     value={branchName}
                     onChange={setBranchName}
                     width="100%"
@@ -524,16 +528,22 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                 <div className="space-y-1.5 pt-1">
                   <div className="flex items-center justify-between">
                     <label className="block text-[11px] font-bold text-neutral-700">
-                      Search Your Business Activity
+                      {language === 'ar' ? 'البحث عن نشاطك التجاري' : language === 'fr' ? 'Recherchez votre activité métier' : 'Search Your Business Activity'}
                     </label>
                     <span className="text-[10px] text-neutral-400 font-medium">
-                      Auto-detects matching category
+                      {language === 'ar' ? 'تحديد تلقائي للقطاع المناسب' : language === 'fr' ? 'Détection automatique du secteur' : 'Auto-detects matching category'}
                     </span>
                   </div>
                   <Seek
                     value={businessSearchQuery}
                     onChange={handleBusinessSearch}
-                    placeholder="e.g. Barbershop, CrossFit, Pâtisserie, Coworking..."
+                    placeholder={
+                      language === 'ar'
+                        ? 'مثال: صالون حلاقة، نادي رياضي، مخبزة، مساحة عمل...'
+                        : language === 'fr'
+                        ? 'ex: Salon de coiffure, CrossFit, Pâtisserie, Coworking...'
+                        : 'e.g. Barbershop, CrossFit, Pâtisserie, Coworking...'
+                    }
                     shutSize={36}
                     openWidth={380}
                   />
@@ -541,7 +551,9 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
 
                   {/* Popular Quick Suggestion Chips */}
                   <div className="flex items-center gap-1.5 overflow-x-auto pb-1 pt-0.5 text-[11px]">
-                    <span className="text-[10px] text-neutral-400 font-semibold shrink-0">Popular:</span>
+                    <span className="text-[10px] text-neutral-400 font-semibold shrink-0">
+                      {language === 'ar' ? 'الأنشطة الشائعة:' : language === 'fr' ? 'Populaire :' : 'Popular:'}
+                    </span>
                     {POPULAR_BUSINESS_SEARCHES.map((item) => {
                       const isChipActive =
                         category === item.category &&
@@ -676,8 +688,8 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                 onClick={() => setCurrentStep(1)}
                 className="h-10 px-3.5 rounded-xl bg-neutral-100 hover:bg-neutral-200 text-neutral-700 text-xs font-semibold flex items-center gap-1 cursor-pointer transition-colors"
               >
-                <ChevronLeft size={14} />
-                <span>Back</span>
+                <ChevronLeft size={14} className={language === 'ar' ? 'rotate-180' : ''} />
+                <span>{language === 'ar' ? 'السابق' : language === 'fr' ? 'Retour' : 'Back'}</span>
               </button>
             ) : (
               <button
@@ -685,7 +697,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                 onClick={onSkipToDashboard}
                 className="text-xs text-neutral-500 hover:text-neutral-900 underline cursor-pointer"
               >
-                Skip &amp; Open Demo
+                {language === 'ar' ? 'تخطي وفتح النسخة التجريبية' : language === 'fr' ? 'Passer & Ouvrir la démo' : 'Skip & Open Demo'}
               </button>
             )}
 
@@ -695,8 +707,8 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                 onClick={handleNext}
                 className="h-10 px-5 rounded-xl bg-[#C4785A] hover:bg-[#b3684a] text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-md transition-all active:scale-95"
               >
-                <span>Continue</span>
-                <ChevronRight size={14} />
+                <span>{language === 'ar' ? 'متابعة' : language === 'fr' ? 'Continuer' : 'Continue'}</span>
+                <ChevronRight size={14} className={language === 'ar' ? 'rotate-180' : ''} />
               </button>
             ) : (
               <button
@@ -706,7 +718,11 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                 className="h-11 px-6 rounded-xl bg-[#C4785A] hover:bg-[#b3684a] text-white text-xs font-bold flex items-center gap-2 cursor-pointer shadow-lg transition-all active:scale-95 disabled:opacity-50"
               >
                 <Rocket size={15} />
-                <span>{isProvisioning ? 'Launching...' : 'Launch Free Workspace'}</span>
+                <span>
+                  {isProvisioning
+                    ? (language === 'ar' ? 'جارٍ الإطلاق...' : language === 'fr' ? 'Lancement...' : 'Launching...')
+                    : (language === 'ar' ? 'إطلاق مساحة العمل المجانية' : language === 'fr' ? 'Lancer l\'espace gratuit' : 'Launch Free Workspace')}
+                </span>
               </button>
             )}
           </div>

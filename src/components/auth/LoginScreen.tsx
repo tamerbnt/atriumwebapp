@@ -304,7 +304,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
             <div className="flex justify-center w-full">
               <LabelInput
                 field="Email"
-                label="Work Email"
+                label={language === 'ar' ? 'البريد الإلكتروني للعمل' : language === 'fr' ? 'Email professionnel' : 'Work Email'}
                 value={email}
                 onChange={setEmail}
                 type="email"
@@ -316,18 +316,20 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
 
             <div className="flex flex-col items-center w-full">
               <div className="flex items-center justify-between w-full max-w-[360px] px-1 mb-1">
-                <span className="text-[11px] text-neutral-400">Security Credential</span>
+                <span className="text-[11px] text-neutral-400">
+                  {language === 'ar' ? 'بيانات الاعتماد الأمنية' : language === 'fr' ? 'Identifiants de sécurité' : 'Security Credential'}
+                </span>
                 <button
                   type="button"
                   onClick={() => setForgotPasswordOpen(true)}
                   className="text-[11px] text-[#C4785A] hover:underline cursor-pointer"
                 >
-                  Forgot password?
+                  {language === 'ar' ? 'نسيت كلمة المرور؟' : language === 'fr' ? 'Mot de passe oublié ?' : 'Forgot password?'}
                 </button>
               </div>
               <LabelInput
                 field="Password"
-                label="Password"
+                label={language === 'ar' ? 'كلمة المرور' : language === 'fr' ? 'Mot de passe' : 'Password'}
                 value={password}
                 onChange={setPassword}
                 type="password"
@@ -345,7 +347,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
                   onChange={(e) => setRememberDevice(e.target.checked)}
                   className="rounded border-neutral-700 text-[#C4785A] focus:ring-0"
                 />
-                <span>Remember this terminal</span>
+                <span>{language === 'ar' ? 'تذكر هذا الجهاز' : language === 'fr' ? 'Mémoriser ce terminal' : 'Remember this terminal'}</span>
               </label>
             </div>
 
@@ -353,8 +355,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
               type="submit"
               className="w-full h-11 rounded-xl bg-[#C4785A] hover:bg-[#b3684a] active:scale-[0.99] text-white text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-md cursor-pointer mt-2"
             >
-              <span>Sign In to Atrium</span>
-              <ArrowRight size={14} />
+              <span>{language === 'ar' ? 'تسجيل الدخول إلى Atrium' : language === 'fr' ? 'Se connecter à Atrium' : 'Sign In to Atrium'}</span>
+              <ArrowRight size={14} className={language === 'ar' ? 'rotate-180' : ''} />
             </button>
           </form>
         ) : (
@@ -362,7 +364,11 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
           <div className="space-y-4">
             <div className="text-center">
               <p className="text-xs text-neutral-400">
-                Enter your 4-digit staff PIN to unlock this terminal
+                {language === 'ar'
+                  ? 'أدخل رمز PIN المكون من 4 أرقام لفتح هذا الجهاز'
+                  : language === 'fr'
+                  ? 'Entrez votre code PIN à 4 chiffres pour déverrouiller ce terminal'
+                  : 'Enter your 4-digit staff PIN to unlock this terminal'}
               </p>
               {/* PIN Bubbles Display */}
               <div className="flex items-center justify-center gap-3 my-3">
@@ -407,7 +413,11 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
             </div>
 
             <p className="text-center text-[11px] text-neutral-500 font-mono">
-              Default PINs: 1234 (Owner), 5566 (Manager), 9988 (Cashier)
+              {language === 'ar'
+                ? 'الرموز الافتراضية: 1234 (المالك)، 5566 (المدير)، 9988 (الكاشير)'
+                : language === 'fr'
+                ? 'Codes PIN par défaut : 1234 (Propriétaire), 5566 (Manager), 9988 (Caissier)'
+                : 'Default PINs: 1234 (Owner), 5566 (Manager), 9988 (Cashier)'}
             </p>
           </div>
         )}
@@ -415,8 +425,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
         {/* Demo Fast Login Pills */}
         <div className="mt-6 pt-5 border-t border-neutral-800/80">
           <div className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 mb-2.5 flex items-center justify-between">
-            <span>Fast Demo Sign-In</span>
-            <span className="text-[9px] text-[#C4785A]">Click to test</span>
+            <span>{language === 'ar' ? 'دخول تجريبي سريع' : language === 'fr' ? 'Connexion démo rapide' : 'Fast Demo Sign-In'}</span>
+            <span className="text-[9px] text-[#C4785A]">{language === 'ar' ? 'اضغط للتجربة' : language === 'fr' ? 'Cliquer pour tester' : 'Click to test'}</span>
           </div>
           <div className="grid grid-cols-3 gap-2 text-left">
             <button
@@ -425,7 +435,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
               className="p-2 rounded-xl bg-neutral-900/90 border border-neutral-800 hover:border-[#C4785A]/50 transition-colors cursor-pointer group"
             >
               <div className="text-xs font-bold text-white group-hover:text-[#C4785A]">Tamer</div>
-              <div className="text-[10px] text-neutral-400">Owner (1234)</div>
+              <div className="text-[10px] text-neutral-400">{language === 'ar' ? 'المالك (1234)' : language === 'fr' ? 'Propriétaire (1234)' : 'Owner (1234)'}</div>
             </button>
             <button
               type="button"
@@ -433,7 +443,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
               className="p-2 rounded-xl bg-neutral-900/90 border border-neutral-800 hover:border-[#C4785A]/50 transition-colors cursor-pointer group"
             >
               <div className="text-xs font-bold text-white group-hover:text-[#C4785A]">Samir</div>
-              <div className="text-[10px] text-neutral-400">Manager (5566)</div>
+              <div className="text-[10px] text-neutral-400">{language === 'ar' ? 'المدير (5566)' : language === 'fr' ? 'Manager (5566)' : 'Manager (5566)'}</div>
             </button>
             <button
               type="button"
@@ -441,7 +451,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
               className="p-2 rounded-xl bg-neutral-900/90 border border-neutral-800 hover:border-[#C4785A]/50 transition-colors cursor-pointer group"
             >
               <div className="text-xs font-bold text-white group-hover:text-[#C4785A]">Meriem</div>
-              <div className="text-[10px] text-neutral-400">Cashier (9988)</div>
+              <div className="text-[10px] text-neutral-400">{language === 'ar' ? 'الكاشير (9988)' : language === 'fr' ? 'Caissier (9988)' : 'Cashier (9988)'}</div>
             </button>
           </div>
         </div>
@@ -449,7 +459,11 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
         {/* Onboarding Link Section (Section 11.2) */}
         <div className="mt-6 text-center pt-3">
           <p className="text-xs text-neutral-400">
-            Setting up a new business or branch?
+            {language === 'ar'
+              ? 'هل تؤسس نشاطاً تجارياً أو فرعاً جديداً؟'
+              : language === 'fr'
+              ? 'Vous configurez une nouvelle entreprise ou succursale ?'
+              : 'Setting up a new business or branch?'}
           </p>
           <button
             type="button"
@@ -457,7 +471,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
             className="mt-2 text-xs font-bold text-[#C4785A] hover:text-[#d68565] flex items-center justify-center gap-1.5 mx-auto transition-colors cursor-pointer"
           >
             <Sparkles size={13} />
-            <span>Start Multi-Step Business Onboarding</span>
+            <span>{language === 'ar' ? 'بدء معالج التهيئة متعدد المراحل' : language === 'fr' ? 'Lancer l\'assistant de configuration' : 'Start Multi-Step Business Onboarding'}</span>
           </button>
         </div>
       </div>
@@ -466,19 +480,29 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
       {forgotPasswordOpen && (
         <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs">
           <div className="w-full max-w-sm rounded-2xl bg-[#1E1B19] border border-neutral-700 p-6 text-white space-y-4">
-            <h3 className="text-base font-bold">Password Recovery</h3>
+            <h3 className="text-base font-bold">
+              {language === 'ar' ? 'استرجاع كلمة المرور' : language === 'fr' ? 'Récupération du mot de passe' : 'Password Recovery'}
+            </h3>
             <p className="text-xs text-neutral-300 leading-relaxed">
-              For local security in Atrium desktop & web terminals, password recovery codes are routed to the registered account owner email or master cash voucher.
+              {language === 'ar'
+                ? 'لأمان المحطات وأجهزة سطح المكتب، يتم إرسال رموز الاسترجاع إلى البريد الإلكتروني المعتمد أو عبر القسيمة الرئيسية.'
+                : language === 'fr'
+                ? 'Pour la sécurité locale des postes Atrium, les codes de récupération sont transmis à l\'adresse de l\'administrateur ou via le bon maître.'
+                : 'For local security in Atrium desktop & web terminals, password recovery codes are routed to the registered account owner email or master cash voucher.'}
             </p>
             <div className="p-3 rounded-xl bg-neutral-900 border border-neutral-800 text-xs text-neutral-400">
-              Recovery hint: Use default demo credentials or sign in with your 4-digit PIN (<span className="text-[#C4785A] font-bold">1234</span> for Owner).
+              {language === 'ar'
+                ? <>تلميح: استخدم بيانات الدخول التجريبية أو رمز PIN المكون من 4 أرقام (<span className="text-[#C4785A] font-bold">1234</span> للمالك).</>
+                : language === 'fr'
+                ? <>Astuce : Utilisez les identifiants de démo ou votre code PIN à 4 chiffres (<span className="text-[#C4785A] font-bold">1234</span> pour le Propriétaire).</>
+                : <>Recovery hint: Use default demo credentials or sign in with your 4-digit PIN (<span className="text-[#C4785A] font-bold">1234</span> for Owner).</>}
             </div>
             <button
               type="button"
               onClick={() => setForgotPasswordOpen(false)}
               className="w-full h-10 rounded-xl bg-[#C4785A] text-white text-xs font-bold cursor-pointer"
             >
-              Back to Sign In
+              {language === 'ar' ? 'العودة لتسجيل الدخول' : language === 'fr' ? 'Retour à la connexion' : 'Back to Sign In'}
             </button>
           </div>
         </div>

@@ -2260,16 +2260,16 @@ export const ShopScreen: React.FC = () => {
 
               <div className="py-2 text-[10px] border-b border-dashed border-neutral-400 space-y-0.5">
                 <div className="flex justify-between">
-                  <span>RECEIPT: #{completedSale.id.slice(-8).toUpperCase()}</span>
+                  <span>{language === 'ar' ? `وصل رقم / TICKET : #${completedSale.id.slice(-8).toUpperCase()}` : language === 'fr' ? `TICKET : #${completedSale.id.slice(-8).toUpperCase()}` : `RECEIPT: #${completedSale.id.slice(-8).toUpperCase()}`}</span>
                   <span>{new Date(completedSale.createdAt).toLocaleDateString()}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>CASHIER: {completedSale.cashierName || 'Cashier'}</span>
+                  <span>{language === 'ar' ? `الكاشير / CAISSIER : ${completedSale.cashierName || 'Cashier'}` : language === 'fr' ? `CAISSIER : ${completedSale.cashierName || 'Caissier'}` : `CASHIER: ${completedSale.cashierName || 'Cashier'}`}</span>
                   <span>{new Date(completedSale.createdAt).toLocaleTimeString()}</span>
                 </div>
                 {completedSale.memberName && (
                   <div className="flex justify-between font-bold">
-                    <span>CUSTOMER:</span>
+                    <span>{language === 'ar' ? 'الزبون / CLIENT :' : language === 'fr' ? 'CLIENT :' : 'CUSTOMER:'}</span>
                     <span>{completedSale.memberName}</span>
                   </div>
                 )}
@@ -2280,7 +2280,9 @@ export const ShopScreen: React.FC = () => {
                 {completedSale.items.map((it: any, idx: number) => (
                   <div key={idx} className="flex justify-between">
                     <span>{it.quantity}x {it.productName}</span>
-                    <span className="font-bold">{formatMoney(it.totalPrice)}</span>
+                    <span className="font-bold">
+                      {formatMoney(it.totalPrice)} {language === 'ar' ? 'د.ج' : ''}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -2289,33 +2291,37 @@ export const ShopScreen: React.FC = () => {
               <div className="py-2 space-y-1 border-b border-dashed border-neutral-400">
                 {completedSale.subtotal && completedSale.subtotal !== completedSale.totalAmount && (
                   <div className="flex justify-between text-neutral-600">
-                    <span>SUBTOTAL</span>
-                    <span>{formatMoney(completedSale.subtotal)}</span>
+                    <span>{language === 'ar' ? 'المجموع الفرعي / SOUS-TOTAL' : language === 'fr' ? 'SOUS-TOTAL' : 'SUBTOTAL'}</span>
+                    <span>{formatMoney(completedSale.subtotal)} {language === 'ar' ? 'د.ج' : ''}</span>
                   </div>
                 )}
                 {completedSale.discountAmount > 0 && (
                   <div className="flex justify-between text-emerald-700 font-bold">
-                    <span>DISCOUNT</span>
-                    <span>-{formatMoney(completedSale.discountAmount)}</span>
+                    <span>{language === 'ar' ? 'الخصم / REMISE' : language === 'fr' ? 'REMISE' : 'DISCOUNT'}</span>
+                    <span>-{formatMoney(completedSale.discountAmount)} {language === 'ar' ? 'د.ج' : ''}</span>
                   </div>
                 )}
                 <div className="flex justify-between text-sm font-black pt-1">
-                  <span>TOTAL PAID</span>
-                  <span>{formatMoney(completedSale.totalAmount)}</span>
+                  <span>{language === 'ar' ? 'المجموع المدفوع / TOTAL PAYÉ' : language === 'fr' ? 'TOTAL PAYÉ' : 'TOTAL PAID'}</span>
+                  <span>{formatMoney(completedSale.totalAmount)} {language === 'ar' ? 'د.ج' : ''}</span>
                 </div>
                 <div className="flex justify-between text-[10px] text-neutral-600 pt-1">
-                  <span>METHOD:</span>
-                  <span className="font-bold">{completedSale.paymentMethod}</span>
+                  <span>{language === 'ar' ? 'طريقة الدفع / MODE DE PAIEMENT :' : language === 'fr' ? 'MODE DE PAIEMENT :' : 'METHOD:'}</span>
+                  <span className="font-bold">
+                    {completedSale.paymentMethod === 'Cash'
+                      ? (language === 'ar' ? 'نقداً / Espèces' : language === 'fr' ? 'Espèces' : 'Cash')
+                      : completedSale.paymentMethod}
+                  </span>
                 </div>
                 {completedSale.amountTendered !== undefined && completedSale.paymentMethod === 'Cash' && (
                   <>
                     <div className="flex justify-between text-[10px]">
-                      <span>TENDERED:</span>
-                      <span>{formatMoney(completedSale.amountTendered)}</span>
+                      <span>{language === 'ar' ? 'المقبوض / REÇU :' : language === 'fr' ? 'REÇU :' : 'TENDERED:'}</span>
+                      <span>{formatMoney(completedSale.amountTendered)} {language === 'ar' ? 'د.ج' : ''}</span>
                     </div>
                     <div className="flex justify-between text-[10px] font-bold">
-                      <span>CHANGE DUE:</span>
-                      <span>{formatMoney(completedSale.changeGiven || 0)}</span>
+                      <span>{language === 'ar' ? 'المتبقي / RENDU :' : language === 'fr' ? 'MONNAIE RENDUE :' : 'CHANGE DUE:'}</span>
+                      <span>{formatMoney(completedSale.changeGiven || 0)} {language === 'ar' ? 'د.ج' : ''}</span>
                     </div>
                   </>
                 )}

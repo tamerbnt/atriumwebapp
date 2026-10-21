@@ -362,7 +362,6 @@ export const EducationAdmissionsView: React.FC = () => {
                   value: co.id,
                   label: `${co.title} (${co.category})`,
                 }))}
-                placeholder="Select Desired Course..."
               />
 
               <div className="grid grid-cols-2 gap-3">
@@ -381,7 +380,7 @@ export const EducationAdmissionsView: React.FC = () => {
                 <div>
                   <LabelInput
                     field="source"
-                    label="Acquisition Channel"
+                    label={t('member_field_acquisition')}
                     placeholder="e.g. Instagram, Referral, Walk-in"
                     value={formData.source}
                     onChange={(val) => setFormData({ ...formData, source: String(val) })}

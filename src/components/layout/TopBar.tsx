@@ -475,7 +475,7 @@ export const TopBar: React.FC<TopBarProps> = ({
           {facilityDropdownOpen && (
             <div className="absolute left-0 mt-2 w-64 rounded-2xl bg-white dark:bg-[#1E1B19] border border-neutral-200 dark:border-neutral-700 shadow-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
               <div className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
-                Switch Vertical / Facility
+                {language === 'ar' ? 'تبديل المنشأة / الفرع' : language === 'fr' ? 'Changer d\'établissement / succursale' : 'Switch Vertical / Facility'}
               </div>
               {businesses.map((biz) => {
                 const isCurrent = biz.id === currentBusinessId;
@@ -518,7 +518,7 @@ export const TopBar: React.FC<TopBarProps> = ({
                 >
                   <div className="flex items-center gap-2">
                     <Plus size={13} />
-                    <span>Add Facility or Branch</span>
+                    <span>{language === 'ar' ? 'إضافة منشأة أو فرع' : language === 'fr' ? 'Ajouter une succursale' : 'Add Facility or Branch'}</span>
                   </div>
                   <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-[#C4785A]/15 text-[#C4785A]">
                     Desktop
@@ -767,12 +767,12 @@ export const TopBar: React.FC<TopBarProps> = ({
         <div
           title={
             supabaseStatus === 'connected'
-              ? `Connected to Supabase PostgreSQL & Realtime${lastSyncedAt ? ` (Synced: ${new Date(lastSyncedAt).toLocaleTimeString()})` : ''}`
+              ? (language === 'ar' ? `متصل بسوبابيس PostgreSQL والبث المباشر${lastSyncedAt ? ` (المزامنة: ${new Date(lastSyncedAt).toLocaleTimeString()})` : ''}` : language === 'fr' ? `Connecté à Supabase PostgreSQL & temps réel${lastSyncedAt ? ` (Synchronisé : ${new Date(lastSyncedAt).toLocaleTimeString()})` : ''}` : `Connected to Supabase PostgreSQL & Realtime${lastSyncedAt ? ` (Synced: ${new Date(lastSyncedAt).toLocaleTimeString()})` : ''}`)
               : supabaseStatus === 'connecting'
-              ? 'Connecting to Supabase...'
+              ? (language === 'ar' ? 'جارٍ الاتصال بسوبابيس...' : language === 'fr' ? 'Connexion à Supabase...' : 'Connecting to Supabase...')
               : supabaseStatus === 'offline'
-              ? 'Offline mode — local changes will sync when connection is restored'
-              : 'Local Storage / Demo Mode (Set VITE_SUPABASE_URL to connect live cloud)'
+              ? (language === 'ar' ? 'الوضع المحلي بدون إنترنت — سيتم مزامنة التغييرات تلقائياً فور عودة الاتصال' : language === 'fr' ? 'Mode hors-ligne — synchronisation dès retour du réseau' : 'Offline mode — local changes will sync when connection is restored')
+              : (language === 'ar' ? 'وضع التخزين المحلي / التجريبي' : language === 'fr' ? 'Stockage local / Mode démo' : 'Local Storage / Demo Mode')
           }
           className={`hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium border transition-colors ${
             supabaseStatus === 'connected'
@@ -788,24 +788,24 @@ export const TopBar: React.FC<TopBarProps> = ({
             <>
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
               <Cloud size={12} />
-              <span>Cloud Synced</span>
+              <span>{t('topbar_cloud_synced', language)}</span>
             </>
           ) : supabaseStatus === 'connecting' ? (
             <>
               <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-ping" />
               <RotateCw size={12} className="animate-spin" />
-              <span>Syncing...</span>
+              <span>{t('topbar_syncing', language)}</span>
             </>
           ) : supabaseStatus === 'offline' ? (
             <>
               <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
               <CloudOff size={12} />
-              <span>Offline</span>
+              <span>{t('topbar_offline', language)}</span>
             </>
           ) : (
             <>
               <Database size={12} className="text-[#C4785A]" />
-              <span>Hybrid / Local</span>
+              <span>{language === 'ar' ? 'محلي / هجين' : language === 'fr' ? 'Hybride / Local' : 'Hybrid / Local'}</span>
             </>
           )}
         </div>
@@ -814,7 +814,7 @@ export const TopBar: React.FC<TopBarProps> = ({
         <button
           type="button"
           onClick={() => syncWithSupabase()}
-          title={isSupabaseConfigured ? 'Sync with Supabase Cloud' : 'Refresh State'}
+          title={isSupabaseConfigured ? (language === 'ar' ? 'مزامنة مع سحابة سوبابيس' : language === 'fr' ? 'Synchroniser avec Supabase Cloud' : 'Sync with Supabase Cloud') : (language === 'ar' ? 'تحديث الحالة' : language === 'fr' ? 'Actualiser l\'état' : 'Refresh State')}
           className={`w-8 h-8 rounded-full flex items-center justify-center text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer ${
             isSyncing ? 'animate-spin text-[#C4785A]' : ''
           }`}
@@ -826,7 +826,7 @@ export const TopBar: React.FC<TopBarProps> = ({
         <button
           type="button"
           onClick={onOpenVoucherModal}
-          title="Atrium Launch & License Center"
+          title={language === 'ar' ? 'مركز إطلاق وتراخيص Atrium' : language === 'fr' ? 'Centre de licences & activation Atrium' : 'Atrium Launch & License Center'}
           className="w-8 h-8 rounded-full flex items-center justify-center text-neutral-500 dark:text-neutral-400 hover:text-[#C4785A] hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
         >
           <Rocket size={14} />

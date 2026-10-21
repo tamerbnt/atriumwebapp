@@ -25,7 +25,7 @@ import { useTranslation } from '../../../utils/useTranslation';
 type PaymentFilterKey = 'all' | 'pending' | 'partial' | 'overdue' | 'paid';
 
 export const EducationFinanceView: React.FC = () => {
-  const { t, isRtl } = useTranslation();
+  const { t, isRtl, language } = useTranslation();
   const {
     eduEnrollments,
     eduCohorts,
@@ -127,7 +127,7 @@ export const EducationFinanceView: React.FC = () => {
             className="h-10 px-4 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 text-xs font-semibold flex items-center gap-1.5 hover:bg-neutral-50 dark:hover:bg-neutral-700/60 transition-colors cursor-pointer shadow-2xs"
           >
             <Printer size={14} />
-            <span>Print Ledger</span>
+            <span>{language === 'ar' ? 'طباعة كشف الحساب' : language === 'fr' ? 'Imprimer le grand livre' : 'Print Ledger'}</span>
           </button>
           {eduEnrollments.length > 0 && (
             <button
@@ -146,7 +146,7 @@ export const EducationFinanceView: React.FC = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="p-4 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-900/40 border border-[#EDF1F3] dark:border-neutral-800">
           <div className="flex items-center justify-between text-neutral-500 dark:text-neutral-400 text-xs font-semibold mb-1">
-            <span>Contracted Billed</span>
+            <span>{language === 'ar' ? 'المبلغ الإجمالي المتعاقد عليه' : language === 'fr' ? 'Total facturé' : 'Contracted Billed'}</span>
             <DollarSign size={16} className="text-[#C4785A]" />
           </div>
           <div className="my-1">
@@ -242,7 +242,7 @@ export const EducationFinanceView: React.FC = () => {
               <th className="py-3.5 px-4">{t('edu_col_student')}</th>
               <th className="py-3.5 px-4">{t('edu_col_cohort')}</th>
               <th className="py-3.5 px-4">{t('edu_field_tuition_fee')}</th>
-              <th className="py-3.5 px-4">Paid / Balance</th>
+              <th className="py-3.5 px-4">{language === 'ar' ? 'المسدد / الرصيد المتبقي' : language === 'fr' ? 'Payé / Solde' : 'Paid / Balance'}</th>
               <th className="py-3.5 px-4">{t('common_status')}</th>
               <th className="py-3.5 px-4 text-right rtl:text-left">{t('edu_col_actions')}</th>
             </tr>
@@ -442,13 +442,13 @@ export const EducationFinanceView: React.FC = () => {
 
             <div className="p-4 rounded-xl bg-[#F8F9FA] dark:bg-neutral-900/60 border border-neutral-200 dark:border-neutral-800 space-y-2 text-xs">
               <div className="flex justify-between">
-                <span className="text-neutral-500">Learner:</span>
+                <span className="text-neutral-500">{language === 'ar' ? 'المترشح / المتدرب:' : language === 'fr' ? 'Apprenant :' : 'Learner:'}</span>
                 <span className="font-bold text-neutral-900 dark:text-white">
                   {receiptToPrint.studentName}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-neutral-500">Cohort / Course:</span>
+                <span className="text-neutral-500">{language === 'ar' ? 'الفوج / الدورة التدريبية:' : language === 'fr' ? 'Promotion / Formation :' : 'Cohort / Course:'}</span>
                 <span className="font-semibold text-neutral-800 dark:text-neutral-200">
                   {receiptToPrint.cohortName}
                 </span>
@@ -458,7 +458,7 @@ export const EducationFinanceView: React.FC = () => {
                 <span className="font-semibold">{receiptToPrint.method}</span>
               </div>
               <div className="flex justify-between pt-2 border-t border-neutral-200 dark:border-neutral-800 font-bold text-sm">
-                <span>Amount Paid:</span>
+                <span>{language === 'ar' ? 'المبلغ المسدد:' : language === 'fr' ? 'Montant payé :' : 'Amount Paid:'}</span>
                 <span className="text-emerald-600 dark:text-emerald-400">{formatMoney(receiptToPrint.amount)}</span>
               </div>
             </div>

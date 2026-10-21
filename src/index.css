@@ -131,6 +131,7 @@
   [dir="rtl"] body,
   [dir="rtl"] {
     font-family: 'Cairo', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    letter-spacing: normal;
   }
 }
 
@@ -780,10 +781,14 @@
   left: auto;
   right: var(--lbi-x);
   transform-origin: right center;
+  letter-spacing: normal !important;
+  unicode-bidi: plaintext;
 }
 [dir="rtl"] .lbi-field {
   padding: 0 var(--lbi-x) 0 0;
   text-align: right;
+  letter-spacing: normal !important;
+  unicode-bidi: plaintext;
 }
 [dir="rtl"] .lbi-field::-webkit-calendar-picker-indicator {
   margin-right: 0;
