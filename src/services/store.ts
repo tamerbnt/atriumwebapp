@@ -942,33 +942,52 @@ export function useAtriumStore() {
     let nextRole = globalState.activePmRole;
     let nextSubScreen = globalState.activePmSubScreen;
 
+    // Role 1: Direction
     if (activeScreen === 'pm_dir_dashboard') {
       nextRole = 'direction';
       nextSubScreen = 'dashboard';
     } else if (activeScreen === 'pm_dir_new_project') {
       nextRole = 'direction';
       nextSubScreen = 'new_project';
+    } else if (activeScreen === 'pm_dir_projects') {
+      nextRole = 'direction';
+      nextSubScreen = 'dashboard';
     } else if (activeScreen === 'pm_dir_approvals') {
       nextRole = 'direction';
       nextSubScreen = 'approvals';
+    } else if (activeScreen === 'pm_dir_reports') {
+      nextRole = 'direction';
+      nextSubScreen = 'reports';
+    // Role 2: Chef de Projet
     } else if (activeScreen === 'pm_cp_projects') {
       nextRole = 'chef_projet';
       nextSubScreen = 'portfolio';
     } else if (activeScreen === 'pm_cp_catalog') {
       nextRole = 'chef_projet';
       nextSubScreen = 'catalog';
-    } else if (activeScreen === 'pm_cp_deliverables') {
+    } else if (activeScreen === 'pm_cp_orders') {
+      nextRole = 'chef_projet';
+      nextSubScreen = 'orders';
+    } else if (activeScreen === 'pm_cp_deliverables' || activeScreen === 'pm_cp_files') {
       nextRole = 'chef_projet';
       nextSubScreen = 'bat';
     } else if (activeScreen === 'pm_cp_expenses') {
       nextRole = 'chef_projet';
       nextSubScreen = 'expenses';
+    // Role 3: Créa Studio
     } else if (activeScreen === 'pm_crea_kanban') {
       nextRole = 'crea';
-      nextSubScreen = 'kanban';
+      nextSubScreen = 'demandes';
+    } else if (activeScreen === 'pm_crea_production') {
+      nextRole = 'crea';
+      nextSubScreen = 'production';
     } else if (activeScreen === 'pm_crea_upload') {
       nextRole = 'crea';
       nextSubScreen = 'upload';
+    } else if (activeScreen === 'pm_crea_briefs') {
+      nextRole = 'crea';
+      nextSubScreen = 'briefs';
+    // Role 4: Superviseur Terrain
     } else if (activeScreen === 'pm_sup_missions') {
       nextRole = 'superviseur';
       nextSubScreen = 'missions';
@@ -981,6 +1000,7 @@ export function useAtriumStore() {
     } else if (activeScreen === 'pm_sup_expenses') {
       nextRole = 'superviseur';
       nextSubScreen = 'expense';
+    // Role 5: Ressources Humaines
     } else if (activeScreen === 'pm_rh_talents') {
       nextRole = 'rh';
       nextSubScreen = 'talents';
@@ -993,6 +1013,7 @@ export function useAtriumStore() {
     } else if (activeScreen === 'pm_rh_walkin') {
       nextRole = 'rh';
       nextSubScreen = 'walkin';
+    // Role 6: Comptabilité & Finance
     } else if (activeScreen === 'pm_compta_payroll') {
       nextRole = 'compta';
       nextSubScreen = 'payroll';
@@ -1005,6 +1026,27 @@ export function useAtriumStore() {
     } else if (activeScreen === 'pm_compta_stock') {
       nextRole = 'compta';
       nextSubScreen = 'stock';
+    // Category mapping when in Agency mode
+    } else if (currentBusiness?.category === 'project_milestone') {
+      if (activeScreen === 'dashboard') {
+        nextRole = 'direction';
+        nextSubScreen = 'dashboard';
+      } else if (activeScreen === 'scheduler') {
+        nextRole = 'chef_projet';
+        nextSubScreen = 'portfolio';
+      } else if (activeScreen === 'registrations') {
+        nextRole = 'crea';
+        nextSubScreen = 'demandes';
+      } else if (activeScreen === 'analytics') {
+        nextRole = 'superviseur';
+        nextSubScreen = 'missions';
+      } else if (activeScreen === 'members') {
+        nextRole = 'rh';
+        nextSubScreen = 'talents';
+      } else if (activeScreen === 'finance' || activeScreen === 'shop') {
+        nextRole = 'compta';
+        nextSubScreen = 'payroll';
+      }
     }
 
     globalState = {

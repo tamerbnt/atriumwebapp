@@ -467,13 +467,13 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
               <Seek
                 value={talentSearch}
                 onChange={setTalentSearch}
-                placeholder="Rechercher animateur, wilaya, commune..."
+                placeholder={t('pm_sup_search_talents_ph')}
                 openWidth={260}
                 shutSize={38}
               />
 
               <FilterSelect
-                label="Wilaya"
+                label={t('pm_sup_filter_wilaya')}
                 value={wilayaFilter}
                 onChange={(val) => setWilayaFilter(typeof val === 'string' ? val : val.target?.value || val)}
                 options={[
@@ -486,7 +486,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
               />
 
               <FilterSelect
-                label="Note Min"
+                label={t('pm_sup_filter_min_rating')}
                 value={minRatingFilter}
                 onChange={(val) => setMinRatingFilter(Number(typeof val === 'string' || typeof val === 'number' ? val : val.target?.value || val))}
                 options={[
@@ -605,9 +605,9 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
             <div>
               <LabelInput
                 field="Motif"
-                label="Motif de la Dépense Terrain *"
+                label={t('pm_sup_field_expense_reason')}
                 required
-                placeholder="Ex: Câble HDMI blindé pour écran stand Bab Ezzouar"
+                placeholder={t('pm_sup_field_expense_reason_ph')}
                 value={expenseTitle}
                 onChange={setExpenseTitle}
                 width="100%"
@@ -620,7 +620,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
               <div>
                 <LabelInput
                   field="Montant"
-                  label="Montant en DA *"
+                  label={t('pm_cp_field_amount')}
                   type="number"
                   required
                   value={expenseAmount}
@@ -633,7 +633,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
 
               <LabelSelect
                 field="Category"
-                label="Catégorie"
+                label={t('pm_cp_table_col_category')}
                 value={expenseCategory}
                 onChange={(val) => setExpenseCategory(typeof val === 'string' ? (val as any) : (val.target?.value || val))}
                 options={[
@@ -649,7 +649,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
             <div>
               <LabelInput
                 field="PhotoUrl"
-                label="Photo du Ticket / Facturette (URL simulation caméra)"
+                label={t('pm_sup_field_expense_photo')}
                 type="url"
                 value={expensePhotoUrl}
                 onChange={setExpensePhotoUrl}

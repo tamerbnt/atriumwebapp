@@ -35,7 +35,7 @@ import { useAtriumStore, showToast } from '../../services/store';
 import { formatDuration } from '../../utils/rules';
 import { PMRole, SupportedLanguage } from '../../types/index';
 import { Seek } from '../ui/Seek';
-import { t } from '../../utils/i18n';
+import { useTranslation } from '../../utils/useTranslation';
 
 interface TopBarProps {
   onOpenVoucherModal: () => void;
@@ -48,6 +48,7 @@ export const TopBar: React.FC<TopBarProps> = ({
   onToggleMobileMenu,
   onOpenCommandPalette,
 }) => {
+  const { t } = useTranslation();
   const {
     activeScreen,
     setScreen,
@@ -132,7 +133,7 @@ export const TopBar: React.FC<TopBarProps> = ({
             <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
             <span className="text-neutral-900 dark:text-white font-semibold">
               {isProjectMilestone
-                ? 'Superviseur Terrain (Live Missions)'
+                ? t('pm_screen_sup_missions')
                 : isFreelance
                 ? t('topbar_solo_timetracker_crumb', language)
                 : isRental
@@ -164,7 +165,7 @@ export const TopBar: React.FC<TopBarProps> = ({
                 onClick={() => selectMember(null)}
                 className="text-neutral-400 hover:text-[#C4785A] font-medium transition-colors cursor-pointer"
               >
-                {isFreelance ? t('topbar_solo_clients_crumb', language) : isRental ? 'Renters' : isEducation ? 'Students' : isPOS ? 'Customers' : terminology.members}
+                {isProjectMilestone ? t('pm_screen_rh_talents') : isFreelance ? t('topbar_solo_clients_crumb', language) : isRental ? 'Renters' : isEducation ? 'Students' : isPOS ? 'Customers' : terminology.members}
               </button>
               <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
               <span className="text-neutral-900 dark:text-white font-semibold truncate max-w-[130px] sm:max-w-[200px]">
@@ -185,7 +186,9 @@ export const TopBar: React.FC<TopBarProps> = ({
             </button>
             <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
             <span className="text-neutral-900 dark:text-white font-semibold">
-              {isFreelance
+              {isProjectMilestone
+                ? t('pm_screen_rh_talents')
+                : isFreelance
                 ? t('topbar_solo_clients_crumb', language)
                 : isRental
                 ? 'Renters & Client Directory'
@@ -210,7 +213,9 @@ export const TopBar: React.FC<TopBarProps> = ({
             </button>
             <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
             <span className="text-neutral-900 dark:text-white font-semibold">
-              {isFreelance
+              {isProjectMilestone
+                ? t('pm_screen_crea_kanban')
+                : isFreelance
                 ? t('topbar_solo_proposals_crumb', language)
                 : isRental
                 ? 'Reservations & Event Inquiries'
@@ -235,7 +240,9 @@ export const TopBar: React.FC<TopBarProps> = ({
             </button>
             <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
             <span className="text-neutral-900 dark:text-white font-semibold">
-              {isFreelance
+              {isProjectMilestone
+                ? t('pm_screen_cp_catalog')
+                : isFreelance
                 ? t('topbar_solo_invoices_crumb', language)
                 : isRental
                 ? 'Spaces & Asset Inventory'
@@ -260,7 +267,9 @@ export const TopBar: React.FC<TopBarProps> = ({
             </button>
             <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
             <span className="text-neutral-900 dark:text-white font-semibold">
-              {isFreelance
+              {isProjectMilestone
+                ? t('pm_screen_cp_projects')
+                : isFreelance
                 ? t('topbar_solo_deliverables_crumb', language)
                 : isRental
                 ? 'Occupancy Matrix & Timeline'
@@ -285,7 +294,9 @@ export const TopBar: React.FC<TopBarProps> = ({
             </button>
             <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
             <span className="text-neutral-900 dark:text-white font-semibold">
-              {isFreelance
+              {isProjectMilestone
+                ? t('pm_screen_compta_payroll')
+                : isFreelance
                 ? t('topbar_solo_finance_crumb', language)
                 : isRental
                 ? 'Caution Escrow & Rental Revenue'
@@ -308,7 +319,9 @@ export const TopBar: React.FC<TopBarProps> = ({
             </button>
             <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
             <span className="text-neutral-900 dark:text-white font-semibold">
-              {isFreelance
+              {isProjectMilestone
+                ? t('pm_screen_sup_attendance')
+                : isFreelance
                 ? t('topbar_solo_history_crumb', language)
                 : isEducation
                 ? 'Roll Call & Attendance Log'
@@ -333,7 +346,7 @@ export const TopBar: React.FC<TopBarProps> = ({
             </button>
             <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
             <span className="text-neutral-900 dark:text-white font-semibold">
-              {isFreelance ? t('topbar_solo_settings_crumb', language) : 'Settings & License'}
+              {t('nav_settings')}
             </span>
           </nav>
         );
@@ -411,12 +424,61 @@ export const TopBar: React.FC<TopBarProps> = ({
           </nav>
         );
       }
-      default:
+      default: {
+        const pmScreenTitles: Record<string, { role: string; screen: string }> = {
+          pm_dir_dashboard: { role: t('pm_role_direction_name'), screen: t('pm_screen_dir_dashboard') },
+          pm_dir_new_project: { role: t('pm_role_direction_name'), screen: t('pm_screen_dir_new_project') },
+          pm_dir_projects: { role: t('pm_role_direction_name'), screen: t('pm_screen_dir_projects') },
+          pm_dir_approvals: { role: t('pm_role_direction_name'), screen: t('pm_screen_dir_approvals') },
+          pm_dir_reports: { role: t('pm_role_direction_name'), screen: t('pm_screen_dir_reports') },
+          pm_cp_projects: { role: t('pm_role_chef_projet_name'), screen: t('pm_screen_cp_projects') },
+          pm_cp_catalog: { role: t('pm_role_chef_projet_name'), screen: t('pm_screen_cp_catalog') },
+          pm_cp_orders: { role: t('pm_role_chef_projet_name'), screen: t('pm_screen_cp_orders') },
+          pm_cp_files: { role: t('pm_role_chef_projet_name'), screen: t('pm_screen_cp_deliverables') },
+          pm_cp_deliverables: { role: t('pm_role_chef_projet_name'), screen: t('pm_screen_cp_deliverables') },
+          pm_cp_expenses: { role: t('pm_role_chef_projet_name'), screen: t('pm_screen_cp_expenses') },
+          pm_crea_kanban: { role: t('pm_role_crea_name'), screen: t('pm_screen_crea_kanban') },
+          pm_crea_production: { role: t('pm_role_crea_name'), screen: t('pm_screen_crea_production') },
+          pm_crea_upload: { role: t('pm_role_crea_name'), screen: t('pm_screen_crea_upload') },
+          pm_crea_briefs: { role: t('pm_role_crea_name'), screen: t('pm_screen_crea_briefs') },
+          pm_sup_missions: { role: t('pm_role_superviseur_name'), screen: t('pm_screen_sup_missions') },
+          pm_sup_attendance: { role: t('pm_role_superviseur_name'), screen: t('pm_screen_sup_attendance') },
+          pm_sup_staffing: { role: t('pm_role_superviseur_name'), screen: t('pm_screen_sup_staffing') },
+          pm_sup_expenses: { role: t('pm_role_superviseur_name'), screen: t('pm_screen_sup_expenses') },
+          pm_rh_talents: { role: t('pm_role_rh_name'), screen: t('pm_screen_rh_talents') },
+          pm_rh_dossier: { role: t('pm_role_rh_name'), screen: t('pm_screen_rh_dossier') },
+          pm_rh_portal: { role: t('pm_role_rh_name'), screen: t('pm_screen_rh_portal') },
+          pm_rh_walkin: { role: t('pm_role_rh_name'), screen: t('pm_screen_rh_walkin') },
+          pm_compta_payroll: { role: t('pm_role_compta_name'), screen: t('pm_screen_compta_payroll') },
+          pm_compta_ccp: { role: t('pm_role_compta_name'), screen: t('pm_screen_compta_ccp') },
+          pm_compta_expenses: { role: t('pm_role_compta_name'), screen: t('pm_screen_compta_expenses') },
+          pm_compta_stock: { role: t('pm_role_compta_name'), screen: t('pm_screen_compta_stock') },
+        };
+        const info = (pmScreenTitles as Record<string, { role: string; screen: string }>)[activeScreen];
+        if (info) {
+          return (
+            <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs">
+              <button
+                type="button"
+                onClick={() => setScreen('dashboard')}
+                className="text-neutral-400 hover:text-[#C4785A] font-medium transition-colors flex items-center gap-1 cursor-pointer"
+              >
+                <Home size={12} />
+                <span>{homeLabel}</span>
+              </button>
+              <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
+              <span className="text-neutral-500 font-medium">{info.role}</span>
+              <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
+              <span className="text-neutral-900 dark:text-white font-semibold">{info.screen}</span>
+            </nav>
+          );
+        }
         return (
           <span className="text-xs font-semibold text-neutral-800 dark:text-neutral-200 capitalize">
             {activeScreen}
           </span>
         );
+      }
     }
   };
 

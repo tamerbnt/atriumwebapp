@@ -786,9 +786,9 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
               <div className="md:col-span-2">
                 <LabelInput
                   field="Designation"
-                  label="Désignation du Matériel *"
+                  label={t('pm_cp_field_designation')}
                   required
-                  placeholder="Ex: Nappe comptoir brandée, Câble HDMI 15m..."
+                  placeholder={t('pm_cp_field_designation_ph')}
                   value={purchaseTitle}
                   onChange={setPurchaseTitle}
                   width="100%"
@@ -800,7 +800,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
               <div>
                 <LabelInput
                   field="Montant"
-                  label="Montant en DA *"
+                  label={t('pm_cp_field_amount')}
                   type="number"
                   required
                   value={purchaseAmount}
@@ -896,11 +896,11 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
           <div className="bg-white dark:bg-zinc-900 rounded-2xl max-w-sm w-full p-6 space-y-4 shadow-xl">
             <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-              Demande de Correction BAT
+              {t('pm_cp_revision_modal_title')}
             </h3>
             <textarea
               rows={3}
-              placeholder="Ex: Ajuster le logo client à 15cm du bord supérieur et corriger le texte légal..."
+              placeholder={t('pm_cp_revision_ph')}
               value={correctionNote}
               onChange={(e) => setCorrectionNote(e.target.value)}
               className="w-full px-3 py-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-[#C4785A]"
@@ -908,15 +908,15 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
             <div className="flex justify-end gap-2">
               <button
                 onClick={() => setIsCorrectionModalOpen(false)}
-                className="px-3 py-1.5 text-xs text-zinc-500 hover:text-zinc-800"
+                className="px-3 py-1.5 text-xs text-zinc-500 hover:text-zinc-800 cursor-pointer"
               >
-                Annuler
+                {t('common_cancel')}
               </button>
               <button
                 onClick={handleRequestRevision}
-                className="px-3.5 py-1.5 text-xs font-semibold text-white bg-amber-600 hover:bg-amber-500 rounded-lg"
+                className="px-3.5 py-1.5 text-xs font-semibold text-white bg-amber-600 hover:bg-amber-500 rounded-lg cursor-pointer"
               >
-                Envoyer au Studio Créa
+                {t('pm_cp_revision_btn_send')}
               </button>
             </div>
           </div>

@@ -543,7 +543,7 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
             <div className="space-y-4">
               <LabelSelect
                 field="Project"
-                label="Projet & Campagne Associée"
+                label={t('pm_crea_field_project')}
                 value={selectedProjectId}
                 onChange={(val) => setSelectedProjectId(typeof val === 'string' ? val : val.target?.value || val)}
                 options={pmProjects.map((p) => ({
@@ -557,7 +557,7 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
               <div>
                 <LabelInput
                   field="ArtworkTitle"
-                  label="Nom du Livrable Graphique *"
+                  label={t('pm_crea_field_artwork_name')}
                   required
                   placeholder="BAT_Rollup_BabEzzouar_85x200"
                   value={artworkTitle}
@@ -571,18 +571,18 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
               {/* Technical Specifications Matrix */}
               <div className="p-4 bg-zinc-50 dark:bg-zinc-800/40 rounded-xl border border-zinc-200 dark:border-zinc-700/60 space-y-3">
                 <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100 block">
-                  Contrôle Qualité Pré-Presse (Enregistrement Technique)
+                  {t('pm_crea_upload_sub')}
                 </span>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <LabelSelect
                     field="ColorSpace"
-                    label="Espace Couleur"
+                    label={t('pm_crea_field_colorspace')}
                     value={colorSpace}
                     onChange={(val) => setColorSpace(typeof val === 'string' ? (val as any) : (val.target?.value || val))}
                     options={[
-                      { value: 'CMJN', label: 'CMJN / CMYK (Imprimeur)' },
-                      { value: 'RVB', label: 'RVB / RGB (Écrans)' },
+                      { value: 'CMJN', label: 'CMJN / CMYK' },
+                      { value: 'RVB', label: 'RVB / RGB' },
                     ]}
                     height={42}
                     corner={10}
@@ -590,13 +590,13 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
 
                   <LabelSelect
                     field="Resolution"
-                    label="Résolution"
+                    label={t('pm_crea_field_resolution')}
                     value={resolutionDpi}
                     onChange={(val) => setResolutionDpi(typeof val === 'string' ? val : val.target?.value || val)}
                     options={[
-                      { value: '300', label: '300 DPI HD (Print)' },
-                      { value: '150', label: '150 DPI (Bâche)' },
-                      { value: '72', label: '72 DPI (Web)' },
+                      { value: '300', label: '300 DPI HD' },
+                      { value: '150', label: '150 DPI' },
+                      { value: '72', label: '72 DPI' },
                     ]}
                     height={42}
                     corner={10}
@@ -604,14 +604,14 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
 
                   <LabelSelect
                     field="Format"
-                    label="Format Fichier"
+                    label={t('pm_crea_field_fileformat')}
                     value={fileFormat}
                     onChange={(val) => setFileFormat(typeof val === 'string' ? (val as any) : (val.target?.value || val))}
                     options={[
-                      { value: 'pdf', label: 'PDF Haute Définition' },
-                      { value: 'ai', label: 'Adobe Illustrator (.ai)' },
-                      { value: 'psd', label: 'Adobe Photoshop (.psd)' },
-                      { value: 'tiff', label: 'TIFF Non Compressé' },
+                      { value: 'pdf', label: 'PDF' },
+                      { value: 'ai', label: 'Illustrator (.ai)' },
+                      { value: 'psd', label: 'Photoshop (.psd)' },
+                      { value: 'tiff', label: 'TIFF' },
                     ]}
                     height={42}
                     corner={10}
@@ -635,7 +635,7 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
               <div>
                 <LabelInput
                   field="PreviewUrl"
-                  label="URL de Prévisualisation du BAT (Aperçu HD)"
+                  label={t('pm_crea_field_preview_url')}
                   type="url"
                   value={previewUrl}
                   onChange={setPreviewUrl}

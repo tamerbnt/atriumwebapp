@@ -1,0 +1,3052 @@
+[
+  {
+    "key": "pm_role_direction_badge",
+    "ar": "Direction Générale (DG)",
+    "fr": "Direction Générale (DG)"
+  },
+  {
+    "key": "pm_role_cp_badge",
+    "ar": "Chef de Projet (CDP)",
+    "fr": "Chef de Projet (CDP)"
+  },
+  {
+    "key": "pm_role_crea_badge",
+    "ar": "Studio Créa (CR)",
+    "fr": "Studio Créa (CR)"
+  },
+  {
+    "key": "pm_role_sup_badge",
+    "ar": "Superviseur Terrain (SUP)",
+    "fr": "Superviseur Terrain (SUP)"
+  },
+  {
+    "key": "pm_role_rh_badge",
+    "ar": "Ressources Humaines & Casting (RH)",
+    "fr": "Ressources Humaines & Casting (RH)"
+  },
+  {
+    "key": "pm_role_compta_badge",
+    "ar": "Comptabilité & Paie (CPT)",
+    "fr": "Comptabilité & Paie (CPT)"
+  },
+  {
+    "key": "pm_role_active_label",
+    "ar": "Rôle Actif",
+    "fr": "Rôle Actif"
+  },
+  {
+    "key": "pm_role_direction_name",
+    "ar": "Direction Générale",
+    "fr": "Direction Générale"
+  },
+  {
+    "key": "pm_role_chef_projet_name",
+    "ar": "Chef de Projet",
+    "fr": "Chef de Projet"
+  },
+  {
+    "key": "pm_role_crea_name",
+    "ar": "Studio Créa",
+    "fr": "Studio Créa"
+  },
+  {
+    "key": "pm_role_superviseur_name",
+    "ar": "Superviseur Terrain",
+    "fr": "Superviseur Terrain"
+  },
+  {
+    "key": "pm_role_rh_name",
+    "ar": "Ressources Humaines & Casting",
+    "fr": "Ressources Humaines & Casting"
+  },
+  {
+    "key": "pm_role_compta_name",
+    "ar": "Comptabilité & Paie",
+    "fr": "Comptabilité & Paie"
+  },
+  {
+    "key": "pm_role_chef_projet_abbr",
+    "ar": "CDP",
+    "fr": "CDP"
+  },
+  {
+    "key": "pm_role_superviseur_abbr",
+    "ar": "SUP",
+    "fr": "SUP"
+  },
+  {
+    "key": "pm_role_compta_abbr",
+    "ar": "CPT",
+    "fr": "CPT"
+  },
+  {
+    "key": "pm_screen_dir_dashboard",
+    "ar": "Command Center",
+    "fr": "Command Center"
+  },
+  {
+    "key": "pm_screen_dir_new_project",
+    "ar": "Cadrage & Cahier des Charges",
+    "fr": "Cadrage & Cahier des Charges"
+  },
+  {
+    "key": "pm_screen_dir_projects",
+    "ar": "Portefeuille Projets",
+    "fr": "Portefeuille Projets"
+  },
+  {
+    "key": "pm_screen_dir_approvals",
+    "ar": "Double-Lock Approbations",
+    "fr": "Double-Lock Approbations"
+  },
+  {
+    "key": "pm_screen_dir_reports",
+    "ar": "Rapports & Marges",
+    "fr": "Rapports & Marges"
+  },
+  {
+    "key": "pm_screen_cp_projects",
+    "ar": "Portefeuille & Jalons",
+    "fr": "Portefeuille & Jalons"
+  },
+  {
+    "key": "pm_screen_cp_catalog",
+    "ar": "Catalogue Print & PLV",
+    "fr": "Catalogue Print & PLV"
+  },
+  {
+    "key": "pm_screen_cp_orders",
+    "ar": "Suivi Commandes & Épreuves",
+    "fr": "Suivi Commandes & Épreuves"
+  },
+  {
+    "key": "pm_screen_cp_deliverables",
+    "ar": "BAT & Livrables",
+    "fr": "BAT & Livrables"
+  },
+  {
+    "key": "pm_screen_cp_files",
+    "ar": "BAT & Livrables",
+    "fr": "BAT & Livrables"
+  },
+  {
+    "key": "pm_screen_cp_expenses",
+    "ar": "Budget & Dépenses",
+    "fr": "Budget & Dépenses"
+  },
+  {
+    "key": "pm_screen_crea_kanban",
+    "ar": "Kanban de Production",
+    "fr": "Kanban de Production"
+  },
+  {
+    "key": "pm_screen_crea_production",
+    "ar": "Création Visuels Clés",
+    "fr": "Création Visuels Clés"
+  },
+  {
+    "key": "pm_screen_crea_upload",
+    "ar": "Validateur BAT & Specs",
+    "fr": "Validateur BAT & Specs"
+  },
+  {
+    "key": "pm_screen_crea_briefs",
+    "ar": "Briefs Validés",
+    "fr": "Briefs Validés"
+  },
+  {
+    "key": "pm_screen_sup_missions",
+    "ar": "Missions Terrain",
+    "fr": "Missions Terrain"
+  },
+  {
+    "key": "pm_screen_sup_attendance",
+    "ar": "Pointage Mobile Direct",
+    "fr": "Pointage Mobile Direct"
+  },
+  {
+    "key": "pm_screen_sup_staffing",
+    "ar": "Casting & Staffing",
+    "fr": "Casting & Staffing"
+  },
+  {
+    "key": "pm_screen_sup_expenses",
+    "ar": "Déclaration Dépense",
+    "fr": "Déclaration Dépense"
+  },
+  {
+    "key": "pm_screen_rh_talents",
+    "ar": "Vivier Talents (58 Wilayas)",
+    "fr": "Vivier Talents (58 Wilayas)"
+  },
+  {
+    "key": "pm_screen_rh_dossier",
+    "ar": "Dossier Talent 360°",
+    "fr": "Dossier Talent 360°"
+  },
+  {
+    "key": "pm_screen_rh_portal",
+    "ar": "Portail Candidat Public",
+    "fr": "Portail Candidat Public"
+  },
+  {
+    "key": "pm_screen_rh_walkin",
+    "ar": "Saisie Express Agence",
+    "fr": "Saisie Express Agence"
+  },
+  {
+    "key": "pm_screen_compta_payroll",
+    "ar": "Hub Paies Automatisé",
+    "fr": "Hub Paies Automatisé"
+  },
+  {
+    "key": "pm_screen_compta_expenses",
+    "ar": "Audit Factures & NIF",
+    "fr": "Audit Factures & NIF"
+  },
+  {
+    "key": "pm_screen_compta_stock",
+    "ar": "Stock Matériel & QR",
+    "fr": "Stock Matériel & QR"
+  },
+  {
+    "key": "pm_month_jan",
+    "ar": "Jan",
+    "fr": "Jan"
+  },
+  {
+    "key": "pm_month_feb",
+    "ar": "Fév",
+    "fr": "Fév"
+  },
+  {
+    "key": "pm_month_mar",
+    "ar": "Mar",
+    "fr": "Mar"
+  },
+  {
+    "key": "pm_month_apr",
+    "ar": "Avr",
+    "fr": "Avr"
+  },
+  {
+    "key": "pm_month_may",
+    "ar": "Mai",
+    "fr": "Mai"
+  },
+  {
+    "key": "pm_month_jun",
+    "ar": "Juin",
+    "fr": "Juin"
+  },
+  {
+    "key": "pm_month_jul",
+    "ar": "Juil",
+    "fr": "Juil"
+  },
+  {
+    "key": "pm_cp_empty_cart_msg",
+    "ar": "Le panier est actuellement vide.",
+    "fr": "Le panier est actuellement vide."
+  },
+  {
+    "key": "pm_cp_imputation_label",
+    "ar": "Imputation :",
+    "fr": "Imputation :"
+  },
+  {
+    "key": "pm_cp_order_total_label",
+    "ar": "Total Commande :",
+    "fr": "Total Commande :"
+  },
+  {
+    "key": "pm_cp_deposited_by",
+    "ar": "Déposé par : {name} (Studio Créa)",
+    "fr": "Déposé par : {name} (Studio Créa)"
+  },
+  {
+    "key": "pm_cp_total_consumed",
+    "ar": "Total Consommé",
+    "fr": "Total Consommé"
+  },
+  {
+    "key": "pm_cp_conso_badge",
+    "ar": "Conso",
+    "fr": "Conso"
+  },
+  {
+    "key": "pm_cp_table_col_designation",
+    "ar": "Désignation",
+    "fr": "Désignation"
+  },
+  {
+    "key": "pm_cp_table_col_category",
+    "ar": "Catégorie",
+    "fr": "Catégorie"
+  },
+  {
+    "key": "pm_cp_table_col_declared_by",
+    "ar": "Déclaré Par",
+    "fr": "Déclaré Par"
+  },
+  {
+    "key": "pm_cp_table_col_dir_status",
+    "ar": "Statut Direction",
+    "fr": "Statut Direction"
+  },
+  {
+    "key": "pm_cp_table_col_amount_dzd",
+    "ar": "Montant DZD",
+    "fr": "Montant DZD"
+  },
+  {
+    "key": "pm_cp_tax_invoice_tag",
+    "ar": "Facture NIF",
+    "fr": "Facture NIF"
+  },
+  {
+    "key": "pm_crea_waiting_creation",
+    "ar": "En attente création",
+    "fr": "En attente création"
+  },
+  {
+    "key": "pm_crea_order_received",
+    "ar": "Ordre reçu",
+    "fr": "Ordre reçu"
+  },
+  {
+    "key": "pm_crea_bleed_3mm",
+    "ar": "Bords 3mm",
+    "fr": "Bords 3mm"
+  },
+  {
+    "key": "pm_crea_bleed_flash_ready",
+    "ar": "Fonds perdus 3mm inclus · Prêt pour flashage",
+    "fr": "Fonds perdus 3mm inclus · Prêt pour flashage"
+  },
+  {
+    "key": "pm_crea_bat_returned_success",
+    "ar": "BAT renvoyé au Chef de Projet pour validation et transmission à l\\'imprimeur !",
+    "fr": "BAT renvoyé au Chef de Projet pour validation et transmission à l\\'imprimeur !"
+  },
+  {
+    "key": "pm_crea_deadline_kv",
+    "ar": "Échéance KV : {date}",
+    "fr": "Échéance KV : {date}"
+  },
+  {
+    "key": "pm_crea_deadline_print",
+    "ar": "Échéance Print : {date}",
+    "fr": "Échéance Print : {date}"
+  },
+  {
+    "key": "pm_crea_pm_lead",
+    "ar": "CDP : {name}",
+    "fr": "CDP : {name}"
+  },
+  {
+    "key": "pm_crea_crop_marks_included",
+    "ar": "Bords perdus de 3mm et traits de coupe inclus dans le fichier",
+    "fr": "Bords perdus de 3mm et traits de coupe inclus dans le fichier"
+  },
+  {
+    "key": "pm_crea_cloud_security_note",
+    "ar": "Sécurité Source Master : Les fichiers originaux .AI / .PSD restent stockés sur le cloud sécurisé de l\\'agence. Seules les épreuves de contrôle ou BAT validés sont transmis aux prestataires imprimeurs.",
+    "fr": "Sécurité Source Master : Les fichiers originaux .AI / .PSD restent stockés sur le cloud sécurisé de l\\'agence. Seules les épreuves de contrôle ou BAT validés sont transmis aux prestataires imprimeurs."
+  },
+  {
+    "key": "pm_sup_schedule_label",
+    "ar": "Horaires : {start} – {end}",
+    "fr": "Horaires : {start} – {end}"
+  },
+  {
+    "key": "pm_sup_status_present_badge",
+    "ar": "Présents",
+    "fr": "Présents"
+  },
+  {
+    "key": "pm_sup_status_late_badge",
+    "ar": "Retard",
+    "fr": "Retard"
+  },
+  {
+    "key": "pm_sup_status_absent_badge",
+    "ar": "Absents",
+    "fr": "Absents"
+  },
+  {
+    "key": "pm_rh_gender_female",
+    "ar": "Femme",
+    "fr": "Femme"
+  },
+  {
+    "key": "pm_rh_gender_male",
+    "ar": "Homme",
+    "fr": "Homme"
+  },
+  {
+    "key": "pm_rh_role_animator",
+    "ar": "Animateur Commercial",
+    "fr": "Animateur Commercial"
+  },
+  {
+    "key": "pm_rh_role_hostess",
+    "ar": "Hôtesse d\\'Accueil",
+    "fr": "Hôtesse d\\'Accueil"
+  },
+  {
+    "key": "pm_rh_role_supervisor",
+    "ar": "Superviseur Wilaya",
+    "fr": "Superviseur Wilaya"
+  },
+  {
+    "key": "pm_compta_status_approved_dg",
+    "ar": "Validée DG",
+    "fr": "Validée DG"
+  },
+  {
+    "key": "pm_compta_status_pending_dg",
+    "ar": "En attente DG",
+    "fr": "En attente DG"
+  },
+  {
+    "key": "pm_compta_timeline_bought_coded",
+    "ar": "Acheté & codé",
+    "fr": "Acheté & codé"
+  },
+  {
+    "key": "pm_compta_timeline_assigned",
+    "ar": "Affecté sur mission",
+    "fr": "Affecté sur mission"
+  },
+  {
+    "key": "pm_compta_timeline_stock_returned",
+    "ar": "Retour stock",
+    "fr": "Retour stock"
+  },
+  {
+    "key": "pm_compta_timeline_salon",
+    "ar": "Salon SITEV — Alger",
+    "fr": "Salon SITEV — Alger"
+  },
+  {
+    "key": "pm_compta_timeline_in_stock_avail",
+    "ar": "En stock — État : Bon",
+    "fr": "En stock — État : Bon"
+  },
+  {
+    "key": "pm_kpi_active_projects",
+    "ar": "Campagnes Agence Actives",
+    "fr": "Campagnes Agence Actives"
+  },
+  {
+    "key": "pm_kpi_budget_committed",
+    "ar": "Budget Engagé",
+    "fr": "Budget Engagé"
+  },
+  {
+    "key": "pm_kpi_field_talents",
+    "ar": "Talents Terrain Mobilisés",
+    "fr": "Talents Terrain Mobilisés"
+  },
+  {
+    "key": "pm_kpi_payroll_due",
+    "ar": "Salaires Terrain Dus",
+    "fr": "Salaires Terrain Dus"
+  },
+  {
+    "key": "pm_kpi_ccp_slips",
+    "ar": "Bordereaux Algérie Poste (CCP)",
+    "fr": "Bordereaux Algérie Poste (CCP)"
+  },
+  {
+    "key": "pm_dir_title",
+    "ar": "Centre de Commandement Direction",
+    "fr": "Centre de Commandement Direction"
+  },
+  {
+    "key": "pm_dir_subtitle",
+    "ar": "Supervision stratégique des campagnes, validation client et double verrou financier",
+    "fr": "Supervision stratégique des campagnes, validation client et double verrou financier"
+  },
+  {
+    "key": "pm_cp_title",
+    "ar": "Portefeuille Projets & Hub d\\'Activation",
+    "fr": "Portefeuille Projets & Hub d\\'Activation"
+  },
+  {
+    "key": "pm_cp_subtitle",
+    "ar": "Jalons des campagnes, validation BAT, bons de commande et achats",
+    "fr": "Jalons des campagnes, validation BAT, bons de commande et achats"
+  },
+  {
+    "key": "pm_crea_title",
+    "ar": "Production du Studio Créatif",
+    "fr": "Production du Studio Créatif"
+  },
+  {
+    "key": "pm_crea_subtitle",
+    "ar": "Création graphique, conformité technique, Key Visuals (KV) et déclinaisons",
+    "fr": "Création graphique, conformité technique, Key Visuals (KV) et déclinaisons"
+  },
+  {
+    "key": "pm_sup_title",
+    "ar": "Opérations Terrain & Pointage Mobile",
+    "fr": "Opérations Terrain & Pointage Mobile"
+  },
+  {
+    "key": "pm_sup_subtitle",
+    "ar": "Déploiement des missions, staffing des équipes, pointage terrain et frais directs",
+    "fr": "Déploiement des missions, staffing des équipes, pointage terrain et frais directs"
+  },
+  {
+    "key": "pm_rh_title",
+    "ar": "Vivier National des Talents (58 Wilayas)",
+    "fr": "Vivier National des Talents (58 Wilayas)"
+  },
+  {
+    "key": "pm_rh_subtitle",
+    "ar": "Base d\\'animateurs, conformité légale, pièces d\\'identité et recrutement",
+    "fr": "Base d\\'animateurs, conformité légale, pièces d\\'identité et recrutement"
+  },
+  {
+    "key": "pm_compta_title",
+    "ar": "Règlements Financiers & Bordereaux CCP",
+    "fr": "Règlements Financiers & Bordereaux CCP"
+  },
+  {
+    "key": "pm_compta_subtitle",
+    "ar": "Audit automatisé des paies, bordereaux légaux Algérie Poste SFP 01 et rapprochement",
+    "fr": "Audit automatisé des paies, bordereaux légaux Algérie Poste SFP 01 et rapprochement"
+  },
+  {
+    "key": "pm_btn_new_project",
+    "ar": "Cadrer un Projet",
+    "fr": "Cadrer un Projet"
+  },
+  {
+    "key": "pm_btn_generate_ccp",
+    "ar": "Générer Bordereau CCP SFP 01",
+    "fr": "Générer Bordereau CCP SFP 01"
+  },
+  {
+    "key": "pm_btn_approve_payroll",
+    "ar": "Valider (Double Verrou)",
+    "fr": "Valider (Double Verrou)"
+  },
+  {
+    "key": "pm_btn_upload_bat",
+    "ar": "Téléverser Fichier BAT",
+    "fr": "Téléverser Fichier BAT"
+  },
+  {
+    "key": "pm_btn_open_mobile_sim",
+    "ar": "Ouvrir App Mobile Terrain",
+    "fr": "Ouvrir App Mobile Terrain"
+  },
+  {
+    "key": "pm_status_brief",
+    "ar": "Cahier des Charges",
+    "fr": "Cahier des Charges"
+  },
+  {
+    "key": "pm_status_crea_in_progress",
+    "ar": "Créa en Cours",
+    "fr": "Créa en Cours"
+  },
+  {
+    "key": "pm_status_client_review",
+    "ar": "Validation Client",
+    "fr": "Validation Client"
+  },
+  {
+    "key": "pm_status_bat_approved",
+    "ar": "BAT Validé",
+    "fr": "BAT Validé"
+  },
+  {
+    "key": "pm_status_field_active",
+    "ar": "Déploiement Terrain",
+    "fr": "Déploiement Terrain"
+  },
+  {
+    "key": "pm_status_audit_pending",
+    "ar": "Audit Compta en Attente",
+    "fr": "Audit Compta en Attente"
+  },
+  {
+    "key": "pm_status_closed",
+    "ar": "Clôturé & Payé",
+    "fr": "Clôturé & Payé"
+  },
+  {
+    "key": "pm_compta_tab_payroll",
+    "ar": "Validation Paies Terrain",
+    "fr": "Validation Paies Terrain"
+  },
+  {
+    "key": "pm_compta_tab_expenses",
+    "ar": "Dépenses & Factures Scannées",
+    "fr": "Dépenses & Factures Scannées"
+  },
+  {
+    "key": "pm_compta_tab_stock",
+    "ar": "Matériel Codé & Inventaire",
+    "fr": "Matériel Codé & Inventaire"
+  },
+  {
+    "key": "pm_compta_double_lock_badge",
+    "ar": "Double Verrouillage Direction + Compta",
+    "fr": "Double Verrouillage Direction + Compta"
+  },
+  {
+    "key": "pm_compta_btn_generate_slips",
+    "ar": "Générer les Bordereaux SFP 01",
+    "fr": "Générer les Bordereaux SFP 01"
+  },
+  {
+    "key": "pm_compta_slips_generated",
+    "ar": "Bordereaux CCP générés pour ce lot",
+    "fr": "Bordereaux CCP générés pour ce lot"
+  },
+  {
+    "key": "pm_compta_col_animator",
+    "ar": "Animateur / Talent",
+    "fr": "Animateur / Talent"
+  },
+  {
+    "key": "pm_compta_col_mission",
+    "ar": "Mission & Lieu",
+    "fr": "Mission & Lieu"
+  },
+  {
+    "key": "pm_compta_col_days",
+    "ar": "Jours Pointés",
+    "fr": "Jours Pointés"
+  },
+  {
+    "key": "pm_compta_col_amount",
+    "ar": "Montant Net (DZD)",
+    "fr": "Montant Net (DZD)"
+  },
+  {
+    "key": "pm_compta_col_ccp",
+    "ar": "N° Compte CCP & Clé",
+    "fr": "N° Compte CCP & Clé"
+  },
+  {
+    "key": "pm_compta_col_wilaya",
+    "ar": "Wilaya",
+    "fr": "Wilaya"
+  },
+  {
+    "key": "pm_compta_col_status",
+    "ar": "Validation Direction",
+    "fr": "Validation Direction"
+  },
+  {
+    "key": "pm_compta_status_approved",
+    "ar": "Validée Direction",
+    "fr": "Validée Direction"
+  },
+  {
+    "key": "pm_compta_status_pending",
+    "ar": "En attente",
+    "fr": "En attente"
+  },
+  {
+    "key": "pm_compta_preview_title",
+    "ar": "Aperçu Bordereau SFP 01",
+    "fr": "Aperçu Bordereau SFP 01"
+  },
+  {
+    "key": "pm_compta_btn_print_a4",
+    "ar": "Imprimer Mandat (A4)",
+    "fr": "Imprimer Mandat (A4)"
+  },
+  {
+    "key": "pm_compta_btn_view_full",
+    "ar": "Agrandir le Bordereau",
+    "fr": "Agrandir le Bordereau"
+  },
+  {
+    "key": "pm_compta_expense_invoice_title",
+    "ar": "Facture Scannée & Justificatif",
+    "fr": "Facture Scannée & Justificatif"
+  },
+  {
+    "key": "pm_compta_expense_conform",
+    "ar": "Conforme aux Règles Comptables",
+    "fr": "Conforme aux Règles Comptables"
+  },
+  {
+    "key": "pm_compta_stock_coded_title",
+    "ar": "Traçabilité des Matériels Codés",
+    "fr": "Traçabilité des Matériels Codés"
+  },
+  {
+    "key": "pm_compta_stock_qr_ready",
+    "ar": "QR Code prêt pour scan terrain",
+    "fr": "QR Code prêt pour scan terrain"
+  },
+  {
+    "key": "pm_ccp_modal_title",
+    "ar": "Bordereau Officiel Algérie Poste — SFP 01",
+    "fr": "Bordereau Officiel Algérie Poste — SFP 01"
+  },
+  {
+    "key": "pm_ccp_modal_sub",
+    "ar": "Opération Financière Postale · Mandat de Virement CCP Conforme",
+    "fr": "Opération Financière Postale · Mandat de Virement CCP Conforme"
+  },
+  {
+    "key": "pm_ccp_standard_notice",
+    "ar": "Format standard SFP 01 conforme aux guichets Algérie Poste",
+    "fr": "Format standard SFP 01 conforme aux guichets Algérie Poste"
+  },
+  {
+    "key": "pm_dir_kpi_turnover",
+    "ar": "Chiffre d\\'Affaires Campagnes",
+    "fr": "Chiffre d\\'Affaires Campagnes"
+  },
+  {
+    "key": "pm_dir_kpi_margin",
+    "ar": "Marge Nette Agence",
+    "fr": "Marge Nette Agence"
+  },
+  {
+    "key": "pm_dir_kpi_approvals",
+    "ar": "Validations DG en Attente",
+    "fr": "Validations DG en Attente"
+  },
+  {
+    "key": "pm_dir_btn_approve_all",
+    "ar": "Valider la Sélection",
+    "fr": "Valider la Sélection"
+  },
+  {
+    "key": "pm_dir_new_brief_modal",
+    "ar": "Nouveau Cahier des Charges & Brief",
+    "fr": "Nouveau Cahier des Charges & Brief"
+  },
+  {
+    "key": "pm_cp_tab_portfolio",
+    "ar": "Mes Projets & Jalons",
+    "fr": "Mes Projets & Jalons"
+  },
+  {
+    "key": "pm_cp_tab_catalog",
+    "ar": "Catalogue Print & Digital",
+    "fr": "Catalogue Print & Digital"
+  },
+  {
+    "key": "pm_cp_tab_orders",
+    "ar": "Suivi Commandes & BAT",
+    "fr": "Suivi Commandes & BAT"
+  },
+  {
+    "key": "pm_cp_tab_bat",
+    "ar": "Fichiers Prêts à Imprimer",
+    "fr": "Fichiers Prêts à Imprimer"
+  },
+  {
+    "key": "pm_cp_tab_expenses",
+    "ar": "Achats & Déclarations",
+    "fr": "Achats & Déclarations"
+  },
+  {
+    "key": "pm_cp_btn_order_print",
+    "ar": "Commander Impression",
+    "fr": "Commander Impression"
+  },
+  {
+    "key": "pm_crea_tab_kanban",
+    "ar": "Demandes & Briefs Reçus",
+    "fr": "Demandes & Briefs Reçus"
+  },
+  {
+    "key": "pm_crea_tab_production",
+    "ar": "Production Créative",
+    "fr": "Production Créative"
+  },
+  {
+    "key": "pm_crea_tab_upload",
+    "ar": "Livrables & Upload BAT",
+    "fr": "Livrables & Upload BAT"
+  },
+  {
+    "key": "pm_crea_tab_briefs",
+    "ar": "Cahiers des Charges Créa",
+    "fr": "Cahiers des Charges Créa"
+  },
+  {
+    "key": "pm_sup_tab_missions",
+    "ar": "Missions & Activations Terrain",
+    "fr": "Missions & Activations Terrain"
+  },
+  {
+    "key": "pm_sup_tab_staffing",
+    "ar": "Composition des Équipes",
+    "fr": "Composition des Équipes"
+  },
+  {
+    "key": "pm_sup_tab_attendance",
+    "ar": "Pointage Terrain Mobile",
+    "fr": "Pointage Terrain Mobile"
+  },
+  {
+    "key": "pm_sup_tab_expenses",
+    "ar": "Notes & Frais Terrain",
+    "fr": "Notes & Frais Terrain"
+  },
+  {
+    "key": "pm_rh_tab_talents",
+    "ar": "Vivier 58 Wilayas",
+    "fr": "Vivier 58 Wilayas"
+  },
+  {
+    "key": "pm_rh_tab_dossier",
+    "ar": "Dossier 360° Talent",
+    "fr": "Dossier 360° Talent"
+  },
+  {
+    "key": "pm_rh_tab_portal",
+    "ar": "Pré-inscription en Ligne",
+    "fr": "Pré-inscription en Ligne"
+  },
+  {
+    "key": "pm_rh_tab_walkin",
+    "ar": "Création Directe Agence",
+    "fr": "Création Directe Agence"
+  },
+  {
+    "key": "pm_rh_btn_new_talent",
+    "ar": "Nouveau Talent",
+    "fr": "Nouveau Talent"
+  },
+  {
+    "key": "pm_role_cp_sub",
+    "ar": "Jalons des campagnes, validation BAT, bons de commande et achats",
+    "fr": "Jalons des campagnes, validation BAT, bons de commande et achats"
+  },
+  {
+    "key": "pm_role_crea_sub",
+    "ar": "Création graphique, conformité technique, Key Visuals (KV) et déclinaisons",
+    "fr": "Création graphique, conformité technique, Key Visuals (KV) et déclinaisons"
+  },
+  {
+    "key": "pm_role_sup_sub",
+    "ar": "Déploiement des missions, staffing des équipes, pointage terrain et frais directs",
+    "fr": "Déploiement des missions, staffing des équipes, pointage terrain et frais directs"
+  },
+  {
+    "key": "pm_role_rh_sub",
+    "ar": "Base d\\'animateurs, conformité légale, pièces d\\'identité et recrutement",
+    "fr": "Base d\\'animateurs, conformité légale, pièces d\\'identité et recrutement"
+  },
+  {
+    "key": "pm_role_compta_sub",
+    "ar": "Audit automatisé des paies, bordereaux légaux Algérie Poste SFP 01 et rapprochement",
+    "fr": "Audit automatisé des paies, bordereaux légaux Algérie Poste SFP 01 et rapprochement"
+  },
+  {
+    "key": "pm_dir_kpi_budget_committed",
+    "ar": "Budget Engagé",
+    "fr": "Budget Engagé"
+  },
+  {
+    "key": "pm_dir_kpi_active_projects",
+    "ar": "Projets Actifs",
+    "fr": "Projets Actifs"
+  },
+  {
+    "key": "pm_dir_kpi_field_talents",
+    "ar": "Talents Terrain",
+    "fr": "Talents Terrain"
+  },
+  {
+    "key": "pm_dir_kpi_pending_approvals",
+    "ar": "Validations en Attente",
+    "fr": "Validations en Attente"
+  },
+  {
+    "key": "pm_dir_field_title",
+    "ar": "Titre de la Campagne *",
+    "fr": "Titre de la Campagne *"
+  },
+  {
+    "key": "pm_dir_field_client",
+    "ar": "Compte Client *",
+    "fr": "Compte Client *"
+  },
+  {
+    "key": "pm_dir_field_scope",
+    "ar": "Cahier des Charges & Cadrage *",
+    "fr": "Cahier des Charges & Cadrage *"
+  },
+  {
+    "key": "pm_dir_field_budget_cap",
+    "ar": "Plafond Budgétaire Total (DZD)",
+    "fr": "Plafond Budgétaire Total (DZD)"
+  },
+  {
+    "key": "pm_dir_field_max_field",
+    "ar": "Enveloppe Max Frais de Terrain (DZD)",
+    "fr": "Enveloppe Max Frais de Terrain (DZD)"
+  },
+  {
+    "key": "pm_dir_field_margin",
+    "ar": "Marge Brute Cible (%)",
+    "fr": "Marge Brute Cible (%)"
+  },
+  {
+    "key": "pm_dir_field_start_date",
+    "ar": "Date de Lancement Campagne",
+    "fr": "Date de Lancement Campagne"
+  },
+  {
+    "key": "pm_dir_field_end_date",
+    "ar": "Date de Clôture",
+    "fr": "Date de Clôture"
+  },
+  {
+    "key": "pm_dir_field_pm",
+    "ar": "Chef de Projet Désigné (CDP)",
+    "fr": "Chef de Projet Désigné (CDP)"
+  },
+  {
+    "key": "pm_dir_field_crea",
+    "ar": "Directeur Artistique / Créa Lead",
+    "fr": "Directeur Artistique / Créa Lead"
+  },
+  {
+    "key": "pm_dir_btn_create_project",
+    "ar": "Créer la Charte Projet",
+    "fr": "Créer la Charte Projet"
+  },
+  {
+    "key": "pm_dir_approvals_all",
+    "ar": "Toutes en Attente ({count})",
+    "fr": "Toutes en Attente ({count})"
+  },
+  {
+    "key": "pm_dir_approvals_payroll",
+    "ar": "Lots de Paie ({count})",
+    "fr": "Lots de Paie ({count})"
+  },
+  {
+    "key": "pm_dir_approvals_expenses",
+    "ar": "Achats & Dépenses ({count})",
+    "fr": "Achats & Dépenses ({count})"
+  },
+  {
+    "key": "pm_dir_btn_approve",
+    "ar": "Valider",
+    "fr": "Valider"
+  },
+  {
+    "key": "pm_dir_btn_reject",
+    "ar": "Refuser",
+    "fr": "Refuser"
+  },
+  {
+    "key": "pm_dir_reject_modal_title",
+    "ar": "Motif du Refus de Validation",
+    "fr": "Motif du Refus de Validation"
+  },
+  {
+    "key": "pm_dir_reject_modal_desc",
+    "ar": "Précisez la non-conformité constatée pour notification et correction.",
+    "fr": "Précisez la non-conformité constatée pour notification et correction."
+  },
+  {
+    "key": "pm_dir_reject_reason_label",
+    "ar": "Motif du Rejet *",
+    "fr": "Motif du Rejet *"
+  },
+  {
+    "key": "pm_dir_btn_confirm_reject",
+    "ar": "Confirmer le Rejet",
+    "fr": "Confirmer le Rejet"
+  },
+  {
+    "key": "pm_cp_kpi_burn_rate",
+    "ar": "Taux de Consommation Frais Terrain",
+    "fr": "Taux de Consommation Frais Terrain"
+  },
+  {
+    "key": "pm_cp_btn_cart",
+    "ar": "Panier d\\'Impression ({count})",
+    "fr": "Panier d\\'Impression ({count})"
+  },
+  {
+    "key": "pm_cp_cart_title",
+    "ar": "Panier Commande d\\'Impression",
+    "fr": "Panier Commande d\\'Impression"
+  },
+  {
+    "key": "pm_cp_cart_empty",
+    "ar": "Votre panier d\\'impression est vide.",
+    "fr": "Votre panier d\\'impression est vide."
+  },
+  {
+    "key": "pm_cp_cart_total",
+    "ar": "Total de la Commande :",
+    "fr": "Total de la Commande :"
+  },
+  {
+    "key": "pm_cp_cart_btn_transmit",
+    "ar": "Transmettre au Studio Créa & Imprimeur",
+    "fr": "Transmettre au Studio Créa & Imprimeur"
+  },
+  {
+    "key": "pm_cp_col_grammage",
+    "ar": "Grammage Papier :",
+    "fr": "Grammage Papier :"
+  },
+  {
+    "key": "pm_cp_col_finish",
+    "ar": "Finition / Pelliculage :",
+    "fr": "Finition / Pelliculage :"
+  },
+  {
+    "key": "pm_cp_col_print_run",
+    "ar": "Tirage Standard :",
+    "fr": "Tirage Standard :"
+  },
+  {
+    "key": "pm_cp_btn_add_to_cart",
+    "ar": "Ajouter à la Commande",
+    "fr": "Ajouter à la Commande"
+  },
+  {
+    "key": "pm_cp_bat_status_approved",
+    "ar": "BAT Validé Client",
+    "fr": "BAT Validé Client"
+  },
+  {
+    "key": "pm_cp_bat_status_revision",
+    "ar": "Correction Demandée",
+    "fr": "Correction Demandée"
+  },
+  {
+    "key": "pm_cp_bat_status_pending",
+    "ar": "En Attente de Revue",
+    "fr": "En Attente de Revue"
+  },
+  {
+    "key": "pm_cp_btn_approve_bat",
+    "ar": "Valider BAT Client",
+    "fr": "Valider BAT Client"
+  },
+  {
+    "key": "pm_cp_btn_request_revision",
+    "ar": "Demander Correction",
+    "fr": "Demander Correction"
+  },
+  {
+    "key": "pm_cp_revision_modal_title",
+    "ar": "Demander une Révision du BAT",
+    "fr": "Demander une Révision du BAT"
+  },
+  {
+    "key": "pm_cp_revision_note_label",
+    "ar": "Remarques Techniques & Corrections Requises",
+    "fr": "Remarques Techniques & Corrections Requises"
+  },
+  {
+    "key": "pm_cp_revision_btn_send",
+    "ar": "Envoyer les Remarques à la Créa",
+    "fr": "Envoyer les Remarques à la Créa"
+  },
+  {
+    "key": "pm_cp_purchase_form_title",
+    "ar": "Déclarer un Achat / Fourniture de Terrain",
+    "fr": "Déclarer un Achat / Fourniture de Terrain"
+  },
+  {
+    "key": "pm_cp_purchase_form_sub",
+    "ar": "La dépense est automatiquement codée dans le stock indirect (NCH-A-00xxx).",
+    "fr": "La dépense est automatiquement codée dans le stock indirect (NCH-A-00xxx)."
+  },
+  {
+    "key": "pm_cp_purchase_field_title",
+    "ar": "Désignation de l\\'Article *",
+    "fr": "Désignation de l\\'Article *"
+  },
+  {
+    "key": "pm_cp_purchase_field_amount",
+    "ar": "Montant en DZD *",
+    "fr": "Montant en DZD *"
+  },
+  {
+    "key": "pm_cp_purchase_field_cat",
+    "ar": "Catégorie de Dépense",
+    "fr": "Catégorie de Dépense"
+  },
+  {
+    "key": "pm_cp_purchase_btn_submit",
+    "ar": "Déclarer l\\'Achat & Coder l\\'Actif",
+    "fr": "Déclarer l\\'Achat & Coder l\\'Actif"
+  },
+  {
+    "key": "pm_crea_kanban_received",
+    "ar": "Briefs & Commandes Reçus",
+    "fr": "Briefs & Commandes Reçus"
+  },
+  {
+    "key": "pm_crea_kanban_in_progress",
+    "ar": "Production Créative en Cours",
+    "fr": "Production Créative en Cours"
+  },
+  {
+    "key": "pm_crea_kanban_ready_bat",
+    "ar": "BAT Prêts & Validés",
+    "fr": "BAT Prêts & Validés"
+  },
+  {
+    "key": "pm_crea_upload_title",
+    "ar": "Téléverser Fichier BAT & Épreuve Technique",
+    "fr": "Téléverser Fichier BAT & Épreuve Technique"
+  },
+  {
+    "key": "pm_crea_upload_sub",
+    "ar": "Contrôle prépresse : 300 DPI, espace colorimétrique CMJN, 3mm de fonds perdus",
+    "fr": "Contrôle prépresse : 300 DPI, espace colorimétrique CMJN, 3mm de fonds perdus"
+  },
+  {
+    "key": "pm_crea_field_artwork_title",
+    "ar": "Nom du Fichier / Code Livrable *",
+    "fr": "Nom du Fichier / Code Livrable *"
+  },
+  {
+    "key": "pm_crea_field_format",
+    "ar": "Format du Fichier",
+    "fr": "Format du Fichier"
+  },
+  {
+    "key": "pm_crea_field_color",
+    "ar": "Espace Colorimétrique",
+    "fr": "Espace Colorimétrique"
+  },
+  {
+    "key": "pm_crea_field_resolution",
+    "ar": "Résolution",
+    "fr": "Résolution"
+  },
+  {
+    "key": "pm_crea_field_bleed",
+    "ar": "Fonds Perdus 3mm Inclus",
+    "fr": "Fonds Perdus 3mm Inclus"
+  },
+  {
+    "key": "pm_crea_field_preview_url",
+    "ar": "URL de Prévisualisation du BAT (Aperçu HD)",
+    "fr": "URL de Prévisualisation du BAT (Aperçu HD)"
+  },
+  {
+    "key": "pm_crea_btn_upload",
+    "ar": "Téléverser le BAT dans le Hub Projet",
+    "fr": "Téléverser le BAT dans le Hub Projet"
+  },
+  {
+    "key": "pm_crea_tech_compliance",
+    "ar": "Conformité Prépresse 100% Validée",
+    "fr": "Conformité Prépresse 100% Validée"
+  },
+  {
+    "key": "pm_sup_kpi_present",
+    "ar": "Présents",
+    "fr": "Présents"
+  },
+  {
+    "key": "pm_sup_kpi_late",
+    "ar": "En Retard",
+    "fr": "En Retard"
+  },
+  {
+    "key": "pm_sup_kpi_absent",
+    "ar": "Absents",
+    "fr": "Absents"
+  },
+  {
+    "key": "pm_sup_btn_close_shift",
+    "ar": "Clôturer & Verrouiller le Pointage",
+    "fr": "Clôturer & Verrouiller le Pointage"
+  },
+  {
+    "key": "pm_sup_shift_closed",
+    "ar": "Pointage Clôturé & Transmis à la Compta",
+    "fr": "Pointage Clôturé & Transmis à la Compta"
+  },
+  {
+    "key": "pm_sup_rollcall_title",
+    "ar": "Feuille d\\'Émargement Mobile du Jour",
+    "fr": "Feuille d\\'Émargement Mobile du Jour"
+  },
+  {
+    "key": "pm_sup_rollcall_sub",
+    "ar": "Présence terrain, horodatage GPS et notation individuelle des animateurs",
+    "fr": "Présence terrain, horodatage GPS et notation individuelle des animateurs"
+  },
+  {
+    "key": "pm_sup_col_promoter",
+    "ar": "Animateur / Hôtesse",
+    "fr": "Animateur / Hôtesse"
+  },
+  {
+    "key": "pm_sup_col_checkin",
+    "ar": "Heure d\\'Arrivée",
+    "fr": "Heure d\\'Arrivée"
+  },
+  {
+    "key": "pm_sup_col_rating",
+    "ar": "Évaluation Journée",
+    "fr": "Évaluation Journée"
+  },
+  {
+    "key": "pm_sup_col_status",
+    "ar": "Statut Présence",
+    "fr": "Statut Présence"
+  },
+  {
+    "key": "pm_sup_petty_cash_title",
+    "ar": "Saisie Frais Menue Monnaie & Transport",
+    "fr": "Saisie Frais Menue Monnaie & Transport"
+  },
+  {
+    "key": "pm_sup_petty_cash_btn",
+    "ar": "Soumettre la Note de Frais",
+    "fr": "Soumettre la Note de Frais"
+  },
+  {
+    "key": "pm_rh_kpi_total_talents",
+    "ar": "Vivier Total Candidats",
+    "fr": "Vivier Total Candidats"
+  },
+  {
+    "key": "pm_rh_kpi_active_talents",
+    "ar": "Animateurs Prêts",
+    "fr": "Animateurs Prêts"
+  },
+  {
+    "key": "pm_rh_kpi_verified_ccp",
+    "ar": "Comptes CCP Vérifiés",
+    "fr": "Comptes CCP Vérifiés"
+  },
+  {
+    "key": "pm_rh_search_ph",
+    "ar": "Rechercher par nom, téléphone, CCP, wilaya...",
+    "fr": "Rechercher par nom, téléphone, CCP, wilaya..."
+  },
+  {
+    "key": "pm_rh_btn_export_csv",
+    "ar": "Exporter Vivier National (CSV)",
+    "fr": "Exporter Vivier National (CSV)"
+  },
+  {
+    "key": "pm_rh_col_talent",
+    "ar": "Fiche Candidat",
+    "fr": "Fiche Candidat"
+  },
+  {
+    "key": "pm_rh_col_location",
+    "ar": "Wilaya & Commune",
+    "fr": "Wilaya & Commune"
+  },
+  {
+    "key": "pm_rh_col_ccp",
+    "ar": "N° CCP & Clé",
+    "fr": "N° CCP & Clé"
+  },
+  {
+    "key": "pm_rh_col_rating",
+    "ar": "Note",
+    "fr": "Note"
+  },
+  {
+    "key": "pm_rh_col_vehicle",
+    "ar": "Véhicule",
+    "fr": "Véhicule"
+  },
+  {
+    "key": "pm_rh_col_license",
+    "ar": "Permis",
+    "fr": "Permis"
+  },
+  {
+    "key": "pm_rh_has_vehicle",
+    "ar": "Véhiculé",
+    "fr": "Véhiculé"
+  },
+  {
+    "key": "pm_rh_has_license",
+    "ar": "Permis B",
+    "fr": "Permis B"
+  },
+  {
+    "key": "pm_rh_dossier_title",
+    "ar": "Dossier 360° du Talent",
+    "fr": "Dossier 360° du Talent"
+  },
+  {
+    "key": "pm_rh_dossier_nin",
+    "ar": "N° Identification Nationale (NIN) :",
+    "fr": "N° Identification Nationale (NIN) :"
+  },
+  {
+    "key": "pm_rh_dossier_missions_completed",
+    "ar": "Missions Réalisées :",
+    "fr": "Missions Réalisées :"
+  },
+  {
+    "key": "pm_rh_portal_title",
+    "ar": "Portail Public de Candidature en Ligne",
+    "fr": "Portail Public de Candidature en Ligne"
+  },
+  {
+    "key": "pm_rh_portal_sub",
+    "ar": "Inscription accessible sur smartphone pour hôtesses et animateurs des 58 Wilayas",
+    "fr": "Inscription accessible sur smartphone pour hôtesses et animateurs des 58 Wilayas"
+  },
+  {
+    "key": "pm_rh_walkin_title",
+    "ar": "Saisie Express Candidat Agence",
+    "fr": "Saisie Express Candidat Agence"
+  },
+  {
+    "key": "pm_rh_walkin_sub",
+    "ar": "Enregistrement direct au comptoir et vérification biométrique immédiate",
+    "fr": "Enregistrement direct au comptoir et vérification biométrique immédiate"
+  },
+  {
+    "key": "pm_rh_field_fullname",
+    "ar": "Nom & Prénom *",
+    "fr": "Nom & Prénom *"
+  },
+  {
+    "key": "pm_rh_field_gender",
+    "ar": "Genre",
+    "fr": "Genre"
+  },
+  {
+    "key": "pm_rh_field_age",
+    "ar": "Âge",
+    "fr": "Âge"
+  },
+  {
+    "key": "pm_rh_field_phone",
+    "ar": "Numéro de Téléphone *",
+    "fr": "Numéro de Téléphone *"
+  },
+  {
+    "key": "pm_rh_field_email",
+    "ar": "Adresse Email",
+    "fr": "Adresse Email"
+  },
+  {
+    "key": "pm_rh_field_wilaya",
+    "ar": "Wilaya *",
+    "fr": "Wilaya *"
+  },
+  {
+    "key": "pm_rh_field_commune",
+    "ar": "Commune de Résidence *",
+    "fr": "Commune de Résidence *"
+  },
+  {
+    "key": "pm_rh_field_ccp",
+    "ar": "Numéro de Compte CCP *",
+    "fr": "Numéro de Compte CCP *"
+  },
+  {
+    "key": "pm_rh_field_ccp_key",
+    "ar": "Clé CCP *",
+    "fr": "Clé CCP *"
+  },
+  {
+    "key": "pm_rh_btn_submit_talent",
+    "ar": "Enregistrer le Profil Talent",
+    "fr": "Enregistrer le Profil Talent"
+  },
+  {
+    "key": "pm_compta_kpi_active_period",
+    "ar": "Période Active",
+    "fr": "Période Active"
+  },
+  {
+    "key": "pm_compta_kpi_approved_dg",
+    "ar": "Validées Direction (DG)",
+    "fr": "Validées Direction (DG)"
+  },
+  {
+    "key": "pm_compta_kpi_pending_dg",
+    "ar": "En Attente Signature",
+    "fr": "En Attente Signature"
+  },
+  {
+    "key": "pm_compta_kpi_net_payroll",
+    "ar": "Masse Salariale Nette",
+    "fr": "Masse Salariale Nette"
+  },
+  {
+    "key": "pm_compta_audit_title",
+    "ar": "Paies — Juillet 2026",
+    "fr": "Paies — Juillet 2026"
+  },
+  {
+    "key": "pm_compta_audit_sub",
+    "ar": "Pointages terrain validés par la Direction. Cliquez sur un animateur pour inspecter son mandat CCP SFP 01.",
+    "fr": "Pointages terrain validés par la Direction. Cliquez sur un animateur pour inspecter son mandat CCP SFP 01."
+  },
+  {
+    "key": "pm_compta_btn_generate_batch",
+    "ar": "⟳ Générer les CCP ({count}) → un PDF fusionné, prêt à imprimer",
+    "fr": "⟳ Générer les CCP ({count}) → un PDF fusionné, prêt à imprimer"
+  },
+  {
+    "key": "pm_compta_batch_success",
+    "ar": "Mandats CCP générés avec succès ! Fichiers conformes SFP 01 prêts pour virement postal.",
+    "fr": "Mandats CCP générés avec succès ! Fichiers conformes SFP 01 prêts pour virement postal."
+  },
+  {
+    "key": "pm_compta_table_animator",
+    "ar": "ANIMATEUR",
+    "fr": "ANIMATEUR"
+  },
+  {
+    "key": "pm_compta_table_mission",
+    "ar": "MISSION",
+    "fr": "MISSION"
+  },
+  {
+    "key": "pm_compta_table_days",
+    "ar": "JOURS",
+    "fr": "JOURS"
+  },
+  {
+    "key": "pm_compta_table_amount",
+    "ar": "MONTANT",
+    "fr": "MONTANT"
+  },
+  {
+    "key": "pm_compta_table_status",
+    "ar": "STATUT",
+    "fr": "STATUT"
+  },
+  {
+    "key": "pm_compta_status_validated_dg",
+    "ar": "Validée DG",
+    "fr": "Validée DG"
+  },
+  {
+    "key": "pm_compta_batches_transmitted",
+    "ar": "LOTS DE PAIE TRANSMIS PAR LES SUPERVISEURS (MOBILE)",
+    "fr": "LOTS DE PAIE TRANSMIS PAR LES SUPERVISEURS (MOBILE)"
+  },
+  {
+    "key": "pm_compta_voucher_preview_header",
+    "ar": "Bordereau Algérie Poste (SFP 01)",
+    "fr": "Bordereau Algérie Poste (SFP 01)"
+  },
+  {
+    "key": "pm_compta_voucher_official_badge",
+    "ar": "APERÇU OFFICIEL",
+    "fr": "APERÇU OFFICIEL"
+  },
+  {
+    "key": "pm_compta_republic_title",
+    "ar": "RÉPUBLIQUE ALGÉRIENNE DÉMOCRATIQUE ET POPULAIRE",
+    "fr": "RÉPUBLIQUE ALGÉRIENNE DÉMOCRATIQUE ET POPULAIRE"
+  },
+  {
+    "key": "pm_compta_ministry_title",
+    "ar": "MINISTÈRE DE LA POSTE ET DES TÉLÉCOMMUNICATIONS",
+    "fr": "MINISTÈRE DE LA POSTE ET DES TÉLÉCOMMUNICATIONS"
+  },
+  {
+    "key": "pm_compta_ptt_ops",
+    "ar": "ALGÉRIE POSTE · OPÉRATIONS FINANCIÈRES",
+    "fr": "ALGÉRIE POSTE · OPÉRATIONS FINANCIÈRES"
+  },
+  {
+    "key": "pm_compta_account_key_label",
+    "ar": "N° Compte CCP & Clé",
+    "fr": "N° Compte CCP & Clé"
+  },
+  {
+    "key": "pm_compta_amount_wire_label",
+    "ar": "Montant à Virer",
+    "fr": "Montant à Virer"
+  },
+  {
+    "key": "pm_compta_beneficiary_label",
+    "ar": "Bénéficiaire du Virement",
+    "fr": "Bénéficiaire du Virement"
+  },
+  {
+    "key": "pm_compta_wilaya_label",
+    "ar": "Wilaya de rattachement :",
+    "fr": "Wilaya de rattachement :"
+  },
+  {
+    "key": "pm_compta_amount_in_words_label",
+    "ar": "Somme en toutes lettres (Mention Légale)",
+    "fr": "Somme en toutes lettres (Mention Légale)"
+  },
+  {
+    "key": "pm_compta_purpose_label",
+    "ar": "Motif :",
+    "fr": "Motif :"
+  },
+  {
+    "key": "pm_compta_stamp_ptt",
+    "ar": "Cachet PTT",
+    "fr": "Cachet PTT"
+  },
+  {
+    "key": "pm_compta_slips_issued_title",
+    "ar": "Bordereaux Postaux SFP 01 Édités",
+    "fr": "Bordereaux Postaux SFP 01 Édités"
+  },
+  {
+    "key": "pm_compta_slips_issued_sub",
+    "ar": "Montants transcrits automatiquement en lettres légales (Français et Arabe). Conformes aux guichets Algérie Poste.",
+    "fr": "Montants transcrits automatiquement en lettres légales (Français et Arabe). Conformes aux guichets Algérie Poste."
+  },
+  {
+    "key": "pm_compta_status_printed",
+    "ar": "Imprimé ✓",
+    "fr": "Imprimé ✓"
+  },
+  {
+    "key": "pm_compta_status_ready_counter",
+    "ar": "Prêt pour guichet",
+    "fr": "Prêt pour guichet"
+  },
+  {
+    "key": "pm_compta_expense_journal_title",
+    "ar": "Journal des Dépenses de Terrain",
+    "fr": "Journal des Dépenses de Terrain"
+  },
+  {
+    "key": "pm_compta_expense_journal_sub",
+    "ar": "Vérification des tickets de caisse, déductions TVA et factures fiscales.",
+    "fr": "Vérification des tickets de caisse, déductions TVA et factures fiscales."
+  },
+  {
+    "key": "pm_compta_fiscal_invoice_badge",
+    "ar": "FACTURE FISCALE",
+    "fr": "FACTURE FISCALE"
+  },
+  {
+    "key": "pm_compta_declared_by",
+    "ar": "{project} · Déclaré par {user}",
+    "fr": "{project} · Déclaré par {user}"
+  },
+  {
+    "key": "pm_compta_scanner_title",
+    "ar": "Visualiseur de Reçu & Conformité",
+    "fr": "Visualiseur de Reçu & Conformité"
+  },
+  {
+    "key": "pm_compta_scanner_select",
+    "ar": "Sélectionnez une dépense pour inspecter son justificatif.",
+    "fr": "Sélectionnez une dépense pour inspecter son justificatif."
+  },
+  {
+    "key": "pm_compta_nif_recorded",
+    "ar": "NIF Enregistré :",
+    "fr": "NIF Enregistré :"
+  },
+  {
+    "key": "pm_compta_stock_title",
+    "ar": "Parc Matériel & Stock Indirect — Tracé à Vie (Slide 11)",
+    "fr": "Parc Matériel & Stock Indirect — Tracé à Vie (Slide 11)"
+  },
+  {
+    "key": "pm_compta_stock_sub",
+    "ar": "Chaque achat de terrain est automatiquement codé (NCH-A-00xxx) et bénéficie d\\'une traçabilité de cycle de vie.",
+    "fr": "Chaque achat de terrain est automatiquement codé (NCH-A-00xxx) et bénéficie d\\'une traçabilité de cycle de vie."
+  },
+  {
+    "key": "pm_compta_filter_all_stock",
+    "ar": "Tous ({count})",
+    "fr": "Tous ({count})"
+  },
+  {
+    "key": "pm_compta_filter_indirect",
+    "ar": "Achats Terrain (NCH-A)",
+    "fr": "Achats Terrain (NCH-A)"
+  },
+  {
+    "key": "pm_compta_filter_in_stock",
+    "ar": "En Dépôt",
+    "fr": "En Dépôt"
+  },
+  {
+    "key": "pm_compta_filter_deployed",
+    "ar": "En Mission",
+    "fr": "En Mission"
+  },
+  {
+    "key": "pm_compta_stock_registered",
+    "ar": "MATÉRIEL ENREGISTRÉ",
+    "fr": "MATÉRIEL ENREGISTRÉ"
+  },
+  {
+    "key": "pm_compta_stock_items_count",
+    "ar": "{count} articles",
+    "fr": "{count} articles"
+  },
+  {
+    "key": "pm_compta_badge_indirect",
+    "ar": "STOCK INDIRECT (TERRAIN)",
+    "fr": "STOCK INDIRECT (TERRAIN)"
+  },
+  {
+    "key": "pm_compta_badge_deployed",
+    "ar": "DÉPLOYÉ TERRAIN",
+    "fr": "DÉPLOYÉ TERRAIN"
+  },
+  {
+    "key": "pm_compta_badge_in_depot",
+    "ar": "EN DÉPÔT",
+    "fr": "EN DÉPÔT"
+  },
+  {
+    "key": "pm_compta_lifecycle_title",
+    "ar": "CYCLE DE VIE DÉTAILLÉ (SLIDE 11)",
+    "fr": "CYCLE DE VIE DÉTAILLÉ (SLIDE 11)"
+  },
+  {
+    "key": "pm_compta_origin_acquisition",
+    "ar": "Origine acquisition :",
+    "fr": "Origine acquisition :"
+  },
+  {
+    "key": "pm_compta_origin_field_purchased",
+    "ar": "Acheté et déclaré sur le terrain",
+    "fr": "Acheté et déclaré sur le terrain"
+  },
+  {
+    "key": "pm_compta_fiscal_voucher",
+    "ar": "Justificatif fiscal :",
+    "fr": "Justificatif fiscal :"
+  },
+  {
+    "key": "pm_compta_voucher_scanned",
+    "ar": "facture_scan.jpg ✓ Scannée",
+    "fr": "facture_scan.jpg ✓ Scannée"
+  },
+  {
+    "key": "pm_compta_current_status",
+    "ar": "Statut actuel :",
+    "fr": "Statut actuel :"
+  },
+  {
+    "key": "pm_compta_status_good",
+    "ar": "Disponible — état : bon",
+    "fr": "Disponible — état : bon"
+  },
+  {
+    "key": "pm_compta_history_title",
+    "ar": "Historique Chronologique des Affectations",
+    "fr": "Historique Chronologique des Affectations"
+  },
+  {
+    "key": "pm_compta_btn_assign_mission",
+    "ar": "Affecter à une Mission",
+    "fr": "Affecter à une Mission"
+  },
+  {
+    "key": "pm_compta_btn_return_stock",
+    "ar": "Retour Stock",
+    "fr": "Retour Stock"
+  },
+  {
+    "key": "pm_compta_btn_qr_label",
+    "ar": "Imprimer Étiquette QR Code",
+    "fr": "Imprimer Étiquette QR Code"
+  },
+  {
+    "key": "pm_sim_mobile_mode",
+    "ar": "Mode Téléphone (390px)",
+    "fr": "Mode Téléphone (390px)"
+  },
+  {
+    "key": "pm_sim_desktop_mode",
+    "ar": "Plein Écran (Bureau)",
+    "fr": "Plein Écran (Bureau)"
+  },
+  {
+    "key": "pm_sim_badge",
+    "ar": "Mobile-First",
+    "fr": "Mobile-First"
+  },
+  {
+    "key": "pm_ccp_republic",
+    "ar": "RÉPUBLIQUE ALGÉRIENNE DÉMOCRATIQUE ET POPULAIRE",
+    "fr": "RÉPUBLIQUE ALGÉRIENNE DÉMOCRATIQUE ET POPULAIRE"
+  },
+  {
+    "key": "pm_ccp_ministry",
+    "ar": "MINISTÈRE DE LA POSTE ET DES TÉLÉCOMMUNICATIONS",
+    "fr": "MINISTÈRE DE LA POSTE ET DES TÉLÉCOMMUNICATIONS"
+  },
+  {
+    "key": "pm_ccp_operations",
+    "ar": "ALGÉRIE POSTE · OPÉRATIONS FINANCIÈRES SFP 01",
+    "fr": "ALGÉRIE POSTE · OPÉRATIONS FINANCIÈRES SFP 01"
+  },
+  {
+    "key": "pm_ccp_edition",
+    "ar": "Édition Atrium ERP",
+    "fr": "Édition Atrium ERP"
+  },
+  {
+    "key": "pm_ccp_beneficiary_name",
+    "ar": "Bénéficiaire (Nom & Prénom)",
+    "fr": "Bénéficiaire (Nom & Prénom)"
+  },
+  {
+    "key": "pm_ccp_amount_digits",
+    "ar": "Montant en Chiffres",
+    "fr": "Montant en Chiffres"
+  },
+  {
+    "key": "pm_ccp_account_number",
+    "ar": "Numéro de Compte Courant Postal (N° CCP)",
+    "fr": "Numéro de Compte Courant Postal (N° CCP)"
+  },
+  {
+    "key": "pm_ccp_key",
+    "ar": "Clé CCP",
+    "fr": "Clé CCP"
+  },
+  {
+    "key": "pm_ccp_words_fr",
+    "ar": "Somme en toutes lettres (Français légal) :",
+    "fr": "Somme en toutes lettres (Français légal) :"
+  },
+  {
+    "key": "pm_ccp_purpose",
+    "ar": "Motif de l\\'opération :",
+    "fr": "Motif de l\\'opération :"
+  },
+  {
+    "key": "pm_ccp_signature_order",
+    "ar": "Signature et Cachet du Donneur d\\'Ordre :",
+    "fr": "Signature et Cachet du Donneur d\\'Ordre :"
+  },
+  {
+    "key": "pm_ccp_signed_dg",
+    "ar": "Validé par Direction Générale NCH",
+    "fr": "Validé par Direction Générale NCH"
+  },
+  {
+    "key": "pm_ccp_post_stamp_box",
+    "ar": "Timbre à date du bureau postal",
+    "fr": "Timbre à date du bureau postal"
+  },
+  {
+    "key": "pm_ccp_compliance_footer",
+    "ar": "Format standard SFP 01 conforme aux guichets Algérie Poste",
+    "fr": "Format standard SFP 01 conforme aux guichets Algérie Poste"
+  },
+  {
+    "key": "pm_cp_budget_allocated",
+    "ar": "Budget Total Alloué",
+    "fr": "Budget Total Alloué"
+  },
+  {
+    "key": "pm_cp_target_margin",
+    "ar": "Marge Cible : {margin}%",
+    "fr": "Marge Cible : {margin}%"
+  },
+  {
+    "key": "pm_cp_burn_rate_warning",
+    "ar": "Alerte Consommation Budget : {percent}% des frais de terrain déjà engagés ({spent} DA / {limit} DA plafond).",
+    "fr": "Alerte Consommation Budget : {percent}% des frais de terrain déjà engagés ({spent} DA / {limit} DA plafond)."
+  },
+  {
+    "key": "pm_cp_activation_progress",
+    "ar": "Avancement du Processus d\\'Activation",
+    "fr": "Avancement du Processus d\\'Activation"
+  },
+  {
+    "key": "pm_cp_status_field_exec",
+    "ar": "80% (En Exécution Terrain)",
+    "fr": "80% (En Exécution Terrain)"
+  },
+  {
+    "key": "pm_cp_status_crea_print",
+    "ar": "45% (Créa & Print)",
+    "fr": "45% (Créa & Print)"
+  },
+  {
+    "key": "pm_cp_milestones_title",
+    "ar": "Jalons Opérationnels (Milestones)",
+    "fr": "Jalons Opérationnels (Milestones)"
+  },
+  {
+    "key": "pm_cp_milestone_step",
+    "ar": "Étape {step}",
+    "fr": "Étape {step}"
+  },
+  {
+    "key": "pm_cp_milestone_done",
+    "ar": "Clôturé",
+    "fr": "Clôturé"
+  },
+  {
+    "key": "pm_cp_milestone_pending",
+    "ar": "À réaliser",
+    "fr": "À réaliser"
+  },
+  {
+    "key": "pm_cp_milestone_deadline",
+    "ar": "Échéance : {date}",
+    "fr": "Échéance : {date}"
+  },
+  {
+    "key": "pm_cp_circuit_title",
+    "ar": "LE CIRCUIT FICHIER (SLIDE 6)",
+    "fr": "LE CIRCUIT FICHIER (SLIDE 6)"
+  },
+  {
+    "key": "pm_cp_circuit_s1",
+    "ar": "1. Le CDP commande",
+    "fr": "1. Le CDP commande"
+  },
+  {
+    "key": "pm_cp_circuit_s2",
+    "ar": "2. La Créa produit",
+    "fr": "2. La Créa produit"
+  },
+  {
+    "key": "pm_cp_circuit_s3",
+    "ar": "3. Retour au CDP",
+    "fr": "3. Retour au CDP"
+  },
+  {
+    "key": "pm_cp_circuit_s4",
+    "ar": "4. Transmission imprimeur",
+    "fr": "4. Transmission imprimeur"
+  },
+  {
+    "key": "pm_cp_cat_title",
+    "ar": "Catalogue PLV, Bannières & Textile",
+    "fr": "Catalogue PLV, Bannières & Textile"
+  },
+  {
+    "key": "pm_cp_cat_sub",
+    "ar": "Commandez les supports physiques pour vos activations de terrain.",
+    "fr": "Commandez les supports physiques pour vos activations de terrain."
+  },
+  {
+    "key": "pm_cp_cat_search_ph",
+    "ar": "Rechercher PLV, rollup, dimensions...",
+    "fr": "Rechercher PLV, rollup, dimensions..."
+  },
+  {
+    "key": "pm_cp_cat_view_cart",
+    "ar": "Voir Panier ({count})",
+    "fr": "Voir Panier ({count})"
+  },
+  {
+    "key": "pm_cp_orders_title",
+    "ar": "Suivi des Ordres de Fabrication & Commandes Print",
+    "fr": "Suivi des Ordres de Fabrication & Commandes Print"
+  },
+  {
+    "key": "pm_cp_orders_sub",
+    "ar": "Suivez en temps réel la prise en charge de vos commandes par le Studio Créa jusqu\\'au BAT final.",
+    "fr": "Suivez en temps réel la prise en charge de vos commandes par le Studio Créa jusqu\\'au BAT final."
+  },
+  {
+    "key": "pm_cp_order_items",
+    "ar": "Articles : {items}",
+    "fr": "Articles : {items}"
+  },
+  {
+    "key": "pm_cp_order_total",
+    "ar": "Total Fabrication :",
+    "fr": "Total Fabrication :"
+  },
+  {
+    "key": "pm_cp_bat_hub_title",
+    "ar": "Centre de Validation BAT (Bon à Tirer)",
+    "fr": "Centre de Validation BAT (Bon à Tirer)"
+  },
+  {
+    "key": "pm_cp_bat_hub_sub",
+    "ar": "Inspectez la fidélité colorimétrique (CMJN), les marges de bords perdus (3mm), et validez l\\'ordre d\\'impression.",
+    "fr": "Inspectez la fidélité colorimétrique (CMJN), les marges de bords perdus (3mm), et validez l\\'ordre d\\'impression."
+  },
+  {
+    "key": "pm_cp_toast_purchase_title",
+    "ar": "Achat déclaré & codé en stock",
+    "fr": "Achat déclaré & codé en stock"
+  },
+  {
+    "key": "pm_cp_toast_purchase_desc",
+    "ar": "Achat \"{title}\" déclaré avec succès ! L\\'actif a été codé automatiquement dans le stock indirect (NCH-A-00xxx).",
+    "fr": "Achat \"{title}\" déclaré avec succès ! L\\'actif a été codé automatiquement dans le stock indirect (NCH-A-00xxx)."
+  },
+  {
+    "key": "pm_rh_badge_title",
+    "ar": "Rôle 5 · Ressources Humaines & Casting",
+    "fr": "Rôle 5 · Ressources Humaines & Casting"
+  },
+  {
+    "key": "pm_rh_title_talents",
+    "ar": "Vivier National des Talents",
+    "fr": "Vivier National des Talents"
+  },
+  {
+    "key": "pm_rh_title_dossier",
+    "ar": "Dossier Candidat · {name}",
+    "fr": "Dossier Candidat · {name}"
+  },
+  {
+    "key": "pm_rh_title_portal",
+    "ar": "Portail Candidat Public (/cvs/create)",
+    "fr": "Portail Candidat Public (/cvs/create)"
+  },
+  {
+    "key": "pm_rh_title_walkin",
+    "ar": "Saisie Express Candidat Agence",
+    "fr": "Saisie Express Candidat Agence"
+  },
+  {
+    "key": "pm_rh_btn_new_candidate",
+    "ar": "Nouveau Candidat",
+    "fr": "Nouveau Candidat"
+  },
+  {
+    "key": "pm_rh_btn_export_excel",
+    "ar": "Exporter Vivier (Excel)",
+    "fr": "Exporter Vivier (Excel)"
+  },
+  {
+    "key": "pm_rh_profiles_found",
+    "ar": "{count} profils trouvés",
+    "fr": "{count} profils trouvés"
+  },
+  {
+    "key": "pm_rh_col_consolidated_score",
+    "ar": "Score Consolidé",
+    "fr": "Score Consolidé"
+  },
+  {
+    "key": "pm_rh_col_mobility",
+    "ar": "Mobilité",
+    "fr": "Mobilité"
+  },
+  {
+    "key": "pm_rh_col_key",
+    "ar": "Clé : {key}",
+    "fr": "Clé : {key}"
+  },
+  {
+    "key": "pm_rh_pillar1_title",
+    "ar": "Compétences & Disponibilités",
+    "fr": "Compétences & Disponibilités"
+  },
+  {
+    "key": "pm_rh_pillar1_roles",
+    "ar": "Rôles souhaités :",
+    "fr": "Rôles souhaités :"
+  },
+  {
+    "key": "pm_rh_pillar1_langs",
+    "ar": "Langues :",
+    "fr": "Langues :"
+  },
+  {
+    "key": "pm_rh_pillar1_mobility",
+    "ar": "Mobilité :",
+    "fr": "Mobilité :"
+  },
+  {
+    "key": "pm_rh_pillar2_title",
+    "ar": "Coordonnées Postales (Algérie Poste)",
+    "fr": "Coordonnées Postales (Algérie Poste)"
+  },
+  {
+    "key": "pm_rh_pillar2_key",
+    "ar": "Clé Algérie Poste :",
+    "fr": "Clé Algérie Poste :"
+  },
+  {
+    "key": "pm_rh_pillar2_verified",
+    "ar": "✓ Validé conforme à l\\'algorithme d\\'Algérie Poste",
+    "fr": "✓ Validé conforme à l\\'algorithme d\\'Algérie Poste"
+  },
+  {
+    "key": "pm_rh_pillar3_title",
+    "ar": "Coffre-Fort des Pièces Justificatives",
+    "fr": "Coffre-Fort des Pièces Justificatives"
+  },
+  {
+    "key": "pm_rh_doc_cni",
+    "ar": "Carte Nationale d\\'Identité (CNI)",
+    "fr": "Carte Nationale d\\'Identité (CNI)"
+  },
+  {
+    "key": "pm_rh_doc_license",
+    "ar": "Permis de Conduire Catégorie B",
+    "fr": "Permis de Conduire Catégorie B"
+  },
+  {
+    "key": "pm_rh_doc_verified",
+    "ar": "Vérifiée",
+    "fr": "Vérifiée"
+  },
+  {
+    "key": "pm_rh_doc_compliant",
+    "ar": "Conforme",
+    "fr": "Conforme"
+  },
+  {
+    "key": "pm_rh_pillar4_title",
+    "ar": "Historique Missions & Fiabilité",
+    "fr": "Historique Missions & Fiabilité"
+  },
+  {
+    "key": "pm_rh_history_completed",
+    "ar": "Missions Complétées :",
+    "fr": "Missions Complétées :"
+  },
+  {
+    "key": "pm_rh_history_absences",
+    "ar": "Absences Non Justifiées :",
+    "fr": "Absences Non Justifiées :"
+  },
+  {
+    "key": "pm_rh_history_reliability",
+    "ar": "0 absence (100% fiabilité)",
+    "fr": "0 absence (100% fiabilité)"
+  },
+  {
+    "key": "pm_rh_history_hr_notes",
+    "ar": "Avis RH :",
+    "fr": "Avis RH :"
+  },
+  {
+    "key": "pm_rh_btn_back_pool",
+    "ar": "Retour au Vivier",
+    "fr": "Retour au Vivier"
+  },
+  {
+    "key": "pm_rh_portal_join_title",
+    "ar": "Rejoignez le Réseau NCH",
+    "fr": "Rejoignez le Réseau NCH"
+  },
+  {
+    "key": "pm_rh_portal_form_title",
+    "ar": "Formulaire d\\'Inscription Talent",
+    "fr": "Formulaire d\\'Inscription Talent"
+  },
+  {
+    "key": "pm_rh_portal_form_sub",
+    "ar": "Gagnez jusqu\\'à 4 500 DA / jour sur les événements de grandes marques.",
+    "fr": "Gagnez jusqu\\'à 4 500 DA / jour sur les événements de grandes marques."
+  },
+  {
+    "key": "pm_rh_portal_success",
+    "ar": "✓ Candidature envoyée avec succès ! Notre équipe RH vous contactera sous 48h.",
+    "fr": "✓ Candidature envoyée avec succès ! Notre équipe RH vous contactera sous 48h."
+  },
+  {
+    "key": "pm_cp_btn_add",
+    "ar": "Ajouter",
+    "fr": "Ajouter"
+  },
+  {
+    "key": "pm_cp_my_order",
+    "ar": "Ma commande",
+    "fr": "Ma commande"
+  },
+  {
+    "key": "pm_cp_articles_count",
+    "ar": "{count} article(s)",
+    "fr": "{count} article(s)"
+  },
+  {
+    "key": "pm_cp_btn_transmit_crea",
+    "ar": "Envoyer à la Créa →",
+    "fr": "Envoyer à la Créa →"
+  },
+  {
+    "key": "pm_cp_order_status_sent_crea",
+    "ar": "TRANSMIS AU STUDIO CRÉA",
+    "fr": "TRANSMIS AU STUDIO CRÉA"
+  },
+  {
+    "key": "pm_cp_order_status_in_prod",
+    "ar": "EN PRODUCTION CRÉA",
+    "fr": "EN PRODUCTION CRÉA"
+  },
+  {
+    "key": "pm_cp_order_status_bat_approved",
+    "ar": "BAT VALIDÉ / IMPRESSION",
+    "fr": "BAT VALIDÉ / IMPRESSION"
+  },
+  {
+    "key": "pm_cp_bat_status_approved_badge",
+    "ar": "BAT VALIDÉ",
+    "fr": "BAT VALIDÉ"
+  },
+  {
+    "key": "pm_cp_bat_status_revision_badge",
+    "ar": "CORRECTION REQUISE",
+    "fr": "CORRECTION REQUISE"
+  },
+  {
+    "key": "pm_cp_bat_status_pending_badge",
+    "ar": "EN ATTENTE REVUE",
+    "fr": "EN ATTENTE REVUE"
+  },
+  {
+    "key": "pm_cp_btn_request_revision_action",
+    "ar": "Demander Correction",
+    "fr": "Demander Correction"
+  },
+  {
+    "key": "pm_cp_btn_approve_bat_action",
+    "ar": "Valider le BAT →",
+    "fr": "Valider le BAT →"
+  },
+  {
+    "key": "pm_cp_bat_validated_print_msg",
+    "ar": "BAT validé pour fabrication imprimeur",
+    "fr": "BAT validé pour fabrication imprimeur"
+  },
+  {
+    "key": "pm_cp_correction_note_prefix",
+    "ar": "Note de correction :",
+    "fr": "Note de correction :"
+  },
+  {
+    "key": "pm_cp_expenses_section_title",
+    "ar": "Achats Projet & Déclaration Entrée Stock Indirect (Slide 11)",
+    "fr": "Achats Projet & Déclaration Entrée Stock Indirect (Slide 11)"
+  },
+  {
+    "key": "pm_cp_active_project_label",
+    "ar": "Projet actif :",
+    "fr": "Projet actif :"
+  },
+  {
+    "key": "pm_cp_field_limit_label",
+    "ar": "Plafond terrain :",
+    "fr": "Plafond terrain :"
+  },
+  {
+    "key": "pm_cp_declare_purchase_title",
+    "ar": "Déclarer un Achat de Terrain (Création automatique de code stock NCH-A-00xxx)",
+    "fr": "Déclarer un Achat de Terrain (Création automatique de code stock NCH-A-00xxx)"
+  },
+  {
+    "key": "pm_cp_declare_purchase_sub",
+    "ar": "Tout achat matériel déclaré par le Chef de Projet ou Superviseur est immédiatement codé et tracé à vie dans l\\'inventaire indirect.",
+    "fr": "Tout achat matériel déclaré par le Chef de Projet ou Superviseur est immédiatement codé et tracé à vie dans l\\'inventaire indirect."
+  },
+  {
+    "key": "pm_cp_designation_label",
+    "ar": "Désignation du Matériel *",
+    "fr": "Désignation du Matériel *"
+  },
+  {
+    "key": "pm_cp_designation_ph",
+    "ar": "Ex: Nappe comptoir brandée, Câble HDMI 15m...",
+    "fr": "Ex: Nappe comptoir brandée, Câble HDMI 15m..."
+  },
+  {
+    "key": "pm_cp_scan_voucher_label",
+    "ar": "Justificatif Scan",
+    "fr": "Justificatif Scan"
+  },
+  {
+    "key": "pm_cp_btn_declare_stock",
+    "ar": "Déclarer & Coder l\\'Actif en Stock →",
+    "fr": "Déclarer & Coder l\\'Actif en Stock →"
+  },
+  {
+    "key": "pm_cp_journal_title",
+    "ar": "Journal des Achats du Projet ({count})",
+    "fr": "Journal des Achats du Projet ({count})"
+  },
+  {
+    "key": "pm_cp_exp_approved_dg",
+    "ar": "APPROUVÉ DG",
+    "fr": "APPROUVÉ DG"
+  },
+  {
+    "key": "pm_cp_exp_rejected",
+    "ar": "REJETÉ",
+    "fr": "REJETÉ"
+  },
+  {
+    "key": "pm_cp_exp_pending_dg",
+    "ar": "EN ATTENTE DG",
+    "fr": "EN ATTENTE DG"
+  },
+  {
+    "key": "pm_cp_modal_correction_title",
+    "ar": "Demande de Correction BAT",
+    "fr": "Demande de Correction BAT"
+  },
+  {
+    "key": "pm_cp_modal_correction_ph",
+    "ar": "Ex: Ajuster le logo client à 15cm du bord supérieur et corriger le texte légal...",
+    "fr": "Ex: Ajuster le logo client à 15cm du bord supérieur et corriger le texte légal..."
+  },
+  {
+    "key": "pm_cp_btn_send_to_studio",
+    "ar": "Envoyer au Studio Créa",
+    "fr": "Envoyer au Studio Créa"
+  },
+  {
+    "key": "pm_crea_col_received",
+    "ar": "Reçues",
+    "fr": "Reçues"
+  },
+  {
+    "key": "pm_crea_col_in_progress",
+    "ar": "En production",
+    "fr": "En production"
+  },
+  {
+    "key": "pm_crea_col_delivered",
+    "ar": "Livrées",
+    "fr": "Livrées"
+  },
+  {
+    "key": "pm_crea_badge_brief_kv",
+    "ar": "BRIEF · KV",
+    "fr": "BRIEF · KV"
+  },
+  {
+    "key": "pm_crea_badge_print",
+    "ar": "PRINT",
+    "fr": "PRINT"
+  },
+  {
+    "key": "pm_crea_badge_in_prod",
+    "ar": "EN PRODUCTION",
+    "fr": "EN PRODUCTION"
+  },
+  {
+    "key": "pm_crea_badge_bat_valid",
+    "ar": "BAT VALIDÉ",
+    "fr": "BAT VALIDÉ"
+  },
+  {
+    "key": "pm_crea_badge_ready_print",
+    "ar": "PRÊT IMPRESSION",
+    "fr": "PRÊT IMPRESSION"
+  },
+  {
+    "key": "pm_crea_badge_transmitted",
+    "ar": "Transmis",
+    "fr": "Transmis"
+  },
+  {
+    "key": "pm_crea_panel_ready_title",
+    "ar": "Livrable prêt",
+    "fr": "Livrable prêt"
+  },
+  {
+    "key": "pm_crea_panel_bat_final",
+    "ar": "BAT Final",
+    "fr": "BAT Final"
+  },
+  {
+    "key": "pm_crea_btn_return_cdp",
+    "ar": "Renvoyer au chef de projet",
+    "fr": "Renvoyer au chef de projet"
+  },
+  {
+    "key": "pm_crea_return_cdp_note",
+    "ar": "Le CDP recevra le fichier HD dans son espace pour envoi direct à l\\'imprimeur.",
+    "fr": "Le CDP recevra le fichier HD dans son espace pour envoi direct à l\\'imprimeur."
+  },
+  {
+    "key": "pm_crea_briefs_title",
+    "ar": "Cahiers des Charges & Spécifications Graphiques",
+    "fr": "Cahiers des Charges & Spécifications Graphiques"
+  },
+  {
+    "key": "pm_crea_briefs_sub",
+    "ar": "Briefs injectés par la Direction et les Chefs de Projets pour cadrage des Key Visuals (KV).",
+    "fr": "Briefs injectés par la Direction et les Chefs de Projets pour cadrage des Key Visuals (KV)."
+  },
+  {
+    "key": "pm_crea_btn_start_kv",
+    "ar": "Démarrer Production KV ➔",
+    "fr": "Démarrer Production KV ➔"
+  },
+  {
+    "key": "pm_crea_upload_screen_tag",
+    "ar": "Écran 3.2 · Validateur & Upload BAT",
+    "fr": "Écran 3.2 · Validateur & Upload BAT"
+  },
+  {
+    "key": "pm_crea_upload_screen_title",
+    "ar": "Livraison d\\'Épreuve Imprimeur & Contrôle des Normes Pré-Presse",
+    "fr": "Livraison d\\'Épreuve Imprimeur & Contrôle des Normes Pré-Presse"
+  },
+  {
+    "key": "pm_crea_upload_screen_sub",
+    "ar": "Assurez la fidélité de production : vérifiez l\\'espace colorimétrique CMJN, la résolution 300 DPI et les fonds perdus.",
+    "fr": "Assurez la fidélité de production : vérifiez l\\'espace colorimétrique CMJN, la résolution 300 DPI et les fonds perdus."
+  },
+  {
+    "key": "pm_crea_upload_success_banner",
+    "ar": "Épreuve BAT déposée avec succès ! Notification envoyée au Chef de Projet pour revue.",
+    "fr": "Épreuve BAT déposée avec succès ! Notification envoyée au Chef de Projet pour revue."
+  },
+  {
+    "key": "pm_crea_upload_field_project",
+    "ar": "Projet & Campagne Associée",
+    "fr": "Projet & Campagne Associée"
+  },
+  {
+    "key": "pm_crea_upload_field_artwork_name",
+    "ar": "Nom du Livrable Graphique *",
+    "fr": "Nom du Livrable Graphique *"
+  },
+  {
+    "key": "pm_crea_upload_qa_title",
+    "ar": "Contrôle Qualité Pré-Presse (Enregistrement Technique)",
+    "fr": "Contrôle Qualité Pré-Presse (Enregistrement Technique)"
+  },
+  {
+    "key": "pm_crea_upload_field_colorspace",
+    "ar": "Espace Couleur",
+    "fr": "Espace Couleur"
+  },
+  {
+    "key": "pm_crea_upload_field_resolution",
+    "ar": "Résolution",
+    "fr": "Résolution"
+  },
+  {
+    "key": "pm_crea_upload_field_format",
+    "ar": "Format Fichier",
+    "fr": "Format Fichier"
+  },
+  {
+    "key": "pm_crea_upload_field_preview_url",
+    "ar": "URL de Prévisualisation du BAT (Aperçu HD)",
+    "fr": "URL de Prévisualisation du BAT (Aperçu HD)"
+  },
+  {
+    "key": "pm_crea_upload_btn_save",
+    "ar": "Enregistrer & Notifier le Chef de Projet",
+    "fr": "Enregistrer & Notifier le Chef de Projet"
+  },
+  {
+    "key": "pm_sup_badge_live_today",
+    "ar": "● EN COURS AUJOURD\\'HUI",
+    "fr": "● EN COURS AUJOURD\\'HUI"
+  },
+  {
+    "key": "pm_sup_badge_upcoming",
+    "ar": "À VENIR",
+    "fr": "À VENIR"
+  },
+  {
+    "key": "pm_sup_staff_count_suffix",
+    "ar": "staff",
+    "fr": "staff"
+  },
+  {
+    "key": "pm_sup_btn_open_maps",
+    "ar": "Ouvrir Google Maps",
+    "fr": "Ouvrir Google Maps"
+  },
+  {
+    "key": "pm_sup_btn_start_rollcall",
+    "ar": "Lancer le Pointage ➔",
+    "fr": "Lancer le Pointage ➔"
+  },
+  {
+    "key": "pm_sup_sim_title",
+    "ar": "Pointage Terrain en Temps Réel",
+    "fr": "Pointage Terrain en Temps Réel"
+  },
+  {
+    "key": "pm_sup_sim_badge",
+    "ar": "Pointage Mobile",
+    "fr": "Pointage Mobile"
+  },
+  {
+    "key": "pm_sup_btn_present",
+    "ar": "Présent",
+    "fr": "Présent"
+  },
+  {
+    "key": "pm_sup_btn_late",
+    "ar": "Retard",
+    "fr": "Retard"
+  },
+  {
+    "key": "pm_sup_btn_absent",
+    "ar": "Absent",
+    "fr": "Absent"
+  },
+  {
+    "key": "pm_sup_btn_standby",
+    "ar": "Standby",
+    "fr": "Standby"
+  },
+  {
+    "key": "pm_sup_lock_title",
+    "ar": "Pointage Clôturé & Verrouillé",
+    "fr": "Pointage Clôturé & Verrouillé"
+  },
+  {
+    "key": "pm_sup_lock_desc",
+    "ar": "Transmis à la Direction pour approbation et génération des mandats CCP.",
+    "fr": "Transmis à la Direction pour approbation et génération des mandats CCP."
+  },
+  {
+    "key": "pm_sup_btn_close_day",
+    "ar": "Clôturer le Pointage du Jour",
+    "fr": "Clôturer le Pointage du Jour"
+  },
+  {
+    "key": "pm_sup_day_rate_suffix",
+    "ar": "/ jour",
+    "fr": "/ jour"
+  },
+  {
+    "key": "pm_sup_search_ph",
+    "ar": "Rechercher animateur, wilaya, commune...",
+    "fr": "Rechercher animateur, wilaya, commune..."
+  },
+  {
+    "key": "pm_sup_wilaya_all",
+    "ar": "58 Wilayas (Toutes)",
+    "fr": "58 Wilayas (Toutes)"
+  },
+  {
+    "key": "pm_sup_filter_rating",
+    "ar": "Note Min",
+    "fr": "Note Min"
+  },
+  {
+    "key": "pm_sup_filter_rating_confirmed",
+    "ar": "≥ 4.0 ★ (Confirmé)",
+    "fr": "≥ 4.0 ★ (Confirmé)"
+  },
+  {
+    "key": "pm_sup_filter_rating_elite",
+    "ar": "≥ 4.5 ★ (Élite)",
+    "fr": "≥ 4.5 ★ (Élite)"
+  },
+  {
+    "key": "pm_sup_filter_vehicle_only",
+    "ar": "Véhiculé uniquement (Permis B)",
+    "fr": "Véhiculé uniquement (Permis B)"
+  },
+  {
+    "key": "pm_sup_talents_found",
+    "ar": "{count} animateurs éligibles trouvés",
+    "fr": "{count} animateurs éligibles trouvés"
+  },
+  {
+    "key": "pm_sup_btn_assigned",
+    "ar": "Assigné",
+    "fr": "Assigné"
+  },
+  {
+    "key": "pm_sup_btn_assign",
+    "ar": "Affecter",
+    "fr": "Affecter"
+  },
+  {
+    "key": "pm_sup_exp_tag",
+    "ar": "Écran 4.4 · Déclaration Achat Terrain",
+    "fr": "Écran 4.4 · Déclaration Achat Terrain"
+  },
+  {
+    "key": "pm_sup_exp_title",
+    "ar": "Capture Reçu & Dépense Imprévue On-Site",
+    "fr": "Capture Reçu & Dépense Imprévue On-Site"
+  },
+  {
+    "key": "pm_sup_exp_sub",
+    "ar": "Photographie du ticket de caisse obligatoire pour validation par la Direction et remboursement.",
+    "fr": "Photographie du ticket de caisse obligatoire pour validation par la Direction et remboursement."
+  },
+  {
+    "key": "pm_sup_exp_success",
+    "ar": "Dépense transmise avec succès ! Statut : En attente d\\'approbation DG.",
+    "fr": "Dépense transmise avec succès ! Statut : En attente d\\'approbation DG."
+  },
+  {
+    "key": "pm_sup_exp_field_title",
+    "ar": "Motif de la Dépense Terrain *",
+    "fr": "Motif de la Dépense Terrain *"
+  },
+  {
+    "key": "pm_sup_exp_field_title_ph",
+    "ar": "Ex: Câble HDMI blindé pour écran stand Bab Ezzouar",
+    "fr": "Ex: Câble HDMI blindé pour écran stand Bab Ezzouar"
+  },
+  {
+    "key": "pm_sup_exp_field_category",
+    "ar": "Catégorie",
+    "fr": "Catégorie"
+  },
+  {
+    "key": "pm_sup_exp_cat_materials",
+    "ar": "Matériel d\\'Urgence",
+    "fr": "Matériel d\\'Urgence"
+  },
+  {
+    "key": "pm_sup_exp_cat_catering",
+    "ar": "Restauration Animateurs",
+    "fr": "Restauration Animateurs"
+  },
+  {
+    "key": "pm_sup_exp_cat_transport",
+    "ar": "Transport & Parking",
+    "fr": "Transport & Parking"
+  },
+  {
+    "key": "pm_sup_exp_field_photo",
+    "ar": "Photo du Ticket / Facturette (URL simulation caméra)",
+    "fr": "Photo du Ticket / Facturette (URL simulation caméra)"
+  },
+  {
+    "key": "pm_sup_exp_camera_hint",
+    "ar": "L\\'image est automatiquement soumise au zoom de contrôle de la Direction Générale.",
+    "fr": "L\\'image est automatiquement soumise au zoom de contrôle de la Direction Générale."
+  },
+  {
+    "key": "pm_sup_exp_btn_submit",
+    "ar": "Soumettre la Dépense à la Direction",
+    "fr": "Soumettre la Dépense à la Direction"
+  },
+  {
+    "key": "pm_rh_tag_driver_license",
+    "ar": "Permis B",
+    "fr": "Permis B"
+  },
+  {
+    "key": "pm_rh_tag_vehicle_owner",
+    "ar": "Véhiculé",
+    "fr": "Véhiculé"
+  },
+  {
+    "key": "pm_rh_btn_inspect_dossier",
+    "ar": "Inspecter Dossier ➔",
+    "fr": "Inspecter Dossier ➔"
+  },
+  {
+    "key": "pm_rh_badge_hr_verified",
+    "ar": "Vérifié par RH",
+    "fr": "Vérifié par RH"
+  },
+  {
+    "key": "pm_rh_years_old",
+    "ar": "ans",
+    "fr": "ans"
+  },
+  {
+    "key": "pm_rh_wilaya_of",
+    "ar": "Wilaya de",
+    "fr": "Wilaya de"
+  },
+  {
+    "key": "pm_rh_yes",
+    "ar": "Oui",
+    "fr": "Oui"
+  },
+  {
+    "key": "pm_rh_no",
+    "ar": "Non",
+    "fr": "Non"
+  },
+  {
+    "key": "pm_rh_vehicle_yes",
+    "ar": "Véhiculé Oui",
+    "fr": "Véhiculé Oui"
+  },
+  {
+    "key": "pm_rh_vehicle_no",
+    "ar": "Non véhiculé",
+    "fr": "Non véhiculé"
+  },
+  {
+    "key": "pm_rh_candidate_walkin_note",
+    "ar": "Candidat reçu directement à l\\'agence.",
+    "fr": "Candidat reçu directement à l\\'agence."
+  },
+  {
+    "key": "pm_rh_candidate_online_note",
+    "ar": "Pré-inscription portail en ligne.",
+    "fr": "Pré-inscription portail en ligne."
+  },
+  {
+    "key": "pm_rh_form_walkin_title",
+    "ar": "Saisie Express Agence (Candidat au Guichet)",
+    "fr": "Saisie Express Agence (Candidat au Guichet)"
+  },
+  {
+    "key": "pm_rh_form_walkin_sub",
+    "ar": "Création immédiate de fiche avec validation clé CCP et qualification RH.",
+    "fr": "Création immédiate de fiche avec validation clé CCP et qualification RH."
+  },
+  {
+    "key": "pm_rh_btn_save_talent",
+    "ar": "Enregistrer & Ajouter au Vivier",
+    "fr": "Enregistrer & Ajouter au Vivier"
+  },
+  {
+    "key": "pm_rh_success_saved",
+    "ar": "Talent enregistré avec succès et intégré au vivier 58 Wilayas !",
+    "fr": "Talent enregistré avec succès et intégré au vivier 58 Wilayas !"
+  },
+  {
+    "key": "pm_dir_activity_ccp_generated",
+    "ar": "{user} a généré {count} formulaires CCP",
+    "fr": "{user} a généré {count} formulaires CCP"
+  },
+  {
+    "key": "pm_dir_activity_rollcall_closed",
+    "ar": "{user} a clôturé le pointage — Mission n°{code}",
+    "fr": "{user} a clôturé le pointage — Mission n°{code}"
+  },
+  {
+    "key": "pm_dir_activity_bat_delivered",
+    "ar": "{user} a livré {file}",
+    "fr": "{user} a livré {file}"
+  },
+  {
+    "key": "pm_dir_activity_purchase_declared",
+    "ar": "{user} a déclaré un achat : {amount} DA",
+    "fr": "{user} a déclaré un achat : {amount} DA"
+  },
+  {
+    "key": "pm_dir_time_ago_min",
+    "ar": "Il y a {min} min",
+    "fr": "Il y a {min} min"
+  },
+  {
+    "key": "pm_dir_chart_subtitle",
+    "ar": "Année 2026",
+    "fr": "Année 2026"
+  },
+  {
+    "key": "pm_dir_active_projects_list_title",
+    "ar": "Campagnes d\\'Activation en Cours",
+    "fr": "Campagnes d\\'Activation en Cours"
+  },
+  {
+    "key": "pm_dir_active_projects_list_sub",
+    "ar": "Suivi des campagnes sur les 58 Wilayas",
+    "fr": "Suivi des campagnes sur les 58 Wilayas"
+  },
+  {
+    "key": "pm_dir_btn_view_project",
+    "ar": "Consulter Campagne",
+    "fr": "Consulter Campagne"
+  },
+  {
+    "key": "pm_compta_month_period",
+    "ar": "Juillet 2026",
+    "fr": "Juillet 2026"
+  },
+  {
+    "key": "pm_compta_timeline_step1_stage",
+    "ar": "Acheté & codé",
+    "fr": "Acheté & codé"
+  },
+  {
+    "key": "pm_compta_timeline_step2_stage",
+    "ar": "Affecté",
+    "fr": "Affecté"
+  },
+  {
+    "key": "pm_compta_timeline_step3_stage",
+    "ar": "Retour stock",
+    "fr": "Retour stock"
+  },
+  {
+    "key": "pm_compta_timeline_step4_stage",
+    "ar": "En stock",
+    "fr": "En stock"
+  },
+  {
+    "key": "pm_compta_timeline_today",
+    "ar": "Auj.",
+    "fr": "Auj."
+  },
+  {
+    "key": "pm_crea_tab_demandes",
+    "ar": "Demandes Reçues",
+    "fr": "Demandes Reçues"
+  },
+  {
+    "key": "pm_sup_tab_expense",
+    "ar": "Déclarer Dépense",
+    "fr": "Déclarer Dépense"
+  },
+  {
+    "key": "pm_dir_tab_cockpit",
+    "ar": "Cockpit Direction",
+    "fr": "Cockpit Direction"
+  },
+  {
+    "key": "pm_dir_tab_new_project",
+    "ar": "Nouveau Cadrage",
+    "fr": "Nouveau Cadrage"
+  },
+  {
+    "key": "pm_dir_tab_approvals",
+    "ar": "Validations Direction",
+    "fr": "Validations Direction"
+  },
+  {
+    "key": "pm_dir_tab_reports",
+    "ar": "Rapports & Audit",
+    "fr": "Rapports & Audit"
+  },
+  {
+    "key": "pm_dir_missions_month",
+    "ar": "Missions par Mois",
+    "fr": "Missions par Mois"
+  },
+  {
+    "key": "pm_dir_year",
+    "ar": "Année 2026",
+    "fr": "Année 2026"
+  },
+  {
+    "key": "pm_dir_injection_title",
+    "ar": "Injection Rapide Cahier des Charges",
+    "fr": "Injection Rapide Cahier des Charges"
+  },
+  {
+    "key": "pm_dir_step_crea",
+    "ar": "Envoi direct au Studio Créa",
+    "fr": "Envoi direct au Studio Créa"
+  },
+  {
+    "key": "pm_dir_new_specs",
+    "ar": "Titre de l\\'opération et supports",
+    "fr": "Titre de l\\'opération et supports"
+  },
+  {
+    "key": "pm_dir_client_deadline",
+    "ar": "Délai Express 48h",
+    "fr": "Délai Express 48h"
+  },
+  {
+    "key": "pm_dir_injected_success",
+    "ar": "Cahier des charges transmis avec succès au Studio Créa et au Chef de Projet !",
+    "fr": "Cahier des charges transmis avec succès au Studio Créa et au Chef de Projet !"
+  },
+  {
+    "key": "pm_dir_send_crea",
+    "ar": "Transmettre au Studio Créa",
+    "fr": "Transmettre au Studio Créa"
+  },
+  {
+    "key": "pm_dir_recent_activity",
+    "ar": "Activité Opérationnelle Récente",
+    "fr": "Activité Opérationnelle Récente"
+  },
+  {
+    "key": "pm_dir_pending_validation",
+    "ar": "Paies Terrain en Attente de Validation",
+    "fr": "Paies Terrain en Attente de Validation"
+  },
+  {
+    "key": "pm_dir_requests_count",
+    "ar": "{count} en attente",
+    "fr": "{count} en attente"
+  },
+  {
+    "key": "pm_dir_table_animator",
+    "ar": "ANIMATEUR",
+    "fr": "ANIMATEUR"
+  },
+  {
+    "key": "pm_dir_table_mission",
+    "ar": "MISSION",
+    "fr": "MISSION"
+  },
+  {
+    "key": "pm_dir_table_amount",
+    "ar": "MONTANT",
+    "fr": "MONTANT"
+  },
+  {
+    "key": "pm_dir_table_action",
+    "ar": "ACTION",
+    "fr": "ACTION"
+  },
+  {
+    "key": "pm_dir_status_validated_dg",
+    "ar": "Validé DG",
+    "fr": "Validé DG"
+  },
+  {
+    "key": "pm_dir_btn_validate",
+    "ar": "Valider",
+    "fr": "Valider"
+  },
+  {
+    "key": "pm_dir_what_changes",
+    "ar": "Ce que ça change pour la Direction",
+    "fr": "Ce que ça change pour la Direction"
+  },
+  {
+    "key": "pm_dir_benefit_1",
+    "ar": "Zéro dépassement imprévu : chaque enveloppe terrain est strictement plafonnée.",
+    "fr": "Zéro dépassement imprévu : chaque enveloppe terrain est strictement plafonnée."
+  },
+  {
+    "key": "pm_dir_benefit_2",
+    "ar": "Double verrou financier : paie validée uniquement après accord Direction et Compta.",
+    "fr": "Double verrou financier : paie validée uniquement après accord Direction et Compta."
+  },
+  {
+    "key": "pm_dir_benefit_3",
+    "ar": "Supervision 58 Wilayas en direct : pointage GPS éliminant les animateurs fantômes.",
+    "fr": "Supervision 58 Wilayas en direct : pointage GPS éliminant les animateurs fantômes."
+  },
+  {
+    "key": "pm_dir_benefit_4",
+    "ar": "Bordereaux Algérie Poste conformes : génération en 1 clic des mandats SFP 01.",
+    "fr": "Bordereaux Algérie Poste conformes : génération en 1 clic des mandats SFP 01."
+  },
+  {
+    "key": "pm_dir_live_tagline",
+    "ar": "Chaîne d\\'activation intégrée : du brief créatif au virement postal certifié.",
+    "fr": "Chaîne d\\'activation intégrée : du brief créatif au virement postal certifié."
+  },
+  {
+    "key": "pm_dir_approvals_badge",
+    "ar": "File de Validation DG",
+    "fr": "File de Validation DG"
+  },
+  {
+    "key": "pm_dir_approvals_title",
+    "ar": "Gouvernance Stratégique & Arbitrage des Dépenses",
+    "fr": "Gouvernance Stratégique & Arbitrage des Dépenses"
+  },
+  {
+    "key": "pm_dir_approvals_sub",
+    "ar": "Contrôlez les lots de paie animateurs et les factures fournisseurs avant ordonnancement comptable.",
+    "fr": "Contrôlez les lots de paie animateurs et les factures fournisseurs avant ordonnancement comptable."
+  },
+  {
+    "key": "pm_dir_filter_all",
+    "ar": "Tous ({count})",
+    "fr": "Tous ({count})"
+  },
+  {
+    "key": "pm_dir_filter_payroll",
+    "ar": "Lots de Paie ({count})",
+    "fr": "Lots de Paie ({count})"
+  },
+  {
+    "key": "pm_dir_filter_expenses",
+    "ar": "Achats & Factures ({count})",
+    "fr": "Achats & Factures ({count})"
+  },
+  {
+    "key": "pm_dir_payroll_badge",
+    "ar": "Paie Terrain",
+    "fr": "Paie Terrain"
+  },
+  {
+    "key": "pm_dir_logistics_badge",
+    "ar": "Achat Logistique",
+    "fr": "Achat Logistique"
+  },
+  {
+    "key": "pm_dir_fiscal_invoice",
+    "ar": "Facture Fiscale (NIF/RC)",
+    "fr": "Facture Fiscale (NIF/RC)"
+  },
+  {
+    "key": "pm_dir_see_receipt",
+    "ar": "Voir Justificatif",
+    "fr": "Voir Justificatif"
+  },
+  {
+    "key": "pm_dir_approve_btn",
+    "ar": "Approuver",
+    "fr": "Approuver"
+  },
+  {
+    "key": "pm_dir_reject_btn",
+    "ar": "Rejeter",
+    "fr": "Rejeter"
+  },
+  {
+    "key": "pm_dir_screen_new_badge",
+    "ar": "Écran 1.2 · Cadrage & Cahier des Charges",
+    "fr": "Écran 1.2 · Cadrage & Cahier des Charges"
+  },
+  {
+    "key": "pm_dir_screen_new_title",
+    "ar": "Formalisation du Dispositif d\\'Activation & Enveloppes Budgétaires",
+    "fr": "Formalisation du Dispositif d\\'Activation & Enveloppes Budgétaires"
+  },
+  {
+    "key": "pm_dir_screen_new_sub",
+    "ar": "Définissez les objectifs de campagne, les plafonds de dépenses terrain et assignez les chefs de file.",
+    "fr": "Définissez les objectifs de campagne, les plafonds de dépenses terrain et assignez les chefs de file."
+  },
+  {
+    "key": "pm_dir_screen_new_success",
+    "ar": "Projet créé avec succès ! Dispatching instantané vers le Chef de Projet et le Studio Créa...",
+    "fr": "Projet créé avec succès ! Dispatching instantané vers le Chef de Projet et le Studio Créa..."
+  },
+  {
+    "key": "pm_dir_field_scope_ph",
+    "ar": "Détaillez le dispositif : nombre de stands éphémères, cibles d\\'échantillonnage, animations GMS, tenues personnalisées...",
+    "fr": "Détaillez le dispositif : nombre de stands éphémères, cibles d\\'échantillonnage, animations GMS, tenues personnalisées..."
+  },
+  {
+    "key": "pm_dir_reject_modal_ph",
+    "ar": "Indiquez pourquoi cette dépense est rejetée (ex: reçu illisible, hors budget)...",
+    "fr": "Indiquez pourquoi cette dépense est rejetée (ex: reçu illisible, hors budget)..."
+  },
+  {
+    "key": "pm_dir_target_objective",
+    "ar": "Objectif agence : 30%",
+    "fr": "Objectif agence : 30%"
+  },
+  {
+    "key": "pm_dir_coverage_wilayas",
+    "ar": "58 Wilayas couvertes",
+    "fr": "58 Wilayas couvertes"
+  },
+  {
+    "key": "pm_dir_rating_avg",
+    "ar": "Moyenne note : 4,6★",
+    "fr": "Moyenne note : 4,6★"
+  },
+  {
+    "key": "pm_dir_client_profitability",
+    "ar": "Rentabilité par Compte Client",
+    "fr": "Rentabilité par Compte Client"
+  },
+  {
+    "key": "pm_dir_turnover_share",
+    "ar": "Part du CA",
+    "fr": "Part du CA"
+  },
+  {
+    "key": "pm_dir_territorial_deploy",
+    "ar": "Déploiement Territorial",
+    "fr": "Déploiement Territorial"
+  },
+  {
+    "key": "pm_dir_activations_count",
+    "ar": "Activations",
+    "fr": "Activations"
+  },
+  {
+    "key": "pm_cp_field_designation",
+    "ar": "Désignation du Matériel *",
+    "fr": "Désignation du Matériel *"
+  },
+  {
+    "key": "pm_cp_field_designation_ph",
+    "ar": "Ex: Nappe comptoir brandée, Câble HDMI 15m...",
+    "fr": "Ex: Nappe comptoir brandée, Câble HDMI 15m..."
+  },
+  {
+    "key": "pm_cp_revision_ph",
+    "ar": "Ex: Ajuster le logo client à 15cm du bord supérieur et corriger le texte légal...",
+    "fr": "Ex: Ajuster le logo client à 15cm du bord supérieur et corriger le texte légal..."
+  },
+  {
+    "key": "pm_crea_field_project",
+    "ar": "Projet & Campagne Associée",
+    "fr": "Projet & Campagne Associée"
+  },
+  {
+    "key": "pm_crea_field_artwork_name",
+    "ar": "Nom du Livrable Graphique *",
+    "fr": "Nom du Livrable Graphique *"
+  },
+  {
+    "key": "pm_crea_field_colorspace",
+    "ar": "Espace Couleur",
+    "fr": "Espace Couleur"
+  },
+  {
+    "key": "pm_crea_field_fileformat",
+    "ar": "Format Fichier",
+    "fr": "Format Fichier"
+  },
+  {
+    "key": "pm_sup_search_talents_ph",
+    "ar": "Rechercher animateur, wilaya, commune...",
+    "fr": "Rechercher animateur, wilaya, commune..."
+  },
+  {
+    "key": "pm_sup_filter_wilaya",
+    "ar": "Wilaya",
+    "fr": "Wilaya"
+  },
+  {
+    "key": "pm_sup_filter_min_rating",
+    "ar": "Note Min",
+    "fr": "Note Min"
+  },
+  {
+    "key": "pm_sup_field_expense_reason",
+    "ar": "Motif de la Dépense Terrain *",
+    "fr": "Motif de la Dépense Terrain *"
+  },
+  {
+    "key": "pm_sup_field_expense_reason_ph",
+    "ar": "Ex: Câble HDMI blindé pour écran stand Bab Ezzouar",
+    "fr": "Ex: Câble HDMI blindé pour écran stand Bab Ezzouar"
+  },
+  {
+    "key": "pm_sup_field_expense_photo",
+    "ar": "Photo du Ticket / Facturette (URL simulation caméra)",
+    "fr": "Photo du Ticket / Facturette (URL simulation caméra)"
+  },
+  {
+    "key": "pm_rh_no_talent_selected",
+    "ar": "Aucun talent sélectionné.",
+    "fr": "Aucun talent sélectionné."
+  },
+  {
+    "key": "pm_rh_field_photo_url",
+    "ar": "Photo Portrait / Casting Selfie (Lien image)",
+    "fr": "Photo Portrait / Casting Selfie (Lien image)"
+  },
+  {
+    "key": "pm_rh_field_candidate_name",
+    "ar": "Nom et Prénom du Candidat *",
+    "fr": "Nom et Prénom du Candidat *"
+  },
+  {
+    "key": "pm_rh_field_key_hint",
+    "ar": "Clé (2 chiffres) *",
+    "fr": "Clé (2 chiffres) *"
+  },
+  {
+    "key": "pm_ccp_postal_reserved",
+    "ar": "Réservé à la Poste :",
+    "fr": "Réservé à la Poste :"
+  }
+]

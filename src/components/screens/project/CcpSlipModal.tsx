@@ -162,7 +162,7 @@ export const CcpSlipModal: React.FC<CcpSlipModalProps> = ({
                 </div>
               </div>
               <div className="text-right">
-                <span className="text-[10px] uppercase text-zinc-500 block">Réservé à la Poste :</span>
+                <span className="text-[10px] uppercase text-zinc-500 block">{t('pm_ccp_postal_reserved')}</span>
                 <div className="h-24 border border-zinc-300 dark:border-zinc-700 rounded bg-white/50 dark:bg-zinc-900/50 flex items-center justify-center text-[10px] text-zinc-400 mt-1">
                   {t('pm_ccp_post_stamp_box')}
                 </div>

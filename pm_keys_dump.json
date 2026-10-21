@@ -1,0 +1,3157 @@
+{
+  "pm_role_direction_badge": {
+    "en": "Executive Management (DG)",
+    "fr": "Direction Générale (DG)",
+    "ar": "Direction Générale (DG)"
+  },
+  "pm_role_cp_badge": {
+    "en": "Project Manager (CDP)",
+    "fr": "Chef de Projet (CDP)",
+    "ar": "Chef de Projet (CDP)"
+  },
+  "pm_role_crea_badge": {
+    "en": "Creative Studio (CR)",
+    "fr": "Studio Créa (CR)",
+    "ar": "Studio Créa (CR)"
+  },
+  "pm_role_sup_badge": {
+    "en": "Field Supervisor (SUP)",
+    "fr": "Superviseur Terrain (SUP)",
+    "ar": "Superviseur Terrain (SUP)"
+  },
+  "pm_role_rh_badge": {
+    "en": "HR & Talent Casting (RH)",
+    "fr": "Ressources Humaines & Casting (RH)",
+    "ar": "Ressources Humaines & Casting (RH)"
+  },
+  "pm_role_compta_badge": {
+    "en": "Accounting & Payroll (CPT)",
+    "fr": "Comptabilité & Paie (CPT)",
+    "ar": "Comptabilité & Paie (CPT)"
+  },
+  "pm_role_active_label": {
+    "en": "Active Role",
+    "fr": "Rôle Actif",
+    "ar": "Rôle Actif"
+  },
+  "pm_role_direction_name": {
+    "en": "Executive Management",
+    "fr": "Direction Générale",
+    "ar": "Direction Générale"
+  },
+  "pm_role_chef_projet_name": {
+    "en": "Project Manager",
+    "fr": "Chef de Projet",
+    "ar": "Chef de Projet"
+  },
+  "pm_role_crea_name": {
+    "en": "Creative Studio",
+    "fr": "Studio Créa",
+    "ar": "Studio Créa"
+  },
+  "pm_role_superviseur_name": {
+    "en": "Field Supervisor",
+    "fr": "Superviseur Terrain",
+    "ar": "Superviseur Terrain"
+  },
+  "pm_role_rh_name": {
+    "en": "HR & Talent Casting",
+    "fr": "Ressources Humaines & Casting",
+    "ar": "Ressources Humaines & Casting"
+  },
+  "pm_role_compta_name": {
+    "en": "Accounting & Payroll",
+    "fr": "Comptabilité & Paie",
+    "ar": "Comptabilité & Paie"
+  },
+  "pm_role_direction_abbr": {
+    "en": "DG",
+    "fr": "DG",
+    "ar": "DG"
+  },
+  "pm_role_chef_projet_abbr": {
+    "en": "CDP",
+    "fr": "CDP",
+    "ar": "CDP"
+  },
+  "pm_role_crea_abbr": {
+    "en": "CR",
+    "fr": "CR",
+    "ar": "CR"
+  },
+  "pm_role_superviseur_abbr": {
+    "en": "SUP",
+    "fr": "SUP",
+    "ar": "SUP"
+  },
+  "pm_role_rh_abbr": {
+    "en": "RH",
+    "fr": "RH",
+    "ar": "RH"
+  },
+  "pm_role_compta_abbr": {
+    "en": "CPT",
+    "fr": "CPT",
+    "ar": "CPT"
+  },
+  "pm_screen_dir_dashboard": {
+    "en": "Command Center",
+    "fr": "Command Center",
+    "ar": "Command Center"
+  },
+  "pm_screen_dir_new_project": {
+    "en": "Cadrage & Cahier des Charges",
+    "fr": "Cadrage & Cahier des Charges",
+    "ar": "Cadrage & Cahier des Charges"
+  },
+  "pm_screen_dir_projects": {
+    "en": "Agency Projects",
+    "fr": "Portefeuille Projets",
+    "ar": "Portefeuille Projets"
+  },
+  "pm_screen_dir_approvals": {
+    "en": "Double-Lock Approvals",
+    "fr": "Double-Lock Approbations",
+    "ar": "Double-Lock Approbations"
+  },
+  "pm_screen_dir_reports": {
+    "en": "Performance & Margins",
+    "fr": "Rapports & Marges",
+    "ar": "Rapports & Marges"
+  },
+  "pm_screen_cp_projects": {
+    "en": "Projects & Milestones",
+    "fr": "Portefeuille & Jalons",
+    "ar": "Portefeuille & Jalons"
+  },
+  "pm_screen_cp_catalog": {
+    "en": "Print & POS Catalog",
+    "fr": "Catalogue Print & PLV",
+    "ar": "Catalogue Print & PLV"
+  },
+  "pm_screen_cp_orders": {
+    "en": "Orders & BAT Tracking",
+    "fr": "Suivi Commandes & Épreuves",
+    "ar": "Suivi Commandes & Épreuves"
+  },
+  "pm_screen_cp_deliverables": {
+    "en": "Press-Ready BAT Files",
+    "fr": "BAT & Livrables",
+    "ar": "BAT & Livrables"
+  },
+  "pm_screen_cp_files": {
+    "en": "Press-Ready BAT Files",
+    "fr": "BAT & Livrables",
+    "ar": "BAT & Livrables"
+  },
+  "pm_screen_cp_expenses": {
+    "en": "Budget & Purchases",
+    "fr": "Budget & Dépenses",
+    "ar": "Budget & Dépenses"
+  },
+  "pm_screen_crea_kanban": {
+    "en": "Production Kanban",
+    "fr": "Kanban de Production",
+    "ar": "Kanban de Production"
+  },
+  "pm_screen_crea_production": {
+    "en": "Key Visual Production",
+    "fr": "Création Visuels Clés",
+    "ar": "Création Visuels Clés"
+  },
+  "pm_screen_crea_upload": {
+    "en": "BAT Validator & Specs",
+    "fr": "Validateur BAT & Specs",
+    "ar": "Validateur BAT & Specs"
+  },
+  "pm_screen_crea_briefs": {
+    "en": "Creative Specifications",
+    "fr": "Briefs Validés",
+    "ar": "Briefs Validés"
+  },
+  "pm_screen_sup_missions": {
+    "en": "Field Missions",
+    "fr": "Missions Terrain",
+    "ar": "Missions Terrain"
+  },
+  "pm_screen_sup_attendance": {
+    "en": "Direct Mobile Roll Call",
+    "fr": "Pointage Mobile Direct",
+    "ar": "Pointage Mobile Direct"
+  },
+  "pm_screen_sup_staffing": {
+    "en": "Casting & Staffing",
+    "fr": "Casting & Staffing",
+    "ar": "Casting & Staffing"
+  },
+  "pm_screen_sup_expenses": {
+    "en": "Field Expense Declaration",
+    "fr": "Déclaration Dépense",
+    "ar": "Déclaration Dépense"
+  },
+  "pm_screen_rh_talents": {
+    "en": "58 Wilayas Talent Pool",
+    "fr": "Vivier Talents (58 Wilayas)",
+    "ar": "Vivier Talents (58 Wilayas)"
+  },
+  "pm_screen_rh_dossier": {
+    "en": "360° Candidate Dossier",
+    "fr": "Dossier Talent 360°",
+    "ar": "Dossier Talent 360°"
+  },
+  "pm_screen_rh_portal": {
+    "en": "Public Candidate Portal",
+    "fr": "Portail Candidat Public",
+    "ar": "Portail Candidat Public"
+  },
+  "pm_screen_rh_walkin": {
+    "en": "Agency Express Intake",
+    "fr": "Saisie Express Agence",
+    "ar": "Saisie Express Agence"
+  },
+  "pm_screen_compta_payroll": {
+    "en": "Automated Payroll Hub",
+    "fr": "Hub Paies Automatisé",
+    "ar": "Hub Paies Automatisé"
+  },
+  "pm_screen_compta_ccp": {
+    "en": "Algérie Poste CCP (SFP 01)",
+    "fr": "Bordereaux CCP (SFP 01)",
+    "ar": "Bordereaux CCP (SFP 01)"
+  },
+  "pm_screen_compta_expenses": {
+    "en": "Invoice & NIF Audit",
+    "fr": "Audit Factures & NIF",
+    "ar": "Audit Factures & NIF"
+  },
+  "pm_screen_compta_stock": {
+    "en": "Equipment & Indirect Stock",
+    "fr": "Stock Matériel & QR",
+    "ar": "Stock Matériel & QR"
+  },
+  "pm_month_jan": {
+    "en": "Jan",
+    "fr": "Jan",
+    "ar": "Jan"
+  },
+  "pm_month_feb": {
+    "en": "Feb",
+    "fr": "Fév",
+    "ar": "Fév"
+  },
+  "pm_month_mar": {
+    "en": "Mar",
+    "fr": "Mar",
+    "ar": "Mar"
+  },
+  "pm_month_apr": {
+    "en": "Apr",
+    "fr": "Avr",
+    "ar": "Avr"
+  },
+  "pm_month_may": {
+    "en": "May",
+    "fr": "Mai",
+    "ar": "Mai"
+  },
+  "pm_month_jun": {
+    "en": "Jun",
+    "fr": "Juin",
+    "ar": "Juin"
+  },
+  "pm_month_jul": {
+    "en": "Jul",
+    "fr": "Juil",
+    "ar": "Juil"
+  },
+  "pm_cp_empty_cart_msg": {
+    "en": "The cart is currently empty.",
+    "fr": "Le panier est actuellement vide.",
+    "ar": "Le panier est actuellement vide."
+  },
+  "pm_cp_imputation_label": {
+    "en": "Allocation:",
+    "fr": "Imputation :",
+    "ar": "Imputation :"
+  },
+  "pm_cp_order_total_label": {
+    "en": "Total Order:",
+    "fr": "Total Commande :",
+    "ar": "Total Commande :"
+  },
+  "pm_cp_deposited_by": {
+    "en": "Submitted by: {name} (Creative Studio)",
+    "fr": "Déposé par : {name} (Studio Créa)",
+    "ar": "Déposé par : {name} (Studio Créa)"
+  },
+  "pm_cp_total_consumed": {
+    "en": "Total Consumed",
+    "fr": "Total Consommé",
+    "ar": "Total Consommé"
+  },
+  "pm_cp_conso_badge": {
+    "en": "Spent",
+    "fr": "Conso",
+    "ar": "Conso"
+  },
+  "pm_cp_table_col_designation": {
+    "en": "Item / Collateral",
+    "fr": "Désignation",
+    "ar": "Désignation"
+  },
+  "pm_cp_table_col_category": {
+    "en": "Category",
+    "fr": "Catégorie",
+    "ar": "Catégorie"
+  },
+  "pm_cp_table_col_declared_by": {
+    "en": "Declared By",
+    "fr": "Déclaré Par",
+    "ar": "Déclaré Par"
+  },
+  "pm_cp_table_col_dir_status": {
+    "en": "Executive Status",
+    "fr": "Statut Direction",
+    "ar": "Statut Direction"
+  },
+  "pm_cp_table_col_amount_dzd": {
+    "en": "Amount DZD",
+    "fr": "Montant DZD",
+    "ar": "Montant DZD"
+  },
+  "pm_cp_tax_invoice_tag": {
+    "en": "Fiscal Invoice (NIF)",
+    "fr": "Facture NIF",
+    "ar": "Facture NIF"
+  },
+  "pm_crea_waiting_creation": {
+    "en": "Awaiting Creation",
+    "fr": "En attente création",
+    "ar": "En attente création"
+  },
+  "pm_crea_order_received": {
+    "en": "Order Received",
+    "fr": "Ordre reçu",
+    "ar": "Ordre reçu"
+  },
+  "pm_crea_bleed_3mm": {
+    "en": "3mm Bleeds",
+    "fr": "Bords 3mm",
+    "ar": "Bords 3mm"
+  },
+  "pm_crea_bleed_flash_ready": {
+    "en": "3mm bleeds included · Ready for pre-press",
+    "fr": "Fonds perdus 3mm inclus · Prêt pour flashage",
+    "ar": "Fonds perdus 3mm inclus · Prêt pour flashage"
+  },
+  "pm_crea_bat_returned_success": {
+    "en": "BAT returned to Project Manager for validation and printer transmission!",
+    "fr": "BAT renvoyé au Chef de Projet pour validation et transmission à l\\'imprimeur !",
+    "ar": "BAT renvoyé au Chef de Projet pour validation et transmission à l\\'imprimeur !"
+  },
+  "pm_crea_deadline_kv": {
+    "en": "KV Deadline: {date}",
+    "fr": "Échéance KV : {date}",
+    "ar": "Échéance KV : {date}"
+  },
+  "pm_crea_deadline_print": {
+    "en": "Print Deadline: {date}",
+    "fr": "Échéance Print : {date}",
+    "ar": "Échéance Print : {date}"
+  },
+  "pm_crea_pm_lead": {
+    "en": "Project Manager: {name}",
+    "fr": "CDP : {name}",
+    "ar": "CDP : {name}"
+  },
+  "pm_crea_crop_marks_included": {
+    "en": "3mm bleeds and crop marks included in file",
+    "fr": "Bords perdus de 3mm et traits de coupe inclus dans le fichier",
+    "ar": "Bords perdus de 3mm et traits de coupe inclus dans le fichier"
+  },
+  "pm_crea_cloud_security_note": {
+    "en": "Master Source Security: Original .AI / .PSD files remain stored in the agency secure cloud. Only validated proofs or BATs are transmitted to print suppliers.",
+    "fr": "Sécurité Source Master : Les fichiers originaux .AI / .PSD restent stockés sur le cloud sécurisé de l\\'agence. Seules les épreuves de contrôle ou BAT validés sont transmis aux prestataires imprimeurs.",
+    "ar": "Sécurité Source Master : Les fichiers originaux .AI / .PSD restent stockés sur le cloud sécurisé de l\\'agence. Seules les épreuves de contrôle ou BAT validés sont transmis aux prestataires imprimeurs."
+  },
+  "pm_sup_schedule_label": {
+    "en": "Hours: {start} – {end}",
+    "fr": "Horaires : {start} – {end}",
+    "ar": "Horaires : {start} – {end}"
+  },
+  "pm_sup_status_present_badge": {
+    "en": "Present",
+    "fr": "Présents",
+    "ar": "Présents"
+  },
+  "pm_sup_status_late_badge": {
+    "en": "Late",
+    "fr": "Retard",
+    "ar": "Retard"
+  },
+  "pm_sup_status_absent_badge": {
+    "en": "Absent",
+    "fr": "Absents",
+    "ar": "Absents"
+  },
+  "pm_sup_ccp_account_tag": {
+    "en": "CCP: {number}",
+    "fr": "CCP : {number}",
+    "ar": "CCP : {number}"
+  },
+  "pm_rh_ccp_error_title": {
+    "en": "CCP Account Error",
+    "fr": "Erreur Compte CCP",
+    "ar": "Erreur Compte CCP"
+  },
+  "pm_rh_ccp_error_msg": {
+    "en": "CCP Account validation error: {error}",
+    "fr": "Erreur de validation CCP : {error}",
+    "ar": "Erreur de validation CCP : {error}"
+  },
+  "pm_rh_gender_female": {
+    "en": "Female",
+    "fr": "Femme",
+    "ar": "Femme"
+  },
+  "pm_rh_gender_male": {
+    "en": "Male",
+    "fr": "Homme",
+    "ar": "Homme"
+  },
+  "pm_rh_role_animator": {
+    "en": "Commercial Animator",
+    "fr": "Animateur Commercial",
+    "ar": "Animateur Commercial"
+  },
+  "pm_rh_role_hostess": {
+    "en": "Hostess / Receptionist",
+    "fr": "Hôtesse d\\'Accueil",
+    "ar": "Hôtesse d\\'Accueil"
+  },
+  "pm_rh_role_supervisor": {
+    "en": "Wilaya Supervisor",
+    "fr": "Superviseur Wilaya",
+    "ar": "Superviseur Wilaya"
+  },
+  "pm_compta_status_approved_dg": {
+    "en": "Approved by DG",
+    "fr": "Validée DG",
+    "ar": "Validée DG"
+  },
+  "pm_compta_status_pending_dg": {
+    "en": "Pending DG Approval",
+    "fr": "En attente DG",
+    "ar": "En attente DG"
+  },
+  "pm_compta_timeline_bought_coded": {
+    "en": "Purchased & Coded",
+    "fr": "Acheté & codé",
+    "ar": "Acheté & codé"
+  },
+  "pm_compta_timeline_assigned": {
+    "en": "Assigned to Mission",
+    "fr": "Affecté sur mission",
+    "ar": "Affecté sur mission"
+  },
+  "pm_compta_timeline_stock_returned": {
+    "en": "Stock Return",
+    "fr": "Retour stock",
+    "ar": "Retour stock"
+  },
+  "pm_compta_timeline_salon": {
+    "en": "SITEV Exhibition — Algiers",
+    "fr": "Salon SITEV — Alger",
+    "ar": "Salon SITEV — Alger"
+  },
+  "pm_compta_timeline_in_stock_avail": {
+    "en": "In Stock — Condition: Good",
+    "fr": "En stock — État : Bon",
+    "ar": "En stock — État : Bon"
+  },
+  "pm_kpi_active_projects": {
+    "en": "Active Agency Campaigns",
+    "fr": "Campagnes Agence Actives",
+    "ar": "Campagnes Agence Actives"
+  },
+  "pm_kpi_budget_committed": {
+    "en": "Budget Engaged",
+    "fr": "Budget Engagé",
+    "ar": "Budget Engagé"
+  },
+  "pm_kpi_field_talents": {
+    "en": "Field Talents Mobilized",
+    "fr": "Talents Terrain Mobilisés",
+    "ar": "Talents Terrain Mobilisés"
+  },
+  "pm_kpi_payroll_due": {
+    "en": "Field Payroll Due",
+    "fr": "Salaires Terrain Dus",
+    "ar": "Salaires Terrain Dus"
+  },
+  "pm_kpi_ccp_slips": {
+    "en": "Algérie Poste CCP Slips",
+    "fr": "Bordereaux Algérie Poste (CCP)",
+    "ar": "Bordereaux Algérie Poste (CCP)"
+  },
+  "pm_dir_title": {
+    "en": "Executive Command Center",
+    "fr": "Centre de Commandement Direction",
+    "ar": "Centre de Commandement Direction"
+  },
+  "pm_dir_subtitle": {
+    "en": "Strategic campaign oversight, client validation, and double-lock financial governance",
+    "fr": "Supervision stratégique des campagnes, validation client et double verrou financier",
+    "ar": "Supervision stratégique des campagnes, validation client et double verrou financier"
+  },
+  "pm_cp_title": {
+    "en": "Project Portfolio & Activation Hub",
+    "fr": "Portefeuille Projets & Hub d\\'Activation",
+    "ar": "Portefeuille Projets & Hub d\\'Activation"
+  },
+  "pm_cp_subtitle": {
+    "en": "Campaign milestones, press-ready proofing (BAT), orders, and supplier receipts",
+    "fr": "Jalons des campagnes, validation BAT, bons de commande et achats",
+    "ar": "Jalons des campagnes, validation BAT, bons de commande et achats"
+  },
+  "pm_crea_title": {
+    "en": "Creative Studio Production",
+    "fr": "Production du Studio Créatif",
+    "ar": "Production du Studio Créatif"
+  },
+  "pm_crea_subtitle": {
+    "en": "Visual assets, specifications, brand key visuals (KV), and packaging checks",
+    "fr": "Création graphique, conformité technique, Key Visuals (KV) et déclinaisons",
+    "ar": "Création graphique, conformité technique, Key Visuals (KV) et déclinaisons"
+  },
+  "pm_sup_title": {
+    "en": "Field Operations & Mobile Check-in",
+    "fr": "Opérations Terrain & Pointage Mobile",
+    "ar": "Opérations Terrain & Pointage Mobile"
+  },
+  "pm_sup_subtitle": {
+    "en": "On-site mission dispatch, talent staffing, GPS presence check, and field expenses",
+    "fr": "Déploiement des missions, staffing des équipes, pointage terrain et frais directs",
+    "ar": "Déploiement des missions, staffing des équipes, pointage terrain et frais directs"
+  },
+  "pm_rh_title": {
+    "en": "58 Wilayas Talent Pool & Casting",
+    "fr": "Vivier National des Talents (58 Wilayas)",
+    "ar": "Vivier National des Talents (58 Wilayas)"
+  },
+  "pm_rh_subtitle": {
+    "en": "Promoter database, contract compliance, national ID, and candidate onboarding",
+    "fr": "Base d\\'animateurs, conformité légale, pièces d\\'identité et recrutement",
+    "ar": "Base d\\'animateurs, conformité légale, pièces d\\'identité et recrutement"
+  },
+  "pm_compta_title": {
+    "en": "Financial Settlements & Postal CCP",
+    "fr": "Règlements Financiers & Bordereaux CCP",
+    "ar": "Règlements Financiers & Bordereaux CCP"
+  },
+  "pm_compta_subtitle": {
+    "en": "Automated payroll audit, legal Algérie Poste SFP 01 slips, and expense reconciliation",
+    "fr": "Audit automatisé des paies, bordereaux légaux Algérie Poste SFP 01 et rapprochement",
+    "ar": "Audit automatisé des paies, bordereaux légaux Algérie Poste SFP 01 et rapprochement"
+  },
+  "pm_btn_new_project": {
+    "en": "Frame New Project",
+    "fr": "Cadrer un Projet",
+    "ar": "Cadrer un Projet"
+  },
+  "pm_btn_generate_ccp": {
+    "en": "Generate Legal CCP SFP 01",
+    "fr": "Générer Bordereau CCP SFP 01",
+    "ar": "Générer Bordereau CCP SFP 01"
+  },
+  "pm_btn_approve_payroll": {
+    "en": "Double-Lock Approve",
+    "fr": "Valider (Double Verrou)",
+    "ar": "Valider (Double Verrou)"
+  },
+  "pm_btn_upload_bat": {
+    "en": "Upload Press BAT",
+    "fr": "Téléverser Fichier BAT",
+    "ar": "Téléverser Fichier BAT"
+  },
+  "pm_btn_open_mobile_sim": {
+    "en": "Open Field Mobile App",
+    "fr": "Ouvrir App Mobile Terrain",
+    "ar": "Ouvrir App Mobile Terrain"
+  },
+  "pm_status_brief": {
+    "en": "Briefing",
+    "fr": "Cahier des Charges",
+    "ar": "Cahier des Charges"
+  },
+  "pm_status_crea_in_progress": {
+    "en": "Créa in Progress",
+    "fr": "Créa en Cours",
+    "ar": "Créa en Cours"
+  },
+  "pm_status_client_review": {
+    "en": "Client Review",
+    "fr": "Validation Client",
+    "ar": "Validation Client"
+  },
+  "pm_status_bat_approved": {
+    "en": "BAT Approved",
+    "fr": "BAT Validé",
+    "ar": "BAT Validé"
+  },
+  "pm_status_field_active": {
+    "en": "Field Active",
+    "fr": "Déploiement Terrain",
+    "ar": "Déploiement Terrain"
+  },
+  "pm_status_audit_pending": {
+    "en": "Audit Pending",
+    "fr": "Audit Compta en Attente",
+    "ar": "Audit Compta en Attente"
+  },
+  "pm_status_closed": {
+    "en": "Closed & Paid",
+    "fr": "Clôturé & Payé",
+    "ar": "Clôturé & Payé"
+  },
+  "pm_compta_tab_payroll": {
+    "en": "Field Payroll Audit",
+    "fr": "Validation Paies Terrain",
+    "ar": "Validation Paies Terrain"
+  },
+  "pm_compta_tab_ccp": {
+    "en": "CCP SFP 01 Postal Forms",
+    "fr": "Formulaires CCP SFP 01",
+    "ar": "Formulaires CCP SFP 01"
+  },
+  "pm_compta_tab_expenses": {
+    "en": "Expenses & Scanned Invoices",
+    "fr": "Dépenses & Factures Scannées",
+    "ar": "Dépenses & Factures Scannées"
+  },
+  "pm_compta_tab_stock": {
+    "en": "Coded Asset Inventory",
+    "fr": "Matériel Codé & Inventaire",
+    "ar": "Matériel Codé & Inventaire"
+  },
+  "pm_compta_double_lock_badge": {
+    "en": "Double-Lock Governance: Direction + Compta",
+    "fr": "Double Verrouillage Direction + Compta",
+    "ar": "Double Verrouillage Direction + Compta"
+  },
+  "pm_compta_btn_generate_slips": {
+    "en": "Generate SFP 01 Postal Slips",
+    "fr": "Générer les Bordereaux SFP 01",
+    "ar": "Générer les Bordereaux SFP 01"
+  },
+  "pm_compta_slips_generated": {
+    "en": "CCP Slips generated for this batch",
+    "fr": "Bordereaux CCP générés pour ce lot",
+    "ar": "Bordereaux CCP générés pour ce lot"
+  },
+  "pm_compta_col_animator": {
+    "en": "Animator / Talent",
+    "fr": "Animateur / Talent",
+    "ar": "Animateur / Talent"
+  },
+  "pm_compta_col_mission": {
+    "en": "Mission & Location",
+    "fr": "Mission & Lieu",
+    "ar": "Mission & Lieu"
+  },
+  "pm_compta_col_days": {
+    "en": "Days Worked",
+    "fr": "Jours Pointés",
+    "ar": "Jours Pointés"
+  },
+  "pm_compta_col_amount": {
+    "en": "Net Amount (DZD)",
+    "fr": "Montant Net (DZD)",
+    "ar": "Montant Net (DZD)"
+  },
+  "pm_compta_col_ccp": {
+    "en": "CCP Account & Key",
+    "fr": "N° Compte CCP & Clé",
+    "ar": "N° Compte CCP & Clé"
+  },
+  "pm_compta_col_wilaya": {
+    "en": "Wilaya",
+    "fr": "Wilaya",
+    "ar": "Wilaya"
+  },
+  "pm_compta_col_status": {
+    "en": "Executive Status",
+    "fr": "Validation Direction",
+    "ar": "Validation Direction"
+  },
+  "pm_compta_status_approved": {
+    "en": "Director Approved",
+    "fr": "Validée Direction",
+    "ar": "Validée Direction"
+  },
+  "pm_compta_status_pending": {
+    "en": "Pending Approval",
+    "fr": "En attente",
+    "ar": "En attente"
+  },
+  "pm_compta_preview_title": {
+    "en": "SFP 01 Slip Live Preview",
+    "fr": "Aperçu Bordereau SFP 01",
+    "ar": "Aperçu Bordereau SFP 01"
+  },
+  "pm_compta_btn_print_a4": {
+    "en": "Print Remittance (A4)",
+    "fr": "Imprimer Mandat (A4)",
+    "ar": "Imprimer Mandat (A4)"
+  },
+  "pm_compta_btn_view_full": {
+    "en": "Expand Remittance Form",
+    "fr": "Agrandir le Bordereau",
+    "ar": "Agrandir le Bordereau"
+  },
+  "pm_compta_expense_invoice_title": {
+    "en": "Scanned Receipt & Audit",
+    "fr": "Facture Scannée & Justificatif",
+    "ar": "Facture Scannée & Justificatif"
+  },
+  "pm_compta_expense_conform": {
+    "en": "Compliant with Accounting Rules",
+    "fr": "Conforme aux Règles Comptables",
+    "ar": "Conforme aux Règles Comptables"
+  },
+  "pm_compta_stock_coded_title": {
+    "en": "Coded Equipment Traceability",
+    "fr": "Traçabilité des Matériels Codés",
+    "ar": "Traçabilité des Matériels Codés"
+  },
+  "pm_compta_stock_qr_ready": {
+    "en": "QR Code ready for field scan",
+    "fr": "QR Code prêt pour scan terrain",
+    "ar": "QR Code prêt pour scan terrain"
+  },
+  "pm_ccp_modal_title": {
+    "en": "Official Algérie Poste SFP 01 Remittance",
+    "fr": "Bordereau Officiel Algérie Poste — SFP 01",
+    "ar": "Bordereau Officiel Algérie Poste — SFP 01"
+  },
+  "pm_ccp_modal_sub": {
+    "en": "Postal Financial Operation · Certified CCP Wire Mandate",
+    "fr": "Opération Financière Postale · Mandat de Virement CCP Conforme",
+    "ar": "Opération Financière Postale · Mandat de Virement CCP Conforme"
+  },
+  "pm_ccp_standard_notice": {
+    "en": "Standard SFP 01 format compliant with Algérie Poste post offices",
+    "fr": "Format standard SFP 01 conforme aux guichets Algérie Poste",
+    "ar": "Format standard SFP 01 conforme aux guichets Algérie Poste"
+  },
+  "pm_dir_kpi_turnover": {
+    "en": "Total Campaign Turnover",
+    "fr": "Chiffre d\\'Affaires Campagnes",
+    "ar": "Chiffre d\\'Affaires Campagnes"
+  },
+  "pm_dir_kpi_margin": {
+    "en": "Net Agency Margin",
+    "fr": "Marge Nette Agence",
+    "ar": "Marge Nette Agence"
+  },
+  "pm_dir_kpi_approvals": {
+    "en": "Pending Executive Approvals",
+    "fr": "Validations DG en Attente",
+    "ar": "Validations DG en Attente"
+  },
+  "pm_dir_btn_approve_all": {
+    "en": "Approve All Selected",
+    "fr": "Valider la Sélection",
+    "ar": "Valider la Sélection"
+  },
+  "pm_dir_new_brief_modal": {
+    "en": "New Project Charter & Brief",
+    "fr": "Nouveau Cahier des Charges & Brief",
+    "ar": "Nouveau Cahier des Charges & Brief"
+  },
+  "pm_cp_tab_portfolio": {
+    "en": "Projects & Milestones",
+    "fr": "Mes Projets & Jalons",
+    "ar": "Mes Projets & Jalons"
+  },
+  "pm_cp_tab_catalog": {
+    "en": "Print & Digital Catalog",
+    "fr": "Catalogue Print & Digital",
+    "ar": "Catalogue Print & Digital"
+  },
+  "pm_cp_tab_orders": {
+    "en": "Orders & BAT Tracking",
+    "fr": "Suivi Commandes & BAT",
+    "ar": "Suivi Commandes & BAT"
+  },
+  "pm_cp_tab_bat": {
+    "en": "Press-Ready Files",
+    "fr": "Fichiers Prêts à Imprimer",
+    "ar": "Fichiers Prêts à Imprimer"
+  },
+  "pm_cp_tab_expenses": {
+    "en": "Purchases & Field Spend",
+    "fr": "Achats & Déclarations",
+    "ar": "Achats & Déclarations"
+  },
+  "pm_cp_btn_order_print": {
+    "en": "Place Print Order",
+    "fr": "Commander Impression",
+    "ar": "Commander Impression"
+  },
+  "pm_crea_tab_kanban": {
+    "en": "Received Briefs",
+    "fr": "Demandes & Briefs Reçus",
+    "ar": "Demandes & Briefs Reçus"
+  },
+  "pm_crea_tab_production": {
+    "en": "Creative Production",
+    "fr": "Production Créative",
+    "ar": "Production Créative"
+  },
+  "pm_crea_tab_upload": {
+    "en": "BAT Upload & Proofs",
+    "fr": "Livrables & Upload BAT",
+    "ar": "Livrables & Upload BAT"
+  },
+  "pm_crea_tab_briefs": {
+    "en": "Creative Specifications",
+    "fr": "Cahiers des Charges Créa",
+    "ar": "Cahiers des Charges Créa"
+  },
+  "pm_sup_tab_missions": {
+    "en": "Field Missions",
+    "fr": "Missions & Activations Terrain",
+    "ar": "Missions & Activations Terrain"
+  },
+  "pm_sup_tab_staffing": {
+    "en": "Team Staffing",
+    "fr": "Composition des Équipes",
+    "ar": "Composition des Équipes"
+  },
+  "pm_sup_tab_attendance": {
+    "en": "GPS Roll Call",
+    "fr": "Pointage Terrain Mobile",
+    "ar": "Pointage Terrain Mobile"
+  },
+  "pm_sup_tab_expenses": {
+    "en": "Petty Cash & Transport",
+    "fr": "Notes & Frais Terrain",
+    "ar": "Notes & Frais Terrain"
+  },
+  "pm_rh_tab_talents": {
+    "en": "58 Wilayas Pool",
+    "fr": "Vivier 58 Wilayas",
+    "ar": "Vivier 58 Wilayas"
+  },
+  "pm_rh_tab_dossier": {
+    "en": "Talent 360° Dossier",
+    "fr": "Dossier 360° Talent",
+    "ar": "Dossier 360° Talent"
+  },
+  "pm_rh_tab_portal": {
+    "en": "Candidate Portal",
+    "fr": "Pré-inscription en Ligne",
+    "ar": "Pré-inscription en Ligne"
+  },
+  "pm_rh_tab_walkin": {
+    "en": "Direct Intake",
+    "fr": "Création Directe Agence",
+    "ar": "Création Directe Agence"
+  },
+  "pm_rh_btn_new_talent": {
+    "en": "Register New Talent",
+    "fr": "Nouveau Talent",
+    "ar": "Nouveau Talent"
+  },
+  "pm_role_cp_sub": {
+    "en": "Campaign milestones, press-ready proofing (BAT), orders, and supplier receipts",
+    "fr": "Jalons des campagnes, validation BAT, bons de commande et achats",
+    "ar": "Jalons des campagnes, validation BAT, bons de commande et achats"
+  },
+  "pm_role_crea_sub": {
+    "en": "Visual assets, specifications, brand key visuals (KV), and packaging checks",
+    "fr": "Création graphique, conformité technique, Key Visuals (KV) et déclinaisons",
+    "ar": "Création graphique, conformité technique, Key Visuals (KV) et déclinaisons"
+  },
+  "pm_role_sup_sub": {
+    "en": "On-site mission dispatch, talent staffing, GPS presence check, and field expenses",
+    "fr": "Déploiement des missions, staffing des équipes, pointage terrain et frais directs",
+    "ar": "Déploiement des missions, staffing des équipes, pointage terrain et frais directs"
+  },
+  "pm_role_rh_sub": {
+    "en": "Promoter database, contract compliance, national ID, and candidate onboarding",
+    "fr": "Base d\\'animateurs, conformité légale, pièces d\\'identité et recrutement",
+    "ar": "Base d\\'animateurs, conformité légale, pièces d\\'identité et recrutement"
+  },
+  "pm_role_compta_sub": {
+    "en": "Automated payroll audit, legal Algérie Poste SFP 01 slips, and expense reconciliation",
+    "fr": "Audit automatisé des paies, bordereaux légaux Algérie Poste SFP 01 et rapprochement",
+    "ar": "Audit automatisé des paies, bordereaux légaux Algérie Poste SFP 01 et rapprochement"
+  },
+  "pm_dir_kpi_budget_committed": {
+    "en": "Budget Committed",
+    "fr": "Budget Engagé",
+    "ar": "Budget Engagé"
+  },
+  "pm_dir_kpi_active_projects": {
+    "en": "Active Projects",
+    "fr": "Projets Actifs",
+    "ar": "Projets Actifs"
+  },
+  "pm_dir_kpi_field_talents": {
+    "en": "Field Talents",
+    "fr": "Talents Terrain",
+    "ar": "Talents Terrain"
+  },
+  "pm_dir_kpi_pending_approvals": {
+    "en": "Pending Approvals",
+    "fr": "Validations en Attente",
+    "ar": "Validations en Attente"
+  },
+  "pm_dir_field_title": {
+    "en": "Project Campaign Title *",
+    "fr": "Titre de la Campagne *",
+    "ar": "Titre de la Campagne *"
+  },
+  "pm_dir_field_client": {
+    "en": "Client Account *",
+    "fr": "Compte Client *",
+    "ar": "Compte Client *"
+  },
+  "pm_dir_field_scope": {
+    "en": "Scope of Work & Activation Brief *",
+    "fr": "Cahier des Charges & Cadrage *",
+    "ar": "Cahier des Charges & Cadrage *"
+  },
+  "pm_dir_field_budget_cap": {
+    "en": "Total Budget Ceiling (DZD)",
+    "fr": "Plafond Budgétaire Total (DZD)",
+    "ar": "Plafond Budgétaire Total (DZD)"
+  },
+  "pm_dir_field_max_field": {
+    "en": "Max Field Operational Expenses (DZD)",
+    "fr": "Enveloppe Max Frais de Terrain (DZD)",
+    "ar": "Enveloppe Max Frais de Terrain (DZD)"
+  },
+  "pm_dir_field_margin": {
+    "en": "Target Gross Margin (%)",
+    "fr": "Marge Brute Cible (%)",
+    "ar": "Marge Brute Cible (%)"
+  },
+  "pm_dir_field_start_date": {
+    "en": "Campaign Kickoff Date",
+    "fr": "Date de Lancement Campagne",
+    "ar": "Date de Lancement Campagne"
+  },
+  "pm_dir_field_end_date": {
+    "en": "Wrap-up Date",
+    "fr": "Date de Clôture",
+    "ar": "Date de Clôture"
+  },
+  "pm_dir_field_pm": {
+    "en": "Designated Project Manager (CDP)",
+    "fr": "Chef de Projet Désigné (CDP)",
+    "ar": "Chef de Projet Désigné (CDP)"
+  },
+  "pm_dir_field_crea": {
+    "en": "Lead Creative / Art Director",
+    "fr": "Directeur Artistique / Créa Lead",
+    "ar": "Directeur Artistique / Créa Lead"
+  },
+  "pm_dir_btn_create_project": {
+    "en": "Create Project Charter",
+    "fr": "Créer la Charte Projet",
+    "ar": "Créer la Charte Projet"
+  },
+  "pm_dir_approvals_all": {
+    "en": "All Pending ({count})",
+    "fr": "Toutes en Attente ({count})",
+    "ar": "Toutes en Attente ({count})"
+  },
+  "pm_dir_approvals_payroll": {
+    "en": "Payroll Batches ({count})",
+    "fr": "Lots de Paie ({count})",
+    "ar": "Lots de Paie ({count})"
+  },
+  "pm_dir_approvals_expenses": {
+    "en": "Purchases & Expenses ({count})",
+    "fr": "Achats & Dépenses ({count})",
+    "ar": "Achats & Dépenses ({count})"
+  },
+  "pm_dir_btn_approve": {
+    "en": "Approve",
+    "fr": "Valider",
+    "ar": "Valider"
+  },
+  "pm_dir_btn_reject": {
+    "en": "Reject",
+    "fr": "Refuser",
+    "ar": "Refuser"
+  },
+  "pm_dir_reject_modal_title": {
+    "en": "Reject Item with Justification",
+    "fr": "Motif du Refus de Validation",
+    "ar": "Motif du Refus de Validation"
+  },
+  "pm_dir_reject_modal_desc": {
+    "en": "Specify non-compliance rationale for the submitter to review and rectify.",
+    "fr": "Précisez la non-conformité constatée pour notification et correction.",
+    "ar": "Précisez la non-conformité constatée pour notification et correction."
+  },
+  "pm_dir_reject_reason_label": {
+    "en": "Reason for Rejection *",
+    "fr": "Motif du Rejet *",
+    "ar": "Motif du Rejet *"
+  },
+  "pm_dir_btn_confirm_reject": {
+    "en": "Confirm Rejection",
+    "fr": "Confirmer le Rejet",
+    "ar": "Confirmer le Rejet"
+  },
+  "pm_cp_kpi_burn_rate": {
+    "en": "Field Expense Burn Rate",
+    "fr": "Taux de Consommation Frais Terrain",
+    "ar": "Taux de Consommation Frais Terrain"
+  },
+  "pm_cp_btn_cart": {
+    "en": "Print Order Cart ({count})",
+    "fr": "Panier d\\'Impression ({count})",
+    "ar": "Panier d\\'Impression ({count})"
+  },
+  "pm_cp_cart_title": {
+    "en": "Print Order Basket",
+    "fr": "Panier Commande d\\'Impression",
+    "ar": "Panier Commande d\\'Impression"
+  },
+  "pm_cp_cart_empty": {
+    "en": "Your order basket is empty.",
+    "fr": "Votre panier d\\'impression est vide.",
+    "ar": "Votre panier d\\'impression est vide."
+  },
+  "pm_cp_cart_total": {
+    "en": "Total Order Amount:",
+    "fr": "Total de la Commande :",
+    "ar": "Total de la Commande :"
+  },
+  "pm_cp_cart_btn_transmit": {
+    "en": "Send to Créa Studio & Printer",
+    "fr": "Transmettre au Studio Créa & Imprimeur",
+    "ar": "Transmettre au Studio Créa & Imprimeur"
+  },
+  "pm_cp_col_grammage": {
+    "en": "Paper Weight:",
+    "fr": "Grammage Papier :",
+    "ar": "Grammage Papier :"
+  },
+  "pm_cp_col_finish": {
+    "en": "Lamination / Finish:",
+    "fr": "Finition / Pelliculage :",
+    "ar": "Finition / Pelliculage :"
+  },
+  "pm_cp_col_print_run": {
+    "en": "Standard Run:",
+    "fr": "Tirage Standard :",
+    "ar": "Tirage Standard :"
+  },
+  "pm_cp_btn_add_to_cart": {
+    "en": "Add to Order",
+    "fr": "Ajouter à la Commande",
+    "ar": "Ajouter à la Commande"
+  },
+  "pm_cp_bat_status_approved": {
+    "en": "Client Approved BAT",
+    "fr": "BAT Validé Client",
+    "ar": "BAT Validé Client"
+  },
+  "pm_cp_bat_status_revision": {
+    "en": "Revision Requested",
+    "fr": "Correction Demandée",
+    "ar": "Correction Demandée"
+  },
+  "pm_cp_bat_status_pending": {
+    "en": "Pending Review",
+    "fr": "En Attente de Revue",
+    "ar": "En Attente de Revue"
+  },
+  "pm_cp_btn_approve_bat": {
+    "en": "Validate Client BAT",
+    "fr": "Valider BAT Client",
+    "ar": "Valider BAT Client"
+  },
+  "pm_cp_btn_request_revision": {
+    "en": "Request Correction",
+    "fr": "Demander Correction",
+    "ar": "Demander Correction"
+  },
+  "pm_cp_revision_modal_title": {
+    "en": "Request BAT Revision",
+    "fr": "Demander une Révision du BAT",
+    "ar": "Demander une Révision du BAT"
+  },
+  "pm_cp_revision_note_label": {
+    "en": "Correction Notes & Technical Remarks",
+    "fr": "Remarques Techniques & Corrections Requises",
+    "ar": "Remarques Techniques & Corrections Requises"
+  },
+  "pm_cp_revision_btn_send": {
+    "en": "Send Remarks to Créa",
+    "fr": "Envoyer les Remarques à la Créa",
+    "ar": "Envoyer les Remarques à la Créa"
+  },
+  "pm_cp_purchase_form_title": {
+    "en": "Declare Field Purchase / Supply",
+    "fr": "Déclarer un Achat / Fourniture de Terrain",
+    "ar": "Déclarer un Achat / Fourniture de Terrain"
+  },
+  "pm_cp_purchase_form_sub": {
+    "en": "Expense is coded directly into the indirect stock lifecycle (NCH-A-00xxx).",
+    "fr": "La dépense est automatiquement codée dans le stock indirect (NCH-A-00xxx).",
+    "ar": "La dépense est automatiquement codée dans le stock indirect (NCH-A-00xxx)."
+  },
+  "pm_cp_purchase_field_title": {
+    "en": "Item Title / Description *",
+    "fr": "Désignation de l\\'Article *",
+    "ar": "Désignation de l\\'Article *"
+  },
+  "pm_cp_purchase_field_amount": {
+    "en": "Amount in DZD *",
+    "fr": "Montant en DZD *",
+    "ar": "Montant en DZD *"
+  },
+  "pm_cp_purchase_field_cat": {
+    "en": "Expense Category",
+    "fr": "Catégorie de Dépense",
+    "ar": "Catégorie de Dépense"
+  },
+  "pm_cp_purchase_btn_submit": {
+    "en": "Declare Purchase & Code Asset",
+    "fr": "Déclarer l\\'Achat & Coder l\\'Actif",
+    "ar": "Déclarer l\\'Achat & Coder l\\'Actif"
+  },
+  "pm_crea_kanban_received": {
+    "en": "Briefs & Orders Received",
+    "fr": "Briefs & Commandes Reçus",
+    "ar": "Briefs & Commandes Reçus"
+  },
+  "pm_crea_kanban_in_progress": {
+    "en": "Creative Production in Progress",
+    "fr": "Production Créative en Cours",
+    "ar": "Production Créative en Cours"
+  },
+  "pm_crea_kanban_ready_bat": {
+    "en": "BAT Ready & Approved",
+    "fr": "BAT Prêts & Validés",
+    "ar": "BAT Prêts & Validés"
+  },
+  "pm_crea_upload_title": {
+    "en": "Upload Press BAT & Technical Proof",
+    "fr": "Téléverser Fichier BAT & Épreuve Technique",
+    "ar": "Téléverser Fichier BAT & Épreuve Technique"
+  },
+  "pm_crea_upload_sub": {
+    "en": "Pre-flight checks: 300 DPI, CMJN color space, 3mm bleed included",
+    "fr": "Contrôle prépresse : 300 DPI, espace colorimétrique CMJN, 3mm de fonds perdus",
+    "ar": "Contrôle prépresse : 300 DPI, espace colorimétrique CMJN, 3mm de fonds perdus"
+  },
+  "pm_crea_field_artwork_title": {
+    "en": "Artwork Title / Asset Code *",
+    "fr": "Nom du Fichier / Code Livrable *",
+    "ar": "Nom du Fichier / Code Livrable *"
+  },
+  "pm_crea_field_format": {
+    "en": "File Format",
+    "fr": "Format du Fichier",
+    "ar": "Format du Fichier"
+  },
+  "pm_crea_field_color": {
+    "en": "Color Space",
+    "fr": "Espace Colorimétrique",
+    "ar": "Espace Colorimétrique"
+  },
+  "pm_crea_field_resolution": {
+    "en": "Resolution (DPI)",
+    "fr": "Résolution",
+    "ar": "Résolution"
+  },
+  "pm_crea_field_bleed": {
+    "en": "3mm Bleed Included (Fonds perdus)",
+    "fr": "Fonds Perdus 3mm Inclus",
+    "ar": "Fonds Perdus 3mm Inclus"
+  },
+  "pm_crea_field_preview_url": {
+    "en": "Artwork Preview URL",
+    "fr": "URL de Prévisualisation du BAT (Aperçu HD)",
+    "ar": "URL de Prévisualisation du BAT (Aperçu HD)"
+  },
+  "pm_crea_btn_upload": {
+    "en": "Upload BAT to Project Hub",
+    "fr": "Téléverser le BAT dans le Hub Projet",
+    "ar": "Téléverser le BAT dans le Hub Projet"
+  },
+  "pm_crea_tech_compliance": {
+    "en": "100% Technical Pre-flight Passed",
+    "fr": "Conformité Prépresse 100% Validée",
+    "ar": "Conformité Prépresse 100% Validée"
+  },
+  "pm_sup_kpi_present": {
+    "en": "Present",
+    "fr": "Présents",
+    "ar": "Présents"
+  },
+  "pm_sup_kpi_late": {
+    "en": "Late",
+    "fr": "En Retard",
+    "ar": "En Retard"
+  },
+  "pm_sup_kpi_absent": {
+    "en": "Absent",
+    "fr": "Absents",
+    "ar": "Absents"
+  },
+  "pm_sup_btn_close_shift": {
+    "en": "Lock & Close Daily Roll Call",
+    "fr": "Clôturer & Verrouiller le Pointage",
+    "ar": "Clôturer & Verrouiller le Pointage"
+  },
+  "pm_sup_shift_closed": {
+    "en": "Shift Closed & Transmitted to Compta",
+    "fr": "Pointage Clôturé & Transmis à la Compta",
+    "ar": "Pointage Clôturé & Transmis à la Compta"
+  },
+  "pm_sup_rollcall_title": {
+    "en": "Daily Mobile Roll Call",
+    "fr": "Feuille d\\'Émargement Mobile du Jour",
+    "ar": "Feuille d\\'Émargement Mobile du Jour"
+  },
+  "pm_sup_rollcall_sub": {
+    "en": "On-site presence, GPS timestamp, and individual animator evaluation",
+    "fr": "Présence terrain, horodatage GPS et notation individuelle des animateurs",
+    "ar": "Présence terrain, horodatage GPS et notation individuelle des animateurs"
+  },
+  "pm_sup_col_promoter": {
+    "en": "Promoter / Hostess",
+    "fr": "Animateur / Hôtesse",
+    "ar": "Animateur / Hôtesse"
+  },
+  "pm_sup_col_checkin": {
+    "en": "Check-In",
+    "fr": "Heure d\\'Arrivée",
+    "ar": "Heure d\\'Arrivée"
+  },
+  "pm_sup_col_rating": {
+    "en": "Day Performance",
+    "fr": "Évaluation Journée",
+    "ar": "Évaluation Journée"
+  },
+  "pm_sup_col_status": {
+    "en": "Roll Call Status",
+    "fr": "Statut Présence",
+    "ar": "Statut Présence"
+  },
+  "pm_sup_petty_cash_title": {
+    "en": "Log On-site Petty Cash / Transport",
+    "fr": "Saisie Frais Menue Monnaie & Transport",
+    "ar": "Saisie Frais Menue Monnaie & Transport"
+  },
+  "pm_sup_petty_cash_btn": {
+    "en": "Submit Expense",
+    "fr": "Soumettre la Note de Frais",
+    "ar": "Soumettre la Note de Frais"
+  },
+  "pm_rh_kpi_total_talents": {
+    "en": "Total Talent Pool",
+    "fr": "Vivier Total Candidats",
+    "ar": "Vivier Total Candidats"
+  },
+  "pm_rh_kpi_active_talents": {
+    "en": "Active Promoters",
+    "fr": "Animateurs Prêts",
+    "ar": "Animateurs Prêts"
+  },
+  "pm_rh_kpi_verified_ccp": {
+    "en": "Verified CCP Accounts",
+    "fr": "Comptes CCP Vérifiés",
+    "ar": "Comptes CCP Vérifiés"
+  },
+  "pm_rh_search_ph": {
+    "en": "Search talent by name, phone, CCP, wilaya...",
+    "fr": "Rechercher par nom, téléphone, CCP, wilaya...",
+    "ar": "Rechercher par nom, téléphone, CCP, wilaya..."
+  },
+  "pm_rh_btn_export_csv": {
+    "en": "Export Talent Pool (CSV)",
+    "fr": "Exporter Vivier National (CSV)",
+    "ar": "Exporter Vivier National (CSV)"
+  },
+  "pm_rh_col_talent": {
+    "en": "Talent Profile",
+    "fr": "Fiche Candidat",
+    "ar": "Fiche Candidat"
+  },
+  "pm_rh_col_location": {
+    "en": "Wilaya & Commune",
+    "fr": "Wilaya & Commune",
+    "ar": "Wilaya & Commune"
+  },
+  "pm_rh_col_ccp": {
+    "en": "CCP Number & Key",
+    "fr": "N° CCP & Clé",
+    "ar": "N° CCP & Clé"
+  },
+  "pm_rh_col_rating": {
+    "en": "Score",
+    "fr": "Note",
+    "ar": "Note"
+  },
+  "pm_rh_col_vehicle": {
+    "en": "Vehicle",
+    "fr": "Véhicule",
+    "ar": "Véhicule"
+  },
+  "pm_rh_col_license": {
+    "en": "License",
+    "fr": "Permis",
+    "ar": "Permis"
+  },
+  "pm_rh_has_vehicle": {
+    "en": "Has Car",
+    "fr": "Véhiculé",
+    "ar": "Véhiculé"
+  },
+  "pm_rh_has_license": {
+    "en": "Permis B",
+    "fr": "Permis B",
+    "ar": "Permis B"
+  },
+  "pm_rh_dossier_title": {
+    "en": "Talent 360° Dossier",
+    "fr": "Dossier 360° du Talent",
+    "ar": "Dossier 360° du Talent"
+  },
+  "pm_rh_dossier_nin": {
+    "en": "National ID (NIN):",
+    "fr": "N° Identification Nationale (NIN) :",
+    "ar": "N° Identification Nationale (NIN) :"
+  },
+  "pm_rh_dossier_missions_completed": {
+    "en": "Missions Completed:",
+    "fr": "Missions Réalisées :",
+    "ar": "Missions Réalisées :"
+  },
+  "pm_rh_portal_title": {
+    "en": "Online Candidate Self-Registration Portal",
+    "fr": "Portail Public de Candidature en Ligne",
+    "ar": "Portail Public de Candidature en Ligne"
+  },
+  "pm_rh_portal_sub": {
+    "en": "Public mobile-friendly registration for animators and field promoters across 58 Wilayas",
+    "fr": "Inscription accessible sur smartphone pour hôtesses et animateurs des 58 Wilayas",
+    "ar": "Inscription accessible sur smartphone pour hôtesses et animateurs des 58 Wilayas"
+  },
+  "pm_rh_walkin_title": {
+    "en": "Agency Fast Intake Form",
+    "fr": "Saisie Express Candidat Agence",
+    "ar": "Saisie Express Candidat Agence"
+  },
+  "pm_rh_walkin_sub": {
+    "en": "Instant in-person candidate registration and biometric verification",
+    "fr": "Enregistrement direct au comptoir et vérification biométrique immédiate",
+    "ar": "Enregistrement direct au comptoir et vérification biométrique immédiate"
+  },
+  "pm_rh_field_fullname": {
+    "en": "Full Name *",
+    "fr": "Nom & Prénom *",
+    "ar": "Nom & Prénom *"
+  },
+  "pm_rh_field_gender": {
+    "en": "Gender",
+    "fr": "Genre",
+    "ar": "Genre"
+  },
+  "pm_rh_field_age": {
+    "en": "Age",
+    "fr": "Âge",
+    "ar": "Âge"
+  },
+  "pm_rh_field_phone": {
+    "en": "Phone Number *",
+    "fr": "Numéro de Téléphone *",
+    "ar": "Numéro de Téléphone *"
+  },
+  "pm_rh_field_email": {
+    "en": "Email Address",
+    "fr": "Adresse Email",
+    "ar": "Adresse Email"
+  },
+  "pm_rh_field_wilaya": {
+    "en": "Wilaya *",
+    "fr": "Wilaya *",
+    "ar": "Wilaya *"
+  },
+  "pm_rh_field_commune": {
+    "en": "Commune *",
+    "fr": "Commune de Résidence *",
+    "ar": "Commune de Résidence *"
+  },
+  "pm_rh_field_ccp": {
+    "en": "CCP Account Number *",
+    "fr": "Numéro de Compte CCP *",
+    "ar": "Numéro de Compte CCP *"
+  },
+  "pm_rh_field_ccp_key": {
+    "en": "CCP Key (Clé) *",
+    "fr": "Clé CCP *",
+    "ar": "Clé CCP *"
+  },
+  "pm_rh_btn_submit_talent": {
+    "en": "Register Talent Profile",
+    "fr": "Enregistrer le Profil Talent",
+    "ar": "Enregistrer le Profil Talent"
+  },
+  "pm_compta_kpi_active_period": {
+    "en": "Active Period",
+    "fr": "Période Active",
+    "ar": "Période Active"
+  },
+  "pm_compta_kpi_approved_dg": {
+    "en": "Approved by DG",
+    "fr": "Validées Direction (DG)",
+    "ar": "Validées Direction (DG)"
+  },
+  "pm_compta_kpi_pending_dg": {
+    "en": "Pending DG Signature",
+    "fr": "En Attente Signature",
+    "ar": "En Attente Signature"
+  },
+  "pm_compta_kpi_net_payroll": {
+    "en": "Net Payroll Mass",
+    "fr": "Masse Salariale Nette",
+    "ar": "Masse Salariale Nette"
+  },
+  "pm_compta_audit_title": {
+    "en": "July 2026 Payroll",
+    "fr": "Paies — Juillet 2026",
+    "ar": "Paies — Juillet 2026"
+  },
+  "pm_compta_audit_sub": {
+    "en": "Field timesheets validated by Direction. Click any animator to inspect CCP SFP 01 voucher.",
+    "fr": "Pointages terrain validés par la Direction. Cliquez sur un animateur pour inspecter son mandat CCP SFP 01.",
+    "ar": "Pointages terrain validés par la Direction. Cliquez sur un animateur pour inspecter son mandat CCP SFP 01."
+  },
+  "pm_compta_btn_generate_batch": {
+    "en": "⟳ Generate CCP Vouchers ({count}) → Merged PDF",
+    "fr": "⟳ Générer les CCP ({count}) → un PDF fusionné, prêt à imprimer",
+    "ar": "⟳ Générer les CCP ({count}) → un PDF fusionné, prêt à imprimer"
+  },
+  "pm_compta_batch_success": {
+    "en": "CCP vouchers generated successfully! Standard SFP 01 files ready for postal wire transfer.",
+    "fr": "Mandats CCP générés avec succès ! Fichiers conformes SFP 01 prêts pour virement postal.",
+    "ar": "Mandats CCP générés avec succès ! Fichiers conformes SFP 01 prêts pour virement postal."
+  },
+  "pm_compta_table_animator": {
+    "en": "ANIMATOR",
+    "fr": "ANIMATEUR",
+    "ar": "ANIMATEUR"
+  },
+  "pm_compta_table_mission": {
+    "en": "MISSION",
+    "fr": "MISSION",
+    "ar": "MISSION"
+  },
+  "pm_compta_table_days": {
+    "en": "DAYS",
+    "fr": "JOURS",
+    "ar": "JOURS"
+  },
+  "pm_compta_table_amount": {
+    "en": "AMOUNT",
+    "fr": "MONTANT",
+    "ar": "MONTANT"
+  },
+  "pm_compta_table_status": {
+    "en": "STATUS",
+    "fr": "STATUT",
+    "ar": "STATUT"
+  },
+  "pm_compta_status_validated_dg": {
+    "en": "Valid DG",
+    "fr": "Validée DG",
+    "ar": "Validée DG"
+  },
+  "pm_compta_batches_transmitted": {
+    "en": "PAYROLL BATCHES TRANSMITTED BY SUPERVISORS (MOBILE)",
+    "fr": "LOTS DE PAIE TRANSMIS PAR LES SUPERVISEURS (MOBILE)",
+    "ar": "LOTS DE PAIE TRANSMIS PAR LES SUPERVISEURS (MOBILE)"
+  },
+  "pm_compta_voucher_preview_header": {
+    "en": "Algérie Poste Voucher (SFP 01)",
+    "fr": "Bordereau Algérie Poste (SFP 01)",
+    "ar": "Bordereau Algérie Poste (SFP 01)"
+  },
+  "pm_compta_voucher_official_badge": {
+    "en": "OFFICIAL PREVIEW",
+    "fr": "APERÇU OFFICIEL",
+    "ar": "APERÇU OFFICIEL"
+  },
+  "pm_compta_republic_title": {
+    "en": "DEMOCRATIC AND POPULAR REPUBLIC OF ALGERIA",
+    "fr": "RÉPUBLIQUE ALGÉRIENNE DÉMOCRATIQUE ET POPULAIRE",
+    "ar": "RÉPUBLIQUE ALGÉRIENNE DÉMOCRATIQUE ET POPULAIRE"
+  },
+  "pm_compta_ministry_title": {
+    "en": "MINISTRY OF POST AND TELECOMMUNICATIONS",
+    "fr": "MINISTÈRE DE LA POSTE ET DES TÉLÉCOMMUNICATIONS",
+    "ar": "MINISTÈRE DE LA POSTE ET DES TÉLÉCOMMUNICATIONS"
+  },
+  "pm_compta_ptt_ops": {
+    "en": "ALGÉRIE POSTE · FINANCIAL OPERATIONS",
+    "fr": "ALGÉRIE POSTE · OPÉRATIONS FINANCIÈRES",
+    "ar": "ALGÉRIE POSTE · OPÉRATIONS FINANCIÈRES"
+  },
+  "pm_compta_account_key_label": {
+    "en": "CCP Account # & Key",
+    "fr": "N° Compte CCP & Clé",
+    "ar": "N° Compte CCP & Clé"
+  },
+  "pm_compta_amount_wire_label": {
+    "en": "Amount to Wire",
+    "fr": "Montant à Virer",
+    "ar": "Montant à Virer"
+  },
+  "pm_compta_beneficiary_label": {
+    "en": "Wire Beneficiary",
+    "fr": "Bénéficiaire du Virement",
+    "ar": "Bénéficiaire du Virement"
+  },
+  "pm_compta_wilaya_label": {
+    "en": "Home Wilaya:",
+    "fr": "Wilaya de rattachement :",
+    "ar": "Wilaya de rattachement :"
+  },
+  "pm_compta_amount_in_words_label": {
+    "en": "Amount in Words (Legal Mention)",
+    "fr": "Somme en toutes lettres (Mention Légale)",
+    "ar": "Somme en toutes lettres (Mention Légale)"
+  },
+  "pm_compta_purpose_label": {
+    "en": "Purpose:",
+    "fr": "Motif :",
+    "ar": "Motif :"
+  },
+  "pm_compta_stamp_ptt": {
+    "en": "PTT STAMP",
+    "fr": "Cachet PTT",
+    "ar": "Cachet PTT"
+  },
+  "pm_compta_btn_print_sfp01": {
+    "en": "Print SFP 01 Format",
+    "fr": "Imprimer Format SFP 01",
+    "ar": "Imprimer Format SFP 01"
+  },
+  "pm_compta_slips_issued_title": {
+    "en": "Issued SFP 01 Postal Vouchers",
+    "fr": "Bordereaux Postaux SFP 01 Édités",
+    "ar": "Bordereaux Postaux SFP 01 Édités"
+  },
+  "pm_compta_slips_issued_sub": {
+    "en": "Amounts automatically transcribed in legal words (French & Arabic). Fully compliant with Algérie Poste counters.",
+    "fr": "Montants transcrits automatiquement en lettres légales (Français et Arabe). Conformes aux guichets Algérie Poste.",
+    "ar": "Montants transcrits automatiquement en lettres légales (Français et Arabe). Conformes aux guichets Algérie Poste."
+  },
+  "pm_compta_btn_print_all_slips": {
+    "en": "Print Complete Batch (SFP 01)",
+    "fr": "Imprimer le Lot Complet (SFP 01)",
+    "ar": "Imprimer le Lot Complet (SFP 01)"
+  },
+  "pm_compta_status_printed": {
+    "en": "Printed ✓",
+    "fr": "Imprimé ✓",
+    "ar": "Imprimé ✓"
+  },
+  "pm_compta_status_ready_counter": {
+    "en": "Ready for Postal Counter",
+    "fr": "Prêt pour guichet",
+    "ar": "Prêt pour guichet"
+  },
+  "pm_compta_btn_view_sfp01": {
+    "en": "Inspect SFP 01",
+    "fr": "Visualiser SFP 01",
+    "ar": "Visualiser SFP 01"
+  },
+  "pm_compta_expense_journal_title": {
+    "en": "Field Expenses Ledger",
+    "fr": "Journal des Dépenses de Terrain",
+    "ar": "Journal des Dépenses de Terrain"
+  },
+  "pm_compta_expense_journal_sub": {
+    "en": "Audit of register tickets, VAT deductions, and fiscal invoices.",
+    "fr": "Vérification des tickets de caisse, déductions TVA et factures fiscales.",
+    "ar": "Vérification des tickets de caisse, déductions TVA et factures fiscales."
+  },
+  "pm_compta_fiscal_invoice_badge": {
+    "en": "FISCAL INVOICE",
+    "fr": "FACTURE FISCALE",
+    "ar": "FACTURE FISCALE"
+  },
+  "pm_compta_declared_by": {
+    "en": "{project} · Declared by {user}",
+    "fr": "{project} · Déclaré par {user}",
+    "ar": "{project} · Déclaré par {user}"
+  },
+  "pm_compta_scanner_title": {
+    "en": "Receipt Viewer & Compliance",
+    "fr": "Visualiseur de Reçu & Conformité",
+    "ar": "Visualiseur de Reçu & Conformité"
+  },
+  "pm_compta_scanner_select": {
+    "en": "Select an expense to inspect its receipt.",
+    "fr": "Sélectionnez une dépense pour inspecter son justificatif.",
+    "ar": "Sélectionnez une dépense pour inspecter son justificatif."
+  },
+  "pm_compta_nif_recorded": {
+    "en": "Recorded NIF:",
+    "fr": "NIF Enregistré :",
+    "ar": "NIF Enregistré :"
+  },
+  "pm_compta_stock_title": {
+    "en": "Equipment Fleet & Indirect Stock — Lifelong Trace (Slide 11)",
+    "fr": "Parc Matériel & Stock Indirect — Tracé à Vie (Slide 11)",
+    "ar": "Parc Matériel & Stock Indirect — Tracé à Vie (Slide 11)"
+  },
+  "pm_compta_stock_sub": {
+    "en": "Every field purchase is automatically coded (NCH-A-00xxx) with complete lifecycle traceability.",
+    "fr": "Chaque achat de terrain est automatiquement codé (NCH-A-00xxx) et bénéficie d\\'une traçabilité de cycle de vie.",
+    "ar": "Chaque achat de terrain est automatiquement codé (NCH-A-00xxx) et bénéficie d\\'une traçabilité de cycle de vie."
+  },
+  "pm_compta_filter_all_stock": {
+    "en": "All ({count})",
+    "fr": "Tous ({count})",
+    "ar": "Tous ({count})"
+  },
+  "pm_compta_filter_indirect": {
+    "en": "Field Purchases (NCH-A)",
+    "fr": "Achats Terrain (NCH-A)",
+    "ar": "Achats Terrain (NCH-A)"
+  },
+  "pm_compta_filter_in_stock": {
+    "en": "In Storage",
+    "fr": "En Dépôt",
+    "ar": "En Dépôt"
+  },
+  "pm_compta_filter_deployed": {
+    "en": "On Mission",
+    "fr": "En Mission",
+    "ar": "En Mission"
+  },
+  "pm_compta_stock_registered": {
+    "en": "REGISTERED ASSETS",
+    "fr": "MATÉRIEL ENREGISTRÉ",
+    "ar": "MATÉRIEL ENREGISTRÉ"
+  },
+  "pm_compta_stock_items_count": {
+    "en": "{count} items",
+    "fr": "{count} articles",
+    "ar": "{count} articles"
+  },
+  "pm_compta_badge_indirect": {
+    "en": "INDIRECT STOCK (FIELD)",
+    "fr": "STOCK INDIRECT (TERRAIN)",
+    "ar": "STOCK INDIRECT (TERRAIN)"
+  },
+  "pm_compta_badge_deployed": {
+    "en": "DEPLOYED ON MISSION",
+    "fr": "DÉPLOYÉ TERRAIN",
+    "ar": "DÉPLOYÉ TERRAIN"
+  },
+  "pm_compta_badge_in_depot": {
+    "en": "IN STORAGE",
+    "fr": "EN DÉPÔT",
+    "ar": "EN DÉPÔT"
+  },
+  "pm_compta_lifecycle_title": {
+    "en": "DETAILED LIFECYCLE (SLIDE 11)",
+    "fr": "CYCLE DE VIE DÉTAILLÉ (SLIDE 11)",
+    "ar": "CYCLE DE VIE DÉTAILLÉ (SLIDE 11)"
+  },
+  "pm_compta_origin_acquisition": {
+    "en": "Acquisition Origin:",
+    "fr": "Origine acquisition :",
+    "ar": "Origine acquisition :"
+  },
+  "pm_compta_origin_field_purchased": {
+    "en": "Purchased and declared in the field",
+    "fr": "Acheté et déclaré sur le terrain",
+    "ar": "Acheté et déclaré sur le terrain"
+  },
+  "pm_compta_fiscal_voucher": {
+    "en": "Fiscal Voucher:",
+    "fr": "Justificatif fiscal :",
+    "ar": "Justificatif fiscal :"
+  },
+  "pm_compta_voucher_scanned": {
+    "en": "invoice_scan.jpg ✓ Scanned",
+    "fr": "facture_scan.jpg ✓ Scannée",
+    "ar": "facture_scan.jpg ✓ Scannée"
+  },
+  "pm_compta_current_status": {
+    "en": "Current Status:",
+    "fr": "Statut actuel :",
+    "ar": "Statut actuel :"
+  },
+  "pm_compta_status_good": {
+    "en": "Available — Condition: Good",
+    "fr": "Disponible — état : bon",
+    "ar": "Disponible — état : bon"
+  },
+  "pm_compta_history_title": {
+    "en": "Chronological Assignment History",
+    "fr": "Historique Chronologique des Affectations",
+    "ar": "Historique Chronologique des Affectations"
+  },
+  "pm_compta_btn_assign_mission": {
+    "en": "Assign to Mission",
+    "fr": "Affecter à une Mission",
+    "ar": "Affecter à une Mission"
+  },
+  "pm_compta_btn_return_stock": {
+    "en": "Return to Stock",
+    "fr": "Retour Stock",
+    "ar": "Retour Stock"
+  },
+  "pm_compta_btn_qr_label": {
+    "en": "Print QR Code Label",
+    "fr": "Imprimer Étiquette QR Code",
+    "ar": "Imprimer Étiquette QR Code"
+  },
+  "pm_sim_mobile_mode": {
+    "en": "Phone Mode (390px)",
+    "fr": "Mode Téléphone (390px)",
+    "ar": "Mode Téléphone (390px)"
+  },
+  "pm_sim_desktop_mode": {
+    "en": "Full Screen (Desktop)",
+    "fr": "Plein Écran (Bureau)",
+    "ar": "Plein Écran (Bureau)"
+  },
+  "pm_sim_badge": {
+    "en": "Mobile-First",
+    "fr": "Mobile-First",
+    "ar": "Mobile-First"
+  },
+  "pm_ccp_republic": {
+    "en": "DEMOCRATIC AND POPULAR REPUBLIC OF ALGERIA",
+    "fr": "RÉPUBLIQUE ALGÉRIENNE DÉMOCRATIQUE ET POPULAIRE",
+    "ar": "RÉPUBLIQUE ALGÉRIENNE DÉMOCRATIQUE ET POPULAIRE"
+  },
+  "pm_ccp_ministry": {
+    "en": "MINISTRY OF POST AND TELECOMMUNICATIONS",
+    "fr": "MINISTÈRE DE LA POSTE ET DES TÉLÉCOMMUNICATIONS",
+    "ar": "MINISTÈRE DE LA POSTE ET DES TÉLÉCOMMUNICATIONS"
+  },
+  "pm_ccp_operations": {
+    "en": "ALGÉRIE POSTE · FINANCIAL OPERATIONS SFP 01",
+    "fr": "ALGÉRIE POSTE · OPÉRATIONS FINANCIÈRES SFP 01",
+    "ar": "ALGÉRIE POSTE · OPÉRATIONS FINANCIÈRES SFP 01"
+  },
+  "pm_ccp_edition": {
+    "en": "Atrium ERP Edition",
+    "fr": "Édition Atrium ERP",
+    "ar": "Édition Atrium ERP"
+  },
+  "pm_ccp_beneficiary_name": {
+    "en": "Beneficiary (Full Name)",
+    "fr": "Bénéficiaire (Nom & Prénom)",
+    "ar": "Bénéficiaire (Nom & Prénom)"
+  },
+  "pm_ccp_amount_digits": {
+    "en": "Amount in Digits",
+    "fr": "Montant en Chiffres",
+    "ar": "Montant en Chiffres"
+  },
+  "pm_ccp_account_number": {
+    "en": "Postal Checking Account Number (N° CCP)",
+    "fr": "Numéro de Compte Courant Postal (N° CCP)",
+    "ar": "Numéro de Compte Courant Postal (N° CCP)"
+  },
+  "pm_ccp_key": {
+    "en": "CCP Key",
+    "fr": "Clé CCP",
+    "ar": "Clé CCP"
+  },
+  "pm_ccp_words_fr": {
+    "en": "Amount in words (Legal French):",
+    "fr": "Somme en toutes lettres (Français légal) :",
+    "ar": "Somme en toutes lettres (Français légal) :"
+  },
+  "pm_ccp_words_ar": {
+    "en": "المبلغ بالأحرف كاملة (اللغة العربية القانونية) :",
+    "fr": "المبلغ بالأحرف كاملة (اللغة العربية القانونية) :",
+    "ar": "المبلغ بالأحرف كاملة (اللغة العربية القانونية) :"
+  },
+  "pm_ccp_purpose": {
+    "en": "Operation Purpose:",
+    "fr": "Motif de l\\'opération :",
+    "ar": "Motif de l\\'opération :"
+  },
+  "pm_ccp_signature_order": {
+    "en": "Payer Signature & Stamp:",
+    "fr": "Signature et Cachet du Donneur d\\'Ordre :",
+    "ar": "Signature et Cachet du Donneur d\\'Ordre :"
+  },
+  "pm_ccp_signed_dg": {
+    "en": "Validated by General Management NCH",
+    "fr": "Validé par Direction Générale NCH",
+    "ar": "Validé par Direction Générale NCH"
+  },
+  "pm_ccp_post_stamp_box": {
+    "en": "Postal counter date stamp",
+    "fr": "Timbre à date du bureau postal",
+    "ar": "Timbre à date du bureau postal"
+  },
+  "pm_ccp_compliance_footer": {
+    "en": "Standard SFP 01 format compliant with Algérie Poste counters",
+    "fr": "Format standard SFP 01 conforme aux guichets Algérie Poste",
+    "ar": "Format standard SFP 01 conforme aux guichets Algérie Poste"
+  },
+  "pm_cp_budget_allocated": {
+    "en": "Total Budget Allocated",
+    "fr": "Budget Total Alloué",
+    "ar": "Budget Total Alloué"
+  },
+  "pm_cp_target_margin": {
+    "en": "Target Margin: {margin}%",
+    "fr": "Marge Cible : {margin}%",
+    "ar": "Marge Cible : {margin}%"
+  },
+  "pm_cp_burn_rate_warning": {
+    "en": "Budget Consumption Alert: {percent}% of field expenses already committed ({spent} DA / {limit} DA cap).",
+    "fr": "Alerte Consommation Budget : {percent}% des frais de terrain déjà engagés ({spent} DA / {limit} DA plafond).",
+    "ar": "Alerte Consommation Budget : {percent}% des frais de terrain déjà engagés ({spent} DA / {limit} DA plafond)."
+  },
+  "pm_cp_activation_progress": {
+    "en": "Activation Process Progress",
+    "fr": "Avancement du Processus d\\'Activation",
+    "ar": "Avancement du Processus d\\'Activation"
+  },
+  "pm_cp_status_field_exec": {
+    "en": "80% (Field Execution Active)",
+    "fr": "80% (En Exécution Terrain)",
+    "ar": "80% (En Exécution Terrain)"
+  },
+  "pm_cp_status_crea_print": {
+    "en": "45% (Creative & Print)",
+    "fr": "45% (Créa & Print)",
+    "ar": "45% (Créa & Print)"
+  },
+  "pm_cp_milestones_title": {
+    "en": "Operational Milestones",
+    "fr": "Jalons Opérationnels (Milestones)",
+    "ar": "Jalons Opérationnels (Milestones)"
+  },
+  "pm_cp_milestone_step": {
+    "en": "Step {step}",
+    "fr": "Étape {step}",
+    "ar": "Étape {step}"
+  },
+  "pm_cp_milestone_done": {
+    "en": "Completed",
+    "fr": "Clôturé",
+    "ar": "Clôturé"
+  },
+  "pm_cp_milestone_pending": {
+    "en": "To Be Done",
+    "fr": "À réaliser",
+    "ar": "À réaliser"
+  },
+  "pm_cp_milestone_deadline": {
+    "en": "Deadline: {date}",
+    "fr": "Échéance : {date}",
+    "ar": "Échéance : {date}"
+  },
+  "pm_cp_circuit_title": {
+    "en": "PRINT WORKFLOW CIRCUIT (SLIDE 6)",
+    "fr": "LE CIRCUIT FICHIER (SLIDE 6)",
+    "ar": "LE CIRCUIT FICHIER (SLIDE 6)"
+  },
+  "pm_cp_circuit_s1": {
+    "en": "1. Project Manager orders",
+    "fr": "1. Le CDP commande",
+    "ar": "1. Le CDP commande"
+  },
+  "pm_cp_circuit_s2": {
+    "en": "2. Creative produces",
+    "fr": "2. La Créa produit",
+    "ar": "2. La Créa produit"
+  },
+  "pm_cp_circuit_s3": {
+    "en": "3. Return to Project Manager",
+    "fr": "3. Retour au CDP",
+    "ar": "3. Retour au CDP"
+  },
+  "pm_cp_circuit_s4": {
+    "en": "4. Sent to Printer",
+    "fr": "4. Transmission imprimeur",
+    "ar": "4. Transmission imprimeur"
+  },
+  "pm_cp_cat_title": {
+    "en": "POS Displays, Banners & Textile Catalog",
+    "fr": "Catalogue PLV, Bannières & Textile",
+    "ar": "Catalogue PLV, Bannières & Textile"
+  },
+  "pm_cp_cat_sub": {
+    "en": "Order physical collaterals for field activation campaigns.",
+    "fr": "Commandez les supports physiques pour vos activations de terrain.",
+    "ar": "Commandez les supports physiques pour vos activations de terrain."
+  },
+  "pm_cp_cat_search_ph": {
+    "en": "Search POS, banners, rollup, dimensions...",
+    "fr": "Rechercher PLV, rollup, dimensions...",
+    "ar": "Rechercher PLV, rollup, dimensions..."
+  },
+  "pm_cp_cat_view_cart": {
+    "en": "View Order Basket ({count})",
+    "fr": "Voir Panier ({count})",
+    "ar": "Voir Panier ({count})"
+  },
+  "pm_cp_orders_title": {
+    "en": "Production Orders & Print Tracking",
+    "fr": "Suivi des Ordres de Fabrication & Commandes Print",
+    "ar": "Suivi des Ordres de Fabrication & Commandes Print"
+  },
+  "pm_cp_orders_sub": {
+    "en": "Real-time tracking of orders from creative production to press BAT.",
+    "fr": "Suivez en temps réel la prise en charge de vos commandes par le Studio Créa jusqu\\'au BAT final.",
+    "ar": "Suivez en temps réel la prise en charge de vos commandes par le Studio Créa jusqu\\'au BAT final."
+  },
+  "pm_cp_order_items": {
+    "en": "Items: {items}",
+    "fr": "Articles : {items}",
+    "ar": "Articles : {items}"
+  },
+  "pm_cp_order_total": {
+    "en": "Total Production:",
+    "fr": "Total Fabrication :",
+    "ar": "Total Fabrication :"
+  },
+  "pm_cp_bat_hub_title": {
+    "en": "BAT Approval Center (Press Proofing)",
+    "fr": "Centre de Validation BAT (Bon à Tirer)",
+    "ar": "Centre de Validation BAT (Bon à Tirer)"
+  },
+  "pm_cp_bat_hub_sub": {
+    "en": "Inspect CMYK color accuracy, 3mm bleed margins, and authorize print run.",
+    "fr": "Inspectez la fidélité colorimétrique (CMJN), les marges de bords perdus (3mm), et validez l\\'ordre d\\'impression.",
+    "ar": "Inspectez la fidélité colorimétrique (CMJN), les marges de bords perdus (3mm), et validez l\\'ordre d\\'impression."
+  },
+  "pm_cp_toast_purchase_title": {
+    "en": "Field purchase declared & coded",
+    "fr": "Achat déclaré & codé en stock",
+    "ar": "Achat déclaré & codé en stock"
+  },
+  "pm_cp_toast_purchase_desc": {
+    "en": "Purchase \"{title}\" declared successfully! Asset coded into indirect stock.",
+    "fr": "Achat \"{title}\" déclaré avec succès ! L\\'actif a été codé automatiquement dans le stock indirect (NCH-A-00xxx).",
+    "ar": "Achat \"{title}\" déclaré avec succès ! L\\'actif a été codé automatiquement dans le stock indirect (NCH-A-00xxx)."
+  },
+  "pm_rh_badge_title": {
+    "en": "Role 5 · Human Resources & Casting",
+    "fr": "Rôle 5 · Ressources Humaines & Casting",
+    "ar": "Rôle 5 · Ressources Humaines & Casting"
+  },
+  "pm_rh_badge_sub": {
+    "en": "58 Wilayas Talent Pool & CCP Accounts",
+    "fr": "Vivier 58 Wilayas & Comptes CCP",
+    "ar": "Vivier 58 Wilayas & Comptes CCP"
+  },
+  "pm_rh_title_talents": {
+    "en": "National Talent Pool",
+    "fr": "Vivier National des Talents",
+    "ar": "Vivier National des Talents"
+  },
+  "pm_rh_title_dossier": {
+    "en": "Candidate File · {name}",
+    "fr": "Dossier Candidat · {name}",
+    "ar": "Dossier Candidat · {name}"
+  },
+  "pm_rh_title_portal": {
+    "en": "Public Candidate Portal (/cvs/create)",
+    "fr": "Portail Candidat Public (/cvs/create)",
+    "ar": "Portail Candidat Public (/cvs/create)"
+  },
+  "pm_rh_title_walkin": {
+    "en": "Agency Express Intake",
+    "fr": "Saisie Express Candidat Agence",
+    "ar": "Saisie Express Candidat Agence"
+  },
+  "pm_rh_btn_new_candidate": {
+    "en": "New Candidate",
+    "fr": "Nouveau Candidat",
+    "ar": "Nouveau Candidat"
+  },
+  "pm_rh_btn_export_excel": {
+    "en": "Export Talent Pool (Excel)",
+    "fr": "Exporter Vivier (Excel)",
+    "ar": "Exporter Vivier (Excel)"
+  },
+  "pm_rh_profiles_found": {
+    "en": "{count} profiles found",
+    "fr": "{count} profils trouvés",
+    "ar": "{count} profils trouvés"
+  },
+  "pm_rh_col_consolidated_score": {
+    "en": "Consolidated Score",
+    "fr": "Score Consolidé",
+    "ar": "Score Consolidé"
+  },
+  "pm_rh_col_mobility": {
+    "en": "Mobility",
+    "fr": "Mobilité",
+    "ar": "Mobilité"
+  },
+  "pm_rh_col_key": {
+    "en": "Key: {key}",
+    "fr": "Clé : {key}",
+    "ar": "Clé : {key}"
+  },
+  "pm_rh_pillar1_title": {
+    "en": "Skills & Availability",
+    "fr": "Compétences & Disponibilités",
+    "ar": "Compétences & Disponibilités"
+  },
+  "pm_rh_pillar1_roles": {
+    "en": "Desired Roles:",
+    "fr": "Rôles souhaités :",
+    "ar": "Rôles souhaités :"
+  },
+  "pm_rh_pillar1_langs": {
+    "en": "Languages:",
+    "fr": "Langues :",
+    "ar": "Langues :"
+  },
+  "pm_rh_pillar1_mobility": {
+    "en": "Mobility:",
+    "fr": "Mobilité :",
+    "ar": "Mobilité :"
+  },
+  "pm_rh_pillar2_title": {
+    "en": "Postal Coordinates (Algérie Poste)",
+    "fr": "Coordonnées Postales (Algérie Poste)",
+    "ar": "Coordonnées Postales (Algérie Poste)"
+  },
+  "pm_rh_pillar2_ccp": {
+    "en": "CCP Account #:",
+    "fr": "N° Compte CCP :",
+    "ar": "N° Compte CCP :"
+  },
+  "pm_rh_pillar2_key": {
+    "en": "Algérie Poste Key:",
+    "fr": "Clé Algérie Poste :",
+    "ar": "Clé Algérie Poste :"
+  },
+  "pm_rh_pillar2_verified": {
+    "en": "✓ Validated compliant with Algérie Poste algorithm",
+    "fr": "✓ Validé conforme à l\\'algorithme d\\'Algérie Poste",
+    "ar": "✓ Validé conforme à l\\'algorithme d\\'Algérie Poste"
+  },
+  "pm_rh_pillar3_title": {
+    "en": "Verified Document Vault",
+    "fr": "Coffre-Fort des Pièces Justificatives",
+    "ar": "Coffre-Fort des Pièces Justificatives"
+  },
+  "pm_rh_doc_cni": {
+    "en": "National Identity Card (CNI)",
+    "fr": "Carte Nationale d\\'Identité (CNI)",
+    "ar": "Carte Nationale d\\'Identité (CNI)"
+  },
+  "pm_rh_doc_license": {
+    "en": "Driver License Category B",
+    "fr": "Permis de Conduire Catégorie B",
+    "ar": "Permis de Conduire Catégorie B"
+  },
+  "pm_rh_doc_verified": {
+    "en": "Verified",
+    "fr": "Vérifiée",
+    "ar": "Vérifiée"
+  },
+  "pm_rh_doc_compliant": {
+    "en": "Compliant",
+    "fr": "Conforme",
+    "ar": "Conforme"
+  },
+  "pm_rh_pillar4_title": {
+    "en": "Mission History & Reliability",
+    "fr": "Historique Missions & Fiabilité",
+    "ar": "Historique Missions & Fiabilité"
+  },
+  "pm_rh_history_completed": {
+    "en": "Completed Missions:",
+    "fr": "Missions Complétées :",
+    "ar": "Missions Complétées :"
+  },
+  "pm_rh_history_absences": {
+    "en": "Unjustified Absences:",
+    "fr": "Absences Non Justifiées :",
+    "ar": "Absences Non Justifiées :"
+  },
+  "pm_rh_history_reliability": {
+    "en": "0 absence (100% reliability)",
+    "fr": "0 absence (100% fiabilité)",
+    "ar": "0 absence (100% fiabilité)"
+  },
+  "pm_rh_history_hr_notes": {
+    "en": "HR Assessment:",
+    "fr": "Avis RH :",
+    "ar": "Avis RH :"
+  },
+  "pm_rh_btn_back_pool": {
+    "en": "Back to Talent Pool",
+    "fr": "Retour au Vivier",
+    "ar": "Retour au Vivier"
+  },
+  "pm_rh_portal_join_title": {
+    "en": "Join the NCH Activation Network",
+    "fr": "Rejoignez le Réseau NCH",
+    "ar": "Rejoignez le Réseau NCH"
+  },
+  "pm_rh_portal_form_title": {
+    "en": "Talent Intake Application",
+    "fr": "Formulaire d\\'Inscription Talent",
+    "ar": "Formulaire d\\'Inscription Talent"
+  },
+  "pm_rh_portal_form_sub": {
+    "en": "Earn up to 4,500 DZD / day on premium brand campaigns.",
+    "fr": "Gagnez jusqu\\'à 4 500 DA / jour sur les événements de grandes marques.",
+    "ar": "Gagnez jusqu\\'à 4 500 DA / jour sur les événements de grandes marques."
+  },
+  "pm_rh_portal_success": {
+    "en": "✓ Application submitted successfully! Our HR team will contact you within 48h.",
+    "fr": "✓ Candidature envoyée avec succès ! Notre équipe RH vous contactera sous 48h.",
+    "ar": "✓ Candidature envoyée avec succès ! Notre équipe RH vous contactera sous 48h."
+  },
+  "pm_cp_btn_add": {
+    "en": "Add",
+    "fr": "Ajouter",
+    "ar": "Ajouter"
+  },
+  "pm_cp_my_order": {
+    "en": "My Order",
+    "fr": "Ma commande",
+    "ar": "Ma commande"
+  },
+  "pm_cp_articles_count": {
+    "en": "{count} article(s)",
+    "fr": "{count} article(s)",
+    "ar": "{count} article(s)"
+  },
+  "pm_cp_btn_transmit_crea": {
+    "en": "Send to Creative →",
+    "fr": "Envoyer à la Créa →",
+    "ar": "Envoyer à la Créa →"
+  },
+  "pm_cp_order_status_sent_crea": {
+    "en": "TRANSMITTED TO CREATIVE STUDIO",
+    "fr": "TRANSMIS AU STUDIO CRÉA",
+    "ar": "TRANSMIS AU STUDIO CRÉA"
+  },
+  "pm_cp_order_status_in_prod": {
+    "en": "IN CREATIVE PRODUCTION",
+    "fr": "EN PRODUCTION CRÉA",
+    "ar": "EN PRODUCTION CRÉA"
+  },
+  "pm_cp_order_status_bat_approved": {
+    "en": "BAT APPROVED / PRINTING",
+    "fr": "BAT VALIDÉ / IMPRESSION",
+    "ar": "BAT VALIDÉ / IMPRESSION"
+  },
+  "pm_cp_bat_status_approved_badge": {
+    "en": "BAT APPROVED",
+    "fr": "BAT VALIDÉ",
+    "ar": "BAT VALIDÉ"
+  },
+  "pm_cp_bat_status_revision_badge": {
+    "en": "CORRECTION REQUIRED",
+    "fr": "CORRECTION REQUISE",
+    "ar": "CORRECTION REQUISE"
+  },
+  "pm_cp_bat_status_pending_badge": {
+    "en": "AWAITING REVIEW",
+    "fr": "EN ATTENTE REVUE",
+    "ar": "EN ATTENTE REVUE"
+  },
+  "pm_cp_btn_request_revision_action": {
+    "en": "Request Correction",
+    "fr": "Demander Correction",
+    "ar": "Demander Correction"
+  },
+  "pm_cp_btn_approve_bat_action": {
+    "en": "Approve BAT →",
+    "fr": "Valider le BAT →",
+    "ar": "Valider le BAT →"
+  },
+  "pm_cp_bat_validated_print_msg": {
+    "en": "BAT approved for printer manufacturing",
+    "fr": "BAT validé pour fabrication imprimeur",
+    "ar": "BAT validé pour fabrication imprimeur"
+  },
+  "pm_cp_correction_note_prefix": {
+    "en": "Correction note:",
+    "fr": "Note de correction :",
+    "ar": "Note de correction :"
+  },
+  "pm_cp_expenses_section_title": {
+    "en": "Project Purchases & Indirect Stock Intake (Slide 11)",
+    "fr": "Achats Projet & Déclaration Entrée Stock Indirect (Slide 11)",
+    "ar": "Achats Projet & Déclaration Entrée Stock Indirect (Slide 11)"
+  },
+  "pm_cp_active_project_label": {
+    "en": "Active project:",
+    "fr": "Projet actif :",
+    "ar": "Projet actif :"
+  },
+  "pm_cp_field_limit_label": {
+    "en": "Field ceiling:",
+    "fr": "Plafond terrain :",
+    "ar": "Plafond terrain :"
+  },
+  "pm_cp_declare_purchase_title": {
+    "en": "Declare Field Purchase (Automatic NCH-A-00xxx stock code generation)",
+    "fr": "Déclarer un Achat de Terrain (Création automatique de code stock NCH-A-00xxx)",
+    "ar": "Déclarer un Achat de Terrain (Création automatique de code stock NCH-A-00xxx)"
+  },
+  "pm_cp_declare_purchase_sub": {
+    "en": "Any equipment purchased by the PM or Supervisor is immediately coded and traced in indirect inventory.",
+    "fr": "Tout achat matériel déclaré par le Chef de Projet ou Superviseur est immédiatement codé et tracé à vie dans l\\'inventaire indirect.",
+    "ar": "Tout achat matériel déclaré par le Chef de Projet ou Superviseur est immédiatement codé et tracé à vie dans l\\'inventaire indirect."
+  },
+  "pm_cp_designation_label": {
+    "en": "Equipment Designation *",
+    "fr": "Désignation du Matériel *",
+    "ar": "Désignation du Matériel *"
+  },
+  "pm_cp_designation_ph": {
+    "en": "E.g., Branded counter tablecloth, 15m HDMI cable...",
+    "fr": "Ex: Nappe comptoir brandée, Câble HDMI 15m...",
+    "ar": "Ex: Nappe comptoir brandée, Câble HDMI 15m..."
+  },
+  "pm_cp_amount_da_label": {
+    "en": "Amount in DA *",
+    "fr": "Montant en DA *",
+    "ar": "Montant en DA *"
+  },
+  "pm_cp_scan_voucher_label": {
+    "en": "Scanned Receipt",
+    "fr": "Justificatif Scan",
+    "ar": "Justificatif Scan"
+  },
+  "pm_cp_btn_declare_stock": {
+    "en": "Declare & Code Asset in Stock →",
+    "fr": "Déclarer & Coder l\\'Actif en Stock →",
+    "ar": "Déclarer & Coder l\\'Actif en Stock →"
+  },
+  "pm_cp_journal_title": {
+    "en": "Project Purchases Journal ({count})",
+    "fr": "Journal des Achats du Projet ({count})",
+    "ar": "Journal des Achats du Projet ({count})"
+  },
+  "pm_cp_exp_approved_dg": {
+    "en": "APPROVED DG",
+    "fr": "APPROUVÉ DG",
+    "ar": "APPROUVÉ DG"
+  },
+  "pm_cp_exp_rejected": {
+    "en": "REJECTED",
+    "fr": "REJETÉ",
+    "ar": "REJETÉ"
+  },
+  "pm_cp_exp_pending_dg": {
+    "en": "AWAITING DG",
+    "fr": "EN ATTENTE DG",
+    "ar": "EN ATTENTE DG"
+  },
+  "pm_cp_modal_correction_title": {
+    "en": "BAT Correction Request",
+    "fr": "Demande de Correction BAT",
+    "ar": "Demande de Correction BAT"
+  },
+  "pm_cp_modal_correction_ph": {
+    "en": "E.g., Adjust client logo 15cm from top edge and fix legal notice...",
+    "fr": "Ex: Ajuster le logo client à 15cm du bord supérieur et corriger le texte légal...",
+    "ar": "Ex: Ajuster le logo client à 15cm du bord supérieur et corriger le texte légal..."
+  },
+  "pm_cp_btn_send_to_studio": {
+    "en": "Send to Creative Studio",
+    "fr": "Envoyer au Studio Créa",
+    "ar": "Envoyer au Studio Créa"
+  },
+  "pm_crea_col_received": {
+    "en": "Received",
+    "fr": "Reçues",
+    "ar": "Reçues"
+  },
+  "pm_crea_col_in_progress": {
+    "en": "In Production",
+    "fr": "En production",
+    "ar": "En production"
+  },
+  "pm_crea_col_delivered": {
+    "en": "Delivered",
+    "fr": "Livrées",
+    "ar": "Livrées"
+  },
+  "pm_crea_badge_brief_kv": {
+    "en": "BRIEF · KV",
+    "fr": "BRIEF · KV",
+    "ar": "BRIEF · KV"
+  },
+  "pm_crea_badge_print": {
+    "en": "PRINT",
+    "fr": "PRINT",
+    "ar": "PRINT"
+  },
+  "pm_crea_badge_in_prod": {
+    "en": "IN PRODUCTION",
+    "fr": "EN PRODUCTION",
+    "ar": "EN PRODUCTION"
+  },
+  "pm_crea_badge_bat_valid": {
+    "en": "BAT APPROVED",
+    "fr": "BAT VALIDÉ",
+    "ar": "BAT VALIDÉ"
+  },
+  "pm_crea_badge_ready_print": {
+    "en": "READY TO PRINT",
+    "fr": "PRÊT IMPRESSION",
+    "ar": "PRÊT IMPRESSION"
+  },
+  "pm_crea_badge_transmitted": {
+    "en": "Transmitted",
+    "fr": "Transmis",
+    "ar": "Transmis"
+  },
+  "pm_crea_panel_ready_title": {
+    "en": "Ready deliverable",
+    "fr": "Livrable prêt",
+    "ar": "Livrable prêt"
+  },
+  "pm_crea_panel_bat_final": {
+    "en": "Final BAT",
+    "fr": "BAT Final",
+    "ar": "BAT Final"
+  },
+  "pm_crea_btn_return_cdp": {
+    "en": "Return to Project Manager",
+    "fr": "Renvoyer au chef de projet",
+    "ar": "Renvoyer au chef de projet"
+  },
+  "pm_crea_return_cdp_note": {
+    "en": "The PM will receive the HD file in their workspace for direct printer transmission.",
+    "fr": "Le CDP recevra le fichier HD dans son espace pour envoi direct à l\\'imprimeur.",
+    "ar": "Le CDP recevra le fichier HD dans son espace pour envoi direct à l\\'imprimeur."
+  },
+  "pm_crea_briefs_title": {
+    "en": "Specifications & Graphic Guidelines",
+    "fr": "Cahiers des Charges & Spécifications Graphiques",
+    "ar": "Cahiers des Charges & Spécifications Graphiques"
+  },
+  "pm_crea_briefs_sub": {
+    "en": "Briefs submitted by Direction and Project Managers for Key Visual (KV) framing.",
+    "fr": "Briefs injectés par la Direction et les Chefs de Projets pour cadrage des Key Visuals (KV).",
+    "ar": "Briefs injectés par la Direction et les Chefs de Projets pour cadrage des Key Visuals (KV)."
+  },
+  "pm_crea_btn_start_kv": {
+    "en": "Start KV Production ➔",
+    "fr": "Démarrer Production KV ➔",
+    "ar": "Démarrer Production KV ➔"
+  },
+  "pm_crea_upload_screen_tag": {
+    "en": "Screen 3.2 · BAT Validator & Upload",
+    "fr": "Écran 3.2 · Validateur & Upload BAT",
+    "ar": "Écran 3.2 · Validateur & Upload BAT"
+  },
+  "pm_crea_upload_screen_title": {
+    "en": "Printer Proof Delivery & Pre-Press Standards Check",
+    "fr": "Livraison d\\'Épreuve Imprimeur & Contrôle des Normes Pré-Presse",
+    "ar": "Livraison d\\'Épreuve Imprimeur & Contrôle des Normes Pré-Presse"
+  },
+  "pm_crea_upload_screen_sub": {
+    "en": "Ensure production fidelity: verify CMYK color space, 300 DPI resolution, and bleed margins.",
+    "fr": "Assurez la fidélité de production : vérifiez l\\'espace colorimétrique CMJN, la résolution 300 DPI et les fonds perdus.",
+    "ar": "Assurez la fidélité de production : vérifiez l\\'espace colorimétrique CMJN, la résolution 300 DPI et les fonds perdus."
+  },
+  "pm_crea_upload_success_banner": {
+    "en": "BAT proof submitted successfully! Notification sent to Project Manager for review.",
+    "fr": "Épreuve BAT déposée avec succès ! Notification envoyée au Chef de Projet pour revue.",
+    "ar": "Épreuve BAT déposée avec succès ! Notification envoyée au Chef de Projet pour revue."
+  },
+  "pm_crea_upload_field_project": {
+    "en": "Project & Associated Campaign",
+    "fr": "Projet & Campagne Associée",
+    "ar": "Projet & Campagne Associée"
+  },
+  "pm_crea_upload_field_artwork_name": {
+    "en": "Graphic Deliverable Name *",
+    "fr": "Nom du Livrable Graphique *",
+    "ar": "Nom du Livrable Graphique *"
+  },
+  "pm_crea_upload_qa_title": {
+    "en": "Pre-Press Quality Control (Technical Registration)",
+    "fr": "Contrôle Qualité Pré-Presse (Enregistrement Technique)",
+    "ar": "Contrôle Qualité Pré-Presse (Enregistrement Technique)"
+  },
+  "pm_crea_upload_field_colorspace": {
+    "en": "Color Space",
+    "fr": "Espace Couleur",
+    "ar": "Espace Couleur"
+  },
+  "pm_crea_upload_field_resolution": {
+    "en": "Resolution",
+    "fr": "Résolution",
+    "ar": "Résolution"
+  },
+  "pm_crea_upload_field_format": {
+    "en": "File Format",
+    "fr": "Format Fichier",
+    "ar": "Format Fichier"
+  },
+  "pm_crea_upload_field_preview_url": {
+    "en": "BAT Preview URL (HD Preview)",
+    "fr": "URL de Prévisualisation du BAT (Aperçu HD)",
+    "ar": "URL de Prévisualisation du BAT (Aperçu HD)"
+  },
+  "pm_crea_upload_btn_save": {
+    "en": "Save & Notify Project Manager",
+    "fr": "Enregistrer & Notifier le Chef de Projet",
+    "ar": "Enregistrer & Notifier le Chef de Projet"
+  },
+  "pm_sup_badge_live_today": {
+    "en": "● LIVE TODAY",
+    "fr": "● EN COURS AUJOURD\\'HUI",
+    "ar": "● EN COURS AUJOURD\\'HUI"
+  },
+  "pm_sup_badge_upcoming": {
+    "en": "UPCOMING",
+    "fr": "À VENIR",
+    "ar": "À VENIR"
+  },
+  "pm_sup_staff_count_suffix": {
+    "en": "staff",
+    "fr": "staff",
+    "ar": "staff"
+  },
+  "pm_sup_btn_open_maps": {
+    "en": "Open Google Maps",
+    "fr": "Ouvrir Google Maps",
+    "ar": "Ouvrir Google Maps"
+  },
+  "pm_sup_btn_start_rollcall": {
+    "en": "Start Roll Call ➔",
+    "fr": "Lancer le Pointage ➔",
+    "ar": "Lancer le Pointage ➔"
+  },
+  "pm_sup_sim_title": {
+    "en": "Real-Time Field Roll Call",
+    "fr": "Pointage Terrain en Temps Réel",
+    "ar": "Pointage Terrain en Temps Réel"
+  },
+  "pm_sup_sim_badge": {
+    "en": "Mobile Roll Call",
+    "fr": "Pointage Mobile",
+    "ar": "Pointage Mobile"
+  },
+  "pm_sup_btn_present": {
+    "en": "Present",
+    "fr": "Présent",
+    "ar": "Présent"
+  },
+  "pm_sup_btn_late": {
+    "en": "Late",
+    "fr": "Retard",
+    "ar": "Retard"
+  },
+  "pm_sup_btn_absent": {
+    "en": "Absent",
+    "fr": "Absent",
+    "ar": "Absent"
+  },
+  "pm_sup_btn_standby": {
+    "en": "Standby",
+    "fr": "Standby",
+    "ar": "Standby"
+  },
+  "pm_sup_lock_title": {
+    "en": "Roll Call Closed & Locked",
+    "fr": "Pointage Clôturé & Verrouillé",
+    "ar": "Pointage Clôturé & Verrouillé"
+  },
+  "pm_sup_lock_desc": {
+    "en": "Transmitted to Direction for approval and generation of CCP mandates.",
+    "fr": "Transmis à la Direction pour approbation et génération des mandats CCP.",
+    "ar": "Transmis à la Direction pour approbation et génération des mandats CCP."
+  },
+  "pm_sup_btn_close_day": {
+    "en": "Close Today\\'s Roll Call",
+    "fr": "Clôturer le Pointage du Jour",
+    "ar": "Clôturer le Pointage du Jour"
+  },
+  "pm_sup_day_rate_suffix": {
+    "en": "/ day",
+    "fr": "/ jour",
+    "ar": "/ jour"
+  },
+  "pm_sup_search_ph": {
+    "en": "Search promoter, wilaya, commune...",
+    "fr": "Rechercher animateur, wilaya, commune...",
+    "ar": "Rechercher animateur, wilaya, commune..."
+  },
+  "pm_sup_wilaya_all": {
+    "en": "58 Wilayas (All)",
+    "fr": "58 Wilayas (Toutes)",
+    "ar": "58 Wilayas (Toutes)"
+  },
+  "pm_sup_filter_rating": {
+    "en": "Min Rating",
+    "fr": "Note Min",
+    "ar": "Note Min"
+  },
+  "pm_sup_filter_rating_confirmed": {
+    "en": "≥ 4.0 ★ (Confirmed)",
+    "fr": "≥ 4.0 ★ (Confirmé)",
+    "ar": "≥ 4.0 ★ (Confirmé)"
+  },
+  "pm_sup_filter_rating_elite": {
+    "en": "≥ 4.5 ★ (Elite)",
+    "fr": "≥ 4.5 ★ (Élite)",
+    "ar": "≥ 4.5 ★ (Élite)"
+  },
+  "pm_sup_filter_vehicle_only": {
+    "en": "Vehicle owners only (Category B License)",
+    "fr": "Véhiculé uniquement (Permis B)",
+    "ar": "Véhiculé uniquement (Permis B)"
+  },
+  "pm_sup_talents_found": {
+    "en": "{count} eligible promoters found",
+    "fr": "{count} animateurs éligibles trouvés",
+    "ar": "{count} animateurs éligibles trouvés"
+  },
+  "pm_sup_btn_assigned": {
+    "en": "Assigned",
+    "fr": "Assigné",
+    "ar": "Assigné"
+  },
+  "pm_sup_btn_assign": {
+    "en": "Assign",
+    "fr": "Affecter",
+    "ar": "Affecter"
+  },
+  "pm_sup_exp_tag": {
+    "en": "Screen 4.4 · Field Expense Declaration",
+    "fr": "Écran 4.4 · Déclaration Achat Terrain",
+    "ar": "Écran 4.4 · Déclaration Achat Terrain"
+  },
+  "pm_sup_exp_title": {
+    "en": "Receipt Capture & On-Site Petty Cash",
+    "fr": "Capture Reçu & Dépense Imprévue On-Site",
+    "ar": "Capture Reçu & Dépense Imprévue On-Site"
+  },
+  "pm_sup_exp_sub": {
+    "en": "Receipt photograph mandatory for validation by Direction and reimbursement.",
+    "fr": "Photographie du ticket de caisse obligatoire pour validation par la Direction et remboursement.",
+    "ar": "Photographie du ticket de caisse obligatoire pour validation par la Direction et remboursement."
+  },
+  "pm_sup_exp_success": {
+    "en": "Expense submitted successfully! Status: Pending DG Approval.",
+    "fr": "Dépense transmise avec succès ! Statut : En attente d\\'approbation DG.",
+    "ar": "Dépense transmise avec succès ! Statut : En attente d\\'approbation DG."
+  },
+  "pm_sup_exp_field_title": {
+    "en": "Field Expense Purpose *",
+    "fr": "Motif de la Dépense Terrain *",
+    "ar": "Motif de la Dépense Terrain *"
+  },
+  "pm_sup_exp_field_title_ph": {
+    "en": "E.g., Heavy duty HDMI cable for Bab Ezzouar screen",
+    "fr": "Ex: Câble HDMI blindé pour écran stand Bab Ezzouar",
+    "ar": "Ex: Câble HDMI blindé pour écran stand Bab Ezzouar"
+  },
+  "pm_sup_exp_field_amount": {
+    "en": "Amount in DA *",
+    "fr": "Montant en DA *",
+    "ar": "Montant en DA *"
+  },
+  "pm_sup_exp_field_category": {
+    "en": "Category",
+    "fr": "Catégorie",
+    "ar": "Catégorie"
+  },
+  "pm_sup_exp_cat_materials": {
+    "en": "Emergency Supplies",
+    "fr": "Matériel d\\'Urgence",
+    "ar": "Matériel d\\'Urgence"
+  },
+  "pm_sup_exp_cat_catering": {
+    "en": "Promoters Catering",
+    "fr": "Restauration Animateurs",
+    "ar": "Restauration Animateurs"
+  },
+  "pm_sup_exp_cat_transport": {
+    "en": "Transport & Parking",
+    "fr": "Transport & Parking",
+    "ar": "Transport & Parking"
+  },
+  "pm_sup_exp_field_photo": {
+    "en": "Receipt / Voucher Photo (Camera simulation URL)",
+    "fr": "Photo du Ticket / Facturette (URL simulation caméra)",
+    "ar": "Photo du Ticket / Facturette (URL simulation caméra)"
+  },
+  "pm_sup_exp_camera_hint": {
+    "en": "The image is automatically submitted to Direction zoom inspection.",
+    "fr": "L\\'image est automatiquement soumise au zoom de contrôle de la Direction Générale.",
+    "ar": "L\\'image est automatiquement soumise au zoom de contrôle de la Direction Générale."
+  },
+  "pm_sup_exp_btn_submit": {
+    "en": "Submit Expense to Direction",
+    "fr": "Soumettre la Dépense à la Direction",
+    "ar": "Soumettre la Dépense à la Direction"
+  },
+  "pm_rh_tag_driver_license": {
+    "en": "License B",
+    "fr": "Permis B",
+    "ar": "Permis B"
+  },
+  "pm_rh_tag_vehicle_owner": {
+    "en": "Vehicle",
+    "fr": "Véhiculé",
+    "ar": "Véhiculé"
+  },
+  "pm_rh_btn_inspect_dossier": {
+    "en": "Inspect Dossier ➔",
+    "fr": "Inspecter Dossier ➔",
+    "ar": "Inspecter Dossier ➔"
+  },
+  "pm_rh_badge_hr_verified": {
+    "en": "Verified by HR",
+    "fr": "Vérifié par RH",
+    "ar": "Vérifié par RH"
+  },
+  "pm_rh_years_old": {
+    "en": "years",
+    "fr": "ans",
+    "ar": "ans"
+  },
+  "pm_rh_wilaya_of": {
+    "en": "Wilaya of",
+    "fr": "Wilaya de",
+    "ar": "Wilaya de"
+  },
+  "pm_rh_yes": {
+    "en": "Yes",
+    "fr": "Oui",
+    "ar": "Oui"
+  },
+  "pm_rh_no": {
+    "en": "No",
+    "fr": "Non",
+    "ar": "Non"
+  },
+  "pm_rh_vehicle_yes": {
+    "en": "Vehicle Yes",
+    "fr": "Véhiculé Oui",
+    "ar": "Véhiculé Oui"
+  },
+  "pm_rh_vehicle_no": {
+    "en": "No vehicle",
+    "fr": "Non véhiculé",
+    "ar": "Non véhiculé"
+  },
+  "pm_rh_candidate_walkin_note": {
+    "en": "Candidate received directly at agency.",
+    "fr": "Candidat reçu directement à l\\'agence.",
+    "ar": "Candidat reçu directement à l\\'agence."
+  },
+  "pm_rh_candidate_online_note": {
+    "en": "Online portal pre-registration.",
+    "fr": "Pré-inscription portail en ligne.",
+    "ar": "Pré-inscription portail en ligne."
+  },
+  "pm_rh_form_walkin_title": {
+    "en": "Agency Express Intake (Candidate at Desk)",
+    "fr": "Saisie Express Agence (Candidat au Guichet)",
+    "ar": "Saisie Express Agence (Candidat au Guichet)"
+  },
+  "pm_rh_form_walkin_sub": {
+    "en": "Immediate profile creation with CCP key validation and HR qualification.",
+    "fr": "Création immédiate de fiche avec validation clé CCP et qualification RH.",
+    "ar": "Création immédiate de fiche avec validation clé CCP et qualification RH."
+  },
+  "pm_rh_btn_save_talent": {
+    "en": "Save & Add to Pool",
+    "fr": "Enregistrer & Ajouter au Vivier",
+    "ar": "Enregistrer & Ajouter au Vivier"
+  },
+  "pm_rh_success_saved": {
+    "en": "Talent successfully saved and added to 58 Wilayas pool!",
+    "fr": "Talent enregistré avec succès et intégré au vivier 58 Wilayas !",
+    "ar": "Talent enregistré avec succès et intégré au vivier 58 Wilayas !"
+  },
+  "pm_dir_activity_ccp_generated": {
+    "en": "{user} generated {count} CCP forms",
+    "fr": "{user} a généré {count} formulaires CCP",
+    "ar": "{user} a généré {count} formulaires CCP"
+  },
+  "pm_dir_activity_rollcall_closed": {
+    "en": "{user} closed roll call — Mission #{code}",
+    "fr": "{user} a clôturé le pointage — Mission n°{code}",
+    "ar": "{user} a clôturé le pointage — Mission n°{code}"
+  },
+  "pm_dir_activity_bat_delivered": {
+    "en": "{user} delivered {file}",
+    "fr": "{user} a livré {file}",
+    "ar": "{user} a livré {file}"
+  },
+  "pm_dir_activity_purchase_declared": {
+    "en": "{user} declared a purchase: {amount} DA",
+    "fr": "{user} a déclaré un achat : {amount} DA",
+    "ar": "{user} a déclaré un achat : {amount} DA"
+  },
+  "pm_dir_time_ago_min": {
+    "en": "{min} min ago",
+    "fr": "Il y a {min} min",
+    "ar": "Il y a {min} min"
+  },
+  "pm_dir_time_ago_hour": {
+    "en": "{hr} h ago",
+    "fr": "Il y a {hr} h",
+    "ar": "Il y a {hr} h"
+  },
+  "pm_dir_chart_subtitle": {
+    "en": "Year 2026",
+    "fr": "Année 2026",
+    "ar": "Année 2026"
+  },
+  "pm_dir_active_projects_list_title": {
+    "en": "Active Campaigns Portfolio",
+    "fr": "Campagnes d\\'Activation en Cours",
+    "ar": "Campagnes d\\'Activation en Cours"
+  },
+  "pm_dir_active_projects_list_sub": {
+    "en": "Tracking activations across the 58 Wilayas",
+    "fr": "Suivi des campagnes sur les 58 Wilayas",
+    "ar": "Suivi des campagnes sur les 58 Wilayas"
+  },
+  "pm_dir_btn_view_project": {
+    "en": "Inspect Campaign",
+    "fr": "Consulter Campagne",
+    "ar": "Consulter Campagne"
+  },
+  "pm_compta_month_period": {
+    "en": "July 2026",
+    "fr": "Juillet 2026",
+    "ar": "Juillet 2026"
+  },
+  "pm_compta_timeline_step1_stage": {
+    "en": "Purchased & coded",
+    "fr": "Acheté & codé",
+    "ar": "Acheté & codé"
+  },
+  "pm_compta_timeline_step2_stage": {
+    "en": "Assigned",
+    "fr": "Affecté",
+    "ar": "Affecté"
+  },
+  "pm_compta_timeline_step3_stage": {
+    "en": "Stock return",
+    "fr": "Retour stock",
+    "ar": "Retour stock"
+  },
+  "pm_compta_timeline_step4_stage": {
+    "en": "In stock",
+    "fr": "En stock",
+    "ar": "En stock"
+  },
+  "pm_compta_timeline_today": {
+    "en": "Today",
+    "fr": "Auj.",
+    "ar": "Auj."
+  },
+  "pm_crea_tab_demandes": {
+    "en": "Received Briefs",
+    "fr": "Demandes Reçues",
+    "ar": "Demandes Reçues"
+  },
+  "pm_sup_tab_expense": {
+    "en": "Declare Expense",
+    "fr": "Déclarer Dépense",
+    "ar": "Déclarer Dépense"
+  },
+  "pm_dir_tab_cockpit": {
+    "en": "Cockpit & Pulse",
+    "fr": "Cockpit Direction",
+    "ar": "Cockpit Direction"
+  },
+  "pm_dir_tab_new_project": {
+    "en": "New Activation Charter",
+    "fr": "Nouveau Cadrage",
+    "ar": "Nouveau Cadrage"
+  },
+  "pm_dir_tab_approvals": {
+    "en": "Executive Approvals",
+    "fr": "Validations Direction",
+    "ar": "Validations Direction"
+  },
+  "pm_dir_tab_reports": {
+    "en": "Performance & Reports",
+    "fr": "Rapports & Audit",
+    "ar": "Rapports & Audit"
+  },
+  "pm_dir_missions_month": {
+    "en": "Missions per Month",
+    "fr": "Missions par Mois",
+    "ar": "Missions par Mois"
+  },
+  "pm_dir_year": {
+    "en": "Year 2026",
+    "fr": "Année 2026",
+    "ar": "Année 2026"
+  },
+  "pm_dir_injection_title": {
+    "en": "Fast Charter Injection (CDP / Créa)",
+    "fr": "Injection Rapide Cahier des Charges",
+    "ar": "Injection Rapide Cahier des Charges"
+  },
+  "pm_dir_step_crea": {
+    "en": "Direct Dispatch to Creative Studio",
+    "fr": "Envoi direct au Studio Créa",
+    "ar": "Envoi direct au Studio Créa"
+  },
+  "pm_dir_new_specs": {
+    "en": "Campaign Title & Collaterals",
+    "fr": "Titre de l\\'opération et supports",
+    "ar": "Titre de l\\'opération et supports"
+  },
+  "pm_dir_client_deadline": {
+    "en": "Express 48h Turnaround",
+    "fr": "Délai Express 48h",
+    "ar": "Délai Express 48h"
+  },
+  "pm_dir_injected_success": {
+    "en": "Brief dispatched to Creative Lead and Project Manager successfully!",
+    "fr": "Cahier des charges transmis avec succès au Studio Créa et au Chef de Projet !",
+    "ar": "Cahier des charges transmis avec succès au Studio Créa et au Chef de Projet !"
+  },
+  "pm_dir_send_crea": {
+    "en": "Dispatch Brief to Créa",
+    "fr": "Transmettre au Studio Créa",
+    "ar": "Transmettre au Studio Créa"
+  },
+  "pm_dir_recent_activity": {
+    "en": "Recent Operational Activity",
+    "fr": "Activité Opérationnelle Récente",
+    "ar": "Activité Opérationnelle Récente"
+  },
+  "pm_dir_pending_validation": {
+    "en": "Field Payroll Pending Executive Sign-off",
+    "fr": "Paies Terrain en Attente de Validation",
+    "ar": "Paies Terrain en Attente de Validation"
+  },
+  "pm_dir_requests_count": {
+    "en": "{count} Pending",
+    "fr": "{count} en attente",
+    "ar": "{count} en attente"
+  },
+  "pm_dir_table_animator": {
+    "en": "ANIMATOR",
+    "fr": "ANIMATEUR",
+    "ar": "ANIMATEUR"
+  },
+  "pm_dir_table_mission": {
+    "en": "MISSION",
+    "fr": "MISSION",
+    "ar": "MISSION"
+  },
+  "pm_dir_table_amount": {
+    "en": "AMOUNT",
+    "fr": "MONTANT",
+    "ar": "MONTANT"
+  },
+  "pm_dir_table_action": {
+    "en": "ACTION",
+    "fr": "ACTION",
+    "ar": "ACTION"
+  },
+  "pm_dir_status_validated_dg": {
+    "en": "Approved DG",
+    "fr": "Validé DG",
+    "ar": "Validé DG"
+  },
+  "pm_dir_btn_validate": {
+    "en": "Validate",
+    "fr": "Valider",
+    "ar": "Valider"
+  },
+  "pm_dir_what_changes": {
+    "en": "Executive Impact & Control",
+    "fr": "Ce que ça change pour la Direction",
+    "ar": "Ce que ça change pour la Direction"
+  },
+  "pm_dir_benefit_1": {
+    "en": "Zero unauthorized spending: every mission expense capped by budget lock.",
+    "fr": "Zéro dépassement imprévu : chaque enveloppe terrain est strictement plafonnée.",
+    "ar": "Zéro dépassement imprévu : chaque enveloppe terrain est strictement plafonnée."
+  },
+  "pm_dir_benefit_2": {
+    "en": "Dual-lock governance: Payroll transmitted only after DG and Accounting cross-verification.",
+    "fr": "Double verrou financier : paie validée uniquement après accord Direction et Compta.",
+    "ar": "Double verrou financier : paie validée uniquement après accord Direction et Compta."
+  },
+  "pm_dir_benefit_3": {
+    "en": "Real-time 58-Wilaya supervision: GPS check-ins eliminate phantom animator claims.",
+    "fr": "Supervision 58 Wilayas en direct : pointage GPS éliminant les animateurs fantômes.",
+    "ar": "Supervision 58 Wilayas en direct : pointage GPS éliminant les animateurs fantômes."
+  },
+  "pm_dir_benefit_4": {
+    "en": "Algérie Poste certified slips: 1-click legal SFP 01 generation for post office wiring.",
+    "fr": "Bordereaux Algérie Poste conformes : génération en 1 clic des mandats SFP 01.",
+    "ar": "Bordereaux Algérie Poste conformes : génération en 1 clic des mandats SFP 01."
+  },
+  "pm_dir_live_tagline": {
+    "en": "Integrated agency command: from creative briefing to postal wire reconciliation.",
+    "fr": "Chaîne d\\'activation intégrée : du brief créatif au virement postal certifié.",
+    "ar": "Chaîne d\\'activation intégrée : du brief créatif au virement postal certifié."
+  },
+  "pm_dir_approvals_badge": {
+    "en": "Executive Queue",
+    "fr": "File de Validation DG",
+    "ar": "File de Validation DG"
+  },
+  "pm_dir_approvals_title": {
+    "en": "Executive Governance & Expenditure Validation",
+    "fr": "Gouvernance Stratégique & Arbitrage des Dépenses",
+    "ar": "Gouvernance Stratégique & Arbitrage des Dépenses"
+  },
+  "pm_dir_approvals_sub": {
+    "en": "Review field payroll transmissions and logistics supplier invoices before accounting release.",
+    "fr": "Contrôlez les lots de paie animateurs et les factures fournisseurs avant ordonnancement comptable.",
+    "ar": "Contrôlez les lots de paie animateurs et les factures fournisseurs avant ordonnancement comptable."
+  },
+  "pm_dir_filter_all": {
+    "en": "All Items ({count})",
+    "fr": "Tous ({count})",
+    "ar": "Tous ({count})"
+  },
+  "pm_dir_filter_payroll": {
+    "en": "Payroll Batches ({count})",
+    "fr": "Lots de Paie ({count})",
+    "ar": "Lots de Paie ({count})"
+  },
+  "pm_dir_filter_expenses": {
+    "en": "Field Invoices ({count})",
+    "fr": "Achats & Factures ({count})",
+    "ar": "Achats & Factures ({count})"
+  },
+  "pm_dir_payroll_badge": {
+    "en": "Field Payroll",
+    "fr": "Paie Terrain",
+    "ar": "Paie Terrain"
+  },
+  "pm_dir_btn_validate_ccp": {
+    "en": "Approve for CCP Wire",
+    "fr": "Valider pour virement CCP",
+    "ar": "Valider pour virement CCP"
+  },
+  "pm_dir_logistics_badge": {
+    "en": "Logistics Purchase",
+    "fr": "Achat Logistique",
+    "ar": "Achat Logistique"
+  },
+  "pm_dir_fiscal_invoice": {
+    "en": "Fiscal Invoice (NIF/RC)",
+    "fr": "Facture Fiscale (NIF/RC)",
+    "ar": "Facture Fiscale (NIF/RC)"
+  },
+  "pm_dir_see_receipt": {
+    "en": "Inspect Receipt",
+    "fr": "Voir Justificatif",
+    "ar": "Voir Justificatif"
+  },
+  "pm_dir_approve_btn": {
+    "en": "Approve",
+    "fr": "Approuver",
+    "ar": "Approuver"
+  },
+  "pm_dir_reject_btn": {
+    "en": "Reject",
+    "fr": "Rejeter",
+    "ar": "Rejeter"
+  },
+  "pm_dir_screen_new_badge": {
+    "en": "Screen 1.2 · Framing & Terms of Reference",
+    "fr": "Écran 1.2 · Cadrage & Cahier des Charges",
+    "ar": "Écran 1.2 · Cadrage & Cahier des Charges"
+  },
+  "pm_dir_screen_new_title": {
+    "en": "Campaign Activation Blueprint & Budget Caps",
+    "fr": "Formalisation du Dispositif d\\'Activation & Enveloppes Budgétaires",
+    "ar": "Formalisation du Dispositif d\\'Activation & Enveloppes Budgétaires"
+  },
+  "pm_dir_screen_new_sub": {
+    "en": "Define campaign objectives, lock field spending ceilings, and assign lead coordinators.",
+    "fr": "Définissez les objectifs de campagne, les plafonds de dépenses terrain et assignez les chefs de file.",
+    "ar": "Définissez les objectifs de campagne, les plafonds de dépenses terrain et assignez les chefs de file."
+  },
+  "pm_dir_screen_new_success": {
+    "en": "Project created successfully! Dispatched to Project Manager and Creative Studio.",
+    "fr": "Projet créé avec succès ! Dispatching instantané vers le Chef de Projet et le Studio Créa...",
+    "ar": "Projet créé avec succès ! Dispatching instantané vers le Chef de Projet et le Studio Créa..."
+  },
+  "pm_dir_field_title_ph": {
+    "en": "Ex: National 5G Roadshow — Summer Beach Caravan 2026",
+    "fr": "Ex: Roadshow National 5G Ooredoo — Caravane des Plages 2026",
+    "ar": "Ex: Roadshow National 5G Ooredoo — Caravane des Plages 2026"
+  },
+  "pm_dir_field_scope_ph": {
+    "en": "Detail deployment: pop-up stands, sample targets, supermarket animations, uniforms...",
+    "fr": "Détaillez le dispositif : nombre de stands éphémères, cibles d\\'échantillonnage, animations GMS, tenues personnalisées...",
+    "ar": "Détaillez le dispositif : nombre de stands éphémères, cibles d\\'échantillonnage, animations GMS, tenues personnalisées..."
+  },
+  "pm_dir_reject_modal_ph": {
+    "en": "Specify rejection rationale (e.g., illegible receipt, unapproved item, budget overrun)...",
+    "fr": "Indiquez pourquoi cette dépense est rejetée (ex: reçu illisible, hors budget)...",
+    "ar": "Indiquez pourquoi cette dépense est rejetée (ex: reçu illisible, hors budget)..."
+  },
+  "pm_dir_target_objective": {
+    "en": "Agency Target: 30%",
+    "fr": "Objectif agence : 30%",
+    "ar": "Objectif agence : 30%"
+  },
+  "pm_dir_coverage_wilayas": {
+    "en": "58 Wilayas Covered",
+    "fr": "58 Wilayas couvertes",
+    "ar": "58 Wilayas couvertes"
+  },
+  "pm_dir_rating_avg": {
+    "en": "Average Rating: 4.6★",
+    "fr": "Moyenne note : 4,6★",
+    "ar": "Moyenne note : 4,6★"
+  },
+  "pm_dir_client_profitability": {
+    "en": "Profitability by Client Account",
+    "fr": "Rentabilité par Compte Client",
+    "ar": "Rentabilité par Compte Client"
+  },
+  "pm_dir_turnover_share": {
+    "en": "Turnover Share",
+    "fr": "Part du CA",
+    "ar": "Part du CA"
+  },
+  "pm_dir_territorial_deploy": {
+    "en": "Territorial Deployment",
+    "fr": "Déploiement Territorial",
+    "ar": "Déploiement Territorial"
+  },
+  "pm_dir_activations_count": {
+    "en": "Activations",
+    "fr": "Activations",
+    "ar": "Activations"
+  },
+  "pm_cp_field_designation": {
+    "en": "Material Designation *",
+    "fr": "Désignation du Matériel *",
+    "ar": "Désignation du Matériel *"
+  },
+  "pm_cp_field_designation_ph": {
+    "en": "Ex: Branded counter drape, 15m HDMI cable...",
+    "fr": "Ex: Nappe comptoir brandée, Câble HDMI 15m...",
+    "ar": "Ex: Nappe comptoir brandée, Câble HDMI 15m..."
+  },
+  "pm_cp_field_amount": {
+    "en": "Amount in DZD *",
+    "fr": "Montant en DA *",
+    "ar": "Montant en DA *"
+  },
+  "pm_cp_revision_ph": {
+    "en": "Ex: Align client logo 15cm from top edge and fix legal footnote...",
+    "fr": "Ex: Ajuster le logo client à 15cm du bord supérieur et corriger le texte légal...",
+    "ar": "Ex: Ajuster le logo client à 15cm du bord supérieur et corriger le texte légal..."
+  },
+  "pm_crea_field_project": {
+    "en": "Associated Campaign & Project",
+    "fr": "Projet & Campagne Associée",
+    "ar": "Projet & Campagne Associée"
+  },
+  "pm_crea_field_artwork_name": {
+    "en": "Artwork Deliverable Name *",
+    "fr": "Nom du Livrable Graphique *",
+    "ar": "Nom du Livrable Graphique *"
+  },
+  "pm_crea_field_colorspace": {
+    "en": "Color Space",
+    "fr": "Espace Couleur",
+    "ar": "Espace Couleur"
+  },
+  "pm_crea_field_fileformat": {
+    "en": "File Format",
+    "fr": "Format Fichier",
+    "ar": "Format Fichier"
+  },
+  "pm_sup_search_talents_ph": {
+    "en": "Search animator, wilaya, commune...",
+    "fr": "Rechercher animateur, wilaya, commune...",
+    "ar": "Rechercher animateur, wilaya, commune..."
+  },
+  "pm_sup_filter_wilaya": {
+    "en": "Wilaya",
+    "fr": "Wilaya",
+    "ar": "Wilaya"
+  },
+  "pm_sup_filter_min_rating": {
+    "en": "Min Rating",
+    "fr": "Note Min",
+    "ar": "Note Min"
+  },
+  "pm_sup_field_expense_reason": {
+    "en": "Field Expense Purpose *",
+    "fr": "Motif de la Dépense Terrain *",
+    "ar": "Motif de la Dépense Terrain *"
+  },
+  "pm_sup_field_expense_reason_ph": {
+    "en": "Ex: Shielded HDMI cable for Bab Ezzouar stand display",
+    "fr": "Ex: Câble HDMI blindé pour écran stand Bab Ezzouar",
+    "ar": "Ex: Câble HDMI blindé pour écran stand Bab Ezzouar"
+  },
+  "pm_sup_field_expense_photo": {
+    "en": "Receipt Photo (Camera simulation URL)",
+    "fr": "Photo du Ticket / Facturette (URL simulation caméra)",
+    "ar": "Photo du Ticket / Facturette (URL simulation caméra)"
+  },
+  "pm_rh_no_talent_selected": {
+    "en": "No talent selected.",
+    "fr": "Aucun talent sélectionné.",
+    "ar": "Aucun talent sélectionné."
+  },
+  "pm_rh_field_photo_url": {
+    "en": "Portrait Photo / Casting Selfie (Image URL)",
+    "fr": "Photo Portrait / Casting Selfie (Lien image)",
+    "ar": "Photo Portrait / Casting Selfie (Lien image)"
+  },
+  "pm_rh_field_candidate_name": {
+    "en": "Candidate Full Name *",
+    "fr": "Nom et Prénom du Candidat *",
+    "ar": "Nom et Prénom du Candidat *"
+  },
+  "pm_rh_field_ccp_hint": {
+    "en": "CCP Account (10 digits) *",
+    "fr": "N° Compte CCP (10 chiffres) *",
+    "ar": "N° Compte CCP (10 chiffres) *"
+  },
+  "pm_rh_field_key_hint": {
+    "en": "Key (2 digits) *",
+    "fr": "Clé (2 chiffres) *",
+    "ar": "Clé (2 chiffres) *"
+  },
+  "pm_ccp_postal_reserved": {
+    "en": "Reserved for Postal Service:",
+    "fr": "Réservé à la Poste :",
+    "ar": "Réservé à la Poste :"
+  }
+}

@@ -559,20 +559,20 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
         <div className="p-6 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs max-w-4xl mx-auto space-y-6">
           <div>
             <span className="text-xs font-semibold text-[#C4785A] uppercase tracking-wide">
-              Écran 1.2 · Cadrage & Cahier des Charges
+              {t('pm_dir_screen_new_badge')}
             </span>
             <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mt-1">
-              Formalisation du Dispositif d'Activation & Enveloppes Budgétaires
+              {t('pm_dir_screen_new_title')}
             </h2>
             <p className="text-xs text-zinc-500">
-              Définissez les objectifs de campagne, les plafonds de dépenses terrain et assignez les chefs de file.
+              {t('pm_dir_screen_new_sub')}
             </p>
           </div>
 
           {projectCreatedSuccess && (
             <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 flex items-center gap-3 text-xs font-semibold animate-in fade-in">
               <CheckCircle className="w-5 h-5 text-emerald-600" />
-              Projet créé avec succès ! Dispatching instantané vers le Chef de Projet et le Studio Créa...
+              {t('pm_dir_screen_new_success')}
             </div>
           )}
 
@@ -581,9 +581,9 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
               <div className="sm:col-span-2">
                 <LabelInput
                   field="Title"
-                  label="Titre de l'Opération / Campagne d'Activation *"
+                  label={t('pm_dir_field_title')}
                   required
-                  placeholder="Ex: Roadshow National 5G Ooredoo — Caravane des Plages 2026"
+                  placeholder={t('pm_dir_field_title_ph')}
                   value={newProjectTitle}
                   onChange={setNewProjectTitle}
                   width="100%"
@@ -594,7 +594,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
 
               <LabelSelect
                 field="Client"
-                label="Client Annonceur"
+                label={t('pm_dir_field_client')}
                 value={newProjectClientId}
                 onChange={(val) => setNewProjectClientId(typeof val === 'string' ? val : val.target?.value || val)}
                 options={pmClients.map((c) => ({
@@ -608,7 +608,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
               <div>
                 <LabelInput
                   field="BudgetCap"
-                  label="Plafond Budgétaire Global (Budget Cap DA)"
+                  label={t('pm_dir_field_budget_cap')}
                   type="number"
                   value={newProjectBudgetCap}
                   onChange={setNewProjectBudgetCap}
@@ -621,7 +621,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
               <div>
                 <LabelInput
                   field="MaxField"
-                  label="Plafond Dépenses Terrain (Seuil Verrouillé DA)"
+                  label={t('pm_dir_field_max_field')}
                   type="number"
                   value={newProjectMaxField}
                   onChange={setNewProjectMaxField}
@@ -634,7 +634,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
               <div>
                 <LabelInput
                   field="Margin"
-                  label="Marge Brute Cible (%)"
+                  label={t('pm_dir_field_margin')}
                   type="number"
                   value={newProjectMargin}
                   onChange={setNewProjectMargin}
@@ -646,12 +646,12 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
 
               <div className="sm:col-span-2">
                 <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block mb-1">
-                  Cahier des Charges & Dispositif Opérationnel
+                  {t('pm_dir_field_scope')}
                 </label>
                 <textarea
                   rows={4}
                   required
-                  placeholder="Détaillez le dispositif : nombre de stands éphémères, cibles d'échantillonnage, animations GMS, tenues personnalisées..."
+                  placeholder={t('pm_dir_field_scope_ph')}
                   value={newProjectScope}
                   onChange={(e) => setNewProjectScope(e.target.value)}
                   className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-[#C4785A]"
@@ -661,7 +661,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
               <div>
                 <LabelInput
                   field="StartDate"
-                  label="Date de Lancement Campagne"
+                  label={t('pm_dir_field_start_date')}
                   type="date"
                   value={newProjectStartDate}
                   onChange={setNewProjectStartDate}
@@ -674,7 +674,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
               <div>
                 <LabelInput
                   field="EndDate"
-                  label="Date de Clôture Terrain"
+                  label={t('pm_dir_field_end_date')}
                   type="date"
                   value={newProjectEndDate}
                   onChange={setNewProjectEndDate}
@@ -686,7 +686,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
 
               <LabelSelect
                 field="LeadPM"
-                label="Chef de Projet Attitré (Lead PM)"
+                label={t('pm_dir_field_pm')}
                 value={newProjectPmId}
                 onChange={(val) => setNewProjectPmId(typeof val === 'string' ? val : val.target?.value || val)}
                 options={[
@@ -699,7 +699,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
 
               <LabelSelect
                 field="LeadCrea"
-                label="Lead Graphiste Créa Attitré"
+                label={t('pm_dir_field_crea')}
                 value={newProjectCreaId}
                 onChange={(val) => setNewProjectCreaId(typeof val === 'string' ? val : val.target?.value || val)}
                 options={[
@@ -953,7 +953,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
                 <div className="text-2xl font-mono font-bold text-emerald-600 tabular-nums">
                   31,4 %
                 </div>
-                <span className="text-[11px] text-zinc-500">Objectif agence : 30%</span>
+                <span className="text-[11px] text-zinc-500">{t('pm_dir_target_objective')}</span>
               </div>
 
               <div className="p-4 rounded-xl border border-zinc-200/80 dark:border-zinc-800 bg-zinc-50/60 dark:bg-zinc-800/40">
@@ -963,7 +963,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
                 <div className="text-2xl font-mono font-bold text-zinc-900 dark:text-zinc-100 tabular-nums">
                   48
                 </div>
-                <span className="text-[11px] text-zinc-500">58 Wilayas couvertes</span>
+                <span className="text-[11px] text-zinc-500">{t('pm_dir_coverage_wilayas')}</span>
               </div>
 
               <div className="p-4 rounded-xl border border-zinc-200/80 dark:border-zinc-800 bg-zinc-50/60 dark:bg-zinc-800/40">
@@ -973,7 +973,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
                 <div className="text-2xl font-mono font-bold text-blue-600 tabular-nums">
                   98,2 %
                 </div>
-                <span className="text-[11px] text-zinc-500">Moyenne note : 4,6★</span>
+                <span className="text-[11px] text-zinc-500">{t('pm_dir_rating_avg')}</span>
               </div>
             </div>
           </div>
@@ -983,8 +983,8 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
             {/* Client Breakdown */}
             <div className="p-6 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs space-y-4">
               <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 flex items-center justify-between">
-                <span>Rentabilité par Compte Client</span>
-                <span className="text-xs text-zinc-400 font-normal">Part du CA</span>
+                <span>{t('pm_dir_client_profitability')}</span>
+                <span className="text-xs text-zinc-400 font-normal">{t('pm_dir_turnover_share')}</span>
               </h3>
 
               <div className="space-y-3">
@@ -1010,8 +1010,8 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
             {/* Geographical Wilaya Distribution */}
             <div className="p-6 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs space-y-4">
               <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 flex items-center justify-between">
-                <span>Déploiement Territorial</span>
-                <span className="text-xs text-zinc-400 font-normal">Activations</span>
+                <span>{t('pm_dir_territorial_deploy')}</span>
+                <span className="text-xs text-zinc-400 font-normal">{t('pm_dir_activations_count')}</span>
               </h3>
 
               <div className="space-y-3">
@@ -1044,7 +1044,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
           <div className="bg-white dark:bg-zinc-900 rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl border border-zinc-200 dark:border-zinc-800">
             <div className="p-4 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
               <h4 className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
-                Inspection Justificatif de Caisse
+                {t('pm_dir_see_receipt')}
               </h4>
               <button
                 onClick={() => setSelectedReceiptUrl(null)}
@@ -1065,7 +1065,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
                 onClick={() => setSelectedReceiptUrl(null)}
                 className="px-4 py-1.5 text-xs font-semibold text-zinc-700 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-700 rounded-lg cursor-pointer"
               >
-                Fermer
+                {t('common_close')}
               </button>
             </div>
           </div>
@@ -1077,11 +1077,11 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
           <div className="bg-white dark:bg-zinc-900 rounded-2xl max-w-md w-full p-6 shadow-2xl border border-zinc-200 dark:border-zinc-800 space-y-4">
             <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-              Motif du Rejet de la Dépense
+              {t('pm_dir_reject_modal_title')}
             </h3>
             <textarea
               rows={3}
-              placeholder="Indiquez pourquoi cette dépense est rejetée (ex: reçu illisible, hors budget)..."
+              placeholder={t('pm_dir_reject_modal_ph')}
               value={rejectionReason}
               onChange={(e) => setRejectionReason(e.target.value)}
               className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
@@ -1091,13 +1091,13 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
                 onClick={() => setRejectionModalId(null)}
                 className="px-3 py-1.5 text-xs text-zinc-600 dark:text-zinc-400 cursor-pointer"
               >
-                Annuler
+                {t('common_cancel')}
               </button>
               <button
                 onClick={handleRejectConfirm}
                 className="px-4 py-1.5 text-xs font-semibold text-white bg-red-600 hover:bg-red-500 rounded-lg cursor-pointer"
               >
-                Confirmer le Rejet
+                {t('pm_dir_btn_confirm_reject')}
               </button>
             </div>
           </div>

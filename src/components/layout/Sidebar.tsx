@@ -30,7 +30,7 @@ import {
 } from 'lucide-react';
 import { useAtriumStore, ActiveScreen } from '../../services/store';
 import { FiveCubesLogo } from '../auth/AtriumMonolith';
-import { t } from '../../utils/i18n';
+import { useTranslation } from '../../utils/useTranslation';
 
 interface SidebarProps {
   onOpenVoucherModal: () => void;
@@ -43,6 +43,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   isOpenMobile = false,
   onCloseMobile,
 }) => {
+  const { t } = useTranslation();
   const {
     activeScreen,
     setScreen,

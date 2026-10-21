@@ -1,0 +1,132 @@
+[
+  {
+    "key": "pm_screen_dir_new_project",
+    "en": "Cadrage & Cahier des Charges",
+    "fr": "Cadrage & Cahier des Charges"
+  },
+  {
+    "key": "pm_screen_rh_dossier",
+    "en": "360° Candidate Dossier",
+    "fr": "Dossier Talent 360°"
+  },
+  {
+    "key": "pm_screen_compta_ccp",
+    "en": "Algérie Poste CCP (SFP 01)",
+    "fr": "Bordereaux CCP (SFP 01)"
+  },
+  {
+    "key": "pm_kpi_ccp_slips",
+    "en": "Algérie Poste CCP Slips",
+    "fr": "Bordereaux Algérie Poste (CCP)"
+  },
+  {
+    "key": "pm_compta_subtitle",
+    "en": "Automated payroll audit, legal Algérie Poste SFP 01 slips, and expense reconciliation",
+    "fr": "Audit automatisé des paies, bordereaux légaux Algérie Poste SFP 01 et rapprochement"
+  },
+  {
+    "key": "pm_status_crea_in_progress",
+    "en": "Créa in Progress",
+    "fr": "Créa en Cours"
+  },
+  {
+    "key": "pm_ccp_modal_title",
+    "en": "Official Algérie Poste SFP 01 Remittance",
+    "fr": "Bordereau Officiel Algérie Poste — SFP 01"
+  },
+  {
+    "key": "pm_ccp_standard_notice",
+    "en": "Standard SFP 01 format compliant with Algérie Poste post offices",
+    "fr": "Format standard SFP 01 conforme aux guichets Algérie Poste"
+  },
+  {
+    "key": "pm_rh_tab_dossier",
+    "en": "Talent 360° Dossier",
+    "fr": "Dossier 360° Talent"
+  },
+  {
+    "key": "pm_role_compta_sub",
+    "en": "Automated payroll audit, legal Algérie Poste SFP 01 slips, and expense reconciliation",
+    "fr": "Audit automatisé des paies, bordereaux légaux Algérie Poste SFP 01 et rapprochement"
+  },
+  {
+    "key": "pm_cp_cart_btn_transmit",
+    "en": "Send to Créa Studio & Printer",
+    "fr": "Transmettre au Studio Créa & Imprimeur"
+  },
+  {
+    "key": "pm_cp_revision_btn_send",
+    "en": "Send Remarks to Créa",
+    "fr": "Envoyer les Remarques à la Créa"
+  },
+  {
+    "key": "pm_rh_dossier_title",
+    "en": "Talent 360° Dossier",
+    "fr": "Dossier 360° du Talent"
+  },
+  {
+    "key": "pm_rh_field_ccp_key",
+    "en": "CCP Key (Clé) *",
+    "fr": "Clé CCP *"
+  },
+  {
+    "key": "pm_compta_voucher_preview_header",
+    "en": "Algérie Poste Voucher (SFP 01)",
+    "fr": "Bordereau Algérie Poste (SFP 01)"
+  },
+  {
+    "key": "pm_compta_ptt_ops",
+    "en": "ALGÉRIE POSTE · FINANCIAL OPERATIONS",
+    "fr": "ALGÉRIE POSTE · OPÉRATIONS FINANCIÈRES"
+  },
+  {
+    "key": "pm_compta_slips_issued_sub",
+    "en": "Amounts automatically transcribed in legal words (French & Arabic). Fully compliant with Algérie Poste counters.",
+    "fr": "Montants transcrits automatiquement en lettres légales (Français et Arabe). Conformes aux guichets Algérie Poste."
+  },
+  {
+    "key": "pm_ccp_operations",
+    "en": "ALGÉRIE POSTE · FINANCIAL OPERATIONS SFP 01",
+    "fr": "ALGÉRIE POSTE · OPÉRATIONS FINANCIÈRES SFP 01"
+  },
+  {
+    "key": "pm_ccp_compliance_footer",
+    "en": "Standard SFP 01 format compliant with Algérie Poste counters",
+    "fr": "Format standard SFP 01 conforme aux guichets Algérie Poste"
+  },
+  {
+    "key": "pm_rh_pillar2_title",
+    "en": "Postal Coordinates (Algérie Poste)",
+    "fr": "Coordonnées Postales (Algérie Poste)"
+  },
+  {
+    "key": "pm_rh_pillar2_key",
+    "en": "Algérie Poste Key:",
+    "fr": "Clé Algérie Poste :"
+  },
+  {
+    "key": "pm_rh_pillar2_verified",
+    "en": "✓ Validated compliant with Algérie Poste algorithm",
+    "fr": "✓ Validé conforme à l\\'algorithme d\\'Algérie Poste"
+  },
+  {
+    "key": "pm_rh_btn_inspect_dossier",
+    "en": "Inspect Dossier ➔",
+    "fr": "Inspecter Dossier ➔"
+  },
+  {
+    "key": "pm_dir_injection_title",
+    "en": "Fast Charter Injection (CDP / Créa)",
+    "fr": "Injection Rapide Cahier des Charges"
+  },
+  {
+    "key": "pm_dir_send_crea",
+    "en": "Dispatch Brief to Créa",
+    "fr": "Transmettre au Studio Créa"
+  },
+  {
+    "key": "pm_dir_benefit_4",
+    "en": "Algérie Poste certified slips: 1-click legal SFP 01 generation for post office wiring.",
+    "fr": "Bordereaux Algérie Poste conformes : génération en 1 clic des mandats SFP 01."
+  }
+]

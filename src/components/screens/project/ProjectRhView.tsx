@@ -430,7 +430,7 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
               </div>
             </div>
           ) : (
-            <p className="text-xs text-zinc-500 text-center py-8">Aucun talent sélectionné.</p>
+            <p className="text-xs text-zinc-500 text-center py-8">{t('pm_rh_no_talent_selected')}</p>
           )}
         </div>
       )}
@@ -464,7 +464,7 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
             <form onSubmit={(e) => handleCreateTalent(e, 'portal')} className="space-y-3">
               <LabelInput
                 field="Nom"
-                label="Nom et Prénom *"
+                label={t('pm_rh_field_fullname')}
                 value={fullName}
                 onChange={setFullName}
                 required
@@ -477,7 +477,7 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
               <div className="grid grid-cols-2 gap-2">
                 <LabelInput
                   field="Telephone"
-                  label="Numéro de Téléphone *"
+                  label={t('pm_rh_field_phone')}
                   type="tel"
                   required
                   placeholder="+213 661 ..."
@@ -489,7 +489,7 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                 />
                 <LabelInput
                   field="Age"
-                  label="Âge"
+                  label={t('pm_rh_field_age')}
                   type="number"
                   value={age ? String(age) : ''}
                   onChange={(v) => setAge(String(v || ''))}
@@ -502,7 +502,7 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
               <div className="grid grid-cols-2 gap-2">
                 <LabelSelect
                   field="Wilaya"
-                  label="Wilaya de Résidence *"
+                  label={t('pm_rh_field_wilaya')}
                   value={wilayaCode}
                   onChange={(val) => setWilayaCode(typeof val === 'string' ? val : val.target?.value || val)}
                   options={ALGERIAN_WILAYAS.map((w) => ({
@@ -516,7 +516,7 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
 
                 <LabelInput
                   field="Commune"
-                  label="Commune"
+                  label={t('pm_rh_field_commune')}
                   value={commune}
                   onChange={setCommune}
                   width="100%"
@@ -528,13 +528,13 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
               {/* CCP Info */}
               <div className="p-3 bg-zinc-50 dark:bg-zinc-800/40 rounded-xl border border-zinc-200 dark:border-zinc-700/60 space-y-2">
                 <span className="text-[11px] font-bold text-zinc-800 dark:text-zinc-200 block">
-                  Coordonnées CCP (Pour le paiement des cachets)
+                  {t('pm_compta_tab_ccp')}
                 </span>
                 <div className="grid grid-cols-3 gap-2">
                   <div className="col-span-2">
                     <LabelInput
                       field="CCP"
-                      label="N° Compte CCP *"
+                      label={t('pm_rh_field_ccp')}
                       placeholder="0012345678"
                       value={ccpNumber}
                       onChange={setCcpNumber}
@@ -547,7 +547,7 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                   <div>
                     <LabelInput
                       field="Cle"
-                      label="Clé *"
+                      label={t('pm_rh_field_ccp_key')}
                       placeholder="45"
                       value={ccpKey}
                       onChange={setCcpKey}
@@ -563,7 +563,7 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
               {/* Selfie / Portrait Upload */}
               <LabelInput
                 field="Photo"
-                label="Photo Portrait / Casting Selfie (Lien image)"
+                label={t('pm_rh_field_photo_url')}
                 type="url"
                 value={photoUrl}
                 onChange={setPhotoUrl}
@@ -602,7 +602,7 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
             <div className="space-y-3">
               <LabelInput
                 field="Nom"
-                label="Nom et Prénom du Candidat *"
+                label={t('pm_rh_field_candidate_name')}
                 required
                 placeholder="Ex: Karim Bensalem"
                 value={fullName}
@@ -615,7 +615,7 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
               <div className="grid grid-cols-2 gap-3">
                 <LabelInput
                   field="Telephone"
-                  label="Téléphone Mobile *"
+                  label={t('pm_rh_field_phone')}
                   type="tel"
                   required
                   placeholder="+213 550 ..."
@@ -628,7 +628,7 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
 
                 <LabelSelect
                   field="Wilaya"
-                  label="Wilaya de Résidence"
+                  label={t('pm_rh_field_wilaya')}
                   value={wilayaCode}
                   onChange={(val) => setWilayaCode(typeof val === 'string' ? val : val.target?.value || val)}
                   options={ALGERIAN_WILAYAS.map((w) => ({
@@ -645,7 +645,7 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                 <div className="col-span-2">
                   <LabelInput
                     field="CCP"
-                    label="N° Compte CCP (10 chiffres) *"
+                    label={t('pm_rh_field_ccp_hint')}
                     required
                     value={ccpNumber}
                     onChange={setCcpNumber}
@@ -657,7 +657,7 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                 <div>
                   <LabelInput
                     field="Cle"
-                    label="Clé (2 chiffres) *"
+                    label={t('pm_rh_field_key_hint')}
                     required
                     value={ccpKey}
                     onChange={setCcpKey}
