@@ -24,10 +24,12 @@ import { Seek } from '../../ui/Seek';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { ActionNode } from '../../ui/ActionNode';
+import { useTranslation } from '../../../utils/useTranslation';
 
 type CourseCat = 'All' | 'Language' | 'Technology' | 'Academic' | 'Arts';
 
 export const EducationCohortsView: React.FC = () => {
+  const { t, isRtl } = useTranslation();
   const {
     eduCohorts,
     eduCourses,
@@ -147,14 +149,14 @@ export const EducationCohortsView: React.FC = () => {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white">
-              Cohorts, Courses & Syllabi
+              {t('edu_cohorts_title')}
             </h1>
             <span className="text-xs text-neutral-500 dark:text-neutral-400">
               {eduCohorts.length} active batches · {eduCourses.length} syllabus courses
             </span>
           </div>
           <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
-            Curriculum progression, seat occupancy tracking, syllabus milestones, and cohort deep-dives
+            {t('edu_cohorts_subtitle')}
           </p>
         </div>
 
@@ -164,7 +166,7 @@ export const EducationCohortsView: React.FC = () => {
           className="h-10 px-4 rounded-xl bg-[#C4785A] text-white text-xs font-semibold flex items-center gap-1.5 hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
         >
           <Plus size={14} />
-          <span>Create New Cohort</span>
+          <span>{t('edu_modal_add_cohort')}</span>
         </button>
       </div>
 
@@ -172,7 +174,7 @@ export const EducationCohortsView: React.FC = () => {
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
         <div className="p-4 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-900/40 border border-[#EDF1F3] dark:border-neutral-800">
           <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400 block mb-1">
-            Active Cohort Batches
+            {t('edu_kpi_active_cohorts')}
           </span>
           <div className="flex items-baseline gap-2">
             <span className="text-2xl font-extrabold text-neutral-900 dark:text-white tabular-nums">
@@ -190,13 +192,15 @@ export const EducationCohortsView: React.FC = () => {
             <span className="text-2xl font-extrabold text-[#C4785A] tabular-nums">
               {globalOccupancy}%
             </span>
-            <span className="text-xs text-neutral-500">{totalEnrolled} / {totalSeats} seats</span>
+            <span className="text-xs text-neutral-500">
+              {t('edu_seats_filled', { enrolled: String(totalEnrolled), capacity: String(totalSeats) })}
+            </span>
           </div>
         </div>
 
         <div className="p-4 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-900/40 border border-[#EDF1F3] dark:border-neutral-800">
           <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400 block mb-1">
-            Total Enrolled Students
+            {t('edu_kpi_total_students')}
           </span>
           <div className="flex items-baseline gap-2">
             <span className="text-2xl font-extrabold text-neutral-900 dark:text-white tabular-nums">
@@ -224,14 +228,14 @@ export const EducationCohortsView: React.FC = () => {
         <Seek
           value={searchQuery}
           onChange={setSearchQuery}
-          placeholder="Search cohorts by name, code, instructor..."
+          placeholder={t('edu_search_cohorts_ph')}
           shutSize={36}
           openWidth={260}
         />
 
         <div className="flex items-center gap-1 p-1 bg-neutral-100 dark:bg-neutral-800/80 rounded-xl self-start sm:self-auto overflow-x-auto">
           {[
-            { id: 'All', label: 'All Categories' },
+            { id: 'All', label: t('edu_filter_all_programs') },
             { id: 'Language', label: 'Languages' },
             { id: 'Technology', label: 'Technology & Code' },
             { id: 'Academic', label: 'Academic & BAC' },
@@ -309,7 +313,7 @@ export const EducationCohortsView: React.FC = () => {
                   label: 'Delete Cohort',
                   icon: <Trash2 size={14} />,
                   onClick: () => {
-                    if (confirm(`Delete cohort ${cohort.name}?`)) {
+                    if (confirm(t('edu_confirm_delete_cohort'))) {
                       deleteEduCohort(cohort.id);
                     }
                   },
@@ -346,7 +350,7 @@ export const EducationCohortsView: React.FC = () => {
       {/* 360° Cohort Slide-over Drawer */}
       {selectedCohort && (
         <div className="fixed inset-0 z-50 flex justify-end bg-black/40 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="w-full max-w-lg bg-white dark:bg-[#18181B] h-full shadow-2xl border-l border-neutral-200 dark:border-neutral-800 flex flex-col overflow-hidden animate-in slide-in-from-right duration-200">
+          <div className="w-full max-w-lg bg-white dark:bg-[#18181B] h-full shadow-2xl border-l rtl:border-r rtl:border-l-0 border-neutral-200 dark:border-neutral-800 flex flex-col overflow-hidden animate-in slide-in-from-right duration-200">
             {/* Drawer Header */}
             <div className="p-5 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
               <div>
@@ -495,7 +499,7 @@ export const EducationCohortsView: React.FC = () => {
           <div className="relative w-full max-w-lg bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl border border-neutral-200 dark:border-neutral-800 p-6">
             <div className="flex items-center justify-between pb-4 border-b border-neutral-100 dark:border-neutral-800">
               <h2 className="text-base font-bold text-neutral-900 dark:text-white">
-                Create New Cohort Batch
+                {t('edu_modal_add_cohort')}
               </h2>
               <button
                 type="button"
@@ -509,7 +513,7 @@ export const EducationCohortsView: React.FC = () => {
             <form onSubmit={handleCreateCohort} className="space-y-3.5 pt-4 text-xs">
               <LabelSelect
                 field="CourseCurriculum"
-                label="Course Curriculum *"
+                label={t('edu_field_course_title')}
                 value={formData.courseId}
                 onChange={(val) => setFormData({ ...formData, courseId: val?.target?.value ?? String(val) })}
                 options={eduCourses.map((co) => ({
@@ -525,7 +529,7 @@ export const EducationCohortsView: React.FC = () => {
 
               <LabelInput
                 field="CohortName"
-                label="Cohort Name / Batch Title *"
+                label={t('edu_field_cohort_code')}
                 required
                 value={formData.name}
                 onChange={(val) => setFormData({ ...formData, name: val?.target?.value ?? val })}
@@ -538,7 +542,7 @@ export const EducationCohortsView: React.FC = () => {
               <div className="grid grid-cols-2 gap-3">
                 <LabelSelect
                   field="Instructor"
-                  label="Instructor"
+                  label={t('edu_field_instructor')}
                   value={formData.instructorId}
                   onChange={(val) => setFormData({ ...formData, instructorId: val?.target?.value ?? String(val) })}
                   options={staff.map((s) => ({
@@ -554,7 +558,7 @@ export const EducationCohortsView: React.FC = () => {
 
                 <LabelSelect
                   field="AssignedClassroom"
-                  label="Assigned Classroom"
+                  label={t('edu_field_classroom')}
                   value={formData.classroomId}
                   onChange={(val) => setFormData({ ...formData, classroomId: val?.target?.value ?? String(val) })}
                   options={eduClassrooms.map((r) => ({
@@ -572,7 +576,7 @@ export const EducationCohortsView: React.FC = () => {
               <div className="grid grid-cols-2 gap-3">
                 <LabelInput
                   field="StartDate"
-                  label="Start Date *"
+                  label={t('edu_field_start_date')}
                   type="date"
                   required
                   value={formData.startDate}
@@ -583,7 +587,7 @@ export const EducationCohortsView: React.FC = () => {
                 />
                 <LabelInput
                   field="EndDate"
-                  label="End Date *"
+                  label={t('edu_field_end_date')}
                   type="date"
                   required
                   value={formData.endDate}
@@ -597,7 +601,7 @@ export const EducationCohortsView: React.FC = () => {
               <div className="grid grid-cols-2 gap-3">
                 <LabelInput
                   field="TuitionFee"
-                  label="Tuition Fee (DZD) *"
+                  label={t('edu_field_tuition_fee')}
                   type="number"
                   required
                   value={formData.tuitionFee}
@@ -608,7 +612,7 @@ export const EducationCohortsView: React.FC = () => {
                 />
                 <LabelInput
                   field="SeatLimit"
-                  label="Seat Limit *"
+                  label={t('edu_field_max_students')}
                   type="number"
                   required
                   value={formData.maxStudents}
@@ -621,7 +625,7 @@ export const EducationCohortsView: React.FC = () => {
 
               <LabelInput
                 field="ScheduleSummary"
-                label="Schedule Summary"
+                label={t('edu_field_schedule_desc')}
                 value={formData.scheduleSummary}
                 onChange={(val) => setFormData({ ...formData, scheduleSummary: val?.target?.value ?? val })}
                 placeholder="e.g. Sat & Tue 14:00 - 16:30"
@@ -636,13 +640,13 @@ export const EducationCohortsView: React.FC = () => {
                   onClick={() => setIsAddCohortModalOpen(false)}
                   className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 font-semibold cursor-pointer"
                 >
-                  Cancel
+                  {t('common_cancel')}
                 </button>
                 <button
                   type="submit"
                   className="px-5 py-2 rounded-xl bg-[#C4785A] text-white font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
                 >
-                  Create Cohort
+                  {t('edu_btn_save_cohort')}
                 </button>
               </div>
             </form>

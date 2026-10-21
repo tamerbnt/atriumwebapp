@@ -27,10 +27,12 @@ import { CertificateModal } from './CertificateModal';
 import { Seek } from '../../ui/Seek';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
+import { useTranslation } from '../../../utils/useTranslation';
 
 type FilterKey = 'all' | 'active' | 'minors' | 'overdue' | 'graduated';
 
 export const EducationStudentsView: React.FC = () => {
+  const { t, isRtl } = useTranslation();
   const {
     terminology,
     eduStudents,
@@ -239,10 +241,10 @@ export const EducationStudentsView: React.FC = () => {
     setIsAddModalOpen(false);
   };
 
-  const handleDelete = (studentId: string) => {
-    if (confirm('Are you sure you want to remove this student? This will also remove their enrollments.')) {
-      deleteEduStudent(studentId);
-      if (selectedStudent?.id === studentId) {
+  const handleDelete = (student: EduStudent) => {
+    if (confirm(t('edu_confirm_delete_student', { name: student.fullName }))) {
+      deleteEduStudent(student.id);
+      if (selectedStudent?.id === student.id) {
         setSelectedStudent(null);
       }
     }
@@ -269,14 +271,14 @@ export const EducationStudentsView: React.FC = () => {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white">
-              Students & Guardians CRM
+              {t('edu_students_title')}
             </h1>
             <span className="text-xs text-neutral-500 dark:text-neutral-400">
               {totalStudentsCount} accounts · {activeMinorsCount} linked guardians
             </span>
           </div>
           <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
-            Manage student registrations, guardian emergency links, cohort enrollments and verifiable credentials
+            {t('edu_students_subtitle')}
           </p>
         </div>
 
@@ -286,7 +288,7 @@ export const EducationStudentsView: React.FC = () => {
           className="h-10 px-4 rounded-xl bg-[#C4785A] text-white text-xs font-semibold flex items-center gap-1.5 hover:opacity-90 transition-opacity cursor-pointer shadow-xs self-start sm:self-auto"
         >
           <Plus size={14} />
-          <span>Add New Student</span>
+          <span>{t('edu_modal_add_student')}</span>
         </button>
       </div>
 
@@ -294,7 +296,7 @@ export const EducationStudentsView: React.FC = () => {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="p-4 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-900/40 border border-[#EDF1F3] dark:border-neutral-800">
           <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400 block mb-1">
-            Total Student Community
+            {t('edu_kpi_total_students')}
           </span>
           <div className="flex items-baseline gap-2">
             <span className="text-2xl font-extrabold text-neutral-900 dark:text-white tabular-nums">
@@ -308,21 +310,21 @@ export const EducationStudentsView: React.FC = () => {
 
         <div className="p-4 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-900/40 border border-[#EDF1F3] dark:border-neutral-800">
           <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400 block mb-1">
-            Average Campus Attendance
+            {t('edu_kpi_attendance_rate')}
           </span>
           <div className="flex items-baseline gap-2">
             <span className="text-2xl font-extrabold text-neutral-900 dark:text-white tabular-nums">
               {averageAttendance}%
             </span>
             <span className="text-xs text-emerald-600 dark:text-emerald-400">
-              verified presence rate
+              {t('edu_verified_rate')}
             </span>
           </div>
         </div>
 
         <div className="p-4 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-900/40 border border-[#EDF1F3] dark:border-neutral-800">
           <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400 block mb-1">
-            Settled Tuition Cashflow
+            {t('edu_fin_collected')}
           </span>
           <div className="flex items-baseline gap-2">
             <span className="text-2xl font-extrabold text-[#C4785A] tabular-nums">
@@ -341,7 +343,7 @@ export const EducationStudentsView: React.FC = () => {
         <Seek
           value={searchQuery}
           onChange={setSearchQuery}
-          placeholder="Search students by name, phone, email, guardian..."
+          placeholder={t('edu_search_students_ph')}
           shutSize={36}
           openWidth={280}
         />
@@ -349,11 +351,11 @@ export const EducationStudentsView: React.FC = () => {
         {/* Segmented Filter Control */}
         <div className="flex items-center gap-1 p-1 bg-neutral-100 dark:bg-neutral-800/80 rounded-xl self-start sm:self-auto overflow-x-auto">
           {[
-            { id: 'all', label: 'All Students', count: eduStudents.length },
-            { id: 'active', label: 'Active', count: eduStudents.filter((s) => s.status === 'Active').length },
-            { id: 'minors', label: 'Minors & Guardians' },
-            { id: 'overdue', label: 'Overdue Tuition' },
-            { id: 'graduated', label: 'Graduated' },
+            { id: 'all', label: t('edu_filter_all'), count: eduStudents.length },
+            { id: 'active', label: t('edu_status_active'), count: eduStudents.filter((s) => s.status === 'Active').length },
+            { id: 'minors', label: t('edu_filter_minors') },
+            { id: 'overdue', label: t('edu_tuition_overdue') },
+            { id: 'graduated', label: t('edu_status_graduated') },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -378,10 +380,7 @@ export const EducationStudentsView: React.FC = () => {
       {filteredStudents.length === 0 ? (
         <div className="p-12 text-center rounded-2xl border border-dashed border-neutral-200 dark:border-neutral-800 bg-[#F8F9FA]/50 dark:bg-neutral-900/20">
           <p className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">
-            No students match your filter criteria
-          </p>
-          <p className="text-xs text-neutral-500 mt-1">
-            Try adjusting your search query or enroll your first student.
+            {t('edu_no_students_enrolled')}
           </p>
           <button
             type="button"
@@ -389,20 +388,20 @@ export const EducationStudentsView: React.FC = () => {
             className="mt-4 px-4 py-2 rounded-xl bg-[#C4785A] text-white text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer inline-flex items-center gap-1.5"
           >
             <Plus size={14} />
-            <span>Enroll Student</span>
+            <span>{t('edu_modal_add_student')}</span>
           </button>
         </div>
       ) : (
         <div className="overflow-hidden rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/60 shadow-2xs">
-          <table className="w-full text-left border-collapse text-xs">
+          <table className="w-full text-left rtl:text-right border-collapse text-xs">
             <thead>
               <tr className="border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/50 text-[11px] font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
-                <th className="py-3.5 px-4">Student</th>
-                <th className="py-3.5 px-4">Enrolled Cohort</th>
-                <th className="py-3.5 px-4">Attendance</th>
-                <th className="py-3.5 px-4">Tuition Status</th>
-                <th className="py-3.5 px-4">Guardian Contact</th>
-                <th className="py-3.5 px-4 text-right">Actions</th>
+                <th className="py-3.5 px-4">{t('edu_col_student')}</th>
+                <th className="py-3.5 px-4">{t('edu_col_cohort')}</th>
+                <th className="py-3.5 px-4">{t('edu_col_attendance')}</th>
+                <th className="py-3.5 px-4">{t('edu_col_tuition_status')}</th>
+                <th className="py-3.5 px-4">{t('edu_drawer_guardian')}</th>
+                <th className="py-3.5 px-4 text-right rtl:text-left">{t('edu_col_actions')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800/80">
@@ -504,8 +503,8 @@ export const EducationStudentsView: React.FC = () => {
                       )}
                     </td>
 
-                    <td className="py-3.5 px-4 text-right">
-                      <div className="flex items-center justify-end gap-1.5">
+                    <td className="py-3.5 px-4 text-right rtl:text-left">
+                      <div className="flex items-center justify-end rtl:justify-start gap-1.5">
                         <button
                           type="button"
                           onClick={(e) => {
@@ -515,7 +514,7 @@ export const EducationStudentsView: React.FC = () => {
                           className="px-2.5 py-1.5 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-[#C4785A] hover:text-white text-xs font-semibold flex items-center gap-1 transition-colors cursor-pointer"
                         >
                           <span>Profile 360°</span>
-                          <ChevronRight size={13} />
+                          <ChevronRight size={13} className="rtl:rotate-180" />
                         </button>
                         <button
                           type="button"
@@ -532,7 +531,7 @@ export const EducationStudentsView: React.FC = () => {
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleDelete(student.id);
+                            handleDelete(student);
                           }}
                           className="p-1.5 rounded-lg text-neutral-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
                           title="Delete student"
@@ -552,7 +551,7 @@ export const EducationStudentsView: React.FC = () => {
       {/* 360° Student Slide-over Drawer matching FreelanceClientsView */}
       {selectedStudent && (
         <div className="fixed inset-0 z-50 flex justify-end bg-black/40 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="w-full max-w-lg bg-white dark:bg-[#18181B] h-full shadow-2xl border-l border-neutral-200 dark:border-neutral-800 flex flex-col overflow-hidden animate-in slide-in-from-right duration-200">
+          <div className="w-full max-w-lg bg-white dark:bg-[#18181B] h-full shadow-2xl border-l rtl:border-r rtl:border-l-0 border-neutral-200 dark:border-neutral-800 flex flex-col overflow-hidden animate-in slide-in-from-right duration-200">
             {/* Drawer Header */}
             <div className="p-5 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -595,21 +594,21 @@ export const EducationStudentsView: React.FC = () => {
             <div className="px-5 pt-3 pb-2 border-b border-neutral-100 dark:border-neutral-800/80 bg-neutral-50/50 dark:bg-neutral-900/30">
               <div className="flex items-center gap-1 p-1 bg-neutral-100 dark:bg-neutral-800/80 rounded-xl overflow-x-auto">
                 {[
-                  { id: 'academic', label: 'Academic & Cohorts' },
-                  { id: 'financial', label: 'Tuition & Billing' },
-                  { id: 'guardian', label: 'Guardian Contact' },
-                  { id: 'certificates', label: 'Certificates' },
-                ].map((t) => (
+                  { id: 'academic', label: t('edu_drawer_academic') },
+                  { id: 'financial', label: t('edu_drawer_financial') },
+                  { id: 'guardian', label: t('edu_drawer_guardian') },
+                  { id: 'certificates', label: t('edu_drawer_certificates') },
+                ].map((tb) => (
                   <button
-                    key={t.id}
-                    onClick={() => setActiveDrawerTab(t.id as any)}
+                    key={tb.id}
+                    onClick={() => setActiveDrawerTab(tb.id as any)}
                     className={`flex-1 py-1.5 px-2 text-[11px] font-semibold rounded-lg text-center transition-colors whitespace-nowrap cursor-pointer ${
-                      activeDrawerTab === t.id
+                      activeDrawerTab === tb.id
                         ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-2xs'
                         : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
                     }`}
                   >
-                    {t.label}
+                    {tb.label}
                   </button>
                 ))}
               </div>
@@ -622,7 +621,7 @@ export const EducationStudentsView: React.FC = () => {
                   {/* Current Active Cohorts */}
                   <div>
                     <h3 className="text-xs font-bold text-neutral-900 dark:text-white uppercase tracking-wider mb-2">
-                      Active Cohorts
+                      {t('edu_cohorts_title')}
                     </h3>
                     {studentEnrollments.length === 0 ? (
                       <p className="text-neutral-400 italic">No current enrollments.</p>
@@ -654,10 +653,10 @@ export const EducationStudentsView: React.FC = () => {
                   {/* Attendance Log */}
                   <div>
                     <h3 className="text-xs font-bold text-neutral-900 dark:text-white uppercase tracking-wider mb-2">
-                      Recent Attendance Records
+                      {t('edu_tab_rollcall')}
                     </h3>
                     {studentAttendance.length === 0 ? (
-                      <p className="text-neutral-400 italic">No attendance records logged yet.</p>
+                      <p className="text-neutral-400 italic">{t('edu_no_sessions')}</p>
                     ) : (
                       <div className="space-y-1.5">
                         {studentAttendance.slice(0, 5).map((att) => (
@@ -688,7 +687,7 @@ export const EducationStudentsView: React.FC = () => {
                   {/* Academic Grades */}
                   <div>
                     <h3 className="text-xs font-bold text-neutral-900 dark:text-white uppercase tracking-wider mb-2">
-                      Evaluations & Grades
+                      {t('edu_tab_gradebook')}
                     </h3>
                     {studentGrades.length === 0 ? (
                       <p className="text-neutral-400 italic">No grades recorded yet.</p>
@@ -738,13 +737,13 @@ export const EducationStudentsView: React.FC = () => {
 
                       <div className="grid grid-cols-2 gap-2 text-xs">
                         <div className="p-2.5 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800">
-                          <span className="text-neutral-400 block text-[10px]">Agreed Tuition</span>
+                          <span className="text-neutral-400 block text-[10px]">{t('edu_field_tuition_fee')}</span>
                           <span className="font-bold text-neutral-900 dark:text-white">
                             {formatMoney(enr.agreedTuition)}
                           </span>
                         </div>
                         <div className="p-2.5 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800">
-                          <span className="text-neutral-400 block text-[10px]">Balance Due</span>
+                          <span className="text-neutral-400 block text-[10px]">{t('edu_fin_receivables')}</span>
                           <span className="font-bold text-rose-600 dark:text-rose-400">
                             {formatMoney(enr.balanceDue)}
                           </span>
@@ -775,7 +774,7 @@ export const EducationStudentsView: React.FC = () => {
                                     : 'bg-neutral-100 text-neutral-500'
                                 }`}
                               >
-                                {inst.isPaid ? 'Paid' : 'Unpaid'}
+                                {inst.isPaid ? t('edu_tuition_paid') : t('edu_tuition_unpaid')}
                               </span>
                             </div>
                           </div>
@@ -790,7 +789,7 @@ export const EducationStudentsView: React.FC = () => {
                         }}
                         className="w-full py-2 text-xs font-semibold text-center text-[#C4785A] bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-700/60 rounded-xl transition-colors cursor-pointer shadow-2xs"
                       >
-                        Record Payment in Finance Hub →
+                        {t('edu_btn_log_payment')} →
                       </button>
                     </div>
                   ))}
@@ -801,7 +800,7 @@ export const EducationStudentsView: React.FC = () => {
                 <div className="p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-[#F8F9FA] dark:bg-neutral-900/60 space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="font-bold text-neutral-900 dark:text-white">
-                      Guardian / Emergency Contact
+                      {t('edu_drawer_guardian')}
                     </span>
                     <Shield size={16} className="text-[#C4785A]" />
                   </div>
@@ -809,19 +808,19 @@ export const EducationStudentsView: React.FC = () => {
                   {selectedStudent.guardianName ? (
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-neutral-500">Name:</span>
+                        <span className="text-neutral-500">{t('edu_field_guardian_name')}:</span>
                         <span className="font-semibold text-neutral-900 dark:text-white">
                           {selectedStudent.guardianName}
                         </span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-neutral-500">Relationship:</span>
+                        <span className="text-neutral-500">{t('edu_field_guardian_relation')}:</span>
                         <span className="font-semibold text-neutral-900 dark:text-white">
-                          {selectedStudent.guardianRelation || 'Father / Mother'}
+                          {selectedStudent.guardianRelation || 'Parent'}
                         </span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-neutral-500">Phone:</span>
+                        <span className="text-neutral-500">{t('edu_field_guardian_phone')}:</span>
                         <a
                           href={`tel:${selectedStudent.guardianPhone}`}
                           className="font-semibold text-[#C4785A] hover:underline"
@@ -842,7 +841,7 @@ export const EducationStudentsView: React.FC = () => {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="font-bold text-neutral-900 dark:text-white">
-                      Issued Certificates
+                      {t('edu_drawer_certificates')}
                     </span>
                     <button
                       type="button"
@@ -850,7 +849,7 @@ export const EducationStudentsView: React.FC = () => {
                       className="px-2.5 py-1.5 rounded-lg bg-[#C4785A] text-white text-xs font-semibold flex items-center gap-1 cursor-pointer hover:opacity-90"
                     >
                       <Plus size={12} />
-                      <span>Issue Certificate</span>
+                      <span>{t('edu_btn_issue_certificate')}</span>
                     </button>
                   </div>
 
@@ -859,7 +858,7 @@ export const EducationStudentsView: React.FC = () => {
                       <Award size={32} className="mx-auto text-neutral-300 dark:text-neutral-600 mb-2" />
                       <p className="text-neutral-400 italic">No certificates issued yet.</p>
                       <p className="text-[11px] text-neutral-500 mt-1">
-                        Graduating learners receive verifiable cryptographic credentials.
+                        {t('edu_cert_security_sub')}
                       </p>
                     </div>
                   ) : (
@@ -900,7 +899,7 @@ export const EducationStudentsView: React.FC = () => {
           <div className="relative w-full max-w-lg bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl border border-neutral-200 dark:border-neutral-800 p-6 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-4 border-b border-neutral-100 dark:border-neutral-800">
               <h2 className="text-base font-bold text-neutral-900 dark:text-white">
-                {studentToEdit ? 'Edit Student Profile' : 'Enroll New Student'}
+                {studentToEdit ? t('edu_modal_edit_student') : t('edu_modal_add_student')}
               </h2>
               <button
                 type="button"
@@ -914,7 +913,7 @@ export const EducationStudentsView: React.FC = () => {
             <form onSubmit={handleSaveStudent} className="space-y-4 pt-4 text-xs">
               <LabelInput
                 id="student-fullname"
-                label="Full Name"
+                label={t('edu_field_fullname')}
                 required
                 value={formData.fullName}
                 onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
@@ -924,7 +923,7 @@ export const EducationStudentsView: React.FC = () => {
               <div className="grid grid-cols-2 gap-3">
                 <LabelInput
                   id="student-phone"
-                  label="Phone Number"
+                  label={t('edu_field_phone')}
                   type="tel"
                   required
                   value={formData.phone}
@@ -933,7 +932,7 @@ export const EducationStudentsView: React.FC = () => {
                 />
                 <LabelInput
                   id="student-email"
-                  label="Email Address"
+                  label={t('edu_field_email')}
                   type="email"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -944,13 +943,13 @@ export const EducationStudentsView: React.FC = () => {
               <div className="grid grid-cols-2 gap-3">
                 <LabelInput
                   id="student-grade"
-                  label="Grade / Level"
+                  label={t('edu_field_school_grade')}
                   value={formData.schoolGrade}
                   onChange={(e) => setFormData({ ...formData, schoolGrade: e.target.value })}
                   placeholder="e.g. 3AS Math / Adult"
                 />
                 <LabelSelect
-                  label="Enrollment Status"
+                  label={t('edu_filter_status')}
                   value={formData.status}
                   onChange={(val) =>
                     setFormData({
@@ -959,17 +958,17 @@ export const EducationStudentsView: React.FC = () => {
                     })
                   }
                   options={[
-                    { value: 'Active', label: 'Active' },
-                    { value: 'Applicant', label: 'Applicant' },
-                    { value: 'Graduated', label: 'Graduated' },
-                    { value: 'Suspended', label: 'Suspended' },
+                    { value: 'Active', label: t('edu_status_active') },
+                    { value: 'Applicant', label: t('edu_stage_inquiry') },
+                    { value: 'Graduated', label: t('edu_status_graduated') },
+                    { value: 'Suspended', label: t('edu_status_paused') },
                   ]}
                 />
               </div>
 
               {!studentToEdit && eduCohorts.length > 0 && (
                 <LabelSelect
-                  label="Initial Cohort Enrollment"
+                  label={t('edu_field_initial_cohort')}
                   value={formData.initialCohortId}
                   onChange={(val) =>
                     setFormData({
@@ -997,7 +996,7 @@ export const EducationStudentsView: React.FC = () => {
                     onChange={(e) => setFormData({ ...formData, isMinor: e.target.checked })}
                     className="rounded text-[#C4785A] focus:ring-[#C4785A]"
                   />
-                  <span>Student is a minor or has linked guardian</span>
+                  <span>{t('edu_field_is_minor')}</span>
                 </label>
 
                 {formData.isMinor && (
@@ -1005,13 +1004,13 @@ export const EducationStudentsView: React.FC = () => {
                     <div className="grid grid-cols-2 gap-3">
                       <LabelInput
                         id="guardian-name"
-                        label="Guardian Name"
+                        label={t('edu_field_guardian_name')}
                         value={formData.guardianName}
                         onChange={(e) => setFormData({ ...formData, guardianName: e.target.value })}
                         placeholder="e.g. Karim Mansouri"
                       />
                       <LabelSelect
-                        label="Guardian Relationship"
+                        label={t('edu_field_guardian_relation')}
                         value={formData.guardianRelation}
                         onChange={(val) =>
                           setFormData({
@@ -1029,7 +1028,7 @@ export const EducationStudentsView: React.FC = () => {
                     </div>
                     <LabelInput
                       id="guardian-phone"
-                      label="Guardian Phone (Emergency Contact)"
+                      label={t('edu_field_guardian_phone')}
                       type="tel"
                       value={formData.guardianPhone}
                       onChange={(e) => setFormData({ ...formData, guardianPhone: e.target.value })}
@@ -1045,13 +1044,13 @@ export const EducationStudentsView: React.FC = () => {
                   onClick={() => setIsAddModalOpen(false)}
                   className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 font-semibold cursor-pointer"
                 >
-                  Cancel
+                  {t('common_cancel')}
                 </button>
                 <button
                   type="submit"
                   className="px-5 py-2 rounded-xl bg-[#C4785A] text-white font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
                 >
-                  {studentToEdit ? 'Save Changes' : 'Enroll Student'}
+                  {t('edu_btn_save_student')}
                 </button>
               </div>
             </form>

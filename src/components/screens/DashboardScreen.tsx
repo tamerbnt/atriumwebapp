@@ -914,12 +914,12 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
               <div className="text-[11px] font-semibold text-[#64748B] dark:text-neutral-400 flex items-center gap-1.5">
                 <Clock size={13} className="text-neutral-400" />
                 <span>
-                  {isSalon ? t('dash_salon_chair_utilization', language) : isPOS ? 'Average Basket' : 'Moyenne Semaine'}
+                  {isSalon ? t('dash_salon_chair_utilization', language) : isPOS ? (language === 'ar' ? 'متوسط الفاتورة' : language === 'fr' ? 'Panier moyen' : 'Average Basket') : 'Moyenne Semaine'}
                 </span>
               </div>
               <div className="mt-1 flex items-center gap-1.5">
                 <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
-                  ↗ {isPOS ? 'Healthy' : '+8.5%'}
+                  ↗ {isPOS ? (language === 'ar' ? 'مستقر' : language === 'fr' ? 'Stable' : 'Healthy') : '+8.5%'}
                 </span>
               </div>
               <div className="text-xl font-black text-neutral-900 dark:text-white mt-1 tabular-nums font-mono">
@@ -931,7 +931,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
               <div className="text-[11px] font-semibold text-[#64748B] dark:text-neutral-400 flex items-center gap-1.5">
                 <TrendingUp size={13} className="text-neutral-400" />
                 <span>
-                  {isSalon ? t('dash_salon_daily_sales', language) : isPOS ? 'Low Stock Depletion' : 'Objectif Mensuel'}
+                  {isSalon ? t('dash_salon_daily_sales', language) : isPOS ? (language === 'ar' ? 'تنبيهات المخزون' : language === 'fr' ? 'Ruptures de stock' : 'Low Stock Depletion') : 'Objectif Mensuel'}
                 </span>
               </div>
               <div className="mt-1 flex items-center gap-1.5">
@@ -942,13 +942,13 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                 }`}>
                   {isPOS
                     ? posMetrics.lowStockCount > 0
-                      ? `⚠ ${posMetrics.lowStockCount} need reorder`
-                      : '✓ Stock Balanced'
+                      ? (language === 'ar' ? `⚠ ${posMetrics.lowStockCount} بحاجة للطلب` : language === 'fr' ? `⚠ ${posMetrics.lowStockCount} à réapprovisionner` : `⚠ ${posMetrics.lowStockCount} need reorder`)
+                      : (language === 'ar' ? '✓ المخزون متوازن' : language === 'fr' ? '✓ Stock équilibré' : '✓ Stock Balanced')
                     : '↗ On Track'}
                 </span>
               </div>
               <div className="text-xl font-black text-neutral-900 dark:text-white mt-1 tabular-nums">
-                {isSalon ? formatMoney(salonMetrics.totalDailyRev) : isPOS ? `${posMetrics.lowStockCount} items` : '84.5%'}
+                {isSalon ? formatMoney(salonMetrics.totalDailyRev) : isPOS ? `${posMetrics.lowStockCount} ${language === 'ar' ? 'أصناف' : language === 'fr' ? 'articles' : 'items'}` : '84.5%'}
               </div>
             </div>
           </div>
@@ -1109,11 +1109,11 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                   <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[126px]">
                     <div>
                       <span className="text-[11px] font-semibold text-[#64748B] dark:text-neutral-400">
-                        Total POS Revenue
+                        {language === 'ar' ? 'إجمالي مداخيل الكاشير' : language === 'fr' ? 'Chiffre d\'Affaires Caisse' : 'Total POS Revenue'}
                       </span>
                       <div className="mt-0.5">
                         <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
-                          ↗ 100% Settled
+                          ↗ {language === 'ar' ? '100% مدفوع بالكامل' : language === 'fr' ? '100% Encaissé' : '100% Settled'}
                         </span>
                       </div>
                     </div>
@@ -1128,20 +1128,20 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                   <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[126px]">
                     <div>
                       <span className="text-[11px] font-semibold text-[#64748B] dark:text-neutral-400">
-                        Store Inventory SKUs
+                        {language === 'ar' ? 'أصناف المتجر المخزنة' : language === 'fr' ? 'Références Produits en Stock' : 'Store Inventory SKUs'}
                       </span>
                       <div className="mt-0.5">
                         <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
-                          Catalog In Stock
+                          {language === 'ar' ? 'متوفر في الكتالوج' : language === 'fr' ? 'Catalogue en Stock' : 'Catalog In Stock'}
                         </span>
                       </div>
                     </div>
                     <div className="relative">
                       <div className="text-xl font-black text-neutral-900 dark:text-white tabular-nums">
-                        {products.length} Products
+                        {products.length} {language === 'ar' ? 'منتجات' : language === 'fr' ? 'produits' : 'Products'}
                       </div>
                       <div className="text-[10px] text-neutral-400 mt-1">
-                        {products.reduce((a, b) => a + b.stockQuantity, 0)} units total
+                        {products.reduce((a, b) => a + b.stockQuantity, 0)} {language === 'ar' ? 'قطعة إجمالاً' : language === 'fr' ? 'unités au total' : 'units total'}
                       </div>
                     </div>
                   </div>
@@ -1149,17 +1149,17 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                   <div className="p-4 rounded-[20px] bg-[#18181B] border border-neutral-800 text-white flex flex-col justify-between h-[126px] shadow-sm">
                     <div>
                       <span className="text-[11px] font-medium text-neutral-300">
-                        Depletion Warning
+                        {language === 'ar' ? 'تنبيه النفاذ وإعادة التوريد' : language === 'fr' ? 'Alerte Seuil de Réapprovisionnement' : 'Depletion Warning'}
                       </span>
                       <div className="mt-0.5">
                         <span className="text-[10px] font-bold text-amber-300 bg-amber-400/20 px-2 py-0.5 rounded-full">
-                          {posMetrics.lowStockCount} below reorder level
+                          {posMetrics.lowStockCount} {language === 'ar' ? 'دون حد التنبيه' : language === 'fr' ? 'sous le seuil d\'alerte' : 'below reorder level'}
                         </span>
                       </div>
                     </div>
                     <div>
                       <div className="text-xl font-black text-white tabular-nums">
-                        {posMetrics.lowStockCount} Alerts
+                        {posMetrics.lowStockCount} {language === 'ar' ? 'تنبيهات' : language === 'fr' ? 'alertes' : 'Alerts'}
                       </div>
                       <div className="w-full h-0.5 bg-amber-500 mt-2.5 rounded-full opacity-80" />
                     </div>
@@ -1172,14 +1172,14 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                     <div className="flex items-center justify-between text-xs">
                       <div className="flex items-center gap-2 font-bold text-neutral-900 dark:text-white">
                         <Sparkles size={14} className="text-[#C4785A]" />
-                        <span>Top Selling Products & Revenue Drivers</span>
+                        <span>{language === 'ar' ? 'أفضل المنتجات مبيعاً وأكثرها تحقيقاً للمداخيل' : language === 'fr' ? 'Meilleures Ventes & Produits Phares' : 'Top Selling Products & Revenue Drivers'}</span>
                       </div>
                       <button
                         type="button"
                         onClick={() => setScreen('shop')}
-                        className="text-[11px] font-bold text-[#C4785A] hover:underline"
+                        className="text-[11px] font-bold text-[#C4785A] hover:underline cursor-pointer"
                       >
-                        Manage All SKUs →
+                        {language === 'ar' ? 'إدارة كافة المنتجات ←' : language === 'fr' ? 'Gérer tous les articles →' : 'Manage All SKUs →'}
                       </button>
                     </div>
 
@@ -1194,7 +1194,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                               {tp.name}
                             </div>
                             <div className="text-[10px] text-neutral-400">
-                              {tp.quantity} units sold
+                              {tp.quantity} {language === 'ar' ? 'قطع مباعة' : language === 'fr' ? 'unités vendues' : 'units sold'}
                             </div>
                           </div>
                           <div className="text-xs font-mono font-bold text-[#C4785A] shrink-0">
@@ -1544,13 +1544,13 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                   sales.length === 0 ? (
                     <div className="py-8 text-center text-xs text-neutral-400 space-y-2">
                       <Receipt size={24} className="mx-auto opacity-40" />
-                      <p>No register sales recorded yet today.</p>
+                      <p>{language === 'ar' ? 'لم تسجل أي مبيعات في الكاشير اليوم بعد.' : language === 'fr' ? 'Aucune vente de caisse enregistrée aujourd\'hui.' : 'No register sales recorded yet today.'}</p>
                       <button
                         type="button"
                         onClick={() => setScreen('shop')}
-                        className="px-4 py-1.5 rounded-full bg-[#C4785A] text-white text-xs font-bold hover:opacity-90"
+                        className="px-4 py-1.5 rounded-full bg-[#C4785A] text-white text-xs font-bold hover:opacity-90 cursor-pointer"
                       >
-                        Open POS Register
+                        {language === 'ar' ? 'فتح شاشة الكاشير' : language === 'fr' ? 'Ouvrir la caisse POS' : 'Open POS Register'}
                       </button>
                     </div>
                   ) : (
@@ -1566,10 +1566,10 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                           </div>
                           <div className="min-w-0">
                             <span className="text-xs font-bold text-neutral-900 dark:text-white truncate block group-hover:text-[#C4785A] transition-colors">
-                              {sale.memberName || 'Walk-in Customer'}
+                              {sale.memberName || (language === 'ar' ? 'زبون عابر' : language === 'fr' ? 'Client de passage' : 'Walk-in Customer')}
                             </span>
                             <span className="text-[10px] text-neutral-400 font-mono">
-                              #{sale.id.slice(-6).toUpperCase()} · {sale.items.length} {sale.items.length === 1 ? 'item' : 'items'}
+                              #{sale.id.slice(-6).toUpperCase()} · {sale.items.length} {sale.items.length === 1 ? (language === 'ar' ? 'عنصر' : language === 'fr' ? 'article' : 'item') : (language === 'ar' ? 'عناصر' : language === 'fr' ? 'articles' : 'items')}
                             </span>
                           </div>
                         </div>

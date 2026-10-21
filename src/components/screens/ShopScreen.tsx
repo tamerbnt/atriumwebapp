@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   ShoppingBag,
   Plus,
@@ -16,38 +16,31 @@ import {
   List,
   ChevronDown,
   Building2,
-  X,
   Check,
-  AlertTriangle,
   Sparkles,
   Barcode,
   Printer,
-  Laptop,
   PauseCircle,
   PlayCircle,
   ArrowRight,
   ArrowDownUp,
   Tag,
-  SlidersHorizontal,
   Volume2,
   VolumeX,
-  RefreshCw,
   Coins,
   Split,
   Edit2,
   Settings2,
-  FileText,
-  Phone,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../services/store';
-import { Product, PaymentDetail, ParkedOrder, StockMovement, ReceiptConfig } from '../../types/index';
+import { Product, PaymentDetail, ParkedOrder, StockMovement } from '../../types/index';
 import { formatMoney } from '../../utils/rules';
 import { Modal } from '../ui/Modal';
 import { Seek } from '../ui/Seek';
 import { LabelInput } from '../ui/LabelInput';
 import { LabelSelect } from '../ui/LabelSelect';
 import { FilterSelect } from '../ui/FilterSelect';
-import { t } from '../../utils/i18n';
+import { useTranslation } from '../../utils/useTranslation';
 
 interface CartItem {
   product: Product;
@@ -76,20 +69,16 @@ const playBeep = (freq = 880, duration = 0.08) => {
 };
 
 export const ShopScreen: React.FC = () => {
+  const { t, language, isRtl } = useTranslation();
+
   const {
     products,
     members,
     staff,
-    terminology,
     currentBranch,
-    currentBusiness,
-    businesses,
     branches,
-    currentBusinessId,
-    switchBusiness,
     switchBranch,
     processSale,
-    refundSale,
     adjustStock,
     addProduct,
     updateProduct,
@@ -102,8 +91,6 @@ export const ShopScreen: React.FC = () => {
     receiptConfig,
     updateReceiptConfig,
     seedDemoInventory,
-    openDesktopUpgradeModal,
-    language,
   } = useAtriumStore();
 
   // Active top-level subtab
@@ -142,107 +129,108 @@ export const ShopScreen: React.FC = () => {
     { method: 'Card', amount: 0 },
   ]);
 
-  // Completed sale receipt preview
-  const [completedSale, setCompletedSale] = useState<any | null>(null);
+  // Completed sale modal for thermal slip preview
+  const [completedSale, setCompletedSale] = useState<any>(null);
 
-  // Stock management state
-  const [stockStatusFilter, setStockStatusFilter] = useState<'all' | 'low' | 'out'>('all');
-  const [isAdjustStockModalOpen, setIsAdjustStockModalOpen] = useState(false);
-  const [selectedProductForAdjust, setSelectedProductForAdjust] = useState<Product | null>(null);
-  const [adjustQuantity, setAdjustQuantity] = useState<number>(10);
-  const [adjustMode, setAdjustMode] = useState<'add' | 'remove' | 'set'>('add');
-  const [adjustReason, setAdjustReason] = useState<string>('Supplier Delivery Restock');
-
-  // Add / Edit Product modal
-  const [isProductFormModalOpen, setIsProductFormModalOpen] = useState(false);
-  const [editingProductId, setEditingProductId] = useState<string | null>(null);
-  const [formName, setFormName] = useState('');
-  const [formCategory, setFormCategory] = useState('Beverage');
-  const [formSku, setFormSku] = useState('SKU-');
-  const [formBarcode, setFormBarcode] = useState('');
-  const [formPrice, setFormPrice] = useState(1200);
-  const [formCost, setFormCost] = useState(800);
-  const [formStock, setFormStock] = useState(30);
-  const [formReorder, setFormReorder] = useState(10);
-  const [formUnit, setFormUnit] = useState('pcs');
-  const [formTaxRate, setFormTaxRate] = useState(19);
-
-  // Hold order modal
+  // Hold / Park Order Modal
   const [isHoldOrderModalOpen, setIsHoldOrderModalOpen] = useState(false);
   const [holdOrderRefName, setHoldOrderRefName] = useState('');
   const [holdOrderNotes, setHoldOrderNotes] = useState('');
 
-  // Scanner input ref
-  const scannerInputRef = useRef<HTMLInputElement>(null);
+  // Inventory Filter state
+  const [stockStatusFilter, setStockStatusFilter] = useState<'all' | 'low' | 'out'>('all');
 
-  // Dynamic categories
+  // Stock Adjustment Modal
+  const [isAdjustStockModalOpen, setIsAdjustStockModalOpen] = useState(false);
+  const [selectedProductForAdjust, setSelectedProductForAdjust] = useState<Product | null>(null);
+  const [adjustQuantity, setAdjustQuantity] = useState<number>(10);
+  const [adjustMode, setAdjustMode] = useState<'add' | 'remove' | 'set'>('add');
+  const [adjustReason, setAdjustReason] = useState<string>('');
+
+  // Add / Edit Product Modal
+  const [isProductFormModalOpen, setIsProductFormModalOpen] = useState(false);
+  const [editingProductId, setEditingProductId] = useState<string | null>(null);
+  const [formName, setFormName] = useState('');
+  const [formCategory, setFormCategory] = useState('Beverage');
+  const [formSku, setFormSku] = useState('');
+  const [formBarcode, setFormBarcode] = useState('');
+  const [formPrice, setFormPrice] = useState<number>(1500);
+  const [formCost, setFormCost] = useState<number>(900);
+  const [formStock, setFormStock] = useState<number>(25);
+  const [formReorder, setFormReorder] = useState<number>(5);
+  const [formUnit, setFormUnit] = useState('pcs');
+  const [formTaxRate, setFormTaxRate] = useState<number>(19);
+
+  // Unique categories in catalog
   const categories = useMemo(() => {
-    const set = new Set<string>(['All']);
+    const set = new Set<string>();
     products.forEach((p) => {
       if (p.category) set.add(p.category);
     });
-    // Add default fallbacks if none exist
-    ['Beverage', 'Grocery', 'Bakery', 'General'].forEach((c) => set.add(c));
-    return Array.from(set);
+    return ['All', ...Array.from(set)];
   }, [products]);
 
-  // Filtered products for register
+  // Filtered products in Register
   const filteredProducts = useMemo(() => {
     return products.filter((p) => {
-      if (categoryFilter !== 'All' && p.category !== categoryFilter) return false;
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase();
-        const matchesName = p.name.toLowerCase().includes(q);
-        const matchesSku = p.sku.toLowerCase().includes(q);
-        const matchesBarcode = p.barcode ? p.barcode.toLowerCase().includes(q) : false;
-        if (!matchesName && !matchesSku && !matchesBarcode) return false;
-      }
-      return true;
+      const matchCat = categoryFilter === 'All' || p.category === categoryFilter;
+      const matchSearch =
+        searchQuery === '' ||
+        p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.sku.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (p.barcode && p.barcode.toLowerCase().includes(searchQuery.toLowerCase()));
+      return matchCat && matchSearch;
     });
   }, [products, categoryFilter, searchQuery]);
 
-  // Filtered inventory list
+  // Filtered products in Inventory Tab
   const filteredInventory = useMemo(() => {
     return products.filter((p) => {
-      if (categoryFilter !== 'All' && p.category !== categoryFilter) return false;
-      if (stockStatusFilter === 'low' && p.stockQuantity > (p.reorderLevel || 5)) return false;
-      if (stockStatusFilter === 'out' && p.stockQuantity > 0) return false;
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase();
-        const matchesName = p.name.toLowerCase().includes(q);
-        const matchesSku = p.sku.toLowerCase().includes(q);
-        const matchesBarcode = p.barcode ? p.barcode.toLowerCase().includes(q) : false;
-        if (!matchesName && !matchesSku && !matchesBarcode) return false;
-      }
-      return true;
+      const matchCat = categoryFilter === 'All' || p.category === categoryFilter;
+      const isOut = p.stockQuantity <= 0;
+      const isLow = !isOut && p.stockQuantity <= (p.reorderLevel || 5);
+
+      if (stockStatusFilter === 'out') return matchCat && isOut;
+      if (stockStatusFilter === 'low') return matchCat && isLow;
+      return matchCat;
     });
-  }, [products, categoryFilter, stockStatusFilter, searchQuery]);
+  }, [products, categoryFilter, stockStatusFilter]);
 
   // Inventory valuation KPIs
   const inventoryStats = useMemo(() => {
-    const totalSKUs = products.length;
-    const totalUnits = products.reduce((acc, p) => acc + p.stockQuantity, 0);
-    const retailValuation = products.reduce((acc, p) => acc + p.price.amount * p.stockQuantity, 0);
-    const costValuation = products.reduce((acc, p) => acc + (p.costPrice || p.cost?.amount || 0) * p.stockQuantity, 0);
-    const lowStockItems = products.filter((p) => p.stockQuantity > 0 && p.stockQuantity <= (p.reorderLevel || 5)).length;
-    const outOfStockItems = products.filter((p) => p.stockQuantity <= 0).length;
+    let totalSKUs = products.length;
+    let totalUnits = 0;
+    let retailValuation = 0;
+    let costValuation = 0;
+    let lowStockItems = 0;
+    let outOfStockItems = 0;
+
+    products.forEach((p) => {
+      totalUnits += p.stockQuantity;
+      retailValuation += p.price.amount * p.stockQuantity;
+      const c = p.costPrice || p.cost?.amount || Math.round(p.price.amount * 0.6);
+      costValuation += c * p.stockQuantity;
+      if (p.stockQuantity <= 0) {
+        outOfStockItems++;
+      } else if (p.stockQuantity <= (p.reorderLevel || 5)) {
+        lowStockItems++;
+      }
+    });
+
     return {
       totalSKUs,
       totalUnits,
       retailValuation,
       costValuation,
-      potentialProfit: retailValuation - costValuation,
+      potentialProfit: Math.max(0, retailValuation - costValuation),
       lowStockItems,
       outOfStockItems,
     };
   }, [products]);
 
-  // Cart calculations
+  // Cart financial calculations
   const cartSubtotal = useMemo(() => {
-    return cart.reduce((sum, item) => {
-      const lineTotal = item.product.price.amount * item.quantity;
-      return sum + Math.max(0, lineTotal - item.discount);
-    }, 0);
+    return cart.reduce((acc, item) => acc + item.product.price.amount * item.quantity, 0);
   }, [cart]);
 
   const discountAmount = useMemo(() => {
@@ -303,8 +291,8 @@ export const ShopScreen: React.FC = () => {
       if (soundEnabled) playBeep(330, 0.2); // error low beep
       showToast({
         type: 'warning',
-        title: 'Product Not Found',
-        message: `No item found matching Barcode or SKU "${barcodeQuery}".`,
+        title: t('shop_toast_not_found_title'),
+        message: t('shop_toast_not_found_msg', { query: barcodeQuery }),
       });
     }
   };
@@ -314,8 +302,8 @@ export const ShopScreen: React.FC = () => {
     if (product.stockQuantity <= 0) {
       showToast({
         type: 'warning',
-        title: 'Out of Stock',
-        message: `"${product.name}" is currently sold out and unavailable.`,
+        title: t('shop_toast_out_of_stock_title'),
+        message: t('shop_toast_out_of_stock_msg', { name: product.name }),
       });
       return;
     }
@@ -325,8 +313,8 @@ export const ShopScreen: React.FC = () => {
         if (existing.quantity >= product.stockQuantity) {
           showToast({
             type: 'warning',
-            title: 'Max Stock Reached',
-            message: `Cannot exceed available inventory limit (${product.stockQuantity} units).`,
+            title: t('shop_toast_max_stock_title'),
+            message: t('shop_toast_max_stock_msg', { limit: product.stockQuantity }),
           });
           return prev;
         }
@@ -349,8 +337,8 @@ export const ShopScreen: React.FC = () => {
             if (newQty > item.product.stockQuantity) {
               showToast({
                 type: 'warning',
-                title: 'Inventory Cap',
-                message: `Maximum in-stock count for this item is ${item.product.stockQuantity} units.`,
+                title: t('shop_toast_max_stock_title'),
+                message: t('shop_toast_max_stock_msg', { limit: item.product.stockQuantity }),
               });
               return item;
             }
@@ -366,17 +354,19 @@ export const ShopScreen: React.FC = () => {
   const updateLineDiscount = (productId: string, discount: number) => {
     setCart((prev) =>
       prev.map((item) =>
-        item.product.id === productId ? { ...item, discount: Math.max(0, discount) } : item
+        item.product.id === productId
+          ? { ...item, discount: Math.max(0, Math.min(item.product.price.amount * item.quantity, discount)) }
+          : item
       )
     );
   };
 
-  // Remove from cart
+  // Remove item
   const removeFromCart = (productId: string) => {
     setCart((prev) => prev.filter((item) => item.product.id !== productId));
   };
 
-  // Quick custom item addition
+  // Quick custom item submission
   const handleAddCustomItem = (e: React.FormEvent) => {
     e.preventDefault();
     if (!customItemName.trim() || customItemPrice <= 0) return;
@@ -422,8 +412,8 @@ export const ShopScreen: React.FC = () => {
     if (checkoutMode === 'split' && splitRemaining !== 0) {
       showToast({
         type: 'warning',
-        title: 'Payment Mismatch',
-        message: `Split payments total must equal the cart total exactly. Remaining balance: ${splitRemaining} DA`,
+        title: t('shop_toast_split_mismatch_title'),
+        message: t('shop_toast_split_mismatch_msg', { remaining: formatMoney(splitRemaining) }),
       });
       return;
     }
@@ -444,7 +434,7 @@ export const ShopScreen: React.FC = () => {
         changeGiven: changeDue,
         cashierName: selectedCashierName,
         customerPhone: checkoutCustomerPhone || customer?.phoneNumber,
-        customerName: customer?.fullName || 'Walk-in Customer',
+        customerName: customer?.fullName || t('shop_receipt_walkin'),
       }
     );
 
@@ -458,11 +448,14 @@ export const ShopScreen: React.FC = () => {
 
     showToast({
       type: 'success',
-      title: 'Payment Settled',
-      message: `Receipt #${sale.id.slice(-6).toUpperCase()} processed (${sale.totalAmount.toLocaleString()} DZD).`,
+      title: t('shop_toast_settled_title'),
+      message: t('shop_toast_settled_msg', {
+        id: sale.id.slice(-6).toUpperCase(),
+        amount: formatMoney(sale.totalAmount),
+      }),
       category: 'pos_inventory',
       action: {
-        label: 'Receipt',
+        label: t('shop_receipt_printed'),
         onClick: () => window.print?.(),
       },
     });
@@ -475,12 +468,12 @@ export const ShopScreen: React.FC = () => {
     const customer = members.find((m) => m.id === selectedCustomerId);
     const ref =
       holdOrderRefName.trim() ||
-      (customer ? `${customer.fullName} (#${cart.length} items)` : `Held Order #${Date.now().toString().slice(-4)}`);
+      (customer ? `${customer.fullName} (#${cart.length})` : `Held #${Date.now().toString().slice(-4)}`);
 
     parkOrder({
       referenceName: ref,
       customerId: selectedCustomerId || undefined,
-      customerName: customer?.fullName || 'Walk-in Customer',
+      customerName: customer?.fullName || t('shop_receipt_walkin'),
       customerPhone: customer?.phoneNumber,
       subtotal: cartSubtotal,
       discount: discountAmount,
@@ -508,17 +501,15 @@ export const ShopScreen: React.FC = () => {
     setIsHoldOrderModalOpen(false);
     showToast({
       type: 'info',
-      title: 'Order Parked',
-      message: 'Order held successfully. You can resume it anytime from the Held Orders tab.',
+      title: t('shop_toast_parked_title'),
+      message: t('shop_toast_parked_msg'),
     });
   };
 
   // Resume parked order
   const handleResumeOrder = (parked: ParkedOrder) => {
     if (cart.length > 0) {
-      const confirmReplace = window.confirm(
-        'The register currently has active items. Replace active cart with held order?'
-      );
+      const confirmReplace = window.confirm(t('shop_confirm_replace_cart'));
       if (!confirmReplace) return;
     }
 
@@ -699,7 +690,7 @@ export const ShopScreen: React.FC = () => {
   };
 
   return (
-    <div className="space-y-5 pb-16">
+    <div className="space-y-5 pb-16" dir={isRtl ? 'rtl' : 'ltr'}>
       {/* Print stylesheet for thermal receipt */}
       <style>{`
         @media print {
@@ -730,14 +721,14 @@ export const ShopScreen: React.FC = () => {
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-black text-neutral-900 dark:text-white tracking-tight flex items-center gap-2.5">
               <ShoppingBag className="text-[#C4785A]" size={26} />
-              <span>{t('shop_hub_title', language)}</span>
+              <span>{t('shop_hub_title')}</span>
             </h1>
             <span className="text-[11px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800">
-              {t('status_active', language)}
+              {t('status_active')}
             </span>
           </div>
           <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
-            {t('shop_hub_desc', language)}
+            {t('shop_hub_desc')}
           </p>
         </div>
 
@@ -749,19 +740,19 @@ export const ShopScreen: React.FC = () => {
             className="flex items-center gap-2.5 px-3.5 py-2 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-xs font-semibold text-neutral-800 dark:text-neutral-200 shadow-2xs hover:border-[#C4785A] transition-colors cursor-pointer"
           >
             <Building2 size={15} className="text-[#C4785A]" />
-            <div className="text-left">
-              <div className="text-[10px] uppercase font-bold text-neutral-400 leading-none">{t('shop_active_store', language)}</div>
+            <div className={isRtl ? 'text-right' : 'text-left'}>
+              <div className="text-[10px] uppercase font-bold text-neutral-400 leading-none">{t('shop_active_store')}</div>
               <div className="text-xs font-bold leading-tight truncate max-w-[150px]">
-                {currentBranch?.name || 'Main Branch'}
+                {currentBranch?.name || t('shop_main_branch')}
               </div>
             </div>
             <ChevronDown size={14} className="text-neutral-400 ml-1" />
           </button>
 
           {isFacilityDropdownOpen && (
-            <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-neutral-900 rounded-2xl shadow-xl border border-neutral-200 dark:border-neutral-800 py-1.5 z-40">
+            <div className={`absolute ${isRtl ? 'left-0' : 'right-0'} mt-2 w-64 bg-white dark:bg-neutral-900 rounded-2xl shadow-xl border border-neutral-200 dark:border-neutral-800 py-1.5 z-40`}>
               <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
-                {t('shop_select_store', language)}
+                {t('shop_select_store')}
               </div>
               {branches.map((b) => (
                 <button
@@ -771,7 +762,9 @@ export const ShopScreen: React.FC = () => {
                     switchBranch(b.id);
                     setIsFacilityDropdownOpen(false);
                   }}
-                  className={`w-full px-3 py-2 text-left text-xs flex items-center justify-between hover:bg-neutral-50 dark:hover:bg-neutral-800 cursor-pointer ${
+                  className={`w-full px-3 py-2 text-xs flex items-center justify-between hover:bg-neutral-50 dark:hover:bg-neutral-800 cursor-pointer ${
+                    isRtl ? 'text-right' : 'text-left'
+                  } ${
                     b.id === currentBranch.id ? 'font-bold text-[#C4785A] bg-neutral-50 dark:bg-neutral-800/50' : 'text-neutral-700 dark:text-neutral-300'
                   }`}
                 >
@@ -797,9 +790,9 @@ export const ShopScreen: React.FC = () => {
             }`}
           >
             <Coins size={15} />
-            <span>{t('nav_pos_register', language)}</span>
+            <span>{t('nav_pos_register')}</span>
             {cart.length > 0 && (
-              <span className="ml-1 px-1.5 py-0.2 rounded-full bg-white text-[#C4785A] text-[10px] font-black">
+              <span className="mx-1 px-1.5 py-0.2 rounded-full bg-white text-[#C4785A] text-[10px] font-black">
                 {cart.reduce((a, b) => a + b.quantity, 0)}
               </span>
             )}
@@ -815,9 +808,9 @@ export const ShopScreen: React.FC = () => {
             }`}
           >
             <PauseCircle size={15} />
-            <span>{t('shop_park_order', language)}</span>
+            <span>{t('shop_held_orders')}</span>
             {parkedOrders.length > 0 && (
-              <span className={`ml-1 px-2 py-0.5 rounded-full text-[10px] font-black ${
+              <span className={`mx-1 px-2 py-0.5 rounded-full text-[10px] font-black ${
                 activeTab === 'parked' ? 'bg-white text-[#C4785A]' : 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
               }`}>
                 {parkedOrders.length}
@@ -835,9 +828,9 @@ export const ShopScreen: React.FC = () => {
             }`}
           >
             <Package size={15} />
-            <span>{t('shop_inventory_count', language)}</span>
+            <span>{t('shop_inventory_count')}</span>
             {inventoryStats.lowStockItems > 0 && (
-              <span className="ml-1 px-1.5 py-0.5 rounded-full bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300 text-[10px] font-black">
+              <span className="mx-1 px-1.5 py-0.5 rounded-full bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300 text-[10px] font-black">
                 {inventoryStats.lowStockItems}
               </span>
             )}
@@ -853,7 +846,7 @@ export const ShopScreen: React.FC = () => {
             }`}
           >
             <Settings2 size={15} />
-            <span>{t('shop_receipt_printed', language)}</span>
+            <span>{t('shop_receipt_printed')}</span>
           </button>
         </div>
 
@@ -862,7 +855,7 @@ export const ShopScreen: React.FC = () => {
           <button
             type="button"
             onClick={() => setSoundEnabled(!soundEnabled)}
-            title={soundEnabled ? 'Beep sound enabled' : 'Muted'}
+            title={soundEnabled ? t('shop_sound_enabled_tip') : t('shop_sound_muted_tip')}
             className={`p-2 rounded-xl border text-xs cursor-pointer transition-colors ${
               soundEnabled
                 ? 'border-emerald-300 text-emerald-600 dark:border-emerald-800 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40'
@@ -889,7 +882,7 @@ export const ShopScreen: React.FC = () => {
               <div className="flex-1">
                 <LabelInput
                   field="Barcode"
-                  label="Scan or type Barcode / SKU and hit Enter..."
+                  label={t('shop_barcode_label')}
                   value={barcodeQuery}
                   onChange={(val) => setBarcodeQuery(val?.target?.value ?? String(val))}
                   width="100%"
@@ -900,9 +893,9 @@ export const ShopScreen: React.FC = () => {
               </div>
               <button
                 type="submit"
-                className="px-4 py-2.5 rounded-xl bg-[#C4785A] text-white text-xs font-bold hover:opacity-90 cursor-pointer transition-opacity shrink-0 mr-2"
+                className="px-4 py-2.5 rounded-xl bg-[#C4785A] text-white text-xs font-bold hover:opacity-90 cursor-pointer transition-opacity shrink-0 mx-2"
               >
-                Scan Add
+                {t('shop_scan_btn')}
               </button>
             </form>
 
@@ -913,7 +906,7 @@ export const ShopScreen: React.FC = () => {
                 <Seek
                   value={searchQuery}
                   onChange={setSearchQuery}
-                  placeholder="Search catalog by name or code..."
+                  placeholder={t('shop_search_catalog')}
                   shutSize={36}
                   openWidth={260}
                 />
@@ -922,10 +915,9 @@ export const ShopScreen: React.FC = () => {
                   type="button"
                   onClick={() => setIsCustomItemModalOpen(true)}
                   className="px-3 py-2 rounded-xl bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-200 text-xs font-bold flex items-center gap-1.5 shrink-0 cursor-pointer border border-neutral-200 dark:border-neutral-700"
-                  title="Add custom unlisted article on the fly"
                 >
                   <Tag size={13} className="text-[#C4785A]" />
-                  <span>+ Custom Item</span>
+                  <span>{t('shop_custom_item_btn')}</span>
                 </button>
               </div>
 
@@ -965,7 +957,7 @@ export const ShopScreen: React.FC = () => {
                       : 'bg-white dark:bg-neutral-900 text-neutral-600 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-800 hover:border-neutral-300'
                   }`}
                 >
-                  {cat}
+                  {cat === 'All' ? t('shop_categories_all') : cat}
                 </button>
               ))}
             </div>
@@ -975,10 +967,10 @@ export const ShopScreen: React.FC = () => {
               <div className="p-8 rounded-3xl bg-neutral-50 dark:bg-neutral-900 border border-dashed border-neutral-300 dark:border-neutral-700 text-center space-y-3">
                 <Package size={36} className="text-[#C4785A] mx-auto opacity-70" />
                 <h3 className="text-base font-bold text-neutral-900 dark:text-white">
-                  No Inventory Items in {currentBranch.name}
+                  {t('shop_empty_inventory_title', { branch: currentBranch.name })}
                 </h3>
                 <p className="text-xs text-neutral-500 max-w-md mx-auto">
-                  Seed sample retail & POS merchandise with barcodes, prices, and stock units to start ringing up sales right away.
+                  {t('shop_empty_inventory_desc')}
                 </p>
                 <button
                   type="button"
@@ -986,7 +978,7 @@ export const ShopScreen: React.FC = () => {
                   className="px-5 py-2.5 rounded-full bg-[#C4785A] text-white text-xs font-bold hover:opacity-90 cursor-pointer shadow-xs inline-flex items-center gap-2"
                 >
                   <Sparkles size={14} />
-                  <span>Seed Retail Demo Catalog</span>
+                  <span>{t('shop_seed_catalog_btn')}</span>
                 </button>
               </div>
             )}
@@ -1005,7 +997,9 @@ export const ShopScreen: React.FC = () => {
                       type="button"
                       disabled={isOutOfStock}
                       onClick={() => addToCart(product)}
-                      className={`relative p-3.5 rounded-2xl text-left transition-all border cursor-pointer flex flex-col justify-between min-h-[140px] group ${
+                      className={`relative p-3.5 rounded-2xl transition-all border cursor-pointer flex flex-col justify-between min-h-[140px] group ${
+                        isRtl ? 'text-right' : 'text-left'
+                      } ${
                         isOutOfStock
                           ? 'bg-neutral-100 dark:bg-neutral-900/40 border-neutral-200 dark:border-neutral-800 opacity-60 cursor-not-allowed'
                           : inCartItem
@@ -1020,17 +1014,17 @@ export const ShopScreen: React.FC = () => {
                         </span>
                         {inCartItem && (
                           <span className="px-1.5 py-0.5 rounded-full bg-[#C4785A] text-white text-[10px] font-black">
-                            {inCartItem.quantity} in cart
+                            {t('shop_in_cart_badge', { count: inCartItem.quantity })}
                           </span>
                         )}
                         {!inCartItem && isLowStock && (
                           <span className="px-1.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-400 text-[10px] font-bold">
-                            {product.stockQuantity} left
+                            {t('shop_left_badge', { count: product.stockQuantity })}
                           </span>
                         )}
                         {!inCartItem && isOutOfStock && (
                           <span className="px-1.5 py-0.5 rounded-full bg-red-100 dark:bg-red-950 text-red-700 dark:text-red-400 text-[10px] font-bold">
-                            Sold Out
+                            {t('shop_sold_out_badge')}
                           </span>
                         )}
                       </div>
@@ -1051,7 +1045,7 @@ export const ShopScreen: React.FC = () => {
                           {formatMoney(product.price.amount)}
                         </div>
                         <div className="text-[10px] font-bold text-neutral-400">
-                          {product.stockQuantity} {product.unit || 'pcs'}
+                          {product.stockQuantity} {product.unit || t('shop_unit_pcs')}
                         </div>
                       </div>
                     </button>
@@ -1089,7 +1083,7 @@ export const ShopScreen: React.FC = () => {
                       </div>
 
                       <div className="flex items-center gap-4 shrink-0">
-                        <div className="text-right">
+                        <div className={isRtl ? 'text-left' : 'text-right'}>
                           <div className="text-xs font-black font-mono text-neutral-900 dark:text-white">
                             {formatMoney(product.price.amount)}
                           </div>
@@ -1100,7 +1094,7 @@ export const ShopScreen: React.FC = () => {
                               ? 'text-amber-600'
                               : 'text-neutral-400'
                           }`}>
-                            {product.stockQuantity} in stock
+                            {t('shop_in_stock_badge', { count: product.stockQuantity })}
                           </div>
                         </div>
 
@@ -1117,7 +1111,7 @@ export const ShopScreen: React.FC = () => {
                           }`}
                         >
                           <Plus size={13} />
-                          <span>{inCartItem ? `(${inCartItem.quantity})` : 'Add'}</span>
+                          <span>{inCartItem ? `(${inCartItem.quantity})` : t('shop_add_btn')}</span>
                         </button>
                       </div>
                     </div>
@@ -1134,10 +1128,13 @@ export const ShopScreen: React.FC = () => {
               <div>
                 <h2 className="text-base font-black text-neutral-900 dark:text-white flex items-center gap-2">
                   <Receipt size={18} className="text-[#C4785A]" />
-                  <span>{t('pos_current_order_title', language)}</span>
+                  <span>{t('pos_current_order_title')}</span>
                 </h2>
                 <div className="text-[11px] text-neutral-400">
-                  {cart.length} {language === 'ar' ? 'أصناف مختلفة' : language === 'fr' ? 'articles uniques' : 'unique items'} · {cart.reduce((a, b) => a + b.quantity, 0)} {language === 'ar' ? 'قطع' : language === 'fr' ? 'unités' : 'units'}
+                  {t('shop_unique_items_summary', {
+                    unique: cart.length,
+                    total: cart.reduce((a, b) => a + b.quantity, 0),
+                  })}
                 </div>
               </div>
 
@@ -1146,7 +1143,7 @@ export const ShopScreen: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setIsHoldOrderModalOpen(true)}
-                    title={language === 'ar' ? 'تعليق الطلب' : language === 'fr' ? 'Mettre la commande en attente' : 'Hold / Park this order to serve another customer'}
+                    title={t('shop_hold_cart_tooltip')}
                     className="p-1.5 rounded-lg text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/40 cursor-pointer"
                   >
                     <PauseCircle size={17} />
@@ -1154,7 +1151,7 @@ export const ShopScreen: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setCart([])}
-                    title={language === 'ar' ? 'تفريغ السلة' : language === 'fr' ? 'Vider le panier' : 'Clear current cart'}
+                    title={t('shop_clear_cart_tooltip')}
                     className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 cursor-pointer"
                   >
                     <Trash2 size={16} />
@@ -1166,11 +1163,11 @@ export const ShopScreen: React.FC = () => {
             {/* Customer selector (Walk-in vs Account) */}
             <LabelSelect
               field="Customer"
-              label={t('pos_customer_attribution', language)}
+              label={t('pos_customer_attribution')}
               value={selectedCustomerId}
               onChange={(val) => setSelectedCustomerId(typeof val === 'string' ? val : val.target?.value || val)}
               options={[
-                { value: '', label: t('pos_guest_walkin', language) },
+                { value: '', label: t('pos_guest_walkin') },
                 ...members.map((m) => ({
                   value: m.id,
                   label: `${m.fullName} (${m.phoneNumber})`,
@@ -1186,14 +1183,10 @@ export const ShopScreen: React.FC = () => {
                 <div className="py-12 text-center text-neutral-400 space-y-2">
                   <ShoppingBag size={32} className="mx-auto opacity-40" />
                   <p className="text-xs font-semibold">
-                    {language === 'ar' ? 'سلة الكاشير فارغة' : language === 'fr' ? 'Le panier de caisse est vide' : 'Register cart is empty'}
+                    {t('shop_cart_empty_title')}
                   </p>
                   <p className="text-[11px] text-neutral-400 max-w-[200px] mx-auto">
-                    {language === 'ar'
-                      ? 'انقر على أي منتج أو امسح الباركود للبدء في تسجيل المبيعات.'
-                      : language === 'fr'
-                      ? 'Cliquez sur un article ou scannez un code-barres pour commencer.'
-                      : 'Click any product or scan a barcode to begin ringing up sales.'}
+                    {t('shop_cart_empty_desc')}
                   </p>
                 </div>
               ) : (
@@ -1208,17 +1201,17 @@ export const ShopScreen: React.FC = () => {
                             {item.product.name}
                           </div>
                           <div className="text-[10px] text-neutral-400 font-mono">
-                            {formatMoney(item.product.price.amount)} {language === 'ar' ? 'للوحدة' : language === 'fr' ? 'l\'unité' : 'each'}
+                            {formatMoney(item.product.price.amount)} {t('shop_per_unit')}
                           </div>
                         </div>
 
-                        <div className="text-right shrink-0">
+                        <div className={`shrink-0 ${isRtl ? 'text-left' : 'text-right'}`}>
                           <div className="text-xs font-black font-mono text-neutral-900 dark:text-white">
                             {formatMoney(lineTotal)}
                           </div>
                           {item.discount > 0 && (
                             <div className="text-[10px] text-emerald-600 font-bold">
-                              -{formatMoney(item.discount)} {language === 'ar' ? 'خصم' : 'remise'}
+                              {t('shop_discount_badge', { amount: formatMoney(item.discount) })}
                             </div>
                           )}
                         </div>
@@ -1250,11 +1243,12 @@ export const ShopScreen: React.FC = () => {
                           <input
                             type="number"
                             min="0"
-                            placeholder={language === 'ar' ? 'خصم (د.ج)' : 'Remise (DA)'}
+                            placeholder={t('shop_line_discount_ph')}
                             value={item.discount || ''}
                             onChange={(e) => updateLineDiscount(item.product.id, parseFloat(e.target.value) || 0)}
-                            className="w-20 h-6 px-1.5 text-[11px] rounded border border-neutral-200 dark:border-neutral-700 bg-transparent text-right font-mono"
-                            title="Line item discount in DA"
+                            className={`w-20 h-6 px-1.5 text-[11px] rounded border border-neutral-200 dark:border-neutral-700 bg-transparent font-mono ${
+                              isRtl ? 'text-left' : 'text-right'
+                            }`}
                           />
                           <button
                             type="button"
@@ -1275,7 +1269,7 @@ export const ShopScreen: React.FC = () => {
             {cart.length > 0 && (
               <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 space-y-1">
                 <div className="flex items-center justify-between text-[11px] font-bold text-neutral-500">
-                  <span>{t('pos_cart_discount_label', language)}</span>
+                  <span>{t('pos_cart_discount_label')}</span>
                   <div className="flex items-center gap-1">
                     <button
                       type="button"
@@ -1303,7 +1297,7 @@ export const ShopScreen: React.FC = () => {
                   max={orderDiscountType === 'percent' ? 100 : cartSubtotal}
                   value={orderDiscountValue || ''}
                   onChange={(e) => setOrderDiscountValue(parseFloat(e.target.value) || 0)}
-                  placeholder={orderDiscountType === 'percent' ? '10%' : (language === 'ar' ? 'قيمة الخصم بالدينار' : 'Montant de remise DA')}
+                  placeholder={orderDiscountType === 'percent' ? '10%' : t('shop_order_discount_ph')}
                   className="w-full h-8 px-2 text-xs rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800 font-mono text-neutral-900 dark:text-white"
                 />
               </div>
@@ -1312,26 +1306,26 @@ export const ShopScreen: React.FC = () => {
             {/* Price Breakdown */}
             <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 space-y-1.5 text-xs">
               <div className="flex justify-between text-neutral-500">
-                <span>{t('pos_subtotal_label', language)}</span>
+                <span>{t('pos_subtotal_label')}</span>
                 <span className="font-mono font-semibold">{formatMoney(cartSubtotal)}</span>
               </div>
 
               {discountAmount > 0 && (
                 <div className="flex justify-between text-emerald-600 font-bold">
-                  <span>{t('pos_total_discount_label', language)}</span>
+                  <span>{t('pos_total_discount_label')}</span>
                   <span className="font-mono">-{formatMoney(discountAmount)}</span>
                 </div>
               )}
 
               {receiptConfig.showTaxBreakdown && taxAmount > 0 && (
                 <div className="flex justify-between text-neutral-500">
-                  <span>{language === 'ar' ? 'الرسم على القيمة المضافة (9%)' : 'TVA (9%)'}</span>
+                  <span>{t('shop_vat_line')}</span>
                   <span className="font-mono">{formatMoney(taxAmount)}</span>
                 </div>
               )}
 
               <div className="flex justify-between items-baseline pt-2 border-t border-neutral-200 dark:border-neutral-700 text-neutral-900 dark:text-white font-black">
-                <span className="text-sm">{t('pos_total_due_label', language)}</span>
+                <span className="text-sm">{t('pos_total_due_label')}</span>
                 <span className="text-2xl font-mono text-[#C4785A]">{formatMoney(cartTotal)}</span>
               </div>
             </div>
@@ -1340,7 +1334,7 @@ export const ShopScreen: React.FC = () => {
             {cart.length > 0 && (
               <div className="space-y-1.5 pt-1">
                 <div className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
-                  {t('pos_quick_cash_title', language)}
+                  {t('pos_quick_cash_title')}
                 </div>
                 <div className="grid grid-cols-4 gap-1.5">
                   {[cartTotal, 1000, 2000, 5000].map((amt, idx) => {
@@ -1360,7 +1354,7 @@ export const ShopScreen: React.FC = () => {
                             : 'bg-neutral-50 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300'
                         }`}
                       >
-                        {isExact ? (language === 'ar' ? 'المبلغ بالضبط' : language === 'fr' ? 'Montant exact' : 'Exact') : `${amt.toLocaleString()} ${language === 'ar' ? 'د.ج' : 'DA'}`}
+                        {isExact ? t('shop_quick_cash_exact') : `${amt.toLocaleString()} ${language === 'ar' ? 'د.ج' : 'DA'}`}
                       </button>
                     );
                   })}
@@ -1380,10 +1374,8 @@ export const ShopScreen: React.FC = () => {
               }`}
             >
               <Coins size={16} />
-              <span>
-                {language === 'ar' ? `تسوية ${formatMoney(cartTotal)}` : language === 'fr' ? `Encaisser ${formatMoney(cartTotal)}` : `Charge ${formatMoney(cartTotal)}`}
-              </span>
-              <ArrowRight size={15} />
+              <span>{t('shop_charge_button', { amount: formatMoney(cartTotal) })}</span>
+              <ArrowRight size={15} className={isRtl ? 'rotate-180' : ''} />
             </button>
           </div>
         </div>
@@ -1397,10 +1389,10 @@ export const ShopScreen: React.FC = () => {
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-base font-black text-neutral-900 dark:text-white">
-                Held Orders ({parkedOrders.length})
+                {t('shop_held_orders_title', { count: parkedOrders.length })}
               </h2>
               <p className="text-xs text-neutral-500">
-                Customers stepping away or pending split payment. Resume any order to ring up in the register.
+                {t('shop_held_orders_desc')}
               </p>
             </div>
           </div>
@@ -1408,9 +1400,11 @@ export const ShopScreen: React.FC = () => {
           {parkedOrders.length === 0 ? (
             <div className="p-12 text-center rounded-3xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 space-y-2">
               <PauseCircle size={36} className="text-neutral-400 mx-auto" />
-              <h3 className="text-sm font-bold text-neutral-900 dark:text-white">No held orders</h3>
+              <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
+                {t('shop_no_held_title')}
+              </h3>
               <p className="text-xs text-neutral-500 max-w-sm mx-auto">
-                While ringing up sales in the POS Register, click the pause icon to hold an order and free the till for the next customer.
+                {t('shop_no_held_desc')}
               </p>
             </div>
           ) : (
@@ -1426,7 +1420,10 @@ export const ShopScreen: React.FC = () => {
                         {po.referenceName}
                       </div>
                       <div className="text-[10px] text-neutral-400 mt-0.5">
-                        Held {new Date(po.createdAt).toLocaleTimeString()} · {po.items.length} items
+                        {t('shop_held_at_time', {
+                          time: new Date(po.createdAt).toLocaleTimeString(),
+                          count: po.items.length,
+                        })}
                       </div>
                     </div>
                     <div className="text-sm font-black font-mono text-[#C4785A]">
@@ -1446,7 +1443,7 @@ export const ShopScreen: React.FC = () => {
 
                   {po.notes && (
                     <div className="text-[11px] text-amber-600 dark:text-amber-400 italic">
-                      Note: {po.notes}
+                      {t('shop_note_prefix', { notes: po.notes })}
                     </div>
                   )}
 
@@ -1457,13 +1454,13 @@ export const ShopScreen: React.FC = () => {
                       className="flex-1 h-9 rounded-xl bg-[#C4785A] text-white text-xs font-bold flex items-center justify-center gap-1.5 hover:opacity-90 cursor-pointer"
                     >
                       <PlayCircle size={14} />
-                      <span>Resume in Register</span>
+                      <span>{t('shop_resume_in_register')}</span>
                     </button>
                     <button
                       type="button"
                       onClick={() => deleteParkedOrder(po.id)}
                       className="h-9 px-3 rounded-xl border border-neutral-200 dark:border-neutral-700 text-neutral-400 hover:text-red-500 cursor-pointer"
-                      title="Discard order"
+                      title={t('shop_discard_order')}
                     >
                       <Trash2 size={14} />
                     </button>
@@ -1484,52 +1481,54 @@ export const ShopScreen: React.FC = () => {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <div className="p-4 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-2xs space-y-1">
               <div className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
-                Total Catalog SKUs
+                {t('shop_kpi_skus')}
               </div>
               <div className="text-xl font-black text-neutral-900 dark:text-white">
                 {inventoryStats.totalSKUs}
               </div>
               <div className="text-[10px] text-neutral-400">
-                {inventoryStats.totalUnits} physical units in store
+                {t('shop_kpi_skus_sub', { count: inventoryStats.totalUnits })}
               </div>
             </div>
 
             <div className="p-4 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-2xs space-y-1">
               <div className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
-                Retail Stock Valuation
+                {t('shop_kpi_retail_val')}
               </div>
               <div className="text-xl font-black font-mono text-[#C4785A]">
                 {formatMoney(inventoryStats.retailValuation)}
               </div>
               <div className="text-[10px] text-neutral-400">
-                Cost base: {formatMoney(inventoryStats.costValuation)}
+                {t('shop_kpi_retail_val_sub', { cost: formatMoney(inventoryStats.costValuation) })}
               </div>
             </div>
 
             <div className="p-4 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-2xs space-y-1">
               <div className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
-                Potential Gross Margin
+                {t('shop_kpi_margin')}
               </div>
               <div className="text-xl font-black font-mono text-emerald-600 dark:text-emerald-400">
                 {formatMoney(inventoryStats.potentialProfit)}
               </div>
               <div className="text-[10px] text-neutral-400">
-                Projected full catalog margin
+                {t('shop_kpi_margin_sub')}
               </div>
             </div>
 
             <div className="p-4 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-2xs space-y-1">
               <div className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
-                Low Stock Alerts
+                {t('shop_kpi_low_stock')}
               </div>
               <div className="text-xl font-black text-red-600 dark:text-red-400 flex items-center gap-2">
-                <span>{inventoryStats.lowStockItems} items</span>
+                <span>{t('shop_kpi_low_items', { count: inventoryStats.lowStockItems })}</span>
                 {inventoryStats.outOfStockItems > 0 && (
-                  <span className="text-xs font-bold text-red-400">({inventoryStats.outOfStockItems} sold out)</span>
+                  <span className="text-xs font-bold text-red-400">
+                    {t('shop_kpi_out_items', { count: inventoryStats.outOfStockItems })}
+                  </span>
                 )}
               </div>
               <div className="text-[10px] text-neutral-400">
-                Requires supplier reorder
+                {t('shop_kpi_low_sub')}
               </div>
             </div>
           </div>
@@ -1546,7 +1545,7 @@ export const ShopScreen: React.FC = () => {
                     stockStatusFilter === 'all' ? 'bg-[#C4785A] text-white' : 'text-neutral-500'
                   }`}
                 >
-                  All Items ({products.length})
+                  {t('shop_filter_all', { count: products.length })}
                 </button>
                 <button
                   type="button"
@@ -1555,7 +1554,7 @@ export const ShopScreen: React.FC = () => {
                     stockStatusFilter === 'low' ? 'bg-amber-600 text-white' : 'text-neutral-500'
                   }`}
                 >
-                  Low Stock ({inventoryStats.lowStockItems})
+                  {t('shop_filter_low', { count: inventoryStats.lowStockItems })}
                 </button>
                 <button
                   type="button"
@@ -1564,16 +1563,16 @@ export const ShopScreen: React.FC = () => {
                     stockStatusFilter === 'out' ? 'bg-red-600 text-white' : 'text-neutral-500'
                   }`}
                 >
-                  Out of Stock ({inventoryStats.outOfStockItems})
+                  {t('shop_filter_out', { count: inventoryStats.outOfStockItems })}
                 </button>
               </div>
 
               {/* Category selector */}
               <FilterSelect
-                label="Category"
+                label={t('shop_filter_category_label')}
                 value={categoryFilter}
                 onChange={(val) => setCategoryFilter(typeof val === 'string' ? val : val.target?.value || val)}
-                options={categories.map((c) => ({ value: c, label: c }))}
+                options={categories.map((c) => ({ value: c, label: c === 'All' ? t('shop_categories_all') : c }))}
               />
             </div>
 
@@ -1584,7 +1583,7 @@ export const ShopScreen: React.FC = () => {
                 className="h-9 px-3.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-700 dark:text-neutral-200 text-xs font-bold flex items-center gap-1.5 hover:bg-neutral-50 dark:hover:bg-neutral-800 cursor-pointer"
               >
                 <Download size={13} />
-                <span>Export CSV</span>
+                <span>{t('shop_export_csv')}</span>
               </button>
 
               <button
@@ -1593,7 +1592,7 @@ export const ShopScreen: React.FC = () => {
                 className="h-9 px-4 rounded-xl bg-[#C4785A] text-white text-xs font-bold flex items-center gap-1.5 hover:opacity-90 cursor-pointer shadow-xs"
               >
                 <Plus size={14} />
-                <span>Add Product</span>
+                <span>{t('shop_add_product')}</span>
               </button>
             </div>
           </div>
@@ -1601,24 +1600,24 @@ export const ShopScreen: React.FC = () => {
           {/* Inventory Table */}
           <div className="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 overflow-hidden shadow-2xs">
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
+              <table className={`w-full text-xs ${isRtl ? 'text-right' : 'text-left'}`}>
                 <thead className="bg-neutral-50 dark:bg-neutral-800/60 text-neutral-400 font-bold uppercase tracking-wider text-[10px] border-b border-neutral-200 dark:border-neutral-800">
                   <tr>
-                    <th className="py-3 px-4">Item Details</th>
-                    <th className="py-3 px-4">Category</th>
-                    <th className="py-3 px-4">SKU / Barcode</th>
-                    <th className="py-3 px-4 text-right">Cost Price</th>
-                    <th className="py-3 px-4 text-right">Retail Price</th>
-                    <th className="py-3 px-4 text-center">In Stock</th>
-                    <th className="py-3 px-4 text-right">Valuation</th>
-                    <th className="py-3 px-4 text-right">Actions</th>
+                    <th className="py-3 px-4">{t('shop_col_item')}</th>
+                    <th className="py-3 px-4">{t('shop_col_category')}</th>
+                    <th className="py-3 px-4">{t('shop_col_sku')}</th>
+                    <th className={`py-3 px-4 ${isRtl ? 'text-left' : 'text-right'}`}>{t('shop_col_cost')}</th>
+                    <th className={`py-3 px-4 ${isRtl ? 'text-left' : 'text-right'}`}>{t('shop_col_retail')}</th>
+                    <th className="py-3 px-4 text-center">{t('shop_col_stock')}</th>
+                    <th className={`py-3 px-4 ${isRtl ? 'text-left' : 'text-right'}`}>{t('shop_col_val')}</th>
+                    <th className={`py-3 px-4 ${isRtl ? 'text-left' : 'text-right'}`}>{t('shop_col_actions')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
                   {filteredInventory.length === 0 ? (
                     <tr>
                       <td colSpan={8} className="py-12 text-center text-neutral-400">
-                        No products match current filters.
+                        {t('shop_table_empty')}
                       </td>
                     </tr>
                   ) : (
@@ -1632,7 +1631,7 @@ export const ShopScreen: React.FC = () => {
                           <td className="py-3 px-4 font-bold text-neutral-900 dark:text-white">
                             <div className="truncate max-w-[220px]">{p.name}</div>
                             <div className="text-[10px] font-normal text-neutral-400 truncate max-w-[220px]">
-                              {p.description || 'Standard store article'}
+                              {p.description || t('shop_standard_article')}
                             </div>
                           </td>
                           <td className="py-3 px-4 text-neutral-600 dark:text-neutral-300">
@@ -1644,10 +1643,10 @@ export const ShopScreen: React.FC = () => {
                             <div>{p.sku}</div>
                             {p.barcode && <div className="text-[10px] text-neutral-400">{p.barcode}</div>}
                           </td>
-                          <td className="py-3 px-4 text-right font-mono text-neutral-500">
+                          <td className={`py-3 px-4 font-mono text-neutral-500 ${isRtl ? 'text-left' : 'text-right'}`}>
                             {formatMoney(costAmt)}
                           </td>
-                          <td className="py-3 px-4 text-right font-mono font-bold text-neutral-900 dark:text-white">
+                          <td className={`py-3 px-4 font-mono font-bold text-neutral-900 dark:text-white ${isRtl ? 'text-left' : 'text-right'}`}>
                             {formatMoney(p.price.amount)}
                           </td>
                           <td className="py-3 px-4 text-center">
@@ -1658,14 +1657,14 @@ export const ShopScreen: React.FC = () => {
                                 ? 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300'
                                 : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300'
                             }`}>
-                              {p.stockQuantity} {p.unit || 'pcs'}
+                              {p.stockQuantity} {p.unit || t('shop_unit_pcs')}
                             </span>
                           </td>
-                          <td className="py-3 px-4 text-right font-mono font-bold text-[#C4785A]">
+                          <td className={`py-3 px-4 font-mono font-bold text-[#C4785A] ${isRtl ? 'text-left' : 'text-right'}`}>
                             {formatMoney(p.price.amount * p.stockQuantity)}
                           </td>
-                          <td className="py-3 px-4 text-right">
-                            <div className="flex items-center justify-end gap-1">
+                          <td className={`py-3 px-4 ${isRtl ? 'text-left' : 'text-right'}`}>
+                            <div className={`flex items-center gap-1 ${isRtl ? 'justify-start' : 'justify-end'}`}>
                               <button
                                 type="button"
                                 onClick={() => {
@@ -1674,7 +1673,7 @@ export const ShopScreen: React.FC = () => {
                                   setAdjustMode('add');
                                   setIsAdjustStockModalOpen(true);
                                 }}
-                                title="Adjust Stock / Restock"
+                                title={t('shop_adjust_tooltip')}
                                 className="p-1.5 rounded-lg text-[#C4785A] hover:bg-orange-50 dark:hover:bg-orange-950/40 cursor-pointer"
                               >
                                 <ArrowDownUp size={14} />
@@ -1682,7 +1681,7 @@ export const ShopScreen: React.FC = () => {
                               <button
                                 type="button"
                                 onClick={() => handleOpenEditProduct(p)}
-                                title="Edit Product details"
+                                title={t('shop_edit_tooltip')}
                                 className="p-1.5 rounded-lg text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
                               >
                                 <Edit2 size={14} />
@@ -1690,11 +1689,11 @@ export const ShopScreen: React.FC = () => {
                               <button
                                 type="button"
                                 onClick={() => {
-                                  if (window.confirm(`Delete product "${p.name}"?`)) {
+                                  if (window.confirm(t('shop_delete_confirm', { name: p.name }))) {
                                     deleteProduct(p.id);
                                   }
                                 }}
-                                title="Delete Product"
+                                title={t('shop_delete_tooltip')}
                                 className="p-1.5 rounded-lg text-neutral-400 hover:text-red-500 cursor-pointer"
                               >
                                 <Trash2 size={14} />
@@ -1715,10 +1714,10 @@ export const ShopScreen: React.FC = () => {
             <div className="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-4 space-y-3">
               <div className="flex items-center justify-between">
                 <h3 className="text-xs font-black uppercase tracking-wider text-neutral-500">
-                  Recent Stock Audits & Adjustments
+                  {t('shop_movements_title')}
                 </h3>
                 <span className="text-[10px] text-neutral-400 font-mono">
-                  {stockMovements.length} log events
+                  {t('shop_movements_count', { count: stockMovements.length })}
                 </span>
               </div>
               <div className="divide-y divide-neutral-100 dark:divide-neutral-800 text-xs">
@@ -1729,10 +1728,14 @@ export const ShopScreen: React.FC = () => {
                         {sm.productName}
                       </div>
                       <div className="text-[10px] text-neutral-400">
-                        {sm.reason || sm.type} · by {sm.createdBy || 'Staff'} at {new Date(sm.createdAt).toLocaleString()}
+                        {t('shop_movement_by', {
+                          reason: sm.reason || sm.type,
+                          user: sm.createdBy || 'Staff',
+                          date: new Date(sm.createdAt).toLocaleString(),
+                        })}
                       </div>
                     </div>
-                    <div className="text-right shrink-0">
+                    <div className={`shrink-0 ${isRtl ? 'text-left' : 'text-right'}`}>
                       <span className={`font-mono font-bold text-xs ${
                         sm.quantity > 0 ? 'text-emerald-600' : 'text-red-600'
                       }`}>
@@ -1759,17 +1762,17 @@ export const ShopScreen: React.FC = () => {
           <div className="p-5 rounded-3xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 space-y-4">
             <div>
               <h2 className="text-base font-black text-neutral-900 dark:text-white">
-                Thermal Receipt & Register Branding
+                {t('shop_receipt_branding_title')}
               </h2>
               <p className="text-xs text-neutral-500">
-                Configure your store name, tax registration numbers, address, and personalized customer footer message.
+                {t('shop_receipt_branding_desc')}
               </p>
             </div>
 
             <div className="space-y-3 text-xs">
               <LabelInput
                 field="StoreTitle"
-                label="Store / Header Title"
+                label={t('shop_field_store_title')}
                 value={receiptConfig.headerTitle}
                 onChange={(v) => updateReceiptConfig({ headerTitle: v })}
                 width="100%"
@@ -1779,7 +1782,7 @@ export const ShopScreen: React.FC = () => {
 
               <LabelInput
                 field="Tagline"
-                label="Tagline / Subheader"
+                label={t('shop_field_tagline')}
                 value={receiptConfig.subHeader || ''}
                 onChange={(v) => updateReceiptConfig({ subHeader: v })}
                 width="100%"
@@ -1790,7 +1793,7 @@ export const ShopScreen: React.FC = () => {
               <div className="grid grid-cols-2 gap-3">
                 <LabelInput
                   field="Phone"
-                  label="Store Phone"
+                  label={t('shop_field_phone')}
                   value={receiptConfig.phone || ''}
                   onChange={(v) => updateReceiptConfig({ phone: v })}
                   width="100%"
@@ -1800,7 +1803,7 @@ export const ShopScreen: React.FC = () => {
 
                 <LabelInput
                   field="TaxId"
-                  label="Tax ID (NIF / RC)"
+                  label={t('shop_field_tax_id')}
                   value={receiptConfig.taxId || ''}
                   onChange={(v) => updateReceiptConfig({ taxId: v })}
                   width="100%"
@@ -1811,7 +1814,7 @@ export const ShopScreen: React.FC = () => {
 
               <LabelInput
                 field="Address"
-                label="Store Physical Address"
+                label={t('shop_field_address')}
                 value={receiptConfig.address || ''}
                 onChange={(v) => updateReceiptConfig({ address: v })}
                 width="100%"
@@ -1821,7 +1824,7 @@ export const ShopScreen: React.FC = () => {
 
               <LabelInput
                 field="Footer"
-                label="Receipt Footer Note"
+                label={t('shop_field_footer')}
                 value={receiptConfig.footerMessage || ''}
                 onChange={(v) => updateReceiptConfig({ footerMessage: v })}
                 width="100%"
@@ -1837,7 +1840,7 @@ export const ShopScreen: React.FC = () => {
                     onChange={(e) => updateReceiptConfig({ showTaxBreakdown: e.target.checked })}
                     className="w-4 h-4 rounded text-[#C4785A]"
                   />
-                  <span>Show Tax / VAT Breakdown line on receipt</span>
+                  <span>{t('shop_toggle_tax')}</span>
                 </label>
 
                 <label className="flex items-center gap-2 cursor-pointer font-bold text-neutral-700 dark:text-neutral-300">
@@ -1847,7 +1850,7 @@ export const ShopScreen: React.FC = () => {
                     onChange={(e) => updateReceiptConfig({ showCashier: e.target.checked })}
                     className="w-4 h-4 rounded text-[#C4785A]"
                   />
-                  <span>Print Cashier / Attendant Name</span>
+                  <span>{t('shop_toggle_cashier')}</span>
                 </label>
 
                 <label className="flex items-center gap-2 cursor-pointer font-bold text-neutral-700 dark:text-neutral-300">
@@ -1857,7 +1860,7 @@ export const ShopScreen: React.FC = () => {
                     onChange={(e) => updateReceiptConfig({ showBarcode: e.target.checked })}
                     className="w-4 h-4 rounded text-[#C4785A]"
                   />
-                  <span>Print Barcode & Transaction QR</span>
+                  <span>{t('shop_toggle_barcode')}</span>
                 </label>
               </div>
             </div>
@@ -1866,7 +1869,7 @@ export const ShopScreen: React.FC = () => {
           {/* Live Receipt Slip Preview */}
           <div className="p-5 rounded-3xl bg-neutral-100 dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-700 flex flex-col items-center">
             <div className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-3">
-              Interactive 80mm ESC/POS Thermal Slip Preview
+              {t('shop_preview_title')}
             </div>
 
             <div className="w-[300px] bg-white text-black p-5 shadow-xl font-mono text-[11px] leading-relaxed border-t-4 border-[#C4785A]">
@@ -1890,26 +1893,26 @@ export const ShopScreen: React.FC = () => {
 
               <div className="py-2.5 text-[10px] border-b border-dashed border-neutral-400 space-y-0.5">
                 <div className="flex justify-between">
-                  <span>RECEIPT: #SAMPLE-0042</span>
+                  <span>{t('shop_receipt_sample_num')}</span>
                   <span>{new Date().toLocaleDateString()}</span>
                 </div>
                 {receiptConfig.showCashier && (
                   <div className="flex justify-between">
-                    <span>CASHIER: Amine B.</span>
+                    <span>{t('shop_receipt_sample_cashier')}</span>
                     <span>{new Date().toLocaleTimeString()}</span>
                   </div>
                 )}
                 <div className="flex justify-between">
-                  <span>CLIENT: Walk-in Customer</span>
-                  <span>POS-TERMINAL 01</span>
+                  <span>{t('shop_receipt_sample_client')}</span>
+                  <span>{t('shop_receipt_terminal')}</span>
                 </div>
               </div>
 
               {/* Items table */}
               <div className="py-2.5 space-y-1.5 border-b border-dashed border-neutral-400">
                 <div className="flex justify-between font-bold text-[10px]">
-                  <span>ITEM / QTY</span>
-                  <span>TOTAL</span>
+                  <span>{t('shop_receipt_item_qty_header')}</span>
+                  <span>{t('shop_receipt_total_header')}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>1x Espresso Beans 1kg</span>
@@ -1924,25 +1927,25 @@ export const ShopScreen: React.FC = () => {
               {/* Summary */}
               <div className="py-2.5 space-y-1 border-b border-dashed border-neutral-400">
                 <div className="flex justify-between">
-                  <span>SUBTOTAL</span>
+                  <span>{t('shop_receipt_subtotal_header')}</span>
                   <span>4,160 DA</span>
                 </div>
                 {receiptConfig.showTaxBreakdown && (
                   <div className="flex justify-between text-[10px] text-neutral-600">
-                    <span>VAT (9%)</span>
+                    <span>{t('shop_receipt_vat_header')}</span>
                     <span>374 DA</span>
                   </div>
                 )}
                 <div className="flex justify-between text-sm font-black pt-1">
-                  <span>TOTAL DUE</span>
+                  <span>{t('shop_receipt_total_due_header')}</span>
                   <span>4,160 DA</span>
                 </div>
                 <div className="flex justify-between text-[10px] text-neutral-600 pt-1">
-                  <span>TENDER: CASH</span>
-                  <span>PAID: 5,000 DA</span>
+                  <span>{t('shop_receipt_tender_cash_header')}</span>
+                  <span>5,000 DA</span>
                 </div>
                 <div className="flex justify-between text-[10px] font-bold">
-                  <span>CHANGE RETURNED</span>
+                  <span>{t('shop_receipt_change_header')}</span>
                   <span>840 DA</span>
                 </div>
               </div>
@@ -1955,7 +1958,7 @@ export const ShopScreen: React.FC = () => {
                   </div>
                 )}
                 <div className="text-[10px] font-bold text-neutral-800">
-                  {receiptConfig.footerMessage || 'Thank you for your visit!'}
+                  {receiptConfig.footerMessage || t('shop_receipt_default_footer')}
                 </div>
               </div>
             </div>
@@ -1969,16 +1972,10 @@ export const ShopScreen: React.FC = () => {
       <Modal
         isOpen={isCheckoutModalOpen}
         onClose={() => setIsCheckoutModalOpen(false)}
-        title={
-          language === 'ar'
-            ? 'تسوية ودفع الحساب'
-            : language === 'fr'
-            ? 'Règlement & Encaissement Caisse'
-            : 'Register Checkout & Settlement'
-        }
-        subtitle={`${language === 'ar' ? 'المبلغ المستحق:' : language === 'fr' ? 'Total à payer :' : 'Total to pay:'} ${formatMoney(cartTotal)}`}
+        title={t('shop_modal_checkout_title')}
+        subtitle={t('shop_modal_checkout_subtitle', { amount: formatMoney(cartTotal) })}
       >
-        <div className="space-y-4">
+        <div className="space-y-4" dir={isRtl ? 'rtl' : 'ltr'}>
           {/* Mode Switch: Single vs Split */}
           <div className="flex rounded-xl bg-neutral-100 dark:bg-neutral-800 p-1 text-xs font-bold">
             <button
@@ -1991,7 +1988,7 @@ export const ShopScreen: React.FC = () => {
               }`}
             >
               <Banknote size={14} />
-              <span>{language === 'ar' ? 'دفع كامل' : language === 'fr' ? 'Paiement unique' : 'Single Tender'}</span>
+              <span>{t('shop_mode_single')}</span>
             </button>
             <button
               type="button"
@@ -2003,7 +2000,7 @@ export const ShopScreen: React.FC = () => {
               }`}
             >
               <Split size={14} />
-              <span>{language === 'ar' ? 'دفع مجزأ' : language === 'fr' ? 'Paiement fractionné' : 'Split Payment'}</span>
+              <span>{t('shop_mode_split')}</span>
             </button>
           </div>
 
@@ -2011,17 +2008,17 @@ export const ShopScreen: React.FC = () => {
           {checkoutMode === 'single' && (
             <div className="space-y-3">
               <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
-                {language === 'ar' ? 'طريقة الدفع' : language === 'fr' ? 'Mode de règlement' : 'Payment Method'}
+                {t('shop_tender_method_label')}
               </label>
               <div className="grid grid-cols-3 gap-2">
                 {(['Cash', 'Card', 'MemberBalance'] as const).map((method) => {
                   const isSelected = singlePaymentMethod === method;
                   const label =
                     method === 'Cash'
-                      ? t('pos_tender_cash', language)
+                      ? t('pos_tender_cash')
                       : method === 'Card'
-                      ? t('pos_tender_card', language)
-                      : (language === 'ar' ? 'رصيد المشترك' : language === 'fr' ? 'Solde adhérent' : 'Store Credit');
+                      ? t('pos_tender_card')
+                      : t('shop_tender_member_bal');
                   return (
                     <button
                       key={method}
@@ -2047,19 +2044,19 @@ export const ShopScreen: React.FC = () => {
                 <div className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700 space-y-2">
                   <div className="flex items-center justify-between pb-1">
                     <span className="text-[11px] font-bold text-neutral-400">
-                      {language === 'ar' ? 'تسوية نقدية' : language === 'fr' ? 'Encaissement espèces' : 'Cash Settlement'}
+                      {t('shop_cash_settlement')}
                     </span>
                     <button
                       type="button"
                       onClick={() => setAmountTenderedInput(cartTotal.toString())}
                       className="text-[11px] font-bold text-[#C4785A] hover:underline cursor-pointer"
                     >
-                      {language === 'ar' ? `المبلغ بالضبط (${formatMoney(cartTotal)})` : language === 'fr' ? `Montant exact (${formatMoney(cartTotal)})` : `Exact Cash (${formatMoney(cartTotal)})`}
+                      {t('shop_exact_cash_btn', { amount: formatMoney(cartTotal) })}
                     </button>
                   </div>
                   <LabelInput
                     field="Tendered"
-                    label={language === 'ar' ? 'المبلغ المدفوع من الزبون (د.ج)' : language === 'fr' ? 'Montant remis par le client (DA)' : 'Amount Tendered by Customer (DA)'}
+                    label={t('shop_amount_tendered_input')}
                     type="number"
                     value={amountTenderedInput}
                     onChange={setAmountTenderedInput}
@@ -2071,7 +2068,7 @@ export const ShopScreen: React.FC = () => {
                   {/* Change output */}
                   <div className="flex items-center justify-between pt-1">
                     <span className="text-xs font-bold text-neutral-500">
-                      {t('pos_change_due_label', language)} :
+                      {t('pos_change_due_label')} :
                     </span>
                     <span className="text-lg font-black font-mono text-emerald-600 dark:text-emerald-400">
                       {formatMoney(changeDue)}
@@ -2087,10 +2084,10 @@ export const ShopScreen: React.FC = () => {
             <div className="space-y-3">
               <div className="flex items-center justify-between text-xs font-bold">
                 <span className="text-neutral-500">
-                  {language === 'ar' ? 'إجمالي الطلب:' : language === 'fr' ? 'Total commande :' : 'Total Order:'} {formatMoney(cartTotal)}
+                  {t('shop_split_total_order', { amount: formatMoney(cartTotal) })}
                 </span>
                 <span className={splitRemaining === 0 ? 'text-emerald-600 font-mono' : 'text-red-500 font-mono'}>
-                  {splitRemaining === 0 ? '✓ Balanced' : `Remaining: ${formatMoney(splitRemaining)}`}
+                  {splitRemaining === 0 ? t('shop_split_balanced') : t('shop_split_remaining', { amount: formatMoney(splitRemaining) })}
                 </span>
               </div>
 
@@ -2100,7 +2097,7 @@ export const ShopScreen: React.FC = () => {
                     <div className="w-36">
                       <LabelSelect
                         field="Method"
-                        label="Method"
+                        label={t('shop_split_col_method')}
                         value={sp.method}
                         onChange={(val) => {
                           const v = typeof val === 'string' ? val : val.target?.value || val;
@@ -2109,10 +2106,10 @@ export const ShopScreen: React.FC = () => {
                           setSplitPayments(newArr);
                         }}
                         options={[
-                          { value: 'Cash', label: t('pos_tender_cash', language) },
-                          { value: 'Card', label: t('pos_tender_card', language) },
-                          { value: 'BankTransfer', label: t('pos_tender_baridimob', language) },
-                          { value: 'Credit', label: language === 'ar' ? 'رصيد' : 'Crédit' },
+                          { value: 'Cash', label: t('pos_tender_cash') },
+                          { value: 'Card', label: t('pos_tender_card') },
+                          { value: 'BankTransfer', label: t('pos_tender_baridimob') },
+                          { value: 'Credit', label: t('shop_split_credit') },
                         ]}
                         height={40}
                         corner={12}
@@ -2122,7 +2119,7 @@ export const ShopScreen: React.FC = () => {
                     <div className="flex-1">
                       <LabelInput
                         field="Amount"
-                        label={`Amount (${language === 'ar' ? 'د.ج' : 'DA'})`}
+                        label={t('shop_split_col_amount')}
                         type="number"
                         value={sp.amount || ''}
                         onChange={(val) => {
@@ -2140,7 +2137,7 @@ export const ShopScreen: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => setSplitPayments(splitPayments.filter((_, i) => i !== idx))}
-                        className="text-neutral-400 hover:text-red-500 p-1"
+                        className="text-neutral-400 hover:text-red-500 p-1 cursor-pointer"
                       >
                         <Trash2 size={14} />
                       </button>
@@ -2154,7 +2151,7 @@ export const ShopScreen: React.FC = () => {
                   className="text-xs font-bold text-[#C4785A] hover:underline flex items-center gap-1 cursor-pointer pt-1"
                 >
                   <Plus size={13} />
-                  <span>{language === 'ar' ? 'إضافة وسيلة دفع مجزأة' : language === 'fr' ? 'Ajouter une ligne de paiement' : 'Add Split Tender Line'}</span>
+                  <span>{t('shop_add_split_line')}</span>
                 </button>
               </div>
             </div>
@@ -2165,7 +2162,7 @@ export const ShopScreen: React.FC = () => {
             <div>
               <LabelSelect
                 field="Cashier"
-                label={language === 'ar' ? 'المسؤول عن الصندوق' : language === 'fr' ? 'Caissier responsable' : 'Cashier Attribution'}
+                label={t('shop_field_cashier')}
                 value={selectedCashierName}
                 onChange={(val) => setSelectedCashierName(typeof val === 'string' ? val : val.target?.value || val)}
                 options={staff.map((s) => ({
@@ -2180,7 +2177,7 @@ export const ShopScreen: React.FC = () => {
             <div>
               <LabelInput
                 field="CustPhone"
-                label={language === 'ar' ? 'هاتف الزبون (اختياري)' : language === 'fr' ? 'Téléphone client (facultatif)' : 'Customer Phone (Optional)'}
+                label={t('shop_field_phone_optional')}
                 type="tel"
                 value={checkoutCustomerPhone}
                 onChange={setCheckoutCustomerPhone}
@@ -2196,7 +2193,7 @@ export const ShopScreen: React.FC = () => {
           <div>
             <LabelInput
               field="TransNotes"
-              label={language === 'ar' ? 'ملاحظات العملية (اختياري)' : language === 'fr' ? 'Notes de transaction (facultatif)' : 'Transaction Notes (Optional)'}
+              label={t('shop_field_notes_optional')}
               value={checkoutNotes}
               onChange={setCheckoutNotes}
               placeholder="e.g. Counter #1 - BaridiMob Ref #9812"
@@ -2213,7 +2210,7 @@ export const ShopScreen: React.FC = () => {
               onClick={() => setIsCheckoutModalOpen(false)}
               className="h-10 px-4 text-xs font-semibold text-neutral-500 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
             >
-              {t('action_cancel', language)}
+              {t('action_cancel')}
             </button>
             <button
               type="button"
@@ -2221,13 +2218,7 @@ export const ShopScreen: React.FC = () => {
               className="h-10 px-6 text-xs font-bold text-white bg-[#C4785A] rounded-full flex items-center gap-2 hover:opacity-90 active:scale-98 transition-all cursor-pointer shadow-xs"
             >
               <CheckCircle2 size={15} />
-              <span>
-                {language === 'ar'
-                  ? 'إتمام البيع وطباعة الوصل'
-                  : language === 'fr'
-                  ? 'Valider la vente & Imprimer'
-                  : 'Complete Sale & Print Receipt'}
-              </span>
+              <span>{t('shop_btn_complete_sale')}</span>
             </button>
           </div>
         </div>
@@ -2240,10 +2231,10 @@ export const ShopScreen: React.FC = () => {
         <Modal
           isOpen={true}
           onClose={() => setCompletedSale(null)}
-          title="Payment Completed"
-          subtitle={`Receipt #${completedSale.id.slice(-6).toUpperCase()}`}
+          title={t('shop_sale_success_title')}
+          subtitle={t('shop_receipt_number_sub', { id: completedSale.id.slice(-6).toUpperCase() })}
         >
-          <div className="space-y-4">
+          <div className="space-y-4" dir="ltr">
             {/* Printable Thermal Receipt Slip Container */}
             <div
               id="pos-thermal-receipt-container"
@@ -2338,7 +2329,7 @@ export const ShopScreen: React.FC = () => {
                   </div>
                 )}
                 <div className="text-[10px] font-bold">
-                  {receiptConfig.footerMessage || 'Thank you for your business!'}
+                  {receiptConfig.footerMessage || t('shop_receipt_default_footer')}
                 </div>
               </div>
             </div>
@@ -2348,14 +2339,14 @@ export const ShopScreen: React.FC = () => {
               <div className="flex items-center justify-between font-bold text-neutral-800 dark:text-neutral-200">
                 <span className="flex items-center gap-1.5 text-[#C4785A]">
                   <Printer size={13} />
-                  <span>Hardware Thermal POS</span>
+                  <span>{t('shop_escpos_hardware_title')}</span>
                 </span>
                 <span className="text-[10px] bg-[#C4785A]/15 text-[#C4785A] px-2 py-0.5 rounded-full">
                   Atrium Desktop
                 </span>
               </div>
               <p className="text-[11px] text-neutral-500">
-                To connect direct 80mm ESC/POS USB or network receipt printers and open the physical cash drawer automatically on payment, use Atrium Desktop.
+                {t('shop_escpos_hardware_desc')}
               </p>
             </div>
 
@@ -2367,7 +2358,7 @@ export const ShopScreen: React.FC = () => {
                 className="h-10 px-4 text-xs font-bold text-neutral-700 dark:text-neutral-200 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 rounded-full cursor-pointer flex items-center justify-center gap-1.5 border border-neutral-200 dark:border-neutral-700"
               >
                 <Printer size={14} />
-                <span>Print Thermal Receipt</span>
+                <span>{t('shop_btn_print')}</span>
               </button>
 
               <button
@@ -2375,7 +2366,7 @@ export const ShopScreen: React.FC = () => {
                 onClick={() => setCompletedSale(null)}
                 className="flex-1 h-10 text-xs font-bold text-white bg-[#C4785A] rounded-full cursor-pointer hover:opacity-90 shadow-xs"
               >
-                New Register Order
+                {t('shop_btn_new_order')}
               </button>
             </div>
           </div>
@@ -2388,13 +2379,13 @@ export const ShopScreen: React.FC = () => {
       <Modal
         isOpen={isCustomItemModalOpen}
         onClose={() => setIsCustomItemModalOpen(false)}
-        title="Add Custom Item to Register"
-        subtitle="Ring up an unlisted article or custom-priced service on the fly"
+        title={t('shop_custom_modal_title')}
+        subtitle={t('shop_custom_modal_subtitle')}
       >
-        <form onSubmit={handleAddCustomItem} className="space-y-4">
+        <form onSubmit={handleAddCustomItem} className="space-y-4" dir={isRtl ? 'rtl' : 'ltr'}>
           <LabelInput
             field="CustomItemName"
-            label="Item Name / Description *"
+            label={t('shop_custom_name')}
             required
             value={customItemName}
             onChange={setCustomItemName}
@@ -2407,7 +2398,7 @@ export const ShopScreen: React.FC = () => {
           <div className="grid grid-cols-2 gap-3">
             <LabelInput
               field="CustomPrice"
-              label="Price (DZD) *"
+              label={t('shop_custom_price')}
               type="number"
               required
               value={customItemPrice ? String(customItemPrice) : ''}
@@ -2419,7 +2410,7 @@ export const ShopScreen: React.FC = () => {
 
             <LabelInput
               field="CustomCategory"
-              label="Category"
+              label={t('shop_custom_category')}
               value={customItemCategory}
               onChange={setCustomItemCategory}
               placeholder="General"
@@ -2433,15 +2424,15 @@ export const ShopScreen: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsCustomItemModalOpen(false)}
-              className="h-10 px-4 text-xs font-semibold text-neutral-500 rounded-full hover:bg-neutral-100"
+              className="h-10 px-4 text-xs font-semibold text-neutral-500 rounded-full hover:bg-neutral-100 cursor-pointer"
             >
-              Cancel
+              {t('action_cancel')}
             </button>
             <button
               type="submit"
-              className="h-10 px-5 text-xs font-bold text-white bg-[#C4785A] rounded-full hover:opacity-90 shadow-xs"
+              className="h-10 px-5 text-xs font-bold text-white bg-[#C4785A] rounded-full hover:opacity-90 shadow-xs cursor-pointer"
             >
-              Add to Register Cart
+              {t('shop_custom_btn_add')}
             </button>
           </div>
         </form>
@@ -2453,16 +2444,16 @@ export const ShopScreen: React.FC = () => {
       <Modal
         isOpen={isHoldOrderModalOpen}
         onClose={() => setIsHoldOrderModalOpen(false)}
-        title="Park Current Order"
-        subtitle="Save this cart and free the register for waiting customers"
+        title={t('shop_hold_modal_title')}
+        subtitle={t('shop_hold_modal_subtitle')}
       >
-        <form onSubmit={handleHoldOrder} className="space-y-4">
+        <form onSubmit={handleHoldOrder} className="space-y-4" dir={isRtl ? 'rtl' : 'ltr'}>
           <LabelInput
             field="HoldRef"
-            label="Reference / Customer Tag"
+            label={t('shop_hold_ref')}
             value={holdOrderRefName}
             onChange={setHoldOrderRefName}
-            placeholder="e.g. Customer in Red Jacket / Table 4 / Phone order"
+            placeholder={t('shop_hold_ref_ph')}
             width="100%"
             height={46}
             corner={14}
@@ -2470,10 +2461,10 @@ export const ShopScreen: React.FC = () => {
 
           <LabelInput
             field="HoldNotes"
-            label="Reason / Notes"
+            label={t('shop_hold_notes')}
             value={holdOrderNotes}
             onChange={setHoldOrderNotes}
-            placeholder="e.g. Fetching wallet from car"
+            placeholder={t('shop_hold_notes_ph')}
             width="100%"
             height={46}
             corner={14}
@@ -2483,16 +2474,16 @@ export const ShopScreen: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsHoldOrderModalOpen(false)}
-              className="h-10 px-4 text-xs font-semibold text-neutral-500 rounded-full hover:bg-neutral-100"
+              className="h-10 px-4 text-xs font-semibold text-neutral-500 rounded-full hover:bg-neutral-100 cursor-pointer"
             >
-              Cancel
+              {t('action_cancel')}
             </button>
             <button
               type="submit"
-              className="h-10 px-5 text-xs font-bold text-white bg-[#C4785A] rounded-full hover:opacity-90 shadow-xs flex items-center gap-1.5"
+              className="h-10 px-5 text-xs font-bold text-white bg-[#C4785A] rounded-full hover:opacity-90 shadow-xs flex items-center gap-1.5 cursor-pointer"
             >
               <PauseCircle size={14} />
-              <span>Confirm & Park Order</span>
+              <span>{t('shop_hold_confirm_btn')}</span>
             </button>
           </div>
         </form>
@@ -2508,21 +2499,21 @@ export const ShopScreen: React.FC = () => {
             setIsAdjustStockModalOpen(false);
             setSelectedProductForAdjust(null);
           }}
-          title="Adjust Inventory Stock"
+          title={t('shop_adjust_modal_title')}
           subtitle={selectedProductForAdjust.name}
         >
-          <form onSubmit={handleConfirmStockAdjust} className="space-y-4">
+          <form onSubmit={handleConfirmStockAdjust} className="space-y-4" dir={isRtl ? 'rtl' : 'ltr'}>
             <div className="p-3 rounded-2xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-between text-xs font-bold">
-              <span className="text-neutral-500">Current In Stock:</span>
+              <span className="text-neutral-500">{t('shop_adjust_current')}</span>
               <span className="font-mono text-neutral-900 dark:text-white text-sm">
-                {selectedProductForAdjust.stockQuantity} {selectedProductForAdjust.unit || 'pcs'}
+                {selectedProductForAdjust.stockQuantity} {selectedProductForAdjust.unit || t('shop_unit_pcs')}
               </span>
             </div>
 
             {/* Mode selection */}
             <div className="space-y-1">
               <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
-                Adjustment Action
+                {t('shop_adjust_action')}
               </label>
               <div className="grid grid-cols-3 gap-2">
                 <button
@@ -2532,7 +2523,7 @@ export const ShopScreen: React.FC = () => {
                     adjustMode === 'add' ? 'border-emerald-500 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40' : 'border-neutral-200 dark:border-neutral-700'
                   }`}
                 >
-                  + Restock
+                  {t('shop_adjust_restock')}
                 </button>
                 <button
                   type="button"
@@ -2541,7 +2532,7 @@ export const ShopScreen: React.FC = () => {
                     adjustMode === 'remove' ? 'border-red-500 bg-red-50 text-red-700 dark:bg-red-950/40' : 'border-neutral-200 dark:border-neutral-700'
                   }`}
                 >
-                  - Damage/Loss
+                  {t('shop_adjust_damage')}
                 </button>
                 <button
                   type="button"
@@ -2550,7 +2541,7 @@ export const ShopScreen: React.FC = () => {
                     adjustMode === 'set' ? 'border-[#C4785A] bg-orange-50 text-[#C4785A] dark:bg-orange-950/40' : 'border-neutral-200 dark:border-neutral-700'
                   }`}
                 >
-                  = Count Audit
+                  {t('shop_adjust_audit')}
                 </button>
               </div>
             </div>
@@ -2558,7 +2549,7 @@ export const ShopScreen: React.FC = () => {
             <div>
               <LabelInput
                 field="AdjustQuantity"
-                label={adjustMode === 'set' ? 'New Total Physical Count *' : 'Units to Adjust *'}
+                label={adjustMode === 'set' ? t('shop_adjust_new_count') : t('shop_adjust_quantity')}
                 type="number"
                 min="0"
                 required
@@ -2573,10 +2564,10 @@ export const ShopScreen: React.FC = () => {
             <div>
               <LabelInput
                 field="AdjustReason"
-                label="Audit Reason / Supplier Note"
+                label={t('shop_adjust_reason')}
                 value={adjustReason}
                 onChange={setAdjustReason}
-                placeholder="e.g. Batch delivery from local wholesaler"
+                placeholder={t('shop_adjust_reason_ph')}
                 width="100%"
                 height={46}
                 corner={14}
@@ -2590,15 +2581,15 @@ export const ShopScreen: React.FC = () => {
                   setIsAdjustStockModalOpen(false);
                   setSelectedProductForAdjust(null);
                 }}
-                className="h-10 px-4 text-xs font-semibold text-neutral-500 rounded-full hover:bg-neutral-100"
+                className="h-10 px-4 text-xs font-semibold text-neutral-500 rounded-full hover:bg-neutral-100 cursor-pointer"
               >
-                Cancel
+                {t('action_cancel')}
               </button>
               <button
                 type="submit"
-                className="h-10 px-5 text-xs font-bold text-white bg-[#C4785A] rounded-full hover:opacity-90 shadow-xs"
+                className="h-10 px-5 text-xs font-bold text-white bg-[#C4785A] rounded-full hover:opacity-90 shadow-xs cursor-pointer"
               >
-                Apply Stock Adjustment
+                {t('shop_adjust_apply_btn')}
               </button>
             </div>
           </form>
@@ -2614,17 +2605,17 @@ export const ShopScreen: React.FC = () => {
           setIsProductFormModalOpen(false);
           setEditingProductId(null);
         }}
-        title={editingProductId ? 'Edit Product Item' : 'Add New Inventory Product'}
-        subtitle={`Registered in store: ${currentBranch.name}`}
+        title={editingProductId ? t('shop_product_modal_edit') : t('shop_product_modal_add')}
+        subtitle={t('shop_product_modal_sub', { branch: currentBranch.name })}
       >
-        <form onSubmit={handleSaveProduct} className="space-y-4">
+        <form onSubmit={handleSaveProduct} className="space-y-4" dir={isRtl ? 'rtl' : 'ltr'}>
           <LabelInput
             field="ProductName"
-            label="Product Title / Name *"
+            label={t('shop_prod_name')}
             required
             value={formName}
             onChange={setFormName}
-            placeholder="e.g. Artisanal Espresso Beans 1kg"
+            placeholder={t('shop_prod_name_ph')}
             width="100%"
             height={46}
             corner={14}
@@ -2633,7 +2624,7 @@ export const ShopScreen: React.FC = () => {
           <div className="grid grid-cols-2 gap-3">
             <LabelSelect
               field="Category"
-              label="Product Category"
+              label={t('shop_prod_cat')}
               value={formCategory}
               onChange={(val) => setFormCategory(typeof val === 'string' ? val : val.target?.value || val)}
               options={[
@@ -2652,7 +2643,7 @@ export const ShopScreen: React.FC = () => {
 
             <LabelSelect
               field="Unit"
-              label="Unit of Sale"
+              label={t('shop_prod_unit')}
               value={formUnit}
               onChange={(val) => setFormUnit(typeof val === 'string' ? val : val.target?.value || val)}
               options={[
@@ -2671,7 +2662,7 @@ export const ShopScreen: React.FC = () => {
           <div className="grid grid-cols-2 gap-3">
             <LabelInput
               field="Sku"
-              label="SKU Identifier"
+              label={t('shop_prod_sku')}
               value={formSku}
               onChange={setFormSku}
               width="100%"
@@ -2681,7 +2672,7 @@ export const ShopScreen: React.FC = () => {
 
             <LabelInput
               field="Barcode"
-              label="Barcode / EAN-13"
+              label={t('shop_prod_barcode')}
               value={formBarcode}
               onChange={setFormBarcode}
               placeholder="6131100..."
@@ -2694,7 +2685,7 @@ export const ShopScreen: React.FC = () => {
           <div className="grid grid-cols-2 gap-3">
             <LabelInput
               field="Price"
-              label="Retail Selling Price (DZD) *"
+              label={t('shop_prod_price')}
               type="number"
               required
               value={formPrice ? String(formPrice) : ''}
@@ -2706,7 +2697,7 @@ export const ShopScreen: React.FC = () => {
 
             <LabelInput
               field="Cost"
-              label="Cost Price (DZD)"
+              label={t('shop_prod_cost')}
               type="number"
               value={formCost ? String(formCost) : ''}
               onChange={(v) => setFormCost(parseFloat(v) || 0)}
@@ -2719,7 +2710,7 @@ export const ShopScreen: React.FC = () => {
           <div className="grid grid-cols-2 gap-3">
             <LabelInput
               field="Stock"
-              label="Initial Stock Units *"
+              label={t('shop_prod_stock')}
               type="number"
               required
               value={formStock !== undefined ? String(formStock) : ''}
@@ -2731,7 +2722,7 @@ export const ShopScreen: React.FC = () => {
 
             <LabelInput
               field="Reorder"
-              label="Low Stock Reorder Alert Level"
+              label={t('shop_prod_reorder')}
               type="number"
               value={formReorder !== undefined ? String(formReorder) : ''}
               onChange={(v) => setFormReorder(parseInt(v) || 5)}
@@ -2748,15 +2739,15 @@ export const ShopScreen: React.FC = () => {
                 setIsProductFormModalOpen(false);
                 setEditingProductId(null);
               }}
-              className="h-10 px-4 text-xs font-semibold text-neutral-500 rounded-full hover:bg-neutral-100"
+              className="h-10 px-4 text-xs font-semibold text-neutral-500 rounded-full hover:bg-neutral-100 cursor-pointer"
             >
-              Cancel
+              {t('action_cancel')}
             </button>
             <button
               type="submit"
-              className="h-10 px-6 text-xs font-bold text-white bg-[#C4785A] rounded-full hover:opacity-90 shadow-xs"
+              className="h-10 px-6 text-xs font-bold text-white bg-[#C4785A] rounded-full hover:opacity-90 shadow-xs cursor-pointer"
             >
-              {editingProductId ? 'Update Product' : 'Save Product'}
+              {editingProductId ? t('shop_prod_update') : t('shop_prod_save')}
             </button>
           </div>
         </form>

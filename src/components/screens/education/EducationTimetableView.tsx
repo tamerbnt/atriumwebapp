@@ -21,8 +21,10 @@ import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { FilterSelect } from '../../ui/FilterSelect';
 import { Seek } from '../../ui/Seek';
+import { useTranslation } from '../../../utils/useTranslation';
 
 export const EducationTimetableView: React.FC = () => {
+  const { t, isRtl } = useTranslation();
   const {
     eduSessions,
     eduCohorts,
@@ -121,14 +123,14 @@ export const EducationTimetableView: React.FC = () => {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white">
-              Master Timetable & Classrooms
+              {t('edu_timetable_title')}
             </h1>
             <span className="text-xs text-neutral-500 dark:text-neutral-400">
               {eduSessions.length} total scheduled slots · {eduClassrooms.length} campus rooms
             </span>
           </div>
           <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
-            Conflict-free room scheduling, instructor timetables, and real-time session roll calls
+            {t('edu_timetable_subtitle')}
           </p>
         </div>
 
@@ -136,7 +138,7 @@ export const EducationTimetableView: React.FC = () => {
           {conflicts.size > 0 && (
             <div className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-400 text-xs font-semibold">
               <AlertTriangle size={14} />
-              <span>{conflicts.size} Schedule Clash Detected</span>
+              <span>{t('edu_conflict_warning')}</span>
             </div>
           )}
           <button
@@ -145,7 +147,7 @@ export const EducationTimetableView: React.FC = () => {
             className="h-10 px-4 rounded-xl bg-[#C4785A] text-white text-xs font-semibold flex items-center gap-1.5 hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
           >
             <Plus size={14} />
-            <span>Schedule Session</span>
+            <span>{t('edu_btn_add_session')}</span>
           </button>
         </div>
       </div>
@@ -154,7 +156,7 @@ export const EducationTimetableView: React.FC = () => {
       <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-900/40 border border-[#EDF1F3] dark:border-neutral-800">
         <div className="flex flex-wrap items-center gap-2.5">
           <FilterSelect
-            label="Cohort"
+            label={t('edu_label_cohort')}
             value={selectedCohortId}
             onChange={(val) => setSelectedCohortId(val?.target?.value ?? String(val))}
             options={[
@@ -164,7 +166,7 @@ export const EducationTimetableView: React.FC = () => {
           />
 
           <FilterSelect
-            label="Classroom"
+            label={t('edu_field_classroom')}
             value={selectedClassroomId}
             onChange={(val) => setSelectedClassroomId(val?.target?.value ?? String(val))}
             options={[
@@ -200,7 +202,7 @@ export const EducationTimetableView: React.FC = () => {
               No scheduled sessions found
             </p>
             <p className="text-xs text-neutral-500 mt-1">
-              Click "Schedule Session" above to add new timetable entries.
+              Click "{t('edu_btn_add_session')}" above to add new timetable entries.
             </p>
           </div>
         ) : (
@@ -256,7 +258,7 @@ export const EducationTimetableView: React.FC = () => {
                       </div>
                       <div className="flex items-center gap-2">
                         <User size={13} className="text-neutral-400 shrink-0" />
-                        <span className="truncate">Instructor: {session.instructorName}</span>
+                        <span className="truncate">{t('edu_field_instructor')}: {session.instructorName}</span>
                       </div>
                     </div>
                   </div>
@@ -277,7 +279,7 @@ export const EducationTimetableView: React.FC = () => {
                       className="px-2.5 py-1.5 rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-[#C4785A] hover:text-white text-neutral-700 dark:text-neutral-300 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
                     >
                       <CheckCircle2 size={13} />
-                      <span>Roll Call</span>
+                      <span>{t('edu_btn_roll_call')}</span>
                     </button>
                   </div>
                 </div>
@@ -293,7 +295,7 @@ export const EducationTimetableView: React.FC = () => {
           <div className="relative w-full max-w-lg bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl border border-neutral-200 dark:border-neutral-800 p-6">
             <div className="flex items-center justify-between pb-4 border-b border-neutral-100 dark:border-neutral-800">
               <h2 className="text-base font-bold text-neutral-900 dark:text-white">
-                Schedule Classroom Session
+                {t('edu_session_modal_title')}
               </h2>
               <button
                 type="button"
@@ -307,7 +309,7 @@ export const EducationTimetableView: React.FC = () => {
             <form onSubmit={handleCreateSession} className="space-y-4 pt-4 text-xs">
               <LabelSelect
                 field="Cohort"
-                label="Target Cohort *"
+                label={t('edu_label_cohort')}
                 value={formData.cohortId}
                 onChange={(val) => setFormData({ ...formData, cohortId: typeof val === 'string' ? val : val.target?.value || val })}
                 options={eduCohorts.map((c) => ({
@@ -321,7 +323,7 @@ export const EducationTimetableView: React.FC = () => {
               <div className="grid grid-cols-2 gap-3">
                 <LabelSelect
                   field="Classroom"
-                  label="Classroom"
+                  label={t('edu_field_classroom')}
                   value={formData.classroomId}
                   onChange={(val) => setFormData({ ...formData, classroomId: typeof val === 'string' ? val : val.target?.value || val })}
                   options={eduClassrooms.map((r) => ({
@@ -333,7 +335,7 @@ export const EducationTimetableView: React.FC = () => {
                 />
                 <LabelSelect
                   field="Instructor"
-                  label="Instructor"
+                  label={t('edu_field_instructor')}
                   value={formData.instructorId}
                   onChange={(val) => setFormData({ ...formData, instructorId: typeof val === 'string' ? val : val.target?.value || val })}
                   options={staff.map((s) => ({
@@ -347,7 +349,7 @@ export const EducationTimetableView: React.FC = () => {
 
               <LabelInput
                 id="session-date"
-                label="Session Date"
+                label={t('edu_field_session_date')}
                 type="date"
                 required
                 value={formData.date}
@@ -357,7 +359,7 @@ export const EducationTimetableView: React.FC = () => {
               <div className="grid grid-cols-2 gap-3">
                 <LabelInput
                   id="session-start-time"
-                  label="Start Time"
+                  label={t('edu_field_session_start')}
                   type="time"
                   required
                   value={formData.startTime}
@@ -365,7 +367,7 @@ export const EducationTimetableView: React.FC = () => {
                 />
                 <LabelInput
                   id="session-end-time"
-                  label="End Time"
+                  label={t('edu_field_session_end')}
                   type="time"
                   required
                   value={formData.endTime}
@@ -375,7 +377,7 @@ export const EducationTimetableView: React.FC = () => {
 
               <LabelInput
                 id="session-topic"
-                label="Topic / Lesson Plan Summary"
+                label={t('edu_field_session_topic')}
                 placeholder="e.g. Chapter 4: Calculus Limits & Functions"
                 value={formData.topic}
                 onChange={(e) => setFormData({ ...formData, topic: e.target.value })}
@@ -387,13 +389,13 @@ export const EducationTimetableView: React.FC = () => {
                   onClick={() => setIsAddSessionModalOpen(false)}
                   className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 font-semibold cursor-pointer"
                 >
-                  Cancel
+                  {t('common_cancel')}
                 </button>
                 <button
                   type="submit"
                   className="px-5 py-2 rounded-xl bg-[#C4785A] text-white font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
                 >
-                  Save Timetable Slot
+                  {t('edu_btn_save_session')}
                 </button>
               </div>
             </form>

@@ -18,10 +18,12 @@ import { Seek } from '../../ui/Seek';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { FilterSelect } from '../../ui/FilterSelect';
+import { useTranslation } from '../../../utils/useTranslation';
 
 type ModeKey = 'attendance' | 'gradebook';
 
 export const EducationAttendanceView: React.FC = () => {
+  const { t, isRtl } = useTranslation();
   const {
     eduCohorts,
     eduSessions,
@@ -119,14 +121,14 @@ export const EducationAttendanceView: React.FC = () => {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white">
-              Roll Call Attendance & Gradebook
+              {t('edu_attendance_title')}
             </h1>
             <span className="text-xs text-neutral-500 dark:text-neutral-400">
-              {activeCohort?.name || 'Academic Cohort'} · {cohortStudents.length} learners
+              {activeCohort?.name || t('edu_label_cohort')} · {t('edu_learners_count', { count: String(cohortStudents.length) })}
             </span>
           </div>
           <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
-            Real-time session roll call attendance matrix, academic evaluations, and weighted gradebook
+            {t('edu_attendance_subtitle')}
           </p>
         </div>
 
@@ -134,10 +136,10 @@ export const EducationAttendanceView: React.FC = () => {
           <Seek
             value={searchQuery}
             onChange={setSearchQuery}
-            placeholder="Search students in cohort..."
+            placeholder={t('edu_search_in_cohort')}
           />
           <FilterSelect
-            label="Cohort"
+            label={t('edu_label_cohort')}
             value={selectedCohortId}
             onChange={(val) => setSelectedCohortId(typeof val === 'string' ? val : val.target?.value || val)}
             options={eduCohorts.map((c) => ({
@@ -153,7 +155,7 @@ export const EducationAttendanceView: React.FC = () => {
               className="h-10 px-4 rounded-xl bg-[#C4785A] text-white text-xs font-semibold flex items-center gap-1.5 hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
             >
               <CheckCircle2 size={15} />
-              <span>Take Roll Call</span>
+              <span>{t('edu_btn_roll_call')}</span>
             </button>
           ) : (
             <button
@@ -168,7 +170,7 @@ export const EducationAttendanceView: React.FC = () => {
               className="h-10 px-4 rounded-xl bg-[#C4785A] text-white text-xs font-semibold flex items-center gap-1.5 hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
             >
               <Plus size={14} />
-              <span>Record Assessment Grade</span>
+              <span>{t('edu_btn_record_grade')}</span>
             </button>
           )}
         </div>
@@ -178,37 +180,37 @@ export const EducationAttendanceView: React.FC = () => {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="p-4 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-900/40 border border-[#EDF1F3] dark:border-neutral-800">
           <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400 block mb-1">
-            Cohort Attendance Rate
+            {t('edu_kpi_cohort_att_rate')}
           </span>
           <div className="flex items-baseline gap-2">
             <span className="text-2xl font-extrabold text-neutral-900 dark:text-white tabular-nums">
               {cohortAttRate}%
             </span>
-            <span className="text-xs text-emerald-600 dark:text-emerald-400">verified rate</span>
+            <span className="text-xs text-emerald-600 dark:text-emerald-400">{t('edu_verified_rate')}</span>
           </div>
         </div>
 
         <div className="p-4 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-900/40 border border-[#EDF1F3] dark:border-neutral-800">
           <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400 block mb-1">
-            Active Roster Enrolled
+            {t('edu_kpi_active_roster')}
           </span>
           <div className="flex items-baseline gap-2">
             <span className="text-2xl font-extrabold text-neutral-900 dark:text-white tabular-nums">
               {cohortStudents.length}
             </span>
-            <span className="text-xs text-neutral-500">of {activeCohort?.maxStudents || 20} seats</span>
+            <span className="text-xs text-neutral-500">{t('edu_seats_of', { count: String(activeCohort?.maxStudents || 20) })}</span>
           </div>
         </div>
 
         <div className="p-4 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-900/40 border border-[#EDF1F3] dark:border-neutral-800">
           <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400 block mb-1">
-            Academic Performance
+            {t('edu_kpi_academic_perf')}
           </span>
           <div className="flex items-baseline gap-2">
             <span className="text-2xl font-extrabold text-[#C4785A] tabular-nums">
               {avgGrade}%
             </span>
-            <span className="text-xs text-neutral-500">average weighted score</span>
+            <span className="text-xs text-neutral-500">{t('edu_avg_weighted')}</span>
           </div>
         </div>
       </div>
@@ -224,7 +226,7 @@ export const EducationAttendanceView: React.FC = () => {
               : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
           }`}
         >
-          Daily Roll Call Attendance Matrix
+          {t('edu_tab_rollcall')}
         </button>
         <button
           type="button"
@@ -235,20 +237,20 @@ export const EducationAttendanceView: React.FC = () => {
               : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
           }`}
         >
-          Evaluations & Weighted Gradebook
+          {t('edu_tab_gradebook')}
         </button>
       </div>
 
       {/* Content Section */}
       {activeTab === 'attendance' ? (
         <div className="overflow-hidden rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/60 shadow-2xs">
-          <table className="w-full text-left border-collapse text-xs">
+          <table className="w-full text-left rtl:text-right border-collapse text-xs">
             <thead>
               <tr className="border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/50 text-[11px] font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
-                <th className="py-3.5 px-4">Student</th>
-                <th className="py-3.5 px-4">Attendance Rate</th>
-                <th className="py-3.5 px-4">Status Log</th>
-                <th className="py-3.5 px-4 text-right">Actions</th>
+                <th className="py-3.5 px-4">{t('edu_col_student')}</th>
+                <th className="py-3.5 px-4">{t('edu_col_attendance')}</th>
+                <th className="py-3.5 px-4">{t('common_status')}</th>
+                <th className="py-3.5 px-4 text-right rtl:text-left">{t('edu_col_actions')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800/80">
@@ -306,22 +308,28 @@ export const EducationAttendanceView: React.FC = () => {
                                 : 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300'
                             }`}
                           >
-                            {rec.status}
+                            {rec.status === 'Present'
+                              ? t('edu_roll_call_present')
+                              : rec.status === 'Late'
+                              ? t('edu_roll_call_late')
+                              : rec.status === 'Absent'
+                              ? t('edu_roll_call_absent')
+                              : t('edu_roll_call_excused')}
                           </span>
                         ))}
                         {studentRecords.length === 0 && (
-                          <span className="text-neutral-400 italic">No attendance logged yet</span>
+                          <span className="text-neutral-400 italic">{t('edu_no_sessions')}</span>
                         )}
                       </div>
                     </td>
 
-                    <td className="py-3.5 px-4 text-right">
+                    <td className="py-3.5 px-4 text-right rtl:text-left">
                       <button
                         type="button"
                         onClick={() => setIsRollCallOpen(true)}
                         className="px-2.5 py-1.5 rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-[#C4785A] hover:text-white text-neutral-700 dark:text-neutral-300 text-xs font-semibold transition-colors cursor-pointer"
                       >
-                        Roll Call
+                        {t('edu_btn_roll_call')}
                       </button>
                     </td>
                   </tr>
@@ -332,17 +340,17 @@ export const EducationAttendanceView: React.FC = () => {
         </div>
       ) : (
         <div className="overflow-hidden rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/60 shadow-2xs">
-          <table className="w-full text-left border-collapse text-xs">
+          <table className="w-full text-left rtl:text-right border-collapse text-xs">
             <thead>
               <tr className="border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/50 text-[11px] font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
-                <th className="py-3.5 px-4">Student</th>
+                <th className="py-3.5 px-4">{t('edu_col_student')}</th>
                 {assessmentTitles.map((title) => (
                   <th key={title} className="py-3.5 px-4">
                     {title}
                   </th>
                 ))}
-                <th className="py-3.5 px-4">Weighted Average</th>
-                <th className="py-3.5 px-4 text-right">Actions</th>
+                <th className="py-3.5 px-4">{t('edu_avg_weighted')}</th>
+                <th className="py-3.5 px-4 text-right rtl:text-left">{t('edu_col_actions')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800/80">
@@ -396,11 +404,11 @@ export const EducationAttendanceView: React.FC = () => {
                           {avgScore}%
                         </span>
                       ) : (
-                        <span className="text-neutral-400 italic">Not graded</span>
+                        <span className="text-neutral-400 italic">—</span>
                       )}
                     </td>
 
-                    <td className="py-3.5 px-4 text-right">
+                    <td className="py-3.5 px-4 text-right rtl:text-left">
                       <button
                         type="button"
                         onClick={() => {
@@ -412,7 +420,7 @@ export const EducationAttendanceView: React.FC = () => {
                         }}
                         className="px-2.5 py-1.5 rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-[#C4785A] hover:text-white text-neutral-700 dark:text-neutral-300 text-xs font-semibold transition-colors cursor-pointer"
                       >
-                        Enter Grade
+                        {t('edu_btn_record_grade')}
                       </button>
                     </td>
                   </tr>
@@ -429,7 +437,7 @@ export const EducationAttendanceView: React.FC = () => {
           <div className="relative w-full max-w-md bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl border border-neutral-200 dark:border-neutral-800 p-6">
             <div className="flex items-center justify-between pb-4 border-b border-neutral-100 dark:border-neutral-800">
               <h2 className="text-base font-bold text-neutral-900 dark:text-white">
-                Record Assessment Grade
+                {t('edu_grade_modal_title')}
               </h2>
               <button
                 type="button"
@@ -443,7 +451,7 @@ export const EducationAttendanceView: React.FC = () => {
             <form onSubmit={handleRecordGrade} className="space-y-4 pt-4 text-xs">
               <LabelSelect
                 field="Student"
-                label="Student *"
+                label={t('edu_grade_student')}
                 value={gradeForm.studentId}
                 onChange={(val) => setGradeForm({ ...gradeForm, studentId: typeof val === 'string' ? val : val.target?.value || val })}
                 options={cohortStudents.map((s) => ({
@@ -457,7 +465,7 @@ export const EducationAttendanceView: React.FC = () => {
               <div>
                 <LabelInput
                   field="AssessmentTitle"
-                  label="Assessment Title *"
+                  label={t('edu_grade_assessment')}
                   required
                   value={gradeForm.assessmentTitle}
                   onChange={(val) => setGradeForm({ ...gradeForm, assessmentTitle: String(val?.target?.value || val || '') })}
@@ -472,7 +480,7 @@ export const EducationAttendanceView: React.FC = () => {
                 <div>
                   <LabelInput
                     field="Score"
-                    label="Student Score *"
+                    label={t('edu_grade_score')}
                     type="number"
                     required
                     value={gradeForm.score}
@@ -485,7 +493,7 @@ export const EducationAttendanceView: React.FC = () => {
                 <div>
                   <LabelInput
                     field="MaxScore"
-                    label="Max Possible Score *"
+                    label={t('edu_grade_max')}
                     type="number"
                     required
                     value={gradeForm.maxScore}
@@ -499,7 +507,7 @@ export const EducationAttendanceView: React.FC = () => {
 
               <div>
                 <label className="block font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
-                  Teacher Remarks / Feedback
+                  {t('edu_grade_remarks')}
                 </label>
                 <textarea
                   rows={2}
@@ -515,13 +523,13 @@ export const EducationAttendanceView: React.FC = () => {
                   onClick={() => setIsGradeModalOpen(false)}
                   className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 font-semibold cursor-pointer"
                 >
-                  Cancel
+                  {t('common_cancel')}
                 </button>
                 <button
                   type="submit"
                   className="px-5 py-2 rounded-xl bg-[#C4785A] text-white font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
                 >
-                  Save Grade
+                  {t('edu_grade_save')}
                 </button>
               </div>
             </form>

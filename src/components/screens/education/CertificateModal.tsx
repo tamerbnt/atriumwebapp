@@ -12,6 +12,7 @@ import { useAtriumStore } from '../../../services/store';
 import { EduCertificate } from '../../../types';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
+import { useTranslation } from '../../../utils/useTranslation';
 
 interface CertificateModalProps {
   certificate?: EduCertificate | null;
@@ -22,6 +23,7 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
   certificate: existingCert,
   onClose,
 }) => {
+  const { t } = useTranslation();
   const {
     eduStudents,
     eduCohorts,
@@ -88,10 +90,10 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
         <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-100 dark:border-neutral-800 bg-[#F8F9FA] dark:bg-neutral-900/60 print:hidden">
           <div>
             <h2 className="text-base font-bold text-neutral-900 dark:text-white">
-              {activeCert ? 'Official Academic Certificate' : 'Issue Official Certificate'}
+              {t(activeCert ? 'edu_cert_modal_title_view' : 'edu_cert_modal_title')}
             </h2>
             <p className="text-xs text-neutral-500 dark:text-neutral-400">
-              Verified Cryptographic Credential with tamper-proof signature hash
+              {t('edu_cert_security_sub')}
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -102,7 +104,7 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
                 className="px-3.5 py-2 text-xs font-semibold text-neutral-700 dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-700/60 rounded-xl flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
               >
                 <Printer size={14} />
-                <span>Print Certificate</span>
+                <span>{t('edu_cert_print')}</span>
               </button>
             )}
             <button
@@ -121,7 +123,7 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
               <div>
                 <LabelSelect
                   field="RecipientStudent"
-                  label="Recipient Student *"
+                  label={t('edu_cert_recipient')}
                   value={studentId}
                   onChange={(val) => setStudentId(val?.target?.value ?? String(val))}
                   options={eduStudents.map((s) => ({
@@ -139,7 +141,7 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
               <div>
                 <LabelSelect
                   field="CompletedCohort"
-                  label="Completed Cohort / Course *"
+                  label={t('edu_cert_cohort')}
                   value={cohortId}
                   onChange={(val) => setCohortId(val?.target?.value ?? String(val))}
                   options={eduCohorts.map((c) => ({
@@ -157,7 +159,7 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
               <div className="grid grid-cols-2 gap-3">
                 <LabelInput
                   field="CumulativeGrade"
-                  label="Cumulative Grade (%)"
+                  label={t('edu_cert_grade')}
                   type="number"
                   min={50}
                   max={100}
@@ -169,10 +171,10 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
                 />
                 <LabelInput
                   field="Honors"
-                  label="Honors & Distinctions"
+                  label={t('edu_cert_honors')}
                   value={honors}
                   onChange={setHonors}
-                  placeholder="e.g. Magna Cum Laude"
+                  placeholder={t('edu_cert_honors_ph')}
                   width="100%"
                   height={40}
                   corner={12}
@@ -182,7 +184,7 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
               <div className="grid grid-cols-2 gap-3">
                 <LabelInput
                   field="Signatory Name"
-                  label="Signatory Name"
+                  label={t('edu_cert_signatory_name')}
                   value={signatoryName}
                   onChange={setSignatoryName}
                   width="100%"
@@ -191,7 +193,7 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
                 />
                 <LabelInput
                   field="Signatory Title"
-                  label="Signatory Title"
+                  label={t('edu_cert_signatory_title')}
                   value={signatoryTitle}
                   onChange={setSignatoryTitle}
                   width="100%"
@@ -206,14 +208,14 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
                   onClick={onClose}
                   className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 font-semibold cursor-pointer"
                 >
-                  Cancel
+                  {t('common_cancel')}
                 </button>
                 <button
                   type="submit"
                   className="px-5 py-2 rounded-xl bg-[#C4785A] text-white font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-xs flex items-center gap-1.5"
                 >
                   <FileCheck size={14} />
-                  <span>Generate & Issue Certificate</span>
+                  <span>{t('edu_cert_generate')}</span>
                 </button>
               </div>
             </form>
@@ -235,11 +237,11 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
                 </div>
 
                 <h1 className="text-2xl sm:text-3xl font-serif font-bold text-neutral-900 dark:text-white tracking-tight">
-                  Certificate of Achievement & Completion
+                  {t('edu_cert_doc_title')}
                 </h1>
 
                 <p className="text-xs text-neutral-500 dark:text-neutral-400 italic">
-                  This official credential is proudly awarded to
+                  {t('edu_cert_awarded_to')}
                 </p>
 
                 <div className="py-2">
@@ -249,7 +251,7 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
                 </div>
 
                 <p className="text-sm text-neutral-700 dark:text-neutral-300 max-w-lg mx-auto leading-relaxed">
-                  for outstanding dedication and mastery in successfully fulfilling the prescribed curriculum of
+                  {t('edu_cert_for_curriculum')}
                 </p>
 
                 <div className="text-lg font-semibold text-neutral-900 dark:text-white">
@@ -258,11 +260,11 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
 
                 {activeCert.honors && (
                   <div className="inline-block text-xs font-semibold px-3 py-1 rounded-md bg-[#FCEEE8] dark:bg-neutral-800 text-[#C4785A]">
-                    {activeCert.honors} · Final Score: {activeCert.averageGradeScore}%
+                    {activeCert.honors} · {t('edu_cert_final_score')} {activeCert.averageGradeScore}%
                   </div>
                 )}
 
-                <div className="pt-8 grid grid-cols-2 gap-8 border-t border-[#C4785A]/20 mt-8 text-left">
+                <div className="pt-8 grid grid-cols-2 gap-8 border-t border-[#C4785A]/20 mt-8 text-left rtl:text-right">
                   <div>
                     <div className="text-xs font-semibold text-neutral-900 dark:text-white">
                       {activeCert.signatoryName}
@@ -271,19 +273,19 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
                       {activeCert.signatoryTitle}
                     </div>
                     <div className="text-[10px] text-neutral-400 dark:text-neutral-500 mt-1">
-                      Date Issued: {activeCert.issueDate}
+                      {t('edu_cert_date_issued')} {activeCert.issueDate}
                     </div>
                   </div>
 
-                  <div className="text-right">
+                  <div className="text-right rtl:text-left">
                     <div className="text-[10px] uppercase font-mono tracking-wider text-neutral-400 dark:text-neutral-500">
-                      Verification Hash
+                      {t('edu_cert_verif_hash')}
                     </div>
                     <div className="text-xs font-mono font-medium text-[#C4785A]">
                       {activeCert.verificationHash}
                     </div>
                     <div className="text-[10px] text-neutral-400 dark:text-neutral-500 mt-1">
-                      ID: #{activeCert.certificateNumber}
+                      {t('edu_cert_id')} #{activeCert.certificateNumber}
                     </div>
                   </div>
                 </div>

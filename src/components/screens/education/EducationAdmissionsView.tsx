@@ -17,16 +17,10 @@ import { AdmissionStage, EduAdmissionLead } from '../../../types';
 import { Seek } from '../../ui/Seek';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
-
-const STAGES: { id: AdmissionStage; title: string }[] = [
-  { id: 'Inquiry', title: '1. Inquiries' },
-  { id: 'PlacementTest', title: '2. Placement Test' },
-  { id: 'TrialClass', title: '3. Trial Session' },
-  { id: 'Admitted', title: '4. Admitted' },
-  { id: 'Enrolled', title: '5. Enrolled' },
-];
+import { useTranslation } from '../../../utils/useTranslation';
 
 export const EducationAdmissionsView: React.FC = () => {
+  const { t, isRtl } = useTranslation();
   const {
     eduAdmissions,
     eduCourses,
@@ -49,9 +43,17 @@ export const EducationAdmissionsView: React.FC = () => {
     desiredCourseId: eduCourses[0]?.id || '',
     guardianName: '',
     placementScore: '',
-    source: 'Instagram Ad',
+    source: 'Social Media',
     notes: '',
   });
+
+  const stages: { id: AdmissionStage; title: string }[] = [
+    { id: 'Inquiry', title: t('edu_stage_inquiry') },
+    { id: 'PlacementTest', title: t('edu_stage_placement') },
+    { id: 'TrialClass', title: t('edu_stage_trial') },
+    { id: 'Admitted', title: t('edu_stage_admitted') },
+    { id: 'Enrolled', title: t('edu_stage_enrolled') },
+  ];
 
   const handleCreateLead = (e: React.FormEvent) => {
     e.preventDefault();
@@ -98,14 +100,14 @@ export const EducationAdmissionsView: React.FC = () => {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white">
-              Admissions & Intake Funnel
+              {t('edu_admissions_title')}
             </h1>
             <span className="text-xs text-neutral-500 dark:text-neutral-400">
               {eduAdmissions.length} active leads · 5 intake pipeline stages
             </span>
           </div>
           <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
-            Prospect conversion pipeline, placement test evaluations, and automated cohort enrollment
+            {t('edu_admissions_subtitle')}
           </p>
         </div>
 
@@ -115,7 +117,7 @@ export const EducationAdmissionsView: React.FC = () => {
           className="h-10 px-4 rounded-xl bg-[#C4785A] text-white text-xs font-semibold flex items-center gap-1.5 hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
         >
           <Plus size={14} />
-          <span>New Inquiry / Lead</span>
+          <span>{t('edu_btn_new_lead')}</span>
         </button>
       </div>
 
@@ -130,7 +132,7 @@ export const EducationAdmissionsView: React.FC = () => {
 
       {/* Kanban Pipeline Board */}
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 items-start">
-        {STAGES.map((stage) => {
+        {stages.map((stage) => {
           const leadsInStage = filteredAdmissions.filter((l) => l.stage === stage.id);
 
           return (
@@ -178,7 +180,7 @@ export const EducationAdmissionsView: React.FC = () => {
                       </div>
                       {lead.guardianName && (
                         <div className="text-[10px] text-neutral-400">
-                          Guardian: {lead.guardianName}
+                          {t('edu_guardian_prefix', { name: lead.guardianName })}
                         </div>
                       )}
                       {lead.source && (
@@ -195,21 +197,21 @@ export const EducationAdmissionsView: React.FC = () => {
                           className="w-full py-1.5 px-2 rounded-lg bg-[#C4785A] text-white text-[11px] font-semibold flex items-center justify-center gap-1.5 cursor-pointer hover:opacity-90 shadow-2xs"
                         >
                           <UserCheck size={12} />
-                          <span>Enroll Student</span>
+                          <span>{t('edu_btn_convert_student')}</span>
                         </button>
                       ) : stage.id !== 'Enrolled' ? (
                         <button
                           type="button"
                           onClick={() => {
-                            const nextIndex = STAGES.findIndex((s) => s.id === stage.id) + 1;
-                            if (nextIndex < STAGES.length) {
-                              updateAdmissionStage(lead.id, STAGES[nextIndex].id);
+                            const nextIndex = stages.findIndex((s) => s.id === stage.id) + 1;
+                            if (nextIndex < stages.length) {
+                              updateAdmissionStage(lead.id, stages[nextIndex].id);
                             }
                           }}
                           className="w-full py-1 text-center text-[10px] font-semibold text-neutral-600 dark:text-neutral-400 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-lg transition-colors flex items-center justify-center gap-1 cursor-pointer"
                         >
                           <span>Move Next</span>
-                          <ArrowRight size={11} />
+                          <ArrowRight size={11} className="rtl:rotate-180" />
                         </button>
                       ) : (
                         <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1 mx-auto">
@@ -237,7 +239,7 @@ export const EducationAdmissionsView: React.FC = () => {
           <div className="relative w-full max-w-md bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl border border-neutral-200 dark:border-neutral-800 p-6">
             <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
               <h2 className="text-base font-bold text-neutral-900 dark:text-white">
-                Convert Inquiry to Active Student
+                {t('edu_lead_modal_title')}
               </h2>
               <button
                 type="button"
@@ -254,7 +256,7 @@ export const EducationAdmissionsView: React.FC = () => {
               </p>
 
               <LabelSelect
-                label="Starting Cohort Batch *"
+                label={t('edu_label_cohort')}
                 value={targetCohortId}
                 onChange={(val) => setTargetCohortId(val?.target?.value ?? String(val))}
                 options={eduCohorts.map((c) => ({
@@ -270,14 +272,14 @@ export const EducationAdmissionsView: React.FC = () => {
                   onClick={() => setConversionLead(null)}
                   className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 font-semibold cursor-pointer"
                 >
-                  Cancel
+                  {t('common_cancel')}
                 </button>
                 <button
                   type="button"
                   onClick={handleConfirmConversion}
                   className="px-5 py-2 rounded-xl bg-[#C4785A] text-white font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
                 >
-                  Confirm & Enroll
+                  {t('edu_btn_convert_student')}
                 </button>
               </div>
             </div>
@@ -291,7 +293,7 @@ export const EducationAdmissionsView: React.FC = () => {
           <div className="relative w-full max-w-lg bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl border border-neutral-200 dark:border-neutral-800 p-6">
             <div className="flex items-center justify-between pb-4 border-b border-neutral-100 dark:border-neutral-800">
               <h2 className="text-base font-bold text-neutral-900 dark:text-white">
-                New Admission Inquiry / Lead
+                {t('edu_btn_new_lead')}
               </h2>
               <button
                 type="button"
@@ -306,7 +308,7 @@ export const EducationAdmissionsView: React.FC = () => {
               <div>
                 <LabelInput
                   field="studentName"
-                  label="Candidate Name *"
+                  label={t('edu_field_fullname')}
                   required
                   placeholder="e.g. Yacine Benali"
                   value={formData.studentName}
@@ -321,7 +323,7 @@ export const EducationAdmissionsView: React.FC = () => {
                 <div>
                   <LabelInput
                     field="phone"
-                    label="Phone *"
+                    label={t('edu_field_phone')}
                     type="tel"
                     required
                     placeholder="0550 00 00 00"
@@ -335,7 +337,7 @@ export const EducationAdmissionsView: React.FC = () => {
                 <div>
                   <LabelInput
                     field="email"
-                    label="Email"
+                    label={t('edu_field_email')}
                     type="email"
                     placeholder="yacine@example.com"
                     value={formData.email}
@@ -348,7 +350,7 @@ export const EducationAdmissionsView: React.FC = () => {
               </div>
 
               <LabelSelect
-                label="Desired Course *"
+                label={t('edu_field_course_title')}
                 value={formData.desiredCourseId}
                 onChange={(val) =>
                   setFormData({
@@ -367,7 +369,7 @@ export const EducationAdmissionsView: React.FC = () => {
                 <div>
                   <LabelInput
                     field="guardianName"
-                    label="Guardian Name"
+                    label={t('edu_field_guardian_name')}
                     placeholder="Parent / Sponsor"
                     value={formData.guardianName}
                     onChange={(val) => setFormData({ ...formData, guardianName: String(val) })}
@@ -396,13 +398,13 @@ export const EducationAdmissionsView: React.FC = () => {
                   onClick={() => setIsAddLeadModalOpen(false)}
                   className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 font-semibold cursor-pointer"
                 >
-                  Cancel
+                  {t('common_cancel')}
                 </button>
                 <button
                   type="submit"
                   className="px-5 py-2 rounded-xl bg-[#C4785A] text-white font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
                 >
-                  Add Lead
+                  {t('edu_btn_new_lead')}
                 </button>
               </div>
             </form>

@@ -20,10 +20,12 @@ import { EduEnrollment } from '../../../types';
 import { Seek } from '../../ui/Seek';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
+import { useTranslation } from '../../../utils/useTranslation';
 
 type PaymentFilterKey = 'all' | 'pending' | 'partial' | 'overdue' | 'paid';
 
 export const EducationFinanceView: React.FC = () => {
+  const { t, isRtl } = useTranslation();
   const {
     eduEnrollments,
     eduCohorts,
@@ -107,14 +109,14 @@ export const EducationFinanceView: React.FC = () => {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white">
-              Tuition, Installments & Billing
+              {t('edu_finance_title')}
             </h1>
             <span className="text-xs text-neutral-500 dark:text-neutral-400">
               {eduEnrollments.length} accounts · {formatMoney(totalCollected)} settled
             </span>
           </div>
           <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
-            Multi-installment student tuition schedules, cash collection radar, overdue aging, and automated receipts
+            {t('edu_finance_subtitle')}
           </p>
         </div>
 
@@ -134,7 +136,7 @@ export const EducationFinanceView: React.FC = () => {
               className="h-10 px-4 rounded-xl bg-[#C4785A] text-white text-xs font-semibold flex items-center gap-1.5 hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
             >
               <Plus size={14} />
-              <span>Record Payment</span>
+              <span>{t('edu_btn_log_payment')}</span>
             </button>
           )}
         </div>
@@ -157,7 +159,7 @@ export const EducationFinanceView: React.FC = () => {
 
         <div className="p-4 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-900/40 border border-[#EDF1F3] dark:border-neutral-800">
           <div className="flex items-center justify-between text-neutral-500 dark:text-neutral-400 text-xs font-semibold mb-1">
-            <span>Settled Collections</span>
+            <span>{t('edu_fin_collected')}</span>
             <CheckCircle2 size={16} className="text-emerald-500" />
           </div>
           <div className="my-1">
@@ -172,7 +174,7 @@ export const EducationFinanceView: React.FC = () => {
 
         <div className="p-4 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-900/40 border border-[#EDF1F3] dark:border-neutral-800">
           <div className="flex items-center justify-between text-neutral-500 dark:text-neutral-400 text-xs font-semibold mb-1">
-            <span>Outstanding Balance</span>
+            <span>{t('edu_fin_receivables')}</span>
             <Wallet size={16} className="text-amber-500" />
           </div>
           <div className="my-1">
@@ -185,7 +187,7 @@ export const EducationFinanceView: React.FC = () => {
 
         <div className="p-4 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-900/40 border border-[#EDF1F3] dark:border-neutral-800">
           <div className="flex items-center justify-between text-neutral-500 dark:text-neutral-400 text-xs font-semibold mb-1">
-            <span>Overdue Aging AR</span>
+            <span>{t('edu_fin_overdue')}</span>
             <AlertCircle size={16} className="text-rose-500" />
           </div>
           <div className="my-1">
@@ -211,10 +213,10 @@ export const EducationFinanceView: React.FC = () => {
         <div className="flex items-center gap-1 p-1 bg-neutral-100 dark:bg-neutral-800/80 rounded-xl self-start sm:self-auto overflow-x-auto">
           {[
             { id: 'all', label: 'All Accounts' },
-            { id: 'pending', label: 'Pending' },
-            { id: 'partial', label: 'Partial' },
-            { id: 'overdue', label: 'Overdue' },
-            { id: 'paid', label: 'Fully Settled' },
+            { id: 'pending', label: t('edu_tuition_unpaid') },
+            { id: 'partial', label: t('edu_tuition_partial') },
+            { id: 'overdue', label: t('edu_tuition_overdue') },
+            { id: 'paid', label: t('edu_tuition_paid') },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -234,15 +236,15 @@ export const EducationFinanceView: React.FC = () => {
 
       {/* Tuition Accounts Table */}
       <div className="overflow-hidden rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/60 shadow-2xs">
-        <table className="w-full text-left border-collapse text-xs">
+        <table className="w-full text-left rtl:text-right border-collapse text-xs">
           <thead>
             <tr className="border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/50 text-[11px] font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
-              <th className="py-3.5 px-4">Learner</th>
-              <th className="py-3.5 px-4">Cohort</th>
-              <th className="py-3.5 px-4">Agreed Tuition</th>
+              <th className="py-3.5 px-4">{t('edu_col_student')}</th>
+              <th className="py-3.5 px-4">{t('edu_col_cohort')}</th>
+              <th className="py-3.5 px-4">{t('edu_field_tuition_fee')}</th>
               <th className="py-3.5 px-4">Paid / Balance</th>
-              <th className="py-3.5 px-4">Status & Milestones</th>
-              <th className="py-3.5 px-4 text-right">Actions</th>
+              <th className="py-3.5 px-4">{t('common_status')}</th>
+              <th className="py-3.5 px-4 text-right rtl:text-left">{t('edu_col_actions')}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800/80">
@@ -294,7 +296,11 @@ export const EducationFinanceView: React.FC = () => {
                           : 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300'
                       }`}
                     >
-                      {enr.paymentStatus}
+                      {enr.paymentStatus === 'Paid'
+                        ? t('edu_tuition_paid')
+                        : enr.paymentStatus === 'Overdue'
+                        ? t('edu_tuition_overdue')
+                        : t('edu_tuition_partial')}
                     </span>
                     <span className="text-[11px] text-neutral-500">
                       {enr.installments?.filter((i) => i.isPaid).length || 0} /{' '}
@@ -303,14 +309,14 @@ export const EducationFinanceView: React.FC = () => {
                   </div>
                 </td>
 
-                <td className="py-3.5 px-4 text-right">
+                <td className="py-3.5 px-4 text-right rtl:text-left">
                   {enr.balanceDue > 0 ? (
                     <button
                       type="button"
                       onClick={() => handleOpenPayment(enr, 0)}
                       className="px-2.5 py-1.5 rounded-lg bg-[#C4785A] text-white text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-2xs"
                     >
-                      Record Payment
+                      {t('edu_btn_log_payment')}
                     </button>
                   ) : (
                     <span className="text-[11px] text-emerald-600 font-semibold">
@@ -338,7 +344,7 @@ export const EducationFinanceView: React.FC = () => {
           <div className="relative w-full max-w-md bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl border border-neutral-200 dark:border-neutral-800 p-6 space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
               <h2 className="text-base font-bold text-neutral-900 dark:text-white">
-                Log Tuition Payment
+                {t('edu_payment_modal_title')}
               </h2>
               <button
                 type="button"
@@ -355,16 +361,16 @@ export const EducationFinanceView: React.FC = () => {
                   {selectedEnrollmentForPayment.studentName}
                 </div>
                 <div className="text-neutral-500">
-                  Cohort: {selectedEnrollmentForPayment.cohortName}
+                  {t('edu_label_cohort')}: {selectedEnrollmentForPayment.cohortName}
                 </div>
                 <div className="text-[#C4785A] font-bold">
-                  Outstanding Balance: {formatMoney(selectedEnrollmentForPayment.balanceDue)}
+                  {t('edu_fin_receivables')}: {formatMoney(selectedEnrollmentForPayment.balanceDue)}
                 </div>
               </div>
 
               <LabelInput
                 id="payment-amount"
-                label="Payment Amount (DZD)"
+                label={t('edu_field_pay_amount')}
                 type="number"
                 min="1"
                 max={selectedEnrollmentForPayment.balanceDue}
@@ -375,7 +381,7 @@ export const EducationFinanceView: React.FC = () => {
 
               <LabelSelect
                 field="Method"
-                label="Payment Method"
+                label={t('edu_field_pay_method')}
                 value={paymentMethod}
                 onChange={(val) => setPaymentMethod(typeof val === 'string' ? val : val.target?.value || val)}
                 options={[
@@ -394,13 +400,13 @@ export const EducationFinanceView: React.FC = () => {
                   onClick={() => setSelectedEnrollmentForPayment(null)}
                   className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 font-semibold cursor-pointer"
                 >
-                  Cancel
+                  {t('common_cancel')}
                 </button>
                 <button
                   type="submit"
                   className="px-5 py-2 rounded-xl bg-[#C4785A] text-white font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
                 >
-                  Confirm & Generate Receipt
+                  {t('edu_btn_save_payment')}
                 </button>
               </div>
             </form>
@@ -448,7 +454,7 @@ export const EducationFinanceView: React.FC = () => {
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-neutral-500">Payment Channel:</span>
+                <span className="text-neutral-500">{t('edu_field_pay_method')}:</span>
                 <span className="font-semibold">{receiptToPrint.method}</span>
               </div>
               <div className="flex justify-between pt-2 border-t border-neutral-200 dark:border-neutral-800 font-bold text-sm">

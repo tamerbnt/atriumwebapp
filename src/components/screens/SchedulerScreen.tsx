@@ -243,7 +243,7 @@ export const SchedulerScreen: React.FC = () => {
           <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
             <div>
               <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
-                {isPOS ? 'Weekly Scheduled Shifts' : t('schedule_weekly_classes', language)}
+                {isPOS ? (language === 'ar' ? 'ورديات العمل المجدولة أسبوعياً' : language === 'fr' ? 'Créneaux & Équipe de la Semaine' : 'Weekly Scheduled Shifts') : t('schedule_weekly_classes', language)}
               </span>
               <div className="mt-1">
                 <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
@@ -254,7 +254,7 @@ export const SchedulerScreen: React.FC = () => {
             <div className="text-3xl font-black text-neutral-900 dark:text-white tabular-nums">
               {schedule.length}{' '}
               <span className="text-xs font-normal text-neutral-400">
-                {isPOS ? 'shifts' : (language === 'ar' ? 'حصص تدريبية' : language === 'fr' ? 'cours au programme' : 'scheduled classes')}
+                {isPOS ? (language === 'ar' ? 'ورديات' : language === 'fr' ? 'créneaux' : 'shifts') : (language === 'ar' ? 'حصص تدريبية' : language === 'fr' ? 'cours au programme' : 'scheduled classes')}
               </span>
             </div>
           </div>
@@ -263,18 +263,18 @@ export const SchedulerScreen: React.FC = () => {
           <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
             <div>
               <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
-                {isPOS ? 'Weekly Staff Coverage' : t('schedule_enrolled_athletes', language)}
+                {isPOS ? (language === 'ar' ? 'تغطية طاقم العمل الأسبوعية' : language === 'fr' ? 'Couverture Hebdo de la Caisse' : 'Weekly Staff Coverage') : t('schedule_enrolled_athletes', language)}
               </span>
               <div className="mt-1">
                 <span className="text-[10px] font-bold text-[#C4785A] bg-[#C4785A]/10 px-2 py-0.5 rounded-full">
-                  {isPOS ? '100% Register Coverage' : (language === 'ar' ? '82% نسبة الامتلاء' : language === 'fr' ? '82% Taux de Remplissage' : '82% Capacity Ratio')}
+                  {isPOS ? (language === 'ar' ? '100% تغطية الصندوق' : language === 'fr' ? '100% Couverture Caisse' : '100% Register Coverage') : (language === 'ar' ? '82% نسبة الامتلاء' : language === 'fr' ? '82% Taux de Remplissage' : '82% Capacity Ratio')}
                 </span>
               </div>
             </div>
             <div className="text-3xl font-black text-neutral-900 dark:text-white tabular-nums">
               {isPOS ? `${schedule.length * 8}h` : totalEnrolled}{' '}
               <span className="text-xs font-normal text-neutral-400">
-                {isPOS ? 'heures' : (language === 'ar' ? 'رياضي مسجل' : language === 'fr' ? 'réservations' : 'bookings')}
+                {isPOS ? (language === 'ar' ? 'ساعات' : language === 'fr' ? 'heures' : 'hours') : (language === 'ar' ? 'رياضي مسجل' : language === 'fr' ? 'réservations' : 'bookings')}
               </span>
             </div>
           </div>
@@ -283,16 +283,16 @@ export const SchedulerScreen: React.FC = () => {
           <div className="p-5 rounded-[20px] bg-[#18181B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
             <div>
               <span className="text-xs font-medium text-neutral-300">
-                {isPOS ? 'Peak Register Rush' : t('schedule_peak_capacity', language)}
+                {isPOS ? (language === 'ar' ? 'ذروة تدفق الزبائن على الصندوق' : language === 'fr' ? 'Heures d\'Affluence Caisse' : 'Peak Register Rush') : t('schedule_peak_capacity', language)}
               </span>
               <div className="text-[11px] text-[#C4785A] font-semibold mt-0.5">
-                {isPOS ? 'Pointes midi & sortie de bureaux' : (language === 'ar' ? 'ساعات الذروة والقاعة الرئيسية' : language === 'fr' ? 'Heures de Pointe Salle Principale' : 'Peak Hours Main Arena')}
+                {isPOS ? (language === 'ar' ? 'ذروة الغداء ومغادرة المكاتب' : language === 'fr' ? 'Pointes midi & sortie de bureaux' : 'Lunch & Office Exit Rush') : (language === 'ar' ? 'ساعات الذروة والقاعة الرئيسية' : language === 'fr' ? 'Heures de Pointe Salle Principale' : 'Peak Hours Main Arena')}
               </div>
             </div>
             <div className="text-2xl font-black text-white tabular-nums">
               12:00 - 18:30{' '}
               <span className="text-xs font-normal text-neutral-400">
-                {isPOS ? 'Caisse & Étage' : 'CrossFit & Boxe'}
+                {isPOS ? (language === 'ar' ? 'الكاشير والواجهة' : language === 'fr' ? 'Caisse & Étage' : 'Register & Floor') : 'CrossFit & Boxe'}
               </span>
             </div>
           </div>

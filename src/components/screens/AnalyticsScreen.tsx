@@ -334,25 +334,25 @@ export const AnalyticsScreen: React.FC = () => {
 
     return [
       {
-        label: isPOS ? 'Frequent Shoppers (3+ orders)' : 'High Frequency (4-6 visits/week)',
+        label: isPOS ? (language === 'ar' ? 'زبائن دائمون (+3 طلبيات)' : language === 'fr' ? 'Clients fréquents (3+ achats)' : 'Frequent Shoppers (3+ orders)') : 'High Frequency (4-6 visits/week)',
         count: frequentCount,
         pct: Math.round((frequentCount / safeBase) * 100),
         color: 'bg-emerald-500',
       },
       {
-        label: isPOS ? 'Occasional Regulars (2 orders)' : 'Moderate Frequency (2-3 visits/week)',
+        label: isPOS ? (language === 'ar' ? 'زبائن دوريون (طلبيتان)' : language === 'fr' ? 'Habitués occasionnels (2 achats)' : 'Occasional Regulars (2 orders)') : 'Moderate Frequency (2-3 visits/week)',
         count: occasionalCount,
         pct: Math.round((occasionalCount / safeBase) * 100),
         color: 'bg-[#C4785A]',
       },
       {
-        label: isPOS ? 'One-time & Walk-in Guests' : 'Weekend Regulars (1-2 visits/week)',
+        label: isPOS ? (language === 'ar' ? 'زبائن عابرون لمرة واحدة' : language === 'fr' ? 'Clients de passage uniques' : 'One-time & Walk-in Guests') : 'Weekend Regulars (1-2 visits/week)',
         count: singleTotal,
         pct: Math.round((singleTotal / safeBase) * 100),
         color: 'bg-blue-500',
       },
       {
-        label: isPOS ? 'Profiles without orders' : 'At Risk / Inactive (<1 visit/month)',
+        label: isPOS ? (language === 'ar' ? 'حسابات دون طلبيات' : language === 'fr' ? 'Profils sans commandes' : 'Profiles without orders') : 'At Risk / Inactive (<1 visit/month)',
         count: lapsedCount,
         pct: Math.round((lapsedCount / safeBase) * 100),
         color: 'bg-rose-500',
@@ -513,7 +513,7 @@ export const AnalyticsScreen: React.FC = () => {
         <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-semibold text-[#64748B] dark:text-neutral-400">
-              {isPOS ? 'Total POS Transactions' : 'Total Footfall'}
+              {isPOS ? (language === 'ar' ? 'إجمالي عمليات الكاشير' : language === 'fr' ? 'Total Transactions Caisse' : 'Total POS Transactions') : 'Total Footfall'}
             </span>
             <div className="w-7 h-7 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
               {isPOS ? <Receipt size={15} /> : <UserCheck size={15} />}
@@ -522,14 +522,14 @@ export const AnalyticsScreen: React.FC = () => {
           <div className="mt-3">
             <div className="text-2xl font-black text-neutral-900 dark:text-white tabular-nums tracking-tight font-mono">
               {isPOS ? `${totalTransactions}` : '1,482'}
-              {isPOS && <span className="text-xs font-normal text-neutral-400 ml-1">tickets</span>}
+              {isPOS && <span className="text-xs font-normal text-neutral-400 mx-1">{language === 'ar' ? 'تذكرة' : language === 'fr' ? 'tickets' : 'tickets'}</span>}
             </div>
             <div className="mt-1 flex items-center gap-1.5 text-[11px]">
               <span className={`font-bold flex items-center ${transactionsGrowthPct >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
                 {transactionsGrowthPct >= 0 ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
                 {transactionsGrowthPct >= 0 ? `+${transactionsGrowthPct}%` : `${transactionsGrowthPct}%`}
               </span>
-              <span className="text-neutral-400">{isPOS ? 'Settled tickets' : `vs prev ${timeRange.toLowerCase()}`}</span>
+              <span className="text-neutral-400">{isPOS ? (language === 'ar' ? 'وصولات مدفوعة' : language === 'fr' ? 'Tickets encaissés' : 'Settled tickets') : `vs prev ${timeRange.toLowerCase()}`}</span>
             </div>
           </div>
         </div>
@@ -538,7 +538,7 @@ export const AnalyticsScreen: React.FC = () => {
         <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-semibold text-[#64748B] dark:text-neutral-400">
-              Gross Sales Revenue
+              {language === 'ar' ? 'إجمالي الإيرادات' : language === 'fr' ? 'Chiffre d\'Affaires Brut' : 'Gross Sales Revenue'}
             </span>
             <div className="w-7 h-7 rounded-lg bg-amber-50 dark:bg-amber-950/40 text-[#C4785A] flex items-center justify-center">
               <CreditCard size={15} />
@@ -553,7 +553,7 @@ export const AnalyticsScreen: React.FC = () => {
                 {revenueGrowthPct >= 0 ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
                 {revenueGrowthPct >= 0 ? `+${revenueGrowthPct}%` : `${revenueGrowthPct}%`}
               </span>
-              <span className="text-neutral-400">{prevGrossRevenue > 0 ? `vs prev ${timeRange.toLowerCase()}` : 'Live register ledger'}</span>
+              <span className="text-neutral-400">{prevGrossRevenue > 0 ? `vs prev ${timeRange.toLowerCase()}` : (language === 'ar' ? 'سجل الكاشير المباشر' : language === 'fr' ? 'Journal de caisse en direct' : 'Live register ledger')}</span>
             </div>
           </div>
         </div>
@@ -562,7 +562,7 @@ export const AnalyticsScreen: React.FC = () => {
         <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-semibold text-[#64748B] dark:text-neutral-400">
-              {isPOS ? 'Customer Accounts' : 'Retention & Renewals'}
+              {isPOS ? (language === 'ar' ? 'حسابات الزبائن' : language === 'fr' ? 'Comptes Clients' : 'Customer Accounts') : 'Retention & Renewals'}
             </span>
             <div className="w-7 h-7 rounded-lg bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center">
               <TrendingUp size={15} />
@@ -571,14 +571,14 @@ export const AnalyticsScreen: React.FC = () => {
           <div className="mt-3">
             <div className="text-2xl font-black text-neutral-900 dark:text-white tabular-nums tracking-tight font-mono">
               {isPOS ? `${totalCustomers}` : '91.8%'}
-              {isPOS && <span className="text-xs font-normal text-neutral-400 ml-1">clients</span>}
+              {isPOS && <span className="text-xs font-normal text-neutral-400 mx-1">{language === 'ar' ? 'عميل' : language === 'fr' ? 'clients' : 'clients'}</span>}
             </div>
             <div className="mt-1 flex items-center gap-1.5 text-[11px]">
               <span className="font-bold text-emerald-600 flex items-center">
                 <ArrowUpRight size={12} />
-                Active
+                {language === 'ar' ? 'نشط' : language === 'fr' ? 'Actif' : 'Active'}
               </span>
-              <span className="text-neutral-400">{isPOS ? 'Directory profiles' : 'churn reduced'}</span>
+              <span className="text-neutral-400">{isPOS ? (language === 'ar' ? 'ملفات الزبائن' : language === 'fr' ? 'Fiches clients' : 'Directory profiles') : 'churn reduced'}</span>
             </div>
           </div>
         </div>
@@ -587,7 +587,7 @@ export const AnalyticsScreen: React.FC = () => {
         <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-semibold text-[#64748B] dark:text-neutral-400">
-              {isPOS ? 'Average Basket (Ticket)' : 'Avg Member Spend'}
+              {isPOS ? (language === 'ar' ? 'متوسط قيمة الوصل' : language === 'fr' ? 'Panier Moyen (Ticket)' : 'Average Basket (Ticket)') : 'Avg Member Spend'}
             </span>
             <div className="w-7 h-7 rounded-lg bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 flex items-center justify-center">
               <Users size={15} />
@@ -617,10 +617,10 @@ export const AnalyticsScreen: React.FC = () => {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div>
                 <h2 className="text-base font-bold text-neutral-900 dark:text-white">
-                  {isPOS ? 'Hourly Register Sales Distribution' : 'Hourly Peak Traffic & Density'}
+                  {isPOS ? (language === 'ar' ? 'توزيع مبيعات الصندوق بالساعة' : language === 'fr' ? 'Distribution Horaire des Ventes' : 'Hourly Register Sales Distribution') : 'Hourly Peak Traffic & Density'}
                 </h2>
                 <p className="text-xs text-neutral-400 dark:text-neutral-500">
-                  {isPOS ? 'Transaction throughput and peak buying hours across the day.' : 'Visitor distribution across operating hours.'}
+                  {isPOS ? (language === 'ar' ? 'حجم المعاملات وساعات الذروة الشرائية على مدار اليوم.' : language === 'fr' ? 'Volume des transactions et pics d\'achat tout au long de la journée.' : 'Transaction throughput and peak buying hours across the day.') : 'Visitor distribution across operating hours.'}
                 </p>
               </div>
 
@@ -684,16 +684,24 @@ export const AnalyticsScreen: React.FC = () => {
             {/* Occupancy Legend & Stats */}
             <div className="grid grid-cols-3 gap-2 pt-1 border-t border-[#EDF1F3] dark:border-neutral-700/60">
               <div className="text-center p-2 rounded-xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60">
-                <span className="text-[10px] text-neutral-400 block font-medium">Peak Hour</span>
+                <span className="text-[10px] text-neutral-400 block font-medium">
+                  {language === 'ar' ? 'ساعة الذروة' : language === 'fr' ? 'Heure de pointe' : 'Peak Hour'}
+                </span>
                 <span className="text-xs font-bold text-neutral-900 dark:text-white font-mono">{peakHourRange}</span>
               </div>
               <div className="text-center p-2 rounded-xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60">
-                <span className="text-[10px] text-neutral-400 block font-medium">Avg Items / Ticket</span>
-                <span className="text-xs font-bold text-neutral-900 dark:text-white font-mono">{avgItemsPerTicket} items</span>
+                <span className="text-[10px] text-neutral-400 block font-medium">
+                  {language === 'ar' ? 'متوسط الأصناف / الوصل' : language === 'fr' ? 'Articles / Ticket' : 'Avg Items / Ticket'}
+                </span>
+                <span className="text-xs font-bold text-neutral-900 dark:text-white font-mono">{avgItemsPerTicket} {language === 'ar' ? 'قطع' : language === 'fr' ? 'articles' : 'items'}</span>
               </div>
               <div className="text-center p-2 rounded-xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60">
-                <span className="text-[10px] text-neutral-400 block font-medium">Register Status</span>
-                <span className="text-xs font-bold text-emerald-600">Active Online</span>
+                <span className="text-[10px] text-neutral-400 block font-medium">
+                  {language === 'ar' ? 'حالة الصندوق' : language === 'fr' ? 'État du terminal' : 'Register Status'}
+                </span>
+                <span className="text-xs font-bold text-emerald-600">
+                  {language === 'ar' ? 'متصل ومباشر' : language === 'fr' ? 'Actif en ligne' : 'Active Online'}
+                </span>
               </div>
             </div>
           </div>
@@ -701,7 +709,7 @@ export const AnalyticsScreen: React.FC = () => {
           {/* Member Attendance / Customer Repeat Rate */}
           <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[26px] p-5 space-y-3 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
             <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
-              {isPOS ? 'Customer Order Frequency Distribution' : 'Member Attendance Regularity'}
+              {isPOS ? (language === 'ar' ? 'توزيع وتيرة طلبيات الزبائن' : language === 'fr' ? 'Fréquence d\'Achat des Clients' : 'Customer Order Frequency Distribution') : 'Member Attendance Regularity'}
             </h3>
             <div className="space-y-2.5">
               {customerFrequency.map((item, i) => (
@@ -732,10 +740,10 @@ export const AnalyticsScreen: React.FC = () => {
           <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[26px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
             <div>
               <h2 className="text-base font-bold text-neutral-900 dark:text-white">
-                {isPOS ? 'Payment Tender Breakdown' : 'Revenue Breakdown'}
+                {isPOS ? (language === 'ar' ? 'تفصيل طرق السداد والقبض' : language === 'fr' ? 'Répartition des Règlements Caisse' : 'Payment Tender Breakdown') : 'Revenue Breakdown'}
               </h2>
               <p className="text-xs text-neutral-400 dark:text-neutral-500">
-                {isPOS ? 'Settlement breakdown by tender method.' : 'Income segmentation across revenue channels.'}
+                {isPOS ? (language === 'ar' ? 'توزيع المداخيل حسب طريقة الدفع.' : language === 'fr' ? 'Ventilation des encaissements par mode de règlement.' : 'Settlement breakdown by tender method.') : 'Income segmentation across revenue channels.'}
               </p>
             </div>
 
