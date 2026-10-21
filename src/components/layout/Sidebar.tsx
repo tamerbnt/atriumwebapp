@@ -676,7 +676,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     setActivePmSubScreen(next.sub);
                   }}
                   className="w-9 h-9 rounded-xl bg-[#C4785A]/20 border border-[#C4785A]/40 text-[#C4785A] hover:bg-[#C4785A] hover:text-white flex items-center justify-center font-bold text-[11px] transition-all cursor-pointer shadow-xs active:scale-95"
-                  title={`${t('pm_role_active_label')}: ${activePmRole}`}
+                  title={`${t('pm_role_active_label')}: ${activePmRole === 'direction' ? t('pm_role_direction_name') : activePmRole === 'chef_projet' ? t('pm_role_chef_projet_name') : activePmRole === 'crea' ? t('pm_role_crea_name') : activePmRole === 'superviseur' ? t('pm_role_superviseur_name') : activePmRole === 'rh' ? t('pm_role_rh_name') : t('pm_role_compta_name')}`}
                 >
                   {activePmRole === 'direction' ? t('pm_role_direction_abbr') : activePmRole === 'chef_projet' ? t('pm_role_chef_projet_abbr') : activePmRole === 'crea' ? t('pm_role_crea_abbr') : activePmRole === 'superviseur' ? t('pm_role_superviseur_abbr') : activePmRole === 'rh' ? t('pm_role_rh_abbr') : t('pm_role_compta_abbr')}
                 </button>

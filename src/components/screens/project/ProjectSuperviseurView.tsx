@@ -294,7 +294,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
       {/* SCREEN 4.3: REAL-TIME MOBILE DAILY CLOCK-IN (WRAPPED IN SIMULATOR) */}
       {activeTab === 'attendance' && (
         <MobilePhoneSimulator
-          title="Pointage Terrain en Temps Réel"
+          title={t('pm_sup_sim_title')}
           subtitle={`${selectedMission?.code} · ${selectedMission?.venueName}`}
           defaultMode="mobile"
         >
@@ -302,7 +302,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
           <div className="p-3 bg-zinc-100 dark:bg-zinc-800/60 rounded-2xl border border-zinc-200 dark:border-zinc-700/60 space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-bold text-[#C4785A] uppercase tracking-wide">
-                Pointage Mobile
+                {t('pm_sup_sim_badge')}
               </span>
               <span className="font-mono text-[10px] text-zinc-500">{selectedMission?.code}</span>
             </div>

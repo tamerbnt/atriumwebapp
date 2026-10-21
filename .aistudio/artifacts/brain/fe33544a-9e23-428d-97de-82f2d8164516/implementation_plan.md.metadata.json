@@ -1,0 +1,5 @@
+{
+  "summary":  "Comprehensive Localization and Polish Overhaul for the Project & Milestone (Agency 6-Roles) category in Atrium ERP & CRM. Audited and fixed 610 previously untranslated Arabic keys, 26 English keys, eliminated raw 'pm_...' role identifier leaks, localized hardcoded strings across all 6 agency roles and 21 sub-screens, added full Agency role navigation to the Command Palette, and resolved settings breadcrumbs. All 679 PM keys are now 100% translated and aligned across French, Modern Standard Arabic, and English.",
+  "updatedAt":  "2026-10-21T04:21:28.684367483Z",
+  "userFacing":  true
+}

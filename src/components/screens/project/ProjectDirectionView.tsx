@@ -411,10 +411,10 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
                         €
                       </div>
                       <span className="text-zinc-800 dark:text-zinc-200">
-                        <strong>F. Nassima</strong> a généré 3 formulaires CCP
+                        {t('pm_dir_activity_ccp_generated', { user: 'F. Nassima', count: 3 })}
                       </span>
                     </div>
-                    <span className="text-[11px] text-zinc-400">Il y a 8 min</span>
+                    <span className="text-[11px] text-zinc-400">{t('pm_dir_time_ago_min', { min: 8 })}</span>
                   </div>
 
                   <div className="flex items-center justify-between py-1.5 border-b border-zinc-100 dark:border-zinc-800/60">
@@ -423,10 +423,10 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
                         S
                       </div>
                       <span className="text-zinc-800 dark:text-zinc-200">
-                        <strong>R. Sofiane</strong> a clôturé le pointage — Mission n°142
+                        {t('pm_dir_activity_rollcall_closed', { user: 'R. Sofiane', code: 142 })}
                       </span>
                     </div>
-                    <span className="text-[11px] text-zinc-400">Il y a 26 min</span>
+                    <span className="text-[11px] text-zinc-400">{t('pm_dir_time_ago_min', { min: 26 })}</span>
                   </div>
 
                   <div className="flex items-center justify-between py-1.5 border-b border-zinc-100 dark:border-zinc-800/60">
@@ -435,10 +435,10 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
                         C
                       </div>
                       <span className="text-zinc-800 dark:text-zinc-200">
-                        <strong>S. Meriem</strong> a livré BAT_rollup_ooredoo.pdf
+                        {t('pm_dir_activity_bat_delivered', { user: 'S. Meriem', file: 'BAT_rollup_ooredoo.pdf' })}
                       </span>
                     </div>
-                    <span className="text-[11px] text-zinc-400">Il y a 1 h</span>
+                    <span className="text-[11px] text-zinc-400">{t('pm_dir_time_ago_hours', { count: 1 })}</span>
                   </div>
 
                   <div className="flex items-center justify-between py-1.5">
@@ -447,10 +447,10 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
                         P
                       </div>
                       <span className="text-zinc-800 dark:text-zinc-200">
-                        <strong>K. Yacine</strong> a déclaré un achat : 8 400 DA
+                        {t('pm_dir_activity_purchase_declared', { user: 'K. Yacine', amount: '8 400' })}
                       </span>
                     </div>
-                    <span className="text-[11px] text-zinc-400">Il y a 2 h</span>
+                    <span className="text-[11px] text-zinc-400">{t('pm_dir_time_ago_hours', { count: 2 })}</span>
                   </div>
                 </div>
               </div>
@@ -938,17 +938,17 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
               <div className="p-4 rounded-xl border border-zinc-200/80 dark:border-zinc-800 bg-zinc-50/60 dark:bg-zinc-800/40">
                 <span className="text-[10px] uppercase font-bold text-zinc-400 block mb-1">
-                  CA CUMULÉ 2026
+                  {t('pm_dir_kpi_cumul_ca')}
                 </span>
                 <div className="text-2xl font-mono font-bold text-zinc-900 dark:text-zinc-100 tabular-nums">
                   58,4 M DA
                 </div>
-                <span className="text-[11px] text-emerald-600 font-semibold">+18% vs 2025</span>
+                <span className="text-[11px] text-emerald-600 font-semibold">{t('pm_dir_vs_2025')}</span>
               </div>
 
               <div className="p-4 rounded-xl border border-zinc-200/80 dark:border-zinc-800 bg-zinc-50/60 dark:bg-zinc-800/40">
                 <span className="text-[10px] uppercase font-bold text-zinc-400 block mb-1">
-                  MARGE BRUTE MOYENNE
+                  {t('pm_dir_kpi_avg_margin')}
                 </span>
                 <div className="text-2xl font-mono font-bold text-emerald-600 tabular-nums">
                   31,4 %
@@ -958,7 +958,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
 
               <div className="p-4 rounded-xl border border-zinc-200/80 dark:border-zinc-800 bg-zinc-50/60 dark:bg-zinc-800/40">
                 <span className="text-[10px] uppercase font-bold text-zinc-400 block mb-1">
-                  MISSIONS CLÔTURÉES
+                  {t('pm_dir_kpi_closed_missions')}
                 </span>
                 <div className="text-2xl font-mono font-bold text-zinc-900 dark:text-zinc-100 tabular-nums">
                   48
@@ -968,7 +968,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
 
               <div className="p-4 rounded-xl border border-zinc-200/80 dark:border-zinc-800 bg-zinc-50/60 dark:bg-zinc-800/40">
                 <span className="text-[10px] uppercase font-bold text-zinc-400 block mb-1">
-                  ASSIDUITÉ TERRAIN
+                  {t('pm_dir_kpi_attendance_rate')}
                 </span>
                 <div className="text-2xl font-mono font-bold text-blue-600 tabular-nums">
                   98,2 %
@@ -990,9 +990,9 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
               <div className="space-y-3">
                 {[
                   { name: 'Ooredoo Algérie', ca: '24,5 M DA', pct: 42, margin: '32%', color: 'bg-red-500' },
-                  { name: 'Danone Djurdjura', ca: '16,3 M DA', pct: 28, margin: '30%', color: 'bg-blue-500' },
-                  { name: 'Cevital Agro', ca: '10,5 M DA', pct: 18, margin: '34%', color: 'bg-emerald-500' },
-                  { name: 'Autres Annonceurs', ca: '7,1 M DA', pct: 12, margin: '28%', color: 'bg-amber-500' },
+                  { name: t('pm_dir_client_danone'), ca: '16,3 M DA', pct: 28, margin: '30%', color: 'bg-blue-500' },
+                  { name: t('pm_dir_client_cevital'), ca: '10,5 M DA', pct: 18, margin: '34%', color: 'bg-emerald-500' },
+                  { name: t('pm_dir_client_others'), ca: '7,1 M DA', pct: 12, margin: '28%', color: 'bg-amber-500' },
                 ].map((cli) => (
                   <div key={cli.name} className="space-y-1 text-xs">
                     <div className="flex justify-between items-center">
@@ -1020,7 +1020,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
                   { wilaya: '31 - Oran (Ouest)', count: 12, pct: 25, color: 'bg-amber-500' },
                   { wilaya: '25 - Constantine (Est)', count: 9, pct: 19, color: 'bg-blue-500' },
                   { wilaya: '19 - Sétif (Hauts Plateaux)', count: 5, pct: 10, color: 'bg-emerald-500' },
-                  { wilaya: 'Autres Wilayas', count: 2, pct: 4, color: 'bg-zinc-400' },
+                  { wilaya: t('pm_dir_wilaya_others'), count: 2, pct: 4, color: 'bg-zinc-400' },
                 ].map((w) => (
                   <div key={w.wilaya} className="space-y-1 text-xs">
                     <div className="flex justify-between items-center">

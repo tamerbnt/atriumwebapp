@@ -642,9 +642,9 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
 
                   <div className="p-2.5 rounded-xl bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/40 text-xs space-y-1">
                     <div className="flex justify-between font-mono">
-                      <span className="text-zinc-500">CCP :</span>
+                      <span className="text-zinc-500">{t('pm_rh_col_ccp')} :</span>
                       <strong className="text-zinc-900 dark:text-zinc-100">
-                        {slip.ccpNumber} Clé {slip.ccpKey}
+                        {slip.ccpNumber} · {t('pm_rh_col_key', { key: slip.ccpKey })}
                       </strong>
                     </div>
                     <div className="flex justify-between font-mono font-bold text-emerald-700 dark:text-emerald-400">

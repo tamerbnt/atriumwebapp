@@ -383,7 +383,7 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                       <div className="pt-1.5 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between text-[10px]">
                         <span className="text-zinc-400">300 DPI · CMJN</span>
                         <span className="text-emerald-600 font-semibold flex items-center gap-1">
-                          <CheckCircle className="w-3 h-3" /> Transmis
+                          <CheckCircle className="w-3 h-3" /> {t('pm_crea_status_transmitted')}
                         </span>
                       </div>
                     </div>
@@ -397,10 +397,10 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
             <div className="p-6 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm sticky top-6 space-y-4">
               <div className="flex items-center justify-between pb-3 border-b border-zinc-200 dark:border-zinc-800">
                 <span className="text-xs font-bold uppercase tracking-wider text-[#DC2626]">
-                  Livrable prêt
+                  {t('pm_crea_deliverable_ready')}
                 </span>
                 <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">
-                  BAT Final
+                  {t('pm_crea_bat_final')}
                 </span>
               </div>
 
@@ -412,7 +412,7 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                   </h4>
                 </div>
                 <div className="flex items-center gap-2 text-xs text-zinc-500">
-                  <span className="font-mono">24,8 Mo</span>
+                  <span className="font-mono">{t('pm_crea_size_mb', { size: '24,8' })}</span>
                   <span>·</span>
                   <span className="px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 font-bold text-[10px]">
                     HD
@@ -559,7 +559,7 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                   field="ArtworkTitle"
                   label={t('pm_crea_field_artwork_name')}
                   required
-                  placeholder="BAT_Rollup_BabEzzouar_85x200"
+                  placeholder={t('pm_crea_field_artwork_name_ph')}
                   value={artworkTitle}
                   onChange={setArtworkTitle}
                   width="100%"

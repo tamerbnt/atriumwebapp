@@ -468,7 +468,7 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                 value={fullName}
                 onChange={setFullName}
                 required
-                placeholder="Ex: Yasmine Belkacem"
+                placeholder={t('pm_rh_field_fullname_ph')}
                 width="100%"
                 height={46}
                 corner={14}
@@ -604,7 +604,7 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                 field="Nom"
                 label={t('pm_rh_field_candidate_name')}
                 required
-                placeholder="Ex: Karim Bensalem"
+                placeholder={t('pm_rh_field_fullname_ph')}
                 value={fullName}
                 onChange={setFullName}
                 width="100%"

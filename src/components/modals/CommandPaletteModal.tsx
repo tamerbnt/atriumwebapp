@@ -21,6 +21,11 @@ import {
   DoorOpen,
   X,
   Command,
+  ShieldCheck,
+  BarChart2,
+  Kanban,
+  Radio,
+  Wallet,
 } from 'lucide-react';
 import { useAtriumStore, ActiveScreen } from '../../services/store';
 import { t } from '../../utils/i18n';
@@ -90,29 +95,81 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
     const actionCategoryLabel = language === 'ar' ? 'إجراءات' : language === 'fr' ? 'Actions' : 'Actions';
 
     // 1. Navigation items
-    const navItems: Array<{ id: ActiveScreen; label: string; icon: React.ReactNode }> = [
-      { id: 'dashboard', label: t('nav_dashboard', language), icon: <Home size={15} /> },
-      { id: 'members', label: `${terminology.members}`, icon: <Users size={15} /> },
-      { id: 'scheduler', label: `${terminology.scheduler}`, icon: <Calendar size={15} /> },
-      { id: 'shop', label: `${terminology.shop}`, icon: <ShoppingBag size={15} /> },
-      { id: 'registrations', label: `${terminology.registration}`, icon: <FileText size={15} /> },
-      { id: 'finance', label: t('nav_finance', language), icon: <CreditCard size={15} /> },
-      { id: 'history', label: t('nav_history', language), icon: <History size={15} /> },
-      { id: 'settings', label: t('nav_settings', language), icon: <Settings size={15} /> },
-    ];
+    if (category === 'project_milestone') {
+      const pmNavItems: Array<{ id: ActiveScreen; label: string; role: string; icon: React.ReactNode }> = [
+        // Direction
+        { id: 'pm_dir_dashboard', label: t('pm_screen_dir_dashboard'), role: t('pm_role_direction_name'), icon: <Home size={15} /> },
+        { id: 'pm_dir_new_project', label: t('pm_screen_dir_new_project'), role: t('pm_role_direction_name'), icon: <FileText size={15} /> },
+        { id: 'pm_dir_approvals', label: t('pm_screen_dir_approvals'), role: t('pm_role_direction_name'), icon: <ShieldCheck size={15} /> },
+        { id: 'pm_dir_reports', label: t('pm_screen_dir_reports'), role: t('pm_role_direction_name'), icon: <BarChart2 size={15} /> },
+        // Chef de Projet
+        { id: 'pm_cp_projects', label: t('pm_screen_cp_projects'), role: t('pm_role_chef_projet_name'), icon: <Kanban size={15} /> },
+        { id: 'pm_cp_catalog', label: t('pm_screen_cp_catalog'), role: t('pm_role_chef_projet_name'), icon: <ShoppingBag size={15} /> },
+        { id: 'pm_cp_orders', label: t('pm_screen_cp_orders'), role: t('pm_role_chef_projet_name'), icon: <Sparkles size={15} /> },
+        { id: 'pm_cp_files', label: t('pm_screen_cp_deliverables'), role: t('pm_role_chef_projet_name'), icon: <FileText size={15} /> },
+        { id: 'pm_cp_expenses', label: t('pm_screen_cp_expenses'), role: t('pm_role_chef_projet_name'), icon: <Wallet size={15} /> },
+        // Créa
+        { id: 'pm_crea_kanban', label: t('pm_screen_crea_kanban'), role: t('pm_role_crea_name'), icon: <Layers size={15} /> },
+        { id: 'pm_crea_production', label: t('pm_screen_crea_production'), role: t('pm_role_crea_name'), icon: <Sparkles size={15} /> },
+        { id: 'pm_crea_upload', label: t('pm_screen_crea_upload'), role: t('pm_role_crea_name'), icon: <FileText size={15} /> },
+        { id: 'pm_crea_briefs', label: t('pm_screen_crea_briefs'), role: t('pm_role_crea_name'), icon: <FileText size={15} /> },
+        // Superviseur
+        { id: 'pm_sup_missions', label: t('pm_screen_sup_missions'), role: t('pm_role_superviseur_name'), icon: <Radio size={15} /> },
+        { id: 'pm_sup_attendance', label: t('pm_screen_sup_attendance'), role: t('pm_role_superviseur_name'), icon: <Clock size={15} /> },
+        { id: 'pm_sup_staffing', label: t('pm_screen_sup_staffing'), role: t('pm_role_superviseur_name'), icon: <Users size={15} /> },
+        { id: 'pm_sup_expenses', label: t('pm_screen_sup_expenses'), role: t('pm_role_superviseur_name'), icon: <Wallet size={15} /> },
+        // RH
+        { id: 'pm_rh_talents', label: t('pm_screen_rh_talents'), role: t('pm_role_rh_name'), icon: <Users size={15} /> },
+        { id: 'pm_rh_dossier', label: t('pm_screen_rh_dossier'), role: t('pm_role_rh_name'), icon: <FileText size={15} /> },
+        { id: 'pm_rh_portal', label: t('pm_screen_rh_portal'), role: t('pm_role_rh_name'), icon: <GraduationCap size={15} /> },
+        { id: 'pm_rh_walkin', label: t('pm_screen_rh_walkin'), role: t('pm_role_rh_name'), icon: <DoorOpen size={15} /> },
+        // Compta
+        { id: 'pm_compta_payroll', label: t('pm_screen_compta_payroll'), role: t('pm_role_compta_name'), icon: <Wallet size={15} /> },
+        { id: 'pm_compta_ccp', label: t('pm_screen_compta_ccp'), role: t('pm_role_compta_name'), icon: <FileText size={15} /> },
+        { id: 'pm_compta_expenses', label: t('pm_screen_compta_expenses'), role: t('pm_role_compta_name'), icon: <ShieldCheck size={15} /> },
+        { id: 'pm_compta_stock', label: t('pm_screen_compta_stock'), role: t('pm_role_compta_name'), icon: <ShoppingBag size={15} /> },
+        // Settings
+        { id: 'settings', label: t('nav_settings', language), role: 'NCH Activator', icon: <Settings size={15} /> },
+      ];
 
-    navItems.forEach((nav) => {
-      list.push({
-        id: `nav-${nav.id}`,
-        title: nav.label,
-        category: navCategoryLabel,
-        icon: nav.icon,
-        onSelect: () => {
-          setScreen(nav.id);
-          onClose();
-        },
+      pmNavItems.forEach((nav) => {
+        list.push({
+          id: `nav-${nav.id}`,
+          title: nav.label,
+          subtitle: nav.role,
+          category: navCategoryLabel,
+          icon: nav.icon,
+          onSelect: () => {
+            setScreen(nav.id);
+            onClose();
+          },
+        });
       });
-    });
+    } else {
+      const navItems: Array<{ id: ActiveScreen; label: string; icon: React.ReactNode }> = [
+        { id: 'dashboard', label: t('nav_dashboard', language), icon: <Home size={15} /> },
+        { id: 'members', label: `${terminology.members}`, icon: <Users size={15} /> },
+        { id: 'scheduler', label: `${terminology.scheduler}`, icon: <Calendar size={15} /> },
+        { id: 'shop', label: `${terminology.shop}`, icon: <ShoppingBag size={15} /> },
+        { id: 'registrations', label: `${terminology.registration}`, icon: <FileText size={15} /> },
+        { id: 'finance', label: t('nav_finance', language), icon: <CreditCard size={15} /> },
+        { id: 'history', label: t('nav_history', language), icon: <History size={15} /> },
+        { id: 'settings', label: t('nav_settings', language), icon: <Settings size={15} /> },
+      ];
+
+      navItems.forEach((nav) => {
+        list.push({
+          id: `nav-${nav.id}`,
+          title: nav.label,
+          category: navCategoryLabel,
+          icon: nav.icon,
+          onSelect: () => {
+            setScreen(nav.id);
+            onClose();
+          },
+        });
+      });
+    }
 
     // 2. Action items
     list.push({

@@ -1,0 +1,858 @@
+{
+  "pm_rh_ccp_error_title": {
+    "fr": "Erreur Compte CCP",
+    "en": "CCP Account Error"
+  },
+  "pm_rh_ccp_error_msg": {
+    "fr": "Erreur de validation CCP : {error}",
+    "en": "CCP Account validation error: {error}"
+  },
+  "pm_rh_gender_female": {
+    "fr": "Femme",
+    "en": "Female"
+  },
+  "pm_rh_gender_male": {
+    "fr": "Homme",
+    "en": "Male"
+  },
+  "pm_rh_role_animator": {
+    "fr": "Animateur Commercial",
+    "en": "Commercial Animator"
+  },
+  "pm_rh_role_hostess": {
+    "fr": "Hôtesse d\\'Accueil",
+    "en": "Hostess / Receptionist"
+  },
+  "pm_rh_role_supervisor": {
+    "fr": "Superviseur Wilaya",
+    "en": "Wilaya Supervisor"
+  },
+  "pm_compta_status_approved_dg": {
+    "fr": "Validée DG",
+    "en": "Approved by DG"
+  },
+  "pm_compta_status_pending_dg": {
+    "fr": "En attente DG",
+    "en": "Pending DG Approval"
+  },
+  "pm_compta_timeline_bought_coded": {
+    "fr": "Acheté & codé",
+    "en": "Purchased & Coded"
+  },
+  "pm_compta_timeline_assigned": {
+    "fr": "Affecté sur mission",
+    "en": "Assigned to Mission"
+  },
+  "pm_compta_timeline_stock_returned": {
+    "fr": "Retour stock",
+    "en": "Stock Return"
+  },
+  "pm_compta_timeline_salon": {
+    "fr": "Salon SITEV — Alger",
+    "en": "SITEV Exhibition — Algiers"
+  },
+  "pm_compta_timeline_in_stock_avail": {
+    "fr": "En stock — État : Bon",
+    "en": "In Stock — Condition: Good"
+  },
+  "pm_rh_title": {
+    "fr": "Vivier National des Talents (58 Wilayas)",
+    "en": "58 Wilayas Talent Pool & Casting"
+  },
+  "pm_rh_subtitle": {
+    "fr": "Base d\\'animateurs, conformité légale, pièces d\\'identité et recrutement",
+    "en": "Promoter database, contract compliance, national ID, and candidate onboarding"
+  },
+  "pm_compta_title": {
+    "fr": "Règlements Financiers & Bordereaux CCP",
+    "en": "Financial Settlements & Postal CCP"
+  },
+  "pm_compta_subtitle": {
+    "fr": "Audit automatisé des paies, bordereaux légaux Algérie Poste SFP 01 et rapprochement",
+    "en": "Automated payroll audit, legal Algérie Poste SFP 01 slips, and expense reconciliation"
+  },
+  "pm_compta_tab_payroll": {
+    "fr": "Validation Paies Terrain",
+    "en": "Field Payroll Audit"
+  },
+  "pm_compta_tab_ccp": {
+    "fr": "Formulaires CCP SFP 01",
+    "en": "CCP SFP 01 Postal Forms"
+  },
+  "pm_compta_tab_expenses": {
+    "fr": "Dépenses & Factures Scannées",
+    "en": "Expenses & Scanned Invoices"
+  },
+  "pm_compta_tab_stock": {
+    "fr": "Matériel Codé & Inventaire",
+    "en": "Coded Asset Inventory"
+  },
+  "pm_compta_double_lock_badge": {
+    "fr": "Double Verrouillage Direction + Compta",
+    "en": "Double-Lock Governance: Direction + Compta"
+  },
+  "pm_compta_btn_generate_slips": {
+    "fr": "Générer les Bordereaux SFP 01",
+    "en": "Generate SFP 01 Postal Slips"
+  },
+  "pm_compta_slips_generated": {
+    "fr": "Bordereaux CCP générés pour ce lot",
+    "en": "CCP Slips generated for this batch"
+  },
+  "pm_compta_col_animator": {
+    "fr": "Animateur / Talent",
+    "en": "Animator / Talent"
+  },
+  "pm_compta_col_mission": {
+    "fr": "Mission & Lieu",
+    "en": "Mission & Location"
+  },
+  "pm_compta_col_days": {
+    "fr": "Jours Pointés",
+    "en": "Days Worked"
+  },
+  "pm_compta_col_amount": {
+    "fr": "Montant Net (DZD)",
+    "en": "Net Amount (DZD)"
+  },
+  "pm_compta_col_ccp": {
+    "fr": "N° Compte CCP & Clé",
+    "en": "CCP Account & Key"
+  },
+  "pm_compta_col_wilaya": {
+    "fr": "Wilaya",
+    "en": "Wilaya"
+  },
+  "pm_compta_col_status": {
+    "fr": "Validation Direction",
+    "en": "Executive Status"
+  },
+  "pm_compta_status_approved": {
+    "fr": "Validée Direction",
+    "en": "Director Approved"
+  },
+  "pm_compta_status_pending": {
+    "fr": "En attente",
+    "en": "Pending Approval"
+  },
+  "pm_compta_preview_title": {
+    "fr": "Aperçu Bordereau SFP 01",
+    "en": "SFP 01 Slip Live Preview"
+  },
+  "pm_compta_btn_print_a4": {
+    "fr": "Imprimer Mandat (A4)",
+    "en": "Print Remittance (A4)"
+  },
+  "pm_compta_btn_view_full": {
+    "fr": "Agrandir le Bordereau",
+    "en": "Expand Remittance Form"
+  },
+  "pm_compta_expense_invoice_title": {
+    "fr": "Facture Scannée & Justificatif",
+    "en": "Scanned Receipt & Audit"
+  },
+  "pm_compta_expense_conform": {
+    "fr": "Conforme aux Règles Comptables",
+    "en": "Compliant with Accounting Rules"
+  },
+  "pm_compta_stock_coded_title": {
+    "fr": "Traçabilité des Matériels Codés",
+    "en": "Coded Equipment Traceability"
+  },
+  "pm_compta_stock_qr_ready": {
+    "fr": "QR Code prêt pour scan terrain",
+    "en": "QR Code ready for field scan"
+  },
+  "pm_rh_tab_talents": {
+    "fr": "Vivier 58 Wilayas",
+    "en": "58 Wilayas Pool"
+  },
+  "pm_rh_tab_dossier": {
+    "fr": "Dossier 360° Talent",
+    "en": "Talent 360° Dossier"
+  },
+  "pm_rh_tab_portal": {
+    "fr": "Pré-inscription en Ligne",
+    "en": "Candidate Portal"
+  },
+  "pm_rh_tab_walkin": {
+    "fr": "Création Directe Agence",
+    "en": "Direct Intake"
+  },
+  "pm_rh_btn_new_talent": {
+    "fr": "Nouveau Talent",
+    "en": "Register New Talent"
+  },
+  "pm_rh_kpi_total_talents": {
+    "fr": "Vivier Total Candidats",
+    "en": "Total Talent Pool"
+  },
+  "pm_rh_kpi_active_talents": {
+    "fr": "Animateurs Prêts",
+    "en": "Active Promoters"
+  },
+  "pm_rh_kpi_verified_ccp": {
+    "fr": "Comptes CCP Vérifiés",
+    "en": "Verified CCP Accounts"
+  },
+  "pm_rh_search_ph": {
+    "fr": "Rechercher par nom, téléphone, CCP, wilaya...",
+    "en": "Search talent by name, phone, CCP, wilaya..."
+  },
+  "pm_rh_btn_export_csv": {
+    "fr": "Exporter Vivier National (CSV)",
+    "en": "Export Talent Pool (CSV)"
+  },
+  "pm_rh_col_talent": {
+    "fr": "Fiche Candidat",
+    "en": "Talent Profile"
+  },
+  "pm_rh_col_location": {
+    "fr": "Wilaya & Commune",
+    "en": "Wilaya & Commune"
+  },
+  "pm_rh_col_ccp": {
+    "fr": "N° CCP & Clé",
+    "en": "CCP Number & Key"
+  },
+  "pm_rh_col_rating": {
+    "fr": "Note",
+    "en": "Score"
+  },
+  "pm_rh_col_vehicle": {
+    "fr": "Véhicule",
+    "en": "Vehicle"
+  },
+  "pm_rh_col_license": {
+    "fr": "Permis",
+    "en": "License"
+  },
+  "pm_rh_has_vehicle": {
+    "fr": "Véhiculé",
+    "en": "Has Car"
+  },
+  "pm_rh_has_license": {
+    "fr": "Permis B",
+    "en": "Permis B"
+  },
+  "pm_rh_dossier_title": {
+    "fr": "Dossier 360° du Talent",
+    "en": "Talent 360° Dossier"
+  },
+  "pm_rh_dossier_nin": {
+    "fr": "N° Identification Nationale (NIN) :",
+    "en": "National ID (NIN):"
+  },
+  "pm_rh_dossier_missions_completed": {
+    "fr": "Missions Réalisées :",
+    "en": "Missions Completed:"
+  },
+  "pm_rh_portal_title": {
+    "fr": "Portail Public de Candidature en Ligne",
+    "en": "Online Candidate Self-Registration Portal"
+  },
+  "pm_rh_portal_sub": {
+    "fr": "Inscription accessible sur smartphone pour hôtesses et animateurs des 58 Wilayas",
+    "en": "Public mobile-friendly registration for animators and field promoters across 58 Wilayas"
+  },
+  "pm_rh_walkin_title": {
+    "fr": "Saisie Express Candidat Agence",
+    "en": "Agency Fast Intake Form"
+  },
+  "pm_rh_walkin_sub": {
+    "fr": "Enregistrement direct au comptoir et vérification biométrique immédiate",
+    "en": "Instant in-person candidate registration and biometric verification"
+  },
+  "pm_rh_field_fullname": {
+    "fr": "Nom & Prénom *",
+    "en": "Full Name *"
+  },
+  "pm_rh_field_gender": {
+    "fr": "Genre",
+    "en": "Gender"
+  },
+  "pm_rh_field_age": {
+    "fr": "Âge",
+    "en": "Age"
+  },
+  "pm_rh_field_phone": {
+    "fr": "Numéro de Téléphone *",
+    "en": "Phone Number *"
+  },
+  "pm_rh_field_email": {
+    "fr": "Adresse Email",
+    "en": "Email Address"
+  },
+  "pm_rh_field_wilaya": {
+    "fr": "Wilaya *",
+    "en": "Wilaya *"
+  },
+  "pm_rh_field_commune": {
+    "fr": "Commune de Résidence *",
+    "en": "Commune *"
+  },
+  "pm_rh_field_ccp": {
+    "fr": "Numéro de Compte CCP *",
+    "en": "CCP Account Number *"
+  },
+  "pm_rh_field_ccp_key": {
+    "fr": "Clé CCP *",
+    "en": "CCP Key (Clé) *"
+  },
+  "pm_rh_btn_submit_talent": {
+    "fr": "Enregistrer le Profil Talent",
+    "en": "Register Talent Profile"
+  },
+  "pm_compta_kpi_active_period": {
+    "fr": "Période Active",
+    "en": "Active Period"
+  },
+  "pm_compta_kpi_approved_dg": {
+    "fr": "Validées Direction (DG)",
+    "en": "Approved by DG"
+  },
+  "pm_compta_kpi_pending_dg": {
+    "fr": "En Attente Signature",
+    "en": "Pending DG Signature"
+  },
+  "pm_compta_kpi_net_payroll": {
+    "fr": "Masse Salariale Nette",
+    "en": "Net Payroll Mass"
+  },
+  "pm_compta_audit_title": {
+    "fr": "Paies — Juillet 2026",
+    "en": "July 2026 Payroll"
+  },
+  "pm_compta_audit_sub": {
+    "fr": "Pointages terrain validés par la Direction. Cliquez sur un animateur pour inspecter son mandat CCP SFP 01.",
+    "en": "Field timesheets validated by Direction. Click any animator to inspect CCP SFP 01 voucher."
+  },
+  "pm_compta_btn_generate_batch": {
+    "fr": "⟳ Générer les CCP ({count}) → un PDF fusionné, prêt à imprimer",
+    "en": "⟳ Generate CCP Vouchers ({count}) → Merged PDF"
+  },
+  "pm_compta_batch_success": {
+    "fr": "Mandats CCP générés avec succès ! Fichiers conformes SFP 01 prêts pour virement postal.",
+    "en": "CCP vouchers generated successfully! Standard SFP 01 files ready for postal wire transfer."
+  },
+  "pm_compta_table_animator": {
+    "fr": "ANIMATEUR",
+    "en": "ANIMATOR"
+  },
+  "pm_compta_table_mission": {
+    "fr": "MISSION",
+    "en": "MISSION"
+  },
+  "pm_compta_table_days": {
+    "fr": "JOURS",
+    "en": "DAYS"
+  },
+  "pm_compta_table_amount": {
+    "fr": "MONTANT",
+    "en": "AMOUNT"
+  },
+  "pm_compta_table_status": {
+    "fr": "STATUT",
+    "en": "STATUS"
+  },
+  "pm_compta_status_validated_dg": {
+    "fr": "Validée DG",
+    "en": "Valid DG"
+  },
+  "pm_compta_batches_transmitted": {
+    "fr": "LOTS DE PAIE TRANSMIS PAR LES SUPERVISEURS (MOBILE)",
+    "en": "PAYROLL BATCHES TRANSMITTED BY SUPERVISORS (MOBILE)"
+  },
+  "pm_compta_voucher_preview_header": {
+    "fr": "Bordereau Algérie Poste (SFP 01)",
+    "en": "Algérie Poste Voucher (SFP 01)"
+  },
+  "pm_compta_voucher_official_badge": {
+    "fr": "APERÇU OFFICIEL",
+    "en": "OFFICIAL PREVIEW"
+  },
+  "pm_compta_republic_title": {
+    "fr": "RÉPUBLIQUE ALGÉRIENNE DÉMOCRATIQUE ET POPULAIRE",
+    "en": "DEMOCRATIC AND POPULAR REPUBLIC OF ALGERIA"
+  },
+  "pm_compta_ministry_title": {
+    "fr": "MINISTÈRE DE LA POSTE ET DES TÉLÉCOMMUNICATIONS",
+    "en": "MINISTRY OF POST AND TELECOMMUNICATIONS"
+  },
+  "pm_compta_ptt_ops": {
+    "fr": "ALGÉRIE POSTE · OPÉRATIONS FINANCIÈRES",
+    "en": "ALGÉRIE POSTE · FINANCIAL OPERATIONS"
+  },
+  "pm_compta_account_key_label": {
+    "fr": "N° Compte CCP & Clé",
+    "en": "CCP Account # & Key"
+  },
+  "pm_compta_amount_wire_label": {
+    "fr": "Montant à Virer",
+    "en": "Amount to Wire"
+  },
+  "pm_compta_beneficiary_label": {
+    "fr": "Bénéficiaire du Virement",
+    "en": "Wire Beneficiary"
+  },
+  "pm_compta_wilaya_label": {
+    "fr": "Wilaya de rattachement :",
+    "en": "Home Wilaya:"
+  },
+  "pm_compta_amount_in_words_label": {
+    "fr": "Somme en toutes lettres (Mention Légale)",
+    "en": "Amount in Words (Legal Mention)"
+  },
+  "pm_compta_purpose_label": {
+    "fr": "Motif :",
+    "en": "Purpose:"
+  },
+  "pm_compta_stamp_ptt": {
+    "fr": "Cachet PTT",
+    "en": "PTT STAMP"
+  },
+  "pm_compta_btn_print_sfp01": {
+    "fr": "Imprimer Format SFP 01",
+    "en": "Print SFP 01 Format"
+  },
+  "pm_compta_slips_issued_title": {
+    "fr": "Bordereaux Postaux SFP 01 Édités",
+    "en": "Issued SFP 01 Postal Vouchers"
+  },
+  "pm_compta_slips_issued_sub": {
+    "fr": "Montants transcrits automatiquement en lettres légales (Français et Arabe). Conformes aux guichets Algérie Poste.",
+    "en": "Amounts automatically transcribed in legal words (French & Arabic). Fully compliant with Algérie Poste counters."
+  },
+  "pm_compta_btn_print_all_slips": {
+    "fr": "Imprimer le Lot Complet (SFP 01)",
+    "en": "Print Complete Batch (SFP 01)"
+  },
+  "pm_compta_status_printed": {
+    "fr": "Imprimé ✓",
+    "en": "Printed ✓"
+  },
+  "pm_compta_status_ready_counter": {
+    "fr": "Prêt pour guichet",
+    "en": "Ready for Postal Counter"
+  },
+  "pm_compta_btn_view_sfp01": {
+    "fr": "Visualiser SFP 01",
+    "en": "Inspect SFP 01"
+  },
+  "pm_compta_expense_journal_title": {
+    "fr": "Journal des Dépenses de Terrain",
+    "en": "Field Expenses Ledger"
+  },
+  "pm_compta_expense_journal_sub": {
+    "fr": "Vérification des tickets de caisse, déductions TVA et factures fiscales.",
+    "en": "Audit of register tickets, VAT deductions, and fiscal invoices."
+  },
+  "pm_compta_fiscal_invoice_badge": {
+    "fr": "FACTURE FISCALE",
+    "en": "FISCAL INVOICE"
+  },
+  "pm_compta_declared_by": {
+    "fr": "{project} · Déclaré par {user}",
+    "en": "{project} · Declared by {user}"
+  },
+  "pm_compta_scanner_title": {
+    "fr": "Visualiseur de Reçu & Conformité",
+    "en": "Receipt Viewer & Compliance"
+  },
+  "pm_compta_scanner_select": {
+    "fr": "Sélectionnez une dépense pour inspecter son justificatif.",
+    "en": "Select an expense to inspect its receipt."
+  },
+  "pm_compta_nif_recorded": {
+    "fr": "NIF Enregistré :",
+    "en": "Recorded NIF:"
+  },
+  "pm_compta_stock_title": {
+    "fr": "Parc Matériel & Stock Indirect — Tracé à Vie (Slide 11)",
+    "en": "Equipment Fleet & Indirect Stock — Lifelong Trace (Slide 11)"
+  },
+  "pm_compta_stock_sub": {
+    "fr": "Chaque achat de terrain est automatiquement codé (NCH-A-00xxx) et bénéficie d\\'une traçabilité de cycle de vie.",
+    "en": "Every field purchase is automatically coded (NCH-A-00xxx) with complete lifecycle traceability."
+  },
+  "pm_compta_filter_all_stock": {
+    "fr": "Tous ({count})",
+    "en": "All ({count})"
+  },
+  "pm_compta_filter_indirect": {
+    "fr": "Achats Terrain (NCH-A)",
+    "en": "Field Purchases (NCH-A)"
+  },
+  "pm_compta_filter_in_stock": {
+    "fr": "En Dépôt",
+    "en": "In Storage"
+  },
+  "pm_compta_filter_deployed": {
+    "fr": "En Mission",
+    "en": "On Mission"
+  },
+  "pm_compta_stock_registered": {
+    "fr": "MATÉRIEL ENREGISTRÉ",
+    "en": "REGISTERED ASSETS"
+  },
+  "pm_compta_stock_items_count": {
+    "fr": "{count} articles",
+    "en": "{count} items"
+  },
+  "pm_compta_badge_indirect": {
+    "fr": "STOCK INDIRECT (TERRAIN)",
+    "en": "INDIRECT STOCK (FIELD)"
+  },
+  "pm_compta_badge_deployed": {
+    "fr": "DÉPLOYÉ TERRAIN",
+    "en": "DEPLOYED ON MISSION"
+  },
+  "pm_compta_badge_in_depot": {
+    "fr": "EN DÉPÔT",
+    "en": "IN STORAGE"
+  },
+  "pm_compta_lifecycle_title": {
+    "fr": "CYCLE DE VIE DÉTAILLÉ (SLIDE 11)",
+    "en": "DETAILED LIFECYCLE (SLIDE 11)"
+  },
+  "pm_compta_origin_acquisition": {
+    "fr": "Origine acquisition :",
+    "en": "Acquisition Origin:"
+  },
+  "pm_compta_origin_field_purchased": {
+    "fr": "Acheté et déclaré sur le terrain",
+    "en": "Purchased and declared in the field"
+  },
+  "pm_compta_fiscal_voucher": {
+    "fr": "Justificatif fiscal :",
+    "en": "Fiscal Voucher:"
+  },
+  "pm_compta_voucher_scanned": {
+    "fr": "facture_scan.jpg ✓ Scannée",
+    "en": "invoice_scan.jpg ✓ Scanned"
+  },
+  "pm_compta_current_status": {
+    "fr": "Statut actuel :",
+    "en": "Current Status:"
+  },
+  "pm_compta_status_good": {
+    "fr": "Disponible — état : bon",
+    "en": "Available — Condition: Good"
+  },
+  "pm_compta_history_title": {
+    "fr": "Historique Chronologique des Affectations",
+    "en": "Chronological Assignment History"
+  },
+  "pm_compta_btn_assign_mission": {
+    "fr": "Affecter à une Mission",
+    "en": "Assign to Mission"
+  },
+  "pm_compta_btn_return_stock": {
+    "fr": "Retour Stock",
+    "en": "Return to Stock"
+  },
+  "pm_compta_btn_qr_label": {
+    "fr": "Imprimer Étiquette QR Code",
+    "en": "Print QR Code Label"
+  },
+  "pm_rh_badge_title": {
+    "fr": "Rôle 5 · Ressources Humaines & Casting",
+    "en": "Role 5 · Human Resources & Casting"
+  },
+  "pm_rh_badge_sub": {
+    "fr": "Vivier 58 Wilayas & Comptes CCP",
+    "en": "58 Wilayas Talent Pool & CCP Accounts"
+  },
+  "pm_rh_title_talents": {
+    "fr": "Vivier National des Talents",
+    "en": "National Talent Pool"
+  },
+  "pm_rh_title_dossier": {
+    "fr": "Dossier Candidat · {name}",
+    "en": "Candidate File · {name}"
+  },
+  "pm_rh_title_portal": {
+    "fr": "Portail Candidat Public (/cvs/create)",
+    "en": "Public Candidate Portal (/cvs/create)"
+  },
+  "pm_rh_title_walkin": {
+    "fr": "Saisie Express Candidat Agence",
+    "en": "Agency Express Intake"
+  },
+  "pm_rh_btn_new_candidate": {
+    "fr": "Nouveau Candidat",
+    "en": "New Candidate"
+  },
+  "pm_rh_btn_export_excel": {
+    "fr": "Exporter Vivier (Excel)",
+    "en": "Export Talent Pool (Excel)"
+  },
+  "pm_rh_profiles_found": {
+    "fr": "{count} profils trouvés",
+    "en": "{count} profiles found"
+  },
+  "pm_rh_col_consolidated_score": {
+    "fr": "Score Consolidé",
+    "en": "Consolidated Score"
+  },
+  "pm_rh_col_mobility": {
+    "fr": "Mobilité",
+    "en": "Mobility"
+  },
+  "pm_rh_col_key": {
+    "fr": "Clé : {key}",
+    "en": "Key: {key}"
+  },
+  "pm_rh_pillar1_title": {
+    "fr": "Compétences & Disponibilités",
+    "en": "Skills & Availability"
+  },
+  "pm_rh_pillar1_roles": {
+    "fr": "Rôles souhaités :",
+    "en": "Desired Roles:"
+  },
+  "pm_rh_pillar1_langs": {
+    "fr": "Langues :",
+    "en": "Languages:"
+  },
+  "pm_rh_pillar1_mobility": {
+    "fr": "Mobilité :",
+    "en": "Mobility:"
+  },
+  "pm_rh_pillar2_title": {
+    "fr": "Coordonnées Postales (Algérie Poste)",
+    "en": "Postal Coordinates (Algérie Poste)"
+  },
+  "pm_rh_pillar2_ccp": {
+    "fr": "N° Compte CCP :",
+    "en": "CCP Account #:"
+  },
+  "pm_rh_pillar2_key": {
+    "fr": "Clé Algérie Poste :",
+    "en": "Algérie Poste Key:"
+  },
+  "pm_rh_pillar2_verified": {
+    "fr": "✓ Validé conforme à l\\'algorithme d\\'Algérie Poste",
+    "en": "✓ Validated compliant with Algérie Poste algorithm"
+  },
+  "pm_rh_pillar3_title": {
+    "fr": "Coffre-Fort des Pièces Justificatives",
+    "en": "Verified Document Vault"
+  },
+  "pm_rh_doc_cni": {
+    "fr": "Carte Nationale d\\'Identité (CNI)",
+    "en": "National Identity Card (CNI)"
+  },
+  "pm_rh_doc_license": {
+    "fr": "Permis de Conduire Catégorie B",
+    "en": "Driver License Category B"
+  },
+  "pm_rh_doc_verified": {
+    "fr": "Vérifiée",
+    "en": "Verified"
+  },
+  "pm_rh_doc_compliant": {
+    "fr": "Conforme",
+    "en": "Compliant"
+  },
+  "pm_rh_pillar4_title": {
+    "fr": "Historique Missions & Fiabilité",
+    "en": "Mission History & Reliability"
+  },
+  "pm_rh_history_completed": {
+    "fr": "Missions Complétées :",
+    "en": "Completed Missions:"
+  },
+  "pm_rh_history_absences": {
+    "fr": "Absences Non Justifiées :",
+    "en": "Unjustified Absences:"
+  },
+  "pm_rh_history_reliability": {
+    "fr": "0 absence (100% fiabilité)",
+    "en": "0 absence (100% reliability)"
+  },
+  "pm_rh_history_hr_notes": {
+    "fr": "Avis RH :",
+    "en": "HR Assessment:"
+  },
+  "pm_rh_btn_back_pool": {
+    "fr": "Retour au Vivier",
+    "en": "Back to Talent Pool"
+  },
+  "pm_rh_portal_join_title": {
+    "fr": "Rejoignez le Réseau NCH",
+    "en": "Join the NCH Activation Network"
+  },
+  "pm_rh_portal_form_title": {
+    "fr": "Formulaire d\\'Inscription Talent",
+    "en": "Talent Intake Application"
+  },
+  "pm_rh_portal_form_sub": {
+    "fr": "Gagnez jusqu\\'à 4 500 DA / jour sur les événements de grandes marques.",
+    "en": "Earn up to 4,500 DZD / day on premium brand campaigns."
+  },
+  "pm_rh_portal_success": {
+    "fr": "✓ Candidature envoyée avec succès ! Notre équipe RH vous contactera sous 48h.",
+    "en": "✓ Application submitted successfully! Our HR team will contact you within 48h."
+  },
+  "pm_crea_upload_field_resolution": {
+    "fr": "Résolution",
+    "en": "Resolution"
+  },
+  "pm_rh_tag_driver_license": {
+    "fr": "Permis B",
+    "en": "License B"
+  },
+  "pm_rh_tag_vehicle_owner": {
+    "fr": "Véhiculé",
+    "en": "Vehicle"
+  },
+  "pm_rh_btn_inspect_dossier": {
+    "fr": "Inspecter Dossier ➔",
+    "en": "Inspect Dossier ➔"
+  },
+  "pm_rh_badge_hr_verified": {
+    "fr": "Vérifié par RH",
+    "en": "Verified by HR"
+  },
+  "pm_rh_years_old": {
+    "fr": "ans",
+    "en": "years"
+  },
+  "pm_rh_wilaya_of": {
+    "fr": "Wilaya de",
+    "en": "Wilaya of"
+  },
+  "pm_rh_yes": {
+    "fr": "Oui",
+    "en": "Yes"
+  },
+  "pm_rh_no": {
+    "fr": "Non",
+    "en": "No"
+  },
+  "pm_rh_vehicle_yes": {
+    "fr": "Véhiculé Oui",
+    "en": "Vehicle Yes"
+  },
+  "pm_rh_vehicle_no": {
+    "fr": "Non véhiculé",
+    "en": "No vehicle"
+  },
+  "pm_rh_candidate_walkin_note": {
+    "fr": "Candidat reçu directement à l\\'agence.",
+    "en": "Candidate received directly at agency."
+  },
+  "pm_rh_candidate_online_note": {
+    "fr": "Pré-inscription portail en ligne.",
+    "en": "Online portal pre-registration."
+  },
+  "pm_rh_form_walkin_title": {
+    "fr": "Saisie Express Agence (Candidat au Guichet)",
+    "en": "Agency Express Intake (Candidate at Desk)"
+  },
+  "pm_rh_form_walkin_sub": {
+    "fr": "Création immédiate de fiche avec validation clé CCP et qualification RH.",
+    "en": "Immediate profile creation with CCP key validation and HR qualification."
+  },
+  "pm_rh_btn_save_talent": {
+    "fr": "Enregistrer & Ajouter au Vivier",
+    "en": "Save & Add to Pool"
+  },
+  "pm_rh_success_saved": {
+    "fr": "Talent enregistré avec succès et intégré au vivier 58 Wilayas !",
+    "en": "Talent successfully saved and added to 58 Wilayas pool!"
+  },
+  "pm_compta_month_period": {
+    "fr": "Juillet 2026",
+    "en": "July 2026"
+  },
+  "pm_compta_timeline_step1_stage": {
+    "fr": "Acheté & codé",
+    "en": "Purchased & coded"
+  },
+  "pm_compta_timeline_step2_stage": {
+    "fr": "Affecté",
+    "en": "Assigned"
+  },
+  "pm_compta_timeline_step3_stage": {
+    "fr": "Retour stock",
+    "en": "Stock return"
+  },
+  "pm_compta_timeline_step4_stage": {
+    "fr": "En stock",
+    "en": "In stock"
+  },
+  "pm_compta_timeline_today": {
+    "fr": "Auj.",
+    "en": "Today"
+  },
+  "pm_rh_no_talent_selected": {
+    "fr": "Aucun talent sélectionné.",
+    "en": "No talent selected."
+  },
+  "pm_rh_field_photo_url": {
+    "fr": "Photo Portrait / Casting Selfie (Lien image)",
+    "en": "Portrait Photo / Casting Selfie (Image URL)"
+  },
+  "pm_rh_field_candidate_name": {
+    "fr": "Nom et Prénom du Candidat *",
+    "en": "Candidate Full Name *"
+  },
+  "pm_rh_field_ccp_hint": {
+    "fr": "N° Compte CCP (10 chiffres) *",
+    "en": "CCP Account (10 digits) *"
+  },
+  "pm_rh_field_key_hint": {
+    "fr": "Clé (2 chiffres) *",
+    "en": "Key (2 digits) *"
+  },
+  "pm_dir_csv_download": {
+    "fr": "Télécharger l\\'Audit Fiscal & Marge (CSV)",
+    "en": "Download Tax & Margin Audit (CSV)"
+  },
+  "pm_dir_kpi_cumul_ca": {
+    "fr": "CA CUMULÉ 2026",
+    "en": "CUMULATIVE REVENUE 2026"
+  },
+  "pm_dir_kpi_avg_margin": {
+    "fr": "MARGE BRUTE MOYENNE",
+    "en": "AVERAGE GROSS MARGIN"
+  },
+  "pm_dir_kpi_closed_missions": {
+    "fr": "MISSIONS CLÔTURÉES",
+    "en": "CLOSED MISSIONS"
+  },
+  "pm_dir_kpi_attendance_rate": {
+    "fr": "ASSIDUITÉ TERRAIN",
+    "en": "FIELD ATTENDANCE"
+  },
+  "pm_dir_client_danone": {
+    "fr": "Danone Djurdjura",
+    "en": "Danone Djurdjura"
+  },
+  "pm_dir_client_cevital": {
+    "fr": "Cevital Agro",
+    "en": "Cevital Agro"
+  },
+  "pm_dir_client_others": {
+    "fr": "Autres Annonceurs",
+    "en": "Other Advertisers"
+  },
+  "pm_dir_wilaya_others": {
+    "fr": "Autres Wilayas",
+    "en": "Other Wilayas"
+  },
+  "pm_dir_vs_2025": {
+    "fr": "+18% vs 2025",
+    "en": "+18% vs 2025"
+  },
+  "pm_rh_btn_submit_public": {
+    "fr": "Envoyer ma Candidature ➔",
+    "en": "Submit Application ➔"
+  },
+  "pm_rh_tag_walkin_screen": {
+    "fr": "Écran 5.3B · Saisie Express Agence",
+    "en": "Screen 5.3B · Direct Agency Intake"
+  }
+}

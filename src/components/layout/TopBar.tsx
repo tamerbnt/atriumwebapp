@@ -109,6 +109,26 @@ export const TopBar: React.FC<TopBarProps> = ({
       ? t('nav_pos_register', language)
       : t('nav_home', language);
 
+    // Dedicated settings breadcrumb
+    if (activeScreen === 'settings') {
+      return (
+        <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs">
+          <button
+            type="button"
+            onClick={() => setScreen(isProjectMilestone ? 'pm_dir_dashboard' : 'dashboard')}
+            className="text-neutral-400 hover:text-[#C4785A] font-medium transition-colors flex items-center gap-1 cursor-pointer"
+          >
+            <Home size={12} />
+            <span>{homeLabel}</span>
+          </button>
+          <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
+          <span className="text-neutral-900 dark:text-white font-semibold">
+            {t('nav_settings', language)}
+          </span>
+        </nav>
+      );
+    }
+
     // If in Project & Milestone category or navigating a PM screen, render role & screen breadcrumb
     if (isProjectMilestone || activeScreen.startsWith('pm_')) {
       const pmScreenTitles: Record<string, { role: string; screen: string }> = {
@@ -139,6 +159,15 @@ export const TopBar: React.FC<TopBarProps> = ({
         pm_compta_ccp: { role: t('pm_role_compta_name'), screen: t('pm_screen_compta_ccp') },
         pm_compta_expenses: { role: t('pm_role_compta_name'), screen: t('pm_screen_compta_expenses') },
         pm_compta_stock: { role: t('pm_role_compta_name'), screen: t('pm_screen_compta_stock') },
+        // Standard ID fallbacks for agency category
+        dashboard: { role: t('pm_role_direction_name'), screen: t('pm_screen_dir_dashboard') },
+        scheduler: { role: t('pm_role_chef_projet_name'), screen: t('pm_screen_cp_projects') },
+        registrations: { role: t('pm_role_crea_name'), screen: t('pm_screen_crea_kanban') },
+        analytics: { role: t('pm_role_superviseur_name'), screen: t('pm_screen_sup_missions') },
+        members: { role: t('pm_role_rh_name'), screen: t('pm_screen_rh_talents') },
+        finance: { role: t('pm_role_compta_name'), screen: t('pm_screen_compta_payroll') },
+        shop: { role: t('pm_role_compta_name'), screen: t('pm_screen_compta_stock') },
+        history: { role: t('pm_role_superviseur_name'), screen: t('pm_screen_sup_attendance') },
       };
 
       const resolved = pmScreenTitles[activeScreen] || {
@@ -393,23 +422,6 @@ export const TopBar: React.FC<TopBarProps> = ({
                 : isPOS
                 ? 'Register Journal & Sales'
                 : 'Operations History'}
-            </span>
-          </nav>
-        );
-      case 'settings':
-        return (
-          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs">
-            <button
-              type="button"
-              onClick={() => setScreen('dashboard')}
-              className="text-neutral-400 hover:text-[#C4785A] font-medium transition-colors flex items-center gap-1 cursor-pointer"
-            >
-              <Home size={12} />
-              <span>{homeLabel}</span>
-            </button>
-            <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
-            <span className="text-neutral-900 dark:text-white font-semibold">
-              {t('nav_settings')}
             </span>
           </nav>
         );
