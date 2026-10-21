@@ -2651,6 +2651,20 @@ const TRANSLATIONS_EN = {
   pm_rh_field_key_hint: 'Key (2 digits) *',
   pm_ccp_postal_reserved: 'Reserved for Postal Service:',
 
+  // Additional Project Milestone Keys
+  pm_dir_csv_download: 'Download Tax & Margin Audit (CSV)',
+  pm_dir_kpi_cumul_ca: 'CUMULATIVE REVENUE 2026',
+  pm_dir_kpi_avg_margin: 'AVERAGE GROSS MARGIN',
+  pm_dir_kpi_closed_missions: 'CLOSED MISSIONS',
+  pm_dir_kpi_attendance_rate: 'FIELD ATTENDANCE',
+  pm_dir_client_danone: 'Danone Djurdjura',
+  pm_dir_client_cevital: 'Cevital Agro',
+  pm_dir_client_others: 'Other Advertisers',
+  pm_dir_wilaya_others: 'Other Wilayas',
+  pm_dir_vs_2025: '+18% vs 2025',
+  pm_rh_btn_submit_public: 'Submit Application ➔',
+  pm_rh_tag_walkin_screen: 'Screen 5.3B · Direct Agency Intake',
+
   // Global missing system utility keys
   shop_receipt_walkin: 'Walk-in Customer',
   edu_cohort_progress: 'Program Completion',
@@ -5243,9 +5257,7 @@ const TRANSLATIONS_FR: typeof TRANSLATIONS_EN = {
   pm_crea_field_project: 'Projet & Campagne Associée',
   pm_crea_field_artwork_name: 'Nom du Livrable Graphique *',
   pm_crea_field_colorspace: 'Espace Couleur',
-  pm_crea_field_resolution: 'Résolution',
   pm_crea_field_fileformat: 'Format Fichier',
-  pm_crea_field_preview_url: 'URL de Prévisualisation du BAT (Aperçu HD)',
   pm_sup_search_talents_ph: 'Rechercher animateur, wilaya, commune...',
   pm_sup_filter_wilaya: 'Wilaya',
   pm_sup_filter_min_rating: 'Note Min',
@@ -5258,6 +5270,20 @@ const TRANSLATIONS_FR: typeof TRANSLATIONS_EN = {
   pm_rh_field_ccp_hint: 'N° Compte CCP (10 chiffres) *',
   pm_rh_field_key_hint: 'Clé (2 chiffres) *',
   pm_ccp_postal_reserved: 'Réservé à la Poste :',
+
+  // Additional Project Milestone Keys
+  pm_dir_csv_download: 'Télécharger l\'Audit Fiscal & Marge (CSV)',
+  pm_dir_kpi_cumul_ca: 'CA CUMULÉ 2026',
+  pm_dir_kpi_avg_margin: 'MARGE BRUTE MOYENNE',
+  pm_dir_kpi_closed_missions: 'MISSIONS CLÔTURÉES',
+  pm_dir_kpi_attendance_rate: 'ASSIDUITÉ TERRAIN',
+  pm_dir_client_danone: 'Danone Djurdjura',
+  pm_dir_client_cevital: 'Cevital Agro',
+  pm_dir_client_others: 'Autres Annonceurs',
+  pm_dir_wilaya_others: 'Autres Wilayas',
+  pm_dir_vs_2025: '+18% vs 2025',
+  pm_rh_btn_submit_public: 'Envoyer ma Candidature ➔',
+  pm_rh_tag_walkin_screen: 'Écran 5.3B · Saisie Express Agence',
 
   // Global missing system utility keys
   shop_receipt_walkin: 'Client Comptoir',
@@ -7851,9 +7877,7 @@ const TRANSLATIONS_AR: typeof TRANSLATIONS_EN = {
   pm_crea_field_project: 'المشروع والحملة المرتبطة',
   pm_crea_field_artwork_name: 'اسم الملف الفني / الإشهار *',
   pm_crea_field_colorspace: 'الفضاء اللوني',
-  pm_crea_field_resolution: 'دقة الوضوح',
   pm_crea_field_fileformat: 'صيغة الملف',
-  pm_crea_field_preview_url: 'رابط معاينة التصميم بجودة عالية',
   pm_sup_search_talents_ph: 'بحث عن منشط، ولاية، بلدية...',
   pm_sup_filter_wilaya: 'الولاية',
   pm_sup_filter_min_rating: 'التقييم الأدنى',
@@ -7866,6 +7890,20 @@ const TRANSLATIONS_AR: typeof TRANSLATIONS_EN = {
   pm_rh_field_ccp_hint: 'رقم حساب CCP (10 أرقام) *',
   pm_rh_field_key_hint: 'المفتاح (رقمين) *',
   pm_ccp_postal_reserved: 'خاص بمصالح البريد:',
+
+  // Additional Project Milestone Keys
+  pm_dir_csv_download: 'تحميل التدقيق الجبائي والهوامش (CSV)',
+  pm_dir_kpi_cumul_ca: 'رقم الأعمال التراكمي 2026',
+  pm_dir_kpi_avg_margin: 'متوسط الهامش الإجمالي',
+  pm_dir_kpi_closed_missions: 'المهام المكتملة والمغلقة',
+  pm_dir_kpi_attendance_rate: 'نسبة الحضور الميداني',
+  pm_dir_client_danone: 'دانون جرجرة',
+  pm_dir_client_cevital: 'سيفيتال للصناعات الغذائية',
+  pm_dir_client_others: 'معلنون ومستشهرون آخرون',
+  pm_dir_wilaya_others: 'ولايات أخرى',
+  pm_dir_vs_2025: '+18% مقارنة بـ 2025',
+  pm_rh_btn_submit_public: 'إرسال ملف الترشح ➔',
+  pm_rh_tag_walkin_screen: 'شاشة 5.3B · التسجيل السريع بمقر الوكالة',
 
   // Global missing system utility keys
   shop_receipt_walkin: 'زبون مباشر',

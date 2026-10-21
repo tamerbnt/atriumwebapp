@@ -109,6 +109,83 @@ export const TopBar: React.FC<TopBarProps> = ({
       ? t('nav_pos_register', language)
       : t('nav_home', language);
 
+    // If in Project & Milestone category or navigating a PM screen, render role & screen breadcrumb
+    if (isProjectMilestone || activeScreen.startsWith('pm_')) {
+      const pmScreenTitles: Record<string, { role: string; screen: string }> = {
+        pm_dir_dashboard: { role: t('pm_role_direction_name'), screen: t('pm_screen_dir_dashboard') },
+        pm_dir_new_project: { role: t('pm_role_direction_name'), screen: t('pm_screen_dir_new_project') },
+        pm_dir_projects: { role: t('pm_role_direction_name'), screen: t('pm_screen_dir_projects') },
+        pm_dir_approvals: { role: t('pm_role_direction_name'), screen: t('pm_screen_dir_approvals') },
+        pm_dir_reports: { role: t('pm_role_direction_name'), screen: t('pm_screen_dir_reports') },
+        pm_cp_projects: { role: t('pm_role_chef_projet_name'), screen: t('pm_screen_cp_projects') },
+        pm_cp_catalog: { role: t('pm_role_chef_projet_name'), screen: t('pm_screen_cp_catalog') },
+        pm_cp_orders: { role: t('pm_role_chef_projet_name'), screen: t('pm_screen_cp_orders') },
+        pm_cp_files: { role: t('pm_role_chef_projet_name'), screen: t('pm_screen_cp_deliverables') },
+        pm_cp_deliverables: { role: t('pm_role_chef_projet_name'), screen: t('pm_screen_cp_deliverables') },
+        pm_cp_expenses: { role: t('pm_role_chef_projet_name'), screen: t('pm_screen_cp_expenses') },
+        pm_crea_kanban: { role: t('pm_role_crea_name'), screen: t('pm_screen_crea_kanban') },
+        pm_crea_production: { role: t('pm_role_crea_name'), screen: t('pm_screen_crea_production') },
+        pm_crea_upload: { role: t('pm_role_crea_name'), screen: t('pm_screen_crea_upload') },
+        pm_crea_briefs: { role: t('pm_role_crea_name'), screen: t('pm_screen_crea_briefs') },
+        pm_sup_missions: { role: t('pm_role_superviseur_name'), screen: t('pm_screen_sup_missions') },
+        pm_sup_attendance: { role: t('pm_role_superviseur_name'), screen: t('pm_screen_sup_attendance') },
+        pm_sup_staffing: { role: t('pm_role_superviseur_name'), screen: t('pm_screen_sup_staffing') },
+        pm_sup_expenses: { role: t('pm_role_superviseur_name'), screen: t('pm_screen_sup_expenses') },
+        pm_rh_talents: { role: t('pm_role_rh_name'), screen: t('pm_screen_rh_talents') },
+        pm_rh_dossier: { role: t('pm_role_rh_name'), screen: t('pm_screen_rh_dossier') },
+        pm_rh_portal: { role: t('pm_role_rh_name'), screen: t('pm_screen_rh_portal') },
+        pm_rh_walkin: { role: t('pm_role_rh_name'), screen: t('pm_screen_rh_walkin') },
+        pm_compta_payroll: { role: t('pm_role_compta_name'), screen: t('pm_screen_compta_payroll') },
+        pm_compta_ccp: { role: t('pm_role_compta_name'), screen: t('pm_screen_compta_ccp') },
+        pm_compta_expenses: { role: t('pm_role_compta_name'), screen: t('pm_screen_compta_expenses') },
+        pm_compta_stock: { role: t('pm_role_compta_name'), screen: t('pm_screen_compta_stock') },
+      };
+
+      const resolved = pmScreenTitles[activeScreen] || {
+        role:
+          activePmRole === 'direction'
+            ? t('pm_role_direction_name')
+            : activePmRole === 'chef_projet'
+            ? t('pm_role_chef_projet_name')
+            : activePmRole === 'crea'
+            ? t('pm_role_crea_name')
+            : activePmRole === 'superviseur'
+            ? t('pm_role_superviseur_name')
+            : activePmRole === 'rh'
+            ? t('pm_role_rh_name')
+            : t('pm_role_compta_name'),
+        screen:
+          activePmRole === 'direction'
+            ? t('pm_screen_dir_dashboard')
+            : activePmRole === 'chef_projet'
+            ? t('pm_screen_cp_projects')
+            : activePmRole === 'crea'
+            ? t('pm_screen_crea_kanban')
+            : activePmRole === 'superviseur'
+            ? t('pm_screen_sup_missions')
+            : activePmRole === 'rh'
+            ? t('pm_screen_rh_talents')
+            : t('pm_screen_compta_payroll'),
+      };
+
+      return (
+        <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs">
+          <button
+            type="button"
+            onClick={() => setScreen('pm_dir_dashboard')}
+            className="text-neutral-400 hover:text-[#C4785A] font-medium transition-colors flex items-center gap-1 cursor-pointer"
+          >
+            <Home size={12} />
+            <span>{homeLabel}</span>
+          </button>
+          <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
+          <span className="text-neutral-500 font-medium">{resolved.role}</span>
+          <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
+          <span className="text-neutral-900 dark:text-white font-semibold">{resolved.screen}</span>
+        </nav>
+      );
+    }
+
     switch (activeScreen) {
       case 'dashboard':
         return (
@@ -132,9 +209,7 @@ export const TopBar: React.FC<TopBarProps> = ({
             </button>
             <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
             <span className="text-neutral-900 dark:text-white font-semibold">
-              {isProjectMilestone
-                ? t('pm_screen_sup_missions')
-                : isFreelance
+              {isFreelance
                 ? t('topbar_solo_timetracker_crumb', language)
                 : isRental
                 ? 'Occupancy Analytics'
@@ -165,7 +240,7 @@ export const TopBar: React.FC<TopBarProps> = ({
                 onClick={() => selectMember(null)}
                 className="text-neutral-400 hover:text-[#C4785A] font-medium transition-colors cursor-pointer"
               >
-                {isProjectMilestone ? t('pm_screen_rh_talents') : isFreelance ? t('topbar_solo_clients_crumb', language) : isRental ? 'Renters' : isEducation ? 'Students' : isPOS ? 'Customers' : terminology.members}
+                {isFreelance ? t('topbar_solo_clients_crumb', language) : isRental ? 'Renters' : isEducation ? 'Students' : isPOS ? 'Customers' : terminology.members}
               </button>
               <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
               <span className="text-neutral-900 dark:text-white font-semibold truncate max-w-[130px] sm:max-w-[200px]">
@@ -186,9 +261,7 @@ export const TopBar: React.FC<TopBarProps> = ({
             </button>
             <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
             <span className="text-neutral-900 dark:text-white font-semibold">
-              {isProjectMilestone
-                ? t('pm_screen_rh_talents')
-                : isFreelance
+              {isFreelance
                 ? t('topbar_solo_clients_crumb', language)
                 : isRental
                 ? 'Renters & Client Directory'
@@ -213,9 +286,7 @@ export const TopBar: React.FC<TopBarProps> = ({
             </button>
             <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
             <span className="text-neutral-900 dark:text-white font-semibold">
-              {isProjectMilestone
-                ? t('pm_screen_crea_kanban')
-                : isFreelance
+              {isFreelance
                 ? t('topbar_solo_proposals_crumb', language)
                 : isRental
                 ? 'Reservations & Event Inquiries'
@@ -240,9 +311,7 @@ export const TopBar: React.FC<TopBarProps> = ({
             </button>
             <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
             <span className="text-neutral-900 dark:text-white font-semibold">
-              {isProjectMilestone
-                ? t('pm_screen_cp_catalog')
-                : isFreelance
+              {isFreelance
                 ? t('topbar_solo_invoices_crumb', language)
                 : isRental
                 ? 'Spaces & Asset Inventory'
@@ -267,9 +336,7 @@ export const TopBar: React.FC<TopBarProps> = ({
             </button>
             <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
             <span className="text-neutral-900 dark:text-white font-semibold">
-              {isProjectMilestone
-                ? t('pm_screen_cp_projects')
-                : isFreelance
+              {isFreelance
                 ? t('topbar_solo_deliverables_crumb', language)
                 : isRental
                 ? 'Occupancy Matrix & Timeline'
@@ -294,9 +361,7 @@ export const TopBar: React.FC<TopBarProps> = ({
             </button>
             <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
             <span className="text-neutral-900 dark:text-white font-semibold">
-              {isProjectMilestone
-                ? t('pm_screen_compta_payroll')
-                : isFreelance
+              {isFreelance
                 ? t('topbar_solo_finance_crumb', language)
                 : isRental
                 ? 'Caution Escrow & Rental Revenue'
@@ -319,9 +384,7 @@ export const TopBar: React.FC<TopBarProps> = ({
             </button>
             <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
             <span className="text-neutral-900 dark:text-white font-semibold">
-              {isProjectMilestone
-                ? t('pm_screen_sup_attendance')
-                : isFreelance
+              {isFreelance
                 ? t('topbar_solo_history_crumb', language)
                 : isEducation
                 ? 'Roll Call & Attendance Log'
@@ -350,63 +413,7 @@ export const TopBar: React.FC<TopBarProps> = ({
             </span>
           </nav>
         );
-      case 'pm_dir_dashboard':
-      case 'pm_dir_new_project':
-      case 'pm_dir_projects':
-      case 'pm_dir_approvals':
-      case 'pm_dir_reports':
-      case 'pm_cp_projects':
-      case 'pm_cp_catalog':
-      case 'pm_cp_orders':
-      case 'pm_cp_files':
-      case 'pm_cp_deliverables':
-      case 'pm_cp_expenses':
-      case 'pm_crea_kanban':
-      case 'pm_crea_production':
-      case 'pm_crea_upload':
-      case 'pm_crea_briefs':
-      case 'pm_sup_missions':
-      case 'pm_sup_attendance':
-      case 'pm_sup_staffing':
-      case 'pm_sup_expenses':
-      case 'pm_rh_talents':
-      case 'pm_rh_dossier':
-      case 'pm_rh_portal':
-      case 'pm_rh_walkin':
-      case 'pm_compta_payroll':
-      case 'pm_compta_ccp':
-      case 'pm_compta_expenses':
-      case 'pm_compta_stock': {
-        const pmScreenTitles: Record<string, { role: string; screen: string }> = {
-          pm_dir_dashboard: { role: t('pm_role_direction_name'), screen: t('pm_screen_dir_dashboard') },
-          pm_dir_new_project: { role: t('pm_role_direction_name'), screen: t('pm_screen_dir_new_project') },
-          pm_dir_projects: { role: t('pm_role_direction_name'), screen: t('pm_screen_dir_projects') },
-          pm_dir_approvals: { role: t('pm_role_direction_name'), screen: t('pm_screen_dir_approvals') },
-          pm_dir_reports: { role: t('pm_role_direction_name'), screen: t('pm_screen_dir_reports') },
-          pm_cp_projects: { role: t('pm_role_chef_projet_name'), screen: t('pm_screen_cp_projects') },
-          pm_cp_catalog: { role: t('pm_role_chef_projet_name'), screen: t('pm_screen_cp_catalog') },
-          pm_cp_orders: { role: t('pm_role_chef_projet_name'), screen: t('pm_screen_cp_orders') },
-          pm_cp_files: { role: t('pm_role_chef_projet_name'), screen: t('pm_screen_cp_deliverables') },
-          pm_cp_deliverables: { role: t('pm_role_chef_projet_name'), screen: t('pm_screen_cp_deliverables') },
-          pm_cp_expenses: { role: t('pm_role_chef_projet_name'), screen: t('pm_screen_cp_expenses') },
-          pm_crea_kanban: { role: t('pm_role_crea_name'), screen: t('pm_screen_crea_kanban') },
-          pm_crea_production: { role: t('pm_role_crea_name'), screen: t('pm_screen_crea_production') },
-          pm_crea_upload: { role: t('pm_role_crea_name'), screen: t('pm_screen_crea_upload') },
-          pm_crea_briefs: { role: t('pm_role_crea_name'), screen: t('pm_screen_crea_briefs') },
-          pm_sup_missions: { role: t('pm_role_superviseur_name'), screen: t('pm_screen_sup_missions') },
-          pm_sup_attendance: { role: t('pm_role_superviseur_name'), screen: t('pm_screen_sup_attendance') },
-          pm_sup_staffing: { role: t('pm_role_superviseur_name'), screen: t('pm_screen_sup_staffing') },
-          pm_sup_expenses: { role: t('pm_role_superviseur_name'), screen: t('pm_screen_sup_expenses') },
-          pm_rh_talents: { role: t('pm_role_rh_name'), screen: t('pm_screen_rh_talents') },
-          pm_rh_dossier: { role: t('pm_role_rh_name'), screen: t('pm_screen_rh_dossier') },
-          pm_rh_portal: { role: t('pm_role_rh_name'), screen: t('pm_screen_rh_portal') },
-          pm_rh_walkin: { role: t('pm_role_rh_name'), screen: t('pm_screen_rh_walkin') },
-          pm_compta_payroll: { role: t('pm_role_compta_name'), screen: t('pm_screen_compta_payroll') },
-          pm_compta_ccp: { role: t('pm_role_compta_name'), screen: t('pm_screen_compta_ccp') },
-          pm_compta_expenses: { role: t('pm_role_compta_name'), screen: t('pm_screen_compta_expenses') },
-          pm_compta_stock: { role: t('pm_role_compta_name'), screen: t('pm_screen_compta_stock') },
-        };
-        const info = pmScreenTitles[activeScreen] || { role: t('pm_role_direction_name'), screen: t('pm_screen_dir_dashboard') };
+      default: {
         return (
           <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs">
             <button
@@ -417,66 +424,7 @@ export const TopBar: React.FC<TopBarProps> = ({
               <Home size={12} />
               <span>{homeLabel}</span>
             </button>
-            <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
-            <span className="text-neutral-500 font-medium">{info.role}</span>
-            <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
-            <span className="text-neutral-900 dark:text-white font-semibold">{info.screen}</span>
           </nav>
-        );
-      }
-      default: {
-        const pmScreenTitles: Record<string, { role: string; screen: string }> = {
-          pm_dir_dashboard: { role: t('pm_role_direction_name'), screen: t('pm_screen_dir_dashboard') },
-          pm_dir_new_project: { role: t('pm_role_direction_name'), screen: t('pm_screen_dir_new_project') },
-          pm_dir_projects: { role: t('pm_role_direction_name'), screen: t('pm_screen_dir_projects') },
-          pm_dir_approvals: { role: t('pm_role_direction_name'), screen: t('pm_screen_dir_approvals') },
-          pm_dir_reports: { role: t('pm_role_direction_name'), screen: t('pm_screen_dir_reports') },
-          pm_cp_projects: { role: t('pm_role_chef_projet_name'), screen: t('pm_screen_cp_projects') },
-          pm_cp_catalog: { role: t('pm_role_chef_projet_name'), screen: t('pm_screen_cp_catalog') },
-          pm_cp_orders: { role: t('pm_role_chef_projet_name'), screen: t('pm_screen_cp_orders') },
-          pm_cp_files: { role: t('pm_role_chef_projet_name'), screen: t('pm_screen_cp_deliverables') },
-          pm_cp_deliverables: { role: t('pm_role_chef_projet_name'), screen: t('pm_screen_cp_deliverables') },
-          pm_cp_expenses: { role: t('pm_role_chef_projet_name'), screen: t('pm_screen_cp_expenses') },
-          pm_crea_kanban: { role: t('pm_role_crea_name'), screen: t('pm_screen_crea_kanban') },
-          pm_crea_production: { role: t('pm_role_crea_name'), screen: t('pm_screen_crea_production') },
-          pm_crea_upload: { role: t('pm_role_crea_name'), screen: t('pm_screen_crea_upload') },
-          pm_crea_briefs: { role: t('pm_role_crea_name'), screen: t('pm_screen_crea_briefs') },
-          pm_sup_missions: { role: t('pm_role_superviseur_name'), screen: t('pm_screen_sup_missions') },
-          pm_sup_attendance: { role: t('pm_role_superviseur_name'), screen: t('pm_screen_sup_attendance') },
-          pm_sup_staffing: { role: t('pm_role_superviseur_name'), screen: t('pm_screen_sup_staffing') },
-          pm_sup_expenses: { role: t('pm_role_superviseur_name'), screen: t('pm_screen_sup_expenses') },
-          pm_rh_talents: { role: t('pm_role_rh_name'), screen: t('pm_screen_rh_talents') },
-          pm_rh_dossier: { role: t('pm_role_rh_name'), screen: t('pm_screen_rh_dossier') },
-          pm_rh_portal: { role: t('pm_role_rh_name'), screen: t('pm_screen_rh_portal') },
-          pm_rh_walkin: { role: t('pm_role_rh_name'), screen: t('pm_screen_rh_walkin') },
-          pm_compta_payroll: { role: t('pm_role_compta_name'), screen: t('pm_screen_compta_payroll') },
-          pm_compta_ccp: { role: t('pm_role_compta_name'), screen: t('pm_screen_compta_ccp') },
-          pm_compta_expenses: { role: t('pm_role_compta_name'), screen: t('pm_screen_compta_expenses') },
-          pm_compta_stock: { role: t('pm_role_compta_name'), screen: t('pm_screen_compta_stock') },
-        };
-        const info = (pmScreenTitles as Record<string, { role: string; screen: string }>)[activeScreen];
-        if (info) {
-          return (
-            <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs">
-              <button
-                type="button"
-                onClick={() => setScreen('dashboard')}
-                className="text-neutral-400 hover:text-[#C4785A] font-medium transition-colors flex items-center gap-1 cursor-pointer"
-              >
-                <Home size={12} />
-                <span>{homeLabel}</span>
-              </button>
-              <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
-              <span className="text-neutral-500 font-medium">{info.role}</span>
-              <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
-              <span className="text-neutral-900 dark:text-white font-semibold">{info.screen}</span>
-            </nav>
-          );
-        }
-        return (
-          <span className="text-xs font-semibold text-neutral-800 dark:text-neutral-200 capitalize">
-            {activeScreen}
-          </span>
         );
       }
     }
