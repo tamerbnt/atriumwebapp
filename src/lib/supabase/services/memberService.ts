@@ -31,8 +31,10 @@ export const memberService = {
     const { data, error } = await client
       .from('members_directory')
       .insert({
-        account_id: member.tenantId,
-        branch_id: member.facilityId,
+        account_id: member.accountId || member.tenantId,
+        business_id: member.businessId,
+        branch_id: member.branchId || member.facilityId,
+        staff_id: member.staffId || null,
         full_name: member.fullName,
         email: member.email || null,
         phone: member.phoneNumber || null,

@@ -35,8 +35,10 @@ export const posService = {
         .from('products')
         .upsert({
           id: product.id,
-          account_id: product.tenantId,
-          branch_id: product.facilityId,
+          account_id: product.accountId || product.tenantId,
+          business_id: product.businessId,
+          branch_id: product.branchId || product.facilityId,
+          staff_id: product.staffId || null,
           name: product.name,
           description: product.description || null,
           price: product.price.amount,
@@ -90,8 +92,10 @@ export const posService = {
         .from('sales')
         .insert({
           id: sale.id,
-          account_id: sale.tenantId,
-          branch_id: sale.facilityId,
+          account_id: sale.accountId || sale.tenantId,
+          business_id: sale.businessId,
+          branch_id: sale.branchId || sale.facilityId,
+          staff_id: sale.staffId || null,
           member_id: sale.memberId || null,
           member_name: sale.memberName || null,
           total_amount: sale.totalAmount,

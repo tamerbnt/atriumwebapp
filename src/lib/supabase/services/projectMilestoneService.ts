@@ -39,8 +39,12 @@ export const projectMilestoneService = {
 
       return (data || []).map((row: any): PMClient => ({
         id: row.id,
-        tenantId: row.tenant_id,
-        facilityId: row.facility_id,
+        accountId: row.account_id || row.tenant_id,
+        businessId: row.business_id,
+        branchId: row.branch_id || row.facility_id,
+        staffId: row.staff_id,
+        tenantId: row.account_id || row.tenant_id,
+        facilityId: row.branch_id || row.facility_id,
         name: row.name,
         logoUrl: row.logo_url || undefined,
         contactPerson: row.contact_person,
@@ -65,8 +69,12 @@ export const projectMilestoneService = {
         .from('pm_clients')
         .upsert({
           id: clientItem.id,
-          tenant_id: clientItem.tenantId,
-          facility_id: clientItem.facilityId,
+          account_id: clientItem.accountId || clientItem.tenantId,
+          business_id: clientItem.businessId,
+          branch_id: clientItem.branchId || clientItem.facilityId,
+          staff_id: clientItem.staffId || null,
+          tenant_id: clientItem.accountId || clientItem.tenantId,
+          facility_id: clientItem.branchId || clientItem.facilityId,
           name: clientItem.name,
           logo_url: clientItem.logoUrl || null,
           contact_person: clientItem.contactPerson,
@@ -95,7 +103,7 @@ export const projectMilestoneService = {
       const { data, error } = await (client as any)
         .from('pm_projects')
         .select('*')
-        .eq('facility_id', facilityId)
+        .or(`facility_id.eq.${facilityId},branch_id.eq.${facilityId}`)
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -105,8 +113,12 @@ export const projectMilestoneService = {
 
       return (data || []).map((row: any): PMProject => ({
         id: row.id,
-        tenantId: row.tenant_id,
-        facilityId: row.facility_id,
+        accountId: row.account_id || row.tenant_id,
+        businessId: row.business_id,
+        branchId: row.branch_id || row.facility_id,
+        staffId: row.staff_id,
+        tenantId: row.account_id || row.tenant_id,
+        facilityId: row.branch_id || row.facility_id,
         clientId: row.client_id,
         clientName: row.client_name,
         title: row.title,
@@ -141,8 +153,12 @@ export const projectMilestoneService = {
         .from('pm_projects')
         .upsert({
           id: project.id,
-          tenant_id: project.tenantId,
-          facility_id: project.facilityId,
+          account_id: project.accountId || project.tenantId,
+          business_id: project.businessId,
+          branch_id: project.branchId || project.facilityId,
+          staff_id: project.staffId || null,
+          tenant_id: project.accountId || project.tenantId,
+          facility_id: project.branchId || project.facilityId,
           client_id: project.clientId,
           client_name: project.clientName,
           title: project.title,

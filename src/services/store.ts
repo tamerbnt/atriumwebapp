@@ -1156,12 +1156,24 @@ export function useAtriumStore() {
     notify();
   };
 
-  const addMember = (newMember: Omit<Member, 'id' | 'tenantId' | 'facilityId' | 'createdAt' | 'updatedAt'>) => {
-    const member: Member = {
-      ...newMember,
-      id: `mem_${Date.now()}`,
+  const getTraceContext = () => {
+    const activeStaffId = state.currentUser?.id || state.staff[0]?.id || undefined;
+    return {
+      accountId: state.account.id,
+      businessId: state.currentBusinessId,
+      branchId: state.currentBranchId,
+      staffId: activeStaffId,
       tenantId: state.account.id,
       facilityId: state.currentBranchId,
+    };
+  };
+
+  const addMember = (newMember: Omit<Member, 'id' | 'tenantId' | 'facilityId' | 'createdAt' | 'updatedAt'>) => {
+    const trace = getTraceContext();
+    const member: Member = {
+      ...trace,
+      ...newMember,
+      id: `mem_${Date.now()}`,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -1331,9 +1343,14 @@ export function useAtriumStore() {
   };
 
   const addLead = (newLead: Omit<RegistrationLead, 'id' | 'tenantId' | 'facilityId' | 'createdAt' | 'updatedAt'>) => {
+    const activeStaffId = state.currentUser?.id || state.staff[0]?.id || undefined;
     const lead: RegistrationLead = {
       ...newLead,
       id: `lead_${Date.now()}`,
+      accountId: state.account.id,
+      businessId: state.currentBusinessId,
+      branchId: state.currentBranchId,
+      staffId: activeStaffId,
       tenantId: state.account.id,
       facilityId: state.currentBranchId,
       createdAt: new Date().toISOString(),
@@ -1446,6 +1463,7 @@ export function useAtriumStore() {
     const finalCustomerName = extra?.customerName || member?.fullName || (memberId ? undefined : 'Walk-in Customer');
 
     const sale: Sale = {
+      ...getTraceContext(),
       id: `sale_${Date.now()}`,
       tenantId: state.account.id,
       facilityId: state.currentBranchId,
@@ -1811,6 +1829,7 @@ export function useAtriumStore() {
     aptData: Omit<Appointment, 'id' | 'createdAt' | 'tenantId' | 'facilityId'>
   ) => {
     const newApt: Appointment = {
+      ...getTraceContext(),
       ...aptData,
       id: `apt_${Date.now()}`,
       tenantId: state.account.id,
@@ -2212,6 +2231,7 @@ export function useAtriumStore() {
 
   const addProduct = (productData: Omit<Product, 'id' | 'tenantId' | 'facilityId'>) => {
     const newProduct: Product = {
+      ...getTraceContext(),
       ...productData,
       id: `prod_${Date.now()}`,
       tenantId: state.account.id,
@@ -3687,6 +3707,7 @@ export function useAtriumStore() {
   ) => {
     const bookingId = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `bk_${Date.now()}`;
     const newBooking: RentalBooking = {
+      ...getTraceContext(),
       ...bookingData,
       id: bookingId,
       tenantId: state.account.id,
@@ -3700,6 +3721,7 @@ export function useAtriumStore() {
     if (newBooking.depositAmount > 0 && newBooking.depositStatus === 'Held') {
       const depositId = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `dep_${Date.now()}`;
       newDeposit = {
+        ...getTraceContext(),
         id: depositId,
         tenantId: state.account.id,
         facilityId: state.currentBranchId,
@@ -4055,6 +4077,7 @@ export function useAtriumStore() {
   ) => {
     const renterId = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `rnt_${Date.now()}`;
     const newRenter: RentalRenter = {
+      ...getTraceContext(),
       ...renterData,
       id: renterId,
       tenantId: state.account.id,
@@ -4277,6 +4300,7 @@ export function useAtriumStore() {
 
   const addEduStudent = (studentData: Omit<EduStudent, 'id' | 'tenantId' | 'facilityId' | 'createdAt'>) => {
     const newStudent: EduStudent = {
+      ...getTraceContext(),
       ...studentData,
       id: `std_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
       tenantId: state.account.id,
@@ -4336,6 +4360,7 @@ export function useAtriumStore() {
 
   const addEduCohort = (cohortData: Omit<EduCohort, 'id' | 'tenantId' | 'facilityId' | 'createdAt' | 'enrolledCount'>) => {
     const newCohort: EduCohort = {
+      ...getTraceContext(),
       ...cohortData,
       id: `cohort_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
       tenantId: state.account.id,
@@ -4726,6 +4751,7 @@ export function useAtriumStore() {
 
   const addEduClassroom = (classroomData: Omit<EduClassroom, 'id' | 'tenantId' | 'facilityId' | 'createdAt'>) => {
     const newRoom: EduClassroom = {
+      ...getTraceContext(),
       ...classroomData,
       id: `room_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
       tenantId: state.account.id,
@@ -4742,6 +4768,7 @@ export function useAtriumStore() {
 
   const addEduCourse = (courseData: Omit<EduCourse, 'id' | 'tenantId' | 'facilityId' | 'createdAt'>) => {
     const newCourse: EduCourse = {
+      ...getTraceContext(),
       ...courseData,
       id: `course_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
       tenantId: state.account.id,
@@ -4839,6 +4866,7 @@ export function useAtriumStore() {
 
   const addPmProject = (projectData: Omit<PMProject, 'id' | 'createdAt' | 'updatedAt'>) => {
     const newProj: PMProject = {
+      ...getTraceContext(),
       ...projectData,
       id: `proj_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
       createdAt: new Date().toISOString(),
@@ -4874,6 +4902,7 @@ export function useAtriumStore() {
 
   const addPmPrintOrder = (orderData: Omit<PMPrintOrder, 'id' | 'createdAt'>) => {
     const newOrder: PMPrintOrder = {
+      ...getTraceContext(),
       ...orderData,
       id: `po_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
       createdAt: new Date().toISOString(),
@@ -4906,6 +4935,7 @@ export function useAtriumStore() {
 
   const addPmBatDeliverable = (batData: Omit<PMBatDeliverable, 'id' | 'createdAt'>) => {
     const newBat: PMBatDeliverable = {
+      ...getTraceContext(),
       ...batData,
       id: `bat_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
       createdAt: new Date().toISOString(),
@@ -4953,6 +4983,7 @@ export function useAtriumStore() {
   const addPmTalent = (talentData: Omit<PMTalent, 'id' | 'createdAt' | 'consolidatedScore'>) => {
     const score = Number(((talentData.initialHrScore + talentData.averageMissionRating) / 2).toFixed(2));
     const newTalent: PMTalent = {
+      ...getTraceContext(),
       ...talentData,
       id: `talent_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
       consolidatedScore: score,
@@ -4988,6 +5019,7 @@ export function useAtriumStore() {
 
   const addPmMission = (missionData: Omit<PMMission, 'id' | 'createdAt'>) => {
     const newMission: PMMission = {
+      ...getTraceContext(),
       ...missionData,
       id: `mis_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
       createdAt: new Date().toISOString(),
@@ -5055,6 +5087,7 @@ export function useAtriumStore() {
 
     const batchNumber = `PAY-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.floor(10 + Math.random() * 90)}`;
     const newBatch: PMPayrollBatch = {
+      ...getTraceContext(),
       id: `batch_${Date.now()}`,
       tenantId: mission.tenantId,
       facilityId: mission.facilityId,
@@ -5088,6 +5121,7 @@ export function useAtriumStore() {
 
   const addPmExpense = (expenseData: Omit<PMExpense, 'id' | 'createdAt' | 'status'>) => {
     const newExp: PMExpense = {
+      ...getTraceContext(),
       ...expenseData,
       id: `exp_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
       status: 'pending_direction_approval',
@@ -5098,6 +5132,7 @@ export function useAtriumStore() {
     const nextAssetNum = 148 + (globalState.pmEquipmentStock?.length || 0);
     const dateFormatted = new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' });
     const newStockItem: PMEquipmentStock = {
+      ...getTraceContext(),
       id: `eq_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
       tenantId: newExp.tenantId,
       facilityId: newExp.facilityId,

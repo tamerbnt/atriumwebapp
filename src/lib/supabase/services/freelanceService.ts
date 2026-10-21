@@ -30,6 +30,10 @@ export const freelanceService = {
 
       return (data || []).map((row: any): FreelanceClient => ({
         id: row.id,
+        accountId: row.account_id,
+        businessId: row.business_id,
+        branchId: row.branch_id,
+        staffId: row.staff_id,
         tenantId: row.account_id,
         facilityId: row.branch_id,
         name: row.name,
@@ -59,8 +63,10 @@ export const freelanceService = {
         .from('freelance_clients')
         .upsert({
           id: clientItem.id,
-          account_id: clientItem.tenantId,
-          branch_id: clientItem.facilityId,
+          account_id: clientItem.accountId || clientItem.tenantId,
+          business_id: clientItem.businessId,
+          branch_id: clientItem.branchId || clientItem.facilityId,
+          staff_id: clientItem.staffId || null,
           name: clientItem.name,
           company: clientItem.company || null,
           email: clientItem.email,
@@ -105,6 +111,10 @@ export const freelanceService = {
 
       return (data || []).map((row: any): FreelanceProject => ({
         id: row.id,
+        accountId: row.account_id,
+        businessId: row.business_id,
+        branchId: row.branch_id,
+        staffId: row.staff_id,
         tenantId: row.account_id,
         facilityId: row.branch_id,
         clientId: row.client_id,
@@ -136,8 +146,10 @@ export const freelanceService = {
         .from('freelance_projects')
         .upsert({
           id: project.id,
-          account_id: project.tenantId,
-          branch_id: project.facilityId,
+          account_id: project.accountId || project.tenantId,
+          business_id: project.businessId,
+          branch_id: project.branchId || project.facilityId,
+          staff_id: project.staffId || null,
           client_id: project.clientId,
           client_name: project.clientName,
           title: project.title,

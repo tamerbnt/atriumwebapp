@@ -34,8 +34,9 @@ export const appointmentService = {
         .from('appointments')
         .upsert({
           id: apt.id,
-          account_id: apt.tenantId,
-          branch_id: apt.facilityId,
+          account_id: apt.accountId || apt.tenantId,
+          business_id: apt.businessId || undefined,
+          branch_id: apt.branchId || apt.facilityId,
           client_id: apt.clientId || null,
           client_name: apt.clientName,
           client_phone: apt.clientPhone || null,

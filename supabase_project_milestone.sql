@@ -473,3 +473,66 @@ DO $$ BEGIN
   CREATE POLICY "Allow all access to pm_equipment_stock" ON public.pm_equipment_stock FOR ALL USING (true);
 EXCEPTION WHEN duplicate_object THEN null;
 END $$;
+
+-- =====================================================================
+-- 5. Quadruple Traceability Migration (account_id, business_id, branch_id, staff_id)
+-- =====================================================================
+ALTER TABLE public.pm_clients ADD COLUMN IF NOT EXISTS account_id uuid REFERENCES public.accounts(id) ON DELETE CASCADE;
+ALTER TABLE public.pm_clients ADD COLUMN IF NOT EXISTS business_id uuid REFERENCES public.businesses(id) ON DELETE CASCADE;
+ALTER TABLE public.pm_clients ADD COLUMN IF NOT EXISTS branch_id uuid REFERENCES public.branches(id) ON DELETE CASCADE;
+ALTER TABLE public.pm_clients ADD COLUMN IF NOT EXISTS staff_id uuid REFERENCES public.staff(id) ON DELETE SET NULL;
+
+ALTER TABLE public.pm_projects ADD COLUMN IF NOT EXISTS account_id uuid REFERENCES public.accounts(id) ON DELETE CASCADE;
+ALTER TABLE public.pm_projects ADD COLUMN IF NOT EXISTS business_id uuid REFERENCES public.businesses(id) ON DELETE CASCADE;
+ALTER TABLE public.pm_projects ADD COLUMN IF NOT EXISTS branch_id uuid REFERENCES public.branches(id) ON DELETE CASCADE;
+ALTER TABLE public.pm_projects ADD COLUMN IF NOT EXISTS staff_id uuid REFERENCES public.staff(id) ON DELETE SET NULL;
+
+ALTER TABLE public.pm_print_orders ADD COLUMN IF NOT EXISTS account_id uuid REFERENCES public.accounts(id) ON DELETE CASCADE;
+ALTER TABLE public.pm_print_orders ADD COLUMN IF NOT EXISTS business_id uuid REFERENCES public.businesses(id) ON DELETE CASCADE;
+ALTER TABLE public.pm_print_orders ADD COLUMN IF NOT EXISTS branch_id uuid REFERENCES public.branches(id) ON DELETE CASCADE;
+ALTER TABLE public.pm_print_orders ADD COLUMN IF NOT EXISTS staff_id uuid REFERENCES public.staff(id) ON DELETE SET NULL;
+
+ALTER TABLE public.pm_bat_deliverables ADD COLUMN IF NOT EXISTS account_id uuid REFERENCES public.accounts(id) ON DELETE CASCADE;
+ALTER TABLE public.pm_bat_deliverables ADD COLUMN IF NOT EXISTS business_id uuid REFERENCES public.businesses(id) ON DELETE CASCADE;
+ALTER TABLE public.pm_bat_deliverables ADD COLUMN IF NOT EXISTS branch_id uuid REFERENCES public.branches(id) ON DELETE CASCADE;
+ALTER TABLE public.pm_bat_deliverables ADD COLUMN IF NOT EXISTS staff_id uuid REFERENCES public.staff(id) ON DELETE SET NULL;
+
+ALTER TABLE public.pm_talents ADD COLUMN IF NOT EXISTS account_id uuid REFERENCES public.accounts(id) ON DELETE CASCADE;
+ALTER TABLE public.pm_talents ADD COLUMN IF NOT EXISTS business_id uuid REFERENCES public.businesses(id) ON DELETE CASCADE;
+ALTER TABLE public.pm_talents ADD COLUMN IF NOT EXISTS branch_id uuid REFERENCES public.branches(id) ON DELETE CASCADE;
+ALTER TABLE public.pm_talents ADD COLUMN IF NOT EXISTS staff_id uuid REFERENCES public.staff(id) ON DELETE SET NULL;
+
+ALTER TABLE public.pm_missions ADD COLUMN IF NOT EXISTS account_id uuid REFERENCES public.accounts(id) ON DELETE CASCADE;
+ALTER TABLE public.pm_missions ADD COLUMN IF NOT EXISTS business_id uuid REFERENCES public.businesses(id) ON DELETE CASCADE;
+ALTER TABLE public.pm_missions ADD COLUMN IF NOT EXISTS branch_id uuid REFERENCES public.branches(id) ON DELETE CASCADE;
+ALTER TABLE public.pm_missions ADD COLUMN IF NOT EXISTS staff_id uuid REFERENCES public.staff(id) ON DELETE SET NULL;
+
+ALTER TABLE public.pm_attendances ADD COLUMN IF NOT EXISTS account_id uuid REFERENCES public.accounts(id) ON DELETE CASCADE;
+ALTER TABLE public.pm_attendances ADD COLUMN IF NOT EXISTS business_id uuid REFERENCES public.businesses(id) ON DELETE CASCADE;
+ALTER TABLE public.pm_attendances ADD COLUMN IF NOT EXISTS branch_id uuid REFERENCES public.branches(id) ON DELETE CASCADE;
+ALTER TABLE public.pm_attendances ADD COLUMN IF NOT EXISTS staff_id uuid REFERENCES public.staff(id) ON DELETE SET NULL;
+
+ALTER TABLE public.pm_expenses ADD COLUMN IF NOT EXISTS account_id uuid REFERENCES public.accounts(id) ON DELETE CASCADE;
+ALTER TABLE public.pm_expenses ADD COLUMN IF NOT EXISTS business_id uuid REFERENCES public.businesses(id) ON DELETE CASCADE;
+ALTER TABLE public.pm_expenses ADD COLUMN IF NOT EXISTS branch_id uuid REFERENCES public.branches(id) ON DELETE CASCADE;
+ALTER TABLE public.pm_expenses ADD COLUMN IF NOT EXISTS staff_id uuid REFERENCES public.staff(id) ON DELETE SET NULL;
+
+ALTER TABLE public.pm_payroll_batches ADD COLUMN IF NOT EXISTS account_id uuid REFERENCES public.accounts(id) ON DELETE CASCADE;
+ALTER TABLE public.pm_payroll_batches ADD COLUMN IF NOT EXISTS business_id uuid REFERENCES public.businesses(id) ON DELETE CASCADE;
+ALTER TABLE public.pm_payroll_batches ADD COLUMN IF NOT EXISTS branch_id uuid REFERENCES public.branches(id) ON DELETE CASCADE;
+ALTER TABLE public.pm_payroll_batches ADD COLUMN IF NOT EXISTS staff_id uuid REFERENCES public.staff(id) ON DELETE SET NULL;
+
+ALTER TABLE public.pm_ccp_slips ADD COLUMN IF NOT EXISTS account_id uuid REFERENCES public.accounts(id) ON DELETE CASCADE;
+ALTER TABLE public.pm_ccp_slips ADD COLUMN IF NOT EXISTS business_id uuid REFERENCES public.businesses(id) ON DELETE CASCADE;
+ALTER TABLE public.pm_ccp_slips ADD COLUMN IF NOT EXISTS branch_id uuid REFERENCES public.branches(id) ON DELETE CASCADE;
+ALTER TABLE public.pm_ccp_slips ADD COLUMN IF NOT EXISTS staff_id uuid REFERENCES public.staff(id) ON DELETE SET NULL;
+
+ALTER TABLE public.pm_equipment_stock ADD COLUMN IF NOT EXISTS account_id uuid REFERENCES public.accounts(id) ON DELETE CASCADE;
+ALTER TABLE public.pm_equipment_stock ADD COLUMN IF NOT EXISTS business_id uuid REFERENCES public.businesses(id) ON DELETE CASCADE;
+ALTER TABLE public.pm_equipment_stock ADD COLUMN IF NOT EXISTS branch_id uuid REFERENCES public.branches(id) ON DELETE CASCADE;
+ALTER TABLE public.pm_equipment_stock ADD COLUMN IF NOT EXISTS staff_id uuid REFERENCES public.staff(id) ON DELETE SET NULL;
+
+CREATE INDEX IF NOT EXISTS idx_pm_clients_tracing ON public.pm_clients(account_id, business_id, branch_id);
+CREATE INDEX IF NOT EXISTS idx_pm_projects_tracing ON public.pm_projects(account_id, business_id, branch_id);
+CREATE INDEX IF NOT EXISTS idx_pm_missions_tracing ON public.pm_missions(account_id, business_id, branch_id);
+

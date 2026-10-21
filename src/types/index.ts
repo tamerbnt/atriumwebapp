@@ -116,6 +116,10 @@ export interface LicenseVoucher {
 
 export interface Member {
   id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  staffId?: string;
   tenantId: string;
   facilityId: string;
   fullName: string;
@@ -143,6 +147,10 @@ export interface Member {
 
 export interface MembershipPlan {
   id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  staffId?: string;
   tenantId: string;
   facilityId: string;
   name: string;
@@ -158,6 +166,10 @@ export interface MembershipPlan {
 
 export interface RegistrationLead {
   id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  staffId?: string;
   tenantId: string;
   facilityId: string;
   fullName: string;
@@ -188,6 +200,9 @@ export type StaffRole =
 
 export interface StaffMember {
   id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
   tenantId: string;
   facilityId: string;
   fullName: string;
@@ -206,6 +221,10 @@ export interface StaffMember {
 
 export interface Product {
   id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  staffId?: string;
   tenantId: string;
   facilityId: string;
   name: string;
@@ -263,6 +282,10 @@ export interface PaymentDetail {
 
 export interface Sale {
   id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  staffId?: string;
   tenantId: string;
   facilityId: string;
   memberId?: string;
@@ -288,6 +311,10 @@ export interface Sale {
 
 export interface ParkedOrder {
   id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  staffId?: string;
   tenantId: string;
   facilityId: string;
   referenceName: string;
@@ -382,6 +409,10 @@ export type AppointmentStatus = 'Confirmed' | 'InChair' | 'Completed' | 'Cancell
 
 export interface ServiceItem {
   id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  staffId?: string;
   facilityId: string;
   name: string;
   category: 'Hair' | 'Nails' | 'Facial' | 'Massage' | 'Bridal' | 'Barber';
@@ -393,6 +424,9 @@ export interface ServiceItem {
 
 export interface Appointment {
   id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
   tenantId: string;
   facilityId: string;
   clientId: string;
@@ -426,6 +460,10 @@ export type FreelanceClientStatus =
 
 export interface FreelanceClient {
   id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  staffId?: string;
   tenantId: string;
   facilityId: string;
   name: string;
@@ -467,6 +505,10 @@ export interface FreelanceDeliverable {
 
 export interface FreelanceProject {
   id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  staffId?: string;
   tenantId: string;
   facilityId: string;
   clientId: string;
@@ -488,6 +530,10 @@ export interface FreelanceProject {
 
 export interface TimeLogEntry {
   id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  staffId?: string;
   tenantId: string;
   facilityId: string;
   clientId: string;
@@ -518,6 +564,10 @@ export interface FreelanceInvoiceItem {
 
 export interface FreelanceInvoice {
   id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  staffId?: string;
   tenantId: string;
   facilityId: string;
   clientId: string;
@@ -549,6 +599,10 @@ export type ProposalStatus = 'Pending' | 'Accepted' | 'Declined';
 
 export interface FreelanceProposal {
   id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  staffId?: string;
   tenantId: string;
   facilityId: string;
   clientName: string;
@@ -576,6 +630,10 @@ export type ExpenseCategory =
 
 export interface FreelanceExpense {
   id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  staffId?: string;
   tenantId: string;
   facilityId: string;
   vendor: string;
@@ -616,6 +674,10 @@ export type RentableUnitStatus = 'Available' | 'Occupied' | 'Maintenance';
 
 export interface RentableUnit {
   id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  staffId?: string;
   tenantId: string;
   facilityId: string;
   name: string;
@@ -646,6 +708,10 @@ export interface BookingAddon {
 
 export interface RentalBooking {
   id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  staffId?: string;
   tenantId: string;
   facilityId: string;
   renterId: string;
@@ -679,6 +745,10 @@ export interface RentalBooking {
 
 export interface RentalRenter {
   id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  staffId?: string;
   tenantId: string;
   facilityId: string;
   fullName: string;
@@ -695,6 +765,10 @@ export interface RentalRenter {
 
 export interface SecurityDepositRecord {
   id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  staffId?: string;
   tenantId: string;
   facilityId: string;
   bookingId: string;
@@ -734,6 +808,10 @@ export interface ToastNotification {
 
 export interface EduCourse {
   id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  staffId?: string;
   tenantId: string;
   facilityId: string;
   title: string;
@@ -749,6 +827,10 @@ export interface EduCourse {
 
 export interface EduClassroom {
   id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  staffId?: string;
   tenantId: string;
   facilityId: string;
   name: string;
@@ -763,6 +845,10 @@ export type CohortStatus = 'Upcoming' | 'Enrolling' | 'InProgress' | 'Completed'
 
 export interface EduCohort {
   id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  staffId?: string;
   tenantId: string;
   facilityId: string;
   courseId: string;
@@ -789,6 +875,10 @@ export type StudentStatus = 'Active' | 'Suspended' | 'Graduated' | 'Alumni' | 'A
 
 export interface EduStudent {
   id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  staffId?: string;
   tenantId: string;
   facilityId: string;
   fullName: string;
@@ -810,6 +900,10 @@ export type EnrollmentPaymentStatus = 'Paid' | 'Partial' | 'Pending' | 'Overdue'
 
 export interface EduEnrollment {
   id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  staffId?: string;
   tenantId: string;
   facilityId: string;
   studentId: string;
@@ -835,6 +929,10 @@ export interface EduEnrollment {
 
 export interface EduSession {
   id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  staffId?: string;
   tenantId: string;
   facilityId: string;
   cohortId: string;
@@ -855,6 +953,10 @@ export type AttendanceStatus = 'Present' | 'Absent' | 'Late' | 'Excused';
 
 export interface EduAttendance {
   id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  staffId?: string;
   tenantId: string;
   facilityId: string;
   sessionId: string;
@@ -869,6 +971,10 @@ export interface EduAttendance {
 
 export interface EduGrade {
   id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  staffId?: string;
   tenantId: string;
   facilityId: string;
   cohortId: string;
@@ -884,6 +990,10 @@ export interface EduGrade {
 
 export interface EduCertificate {
   id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  staffId?: string;
   tenantId: string;
   facilityId: string;
   certificateNumber: string;
@@ -904,6 +1014,10 @@ export type AdmissionStage = 'Inquiry' | 'PlacementTest' | 'TrialClass' | 'Admit
 
 export interface EduAdmissionLead {
   id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  staffId?: string;
   tenantId: string;
   facilityId: string;
   studentName: string;
@@ -933,6 +1047,10 @@ export type PMRole =
 
 export interface PMClient {
   id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  staffId?: string;
   tenantId: string;
   facilityId: string;
   name: string;
@@ -955,6 +1073,10 @@ export type PMProjectStatus =
 
 export interface PMProject {
   id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  staffId?: string;
   tenantId: string;
   facilityId: string;
   clientId: string;
@@ -980,6 +1102,10 @@ export interface PMProject {
 
 export interface PMMilestone {
   id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  staffId?: string;
   projectId: string;
   title: string;
   phase: 'brief' | 'concept_kv' | 'client_signoff' | 'print_order' | 'bat_production' | 'field_rollcall' | 'ccp_payroll';
@@ -991,6 +1117,10 @@ export interface PMMilestone {
 
 export interface PMCollateralItem {
   id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  staffId?: string;
   sku: string;
   title: string;
   category: 'banner' | 'flyer' | 'pos_display' | 'apparel' | 'stand' | 'podium';
@@ -1003,6 +1133,10 @@ export interface PMCollateralItem {
 
 export interface PMPrintOrder {
   id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  staffId?: string;
   tenantId: string;
   facilityId: string;
   projectId: string;
@@ -1023,6 +1157,10 @@ export interface PMPrintOrder {
 
 export interface PMBatDeliverable {
   id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  staffId?: string;
   tenantId: string;
   facilityId: string;
   projectId: string;
@@ -1048,6 +1186,10 @@ export interface PMBatDeliverable {
 
 export interface PMTalent {
   id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  staffId?: string;
   tenantId: string;
   facilityId: string;
   fullName: string;
@@ -1082,6 +1224,10 @@ export interface PMTalent {
 
 export interface PMMission {
   id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  staffId?: string;
   tenantId: string;
   facilityId: string;
   projectId: string;
@@ -1121,6 +1267,10 @@ export type AttendanceRollStatus = 'present' | 'late' | 'absent' | 'replacement'
 
 export interface PMAttendance {
   id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  staffId?: string;
   tenantId: string;
   facilityId: string;
   missionId: string;
@@ -1143,6 +1293,10 @@ export interface PMAttendance {
 
 export interface PMExpense {
   id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  staffId?: string;
   tenantId: string;
   facilityId: string;
   projectId: string;
@@ -1167,6 +1321,10 @@ export interface PMExpense {
 
 export interface PMPayrollBatch {
   id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  staffId?: string;
   tenantId: string;
   facilityId: string;
   projectId: string;
@@ -1186,6 +1344,10 @@ export interface PMPayrollBatch {
 
 export interface PMCcpSlip {
   id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  staffId?: string;
   tenantId: string;
   facilityId: string;
   batchId: string;
@@ -1205,6 +1367,10 @@ export interface PMCcpSlip {
 
 export interface PMEquipmentStock {
   id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  staffId?: string;
   tenantId: string;
   facilityId: string;
   assetCode: string; // e.g. "NCH-EQ-00214"

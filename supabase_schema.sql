@@ -118,6 +118,7 @@ CREATE TABLE IF NOT EXISTS public.branches (
 CREATE TABLE IF NOT EXISTS public.devices (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   account_id uuid NOT NULL REFERENCES public.accounts(id) ON DELETE CASCADE,
+  business_id uuid REFERENCES public.businesses(id) ON DELETE CASCADE,
   branch_id uuid NOT NULL REFERENCES public.branches(id) ON DELETE CASCADE,
   hardware_id text UNIQUE NOT NULL,
   label text NOT NULL,
@@ -130,6 +131,8 @@ CREATE TABLE IF NOT EXISTS public.devices (
 CREATE TABLE IF NOT EXISTS public.staff (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   account_id uuid NOT NULL REFERENCES public.accounts(id) ON DELETE CASCADE,
+  business_id uuid REFERENCES public.businesses(id) ON DELETE CASCADE,
+  branch_id uuid REFERENCES public.branches(id) ON DELETE SET NULL,
   full_name text NOT NULL,
   email text,
   phone text,
@@ -144,7 +147,9 @@ CREATE TABLE IF NOT EXISTS public.staff (
 CREATE TABLE IF NOT EXISTS public.members_directory (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   account_id uuid NOT NULL REFERENCES public.accounts(id) ON DELETE CASCADE,
+  business_id uuid REFERENCES public.businesses(id) ON DELETE CASCADE,
   branch_id uuid NOT NULL REFERENCES public.branches(id) ON DELETE CASCADE,
+  staff_id uuid REFERENCES public.staff(id) ON DELETE SET NULL,
   full_name text NOT NULL,
   email text,
   phone text,
@@ -162,7 +167,9 @@ CREATE TABLE IF NOT EXISTS public.members_directory (
 CREATE TABLE IF NOT EXISTS public.registration_requests (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   account_id uuid NOT NULL REFERENCES public.accounts(id) ON DELETE CASCADE,
+  business_id uuid REFERENCES public.businesses(id) ON DELETE CASCADE,
   branch_id uuid NOT NULL REFERENCES public.branches(id) ON DELETE CASCADE,
+  staff_id uuid REFERENCES public.staff(id) ON DELETE SET NULL,
   payload jsonb NOT NULL DEFAULT '{}'::jsonb,
   status text NOT NULL DEFAULT 'pending',
   requested_at timestamptz NOT NULL DEFAULT now(),
@@ -173,12 +180,14 @@ CREATE TABLE IF NOT EXISTS public.registration_requests (
 CREATE TABLE IF NOT EXISTS public.appointments (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   account_id uuid NOT NULL REFERENCES public.accounts(id) ON DELETE CASCADE,
+  business_id uuid REFERENCES public.businesses(id) ON DELETE CASCADE,
   branch_id uuid NOT NULL REFERENCES public.branches(id) ON DELETE CASCADE,
   client_id text,
   client_name text NOT NULL,
   client_phone text,
   staff_id text,
   staff_name text NOT NULL,
+  created_by_staff_id uuid REFERENCES public.staff(id) ON DELETE SET NULL,
   service_id text,
   service_name text NOT NULL,
   date date NOT NULL,
@@ -195,7 +204,9 @@ CREATE TABLE IF NOT EXISTS public.appointments (
 CREATE TABLE IF NOT EXISTS public.products (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   account_id uuid NOT NULL REFERENCES public.accounts(id) ON DELETE CASCADE,
+  business_id uuid REFERENCES public.businesses(id) ON DELETE CASCADE,
   branch_id uuid NOT NULL REFERENCES public.branches(id) ON DELETE CASCADE,
+  staff_id uuid REFERENCES public.staff(id) ON DELETE SET NULL,
   name text NOT NULL,
   description text,
   price numeric NOT NULL DEFAULT 0,
@@ -213,7 +224,9 @@ CREATE TABLE IF NOT EXISTS public.products (
 CREATE TABLE IF NOT EXISTS public.sales (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   account_id uuid NOT NULL REFERENCES public.accounts(id) ON DELETE CASCADE,
+  business_id uuid REFERENCES public.businesses(id) ON DELETE CASCADE,
   branch_id uuid NOT NULL REFERENCES public.branches(id) ON DELETE CASCADE,
+  staff_id uuid REFERENCES public.staff(id) ON DELETE SET NULL,
   member_id text,
   member_name text,
   total_amount numeric NOT NULL DEFAULT 0,
@@ -227,7 +240,9 @@ CREATE TABLE IF NOT EXISTS public.sales (
 CREATE TABLE IF NOT EXISTS public.freelance_clients (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   account_id uuid NOT NULL REFERENCES public.accounts(id) ON DELETE CASCADE,
+  business_id uuid REFERENCES public.businesses(id) ON DELETE CASCADE,
   branch_id uuid NOT NULL REFERENCES public.branches(id) ON DELETE CASCADE,
+  staff_id uuid REFERENCES public.staff(id) ON DELETE SET NULL,
   name text NOT NULL,
   company text,
   email text NOT NULL,
@@ -245,7 +260,9 @@ CREATE TABLE IF NOT EXISTS public.freelance_clients (
 CREATE TABLE IF NOT EXISTS public.freelance_projects (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   account_id uuid NOT NULL REFERENCES public.accounts(id) ON DELETE CASCADE,
+  business_id uuid REFERENCES public.businesses(id) ON DELETE CASCADE,
   branch_id uuid NOT NULL REFERENCES public.branches(id) ON DELETE CASCADE,
+  staff_id uuid REFERENCES public.staff(id) ON DELETE SET NULL,
   client_id text NOT NULL,
   client_name text NOT NULL,
   title text NOT NULL,
@@ -264,7 +281,9 @@ CREATE TABLE IF NOT EXISTS public.freelance_projects (
 CREATE TABLE IF NOT EXISTS public.freelance_time_logs (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   account_id uuid NOT NULL REFERENCES public.accounts(id) ON DELETE CASCADE,
+  business_id uuid REFERENCES public.businesses(id) ON DELETE CASCADE,
   branch_id uuid NOT NULL REFERENCES public.branches(id) ON DELETE CASCADE,
+  staff_id uuid REFERENCES public.staff(id) ON DELETE SET NULL,
   client_id text NOT NULL,
   client_name text NOT NULL,
   project_id text NOT NULL,
@@ -282,7 +301,9 @@ CREATE TABLE IF NOT EXISTS public.freelance_time_logs (
 CREATE TABLE IF NOT EXISTS public.freelance_invoices (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   account_id uuid NOT NULL REFERENCES public.accounts(id) ON DELETE CASCADE,
+  business_id uuid REFERENCES public.businesses(id) ON DELETE CASCADE,
   branch_id uuid NOT NULL REFERENCES public.branches(id) ON DELETE CASCADE,
+  staff_id uuid REFERENCES public.staff(id) ON DELETE SET NULL,
   client_id text NOT NULL,
   client_name text NOT NULL,
   client_company text,
@@ -306,7 +327,9 @@ CREATE TABLE IF NOT EXISTS public.freelance_invoices (
 CREATE TABLE IF NOT EXISTS public.freelance_proposals (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   account_id uuid NOT NULL REFERENCES public.accounts(id) ON DELETE CASCADE,
+  business_id uuid REFERENCES public.businesses(id) ON DELETE CASCADE,
   branch_id uuid NOT NULL REFERENCES public.branches(id) ON DELETE CASCADE,
+  staff_id uuid REFERENCES public.staff(id) ON DELETE SET NULL,
   client_name text NOT NULL,
   client_company text,
   client_email text NOT NULL,
@@ -325,7 +348,9 @@ CREATE TABLE IF NOT EXISTS public.freelance_proposals (
 CREATE TABLE IF NOT EXISTS public.freelance_expenses (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   account_id uuid NOT NULL REFERENCES public.accounts(id) ON DELETE CASCADE,
+  business_id uuid REFERENCES public.businesses(id) ON DELETE CASCADE,
   branch_id uuid NOT NULL REFERENCES public.branches(id) ON DELETE CASCADE,
+  staff_id uuid REFERENCES public.staff(id) ON DELETE SET NULL,
   category text NOT NULL DEFAULT 'Software',
   vendor text NOT NULL,
   description text NOT NULL,
@@ -340,7 +365,9 @@ CREATE TABLE IF NOT EXISTS public.freelance_expenses (
 CREATE TABLE IF NOT EXISTS public.rentable_units (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   account_id uuid NOT NULL REFERENCES public.accounts(id) ON DELETE CASCADE,
+  business_id uuid REFERENCES public.businesses(id) ON DELETE CASCADE,
   branch_id uuid NOT NULL REFERENCES public.branches(id) ON DELETE CASCADE,
+  staff_id uuid REFERENCES public.staff(id) ON DELETE SET NULL,
   name text NOT NULL,
   code text NOT NULL,
   type text NOT NULL DEFAULT 'Room', -- 'Hall', 'Room', 'Court', 'Studio', 'Desk', 'Equipment'
@@ -359,7 +386,9 @@ CREATE TABLE IF NOT EXISTS public.rentable_units (
 CREATE TABLE IF NOT EXISTS public.rental_renters (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   account_id uuid NOT NULL REFERENCES public.accounts(id) ON DELETE CASCADE,
+  business_id uuid REFERENCES public.businesses(id) ON DELETE CASCADE,
   branch_id uuid NOT NULL REFERENCES public.branches(id) ON DELETE CASCADE,
+  staff_id uuid REFERENCES public.staff(id) ON DELETE SET NULL,
   full_name text NOT NULL,
   company_name text,
   email text NOT NULL,
@@ -375,7 +404,9 @@ CREATE TABLE IF NOT EXISTS public.rental_renters (
 CREATE TABLE IF NOT EXISTS public.rental_bookings (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   account_id uuid NOT NULL REFERENCES public.accounts(id) ON DELETE CASCADE,
+  business_id uuid REFERENCES public.businesses(id) ON DELETE CASCADE,
   branch_id uuid NOT NULL REFERENCES public.branches(id) ON DELETE CASCADE,
+  staff_id uuid REFERENCES public.staff(id) ON DELETE SET NULL,
   renter_id text NOT NULL,
   renter_name text NOT NULL,
   renter_phone text NOT NULL,
@@ -408,7 +439,9 @@ CREATE TABLE IF NOT EXISTS public.rental_bookings (
 CREATE TABLE IF NOT EXISTS public.security_deposits (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   account_id uuid NOT NULL REFERENCES public.accounts(id) ON DELETE CASCADE,
+  business_id uuid REFERENCES public.businesses(id) ON DELETE CASCADE,
   branch_id uuid NOT NULL REFERENCES public.branches(id) ON DELETE CASCADE,
+  staff_id uuid REFERENCES public.staff(id) ON DELETE SET NULL,
   booking_id text NOT NULL,
   renter_name text NOT NULL,
   unit_name text NOT NULL,
@@ -420,6 +453,129 @@ CREATE TABLE IF NOT EXISTS public.security_deposits (
   collected_at timestamptz NOT NULL DEFAULT now(),
   released_at timestamptz
 );
+
+-- Education & Academy Tables (Category 15)
+CREATE TABLE IF NOT EXISTS public.education_students (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  account_id uuid NOT NULL REFERENCES public.accounts(id) ON DELETE CASCADE,
+  business_id uuid REFERENCES public.businesses(id) ON DELETE CASCADE,
+  branch_id uuid NOT NULL REFERENCES public.branches(id) ON DELETE CASCADE,
+  staff_id uuid REFERENCES public.staff(id) ON DELETE SET NULL,
+  full_name text NOT NULL,
+  email text,
+  phone text NOT NULL,
+  guardian_name text,
+  guardian_phone text,
+  guardian_relation text,
+  birth_date date,
+  rfid_badge_code text,
+  school_grade text,
+  status text NOT NULL DEFAULT 'Active', -- Active, Suspended, Graduated, Alumni, Applicant
+  notes text,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS public.education_cohorts (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  account_id uuid NOT NULL REFERENCES public.accounts(id) ON DELETE CASCADE,
+  business_id uuid REFERENCES public.businesses(id) ON DELETE CASCADE,
+  branch_id uuid NOT NULL REFERENCES public.branches(id) ON DELETE CASCADE,
+  staff_id uuid REFERENCES public.staff(id) ON DELETE SET NULL,
+  code text NOT NULL,
+  name text NOT NULL,
+  course_id text,
+  course_title text NOT NULL,
+  instructor_id text,
+  instructor_name text NOT NULL,
+  classroom_name text,
+  start_date date NOT NULL,
+  end_date date NOT NULL,
+  max_students int NOT NULL DEFAULT 20,
+  enrolled_count int NOT NULL DEFAULT 0,
+  tuition_fee numeric NOT NULL DEFAULT 0,
+  currency text NOT NULL DEFAULT 'DZD',
+  schedule_summary text,
+  status text NOT NULL DEFAULT 'Enrolling', -- Upcoming, Enrolling, InProgress, Completed, Archived
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS public.education_attendance (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  account_id uuid NOT NULL REFERENCES public.accounts(id) ON DELETE CASCADE,
+  business_id uuid REFERENCES public.businesses(id) ON DELETE CASCADE,
+  branch_id uuid NOT NULL REFERENCES public.branches(id) ON DELETE CASCADE,
+  staff_id uuid REFERENCES public.staff(id) ON DELETE SET NULL,
+  session_id text NOT NULL,
+  cohort_id text NOT NULL,
+  student_id text NOT NULL,
+  student_name text NOT NULL,
+  status text NOT NULL DEFAULT 'Present', -- Present, Absent, Late, Excused
+  minutes_late int DEFAULT 0,
+  excuse_note text,
+  recorded_at timestamptz NOT NULL DEFAULT now()
+);
+
+-- =====================================================================
+-- QUADRUPLE TRACEABILITY MIGRATION SCRIPT (Idempotent for existing DBs)
+-- Ensures account_id, business_id, branch_id, and staff_id exist on all tables
+-- =====================================================================
+ALTER TABLE public.devices ADD COLUMN IF NOT EXISTS business_id uuid REFERENCES public.businesses(id) ON DELETE CASCADE;
+ALTER TABLE public.staff ADD COLUMN IF NOT EXISTS business_id uuid REFERENCES public.businesses(id) ON DELETE CASCADE;
+ALTER TABLE public.staff ADD COLUMN IF NOT EXISTS branch_id uuid REFERENCES public.branches(id) ON DELETE SET NULL;
+ALTER TABLE public.members_directory ADD COLUMN IF NOT EXISTS business_id uuid REFERENCES public.businesses(id) ON DELETE CASCADE;
+ALTER TABLE public.members_directory ADD COLUMN IF NOT EXISTS staff_id uuid REFERENCES public.staff(id) ON DELETE SET NULL;
+ALTER TABLE public.registration_requests ADD COLUMN IF NOT EXISTS business_id uuid REFERENCES public.businesses(id) ON DELETE CASCADE;
+ALTER TABLE public.registration_requests ADD COLUMN IF NOT EXISTS staff_id uuid REFERENCES public.staff(id) ON DELETE SET NULL;
+ALTER TABLE public.appointments ADD COLUMN IF NOT EXISTS business_id uuid REFERENCES public.businesses(id) ON DELETE CASCADE;
+ALTER TABLE public.appointments ADD COLUMN IF NOT EXISTS created_by_staff_id uuid REFERENCES public.staff(id) ON DELETE SET NULL;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS business_id uuid REFERENCES public.businesses(id) ON DELETE CASCADE;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS staff_id uuid REFERENCES public.staff(id) ON DELETE SET NULL;
+ALTER TABLE public.sales ADD COLUMN IF NOT EXISTS business_id uuid REFERENCES public.businesses(id) ON DELETE CASCADE;
+ALTER TABLE public.sales ADD COLUMN IF NOT EXISTS staff_id uuid REFERENCES public.staff(id) ON DELETE SET NULL;
+ALTER TABLE public.freelance_clients ADD COLUMN IF NOT EXISTS business_id uuid REFERENCES public.businesses(id) ON DELETE CASCADE;
+ALTER TABLE public.freelance_clients ADD COLUMN IF NOT EXISTS staff_id uuid REFERENCES public.staff(id) ON DELETE SET NULL;
+ALTER TABLE public.freelance_projects ADD COLUMN IF NOT EXISTS business_id uuid REFERENCES public.businesses(id) ON DELETE CASCADE;
+ALTER TABLE public.freelance_projects ADD COLUMN IF NOT EXISTS staff_id uuid REFERENCES public.staff(id) ON DELETE SET NULL;
+ALTER TABLE public.freelance_time_logs ADD COLUMN IF NOT EXISTS business_id uuid REFERENCES public.businesses(id) ON DELETE CASCADE;
+ALTER TABLE public.freelance_time_logs ADD COLUMN IF NOT EXISTS staff_id uuid REFERENCES public.staff(id) ON DELETE SET NULL;
+ALTER TABLE public.freelance_invoices ADD COLUMN IF NOT EXISTS business_id uuid REFERENCES public.businesses(id) ON DELETE CASCADE;
+ALTER TABLE public.freelance_invoices ADD COLUMN IF NOT EXISTS staff_id uuid REFERENCES public.staff(id) ON DELETE SET NULL;
+ALTER TABLE public.freelance_proposals ADD COLUMN IF NOT EXISTS business_id uuid REFERENCES public.businesses(id) ON DELETE CASCADE;
+ALTER TABLE public.freelance_proposals ADD COLUMN IF NOT EXISTS staff_id uuid REFERENCES public.staff(id) ON DELETE SET NULL;
+ALTER TABLE public.freelance_expenses ADD COLUMN IF NOT EXISTS business_id uuid REFERENCES public.businesses(id) ON DELETE CASCADE;
+ALTER TABLE public.freelance_expenses ADD COLUMN IF NOT EXISTS staff_id uuid REFERENCES public.staff(id) ON DELETE SET NULL;
+ALTER TABLE public.rentable_units ADD COLUMN IF NOT EXISTS business_id uuid REFERENCES public.businesses(id) ON DELETE CASCADE;
+ALTER TABLE public.rentable_units ADD COLUMN IF NOT EXISTS staff_id uuid REFERENCES public.staff(id) ON DELETE SET NULL;
+ALTER TABLE public.rental_renters ADD COLUMN IF NOT EXISTS business_id uuid REFERENCES public.businesses(id) ON DELETE CASCADE;
+ALTER TABLE public.rental_renters ADD COLUMN IF NOT EXISTS staff_id uuid REFERENCES public.staff(id) ON DELETE SET NULL;
+ALTER TABLE public.rental_bookings ADD COLUMN IF NOT EXISTS business_id uuid REFERENCES public.businesses(id) ON DELETE CASCADE;
+ALTER TABLE public.rental_bookings ADD COLUMN IF NOT EXISTS staff_id uuid REFERENCES public.staff(id) ON DELETE SET NULL;
+ALTER TABLE public.security_deposits ADD COLUMN IF NOT EXISTS business_id uuid REFERENCES public.businesses(id) ON DELETE CASCADE;
+ALTER TABLE public.security_deposits ADD COLUMN IF NOT EXISTS staff_id uuid REFERENCES public.staff(id) ON DELETE SET NULL;
+
+-- Automatic Backfill of business_id from branch lineage
+UPDATE public.members_directory m SET business_id = b.business_id FROM public.branches b WHERE m.branch_id = b.id AND m.business_id IS NULL;
+UPDATE public.products p SET business_id = b.business_id FROM public.branches b WHERE p.branch_id = b.id AND p.business_id IS NULL;
+UPDATE public.sales s SET business_id = b.business_id FROM public.branches b WHERE s.branch_id = b.id AND s.business_id IS NULL;
+UPDATE public.appointments a SET business_id = b.business_id FROM public.branches b WHERE a.branch_id = b.id AND a.business_id IS NULL;
+UPDATE public.rental_bookings rb SET business_id = b.business_id FROM public.branches b WHERE rb.branch_id = b.id AND rb.business_id IS NULL;
+UPDATE public.rentable_units ru SET business_id = b.business_id FROM public.branches b WHERE ru.branch_id = b.id AND ru.business_id IS NULL;
+UPDATE public.rental_renters rr SET business_id = b.business_id FROM public.branches b WHERE rr.branch_id = b.id AND rr.business_id IS NULL;
+UPDATE public.security_deposits sd SET business_id = b.business_id FROM public.branches b WHERE sd.branch_id = b.id AND sd.business_id IS NULL;
+UPDATE public.freelance_clients fc SET business_id = b.business_id FROM public.branches b WHERE fc.branch_id = b.id AND fc.business_id IS NULL;
+UPDATE public.freelance_projects fp SET business_id = b.business_id FROM public.branches b WHERE fp.branch_id = b.id AND fp.business_id IS NULL;
+UPDATE public.freelance_time_logs ftl SET business_id = b.business_id FROM public.branches b WHERE ftl.branch_id = b.id AND ftl.business_id IS NULL;
+UPDATE public.freelance_invoices fi SET business_id = b.business_id FROM public.branches b WHERE fi.branch_id = b.id AND fi.business_id IS NULL;
+UPDATE public.freelance_proposals fpr SET business_id = b.business_id FROM public.branches b WHERE fpr.branch_id = b.id AND fpr.business_id IS NULL;
+UPDATE public.freelance_expenses fe SET business_id = b.business_id FROM public.branches b WHERE fe.branch_id = b.id AND fe.business_id IS NULL;
+
+-- High-performance composite indexes for quadruple lineage
+CREATE INDEX IF NOT EXISTS idx_members_tracing ON public.members_directory(account_id, business_id, branch_id);
+CREATE INDEX IF NOT EXISTS idx_sales_tracing ON public.sales(account_id, business_id, branch_id);
+CREATE INDEX IF NOT EXISTS idx_appointments_tracing ON public.appointments(account_id, business_id, branch_id);
+CREATE INDEX IF NOT EXISTS idx_freelance_clients_tracing ON public.freelance_clients(account_id, business_id, branch_id);
+CREATE INDEX IF NOT EXISTS idx_rental_bookings_tracing ON public.rental_bookings(account_id, business_id, branch_id);
+CREATE INDEX IF NOT EXISTS idx_education_students_tracing ON public.education_students(account_id, business_id, branch_id);
 
 -- 4. Stored Procedures & RPCs
 
@@ -1000,6 +1156,10 @@ CREATE TABLE IF NOT EXISTS public.pm_ccp_slips (
 -- PM Equipment & Indirect Collateral Stock
 CREATE TABLE IF NOT EXISTS public.pm_equipment_stock (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  account_id uuid REFERENCES public.accounts(id) ON DELETE CASCADE,
+  business_id uuid REFERENCES public.businesses(id) ON DELETE CASCADE,
+  branch_id uuid REFERENCES public.branches(id) ON DELETE CASCADE,
+  staff_id uuid REFERENCES public.staff(id) ON DELETE SET NULL,
   tenant_id uuid NOT NULL,
   facility_id uuid NOT NULL,
   asset_code text UNIQUE NOT NULL, -- NCH-EQ-00214
@@ -1014,6 +1174,79 @@ CREATE TABLE IF NOT EXISTS public.pm_equipment_stock (
   qr_label_code text NOT NULL,
   created_at timestamptz NOT NULL DEFAULT now()
 );
+
+-- Idempotent ALTER TABLE migration for PM tables
+ALTER TABLE public.pm_clients ADD COLUMN IF NOT EXISTS account_id uuid REFERENCES public.accounts(id) ON DELETE CASCADE;
+ALTER TABLE public.pm_clients ADD COLUMN IF NOT EXISTS business_id uuid REFERENCES public.businesses(id) ON DELETE CASCADE;
+ALTER TABLE public.pm_clients ADD COLUMN IF NOT EXISTS branch_id uuid REFERENCES public.branches(id) ON DELETE CASCADE;
+ALTER TABLE public.pm_clients ADD COLUMN IF NOT EXISTS staff_id uuid REFERENCES public.staff(id) ON DELETE SET NULL;
+
+ALTER TABLE public.pm_projects ADD COLUMN IF NOT EXISTS account_id uuid REFERENCES public.accounts(id) ON DELETE CASCADE;
+ALTER TABLE public.pm_projects ADD COLUMN IF NOT EXISTS business_id uuid REFERENCES public.businesses(id) ON DELETE CASCADE;
+ALTER TABLE public.pm_projects ADD COLUMN IF NOT EXISTS branch_id uuid REFERENCES public.branches(id) ON DELETE CASCADE;
+ALTER TABLE public.pm_projects ADD COLUMN IF NOT EXISTS staff_id uuid REFERENCES public.staff(id) ON DELETE SET NULL;
+
+ALTER TABLE public.pm_print_orders ADD COLUMN IF NOT EXISTS account_id uuid REFERENCES public.accounts(id) ON DELETE CASCADE;
+ALTER TABLE public.pm_print_orders ADD COLUMN IF NOT EXISTS business_id uuid REFERENCES public.businesses(id) ON DELETE CASCADE;
+ALTER TABLE public.pm_print_orders ADD COLUMN IF NOT EXISTS branch_id uuid REFERENCES public.branches(id) ON DELETE CASCADE;
+ALTER TABLE public.pm_print_orders ADD COLUMN IF NOT EXISTS staff_id uuid REFERENCES public.staff(id) ON DELETE SET NULL;
+
+ALTER TABLE public.pm_bat_deliverables ADD COLUMN IF NOT EXISTS account_id uuid REFERENCES public.accounts(id) ON DELETE CASCADE;
+ALTER TABLE public.pm_bat_deliverables ADD COLUMN IF NOT EXISTS business_id uuid REFERENCES public.businesses(id) ON DELETE CASCADE;
+ALTER TABLE public.pm_bat_deliverables ADD COLUMN IF NOT EXISTS branch_id uuid REFERENCES public.branches(id) ON DELETE CASCADE;
+ALTER TABLE public.pm_bat_deliverables ADD COLUMN IF NOT EXISTS staff_id uuid REFERENCES public.staff(id) ON DELETE SET NULL;
+
+ALTER TABLE public.pm_talents ADD COLUMN IF NOT EXISTS account_id uuid REFERENCES public.accounts(id) ON DELETE CASCADE;
+ALTER TABLE public.pm_talents ADD COLUMN IF NOT EXISTS business_id uuid REFERENCES public.businesses(id) ON DELETE CASCADE;
+ALTER TABLE public.pm_talents ADD COLUMN IF NOT EXISTS branch_id uuid REFERENCES public.branches(id) ON DELETE CASCADE;
+ALTER TABLE public.pm_talents ADD COLUMN IF NOT EXISTS staff_id uuid REFERENCES public.staff(id) ON DELETE SET NULL;
+
+ALTER TABLE public.pm_missions ADD COLUMN IF NOT EXISTS account_id uuid REFERENCES public.accounts(id) ON DELETE CASCADE;
+ALTER TABLE public.pm_missions ADD COLUMN IF NOT EXISTS business_id uuid REFERENCES public.businesses(id) ON DELETE CASCADE;
+ALTER TABLE public.pm_missions ADD COLUMN IF NOT EXISTS branch_id uuid REFERENCES public.branches(id) ON DELETE CASCADE;
+ALTER TABLE public.pm_missions ADD COLUMN IF NOT EXISTS staff_id uuid REFERENCES public.staff(id) ON DELETE SET NULL;
+
+ALTER TABLE public.pm_attendances ADD COLUMN IF NOT EXISTS account_id uuid REFERENCES public.accounts(id) ON DELETE CASCADE;
+ALTER TABLE public.pm_attendances ADD COLUMN IF NOT EXISTS business_id uuid REFERENCES public.businesses(id) ON DELETE CASCADE;
+ALTER TABLE public.pm_attendances ADD COLUMN IF NOT EXISTS branch_id uuid REFERENCES public.branches(id) ON DELETE CASCADE;
+ALTER TABLE public.pm_attendances ADD COLUMN IF NOT EXISTS staff_id uuid REFERENCES public.staff(id) ON DELETE SET NULL;
+
+ALTER TABLE public.pm_expenses ADD COLUMN IF NOT EXISTS account_id uuid REFERENCES public.accounts(id) ON DELETE CASCADE;
+ALTER TABLE public.pm_expenses ADD COLUMN IF NOT EXISTS business_id uuid REFERENCES public.businesses(id) ON DELETE CASCADE;
+ALTER TABLE public.pm_expenses ADD COLUMN IF NOT EXISTS branch_id uuid REFERENCES public.branches(id) ON DELETE CASCADE;
+ALTER TABLE public.pm_expenses ADD COLUMN IF NOT EXISTS staff_id uuid REFERENCES public.staff(id) ON DELETE SET NULL;
+
+ALTER TABLE public.pm_payroll_batches ADD COLUMN IF NOT EXISTS account_id uuid REFERENCES public.accounts(id) ON DELETE CASCADE;
+ALTER TABLE public.pm_payroll_batches ADD COLUMN IF NOT EXISTS business_id uuid REFERENCES public.businesses(id) ON DELETE CASCADE;
+ALTER TABLE public.pm_payroll_batches ADD COLUMN IF NOT EXISTS branch_id uuid REFERENCES public.branches(id) ON DELETE CASCADE;
+ALTER TABLE public.pm_payroll_batches ADD COLUMN IF NOT EXISTS staff_id uuid REFERENCES public.staff(id) ON DELETE SET NULL;
+
+ALTER TABLE public.pm_ccp_slips ADD COLUMN IF NOT EXISTS account_id uuid REFERENCES public.accounts(id) ON DELETE CASCADE;
+ALTER TABLE public.pm_ccp_slips ADD COLUMN IF NOT EXISTS business_id uuid REFERENCES public.businesses(id) ON DELETE CASCADE;
+ALTER TABLE public.pm_ccp_slips ADD COLUMN IF NOT EXISTS branch_id uuid REFERENCES public.branches(id) ON DELETE CASCADE;
+ALTER TABLE public.pm_ccp_slips ADD COLUMN IF NOT EXISTS staff_id uuid REFERENCES public.staff(id) ON DELETE SET NULL;
+
+ALTER TABLE public.pm_equipment_stock ADD COLUMN IF NOT EXISTS account_id uuid REFERENCES public.accounts(id) ON DELETE CASCADE;
+ALTER TABLE public.pm_equipment_stock ADD COLUMN IF NOT EXISTS business_id uuid REFERENCES public.businesses(id) ON DELETE CASCADE;
+ALTER TABLE public.pm_equipment_stock ADD COLUMN IF NOT EXISTS branch_id uuid REFERENCES public.branches(id) ON DELETE CASCADE;
+ALTER TABLE public.pm_equipment_stock ADD COLUMN IF NOT EXISTS staff_id uuid REFERENCES public.staff(id) ON DELETE SET NULL;
+
+-- Backfill PM tables
+UPDATE public.pm_clients SET account_id = tenant_id, branch_id = facility_id WHERE account_id IS NULL AND tenant_id IS NOT NULL;
+UPDATE public.pm_projects SET account_id = tenant_id, branch_id = facility_id WHERE account_id IS NULL AND tenant_id IS NOT NULL;
+UPDATE public.pm_print_orders SET account_id = tenant_id, branch_id = facility_id WHERE account_id IS NULL AND tenant_id IS NOT NULL;
+UPDATE public.pm_bat_deliverables SET account_id = tenant_id, branch_id = facility_id WHERE account_id IS NULL AND tenant_id IS NOT NULL;
+UPDATE public.pm_talents SET account_id = tenant_id, branch_id = facility_id WHERE account_id IS NULL AND tenant_id IS NOT NULL;
+UPDATE public.pm_missions SET account_id = tenant_id, branch_id = facility_id WHERE account_id IS NULL AND tenant_id IS NOT NULL;
+UPDATE public.pm_attendances SET account_id = tenant_id, branch_id = facility_id WHERE account_id IS NULL AND tenant_id IS NOT NULL;
+UPDATE public.pm_expenses SET account_id = tenant_id, branch_id = facility_id WHERE account_id IS NULL AND tenant_id IS NOT NULL;
+UPDATE public.pm_payroll_batches SET account_id = tenant_id, branch_id = facility_id WHERE account_id IS NULL AND tenant_id IS NOT NULL;
+UPDATE public.pm_ccp_slips SET account_id = tenant_id, branch_id = facility_id WHERE account_id IS NULL AND tenant_id IS NOT NULL;
+UPDATE public.pm_equipment_stock SET account_id = tenant_id, branch_id = facility_id WHERE account_id IS NULL AND tenant_id IS NOT NULL;
+
+CREATE INDEX IF NOT EXISTS idx_pm_clients_tracing ON public.pm_clients(account_id, business_id, branch_id);
+CREATE INDEX IF NOT EXISTS idx_pm_projects_tracing ON public.pm_projects(account_id, business_id, branch_id);
+CREATE INDEX IF NOT EXISTS idx_pm_missions_tracing ON public.pm_missions(account_id, business_id, branch_id);
 
 -- =====================================================================
 -- 8. Stored Procedures / RPCs for Project & Milestone Operations

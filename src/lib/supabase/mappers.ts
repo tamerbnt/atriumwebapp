@@ -126,8 +126,11 @@ export const mapStaffFromDb = (row: DbStaff, facilityId?: string): StaffMember =
 
   return {
     id: row.id,
+    accountId: row.account_id,
+    businessId: (row as any).business_id || undefined,
+    branchId: (row as any).branch_id || facilityId || undefined,
     tenantId: row.account_id,
-    facilityId: facilityId || '',
+    facilityId: facilityId || (row as any).branch_id || '',
     fullName: row.full_name,
     email: row.email || '',
     phoneNumber: row.phone || '',
@@ -144,6 +147,10 @@ export const mapStaffFromDb = (row: DbStaff, facilityId?: string): StaffMember =
 
 export const mapMemberFromDb = (row: DbMember): Member => ({
   id: row.id,
+  accountId: row.account_id,
+  businessId: (row as any).business_id || undefined,
+  branchId: row.branch_id,
+  staffId: (row as any).staff_id || undefined,
   tenantId: row.account_id,
   facilityId: row.branch_id,
   fullName: row.full_name,
@@ -164,6 +171,10 @@ export const mapLeadFromDb = (row: DbRegistrationRequest): RegistrationLead => {
   const p = (row.payload as any) || {};
   return {
     id: row.id,
+    accountId: row.account_id,
+    businessId: (row as any).business_id || undefined,
+    branchId: row.branch_id,
+    staffId: (row as any).staff_id || undefined,
     tenantId: row.account_id,
     facilityId: row.branch_id,
     fullName: p.fullName || p.full_name || 'Web Applicant',
@@ -180,12 +191,15 @@ export const mapLeadFromDb = (row: DbRegistrationRequest): RegistrationLead => {
 
 export const mapAppointmentFromDb = (row: Database['public']['Tables']['appointments']['Row']): Appointment => ({
   id: row.id,
+  accountId: row.account_id,
+  businessId: (row as any).business_id || undefined,
+  branchId: row.branch_id,
+  staffId: row.staff_id || '',
   tenantId: row.account_id,
   facilityId: row.branch_id,
   clientId: row.client_id || '',
   clientName: row.client_name,
   clientPhone: row.client_phone || '',
-  staffId: row.staff_id || '',
   staffName: row.staff_name,
   serviceId: row.service_id || '',
   serviceName: row.service_name,
@@ -201,6 +215,10 @@ export const mapAppointmentFromDb = (row: Database['public']['Tables']['appointm
 
 export const mapProductFromDb = (row: Database['public']['Tables']['products']['Row']): Product => ({
   id: row.id,
+  accountId: row.account_id,
+  businessId: (row as any).business_id || undefined,
+  branchId: row.branch_id,
+  staffId: (row as any).staff_id || undefined,
   tenantId: row.account_id,
   facilityId: row.branch_id,
   name: row.name,
@@ -218,6 +236,10 @@ export const mapProductFromDb = (row: Database['public']['Tables']['products']['
 
 export const mapSaleFromDb = (row: Database['public']['Tables']['sales']['Row']): Sale => ({
   id: row.id,
+  accountId: row.account_id,
+  businessId: (row as any).business_id || undefined,
+  branchId: row.branch_id,
+  staffId: (row as any).staff_id || undefined,
   tenantId: row.account_id,
   facilityId: row.branch_id,
   memberId: row.member_id || undefined,

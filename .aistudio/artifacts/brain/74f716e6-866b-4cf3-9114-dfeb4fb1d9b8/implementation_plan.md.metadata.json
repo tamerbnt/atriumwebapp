@@ -1,0 +1,6 @@
+{
+  "summary":  "Comprehensive Multi-Tenant & Multi-Vertical Data Traceability Audit and SQL Migration Architecture. Audits every table, category, and screen across Atrium ERP & CRM to ensure 100% compliance with the Quadruple Traceability Standard: account_id (organization root), business_id (vertical legal entity), branch_id (physical facility/campus), and staff_id (action creator/operator with active staff/owner fallback). Provides non-destructive PostgreSQL ALTER TABLE migrations, data backfill logic, updated RLS security rules, and full TypeScript synchronization.",
+  "updatedAt":  "2026-10-21T05:20:27.558200601Z",
+  "requestFeedback":  true,
+  "userFacing":  true
+}
