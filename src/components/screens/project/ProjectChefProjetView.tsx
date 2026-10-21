@@ -174,11 +174,11 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
       hasFiscalInvoice: true,
     });
 
-    const msg = `Achat "${purchaseTitle}" déclaré avec succès ! L'actif a été codé automatiquement dans le stock indirect (NCH-A-00xxx).`;
+    const msg = t('pm_cp_toast_purchase_desc', { title: purchaseTitle });
     setPurchaseSuccessMessage(msg);
     if (showToast) {
       showToast({
-        title: 'Achat déclaré & codé en stock',
+        title: t('pm_cp_toast_purchase_title'),
         message: msg,
         type: 'success',
       });
@@ -275,12 +275,12 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
               </div>
 
               <div className="text-right shrink-0">
-                <span className="text-xs text-zinc-400 block">Budget Total Alloué</span>
+                <span className="text-xs text-zinc-400 block">{t('pm_cp_budget_allocated')}</span>
                 <span className="font-mono text-2xl font-bold text-zinc-900 dark:text-zinc-100 tabular-nums">
                   {selectedProject.budgetCapDzd.toLocaleString()} DA
                 </span>
                 <span className="text-xs text-emerald-600 font-semibold block mt-0.5">
-                  Marge Cible: {selectedProject.targetGrossMarginPercent}%
+                  {t('pm_cp_target_margin', { margin: selectedProject.targetGrossMarginPercent })}
                 </span>
               </div>
             </div>
@@ -290,7 +290,11 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
               <div className="p-3.5 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/40 rounded-xl flex items-center gap-3 text-xs text-amber-800 dark:text-amber-300">
                 <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
                 <span>
-                  <strong>Alerte Consommation Budget:</strong> {burnRatePercent}% des frais de terrain ont déjà été engagés ({totalExpensesSpent.toLocaleString()} DA / {fieldExpensesLimit.toLocaleString()} DA plafond).
+                  {t('pm_cp_burn_rate_warning', {
+                    percent: burnRatePercent,
+                    spent: totalExpensesSpent.toLocaleString(),
+                    limit: fieldExpensesLimit.toLocaleString(),
+                  })}
                 </span>
               </div>
             )}
@@ -298,9 +302,9 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
             {/* Progress Bar */}
             <div className="space-y-1.5 pt-2 border-t border-zinc-100 dark:border-zinc-800">
               <div className="flex justify-between text-xs text-zinc-500">
-                <span>Avancement du Processus d'Activation</span>
+                <span>{t('pm_cp_activation_progress')}</span>
                 <span className="font-semibold text-zinc-800 dark:text-zinc-200">
-                  {selectedProject.status === 'field_active' ? '80% (En Exécution Terrain)' : '45% (Créa & Print)'}
+                  {selectedProject.status === 'field_active' ? t('pm_cp_status_field_exec') : t('pm_cp_status_crea_print')}
                 </span>
               </div>
               <div className="w-full h-2.5 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
@@ -315,7 +319,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
           {/* Sub-Milestones Interactive Timeline */}
           <div className="p-6 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm space-y-4">
             <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-              Jalons Opérationnels (Milestones)
+              {t('pm_cp_milestones_title')}
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -331,18 +335,18 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                     }`}
                   >
                     <div className="flex items-center justify-between text-xs mb-2">
-                      <span className="font-mono text-zinc-400">Étape {idx + 1}</span>
+                      <span className="font-mono text-zinc-400">{t('pm_cp_milestone_step', { step: idx + 1 })}</span>
                       {m.isCompleted ? (
                         <span className="text-emerald-600 font-semibold flex items-center gap-1">
-                          <CheckCircle className="w-3.5 h-3.5" /> Clôturé
+                          <CheckCircle className="w-3.5 h-3.5" /> {t('pm_cp_milestone_done')}
                         </span>
                       ) : (
-                        <span className="text-amber-600 font-medium">À réaliser</span>
+                        <span className="text-amber-600 font-medium">{t('pm_cp_milestone_pending')}</span>
                       )}
                     </div>
                     <p className="font-semibold text-xs text-zinc-900 dark:text-zinc-100">{m.title}</p>
                     <div className="text-[11px] text-zinc-500 mt-2 flex items-center justify-between">
-                      <span>Échéance: {m.targetDate}</span>
+                      <span>{t('pm_cp_milestone_deadline', { date: m.targetDate })}</span>
                       <span className="capitalize font-mono text-[10px] bg-zinc-200 dark:bg-zinc-700 px-1.5 py-0.5 rounded">
                         {m.assignedRole}
                       </span>
@@ -362,23 +366,23 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
             {/* Le Circuit Fichier Banner (Slide 6) */}
             <div className="p-4 bg-zinc-50 dark:bg-zinc-800/40 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-2">
               <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 block">
-                LE CIRCUIT FICHIER
+                {t('pm_cp_circuit_title')}
               </span>
               <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-zinc-700 dark:text-zinc-300">
                 <span className="px-2.5 py-1 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 shadow-xs">
-                  1. Le CDP commande
+                  {t('pm_cp_circuit_s1')}
                 </span>
                 <span className="text-zinc-400">➔</span>
                 <span className="px-2.5 py-1 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 shadow-xs">
-                  2. La Créa produit
+                  {t('pm_cp_circuit_s2')}
                 </span>
                 <span className="text-zinc-400">➔</span>
                 <span className="px-2.5 py-1 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 shadow-xs">
-                  3. Retour au CDP
+                  {t('pm_cp_circuit_s3')}
                 </span>
                 <span className="text-zinc-400">➔</span>
                 <span className="px-2.5 py-1 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 shadow-xs">
-                  4. Transmission imprimeur
+                  {t('pm_cp_circuit_s4')}
                 </span>
               </div>
             </div>
@@ -386,17 +390,17 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
             <div className="p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm flex flex-wrap items-center justify-between gap-4">
               <div>
                 <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                  Catalogue PLV, Bannières & Textile
+                  {t('pm_cp_cat_title')}
                 </h3>
                 <p className="text-xs text-zinc-500">
-                  Commandez les supports physiques pour vos activations de terrain.
+                  {t('pm_cp_cat_sub')}
                 </p>
               </div>
               <div className="flex items-center gap-3">
                 <Seek
                   value={catalogSearch}
                   onChange={setCatalogSearch}
-                  placeholder="Rechercher PLV, rollup, dimensions..."
+                  placeholder={t('pm_cp_cat_search_ph')}
                   openWidth={260}
                   shutSize={38}
                 />
@@ -405,7 +409,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                   className="px-3 py-1.5 text-xs font-semibold text-[#C4785A] border border-[#C4785A]/30 hover:bg-[#C4785A]/10 rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer"
                 >
                   <ShoppingBag className="w-3.5 h-3.5" />
-                  Voir Panier ({cartItems.length})
+                  {t('pm_cp_cat_view_cart', { count: cartItems.length })}
                 </button>
               </div>
             </div>
@@ -552,10 +556,10 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
         <div className="space-y-4">
           <div className="p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
             <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-              Suivi des Ordres de Fabrication & Commandes Print
+              {t('pm_cp_orders_title')}
             </h3>
             <p className="text-xs text-zinc-500">
-              Suivez en temps réel la prise en charge de vos commandes par le Studio Créa jusqu'au BAT final.
+              {t('pm_cp_orders_sub')}
             </p>
           </div>
 
@@ -592,13 +596,13 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                       </span>
                     </div>
                     <p className="text-xs text-zinc-600 dark:text-zinc-400">
-                      Articles : {order.items.map((i) => `${i.quantity}x ${i.itemTitle}`).join(', ')}
+                      {t('pm_cp_order_items', { items: order.items.map((i) => `${i.quantity}x ${i.itemTitle}`).join(', ') })}
                     </p>
                   </div>
 
                   <div className="flex items-center gap-4 shrink-0">
                     <div className="text-right">
-                      <span className="text-xs text-zinc-400 block">Total Fabrication</span>
+                      <span className="text-xs text-zinc-400 block">{t('pm_cp_order_total')}</span>
                       <span className="font-mono font-bold text-base text-zinc-900 dark:text-zinc-100 tabular-nums">
                         {order.totalCostDzd.toLocaleString()} DA
                       </span>
@@ -617,10 +621,10 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                Centre de Validation BAT (Bon à Tirer)
+                {t('pm_cp_bat_hub_title')}
               </h3>
               <p className="text-xs text-zinc-500">
-                Inspectez la fidélité colorimétrique (CMJN), les marges de bords perdus (3mm), et validez l'ordre d'impression.
+                {t('pm_cp_bat_hub_sub')}
               </p>
             </div>
           </div>

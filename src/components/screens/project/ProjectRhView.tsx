@@ -163,19 +163,19 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
         <div>
           <div className="flex items-center gap-2">
             <span className="text-xs font-semibold uppercase tracking-wider text-[#C4785A]">
-              Rôle 5 · Ressources Humaines & Casting
+              {t('pm_rh_badge_title')}
             </span>
             <span className="text-zinc-400">·</span>
-            <span className="text-xs text-zinc-500">Vivier 58 Wilayas & Comptes CCP</span>
+            <span className="text-xs text-zinc-500">{t('pm_rh_badge_sub')}</span>
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
             {activeTab === 'talents'
-              ? 'Vivier National des Talents'
+              ? t('pm_rh_title_talents')
               : activeTab === 'dossier'
-              ? `Dossier Candidat · ${selectedTalent?.fullName || 'Sélection'}`
+              ? t('pm_rh_title_dossier', { name: selectedTalent?.fullName || 'Sélection' })
               : activeTab === 'portal'
-              ? 'Portail Candidat Public (/cvs/create)'
-              : 'Saisie Express Candidat Agence'}
+              ? t('pm_rh_title_portal')
+              : t('pm_rh_title_walkin')}
           </h1>
         </div>
 
@@ -185,19 +185,17 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
             className="px-3.5 py-1.5 text-xs font-semibold text-white bg-[#C4785A] hover:bg-[#b3684a] rounded-xl flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
           >
             <Plus className="w-4 h-4" />
-            Nouveau Candidat
+            {t('pm_rh_btn_new_candidate')}
           </button>
           <button
             onClick={handleExportTalents}
             className="px-3 py-1.5 text-xs font-semibold text-zinc-700 dark:text-zinc-300 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 rounded-xl flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer"
           >
             <Download className="w-3.5 h-3.5" />
-            Exporter Vivier (Excel)
+            {t('pm_rh_btn_export_excel')}
           </button>
         </div>
       </div>
-
-
 
       {/* SCREEN 5.1: TALENT POOL DIRECTORY */}
       {activeTab === 'talents' && (
@@ -208,7 +206,7 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
               <Seek
                 value={searchTerm}
                 onChange={setSearchTerm}
-                placeholder="Rechercher par nom, téléphone, numéro CCP..."
+                placeholder={t('pm_rh_search_ph')}
                 openWidth={360}
                 shutSize={38}
               />
@@ -229,7 +227,7 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
             </div>
 
             <div className="text-xs font-semibold text-zinc-500">
-              {filteredTalents.length} profils trouvés
+              {t('pm_rh_profiles_found', { count: filteredTalents.length })}
             </div>
           </div>
 
@@ -238,12 +236,12 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
             <table className="w-full text-left text-xs">
               <thead className="bg-zinc-50 dark:bg-zinc-800/50 border-b border-zinc-200 dark:border-zinc-800 text-zinc-500 uppercase tracking-wider text-[10px] font-semibold">
                 <tr>
-                  <th className="py-3 px-4">Talent</th>
-                  <th className="py-3 px-4">Wilaya & Commune</th>
-                  <th className="py-3 px-4">Coordonnées CCP</th>
-                  <th className="py-3 px-4 text-center">Score Consolidé</th>
-                  <th className="py-3 px-4">Mobilité</th>
-                  <th className="py-3 px-4 text-right">Actions</th>
+                  <th className="py-3 px-4">{t('pm_rh_col_talent')}</th>
+                  <th className="py-3 px-4">{t('pm_rh_col_location')}</th>
+                  <th className="py-3 px-4">{t('pm_rh_col_ccp')}</th>
+                  <th className="py-3 px-4 text-center">{t('pm_rh_col_consolidated_score')}</th>
+                  <th className="py-3 px-4">{t('pm_rh_col_mobility')}</th>
+                  <th className="py-3 px-4 text-right">{t('common_actions')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
@@ -348,7 +346,7 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                 </div>
 
                 <div className="text-right">
-                  <span className="text-xs text-zinc-400 block">Note Globale Consolidée</span>
+                  <span className="text-xs text-zinc-400 block">{t('pm_rh_col_consolidated_score')}</span>
                   <div className="flex items-center gap-1.5 text-xl font-bold font-mono text-amber-500 justify-end">
                     <Star className="w-5 h-5 fill-amber-400" />
                     <span>{selectedTalent.consolidatedScore} / 5.0</span>
@@ -362,12 +360,12 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                 <div className="p-4 bg-zinc-50 dark:bg-zinc-800/40 rounded-xl border border-zinc-200 dark:border-zinc-700/60 space-y-2">
                   <h3 className="text-xs font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-wide flex items-center gap-1.5">
                     <Users className="w-4 h-4 text-[#C4785A]" />
-                    Compétences & Disponibilités
+                    {t('pm_rh_pillar1_title')}
                   </h3>
                   <div className="text-xs space-y-1 text-zinc-600 dark:text-zinc-400">
-                    <p><strong>Rôles souhaités :</strong> {selectedTalent.desiredRoles.join(', ')}</p>
-                    <p><strong>Langues :</strong> {selectedTalent.languages?.join(', ') || 'Arabe, Français'}</p>
-                    <p><strong>Mobilité :</strong> {selectedTalent.hasDriverLicense ? 'Permis B Oui' : 'Non'} · {selectedTalent.isVehicleOwner ? 'Véhiculé Oui' : 'Non véhicule'}</p>
+                    <p><strong>{t('pm_rh_pillar1_roles')}</strong> {selectedTalent.desiredRoles.join(', ')}</p>
+                    <p><strong>{t('pm_rh_pillar1_langs')}</strong> {selectedTalent.languages?.join(', ') || 'Arabe, Français'}</p>
+                    <p><strong>{t('pm_rh_pillar1_mobility')}</strong> {selectedTalent.hasDriverLicense ? 'Permis B Oui' : 'Non'} · {selectedTalent.isVehicleOwner ? 'Véhiculé Oui' : 'Non véhicule'}</p>
                   </div>
                 </div>
 
@@ -375,12 +373,12 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                 <div className="p-4 bg-zinc-50 dark:bg-zinc-800/40 rounded-xl border border-zinc-200 dark:border-zinc-700/60 space-y-2">
                   <h3 className="text-xs font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-wide flex items-center gap-1.5">
                     <CreditCard className="w-4 h-4 text-emerald-600" />
-                    Coordonnées Postales (Algérie Poste)
+                    {t('pm_rh_pillar2_title')}
                   </h3>
                   <div className="text-xs space-y-1 font-mono text-zinc-800 dark:text-zinc-200">
-                    <p><strong>N° Compte CCP :</strong> {selectedTalent.ccpNumber}</p>
-                    <p><strong>Clé Algérie Poste :</strong> {selectedTalent.ccpKey}</p>
-                    <p className="text-[11px] text-emerald-600 font-sans font-medium">✓ Validé conforme à l'algorithme d'Algérie Poste</p>
+                    <p><strong>{t('pm_rh_pillar2_ccp')}</strong> {selectedTalent.ccpNumber}</p>
+                    <p><strong>{t('pm_rh_pillar2_key')}</strong> {selectedTalent.ccpKey}</p>
+                    <p className="text-[11px] text-emerald-600 font-sans font-medium">{t('pm_rh_pillar2_verified')}</p>
                   </div>
                 </div>
 
@@ -388,16 +386,16 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                 <div className="p-4 bg-zinc-50 dark:bg-zinc-800/40 rounded-xl border border-zinc-200 dark:border-zinc-700/60 space-y-2">
                   <h3 className="text-xs font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-wide flex items-center gap-1.5">
                     <FileText className="w-4 h-4 text-blue-600" />
-                    Coffre-Fort des Pièces Justificatives
+                    {t('pm_rh_pillar3_title')}
                   </h3>
                   <div className="text-xs space-y-2">
                     <div className="flex items-center justify-between p-2 bg-white dark:bg-zinc-800 rounded-lg border border-zinc-200 dark:border-zinc-700">
-                      <span>Carte Nationale d'Identité (CNI)</span>
-                      <span className="text-emerald-600 font-bold text-[10px]">Vérifiée</span>
+                      <span>{t('pm_rh_doc_cni')}</span>
+                      <span className="text-emerald-600 font-bold text-[10px]">{t('pm_rh_doc_verified')}</span>
                     </div>
                     <div className="flex items-center justify-between p-2 bg-white dark:bg-zinc-800 rounded-lg border border-zinc-200 dark:border-zinc-700">
-                      <span>Permis de Conduire Catégorie B</span>
-                      <span className="text-emerald-600 font-bold text-[10px]">Conforme</span>
+                      <span>{t('pm_rh_doc_license')}</span>
+                      <span className="text-emerald-600 font-bold text-[10px]">{t('pm_rh_doc_compliant')}</span>
                     </div>
                   </div>
                 </div>
@@ -406,12 +404,12 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                 <div className="p-4 bg-zinc-50 dark:bg-zinc-800/40 rounded-xl border border-zinc-200 dark:border-zinc-700/60 space-y-2">
                   <h3 className="text-xs font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-wide flex items-center gap-1.5">
                     <Star className="w-4 h-4 text-amber-500" />
-                    Historique Missions & Fiabilité
+                    {t('pm_rh_pillar4_title')}
                   </h3>
                   <div className="text-xs text-zinc-600 dark:text-zinc-400 space-y-1">
-                    <p><strong>Missions Complétées :</strong> {selectedTalent.completedMissionsCount}</p>
-                    <p><strong>Absences Non Justifiées :</strong> 0 absence (100% fiabilité)</p>
-                    <p><strong>Avis RH :</strong> {selectedTalent.hrNotes || 'Profil sérieux et ponctuel.'}</p>
+                    <p><strong>{t('pm_rh_history_completed')}</strong> {selectedTalent.completedMissionsCount}</p>
+                    <p><strong>{t('pm_rh_history_absences')}</strong> {t('pm_rh_history_reliability')}</p>
+                    <p><strong>{t('pm_rh_history_hr_notes')}</strong> {selectedTalent.hrNotes || 'Profil sérieux et ponctuel.'}</p>
                   </div>
                 </div>
               </div>
@@ -421,7 +419,7 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                   onClick={() => setActiveTab('talents')}
                   className="px-4 py-2 text-xs font-semibold text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 rounded-xl hover:bg-zinc-100 cursor-pointer"
                 >
-                  Retour au Vivier
+                  {t('pm_rh_btn_back_pool')}
                 </button>
               </div>
             </div>
@@ -434,26 +432,26 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
       {/* SCREEN 5.3A: PUBLIC CANDIDATE SELF-REGISTRATION (SIMULATOR) */}
       {activeTab === 'portal' && (
         <MobilePhoneSimulator
-          title="Portail Candidat Public (/cvs/create)"
-          subtitle="Formulaire de pré-inscription pour animateurs et hôtesses"
+          title={t('pm_rh_title_portal')}
+          subtitle={t('pm_rh_portal_sub')}
           defaultMode="mobile"
         >
           <div className="space-y-4">
             <div className="text-center pb-2 border-b border-zinc-200 dark:border-zinc-700">
               <span className="text-[10px] font-bold text-[#C4785A] uppercase tracking-wide">
-                Rejoignez le Réseau NCH
+                {t('pm_rh_portal_join_title')}
               </span>
               <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
-                Formulaire d'Inscription Talent
+                {t('pm_rh_portal_form_title')}
               </h3>
               <p className="text-[11px] text-zinc-500">
-                Gagnez jusqu'à 4 500 DA / jour sur les événements de grandes marques.
+                {t('pm_rh_portal_form_sub')}
               </p>
             </div>
 
             {formSubmittedSuccess && (
               <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 rounded-xl border border-emerald-200 text-emerald-800 dark:text-emerald-300 text-xs font-semibold text-center">
-                ✓ Candidature envoyée avec succès ! Notre équipe RH vous contactera sous 48h.
+                {t('pm_rh_portal_success')}
               </div>
             )}
 

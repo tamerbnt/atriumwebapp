@@ -153,6 +153,18 @@ export const FreelanceDeliverablesView: React.FC = () => {
     setIsAddDeliverableModalOpen(false);
   };
 
+  const handleEditDeliverableSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!deliverableToEdit || !editDeliverableForm.title.trim()) return;
+    updateDeliverable(deliverableToEdit.project.id, deliverableToEdit.deliverable.id, {
+      title: editDeliverableForm.title,
+      description: editDeliverableForm.description,
+      estimatedHours: Number(editDeliverableForm.estimatedHours),
+      dueDate: editDeliverableForm.dueDate,
+    });
+    setDeliverableToEdit(null);
+  };
+
   const handleCreateProject = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newProjectData.title.trim() || !newProjectData.clientId) return;
@@ -211,7 +223,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
             {totalScopeCreepItems > 0 && (
               <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-400 border border-rose-200 dark:border-rose-800 flex items-center gap-1">
                 <AlertTriangle size={12} />
-                <span>{totalScopeCreepItems} Scope Creep Alert</span>
+                <span>{totalScopeCreepItems} {language === 'ar' ? 'تنبيه تجاوز الساعات' : language === 'fr' ? 'Alertes Dépassement' : 'Scope Creep Alerts'}</span>
               </span>
             )}
           </div>
@@ -720,6 +732,195 @@ export const FreelanceDeliverablesView: React.FC = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Deliverable Modal */}
+      {deliverableToEdit && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="bg-white dark:bg-[#1C1C1E] border border-neutral-200 dark:border-neutral-800 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
+              <div>
+                <h3 className="text-base font-bold text-neutral-900 dark:text-white">
+                  {t('free_deliv_edit', language)}
+                </h3>
+                <p className="text-xs text-neutral-500 mt-0.5">
+                  {deliverableToEdit.project.title} · {deliverableToEdit.project.clientName}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setDeliverableToEdit(null)}
+                className="w-8 h-8 rounded-full flex items-center justify-center text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 cursor-pointer"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <form onSubmit={handleEditDeliverableSubmit} className="space-y-3.5 text-xs">
+              <LabelInput
+                id="edit-deliverable-title"
+                label={t('free_deliv_field_title', language)}
+                required
+                value={editDeliverableForm.title}
+                onChange={(e) =>
+                  setEditDeliverableForm({ ...editDeliverableForm, title: e.target.value })
+                }
+              />
+
+              <div>
+                <label className="font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
+                  {t('free_deliv_field_tags', language)}
+                </label>
+                <textarea
+                  rows={2}
+                  value={editDeliverableForm.description}
+                  onChange={(e) =>
+                    setEditDeliverableForm({ ...editDeliverableForm, description: e.target.value })
+                  }
+                  className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <LabelInput
+                  id="edit-deliverable-estimated-hours"
+                  label={t('free_deliv_field_est_hours', language)}
+                  type="number"
+                  min="1"
+                  required
+                  value={editDeliverableForm.estimatedHours}
+                  onChange={(e) =>
+                    setEditDeliverableForm({
+                      ...editDeliverableForm,
+                      estimatedHours: Number(e.target.value),
+                    })
+                  }
+                />
+                <LabelInput
+                  id="edit-deliverable-due-date"
+                  label={t('free_deliv_field_due_date', language)}
+                  type="date"
+                  required
+                  value={editDeliverableForm.dueDate}
+                  onChange={(e) =>
+                    setEditDeliverableForm({ ...editDeliverableForm, dueDate: e.target.value })
+                  }
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
+                <button
+                  type="button"
+                  onClick={() => setDeliverableToEdit(null)}
+                  className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+                >
+                  {t('common_cancel', language)}
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl bg-[#C4785A] text-white text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
+                >
+                  {t('common_save', language)}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Deliverable Confirmation Modal */}
+      {deliverableToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="bg-white dark:bg-[#1C1C1E] border border-neutral-200 dark:border-neutral-800 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4 animate-in zoom-in-95 duration-150">
+            <div className="flex items-center gap-3 text-rose-600 dark:text-rose-400">
+              <div className="w-10 h-10 rounded-2xl bg-rose-50 dark:bg-rose-950/60 flex items-center justify-center shrink-0 border border-rose-200 dark:border-rose-900/60">
+                <AlertTriangle size={20} />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-neutral-900 dark:text-white">
+                  {t('free_deliv_delete', language)}
+                </h3>
+                <p className="text-xs text-neutral-500">{deliverableToDelete.title}</p>
+              </div>
+            </div>
+
+            <p className="text-xs text-neutral-600 dark:text-neutral-300 leading-relaxed">
+              {language === 'ar'
+                ? `هل أنت متأكد من رغبتك في حذف التسليمة "${deliverableToDelete.title}"؟ سيتم حذفها نهائياً من لوحة كانبان.`
+                : language === 'fr'
+                ? `Êtes-vous sûr de vouloir supprimer le livrable "${deliverableToDelete.title}" ? Cette tâche sera définitivement retirée du tableau Kanban.`
+                : `Are you sure you want to delete deliverable "${deliverableToDelete.title}"? This task will be permanently removed from the Kanban board.`}
+            </p>
+
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
+              <button
+                type="button"
+                onClick={() => setDeliverableToDelete(null)}
+                className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+              >
+                {t('common_cancel', language)}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  deleteDeliverable(deliverableToDelete.projectId, deliverableToDelete.deliverableId);
+                  setDeliverableToDelete(null);
+                }}
+                className="px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold transition-colors cursor-pointer shadow-xs"
+              >
+                {t('common_delete', language)}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Project Confirmation Modal */}
+      {projectToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="bg-white dark:bg-[#1C1C1E] border border-neutral-200 dark:border-neutral-800 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4 animate-in zoom-in-95 duration-150">
+            <div className="flex items-center gap-3 text-rose-600 dark:text-rose-400">
+              <div className="w-10 h-10 rounded-2xl bg-rose-50 dark:bg-rose-950/60 flex items-center justify-center shrink-0 border border-rose-200 dark:border-rose-900/60">
+                <AlertTriangle size={20} />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-neutral-900 dark:text-white">
+                  {language === 'ar' ? 'حذف المشروع' : language === 'fr' ? 'Supprimer le Projet' : 'Delete Project'}
+                </h3>
+                <p className="text-xs text-neutral-500">{projectToDelete.title} · {projectToDelete.clientName}</p>
+              </div>
+            </div>
+
+            <p className="text-xs text-neutral-600 dark:text-neutral-300 leading-relaxed">
+              {language === 'ar'
+                ? `هل أنت متأكد من رغبتك في حذف مشروع "${projectToDelete.title}"؟ سيتم حذف جميع التسليمات وسجلات الوقت المرتبطة به نهائياً.`
+                : language === 'fr'
+                ? `Êtes-vous sûr de vouloir supprimer le projet "${projectToDelete.title}" ? Tous les livrables et sessions de travail associées seront définitivement supprimés.`
+                : `Are you sure you want to delete project "${projectToDelete.title}"? All associated deliverables and tracked sessions will be permanently deleted.`}
+            </p>
+
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
+              <button
+                type="button"
+                onClick={() => setProjectToDelete(null)}
+                className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+              >
+                {t('common_cancel', language)}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  deleteFreelanceProject(projectToDelete.id);
+                  setSelectedProjectId('all');
+                  setProjectToDelete(null);
+                }}
+                className="px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold transition-colors cursor-pointer shadow-xs"
+              >
+                {t('common_delete', language)}
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -25,6 +25,7 @@ import {
   History,
   ArrowRight,
   ExternalLink,
+  DollarSign,
 } from 'lucide-react';
 import { Seek } from '../../ui/Seek';
 import { useTranslation } from '../../../utils/useTranslation';

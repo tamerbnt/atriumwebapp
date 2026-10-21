@@ -88,17 +88,17 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
   const kanbanColumns = [
     {
       id: 'received',
-      title: 'Briefs & Commandes Reçus',
+      title: t('pm_crea_kanban_received'),
       badgeClass: 'bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300',
     },
     {
       id: 'in_progress',
-      title: 'En Cours de Production Créa',
+      title: t('pm_crea_kanban_in_progress'),
       badgeClass: 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300',
     },
     {
       id: 'ready_bat',
-      title: 'BAT Prêts & Validés',
+      title: t('pm_crea_kanban_ready_bat'),
       badgeClass: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300',
     },
   ];
