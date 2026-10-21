@@ -99,7 +99,13 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
     const ccpCheck = validateCcpAccount(ccpNumber, ccpKey);
 
     if (!ccpCheck.isValid) {
-      alert(`Erreur CCP : ${ccpCheck.error}`);
+      if (showToast) {
+        showToast({
+          title: t('pm_rh_ccp_error_title'),
+          message: t('pm_rh_ccp_error_msg', { error: ccpCheck.error }),
+          type: 'warning',
+        });
+      }
       return;
     }
 

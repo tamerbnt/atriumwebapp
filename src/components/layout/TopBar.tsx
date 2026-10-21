@@ -339,13 +339,19 @@ export const TopBar: React.FC<TopBarProps> = ({
         );
       case 'pm_dir_dashboard':
       case 'pm_dir_new_project':
+      case 'pm_dir_projects':
       case 'pm_dir_approvals':
+      case 'pm_dir_reports':
       case 'pm_cp_projects':
       case 'pm_cp_catalog':
+      case 'pm_cp_orders':
+      case 'pm_cp_files':
       case 'pm_cp_deliverables':
       case 'pm_cp_expenses':
       case 'pm_crea_kanban':
+      case 'pm_crea_production':
       case 'pm_crea_upload':
+      case 'pm_crea_briefs':
       case 'pm_sup_missions':
       case 'pm_sup_attendance':
       case 'pm_sup_staffing':
@@ -359,29 +365,35 @@ export const TopBar: React.FC<TopBarProps> = ({
       case 'pm_compta_expenses':
       case 'pm_compta_stock': {
         const pmScreenTitles: Record<string, { role: string; screen: string }> = {
-          pm_dir_dashboard: { role: 'Direction', screen: 'Command Center' },
-          pm_dir_new_project: { role: 'Direction', screen: 'Cadrage & Cahier des Charges' },
-          pm_dir_approvals: { role: 'Direction', screen: 'Double-Lock Approbations' },
-          pm_cp_projects: { role: 'Chef de Projet', screen: 'Portefeuille & Jalons' },
-          pm_cp_catalog: { role: 'Chef de Projet', screen: 'Catalogue Print & PLV' },
-          pm_cp_deliverables: { role: 'Chef de Projet', screen: 'BAT & Livrables' },
-          pm_cp_expenses: { role: 'Chef de Projet', screen: 'Budget & Dépenses' },
-          pm_crea_kanban: { role: 'Studio Créa', screen: 'Kanban de Production' },
-          pm_crea_upload: { role: 'Studio Créa', screen: 'Validateur BAT & Specs' },
-          pm_sup_missions: { role: 'Superviseur', screen: 'Missions Terrain' },
-          pm_sup_attendance: { role: 'Superviseur', screen: 'Pointage Mobile Direct' },
-          pm_sup_staffing: { role: 'Superviseur', screen: 'Casting & Staffing' },
-          pm_sup_expenses: { role: 'Superviseur', screen: 'Déclaration Dépense' },
-          pm_rh_talents: { role: 'RH & Casting', screen: 'Vivier Talents (58 Wilayas)' },
-          pm_rh_dossier: { role: 'RH & Casting', screen: 'Dossier Talent 360°' },
-          pm_rh_portal: { role: 'RH & Casting', screen: 'Portail Candidat Public' },
-          pm_rh_walkin: { role: 'RH & Casting', screen: 'Saisie Express Agence' },
-          pm_compta_payroll: { role: 'Comptabilité', screen: 'Hub Paies Automatisé' },
-          pm_compta_ccp: { role: 'Comptabilité', screen: 'Bordereaux CCP (SFP 01)' },
-          pm_compta_expenses: { role: 'Comptabilité', screen: 'Audit Factures & NIF' },
-          pm_compta_stock: { role: 'Comptabilité', screen: 'Stock Matériel & QR' },
+          pm_dir_dashboard: { role: t('pm_role_direction_name'), screen: t('pm_screen_dir_dashboard') },
+          pm_dir_new_project: { role: t('pm_role_direction_name'), screen: t('pm_screen_dir_new_project') },
+          pm_dir_projects: { role: t('pm_role_direction_name'), screen: t('pm_screen_dir_projects') },
+          pm_dir_approvals: { role: t('pm_role_direction_name'), screen: t('pm_screen_dir_approvals') },
+          pm_dir_reports: { role: t('pm_role_direction_name'), screen: t('pm_screen_dir_reports') },
+          pm_cp_projects: { role: t('pm_role_chef_projet_name'), screen: t('pm_screen_cp_projects') },
+          pm_cp_catalog: { role: t('pm_role_chef_projet_name'), screen: t('pm_screen_cp_catalog') },
+          pm_cp_orders: { role: t('pm_role_chef_projet_name'), screen: t('pm_screen_cp_orders') },
+          pm_cp_files: { role: t('pm_role_chef_projet_name'), screen: t('pm_screen_cp_deliverables') },
+          pm_cp_deliverables: { role: t('pm_role_chef_projet_name'), screen: t('pm_screen_cp_deliverables') },
+          pm_cp_expenses: { role: t('pm_role_chef_projet_name'), screen: t('pm_screen_cp_expenses') },
+          pm_crea_kanban: { role: t('pm_role_crea_name'), screen: t('pm_screen_crea_kanban') },
+          pm_crea_production: { role: t('pm_role_crea_name'), screen: t('pm_screen_crea_production') },
+          pm_crea_upload: { role: t('pm_role_crea_name'), screen: t('pm_screen_crea_upload') },
+          pm_crea_briefs: { role: t('pm_role_crea_name'), screen: t('pm_screen_crea_briefs') },
+          pm_sup_missions: { role: t('pm_role_superviseur_name'), screen: t('pm_screen_sup_missions') },
+          pm_sup_attendance: { role: t('pm_role_superviseur_name'), screen: t('pm_screen_sup_attendance') },
+          pm_sup_staffing: { role: t('pm_role_superviseur_name'), screen: t('pm_screen_sup_staffing') },
+          pm_sup_expenses: { role: t('pm_role_superviseur_name'), screen: t('pm_screen_sup_expenses') },
+          pm_rh_talents: { role: t('pm_role_rh_name'), screen: t('pm_screen_rh_talents') },
+          pm_rh_dossier: { role: t('pm_role_rh_name'), screen: t('pm_screen_rh_dossier') },
+          pm_rh_portal: { role: t('pm_role_rh_name'), screen: t('pm_screen_rh_portal') },
+          pm_rh_walkin: { role: t('pm_role_rh_name'), screen: t('pm_screen_rh_walkin') },
+          pm_compta_payroll: { role: t('pm_role_compta_name'), screen: t('pm_screen_compta_payroll') },
+          pm_compta_ccp: { role: t('pm_role_compta_name'), screen: t('pm_screen_compta_ccp') },
+          pm_compta_expenses: { role: t('pm_role_compta_name'), screen: t('pm_screen_compta_expenses') },
+          pm_compta_stock: { role: t('pm_role_compta_name'), screen: t('pm_screen_compta_stock') },
         };
-        const info = pmScreenTitles[activeScreen] || { role: 'Projets & Jalons', screen: activeScreen };
+        const info = pmScreenTitles[activeScreen] || { role: t('pm_role_direction_name'), screen: t('pm_screen_dir_dashboard') };
         return (
           <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs">
             <button

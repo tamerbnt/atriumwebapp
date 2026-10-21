@@ -2628,14 +2628,14 @@ export const ShopScreen: React.FC = () => {
               value={formCategory}
               onChange={(val) => setFormCategory(typeof val === 'string' ? val : val.target?.value || val)}
               options={[
-                { value: 'Beverage', label: 'Beverage' },
-                { value: 'Grocery', label: 'Grocery' },
-                { value: 'Bakery', label: 'Bakery & Food' },
-                { value: 'General', label: 'General Merchandise' },
-                { value: 'Supplement', label: 'Supplements' },
-                { value: 'Equipment', label: 'Equipment' },
-                { value: 'Clothing', label: 'Clothing & Goods' },
-                { value: 'Service', label: 'Service' },
+                { value: 'Beverage', label: t('shop_cat_beverage') },
+                { value: 'Grocery', label: t('shop_cat_grocery') },
+                { value: 'Bakery', label: t('shop_cat_bakery') },
+                { value: 'General', label: t('shop_cat_general') },
+                { value: 'Supplement', label: t('shop_cat_supplement') },
+                { value: 'Equipment', label: t('shop_cat_equipment') },
+                { value: 'Clothing', label: t('shop_cat_clothing') },
+                { value: 'Service', label: t('shop_cat_service') },
               ]}
               height={46}
               corner={14}
@@ -2647,12 +2647,12 @@ export const ShopScreen: React.FC = () => {
               value={formUnit}
               onChange={(val) => setFormUnit(typeof val === 'string' ? val : val.target?.value || val)}
               options={[
-                { value: 'pcs', label: 'Pieces (pcs)' },
-                { value: 'pack', label: 'Pack' },
-                { value: 'box', label: 'Box' },
-                { value: 'kg', label: 'Kilogram (kg)' },
-                { value: 'g', label: 'Gram (g)' },
-                { value: 'l', label: 'Liter (l)' },
+                { value: 'pcs', label: `${t('shop_unit_pcs')} (pcs)` },
+                { value: 'pack', label: t('shop_unit_pack') },
+                { value: 'box', label: t('shop_unit_box') },
+                { value: 'kg', label: t('shop_unit_kg') },
+                { value: 'g', label: t('shop_unit_g') },
+                { value: 'l', label: t('shop_unit_l') },
               ]}
               height={46}
               corner={14}

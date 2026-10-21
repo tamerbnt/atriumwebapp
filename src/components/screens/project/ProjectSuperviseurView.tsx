@@ -259,8 +259,8 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
                     </div>
                     <div className="flex items-center gap-2">
                       <Clock className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
-                      <span>Horaires : {mission.dailyStartHour} – {mission.dailyEndHour}</span>
-                      <span>· Effectif requis : {mission.requiredStaffCount} animateurs</span>
+                      <span>{t('pm_sup_schedule_label', { start: mission.dailyStartHour, end: mission.dailyEndHour })}</span>
+                      <span>· {mission.requiredStaffCount} staff</span>
                     </div>
                   </div>
 
@@ -316,15 +316,15 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
             {/* Quick Roll Call Stats */}
             <div className="grid grid-cols-3 gap-2 pt-2 border-t border-zinc-200/60 dark:border-zinc-700/60 text-center">
               <div className="p-1.5 bg-emerald-100/60 dark:bg-emerald-950/40 rounded-xl">
-                <span className="text-[10px] text-emerald-800 dark:text-emerald-300 font-semibold block">Présents</span>
+                <span className="text-[10px] text-emerald-800 dark:text-emerald-300 font-semibold block">{t('pm_sup_status_present_badge')}</span>
                 <span className="text-sm font-bold text-emerald-700 dark:text-emerald-300 font-mono">{presentCount}</span>
               </div>
               <div className="p-1.5 bg-amber-100/60 dark:bg-amber-950/40 rounded-xl">
-                <span className="text-[10px] text-amber-800 dark:text-amber-300 font-semibold block">Retard</span>
+                <span className="text-[10px] text-amber-800 dark:text-amber-300 font-semibold block">{t('pm_sup_status_late_badge')}</span>
                 <span className="text-sm font-bold text-amber-700 dark:text-amber-300 font-mono">{lateCount}</span>
               </div>
               <div className="p-1.5 bg-red-100/60 dark:bg-red-950/40 rounded-xl">
-                <span className="text-[10px] text-red-800 dark:text-red-300 font-semibold block">Absents</span>
+                <span className="text-[10px] text-red-800 dark:text-red-300 font-semibold block">{t('pm_sup_status_absent_badge')}</span>
                 <span className="text-sm font-bold text-red-700 dark:text-red-300 font-mono">{absentCount}</span>
               </div>
             </div>
@@ -545,7 +545,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
                   </div>
 
                   <div className="flex items-center justify-between pt-2 border-t border-zinc-100 dark:border-zinc-800 text-xs">
-                    <span className="font-mono text-zinc-500">CCP: {talent.ccpNumber}</span>
+                    <span className="font-mono text-zinc-500">{t('pm_sup_ccp_account_tag', { number: talent.ccpNumber })}</span>
                     <button
                       type="button"
                       onClick={() => {

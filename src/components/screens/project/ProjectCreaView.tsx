@@ -252,7 +252,7 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                     </div>
                     <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between text-xs">
                       <span className="text-zinc-400 text-[10px]">{p.clientName}</span>
-                      <span className="text-[#C4785A] font-semibold text-[11px]">En attente création</span>
+                      <span className="text-[#C4785A] font-semibold text-[11px]">{t('pm_crea_waiting_creation')}</span>
                     </div>
                   </div>
                 ))}
@@ -280,7 +280,7 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                       </div>
                       <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between text-xs">
                         <span className="font-mono text-[11px] text-zinc-500">{order.totalCostDzd.toLocaleString()} DA</span>
-                        <span className="text-blue-600 dark:text-blue-400 font-semibold text-[11px]">Ordre reçu</span>
+                        <span className="text-blue-600 dark:text-blue-400 font-semibold text-[11px]">{t('pm_crea_order_received')}</span>
                       </div>
                     </div>
                   ))}
@@ -330,7 +330,7 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
 
                       <div className="text-[10px] text-zinc-400 flex items-center justify-between pt-1.5 border-t border-zinc-100 dark:border-zinc-800">
                         <span>{bat.uploadedByCreativeName}</span>
-                        <span className="text-emerald-600 font-medium">Bords 3mm</span>
+                        <span className="text-emerald-600 font-medium">{t('pm_crea_bleed_3mm')}</span>
                       </div>
                     </div>
                   ))}
@@ -433,14 +433,14 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute bottom-2 left-2 right-2 p-2 rounded-lg bg-black/75 backdrop-blur-xs text-white text-[11px]">
-                  <span>Fonds perdus 3mm inclus · Prêt pour flashage</span>
+                  <span>{t('pm_crea_bleed_flash_ready')}</span>
                 </div>
               </div>
 
               {returnedToCdpSuccess && (
                 <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-xs font-semibold flex items-center gap-2 animate-in fade-in">
                   <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
-                  <span>BAT renvoyé au Chef de Projet pour validation et transmission à l'imprimeur !</span>
+                  <span>{t('pm_crea_bat_returned_success')}</span>
                 </div>
               )}
 
@@ -493,9 +493,9 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                   </div>
                   <p className="text-xs text-zinc-500 max-w-2xl">{p.scopeOfWork}</p>
                   <div className="flex items-center gap-4 text-[11px] text-zinc-400 pt-1">
-                    <span>Échéance KV: <strong>{p.kvDeadline || p.startDate}</strong></span>
-                    <span>Échéance Print: <strong>{p.printDeadline || p.startDate}</strong></span>
-                    <span>CDP: <strong>{p.projectManagerName}</strong></span>
+                    <span>{t('pm_crea_deadline_kv', { date: p.kvDeadline || p.startDate })}</span>
+                    <span>{t('pm_crea_deadline_print', { date: p.printDeadline || p.startDate })}</span>
+                    <span>{t('pm_crea_pm_lead', { name: p.projectManagerName })}</span>
                   </div>
                 </div>
 
@@ -626,7 +626,7 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                       onChange={(e) => setHasBleedIncluded(e.target.checked)}
                       className="rounded border-zinc-300 text-[#C4785A] focus:ring-[#C4785A]"
                     />
-                    <span>Bords perdus de 3mm et traits de coupe inclus dans le fichier</span>
+                    <span>{t('pm_crea_crop_marks_included')}</span>
                   </label>
                 </div>
               </div>
@@ -649,7 +649,7 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
               <div className="p-3.5 rounded-xl bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/50 flex items-center gap-3 text-xs text-blue-800 dark:text-blue-300">
                 <Lock className="w-4 h-4 shrink-0 text-blue-600" />
                 <span>
-                  <strong>Sécurité Source Master :</strong> Les fichiers originaux .AI / .PSD restent stockés sur le cloud sécurisé de l'agence. Seules les épreuves de contrôle ou BAT validés sont transmis aux prestataires imprimeurs.
+                  {t('pm_crea_cloud_security_note')}
                 </span>
               </div>
             </div>

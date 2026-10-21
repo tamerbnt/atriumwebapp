@@ -303,13 +303,13 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
                 </div>
                 <div className="h-32 flex items-end justify-between gap-3 pt-4 px-2">
                   {[
-                    { month: 'Jan', count: 4, height: '40%' },
-                    { month: 'Fév', count: 6, height: '55%' },
-                    { month: 'Mar', count: 5, height: '48%' },
-                    { month: 'Avr', count: 8, height: '70%' },
-                    { month: 'Mai', count: 9, height: '78%' },
-                    { month: 'Juin', count: 7, height: '62%' },
-                    { month: 'Juil', count: 12, height: '100%', active: true },
+                    { month: t('pm_month_jan'), count: 4, height: '40%' },
+                    { month: t('pm_month_feb'), count: 6, height: '55%' },
+                    { month: t('pm_month_mar'), count: 5, height: '48%' },
+                    { month: t('pm_month_apr'), count: 8, height: '70%' },
+                    { month: t('pm_month_may'), count: 9, height: '78%' },
+                    { month: t('pm_month_jun'), count: 7, height: '62%' },
+                    { month: t('pm_month_jul'), count: 12, height: '100%', active: true },
                   ].map((bar) => (
                     <div key={bar.month} className="flex-1 flex flex-col items-center gap-1.5 h-full justify-end group">
                       <span className="text-[10px] font-mono font-semibold text-zinc-500 opacity-0 group-hover:opacity-100 transition-opacity">

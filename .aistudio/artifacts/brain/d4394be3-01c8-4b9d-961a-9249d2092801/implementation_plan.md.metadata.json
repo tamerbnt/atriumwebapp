@@ -1,0 +1,6 @@
+{
+  "summary":  "Comprehensive architectural and localization overhaul plan for the Project & Milestone category (Cat 13) across all 6 agency roles and 21 sub-screens. Resolves raw 'pm_...' screen identifier leaks in TopBar breadcrumbs, establishes full Algerian advertising agency nomenclature across French, Arabic, and English, eliminates all hardcoded strings in the 6 role views, and removes forbidden window.alert calls.",
+  "updatedAt":  "2026-10-21T02:50:12.097201275Z",
+  "requestFeedback":  true,
+  "userFacing":  true
+}

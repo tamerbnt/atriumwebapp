@@ -477,9 +477,9 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
               {cartItems.length === 0 ? (
                 <div className="py-8 text-center text-zinc-400 space-y-1">
                   <ShoppingBag className="w-8 h-8 mx-auto text-zinc-300 dark:text-zinc-700" />
-                  <p className="text-xs">Le panier est vide.</p>
+                  <p className="text-xs">{t('pm_cp_empty_cart_msg')}</p>
                   <p className="text-[11px] text-zinc-400">
-                    Sélectionnez vos bannières, roll-up ou comptoirs PLV pour transmettre la commande au Studio Créa.
+                    {t('pm_cp_cat_sub')}
                   </p>
                 </div>
               ) : (
@@ -523,14 +523,14 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
 
                   <div className="pt-3 border-t border-zinc-200 dark:border-zinc-800 space-y-3">
                     <div className="flex justify-between text-xs">
-                      <span className="text-zinc-500">Imputation :</span>
+                      <span className="text-zinc-500">{t('pm_cp_imputation_label')}</span>
                       <span className="font-semibold text-zinc-900 dark:text-zinc-100 truncate max-w-[160px]">
-                        Projet : {selectedProject?.title}
+                        {selectedProject?.title}
                       </span>
                     </div>
 
                     <div className="flex justify-between items-baseline">
-                      <span className="text-xs text-zinc-500">Total Commande :</span>
+                      <span className="text-xs text-zinc-500">{t('pm_cp_order_total_label')}</span>
                       <span className="font-mono text-lg font-bold text-zinc-900 dark:text-zinc-100 tabular-nums">
                         {cartTotalDzd.toLocaleString()} DA
                       </span>
@@ -678,7 +678,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                     )}
 
                     <div className="text-xs text-zinc-500 space-y-1">
-                      <p>Déposé par : <strong>{bat.uploadedByCreativeName}</strong> (Studio Créa)</p>
+                      <p>{t('pm_cp_deposited_by', { name: bat.uploadedByCreativeName })}</p>
                       {bat.revisionComments && (
                         <p className="p-2 rounded bg-amber-50 dark:bg-amber-950/20 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-900/40 text-[11px]">
                           Note de correction : « {bat.revisionComments} »
@@ -739,14 +739,14 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
 
             <div className="flex items-center gap-6">
               <div className="text-right">
-                <span className="text-xs text-zinc-400 block">Total Consommé</span>
+                <span className="text-xs text-zinc-400 block">{t('pm_cp_total_consumed')}</span>
                 <span className="font-mono text-base font-bold text-zinc-900 dark:text-zinc-100 tabular-nums">
                   {totalExpensesSpent.toLocaleString()} DA
                 </span>
               </div>
               <div className="w-24">
                 <div className="flex justify-between text-[10px] text-zinc-500 font-mono mb-1">
-                  <span>Conso</span>
+                  <span>{t('pm_cp_conso_badge')}</span>
                   <span>{burnRatePercent}%</span>
                 </div>
                 <div className="h-2 w-full bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
@@ -844,11 +844,11 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
               <table className="w-full text-left text-xs">
                 <thead className="bg-zinc-50 dark:bg-zinc-800 text-zinc-500 uppercase tracking-wider text-[10px] font-semibold">
                   <tr>
-                    <th className="p-3 rounded-l-lg">Désignation</th>
-                    <th className="p-3">Catégorie</th>
-                    <th className="p-3">Déclaré Par</th>
-                    <th className="p-3">Statut Direction</th>
-                    <th className="p-3 text-right rounded-r-lg">Montant DZD</th>
+                    <th className="p-3 rounded-l-lg">{t('pm_cp_table_col_designation')}</th>
+                    <th className="p-3">{t('pm_cp_table_col_category')}</th>
+                    <th className="p-3">{t('pm_cp_table_col_declared_by')}</th>
+                    <th className="p-3">{t('pm_cp_table_col_dir_status')}</th>
+                    <th className="p-3 text-right rounded-r-lg">{t('pm_cp_table_col_amount_dzd')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
@@ -857,7 +857,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                       <td className="p-3 font-medium text-zinc-900 dark:text-zinc-100">
                         {exp.title}
                         {exp.hasFiscalInvoice && (
-                          <span className="ml-2 text-[10px] text-emerald-600 font-bold uppercase">Facture NIF</span>
+                          <span className="ml-2 text-[10px] text-emerald-600 font-bold uppercase">{t('pm_cp_tax_invoice_tag')}</span>
                         )}
                       </td>
                       <td className="p-3 text-zinc-500 capitalize">{exp.category}</td>

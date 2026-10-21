@@ -618,19 +618,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
             {isExpanded ? (
               <div className="space-y-1.5 px-0.5">
                 <div className="flex items-center justify-between text-[10px] uppercase font-bold tracking-wider text-zinc-400 px-1">
-                  <span>Rôle Actif</span>
+                  <span>{t('pm_role_active_label')}</span>
                   <span className="text-[#C4785A] font-mono">
-                    {activePmRole === 'direction' ? 'DG' : activePmRole === 'chef_projet' ? 'CDP' : activePmRole === 'crea' ? 'CR' : activePmRole === 'superviseur' ? 'SUP' : activePmRole === 'rh' ? 'RH' : 'CPT'}
+                    {activePmRole === 'direction' ? t('pm_role_direction_abbr') : activePmRole === 'chef_projet' ? t('pm_role_chef_projet_abbr') : activePmRole === 'crea' ? t('pm_role_crea_abbr') : activePmRole === 'superviseur' ? t('pm_role_superviseur_abbr') : activePmRole === 'rh' ? t('pm_role_rh_abbr') : t('pm_role_compta_abbr')}
                   </span>
                 </div>
                 <div className="grid grid-cols-3 gap-1">
                   {[
-                    { id: 'direction' as const, label: 'Direction Générale', badge: 'DG', screen: 'pm_dir_dashboard' as const, sub: 'dashboard' },
-                    { id: 'chef_projet' as const, label: 'Chef de Projet', badge: 'CDP', screen: 'pm_cp_projects' as const, sub: 'portfolio' },
-                    { id: 'crea' as const, label: 'Studio Créa', badge: 'CR', screen: 'pm_crea_kanban' as const, sub: 'demandes' },
-                    { id: 'superviseur' as const, label: 'Superviseur Terrain', badge: 'SUP', screen: 'pm_sup_missions' as const, sub: 'missions' },
-                    { id: 'rh' as const, label: 'Ressources Humaines', badge: 'RH', screen: 'pm_rh_talents' as const, sub: 'talents' },
-                    { id: 'compta' as const, label: 'Comptabilité & Paie', badge: 'CPT', screen: 'pm_compta_payroll' as const, sub: 'payroll' },
+                    { id: 'direction' as const, label: t('pm_role_direction_name'), badge: t('pm_role_direction_abbr'), screen: 'pm_dir_dashboard' as const, sub: 'dashboard' },
+                    { id: 'chef_projet' as const, label: t('pm_role_chef_projet_name'), badge: t('pm_role_chef_projet_abbr'), screen: 'pm_cp_projects' as const, sub: 'portfolio' },
+                    { id: 'crea' as const, label: t('pm_role_crea_name'), badge: t('pm_role_crea_abbr'), screen: 'pm_crea_kanban' as const, sub: 'demandes' },
+                    { id: 'superviseur' as const, label: t('pm_role_superviseur_name'), badge: t('pm_role_superviseur_abbr'), screen: 'pm_sup_missions' as const, sub: 'missions' },
+                    { id: 'rh' as const, label: t('pm_role_rh_name'), badge: t('pm_role_rh_abbr'), screen: 'pm_rh_talents' as const, sub: 'talents' },
+                    { id: 'compta' as const, label: t('pm_role_compta_name'), badge: t('pm_role_compta_abbr'), screen: 'pm_compta_payroll' as const, sub: 'payroll' },
                   ].map((r) => {
                     const isRoleActive = activePmRole === r.id;
                     return (
@@ -675,9 +675,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     setActivePmSubScreen(next.sub);
                   }}
                   className="w-9 h-9 rounded-xl bg-[#C4785A]/20 border border-[#C4785A]/40 text-[#C4785A] hover:bg-[#C4785A] hover:text-white flex items-center justify-center font-bold text-[11px] transition-all cursor-pointer shadow-xs active:scale-95"
-                  title={`Rôle: ${activePmRole} (Cliquer pour changer de rôle)`}
+                  title={`${t('pm_role_active_label')}: ${activePmRole}`}
                 >
-                  {activePmRole === 'direction' ? 'DG' : activePmRole === 'chef_projet' ? 'CDP' : activePmRole === 'crea' ? 'CR' : activePmRole === 'superviseur' ? 'SUP' : activePmRole === 'rh' ? 'RH' : 'CPT'}
+                  {activePmRole === 'direction' ? t('pm_role_direction_abbr') : activePmRole === 'chef_projet' ? t('pm_role_chef_projet_abbr') : activePmRole === 'crea' ? t('pm_role_crea_abbr') : activePmRole === 'superviseur' ? t('pm_role_superviseur_abbr') : activePmRole === 'rh' ? t('pm_role_rh_abbr') : t('pm_role_compta_abbr')}
                 </button>
               </div>
             )}
