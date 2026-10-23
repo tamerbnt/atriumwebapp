@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useAtriumStore } from '../../../services/store';
-import { PMProject } from '../../../types/index';
+import { PMProject, PMPayrollBatch, PMExpense } from '../../../types/index';
 import {
   TrendingUp,
   Radio,
@@ -23,19 +23,33 @@ import {
   Calendar,
   Layers,
   ArrowUpRight,
+  Building2,
+  ChevronDown,
+  Pin,
+  Trash2,
+  FolderKanban,
+  Edit2,
+  Receipt,
+  FileSpreadsheet,
 } from 'lucide-react';
 import { LabelInput } from '../../ui/LabelInput';
 import { Seek } from '../../ui/Seek';
 import { LabelSelect } from '../../ui/LabelSelect';
+import { FilterSelect } from '../../ui/FilterSelect';
+import { formatMoney } from '../../../utils/rules';
 import { useTranslation } from '../../../utils/useTranslation';
+import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 
 interface ProjectDirectionViewProps {
-  initialTab?: 'dashboard' | 'new_project' | 'approvals' | 'reports' | 'all' | 'payroll' | 'expenses';
+  initialTab?: 'dashboard' | 'projects' | 'new_project' | 'approvals' | 'reports';
 }
 
 export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ initialTab = 'dashboard' }) => {
   const { t, language, isRtl } = useTranslation();
   const {
+    currentBranch,
+    branches,
+    switchBranch,
     pmProjects,
     pmMissions,
     pmTalents,
@@ -44,18 +58,35 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
     pmClients,
     staff,
     addPmProject,
+    deletePmProject,
+    batchDeletePmProjects,
+    batchUpdatePmProjectStatus,
     approvePmExpense,
     rejectPmExpense,
+    batchApprovePmExpenses,
+    batchRejectPmExpenses,
+    batchDeletePmExpenses,
     approvePmPayrollBatch,
+    batchApprovePmPayrollBatches,
+    resetPmMockData,
     activePmSubScreen,
     setActivePmSubScreen,
+    showToast,
   } = useAtriumStore();
 
+  // Auto-heal empty mock state on mount
+  useEffect(() => {
+    if (!pmProjects || pmProjects.length === 0) {
+      resetPmMockData();
+    }
+  }, [pmProjects, resetPmMockData]);
+
+  const [isBranchDropdownOpen, setIsBranchDropdownOpen] = useState(false);
   const [selectedReceiptUrl, setSelectedReceiptUrl] = useState<string | null>(null);
   const [rejectionModalId, setRejectionModalId] = useState<string | null>(null);
   const [rejectionReason, setRejectionReason] = useState('');
 
-  // Top screen selection: dashboard, new_project, approvals, reports
+  // Top screen selection: dashboard, projects, new_project, approvals, reports
   const currentScreen =
     activePmSubScreen === 'new_project' || initialTab === 'new_project'
       ? 'new_project'
@@ -63,10 +94,23 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
       ? 'approvals'
       : activePmSubScreen === 'reports' || initialTab === 'reports'
       ? 'reports'
+      : activePmSubScreen === 'projects' || initialTab === 'projects'
+      ? 'projects'
       : 'dashboard';
 
+  // Projects Collection State
+  const [projectSearch, setProjectSearch] = useState('');
+  const [projectStatusFilter, setProjectStatusFilter] = useState('all');
+  const [selectedProjectIds, setSelectedProjectIds] = useState<Set<string>>(new Set());
+  const [pinnedProjectIds, setPinnedProjectIds] = useState<Set<string>>(new Set());
+  const [projectSortBy, setProjectSortBy] = useState<string>('project');
+  const [projectSortDir, setProjectSortDir] = useState<'asc' | 'desc'>('asc');
+
+  // Approvals State
   const [approvalsTab, setApprovalsTab] = useState<'all' | 'payroll' | 'expenses'>('all');
   const [approvalSearch, setApprovalSearch] = useState('');
+  const [selectedApprovalBatchIds, setSelectedApprovalBatchIds] = useState<Set<string>>(new Set());
+  const [selectedApprovalExpenseIds, setSelectedApprovalExpenseIds] = useState<Set<string>>(new Set());
   const [validatedPaieIds, setValidatedPaieIds] = useState<string[]>([]);
   const [quickBriefTitle, setQuickBriefTitle] = useState('Roadshow 5G Ouest — Rollup, A5, Kakemonos & Stands');
   const [quickBriefSuccess, setQuickBriefSuccess] = useState(false);
@@ -88,23 +132,209 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
   const totalTurnoverDzd = pmProjects.reduce((acc, p) => acc + p.budgetCapDzd, 0);
   const activeMissionsToday = pmMissions.filter((m) => m.status === 'live_today').length;
   const availableTalentsCount = pmTalents.filter((t) => t.status === 'active').length;
-  const pendingPayrollBatches = pmPayrollBatches.filter((b) => {
-    const matchesStatus = b.status === 'pending_direction_approval';
-    const matchesSearch = !approvalSearch.trim() ||
-      b.batchNumber.toLowerCase().includes(approvalSearch.toLowerCase()) ||
-      b.projectTitle.toLowerCase().includes(approvalSearch.toLowerCase()) ||
-      b.missionCode.toLowerCase().includes(approvalSearch.toLowerCase());
-    return matchesStatus && matchesSearch;
-  });
-  const pendingExpenses = pmExpenses.filter((e) => {
-    const matchesStatus = e.status === 'pending_direction_approval';
-    const matchesSearch = !approvalSearch.trim() ||
-      e.title.toLowerCase().includes(approvalSearch.toLowerCase()) ||
-      e.category.toLowerCase().includes(approvalSearch.toLowerCase()) ||
-      e.declaredByUserName.toLowerCase().includes(approvalSearch.toLowerCase());
-    return matchesStatus && matchesSearch;
-  });
+
+  const pendingPayrollBatches = useMemo(() => {
+    return pmPayrollBatches.filter((b) => {
+      const matchesStatus = b.status === 'pending_direction_approval';
+      const matchesSearch =
+        !approvalSearch.trim() ||
+        b.batchNumber.toLowerCase().includes(approvalSearch.toLowerCase()) ||
+        b.projectTitle.toLowerCase().includes(approvalSearch.toLowerCase()) ||
+        b.missionCode.toLowerCase().includes(approvalSearch.toLowerCase());
+      return matchesStatus && matchesSearch;
+    });
+  }, [pmPayrollBatches, approvalSearch]);
+
+  const pendingExpenses = useMemo(() => {
+    return pmExpenses.filter((e) => {
+      const matchesStatus = e.status === 'pending_direction_approval';
+      const matchesSearch =
+        !approvalSearch.trim() ||
+        e.title.toLowerCase().includes(approvalSearch.toLowerCase()) ||
+        e.category.toLowerCase().includes(approvalSearch.toLowerCase()) ||
+        e.declaredByUserName.toLowerCase().includes(approvalSearch.toLowerCase());
+      return matchesStatus && matchesSearch;
+    });
+  }, [pmExpenses, approvalSearch]);
+
   const totalPendingApprovals = pendingPayrollBatches.length + pendingExpenses.length;
+
+  // Filtered & Sorted Projects
+  const filteredProjects = useMemo(() => {
+    return pmProjects.filter((p) => {
+      const q = projectSearch.toLowerCase().trim();
+      const matchSearch =
+        !q ||
+        p.title.toLowerCase().includes(q) ||
+        p.clientName.toLowerCase().includes(q) ||
+        p.projectManagerName.toLowerCase().includes(q) ||
+        p.leadCreativeName.toLowerCase().includes(q);
+      const matchStatus = projectStatusFilter === 'all' || p.status === projectStatusFilter;
+      return matchSearch && matchStatus;
+    });
+  }, [pmProjects, projectSearch, projectStatusFilter]);
+
+  const sortedProjects = useMemo(() => {
+    return [...filteredProjects].sort((a, b) => {
+      const aPinned = pinnedProjectIds.has(a.id);
+      const bPinned = pinnedProjectIds.has(b.id);
+      if (aPinned && !bPinned) return -1;
+      if (!aPinned && bPinned) return 1;
+
+      if (projectSortBy === 'project') {
+        const cmp = a.title.localeCompare(b.title);
+        return projectSortDir === 'asc' ? cmp : -cmp;
+      }
+      if (projectSortBy === 'budget') {
+        return projectSortDir === 'asc'
+          ? a.budgetCapDzd - b.budgetCapDzd
+          : b.budgetCapDzd - a.budgetCapDzd;
+      }
+      if (projectSortBy === 'margin') {
+        return projectSortDir === 'asc'
+          ? a.targetGrossMarginPercent - b.targetGrossMarginPercent
+          : b.targetGrossMarginPercent - a.targetGrossMarginPercent;
+      }
+      if (projectSortBy === 'deadline') {
+        return projectSortDir === 'asc'
+          ? a.endDate.localeCompare(b.endDate)
+          : b.endDate.localeCompare(a.endDate);
+      }
+      if (projectSortBy === 'status') {
+        return projectSortDir === 'asc'
+          ? a.status.localeCompare(b.status)
+          : b.status.localeCompare(a.status);
+      }
+      return 0;
+    });
+  }, [filteredProjects, pinnedProjectIds, projectSortBy, projectSortDir]);
+
+  // Project Column Definitions
+  const projectColumns: ColumnDefinition<PMProject>[] = useMemo(
+    () => [
+      {
+        key: 'project',
+        header: 'Projet & Client',
+        width: '2.5*',
+        minWidth: '240px',
+        sortable: true,
+        renderCell: (proj) => {
+          const isPinned = pinnedProjectIds.has(proj.id);
+          return (
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setPinnedProjectIds((prev) => {
+                    const next = new Set(prev);
+                    if (next.has(proj.id)) next.delete(proj.id);
+                    else next.add(proj.id);
+                    return next;
+                  });
+                }}
+                className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+                  isPinned
+                    ? 'text-[#C4785A] bg-[#C4785A]/10'
+                    : 'text-zinc-300 hover:text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800'
+                }`}
+                title={isPinned ? 'Détacher le projet' : 'Épingler en haut'}
+              >
+                <Pin className={`w-3.5 h-3.5 ${isPinned ? 'fill-current' : ''}`} />
+              </button>
+              <div className="w-9 h-9 rounded-xl bg-[#C4785A]/10 text-[#C4785A] flex items-center justify-center font-bold text-xs shrink-0">
+                {proj.title.substring(0, 2).toUpperCase()}
+              </div>
+              <div className="min-w-0">
+                <div className="font-semibold text-zinc-900 dark:text-zinc-100 text-xs truncate max-w-[200px]">
+                  {proj.title}
+                </div>
+                <div className="text-[11px] text-zinc-500 truncate">
+                  {proj.clientName} · <span className="font-mono text-[10px]">{proj.id.slice(0, 8)}</span>
+                </div>
+              </div>
+            </div>
+          );
+        },
+      },
+      {
+        key: 'budget',
+        header: 'Plafond Budgétaire',
+        width: '1.5*',
+        minWidth: '150px',
+        sortable: true,
+        align: 'right',
+        renderCell: (proj) => (
+          <div className="font-mono text-xs font-semibold text-zinc-900 dark:text-zinc-100 tabular-nums">
+            {formatMoney(proj.budgetCapDzd, 'DZD')}
+          </div>
+        ),
+      },
+      {
+        key: 'margin',
+        header: 'Marge Brute',
+        width: '1*',
+        minWidth: '110px',
+        sortable: true,
+        align: 'center',
+        renderCell: (proj) => (
+          <span className="font-mono text-xs font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-md">
+            {proj.targetGrossMarginPercent}%
+          </span>
+        ),
+      },
+      {
+        key: 'timeline',
+        header: 'Période & Clôture',
+        width: '1.5*',
+        minWidth: '160px',
+        sortable: true,
+        renderCell: (proj) => (
+          <div className="text-xs text-zinc-600 dark:text-zinc-400 font-mono">
+            {proj.startDate} <span className="text-zinc-400">➔</span> {proj.endDate}
+          </div>
+        ),
+      },
+      {
+        key: 'leads',
+        header: 'Équipe Responsable',
+        width: '1.5*',
+        minWidth: '170px',
+        renderCell: (proj) => (
+          <div className="text-[11px] text-zinc-600 dark:text-zinc-400 space-y-0.5">
+            <div><span className="text-zinc-400 font-medium">CDP:</span> {proj.projectManagerName}</div>
+            <div><span className="text-zinc-400 font-medium">Créa:</span> {proj.leadCreativeName}</div>
+          </div>
+        ),
+      },
+      {
+        key: 'status',
+        header: 'Statut Campagne',
+        width: '1.2*',
+        minWidth: '130px',
+        sortable: true,
+        align: 'center',
+        renderCell: (proj) => {
+          const statusMap: Record<string, { label: string; bg: string; text: string }> = {
+            framing: { label: 'Cahier des charges', bg: 'bg-zinc-100 dark:bg-zinc-800', text: 'text-zinc-700 dark:text-zinc-300' },
+            creative_kv: { label: 'KV Créa', bg: 'bg-amber-100 dark:bg-amber-950/60', text: 'text-amber-700 dark:text-amber-300' },
+            client_validated: { label: 'Validé Client', bg: 'bg-blue-100 dark:bg-blue-950/60', text: 'text-blue-700 dark:text-blue-300' },
+            production: { label: 'En Production', bg: 'bg-purple-100 dark:bg-purple-950/60', text: 'text-purple-700 dark:text-purple-300' },
+            field_execution: { label: 'Terrain Live', bg: 'bg-red-100 dark:bg-red-950/60', text: 'text-red-700 dark:text-red-300' },
+            completed: { label: 'Clôturé', bg: 'bg-emerald-100 dark:bg-emerald-950/60', text: 'text-emerald-700 dark:text-emerald-300' },
+            archived: { label: 'Archivé', bg: 'bg-zinc-100 dark:bg-zinc-800', text: 'text-zinc-500' },
+          };
+          const badge = statusMap[proj.status] || { label: proj.status, bg: 'bg-zinc-100', text: 'text-zinc-700' };
+          return (
+            <span className={`inline-flex px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${badge.bg} ${badge.text}`}>
+              {badge.label}
+            </span>
+          );
+        },
+      },
+    ],
+    [pinnedProjectIds]
+  );
 
   const handleCreateProject = (e: React.FormEvent) => {
     e.preventDefault();
@@ -137,7 +367,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
     setProjectCreatedSuccess(true);
     setTimeout(() => {
       setProjectCreatedSuccess(false);
-      setActivePmSubScreen('dashboard');
+      setActivePmSubScreen('projects');
     }, 1800);
     setNewProjectTitle('');
     setNewProjectScope('');
@@ -156,25 +386,54 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
     pendingExpenses.forEach((e) => approvePmExpense(e.id));
   };
 
-  const handleExportCsv = () => {
+  const handleExportProjectsCsv = () => {
+    const headers = ['ID Projet', 'Titre de la Campagne', 'Client', 'Plafond Budgétaire DZD', 'Dépenses Terrain Max DZD', 'Marge Cible %', 'Date Début', 'Date Fin', 'Chef de Projet', 'Directeur Artistique', 'Statut'];
+    const rows = sortedProjects.map((p) => [
+      `"${p.id}"`,
+      `"${p.title.replace(/"/g, '""')}"`,
+      `"${p.clientName.replace(/"/g, '""')}"`,
+      p.budgetCapDzd,
+      p.maxFieldExpensesDzd,
+      p.targetGrossMarginPercent,
+      p.startDate,
+      p.endDate,
+      `"${p.projectManagerName.replace(/"/g, '""')}"`,
+      `"${p.leadCreativeName.replace(/"/g, '""')}"`,
+      p.status,
+    ]);
+    const csvContent = '\uFEFF' + [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `portefeuille_projets_nch_${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleExportAuditCsv = () => {
     const csvContent =
-      'data:text/csv;charset=utf-8,' +
+      '\uFEFF' +
       ['Type,Ref,Projet,Montant DZD,Statut',
         ...pendingPayrollBatches.map((b) => `Paie,${b.batchNumber},${b.projectTitle},${b.totalAmountDzd},En attente`),
         ...pendingExpenses.map((e) => `Achat,${e.title},${e.projectTitle},${e.amountDzd},En attente`),
       ].join('\n');
-    const encodedUri = encodeURI(csvContent);
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `audit_direction_${new Date().toISOString().slice(0, 10)}.csv`);
+    link.href = url;
+    link.download = `audit_direction_nch_${new Date().toISOString().slice(0, 10)}.csv`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   return (
     <div className="space-y-6">
-      {/* Top Header */}
+      {/* Top Header with Facility Switcher & Demo Data Button */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
         <div>
           <div className="flex items-center gap-2">
@@ -182,26 +441,80 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
               {t('pm_role_direction_badge')}
             </span>
             <span className="text-zinc-400">·</span>
-            <span className="text-xs text-zinc-500">{t('pm_dir_title')}</span>
+            <span className="text-xs text-zinc-500">Direction Générale & Arbitrage</span>
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
             {currentScreen === 'dashboard'
-              ? t('pm_dir_title')
+              ? 'Cockpit & Vue d\'Ensemble'
+              : currentScreen === 'projects'
+              ? 'Portefeuille Projets'
               : currentScreen === 'new_project'
               ? t('pm_btn_new_project')
               : currentScreen === 'approvals'
-              ? t('pm_btn_approve_payroll')
+              ? 'Approbations & Décaissements'
               : t('nav_pm_dir_reports')}
           </h1>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5">
+          {/* Facility Switcher Dropdown Pill */}
+          <div className="relative">
+            <button
+              onClick={() => setIsBranchDropdownOpen((prev) => !prev)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 border border-zinc-200/80 dark:border-zinc-750 transition-all cursor-pointer"
+            >
+              <Building2 className="w-3.5 h-3.5 text-[#C4785A]" />
+              <span>{currentBranch?.name || 'NCH Cyberpark Tower B'}</span>
+              <ChevronDown className="w-3 h-3 opacity-60" />
+            </button>
+
+            {isBranchDropdownOpen && (
+              <div className="absolute right-0 mt-1 w-56 bg-white dark:bg-zinc-900 rounded-2xl shadow-xl border border-zinc-200 dark:border-zinc-800 p-1.5 z-50">
+                <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-zinc-400">
+                  Antennes Agence
+                </div>
+                {branches && branches.length > 0 ? (
+                  branches.map((b) => (
+                    <button
+                      key={b.id}
+                      onClick={() => {
+                        switchBranch(b.id);
+                        setIsBranchDropdownOpen(false);
+                      }}
+                      className={`w-full text-left px-3 py-2 rounded-xl text-xs font-medium flex items-center justify-between cursor-pointer ${
+                        currentBranch?.id === b.id
+                          ? 'bg-[#C4785A]/10 text-[#C4785A] font-bold'
+                          : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800'
+                      }`}
+                    >
+                      <span>{b.name}</span>
+                      {currentBranch?.id === b.id && <Check className="w-3.5 h-3.5 text-[#C4785A]" />}
+                    </button>
+                  ))
+                ) : (
+                  <div className="px-3 py-2 text-xs text-zinc-500">NCH Tower B (Cyberpark Alger)</div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* 1-Click Demo Data Recharge Button */}
           <button
-            onClick={handleExportCsv}
+            onClick={() => resetPmMockData()}
+            title="Recharger les données démo complètes de l'agence"
+            className="px-3 py-1.5 text-xs font-semibold text-zinc-700 dark:text-zinc-300 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 rounded-xl flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-[#C4785A]" />
+            <span>Demo Data</span>
+          </button>
+
+          {/* CSV Export */}
+          <button
+            onClick={currentScreen === 'projects' ? handleExportProjectsCsv : handleExportAuditCsv}
             className="px-3 py-1.5 text-xs font-semibold text-zinc-700 dark:text-zinc-300 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 rounded-xl flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer"
           >
             <Download className="w-3.5 h-3.5" />
-            {t('common_export')} CSV
+            <span>{t('common_export')} CSV</span>
           </button>
         </div>
       </div>
@@ -209,10 +522,11 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
       {/* Navigation Sub-Tabs */}
       <div className="flex border-b border-zinc-200 dark:border-zinc-800 gap-1 overflow-x-auto">
         {[
-          { id: 'dashboard', label: t('pm_dir_tab_cockpit'), icon: TrendingUp },
-          { id: 'new_project', label: t('pm_dir_tab_new_project'), icon: Plus },
-          { id: 'approvals', label: t('pm_dir_tab_approvals'), icon: ShieldCheck, count: totalPendingApprovals },
-          { id: 'reports', label: t('pm_dir_tab_reports'), icon: Layers },
+          { id: 'dashboard', label: 'Cockpit & Vue d\'Ensemble', icon: TrendingUp },
+          { id: 'projects', label: 'Portefeuille Projets', icon: FolderKanban, count: pmProjects.length },
+          { id: 'approvals', label: 'Approbations & Décaissements', icon: ShieldCheck, count: totalPendingApprovals },
+          { id: 'reports', label: 'Rapports & Marges', icon: Layers },
+          { id: 'new_project', label: '+ Nouveau Projet', icon: Plus },
         ].map((tab) => {
           const Icon = tab.icon;
           const isActive = currentScreen === tab.id;
@@ -229,7 +543,11 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
               <Icon className="w-4 h-4" />
               <span>{tab.label}</span>
               {tab.count !== undefined && tab.count > 0 && (
-                <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300 font-mono font-bold">
+                <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-mono font-bold ${
+                  tab.id === 'approvals'
+                    ? 'bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300'
+                    : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300'
+                }`}>
                   {tab.count}
                 </span>
               )}
@@ -238,7 +556,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
         })}
       </div>
 
-      {/* SCREEN 1.1: COMMAND CENTER */}
+      {/* SCREEN 1.1: COCKPIT & COMMAND CENTER */}
       {currentScreen === 'dashboard' && (
         <div className="space-y-6">
           {/* KPI Ribbon matching Slide 5 */}
@@ -251,19 +569,22 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
                 </span>
               </div>
               <div className="text-2xl font-bold font-mono tracking-tight text-zinc-900 dark:text-zinc-100 tabular-nums">
-                4,2 M DA
+                {formatMoney(totalTurnoverDzd, 'DZD')}
               </div>
             </div>
 
-            <div className="p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200/80 dark:border-zinc-800 shadow-xs">
+            <div
+              onClick={() => setActivePmSubScreen('projects')}
+              className="p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200/80 dark:border-zinc-800 shadow-xs cursor-pointer hover:border-[#C4785A] transition-colors"
+            >
               <div className="flex items-center justify-between text-xs text-zinc-500 mb-1">
                 <span className="font-semibold uppercase tracking-wider text-[11px]">{t('pm_kpi_active_projects')}</span>
                 <span className="text-xs font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.5 rounded">
-                  +3
+                  Voir tout ➔
                 </span>
               </div>
               <div className="text-2xl font-bold font-mono tracking-tight text-zinc-900 dark:text-zinc-100 tabular-nums">
-                {pmProjects.length || 12}
+                {pmProjects.length}
               </div>
             </div>
 
@@ -272,26 +593,29 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
                 <span className="font-semibold uppercase tracking-wider text-[11px]">{t('pm_kpi_field_talents')}</span>
               </div>
               <div className="text-2xl font-bold font-mono tracking-tight text-zinc-900 dark:text-zinc-100 tabular-nums">
-                {pmTalents.length || 86}
+                {pmTalents.length}
               </div>
             </div>
 
-            <div className="p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-red-200 dark:border-red-900/50 bg-red-50/20 dark:bg-red-950/10 shadow-xs">
+            <div
+              onClick={() => setActivePmSubScreen('approvals')}
+              className="p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-red-200 dark:border-red-900/50 bg-red-50/20 dark:bg-red-950/10 shadow-xs cursor-pointer hover:border-red-400 transition-colors"
+            >
               <div className="flex items-center justify-between text-xs text-red-700 dark:text-red-400 mb-1">
-                <span className="font-semibold uppercase tracking-wider text-[11px]">{t('pm_kpi_payroll_due')}</span>
+                <span className="font-semibold uppercase tracking-wider text-[11px]">Paies & Frais en Attente</span>
                 <span className="w-5 h-5 rounded-full bg-red-600 text-white flex items-center justify-center font-bold text-xs">
-                  !
+                  {totalPendingApprovals}
                 </span>
               </div>
               <div className="text-2xl font-bold font-mono tracking-tight text-red-700 dark:text-red-400 tabular-nums">
-                {pendingPayrollBatches.length || 23}
+                {totalPendingApprovals}
               </div>
             </div>
           </div>
 
-          {/* Main Grid: Left Widgets & Right Live Queue (matching Slide 5 layout) */}
+          {/* Main Grid: Left Widgets & Right Live Queue */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            {/* Left 7 Columns: Chart, Injection, Feed */}
+            {/* Left 7 Columns: Chart & Specs Injection */}
             <div className="lg:col-span-7 space-y-6">
               {/* Missions par mois Bar Chart */}
               <div className="p-5 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs space-y-3">
@@ -331,7 +655,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
                 </div>
               </div>
 
-              {/* Injection de cahier des charges (Slide 5) */}
+              {/* Injection de cahier des charges */}
               <div className="p-5 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs space-y-3">
                 <div className="flex items-center justify-between">
                   <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
@@ -348,109 +672,26 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
                   </div>
                   <LabelInput
                     field="Brief"
-                    label={t('pm_dir_new_specs')}
-                    placeholder={t('pm_dir_new_specs')}
                     value={quickBriefTitle}
                     onChange={setQuickBriefTitle}
-                    width="100%"
-                    height={46}
-                    corner={14}
+                    placeholder="Titre du brief / campagne"
+                    height={44}
+                    corner={12}
                   />
-                  {quickBriefSuccess && (
-                    <div className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 text-xs font-semibold flex items-center gap-1.5 animate-in fade-in">
-                      <Check className="w-4 h-4 text-emerald-600" /> {t('pm_dir_injected_success')}
-                    </div>
-                  )}
-                  <div className="flex justify-end gap-2">
+                  <div className="flex items-center justify-between pt-1">
+                    <span className="text-[11px] text-zinc-500">
+                      Transmis instantanément au Studio Créa pour élaboration du Key Visual.
+                    </span>
                     <button
                       type="button"
                       onClick={() => {
-                        const client = pmClients[0];
-                        addPmProject({
-                          tenantId: 'acc_01',
-                          facilityId: 'branch_agency_main',
-                          clientId: client?.id || 'pm_cli_01',
-                          clientName: 'Ooredoo Algérie',
-                          title: quickBriefTitle || 'Roadshow 5G Ouest',
-                          scopeOfWork: 'Brief injecté par la Direction Générale : création de Rollup, Flyer A5, Kakemonos et comptoirs PLV.',
-                          budgetCapDzd: 3800000,
-                          maxFieldExpensesDzd: 600000,
-                          targetGrossMarginPercent: 32,
-                          startDate: '2026-07-20',
-                          endDate: '2026-08-15',
-                          kvDeadline: '2026-07-20',
-                          printDeadline: '2026-07-22',
-                          executionStartDate: '2026-07-25',
-                          projectManagerId: 'stf_pm_01',
-                          projectManagerName: 'K. Yacine (CDP)',
-                          leadCreativeId: 'stf_crea_01',
-                          leadCreativeName: 'S. Meriem (DA)',
-                          status: 'framing',
-                        });
                         setQuickBriefSuccess(true);
-                        setTimeout(() => setQuickBriefSuccess(false), 3000);
+                        setTimeout(() => setQuickBriefSuccess(false), 2000);
                       }}
-                      className="px-4 py-2 text-xs font-bold text-white bg-[#DC2626] hover:bg-red-700 rounded-xl transition-all shadow-xs cursor-pointer flex items-center gap-1.5"
+                      className="px-3.5 py-1.5 text-xs font-semibold text-white bg-[#DC2626] hover:bg-red-700 rounded-lg shadow-xs cursor-pointer transition-colors"
                     >
-                      <Sparkles className="w-3.5 h-3.5" />
-                      {t('pm_dir_send_crea')}
+                      {quickBriefSuccess ? 'Transmis !' : 'Injecter au Studio ➔'}
                     </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Activité récente (Slide 5) */}
-              <div className="p-5 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs space-y-3">
-                <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                  {t('pm_dir_recent_activity')}
-                </h3>
-                <div className="space-y-3 text-xs">
-                  <div className="flex items-center justify-between py-1.5 border-b border-zinc-100 dark:border-zinc-800/60">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-6 h-6 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 flex items-center justify-center font-bold text-[10px]">
-                        €
-                      </div>
-                      <span className="text-zinc-800 dark:text-zinc-200">
-                        {t('pm_dir_activity_ccp_generated', { user: 'F. Nassima', count: 3 })}
-                      </span>
-                    </div>
-                    <span className="text-[11px] text-zinc-400">{t('pm_dir_time_ago_min', { min: 8 })}</span>
-                  </div>
-
-                  <div className="flex items-center justify-between py-1.5 border-b border-zinc-100 dark:border-zinc-800/60">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-400 flex items-center justify-center font-bold text-[10px]">
-                        S
-                      </div>
-                      <span className="text-zinc-800 dark:text-zinc-200">
-                        {t('pm_dir_activity_rollcall_closed', { user: 'R. Sofiane', code: 142 })}
-                      </span>
-                    </div>
-                    <span className="text-[11px] text-zinc-400">{t('pm_dir_time_ago_min', { min: 26 })}</span>
-                  </div>
-
-                  <div className="flex items-center justify-between py-1.5 border-b border-zinc-100 dark:border-zinc-800/60">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-6 h-6 rounded-full bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-400 flex items-center justify-center font-bold text-[10px]">
-                        C
-                      </div>
-                      <span className="text-zinc-800 dark:text-zinc-200">
-                        {t('pm_dir_activity_bat_delivered', { user: 'S. Meriem', file: 'BAT_rollup_ooredoo.pdf' })}
-                      </span>
-                    </div>
-                    <span className="text-[11px] text-zinc-400">{t('pm_dir_time_ago_hours', { count: 1 })}</span>
-                  </div>
-
-                  <div className="flex items-center justify-between py-1.5">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-6 h-6 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 flex items-center justify-center font-bold text-[10px]">
-                        P
-                      </div>
-                      <span className="text-zinc-800 dark:text-zinc-200">
-                        {t('pm_dir_activity_purchase_declared', { user: 'K. Yacine', amount: '8 400' })}
-                      </span>
-                    </div>
-                    <span className="text-[11px] text-zinc-400">{t('pm_dir_time_ago_hours', { count: 2 })}</span>
                   </div>
                 </div>
               </div>
@@ -458,14 +699,14 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
 
             {/* Right 5 Columns: Paies en attente de validation & Ce que ça change */}
             <div className="lg:col-span-5 space-y-6">
-              {/* Paies en attente de validation Table (Slide 5) */}
+              {/* Paies en attente de validation Table */}
               <div className="p-5 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs space-y-3">
                 <div className="flex items-center justify-between">
                   <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
                     {t('pm_dir_pending_validation')}
                   </h3>
                   <span className="text-xs font-mono text-red-600 bg-red-50 dark:bg-red-950/40 px-2 py-0.5 rounded font-bold">
-                    {t('pm_dir_requests_count', { count: 4 })}
+                    {pendingPayrollBatches.length} lot(s)
                   </span>
                 </div>
 
@@ -473,28 +714,23 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
                   <table className="w-full text-left text-xs">
                     <thead>
                       <tr className="border-b border-zinc-100 dark:border-zinc-800 text-[11px] text-zinc-400 uppercase font-semibold">
-                        <th className="pb-2">{t('pm_dir_table_animator')}</th>
-                        <th className="pb-2">{t('pm_dir_table_mission')}</th>
-                        <th className="pb-2 text-right">{t('pm_dir_table_amount')}</th>
-                        <th className="pb-2 text-right">{t('pm_dir_table_action')}</th>
+                        <th className="pb-2">Réf. Lot</th>
+                        <th className="pb-2">Projet</th>
+                        <th className="pb-2 text-right">Montant</th>
+                        <th className="pb-2 text-right">Action</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800/60">
-                      {[
-                        { name: 'Amina B.', mission: 'Roadshow', amount: 12500, id: 'p_01' },
-                        { name: 'Yacine K.', mission: 'GMS Carrefour', amount: 9000, id: 'p_02' },
-                        { name: 'Mohamed L.', mission: 'Street mkt', amount: 11200, id: 'p_03' },
-                        { name: 'Lina T.', mission: 'Porte-à-porte', amount: 8400, id: 'p_04' },
-                      ].map((item) => {
-                        const isValidated = validatedPaieIds.includes(item.id);
+                      {pendingPayrollBatches.slice(0, 4).map((batch) => {
+                        const isValidated = validatedPaieIds.includes(batch.id);
                         return (
-                          <tr key={item.id} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/40">
-                            <td className="py-2.5 font-semibold text-zinc-900 dark:text-zinc-100">
-                              {item.name}
+                          <tr key={batch.id} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/40">
+                            <td className="py-2.5 font-semibold text-zinc-900 dark:text-zinc-100 font-mono text-[11px]">
+                              {batch.batchNumber}
                             </td>
-                            <td className="py-2.5 text-zinc-500">{item.mission}</td>
+                            <td className="py-2.5 text-zinc-500 truncate max-w-[120px]">{batch.projectTitle}</td>
                             <td className="py-2.5 text-right font-mono font-semibold text-zinc-900 dark:text-zinc-100 tabular-nums">
-                              {item.amount.toLocaleString()} DA
+                              {batch.totalAmountDzd.toLocaleString()} DA
                             </td>
                             <td className="py-2.5 text-right">
                               {isValidated ? (
@@ -505,12 +741,12 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
                                 <button
                                   type="button"
                                   onClick={() => {
-                                    setValidatedPaieIds((prev) => [...prev, item.id]);
-                                    handleBatchApproveAll();
+                                    setValidatedPaieIds((prev) => [...prev, batch.id]);
+                                    approvePmPayrollBatch(batch.id);
                                   }}
-                                  className="px-3 py-1 text-xs font-bold text-white bg-[#DC2626] hover:bg-red-700 rounded-lg shadow-xs cursor-pointer transition-colors"
+                                  className="px-2.5 py-1 text-xs font-bold text-white bg-[#DC2626] hover:bg-red-700 rounded-lg shadow-xs cursor-pointer transition-colors"
                                 >
-                                  {t('pm_dir_btn_validate')}
+                                  Valider
                                 </button>
                               )}
                             </td>
@@ -522,7 +758,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
                 </div>
               </div>
 
-              {/* Ce que ça change Panel (Slide 5) */}
+              {/* Ce que ça change Panel */}
               <div className="p-5 bg-zinc-50 dark:bg-zinc-800/40 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-3">
                 <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-900 dark:text-zinc-100">
                   {t('pm_dir_what_changes')}
@@ -545,16 +781,166 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
                     <span>{t('pm_dir_benefit_4')}</span>
                   </li>
                 </ul>
-                <div className="pt-2 text-[11px] text-zinc-500 italic">
-                  {t('pm_dir_live_tagline')}
-                </div>
               </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* SCREEN 1.2: PROJECT INTAKE & TERMS OF REFERENCE */}
+      {/* SCREEN 1.2: PORTEFEUILLE PROJETS (UniversalDataCollection) */}
+      {currentScreen === 'projects' && (
+        <div className="space-y-4">
+          {/* Controls Bar */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs">
+            <div className="flex flex-wrap items-center gap-3 text-xs flex-1 max-w-xl">
+              <Seek
+                value={projectSearch}
+                onChange={setProjectSearch}
+                placeholder="Rechercher par campagne, client ou responsable..."
+                openWidth={360}
+                shutSize={38}
+              />
+              <FilterSelect
+                label="Statut"
+                value={projectStatusFilter}
+                onChange={(val) => setProjectStatusFilter(typeof val === 'string' ? val : val.target?.value || val)}
+                options={[
+                  { value: 'all', label: 'Tous les statuts' },
+                  { value: 'framing', label: 'Cahier des charges' },
+                  { value: 'creative_kv', label: 'KV Créa' },
+                  { value: 'client_validated', label: 'Validé Client' },
+                  { value: 'production', label: 'En Production' },
+                  { value: 'field_execution', label: 'Terrain Live' },
+                  { value: 'completed', label: 'Clôturé' },
+                  { value: 'archived', label: 'Archivé' },
+                ]}
+              />
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setActivePmSubScreen('new_project')}
+                className="px-3.5 py-1.5 text-xs font-semibold text-white bg-[#C4785A] hover:bg-[#b3684a] rounded-xl flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Nouveau Projet</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Floating Batch Action Toolbar */}
+          {selectedProjectIds.size > 0 && (
+            <div className="flex items-center justify-between px-4 py-3 bg-[#C4785A]/10 border border-[#C4785A]/30 rounded-2xl animate-in fade-in slide-in-from-top-2">
+              <div className="flex items-center gap-3 text-xs font-semibold text-[#C4785A]">
+                <span>{selectedProjectIds.size} projet(s) sélectionné(s)</span>
+                <button
+                  type="button"
+                  onClick={() => setSelectedProjectIds(new Set())}
+                  className="text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 underline cursor-pointer"
+                >
+                  Désélectionner
+                </button>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    batchUpdatePmProjectStatus(Array.from(selectedProjectIds), 'closed');
+                    setSelectedProjectIds(new Set());
+                  }}
+                  className="px-3 py-1.5 text-xs font-semibold text-emerald-700 bg-emerald-100 hover:bg-emerald-200 rounded-xl transition-colors cursor-pointer"
+                >
+                  Marquer Clôturés
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    batchUpdatePmProjectStatus(Array.from(selectedProjectIds), 'field_active');
+                    setSelectedProjectIds(new Set());
+                  }}
+                  className="px-3 py-1.5 text-xs font-semibold text-blue-700 bg-blue-100 hover:bg-blue-200 dark:bg-blue-950/40 dark:text-blue-300 rounded-xl transition-colors cursor-pointer"
+                >
+                  Passer Terrain
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    batchDeletePmProjects(Array.from(selectedProjectIds));
+                    setSelectedProjectIds(new Set());
+                  }}
+                  className="px-3 py-1.5 text-xs font-semibold text-red-700 bg-red-100 hover:bg-red-200 rounded-xl transition-colors flex items-center gap-1 cursor-pointer"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  Supprimer
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Universal Data Collection for Projects */}
+          <UniversalDataCollection<PMProject>
+            items={sortedProjects}
+            keyExtractor={(p) => p.id}
+            defaultViewMode="list"
+            columns={projectColumns}
+            sortBy={projectSortBy}
+            sortDirection={projectSortDir}
+            onSortChange={(key) => {
+              if (projectSortBy === key) {
+                setProjectSortDir((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+              } else {
+                setProjectSortBy(key);
+                setProjectSortDir('asc');
+              }
+            }}
+            selectedIds={selectedProjectIds}
+            onSelectionChange={setSelectedProjectIds}
+            renderCard={(proj) => (
+              <div className="flex flex-col justify-between h-full space-y-4">
+                <div className="space-y-2">
+                  <div className="flex items-start justify-between gap-2">
+                    <span className="text-[11px] font-bold text-[#C4785A] uppercase tracking-wider truncate">
+                      {proj.clientName}
+                    </span>
+                    <span className="font-mono text-xs font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded">
+                      {proj.targetGrossMarginPercent}%
+                    </span>
+                  </div>
+                  <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-100 line-clamp-1">
+                    {proj.title}
+                  </h3>
+                  <p className="text-xs text-zinc-500 line-clamp-2">
+                    {proj.scopeOfWork}
+                  </p>
+                </div>
+
+                <div className="pt-3 border-t border-zinc-100 dark:border-zinc-800 space-y-2 text-xs">
+                  <div className="flex justify-between items-center">
+                    <span className="text-zinc-400">Plafond Budget:</span>
+                    <span className="font-mono font-bold text-zinc-900 dark:text-zinc-100 tabular-nums">
+                      {formatMoney(proj.budgetCapDzd, 'DZD')}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-zinc-400">Plafond Terrain:</span>
+                    <span className="font-mono text-zinc-600 dark:text-zinc-400 tabular-nums">
+                      {formatMoney(proj.maxFieldExpensesDzd, 'DZD')}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center text-[11px] text-zinc-500">
+                    <span>CDP: {proj.projectManagerName.split(' ')[0]}</span>
+                    <span>Créa: {proj.leadCreativeName.split(' ')[0]}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+          />
+        </div>
+      )}
+
+      {/* SCREEN 1.3: INTAKE & NEW PROJECT */}
       {currentScreen === 'new_project' && (
         <div className="p-6 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs max-w-4xl mx-auto space-y-6">
           <div>
@@ -734,15 +1120,15 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
         </div>
       )}
 
-      {/* SCREEN 1.3: FINANCIAL GOVERNANCE & APPROVALS */}
+      {/* SCREEN 1.4: FINANCIAL GOVERNANCE & APPROVALS */}
       {currentScreen === 'approvals' && (
-        <div className="p-6 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs">
             <div>
               <span className="text-xs font-semibold text-[#C4785A] uppercase tracking-wide">
                 {t('pm_dir_approvals_badge')}
               </span>
-              <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mt-1">
+              <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mt-0.5">
                 {t('pm_dir_approvals_title')}
               </h2>
               <p className="text-xs text-zinc-500">
@@ -750,7 +1136,6 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
               </p>
             </div>
 
-            {/* Search & Filter Pills */}
             <div className="flex flex-wrap items-center gap-2">
               <Seek
                 value={approvalSearch}
@@ -780,7 +1165,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
                       : 'text-zinc-500 hover:text-zinc-900'
                   }`}
                 >
-                  {t('pm_dir_filter_payroll')} ({pendingPayrollBatches.length})
+                  Lots de Paie ({pendingPayrollBatches.length})
                 </button>
                 <button
                   type="button"
@@ -791,123 +1176,165 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
                       : 'text-zinc-500 hover:text-zinc-900'
                   }`}
                 >
-                  {t('pm_dir_filter_expenses')} ({pendingExpenses.length})
+                  Notes de Frais ({pendingExpenses.length})
                 </button>
               </div>
             </div>
           </div>
 
-          <div className="space-y-3">
-            {/* Payroll items */}
-            {(approvalsTab === 'all' || approvalsTab === 'payroll') &&
-              pendingPayrollBatches.map((batch) => (
-                <div
-                  key={batch.id}
-                  className="p-5 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/30 flex flex-col md:flex-row md:items-center justify-between gap-4"
-                >
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300">
-                        {t('pm_dir_payroll_badge')}
-                      </span>
-                      <span className="font-mono text-xs font-semibold text-zinc-700 dark:text-zinc-300">
-                        {batch.batchNumber}
-                      </span>
-                      <span className="text-zinc-400">·</span>
-                      <span className="text-xs text-zinc-600 dark:text-zinc-400 font-medium">
-                        {batch.projectTitle}
-                      </span>
-                    </div>
-                    <p className="text-xs text-zinc-500">
-                      Pointage clôturé par le Superviseur terrain. {batch.totalBeneficiaries} bénéficiaires avec comptes CCP vérifiés.
-                    </p>
-                  </div>
+          {/* Payroll Batches Queue */}
+          {(approvalsTab === 'all' || approvalsTab === 'payroll') && (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between text-xs font-bold text-zinc-700 dark:text-zinc-300 px-1">
+                <span>Lots de Paie Terrain en Attente de Déblocage</span>
+                {pendingPayrollBatches.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => batchApprovePmPayrollBatches(pendingPayrollBatches.map((b) => b.id))}
+                    className="text-xs text-emerald-600 font-semibold hover:underline cursor-pointer"
+                  >
+                    Valider tous les lots de paie ({pendingPayrollBatches.length})
+                  </button>
+                )}
+              </div>
 
-                  <div className="flex items-center gap-4 shrink-0">
-                    <div className="text-right">
-                      <span className="text-[10px] text-zinc-400 block uppercase font-medium">{t('common_amount')}</span>
-                      <span className="font-mono font-bold text-lg text-zinc-900 dark:text-zinc-100 tabular-nums">
-                        {batch.totalAmountDzd.toLocaleString()} DA
-                      </span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => approvePmPayrollBatch(batch.id)}
-                      className="px-4 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-xl shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
-                    >
-                      <CheckCircle className="w-4 h-4" />
-                      {t('pm_dir_btn_validate_ccp')}
-                    </button>
-                  </div>
+              {pendingPayrollBatches.length === 0 ? (
+                <div className="p-8 text-center bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 text-xs text-zinc-500">
+                  Aucun lot de paie en attente d'approbation.
                 </div>
-              ))}
-
-            {/* Expenses items */}
-            {(approvalsTab === 'all' || approvalsTab === 'expenses') &&
-              pendingExpenses.map((expense) => (
-                <div
-                  key={expense.id}
-                  className="p-5 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/30 flex flex-col md:flex-row md:items-center justify-between gap-4"
-                >
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300">
-                        {t('pm_dir_logistics_badge')}
-                      </span>
-                      <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
-                        {expense.title}
-                      </span>
-                      {expense.hasFiscalInvoice && (
-                        <span className="px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold">
-                          {t('pm_dir_fiscal_invoice')}
+              ) : (
+                pendingPayrollBatches.map((batch) => (
+                  <div
+                    key={batch.id}
+                    className="p-5 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-xs"
+                  >
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300">
+                          Lot de Paie
                         </span>
-                      )}
+                        <span className="font-mono text-xs font-semibold text-zinc-900 dark:text-zinc-100">
+                          {batch.batchNumber}
+                        </span>
+                        <span className="text-zinc-400">·</span>
+                        <span className="text-xs text-zinc-700 dark:text-zinc-300 font-medium">
+                          {batch.projectTitle}
+                        </span>
+                      </div>
+                      <p className="text-xs text-zinc-500">
+                        Mission <span className="font-mono font-semibold">{batch.missionCode}</span> · {batch.totalBeneficiaries} animateurs pointés et vérifiés par le Superviseur.
+                      </p>
                     </div>
-                    <p className="text-xs text-zinc-500">
-                      Déclaré par {expense.declaredByUserName} ({expense.declaredByRole}) · {expense.projectTitle}
-                    </p>
-                  </div>
 
-                  <div className="flex items-center gap-3 shrink-0">
-                    {expense.receiptPhotoUrl && (
+                    <div className="flex items-center gap-4 shrink-0">
+                      <div className="text-right">
+                        <span className="text-[10px] text-zinc-400 block uppercase font-medium">{t('common_amount')}</span>
+                        <span className="font-mono font-bold text-lg text-zinc-900 dark:text-zinc-100 tabular-nums">
+                          {formatMoney(batch.totalAmountDzd, 'DZD')}
+                        </span>
+                      </div>
                       <button
                         type="button"
-                        onClick={() => setSelectedReceiptUrl(expense.receiptPhotoUrl || null)}
-                        className="px-3 py-1.5 text-xs text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors flex items-center gap-1.5 cursor-pointer"
+                        onClick={() => approvePmPayrollBatch(batch.id)}
+                        className="px-4 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-xl shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
                       >
-                        <Eye className="w-3.5 h-3.5" />
-                        {t('pm_dir_see_receipt')}
+                        <CheckCircle className="w-4 h-4" />
+                        {t('pm_dir_btn_validate_ccp')}
                       </button>
-                    )}
-                    <div className="text-right">
-                      <span className="text-[10px] text-zinc-400 block uppercase font-medium">{t('common_amount')}</span>
-                      <span className="font-mono font-bold text-base text-zinc-900 dark:text-zinc-100 tabular-nums">
-                        {expense.amountDzd.toLocaleString()} DA
-                      </span>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => approvePmExpense(expense.id)}
-                      className="px-3.5 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-xl shadow-xs transition-colors flex items-center gap-1 cursor-pointer"
-                    >
-                      <CheckCircle className="w-3.5 h-3.5" />
-                      {t('pm_dir_approve_btn')}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setRejectionModalId(expense.id)}
-                      className="px-3 py-2 text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-xl border border-red-200 dark:border-red-800 transition-colors cursor-pointer"
-                    >
-                      {t('pm_dir_reject_btn')}
-                    </button>
                   </div>
+                ))
+              )}
+            </div>
+          )}
+
+          {/* Expenses Queue */}
+          {(approvalsTab === 'all' || approvalsTab === 'expenses') && (
+            <div className="space-y-3 pt-2">
+              <div className="flex items-center justify-between text-xs font-bold text-zinc-700 dark:text-zinc-300 px-1">
+                <span>Achats & Notes de Frais Terrain Déclarés</span>
+                {pendingExpenses.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => batchApprovePmExpenses(pendingExpenses.map((e) => e.id))}
+                    className="text-xs text-emerald-600 font-semibold hover:underline cursor-pointer"
+                  >
+                    Valider toutes les notes de frais ({pendingExpenses.length})
+                  </button>
+                )}
+              </div>
+
+              {pendingExpenses.length === 0 ? (
+                <div className="p-8 text-center bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 text-xs text-zinc-500">
+                  Aucun frais d'activation en attente d'arbitrage.
                 </div>
-              ))}
-          </div>
+              ) : (
+                pendingExpenses.map((expense) => (
+                  <div
+                    key={expense.id}
+                    className="p-5 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-xs"
+                  >
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300">
+                          {expense.category}
+                        </span>
+                        <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
+                          {expense.title}
+                        </span>
+                        {expense.hasFiscalInvoice && (
+                          <span className="px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold">
+                            Facture Fiscale
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-zinc-500">
+                        Déclaré par {expense.declaredByUserName} ({expense.declaredByRole}) · {expense.projectTitle}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-3 shrink-0">
+                      {expense.receiptPhotoUrl && (
+                        <button
+                          type="button"
+                          onClick={() => setSelectedReceiptUrl(expense.receiptPhotoUrl || null)}
+                          className="px-3 py-1.5 text-xs text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors flex items-center gap-1.5 cursor-pointer"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                          Justificatif
+                        </button>
+                      )}
+                      <div className="text-right">
+                        <span className="text-[10px] text-zinc-400 block uppercase font-medium">{t('common_amount')}</span>
+                        <span className="font-mono font-bold text-base text-zinc-900 dark:text-zinc-100 tabular-nums">
+                          {formatMoney(expense.amountDzd, 'DZD')}
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => approvePmExpense(expense.id)}
+                        className="px-3.5 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-xl shadow-xs transition-colors flex items-center gap-1 cursor-pointer"
+                      >
+                        <CheckCircle className="w-3.5 h-3.5" />
+                        Valider
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setRejectionModalId(expense.id)}
+                        className="px-3 py-2 text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-xl border border-red-200 dark:border-red-800 transition-colors cursor-pointer"
+                      >
+                        Refuser
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
         </div>
       )}
 
-      {/* SCREEN 1.4: EXECUTIVE AUDIT & REPORTS */}
+      {/* SCREEN 1.5: EXECUTIVE AUDIT & REPORTS */}
       {currentScreen === 'reports' && (
         <div className="space-y-6">
           <div className="p-6 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs space-y-4">
@@ -926,7 +1353,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
 
               <button
                 type="button"
-                onClick={handleExportCsv}
+                onClick={handleExportAuditCsv}
                 className="px-4 py-2 text-xs font-bold text-white bg-[#DC2626] hover:bg-red-700 rounded-xl transition-all shadow-xs flex items-center gap-2 cursor-pointer self-start"
               >
                 <Download className="w-4 h-4" />
@@ -980,7 +1407,6 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
 
           {/* Breakdown Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Client Breakdown */}
             <div className="p-6 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs space-y-4">
               <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 flex items-center justify-between">
                 <span>{t('pm_dir_client_profitability')}</span>
@@ -999,36 +1425,34 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
                       <span className="font-semibold text-zinc-800 dark:text-zinc-200">{cli.name}</span>
                       <span className="font-mono text-zinc-500">{cli.ca} · Marge {cli.margin}</span>
                     </div>
-                    <div className="w-full h-2 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
-                      <div className={`h-full ${cli.color} rounded-full`} style={{ width: `${cli.pct}%` }} />
+                    <div className="w-full h-2 rounded-full bg-zinc-100 dark:bg-zinc-800 overflow-hidden">
+                      <div className={`h-full ${cli.color}`} style={{ width: `${cli.pct}%` }} />
                     </div>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Geographical Wilaya Distribution */}
             <div className="p-6 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs space-y-4">
               <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 flex items-center justify-between">
-                <span>{t('pm_dir_territorial_deploy')}</span>
-                <span className="text-xs text-zinc-400 font-normal">{t('pm_dir_activations_count')}</span>
+                <span>Ventilation des Dépenses par Poste</span>
+                <span className="text-xs text-zinc-400 font-normal">Terrain & Logistique</span>
               </h3>
 
               <div className="space-y-3">
                 {[
-                  { wilaya: '16 - Alger (Centre)', count: 20, pct: 42, color: 'bg-[#C4785A]' },
-                  { wilaya: '31 - Oran (Ouest)', count: 12, pct: 25, color: 'bg-amber-500' },
-                  { wilaya: '25 - Constantine (Est)', count: 9, pct: 19, color: 'bg-blue-500' },
-                  { wilaya: '19 - Sétif (Hauts Plateaux)', count: 5, pct: 10, color: 'bg-emerald-500' },
-                  { wilaya: t('pm_dir_wilaya_others'), count: 2, pct: 4, color: 'bg-zinc-400' },
-                ].map((w) => (
-                  <div key={w.wilaya} className="space-y-1 text-xs">
+                  { label: 'Indemnités & Paies Animateurs (CCP)', amount: '34,2 M DA', pct: 58, color: 'bg-[#DC2626]' },
+                  { label: 'Production POSM & Impression Imprimeur', amount: '14,8 M DA', pct: 25, color: 'bg-purple-500' },
+                  { label: 'Transport, Carburant & Hébergement', amount: '6,5 M DA', pct: 11, color: 'bg-amber-500' },
+                  { label: 'Frais de Régie & Autorisations APC', amount: '2,9 M DA', pct: 6, color: 'bg-blue-500' },
+                ].map((item) => (
+                  <div key={item.label} className="space-y-1 text-xs">
                     <div className="flex justify-between items-center">
-                      <span className="font-semibold text-zinc-800 dark:text-zinc-200">{w.wilaya}</span>
-                      <span className="font-mono text-zinc-500">{w.count} missions ({w.pct}%)</span>
+                      <span className="font-semibold text-zinc-800 dark:text-zinc-200">{item.label}</span>
+                      <span className="font-mono text-zinc-500">{item.amount}</span>
                     </div>
-                    <div className="w-full h-2 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
-                      <div className={`h-full ${w.color} rounded-full`} style={{ width: `${w.pct}%` }} />
+                    <div className="w-full h-2 rounded-full bg-zinc-100 dark:bg-zinc-800 overflow-hidden">
+                      <div className={`h-full ${item.color}`} style={{ width: `${item.pct}%` }} />
                     </div>
                   </div>
                 ))}
@@ -1038,66 +1462,82 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
         </div>
       )}
 
-      {/* Modal: Receipt Zoom Inspector */}
+      {/* Receipt Preview Modal */}
       {selectedReceiptUrl && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-white dark:bg-zinc-900 rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl border border-zinc-200 dark:border-zinc-800">
-            <div className="p-4 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
-              <h4 className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
-                {t('pm_dir_see_receipt')}
-              </h4>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+          <div className="bg-white dark:bg-zinc-900 rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-zinc-200 dark:border-zinc-800 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+                <Receipt className="w-4 h-4 text-[#C4785A]" />
+                Justificatif Fiscal de Paiement
+              </h3>
               <button
+                type="button"
                 onClick={() => setSelectedReceiptUrl(null)}
-                className="text-zinc-400 hover:text-zinc-600 cursor-pointer"
+                className="p-1 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 hover:text-zinc-600 cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
-            <div className="p-4 bg-zinc-950 flex items-center justify-center min-h-[300px]">
-              <img
-                src={selectedReceiptUrl}
-                alt="Ticket Justificatif"
-                className="max-h-[450px] w-auto rounded-lg object-contain shadow-lg"
-              />
-            </div>
-            <div className="p-3 bg-zinc-50 dark:bg-zinc-800/60 flex justify-end">
+            <img
+              src={selectedReceiptUrl}
+              alt="Scan Justificatif"
+              className="w-full h-72 object-cover rounded-xl border border-zinc-200 dark:border-zinc-800"
+            />
+            <div className="flex justify-end">
               <button
+                type="button"
                 onClick={() => setSelectedReceiptUrl(null)}
-                className="px-4 py-1.5 text-xs font-semibold text-zinc-700 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-700 rounded-lg cursor-pointer"
+                className="px-4 py-2 text-xs font-semibold text-zinc-700 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 rounded-xl cursor-pointer"
               >
-                {t('common_close')}
+                Fermer
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Modal: Rejection Reason */}
+      {/* Expense Rejection Reason Modal */}
       {rejectionModalId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
           <div className="bg-white dark:bg-zinc-900 rounded-2xl max-w-md w-full p-6 shadow-2xl border border-zinc-200 dark:border-zinc-800 space-y-4">
-            <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-              {t('pm_dir_reject_modal_title')}
-            </h3>
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-bold text-red-600 flex items-center gap-2">
+                <Ban className="w-4 h-4" />
+                Motif du Rejet de la Dépense
+              </h3>
+              <button
+                type="button"
+                onClick={() => setRejectionModalId(null)}
+                className="p-1 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 hover:text-zinc-600 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <p className="text-xs text-zinc-500">
+              Veuillez préciser la raison du refus (ex: justificatif illisible, montant hors barème APC, achat non approuvé).
+            </p>
             <textarea
               rows={3}
-              placeholder={t('pm_dir_reject_modal_ph')}
               value={rejectionReason}
               onChange={(e) => setRejectionReason(e.target.value)}
-              className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
+              placeholder="Ex: Facture proforma non conforme ou facture fiscale manquante..."
+              className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-red-500"
             />
             <div className="flex justify-end gap-2">
               <button
+                type="button"
                 onClick={() => setRejectionModalId(null)}
-                className="px-3 py-1.5 text-xs text-zinc-600 dark:text-zinc-400 cursor-pointer"
+                className="px-4 py-2 text-xs font-semibold text-zinc-600 hover:text-zinc-900 cursor-pointer"
               >
-                {t('common_cancel')}
+                Annuler
               </button>
               <button
+                type="button"
                 onClick={handleRejectConfirm}
-                className="px-4 py-1.5 text-xs font-semibold text-white bg-red-600 hover:bg-red-500 rounded-lg cursor-pointer"
+                className="px-4 py-2 text-xs font-semibold text-white bg-red-600 hover:bg-red-700 rounded-xl shadow-xs cursor-pointer"
               >
-                {t('pm_dir_btn_confirm_reject')}
+                Confirmer le Rejet
               </button>
             </div>
           </div>

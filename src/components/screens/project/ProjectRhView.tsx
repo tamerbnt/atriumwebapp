@@ -34,6 +34,10 @@ import {
   ChevronRight,
   ShieldAlert,
   Pin,
+  Building2,
+  ChevronDown,
+  Check,
+  Trash2,
 } from 'lucide-react';
 import { useTranslation } from '../../../utils/useTranslation';
 
@@ -44,13 +48,28 @@ interface ProjectRhViewProps {
 export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
   const { t, language, isRtl } = useTranslation();
   const {
+    currentBranch,
+    branches,
+    switchBranch,
     pmTalents,
     addPmTalent,
     updatePmTalentStatus,
+    batchUpdatePmTalentStatus,
+    batchDeletePmTalents,
+    resetPmMockData,
     activePmSubScreen,
     setActivePmSubScreen,
     showToast,
   } = useAtriumStore();
+
+  // Auto-heal empty mock state on mount
+  React.useEffect(() => {
+    if (!pmTalents || pmTalents.length === 0) {
+      resetPmMockData();
+    }
+  }, [pmTalents, resetPmMockData]);
+
+  const [isBranchDropdownOpen, setIsBranchDropdownOpen] = useState(false);
 
   const activeTab: 'talents' | 'dossier' | 'portal' | 'walkin' =
     activePmSubScreen === 'dossier' || initialTab === 'dossier'
@@ -152,20 +171,27 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
   };
 
   const handleExportTalents = () => {
-    const csvContent =
-      'data:text/csv;charset=utf-8,' +
-      ['Nom,Wilaya,Commune,Téléphone,N° CCP,Clé,Note Globale,Statut',
-        ...filteredTalents.map(
-          (t) => `"${t.fullName}",${t.wilayaName},${t.commune},${t.phone},${t.ccpNumber},${t.ccpKey},${t.consolidatedScore},${t.status}`
-        ),
-      ].join('\n');
-    const encodedUri = encodeURI(csvContent);
+    const headers = ['Nom & Prénom', 'Wilaya', 'Commune', 'Téléphone', 'N° CCP', 'Clé', 'Score Global', 'Statut'];
+    const rows = filteredTalents.map((t) => [
+      `"${t.fullName.replace(/"/g, '""')}"`,
+      `"${t.wilayaName}"`,
+      `"${t.commune}"`,
+      `"${t.phone}"`,
+      `"${t.ccpNumber}"`,
+      `"${t.ccpKey}"`,
+      t.consolidatedScore,
+      t.status,
+    ]);
+    const csvContent = '\uFEFF' + [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `vivier_talents_nch_${new Date().toISOString().slice(0, 10)}.csv`);
+    link.href = url;
+    link.download = `vivier_talents_nch_${new Date().toISOString().slice(0, 10)}.csv`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   const sortedTalents = React.useMemo(() => {
@@ -294,7 +320,49 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
           </h1>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5">
+          {/* Facility Dropdown */}
+          <div className="relative">
+            <button
+              onClick={() => setIsBranchDropdownOpen((prev) => !prev)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 border border-zinc-200/80 dark:border-zinc-750 transition-all cursor-pointer"
+            >
+              <Building2 className="w-3.5 h-3.5 text-[#C4785A]" />
+              <span>{currentBranch?.name || 'NCH Cyberpark Tower B'}</span>
+              <ChevronDown className="w-3 h-3 opacity-60" />
+            </button>
+            {isBranchDropdownOpen && (
+              <div className="absolute right-0 mt-1 w-56 bg-white dark:bg-zinc-900 rounded-2xl shadow-xl border border-zinc-200 dark:border-zinc-800 p-1.5 z-50">
+                {branches && branches.length > 0 ? (
+                  branches.map((b) => (
+                    <button
+                      key={b.id}
+                      onClick={() => {
+                        switchBranch(b.id);
+                        setIsBranchDropdownOpen(false);
+                      }}
+                      className="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer"
+                    >
+                      {b.name}
+                    </button>
+                  ))
+                ) : (
+                  <div className="px-3 py-2 text-xs text-zinc-500">NCH Cyberpark Tower B</div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Demo Data Recharge Button */}
+          <button
+            onClick={() => resetPmMockData()}
+            title="Recharger le vivier démo de talents"
+            className="px-3 py-1.5 text-xs font-semibold text-zinc-700 dark:text-zinc-300 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 rounded-xl flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-[#C4785A]" />
+            <span>Demo Data</span>
+          </button>
+
           <button
             onClick={() => setActiveTab('walkin')}
             className="px-3.5 py-1.5 text-xs font-semibold text-white bg-[#C4785A] hover:bg-[#b3684a] rounded-xl flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
@@ -345,6 +413,56 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
               {t('pm_rh_profiles_found', { count: filteredTalents.length })}
             </div>
           </div>
+
+          {/* Floating Batch Actions Bar */}
+          {selectedTalentIds.size > 0 && (
+            <div className="flex items-center justify-between px-4 py-3 bg-[#C4785A]/10 border border-[#C4785A]/30 rounded-2xl animate-in fade-in">
+              <div className="flex items-center gap-3 text-xs font-semibold text-[#C4785A]">
+                <span>{selectedTalentIds.size} talent(s) sélectionné(s)</span>
+                <button
+                  type="button"
+                  onClick={() => setSelectedTalentIds(new Set())}
+                  className="text-zinc-500 hover:text-zinc-800 underline cursor-pointer"
+                >
+                  Désélectionner
+                </button>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    batchUpdatePmTalentStatus(Array.from(selectedTalentIds), 'active');
+                    setSelectedTalentIds(new Set());
+                  }}
+                  className="px-3 py-1.5 text-xs font-semibold text-emerald-700 bg-emerald-100 hover:bg-emerald-200 rounded-xl transition-colors cursor-pointer"
+                >
+                  Activer Profils
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    batchUpdatePmTalentStatus(Array.from(selectedTalentIds), 'paused');
+                    setSelectedTalentIds(new Set());
+                  }}
+                  className="px-3 py-1.5 text-xs font-semibold text-zinc-700 bg-zinc-200 hover:bg-zinc-300 dark:bg-zinc-800 dark:text-zinc-300 rounded-xl transition-colors cursor-pointer"
+                >
+                  Suspendre
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    batchDeletePmTalents(Array.from(selectedTalentIds));
+                    setSelectedTalentIds(new Set());
+                  }}
+                  className="px-3 py-1.5 text-xs font-semibold text-red-700 bg-red-100 hover:bg-red-200 rounded-xl transition-colors flex items-center gap-1 cursor-pointer"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  Supprimer
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Talents Universal Collection (List view & Grid view with 6-button corner fan) */}
           <UniversalDataCollection<PMTalent>

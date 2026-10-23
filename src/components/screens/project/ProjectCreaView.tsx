@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useAtriumStore } from '../../../services/store';
 import { PMBatDeliverable } from '../../../types/index';
 import {
@@ -19,11 +19,19 @@ import {
   Lock,
   Download,
   Eye,
+  Building2,
+  ChevronDown,
+  Pin,
+  Trash2,
+  LayoutGrid,
+  List,
 } from 'lucide-react';
 import { LabelInput } from '../../ui/LabelInput';
 import { Seek } from '../../ui/Seek';
 import { LabelSelect } from '../../ui/LabelSelect';
+import { FilterSelect } from '../../ui/FilterSelect';
 import { useTranslation } from '../../../utils/useTranslation';
+import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 
 interface ProjectCreaViewProps {
   initialTab?: 'demandes' | 'kanban' | 'production' | 'upload' | 'briefs';
@@ -32,15 +40,30 @@ interface ProjectCreaViewProps {
 export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) => {
   const { t, language, isRtl } = useTranslation();
   const {
+    currentBranch,
+    branches,
+    switchBranch,
     pmProjects,
     pmPrintOrders,
     pmBatDeliverables,
     addPmBatDeliverable,
     updatePmPrintOrderStatus,
     reviewPmBatDeliverable,
+    batchReviewPmBatDeliverables,
+    batchDeletePmBatDeliverables,
+    resetPmMockData,
     activePmSubScreen,
     setActivePmSubScreen,
   } = useAtriumStore();
+
+  // Auto-heal empty mock state on mount
+  useEffect(() => {
+    if (!pmBatDeliverables || pmBatDeliverables.length === 0) {
+      resetPmMockData();
+    }
+  }, [pmBatDeliverables, resetPmMockData]);
+
+  const [isBranchDropdownOpen, setIsBranchDropdownOpen] = useState(false);
 
   const activeTab: 'demandes' | 'kanban' | 'production' | 'upload' | 'briefs' =
     activePmSubScreen === 'upload' || activePmSubScreen === 'livrables' || initialTab === 'upload'
@@ -57,10 +80,9 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
     setActivePmSubScreen(tab);
   };
 
-  const [returnedToCdpSuccess, setReturnedToCdpSuccess] = useState(false);
-
   const [selectedProjectId, setSelectedProjectId] = useState(pmProjects[0]?.id || '');
   const [selectedOrderId, setSelectedOrderId] = useState<string>('');
+  const [selectedPreviewBat, setSelectedPreviewBat] = useState<PMBatDeliverable | null>(null);
 
   // Uploader form state with mandatory technical validation
   const [artworkTitle, setArtworkTitle] = useState('');
@@ -72,36 +94,160 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [creaSearch, setCreaSearch] = useState('');
 
-  const filteredPmProjects = pmProjects.filter(
-    (p) => !creaSearch.trim() || p.title.toLowerCase().includes(creaSearch.toLowerCase()) || p.clientName.toLowerCase().includes(creaSearch.toLowerCase())
-  );
-  const filteredPmPrintOrders = pmPrintOrders.filter(
-    (o) => !creaSearch.trim() || o.projectTitle.toLowerCase().includes(creaSearch.toLowerCase()) || o.orderNumber.toLowerCase().includes(creaSearch.toLowerCase())
-  );
-  const filteredPmBatDeliverables = pmBatDeliverables.filter(
-    (b) => !creaSearch.trim() || b.title.toLowerCase().includes(creaSearch.toLowerCase()) || b.projectTitle.toLowerCase().includes(creaSearch.toLowerCase())
-  );
+  // Universal Data Collection state for deliverables
+  const [selectedBatIds, setSelectedBatIds] = useState<Set<string>>(new Set());
+  const [pinnedBatIds, setPinnedBatIds] = useState<Set<string>>(new Set());
+  const [batSortBy, setBatSortBy] = useState('title');
+  const [batSortDir, setBatSortDir] = useState<'asc' | 'desc'>('asc');
 
   const selectedProject = pmProjects.find((p) => p.id === selectedProjectId) || pmProjects[0];
 
-  // Kanban Tasks derived from Print Orders and Project Briefs
-  const kanbanColumns = [
-    {
-      id: 'received',
-      title: t('pm_crea_kanban_received'),
-      badgeClass: 'bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300',
-    },
-    {
-      id: 'in_progress',
-      title: t('pm_crea_kanban_in_progress'),
-      badgeClass: 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300',
-    },
-    {
-      id: 'ready_bat',
-      title: t('pm_crea_kanban_ready_bat'),
-      badgeClass: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300',
-    },
-  ];
+  const filteredDeliverables = useMemo(() => {
+    return pmBatDeliverables.filter((b) => {
+      const q = creaSearch.toLowerCase().trim();
+      return (
+        !q ||
+        b.title.toLowerCase().includes(q) ||
+        b.projectTitle.toLowerCase().includes(q) ||
+        b.fileFormat.toLowerCase().includes(q)
+      );
+    });
+  }, [pmBatDeliverables, creaSearch]);
+
+  const sortedDeliverables = useMemo(() => {
+    return [...filteredDeliverables].sort((a, b) => {
+      const aPinned = pinnedBatIds.has(a.id);
+      const bPinned = pinnedBatIds.has(b.id);
+      if (aPinned && !bPinned) return -1;
+      if (!aPinned && bPinned) return 1;
+
+      if (batSortBy === 'title') {
+        const cmp = a.title.localeCompare(b.title);
+        return batSortDir === 'asc' ? cmp : -cmp;
+      }
+      if (batSortBy === 'project') {
+        const cmp = a.projectTitle.localeCompare(b.projectTitle);
+        return batSortDir === 'asc' ? cmp : -cmp;
+      }
+      if (batSortBy === 'version') {
+        return batSortDir === 'asc' ? a.version - b.version : b.version - a.version;
+      }
+      return 0;
+    });
+  }, [filteredDeliverables, pinnedBatIds, batSortBy, batSortDir]);
+
+  // Deliverables Table Columns
+  const batColumns: ColumnDefinition<PMBatDeliverable>[] = useMemo(
+    () => [
+      {
+        key: 'title',
+        header: 'Fichier & Version BAT',
+        width: '2.5*',
+        minWidth: '220px',
+        sortable: true,
+        renderCell: (bat) => {
+          const isPinned = pinnedBatIds.has(bat.id);
+          return (
+            <div className="flex items-center gap-2.5">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setPinnedBatIds((prev) => {
+                    const next = new Set(prev);
+                    if (next.has(bat.id)) next.delete(bat.id);
+                    else next.add(bat.id);
+                    return next;
+                  });
+                }}
+                className={`p-1 rounded-lg transition-colors cursor-pointer ${
+                  isPinned ? 'text-[#C4785A] bg-[#C4785A]/10' : 'text-zinc-300 hover:text-zinc-500'
+                }`}
+              >
+                <Pin className={`w-3.5 h-3.5 ${isPinned ? 'fill-current' : ''}`} />
+              </button>
+              <img src={bat.previewUrl} alt={bat.title} className="w-9 h-9 rounded-lg object-cover shrink-0 border border-zinc-200 dark:border-zinc-800" />
+              <div className="min-w-0">
+                <div className="font-semibold text-xs text-zinc-900 dark:text-zinc-100 truncate max-w-[190px]">
+                  {bat.title}
+                </div>
+                <div className="text-[11px] text-zinc-400 font-mono">
+                  {bat.versionCode} · {bat.fileFormat.toUpperCase()}
+                </div>
+              </div>
+            </div>
+          );
+        },
+      },
+      {
+        key: 'project',
+        header: 'Campagne',
+        width: '2*',
+        minWidth: '180px',
+        sortable: true,
+        renderCell: (bat) => (
+          <div className="text-xs text-zinc-700 dark:text-zinc-300 font-medium truncate max-w-[170px]">
+            {bat.projectTitle}
+          </div>
+        ),
+      },
+      {
+        key: 'specs',
+        header: 'Spécifications Imprimeur',
+        width: '1.8*',
+        minWidth: '180px',
+        renderCell: (bat) => (
+          <div className="flex items-center gap-1.5 text-[11px] font-mono">
+            <span className={`px-1.5 py-0.5 rounded font-bold ${bat.colorSpace === 'CMJN' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300' : 'bg-red-100 text-red-700'}`}>
+              {bat.colorSpace}
+            </span>
+            <span className="text-zinc-400">·</span>
+            <span className="text-zinc-600 dark:text-zinc-400">{bat.resolutionDpi} DPI</span>
+            <span className="text-zinc-400">·</span>
+            <span className="text-zinc-500">+{bat.bleedMm}mm</span>
+          </div>
+        ),
+      },
+      {
+        key: 'status',
+        header: 'Statut Validation',
+        width: '1.5*',
+        minWidth: '150px',
+        align: 'center',
+        renderCell: (bat) => {
+          const statusMap: Record<string, { label: string; bg: string; text: string }> = {
+            approved: { label: 'Validé BAT', bg: 'bg-emerald-100 dark:bg-emerald-950/60', text: 'text-emerald-800 dark:text-emerald-300' },
+            revision_requested: { label: 'Corrections', bg: 'bg-red-100 dark:bg-red-950/60', text: 'text-red-800 dark:text-red-300' },
+            pending_review: { label: 'En Revue CDP', bg: 'bg-amber-100 dark:bg-amber-950/60', text: 'text-amber-800 dark:text-amber-300' },
+          };
+          const badge = statusMap[bat.approvalStatus] || { label: bat.approvalStatus, bg: 'bg-zinc-100', text: 'text-zinc-600' };
+          return (
+            <span className={`inline-flex px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${badge.bg} ${badge.text}`}>
+              {badge.label}
+            </span>
+          );
+        },
+      },
+      {
+        key: 'actions',
+        header: 'Aperçu',
+        width: '1*',
+        minWidth: '100px',
+        align: 'right',
+        renderCell: (bat) => (
+          <button
+            type="button"
+            onClick={() => setSelectedPreviewBat(bat)}
+            className="p-1.5 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg cursor-pointer ml-auto"
+            title="Inspecter le BAT"
+          >
+            <Eye className="w-4 h-4" />
+          </button>
+        ),
+      },
+    ],
+    [pinnedBatIds]
+  );
 
   const handleUploadSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -140,54 +286,118 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
     setUploadSuccess(true);
     setTimeout(() => {
       setUploadSuccess(false);
-      setActiveTab('kanban');
+      setActiveTab('production');
     }, 1800);
     setArtworkTitle('');
   };
 
+  const handleExportBatCsv = () => {
+    const headers = ['Livrable', 'Campagne', 'Format', 'Espace Couleur', 'Résolution DPI', 'Version', 'Statut BAT'];
+    const rows = sortedDeliverables.map((b) => [
+      `"${b.title}"`,
+      `"${b.projectTitle.replace(/"/g, '""')}"`,
+      b.fileFormat,
+      b.colorSpace,
+      b.resolutionDpi,
+      b.versionCode,
+      b.approvalStatus,
+    ]);
+    const csvContent = '\uFEFF' + [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `livrables_bat_crea_${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {/* Top Header with Facility Dropdown & Demo Data */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
         <div>
           <div className="flex items-center gap-2">
             <span className="text-xs font-semibold uppercase tracking-wider text-[#C4785A]">
-              {t('pm_role_crea_badge')}
+              Studio Créa
             </span>
             <span className="text-zinc-400">·</span>
-            <span className="text-xs text-zinc-500">{t('pm_role_crea_sub')}</span>
+            <span className="text-xs text-zinc-500">Conception Graphique & Pré-Presse</span>
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
             {activeTab === 'kanban'
-              ? t('pm_crea_tab_kanban')
-              : activeTab === 'upload'
-              ? t('pm_crea_tab_upload')
+              ? 'Tableau Kanban des Créations'
               : activeTab === 'production'
-              ? t('pm_crea_tab_production')
-              : activeTab === 'briefs'
-              ? t('pm_crea_tab_briefs')
-              : t('pm_crea_tab_demandes')}
+              ? 'Livrables & Fichiers BAT'
+              : activeTab === 'upload'
+              ? 'Dépôt & Conformité Technique'
+              : 'Demandes & Briefs Reçus'}
           </h1>
         </div>
 
-        <div className="flex items-center gap-3">
-          <Seek
-            value={creaSearch}
-            onChange={setCreaSearch}
-            placeholder={t('common_search')}
-            openWidth={260}
-            shutSize={38}
-          />
+        <div className="flex items-center gap-2.5">
+          {/* Facility Dropdown */}
+          <div className="relative">
+            <button
+              onClick={() => setIsBranchDropdownOpen((prev) => !prev)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 border border-zinc-200/80 dark:border-zinc-750 transition-all cursor-pointer"
+            >
+              <Building2 className="w-3.5 h-3.5 text-[#C4785A]" />
+              <span>{currentBranch?.name || 'NCH Cyberpark Tower B'}</span>
+              <ChevronDown className="w-3 h-3 opacity-60" />
+            </button>
+            {isBranchDropdownOpen && (
+              <div className="absolute right-0 mt-1 w-56 bg-white dark:bg-zinc-900 rounded-2xl shadow-xl border border-zinc-200 dark:border-zinc-800 p-1.5 z-50">
+                {branches && branches.length > 0 ? (
+                  branches.map((b) => (
+                    <button
+                      key={b.id}
+                      onClick={() => {
+                        switchBranch(b.id);
+                        setIsBranchDropdownOpen(false);
+                      }}
+                      className="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer"
+                    >
+                      {b.name}
+                    </button>
+                  ))
+                ) : (
+                  <div className="px-3 py-2 text-xs text-zinc-500">NCH Cyberpark Tower B</div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Demo Data Recharge Button */}
+          <button
+            onClick={() => resetPmMockData()}
+            title="Recharger les livrables créatifs"
+            className="px-3 py-1.5 text-xs font-semibold text-zinc-700 dark:text-zinc-300 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 rounded-xl flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-[#C4785A]" />
+            <span>Demo Data</span>
+          </button>
+
+          {/* New Deliverable Upload Button */}
+          <button
+            onClick={() => setActiveTab('upload')}
+            className="px-3 py-1.5 text-xs font-semibold text-white bg-[#C4785A] hover:bg-[#b3684a] rounded-xl flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
+          >
+            <UploadCloud className="w-4 h-4" />
+            <span>Déposer un BAT</span>
+          </button>
         </div>
       </div>
 
-      {/* Sub-Tabs */}
+      {/* Navigation Sub-Tabs */}
       <div className="flex border-b border-zinc-200 dark:border-zinc-800 gap-1 overflow-x-auto">
         {[
-          { id: 'kanban', label: t('pm_crea_tab_kanban'), icon: Layers },
-          { id: 'demandes', label: t('pm_crea_tab_demandes'), icon: Clock, count: filteredPmProjects.length },
-          { id: 'production', label: t('pm_crea_tab_production'), icon: Palette, count: filteredPmPrintOrders.length },
-          { id: 'upload', label: t('pm_crea_tab_upload'), icon: UploadCloud },
+          { id: 'kanban', label: 'Kanban Studio', icon: Layers },
+          { id: 'production', label: 'Livrables BAT (Collection)', icon: FileCheck2, count: pmBatDeliverables.length },
+          { id: 'upload', label: 'Uploader Conforme', icon: UploadCloud },
+          { id: 'briefs', label: 'Briefs & Key Visuals', icon: FileText, count: pmProjects.length },
         ].map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -204,7 +414,7 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
               <Icon className="w-4 h-4" />
               <span>{tab.label}</span>
               {tab.count !== undefined && tab.count > 0 && (
-                <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 font-mono">
+                <span className="px-1.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300">
                   {tab.count}
                 </span>
               )}
@@ -213,464 +423,395 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
         })}
       </div>
 
-      {/* SCREEN 3.1 & 3.2: KANBAN BOARD WITH SLIDE 7 LIVRABLE PRÊT INSPECTOR */}
-      {(activeTab === 'kanban' || activeTab === 'demandes' || activeTab === 'production') && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Left 8 Cols: 3-Column Production Board */}
-          <div className="lg:col-span-8 grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Column 1: Received Briefs & Print Orders */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between pb-2 border-b border-zinc-200 dark:border-zinc-800">
-                <span className="text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 flex items-center gap-1.5">
-                  <Clock className="w-3.5 h-3.5 text-zinc-500" />
-                  Reçues
-                </span>
-                <span className="text-xs font-mono font-semibold px-2 py-0.5 rounded-full bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
-                  {filteredPmPrintOrders.filter((o) => o.status === 'sent_to_crea').length + filteredPmProjects.length}
-                </span>
-              </div>
-
-              <div className="space-y-3">
-                {filteredPmProjects.map((p) => (
-                  <div
-                    key={p.id}
-                    className="p-3.5 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-xs space-y-2 hover:border-[#C4785A]/50 transition-colors"
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#C4785A]/15 text-[#C4785A]">
-                        BRIEF · KV
-                      </span>
-                      <span className="text-[10px] text-zinc-400 font-mono">{p.startDate}</span>
-                    </div>
-                    <div>
-                      <h4 className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
-                        {p.title}
-                      </h4>
-                      <p className="text-[11px] text-zinc-500 line-clamp-2 mt-0.5">
-                        {p.scopeOfWork}
-                      </p>
-                    </div>
-                    <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between text-xs">
-                      <span className="text-zinc-400 text-[10px]">{p.clientName}</span>
-                      <span className="text-[#C4785A] font-semibold text-[11px]">{t('pm_crea_waiting_creation')}</span>
-                    </div>
+      {/* TAB 1: KANBAN STUDIO */}
+      {activeTab === 'kanban' && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Column 1: Commandes Reçues */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between pb-2 border-b border-zinc-200 dark:border-zinc-800">
+              <span className="text-xs font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300">
+                1. Reçus du Chef de Projet
+              </span>
+              <span className="w-5 h-5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 font-mono text-xs flex items-center justify-center font-bold">
+                {pmPrintOrders.filter((o) => o.status === 'sent_to_crea').length}
+              </span>
+            </div>
+            {pmPrintOrders
+              .filter((o) => o.status === 'sent_to_crea')
+              .map((order) => (
+                <div
+                  key={order.id}
+                  className="p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs space-y-2.5"
+                >
+                  <div className="flex items-center justify-between text-[11px]">
+                    <span className="font-mono font-bold text-[#C4785A]">{order.orderNumber}</span>
+                    <span className="text-zinc-400">{order.items.length} support(s)</span>
                   </div>
-                ))}
-
-                {filteredPmPrintOrders
-                  .filter((o) => o.status === 'sent_to_crea')
-                  .map((order) => (
-                    <div
-                      key={order.id}
-                      className="p-3.5 bg-white dark:bg-zinc-900 rounded-xl border border-blue-200 dark:border-blue-900/50 shadow-xs space-y-2"
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300">
-                          PRINT
-                        </span>
-                        <span className="text-[10px] font-mono text-zinc-500">{order.orderNumber}</span>
-                      </div>
-                      <div>
-                        <h4 className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
-                          {order.projectTitle}
-                        </h4>
-                        <p className="text-[11px] text-zinc-500 mt-0.5">
-                          {order.items.map((i) => `${i.quantity}x ${i.itemTitle}`).join(', ')}
-                        </p>
-                      </div>
-                      <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between text-xs">
-                        <span className="font-mono text-[11px] text-zinc-500">{order.totalCostDzd.toLocaleString()} DA</span>
-                        <span className="text-blue-600 dark:text-blue-400 font-semibold text-[11px]">{t('pm_crea_order_received')}</span>
-                      </div>
-                    </div>
-                  ))}
-              </div>
-            </div>
-
-            {/* Column 2: In Progress */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between pb-2 border-b border-zinc-200 dark:border-zinc-800">
-                <span className="text-xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
-                  <Palette className="w-3.5 h-3.5 text-amber-500" />
-                  En production
-                </span>
-                <span className="text-xs font-mono font-semibold px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300">
-                  {filteredPmBatDeliverables.filter((b) => b.approvalStatus === 'pending_review').length}
-                </span>
-              </div>
-
-              <div className="space-y-3">
-                {filteredPmBatDeliverables
-                  .filter((b) => b.approvalStatus === 'pending_review')
-                  .map((bat) => (
-                    <div
-                      key={bat.id}
-                      className="p-3.5 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-xs space-y-2.5"
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300">
-                          {bat.versionCode.toUpperCase()} · EN PRODUCTION
-                        </span>
-                        <span className="text-[10px] text-zinc-400">{bat.fileFormat.toUpperCase()} · {bat.colorSpace}</span>
-                      </div>
-
-                      <div className="aspect-video bg-zinc-100 dark:bg-zinc-800 rounded-lg overflow-hidden relative">
-                        <img src={bat.previewUrl} alt={bat.title} className="w-full h-full object-cover" />
-                        <div className="absolute top-1.5 right-1.5 px-1 py-0.5 rounded bg-black/70 text-white text-[9px] font-mono">
-                          {bat.resolutionDpi} DPI
-                        </div>
-                      </div>
-
-                      <div>
-                        <h4 className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 truncate">
-                          {bat.title}
-                        </h4>
-                        <p className="text-[11px] text-zinc-500">{bat.projectTitle}</p>
-                      </div>
-
-                      <div className="text-[10px] text-zinc-400 flex items-center justify-between pt-1.5 border-t border-zinc-100 dark:border-zinc-800">
-                        <span>{bat.uploadedByCreativeName}</span>
-                        <span className="text-emerald-600 font-medium">{t('pm_crea_bleed_3mm')}</span>
-                      </div>
-                    </div>
-                  ))}
-              </div>
-            </div>
-
-            {/* Column 3: Validated & Delivered BAT */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between pb-2 border-b border-zinc-200 dark:border-zinc-800">
-                <span className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
-                  <CheckCircle className="w-3.5 h-3.5 text-emerald-500" />
-                  Livrées
-                </span>
-                <span className="text-xs font-mono font-semibold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300">
-                  {filteredPmBatDeliverables.filter((b) => b.approvalStatus === 'approved').length}
-                </span>
-              </div>
-
-              <div className="space-y-3">
-                {filteredPmBatDeliverables
-                  .filter((b) => b.approvalStatus === 'approved')
-                  .map((bat) => (
-                    <div
-                      key={bat.id}
-                      className="p-3.5 bg-white dark:bg-zinc-900 rounded-xl border border-emerald-200 dark:border-emerald-900/50 shadow-xs space-y-2.5"
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300">
-                          BAT VALIDÉ
-                        </span>
-                        <span className="text-[10px] font-mono text-zinc-500">{bat.versionCode}</span>
-                      </div>
-
-                      <div className="aspect-video bg-zinc-100 dark:bg-zinc-800 rounded-lg overflow-hidden relative">
-                        <img src={bat.previewUrl} alt={bat.title} className="w-full h-full object-cover" />
-                        <div className="absolute inset-0 bg-emerald-500/10 flex items-center justify-center">
-                          <span className="px-2.5 py-0.5 bg-white dark:bg-zinc-900 rounded-full text-[10px] font-bold text-emerald-600 shadow-xs">
-                            PRÊT IMPRESSION
-                          </span>
-                        </div>
-                      </div>
-
-                      <div>
-                        <h4 className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 truncate">
-                          {bat.title}
-                        </h4>
-                        <p className="text-[11px] text-zinc-500">{bat.projectTitle}</p>
-                      </div>
-
-                      <div className="pt-1.5 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between text-[10px]">
-                        <span className="text-zinc-400">300 DPI · CMJN</span>
-                        <span className="text-emerald-600 font-semibold flex items-center gap-1">
-                          <CheckCircle className="w-3 h-3" /> {t('pm_crea_status_transmitted')}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-              </div>
-            </div>
+                  <h4 className="text-xs font-bold text-zinc-900 dark:text-zinc-100">
+                    {order.projectTitle}
+                  </h4>
+                  <div className="text-[11px] text-zinc-500">
+                    {order.items.map((i) => i.itemTitle).join(', ')}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedOrderId(order.id);
+                      setSelectedProjectId(order.projectId);
+                      setActiveTab('upload');
+                    }}
+                    className="w-full py-1.5 text-xs font-semibold text-white bg-[#C4785A] hover:bg-[#b3684a] rounded-xl flex items-center justify-center gap-1 transition-colors cursor-pointer"
+                  >
+                    <UploadCloud className="w-3.5 h-3.5" />
+                    Créer le BAT ➔
+                  </button>
+                </div>
+              ))}
           </div>
 
-          {/* Right 4 Cols: Slide 7 "Livrable Prêt" Panel */}
-          <div className="lg:col-span-4 space-y-4">
-            <div className="p-6 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm sticky top-6 space-y-4">
-              <div className="flex items-center justify-between pb-3 border-b border-zinc-200 dark:border-zinc-800">
-                <span className="text-xs font-bold uppercase tracking-wider text-[#DC2626]">
-                  {t('pm_crea_deliverable_ready')}
-                </span>
-                <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">
-                  {t('pm_crea_bat_final')}
-                </span>
-              </div>
-
-              {/* Deliverable File Info */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <h4 className="font-bold text-sm text-zinc-900 dark:text-zinc-100">
-                    BAT_rollup_ooredoo.pdf
-                  </h4>
-                </div>
-                <div className="flex items-center gap-2 text-xs text-zinc-500">
-                  <span className="font-mono">{t('pm_crea_size_mb', { size: '24,8' })}</span>
-                  <span>·</span>
-                  <span className="px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 font-bold text-[10px]">
-                    HD
-                  </span>
-                  <span className="px-1.5 py-0.5 rounded bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 font-bold text-[10px]">
-                    CMJN
-                  </span>
-                  <span>·</span>
-                  <span className="text-emerald-600 font-semibold text-[11px]">300 DPI</span>
-                </div>
-              </div>
-
-              {/* Thumbnail Display */}
-              <div className="aspect-[4/3] rounded-xl overflow-hidden bg-zinc-100 dark:bg-zinc-800 relative border border-zinc-200 dark:border-zinc-700/60">
-                <img
-                  src="https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=600&auto=format&fit=crop&q=80"
-                  alt="BAT Preview"
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute bottom-2 left-2 right-2 p-2 rounded-lg bg-black/75 backdrop-blur-xs text-white text-[11px]">
-                  <span>{t('pm_crea_bleed_flash_ready')}</span>
-                </div>
-              </div>
-
-              {returnedToCdpSuccess && (
-                <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-xs font-semibold flex items-center gap-2 animate-in fade-in">
-                  <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
-                  <span>{t('pm_crea_bat_returned_success')}</span>
-                </div>
-              )}
-
-              {/* Big Red Button - Slide 7 Exact */}
-              <button
-                type="button"
-                onClick={() => {
-                  reviewPmBatDeliverable('bat_01', 'approved');
-                  setReturnedToCdpSuccess(true);
-                  setTimeout(() => setReturnedToCdpSuccess(false), 3500);
-                }}
-                className="w-full py-3 text-xs font-bold text-white bg-[#DC2626] hover:bg-red-700 rounded-xl transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer active:scale-98"
-              >
-                <ArrowRight className="w-4 h-4" />
-                Renvoyer au chef de projet
-              </button>
-              <p className="text-[11px] text-zinc-400 text-center leading-relaxed">
-                Le CDP recevra le fichier HD dans son espace pour envoi direct à l'imprimeur.
-              </p>
+          {/* Column 2: BAT en Revue */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between pb-2 border-b border-zinc-200 dark:border-zinc-800">
+              <span className="text-xs font-bold uppercase tracking-wider text-amber-600">
+                2. En Revue CDP & Client
+              </span>
+              <span className="w-5 h-5 rounded-full bg-amber-100 text-amber-800 font-mono text-xs flex items-center justify-center font-bold">
+                {pmBatDeliverables.filter((b) => b.approvalStatus === 'pending_review').length}
+              </span>
             </div>
+            {pmBatDeliverables
+              .filter((b) => b.approvalStatus === 'pending_review')
+              .map((bat) => (
+                <div
+                  key={bat.id}
+                  className="p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs space-y-2.5"
+                >
+                  <img src={bat.previewUrl} alt={bat.title} className="w-full h-28 rounded-xl object-cover" />
+                  <div className="flex items-center justify-between text-[11px]">
+                    <span className="font-bold text-zinc-900 dark:text-zinc-100">{bat.title}</span>
+                    <span className="font-mono text-zinc-400">{bat.versionCode}</span>
+                  </div>
+                  <p className="text-[11px] text-zinc-500">{bat.projectTitle}</p>
+                </div>
+              ))}
+          </div>
+
+          {/* Column 3: Bon à Tirer Validé */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between pb-2 border-b border-zinc-200 dark:border-zinc-800">
+              <span className="text-xs font-bold uppercase tracking-wider text-emerald-600">
+                3. BAT Prêt Imprimeur
+              </span>
+              <span className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-800 font-mono text-xs flex items-center justify-center font-bold">
+                {pmBatDeliverables.filter((b) => b.approvalStatus === 'approved').length}
+              </span>
+            </div>
+            {pmBatDeliverables
+              .filter((b) => b.approvalStatus === 'approved')
+              .map((bat) => (
+                <div
+                  key={bat.id}
+                  className="p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-emerald-200 dark:border-emerald-900/40 shadow-xs space-y-2.5"
+                >
+                  <img src={bat.previewUrl} alt={bat.title} className="w-full h-28 rounded-xl object-cover" />
+                  <div className="flex items-center justify-between text-[11px]">
+                    <span className="font-bold text-emerald-700 dark:text-emerald-400">{bat.title}</span>
+                    <span className="font-mono text-emerald-600">{bat.versionCode}</span>
+                  </div>
+                  <div className="text-[11px] text-zinc-500">
+                    Conforme CMJN 300 DPI · Prêt pour déblocage imprimeur.
+                  </div>
+                </div>
+              ))}
           </div>
         </div>
       )}
 
-      {/* SCREEN 3.4: CAHIERS DES CHARGES LIÉS (Slide 7) */}
-      {activeTab === 'briefs' && (
+      {/* TAB 2: LIVRABLES BAT (UniversalDataCollection) */}
+      {activeTab === 'production' && (
         <div className="space-y-4">
-          <div className="p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm flex items-center justify-between">
-            <div>
-              <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                Cahiers des Charges & Spécifications Graphiques
-              </h3>
-              <p className="text-xs text-zinc-500">
-                Briefs injectés par la Direction et les Chefs de Projets pour cadrage des Key Visuals (KV).
-              </p>
-            </div>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs">
+            <Seek
+              value={creaSearch}
+              onChange={setCreaSearch}
+              placeholder="Rechercher par livrable, campagne ou format..."
+              openWidth={360}
+              shutSize={38}
+            />
+
+            <button
+              onClick={handleExportBatCsv}
+              className="px-3 py-1.5 text-xs font-semibold text-zinc-700 dark:text-zinc-300 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 rounded-xl flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>Export CSV</span>
+            </button>
           </div>
 
-          <div className="space-y-3">
-            {pmProjects.map((p) => (
-              <div
-                key={p.id}
-                className="p-5 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4"
-              >
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-xs text-[#C4785A] uppercase">{p.clientName}</span>
-                    <span className="text-zinc-300">·</span>
-                    <span className="font-semibold text-sm text-zinc-900 dark:text-zinc-100">{p.title}</span>
-                  </div>
-                  <p className="text-xs text-zinc-500 max-w-2xl">{p.scopeOfWork}</p>
-                  <div className="flex items-center gap-4 text-[11px] text-zinc-400 pt-1">
-                    <span>{t('pm_crea_deadline_kv', { date: p.kvDeadline || p.startDate })}</span>
-                    <span>{t('pm_crea_deadline_print', { date: p.printDeadline || p.startDate })}</span>
-                    <span>{t('pm_crea_pm_lead', { name: p.projectManagerName })}</span>
-                  </div>
-                </div>
+          {selectedBatIds.size > 0 && (
+            <div className="flex items-center justify-between px-4 py-3 bg-[#C4785A]/10 border border-[#C4785A]/30 rounded-2xl animate-in fade-in">
+              <div className="flex items-center gap-3 text-xs font-semibold text-[#C4785A]">
+                <span>{selectedBatIds.size} livrable(s) sélectionné(s)</span>
+                <button
+                  type="button"
+                  onClick={() => setSelectedBatIds(new Set())}
+                  className="text-zinc-500 hover:text-zinc-800 underline cursor-pointer"
+                >
+                  Désélectionner
+                </button>
+              </div>
 
+              <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => {
-                    setSelectedProjectId(p.id);
-                    setArtworkTitle(`KV_${p.title.replace(/\s+/g, '_')}`);
-                    setActiveTab('upload');
+                    batchReviewPmBatDeliverables(Array.from(selectedBatIds), 'approved');
+                    setSelectedBatIds(new Set());
                   }}
-                  className="px-4 py-2 text-xs font-semibold text-white bg-[#C4785A] hover:bg-[#b3684a] rounded-xl transition-all shadow-xs flex items-center gap-1.5 cursor-pointer shrink-0"
+                  className="px-3 py-1.5 text-xs font-semibold text-emerald-700 bg-emerald-100 hover:bg-emerald-200 rounded-xl transition-colors cursor-pointer"
                 >
-                  <Plus className="w-3.5 h-3.5" />
-                  Démarrer Production KV ➔
+                  Valider Bon à Tirer
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    batchDeletePmBatDeliverables(Array.from(selectedBatIds));
+                    setSelectedBatIds(new Set());
+                  }}
+                  className="px-3 py-1.5 text-xs font-semibold text-red-700 bg-red-100 hover:bg-red-200 rounded-xl transition-colors flex items-center gap-1 cursor-pointer"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  Supprimer
                 </button>
               </div>
-            ))}
-          </div>
+            </div>
+          )}
+
+          <UniversalDataCollection<PMBatDeliverable>
+            items={sortedDeliverables}
+            keyExtractor={(b) => b.id}
+            defaultViewMode="list"
+            columns={batColumns}
+            sortBy={batSortBy}
+            sortDirection={batSortDir}
+            onSortChange={(key) => {
+              if (batSortBy === key) {
+                setBatSortDir((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+              } else {
+                setBatSortBy(key);
+                setBatSortDir('asc');
+              }
+            }}
+            selectedIds={selectedBatIds}
+            onSelectionChange={setSelectedBatIds}
+            renderCard={(bat) => (
+              <div className="flex flex-col justify-between h-full space-y-3">
+                <div className="space-y-2">
+                  <img
+                    src={bat.previewUrl}
+                    alt={bat.title}
+                    className="w-full h-36 rounded-xl object-cover border border-zinc-100 dark:border-zinc-800"
+                  />
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="font-bold text-[#C4785A]">{bat.versionCode}</span>
+                    <span className="font-mono text-zinc-400">{bat.fileFormat.toUpperCase()}</span>
+                  </div>
+                  <h4 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 line-clamp-1">
+                    {bat.title}
+                  </h4>
+                  <p className="text-xs text-zinc-500 line-clamp-1">
+                    {bat.projectTitle}
+                  </p>
+                </div>
+
+                <div className="pt-3 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between text-xs font-mono">
+                  <span>{bat.colorSpace} · {bat.resolutionDpi} DPI</span>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedPreviewBat(bat)}
+                    className="text-[#C4785A] font-semibold hover:underline cursor-pointer"
+                  >
+                    Inspecter ➔
+                  </button>
+                </div>
+              </div>
+            )}
+          />
         </div>
       )}
 
-      {/* SCREEN 3.2: BAT UPLOADER & TECHNICAL VALIDATION STUDIO */}
+      {/* TAB 3: UPLOADER CONFORME AVEC REGLES PRE-PRESSE */}
       {activeTab === 'upload' && (
         <div className="p-6 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs max-w-3xl mx-auto space-y-6">
           <div>
-            <span className="text-xs font-semibold text-[#C4785A] uppercase tracking-wide">
-              Écran 3.2 · Validateur & Upload BAT
+            <span className="text-xs font-bold text-[#C4785A] uppercase tracking-wider block">
+              Dépôt & Conformité Pré-Presse (Slide 8)
             </span>
             <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mt-1">
-              Livraison d'Épreuve Imprimeur & Contrôle des Normes Pré-Presse
+              Validation Technique des Fichiers Imprimeur
             </h2>
             <p className="text-xs text-zinc-500">
-              Assurez la fidélité de production : vérifiez l'espace colorimétrique CMJN, la résolution 300 DPI et les fonds perdus.
+              Verrouillage strict : les fichiers doivent être en CMJN natif, minimum 300 DPI avec 3mm de fond perdu.
             </p>
           </div>
 
           {uploadSuccess && (
-            <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 flex items-center gap-3 text-xs font-semibold animate-in fade-in">
+            <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 flex items-center gap-3 text-xs font-semibold">
               <CheckCircle className="w-5 h-5 text-emerald-600" />
-              Épreuve BAT déposée avec succès ! Notification envoyée au Chef de Projet pour revue.
+              Livrable BAT enregistré et transmis au Chef de Projet !
             </div>
           )}
 
-          <form onSubmit={handleUploadSubmit} className="space-y-5">
-            <div className="space-y-4">
-              <LabelSelect
-                field="Project"
-                label={t('pm_crea_field_project')}
-                value={selectedProjectId}
-                onChange={(val) => setSelectedProjectId(typeof val === 'string' ? val : val.target?.value || val)}
-                options={pmProjects.map((p) => ({
-                  value: p.id,
-                  label: `${p.title} (${p.clientName})`,
-                }))}
-                height={46}
-                corner={14}
+          <form onSubmit={handleUploadSubmit} className="space-y-4">
+            <LabelSelect
+              field="Project"
+              label="Projet / Campagne"
+              value={selectedProjectId}
+              onChange={(val) => setSelectedProjectId(typeof val === 'string' ? val : val.target?.value || val)}
+              options={pmProjects.map((p) => ({ value: p.id, label: `${p.title} (${p.clientName})` }))}
+              height={46}
+              corner={12}
+            />
+
+            <LabelInput
+              field="ArtworkTitle"
+              label="Nom du Fichier d'Exécution"
+              placeholder="Ex: ROLLUP_OOREDOO_85x200_BAT"
+              value={artworkTitle}
+              onChange={setArtworkTitle}
+              required
+              height={46}
+              corner={12}
+            />
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <FilterSelect
+                label="Format Fichier"
+                value={fileFormat}
+                onChange={(val) => setFileFormat((typeof val === 'string' ? val : val.target?.value || val) as any)}
+                options={[
+                  { value: 'pdf', label: 'PDF Haute Résolution' },
+                  { value: 'ai', label: 'Adobe Illustrator (.ai)' },
+                  { value: 'psd', label: 'Photoshop (.psd)' },
+                  { value: 'tiff', label: 'TIFF Pré-presse' },
+                ]}
               />
 
-              <div>
-                <LabelInput
-                  field="ArtworkTitle"
-                  label={t('pm_crea_field_artwork_name')}
-                  required
-                  placeholder={t('pm_crea_field_artwork_name_ph')}
-                  value={artworkTitle}
-                  onChange={setArtworkTitle}
-                  width="100%"
-                  height={46}
-                  corner={14}
-                />
-              </div>
+              <FilterSelect
+                label="Espace Colorimétrique"
+                value={colorSpace}
+                onChange={(val) => setColorSpace((typeof val === 'string' ? val : val.target?.value || val) as any)}
+                options={[
+                  { value: 'CMJN', label: 'CMJN (Quadrichromie)' },
+                  { value: 'RVB', label: 'RVB (Rejeté imprimeur)' },
+                ]}
+              />
 
-              {/* Technical Specifications Matrix */}
-              <div className="p-4 bg-zinc-50 dark:bg-zinc-800/40 rounded-xl border border-zinc-200 dark:border-zinc-700/60 space-y-3">
-                <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100 block">
-                  {t('pm_crea_upload_sub')}
-                </span>
-
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <LabelSelect
-                    field="ColorSpace"
-                    label={t('pm_crea_field_colorspace')}
-                    value={colorSpace}
-                    onChange={(val) => setColorSpace(typeof val === 'string' ? (val as any) : (val.target?.value || val))}
-                    options={[
-                      { value: 'CMJN', label: 'CMJN / CMYK' },
-                      { value: 'RVB', label: 'RVB / RGB' },
-                    ]}
-                    height={42}
-                    corner={10}
-                  />
-
-                  <LabelSelect
-                    field="Resolution"
-                    label={t('pm_crea_field_resolution')}
-                    value={resolutionDpi}
-                    onChange={(val) => setResolutionDpi(typeof val === 'string' ? val : val.target?.value || val)}
-                    options={[
-                      { value: '300', label: '300 DPI HD' },
-                      { value: '150', label: '150 DPI' },
-                      { value: '72', label: '72 DPI' },
-                    ]}
-                    height={42}
-                    corner={10}
-                  />
-
-                  <LabelSelect
-                    field="Format"
-                    label={t('pm_crea_field_fileformat')}
-                    value={fileFormat}
-                    onChange={(val) => setFileFormat(typeof val === 'string' ? (val as any) : (val.target?.value || val))}
-                    options={[
-                      { value: 'pdf', label: 'PDF' },
-                      { value: 'ai', label: 'Illustrator (.ai)' },
-                      { value: 'psd', label: 'Photoshop (.psd)' },
-                      { value: 'tiff', label: 'TIFF' },
-                    ]}
-                    height={42}
-                    corner={10}
-                  />
-                </div>
-
-                <div className="pt-2">
-                  <label className="flex items-center gap-2 cursor-pointer text-xs font-medium text-zinc-800 dark:text-zinc-200">
-                    <input
-                      type="checkbox"
-                      checked={hasBleedIncluded}
-                      onChange={(e) => setHasBleedIncluded(e.target.checked)}
-                      className="rounded border-zinc-300 text-[#C4785A] focus:ring-[#C4785A]"
-                    />
-                    <span>{t('pm_crea_crop_marks_included')}</span>
-                  </label>
-                </div>
-              </div>
-
-              {/* URL Preview */}
-              <div>
-                <LabelInput
-                  field="PreviewUrl"
-                  label={t('pm_crea_field_preview_url')}
-                  type="url"
-                  value={previewUrl}
-                  onChange={setPreviewUrl}
-                  width="100%"
-                  height={46}
-                  corner={14}
-                />
-              </div>
-
-              {/* Master File Security Banner */}
-              <div className="p-3.5 rounded-xl bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/50 flex items-center gap-3 text-xs text-blue-800 dark:text-blue-300">
-                <Lock className="w-4 h-4 shrink-0 text-blue-600" />
-                <span>
-                  {t('pm_crea_cloud_security_note')}
-                </span>
-              </div>
+              <LabelInput
+                field="Resolution"
+                label="Résolution (DPI)"
+                type="number"
+                value={resolutionDpi}
+                onChange={setResolutionDpi}
+                required
+                height={46}
+                corner={12}
+              />
             </div>
 
-            <div className="pt-4 border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-end gap-3">
+            <div className="p-4 rounded-xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200 dark:border-zinc-800 flex items-center justify-between text-xs">
+              <div className="space-y-0.5">
+                <span className="font-semibold text-zinc-900 dark:text-zinc-100">
+                  Fond Perdu & Traits de Coupe (+3mm)
+                </span>
+                <p className="text-[11px] text-zinc-500">
+                  Indispensable pour éviter tout liseré blanc au massicotage.
+                </p>
+              </div>
+              <input
+                type="checkbox"
+                checked={hasBleedIncluded}
+                onChange={(e) => setHasBleedIncluded(e.target.checked)}
+                className="w-4 h-4 rounded text-[#C4785A] focus:ring-[#C4785A]"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={colorSpace !== 'CMJN' || Number(resolutionDpi) < 300 || !hasBleedIncluded}
+              className="w-full py-2.5 text-xs font-semibold text-white bg-[#C4785A] hover:bg-[#b3684a] disabled:opacity-40 rounded-xl flex items-center justify-center gap-2 shadow-xs transition-colors cursor-pointer"
+            >
+              <UploadCloud className="w-4 h-4" />
+              Valider la Conformité & Déposer le BAT
+            </button>
+          </form>
+        </div>
+      )}
+
+      {/* TAB 4: BRIEFS & KEY VISUALS */}
+      {activeTab === 'briefs' && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {pmProjects.map((p) => (
+            <div
+              key={p.id}
+              className="p-5 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs space-y-3"
+            >
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-bold text-[#C4785A] uppercase">{p.clientName}</span>
+                <span className="font-mono text-zinc-400">Échéance KV: {p.kvDeadline}</span>
+              </div>
+              <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+                {p.title}
+              </h3>
+              <p className="text-xs text-zinc-600 dark:text-zinc-400 line-clamp-3">
+                {p.scopeOfWork}
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Inspect Preview Modal */}
+      {selectedPreviewBat && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+          <div className="bg-white dark:bg-zinc-900 rounded-2xl max-w-xl w-full p-6 shadow-2xl border border-zinc-200 dark:border-zinc-800 space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+                  {selectedPreviewBat.title}
+                </h3>
+                <span className="text-xs text-zinc-400">{selectedPreviewBat.projectTitle}</span>
+              </div>
               <button
                 type="button"
-                onClick={() => setActiveTab('kanban')}
-                className="px-4 py-2 text-xs font-semibold text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 cursor-pointer"
+                onClick={() => setSelectedPreviewBat(null)}
+                className="p-1 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer"
               >
-                Annuler
-              </button>
-              <button
-                type="submit"
-                className="px-5 py-2.5 text-xs font-semibold text-white bg-[#C4785A] hover:bg-[#b3684a] rounded-xl flex items-center gap-2 shadow-sm transition-all cursor-pointer"
-              >
-                <UploadCloud className="w-4 h-4" />
-                Enregistrer & Notifier le Chef de Projet
+                <X className="w-4 h-4" />
               </button>
             </div>
-          </form>
+
+            <img
+              src={selectedPreviewBat.previewUrl}
+              alt={selectedPreviewBat.title}
+              className="w-full h-80 object-cover rounded-xl border border-zinc-200 dark:border-zinc-800"
+            />
+
+            <div className="flex justify-between items-center text-xs font-mono text-zinc-500">
+              <span>{selectedPreviewBat.colorSpace} · {selectedPreviewBat.resolutionDpi} DPI</span>
+              <span>Fond perdu : +{selectedPreviewBat.bleedMm}mm</span>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2 border-t border-zinc-100 dark:border-zinc-800">
+              <button
+                type="button"
+                onClick={() => setSelectedPreviewBat(null)}
+                className="px-4 py-2 text-xs font-semibold text-zinc-700 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800 rounded-xl cursor-pointer"
+              >
+                Fermer
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

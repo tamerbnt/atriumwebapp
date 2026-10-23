@@ -162,7 +162,7 @@ export default function App() {
         case 'pm_dir_new_project':
           return <ProjectDirectionView initialTab="new_project" />;
         case 'pm_dir_projects':
-          return <ProjectDirectionView initialTab="dashboard" />;
+          return <ProjectDirectionView initialTab="projects" />;
         case 'pm_dir_approvals':
           return <ProjectDirectionView initialTab="approvals" />;
         case 'pm_dir_reports':

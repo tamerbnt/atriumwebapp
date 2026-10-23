@@ -1994,6 +1994,127 @@ export function useAtriumStore() {
     notify();
   };
 
+  const batchDeleteProducts = (productIds: string[]) => {
+    const idSet = new Set(productIds);
+    globalState = {
+      ...globalState,
+      products: globalState.products.filter((p) => !idSet.has(p.id)),
+    };
+    notify();
+    showToast({
+      type: 'warning',
+      title: 'Products Removed',
+      message: `${productIds.length} items removed from inventory.`,
+      category: 'pos_inventory',
+    });
+  };
+
+  const batchRestockProducts = (productIds: string[], restockQty = 10) => {
+    const idSet = new Set(productIds);
+    const trace = getTraceContext();
+    const newMovements: StockMovement[] = [];
+
+    const updated = globalState.products.map((p) => {
+      if (idSet.has(p.id)) {
+        const prev = p.stockQuantity;
+        const next = prev + restockQty;
+        newMovements.push({
+          ...trace,
+          id: `sm_${Date.now()}_${p.id}`,
+          tenantId: state.account.id,
+          facilityId: state.currentBranchId,
+          productId: p.id,
+          productName: p.name,
+          type: 'Restock',
+          quantity: restockQty,
+          previousStock: prev,
+          newStock: next,
+          reason: `Batch Restock (+${restockQty} units)`,
+          createdAt: new Date().toISOString(),
+          createdBy: globalState.currentUser?.fullName || 'Manager',
+        });
+        return { ...p, stockQuantity: next };
+      }
+      return p;
+    });
+
+    globalState = {
+      ...globalState,
+      products: updated,
+      stockMovements: [...newMovements, ...(globalState.stockMovements || [])],
+    };
+    notify();
+
+    showToast({
+      type: 'success',
+      title: 'Batch Restock Complete',
+      message: `Restocked +${restockQty} units across ${productIds.length} items.`,
+      category: 'pos_inventory',
+    });
+  };
+
+  const resetPosMockData = () => {
+    const targetBranchId = state.currentBranchId || 'branch_rest_didouche';
+    const trace = getTraceContext();
+
+    const posProducts = INITIAL_PRODUCTS.filter(
+      (p) => p.facilityId === 'branch_rest_didouche' || p.sku.startsWith('POS-')
+    ).map((p) => ({
+      ...trace,
+      ...p,
+      facilityId: targetBranchId,
+      branchId: targetBranchId,
+      accountId: state.account.id,
+      businessId: state.currentBusinessId,
+    }));
+
+    const posSales = INITIAL_SALES.filter(
+      (s) => s.facilityId === 'branch_rest_didouche' || s.id.startsWith('sale_pos_')
+    ).map((s) => ({
+      ...trace,
+      ...s,
+      facilityId: targetBranchId,
+      branchId: targetBranchId,
+      accountId: state.account.id,
+      businessId: state.currentBusinessId,
+    }));
+
+    const posParked = INITIAL_PARKED_ORDERS.map((po) => ({
+      ...trace,
+      ...po,
+      facilityId: targetBranchId,
+      branchId: targetBranchId,
+      accountId: state.account.id,
+      businessId: state.currentBusinessId,
+    }));
+
+    const posMovements = INITIAL_STOCK_MOVEMENTS.map((sm) => ({
+      ...trace,
+      ...sm,
+      facilityId: targetBranchId,
+      branchId: targetBranchId,
+      accountId: state.account.id,
+      businessId: state.currentBusinessId,
+    }));
+
+    globalState = {
+      ...globalState,
+      products: [...posProducts, ...globalState.products.filter((p) => p.facilityId !== targetBranchId && !p.sku.startsWith('POS-'))],
+      sales: [...posSales, ...globalState.sales.filter((s) => s.facilityId !== targetBranchId && !s.id.startsWith('sale_pos_'))],
+      parkedOrders: posParked,
+      stockMovements: posMovements,
+      receiptConfig: DEFAULT_RECEIPT_CONFIG,
+    };
+    notify();
+
+    showToast({
+      type: 'success',
+      title: 'POS Catalog & Ledger Recharged',
+      message: `${posProducts.length} retail items, recent transactions, and held orders restored.`,
+      category: 'pos_inventory',
+    });
+  };
+
   const createAppointment = (
     aptData: Omit<Appointment, 'id' | 'createdAt' | 'tenantId' | 'facilityId'>
   ) => {
@@ -5763,6 +5884,447 @@ export function useAtriumStore() {
     if (updated) projectMilestoneService.upsertEquipmentStock(updated).catch(() => {});
   };
 
+  const resetPmMockData = () => {
+    const targetFacilityId = state.currentBranchId || 'branch_agency_main';
+    const targetAccountId = state.account.id || 'acc_01';
+    const targetBizId = state.currentBusinessId || 'biz_agency';
+
+    const freshClients = INITIAL_PM_CLIENTS.map((c) => ({
+      ...c,
+      tenantId: targetAccountId,
+      facilityId: targetFacilityId,
+      accountId: targetAccountId,
+      businessId: targetBizId,
+      branchId: targetFacilityId,
+    }));
+    const freshProjects = INITIAL_PM_PROJECTS.map((p) => ({
+      ...p,
+      tenantId: targetAccountId,
+      facilityId: targetFacilityId,
+      accountId: targetAccountId,
+      businessId: targetBizId,
+      branchId: targetFacilityId,
+    }));
+    const freshMilestones = INITIAL_PM_MILESTONES.map((m) => ({
+      ...m,
+      tenantId: targetAccountId,
+      facilityId: targetFacilityId,
+      accountId: targetAccountId,
+      businessId: targetBizId,
+      branchId: targetFacilityId,
+    }));
+    const freshCollateral = INITIAL_PM_COLLATERAL_CATALOG.map((c) => ({
+      ...c,
+      tenantId: targetAccountId,
+      facilityId: targetFacilityId,
+      accountId: targetAccountId,
+      businessId: targetBizId,
+      branchId: targetFacilityId,
+    }));
+    const freshPrintOrders = INITIAL_PM_PRINT_ORDERS.map((po) => ({
+      ...po,
+      tenantId: targetAccountId,
+      facilityId: targetFacilityId,
+      accountId: targetAccountId,
+      businessId: targetBizId,
+      branchId: targetFacilityId,
+    }));
+    const freshBatDeliverables = INITIAL_PM_BAT_DELIVERABLES.map((b) => ({
+      ...b,
+      tenantId: targetAccountId,
+      facilityId: targetFacilityId,
+      accountId: targetAccountId,
+      businessId: targetBizId,
+      branchId: targetFacilityId,
+    }));
+    const freshTalents = INITIAL_PM_TALENTS.map((t) => ({
+      ...t,
+      tenantId: targetAccountId,
+      facilityId: targetFacilityId,
+      accountId: targetAccountId,
+      businessId: targetBizId,
+      branchId: targetFacilityId,
+    }));
+    const freshMissions = INITIAL_PM_MISSIONS.map((m) => ({
+      ...m,
+      tenantId: targetAccountId,
+      facilityId: targetFacilityId,
+      accountId: targetAccountId,
+      businessId: targetBizId,
+      branchId: targetFacilityId,
+    }));
+    const freshAttendances = INITIAL_PM_ATTENDANCES.map((a) => ({
+      ...a,
+      tenantId: targetAccountId,
+      facilityId: targetFacilityId,
+      accountId: targetAccountId,
+      businessId: targetBizId,
+      branchId: targetFacilityId,
+    }));
+    const freshExpenses = INITIAL_PM_EXPENSES.map((e) => ({
+      ...e,
+      tenantId: targetAccountId,
+      facilityId: targetFacilityId,
+      accountId: targetAccountId,
+      businessId: targetBizId,
+      branchId: targetFacilityId,
+    }));
+    const freshPayrollBatches = INITIAL_PM_PAYROLL_BATCHES.map((pb) => ({
+      ...pb,
+      tenantId: targetAccountId,
+      facilityId: targetFacilityId,
+      accountId: targetAccountId,
+      businessId: targetBizId,
+      branchId: targetFacilityId,
+    }));
+    const freshCcpSlips = INITIAL_PM_CCP_SLIPS.map((s) => ({
+      ...s,
+      tenantId: targetAccountId,
+      facilityId: targetFacilityId,
+      accountId: targetAccountId,
+      businessId: targetBizId,
+      branchId: targetFacilityId,
+    }));
+    const freshEquipment = INITIAL_PM_EQUIPMENT_STOCK.map((eq) => ({
+      ...eq,
+      tenantId: targetAccountId,
+      facilityId: targetFacilityId,
+      accountId: targetAccountId,
+      businessId: targetBizId,
+      branchId: targetFacilityId,
+    }));
+
+    globalState = {
+      ...globalState,
+      pmClients: freshClients,
+      pmProjects: freshProjects,
+      pmMilestones: freshMilestones,
+      pmCollateralCatalog: freshCollateral,
+      pmPrintOrders: freshPrintOrders,
+      pmBatDeliverables: freshBatDeliverables,
+      pmTalents: freshTalents,
+      pmMissions: freshMissions,
+      pmAttendances: freshAttendances,
+      pmExpenses: freshExpenses,
+      pmPayrollBatches: freshPayrollBatches,
+      pmCcpSlips: freshCcpSlips,
+      pmEquipmentStock: freshEquipment,
+    };
+    notify();
+    showToast({
+      type: 'success',
+      title: 'Données Démo Agence Réinitialisées',
+      message: `${freshProjects.length} projets, ${freshMissions.length} missions et ${freshTalents.length} talents rechargés avec succès.`,
+      category: 'project_milestone',
+    });
+  };
+
+  const deletePmProject = (projectId: string) => {
+    globalState = {
+      ...globalState,
+      pmProjects: (globalState.pmProjects || []).filter((p) => p.id !== projectId),
+    };
+    notify();
+  };
+
+  const batchDeletePmProjects = (projectIds: string[]) => {
+    const idSet = new Set(projectIds);
+    globalState = {
+      ...globalState,
+      pmProjects: (globalState.pmProjects || []).filter((p) => !idSet.has(p.id)),
+    };
+    notify();
+    showToast({
+      type: 'info',
+      title: 'Projets Supprimés',
+      message: `${projectIds.length} projet(s) supprimé(s).`,
+      category: 'project_milestone',
+    });
+  };
+
+  const batchUpdatePmProjectStatus = (projectIds: string[], status: PMProject['status']) => {
+    const idSet = new Set(projectIds);
+    globalState = {
+      ...globalState,
+      pmProjects: (globalState.pmProjects || []).map((p) =>
+        idSet.has(p.id) ? { ...p, status, updatedAt: new Date().toISOString() } : p
+      ),
+    };
+    notify();
+    showToast({
+      type: 'success',
+      title: 'Statuts Projets Mis à Jour',
+      message: `${projectIds.length} projet(s) passés en statut '${status}'.`,
+      category: 'project_milestone',
+    });
+  };
+
+  const batchApprovePmExpenses = (expenseIds: string[], notes?: string) => {
+    const idSet = new Set(expenseIds);
+    globalState = {
+      ...globalState,
+      pmExpenses: (globalState.pmExpenses || []).map((e) =>
+        idSet.has(e.id)
+          ? {
+              ...e,
+              status: 'approved_by_direction',
+              directionApprovedAt: new Date().toISOString(),
+              directionNotes: notes || e.directionNotes,
+            }
+          : e
+      ),
+    };
+    notify();
+    showToast({
+      type: 'success',
+      title: 'Frais Validés en Lot',
+      message: `${expenseIds.length} demande(s) de frais validée(s) par la Direction.`,
+      category: 'project_milestone',
+    });
+  };
+
+  const batchRejectPmExpenses = (expenseIds: string[], notes?: string) => {
+    const idSet = new Set(expenseIds);
+    globalState = {
+      ...globalState,
+      pmExpenses: (globalState.pmExpenses || []).map((e) =>
+        idSet.has(e.id)
+          ? {
+              ...e,
+              status: 'rejected',
+              directionNotes: notes || 'Rejeté en lot par la Direction.',
+            }
+          : e
+      ),
+    };
+    notify();
+    showToast({
+      type: 'error',
+      title: 'Frais Rejetés en Lot',
+      message: `${expenseIds.length} demande(s) de frais rejetée(s).`,
+      category: 'project_milestone',
+    });
+  };
+
+  const batchDeletePmExpenses = (expenseIds: string[]) => {
+    const idSet = new Set(expenseIds);
+    globalState = {
+      ...globalState,
+      pmExpenses: (globalState.pmExpenses || []).filter((e) => !idSet.has(e.id)),
+    };
+    notify();
+    showToast({
+      type: 'info',
+      title: 'Frais Supprimés',
+      message: `${expenseIds.length} entrée(s) de frais supprimée(s).`,
+      category: 'project_milestone',
+    });
+  };
+
+  const batchApprovePmPayrollBatches = (batchIds: string[]) => {
+    const idSet = new Set(batchIds);
+    globalState = {
+      ...globalState,
+      pmPayrollBatches: (globalState.pmPayrollBatches || []).map((b) =>
+        idSet.has(b.id)
+          ? {
+              ...b,
+              status: 'approved_by_direction',
+              directionApprovedAt: new Date().toISOString(),
+            }
+          : b
+      ),
+    };
+    notify();
+    showToast({
+      type: 'success',
+      title: 'Lots de Paie Validés (Double-Clé)',
+      message: `${batchIds.length} lot(s) de paie validé(s) pour virement CCP.`,
+      category: 'project_milestone',
+    });
+  };
+
+  const batchUpdatePmPrintOrderStatus = (orderIds: string[], status: PMPrintOrder['status']) => {
+    const idSet = new Set(orderIds);
+    globalState = {
+      ...globalState,
+      pmPrintOrders: (globalState.pmPrintOrders || []).map((o) =>
+        idSet.has(o.id) ? { ...o, status } : o
+      ),
+    };
+    notify();
+    showToast({
+      type: 'success',
+      title: 'Commandes Impression Mises à Jour',
+      message: `${orderIds.length} bon(s) de commande mis à jour.`,
+      category: 'project_milestone',
+    });
+  };
+
+  const batchDeletePmPrintOrders = (orderIds: string[]) => {
+    const idSet = new Set(orderIds);
+    globalState = {
+      ...globalState,
+      pmPrintOrders: (globalState.pmPrintOrders || []).filter((o) => !idSet.has(o.id)),
+    };
+    notify();
+  };
+
+  const batchReviewPmBatDeliverables = (
+    batIds: string[],
+    status: 'approved' | 'revision_requested',
+    comments?: string
+  ) => {
+    const idSet = new Set(batIds);
+    globalState = {
+      ...globalState,
+      pmBatDeliverables: (globalState.pmBatDeliverables || []).map((b) =>
+        idSet.has(b.id)
+          ? {
+              ...b,
+              approvalStatus: status,
+              revisionComments: comments || b.revisionComments,
+            }
+          : b
+      ),
+    };
+    notify();
+    showToast({
+      type: status === 'approved' ? 'success' : 'warning',
+      title: status === 'approved' ? 'BAT Validés en Lot' : 'Révisions Demandées',
+      message: `${batIds.length} livrable(s) ${status === 'approved' ? 'validé(s) Bon à Tirer' : 'renvoyé(s) pour correction'}.`,
+      category: 'project_milestone',
+    });
+  };
+
+  const batchDeletePmBatDeliverables = (batIds: string[]) => {
+    const idSet = new Set(batIds);
+    globalState = {
+      ...globalState,
+      pmBatDeliverables: (globalState.pmBatDeliverables || []).filter((b) => !idSet.has(b.id)),
+    };
+    notify();
+  };
+
+  const batchDeletePmTalents = (talentIds: string[]) => {
+    const idSet = new Set(talentIds);
+    globalState = {
+      ...globalState,
+      pmTalents: (globalState.pmTalents || []).filter((t) => !idSet.has(t.id)),
+    };
+    notify();
+    showToast({
+      type: 'info',
+      title: 'Talents Supprimés',
+      message: `${talentIds.length} profil(s) supprimé(s).`,
+      category: 'project_milestone',
+    });
+  };
+
+  const batchUpdatePmTalentStatus = (talentIds: string[], status: PMTalent['status']) => {
+    const idSet = new Set(talentIds);
+    globalState = {
+      ...globalState,
+      pmTalents: (globalState.pmTalents || []).map((t) =>
+        idSet.has(t.id) ? { ...t, status } : t
+      ),
+    };
+    notify();
+    showToast({
+      type: 'success',
+      title: 'Statuts Talents Mis à Jour',
+      message: `${talentIds.length} talent(s) mis à jour en '${status}'.`,
+      category: 'project_milestone',
+    });
+  };
+
+  const batchDeletePmMissions = (missionIds: string[]) => {
+    const idSet = new Set(missionIds);
+    globalState = {
+      ...globalState,
+      pmMissions: (globalState.pmMissions || []).filter((m) => !idSet.has(m.id)),
+    };
+    notify();
+    showToast({
+      type: 'info',
+      title: 'Missions Supprimées',
+      message: `${missionIds.length} mission(s) retirée(s).`,
+      category: 'project_milestone',
+    });
+  };
+
+  const batchUpdatePmAttendanceStatus = (attendanceIds: string[], status: PMAttendance['status']) => {
+    const idSet = new Set(attendanceIds);
+    globalState = {
+      ...globalState,
+      pmAttendances: (globalState.pmAttendances || []).map((a) => {
+        if (idSet.has(a.id)) {
+          const grossPayableDzd = ['present', 'late', 'replacement'].includes(status) ? a.dayRateDzd : 0;
+          return {
+            ...a,
+            status,
+            grossPayableDzd,
+            checkInTime: a.checkInTime || new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+          };
+        }
+        return a;
+      }),
+    };
+    notify();
+    showToast({
+      type: 'success',
+      title: 'Pointages Mis à Jour',
+      message: `${attendanceIds.length} animateur(s) marqué(s) '${status}'.`,
+      category: 'project_milestone',
+    });
+  };
+
+  const batchMarkPmCcpSlipsPrinted = (slipIds: string[]) => {
+    const idSet = new Set(slipIds);
+    globalState = {
+      ...globalState,
+      pmCcpSlips: (globalState.pmCcpSlips || []).map((s) =>
+        idSet.has(s.id) ? { ...s, isPrinted: true, printedAt: new Date().toISOString() } : s
+      ),
+    };
+    notify();
+    showToast({
+      type: 'success',
+      title: 'Bordereaux Marqués Imprimés',
+      message: `${slipIds.length} bordereau(x) CCP SFP 01 prêts pour le guichet postal.`,
+      category: 'project_milestone',
+    });
+  };
+
+  const batchUpdatePmEquipmentStatus = (
+    assetIds: string[],
+    status: PMEquipmentStock['currentStatus']
+  ) => {
+    const idSet = new Set(assetIds);
+    globalState = {
+      ...globalState,
+      pmEquipmentStock: (globalState.pmEquipmentStock || []).map((eq) =>
+        idSet.has(eq.id) ? { ...eq, currentStatus: status } : eq
+      ),
+    };
+    notify();
+    showToast({
+      type: 'success',
+      title: 'Matériels Mis à Jour',
+      message: `${assetIds.length} équipement(s) mis à jour en '${status}'.`,
+      category: 'project_milestone',
+    });
+  };
+
+  const batchDeletePmEquipmentStock = (assetIds: string[]) => {
+    const idSet = new Set(assetIds);
+    globalState = {
+      ...globalState,
+      pmEquipmentStock: (globalState.pmEquipmentStock || []).filter((eq) => !idSet.has(eq.id)),
+    };
+    notify();
+  };
+
   const resetAllData = () => {
     globalState = DEFAULT_STATE;
     notify();
@@ -5923,6 +6485,9 @@ export function useAtriumStore() {
     deleteParkedOrder,
     updateReceiptConfig,
     seedDemoInventory,
+    batchDeleteProducts,
+    batchRestockProducts,
+    resetPosMockData,
     addStaff,
     addBusiness,
     addBranch,
@@ -6046,6 +6611,25 @@ export function useAtriumStore() {
     markPmCcpSlipPrinted,
     addPmEquipmentStock,
     updatePmEquipmentStatus,
+    resetPmMockData,
+    deletePmProject,
+    batchDeletePmProjects,
+    batchUpdatePmProjectStatus,
+    batchApprovePmExpenses,
+    batchRejectPmExpenses,
+    batchDeletePmExpenses,
+    batchApprovePmPayrollBatches,
+    batchUpdatePmPrintOrderStatus,
+    batchDeletePmPrintOrders,
+    batchReviewPmBatDeliverables,
+    batchDeletePmBatDeliverables,
+    batchDeletePmTalents,
+    batchUpdatePmTalentStatus,
+    batchDeletePmMissions,
+    batchUpdatePmAttendanceStatus,
+    batchMarkPmCcpSlipsPrinted,
+    batchUpdatePmEquipmentStatus,
+    batchDeletePmEquipmentStock,
     // Auth Actions
     login,
     loginWithPin,
