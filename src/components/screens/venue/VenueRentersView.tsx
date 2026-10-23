@@ -23,6 +23,7 @@ import { BookingModal } from './BookingModal';
 import { Seek } from '../../ui/Seek';
 import { LabelInput } from '../../ui/LabelInput';
 import { ActionNode } from '../../ui/ActionNode';
+import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 
 export const VenueRentersView: React.FC = () => {
   const { t, language } = useTranslation();

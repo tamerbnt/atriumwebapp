@@ -1,399 +1,1659 @@
 import React, { useState, useMemo } from 'react';
 import {
-  Users,
-  CreditCard,
-  TrendingUp,
-  Clock,
+  Home,
   Plus,
-  ArrowRight,
+  ArrowDown,
+  ArrowUp,
+  Clock,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  ShoppingCart,
+  TrendingUp,
   Sparkles,
-  AlertCircle,
-  Activity,
-  Dumbbell,
-  CheckCircle2,
+  UserCheck,
+  CreditCard,
+  KeyRound,
+  Check,
+  Building2,
+  Scissors,
   Calendar,
-  Search,
-  Zap,
+  Users,
+  Eye,
+  AlertCircle,
+  Receipt,
+  Package,
 } from 'lucide-react';
-import { useAtriumStore, showToast } from '../../../services/store';
-import { formatMoney, calculateDaysRemaining } from '../../../utils/rules';
-import { useTranslation } from '../../../utils/useTranslation';
-import { ActionNode } from '../../ui/ActionNode';
-import { Seek } from '../../ui/Seek';
+import { useAtriumStore } from '../../../services/store';
+import { formatMoney, calculateDaysRemaining, localizeStatus } from '../../../utils/rules';
+import { AppointmentModal } from '../../modals/AppointmentModal';
+import { Appointment } from '../../../types/index';
+import { t, getLocalizedServiceName } from '../../../utils/i18n';
 
-interface MembershipDashboardViewProps {
-  onAddMember?: () => void;
+export interface MembershipDashboardViewProps {
+  onAddMember: () => void;
+  onOpenVoucherModal?: () => void;
 }
 
 export const MembershipDashboardView: React.FC<MembershipDashboardViewProps> = ({
   onAddMember,
+  onOpenVoucherModal,
 }) => {
-  const { t, language, isRtl } = useTranslation();
   const {
-    members,
-    plans,
-    sales,
-    schedule,
     currentBusiness,
     currentBranch,
+    businesses,
+    branches,
+    currentBusinessId,
+    appointments,
+    sales,
+    products,
+    staff,
+    members,
+    terminology,
+    language,
+    switchBusiness,
+    switchBranch,
     setScreen,
-    selectMember,
+    checkoutAppointment,
   } = useAtriumStore();
 
-  const [searchMemberQuery, setSearchMemberQuery] = useState('');
+  const isSalon = currentBusiness.category === 'appointment_service';
+  const isPOS = currentBusiness.category === 'pos_inventory';
 
-  // Scoped metrics
-  const activeMembers = useMemo(
-    () => members.filter((m) => m.status === 'Active'),
-    [members]
-  );
+  // Retail & POS Specific Analytics
+  const posMetrics = useMemo(() => {
+    const totalRev = sales.reduce((sum, s) => sum + s.totalAmount, 0);
+    const totalTransactions = sales.length;
+    const avgBasket = totalTransactions > 0 ? Math.round(totalRev / totalTransactions) : 0;
+    const lowStockCount = products.filter((p) => p.stockQuantity <= (p.reorderLevel || 5)).length;
+    const outOfStockCount = products.filter((p) => p.stockQuantity <= 0).length;
 
-  const expiringSoonMembers = useMemo(() => {
-    return members.filter((m) => {
-      if (m.status !== 'Active') return false;
-      const days = calculateDaysRemaining(false, m.expirationDate);
-      return days > 0 && days <= 7;
+    // Aggregated top selling products
+    const productSoldMap: Record<string, { name: string; quantity: number; revenue: number }> = {};
+    sales.forEach((s) => {
+      s.items.forEach((it) => {
+        if (!productSoldMap[it.productId]) {
+          productSoldMap[it.productId] = { name: it.productName, quantity: 0, revenue: 0 };
+        }
+        productSoldMap[it.productId].quantity += it.quantity;
+        productSoldMap[it.productId].revenue += it.totalPrice;
+      });
     });
-  }, [members]);
-
-  const expiredMembers = useMemo(
-    () => members.filter((m) => m.status === 'Expired'),
-    [members]
-  );
-
-  const todayStr = new Date().toISOString().split('T')[0];
-
-  const todayClasses = useMemo(() => {
-    const dayOfWeek = new Date().getDay(); // 0 is Sunday, 1 is Monday...
-    const normalizedDay = dayOfWeek === 0 ? 7 : dayOfWeek;
-    return schedule.filter((s) => s.dayOfWeek === normalizedDay);
-  }, [schedule]);
-
-  const todayCheckinsCount = useMemo(() => {
-    // Recent check-in simulations or logs
-    return Math.max(14, Math.round(activeMembers.length * 0.35));
-  }, [activeMembers.length]);
-
-  const monthlyRevenue = useMemo(() => {
-    return sales.reduce((sum, s) => sum + s.totalAmount, 0);
-  }, [sales]);
-
-  const filteredMembers = useMemo(() => {
-    if (!searchMemberQuery.trim()) return [];
-    const q = searchMemberQuery.toLowerCase();
-    return members
-      .filter(
-        (m) =>
-          m.fullName.toLowerCase().includes(q) ||
-          m.cardId?.toLowerCase().includes(q) ||
-          m.phoneNumber?.includes(q)
-      )
+    const topProducts = Object.values(productSoldMap)
+      .sort((a, b) => b.revenue - a.revenue)
       .slice(0, 5);
-  }, [members, searchMemberQuery]);
 
-  const handleSimulateCheckin = (member: (typeof members)[0]) => {
-    showToast({
-      type: 'success',
-      title: language === 'ar' ? 'تم تسجيل الدخول' : language === 'fr' ? 'Accès autorisé' : 'Access Granted',
-      message: `${member.fullName} · ${member.membershipPlanName || 'Standard Pass'} (RFID: ${member.cardId || 'TAG-OK'})`,
+    return {
+      totalRev,
+      totalTransactions,
+      avgBasket,
+      lowStockCount,
+      outOfStockCount,
+      topProducts,
+    };
+  }, [sales, products]);
+
+  const [activityTab, setActivityTab] = useState<'Tous' | 'Passages' | 'Ventes'>('Tous');
+  const [salonActivityTab, setSalonActivityTab] = useState<'Tous' | 'Rendezvous' | 'Ventes'>('Tous');
+  const [isFacilityDropdownOpen, setIsFacilityDropdownOpen] = useState(false);
+  const [isQuickActionsOpen, setIsQuickActionsOpen] = useState(false);
+  const [currentTipIndex, setCurrentTipIndex] = useState(0);
+  const [peopleInside, setPeopleInside] = useState(0);
+  const [entreesJour, setEntreesJour] = useState(48);
+  const [isAppointmentModalOpen, setIsAppointmentModalOpen] = useState(false);
+  const [selectedAppointmentForEdit, setSelectedAppointmentForEdit] = useState<Appointment | null>(null);
+  const [checkoutToast, setCheckoutToast] = useState<string | null>(null);
+
+  const todayStr = useMemo(() => new Date().toISOString().split('T')[0], []);
+
+  // Salon specific metrics
+  const salonMetrics = useMemo(() => {
+    const todayApts = appointments.filter((a) => a.date === todayStr);
+    const activeApts = todayApts.length > 0 ? todayApts : appointments;
+    const inChair = activeApts.filter((a) => a.status === 'InChair');
+    const completed = activeApts.filter((a) => a.status === 'Completed');
+    const confirmed = activeApts.filter((a) => a.status === 'Confirmed');
+
+    const appointmentRev = completed.reduce((sum, a) => sum + a.price, 0);
+    const posRev = sales.reduce((sum, s) => sum + s.totalAmount, 0);
+    const totalDailyRev = appointmentRev + posRev;
+
+    return {
+      todayCount: activeApts.length,
+      inChairCount: inChair.length,
+      completedCount: completed.length,
+      confirmedCount: confirmed.length,
+      totalDailyRev,
+      activeApts,
+    };
+  }, [appointments, sales, todayStr]);
+
+  // Salon Stylists & Chair distribution
+  const stylistChairs = useMemo(() => {
+    const activeStaff = staff.filter((s) => s.isActive);
+    return activeStaff.map((st, index) => {
+      // Find what this stylist is working on today
+      const inChairBooking = appointments.find(
+        (a) => a.staffId === st.id && a.status === 'InChair'
+      );
+      const nextBooking = appointments.find(
+        (a) => a.staffId === st.id && a.status === 'Confirmed'
+      );
+      const todayTotal = appointments.filter(
+        (a) => a.staffId === st.id && a.date === todayStr
+      ).length;
+
+      return {
+        stylist: st,
+        chairNumber: index + 1,
+        inChairBooking,
+        nextBooking,
+        todayTotal,
+        status: inChairBooking ? ('InChair' as const) : nextBooking ? ('Booked' as const) : ('Available' as const),
+      };
     });
+  }, [staff, appointments, todayStr]);
+
+  const handleQuickCheckout = (apt: Appointment) => {
+    const sale = checkoutAppointment(apt.id, 'Cash');
+    const msg = t('salon_checkout_success_toast', language)
+      .replace('{client}', apt.clientName)
+      .replace('{saleId}', sale.id.slice(-6).toUpperCase())
+      .replace('{stylist}', apt.staffName);
+    setCheckoutToast(msg);
+    setTimeout(() => setCheckoutToast(null), 4000);
   };
 
+  const gymTips = useMemo(() => [
+    {
+      step: language === 'ar' ? 'الخطوة 1 / 5' : language === 'fr' ? 'ÉTAPE 1 / 5' : 'STEP 1 / 5',
+      title: t('dash_tip_title', language),
+      text: t('dash_tip_rfid', language),
+      buttonText: language === 'ar' ? 'تهيئة RFID' : language === 'fr' ? 'Configurer RFID' : 'Configure RFID',
+      action: onAddMember,
+    },
+    {
+      step: language === 'ar' ? 'الخطوة 2 / 5' : language === 'fr' ? 'ÉTAPE 2 / 5' : 'STEP 2 / 5',
+      title: t('dash_tip_title', language),
+      text: t('dash_tip_alerts', language),
+      buttonText: language === 'ar' ? 'إدارة التنبيهات' : language === 'fr' ? 'Gérer les alertes' : 'Manage Alerts',
+      action: () => setScreen('members'),
+    },
+    {
+      step: language === 'ar' ? 'الخطوة 3 / 5' : language === 'fr' ? 'ÉTAPE 3 / 5' : 'STEP 3 / 5',
+      title: t('dash_tip_title', language),
+      text: t('dash_tip_walkin', language),
+      buttonText: language === 'ar' ? 'تسجيل دخول' : language === 'fr' ? 'Enregistrer un passage' : 'Record Walk-in',
+      action: () => {
+        setPeopleInside((p) => Math.min(100, p + 1));
+        setEntreesJour((e) => e + 1);
+      },
+    },
+    {
+      step: language === 'ar' ? 'الخطوة 4 / 5' : language === 'fr' ? 'ÉTAPE 4 / 5' : 'STEP 4 / 5',
+      title: t('dash_tip_title', language),
+      text: language === 'ar' ? 'راجع مخزون منتجات نقطة البيع لتعزيز هوامش المبيعات والمكملات.' : language === 'fr' ? 'Analysez le stock des produits en boutique pour optimiser vos marges.' : 'Review daily POS product inventory to optimize supplement and retail margins.',
+      buttonText: language === 'ar' ? 'فتح المتجر' : language === 'fr' ? 'Ouvrir la Boutique' : 'Open Shop',
+      action: () => setScreen('shop'),
+    },
+    {
+      step: language === 'ar' ? 'الخطوة 5 / 5' : language === 'fr' ? 'ÉTAPE 5 / 5' : 'STEP 5 / 5',
+      title: t('dash_tip_title', language),
+      text: language === 'ar' ? 'فعّل قسيمة الشراء الدائمة لفتح إدارة الفروع المتعددة.' : language === 'fr' ? 'Activez votre bon de licence perpétuelle pour débloquer le multi-agences.' : 'Activate your perpetual cash voucher to unlock multi-branch management.',
+      buttonText: language === 'ar' ? 'تفعيل الترخيص' : language === 'fr' ? 'Activer la Licence' : 'Activate License',
+      action: onOpenVoucherModal || onAddMember,
+    },
+  ], [language, onAddMember, onOpenVoucherModal, setScreen]);
+
+  const salonTips = useMemo(() => [
+    {
+      step: language === 'ar' ? 'الخطوة 1 / 5' : language === 'fr' ? 'ÉTAPE 1 / 5' : 'STEP 1 / 5',
+      title: language === 'ar' ? 'نصيحة الصالون' : language === 'fr' ? 'Conseil Salon' : 'Salon Master Tip',
+      text: language === 'ar' ? 'أرسل تنبيهات SMS آلية قبل ساعتين من موعد الصبغة وجلسات العناية.' : language === 'fr' ? 'Envoyez des SMS de rappel 2h avant les rendez-vous coloration & spa.' : 'Send automated SMS reminders 2 hours before scheduled hair coloring & spa appointments.',
+      buttonText: language === 'ar' ? 'جدول المصففين' : language === 'fr' ? 'Planning des coiffeurs' : 'Open Stylist Scheduler',
+      action: () => setScreen('scheduler'),
+    },
+    {
+      step: language === 'ar' ? 'الخطوة 2 / 5' : language === 'fr' ? 'ÉTAPE 2 / 5' : 'STEP 2 / 5',
+      title: language === 'ar' ? 'نصيحة الصالون' : language === 'fr' ? 'Conseil Salon' : 'Salon Master Tip',
+      text: language === 'ar' ? 'ارفع متوسط قيمة الفاتورة ببيع سيروم العناية فور الانتهاء من التصفيف عند الكرسي.' : language === 'fr' ? 'Augmentez le panier moyen en proposant des soins capillaires lors de l\'encaissement au fauteuil.' : 'Boost average ticket size by upselling post-treatment serums directly at chair checkout.',
+      buttonText: language === 'ar' ? 'متجر الصالون' : language === 'fr' ? 'Boutique soins' : 'Manage Beauty Store',
+      action: () => setScreen('shop'),
+    },
+    {
+      step: language === 'ar' ? 'الخطوة 3 / 5' : language === 'fr' ? 'ÉTAPE 3 / 5' : 'STEP 3 / 5',
+      title: language === 'ar' ? 'نصيحة الصالون' : language === 'fr' ? 'Conseil Salon' : 'Salon Master Tip',
+      text: language === 'ar' ? 'حدد نسب العمولات وتوزيع الكراسي للمصففين في شاشة المالية والفريق.' : language === 'fr' ? 'Définissez les commissions et attributions de fauteuils dans Finances & Équipe.' : 'Configure chair assignment and commission tiers in Finance & Staff for senior colorists.',
+      buttonText: language === 'ar' ? 'الفريق والرواتب' : language === 'fr' ? 'Équipe & Paie' : 'View Staff & Payroll',
+      action: () => setScreen('finance'),
+    },
+    {
+      step: language === 'ar' ? 'الخطوة 4 / 5' : language === 'fr' ? 'ÉTAPE 4 / 5' : 'STEP 4 / 5',
+      title: language === 'ar' ? 'نصيحة الصالون' : language === 'fr' ? 'Conseil Salon' : 'Salon Master Tip',
+      text: language === 'ar' ? 'اطلع على سجل علاجات العميل السابقة قبل البدء بجلسات الكيراتين وسحب اللون.' : language === 'fr' ? 'Consultez l\'historique des soins du client avant de débuter un lissage ou décoloration.' : 'Review client past treatment history before starting high-lift lightening and keratin smoothing.',
+      buttonText: language === 'ar' ? 'دليل العملاء' : language === 'fr' ? 'Fichier clients' : 'Client Directory',
+      action: () => setScreen('members'),
+    },
+    {
+      step: language === 'ar' ? 'الخطوة 5 / 5' : language === 'fr' ? 'ÉTAPE 5 / 5' : 'STEP 5 / 5',
+      title: language === 'ar' ? 'نصيحة الصالون' : language === 'fr' ? 'Conseil Salon' : 'Salon Master Tip',
+      text: language === 'ar' ? 'أضف باقات العرائس المتعددة الخدمات لتسهيل حجوزات المناسبات.' : language === 'fr' ? 'Créez des forfaits mariée multi-prestations pour simplifier la réservation d\'événements.' : 'Add multi-service bridal packages in registration plans to streamline event bookings.',
+      buttonText: language === 'ar' ? 'باقات الخدمات' : language === 'fr' ? 'Forfaits services' : 'Registration Pipeline',
+      action: () => setScreen('registrations'),
+    },
+  ], [language, setScreen]);
+
+  const posTips = useMemo(() => [
+    {
+      step: language === 'ar' ? 'الخطوة 1 / 4' : language === 'fr' ? 'ÉTAPE 1 / 4' : 'STEP 1 / 4',
+      title: language === 'ar' ? 'تسريع نقطة البيع' : language === 'fr' ? 'Accélération Caisse' : 'POS Acceleration',
+      text: language === 'ar' ? 'امسح الباركود مباشرة بقارئ الليزر USB أو البلوتوث لإضافة العناصر بلمسة واحدة.' : language === 'fr' ? 'Scannez directement avec douchette USB/Bluetooth pour ajouter les articles au ticket.' : 'Scan hardware barcodes directly from USB or Bluetooth laser scanners for instant 1-touch cart additions.',
+      buttonText: language === 'ar' ? 'فتح الكاشير' : language === 'fr' ? 'Ouvrir la caisse' : 'Open POS Register',
+      action: () => setScreen('shop'),
+    },
+    {
+      step: language === 'ar' ? 'الخطوة 2 / 4' : language === 'fr' ? 'ÉTAPE 2 / 4' : 'STEP 2 / 4',
+      title: language === 'ar' ? 'حماية المخزون' : language === 'fr' ? 'Gestion Stock' : 'Stock Protection',
+      text: language === 'ar' ? 'حدد مستوى إعادة الطلب لكل صنف لتلقي تنبيهات استباقية قبل نفاد الكمية.' : language === 'fr' ? 'Définissez le seuil d\'alerte pour chaque référence afin d\'éviter les ruptures de stock.' : 'Set reorder alert levels for every SKU to receive proactive depletion warnings before running out of stock.',
+      buttonText: language === 'ar' ? 'إدارة المخزون' : language === 'fr' ? 'Gérer le stock' : 'Manage Inventory',
+      action: () => setScreen('shop'),
+    },
+    {
+      step: language === 'ar' ? 'الخطوة 3 / 4' : language === 'fr' ? 'ÉTAPE 3 / 4' : 'STEP 3 / 4',
+      title: language === 'ar' ? 'صندوق النقدية' : language === 'fr' ? 'Sécurité Tiroir-Caisse' : 'Cash Drawer Security',
+      text: language === 'ar' ? 'راجع المقبوضات النقدية اليومية وحسابات الفكة لضمان تطابق الصندوق عند الإغلاق.' : language === 'fr' ? 'Vérifiez les encaissements espèces et le rendu monnaie pour équilibrer le tiroir-caisse.' : 'Review daily cash tenders and change calculations to ensure register drawer counts balance at shift close.',
+      buttonText: language === 'ar' ? 'مراجعة السجل' : language === 'fr' ? 'Consulter journal' : 'Review History',
+      action: () => setScreen('history'),
+    },
+    {
+      step: language === 'ar' ? 'الخطوة 4 / 4' : language === 'fr' ? 'ÉTAPE 4 / 4' : 'STEP 4 / 4',
+      title: language === 'ar' ? 'تخصيص الوصل' : language === 'fr' ? 'Personnalisation Ticket' : 'Receipt Customization',
+      text: language === 'ar' ? 'أضف أرقام التعريف الجبائي والسجل التجاري ورسائل الشكر على وصولات القبض.' : language === 'fr' ? 'Ajoutez vos NIF/RC et messages de bienvenue personnalisés sur vos tickets de caisse.' : 'Add your fiscal NIF/RC numbers and customized thank-you messages to thermal checkout slips.',
+      buttonText: language === 'ar' ? 'إعداد الوصل' : language === 'fr' ? 'Paramétrer ticket' : 'Setup Receipts',
+      action: () => setScreen('shop'),
+    },
+  ], [language, setScreen]);
+
+  const activeTips = isSalon ? salonTips : isPOS ? posTips : gymTips;
+
+  const pillarHours = [
+    '08:00',
+    '09:00',
+    '10:00',
+    '11:00',
+    '12:00',
+    '14:00',
+    '16:00',
+    '17:00',
+    '18:00',
+    '19:00',
+  ];
+
+  // Dynamic pillar chart calculations from real sales/appointments
+  const { pillarHeights, pillarColors, pillarTooltips } = useMemo(() => {
+    const hourSlots = [8, 9, 10, 11, 12, 14, 16, 17, 18, 19];
+
+    if (isPOS) {
+      // Find today's sales or recent sales
+      const now = new Date();
+      const todaySales = sales.filter((s) => {
+        const d = new Date(s.createdAt);
+        return (
+          !isNaN(d.getTime()) &&
+          d.getFullYear() === now.getFullYear() &&
+          d.getMonth() === now.getMonth() &&
+          d.getDate() === now.getDate()
+        );
+      });
+
+      const effectiveSales = todaySales.length > 0 ? todaySales : sales;
+      const counts = hourSlots.map((h) => {
+        return effectiveSales.filter((s) => new Date(s.createdAt).getHours() === h).length;
+      });
+      const revenues = hourSlots.map((h) => {
+        return effectiveSales
+          .filter((s) => new Date(s.createdAt).getHours() === h)
+          .reduce((sum, s) => sum + s.totalAmount, 0);
+      });
+
+      const maxCount = Math.max(...counts, 1);
+      const hasAny = counts.some((c) => c > 0);
+
+      const heights = hasAny
+        ? counts.map((c) => (c > 0 ? Math.min(100, Math.max(25, Math.round((c / maxCount) * 100))) : 16))
+        : [35, 50, 70, 65, 90, 60, 40, 75, 30, 45];
+
+      const colors = heights.map((h) => (h >= 75 ? '#C4785A' : h >= 45 ? '#E59E80' : '#EADCD2'));
+      const tooltips = hourSlots.map(
+        (_, i) => `${pillarHours[i]}: ${counts[i]} sales (${formatMoney(revenues[i])})`
+      );
+
+      return { pillarHeights: heights, pillarColors: colors, pillarTooltips: tooltips };
+    }
+
+    if (isSalon) {
+      const counts = hourSlots.map((h) => {
+        return salonMetrics.activeApts.filter((a) => {
+          const hour = parseInt(a.startTime.split(':')[0], 10);
+          return hour === h;
+        }).length;
+      });
+      const maxCount = Math.max(...counts, 1);
+      const hasAny = counts.some((c) => c > 0);
+
+      const heights = hasAny
+        ? counts.map((c) => (c > 0 ? Math.min(100, Math.max(25, Math.round((c / maxCount) * 100))) : 18))
+        : [30, 60, 80, 70, 85, 65, 45, 90, 40, 50];
+
+      const colors = heights.map((h) => (h >= 75 ? '#C4785A' : h >= 45 ? '#E59E80' : '#EADCD2'));
+      const tooltips = hourSlots.map((_, i) => `${pillarHours[i]}: ${counts[i]} salon bookings`);
+
+      return { pillarHeights: heights, pillarColors: colors, pillarTooltips: tooltips };
+    }
+
+    // Default gym flow
+    const defaultHeights = [38, 55, 75, 70, 95, 62, 40, 78, 30, 48];
+    const defaultColors = [
+      '#C4785A',
+      '#C4785A',
+      '#C4785A',
+      '#C4785A',
+      '#C4785A',
+      '#E59E80',
+      '#EADCD2',
+      '#EADCD2',
+      '#EADCD2',
+      '#EADCD2',
+    ];
+    const defaultTooltips = hourSlots.map(
+      (_, i) => `${pillarHours[i]}: ${Math.round((defaultHeights[i] / 100) * 18)} visitors`
+    );
+
+    return { pillarHeights: defaultHeights, pillarColors: defaultColors, pillarTooltips: defaultTooltips };
+  }, [sales, isPOS, isSalon, salonMetrics]);
+
+  const gymActivities = useMemo(() => [
+    {
+      id: 'act_01',
+      type: 'Ventes' as const,
+      member: 'amira - A1',
+      operation: language === 'ar' ? 'مبيعات (1,500 د.ج)' : language === 'fr' ? 'Vente boutique (1 500 DA)' : 'Sale (1,500 DA)',
+      status: 'completed',
+      time: language === 'ar' ? 'منذ 20 س' : language === 'fr' ? 'Il y a 20h' : '20h ago',
+    },
+    {
+      id: 'act_02',
+      type: 'Ventes' as const,
+      member: language === 'ar' ? 'زائر - ماء' : language === 'fr' ? 'Passage - Eau' : 'Guest - water',
+      operation: language === 'ar' ? 'مبيعات (100 د.ج)' : language === 'fr' ? 'Vente boutique (100 DA)' : 'Sale (100 DA)',
+      status: 'completed',
+      time: language === 'ar' ? 'منذ يوم' : language === 'fr' ? 'Il y a 1j' : '1d ago',
+    },
+    {
+      id: 'act_03',
+      type: 'Ventes' as const,
+      member: language === 'ar' ? 'زائر - ماء' : language === 'fr' ? 'Passage - Eau' : 'Guest - water',
+      operation: language === 'ar' ? 'مبيعات (100 د.ج)' : language === 'fr' ? 'Vente boutique (100 DA)' : 'Sale (100 DA)',
+      status: 'completed',
+      time: language === 'ar' ? 'منذ يومين' : language === 'fr' ? 'Il y a 2j' : '2d ago',
+    },
+    {
+      id: 'act_04',
+      type: 'Ventes' as const,
+      member: language === 'ar' ? 'زائر - بروتين' : language === 'fr' ? 'Passage - Protéine' : 'Guest - protein',
+      operation: language === 'ar' ? 'مبيعات (1,000 د.ج)' : language === 'fr' ? 'Vente boutique (1 000 DA)' : 'Sale (1,000 DA)',
+      status: 'completed',
+      time: language === 'ar' ? 'منذ يومين' : language === 'fr' ? 'Il y a 2j' : '2d ago',
+    },
+    {
+      id: 'act_05',
+      type: 'Passages' as const,
+      member: 'amira - A1',
+      operation: language === 'ar' ? 'تسجيل دخول (بطاقة RFID)' : language === 'fr' ? 'Pointage (Badge RFID)' : 'Check-in (RFID Badge)',
+      status: 'admitted',
+      time: language === 'ar' ? 'منذ ساعتين' : language === 'fr' ? 'Il y a 2h' : '2h ago',
+    },
+    {
+      id: 'act_06',
+      type: 'Passages' as const,
+      member: 'saraa - A1',
+      operation: language === 'ar' ? 'تسجيل دخول (بطاقة RFID)' : language === 'fr' ? 'Pointage (Badge RFID)' : 'Check-in (RFID Badge)',
+      status: 'admitted',
+      time: language === 'ar' ? 'منذ 4 س' : language === 'fr' ? 'Il y a 4h' : '4h ago',
+    },
+  ], [language]);
+
+  // Salon dynamic activities
+  const salonActivities = useMemo(() => {
+    const list: Array<{
+      id: string;
+      type: 'Rendezvous' | 'Ventes';
+      client: string;
+      operation: string;
+      status: string;
+      time: string;
+      badgeColor: string;
+    }> = [];
+
+    // Add recent appointments
+    appointments.slice(0, 5).forEach((apt) => {
+      const localizedService = getLocalizedServiceName(apt.serviceId, apt.serviceName, language);
+      list.push({
+        id: apt.id,
+        type: 'Rendezvous',
+        client: apt.clientName,
+        operation: `${localizedService} • ${t('salon_stylist_label', language).replace('{stylist}', apt.staffName)}`,
+        status: localizeStatus(apt.status, language),
+        time: `${apt.startTime} (${apt.durationMinutes}m)`,
+        badgeColor:
+          apt.status === 'InChair'
+            ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
+            : apt.status === 'Completed'
+            ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
+            : 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950/60 dark:text-indigo-300',
+      });
+    });
+
+    // Add recent sales
+    sales.slice(0, 4).forEach((s) => {
+      list.push({
+        id: s.id,
+        type: 'Ventes',
+        client: s.memberName || t('apt_mode_walkin', language),
+        operation: s.items.map((i) => `${i.quantity}x ${i.productName}`).join(', '),
+        status: formatMoney(s.totalAmount),
+        time: new Date(s.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        badgeColor: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300',
+      });
+    });
+
+    return list;
+  }, [appointments, sales]);
+
+  const filteredGymActivities = gymActivities.filter((item) => {
+    if (activityTab === 'Tous') return true;
+    return item.type === activityTab;
+  });
+
+  const filteredSalonActivities = salonActivities.filter((item) => {
+    if (salonActivityTab === 'Tous') return true;
+    return item.type === salonActivityTab;
+  });
+
   return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-12 animate-in fade-in duration-200">
-      {/* Top Banner & Quick Check-in */}
-      <div className="bg-white dark:bg-[#18181B] rounded-[26px] p-6 border border-[#E9EEF0] dark:border-neutral-800 shadow-2xs">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-          <div className="flex items-center gap-3.5">
-            <div className="w-12 h-12 rounded-2xl bg-[#FDF4F0] dark:bg-neutral-800 text-[#C4785A] flex items-center justify-center shrink-0 border border-[#F5E2D8] dark:border-neutral-700">
-              <Dumbbell size={24} />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-xl font-black text-neutral-900 dark:text-white">
-                  {currentBusiness.name}
-                </h1>
-                <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#C4785A]/10 text-[#C4785A]">
-                  {language === 'ar' ? 'نادي رياضي واشتراكات' : language === 'fr' ? 'Club & Abonnements' : 'Membership Club'}
-                </span>
-              </div>
-              <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
-                {currentBranch.name} · {language === 'ar' ? 'بوابات RFID وإدارة المشتركين' : language === 'fr' ? 'Contrôle d\'accès RFID & Suivi des adhérents' : 'RFID Turnstiles & Member Pass Control'}
-              </p>
-            </div>
+    <div className="space-y-6 animate-in fade-in duration-200">
+      {/* Toast Alert */}
+      {checkoutToast && (
+        <div className="p-3.5 bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-300 dark:border-emerald-700 rounded-2xl text-emerald-800 dark:text-emerald-200 text-xs font-semibold flex items-center justify-between shadow-md animate-in slide-in-from-top-2">
+          <div className="flex items-center gap-2">
+            <Check size={16} className="text-emerald-600" />
+            <span>{checkoutToast}</span>
           </div>
+          <button
+            type="button"
+            onClick={() => setScreen('history')}
+            className="underline hover:text-emerald-900 cursor-pointer text-[11px]"
+          >
+            View in Operations History →
+          </button>
+        </div>
+      )}
 
-          <div className="flex items-center gap-2.5 shrink-0">
-            <Seek
-              value={searchMemberQuery}
-              onChange={setSearchMemberQuery}
-              placeholder={
-                language === 'ar'
-                  ? 'بحث سريع أو مسح بطاقة RFID...'
-                  : language === 'fr'
-                  ? 'Recherche rapide ou badge RFID...'
-                  : 'Quick lookup or RFID badge scan...'
-              }
-              openWidth={340}
-              shutSize={38}
-            />
-
-            {onAddMember && (
-              <button
-                type="button"
-                onClick={onAddMember}
-                className="h-10 px-4 rounded-full bg-[#C4785A] hover:bg-[#b3684a] text-white text-xs font-bold flex items-center gap-2 shadow-xs transition-colors cursor-pointer"
-              >
-                <Plus size={15} />
-                <span>{language === 'ar' ? 'اشتراك جديد' : language === 'fr' ? 'Nouvel Adhérent' : 'New Member'}</span>
-              </button>
+      {/* Top Header Row */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white">
+              {language === 'ar' ? 'مرحباً بك مجدداً، تامر!' : language === 'fr' ? 'Bienvenue, Tamer !' : 'Welcome back, Tamer!'}
+            </h1>
+            {isSalon && (
+              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#FDF4F0] text-[#C4785A] border border-[#F5E2D8] flex items-center gap-1">
+                <Scissors size={12} />
+                <span>{language === 'ar' ? 'نسخة الصالون والسبا' : language === 'fr' ? 'Édition Salon & Spa' : 'Salon & Spa Edition'}</span>
+              </span>
             )}
           </div>
+          <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
+            {isSalon
+              ? (language === 'ar' ? `إشغال الكراسي والمواعيد ومبيعات التجزئة لـ ${currentBranch?.name || 'الفرع الرئيسي'}` : language === 'fr' ? `Occupation en direct, rendez-vous et ventes pour ${currentBranch?.name || 'Salon Principal'}` : `Real-time chair occupancy, appointments & retail revenue for ${currentBranch?.name || 'Luxe Beauty Lounge'}`)
+              : (language === 'ar' ? 'إليك نظرة شاملة على العمليات اليومية في منشأتك.' : language === 'fr' ? 'Voici le point sur l\'activité de votre établissement aujourd\'hui.' : `Here is what's happening at your facility today.`)}
+          </p>
         </div>
 
-        {/* Quick Search Dropdown Results */}
-        {filteredMembers.length > 0 && (
-          <div className="mt-4 pt-4 border-t border-neutral-100 dark:border-neutral-800 divide-y divide-neutral-100 dark:divide-neutral-800">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 block mb-2">
-              {language === 'ar' ? 'نتائج بطاقات المشتركين المطابقة' : language === 'fr' ? 'Résultats correspondants' : 'Matching Member Cards'}
-            </span>
-            {filteredMembers.map((mem) => (
-              <div
-                key={mem.id}
-                className="py-2 flex items-center justify-between text-xs hover:bg-neutral-50 dark:hover:bg-neutral-800/50 px-2 rounded-xl"
-              >
-                <div className="flex items-center gap-2.5">
-                  <span className={`w-2 h-2 rounded-full ${mem.status === 'Active' ? 'bg-emerald-500' : 'bg-rose-500'}`} />
-                  <div>
-                    <span className="font-bold text-neutral-900 dark:text-white">{mem.fullName}</span>
-                    <span className="text-neutral-400 text-[11px] ml-2">RFID: {mem.cardId || 'N/A'} · {mem.membershipPlanName}</span>
-                  </div>
+        <div className="flex items-center gap-3 relative">
+          {/* Facility Selector Pill */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setIsFacilityDropdownOpen(!isFacilityDropdownOpen)}
+              className="h-10 px-4 rounded-full bg-[#F4EFEA] dark:bg-neutral-800/80 border border-[#E8DFD8] dark:border-neutral-700 flex items-center gap-2 cursor-pointer hover:bg-[#EFE8E1] dark:hover:bg-neutral-800 transition-colors shadow-2xs"
+            >
+              <Home size={15} className="text-[#C4785A]" />
+              <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
+                {currentBranch?.name || 'Atrium 1'}
+              </span>
+              <ChevronDown
+                size={14}
+                className={`text-neutral-500 transition-transform ${
+                  isFacilityDropdownOpen ? 'rotate-180' : ''
+                }`}
+              />
+            </button>
+
+            {/* Facility Dropdown Menu */}
+            {isFacilityDropdownOpen && (
+              <div className="absolute right-0 mt-2 w-64 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
+                <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+                  {t('fast_switch_title', language)}
                 </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => handleSimulateCheckin(mem)}
-                    className="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400 text-[11px] font-bold hover:bg-emerald-100 cursor-pointer"
-                  >
-                    {language === 'ar' ? 'تسجيل دخول' : language === 'fr' ? 'Valider entrée' : 'Check In'}
-                  </button>
+                {businesses.map((biz) => {
+                  const isCurrent = biz.id === currentBusinessId;
+                  const matchingBranch = branches.find((b) => b.businessId === biz.id);
+                  return (
+                    <button
+                      key={biz.id}
+                      type="button"
+                      onClick={() => {
+                        switchBusiness(biz.id);
+                        if (matchingBranch) switchBranch(matchingBranch.id);
+                        setIsFacilityDropdownOpen(false);
+                      }}
+                      className={`w-full px-3 py-2 text-left flex items-center justify-between text-xs transition-colors cursor-pointer ${
+                        isCurrent
+                          ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold'
+                          : 'text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <Building2 size={14} className={isCurrent ? 'text-[#C4785A]' : 'text-neutral-400'} />
+                        <span className="truncate">{biz.name}</span>
+                      </div>
+                      {isCurrent && <Check size={14} />}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Primary Quick Actions Button */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setIsQuickActionsOpen(!isQuickActionsOpen)}
+              style={{
+                backgroundColor: 'var(--color-accent)',
+              }}
+              className="h-10 px-5 rounded-full text-xs font-bold text-white flex items-center gap-2 cursor-pointer hover:opacity-90 active:scale-98 transition-all shadow-xs"
+            >
+              <Plus size={15} strokeWidth={2.5} />
+              <span>{t('dash_quick_actions', language)}</span>
+            </button>
+
+            {/* Quick Actions Dropdown Menu */}
+            {isQuickActionsOpen && (
+              <div className="absolute right-0 mt-2 w-60 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
+                {isSalon ? (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsQuickActionsOpen(false);
+                        setSelectedAppointmentForEdit(null);
+                        setIsAppointmentModalOpen(true);
+                      }}
+                      className="w-full px-3.5 py-2 text-left flex items-center gap-2.5 text-xs text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50 cursor-pointer"
+                    >
+                      <Scissors size={14} className="text-[#C4785A]" />
+                      <span className="font-semibold">
+                        {language === 'ar' ? 'حجز جلسة في الصالون' : language === 'fr' ? 'Réserver un soin au salon' : 'Book Salon Treatment'}
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsQuickActionsOpen(false);
+                        setScreen('scheduler');
+                      }}
+                      className="w-full px-3.5 py-2 text-left flex items-center gap-2.5 text-xs text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50 cursor-pointer"
+                    >
+                      <Calendar size={14} className="text-amber-500" />
+                      <span className="font-semibold">
+                        {language === 'ar' ? 'جدول المصففين والكراسي' : language === 'fr' ? 'Planning des fauteuils & coiffeurs' : 'Stylist Multi-Chair Schedule'}
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsQuickActionsOpen(false);
+                        setScreen('shop');
+                      }}
+                      className="w-full px-3.5 py-2 text-left flex items-center gap-2.5 text-xs text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50 cursor-pointer"
+                    >
+                      <ShoppingCart size={14} className="text-blue-500" />
+                      <span className="font-semibold">
+                        {language === 'ar' ? 'كاشير مبيعات منتجات التجميل' : language === 'fr' ? 'Caisse boutique produits de beauté' : 'Beauty Product Retail POS'}
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsQuickActionsOpen(false);
+                        onAddMember();
+                      }}
+                      className="w-full px-3.5 py-2 text-left flex items-center gap-2.5 text-xs text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50 cursor-pointer"
+                    >
+                      <Users size={14} className="text-emerald-500" />
+                      <span className="font-semibold">
+                        {language === 'ar' ? 'تسجيل عميل جديد' : language === 'fr' ? 'Enregistrer un nouveau client' : 'Register New Client'}
+                      </span>
+                    </button>
+                  </>
+                ) : isPOS ? (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsQuickActionsOpen(false);
+                        setScreen('shop');
+                      }}
+                      className="w-full px-3.5 py-2 text-left flex items-center gap-2.5 text-xs text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50 cursor-pointer"
+                    >
+                      <ShoppingCart size={14} className="text-[#C4785A]" />
+                      <span className="font-semibold">
+                        {language === 'ar' ? 'فتح شاشة الكاشير' : language === 'fr' ? 'Ouvrir la caisse POS' : 'Open POS Register'}
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsQuickActionsOpen(false);
+                        setScreen('shop');
+                      }}
+                      className="w-full px-3.5 py-2 text-left flex items-center gap-2.5 text-xs text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50 cursor-pointer"
+                    >
+                      <Plus size={14} className="text-emerald-500" />
+                      <span className="font-semibold">
+                        {language === 'ar' ? 'إضافة / توريد بضاعة للمخزون' : language === 'fr' ? 'Ajouter / Réapprovisionner du stock' : 'Add / Restock Items'}
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsQuickActionsOpen(false);
+                        setScreen('history');
+                      }}
+                      className="w-full px-3.5 py-2 text-left flex items-center gap-2.5 text-xs text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50 cursor-pointer"
+                    >
+                      <CreditCard size={14} className="text-blue-500" />
+                      <span className="font-semibold">
+                        {language === 'ar' ? 'سجل المبيعات والوصولات' : language === 'fr' ? 'Journal des ventes & reçus' : 'Sales Ledger & Receipts'}
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsQuickActionsOpen(false);
+                        onAddMember();
+                      }}
+                      className="w-full px-3.5 py-2 text-left flex items-center gap-2.5 text-xs text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50 cursor-pointer"
+                    >
+                      <Users size={14} className="text-indigo-500" />
+                      <span className="font-semibold">
+                        {language === 'ar' ? 'إضافة حساب زبون' : language === 'fr' ? 'Ajouter un compte client' : 'Add Customer Account'}
+                      </span>
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsQuickActionsOpen(false);
+                        onAddMember();
+                      }}
+                      className="w-full px-3.5 py-2 text-left flex items-center gap-2.5 text-xs text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50 cursor-pointer"
+                    >
+                      <Plus size={14} className="text-[#C4785A]" />
+                      <span className="font-semibold">
+                        {language === 'ar' ? `إضافة ${terminology.memberSingle} جديد` : language === 'fr' ? `Ajouter un ${terminology.memberSingle.toLowerCase()}` : `Add New ${terminology.memberSingle}`}
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsQuickActionsOpen(false);
+                        setPeopleInside((p) => Math.min(100, p + 1));
+                        setEntreesJour((e) => e + 1);
+                      }}
+                      className="w-full px-3.5 py-2 text-left flex items-center gap-2.5 text-xs text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50 cursor-pointer"
+                    >
+                      <UserCheck size={14} className="text-emerald-500" />
+                      <span className="font-semibold">
+                        {language === 'ar' ? 'تسجيل دخول سريع' : language === 'fr' ? 'Passage express' : 'Quick Walk-in Passage'}
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsQuickActionsOpen(false);
+                        setScreen('shop');
+                      }}
+                      className="w-full px-3.5 py-2 text-left flex items-center gap-2.5 text-xs text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50 cursor-pointer"
+                    >
+                      <ShoppingCart size={14} className="text-blue-500" />
+                      <span className="font-semibold">
+                        {language === 'ar' ? 'تسجيل عملية بيع' : language === 'fr' ? 'Enregistrer une vente' : 'Record POS Sale'}
+                      </span>
+                    </button>
+                  </>
+                )}
+                {onOpenVoucherModal && (
                   <button
                     type="button"
                     onClick={() => {
-                      selectMember(mem.id);
-                      setScreen('members');
+                      setIsQuickActionsOpen(false);
+                      onOpenVoucherModal();
                     }}
-                    className="text-neutral-400 hover:text-neutral-900 dark:hover:text-white p-1"
+                    className="w-full px-3.5 py-2 text-left flex items-center gap-2.5 text-xs text-[#C4785A] hover:bg-[#FCEEE8] dark:hover:bg-neutral-700/50 cursor-pointer border-t border-neutral-100 dark:border-neutral-700 mt-1"
                   >
-                    <ArrowRight size={14} />
+                    <KeyRound size={14} />
+                    <span className="font-semibold">
+                      {language === 'ar' ? 'تفعيل قسيمة الترخيص مدى الحياة' : language === 'fr' ? 'Activer un bon de licence à vie' : 'Redeem Lifetime Voucher'}
+                    </span>
                   </button>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Main Grid Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* LEFT COLUMN: Summary / Performance (5 cols on lg) */}
+        <div className="lg:col-span-5 space-y-4">
+          {/* Summary Group Container */}
+          <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[26px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+            {/* Summary Header */}
+            <div className="flex items-start justify-between">
+              <div>
+                <h2 className="text-base font-bold text-neutral-900 dark:text-white">
+                  {isSalon ? (language === 'ar' ? 'نبض الصالون اليومي' : language === 'fr' ? 'Activité du Jour · Salon' : 'Salon Daily Pulse') : isPOS ? (language === 'ar' ? 'ملخص مبيعات الكاشير' : language === 'fr' ? 'Résumé des Ventes Caisse' : 'Register Sales Summary') : (language === 'ar' ? 'ملخص الأداء' : language === 'fr' ? 'Résumé de l\'activité' : 'Summary')}
+                </h2>
+                <p className="text-xs text-neutral-400 dark:text-neutral-500">
+                  {isSalon
+                    ? (language === 'ar' ? 'مؤشرات الحجوزات المباشرة والكراسي' : language === 'fr' ? 'Réservations en direct, fauteuils & indicateurs' : 'Live bookings, chairs & intake metrics')
+                    : isPOS
+                    ? (language === 'ar' ? 'إيرادات المبيعات وتذاكر الكاشير وتنبيهات المخزون' : language === 'fr' ? 'Chiffre d\'affaires en direct, tickets & alertes stock' : 'Real-time sales revenue, ticket counts & stock alerts')
+                    : (language === 'ar' ? 'متابعة أداء المنشأة المباشر.' : language === 'fr' ? 'Suivez la performance en direct de votre établissement.' : 'Track live facility performance.')}
+                </p>
+              </div>
+              <div className="h-7 px-3 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 text-[11px] font-semibold text-neutral-700 dark:text-neutral-300 flex items-center gap-1 cursor-pointer shadow-2xs">
+                <span>{language === 'ar' ? 'يومي' : language === 'fr' ? 'Quotidien' : 'Daily'}</span>
+                <ChevronDown size={12} className="text-neutral-400" />
+              </div>
+            </div>
+
+            {/* Key KPI Tiles */}
+            {isSalon ? (
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-white dark:bg-neutral-800 rounded-[20px] p-4 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
+                  <div className="flex items-center gap-1.5 text-xs text-[#64748B] dark:text-neutral-400 font-medium">
+                    <Scissors size={13} className="text-[#C4785A]" />
+                    <span>{t('dash_salon_in_chair', language)}</span>
+                  </div>
+                  <div className="text-2xl font-black tracking-tight text-neutral-900 dark:text-white mt-1 tabular-nums flex items-baseline gap-1.5">
+                    {salonMetrics.inChairCount}
+                    <span className="text-xs font-semibold text-amber-500 animate-pulse">{language === 'ar' ? 'نشط' : language === 'fr' ? 'en cours' : 'active'}</span>
+                  </div>
+                </div>
+
+                <div className="bg-white dark:bg-neutral-800 rounded-[20px] p-4 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
+                  <div className="flex items-center gap-1.5 text-xs text-[#64748B] dark:text-neutral-400 font-medium">
+                    <Calendar size={13} className="text-emerald-500" />
+                    <span>{t('dash_tab_appointments', language)}</span>
+                  </div>
+                  <div className="text-2xl font-black tracking-tight text-neutral-900 dark:text-white mt-1 tabular-nums">
+                    {salonMetrics.todayCount}{' '}
+                    <span className="text-xs font-semibold text-neutral-400">{terminology.members.toLowerCase()}</span>
+                  </div>
                 </div>
               </div>
-            ))}
-          </div>
-        )}
-      </div>
+            ) : isPOS ? (
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-white dark:bg-neutral-800 rounded-[20px] p-4 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
+                  <div className="flex items-center gap-1.5 text-xs text-[#64748B] dark:text-neutral-400 font-medium">
+                    <TrendingUp size={13} className="text-[#C4785A]" />
+                    <span>{t('dash_kpi_revenue', language)}</span>
+                  </div>
+                  <div className="text-2xl font-black tracking-tight text-emerald-600 dark:text-emerald-400 mt-1 tabular-nums font-mono">
+                    {formatMoney(posMetrics.totalRev)}
+                  </div>
+                </div>
 
-      {/* 4 Metric Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white dark:bg-[#18181B] rounded-[22px] p-5 border border-[#E9EEF0] dark:border-neutral-800 shadow-2xs">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
-              {language === 'ar' ? 'المشتركون النشطون' : language === 'fr' ? 'Adhérents Actifs' : 'Active Members'}
-            </span>
-            <div className="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 flex items-center justify-center">
-              <Users size={16} />
-            </div>
-          </div>
-          <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-2xl font-black text-neutral-900 dark:text-white tabular-nums">
-              {activeMembers.length}
-            </span>
-            <span className="text-[11px] text-neutral-400">
-              / {members.length} {language === 'ar' ? 'إجمالي' : language === 'fr' ? 'total' : 'total'}
-            </span>
-          </div>
-          <div className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold mt-1">
-            {Math.round((activeMembers.length / (members.length || 1)) * 100)}% {language === 'ar' ? 'معدل النشاط' : language === 'fr' ? 'taux d\'activité' : 'retention rate'}
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-[#18181B] rounded-[22px] p-5 border border-[#E9EEF0] dark:border-neutral-800 shadow-2xs">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
-              {language === 'ar' ? 'دخول البوابات اليوم' : language === 'fr' ? 'Passages Portique Aujourd\'hui' : 'Today\'s Turnstile Check-ins'}
-            </span>
-            <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-blue-600 flex items-center justify-center">
-              <Activity size={16} />
-            </div>
-          </div>
-          <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-2xl font-black text-neutral-900 dark:text-white tabular-nums">
-              {todayCheckinsCount}
-            </span>
-            <span className="text-[11px] text-neutral-400">
-              {language === 'ar' ? 'حضور' : language === 'fr' ? 'visites' : 'scans'}
-            </span>
-          </div>
-          <div className="text-[11px] text-blue-600 dark:text-blue-400 font-semibold mt-1 flex items-center gap-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
-            <span>{language === 'ar' ? 'بوابة RFID متصلة' : language === 'fr' ? 'Portique RFID actif' : 'RFID Reader Connected'}</span>
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-[#18181B] rounded-[22px] p-5 border border-[#E9EEF0] dark:border-neutral-800 shadow-2xs">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
-              {language === 'ar' ? 'تنتهي خلال 7 أيام' : language === 'fr' ? 'Expire dans 7 jours' : 'Expiring Soon (7d)'}
-            </span>
-            <div className="w-8 h-8 rounded-xl bg-amber-50 dark:bg-amber-950/50 text-amber-600 flex items-center justify-center">
-              <AlertCircle size={16} />
-            </div>
-          </div>
-          <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-2xl font-black text-neutral-900 dark:text-white tabular-nums">
-              {expiringSoonMembers.length}
-            </span>
-            <span className="text-[11px] text-amber-600 font-semibold">
-              {language === 'ar' ? 'تجديد مطلوب' : language === 'fr' ? 'À renouveler' : 'Renewals due'}
-            </span>
-          </div>
-          <div className="text-[11px] text-neutral-400 mt-1">
-            {expiredMembers.length} {language === 'ar' ? 'منتهي الصلاحية' : language === 'fr' ? 'déjà expirés' : 'already expired'}
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-[#18181B] rounded-[22px] p-5 border border-[#E9EEF0] dark:border-neutral-800 shadow-2xs">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
-              {language === 'ar' ? 'مبيعات المتجر والاشتراكات' : language === 'fr' ? 'Revenus Abonnements & Pro-Shop' : 'Monthly Club Revenue'}
-            </span>
-            <div className="w-8 h-8 rounded-xl bg-[#FDF4F0] dark:bg-neutral-800 text-[#C4785A] flex items-center justify-center">
-              <CreditCard size={16} />
-            </div>
-          </div>
-          <div className="mt-3">
-            <span className="text-xl font-black text-neutral-900 dark:text-white tabular-nums">
-              {formatMoney(monthlyRevenue, language)}
-            </span>
-          </div>
-          <div className="text-[11px] text-[#C4785A] font-semibold mt-1">
-            {sales.length} {language === 'ar' ? 'عملية سداد مسجلة' : language === 'fr' ? 'règlements enregistrés' : 'processed payments'}
-          </div>
-        </div>
-      </div>
-
-      {/* Main Grid: Today's Classes & Expiring Renewals */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Classes Scheduled Today */}
-        <div className="lg:col-span-2 bg-white dark:bg-[#18181B] rounded-[26px] p-6 border border-[#E9EEF0] dark:border-neutral-800 shadow-2xs space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-base font-bold text-neutral-900 dark:text-white">
-                {language === 'ar' ? 'حصص اليوم التدريبية' : language === 'fr' ? 'Séances programmées aujourd\'hui' : 'Today\'s Fitness Classes'}
-              </h2>
-              <p className="text-xs text-neutral-400 mt-0.5">
-                {todayClasses.length} {language === 'ar' ? 'حصص مجدولة بالقاعات الرياضية' : language === 'fr' ? 'séances prévues en salle' : 'sessions scheduled across studios'}
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() => setScreen('scheduler')}
-              className="text-xs font-bold text-[#C4785A] hover:underline flex items-center gap-1 cursor-pointer"
-            >
-              <span>{language === 'ar' ? 'عرض الجدول الأسبوعي' : language === 'fr' ? 'Planning complet' : 'Full Timetable'}</span>
-              <ArrowRight size={13} />
-            </button>
-          </div>
-
-          <div className="divide-y divide-neutral-100 dark:divide-neutral-800">
-            {todayClasses.length === 0 ? (
-              <div className="py-8 text-center text-xs text-neutral-400">
-                {language === 'ar' ? 'لا توجد حصص مجدولة لهذا اليوم' : language === 'fr' ? 'Aucune séance programmée aujourd\'hui' : 'No fitness classes scheduled today'}
+                <div className="bg-white dark:bg-neutral-800 rounded-[20px] p-4 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
+                  <div className="flex items-center gap-1.5 text-xs text-[#64748B] dark:text-neutral-400 font-medium">
+                    <ShoppingCart size={13} className="text-emerald-500" />
+                    <span>{t('dash_tab_sales', language)}</span>
+                  </div>
+                  <div className="text-2xl font-black tracking-tight text-neutral-900 dark:text-white mt-1 tabular-nums">
+                    {posMetrics.totalTransactions}{' '}
+                    <span className="text-xs font-semibold text-neutral-400">{language === 'ar' ? 'تذكرة' : language === 'fr' ? 'tickets' : 'tickets'}</span>
+                  </div>
+                </div>
               </div>
             ) : (
-              todayClasses.map((cls) => (
-                <div key={cls.id} className="py-3.5 flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-neutral-100 dark:bg-neutral-800 flex flex-col items-center justify-center font-mono text-[11px] font-bold text-neutral-700 dark:text-neutral-300">
-                      <span>{cls.startTime}</span>
-                    </div>
-                    <div>
-                      <span className="text-sm font-bold text-neutral-900 dark:text-white block">
-                        {cls.title}
-                      </span>
-                      <span className="text-xs text-neutral-500 dark:text-neutral-400">
-                        {cls.trainerOrStaff || 'Coach'} · {cls.roomOrArea || 'Studio A'} · {cls.category}
-                      </span>
-                    </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-white dark:bg-neutral-800 rounded-[20px] p-4 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
+                  <div className="flex items-center gap-1.5 text-xs text-[#64748B] dark:text-neutral-400 font-medium">
+                    <ArrowDown size={13} className="text-[#C4785A]" />
+                    <span>{t('dash_people_inside', language)}</span>
                   </div>
-
-                  <div className="flex items-center gap-3">
-                    <span className="text-xs font-mono text-neutral-500">
-                      {cls.enrolledCount || 0} / {cls.capacity} {language === 'ar' ? 'مشترك' : language === 'fr' ? 'places' : 'spots'}
-                    </span>
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400">
-                      {cls.category || 'All Levels'}
-                    </span>
+                  <div className="text-2xl font-black tracking-tight text-neutral-900 dark:text-white mt-1 tabular-nums">
+                    {peopleInside}{' '}
+                    <span className="text-xs font-semibold text-neutral-400">/ 100</span>
                   </div>
                 </div>
-              ))
+
+                <div className="bg-white dark:bg-neutral-800 rounded-[20px] p-4 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
+                  <div className="flex items-center gap-1.5 text-xs text-[#64748B] dark:text-neutral-400 font-medium">
+                    <ArrowUp size={13} className="text-emerald-500" />
+                    <span>{t('dash_daily_entries', language)}</span>
+                  </div>
+                  <div className="text-2xl font-black tracking-tight text-neutral-900 dark:text-white mt-1 tabular-nums">
+                    {entreesJour}{' '}
+                    <span className="text-xs font-semibold text-neutral-400">{language === 'ar' ? 'دخول' : language === 'fr' ? 'entrées' : 'check-ins'}</span>
+                  </div>
+                </div>
+              </div>
             )}
+
+            {/* Signature Pillar Bar Chart */}
+            <div className="space-y-1.5 pt-1">
+              <div className="flex justify-between items-center text-[11px] font-semibold text-neutral-500 px-1">
+                <span>
+                  {isSalon
+                    ? t('dash_salon_peak_hours_title', language)
+                    : isPOS
+                    ? 'Hourly Register Sales Velocity'
+                    : 'Hourly Traffic Distribution'}
+                </span>
+                <span className="text-[#C4785A] font-bold">{t('salon_btn_today', language)}</span>
+              </div>
+              <div className="h-28 flex items-end justify-between gap-2.5 px-1 pt-3">
+                {pillarHeights.map((height, i) => (
+                  <div
+                    key={i}
+                    className="flex-1 flex flex-col justify-end items-center h-full group relative cursor-pointer"
+                    title={pillarTooltips[i]}
+                  >
+                    <div
+                      style={{
+                        height: `${height}%`,
+                        backgroundColor: pillarColors[i],
+                      }}
+                      className="w-full rounded-full transition-all group-hover:opacity-80 group-hover:scale-y-105"
+                    />
+                  </div>
+                ))}
+              </div>
+              <div className="flex justify-between text-[9px] text-neutral-400 px-1 font-mono">
+                <span>08:00</span>
+                <span>12:00</span>
+                <span>16:00</span>
+                <span>19:00</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom 2 Metrics (Salon, POS, or Gym) */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
+              <div className="text-[11px] font-semibold text-[#64748B] dark:text-neutral-400 flex items-center gap-1.5">
+                <Clock size={13} className="text-neutral-400" />
+                <span>
+                  {isSalon ? t('dash_salon_chair_utilization', language) : isPOS ? (language === 'ar' ? 'متوسط الفاتورة' : language === 'fr' ? 'Panier moyen' : 'Average Basket') : 'Moyenne Semaine'}
+                </span>
+              </div>
+              <div className="mt-1 flex items-center gap-1.5">
+                <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
+                  ↗ {isPOS ? (language === 'ar' ? 'مستقر' : language === 'fr' ? 'Stable' : 'Healthy') : '+8.5%'}
+                </span>
+              </div>
+              <div className="text-xl font-black text-neutral-900 dark:text-white mt-1 tabular-nums font-mono">
+                {isSalon ? '82.4%' : isPOS ? formatMoney(posMetrics.avgBasket) : '18,400 DA'}
+              </div>
+            </div>
+
+            <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
+              <div className="text-[11px] font-semibold text-[#64748B] dark:text-neutral-400 flex items-center gap-1.5">
+                <TrendingUp size={13} className="text-neutral-400" />
+                <span>
+                  {isSalon ? t('dash_salon_daily_sales', language) : isPOS ? (language === 'ar' ? 'تنبيهات المخزون' : language === 'fr' ? 'Ruptures de stock' : 'Low Stock Depletion') : 'Objectif Mensuel'}
+                </span>
+              </div>
+              <div className="mt-1 flex items-center gap-1.5">
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                  isPOS && posMetrics.lowStockCount > 0
+                    ? 'text-red-700 bg-red-100 dark:bg-red-950 dark:text-red-300'
+                    : 'text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40'
+                }`}>
+                  {isPOS
+                    ? posMetrics.lowStockCount > 0
+                      ? (language === 'ar' ? `⚠ ${posMetrics.lowStockCount} بحاجة للطلب` : language === 'fr' ? `⚠ ${posMetrics.lowStockCount} à réapprovisionner` : `⚠ ${posMetrics.lowStockCount} need reorder`)
+                      : (language === 'ar' ? '✓ المخزون متوازن' : language === 'fr' ? '✓ Stock équilibré' : '✓ Stock Balanced')
+                    : '↗ On Track'}
+                </span>
+              </div>
+              <div className="text-xl font-black text-neutral-900 dark:text-white mt-1 tabular-nums">
+                {isSalon ? formatMoney(salonMetrics.totalDailyRev) : isPOS ? `${posMetrics.lowStockCount} ${language === 'ar' ? 'أصناف' : language === 'fr' ? 'articles' : 'items'}` : '84.5%'}
+              </div>
+            </div>
+          </div>
+
+          {/* Conseil Atrium Tip Card */}
+          <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs space-y-3">
+            <div className="flex items-center justify-between text-xs">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-bold tracking-wider text-[#C4785A] bg-[#C4785A]/10 px-2 py-0.5 rounded-md uppercase">
+                  {activeTips[currentTipIndex].step}
+                </span>
+                <span className="font-bold text-neutral-800 dark:text-neutral-200">
+                  {activeTips[currentTipIndex].title}
+                </span>
+              </div>
+              <div className="flex items-center gap-1 text-neutral-400 text-xs">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setCurrentTipIndex((prev) => (prev > 0 ? prev - 1 : activeTips.length - 1))
+                  }
+                  className="p-1 hover:text-neutral-700 dark:hover:text-neutral-200 cursor-pointer"
+                >
+                  <ChevronLeft size={14} />
+                </button>
+                <span className="text-[11px] font-semibold text-neutral-500">
+                  {currentTipIndex + 1} / {activeTips.length}
+                </span>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setCurrentTipIndex((prev) => (prev < activeTips.length - 1 ? prev + 1 : 0))
+                  }
+                  className="p-1 hover:text-neutral-700 dark:hover:text-neutral-200 cursor-pointer"
+                >
+                  <ChevronRight size={14} />
+                </button>
+              </div>
+            </div>
+
+            <p className="text-xs text-[#52525B] dark:text-neutral-300 leading-relaxed min-h-[34px]">
+              {activeTips[currentTipIndex].text}
+            </p>
+
+            <button
+              type="button"
+              onClick={activeTips[currentTipIndex].action}
+              className="w-full h-10 rounded-xl bg-[#FDF4F0] dark:bg-neutral-700/70 text-[#C4785A] hover:bg-[#FBECE6] text-xs font-bold flex items-center justify-center gap-1 transition-colors cursor-pointer"
+            >
+              <span>{activeTips[currentTipIndex].buttonText}</span>
+              <ChevronRight size={13} />
+            </button>
           </div>
         </div>
 
-        {/* Expiring Soon Sidebar Card */}
-        <div className="bg-white dark:bg-[#18181B] rounded-[26px] p-6 border border-[#E9EEF0] dark:border-neutral-800 shadow-2xs space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-base font-bold text-neutral-900 dark:text-white">
-              {language === 'ar' ? 'تنبيهات التجديد' : language === 'fr' ? 'Alertes renouvellement' : 'Renewal Radar'}
-            </h2>
-            <span className="w-2 h-2 rounded-full bg-amber-500" />
-          </div>
-
-          <p className="text-xs text-neutral-500 dark:text-neutral-400">
-            {language === 'ar'
-              ? 'مشتركون تنتهي اشتراكاتهم قريبا، تواصل معهم لتجديد العضوية.'
-              : language === 'fr'
-              ? 'Adhérents dont l\'abonnement arrive à échéance cette semaine.'
-              : 'Members whose subscriptions expire within 7 days.'}
-          </p>
-
-          <div className="space-y-2.5">
-            {expiringSoonMembers.slice(0, 5).map((mem) => {
-              const days = calculateDaysRemaining(false, mem.expirationDate);
-              return (
-                <div
-                  key={mem.id}
-                  onClick={() => {
-                    selectMember(mem.id);
-                    setScreen('members');
-                  }}
-                  className="p-3 rounded-2xl bg-amber-50/60 dark:bg-amber-950/30 border border-amber-200/60 dark:border-amber-800/50 flex items-center justify-between cursor-pointer hover:border-amber-300 transition-colors"
+        {/* RIGHT COLUMN: Activity & Stylist Chairs (7 cols on lg) */}
+        <div className="lg:col-span-7 space-y-4">
+          {/* Top Activity Card with 3 Metrics */}
+          <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[26px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-base font-bold text-neutral-900 dark:text-white">
+                  {isSalon ? t('dash_salon_chairs_title', language) : t('nav_history', language)}
+                </h2>
+                <p className="text-xs text-neutral-400 dark:text-neutral-500">
+                  {isSalon
+                    ? t('dash_salon_chairs_subtitle', language)
+                    : 'Track your daily operational activity.'}
+                </p>
+              </div>
+              {isSalon && (
+                <button
+                  type="button"
+                  onClick={() => setScreen('scheduler')}
+                  className="text-xs font-bold text-[#C4785A] hover:underline flex items-center gap-1 cursor-pointer"
                 >
-                  <div>
-                    <span className="text-xs font-bold text-neutral-900 dark:text-white block">
-                      {mem.fullName}
-                    </span>
-                    <span className="text-[11px] text-amber-800 dark:text-amber-300">
-                      {mem.membershipPlanName || 'Plan'} · {mem.phoneNumber || 'No phone'}
-                    </span>
-                  </div>
-                  <span className="text-xs font-black text-amber-700 dark:text-amber-400 tabular-nums">
-                    {days} {language === 'ar' ? 'أيام' : language === 'fr' ? 'j' : 'days'}
-                  </span>
-                </div>
-              );
-            })}
+                  <span>{language === 'ar' ? 'فتح جدول المواعيد كاملاً' : language === 'fr' ? 'Ouvrir le planning complet' : 'Open Full Scheduler'}</span>
+                  <ChevronRight size={13} />
+                </button>
+              )}
+            </div>
 
-            {expiringSoonMembers.length === 0 && (
-              <div className="py-6 text-center text-xs text-neutral-400">
-                {language === 'ar' ? 'لا توجد اشتراكات تنتهي قريباً' : language === 'fr' ? 'Aucun abonnement à échéance imminente' : 'No memberships expiring soon'}
+            {isSalon ? (
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {/* Tile 1: Revenue Today */}
+                <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[126px]">
+                  <div>
+                    <span className="text-[11px] font-semibold text-[#64748B] dark:text-neutral-400">
+                      {t('salon_kpi_est_revenue', language)}
+                    </span>
+                    <div className="mt-0.5">
+                      <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
+                        {language === 'ar' ? '↗ +14.2% فوق المتوسط' : language === 'fr' ? '↗ +14,2% vs moy.' : '↗ +14.2% vs avg'}
+                      </span>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-xl font-black text-neutral-900 dark:text-white tabular-nums">
+                      {formatMoney(salonMetrics.totalDailyRev)}
+                    </div>
+                    <div className="w-full h-0.5 bg-[#C4785A] mt-2.5 rounded-full opacity-80" />
+                  </div>
+                </div>
+
+                {/* Tile 2: Active Stylists */}
+                <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[126px]">
+                  <div>
+                    <span className="text-[11px] font-semibold text-[#64748B] dark:text-neutral-400">
+                      {language === 'ar' ? 'المصففون النشطون' : language === 'fr' ? 'Coiffeurs en service' : 'Active Stylists'}
+                    </span>
+                    <div className="mt-0.5">
+                      <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
+                        {stylistChairs.filter((c) => c.status === 'InChair').length} {language === 'ar' ? 'في الخدمة' : language === 'fr' ? 'au fauteuil' : 'in service'}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="relative">
+                    <div className="text-xl font-black text-neutral-900 dark:text-white tabular-nums">
+                      {stylistChairs.length} {language === 'ar' ? 'كراسي' : language === 'fr' ? 'Fauteuils' : 'Chairs'}
+                    </div>
+                    {/* Stylist avatar circles */}
+                    <div className="flex -space-x-1.5 mt-2">
+                      {stylistChairs.slice(0, 4).map((c, idx) => (
+                        <div
+                          key={idx}
+                          className="w-6 h-6 rounded-full bg-[#C4785A]/15 text-[#C4785A] text-[10px] font-bold flex items-center justify-center border-2 border-white dark:border-neutral-800"
+                        >
+                          {c.stylist.fullName.charAt(0)}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Tile 3: Pending & In-Chair in Dark Obsidian */}
+                <div className="p-4 rounded-[20px] bg-[#18181B] border border-neutral-800 text-white flex flex-col justify-between h-[126px] shadow-sm">
+                  <div>
+                    <span className="text-[11px] font-medium text-neutral-300">
+                      {t('dash_salon_next_bookings', language)}
+                    </span>
+                    <div className="mt-0.5">
+                      <span className="text-[10px] font-bold text-amber-300 bg-amber-400/20 px-2 py-0.5 rounded-full">
+                        {t('dash_salon_upcoming_badge', language).replace('{count}', String(salonMetrics.confirmedCount))}
+                      </span>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-xl font-black text-white tabular-nums">
+                      {salonMetrics.confirmedCount}
+                    </div>
+                    <div className="w-full h-0.5 bg-amber-500 mt-2.5 rounded-full opacity-80" />
+                  </div>
+                </div>
+              </div>
+            ) : isPOS ? (
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[126px]">
+                    <div>
+                      <span className="text-[11px] font-semibold text-[#64748B] dark:text-neutral-400">
+                        {language === 'ar' ? 'إجمالي مداخيل الكاشير' : language === 'fr' ? 'Chiffre d\'Affaires Caisse' : 'Total POS Revenue'}
+                      </span>
+                      <div className="mt-0.5">
+                        <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
+                          ↗ {language === 'ar' ? '100% مدفوع بالكامل' : language === 'fr' ? '100% Encaissé' : '100% Settled'}
+                        </span>
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-xl font-black font-mono text-emerald-600 dark:text-emerald-400 tabular-nums">
+                        {formatMoney(posMetrics.totalRev)}
+                      </div>
+                      <div className="w-full h-0.5 bg-[#C4785A] mt-2.5 rounded-full opacity-80" />
+                    </div>
+                  </div>
+
+                  <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[126px]">
+                    <div>
+                      <span className="text-[11px] font-semibold text-[#64748B] dark:text-neutral-400">
+                        {language === 'ar' ? 'أصناف المتجر المخزنة' : language === 'fr' ? 'Références Produits en Stock' : 'Store Inventory SKUs'}
+                      </span>
+                      <div className="mt-0.5">
+                        <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
+                          {language === 'ar' ? 'متوفر في الكتالوج' : language === 'fr' ? 'Catalogue en Stock' : 'Catalog In Stock'}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="relative">
+                      <div className="text-xl font-black text-neutral-900 dark:text-white tabular-nums">
+                        {products.length} {language === 'ar' ? 'منتجات' : language === 'fr' ? 'produits' : 'Products'}
+                      </div>
+                      <div className="text-[10px] text-neutral-400 mt-1">
+                        {products.reduce((a, b) => a + b.stockQuantity, 0)} {language === 'ar' ? 'قطعة إجمالاً' : language === 'fr' ? 'unités au total' : 'units total'}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-4 rounded-[20px] bg-[#18181B] border border-neutral-800 text-white flex flex-col justify-between h-[126px] shadow-sm">
+                    <div>
+                      <span className="text-[11px] font-medium text-neutral-300">
+                        {language === 'ar' ? 'تنبيه النفاذ وإعادة التوريد' : language === 'fr' ? 'Alerte Seuil de Réapprovisionnement' : 'Depletion Warning'}
+                      </span>
+                      <div className="mt-0.5">
+                        <span className="text-[10px] font-bold text-amber-300 bg-amber-400/20 px-2 py-0.5 rounded-full">
+                          {posMetrics.lowStockCount} {language === 'ar' ? 'دون حد التنبيه' : language === 'fr' ? 'sous le seuil d\'alerte' : 'below reorder level'}
+                        </span>
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-xl font-black text-white tabular-nums">
+                        {posMetrics.lowStockCount} {language === 'ar' ? 'تنبيهات' : language === 'fr' ? 'alertes' : 'Alerts'}
+                      </div>
+                      <div className="w-full h-0.5 bg-amber-500 mt-2.5 rounded-full opacity-80" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Top Selling Products Leaderboard */}
+                {posMetrics.topProducts.length > 0 && (
+                  <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs space-y-2.5">
+                    <div className="flex items-center justify-between text-xs">
+                      <div className="flex items-center gap-2 font-bold text-neutral-900 dark:text-white">
+                        <Sparkles size={14} className="text-[#C4785A]" />
+                        <span>{language === 'ar' ? 'أفضل المنتجات مبيعاً وأكثرها تحقيقاً للمداخيل' : language === 'fr' ? 'Meilleures Ventes & Produits Phares' : 'Top Selling Products & Revenue Drivers'}</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setScreen('shop')}
+                        className="text-[11px] font-bold text-[#C4785A] hover:underline cursor-pointer"
+                      >
+                        {language === 'ar' ? 'إدارة كافة المنتجات ←' : language === 'fr' ? 'Gérer tous les articles →' : 'Manage All SKUs →'}
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 pt-1">
+                      {posMetrics.topProducts.map((tp, idx) => (
+                        <div
+                          key={idx}
+                          className="p-2.5 rounded-xl bg-neutral-50 dark:bg-neutral-900/60 border border-neutral-100 dark:border-neutral-800 flex items-center justify-between"
+                        >
+                          <div className="min-w-0 pr-2">
+                            <div className="text-xs font-bold text-neutral-800 dark:text-neutral-200 truncate">
+                              {tp.name}
+                            </div>
+                            <div className="text-[10px] text-neutral-400">
+                              {tp.quantity} {language === 'ar' ? 'قطع مباعة' : language === 'fr' ? 'unités vendues' : 'units sold'}
+                            </div>
+                          </div>
+                          <div className="text-xs font-mono font-bold text-[#C4785A] shrink-0">
+                            {formatMoney(tp.revenue)}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[126px]">
+                  <div>
+                    <span className="text-[11px] font-semibold text-[#64748B] dark:text-neutral-400">
+                      {language === 'ar' ? 'إيرادات اليوم' : language === 'fr' ? 'Revenus du jour' : 'Revenue Today'}
+                    </span>
+                    <div className="mt-0.5">
+                      <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
+                        ↗ 100% {language === 'ar' ? 'مسدد' : language === 'fr' ? 'Encaissé' : 'Settled'}
+                      </span>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-xl font-black text-neutral-900 dark:text-white tabular-nums font-mono">
+                      {formatMoney(sales.reduce((sum, s) => sum + s.totalAmount, 0))}
+                    </div>
+                    <div className="w-full h-0.5 bg-[#C4785A] mt-2.5 rounded-full opacity-80" />
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[126px]">
+                  <div>
+                    <span className="text-[11px] font-semibold text-[#64748B] dark:text-neutral-400">
+                      {language === 'ar' ? 'المشتركون النشطون' : language === 'fr' ? 'Adhérents actifs' : 'Active Members'}
+                    </span>
+                    <div className="mt-0.5">
+                      <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
+                        {language === 'ar' ? 'مقارنة بالأمس' : language === 'fr' ? 'vs hier' : 'vs yesterday'}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="relative">
+                    <div className="text-xl font-black text-neutral-900 dark:text-white tabular-nums">
+                      {members.filter((m) => m.status === 'Active').length}
+                    </div>
+                    <svg
+                      className="w-full h-7 mt-1 text-emerald-500"
+                      viewBox="0 0 100 25"
+                      fill="none"
+                    >
+                      <path
+                        d="M0 20 Q 25 24 50 14 T 100 5"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-[20px] bg-[#18181B] border border-neutral-800 text-white flex flex-col justify-between h-[126px] shadow-sm">
+                  <div>
+                    <span className="text-[11px] font-medium text-neutral-300">
+                      {language === 'ar' ? 'أوشكت على الانتهاء' : language === 'fr' ? 'À renouveler (<14j)' : 'Expiring Soon'}
+                    </span>
+                    <div className="mt-0.5">
+                      <span className="text-[10px] font-bold text-amber-300 bg-amber-400/20 px-2 py-0.5 rounded-full">
+                        {language === 'ar' ? 'تنبيه التجديد' : language === 'fr' ? 'Relance active' : 'Renewal Alert'}
+                      </span>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-xl font-black text-white tabular-nums">
+                      {members.filter((m) => m.status === 'Active' && calculateDaysRemaining(false, m.expirationDate) <= 14).length}
+                    </div>
+                    <div className="w-full h-0.5 bg-amber-500 mt-2.5 rounded-full opacity-80" />
+                  </div>
+                </div>
               </div>
             )}
           </div>
+
+          {/* Salon Specific: Stylist Chairs Live Workstation Board */}
+          {isSalon && (
+            <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[26px] p-5 space-y-3.5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-base font-bold text-neutral-900 dark:text-white flex items-center gap-2">
+                    <Scissors size={16} className="text-[#C4785A]" />
+                    <span>{t('dash_salon_chairs_title', language)}</span>
+                  </h3>
+                  <p className="text-xs text-neutral-400 dark:text-neutral-500">
+                    {t('dash_salon_chairs_subtitle', language)}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedAppointmentForEdit(null);
+                    setIsAppointmentModalOpen(true);
+                  }}
+                  className="px-3 py-1.5 rounded-full bg-[#C4785A] text-white text-xs font-bold hover:opacity-90 flex items-center gap-1 cursor-pointer transition-all shadow-xs"
+                >
+                  <Plus size={13} />
+                  <span>{t('dash_salon_btn_new_booking', language)}</span>
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {stylistChairs.map((chair) => {
+                  const isInChair = chair.status === 'InChair';
+                  const isBooked = chair.status === 'Booked';
+
+                  return (
+                    <div
+                      key={chair.stylist.id}
+                      className={`p-3.5 rounded-[18px] border transition-all ${
+                        isInChair
+                          ? 'bg-amber-50/70 dark:bg-amber-950/30 border-amber-300/80 dark:border-amber-700/60'
+                          : isBooked
+                          ? 'bg-white dark:bg-neutral-800 border-[#E9EEF0] dark:border-neutral-700/60'
+                          : 'bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-200/60 dark:border-emerald-800/50'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <div className="w-7 h-7 rounded-full bg-[#C4785A]/15 text-[#C4785A] font-bold text-xs flex items-center justify-center">
+                            {chair.chairNumber}
+                          </div>
+                          <div>
+                            <span className="text-xs font-bold text-neutral-900 dark:text-white block leading-tight">
+                              {t('dash_salon_chair_label', language)
+                                .replace('{number}', String(chair.chairNumber))
+                                .replace('{stylist}', chair.stylist.fullName)}
+                            </span>
+                            <span className="text-[10px] text-neutral-400">
+                              {chair.stylist.role}
+                            </span>
+                          </div>
+                        </div>
+
+                        <span
+                          className={`text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${
+                            isInChair
+                              ? 'bg-amber-500 text-white animate-pulse'
+                              : isBooked
+                              ? 'bg-indigo-600 text-white'
+                              : 'bg-emerald-600 text-white'
+                          }`}
+                        >
+                          {isInChair
+                            ? t('dash_salon_chair_in_chair', language)
+                            : isBooked
+                            ? t('dash_salon_chair_booked', language)
+                            : t('dash_salon_chair_available', language)}
+                        </span>
+                      </div>
+
+                      {isInChair && chair.inChairBooking && (
+                        <div className="mt-2 p-2.5 bg-white/80 dark:bg-neutral-900/60 rounded-xl border border-amber-200/60 dark:border-amber-900/40 text-xs">
+                          <div className="flex justify-between items-start">
+                            <span className="font-bold text-neutral-900 dark:text-white truncate">
+                              {chair.inChairBooking.clientName}
+                            </span>
+                            <span className="font-bold text-[#C4785A]">
+                              {formatMoney(chair.inChairBooking.price)}
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-neutral-500 truncate mt-0.5">
+                            {chair.inChairBooking.serviceName} ({chair.inChairBooking.startTime} - {chair.inChairBooking.endTime})
+                          </p>
+                          <div className="mt-2 flex items-center justify-between pt-1.5 border-t border-neutral-100 dark:border-neutral-800">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedAppointmentForEdit(chair.inChairBooking!);
+                                setIsAppointmentModalOpen(true);
+                              }}
+                              className="text-[11px] font-semibold text-neutral-600 hover:text-neutral-900 cursor-pointer"
+                            >
+                              {t('dash_salon_manage_service', language)}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleQuickCheckout(chair.inChairBooking!)}
+                              className="px-2 py-0.5 rounded-md bg-[#C4785A] text-white text-[10px] font-bold hover:opacity-90 cursor-pointer flex items-center gap-1 shadow-2xs"
+                            >
+                              <CreditCard size={10} />
+                              <span>{t('salon_quick_checkout', language)}</span>
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
+                      {isBooked && chair.nextBooking && (
+                        <div className="mt-2 p-2.5 bg-neutral-50/80 dark:bg-neutral-900/40 rounded-xl border border-neutral-200/60 dark:border-neutral-800 text-xs">
+                          <div className="flex justify-between items-start">
+                            <span className="font-bold text-neutral-800 dark:text-neutral-200 truncate">
+                              {language === 'ar' ? 'التالي:' : language === 'fr' ? 'Suivant :' : 'Next:'} {chair.nextBooking.clientName}
+                            </span>
+                            <span className="text-[11px] font-semibold text-neutral-500">
+                              {chair.nextBooking.startTime}
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-neutral-500 truncate mt-0.5">
+                            {chair.nextBooking.serviceName}
+                          </p>
+                        </div>
+                      )}
+
+                      {!isInChair && !isBooked && (
+                        <div className="mt-2 p-2.5 rounded-xl border border-dashed border-emerald-300 dark:border-emerald-800/60 text-center">
+                          <p className="text-[11px] text-emerald-700 dark:text-emerald-400 font-medium">
+                            {language === 'ar' ? 'الكرسي شاغر لاستقبال زبون عابر' : language === 'fr' ? 'Fauteuil libre pour un client de passage' : 'Chair is open for walk-in client'}
+                          </p>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSelectedAppointmentForEdit(null);
+                              setIsAppointmentModalOpen(true);
+                            }}
+                            className="mt-1 text-[11px] font-bold text-[#C4785A] hover:underline cursor-pointer"
+                          >
+                            + {t('dash_salon_seat_client_btn', language)}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Activity Table Group */}
+          <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[26px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-base font-bold text-neutral-900 dark:text-white">
+                  {isSalon
+                    ? (language === 'ar' ? 'العلاجات والمبيعات المباشرة' : language === 'fr' ? 'Soins & Ventes en direct' : 'Live Treatment & Sales Stream')
+                    : (language === 'ar' ? 'النشاط الأخير وسجل العمليات' : language === 'fr' ? 'Activité récente & Passages' : 'Recent Activity')}
+                </h3>
+                <p className="text-xs text-neutral-400 dark:text-neutral-500">
+                  {isSalon
+                    ? (language === 'ar' ? 'المواعيد الآنية، حالات الكراسي وإغلاق الحسابات' : language === 'fr' ? 'Rendez-vous temps réel, état des fauteuils et encaissements' : 'Real-time appointments, in-chair statuses, and POS checkouts')
+                    : (language === 'ar' ? 'متابعة حركة الدخول والمبيعات اليومية للقاعة.' : language === 'fr' ? 'Suivi en direct des passages et ventes du jour.' : 'Track your daily operational activity.')}
+                </p>
+              </div>
+
+              {/* Activity Filter Tabs */}
+              {isSalon ? (
+                <div className="h-8 p-0.5 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex items-center gap-0.5 text-xs font-semibold shadow-2xs">
+                  {(['Tous', 'Rendezvous', 'Ventes'] as const).map((tab) => (
+                    <button
+                      key={tab}
+                      type="button"
+                      onClick={() => setSalonActivityTab(tab)}
+                      style={{
+                        backgroundColor:
+                          salonActivityTab === tab ? '#FDF4F0' : 'transparent',
+                        color:
+                          salonActivityTab === tab ? 'var(--color-accent)' : '#71717A',
+                      }}
+                      className={`px-3 py-1 rounded-full cursor-pointer transition-all ${
+                        salonActivityTab === tab ? 'font-bold' : 'hover:text-neutral-900 dark:hover:text-white'
+                      }`}
+                    >
+                      {tab === 'Rendezvous' ? (language === 'ar' ? 'المواعيد' : language === 'fr' ? 'Rendez-vous' : 'Bookings') : tab === 'Ventes' ? (language === 'ar' ? 'المبيعات' : language === 'fr' ? 'Ventes' : 'Sales') : (language === 'ar' ? 'الكل' : language === 'fr' ? 'Tous' : 'All')}
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div className="h-8 p-0.5 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex items-center gap-0.5 text-xs font-semibold shadow-2xs">
+                  {(['Tous', 'Passages', 'Ventes'] as const).map((tab) => (
+                    <button
+                      key={tab}
+                      type="button"
+                      onClick={() => setActivityTab(tab)}
+                      style={{
+                        backgroundColor:
+                          activityTab === tab ? '#FDF4F0' : 'transparent',
+                        color:
+                          activityTab === tab ? 'var(--color-accent)' : '#71717A',
+                      }}
+                      className={`px-3 py-1 rounded-full cursor-pointer transition-all ${
+                        activityTab === tab ? 'font-bold' : 'hover:text-neutral-900 dark:hover:text-white'
+                      }`}
+                    >
+                      {tab === 'Passages'
+                        ? (language === 'ar' ? 'دخول القاعة' : language === 'fr' ? 'Passages' : 'Entries')
+                        : tab === 'Ventes'
+                        ? (language === 'ar' ? 'المبيعات' : language === 'fr' ? 'Ventes' : 'Sales')
+                        : (language === 'ar' ? 'الكل' : language === 'fr' ? 'Tous' : 'All')}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Rows */}
+            <div className="space-y-2">
+              <div className="grid grid-cols-12 px-4 py-2 text-[11px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">
+                <div className="col-span-5 flex items-center gap-1">
+                  <span>{isSalon ? (language === 'ar' ? 'العميل' : language === 'fr' ? 'Client' : 'Client') : (language === 'ar' ? 'المشترك' : language === 'fr' ? 'Adhérent' : 'Member')}</span>
+                  <span className="text-[10px]">↕</span>
+                </div>
+                <div className="col-span-4">{isSalon ? (language === 'ar' ? 'الخدمة / العلاج' : language === 'fr' ? 'Prestation / Soin' : 'Treatment / Service') : (language === 'ar' ? 'العملية' : language === 'fr' ? 'Opération' : 'Operation')}</div>
+                <div className="col-span-1 text-center">{language === 'ar' ? 'الحالة' : language === 'fr' ? 'Statut' : 'Status'}</div>
+                <div className="col-span-2 text-right">{isSalon ? (language === 'ar' ? 'الوقت / الإجمالي' : language === 'fr' ? 'Heure / Total' : 'Time / Total') : (language === 'ar' ? 'الوقت' : language === 'fr' ? 'Heure' : 'Time')}</div>
+              </div>
+
+              <div className="space-y-2">
+                {isSalon ? (
+                  filteredSalonActivities.map((row) => (
+                    <div
+                      key={row.id}
+                      className="grid grid-cols-12 items-center px-4 py-3 rounded-[16px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs hover:border-[#D5DFE3] dark:hover:border-neutral-600 transition-all"
+                    >
+                      <div className="col-span-5 flex items-center gap-2.5 min-w-0 pr-2">
+                        <div className="w-8 h-8 rounded-full bg-[#FDF4F0] dark:bg-neutral-700/80 text-[#C4785A] flex items-center justify-center font-bold text-[11px] shrink-0 border border-[#F5E2D8] dark:border-neutral-600">
+                          {row.type === 'Ventes' ? '$$' : <Scissors size={12} />}
+                        </div>
+                        <span className="text-xs font-bold text-neutral-900 dark:text-white truncate">
+                          {row.client}
+                        </span>
+                      </div>
+
+                      <div className="col-span-4 text-xs text-[#52525B] dark:text-neutral-300 font-medium truncate pr-2">
+                        {row.operation}
+                      </div>
+
+                      <div className="col-span-1 flex justify-center">
+                        <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${row.badgeColor}`}>
+                          {row.status}
+                        </span>
+                      </div>
+
+                      <div className="col-span-2 text-right text-xs text-neutral-400 font-mono tabular-nums">
+                        {row.time}
+                      </div>
+                    </div>
+                  ))
+                ) : isPOS ? (
+                  sales.length === 0 ? (
+                    <div className="py-8 text-center text-xs text-neutral-400 space-y-2">
+                      <Receipt size={24} className="mx-auto opacity-40" />
+                      <p>{language === 'ar' ? 'لم تسجل أي مبيعات في الكاشير اليوم بعد.' : language === 'fr' ? 'Aucune vente de caisse enregistrée aujourd\'hui.' : 'No register sales recorded yet today.'}</p>
+                      <button
+                        type="button"
+                        onClick={() => setScreen('shop')}
+                        className="px-4 py-1.5 rounded-full bg-[#C4785A] text-white text-xs font-bold hover:opacity-90 cursor-pointer"
+                      >
+                        {language === 'ar' ? 'فتح شاشة الكاشير' : language === 'fr' ? 'Ouvrir la caisse POS' : 'Open POS Register'}
+                      </button>
+                    </div>
+                  ) : (
+                    sales.slice(0, 6).map((sale) => (
+                      <div
+                        key={sale.id}
+                        onClick={() => setScreen('history')}
+                        className="grid grid-cols-12 items-center px-4 py-3 rounded-[16px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs hover:border-[#C4785A] transition-all cursor-pointer group"
+                      >
+                        <div className="col-span-5 flex items-center gap-2.5 min-w-0 pr-2">
+                          <div className="w-8 h-8 rounded-full bg-[#FDF4F0] dark:bg-neutral-700/80 text-[#C4785A] flex items-center justify-center font-bold text-[11px] shrink-0 border border-[#F5E2D8] dark:border-neutral-600">
+                            <Receipt size={13} />
+                          </div>
+                          <div className="min-w-0">
+                            <span className="text-xs font-bold text-neutral-900 dark:text-white truncate block group-hover:text-[#C4785A] transition-colors">
+                              {sale.memberName || (language === 'ar' ? 'زبون عابر' : language === 'fr' ? 'Client de passage' : 'Walk-in Customer')}
+                            </span>
+                            <span className="text-[10px] text-neutral-400 font-mono">
+                              #{sale.id.slice(-6).toUpperCase()} · {sale.items.length} {sale.items.length === 1 ? (language === 'ar' ? 'عنصر' : language === 'fr' ? 'article' : 'item') : (language === 'ar' ? 'عناصر' : language === 'fr' ? 'articles' : 'items')}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="col-span-4 text-xs text-[#52525B] dark:text-neutral-300 font-medium truncate pr-2">
+                          {sale.items.map((i) => `${i.quantity}x ${i.productName}`).join(', ')}
+                        </div>
+
+                        <div className="col-span-1 flex justify-center">
+                          <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${
+                            sale.status === 'Refunded'
+                              ? 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300'
+                              : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300'
+                          }`}>
+                            {sale.paymentMethod}
+                          </span>
+                        </div>
+
+                        <div className="col-span-2 text-right">
+                          <div className="text-xs font-mono font-bold text-neutral-900 dark:text-white">
+                            {formatMoney(sale.totalAmount)}
+                          </div>
+                          <div className="text-[10px] text-neutral-400 font-mono">
+                            {new Date(sale.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )
+                ) : (
+                  filteredGymActivities.map((row) => (
+                    <div
+                      key={row.id}
+                      className="grid grid-cols-12 items-center px-4 py-3 rounded-[16px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs hover:border-[#D5DFE3] dark:hover:border-neutral-600 transition-all"
+                    >
+                      <div className="col-span-5 flex items-center gap-2.5 min-w-0 pr-2">
+                        <div className="w-8 h-8 rounded-full bg-[#FDF4F0] dark:bg-neutral-700/80 text-[#C4785A] flex items-center justify-center font-bold text-[11px] shrink-0 border border-[#F5E2D8] dark:border-neutral-600">
+                          {row.type === 'Ventes' ? '$$' : 'IN'}
+                        </div>
+                        <span className="text-xs font-bold text-neutral-900 dark:text-white truncate">
+                          {row.member}
+                        </span>
+                      </div>
+
+                      <div className="col-span-4 text-xs text-[#52525B] dark:text-neutral-300 font-medium truncate pr-2">
+                        {row.operation}
+                      </div>
+
+                      <div className="col-span-1 flex justify-center">
+                        <div className="w-6 h-6 rounded-md bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                          {row.type === 'Ventes' ? (
+                            <ShoppingCart size={13} />
+                          ) : (
+                            <UserCheck size={13} />
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="col-span-2 text-right text-xs text-neutral-400 font-mono tabular-nums">
+                        {row.time}
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
+
+      {/* Appointment Modal for Booking or Editing from Dashboard */}
+      {isAppointmentModalOpen && (
+        <AppointmentModal
+          isOpen={isAppointmentModalOpen}
+          onClose={() => {
+            setIsAppointmentModalOpen(false);
+            setSelectedAppointmentForEdit(null);
+          }}
+          appointment={selectedAppointmentForEdit}
+        />
+      )}
     </div>
   );
 };
+
+export const DashboardScreen = MembershipDashboardView;
+export type DashboardScreenProps = MembershipDashboardViewProps;

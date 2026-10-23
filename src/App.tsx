@@ -3,14 +3,7 @@ import { useAtriumStore } from './services/store';
 import { Member } from './types/index';
 import { Sidebar } from './components/layout/Sidebar';
 import { TopBar } from './components/layout/TopBar';
-import { DashboardScreen } from './components/screens/DashboardScreen';
 import { AnalyticsScreen } from './components/screens/AnalyticsScreen';
-import { MembersScreen } from './components/screens/MembersScreen';
-import { RegistrationsScreen } from './components/screens/RegistrationsScreen';
-import { ShopScreen } from './components/screens/ShopScreen';
-import { SchedulerScreen } from './components/screens/SchedulerScreen';
-import { FinanceStaffScreen } from './components/screens/FinanceStaffScreen';
-import { HistoryScreen } from './components/screens/HistoryScreen';
 import { SettingsScreen } from './components/screens/SettingsScreen';
 import { VoucherModal } from './components/modals/VoucherModal';
 import { MemberModal } from './components/modals/MemberModal';
@@ -332,7 +325,12 @@ export default function App() {
     if (isMembership) {
       switch (activeScreen) {
         case 'dashboard':
-          return <MembershipDashboardView onAddMember={handleOpenAddMember} />;
+          return (
+            <MembershipDashboardView
+              onAddMember={handleOpenAddMember}
+              onOpenVoucherModal={() => setIsVoucherModalOpen(true)}
+            />
+          );
         case 'members':
           return (
             <MembershipMembersView
@@ -351,11 +349,16 @@ export default function App() {
         case 'history':
           return <MembershipHistoryView />;
         case 'analytics':
-          return <MembershipDashboardView onAddMember={handleOpenAddMember} />;
+          return <AnalyticsScreen />;
         case 'settings':
           return <SettingsScreen onOpenVoucherModal={() => setIsVoucherModalOpen(true)} />;
         default:
-          return <MembershipDashboardView onAddMember={handleOpenAddMember} />;
+          return (
+            <MembershipDashboardView
+              onAddMember={handleOpenAddMember}
+              onOpenVoucherModal={() => setIsVoucherModalOpen(true)}
+            />
+          );
       }
     }
 
@@ -363,9 +366,19 @@ export default function App() {
     if (isAppointment) {
       switch (activeScreen) {
         case 'dashboard':
-          return <AppointmentDashboardView />;
+          return (
+            <AppointmentDashboardView
+              onAddMember={handleOpenAddMember}
+              onOpenVoucherModal={() => setIsVoucherModalOpen(true)}
+            />
+          );
         case 'members':
-          return <AppointmentClientsView />;
+          return (
+            <AppointmentClientsView
+              onAddMember={handleOpenAddMember}
+              onEditMember={handleOpenEditMember}
+            />
+          );
         case 'scheduler':
           return <AppointmentScheduleView />;
         case 'shop':
@@ -377,11 +390,16 @@ export default function App() {
         case 'registrations':
           return <AppointmentScheduleView />;
         case 'analytics':
-          return <AppointmentDashboardView />;
+          return <AnalyticsScreen />;
         case 'settings':
           return <SettingsScreen onOpenVoucherModal={() => setIsVoucherModalOpen(true)} />;
         default:
-          return <AppointmentDashboardView />;
+          return (
+            <AppointmentDashboardView
+              onAddMember={handleOpenAddMember}
+              onOpenVoucherModal={() => setIsVoucherModalOpen(true)}
+            />
+          );
       }
     }
 
@@ -389,7 +407,12 @@ export default function App() {
     if (isPOS) {
       switch (activeScreen) {
         case 'dashboard':
-          return <PosDashboardView />;
+          return (
+            <PosDashboardView
+              onAddMember={handleOpenAddMember}
+              onOpenVoucherModal={() => setIsVoucherModalOpen(true)}
+            />
+          );
         case 'shop':
           return <PosRegisterView />;
         case 'scheduler':
@@ -403,40 +426,55 @@ export default function App() {
         case 'members':
           return <PosOrdersView />;
         case 'analytics':
-          return <PosDashboardView />;
+          return <AnalyticsScreen />;
         case 'settings':
           return <SettingsScreen onOpenVoucherModal={() => setIsVoucherModalOpen(true)} />;
         default:
-          return <PosDashboardView />;
+          return (
+            <PosDashboardView
+              onAddMember={handleOpenAddMember}
+              onOpenVoucherModal={() => setIsVoucherModalOpen(true)}
+            />
+          );
       }
     }
 
     switch (activeScreen) {
       case 'dashboard':
-        return <DashboardScreen onAddMember={handleOpenAddMember} />;
+        return (
+          <MembershipDashboardView
+            onAddMember={handleOpenAddMember}
+            onOpenVoucherModal={() => setIsVoucherModalOpen(true)}
+          />
+        );
       case 'analytics':
         return <AnalyticsScreen />;
       case 'members':
         return (
-          <MembersScreen
+          <MembershipMembersView
             onAddMember={handleOpenAddMember}
             onEditMember={handleOpenEditMember}
           />
         );
       case 'registrations':
-        return <RegistrationsScreen onAddLead={() => setIsLeadModalOpen(true)} />;
+        return <MembershipRegistrationsView onAddLead={() => setIsLeadModalOpen(true)} />;
       case 'shop':
-        return <ShopScreen />;
+        return <MembershipShopView />;
       case 'scheduler':
-        return <SchedulerScreen />;
+        return <MembershipSchedulerView />;
       case 'finance':
-        return <FinanceStaffScreen />;
+        return <MembershipFinanceView />;
       case 'history':
-        return <HistoryScreen />;
+        return <MembershipHistoryView />;
       case 'settings':
         return <SettingsScreen onOpenVoucherModal={() => setIsVoucherModalOpen(true)} />;
       default:
-        return <DashboardScreen onAddMember={handleOpenAddMember} />;
+        return (
+          <MembershipDashboardView
+            onAddMember={handleOpenAddMember}
+            onOpenVoucherModal={() => setIsVoucherModalOpen(true)}
+          />
+        );
     }
   };
 
