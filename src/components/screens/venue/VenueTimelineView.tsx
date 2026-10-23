@@ -14,6 +14,7 @@ import {
   Info,
   Cloud,
   LayoutGrid,
+  Sparkles,
 } from 'lucide-react';
 import { useAtriumStore } from '../../../services/store';
 import { RentableUnit, RentalBooking, RentableUnitType } from '../../../types/index';
@@ -31,6 +32,7 @@ export const VenueTimelineView: React.FC = () => {
     checkInBooking,
     checkOutBooking,
     deleteRentalBooking,
+    resetVenueMockData,
   } = useAtriumStore();
 
   const [selectedDate, setSelectedDate] = useState<string>(
@@ -164,6 +166,16 @@ export const VenueTimelineView: React.FC = () => {
                 <ChevronRight size={16} className="rtl:rotate-180" />
               </button>
             </div>
+
+            <button
+              type="button"
+              onClick={resetVenueMockData}
+              className="px-3 py-2 bg-[#FCEEE8] dark:bg-neutral-800 hover:bg-[#F8DFD4] dark:hover:bg-neutral-700 text-[#C4785A] text-xs font-semibold rounded-xl transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer"
+              title={language === 'ar' ? 'إعادة شحن بيانات تجريبية' : language === 'fr' ? 'Recharger Données Démo' : 'Seed Mock Data'}
+            >
+              <Sparkles size={14} />
+              <span className="hidden sm:inline">{language === 'ar' ? 'بيانات تجريبية' : language === 'fr' ? 'Données Démo' : 'Demo Data'}</span>
+            </button>
 
             <button
               onClick={() => setIsCloudSyncModalOpen(true)}

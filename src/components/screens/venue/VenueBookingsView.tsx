@@ -447,6 +447,17 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({ hideHeader
               <span className="hidden sm:inline">CSV</span>
             </button>
 
+            {/* Seed Demo Data Button */}
+            <button
+              type="button"
+              onClick={resetVenueMockData}
+              className="h-10 px-3.5 bg-[#FCEEE8] dark:bg-neutral-800 hover:bg-[#F8DFD4] dark:hover:bg-neutral-700 text-[#C4785A] text-xs font-semibold rounded-full transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer"
+              title={language === 'ar' ? 'إعادة شحن بيانات تجريبية' : language === 'fr' ? 'Recharger Données Démo' : 'Seed Mock Data'}
+            >
+              <Sparkles size={14} />
+              <span className="hidden sm:inline">{language === 'ar' ? 'بيانات تجريبية' : language === 'fr' ? 'Données Démo' : 'Demo Data'}</span>
+            </button>
+
             {/* New Reservation Button */}
             <button
               onClick={handleNewBooking}

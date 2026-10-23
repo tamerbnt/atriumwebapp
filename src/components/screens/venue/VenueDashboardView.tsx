@@ -35,6 +35,7 @@ export const VenueDashboardView: React.FC = () => {
     checkInBooking,
     checkOutBooking,
     setScreen,
+    resetVenueMockData,
   } = useAtriumStore();
 
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
@@ -90,6 +91,15 @@ export const VenueDashboardView: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={resetVenueMockData}
+            className="px-3.5 py-2.5 bg-[#FCEEE8] dark:bg-neutral-800 hover:bg-[#F8DFD4] dark:hover:bg-neutral-700 text-[#C4785A] text-xs font-semibold rounded-xl transition-colors flex items-center gap-2 cursor-pointer shadow-2xs"
+            title={language === 'ar' ? 'إعادة شحن بيانات تجريبية' : language === 'fr' ? 'Recharger Données Démo' : 'Seed Mock Data'}
+          >
+            <Sparkles size={15} />
+            <span className="hidden sm:inline">{language === 'ar' ? 'بيانات تجريبية' : language === 'fr' ? 'Données Démo' : 'Demo Data'}</span>
+          </button>
           <button
             onClick={() => setIsCloudSyncModalOpen(true)}
             className="px-3.5 py-2.5 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-xs font-semibold text-neutral-800 dark:text-neutral-200 rounded-xl transition-colors flex items-center gap-2 cursor-pointer"

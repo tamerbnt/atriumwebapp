@@ -47,13 +47,6 @@ export const VenueRentersView: React.FC = () => {
     showToast,
   } = useAtriumStore();
 
-  // Auto-seed rich venue mock data if stored dataset is small
-  React.useEffect(() => {
-    if (rentalRenters.length < 10) {
-      resetVenueMockData();
-    }
-  }, [rentalRenters.length, resetVenueMockData]);
-
   const [searchQuery, setSearchQuery] = useState('');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [renterToEdit, setRenterToEdit] = useState<RentalRenter | null>(null);

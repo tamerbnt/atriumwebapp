@@ -14,6 +14,12 @@ import {
   X,
   CreditCard,
   Banknote,
+  Download,
+  Sparkles,
+  Home,
+  ChevronDown,
+  Check,
+  Building2,
 } from 'lucide-react';
 import { useAtriumStore } from '../../../services/store';
 import { SecurityDepositRecord } from '../../../types/index';
@@ -29,6 +35,14 @@ export const VenueFinanceView: React.FC = () => {
     rentalBookings,
     releaseSecurityDeposit,
     deductSecurityDeposit,
+    currentBranch,
+    businesses,
+    branches,
+    currentBusinessId,
+    switchBusiness,
+    switchBranch,
+    resetVenueMockData,
+    showToast,
   } = useAtriumStore();
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -36,6 +50,60 @@ export const VenueFinanceView: React.FC = () => {
   const [deductionTarget, setDeductionTarget] = useState<SecurityDepositRecord | null>(null);
   const [deductionReason, setDeductionReason] = useState('');
   const [deductionAmount, setDeductionAmount] = useState<number>(0);
+  const [isFacilityDropdownOpen, setIsFacilityDropdownOpen] = useState(false);
+
+  const handleExportCautionCSV = () => {
+    if (securityDeposits.length === 0) {
+      showToast({
+        type: 'warning',
+        title: 'CSV Export',
+        message: 'No security deposit records to export.',
+        category: 'rental_booking',
+      });
+      return;
+    }
+    const headers = [
+      'Deposit ID',
+      'Booking ID',
+      'Renter Name',
+      'Space / Unit',
+      'Amount (DZD)',
+      'Payment Method',
+      'Status',
+      'Retention Reason',
+      'Collected Date',
+      'Released Date',
+    ];
+    const rows = filteredDeposits.map((dep) => [
+      `"${dep.id}"`,
+      `"${dep.bookingId}"`,
+      `"${dep.renterName.replace(/"/g, '""')}"`,
+      `"${dep.unitName.replace(/"/g, '""')}"`,
+      dep.amount,
+      `"${dep.paymentMethod}"`,
+      `"${dep.status}"`,
+      `"${(dep.deductionReason || '').replace(/"/g, '""')}"`,
+      `"${dep.collectedAt}"`,
+      `"${dep.releasedAt || ''}"`,
+    ]);
+
+    const csvContent = '\uFEFF' + [headers.join(','), ...rows.map((r) => r.join(','))].join('\r\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `atrium_caution_escrow_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    showToast({
+      type: 'success',
+      title: 'CSV Exported',
+      message: `${filteredDeposits.length} caution deposits exported successfully.`,
+      category: 'rental_booking',
+    });
+  };
 
   // Financial aggregates
   const totalHeldCount = securityDeposits.filter((d) => d.status === 'Held').length;
@@ -81,13 +149,94 @@ export const VenueFinanceView: React.FC = () => {
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-900 dark:text-white">
-          {t('venue_fin_page_title')}
-        </h1>
-        <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
-          {t('venue_fin_page_sub')}
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-900 dark:text-white">
+            {t('venue_fin_page_title')}
+          </h1>
+          <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
+            {t('venue_fin_page_sub')}
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2.5 flex-wrap self-start sm:self-auto">
+          {/* Facility Pill: Atrium 1 ▾ */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setIsFacilityDropdownOpen(!isFacilityDropdownOpen)}
+              className="h-10 px-4 rounded-full bg-[#F4EFEA] dark:bg-neutral-800/80 border border-[#E8DFD8] dark:border-neutral-700 flex items-center gap-2 cursor-pointer hover:bg-[#EFE8E1] dark:hover:bg-neutral-800 transition-colors shadow-2xs"
+            >
+              <Home size={15} className="text-[#C4785A]" />
+              <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
+                {currentBranch?.name || 'Palais Central Complex'}
+              </span>
+              <ChevronDown
+                size={14}
+                className={`text-neutral-500 transition-transform ${
+                  isFacilityDropdownOpen ? 'rotate-180' : ''
+                }`}
+              />
+            </button>
+
+            {/* Facility Dropdown Menu */}
+            {isFacilityDropdownOpen && (
+              <div className="absolute right-0 rtl:right-auto rtl:left-0 mt-2 w-64 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
+                <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+                  {language === 'ar' ? 'الفروع والمرافق' : language === 'fr' ? 'Succursales & Sites' : 'Branches & Venues'}
+                </div>
+                {businesses.map((biz) => {
+                  const isCurrent = biz.id === currentBusinessId;
+                  const matchingBranch = branches.find((b) => b.businessId === biz.id);
+                  return (
+                    <button
+                      key={biz.id}
+                      type="button"
+                      onClick={() => {
+                        switchBusiness(biz.id);
+                        if (matchingBranch) switchBranch(matchingBranch.id);
+                        setIsFacilityDropdownOpen(false);
+                      }}
+                      className={`w-full px-3 py-2 text-left rtl:text-right flex items-center justify-between text-xs transition-colors cursor-pointer ${
+                        isCurrent
+                          ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold'
+                          : 'text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <Building2 size={14} className={isCurrent ? 'text-[#C4785A]' : 'text-neutral-400'} />
+                        <span className="truncate">{biz.name}</span>
+                      </div>
+                      {isCurrent && <Check size={14} />}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Export CSV Button */}
+          <button
+            type="button"
+            onClick={handleExportCautionCSV}
+            className="h-10 px-3.5 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold rounded-full transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer"
+            title="Export CSV"
+          >
+            <Download size={14} />
+            <span className="hidden sm:inline">CSV</span>
+          </button>
+
+          {/* Seed Demo Data Button */}
+          <button
+            type="button"
+            onClick={resetVenueMockData}
+            className="h-10 px-3.5 bg-[#FCEEE8] dark:bg-neutral-800 hover:bg-[#F8DFD4] dark:hover:bg-neutral-700 text-[#C4785A] text-xs font-semibold rounded-full transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer"
+            title={language === 'ar' ? 'إعادة شحن بيانات تجريبية' : language === 'fr' ? 'Recharger Données Démo' : 'Seed Mock Data'}
+          >
+            <Sparkles size={14} />
+            <span className="hidden sm:inline">{language === 'ar' ? 'بيانات تجريبية' : language === 'fr' ? 'Données Démo' : 'Demo Data'}</span>
+          </button>
+        </div>
       </div>
 
       {/* KPI Cards Strip */}
