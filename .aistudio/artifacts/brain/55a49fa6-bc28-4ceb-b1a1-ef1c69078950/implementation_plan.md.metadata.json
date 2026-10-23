@@ -1,0 +1,6 @@
+{
+  "summary":  "Comprehensive Production-Readiness Audit and Action Plan across all 7 Atrium ERP verticals. Defines the 6 Pillars of Production Software compared to Toast, Mindbody, Monday, and Odoo, details a category-by-category audit of interactive handlers and data integrity, and establishes an engineering roadmap to eliminate dead buttons and harden storage.",
+  "updatedAt":  "2026-10-23T23:30:16.710766889Z",
+  "requestFeedback":  true,
+  "userFacing":  true
+}

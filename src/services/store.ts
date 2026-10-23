@@ -76,6 +76,8 @@ import {
   PMPayrollBatch,
   PMCcpSlip,
   PMEquipmentStock,
+  SalonWorkstation,
+  StylistPayout,
 } from '../types/index';
 import {
   INITIAL_ACCOUNT,
@@ -90,6 +92,9 @@ import {
   INITIAL_PRODUCTS,
   INITIAL_SALES,
   INITIAL_SALON_SERVICES,
+  INITIAL_SALON_WORKSTATIONS,
+  INITIAL_STYLIST_PAYOUTS,
+  INITIAL_SALON_CLIENTS,
   INITIAL_SCHEDULE,
   INITIAL_STAFF,
   INITIAL_FREELANCE_CLIENTS,
@@ -132,6 +137,7 @@ import {
   INITIAL_PM_CCP_SLIPS,
   INITIAL_PM_EQUIPMENT_STOCK,
 } from './seedData';
+
 import { checkQuota, getCategoryTerminology, validateVoucherCode, calculateDaysRemaining, formatMoney } from '../utils/rules';
 import { numberToWordsFrench, numberToWordsArabic } from '../utils/algerianPtt';
 import { getInitialLanguageConfig, getSystemDefaultLanguage, t, getLocalizedServiceName } from '../utils/i18n';
@@ -278,9 +284,13 @@ interface AppState {
   pmPayrollBatches: PMPayrollBatch[];
   pmCcpSlips: PMCcpSlip[];
   pmEquipmentStock: PMEquipmentStock[];
+  // Salon, Spa & Beauty Care
+  salonWorkstations: SalonWorkstation[];
+  stylistPayouts: StylistPayout[];
   // Toast notifications
   toasts: ToastNotification[];
 }
+
 
 const DEFAULT_USER: CurrentUser = {
   id: 'stf_01',
@@ -377,8 +387,11 @@ const DEFAULT_STATE: AppState = {
   pmPayrollBatches: INITIAL_PM_PAYROLL_BATCHES,
   pmCcpSlips: INITIAL_PM_CCP_SLIPS,
   pmEquipmentStock: INITIAL_PM_EQUIPMENT_STOCK,
+  salonWorkstations: INITIAL_SALON_WORKSTATIONS,
+  stylistPayouts: INITIAL_STYLIST_PAYOUTS,
   toasts: [],
 };
+
 
 // In-memory Quadruple Traceability Normalizer
 function backfillTraceability(state: AppState): AppState {
@@ -500,13 +513,15 @@ let globalState: AppState = backfillTraceability((() => {
           ...INITIAL_SALES.filter((s) => !storedSaleIds.has(s.id)),
         ];
 
-        // Smart merge for members
+        // Smart merge for members (including authentic salon clients)
         const storedMembers = Array.isArray(parsed.members) ? parsed.members : [];
         const storedMemberIds = new Set(storedMembers.map((m: any) => m.id));
         const mergedMembers = [
           ...storedMembers,
           ...INITIAL_MEMBERS.filter((m) => !storedMemberIds.has(m.id)),
+          ...INITIAL_SALON_CLIENTS.filter((m) => !storedMemberIds.has(m.id)),
         ];
+
 
         // Smart merge for staff
         const storedStaff = Array.isArray(parsed.staff) ? parsed.staff : [];
@@ -537,8 +552,10 @@ let globalState: AppState = backfillTraceability((() => {
           staff: mergedStaff,
           schedule: Array.isArray(parsed.schedule) && parsed.schedule.length > 0 ? parsed.schedule : INITIAL_SCHEDULE,
           devices: Array.isArray(parsed.devices) && parsed.devices.length > 0 ? parsed.devices : INITIAL_DEVICES,
-          appointments: Array.isArray(parsed.appointments) && parsed.appointments.length > 0 ? parsed.appointments : INITIAL_APPOINTMENTS,
-          servicesCatalog: Array.isArray(parsed.servicesCatalog) && parsed.servicesCatalog.length > 0 ? parsed.servicesCatalog : INITIAL_SALON_SERVICES,
+          appointments: Array.isArray(parsed.appointments) && parsed.appointments.length >= INITIAL_APPOINTMENTS.length ? parsed.appointments : INITIAL_APPOINTMENTS,
+          servicesCatalog: Array.isArray(parsed.servicesCatalog) && parsed.servicesCatalog.length >= INITIAL_SALON_SERVICES.length ? parsed.servicesCatalog : INITIAL_SALON_SERVICES,
+          salonWorkstations: Array.isArray(parsed.salonWorkstations) && parsed.salonWorkstations.length > 0 ? parsed.salonWorkstations : INITIAL_SALON_WORKSTATIONS,
+          stylistPayouts: Array.isArray(parsed.stylistPayouts) && parsed.stylistPayouts.length > 0 ? parsed.stylistPayouts : INITIAL_STYLIST_PAYOUTS,
           freelanceClients: Array.isArray(parsed.freelanceClients) && parsed.freelanceClients.length >= INITIAL_FREELANCE_CLIENTS.length ? parsed.freelanceClients : INITIAL_FREELANCE_CLIENTS,
           freelanceProjects: Array.isArray(parsed.freelanceProjects) && parsed.freelanceProjects.length >= INITIAL_FREELANCE_PROJECTS.length ? parsed.freelanceProjects : INITIAL_FREELANCE_PROJECTS,
           timeLogs: Array.isArray(parsed.timeLogs) && parsed.timeLogs.length >= INITIAL_TIME_LOGS.length ? parsed.timeLogs : INITIAL_TIME_LOGS,
@@ -2329,6 +2346,160 @@ export function useAtriumStore() {
 
     return sale;
   };
+
+  const batchDeleteAppointments = (ids: string[]) => {
+    const idSet = new Set(ids);
+    globalState = {
+      ...globalState,
+      appointments: (globalState.appointments || []).filter((a) => !idSet.has(a.id)),
+    };
+    notify();
+    showToast({
+      type: 'info',
+      title: 'Rendez-vous supprimés',
+      message: `${ids.length} rendez-vous ont été retirés de l'agenda.`,
+      category: 'appointment_service',
+    });
+  };
+
+  const batchUpdateAppointmentStatus = (ids: string[], status: AppointmentStatus) => {
+    const idSet = new Set(ids);
+    globalState = {
+      ...globalState,
+      appointments: (globalState.appointments || []).map((a) =>
+        idSet.has(a.id) ? { ...a, status } : a
+      ),
+    };
+    notify();
+    showToast({
+      type: 'success',
+      title: 'Statuts mis à jour',
+      message: `${ids.length} rendez-vous passés en état "${status}".`,
+      category: 'appointment_service',
+    });
+  };
+
+  const updateServiceItem = (id: string, updates: Partial<ServiceItem>) => {
+    globalState = {
+      ...globalState,
+      servicesCatalog: (globalState.servicesCatalog || []).map((s) =>
+        s.id === id ? { ...s, ...updates } : s
+      ),
+    };
+    notify();
+    showToast({
+      type: 'success',
+      title: 'Prestation mise à jour',
+      message: 'Les détails du service et son tarif ont été modifiés.',
+      category: 'appointment_service',
+    });
+  };
+
+  const deleteServiceItem = (id: string) => {
+    globalState = {
+      ...globalState,
+      servicesCatalog: (globalState.servicesCatalog || []).filter((s) => s.id !== id),
+    };
+    notify();
+    showToast({
+      type: 'info',
+      title: 'Prestation supprimée',
+      message: 'Le service a été retiré du catalogue.',
+      category: 'appointment_service',
+    });
+  };
+
+  const batchDeleteServiceItems = (ids: string[]) => {
+    const idSet = new Set(ids);
+    globalState = {
+      ...globalState,
+      servicesCatalog: (globalState.servicesCatalog || []).filter((s) => !idSet.has(s.id)),
+    };
+    notify();
+    showToast({
+      type: 'info',
+      title: 'Prestations supprimées',
+      message: `${ids.length} prestations ont été retirées du catalogue.`,
+      category: 'appointment_service',
+    });
+  };
+
+  const updateStylistPayoutStatus = (id: string, status: 'Pending' | 'Approved' | 'Paid', paymentMethod?: string) => {
+    globalState = {
+      ...globalState,
+      stylistPayouts: (globalState.stylistPayouts || []).map((p) =>
+        p.id === id
+          ? {
+              ...p,
+              status,
+              ...(paymentMethod ? { paymentMethod } : {}),
+              ...(status === 'Paid' ? { paidAt: new Date().toISOString().split('T')[0] } : {}),
+            }
+          : p
+      ),
+    };
+    notify();
+    showToast({
+      type: 'success',
+      title: 'Commission styliste mise à jour',
+      message: `Bordereau de commission passé en état ${status}.`,
+      category: 'appointment_service',
+    });
+  };
+
+  const resetSalonMockData = () => {
+    const targetBranchId = state.currentBranchId || 'branch_salon_hydra';
+    const trace = getTraceContext();
+
+    const salonServices = INITIAL_SALON_SERVICES.map((s) => ({
+      ...trace,
+      ...s,
+      facilityId: targetBranchId,
+      branchId: targetBranchId,
+      accountId: state.account.id,
+      businessId: state.currentBusinessId,
+    }));
+
+    const salonAppointments = INITIAL_APPOINTMENTS.map((a) => ({
+      ...trace,
+      ...a,
+      facilityId: targetBranchId,
+      branchId: targetBranchId,
+      accountId: state.account.id,
+      businessId: state.currentBusinessId,
+    }));
+
+    const salonClients = INITIAL_SALON_CLIENTS.map((c) => ({
+      ...trace,
+      ...c,
+      facilityId: targetBranchId,
+      branchId: targetBranchId,
+      accountId: state.account.id,
+      businessId: state.currentBusinessId,
+    }));
+
+    const existingNonSalonMembers = (globalState.members || []).filter((m) => m.facilityId !== targetBranchId);
+    const existingNonSalonServices = (globalState.servicesCatalog || []).filter((s) => s.facilityId !== targetBranchId);
+    const existingNonSalonAppointments = (globalState.appointments || []).filter((a) => a.facilityId !== targetBranchId);
+
+    globalState = {
+      ...globalState,
+      servicesCatalog: [...salonServices, ...existingNonSalonServices],
+      appointments: [...salonAppointments, ...existingNonSalonAppointments],
+      members: [...salonClients, ...existingNonSalonMembers],
+      salonWorkstations: INITIAL_SALON_WORKSTATIONS,
+      stylistPayouts: INITIAL_STYLIST_PAYOUTS,
+    };
+    notify();
+
+    showToast({
+      type: 'success',
+      title: 'Salon & Spa Data Recharged',
+      message: `${salonAppointments.length} appointments, ${salonServices.length} treatments, and ${salonClients.length} client diagnostics restored.`,
+      category: 'appointment_service',
+    });
+  };
+
 
   const addStaff = (staffData: Omit<StaffMember, 'id' | 'tenantId' | 'facilityId'>) => {
     if (!staffQuota.isAllowed) {
@@ -6497,13 +6668,24 @@ export function useAtriumStore() {
     resetAllData,
     exportDatabase,
     importDatabase,
-    // Appointment Actions
+    // Appointment & Salon Actions
+
     createAppointment,
     updateAppointmentStatus,
     rescheduleAppointment,
     deleteAppointment,
+    batchDeleteAppointments,
+    batchUpdateAppointmentStatus,
     addServiceItem,
+    updateServiceItem,
+    deleteServiceItem,
+    batchDeleteServiceItems,
     checkoutAppointment,
+    updateStylistPayoutStatus,
+    resetSalonMockData,
+    salonWorkstations: state.salonWorkstations || INITIAL_SALON_WORKSTATIONS,
+    stylistPayouts: state.stylistPayouts || INITIAL_STYLIST_PAYOUTS,
+
     // Freelance Actions
     startTimer,
     pauseTimer,

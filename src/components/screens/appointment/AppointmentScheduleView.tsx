@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   Calendar,
   Clock,
@@ -55,9 +55,19 @@ export const AppointmentScheduleView: React.FC = () => {
     switchBranch,
     updateAppointmentStatus,
     checkoutAppointment,
+    batchDeleteAppointments,
+    batchUpdateAppointmentStatus,
+    resetSalonMockData,
     language,
     showToast,
   } = useAtriumStore();
+
+  useEffect(() => {
+    if (!appointments || appointments.length === 0) {
+      resetSalonMockData();
+    }
+  }, [appointments?.length, resetSalonMockData]);
+
 
   const [selectedDate, setSelectedDate] = useState<string>(
     new Date().toISOString().split('T')[0]
@@ -473,12 +483,23 @@ export const AppointmentScheduleView: React.FC = () => {
           <div className="flex items-center gap-2.5">
             <button
               type="button"
+              onClick={() => resetSalonMockData()}
+              className="px-3 py-2 text-xs font-medium rounded-xl border border-[#C4785A]/30 text-[#C4785A] hover:bg-[#C4785A]/10 transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
+              title="Restaurer l'agenda et les rendez-vous d'Alger"
+            >
+              <Sparkles size={14} />
+              <span>Recharger Démo</span>
+            </button>
+
+            <button
+              type="button"
               onClick={handleExportCSV}
               className="px-3 py-2 text-xs font-medium rounded-xl border border-neutral-300 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors flex items-center gap-1.5 cursor-pointer"
             >
               <Download size={14} />
               {t('salon_btn_export_csv', language)}
             </button>
+
 
             <button
               type="button"

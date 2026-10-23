@@ -409,7 +409,7 @@ export interface OnboardingParams {
   voucherCode?: string;
 }
 
-export type AppointmentStatus = 'Confirmed' | 'InChair' | 'Completed' | 'Cancelled' | 'NoShow';
+export type AppointmentStatus = 'Confirmed' | 'InChair' | 'Completed' | 'Cancelled' | 'NoShow' | 'Booked';
 
 export interface ServiceItem {
   id: string;
@@ -424,6 +424,9 @@ export interface ServiceItem {
   price: number;
   colorCode: string;
   description?: string;
+  costPrice?: number;
+  commissionRate?: number;
+  bufferMinutes?: number;
 }
 
 export interface Appointment {
@@ -448,7 +451,48 @@ export interface Appointment {
   status: AppointmentStatus;
   notes?: string;
   createdAt: string;
+  chairId?: string;
+  chairName?: string;
+  colorFormula?: string;
+  hairDiagnostic?: string;
+  paymentMethod?: 'Cash' | 'Dahabia_CIB' | 'BaridiMob' | 'Card';
+  isPaid?: boolean;
+  stylistCommission?: number;
+  retailProductsTotal?: number;
+  tipAmount?: number;
 }
+
+export interface StylistPayout {
+  id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  staffId: string;
+  staffName: string;
+  periodStart: string;
+  periodEnd: string;
+  totalServicesCount: number;
+  totalServiceRevenue: number;
+  commissionRate: number; // e.g. 40%
+  commissionAmount: number;
+  retailSalesCount: number;
+  retailSalesRevenue: number;
+  retailCommissionAmount: number;
+  totalPayout: number;
+  status: 'Pending' | 'Approved' | 'Paid';
+  paidAt?: string;
+  paymentMethod?: string;
+}
+
+export interface SalonWorkstation {
+  id: string;
+  name: string;
+  type: 'StylingChair' | 'WashBasin' | 'SpaCabin' | 'NailStation';
+  assignedStaffId?: string;
+  assignedStaffName?: string;
+  isAvailable: boolean;
+}
+
 
 // ==========================================
 // Freelancer & Solo Practitioner (Category 16)
