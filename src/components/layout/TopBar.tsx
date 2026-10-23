@@ -36,6 +36,7 @@ import { formatDuration } from '../../utils/rules';
 import { PMRole, SupportedLanguage } from '../../types/index';
 import { Seek } from '../ui/Seek';
 import { useTranslation } from '../../utils/useTranslation';
+import { BackendDiagnosticPanel } from '../BackendDiagnosticPanel';
 
 interface TopBarProps {
   onOpenVoucherModal: () => void;
@@ -89,6 +90,7 @@ export const TopBar: React.FC<TopBarProps> = ({
   const [facilityDropdownOpen, setFacilityDropdownOpen] = useState(false);
   const [languageDropdownOpen, setLanguageDropdownOpen] = useState(false);
   const [topBarSearch, setTopBarSearch] = useState('');
+  const [isDiagnosticPanelOpen, setIsDiagnosticPanelOpen] = useState(false);
 
   const isFreelance = currentBusiness?.category === 'freelance_solo';
   const isRental = currentBusiness?.category === 'rental_booking';
@@ -763,25 +765,27 @@ export const TopBar: React.FC<TopBarProps> = ({
           )}
         </div>
 
-        {/* Supabase Cloud Connection Status Badge */}
-        <div
+        {/* Supabase Cloud Connection Status Badge / Diagnostics Trigger */}
+        <button
+          type="button"
+          onClick={() => setIsDiagnosticPanelOpen(true)}
           title={
             supabaseStatus === 'connected'
-              ? (language === 'ar' ? `متصل بسوبابيس PostgreSQL والبث المباشر${lastSyncedAt ? ` (المزامنة: ${new Date(lastSyncedAt).toLocaleTimeString()})` : ''}` : language === 'fr' ? `Connecté à Supabase PostgreSQL & temps réel${lastSyncedAt ? ` (Synchronisé : ${new Date(lastSyncedAt).toLocaleTimeString()})` : ''}` : `Connected to Supabase PostgreSQL & Realtime${lastSyncedAt ? ` (Synced: ${new Date(lastSyncedAt).toLocaleTimeString()})` : ''}`)
+              ? (language === 'ar' ? `متصل بسوبابيس PostgreSQL والبث المباشر (انقر لفتح فحص CRUD)` : language === 'fr' ? `Connecté à Supabase PostgreSQL & temps réel (Cliquer pour ouvrir le diagnostic CRUD)` : `Connected to Supabase PostgreSQL & Realtime (Click for CRUD Diagnostics)`)
               : supabaseStatus === 'connecting'
               ? (language === 'ar' ? 'جارٍ الاتصال بسوبابيس...' : language === 'fr' ? 'Connexion à Supabase...' : 'Connecting to Supabase...')
               : supabaseStatus === 'offline'
-              ? (language === 'ar' ? 'الوضع المحلي بدون إنترنت — سيتم مزامنة التغييرات تلقائياً فور عودة الاتصال' : language === 'fr' ? 'Mode hors-ligne — synchronisation dès retour du réseau' : 'Offline mode — local changes will sync when connection is restored')
-              : (language === 'ar' ? 'وضع التخزين المحلي / التجريبي' : language === 'fr' ? 'Stockage local / Mode démo' : 'Local Storage / Demo Mode')
+              ? (language === 'ar' ? 'الوضع المحلي بدون إنترنت — انقر لتشغيل فحص CRUD' : language === 'fr' ? 'Mode hors-ligne — cliquer pour tester le CRUD' : 'Offline mode — click to run CRUD diagnostics')
+              : (language === 'ar' ? 'وضع التخزين المحلي / التجريبي — انقر للفحص' : language === 'fr' ? 'Stockage local / Mode démo — cliquer pour tester' : 'Local Storage / Demo Mode — click for diagnostics')
           }
-          className={`hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium border transition-colors ${
+          className={`hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium border transition-colors cursor-pointer hover:shadow-xs ${
             supabaseStatus === 'connected'
               ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800'
               : supabaseStatus === 'connecting'
               ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800'
               : supabaseStatus === 'offline'
               ? 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-800'
-              : 'bg-neutral-100 text-neutral-600 border-neutral-200 dark:bg-neutral-800 dark:text-neutral-300 dark:border-neutral-700'
+              : 'bg-neutral-100 text-neutral-600 border-neutral-200 dark:bg-neutral-800 dark:text-neutral-300 dark:border-neutral-700 hover:bg-neutral-200/60'
           }`}
         >
           {supabaseStatus === 'connected' ? (
@@ -808,7 +812,7 @@ export const TopBar: React.FC<TopBarProps> = ({
               <span>{language === 'ar' ? 'محلي / هجين' : language === 'fr' ? 'Hybride / Local' : 'Hybrid / Local'}</span>
             </>
           )}
-        </div>
+        </button>
 
         {/* Sync / Refresh Button */}
         <button
@@ -935,6 +939,11 @@ export const TopBar: React.FC<TopBarProps> = ({
           )}
         </div>
       </div>
+
+      <BackendDiagnosticPanel
+        isOpen={isDiagnosticPanelOpen}
+        onClose={() => setIsDiagnosticPanelOpen(false)}
+      />
     </header>
   );
 };

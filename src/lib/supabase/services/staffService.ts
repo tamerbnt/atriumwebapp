@@ -57,7 +57,9 @@ export const staffService = {
     const { data, error } = await client
       .from('staff')
       .insert({
-        account_id: staff.tenantId,
+        account_id: staff.accountId || staff.tenantId,
+        business_id: staff.businessId || null,
+        branch_id: staff.branchId || staff.facilityId || null,
         full_name: staff.fullName,
         email: staff.email || null,
         phone: staff.phoneNumber || null,
@@ -71,6 +73,6 @@ export const staffService = {
       console.warn('[staffService] createStaff failed:', error);
       return null;
     }
-    return mapStaffFromDb(data, staff.facilityId);
+    return mapStaffFromDb(data, staff.branchId || staff.facilityId);
   },
 };

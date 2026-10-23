@@ -1785,6 +1785,10 @@ export const INITIAL_SALES: Sale[] = [
 export const INITIAL_PARKED_ORDERS: ParkedOrder[] = [
   {
     id: 'park_01',
+    accountId: 'acc_01',
+    businessId: 'biz_restaurant',
+    branchId: 'branch_rest_didouche',
+    staffId: 'stf_pos_01',
     tenantId: 'acc_01',
     facilityId: 'branch_rest_didouche',
     referenceName: 'Customer #3 (Hold for Wallet)',
@@ -1819,6 +1823,10 @@ export const INITIAL_PARKED_ORDERS: ParkedOrder[] = [
 export const INITIAL_STOCK_MOVEMENTS: StockMovement[] = [
   {
     id: 'sm_01',
+    accountId: 'acc_01',
+    businessId: 'biz_restaurant',
+    branchId: 'branch_rest_didouche',
+    staffId: 'stf_pos_01',
     tenantId: 'acc_01',
     facilityId: 'branch_rest_didouche',
     productId: 'prod_pos_01',
@@ -1833,6 +1841,10 @@ export const INITIAL_STOCK_MOVEMENTS: StockMovement[] = [
   },
   {
     id: 'sm_02',
+    accountId: 'acc_01',
+    businessId: 'biz_restaurant',
+    branchId: 'branch_rest_didouche',
+    staffId: 'stf_pos_01',
     tenantId: 'acc_01',
     facilityId: 'branch_rest_didouche',
     productId: 'prod_pos_01',
@@ -1847,6 +1859,10 @@ export const INITIAL_STOCK_MOVEMENTS: StockMovement[] = [
   },
   {
     id: 'sm_03',
+    accountId: 'acc_01',
+    businessId: 'biz_restaurant',
+    branchId: 'branch_rest_didouche',
+    staffId: 'stf_pos_01',
     tenantId: 'acc_01',
     facilityId: 'branch_rest_didouche',
     productId: 'prod_pos_06',
@@ -1861,6 +1877,10 @@ export const INITIAL_STOCK_MOVEMENTS: StockMovement[] = [
   },
   {
     id: 'sm_04',
+    accountId: 'acc_01',
+    businessId: 'biz_restaurant',
+    branchId: 'branch_rest_didouche',
+    staffId: 'stf_pos_01',
     tenantId: 'acc_01',
     facilityId: 'branch_rest_didouche',
     productId: 'prod_pos_04',

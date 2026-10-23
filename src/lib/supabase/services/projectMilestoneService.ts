@@ -773,6 +773,10 @@ export const projectMilestoneService = {
 
       return (data || []).map((row: any): PMCcpSlip => ({
         id: row.id,
+        accountId: row.account_id || row.tenant_id,
+        businessId: row.business_id,
+        branchId: row.branch_id || row.facility_id,
+        staffId: row.staff_id,
         tenantId: row.tenant_id,
         facilityId: row.facility_id,
         batchId: row.batch_id,
@@ -812,6 +816,10 @@ export const projectMilestoneService = {
       const amount = att.grossPayableDzd || 3500;
       const slip: PMCcpSlip = {
         id: `slip-${att.id}`,
+        accountId: batch.accountId || batch.tenantId,
+        businessId: batch.businessId,
+        branchId: batch.branchId || batch.facilityId,
+        staffId: batch.staffId,
         tenantId: batch.tenantId,
         facilityId: batch.facilityId,
         batchId: batch.id,
@@ -836,6 +844,10 @@ export const projectMilestoneService = {
         await (client as any).from('pm_ccp_slips').insert(
           slips.map(s => ({
             id: s.id,
+            account_id: s.accountId || s.tenantId,
+            business_id: s.businessId || batch.businessId || null,
+            branch_id: s.branchId || s.facilityId,
+            staff_id: s.staffId || batch.staffId || null,
             tenant_id: s.tenantId,
             facility_id: s.facilityId,
             batch_id: s.batchId,
@@ -883,6 +895,10 @@ export const projectMilestoneService = {
 
       return (data || []).map((row: any): PMEquipmentStock => ({
         id: row.id,
+        accountId: row.account_id || row.tenant_id,
+        businessId: row.business_id,
+        branchId: row.branch_id || row.facility_id,
+        staffId: row.staff_id,
         tenantId: row.tenant_id,
         facilityId: row.facility_id,
         assetCode: row.asset_code,
@@ -911,6 +927,10 @@ export const projectMilestoneService = {
         .from('pm_equipment_stock')
         .upsert({
           id: item.id,
+          account_id: item.accountId || item.tenantId,
+          business_id: item.businessId || null,
+          branch_id: item.branchId || item.facilityId,
+          staff_id: item.staffId || null,
           tenant_id: item.tenantId,
           facility_id: item.facilityId,
           asset_code: item.assetCode,

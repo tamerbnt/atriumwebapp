@@ -378,9 +378,81 @@ const DEFAULT_STATE: AppState = {
   toasts: [],
 };
 
+// In-memory Quadruple Traceability Normalizer
+function backfillTraceability(state: AppState): AppState {
+  const accountId = state.account?.id || 'acc_01';
+  const businessId = state.currentBusinessId || state.businesses[0]?.id || 'biz_01';
+  const branchId = state.currentBranchId || state.branches[0]?.id || 'branch_gym_main';
+  const defaultStaffId = state.currentUser?.id || state.staff?.[0]?.id || 'stf_01';
+
+  const patch = <T extends Record<string, any>>(item: T): T => {
+    const itemBranch = item.branchId || item.facilityId || branchId;
+    const branchManager = (state.staff || []).find(
+      (s) =>
+        (s.branchId === itemBranch || s.facilityId === itemBranch) &&
+        ['owner', 'manager', 'admin', 'agencydirector'].includes((s.role || '').toLowerCase())
+    );
+    const resolvedStaffId = item.staffId || state.currentUser?.id || branchManager?.id || state.staff?.[0]?.id || defaultStaffId;
+
+    return {
+      ...item,
+      accountId: item.accountId || item.tenantId || accountId,
+      businessId: item.businessId || businessId,
+      branchId: itemBranch,
+      staffId: resolvedStaffId,
+    };
+  };
+
+  return {
+    ...state,
+    members: (state.members || []).map(patch),
+    leads: (state.leads || []).map(patch),
+    products: (state.products || []).map(patch),
+    sales: (state.sales || []).map(patch),
+    parkedOrders: (state.parkedOrders || []).map(patch),
+    stockMovements: (state.stockMovements || []).map(patch),
+    staff: (state.staff || []).map((s) => ({
+      ...s,
+      accountId: s.accountId || s.tenantId || accountId,
+      businessId: s.businessId || businessId,
+      branchId: s.branchId || s.facilityId || branchId,
+    })),
+    appointments: (state.appointments || []).map(patch),
+    freelanceClients: (state.freelanceClients || []).map(patch),
+    freelanceProjects: (state.freelanceProjects || []).map(patch),
+    timeLogs: (state.timeLogs || []).map(patch),
+    freelanceInvoices: (state.freelanceInvoices || []).map(patch),
+    freelanceProposals: (state.freelanceProposals || []).map(patch),
+    freelanceExpenses: (state.freelanceExpenses || []).map(patch),
+    rentableUnits: (state.rentableUnits || []).map(patch),
+    rentalBookings: (state.rentalBookings || []).map(patch),
+    rentalRenters: (state.rentalRenters || []).map(patch),
+    securityDeposits: (state.securityDeposits || []).map(patch),
+    eduStudents: (state.eduStudents || []).map(patch),
+    eduCohorts: (state.eduCohorts || []).map(patch),
+    eduSessions: (state.eduSessions || []).map(patch),
+    eduAttendance: (state.eduAttendance || []).map(patch),
+    eduGrades: (state.eduGrades || []).map(patch),
+    eduCertificates: (state.eduCertificates || []).map(patch),
+    eduEnrollments: (state.eduEnrollments || []).map(patch),
+    eduAdmissions: (state.eduAdmissions || []).map(patch),
+    pmClients: (state.pmClients || []).map(patch),
+    pmProjects: (state.pmProjects || []).map(patch),
+    pmPrintOrders: (state.pmPrintOrders || []).map(patch),
+    pmBatDeliverables: (state.pmBatDeliverables || []).map(patch),
+    pmTalents: (state.pmTalents || []).map(patch),
+    pmMissions: (state.pmMissions || []).map(patch),
+    pmAttendances: (state.pmAttendances || []).map(patch),
+    pmExpenses: (state.pmExpenses || []).map(patch),
+    pmPayrollBatches: (state.pmPayrollBatches || []).map(patch),
+    pmCcpSlips: (state.pmCcpSlips || []).map(patch),
+    pmEquipmentStock: (state.pmEquipmentStock || []).map(patch),
+  };
+}
+
 // Global reactive subscribers
 type Listener = () => void;
-let globalState: AppState = (() => {
+let globalState: AppState = backfillTraceability((() => {
   try {
     if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
       const raw = localStorage.getItem(STORAGE_KEY);
@@ -519,7 +591,7 @@ let globalState: AppState = (() => {
     console.warn('Failed to load Atrium state from localStorage, falling back to clean default state', e);
   }
   return DEFAULT_STATE;
-})();
+})());
 
 const listeners = new Set<Listener>();
 
@@ -1157,7 +1229,14 @@ export function useAtriumStore() {
   };
 
   const getTraceContext = () => {
-    const activeStaffId = state.currentUser?.id || state.staff[0]?.id || undefined;
+    const branchManager = (state.staff || []).find(
+      (s) =>
+        (s.branchId === state.currentBranchId || s.facilityId === state.currentBranchId) &&
+        ['owner', 'manager', 'admin', 'agencydirector'].includes((s.role || '').toLowerCase())
+    );
+    const activeStaffId =
+      state.currentUser?.id || branchManager?.id || (state.staff && state.staff.length > 0 ? state.staff[0].id : undefined);
+
     return {
       accountId: state.account.id,
       businessId: state.currentBusinessId,
@@ -1394,7 +1473,9 @@ export function useAtriumStore() {
     const expDateObj = new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000);
     const expirationDate = expDateObj.toISOString().split('T')[0];
 
+    const trace = getTraceContext();
     const newMember: Member = {
+      ...trace,
       id: `mem_${Date.now()}`,
       tenantId: state.account.id,
       facilityId: state.currentBranchId,
@@ -1505,6 +1586,7 @@ export function useAtriumStore() {
         const prev = p.stockQuantity;
         const next = Math.max(0, prev - match.quantity);
         newMovements.push({
+          ...getTraceContext(),
           id: `sm_${Date.now()}_${p.id}`,
           tenantId: state.account.id,
           facilityId: state.currentBranchId,
@@ -1551,6 +1633,7 @@ export function useAtriumStore() {
         const prev = p.stockQuantity;
         const next = prev + match.quantity;
         returnMovements.push({
+          ...getTraceContext(),
           id: `sm_${Date.now()}_${p.id}`,
           tenantId: state.account.id,
           facilityId: state.currentBranchId,
@@ -1601,6 +1684,7 @@ export function useAtriumStore() {
         const next = mode === 'set' ? Math.max(0, quantity) : Math.max(0, prev + quantity);
         const delta = next - prev;
         movement = {
+          ...getTraceContext(),
           id: `sm_${Date.now()}_${p.id}`,
           tenantId: state.account.id,
           facilityId: state.currentBranchId,
@@ -1673,7 +1757,9 @@ export function useAtriumStore() {
   const parkOrder = (
     orderData: Omit<ParkedOrder, 'id' | 'createdAt' | 'tenantId' | 'facilityId'>
   ) => {
+    const trace = getTraceContext();
     const parked: ParkedOrder = {
+      ...trace,
       ...orderData,
       id: `park_${Date.now()}`,
       tenantId: state.account.id,
@@ -1818,9 +1904,19 @@ export function useAtriumStore() {
         isPinned: true,
       },
     ];
+    const trace = getTraceContext();
+    const enrichedDemoItems: Product[] = demoItems.map((item) => ({
+      ...trace,
+      ...item,
+      accountId: state.account.id,
+      businessId: state.currentBusinessId,
+      branchId: targetBranchId,
+      tenantId: state.account.id,
+      facilityId: targetBranchId,
+    }));
     globalState = {
       ...globalState,
-      products: [...demoItems, ...globalState.products],
+      products: [...enrichedDemoItems, ...globalState.products],
     };
     notify();
   };
@@ -1970,6 +2066,7 @@ export function useAtriumStore() {
 
   const addServiceItem = (serviceData: Omit<ServiceItem, 'id' | 'facilityId'>) => {
     const newService: ServiceItem = {
+      ...getTraceContext(),
       ...serviceData,
       id: `srv_${Date.now()}`,
       facilityId: state.currentBranchId,
@@ -1990,6 +2087,7 @@ export function useAtriumStore() {
     if (!apt) throw new Error('Appointment not found');
 
     const sale: Sale = {
+      ...getTraceContext(),
       id: `sale_${Date.now()}`,
       tenantId: state.account.id,
       facilityId: state.currentBranchId,
@@ -2044,6 +2142,7 @@ export function useAtriumStore() {
     }
 
     const newStaff: StaffMember = {
+      ...getTraceContext(),
       ...staffData,
       id: `stf_${Date.now()}`,
       tenantId: state.account.id,
@@ -2054,6 +2153,13 @@ export function useAtriumStore() {
       staff: [...globalState.staff, newStaff],
     };
     notify();
+
+    if (isSupabaseConfigured()) {
+      staffService.createStaff(newStaff).catch((err) => {
+        console.warn('[store] Supabase createStaff notice:', err);
+      });
+    }
+
     return newStaff;
   };
 
@@ -2927,6 +3033,7 @@ export function useAtriumStore() {
 
   const addFreelanceClient = (clientData: Omit<FreelanceClient, 'id' | 'tenantId' | 'facilityId' | 'lifetimeBilled' | 'createdAt'>) => {
     const newClient: FreelanceClient = {
+      ...getTraceContext(),
       ...clientData,
       id: `fcli_${Date.now()}`,
       tenantId: state.account.id,
@@ -3001,6 +3108,7 @@ export function useAtriumStore() {
 
   const addFreelanceProject = (projectData: Omit<FreelanceProject, 'id' | 'tenantId' | 'facilityId' | 'loggedHours' | 'createdAt'>) => {
     const newProject: FreelanceProject = {
+      ...getTraceContext(),
       ...projectData,
       id: `fproj_${Date.now()}`,
       tenantId: state.account.id,
@@ -3194,7 +3302,9 @@ export function useAtriumStore() {
   };
 
   const logTimeEntry = (entryData: Omit<TimeLogEntry, 'id' | 'tenantId' | 'facilityId' | 'createdAt' | 'isInvoiced'>) => {
+    const trace = getTraceContext();
     const entry: TimeLogEntry = {
+      ...trace,
       ...entryData,
       id: `time_${Date.now()}`,
       tenantId: state.account.id,
@@ -3327,6 +3437,7 @@ export function useAtriumStore() {
 
     const invoiceNum = `INV-${new Date().getFullYear()}-${Math.floor(100 + Math.random() * 900)}`;
     const newInvoice: FreelanceInvoice = {
+      ...getTraceContext(),
       id: `inv_${Date.now()}`,
       tenantId: state.account.id,
       facilityId: state.currentBranchId,
@@ -3390,6 +3501,7 @@ export function useAtriumStore() {
 
   const createFreelanceInvoice = (invoiceData: Omit<FreelanceInvoice, 'id' | 'tenantId' | 'facilityId' | 'createdAt'>) => {
     const newInv: FreelanceInvoice = {
+      ...getTraceContext(),
       ...invoiceData,
       id: `inv_${Date.now()}`,
       tenantId: state.account.id,
@@ -3522,6 +3634,7 @@ export function useAtriumStore() {
 
   const createFreelanceProposal = (proposalData: Omit<FreelanceProposal, 'id' | 'tenantId' | 'facilityId' | 'createdAt'>) => {
     const newProp: FreelanceProposal = {
+      ...getTraceContext(),
       ...proposalData,
       id: `prop_${Date.now()}`,
       tenantId: state.account.id,
@@ -3582,6 +3695,7 @@ export function useAtriumStore() {
     );
     if (!client) {
       client = {
+        ...getTraceContext(),
         id: `fcli_${Date.now()}`,
         tenantId: state.account.id,
         facilityId: state.currentBranchId,
@@ -3601,6 +3715,7 @@ export function useAtriumStore() {
     }
 
     const newProject: FreelanceProject = {
+      ...getTraceContext(),
       id: `fproj_${Date.now()}`,
       tenantId: state.account.id,
       facilityId: state.currentBranchId,
@@ -3669,6 +3784,7 @@ export function useAtriumStore() {
 
   const addFreelanceExpense = (expenseData: Omit<FreelanceExpense, 'id' | 'tenantId' | 'facilityId' | 'createdAt'>) => {
     const newExp: FreelanceExpense = {
+      ...getTraceContext(),
       ...expenseData,
       id: `exp_${Date.now()}`,
       tenantId: state.account.id,
@@ -3962,6 +4078,7 @@ export function useAtriumStore() {
   ) => {
     const unitId = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `unit_${Date.now()}`;
     const newUnit: RentableUnit = {
+      ...getTraceContext(),
       ...unitData,
       id: unitId,
       tenantId: state.account.id,
@@ -4411,6 +4528,7 @@ export function useAtriumStore() {
 
   const addEduSession = (sessionData: Omit<EduSession, 'id' | 'tenantId' | 'facilityId' | 'createdAt'>) => {
     const newSession: EduSession = {
+      ...getTraceContext(),
       ...sessionData,
       id: `sess_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
       tenantId: state.account.id,
@@ -4456,7 +4574,9 @@ export function useAtriumStore() {
     records: { studentId: string; studentName: string; status: AttendanceStatus; minutesLate?: number; excuseNote?: string }[]
   ) => {
     const nowIso = new Date().toISOString();
+    const trace = getTraceContext();
     const newRecords: EduAttendance[] = records.map((r) => ({
+      ...trace,
       id: `att_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
       tenantId: state.account.id,
       facilityId: state.currentBranchId,
@@ -4505,6 +4625,7 @@ export function useAtriumStore() {
 
   const recordEduGrade = (gradeData: Omit<EduGrade, 'id' | 'tenantId' | 'facilityId' | 'gradedAt'>) => {
     const newGrade: EduGrade = {
+      ...getTraceContext(),
       ...gradeData,
       id: `grd_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
       tenantId: state.account.id,
@@ -4582,6 +4703,7 @@ export function useAtriumStore() {
 
   const addEduEnrollment = (enrollmentData: Omit<EduEnrollment, 'id' | 'tenantId' | 'facilityId' | 'enrolledAt'>) => {
     const newEnrollment: EduEnrollment = {
+      ...getTraceContext(),
       ...enrollmentData,
       id: `enr_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
       tenantId: state.account.id,
@@ -4613,6 +4735,7 @@ export function useAtriumStore() {
 
   const addEduAdmissionLead = (leadData: Omit<EduAdmissionLead, 'id' | 'tenantId' | 'facilityId' | 'createdAt'>) => {
     const newLead: EduAdmissionLead = {
+      ...getTraceContext(),
       ...leadData,
       id: `lead_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
       tenantId: state.account.id,
@@ -4649,7 +4772,9 @@ export function useAtriumStore() {
     const cohort = (globalState.eduCohorts || []).find((c) => c.id === cohortId);
     if (!lead || !cohort) return;
 
+    const trace = getTraceContext();
     const newStudent: EduStudent = {
+      ...trace,
       id: `std_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
       tenantId: state.account.id,
       facilityId: state.currentBranchId,
@@ -4667,6 +4792,7 @@ export function useAtriumStore() {
     const tranche2 = tuition - tranche1;
 
     const newEnrollment: EduEnrollment = {
+      ...trace,
       id: `enr_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
       tenantId: state.account.id,
       facilityId: state.currentBranchId,
@@ -4721,6 +4847,7 @@ export function useAtriumStore() {
     const certNum = `ATRIUM-CERT-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
     const hash = '0x' + Array.from({ length: 16 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
     const newCert: EduCertificate = {
+      ...getTraceContext(),
       ...certData,
       id: `cert_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
       tenantId: state.account.id,
@@ -5256,6 +5383,7 @@ export function useAtriumStore() {
     const attendances = (globalState.pmAttendances || []).filter((a) => a.missionId === batch.missionId);
     const talentsMap = new Map((globalState.pmTalents || []).map((t) => [t.id, t]));
 
+    const trace = getTraceContext();
     const newSlips: PMCcpSlip[] = [];
     for (const att of attendances) {
       if (!['present', 'late', 'replacement'].includes(att.status)) continue;
@@ -5264,7 +5392,12 @@ export function useAtriumStore() {
 
       const amt = att.grossPayableDzd || 3500;
       newSlips.push({
+        ...trace,
         id: `slip_${att.id}_${Date.now()}`,
+        accountId: batch.accountId || batch.tenantId || trace.accountId,
+        businessId: batch.businessId || trace.businessId,
+        branchId: batch.branchId || batch.facilityId || trace.branchId,
+        staffId: batch.staffId || trace.staffId,
         tenantId: batch.tenantId,
         facilityId: batch.facilityId,
         batchId: batch.id,
@@ -5313,6 +5446,7 @@ export function useAtriumStore() {
 
   const addPmEquipmentStock = (itemData: Omit<PMEquipmentStock, 'id' | 'createdAt'>) => {
     const newItem: PMEquipmentStock = {
+      ...getTraceContext(),
       ...itemData,
       id: `eq_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
       createdAt: new Date().toISOString(),

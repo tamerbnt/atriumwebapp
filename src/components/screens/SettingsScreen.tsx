@@ -24,12 +24,14 @@ import {
   HardDrive,
   Globe,
   Check,
+  Activity,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../services/store';
 import { Modal } from '../ui/Modal';
 import { validateVoucherCode } from '../../utils/rules';
 import { LabelInput } from '../ui/LabelInput';
 import { t, getSystemDefaultLanguage, SUPPORTED_LANGUAGES } from '../../utils/i18n';
+import { BackendDiagnosticPanel } from '../BackendDiagnosticPanel';
 
 interface SettingsScreenProps {
   onOpenVoucherModal: () => void;
@@ -91,6 +93,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
   const [deviceHwId, setDeviceHwId] = useState('');
   const [deviceError, setDeviceError] = useState<string | null>(null);
   const [exportedStatus, setExportedStatus] = useState<string | null>(null);
+  const [isDiagnosticPanelOpen, setIsDiagnosticPanelOpen] = useState(false);
 
   const handleExportDataBackup = () => {
     try {
@@ -648,19 +651,36 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={() => syncWithSupabase()}
-            disabled={isSyncing}
-            className="h-9 px-4 text-xs font-bold rounded-full border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-800 dark:text-white hover:bg-neutral-50 dark:hover:bg-neutral-700/60 flex items-center gap-2 cursor-pointer transition-colors shadow-2xs disabled:opacity-60"
-          >
-            <RotateCw size={13} className={isSyncing ? 'animate-spin text-[#C4785A]' : ''} />
-            <span>
-              {isSyncing
-                ? (language === 'ar' ? 'جارٍ مزامنة الجداول...' : language === 'fr' ? 'Synchronisation des tables...' : 'Syncing Tables...')
-                : (language === 'ar' ? 'مزامنة قاعدة البيانات الآن' : language === 'fr' ? 'Synchroniser maintenant' : 'Sync Database Now')}
-            </span>
-          </button>
+          <div className="flex flex-wrap items-center gap-2.5">
+            <button
+              type="button"
+              onClick={() => setIsDiagnosticPanelOpen(true)}
+              className="h-9 px-4 text-xs font-bold rounded-full border border-neutral-300 dark:border-neutral-700 bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900 hover:opacity-90 flex items-center gap-2 cursor-pointer transition-all shadow-2xs"
+            >
+              <Activity size={13} className="text-[#C4785A]" />
+              <span>
+                {language === 'ar'
+                  ? 'فحص CRUD المباشر'
+                  : language === 'fr'
+                  ? 'Audit CRUD en direct'
+                  : 'Live CRUD Diagnostics'}
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => syncWithSupabase()}
+              disabled={isSyncing}
+              className="h-9 px-4 text-xs font-bold rounded-full border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-800 dark:text-white hover:bg-neutral-50 dark:hover:bg-neutral-700/60 flex items-center gap-2 cursor-pointer transition-colors shadow-2xs disabled:opacity-60"
+            >
+              <RotateCw size={13} className={isSyncing ? 'animate-spin text-[#C4785A]' : ''} />
+              <span>
+                {isSyncing
+                  ? (language === 'ar' ? 'جارٍ مزامنة الجداول...' : language === 'fr' ? 'Synchronisation des tables...' : 'Syncing Tables...')
+                  : (language === 'ar' ? 'مزامنة قاعدة البيانات الآن' : language === 'fr' ? 'Synchroniser maintenant' : 'Sync Database Now')}
+              </span>
+            </button>
+          </div>
         </div>
 
         {/* Cloud Diagnostics */}
@@ -1244,6 +1264,11 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
           </div>
         </div>
       </Modal>
+
+      <BackendDiagnosticPanel
+        isOpen={isDiagnosticPanelOpen}
+        onClose={() => setIsDiagnosticPanelOpen(false)}
+      />
     </div>
   );
 };

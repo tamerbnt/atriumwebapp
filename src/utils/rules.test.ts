@@ -219,3 +219,31 @@ test('Algerian Dinar Legal Number-to-Words for SFP 01 postal transfers', async (
   assert.ok(arWords2.includes('صفر'));
 });
 
+test('Quadruple Traceability Standard: models uphold account_id, business_id, branch_id, staff_id contract', async () => {
+  const { INITIAL_MEMBERS, INITIAL_STAFF, INITIAL_PARKED_ORDERS, INITIAL_STOCK_MOVEMENTS } = await import('../services/seedData.ts');
+
+  // Verify parked order has full quadruple trace keys
+  assert.ok(INITIAL_PARKED_ORDERS.length > 0);
+  for (const po of INITIAL_PARKED_ORDERS) {
+    assert.ok(po.accountId, 'Parked order must have accountId');
+    assert.ok(po.businessId, 'Parked order must have businessId');
+    assert.ok(po.branchId, 'Parked order must have branchId');
+    assert.ok(po.staffId, 'Parked order must have staffId');
+  }
+
+  // Verify stock movements have full quadruple trace keys
+  assert.ok(INITIAL_STOCK_MOVEMENTS.length > 0);
+  for (const sm of INITIAL_STOCK_MOVEMENTS) {
+    assert.ok(sm.accountId, 'Stock movement must have accountId');
+    assert.ok(sm.businessId, 'Stock movement must have businessId');
+    assert.ok(sm.branchId, 'Stock movement must have branchId');
+    assert.ok(sm.staffId, 'Stock movement must have staffId');
+  }
+
+  // Verify staff members have branch and business affiliations
+  assert.ok(INITIAL_STAFF.length > 0);
+  for (const st of INITIAL_STAFF) {
+    assert.ok(st.tenantId || st.accountId, 'Staff must have tenant/account ID');
+    assert.ok(st.facilityId || st.branchId, 'Staff must have facility/branch ID');
+  }
+});

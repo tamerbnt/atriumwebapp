@@ -38,6 +38,10 @@ export const rentalService = {
 
       return (data || []).map((row: any): RentableUnit => ({
         id: row.id,
+        accountId: row.account_id,
+        businessId: row.business_id,
+        branchId: row.branch_id,
+        staffId: row.staff_id,
         tenantId: row.account_id,
         facilityId: row.branch_id,
         name: row.name,
@@ -66,14 +70,16 @@ export const rentalService = {
     }
 
     const safeId = toValidUuid(unit.id);
-    const safeAccountId = toValidUuid(unit.tenantId);
-    const safeBranchId = toValidUuid(unit.facilityId);
+    const safeAccountId = toValidUuid(unit.accountId || unit.tenantId);
+    const safeBranchId = toValidUuid(unit.branchId || unit.facilityId);
 
     try {
       const payload: any = {
         id: safeId,
         account_id: safeAccountId,
+        business_id: unit.businessId || null,
         branch_id: safeBranchId,
+        staff_id: unit.staffId || null,
         name: unit.name,
         code: unit.code,
         type: unit.type,
@@ -155,6 +161,10 @@ export const rentalService = {
 
       return (data || []).map((row: any): RentalRenter => ({
         id: row.id,
+        accountId: row.account_id,
+        businessId: row.business_id,
+        branchId: row.branch_id,
+        staffId: row.staff_id,
         tenantId: row.account_id,
         facilityId: row.branch_id,
         fullName: row.full_name,
@@ -178,14 +188,16 @@ export const rentalService = {
     if (!client) return { success: false, error: 'Not connected' };
 
     const safeId = toValidUuid(renter.id);
-    const safeAccountId = toValidUuid(renter.tenantId);
-    const safeBranchId = toValidUuid(renter.facilityId);
+    const safeAccountId = toValidUuid(renter.accountId || renter.tenantId);
+    const safeBranchId = toValidUuid(renter.branchId || renter.facilityId);
 
     try {
       const payload: any = {
         id: safeId,
         account_id: safeAccountId,
+        business_id: renter.businessId || null,
         branch_id: safeBranchId,
+        staff_id: renter.staffId || null,
         full_name: renter.fullName,
         company_name: renter.companyName || null,
         email: renter.email,
@@ -264,6 +276,10 @@ export const rentalService = {
 
       return (data || []).map((row: any): RentalBooking => ({
         id: row.id,
+        accountId: row.account_id,
+        businessId: row.business_id,
+        branchId: row.branch_id,
+        staffId: row.staff_id,
         tenantId: row.account_id,
         facilityId: row.branch_id,
         renterId: row.renter_id,
@@ -304,14 +320,16 @@ export const rentalService = {
     if (!client) return { success: false, error: 'Not connected' };
 
     const safeId = toValidUuid(booking.id);
-    const safeAccountId = toValidUuid(booking.tenantId);
-    const safeBranchId = toValidUuid(booking.facilityId);
+    const safeAccountId = toValidUuid(booking.accountId || booking.tenantId);
+    const safeBranchId = toValidUuid(booking.branchId || booking.facilityId);
 
     try {
       const payload: any = {
         id: safeId,
         account_id: safeAccountId,
+        business_id: booking.businessId || null,
         branch_id: safeBranchId,
+        staff_id: booking.staffId || null,
         renter_id: booking.renterId,
         renter_name: booking.renterName,
         renter_phone: booking.renterPhone,
@@ -407,6 +425,10 @@ export const rentalService = {
 
       return (data || []).map((row: any): SecurityDepositRecord => ({
         id: row.id,
+        accountId: row.account_id,
+        businessId: row.business_id,
+        branchId: row.branch_id,
+        staffId: row.staff_id,
         tenantId: row.account_id,
         facilityId: row.branch_id,
         bookingId: row.booking_id,
@@ -430,14 +452,16 @@ export const rentalService = {
     if (!client) return { success: false, error: 'Not connected' };
 
     const safeId = toValidUuid(deposit.id);
-    const safeAccountId = toValidUuid(deposit.tenantId);
-    const safeBranchId = toValidUuid(deposit.facilityId);
+    const safeAccountId = toValidUuid(deposit.accountId || deposit.tenantId);
+    const safeBranchId = toValidUuid(deposit.branchId || deposit.facilityId);
 
     try {
       const payload: any = {
         id: safeId,
         account_id: safeAccountId,
+        business_id: deposit.businessId || null,
         branch_id: safeBranchId,
+        staff_id: deposit.staffId || null,
         booking_id: deposit.bookingId,
         renter_name: deposit.renterName,
         unit_name: deposit.unitName,

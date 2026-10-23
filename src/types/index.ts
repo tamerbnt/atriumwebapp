@@ -331,6 +331,10 @@ export interface ParkedOrder {
 
 export interface StockMovement {
   id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  staffId?: string;
   tenantId: string;
   facilityId: string;
   productId: string;
