@@ -15,6 +15,10 @@ import {
   Pin,
   Calendar,
   Clock,
+  Home,
+  ChevronDown,
+  Download,
+  Building2,
 } from 'lucide-react';
 import { useAtriumStore } from '../../../services/store';
 import { RentableUnit, RentableUnitType, RentableUnitStatus } from '../../../types/index';
@@ -33,6 +37,13 @@ export const VenueInventoryView: React.FC = () => {
     createRentableUnit,
     updateRentableUnit,
     deleteRentableUnit,
+    currentBranch,
+    businesses,
+    branches,
+    currentBusinessId,
+    switchBusiness,
+    switchBranch,
+    resetVenueMockData,
     showToast,
   } = useAtriumStore();
 
@@ -44,6 +55,7 @@ export const VenueInventoryView: React.FC = () => {
   const [pinnedUnitIds, setPinnedUnitIds] = useState<Set<string>>(new Set());
   const [unitSortBy, setUnitSortBy] = useState<string>('name');
   const [unitSortDir, setUnitSortDir] = useState<'asc' | 'desc'>('asc');
+  const [isFacilityDropdownOpen, setIsFacilityDropdownOpen] = useState(false);
 
   // Booking modal trigger
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
@@ -323,27 +335,217 @@ export const VenueInventoryView: React.FC = () => {
     },
   ], [language, t]);
 
+  const handleExportUnitsCSV = () => {
+    const headers = [
+      language === 'ar' ? 'رمز الوحدة' : language === 'fr' ? 'Code Unité' : 'Unit Code',
+      language === 'ar' ? 'اسم المساحة' : language === 'fr' ? 'Nom Espace' : 'Space Name',
+      language === 'ar' ? 'النوع' : 'Type',
+      language === 'ar' ? 'السعة (أشخاص)' : language === 'fr' ? 'Capacité' : 'Capacity',
+      language === 'ar' ? 'المساحة (م²)' : language === 'fr' ? 'Surface (m²)' : 'Area (sqm)',
+      language === 'ar' ? 'السعر بالساعة' : language === 'fr' ? 'Tarif Horaire' : 'Hourly Rate',
+      language === 'ar' ? 'السعر باليوم' : language === 'fr' ? 'Tarif Journalier' : 'Daily Rate',
+      language === 'ar' ? 'العملة' : language === 'fr' ? 'Devise' : 'Currency',
+      language === 'ar' ? 'الحالة' : language === 'fr' ? 'Statut' : 'Status',
+      language === 'ar' ? 'المرافق والتجهيزات' : language === 'fr' ? 'Équipements' : 'Amenities',
+    ];
+    const rows = sortedUnits.map((u) => [
+      `"${u.code}"`,
+      `"${u.name}"`,
+      `"${u.type}"`,
+      `"${u.capacity}"`,
+      `"${u.surfaceAreaSqm || ''}"`,
+      `"${u.hourlyRate}"`,
+      `"${u.dailyRate}"`,
+      `"${u.currency}"`,
+      `"${u.status}"`,
+      `"${(u.amenities || []).join(', ')}"`,
+    ]);
+    const csvContent = 'data:text/csv;charset=utf-8,\uFEFF' + [headers.join(','), ...rows.map((row) => row.join(','))].join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `venue-units-${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast({
+      type: 'success',
+      title: language === 'ar' ? 'تم التصدير' : language === 'fr' ? 'Exportation réussie' : 'Export Complete',
+      message: `${sortedUnits.length} ${language === 'ar' ? 'وحدة ومساحة تم تصديرها' : 'spaces exported successfully'}`,
+    });
+  };
+
+  const handleBatchDelete = () => {
+    if (selectedUnitIds.size === 0) return;
+    const count = selectedUnitIds.size;
+    if (confirm(language === 'ar' ? `هل أنت متأكد من حذف ${count} مساحة محددة؟` : language === 'fr' ? `Supprimer ${count} espaces sélectionnés ?` : `Delete ${count} selected spaces?`)) {
+      selectedUnitIds.forEach((id) => deleteRentableUnit(id));
+      setSelectedUnitIds(new Set());
+      showToast({
+        type: 'info',
+        title: language === 'ar' ? 'تم الحذف' : language === 'fr' ? 'Suppression' : 'Deleted',
+        message: `${count} ${language === 'ar' ? 'مساحة تم حذفها' : 'units removed'}`,
+      });
+    }
+  };
+
+  const handleBatchSetStatus = (status: RentableUnitStatus) => {
+    if (selectedUnitIds.size === 0) return;
+    selectedUnitIds.forEach((id) => updateRentableUnit(id, { status }));
+    const count = selectedUnitIds.size;
+    setSelectedUnitIds(new Set());
+    showToast({
+      type: 'success',
+      title: language === 'ar' ? 'تم التحديث' : language === 'fr' ? 'Statut mis à jour' : 'Status Updated',
+      message: `${count} ${language === 'ar' ? 'مساحة تم تحديث حالتها' : 'spaces status updated'}`,
+    });
+  };
+
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-900 dark:text-white">
-            {t('venue_inv_title')}
-          </h1>
-          <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
-            {t('venue_inv_subtitle')}
-          </p>
+        <div className="flex items-center gap-3.5">
+          <div className="w-11 h-11 rounded-2xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-800 dark:text-neutral-200">
+            <DoorOpen size={22} />
+          </div>
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-900 dark:text-white">
+              {t('venue_inv_title')}
+            </h1>
+            <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
+              {t('venue_inv_subtitle')}
+            </p>
+          </div>
         </div>
 
-        <button
-          onClick={handleOpenAdd}
-          className="px-5 py-2.5 bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white text-xs font-semibold rounded-xl shadow-xs transition-colors flex items-center gap-2 self-start sm:self-auto cursor-pointer"
-        >
-          <Plus size={16} />
-          {t('venue_inv_btn_new_space')}
-        </button>
+        <div className="flex items-center gap-2.5 flex-wrap self-start sm:self-auto">
+          {/* Facility Pill: Atrium 1 ▾ */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setIsFacilityDropdownOpen(!isFacilityDropdownOpen)}
+              className="h-10 px-4 rounded-full bg-[#F4EFEA] dark:bg-neutral-800/80 border border-[#E8DFD8] dark:border-neutral-700 flex items-center gap-2 cursor-pointer hover:bg-[#EFE8E1] dark:hover:bg-neutral-800 transition-colors shadow-2xs"
+            >
+              <Home size={15} className="text-[#C4785A]" />
+              <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
+                {currentBranch?.name || 'Atrium 1'}
+              </span>
+              <ChevronDown
+                size={14}
+                className={`text-neutral-500 transition-transform ${
+                  isFacilityDropdownOpen ? 'rotate-180' : ''
+                }`}
+              />
+            </button>
+
+            {/* Facility Dropdown Menu */}
+            {isFacilityDropdownOpen && (
+              <div className="absolute right-0 rtl:right-auto rtl:left-0 mt-2 w-64 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
+                <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+                  {language === 'ar' ? 'الفروع والمرافق' : language === 'fr' ? 'Succursales & Sites' : 'Branches & Venues'}
+                </div>
+                {businesses.map((biz) => {
+                  const isCurrent = biz.id === currentBusinessId;
+                  const matchingBranch = branches.find((b) => b.businessId === biz.id);
+                  return (
+                    <button
+                      key={biz.id}
+                      type="button"
+                      onClick={() => {
+                        switchBusiness(biz.id);
+                        if (matchingBranch) switchBranch(matchingBranch.id);
+                        setIsFacilityDropdownOpen(false);
+                      }}
+                      className={`w-full px-3 py-2 text-left rtl:text-right flex items-center justify-between text-xs transition-colors cursor-pointer ${
+                        isCurrent
+                          ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold'
+                          : 'text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <Building2 size={14} className={isCurrent ? 'text-[#C4785A]' : 'text-neutral-400'} />
+                        <span className="truncate">{biz.name}</span>
+                      </div>
+                      {isCurrent && <Check size={14} />}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Export CSV Button */}
+          <button
+            type="button"
+            onClick={handleExportUnitsCSV}
+            className="h-10 px-3.5 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold rounded-full transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer"
+            title="Export CSV"
+          >
+            <Download size={14} />
+            <span className="hidden sm:inline">CSV</span>
+          </button>
+
+          {/* Seed Demo Data Button */}
+          <button
+            type="button"
+            onClick={resetVenueMockData}
+            className="h-10 px-3.5 bg-[#FCEEE8] dark:bg-neutral-800 hover:bg-[#F8DFD4] dark:hover:bg-neutral-700 text-[#C4785A] text-xs font-semibold rounded-full transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer"
+            title={language === 'ar' ? 'إعادة شحن بيانات تجريبية' : language === 'fr' ? 'Recharger Données Démo' : 'Seed Mock Data'}
+          >
+            <Sparkles size={14} />
+            <span className="hidden sm:inline">{language === 'ar' ? 'بيانات تجريبية' : language === 'fr' ? 'Données Démo' : 'Demo Data'}</span>
+          </button>
+
+          {/* New Space Button */}
+          <button
+            onClick={handleOpenAdd}
+            className="h-10 px-5 bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white text-xs font-semibold rounded-full shadow-xs transition-colors flex items-center gap-2 cursor-pointer"
+          >
+            <Plus size={16} />
+            <span>{t('venue_inv_btn_new_space')}</span>
+          </button>
+        </div>
       </div>
+
+      {/* Batch Selection Toolbar */}
+      {selectedUnitIds.size > 0 && (
+        <div className="flex items-center justify-between p-3 px-4 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 animate-in fade-in slide-in-from-top-2 flex-wrap gap-2">
+          <div className="flex items-center gap-3">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#C4785A] animate-pulse" />
+            <span className="text-xs font-bold text-neutral-900 dark:text-white">
+              {selectedUnitIds.size} {language === 'ar' ? 'مساحات محددة' : language === 'fr' ? 'espaces sélectionnés' : 'spaces selected'}
+            </span>
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              onClick={() => handleBatchSetStatus('Available')}
+              className="px-2.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold cursor-pointer"
+            >
+              {language === 'ar' ? 'تعيين كمتاحة' : language === 'fr' ? 'Rendre Disponible' : 'Mark Available'}
+            </button>
+            <button
+              onClick={() => handleBatchSetStatus('Maintenance')}
+              className="px-2.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold cursor-pointer"
+            >
+              {language === 'ar' ? 'تعيين للصيانة' : language === 'fr' ? 'Maintenance' : 'Maintenance'}
+            </button>
+            <button
+              onClick={() => setSelectedUnitIds(new Set())}
+              className="px-3 py-1.5 text-xs text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white font-medium cursor-pointer"
+            >
+              {language === 'ar' ? 'إلغاء التحديد' : language === 'fr' ? 'Désélectionner' : 'Deselect'}
+            </button>
+            <button
+              onClick={handleBatchDelete}
+              className="px-3.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+            >
+              <Trash2 size={13} />
+              <span>{language === 'ar' ? 'حذف المحدد' : language === 'fr' ? 'Supprimer' : 'Delete Selected'}</span>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Search & Filter Bar */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">

@@ -1,31 +1,22 @@
 import React, { useState, useMemo } from 'react';
 import {
   History,
-  Search,
   Receipt,
   CreditCard,
   Banknote,
   User,
-  Calendar,
   Home,
   ChevronDown,
   Download,
-  LayoutGrid,
-  List,
   Maximize2,
   X,
   Check,
   Building2,
   Printer,
-  Sparkles,
-  ArrowUpRight,
-  ShieldCheck,
-  FileSpreadsheet,
   Scissors,
   RotateCcw,
   AlertCircle,
-  Clock,
-  Phone,
+  Eye,
 } from 'lucide-react';
 import { useAtriumStore } from '../../../services/store';
 import { Sale } from '../../../types/index';
@@ -33,6 +24,7 @@ import { formatMoney } from '../../../utils/rules';
 import { Seek } from '../../ui/Seek';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { t } from '../../../utils/i18n';
+import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 
 export const MembershipHistoryView: React.FC = () => {
   const {
@@ -45,20 +37,23 @@ export const MembershipHistoryView: React.FC = () => {
     switchBranch,
     setScreen,
     refundSale,
-    receiptConfig,
     language,
   } = useAtriumStore();
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [isSearchActive, setIsSearchActive] = useState(false);
   const [methodFilter, setMethodFilter] = useState<'All' | 'Cash' | 'Card' | 'MemberBalance' | 'Split'>('All');
   const [statusFilter, setStatusFilter] = useState<'All' | 'Settled' | 'Refunded'>('All');
   const [selectedSale, setSelectedSale] = useState<Sale | null>(null);
-  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [isFacilityDropdownOpen, setIsFacilityDropdownOpen] = useState(false);
   const [isRefundModalOpen, setIsRefundModalOpen] = useState(false);
   const [refundReason, setRefundReason] = useState('Customer return / exchange');
   const [refundSuccessToast, setRefundSuccessToast] = useState<string | null>(null);
+
+  // UniversalDataCollection state
+  const [selectedSaleIds, setSelectedSaleIds] = useState<Set<string>>(new Set());
+  const [pinnedSaleIds, setPinnedSaleIds] = useState<Set<string>>(new Set());
+  const [saleSortBy, setSaleSortBy] = useState<string>('date');
+  const [saleSortDir, setSaleSortDir] = useState<'asc' | 'desc'>('desc');
 
   const filteredSales = useMemo(() => {
     return sales.filter((s) => {
@@ -87,6 +82,38 @@ export const MembershipHistoryView: React.FC = () => {
       .reduce((sum, s) => sum + s.totalAmount, 0);
     return totalSettledAmount > 0 ? Math.round((cashTotal / totalSettledAmount) * 100) : 0;
   }, [sales, totalSettledAmount]);
+
+  // Sort sales according to collection state
+  const sortedSales = useMemo(() => {
+    return [...filteredSales].sort((a, b) => {
+      const aPinned = pinnedSaleIds.has(a.id);
+      const bPinned = pinnedSaleIds.has(b.id);
+      if (aPinned && !bPinned) return -1;
+      if (!aPinned && bPinned) return 1;
+
+      if (saleSortBy === 'date') {
+        const cmp = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+        return saleSortDir === 'asc' ? cmp : -cmp;
+      }
+      if (saleSortBy === 'id') {
+        const cmp = a.id.localeCompare(b.id);
+        return saleSortDir === 'asc' ? cmp : -cmp;
+      }
+      if (saleSortBy === 'customer') {
+        const cmp = (a.memberName || '').localeCompare(b.memberName || '');
+        return saleSortDir === 'asc' ? cmp : -cmp;
+      }
+      if (saleSortBy === 'total') {
+        const cmp = a.totalAmount - b.totalAmount;
+        return saleSortDir === 'asc' ? cmp : -cmp;
+      }
+      if (saleSortBy === 'method') {
+        const cmp = a.paymentMethod.localeCompare(b.paymentMethod);
+        return saleSortDir === 'asc' ? cmp : -cmp;
+      }
+      return 0;
+    });
+  }, [filteredSales, pinnedSaleIds, saleSortBy, saleSortDir]);
 
   const handleExportCSV = () => {
     const headers = ['Receipt ID', 'Date', 'Time', 'Customer', 'Items Count', 'Payment Method', 'Total (DA)'];
@@ -125,6 +152,128 @@ export const MembershipHistoryView: React.FC = () => {
     if (method === 'MemberBalance') return language === 'ar' ? 'رصيد المشترك' : language === 'fr' ? 'Solde adhérent' : 'Member Balance';
     return method;
   };
+
+  const saleColumns: ColumnDefinition<Sale>[] = useMemo(() => [
+    {
+      key: 'id',
+      header: language === 'ar' ? 'رقم الوصل' : language === 'fr' ? 'N° Ticket' : 'Receipt ID',
+      width: '1.2*',
+      minWidth: '110px',
+      sortable: true,
+      renderCell: (sale) => (
+        <span className="font-mono text-xs font-bold text-[#C4785A]">
+          #{sale.id}
+        </span>
+      ),
+    },
+    {
+      key: 'date',
+      header: language === 'ar' ? 'التاريخ والوقت' : language === 'fr' ? 'Date & Heure' : 'Date & Time',
+      width: '1.5*',
+      minWidth: '130px',
+      sortable: true,
+      renderCell: (sale) => (
+        <div className="text-xs text-neutral-600 dark:text-neutral-300 tabular-nums">
+          <span>{new Date(sale.createdAt).toLocaleDateString()}</span>
+          <span className="text-neutral-400 ml-1.5 font-mono text-[11px]">
+            {new Date(sale.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+          </span>
+        </div>
+      ),
+    },
+    {
+      key: 'customer',
+      header: language === 'ar' ? 'العميل / المشترك' : language === 'fr' ? 'Client / Adhérent' : 'Customer',
+      width: '2*',
+      minWidth: '150px',
+      sortable: true,
+      renderCell: (sale) => (
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-xs font-bold text-neutral-700 dark:text-neutral-300 shrink-0">
+            {(sale.memberName || 'G').charAt(0).toUpperCase()}
+          </div>
+          <div className="min-w-0">
+            <span className="text-xs font-bold text-neutral-900 dark:text-white truncate block">
+              {sale.memberName || (language === 'ar' ? 'زائر غير مسجل' : language === 'fr' ? 'Client de passage' : 'Guest Walk-In')}
+            </span>
+            {sale.customerPhone && (
+              <span className="text-[10px] text-neutral-400 font-mono block">
+                {sale.customerPhone}
+              </span>
+            )}
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: 'items',
+      header: language === 'ar' ? 'الأصناف المشتراة' : language === 'fr' ? 'Articles achetés' : 'Purchased Items',
+      width: '2.5*',
+      minWidth: '180px',
+      renderCell: (sale) => (
+        <div className="flex items-center gap-1.5 flex-wrap">
+          {sale.items.slice(0, 3).map((it, idx) => (
+            <span key={idx} className="px-2 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-800 text-[11px] font-medium text-neutral-700 dark:text-neutral-300">
+              {it.quantity}x {it.productName}
+            </span>
+          ))}
+          {sale.items.length > 3 && (
+            <span className="text-[10px] text-neutral-400 font-bold">
+              +{sale.items.length - 3}
+            </span>
+          )}
+          {sale.notes && (
+            <span className="px-2 py-0.5 rounded-md bg-[#FDF4F0] dark:bg-neutral-800 text-[#C4785A] text-[10px] font-bold flex items-center gap-1 border border-[#F5E2D8] dark:border-neutral-700">
+              <Scissors size={10} />
+              <span className="truncate max-w-[120px]">{sale.notes.replace('Salon Appointment Checkout — ', '')}</span>
+            </span>
+          )}
+        </div>
+      ),
+    },
+    {
+      key: 'method',
+      header: language === 'ar' ? 'طريقة الدفع' : language === 'fr' ? 'Mode de règlement' : 'Tender Method',
+      width: '1.8*',
+      minWidth: '130px',
+      sortable: true,
+      renderCell: (sale) => (
+        <div className="flex items-center gap-1.5">
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300">
+            {sale.paymentMethod === 'Cash' && <Banknote size={13} className="text-emerald-600" />}
+            {sale.paymentMethod === 'Card' && <CreditCard size={13} className="text-blue-600" />}
+            {sale.paymentMethod === 'Split' && <CreditCard size={13} className="text-purple-600" />}
+            {sale.paymentMethod === 'MemberBalance' && <User size={13} className="text-[#C4785A]" />}
+            <span>{getLocalizedPaymentMethod(sale.paymentMethod)}</span>
+          </span>
+          {sale.status === 'Refunded' && (
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800">
+              {language === 'ar' ? 'مسترجع' : language === 'fr' ? 'Remboursé' : 'Refunded'}
+            </span>
+          )}
+        </div>
+      ),
+    },
+    {
+      key: 'total',
+      header: language === 'ar' ? 'المبلغ المحصل' : language === 'fr' ? 'Montant réglé' : 'Settled Amount',
+      width: '1.4*',
+      minWidth: '110px',
+      sortable: true,
+      renderCell: (sale) => (
+        <div className="text-right tabular-nums">
+          <div className={`text-xs font-black font-mono ${sale.status === 'Refunded' ? 'line-through text-neutral-400' : 'text-neutral-900 dark:text-white'}`}>
+            {formatMoney(sale.totalAmount)}
+          </div>
+          {sale.status === 'Refunded' && (
+            <div className="text-[10px] font-bold text-rose-600 dark:text-rose-400">
+              {language === 'ar' ? 'تم الإلغاء' : language === 'fr' ? 'Annulé' : 'Cancelled'}
+            </div>
+          )}
+        </div>
+      ),
+    },
+  ], [language]);
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200 relative">
@@ -247,7 +396,7 @@ export const MembershipHistoryView: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {/* Tile 1: Total Reconciled Volume — Pure White Card */}
+          {/* Tile 1: Total Reconciled Volume */}
           <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
             <div>
               <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
@@ -264,7 +413,7 @@ export const MembershipHistoryView: React.FC = () => {
             </div>
           </div>
 
-          {/* Tile 2: Tender Distribution — Pure White Card */}
+          {/* Tile 2: Tender Distribution */}
           <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
             <div>
               <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
@@ -302,7 +451,7 @@ export const MembershipHistoryView: React.FC = () => {
         </div>
       </div>
 
-      {/* Row 2: Transactions Master Table Card */}
+      {/* Row 2: Transactions Master Universal Data Collection Card */}
       <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[26px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
         {/* Table Control Header */}
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -310,7 +459,7 @@ export const MembershipHistoryView: React.FC = () => {
           <div className="flex items-center gap-2">
             <Receipt size={16} className="text-neutral-500" />
             <span className="text-sm font-bold text-neutral-900 dark:text-white">
-              {language === 'ar' ? 'سجل العمليات' : language === 'fr' ? 'Transactions' : 'Transactions'}
+              {language === 'ar' ? 'سجل العمليات والوصولات' : language === 'fr' ? 'Journal des transactions' : 'Transactions & Sales Collection'}
             </span>
             <span className="text-xs text-neutral-400 font-semibold tabular-nums ml-1">
               {filteredSales.length}
@@ -401,34 +550,6 @@ export const MembershipHistoryView: React.FC = () => {
               <span>{language === 'ar' ? 'تصدير السجل' : language === 'fr' ? 'Exporter le journal' : 'Export Ledger'}</span>
             </button>
 
-            {/* View Mode Toggle */}
-            <div className="flex items-center gap-1 p-0.5 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
-              <button
-                type="button"
-                onClick={() => setViewMode('grid')}
-                className={`p-1.5 rounded-full cursor-pointer transition-colors ${
-                  viewMode === 'grid'
-                    ? 'text-[#C4785A] bg-[#C4785A]/10 font-bold'
-                    : 'text-neutral-400 hover:text-neutral-600'
-                }`}
-                title="Grid view"
-              >
-                <LayoutGrid size={14} />
-              </button>
-              <button
-                type="button"
-                onClick={() => setViewMode('list')}
-                className={`p-1.5 rounded-full cursor-pointer transition-colors ${
-                  viewMode === 'list'
-                    ? 'text-[#C4785A] bg-[#C4785A]/10 font-bold'
-                    : 'text-neutral-400 hover:text-neutral-600'
-                }`}
-                title="List view"
-              >
-                <List size={14} />
-              </button>
-            </div>
-
             {/* Fullscreen Button */}
             <button
               type="button"
@@ -441,185 +562,118 @@ export const MembershipHistoryView: React.FC = () => {
           </div>
         </div>
 
-        {/* Content View: List or Grid */}
-        {viewMode === 'list' ? (
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse text-left">
-              <thead>
-                <tr className="border-b border-neutral-200/60 dark:border-neutral-800/80 text-[11px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider h-11">
-                  <th className="px-5">{language === 'ar' ? 'رقم الوصل' : language === 'fr' ? 'N° Ticket' : 'Receipt ID'}</th>
-                  <th className="px-4">{language === 'ar' ? 'التاريخ والوقت' : language === 'fr' ? 'Date & Heure' : 'Date & Time'}</th>
-                  <th className="px-4">{language === 'ar' ? 'العميل / المشترك' : language === 'fr' ? 'Client / Adhérent' : 'Customer'}</th>
-                  <th className="px-4">{language === 'ar' ? 'الأصناف المشتراة' : language === 'fr' ? 'Articles achetés' : 'Purchased Items'}</th>
-                  <th className="px-4">{language === 'ar' ? 'طريقة الدفع' : language === 'fr' ? 'Mode de règlement' : 'Tender Method'}</th>
-                  <th className="px-4 text-right">{language === 'ar' ? 'المبلغ المحصل' : language === 'fr' ? 'Montant réglé' : 'Settled Amount'}</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-neutral-200/40 dark:divide-neutral-800/60">
-                {filteredSales.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="py-16 text-center text-xs text-neutral-400">
-                      {language === 'ar' ? 'لا توجد معاملات تطابق خيارات البحث.' : language === 'fr' ? 'Aucune transaction ne correspond au filtre.' : 'No transaction records match the current filter.'}
-                    </td>
-                  </tr>
-                ) : (
-                  filteredSales.map((sale) => (
-                    <tr
-                      key={sale.id}
-                      onClick={() => setSelectedSale(sale)}
-                      className={`h-16 transition-colors cursor-pointer ${
-                        selectedSale?.id === sale.id
-                          ? 'bg-[#FCEEE8]/60 dark:bg-neutral-800'
-                          : 'hover:bg-neutral-50/80 dark:hover:bg-neutral-800/50'
-                      }`}
-                    >
-                      <td className="px-5 py-3 font-mono text-xs font-bold text-[#C4785A]">
-                        #{sale.id}
-                      </td>
-
-                      <td className="px-4 py-3 text-xs text-neutral-600 dark:text-neutral-300 tabular-nums">
-                        {new Date(sale.createdAt).toLocaleDateString()}{' '}
-                        <span className="text-neutral-400 ml-1">
-                          {new Date(sale.createdAt).toLocaleTimeString([], {
-                            hour: '2-digit',
-                            minute: '2-digit',
-                          })}
-                        </span>
-                      </td>
-
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-2.5">
-                          <div className="w-8 h-8 rounded-full bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center text-xs font-bold text-neutral-700 dark:text-neutral-300">
-                            {(sale.memberName || 'G').charAt(0).toUpperCase()}
-                          </div>
-                          <div>
-                            <span className="text-xs font-bold text-neutral-900 dark:text-white block">
-                              {sale.memberName || (language === 'ar' ? 'زائر غير مسجل' : language === 'fr' ? 'Client de passage' : 'Guest Walk-In')}
-                            </span>
-                            {sale.customerPhone && (
-                              <span className="text-[10px] text-neutral-400 block font-mono">
-                                {sale.customerPhone}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </td>
-
-                      <td className="px-4 py-3 text-xs text-neutral-600 dark:text-neutral-300 max-w-xs truncate">
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          {sale.items.map((it, idx) => (
-                            <span
-                              key={idx}
-                              className="px-2 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-800 text-[11px] font-medium"
-                            >
-                              {it.quantity}x {it.productName}
-                            </span>
-                          ))}
-                          {sale.notes && (
-                            <span className="px-2 py-0.5 rounded-md bg-[#FDF4F0] dark:bg-neutral-800 text-[#C4785A] text-[10px] font-bold flex items-center gap-1 border border-[#F5E2D8] dark:border-neutral-700">
-                              <Scissors size={10} />
-                              <span>{sale.notes.replace('Salon Appointment Checkout — ', '')}</span>
-                            </span>
-                          )}
-                        </div>
-                      </td>
-
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-2">
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300">
-                            {sale.paymentMethod === 'Cash' && <Banknote size={13} className="text-emerald-600" />}
-                            {sale.paymentMethod === 'Card' && <CreditCard size={13} className="text-blue-600" />}
-                            {sale.paymentMethod === 'Split' && <CreditCard size={13} className="text-purple-600" />}
-                            {sale.paymentMethod === 'MemberBalance' && <User size={13} className="text-[#C4785A]" />}
-                            <span>{getLocalizedPaymentMethod(sale.paymentMethod)}</span>
-                          </span>
-
-                          {sale.status === 'Refunded' && (
-                            <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800">
-                              {language === 'ar' ? 'مسترجع' : language === 'fr' ? 'Remboursé' : 'Refunded'}
-                            </span>
-                          )}
-                        </div>
-                      </td>
-
-                      <td className="px-4 py-3 text-right tabular-nums">
-                        <div className={`text-sm font-black ${sale.status === 'Refunded' ? 'line-through text-neutral-400' : 'text-neutral-900 dark:text-white'}`}>
-                          {formatMoney(sale.totalAmount)}
-                        </div>
-                        {sale.status === 'Refunded' && (
-                          <div className="text-[10px] font-bold text-rose-600 dark:text-rose-400">
-                            0 DZD ({language === 'ar' ? 'معاد للمخزون' : language === 'fr' ? 'Réintégré' : 'Restocked'})
-                          </div>
-                        )}
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          /* Grid View matching desktop cards */
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredSales.map((sale) => (
-              <div
-                key={sale.id}
-                onClick={() => setSelectedSale(sale)}
-                className={`p-5 rounded-2xl border transition-all cursor-pointer ${
-                  selectedSale?.id === sale.id
-                    ? 'border-[#C4785A] bg-[#FAF9F6] dark:bg-neutral-800/80 shadow-sm'
-                    : 'border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-800/40 hover:border-neutral-300'
-                }`}
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <span className="font-mono text-xs font-bold text-[#C4785A]">#{sale.id}</span>
-                  <div className="flex items-center gap-1.5">
-                    {sale.status === 'Refunded' && (
-                      <span className="px-1.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-rose-100 text-rose-700">
-                        {language === 'ar' ? 'مسترجع' : language === 'fr' ? 'Remboursé' : 'Refunded'}
-                      </span>
-                    )}
-                    <span className="text-[11px] text-neutral-400 tabular-nums">
-                      {new Date(sale.createdAt).toLocaleDateString()}
-                    </span>
-                  </div>
+        {/* Universal Data Collection for Sales */}
+        <UniversalDataCollection<Sale>
+          items={sortedSales}
+          keyExtractor={(s) => s.id}
+          defaultViewMode="list"
+          sortBy={saleSortBy}
+          sortDirection={saleSortDir}
+          onSortChange={(key) => {
+            if (saleSortBy === key) {
+              setSaleSortDir((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+            } else {
+              setSaleSortBy(key);
+              setSaleSortDir('desc');
+            }
+          }}
+          selectedIds={selectedSaleIds}
+          onSelectionChange={setSelectedSaleIds}
+          isPinned={(s) => pinnedSaleIds.has(s.id)}
+          onTogglePin={(s) => {
+            setPinnedSaleIds((prev) => {
+              const next = new Set(prev);
+              if (next.has(s.id)) next.delete(s.id);
+              else next.add(s.id);
+              return next;
+            });
+          }}
+          onItemClick={(sale) => setSelectedSale(sale)}
+          columns={saleColumns}
+          renderCard={(sale) => (
+            <div className="flex flex-col justify-between h-full space-y-3">
+              <div>
+                <div className="flex items-center justify-between gap-2 mb-2">
+                  <span className="font-mono text-xs font-bold text-[#C4785A]">
+                    #{sale.id}
+                  </span>
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300">
+                    {sale.paymentMethod === 'Cash' && <Banknote size={12} className="text-emerald-600" />}
+                    {sale.paymentMethod === 'Card' && <CreditCard size={12} className="text-blue-600" />}
+                    {sale.paymentMethod === 'Split' && <CreditCard size={12} className="text-purple-600" />}
+                    {sale.paymentMethod === 'MemberBalance' && <User size={12} className="text-[#C4785A]" />}
+                    <span>{getLocalizedPaymentMethod(sale.paymentMethod)}</span>
+                  </span>
                 </div>
 
-                <div className="flex items-center gap-2.5 mb-3">
-                  <div className="w-9 h-9 rounded-full bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center text-xs font-bold text-neutral-700 dark:text-neutral-300">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-xs font-bold text-neutral-700 dark:text-neutral-300 shrink-0">
                     {(sale.memberName || 'G').charAt(0).toUpperCase()}
                   </div>
-                  <div>
-                    <h3 className="text-xs font-bold text-neutral-900 dark:text-white">
+                  <div className="min-w-0">
+                    <h3 className="text-xs font-bold text-neutral-900 dark:text-white truncate">
                       {sale.memberName || (language === 'ar' ? 'زائر غير مسجل' : language === 'fr' ? 'Client de passage' : 'Guest Walk-In')}
                     </h3>
-                    <p className="text-[11px] text-neutral-400">{sale.paymentMethod}</p>
+                    <p className="text-[10px] text-neutral-400 font-mono">
+                      {new Date(sale.createdAt).toLocaleDateString()} {new Date(sale.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </p>
                   </div>
                 </div>
 
-                <div className="text-xs text-neutral-500 line-clamp-2 mb-2">
-                  {sale.items.map((i) => `${i.quantity}x ${i.productName}`).join(', ')}
+                {/* Items preview */}
+                <div className="bg-neutral-50 dark:bg-neutral-800/40 p-2.5 rounded-xl space-y-1 text-xs">
+                  {sale.items.map((it, idx) => (
+                    <div key={idx} className="flex justify-between text-[11px] text-neutral-600 dark:text-neutral-300">
+                      <span className="truncate max-w-[150px]">{it.quantity}x {it.productName}</span>
+                      <span className="font-mono text-neutral-500 tabular-nums">{formatMoney(it.totalPrice)}</span>
+                    </div>
+                  ))}
                 </div>
+              </div>
 
-                {sale.notes && (
-                  <div className="text-[11px] font-semibold text-[#C4785A] mb-3 flex items-center gap-1 bg-[#FDF4F0] dark:bg-neutral-800 px-2.5 py-1 rounded-lg border border-[#F5E2D8] dark:border-neutral-700 truncate">
-                    <Scissors size={11} className="shrink-0" />
-                    <span className="truncate">{sale.notes.replace('Salon Appointment Checkout — ', '')}</span>
-                  </div>
-                )}
-
-                <div className="flex items-center justify-between pt-3 border-t border-neutral-100 dark:border-neutral-800">
-                  <span className="text-xs text-neutral-400 font-medium">
-                    {language === 'ar' ? 'المبلغ المحصل' : language === 'fr' ? 'Montant réglé' : 'Settled Amount'}
+              <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between">
+                <div>
+                  <span className="text-[10px] text-neutral-400 block uppercase font-medium">
+                    {language === 'ar' ? 'الإجمالي' : 'Total'}
                   </span>
-                  <span className={`text-base font-black tabular-nums ${sale.status === 'Refunded' ? 'line-through text-neutral-400' : 'text-neutral-900 dark:text-white'}`}>
+                  <span className={`text-sm font-black font-mono ${sale.status === 'Refunded' ? 'line-through text-neutral-400' : 'text-neutral-900 dark:text-white'}`}>
                     {formatMoney(sale.totalAmount)}
                   </span>
                 </div>
+
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedSale(sale);
+                    }}
+                    className="px-2.5 py-1 rounded-lg bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-xs font-bold text-neutral-700 dark:text-neutral-300 flex items-center gap-1 cursor-pointer"
+                  >
+                    <Eye size={12} />
+                    <span>{language === 'ar' ? 'عرض' : 'View'}</span>
+                  </button>
+                  {sale.status !== 'Refunded' && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedSale(sale);
+                        setIsRefundModalOpen(true);
+                      }}
+                      className="px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 text-xs font-bold text-rose-600 dark:text-rose-300 flex items-center gap-1 cursor-pointer"
+                    >
+                      <RotateCcw size={12} />
+                      <span>{language === 'ar' ? 'استرجاع' : 'Refund'}</span>
+                    </button>
+                  )}
+                </div>
               </div>
-            ))}
-          </div>
-        )}
+            </div>
+          )}
+          emptyTitle={language === 'ar' ? 'لا توجد معاملات تطابق خيارات البحث' : 'No sales transactions found'}
+          emptyDescription={language === 'ar' ? 'جرب تغيير شروط البحث أو مسح المرشحات لتظهر جميع العمليات' : 'Try adjusting your search terms or clearing filters to display transactions.'}
+        />
       </div>
 
       {/* Desktop Slide-out Inspector Drawer matching MembersScreen */}

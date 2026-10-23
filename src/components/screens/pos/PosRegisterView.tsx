@@ -357,6 +357,195 @@ export const PosRegisterView: React.FC<PosRegisterViewProps> = ({ initialTab = '
     },
   ], [t]);
 
+  // Columns for Register Product Catalog UniversalDataCollection
+  const registerProductColumns: ColumnDefinition<Product>[] = useMemo(() => [
+    {
+      key: 'name',
+      header: t('shop_col_product'),
+      width: '2.5*',
+      minWidth: '160px',
+      sortable: true,
+      renderCell: (p) => (
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center font-bold text-xs text-neutral-600 dark:text-neutral-300 shrink-0">
+            {p.name.charAt(0)}
+          </div>
+          <div className="min-w-0">
+            <span className="font-bold text-xs text-neutral-900 dark:text-white truncate block">
+              {p.name}
+            </span>
+            <span className="text-[10px] text-neutral-400 font-mono block">
+              {p.sku} {p.barcode ? `· ${p.barcode}` : ''}
+            </span>
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: 'category',
+      header: t('shop_col_category'),
+      width: '1.2*',
+      minWidth: '100px',
+      sortable: true,
+      renderCell: (p) => (
+        <span className="px-2 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-800 text-[10px] font-bold text-neutral-700 dark:text-neutral-300">
+          {p.category}
+        </span>
+      ),
+    },
+    {
+      key: 'price',
+      header: t('shop_col_retail'),
+      width: '1.2*',
+      minWidth: '110px',
+      sortable: true,
+      renderCell: (p) => (
+        <span className="font-mono font-black text-xs text-neutral-900 dark:text-white tabular-nums">
+          {formatMoney(p.price.amount)}
+        </span>
+      ),
+    },
+    {
+      key: 'stock',
+      header: t('shop_col_stock'),
+      width: '1.2*',
+      minWidth: '100px',
+      sortable: true,
+      renderCell: (p) => {
+        const isOut = p.stockQuantity <= 0;
+        const isLow = !isOut && p.stockQuantity <= (p.reorderLevel || 5);
+        return (
+          <span
+            className={`inline-flex items-center gap-1 font-bold px-2 py-0.5 rounded-full text-[10px] tabular-nums ${
+              isOut
+                ? 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300'
+                : isLow
+                ? 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300'
+                : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300'
+            }`}
+          >
+            {p.stockQuantity} {p.unit || t('shop_unit_pcs')}
+          </span>
+        );
+      },
+    },
+    {
+      key: 'action',
+      header: '',
+      width: '1*',
+      minWidth: '80px',
+      renderCell: (p) => {
+        const inCartItem = cart.find((c) => c.product.id === p.id);
+        const isOut = p.stockQuantity <= 0;
+        return (
+          <button
+            type="button"
+            disabled={isOut}
+            onClick={(e) => {
+              e.stopPropagation();
+              addToCart(p);
+            }}
+            className={`h-7 px-2.5 rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors ${
+              isOut
+                ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-400 cursor-not-allowed'
+                : inCartItem
+                ? 'bg-[#C4785A] text-white shadow-2xs'
+                : 'bg-neutral-100 dark:bg-neutral-800 hover:bg-[#C4785A] hover:text-white text-neutral-800 dark:text-neutral-200'
+            }`}
+          >
+            <Plus size={12} />
+            <span>{inCartItem ? `(${inCartItem.quantity})` : t('shop_add_btn')}</span>
+          </button>
+        );
+      },
+    },
+  ], [t, cart]);
+
+  // Columns for Held/Parked Orders UniversalDataCollection
+  const parkedOrderColumns: ColumnDefinition<ParkedOrder>[] = useMemo(() => [
+    {
+      key: 'ref',
+      header: language === 'ar' ? 'مرجع التذكرة' : language === 'fr' ? 'Réf Commande' : 'Ticket Reference',
+      width: '2*',
+      minWidth: '150px',
+      sortable: true,
+      renderCell: (po) => (
+        <div>
+          <span className="font-bold text-xs text-neutral-900 dark:text-white block">
+            {po.referenceName}
+          </span>
+          <span className="text-[10px] text-neutral-400 font-mono block">
+            {new Date(po.createdAt).toLocaleTimeString()}
+          </span>
+        </div>
+      ),
+    },
+    {
+      key: 'items',
+      header: language === 'ar' ? 'الأصناف' : language === 'fr' ? 'Articles' : 'Items Preview',
+      width: '3*',
+      minWidth: '200px',
+      renderCell: (po) => (
+        <div className="flex items-center gap-1.5 flex-wrap">
+          {po.items.slice(0, 3).map((it, idx) => (
+            <span key={idx} className="px-2 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-800 text-[11px] font-medium text-neutral-700 dark:text-neutral-300">
+              {it.quantity}x {it.productName}
+            </span>
+          ))}
+          {po.items.length > 3 && (
+            <span className="text-[10px] text-neutral-400 font-bold">
+              +{po.items.length - 3}
+            </span>
+          )}
+        </div>
+      ),
+    },
+    {
+      key: 'total',
+      header: language === 'ar' ? 'المجموع' : language === 'fr' ? 'Total' : 'Total Amount',
+      width: '1.5*',
+      minWidth: '120px',
+      sortable: true,
+      renderCell: (po) => (
+        <span className="font-mono font-black text-sm text-[#C4785A] tabular-nums">
+          {formatMoney(po.totalAmount)}
+        </span>
+      ),
+    },
+    {
+      key: 'actions',
+      header: '',
+      width: '1.8*',
+      minWidth: '140px',
+      renderCell: (po) => (
+        <div className="flex items-center gap-2 justify-end">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleResumeOrder(po);
+            }}
+            className="h-8 px-3 rounded-xl bg-[#C4785A] text-white text-xs font-bold flex items-center gap-1 hover:opacity-90 cursor-pointer"
+          >
+            <PlayCircle size={13} />
+            <span>{t('shop_resume_in_register')}</span>
+          </button>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              deleteParkedOrder(po.id);
+            }}
+            className="h-8 px-2 rounded-xl text-neutral-400 hover:text-red-500 cursor-pointer"
+            title={t('shop_discard_order')}
+          >
+            <Trash2 size={14} />
+          </button>
+        </div>
+      ),
+    },
+  ], [language, t]);
+
   // Inventory valuation KPIs
   const inventoryStats = useMemo(() => {
     let totalSKUs = products.length;
@@ -1144,32 +1333,32 @@ export const PosRegisterView: React.FC<PosRegisterViewProps> = ({ initialTab = '
               </div>
             )}
 
-            {/* Product Display: Grid or List */}
-            {products.length > 0 && viewMode === 'grid' && (
-              <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3">
-                {filteredProducts.map((product) => {
+            {/* Universal Product Catalog Collection */}
+            {products.length > 0 && (
+              <UniversalDataCollection<Product>
+                items={filteredProducts}
+                keyExtractor={(p) => p.id}
+                defaultViewMode="grid"
+                columns={registerProductColumns}
+                onItemClick={(product) => {
+                  if (product.stockQuantity > 0) addToCart(product);
+                }}
+                renderCard={(product) => {
                   const isOutOfStock = product.stockQuantity <= 0;
                   const isLowStock = !isOutOfStock && product.stockQuantity <= (product.reorderLevel || 5);
                   const inCartItem = cart.find((c) => c.product.id === product.id);
 
                   return (
-                    <button
-                      key={product.id}
-                      type="button"
-                      disabled={isOutOfStock}
-                      onClick={() => addToCart(product)}
-                      className={`relative p-3.5 rounded-2xl transition-all border cursor-pointer flex flex-col justify-between min-h-[140px] group ${
-                        isRtl ? 'text-right' : 'text-left'
-                      } ${
-                        isOutOfStock
-                          ? 'bg-neutral-100 dark:bg-neutral-900/40 border-neutral-200 dark:border-neutral-800 opacity-60 cursor-not-allowed'
-                          : inCartItem
-                          ? 'bg-orange-50/70 dark:bg-orange-950/20 border-[#C4785A] shadow-xs'
-                          : 'bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 hover:border-[#C4785A] hover:shadow-xs'
+                    <div
+                      onClick={() => {
+                        if (!isOutOfStock) addToCart(product);
+                      }}
+                      className={`relative p-3.5 rounded-2xl transition-all flex flex-col justify-between h-full cursor-pointer group ${
+                        isOutOfStock ? 'opacity-60 cursor-not-allowed' : ''
                       }`}
                     >
                       {/* Top Badges */}
-                      <div className="flex items-center justify-between w-full gap-1">
+                      <div className="flex items-center justify-between w-full gap-1 mb-2">
                         <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider truncate max-w-[90px]">
                           {product.category}
                         </span>
@@ -1200,70 +1389,25 @@ export const PosRegisterView: React.FC<PosRegisterViewProps> = ({ initialTab = '
                         </div>
                       </div>
 
-                      {/* Price & Stock */}
-                      <div className="flex items-baseline justify-between w-full pt-1 border-t border-neutral-100 dark:border-neutral-800">
-                        <div className="text-sm font-black text-neutral-900 dark:text-white font-mono">
-                          {formatMoney(product.price.amount)}
-                        </div>
-                        <div className="text-[10px] font-bold text-neutral-400">
-                          {product.stockQuantity} {product.unit || t('shop_unit_pcs')}
-                        </div>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-
-            {/* List View */}
-            {products.length > 0 && viewMode === 'list' && (
-              <div className="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 overflow-hidden divide-y divide-neutral-100 dark:divide-neutral-800">
-                {filteredProducts.map((product) => {
-                  const isOutOfStock = product.stockQuantity <= 0;
-                  const inCartItem = cart.find((c) => c.product.id === product.id);
-
-                  return (
-                    <div
-                      key={product.id}
-                      className="p-3 flex items-center justify-between gap-3 hover:bg-neutral-50 dark:hover:bg-neutral-800/40 transition-colors"
-                    >
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div className="w-8 h-8 rounded-xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center shrink-0 text-neutral-500 font-bold text-xs">
-                          {product.name.charAt(0)}
-                        </div>
-                        <div className="min-w-0">
-                          <div className="text-xs font-bold text-neutral-900 dark:text-white truncate">
-                            {product.name}
-                          </div>
-                          <div className="text-[10px] text-neutral-400 flex items-center gap-2 font-mono">
-                            <span>{product.sku}</span>
-                            {product.barcode && <span>· {product.barcode}</span>}
-                            <span>· {product.category}</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-4 shrink-0">
-                        <div className={isRtl ? 'text-left' : 'text-right'}>
-                          <div className="text-xs font-black font-mono text-neutral-900 dark:text-white">
+                      {/* Price & Stock & Quick Add */}
+                      <div className="flex items-center justify-between w-full pt-2 border-t border-neutral-100 dark:border-neutral-800">
+                        <div>
+                          <div className="text-sm font-black text-neutral-900 dark:text-white font-mono">
                             {formatMoney(product.price.amount)}
                           </div>
-                          <div className={`text-[10px] font-bold ${
-                            isOutOfStock
-                              ? 'text-red-600'
-                              : product.stockQuantity <= 5
-                              ? 'text-amber-600'
-                              : 'text-neutral-400'
-                          }`}>
-                            {t('shop_in_stock_badge', { count: product.stockQuantity })}
+                          <div className="text-[10px] font-bold text-neutral-400">
+                            {product.stockQuantity} {product.unit || t('shop_unit_pcs')}
                           </div>
                         </div>
 
                         <button
                           type="button"
                           disabled={isOutOfStock}
-                          onClick={() => addToCart(product)}
-                          className={`h-8 px-3 rounded-xl text-xs font-bold cursor-pointer transition-colors flex items-center gap-1 ${
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            addToCart(product);
+                          }}
+                          className={`h-8 px-2.5 rounded-xl text-xs font-bold cursor-pointer transition-colors flex items-center gap-1 ${
                             isOutOfStock
                               ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-400 cursor-not-allowed'
                               : inCartItem
@@ -1277,8 +1421,8 @@ export const PosRegisterView: React.FC<PosRegisterViewProps> = ({ initialTab = '
                       </div>
                     </div>
                   );
-                })}
-              </div>
+                }}
+              />
             )}
           </div>
 
@@ -1558,24 +1702,16 @@ export const PosRegisterView: React.FC<PosRegisterViewProps> = ({ initialTab = '
             </div>
           </div>
 
-          {parkedOrders.length === 0 ? (
-            <div className="p-12 text-center rounded-3xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 space-y-2">
-              <PauseCircle size={36} className="text-neutral-400 mx-auto" />
-              <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
-                {t('shop_no_held_title')}
-              </h3>
-              <p className="text-xs text-neutral-500 max-w-sm mx-auto">
-                {t('shop_no_held_desc')}
-              </p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-              {parkedOrders.map((po) => (
-                <div
-                  key={po.id}
-                  className="p-4 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 space-y-3 shadow-2xs hover:border-[#C4785A] transition-colors"
-                >
-                  <div className="flex items-start justify-between gap-2">
+          <UniversalDataCollection<ParkedOrder>
+            items={parkedOrders}
+            keyExtractor={(po) => po.id}
+            defaultViewMode="grid"
+            columns={parkedOrderColumns}
+            onItemClick={(po) => handleResumeOrder(po)}
+            renderCard={(po) => (
+              <div className="flex flex-col justify-between h-full space-y-3">
+                <div>
+                  <div className="flex items-start justify-between gap-2 mb-2">
                     <div>
                       <div className="text-xs font-black text-neutral-900 dark:text-white">
                         {po.referenceName}
@@ -1603,33 +1739,41 @@ export const PosRegisterView: React.FC<PosRegisterViewProps> = ({ initialTab = '
                   </div>
 
                   {po.notes && (
-                    <div className="text-[11px] text-amber-600 dark:text-amber-400 italic">
+                    <div className="text-[11px] text-amber-600 dark:text-amber-400 italic mt-2">
                       {t('shop_note_prefix', { notes: po.notes })}
                     </div>
                   )}
-
-                  <div className="flex items-center gap-2 pt-1 border-t border-neutral-100 dark:border-neutral-800">
-                    <button
-                      type="button"
-                      onClick={() => handleResumeOrder(po)}
-                      className="flex-1 h-9 rounded-xl bg-[#C4785A] text-white text-xs font-bold flex items-center justify-center gap-1.5 hover:opacity-90 cursor-pointer"
-                    >
-                      <PlayCircle size={14} />
-                      <span>{t('shop_resume_in_register')}</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => deleteParkedOrder(po.id)}
-                      className="h-9 px-3 rounded-xl border border-neutral-200 dark:border-neutral-700 text-neutral-400 hover:text-red-500 cursor-pointer"
-                      title={t('shop_discard_order')}
-                    >
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
                 </div>
-              ))}
-            </div>
-          )}
+
+                <div className="flex items-center gap-2 pt-2 border-t border-neutral-100 dark:border-neutral-800">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleResumeOrder(po);
+                    }}
+                    className="flex-1 h-9 rounded-xl bg-[#C4785A] text-white text-xs font-bold flex items-center justify-center gap-1.5 hover:opacity-90 cursor-pointer"
+                  >
+                    <PlayCircle size={14} />
+                    <span>{t('shop_resume_in_register')}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      deleteParkedOrder(po.id);
+                    }}
+                    className="h-9 px-3 rounded-xl border border-neutral-200 dark:border-neutral-700 text-neutral-400 hover:text-red-500 cursor-pointer"
+                    title={t('shop_discard_order')}
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              </div>
+            )}
+            emptyTitle={t('shop_no_held_title')}
+            emptyDescription={t('shop_no_held_desc')}
+          />
         </div>
       )}
 

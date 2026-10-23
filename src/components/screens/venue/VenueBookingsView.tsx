@@ -20,6 +20,11 @@ import {
   Pin,
   LogIn,
   LogOut,
+  Home,
+  ChevronDown,
+  Download,
+  Building2,
+  Sparkles,
 } from 'lucide-react';
 import { useAtriumStore } from '../../../services/store';
 import { RentalBooking, BookingStatus } from '../../../types/index';
@@ -30,13 +35,24 @@ import { VenueCloudSyncModal } from './VenueCloudSyncModal';
 import { Seek } from '../../ui/Seek';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 
-export const VenueBookingsView: React.FC = () => {
+export interface VenueBookingsViewProps {
+  hideHeader?: boolean;
+}
+
+export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({ hideHeader = false }) => {
   const { t, language } = useTranslation();
   const {
     rentalBookings,
     checkInBooking,
     checkOutBooking,
     deleteRentalBooking,
+    currentBranch,
+    businesses,
+    branches,
+    currentBusinessId,
+    switchBusiness,
+    switchBranch,
+    resetVenueMockData,
     showToast,
   } = useAtriumStore();
 
@@ -51,6 +67,7 @@ export const VenueBookingsView: React.FC = () => {
   const [pinnedBookingIds, setPinnedBookingIds] = useState<Set<string>>(new Set());
   const [bookingSortBy, setBookingSortBy] = useState<string>('date');
   const [bookingSortDir, setBookingSortDir] = useState<'asc' | 'desc'>('asc');
+  const [isFacilityDropdownOpen, setIsFacilityDropdownOpen] = useState(false);
 
   const filteredBookings = rentalBookings.filter((b) => {
     const matchesSearch =
@@ -255,38 +272,226 @@ export const VenueBookingsView: React.FC = () => {
     setIsBookingModalOpen(true);
   };
 
+  const handleExportBookingsCSV = () => {
+    const headers = [
+      language === 'ar' ? 'معرف الحجز' : language === 'fr' ? 'ID Réservation' : 'Booking ID',
+      language === 'ar' ? 'اسم المستأجر' : language === 'fr' ? 'Nom Locataire' : 'Renter Name',
+      language === 'ar' ? 'الشركة' : language === 'fr' ? 'Entreprise' : 'Company',
+      language === 'ar' ? 'المساحة / القاعة' : language === 'fr' ? 'Espace' : 'Space',
+      language === 'ar' ? 'الغرض' : language === 'fr' ? 'Objet' : 'Purpose',
+      language === 'ar' ? 'البداية' : language === 'fr' ? 'Début' : 'Start Time',
+      language === 'ar' ? 'النهاية' : language === 'fr' ? 'Fin' : 'End Time',
+      language === 'ar' ? 'عدد الحضور' : language === 'fr' ? 'Participants' : 'Attendees',
+      language === 'ar' ? 'الحالة' : language === 'fr' ? 'Statut' : 'Status',
+      language === 'ar' ? 'المبلغ الإجمالي' : language === 'fr' ? 'Montant Total' : 'Total Fee',
+      language === 'ar' ? 'الضمان / الكفالة' : language === 'fr' ? 'Caution' : 'Deposit',
+      language === 'ar' ? 'حالة الضمان' : language === 'fr' ? 'Statut Caution' : 'Deposit Status',
+      language === 'ar' ? 'العملة' : language === 'fr' ? 'Devise' : 'Currency',
+    ];
+    const rows = sortedBookings.map((b) => [
+      `"${b.id}"`,
+      `"${b.renterName}"`,
+      `"${b.renterCompany || ''}"`,
+      `"${b.unitName}"`,
+      `"${b.purpose.replace(/"/g, '""')}"`,
+      `"${b.startDateTime}"`,
+      `"${b.endDateTime}"`,
+      `"${b.attendeeCount}"`,
+      `"${b.status}"`,
+      `"${b.totalAmount}"`,
+      `"${b.depositAmount}"`,
+      `"${b.depositStatus}"`,
+      `"${b.currency}"`,
+    ]);
+    const csvContent = 'data:text/csv;charset=utf-8,\uFEFF' + [headers.join(','), ...rows.map((row) => row.join(','))].join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `venue-bookings-${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast({
+      type: 'success',
+      title: language === 'ar' ? 'تم التصدير' : language === 'fr' ? 'Exportation réussie' : 'Export Complete',
+      message: `${sortedBookings.length} ${language === 'ar' ? 'حجز تم تصديره' : 'bookings exported successfully'}`,
+    });
+  };
+
+  const handleBatchDelete = () => {
+    if (selectedBookingIds.size === 0) return;
+    const count = selectedBookingIds.size;
+    if (confirm(language === 'ar' ? `هل أنت متأكد من إلغاء ${count} حجز محدد؟` : language === 'fr' ? `Annuler ${count} réservations sélectionnées ?` : `Cancel ${count} selected bookings?`)) {
+      selectedBookingIds.forEach((id) => deleteRentalBooking(id));
+      setSelectedBookingIds(new Set());
+      showToast({
+        type: 'info',
+        title: language === 'ar' ? 'تم الإلغاء' : language === 'fr' ? 'Annulé' : 'Cancelled',
+        message: `${count} ${language === 'ar' ? 'حجوزات تم حذفها' : 'bookings cancelled'}`,
+      });
+    }
+  };
+
+  const handleBatchCheckIn = () => {
+    if (selectedBookingIds.size === 0) return;
+    let checkedCount = 0;
+    selectedBookingIds.forEach((id) => {
+      const b = rentalBookings.find((item) => item.id === id);
+      if (b && b.status === 'Confirmed') {
+        checkInBooking(id);
+        checkedCount++;
+      }
+    });
+    setSelectedBookingIds(new Set());
+    showToast({
+      type: 'success',
+      title: language === 'ar' ? 'تسجيل دخول' : language === 'fr' ? 'Check-in effectué' : 'Checked In',
+      message: `${checkedCount} ${language === 'ar' ? 'حجوزات تم تسجيل دخولها' : 'bookings checked in successfully'}`,
+    });
+  };
+
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-900 dark:text-white">
-            {t('venue_bookings_page_title')}
-          </h1>
-          <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
-            {t('venue_bookings_page_sub')}
-          </p>
-        </div>
+      {!hideHeader && (
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex items-center gap-3.5">
+            <div className="w-11 h-11 rounded-2xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-800 dark:text-neutral-200">
+              <Calendar size={22} />
+            </div>
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-900 dark:text-white">
+                {t('venue_bookings_page_title')}
+              </h1>
+              <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
+                {t('venue_bookings_page_sub')}
+              </p>
+            </div>
+          </div>
 
-        <div className="flex items-center gap-3 self-start sm:self-auto">
-          <button
-            onClick={() => setIsCloudSyncModalOpen(true)}
-            className="px-3.5 py-2.5 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-xs font-semibold text-neutral-800 dark:text-neutral-200 rounded-xl transition-colors flex items-center gap-2 cursor-pointer"
-            title="Inspect Supabase live tables and row writes"
-          >
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <Cloud size={15} className="text-purple-600 dark:text-purple-400" />
-            Supabase Cloud
-          </button>
-          <button
-            onClick={handleNewBooking}
-            className="px-5 py-2.5 bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white text-xs font-semibold rounded-xl shadow-xs transition-colors flex items-center gap-2 cursor-pointer"
-          >
-            <Plus size={16} />
-            {t('venue_btn_new_res')}
-          </button>
+          <div className="flex items-center gap-2.5 flex-wrap self-start sm:self-auto">
+            {/* Facility Pill: Atrium 1 ▾ */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setIsFacilityDropdownOpen(!isFacilityDropdownOpen)}
+                className="h-10 px-4 rounded-full bg-[#F4EFEA] dark:bg-neutral-800/80 border border-[#E8DFD8] dark:border-neutral-700 flex items-center gap-2 cursor-pointer hover:bg-[#EFE8E1] dark:hover:bg-neutral-800 transition-colors shadow-2xs"
+              >
+                <Home size={15} className="text-[#C4785A]" />
+                <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
+                  {currentBranch?.name || 'Atrium 1'}
+                </span>
+                <ChevronDown
+                  size={14}
+                  className={`text-neutral-500 transition-transform ${
+                    isFacilityDropdownOpen ? 'rotate-180' : ''
+                  }`}
+                />
+              </button>
+
+              {/* Facility Dropdown Menu */}
+              {isFacilityDropdownOpen && (
+                <div className="absolute right-0 rtl:right-auto rtl:left-0 mt-2 w-64 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
+                  <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+                    {language === 'ar' ? 'الفروع والمرافق' : language === 'fr' ? 'Succursales & Sites' : 'Branches & Venues'}
+                  </div>
+                  {businesses.map((biz) => {
+                    const isCurrent = biz.id === currentBusinessId;
+                    const matchingBranch = branches.find((b) => b.businessId === biz.id);
+                    return (
+                      <button
+                        key={biz.id}
+                        type="button"
+                        onClick={() => {
+                          switchBusiness(biz.id);
+                          if (matchingBranch) switchBranch(matchingBranch.id);
+                          setIsFacilityDropdownOpen(false);
+                        }}
+                        className={`w-full px-3 py-2 text-left rtl:text-right flex items-center justify-between text-xs transition-colors cursor-pointer ${
+                          isCurrent
+                            ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold'
+                            : 'text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 min-w-0">
+                          <Building2 size={14} className={isCurrent ? 'text-[#C4785A]' : 'text-neutral-400'} />
+                          <span className="truncate">{biz.name}</span>
+                        </div>
+                        {isCurrent && <CheckCircle2 size={14} />}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Supabase Cloud */}
+            <button
+              onClick={() => setIsCloudSyncModalOpen(true)}
+              className="h-10 px-3.5 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-xs font-semibold text-neutral-800 dark:text-neutral-200 rounded-full transition-colors flex items-center gap-2 cursor-pointer shadow-2xs"
+              title="Inspect Supabase live tables and row writes"
+            >
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <Cloud size={14} className="text-purple-600 dark:text-purple-400" />
+              <span className="hidden sm:inline">Supabase</span>
+            </button>
+
+            {/* Export CSV Button */}
+            <button
+              type="button"
+              onClick={handleExportBookingsCSV}
+              className="h-10 px-3.5 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold rounded-full transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer"
+              title="Export CSV"
+            >
+              <Download size={14} />
+              <span className="hidden sm:inline">CSV</span>
+            </button>
+
+            {/* New Reservation Button */}
+            <button
+              onClick={handleNewBooking}
+              className="h-10 px-5 bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white text-xs font-semibold rounded-full shadow-xs transition-colors flex items-center gap-2 cursor-pointer"
+            >
+              <Plus size={16} />
+              <span>{t('venue_btn_new_res')}</span>
+            </button>
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* Batch Selection Toolbar */}
+      {selectedBookingIds.size > 0 && (
+        <div className="flex items-center justify-between p-3 px-4 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 animate-in fade-in slide-in-from-top-2 flex-wrap gap-2">
+          <div className="flex items-center gap-3">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#C4785A] animate-pulse" />
+            <span className="text-xs font-bold text-neutral-900 dark:text-white">
+              {selectedBookingIds.size} {language === 'ar' ? 'حجوزات محددة' : language === 'fr' ? 'réservations sélectionnées' : 'bookings selected'}
+            </span>
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              onClick={handleBatchCheckIn}
+              className="px-3 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+            >
+              <LogIn size={13} />
+              <span>{language === 'ar' ? 'تسجيل دخول المحدد' : language === 'fr' ? 'Check-in Sélection' : 'Check In Selected'}</span>
+            </button>
+            <button
+              onClick={() => setSelectedBookingIds(new Set())}
+              className="px-3 py-1.5 text-xs text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white font-medium cursor-pointer"
+            >
+              {language === 'ar' ? 'إلغاء التحديد' : language === 'fr' ? 'Désélectionner' : 'Deselect'}
+            </button>
+            <button
+              onClick={handleBatchDelete}
+              className="px-3.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+            >
+              <Trash2 size={13} />
+              <span>{language === 'ar' ? 'إلغاء المحدد' : language === 'fr' ? 'Annuler' : 'Cancel Selected'}</span>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Filter Tabs & Search */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">

@@ -13,6 +13,7 @@ import {
   FileCheck,
   Info,
   Cloud,
+  LayoutGrid,
 } from 'lucide-react';
 import { useAtriumStore } from '../../../services/store';
 import { RentableUnit, RentalBooking, RentableUnitType } from '../../../types/index';
@@ -20,6 +21,7 @@ import { formatCurrencyAmount } from '../../../utils/rules';
 import { useTranslation } from '../../../utils/useTranslation';
 import { BookingModal } from './BookingModal';
 import { VenueCloudSyncModal } from './VenueCloudSyncModal';
+import { VenueBookingsView } from './VenueBookingsView';
 
 export const VenueTimelineView: React.FC = () => {
   const { t, language } = useTranslation();
@@ -40,6 +42,7 @@ export const VenueTimelineView: React.FC = () => {
   const [modalInitialUnitId, setModalInitialUnitId] = useState<string | undefined>(undefined);
   const [modalInitialHour, setModalInitialHour] = useState<string | undefined>(undefined);
   const [inspectedBooking, setInspectedBooking] = useState<RentalBooking | null>(null);
+  const [mainViewMode, setMainViewMode] = useState<'timeline' | 'collection'>('timeline');
 
   // Time slots from 08:00 to 23:00 (15 hours)
   const HOURS = Array.from({ length: 16 }, (_, i) => i + 8); // 8 to 23
@@ -104,58 +107,93 @@ export const VenueTimelineView: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-3 flex-wrap">
-          {/* Date Navigator */}
-          <div className="flex items-center bg-neutral-100 dark:bg-neutral-800 rounded-xl p-1 border border-neutral-200 dark:border-neutral-700">
-            <button
-              onClick={handlePrevDay}
-              className="p-1.5 text-neutral-600 dark:text-neutral-300 hover:bg-white dark:hover:bg-neutral-700 rounded-lg transition-colors cursor-pointer"
-            >
-              <ChevronLeft size={16} className="rtl:rotate-180" />
-            </button>
-            <button
-              onClick={handleToday}
-              className="px-3 py-1 text-xs font-semibold text-neutral-800 dark:text-neutral-200 hover:bg-white dark:hover:bg-neutral-700 rounded-lg transition-colors cursor-pointer"
-            >
-              {t('venue_timeline_today')}
-            </button>
-            <input
-              type="date"
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              className="bg-transparent text-xs font-medium text-neutral-800 dark:text-neutral-200 px-2 focus:outline-hidden"
-            />
-            <button
-              onClick={handleNextDay}
-              className="p-1.5 text-neutral-600 dark:text-neutral-300 hover:bg-white dark:hover:bg-neutral-700 rounded-lg transition-colors cursor-pointer"
-            >
-              <ChevronRight size={16} className="rtl:rotate-180" />
-            </button>
-          </div>
-
+        {/* Prominent High-Visibility Segmented Switcher: Timeline Matrix vs Universal Collection */}
+        <div className="flex items-center p-1 rounded-2xl bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-2xs">
           <button
-            onClick={() => setIsCloudSyncModalOpen(true)}
-            className="px-3 py-2 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-xs font-semibold text-neutral-800 dark:text-neutral-200 rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer"
-            title="Inspect Supabase live tables and row writes"
+            type="button"
+            onClick={() => setMainViewMode('timeline')}
+            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold cursor-pointer transition-all ${
+              mainViewMode === 'timeline'
+                ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 shadow-xs'
+                : 'text-neutral-600 dark:text-neutral-300 hover:text-neutral-900'
+            }`}
           >
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <Cloud size={14} className="text-purple-600 dark:text-purple-400" />
-            {t('venue_btn_cloud_sync')}
+            <CalendarIcon size={14} />
+            <span>{language === 'ar' ? 'المخطط الزمني للوحدات' : language === 'fr' ? 'Matrice Calendrier' : 'Unit Timeline Matrix'}</span>
           </button>
-
           <button
-            onClick={() => {
-              setModalInitialUnitId(undefined);
-              setModalInitialHour(undefined);
-              setIsBookingModalOpen(true);
-            }}
-            className="px-4 py-2.5 bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white text-xs font-semibold rounded-xl shadow-xs transition-colors flex items-center gap-2 cursor-pointer"
+            type="button"
+            onClick={() => setMainViewMode('collection')}
+            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold cursor-pointer transition-all ${
+              mainViewMode === 'collection'
+                ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 shadow-xs'
+                : 'text-neutral-600 dark:text-neutral-300 hover:text-neutral-900'
+            }`}
           >
-            <Plus size={16} />
-            {t('venue_btn_new_booking')}
+            <LayoutGrid size={14} />
+            <span>{language === 'ar' ? 'بطاقات وقائمة الحجوزات' : language === 'fr' ? 'Cartes & Liste Universelles' : 'Universal Cards & List'}</span>
           </button>
         </div>
+
+        {mainViewMode === 'timeline' && (
+          <div className="flex items-center gap-3 flex-wrap">
+            {/* Date Navigator */}
+            <div className="flex items-center bg-neutral-100 dark:bg-neutral-800 rounded-xl p-1 border border-neutral-200 dark:border-neutral-700">
+              <button
+                onClick={handlePrevDay}
+                className="p-1.5 text-neutral-600 dark:text-neutral-300 hover:bg-white dark:hover:bg-neutral-700 rounded-lg transition-colors cursor-pointer"
+              >
+                <ChevronLeft size={16} className="rtl:rotate-180" />
+              </button>
+              <button
+                onClick={handleToday}
+                className="px-3 py-1 text-xs font-semibold text-neutral-800 dark:text-neutral-200 hover:bg-white dark:hover:bg-neutral-700 rounded-lg transition-colors cursor-pointer"
+              >
+                {t('venue_timeline_today')}
+              </button>
+              <input
+                type="date"
+                value={selectedDate}
+                onChange={(e) => setSelectedDate(e.target.value)}
+                className="bg-transparent text-xs font-medium text-neutral-800 dark:text-neutral-200 px-2 focus:outline-hidden"
+              />
+              <button
+                onClick={handleNextDay}
+                className="p-1.5 text-neutral-600 dark:text-neutral-300 hover:bg-white dark:hover:bg-neutral-700 rounded-lg transition-colors cursor-pointer"
+              >
+                <ChevronRight size={16} className="rtl:rotate-180" />
+              </button>
+            </div>
+
+            <button
+              onClick={() => setIsCloudSyncModalOpen(true)}
+              className="px-3 py-2 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-xs font-semibold text-neutral-800 dark:text-neutral-200 rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer"
+              title="Inspect Supabase live tables and row writes"
+            >
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <Cloud size={14} className="text-purple-600 dark:text-purple-400" />
+              {t('venue_btn_cloud_sync')}
+            </button>
+
+            <button
+              onClick={() => {
+                setModalInitialUnitId(undefined);
+                setModalInitialHour(undefined);
+                setIsBookingModalOpen(true);
+              }}
+              className="px-4 py-2.5 bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white text-xs font-semibold rounded-xl shadow-xs transition-colors flex items-center gap-2 cursor-pointer"
+            >
+              <Plus size={16} />
+              {t('venue_btn_new_booking')}
+            </button>
+          </div>
+        )}
       </div>
+
+      {mainViewMode === 'collection' ? (
+        <VenueBookingsView hideHeader />
+      ) : (
+        <>
 
       {/* Filter Chips Bar */}
       <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
@@ -300,6 +338,8 @@ export const VenueTimelineView: React.FC = () => {
           )}
         </div>
       </div>
+      </>
+      )}
 
       {/* Booking Detail Inspector Drawer / Modal */}
       {inspectedBooking && (

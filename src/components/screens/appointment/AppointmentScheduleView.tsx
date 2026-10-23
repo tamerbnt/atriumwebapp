@@ -429,6 +429,46 @@ export const AppointmentScheduleView: React.FC = () => {
             </p>
           </div>
 
+          {/* Prominent High-Visibility Segmented Switcher: Universal Collection vs Column Matrix vs Catalog */}
+          <div className="flex items-center p-1 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-2xs">
+            <button
+              type="button"
+              onClick={() => setViewMode('list')}
+              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold cursor-pointer transition-all ${
+                viewMode === 'list'
+                  ? 'bg-[#C4785A] text-white shadow-xs'
+                  : 'text-neutral-600 dark:text-neutral-300 hover:text-neutral-900'
+              }`}
+            >
+              <LayoutGrid size={14} />
+              <span>{language === 'ar' ? 'بطاقات وقائمة عامة' : language === 'fr' ? 'Cartes & Liste Universelles' : 'Universal Cards & List'}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode('columns')}
+              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold cursor-pointer transition-all ${
+                viewMode === 'columns'
+                  ? 'bg-[#C4785A] text-white shadow-xs'
+                  : 'text-neutral-600 dark:text-neutral-300 hover:text-neutral-900'
+              }`}
+            >
+              <Calendar size={14} />
+              <span>{language === 'ar' ? 'مخطط كراسي المصففين' : language === 'fr' ? 'Matrice Stylistes' : 'Stylist Chair Matrix'}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode('catalog')}
+              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold cursor-pointer transition-all ${
+                viewMode === 'catalog'
+                  ? 'bg-[#C4785A] text-white shadow-xs'
+                  : 'text-neutral-600 dark:text-neutral-300 hover:text-neutral-900'
+              }`}
+            >
+              <Sparkles size={14} />
+              <span>{t('salon_view_catalog', language)}</span>
+            </button>
+          </div>
+
           {/* Action Buttons */}
           <div className="flex items-center gap-2.5">
             <button
@@ -488,48 +528,6 @@ export const AppointmentScheduleView: React.FC = () => {
             <span className="text-xs font-bold text-neutral-700 dark:text-neutral-300 pr-2">
               • {formattedDateLabel}
             </span>
-          </div>
-
-          {/* View Mode Toggle */}
-          <div className="flex items-center gap-2">
-            <div className="flex items-center bg-neutral-100 dark:bg-neutral-800 p-1 rounded-xl text-xs">
-              <button
-                type="button"
-                onClick={() => setViewMode('columns')}
-                className={`px-3 py-1 rounded-lg font-medium transition-all cursor-pointer flex items-center gap-1.5 ${
-                  viewMode === 'columns'
-                    ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white shadow-xs font-semibold'
-                    : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'
-                }`}
-              >
-                <LayoutGrid size={13} />
-                {t('salon_view_columns', language)}
-              </button>
-              <button
-                type="button"
-                onClick={() => setViewMode('list')}
-                className={`px-3 py-1 rounded-lg font-medium transition-all cursor-pointer flex items-center gap-1.5 ${
-                  viewMode === 'list'
-                    ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white shadow-xs font-semibold'
-                    : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'
-                }`}
-              >
-                <List size={13} />
-                {t('salon_view_list', language)}
-              </button>
-              <button
-                type="button"
-                onClick={() => setViewMode('catalog')}
-                className={`px-3 py-1 rounded-lg font-medium transition-all cursor-pointer flex items-center gap-1.5 ${
-                  viewMode === 'catalog'
-                    ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white shadow-xs font-semibold'
-                    : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'
-                }`}
-              >
-                <Sparkles size={13} />
-                {t('salon_view_catalog', language)}
-              </button>
-            </div>
           </div>
         </div>
 

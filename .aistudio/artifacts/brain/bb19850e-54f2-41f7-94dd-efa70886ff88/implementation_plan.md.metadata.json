@@ -1,6 +1,6 @@
 {
-  "summary":  "Multi-Vertical Rollout Plan for Bookings, Reservations, and Appointment Sessions using UniversalDataCollection with quick status toggles, batch actions, and dual card/table views.",
-  "updatedAt":  "2026-10-23T02:34:29.974263457Z",
+  "summary":  "Standardization of the Venue Rental category (Renters, Units/Inventory, Bookings) has been fully completed with feature parity matching Membership Clients/Staff (UniversalDataCollection, batch selection, row pinning, multi-column sorting, CSV exports, facility dropdown switchers, and Seek search). The Education & Academy category is next in the category-by-category roadmap.",
+  "updatedAt":  "2026-10-23T16:34:10.748976899Z",
   "requestFeedback":  true,
   "userFacing":  true
 }

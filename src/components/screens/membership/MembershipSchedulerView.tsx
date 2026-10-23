@@ -6,10 +6,7 @@ import {
   Users,
   MapPin,
   CheckCircle2,
-  Search,
   Download,
-  LayoutGrid,
-  List,
   Maximize2,
   Home,
   ChevronDown,
@@ -17,18 +14,22 @@ import {
   X,
   Check,
   UserPlus,
-  Sparkles,
   Award,
+  Pin,
+  LayoutGrid,
+  List,
+  Eye,
+  Filter,
 } from 'lucide-react';
 import { useAtriumStore } from '../../../services/store';
 import { ScheduleEvent } from '../../../types/index';
 import { Modal } from '../../ui/Modal';
 import { Seek } from '../../ui/Seek';
 import { LabelInput } from '../../ui/LabelInput';
-import { LabelSelect } from '../../ui/LabelSelect';
 import { FilterSelect } from '../../ui/FilterSelect';
 import { AppointmentScheduleView as StylistScheduleView } from '../appointment/AppointmentScheduleView';
 import { t } from '../../../utils/i18n';
+import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 
 export const MembershipSchedulerView: React.FC = () => {
   const {
@@ -43,6 +44,7 @@ export const MembershipSchedulerView: React.FC = () => {
     terminology,
     staff,
     language,
+    showToast,
   } = useAtriumStore();
 
   if (currentBusiness.category === 'appointment_service') {
@@ -51,14 +53,22 @@ export const MembershipSchedulerView: React.FC = () => {
 
   const isPOS = currentBusiness.category === 'pos_inventory';
 
+  // High-level View Switcher: Timeline Matrix vs Universal Collection
+  const [mainViewMode, setMainViewMode] = useState<'timeline' | 'collection'>('collection');
+
   const [selectedDay, setSelectedDay] = useState<number>(1); // Monday default
+  const [dayFilter, setDayFilter] = useState<string>('All');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [isSearchActive, setIsSearchActive] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState('All');
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [isFacilityDropdownOpen, setIsFacilityDropdownOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<ScheduleEvent | null>(null);
+
+  // Universal Collection state
+  const [selectedEventIds, setSelectedEventIds] = useState<Set<string>>(new Set());
+  const [pinnedEventIds, setPinnedEventIds] = useState<Set<string>>(new Set());
+  const [eventSortBy, setEventSortBy] = useState<string>('time');
+  const [eventSortDir, setEventSortDir] = useState<'asc' | 'desc'>('asc');
 
   // New session modal fields
   const [newTitle, setNewTitle] = useState(isPOS ? 'Morning Cashier & Floor Roster' : 'Morning Workout');
@@ -79,6 +89,12 @@ export const MembershipSchedulerView: React.FC = () => {
     { id: 0, label: t('day_sunday', language), short: t('day_sun', language) },
   ];
 
+  const getDayName = (dayOfWeek: number) => {
+    const found = days.find((d) => d.id === dayOfWeek);
+    return found ? found.label : `Day ${dayOfWeek}`;
+  };
+
+  // Timeline events: filtered by day
   const currentDayEvents = useMemo(() => {
     return schedule.filter((s) => {
       if (s.dayOfWeek !== selectedDay) return false;
@@ -94,6 +110,54 @@ export const MembershipSchedulerView: React.FC = () => {
     });
   }, [schedule, selectedDay, categoryFilter, searchQuery]);
 
+  // Universal Collection events: can view all days or filter by day
+  const collectionEvents = useMemo(() => {
+    return schedule.filter((s) => {
+      if (dayFilter !== 'All' && s.dayOfWeek !== parseInt(dayFilter, 10)) return false;
+      if (categoryFilter !== 'All' && s.category !== categoryFilter) return false;
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        const matchTitle = s.title.toLowerCase().includes(q);
+        const matchTrainer = s.trainerOrStaff.toLowerCase().includes(q);
+        const matchRoom = s.roomOrArea.toLowerCase().includes(q);
+        const matchCategory = s.category.toLowerCase().includes(q);
+        if (!matchTitle && !matchTrainer && !matchRoom && !matchCategory) return false;
+      }
+      return true;
+    });
+  }, [schedule, dayFilter, categoryFilter, searchQuery]);
+
+  const sortedCollectionEvents = useMemo(() => {
+    return [...collectionEvents].sort((a, b) => {
+      const aPinned = pinnedEventIds.has(a.id);
+      const bPinned = pinnedEventIds.has(b.id);
+      if (aPinned && !bPinned) return -1;
+      if (!aPinned && bPinned) return 1;
+
+      if (eventSortBy === 'time') {
+        const cmp = a.startTime.localeCompare(b.startTime);
+        return eventSortDir === 'asc' ? cmp : -cmp;
+      }
+      if (eventSortBy === 'title') {
+        const cmp = a.title.localeCompare(b.title);
+        return eventSortDir === 'asc' ? cmp : -cmp;
+      }
+      if (eventSortBy === 'day') {
+        const cmp = a.dayOfWeek - b.dayOfWeek;
+        return eventSortDir === 'asc' ? cmp : -cmp;
+      }
+      if (eventSortBy === 'trainer') {
+        const cmp = a.trainerOrStaff.localeCompare(b.trainerOrStaff);
+        return eventSortDir === 'asc' ? cmp : -cmp;
+      }
+      if (eventSortBy === 'capacity') {
+        const cmp = a.enrolledCount - b.enrolledCount;
+        return eventSortDir === 'asc' ? cmp : -cmp;
+      }
+      return 0;
+    });
+  }, [collectionEvents, pinnedEventIds, eventSortBy, eventSortDir]);
+
   const totalEnrolled = useMemo(() => {
     return schedule.reduce((acc, s) => acc + s.enrolledCount, 0);
   }, [schedule]);
@@ -105,8 +169,8 @@ export const MembershipSchedulerView: React.FC = () => {
   const handleExportCSV = () => {
     const dayLabel = days.find((d) => d.id === selectedDay)?.label || 'All';
     const headers = ['Day', 'Title', 'Category', 'Start Time', 'End Time', 'Trainer', 'Room', 'Enrolled', 'Capacity'];
-    const rows = currentDayEvents.map((e) => [
-      `"${dayLabel}"`,
+    const rows = (mainViewMode === 'timeline' ? currentDayEvents : sortedCollectionEvents).map((e) => [
+      `"${getDayName(e.dayOfWeek)}"`,
       `"${e.title}"`,
       `"${e.category}"`,
       `"${e.startTime}"`,
@@ -135,6 +199,123 @@ export const MembershipSchedulerView: React.FC = () => {
     }
   };
 
+  const eventColumns: ColumnDefinition<ScheduleEvent>[] = useMemo(() => [
+    {
+      key: 'title',
+      header: language === 'ar' ? 'عنوان الحصة / الدورة' : language === 'fr' ? 'Intitulé du cours' : 'Class Title & Discipline',
+      width: '2.5*',
+      minWidth: '180px',
+      sortable: true,
+      renderCell: (event) => (
+        <div>
+          <span className="font-bold text-xs text-neutral-900 dark:text-white block">
+            {event.title}
+          </span>
+          <span className="text-[10px] font-bold text-[#C4785A] uppercase tracking-wider block mt-0.5">
+            {event.category}
+          </span>
+        </div>
+      ),
+    },
+    {
+      key: 'day',
+      header: language === 'ar' ? 'اليوم والتوقيت' : language === 'fr' ? 'Jour & Créneau' : 'Day & Time Slot',
+      width: '2*',
+      minWidth: '160px',
+      sortable: true,
+      renderCell: (event) => (
+        <div>
+          <span className="text-xs font-semibold text-neutral-800 dark:text-neutral-200 block">
+            {getDayName(event.dayOfWeek)}
+          </span>
+          <div className="flex items-center gap-1 text-[11px] font-mono text-[#C4785A] mt-0.5">
+            <Clock size={11} />
+            <span>{event.startTime} - {event.endTime}</span>
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: 'trainer',
+      header: language === 'ar' ? 'المدرب / المسؤول' : language === 'fr' ? 'Coach / Responsable' : 'Trainer / Coach',
+      width: '1.8*',
+      minWidth: '140px',
+      sortable: true,
+      renderCell: (event) => (
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-xs font-bold text-neutral-700 dark:text-neutral-300 shrink-0">
+            {event.trainerOrStaff.charAt(0)}
+          </div>
+          <span className="text-xs font-medium text-neutral-800 dark:text-neutral-200 truncate">
+            {event.trainerOrStaff}
+          </span>
+        </div>
+      ),
+    },
+    {
+      key: 'room',
+      header: language === 'ar' ? 'القاعة / الاستوديو' : language === 'fr' ? 'Salle / Studio' : 'Room / Studio',
+      width: '1.5*',
+      minWidth: '120px',
+      renderCell: (event) => (
+        <div className="flex items-center gap-1.5 text-xs text-neutral-600 dark:text-neutral-300">
+          <MapPin size={12} className="text-neutral-400 shrink-0" />
+          <span className="truncate">{event.roomOrArea}</span>
+        </div>
+      ),
+    },
+    {
+      key: 'capacity',
+      header: language === 'ar' ? 'نسبة الامتلاء' : language === 'fr' ? 'Remplissage' : 'Occupancy',
+      width: '1.8*',
+      minWidth: '140px',
+      sortable: true,
+      renderCell: (event) => {
+        const isFull = event.enrolledCount >= event.capacity;
+        const fillPercent = Math.min(100, Math.round((event.enrolledCount / event.capacity) * 100));
+        return (
+          <div className="space-y-1">
+            <div className="flex justify-between items-center text-[11px] font-mono tabular-nums">
+              <span className={isFull ? 'text-rose-600 font-bold' : 'text-neutral-700 dark:text-neutral-300 font-medium'}>
+                {event.enrolledCount}/{event.capacity}
+              </span>
+              <span className="text-neutral-400 text-[10px]">{fillPercent}%</span>
+            </div>
+            <div className="w-full h-1.5 rounded-full bg-neutral-100 dark:bg-neutral-800 overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all ${
+                  isFull ? 'bg-rose-500' : fillPercent > 75 ? 'bg-amber-500' : 'bg-emerald-500'
+                }`}
+                style={{ width: `${fillPercent}%` }}
+              />
+            </div>
+          </div>
+        );
+      },
+    },
+    {
+      key: 'actions',
+      header: language === 'ar' ? 'إجراءات' : language === 'fr' ? 'Actions' : 'Actions',
+      width: '1.2*',
+      minWidth: '100px',
+      renderCell: (event) => (
+        <div className="flex items-center justify-end gap-1.5">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setSelectedEvent(event);
+            }}
+            className="px-2.5 py-1 rounded-lg bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-xs font-bold text-neutral-700 dark:text-neutral-300 flex items-center gap-1 cursor-pointer"
+          >
+            <Eye size={12} />
+            <span>{language === 'ar' ? 'عرض' : 'View'}</span>
+          </button>
+        </div>
+      ),
+    },
+  ], [language, days]);
+
   return (
     <div className="space-y-6 animate-in fade-in duration-200 relative">
       {/* Row 0: Top Header matching Desktop App */}
@@ -158,7 +339,35 @@ export const MembershipSchedulerView: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-3 relative">
-          {/* Facility Pill: Atrium 1 ▾ */}
+          {/* Prominent High-Visibility Segmented Switcher: Timeline vs Universal Collection */}
+          <div className="flex items-center p-1 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-2xs">
+            <button
+              type="button"
+              onClick={() => setMainViewMode('collection')}
+              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold cursor-pointer transition-all ${
+                mainViewMode === 'collection'
+                  ? 'bg-[#C4785A] text-white shadow-xs'
+                  : 'text-neutral-600 dark:text-neutral-300 hover:text-neutral-900'
+              }`}
+            >
+              <LayoutGrid size={14} />
+              <span>{language === 'ar' ? 'بطاقات وقائمة عامة' : language === 'fr' ? 'Collection Cartes & Liste' : 'Universal Cards & List'}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setMainViewMode('timeline')}
+              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold cursor-pointer transition-all ${
+                mainViewMode === 'timeline'
+                  ? 'bg-[#C4785A] text-white shadow-xs'
+                  : 'text-neutral-600 dark:text-neutral-300 hover:text-neutral-900'
+              }`}
+            >
+              <Calendar size={14} />
+              <span>{language === 'ar' ? 'مخطط الأيام الزمني' : language === 'fr' ? 'Planning Calendrier' : 'Timetable Timeline'}</span>
+            </button>
+          </div>
+
+          {/* Facility Pill */}
           <div className="relative">
             <button
               type="button"
@@ -219,204 +428,354 @@ export const MembershipSchedulerView: React.FC = () => {
             style={{
               backgroundColor: 'var(--color-accent)',
             }}
-            className="h-10 px-5 rounded-full text-xs font-bold text-white flex items-center gap-2 cursor-pointer hover:opacity-90 active:scale-98 transition-all shadow-xs"
+            className="h-10 px-5 rounded-full text-xs font-bold text-white flex items-center gap-2 cursor-pointer hover:opacity-90 active:scale-98 transition-all shadow-xs shrink-0"
           >
             <Plus size={15} strokeWidth={2.5} />
-            <span>{t('schedule_add_session', language)}</span>
+            <span>{isPOS ? (language === 'ar' ? 'إضافة وردية' : 'New Shift') : t('schedule_new_session', language)}</span>
           </button>
         </div>
       </div>
 
-      {/* Row 1: Weekly Utilization & Attendance Health Banner Card */}
+      {/* Row 1: Weekly Staff Coverage or Enrolled Athletes KPIs */}
       <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[26px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
         <div>
           <h2 className="text-base font-bold text-neutral-900 dark:text-white">
-            {t('schedule_utilization_title', language)}
+            {isPOS
+              ? (language === 'ar' ? 'كفاءة ورديات الكاشير والمخازن' : 'Shift Allocation & Coverage Velocity')
+              : (language === 'ar' ? 'الطاقة الاستيعابية وجدول التمارين' : 'Weekly Session Matrix & Attendance Roster')}
           </h2>
           <p className="text-xs text-neutral-400 dark:text-neutral-500">
-            {t('schedule_utilization_desc', language)}
+            {language === 'ar'
+              ? 'تتبع الحصص التدريبية، توزيع المدربين ومعدلات حضور المشتركين'
+              : 'Coach allocations, studio room assignments, and real-time attendance capacity'}
           </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {/* Tile 1: Weekly Classes — Pure White Card */}
           <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
             <div>
               <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
-                {isPOS ? (language === 'ar' ? 'ورديات العمل المجدولة أسبوعياً' : language === 'fr' ? 'Créneaux & Équipe de la Semaine' : 'Weekly Scheduled Shifts') : t('schedule_weekly_classes', language)}
+                {language === 'ar' ? 'إجمالي الحصص المقررة' : 'Scheduled Class Roster'}
               </span>
               <div className="mt-1">
                 <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
-                  ↗ {language === 'ar' ? 'جدول نشط' : language === 'fr' ? 'Planning Actif' : 'Active Schedule'}
+                  ↗ {language === 'ar' ? 'جدول نشط' : 'Active Schedule'}
                 </span>
               </div>
             </div>
             <div className="text-3xl font-black text-neutral-900 dark:text-white tabular-nums">
               {schedule.length}{' '}
               <span className="text-xs font-normal text-neutral-400">
-                {isPOS ? (language === 'ar' ? 'ورديات' : language === 'fr' ? 'créneaux' : 'shifts') : (language === 'ar' ? 'حصص تدريبية' : language === 'fr' ? 'cours au programme' : 'scheduled classes')}
+                {isPOS ? 'shifts' : 'sessions'}
               </span>
             </div>
           </div>
 
-          {/* Tile 2: Weekly Staff Coverage or Enrolled Athletes */}
           <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
             <div>
               <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
-                {isPOS ? (language === 'ar' ? 'تغطية طاقم العمل الأسبوعية' : language === 'fr' ? 'Couverture Hebdo de la Caisse' : 'Weekly Staff Coverage') : t('schedule_enrolled_athletes', language)}
+                {t('schedule_enrolled_athletes', language)}
               </span>
               <div className="mt-1">
                 <span className="text-[10px] font-bold text-[#C4785A] bg-[#C4785A]/10 px-2 py-0.5 rounded-full">
-                  {isPOS ? (language === 'ar' ? '100% تغطية الصندوق' : language === 'fr' ? '100% Couverture Caisse' : '100% Register Coverage') : (language === 'ar' ? '82% نسبة الامتلاء' : language === 'fr' ? '82% Taux de Remplissage' : '82% Capacity Ratio')}
+                  82% {language === 'ar' ? 'نسبة الامتلاء' : 'Capacity Ratio'}
                 </span>
               </div>
             </div>
             <div className="text-3xl font-black text-neutral-900 dark:text-white tabular-nums">
-              {isPOS ? `${schedule.length * 8}h` : totalEnrolled}{' '}
+              {totalEnrolled}{' '}
               <span className="text-xs font-normal text-neutral-400">
-                {isPOS ? (language === 'ar' ? 'ساعات' : language === 'fr' ? 'heures' : 'hours') : (language === 'ar' ? 'رياضي مسجل' : language === 'fr' ? 'réservations' : 'bookings')}
+                {language === 'ar' ? 'حجز مسجل' : 'bookings'}
               </span>
             </div>
           </div>
 
-          {/* Tile 3: Dark Obsidian Card */}
           <div className="p-5 rounded-[20px] bg-[#18181B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
             <div>
               <span className="text-xs font-medium text-neutral-300">
-                {isPOS ? (language === 'ar' ? 'ذروة تدفق الزبائن على الصندوق' : language === 'fr' ? 'Heures d\'Affluence Caisse' : 'Peak Register Rush') : t('schedule_peak_capacity', language)}
+                {t('schedule_peak_capacity', language)}
               </span>
               <div className="text-[11px] text-[#C4785A] font-semibold mt-0.5">
-                {isPOS ? (language === 'ar' ? 'ذروة الغداء ومغادرة المكاتب' : language === 'fr' ? 'Pointes midi & sortie de bureaux' : 'Lunch & Office Exit Rush') : (language === 'ar' ? 'ساعات الذروة والقاعة الرئيسية' : language === 'fr' ? 'Heures de Pointe Salle Principale' : 'Peak Hours Main Arena')}
+                {language === 'ar' ? 'ساعات الذروة والقاعة الرئيسية' : 'Peak Hours Main Arena'}
               </div>
             </div>
             <div className="text-2xl font-black text-white tabular-nums">
               12:00 - 18:30{' '}
               <span className="text-xs font-normal text-neutral-400">
-                {isPOS ? (language === 'ar' ? 'الكاشير والواجهة' : language === 'fr' ? 'Caisse & Étage' : 'Register & Floor') : 'CrossFit & Boxe'}
+                CrossFit & Boxe
               </span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Row 2: Timetable Master Card */}
-      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[26px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
-        {/* Table Control Header */}
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          {/* Left: Icon + Title + Count */}
-          <div className="flex items-center gap-2">
-            <Calendar size={16} className="text-neutral-500" />
-            <span className="text-sm font-bold text-neutral-900 dark:text-white">
-              {days.find((d) => d.id === selectedDay)?.label} · {t('nav_scheduler', language)}
-            </span>
-            <span className="text-xs text-neutral-400 font-semibold tabular-nums ml-1">
-              {currentDayEvents.length} {language === 'ar' ? 'حصص' : language === 'fr' ? 'créneaux' : 'sessions'}
-            </span>
+      {/* Row 2: Universal Cards & List View OR Timetable Timeline */}
+      {mainViewMode === 'collection' ? (
+        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[26px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+          {/* Collection Filter & Action Header */}
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <Calendar size={16} className="text-neutral-500" />
+              <span className="text-sm font-bold text-neutral-900 dark:text-white">
+                {language === 'ar' ? 'قائمة الحصص والجلسات العامة' : 'Universal Schedule Collection'}
+              </span>
+              <span className="text-xs text-neutral-400 font-semibold tabular-nums ml-1">
+                {sortedCollectionEvents.length}
+              </span>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2.5 ml-auto">
+              {/* Search */}
+              <Seek
+                value={searchQuery}
+                onChange={setSearchQuery}
+                placeholder={language === 'ar' ? 'ابحث عن اسم الحصة، المدرب، القاعة...' : 'Search session, coach, studio...'}
+                shutSize={36}
+                openWidth={220}
+              />
+
+              {/* Day filter */}
+              <FilterSelect
+                label={language === 'ar' ? 'اليوم' : 'Day'}
+                value={dayFilter}
+                onChange={(val) => setDayFilter(typeof val === 'string' ? val : val.target?.value || val)}
+                options={[
+                  { value: 'All', label: language === 'ar' ? 'جميع الأيام' : 'All Days' },
+                  ...days.map((d) => ({ value: String(d.id), label: d.label })),
+                ]}
+              />
+
+              {/* Discipline filter */}
+              <FilterSelect
+                label={language === 'ar' ? 'التصنيف' : 'Discipline'}
+                value={categoryFilter}
+                onChange={(val) => setCategoryFilter(typeof val === 'string' ? val : val.target?.value || val)}
+                options={categories.map((c) => ({
+                  value: c,
+                  label: c === 'All' ? (language === 'ar' ? 'جميع التخصصات' : 'All Disciplines') : c,
+                }))}
+              />
+
+              {/* Export */}
+              <button
+                type="button"
+                onClick={handleExportCSV}
+                className="h-9 px-3.5 rounded-full border border-[#E9EEF0] dark:border-neutral-700/60 bg-white dark:bg-neutral-800 text-xs font-semibold text-neutral-700 dark:text-neutral-300 flex items-center gap-1.5 hover:bg-neutral-50 dark:hover:bg-neutral-700/50 cursor-pointer transition-colors shadow-2xs"
+              >
+                <Download size={13} />
+                <span>Export</span>
+              </button>
+
+              {/* Fullscreen */}
+              <button
+                type="button"
+                onClick={toggleFullscreen}
+                className="w-9 h-9 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex items-center justify-center text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 cursor-pointer transition-colors shadow-2xs"
+                title="Toggle Fullscreen"
+              >
+                <Maximize2 size={13} />
+              </button>
+            </div>
           </div>
 
-          {/* Right Controls Bar */}
-          <div className="flex flex-wrap items-center gap-2.5 ml-auto">
-            {/* Seek Kinetic Search Box */}
-            <Seek
-              value={searchQuery}
-              onChange={setSearchQuery}
-              placeholder={
-                language === 'ar'
-                  ? 'ابحث عن اسم الحصة، المدرب، القاعة...'
-                  : language === 'fr'
-                  ? 'Rechercher un cours, coach, salle...'
-                  : 'Search session title, trainer, area...'
+          {/* UniversalDataCollection Component */}
+          <UniversalDataCollection<ScheduleEvent>
+            items={sortedCollectionEvents}
+            keyExtractor={(e) => e.id}
+            defaultViewMode="list"
+            sortBy={eventSortBy}
+            sortDirection={eventSortDir}
+            onSortChange={(key) => {
+              if (eventSortBy === key) {
+                setEventSortDir((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+              } else {
+                setEventSortBy(key);
+                setEventSortDir('asc');
               }
-              shutSize={36}
-              openWidth={230}
-            />
+            }}
+            selectedIds={selectedEventIds}
+            onSelectionChange={setSelectedEventIds}
+            isPinned={(e) => pinnedEventIds.has(e.id)}
+            onTogglePin={(e) => {
+              setPinnedEventIds((prev) => {
+                const next = new Set(prev);
+                if (next.has(e.id)) next.delete(e.id);
+                else next.add(e.id);
+                return next;
+              });
+            }}
+            onItemClick={(event) => setSelectedEvent(event)}
+            columns={eventColumns}
+            renderCard={(event) => {
+              const isFull = event.enrolledCount >= event.capacity;
+              const fillPercent = Math.min(100, Math.round((event.enrolledCount / event.capacity) * 100));
 
-            {/* Day of Week Segmented Capsules */}
-            <div className="flex items-center p-0.5 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 gap-0.5 text-xs font-semibold shadow-2xs overflow-x-auto max-w-xs sm:max-w-none">
-              {days.map((d) => {
-                const isActive = selectedDay === d.id;
-                return (
-                  <button
-                    key={d.id}
-                    type="button"
-                    onClick={() => setSelectedDay(d.id)}
-                    style={{
-                      backgroundColor: isActive ? '#FCEEE8' : 'transparent',
-                      color: isActive ? 'var(--color-accent)' : '#71717A',
-                    }}
-                    className={`px-3 py-1 rounded-full cursor-pointer transition-all ${
-                      isActive ? 'font-bold' : 'hover:text-neutral-900 dark:hover:text-white'
-                    }`}
-                  >
-                    {d.short}
-                  </button>
-                );
-              })}
-            </div>
+              return (
+                <div className="flex flex-col justify-between h-full space-y-3">
+                  <div>
+                    <div className="flex items-center justify-between gap-2 mb-2">
+                      <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300">
+                        {event.category}
+                      </span>
+                      <span className="text-xs font-mono font-bold text-[#C4785A] flex items-center gap-1">
+                        <Clock size={12} />
+                        <span>{event.startTime} - {event.endTime}</span>
+                      </span>
+                    </div>
 
-            {/* Category Filter */}
-            <FilterSelect
-              value={categoryFilter}
-              onChange={(val) => setCategoryFilter(typeof val === 'string' ? val : val.target?.value || val)}
-              options={categories.map((c) => ({
-                value: c,
-                label: c === 'All' ? 'All Disciplines' : c,
-              }))}
-            />
+                    <h3 className="font-bold text-sm text-neutral-900 dark:text-white line-clamp-1 mb-1">
+                      {event.title}
+                    </h3>
 
-            {/* Export Data Button */}
-            <button
-              type="button"
-              onClick={handleExportCSV}
-              className="h-9 px-3.5 rounded-full border border-[#E9EEF0] dark:border-neutral-700/60 bg-white dark:bg-neutral-800 text-xs font-semibold text-neutral-700 dark:text-neutral-300 flex items-center gap-1.5 hover:bg-neutral-50 dark:hover:bg-neutral-700/50 cursor-pointer transition-colors shadow-2xs"
-              title="Download timetable CSV"
-            >
-              <Download size={13} />
-              <span>Export</span>
-            </button>
+                    <div className="flex items-center gap-2 text-xs text-neutral-500 mb-3">
+                      <span>{getDayName(event.dayOfWeek)}</span>
+                      <span>·</span>
+                      <span className="flex items-center gap-1">
+                        <MapPin size={11} className="text-neutral-400" />
+                        <span>{event.roomOrArea}</span>
+                      </span>
+                    </div>
 
-            {/* View Mode Toggle */}
-            <div className="flex items-center gap-1 p-0.5 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
-              <button
-                type="button"
-                onClick={() => setViewMode('grid')}
-                className={`p-1.5 rounded-full cursor-pointer transition-colors ${
-                  viewMode === 'grid'
-                    ? 'text-[#C4785A] bg-[#C4785A]/10 font-bold'
-                    : 'text-neutral-400 hover:text-neutral-600'
-                }`}
-                title="Grid view"
-              >
-                <LayoutGrid size={14} />
-              </button>
-              <button
-                type="button"
-                onClick={() => setViewMode('list')}
-                className={`p-1.5 rounded-full cursor-pointer transition-colors ${
-                  viewMode === 'list'
-                    ? 'text-[#C4785A] bg-[#C4785A]/10 font-bold'
-                    : 'text-neutral-400 hover:text-neutral-600'
-                }`}
-                title="List view"
-              >
-                <List size={14} />
-              </button>
-            </div>
+                    <div className="flex items-center gap-2 p-2 bg-neutral-50 dark:bg-neutral-800/40 rounded-xl mb-3">
+                      <div className="w-7 h-7 rounded-full bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center text-xs font-bold text-neutral-700 dark:text-neutral-300 shrink-0">
+                        {event.trainerOrStaff.charAt(0)}
+                      </div>
+                      <div className="min-w-0">
+                        <span className="text-[10px] text-neutral-400 block font-medium uppercase">
+                          {language === 'ar' ? 'المدرب' : 'Instructor'}
+                        </span>
+                        <span className="text-xs font-bold text-neutral-900 dark:text-white truncate block">
+                          {event.trainerOrStaff}
+                        </span>
+                      </div>
+                    </div>
 
-            {/* Fullscreen Button */}
-            <button
-              type="button"
-              onClick={toggleFullscreen}
-              className="w-9 h-9 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex items-center justify-center text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 cursor-pointer transition-colors shadow-2xs"
-              title="Toggle Fullscreen"
-            >
-              <Maximize2 size={13} />
-            </button>
-          </div>
+                    {/* Capacity meter */}
+                    <div className="space-y-1">
+                      <div className="flex justify-between text-[11px] font-mono tabular-nums">
+                        <span className={isFull ? 'text-rose-600 font-bold' : 'text-neutral-600 dark:text-neutral-300'}>
+                          {event.enrolledCount} / {event.capacity} {language === 'ar' ? 'مشترك' : 'spots'}
+                        </span>
+                        <span className="text-neutral-400 font-bold">{fillPercent}%</span>
+                      </div>
+                      <div className="w-full h-1.5 rounded-full bg-neutral-100 dark:bg-neutral-800 overflow-hidden">
+                        <div
+                          className={`h-full rounded-full transition-all ${
+                            isFull ? 'bg-rose-500' : fillPercent > 75 ? 'bg-amber-500' : 'bg-emerald-500'
+                          }`}
+                          style={{ width: `${fillPercent}%` }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedEvent(event);
+                      }}
+                      className="text-xs font-bold text-[#C4785A] hover:underline cursor-pointer flex items-center gap-1"
+                    >
+                      <Eye size={12} />
+                      <span>{language === 'ar' ? 'عرض السجل' : 'View Roster'}</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      disabled={isFull}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        showToast({
+                          type: 'success',
+                          title: language === 'ar' ? 'تم تسجيل المشترك' : 'Member Enrolled',
+                          message: `${event.title} (${event.startTime})`,
+                        });
+                      }}
+                      className={`h-8 px-3 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors ${
+                        isFull
+                          ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-400 cursor-not-allowed'
+                          : 'bg-[#C4785A] text-white hover:opacity-90 shadow-2xs'
+                      }`}
+                    >
+                      <UserPlus size={13} />
+                      <span>{isFull ? (language === 'ar' ? 'مكتمل' : 'Full') : (language === 'ar' ? 'تسجيل' : 'Enroll')}</span>
+                    </button>
+                  </div>
+                </div>
+              );
+            }}
+            emptyTitle={language === 'ar' ? 'لا توجد حصص تطابق خيارات البحث' : 'No timetable sessions found'}
+            emptyDescription={language === 'ar' ? 'جرب تغيير شروط البحث أو مسح المرشحات لتظهر جميع الحصص' : 'Try adjusting your search query or discipline filter.'}
+          />
         </div>
+      ) : (
+        /* Timetable Timeline Mode */
+        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[26px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <Calendar size={16} className="text-neutral-500" />
+              <span className="text-sm font-bold text-neutral-900 dark:text-white">
+                {days.find((d) => d.id === selectedDay)?.label} · {t('nav_scheduler', language)}
+              </span>
+              <span className="text-xs text-neutral-400 font-semibold tabular-nums ml-1">
+                {currentDayEvents.length} {language === 'ar' ? 'حصص' : 'sessions'}
+              </span>
+            </div>
 
-        {/* View Mode Display: Grid Cards or Table List */}
-        {viewMode === 'grid' ? (
+            <div className="flex flex-wrap items-center gap-2.5 ml-auto">
+              <Seek
+                value={searchQuery}
+                onChange={setSearchQuery}
+                placeholder={language === 'ar' ? 'ابحث عن اسم الحصة، المدرب، القاعة...' : 'Search session, trainer, room...'}
+                shutSize={36}
+                openWidth={220}
+              />
+
+              {/* Day of Week Segmented Capsules */}
+              <div className="flex items-center p-0.5 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 gap-0.5 text-xs font-semibold shadow-2xs overflow-x-auto max-w-xs sm:max-w-none">
+                {days.map((d) => {
+                  const isActive = selectedDay === d.id;
+                  return (
+                    <button
+                      key={d.id}
+                      type="button"
+                      onClick={() => setSelectedDay(d.id)}
+                      style={{
+                        backgroundColor: isActive ? '#FCEEE8' : 'transparent',
+                        color: isActive ? 'var(--color-accent)' : '#71717A',
+                      }}
+                      className={`px-3 py-1 rounded-full cursor-pointer transition-all ${
+                        isActive ? 'font-bold' : 'hover:text-neutral-900 dark:hover:text-white'
+                      }`}
+                    >
+                      {d.short}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <FilterSelect
+                value={categoryFilter}
+                onChange={(val) => setCategoryFilter(typeof val === 'string' ? val : val.target?.value || val)}
+                options={categories.map((c) => ({
+                  value: c,
+                  label: c === 'All' ? 'All Disciplines' : c,
+                }))}
+              />
+
+              <button
+                type="button"
+                onClick={handleExportCSV}
+                className="h-9 px-3.5 rounded-full border border-[#E9EEF0] dark:border-neutral-700/60 bg-white dark:bg-neutral-800 text-xs font-semibold text-neutral-700 dark:text-neutral-300 flex items-center gap-1.5 hover:bg-neutral-50 dark:hover:bg-neutral-700/50 cursor-pointer transition-colors shadow-2xs"
+              >
+                <Download size={13} />
+                <span>Export</span>
+              </button>
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {currentDayEvents.length === 0 ? (
               <div className="col-span-full py-16 text-center text-xs text-neutral-400">
@@ -450,41 +809,40 @@ export const MembershipSchedulerView: React.FC = () => {
                         </span>
                       </div>
 
-                      <h3 className="text-base font-bold text-neutral-900 dark:text-white mt-1">
+                      <h3 className="text-base font-black text-neutral-900 dark:text-white leading-tight mb-1">
                         {event.title}
                       </h3>
 
-                      <div className="text-xs text-neutral-500 dark:text-neutral-400 mt-2 space-y-1">
-                        <div className="flex items-center gap-1.5">
-                          <Users size={13} className="text-neutral-400" />
-                          <span>{event.trainerOrStaff}</span>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                          <MapPin size={13} className="text-neutral-400" />
+                      <div className="flex items-center gap-2 text-xs text-neutral-500">
+                        <span className="flex items-center gap-1">
+                          <MapPin size={12} />
                           <span>{event.roomOrArea}</span>
-                        </div>
+                        </span>
+                        <span>·</span>
+                        <span>{event.trainerOrStaff}</span>
                       </div>
                     </div>
 
-                    {/* Capacity Bar */}
-                    <div className="pt-3 border-t border-neutral-100 dark:border-neutral-800">
-                      <div className="flex justify-between text-xs mb-1.5">
-                        <span className="text-neutral-400 font-medium">Occupancy:</span>
+                    <div className="pt-3 border-t border-neutral-100 dark:border-neutral-700/60 space-y-1.5">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-neutral-400 font-medium">
+                          {language === 'ar' ? 'المشاركون المقيدون' : 'Enrolled Athletes'}
+                        </span>
                         <span
-                          className={`font-bold tabular-nums ${
-                            isFull ? 'text-rose-500' : 'text-neutral-800 dark:text-neutral-200'
+                          className={`font-black tabular-nums ${
+                            isFull ? 'text-rose-500' : 'text-neutral-900 dark:text-white'
                           }`}
                         >
                           {event.enrolledCount} / {event.capacity} ({fillRatio}%)
                         </span>
                       </div>
-                      <div className="w-full h-1.5 bg-neutral-100 dark:bg-neutral-800 rounded-full overflow-hidden">
+
+                      <div className="w-full h-1.5 rounded-full bg-neutral-100 dark:bg-neutral-700 overflow-hidden">
                         <div
-                          style={{
-                            width: `${Math.min(100, fillRatio)}%`,
-                            backgroundColor: isFull ? '#EF4444' : 'var(--color-accent)',
-                          }}
-                          className="h-full rounded-full transition-all"
+                          className={`h-full rounded-full transition-all ${
+                            isFull ? 'bg-rose-500' : fillRatio > 80 ? 'bg-amber-500' : 'bg-emerald-500'
+                          }`}
+                          style={{ width: `${Math.min(fillRatio, 100)}%` }}
                         />
                       </div>
                     </div>
@@ -493,77 +851,8 @@ export const MembershipSchedulerView: React.FC = () => {
               })
             )}
           </div>
-        ) : (
-          /* List Table View */
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse text-left">
-              <thead>
-                <tr className="border-b border-neutral-200/60 dark:border-neutral-800/80 text-[11px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider h-11">
-                  <th className="px-5">{language === 'ar' ? 'التوقيت' : language === 'fr' ? 'Créneau' : 'Time Window'}</th>
-                  <th className="px-4">{language === 'ar' ? 'عنوان الحصة / الوردية' : language === 'fr' ? 'Titre de la session' : 'Session Title'}</th>
-                  <th className="px-4">{language === 'ar' ? 'التصنيف' : language === 'fr' ? 'Discipline' : 'Discipline'}</th>
-                  <th className="px-4">{language === 'ar' ? 'المسؤول / المدرب' : language === 'fr' ? 'Responsable' : 'Lead Trainer'}</th>
-                  <th className="px-4">{language === 'ar' ? 'القاعة / الصندوق' : language === 'fr' ? 'Salle / Caisse' : 'Facility Studio'}</th>
-                  <th className="px-4 text-right">{language === 'ar' ? 'المشاركون / الطاقة' : language === 'fr' ? 'Inscrits & Capacité' : 'Attendance & Capacity'}</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-neutral-200/40 dark:divide-neutral-800/60">
-                {currentDayEvents.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="py-16 text-center text-xs text-neutral-400">
-                      {t('schedule_no_events', language)}
-                    </td>
-                  </tr>
-                ) : (
-                  currentDayEvents.map((event) => {
-                    const isFull = event.enrolledCount >= event.capacity;
-                    const fillRatio = Math.round((event.enrolledCount / event.capacity) * 100);
-
-                    return (
-                      <tr
-                        key={event.id}
-                        onClick={() => setSelectedEvent(event)}
-                        className={`h-16 transition-colors cursor-pointer ${
-                          selectedEvent?.id === event.id
-                            ? 'bg-[#FCEEE8]/60 dark:bg-neutral-800'
-                            : 'hover:bg-neutral-50/80 dark:hover:bg-neutral-800/50'
-                        }`}
-                      >
-                        <td className="px-5 py-3 font-mono text-xs font-bold text-[#C4785A]">
-                          {event.startTime} - {event.endTime}
-                        </td>
-                        <td className="px-4 py-3 font-bold text-neutral-900 dark:text-white text-sm">
-                          {event.title}
-                        </td>
-                        <td className="px-4 py-3">
-                          <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300">
-                            {event.category}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 text-xs text-neutral-700 dark:text-neutral-300 font-semibold">
-                          {event.trainerOrStaff}
-                        </td>
-                        <td className="px-4 py-3 text-xs text-neutral-500">
-                          {event.roomOrArea}
-                        </td>
-                        <td className="px-4 py-3 text-right tabular-nums">
-                          <span
-                            className={`text-xs font-bold ${
-                              isFull ? 'text-rose-500' : 'text-neutral-900 dark:text-white'
-                            }`}
-                          >
-                            {event.enrolledCount} / {event.capacity} ({fillRatio}%)
-                          </span>
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Desktop Slide-out Inspector Drawer for Session */}
       {selectedEvent && (
@@ -585,7 +874,6 @@ export const MembershipSchedulerView: React.FC = () => {
           </div>
 
           <div className="flex-1 overflow-y-auto p-6 space-y-6 text-xs">
-            {/* Session Card Overview */}
             <div className="p-5 rounded-2xl bg-[#FAF9F6] dark:bg-neutral-800/60 border border-neutral-200/80 dark:border-neutral-700/80 space-y-2">
               <div className="flex justify-between items-center">
                 <span className="text-[10px] font-bold uppercase tracking-wide bg-neutral-200 dark:bg-neutral-700 text-neutral-800 dark:text-neutral-200 px-2.5 py-0.5 rounded-full">
@@ -598,175 +886,93 @@ export const MembershipSchedulerView: React.FC = () => {
               <h3 className="text-lg font-bold text-neutral-900 dark:text-white">
                 {selectedEvent.title}
               </h3>
-              <p className="text-neutral-500">
-                {days.find((d) => d.id === selectedEvent.dayOfWeek)?.label} · {currentBranch?.name || 'Atrium 1'}
+              <p className="text-xs text-neutral-500">
+                {getDayName(selectedEvent.dayOfWeek)} · {selectedEvent.roomOrArea}
               </p>
             </div>
 
-            {/* Logistics */}
             <div className="space-y-3">
-              <span className="text-xs font-bold text-neutral-900 dark:text-white uppercase tracking-wider">
-                {language === 'ar' ? 'اللوجستيات والمشرفون' : language === 'fr' ? 'Logistique & Personnel' : 'Logistics & Personnel'}
-              </span>
-              <div className="p-4 rounded-2xl bg-white dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-700 space-y-2.5">
-                <div className="flex items-center gap-2.5">
-                  <Users size={14} className="text-[#C4785A]" />
-                  <span className="text-neutral-800 dark:text-neutral-200">
-                    {language === 'ar' ? 'المدرب المشرف:' : language === 'fr' ? 'Coach principal :' : 'Lead Coach:'}{' '}
-                    <strong className="text-neutral-900 dark:text-white">
-                      {selectedEvent.trainerOrStaff}
-                    </strong>
-                  </span>
+              <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-400">
+                {language === 'ar' ? 'تفاصيل المدرب والقاعة' : 'Trainer & Studio Info'}
+              </h4>
+              <div className="p-4 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-neutral-400">{language === 'ar' ? 'المدرب المسؤول:' : 'Lead Coach:'}</span>
+                  <span className="font-bold text-neutral-900 dark:text-white">{selectedEvent.trainerOrStaff}</span>
                 </div>
-                <div className="flex items-center gap-2.5">
-                  <MapPin size={14} className="text-[#C4785A]" />
-                  <span className="text-neutral-800 dark:text-neutral-200">
-                    {language === 'ar' ? 'القاعة / المساحة:' : language === 'fr' ? 'Salle / Espace :' : 'Zone/Studio:'}{' '}
-                    <strong className="text-neutral-900 dark:text-white">
-                      {selectedEvent.roomOrArea}
-                    </strong>
-                  </span>
+                <div className="flex justify-between">
+                  <span className="text-neutral-400">{language === 'ar' ? 'الموقع:' : 'Studio Area:'}</span>
+                  <span className="font-semibold text-neutral-800 dark:text-neutral-200">{selectedEvent.roomOrArea}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-neutral-400">{language === 'ar' ? 'الطاقة الاستيعابية:' : 'Max Capacity:'}</span>
+                  <span className="font-bold font-mono text-[#C4785A]">{selectedEvent.capacity} athletes</span>
                 </div>
               </div>
             </div>
 
-            {/* Attendance & Capacity */}
-            <div className="p-4 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 border border-[#E8DFD8] dark:border-neutral-700 space-y-2">
-              <div className="flex justify-between items-center">
-                <span className="text-xs font-bold text-[#C4785A]">
-                  {language === 'ar' ? 'المقاعد المحجوزة' : language === 'fr' ? 'Places réservées' : 'Reserved Seats'}
-                </span>
-                <span className="text-base font-black text-[#C4785A] tabular-nums">
-                  {selectedEvent.enrolledCount} / {selectedEvent.capacity}
-                </span>
-              </div>
-              <div className="w-full h-2 bg-white/70 dark:bg-neutral-700 rounded-full overflow-hidden">
-                <div
-                  style={{
-                    width: `${Math.min(100, Math.round((selectedEvent.enrolledCount / selectedEvent.capacity) * 100))}%`,
-                    backgroundColor: 'var(--color-accent)',
-                  }}
-                  className="h-full rounded-full"
-                />
-              </div>
-            </div>
-
-            {/* Sample Athlete Roster */}
-            <div className="space-y-2">
-              <span className="text-xs font-bold text-neutral-900 dark:text-white uppercase tracking-wider">
-                {language === 'ar' ? 'سجل حضور الرياضيين بالحصة' : language === 'fr' ? 'Liste des athlètes enregistrés' : 'Checked-In Athlete Roster'}
-              </span>
-              <div className="border border-neutral-200 dark:border-neutral-800 rounded-2xl divide-y divide-neutral-200 dark:divide-neutral-800 overflow-hidden">
-                <div className="p-3 flex items-center justify-between bg-white dark:bg-neutral-800/40">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-7 h-7 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center font-bold text-xs">
-                      A
-                    </div>
-                    <div>
-                      <div className="font-bold text-neutral-900 dark:text-white">amira</div>
-                      <div className="text-[11px] text-neutral-400">Card #46466446 · Plan A1</div>
-                    </div>
-                  </div>
-                  <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
-                    {language === 'ar' ? 'حاضر' : language === 'fr' ? 'Présent' : 'Checked In'}
-                  </span>
-                </div>
-                <div className="p-3 flex items-center justify-between bg-white dark:bg-neutral-800/40">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-7 h-7 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs">
-                      S
-                    </div>
-                    <div>
-                      <div className="font-bold text-neutral-900 dark:text-white">saraa</div>
-                      <div className="text-[11px] text-neutral-400">Card #46466447 · Plan A1</div>
-                    </div>
-                  </div>
-                  <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
-                    {language === 'ar' ? 'حاضر' : language === 'fr' ? 'Présent' : 'Checked In'}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Quick Actions */}
-            <div className="space-y-2 pt-2">
+            <div className="space-y-2 pt-4">
               <button
                 type="button"
+                onClick={() => {
+                  showToast({
+                    type: 'success',
+                    title: language === 'ar' ? 'تم تسجيل حضور إضافي' : 'Athlete Check-In Recorded',
+                    message: `${selectedEvent.title} (+1)`,
+                  });
+                }}
                 style={{ backgroundColor: 'var(--color-accent)' }}
                 className="w-full h-10 rounded-full text-xs font-bold text-white flex items-center justify-center gap-2 cursor-pointer hover:opacity-90 shadow-xs"
               >
-                <UserPlus size={15} />
-                <span>{language === 'ar' ? 'تسجيل حضور رياضي سريع' : language === 'fr' ? 'Pointer un athlète rapidement' : 'Quick Check-In Athlete'}</span>
+                <UserPlus size={14} />
+                <span>{language === 'ar' ? 'تسجيل مشترك جديد في الحصة' : 'Enroll New Member in Session'}</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setSelectedEvent(null)}
-                className="w-full h-10 rounded-full border border-neutral-300 dark:border-neutral-700 text-xs font-bold text-neutral-700 dark:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-neutral-800 cursor-pointer"
+                className="w-full h-10 rounded-full border border-neutral-200 dark:border-neutral-700 text-xs font-bold text-neutral-600 dark:text-neutral-300 flex items-center justify-center cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-800"
               >
-                {language === 'ar' ? 'إغلاق المعاينة' : language === 'fr' ? 'Fermer l\'inspecteur' : 'Close Inspector'}
+                {language === 'ar' ? 'إغلاق' : 'Close'}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* New Session Modal */}
+      {/* Modal: New Timetable Class */}
       <Modal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
-        title={
-          language === 'ar'
-            ? 'إضافة حصة رياضية جديدة'
-            : language === 'fr'
-            ? 'Programmer une nouvelle séance'
-            : 'Schedule New Session'
-        }
-        subtitle={
-          language === 'ar'
-            ? `إضافة حصة أو موعد إلى فرع ${currentBranch?.name || 'الرئيسي'}`
-            : language === 'fr'
-            ? `Ajouter un cours ou rendez-vous à ${currentBranch?.name || 'Atrium 1'}`
-            : `Add class or appointment to ${currentBranch?.name || 'Atrium 1'}`
-        }
+        title={isPOS ? 'Programmer une nouvelle vacation de caisse' : t('schedule_modal_title', language)}
       >
         <div className="space-y-4">
           <LabelInput
-            field="SessionTitle"
-            label={`${language === 'ar' ? 'عنوان الحصة الرياضية' : language === 'fr' ? 'Intitulé de la séance' : 'Session Title'} *`}
-            required
+            field="Title"
+            label={t('schedule_field_title', language)}
             value={newTitle}
             onChange={setNewTitle}
-            placeholder={language === 'ar' ? 'مثال: أساسيات الملاكمة أو بيلاتيس صباحي' : 'e.g. Boxing Fundamentals or Pilates Morning'}
             width="100%"
             height={46}
             corner={14}
           />
 
           <div className="grid grid-cols-2 gap-3">
-            <LabelSelect
-              field="Discipline"
-              label={language === 'ar' ? 'نوع النشاط الرياضي' : language === 'fr' ? 'Catégorie sportive' : 'Discipline Category'}
+            <LabelInput
+              field="Category"
+              label={t('schedule_field_category', language)}
               value={newCategory}
-              onChange={(val) => setNewCategory(typeof val === 'string' ? val : val.target?.value || val)}
-              options={[
-                { value: 'CrossFit', label: 'CrossFit' },
-                { value: 'Yoga', label: 'Yoga' },
-                { value: 'Boxing', label: language === 'ar' ? 'ملاكمة (Boxing)' : language === 'fr' ? 'Boxe' : 'Boxing' },
-                { value: 'Pilates', label: 'Pilates' },
-                { value: 'HIIT', label: 'HIIT' },
-                { value: 'Fitness', label: language === 'ar' ? 'لياقة بدنية (Fitness)' : 'Fitness' },
-              ]}
+              onChange={setNewCategory}
+              width="100%"
               height={46}
               corner={14}
             />
 
             <LabelInput
               field="Capacity"
-              label={t('schedule_field_quota', language)}
-              type="number"
-              value={newCapacity ? String(newCapacity) : ''}
-              onChange={(v) => setNewCapacity(Number(v) || 0)}
+              label={t('schedule_field_capacity', language)}
+              value={String(newCapacity)}
+              onChange={(val) => setNewCapacity(parseInt(val, 10) || 0)}
               width="100%"
               height={46}
               corner={14}
@@ -776,18 +982,17 @@ export const MembershipSchedulerView: React.FC = () => {
           <div className="grid grid-cols-2 gap-3">
             <LabelInput
               field="StartTime"
-              label={language === 'ar' ? 'وقت البدء' : language === 'fr' ? 'Heure de début' : 'Start Time'}
-              type="time"
+              label={t('schedule_field_start_time', language)}
               value={newStartTime}
               onChange={setNewStartTime}
               width="100%"
               height={46}
               corner={14}
             />
+
             <LabelInput
               field="EndTime"
-              label={language === 'ar' ? 'وقت الانتهاء' : language === 'fr' ? 'Heure de fin' : 'End Time'}
-              type="time"
+              label={t('schedule_field_end_time', language)}
               value={newEndTime}
               onChange={setNewEndTime}
               width="100%"

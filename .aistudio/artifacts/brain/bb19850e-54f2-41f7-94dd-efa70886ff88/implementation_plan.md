@@ -1,81 +1,64 @@
-# Multi-Vertical Rollout Plan: Bookings, Reservations & Appointment Sessions
+# Implementation Plan - Category-by-Category Standardization
 
-Standardize booking, reservation, and appointment session collections across Atrium ERP & CRM using `UniversalDataCollection<T>`, providing dual-view capability (visual cards & high-density tables), quick status transitions (Check-in, Check-out, In-Chair, Completed), pinning, sorting, and batch actions.
+Standardize each business category across Atrium ERP to deliver the exact unified, high-productivity experience established in the Membership category (`ClientsView` & `StaffView` in `MembershipMembersView`).
 
----
-
-## 1. Scope & Target Components
-
-### A. Venue & Space Bookings (`VenueBookingsView.tsx`)
-- **Entity**: `RentalBooking`
-- **Current State**: Static HTML table with manual status tabs and separate action buttons.
-- **Target Architecture**:
-  - Replace static `<table>` with `UniversalDataCollection<RentalBooking>`.
-  - **Dual View Modes**:
-    - **List Mode**: High-density operational ledger showing Event & Renter, Space Unit, Date Window, Financials & Balance Due, Security Caution, Status, and Actions.
-    - **Grid Mode**: Visual booking cards displaying space badges, client info, time window, caution status, and financial progress bar.
-  - **Quick Status Transitions**:
-    - One-click Check-in / Check-out (`checkInBooking`, `checkOutBooking`).
-    - Quick status cycle between Tentative, Confirmed, CheckedIn, Completed.
-  - **Custom Action Arc**:
-    - Quick Check-in/Check-out trigger (`CheckCircle2` / `ShieldCheck`).
-    - Print Booking Agreement / Receipt (`Printer`).
-    - Edit Booking Modal (`Edit2`).
-    - Pin to top (`Pin`).
-    - Delete with confirmation (`Trash2`).
-  - **Multi-Column Sorting**: Event/Purpose, Renter Name, Date Window, Total Amount, Balance Due, Status.
-  - **Multi-Select**: Multi-selection state (`selectedBookingIds`) with batch actions.
-
-### B. Appointment Sessions & Salon Schedule (`AppointmentScheduleView.tsx`)
-- **Entity**: `Appointment`
-- **Current State**: Contains a multi-stylist column timeline board (`columns`), a basic list view (`list`), and a services catalog view (`catalog`). The list view lacks sorting, pinning, and card view switching.
-- **Target Architecture**:
-  - Enhance `viewMode === 'list'` with `UniversalDataCollection<Appointment>`.
-  - Preserves the Column Schedule Gantt board (`viewMode === 'columns'`) as the default calendar view.
-  - In `list` mode, provide both table and card views for appointments:
-    - **Columns**: Time & Duration, Client & Phone, Service & Category, Stylist / Staff Member, Price, Status.
-    - **Cards**: Rich appointment cards with client initials avatar, service details, price tag, and quick checkout button.
-  - **Quick Workflow Actions**:
-    - One-click Checkout (`handleOneClickCheckout`).
-    - Status toggle to `InChair` (active service) or `Completed`.
-    - Edit Appointment Modal (`handleOpenEditModal`).
-    - Pin high-priority appointments to the top of the day's queue.
-  - **Multi-Column Sorting**: Time, Client Name, Stylist, Service, Price, Status.
+## User Review Required
+> Critical items requiring user attention: None. All modifications are additive and maintain full backwards compatibility with existing state, stores, modals, and workflows.
 
 ---
 
-## 2. Key Architecture & Design Principles
+## Rollout Progress & Status
 
-1. **Anti-Slop & Zero-Pill Discipline**:
-   - Status indicators utilize semantic, restrained badges (emerald for completed/confirmed, amber for tentative/in-chair, neutral for cancelled).
-   - Numerical figures (amounts, durations, attendee counts, guest limits) formatted with `tabular-nums` and font-mono where appropriate.
-2. **Zero Functional Loss**:
-   - Preserves all existing modal flows: `BookingModal`, `VenueCloudSyncModal`, `AppointmentModal`, and receipt printing dialogs.
-   - Retains facility/branch switching, date pickers, seek bars, and summary metric KPI headers.
-3. **Trilingual & RTL Continuity**:
-   - Retains full English, French, and Arabic RTL alignment and localized labels.
+### ✅ Category 1: Venue Rental Category (Completed)
+- **`VenueRentersView.tsx`**:
+  - Full `UniversalDataCollection<RentalRenter>` integration with cards and list view modes.
+  - Multi-column sorting (`renter`, `bookings`, `spent`).
+  - Row pinning with visual indicator and persistent top ordering.
+  - Multi-select checkbox batch selection with a floating action bar (Selected count, Deselect, Batch Delete).
+  - Facility branch switcher pill (`Atrium 1 ▾`) in header.
+  - UTF-8 CSV Export with localized headers in Arabic, French, and English.
+- **`VenueInventoryView.tsx`**:
+  - Full `UniversalDataCollection<RentableUnit>` integration.
+  - Multi-unit batch selection with Batch Set Status (`Mark Available`, `Maintenance`), Deselect, and Batch Delete.
+  - Facility branch switcher dropdown in header.
+  - UTF-8 CSV Export of unit catalog and specifications.
+  - Quick booking modal trigger and unit status toggle pills.
+- **`VenueBookingsView.tsx`**:
+  - Full `UniversalDataCollection<RentalBooking>` integration.
+  - Batch selection with Bulk Check-in, Deselect, and Bulk Cancellation.
+  - Facility branch switcher dropdown in header.
+  - UTF-8 CSV Export of booking manifests.
+  - Dual view toggle between Unit Timeline Matrix and Universal Cards/List in `VenueTimelineView`.
 
 ---
 
-## 3. Implementation Steps
+### ⏳ Category 2: Education & Academy Category (Next Up)
+- **`EducationStudentsView.tsx`**: Student directory with cohorts filter, batch graduation/enrollment, pinning, and CSV export.
+- **`EducationCohortsView.tsx`**: Course cohorts catalog with batch capacity and status actions.
+- **`EducationAdmissionsView.tsx`**: Admission applications table with batch approve/decline and CSV export.
+- **`EducationAttendanceView.tsx`**: Attendance sessions and student roll-call records.
 
-1. **Venue Bookings (`VenueBookingsView.tsx`)**:
-   - Import `UniversalDataCollection, ColumnDefinition` from `'../../ui/collection'`.
-   - Add state: `selectedBookingIds`, `pinnedBookingIds`, `bookingSortBy`, `bookingSortDir`.
-   - Define `sortedBookings` with pinned items floating to the top.
-   - Define `bookingColumns` (Event & Renter, Space Unit, Date Window, Financials, Caution Guarantee, Status).
-   - Define `renderCard` for grid view.
-   - Wire `customActions` for Quick Check-in/Check-out and Print Agreement.
-   - Replace lines 139–285 with `<UniversalDataCollection<RentalBooking> ... />`.
+---
 
-2. **Appointment Sessions (`AppointmentScheduleView.tsx`)**:
-   - Import `UniversalDataCollection, ColumnDefinition` from `'../../ui/collection'` and `Pin` from `'lucide-react'`.
-   - Add state: `selectedAptIds`, `pinnedAptIds`, `aptSortBy`, `aptSortDir`.
-   - Define `sortedAppointments` and `appointmentColumns`.
-   - Replace the basic list view in `viewMode === 'list'` with `<UniversalDataCollection<Appointment> ... />`.
-   - Wire one-click checkout, `InChair` status toggle, and edit modal.
+### ⏳ Category 3: Freelance & Solo Category
+- **`FreelanceClientsView.tsx`**: Client directory with project revenue metrics and pinning.
+- **`FreelanceDeliverablesView.tsx`**: Deliverables & task matrix.
+- **`FreelanceProposalsView.tsx`**: Quotes & proposals registry.
+- **`FreelanceInvoicesView.tsx`**: Invoice ledger with batch send/payment recording.
 
-3. **Verification**:
-   - Run `lint_applet` (`tsc --noEmit`) to verify clean type checking.
-   - Run `compile_applet` to confirm Vite production bundle compilation.
-   - Run `run_command` with `npm test` to ensure all 12 test suites in `rules.test.ts` pass without regressions.
+---
+
+### ⏳ Category 4: Membership Category Remaining Screens
+- **`MembershipRegistrationsView.tsx`**: Convert lead registry to `UniversalDataCollection` with batch lead status update and CSV export.
+
+---
+
+### ⏳ Category 5: Project Milestone Multi-Role Dashboards
+- Standardize Direction, Chef de Projet, Créa, Superviseur, RH, and Compta data tables with `UniversalDataCollection`.
+
+---
+
+## Verification Results
+- `compile_applet`: Passed.
+- `tsc --noEmit`: Passed with 0 errors.
+- `npm test`: All 12/12 unit and architecture tests passed.

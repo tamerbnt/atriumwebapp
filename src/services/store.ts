@@ -547,10 +547,10 @@ let globalState: AppState = backfillTraceability((() => {
           parkedOrders: Array.isArray(parsed.parkedOrders) ? parsed.parkedOrders : INITIAL_PARKED_ORDERS,
           stockMovements: Array.isArray(parsed.stockMovements) ? parsed.stockMovements : INITIAL_STOCK_MOVEMENTS,
           receiptConfig: parsed.receiptConfig || DEFAULT_RECEIPT_CONFIG,
-          rentableUnits: Array.isArray(parsed.rentableUnits) && parsed.rentableUnits.length > 0 ? parsed.rentableUnits : INITIAL_RENTABLE_UNITS,
-          rentalBookings: Array.isArray(parsed.rentalBookings) && parsed.rentalBookings.length > 0 ? parsed.rentalBookings : INITIAL_RENTAL_BOOKINGS,
-          rentalRenters: Array.isArray(parsed.rentalRenters) && parsed.rentalRenters.length > 0 ? parsed.rentalRenters : INITIAL_RENTAL_RENTERS,
-          securityDeposits: Array.isArray(parsed.securityDeposits) && parsed.securityDeposits.length > 0 ? parsed.securityDeposits : INITIAL_SECURITY_DEPOSITS,
+          rentableUnits: Array.isArray(parsed.rentableUnits) && parsed.rentableUnits.length >= INITIAL_RENTABLE_UNITS.length ? parsed.rentableUnits : INITIAL_RENTABLE_UNITS,
+          rentalBookings: Array.isArray(parsed.rentalBookings) && parsed.rentalBookings.length >= INITIAL_RENTAL_BOOKINGS.length ? parsed.rentalBookings : INITIAL_RENTAL_BOOKINGS,
+          rentalRenters: Array.isArray(parsed.rentalRenters) && parsed.rentalRenters.length >= INITIAL_RENTAL_RENTERS.length ? parsed.rentalRenters : INITIAL_RENTAL_RENTERS,
+          securityDeposits: Array.isArray(parsed.securityDeposits) && parsed.securityDeposits.length >= INITIAL_SECURITY_DEPOSITS.length ? parsed.securityDeposits : INITIAL_SECURITY_DEPOSITS,
           eduCourses: Array.isArray(parsed.eduCourses) && parsed.eduCourses.length > 0 ? parsed.eduCourses : INITIAL_EDU_COURSES,
           eduClassrooms: Array.isArray(parsed.eduClassrooms) && parsed.eduClassrooms.length > 0 ? parsed.eduClassrooms : INITIAL_EDU_CLASSROOMS,
           eduCohorts: Array.isArray(parsed.eduCohorts) && parsed.eduCohorts.length > 0 ? parsed.eduCohorts : INITIAL_EDU_COHORTS,
@@ -4410,6 +4410,22 @@ export function useAtriumStore() {
     });
   };
 
+  const resetVenueMockData = () => {
+    globalState = {
+      ...globalState,
+      rentableUnits: INITIAL_RENTABLE_UNITS,
+      rentalRenters: INITIAL_RENTAL_RENTERS,
+      rentalBookings: INITIAL_RENTAL_BOOKINGS,
+      securityDeposits: INITIAL_SECURITY_DEPOSITS,
+    };
+    notify();
+    showToast({
+      type: 'success',
+      title: 'Données Démo Espace & Lieux',
+      message: `${INITIAL_RENTAL_RENTERS.length} locataires, ${INITIAL_RENTABLE_UNITS.length} espaces, et ${INITIAL_RENTAL_BOOKINGS.length} réservations chargés.`,
+      category: 'rental_booking',
+    });
+  };
 
   // ==========================================
   // Education & Academy Actions (Category 15)
@@ -5707,6 +5723,7 @@ export function useAtriumStore() {
     deleteRentalRenter,
     releaseSecurityDeposit,
     deductSecurityDeposit,
+    resetVenueMockData,
     // Education & Academy Actions
     addEduStudent,
     updateEduStudent,
