@@ -1525,6 +1525,14 @@ export function useAtriumStore() {
     notify();
   };
 
+  const deleteLead = (leadId: string) => {
+    globalState = {
+      ...globalState,
+      leads: globalState.leads.filter((l) => l.id !== leadId),
+    };
+    notify();
+  };
+
   const convertLeadToMember = (
     leadId: string,
     planId: string,
@@ -5902,6 +5910,7 @@ export function useAtriumStore() {
     checkInMember,
     addLead,
     updateLeadStatus,
+    deleteLead,
     convertLeadToMember,
     addProduct,
     updateProduct,

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import {
   FileText,
   Plus,
@@ -16,6 +16,15 @@ import {
   Building,
   Trash2,
   AlertTriangle,
+  Download,
+  Sparkles,
+  Home,
+  ChevronDown,
+  Building2,
+  Check,
+  Pin,
+  Eye,
+  Calendar,
 } from 'lucide-react';
 import { useAtriumStore } from '../../../services/store';
 import { formatCurrencyAmount } from '../../../utils/rules';
@@ -29,6 +38,7 @@ import {
 import { Seek } from '../../ui/Seek';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
+import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { useTranslation } from '../../../utils/useTranslation';
 
 export const FreelanceInvoicesView: React.FC = () => {
@@ -41,10 +51,34 @@ export const FreelanceInvoicesView: React.FC = () => {
     updateInvoiceStatus,
     deleteFreelanceInvoice,
     billUnbilledHours,
+    resetFreelanceMockData,
+    businesses,
+    branches,
+    currentBusinessId,
+    currentBranchId,
+    switchBusiness,
+    switchBranch,
     currentBusiness,
     currentUser,
     account,
+    showToast,
   } = useAtriumStore();
+
+  const currentBranch = branches.find((b) => b.id === currentBranchId);
+  const [isFacilityDropdownOpen, setIsFacilityDropdownOpen] = useState(false);
+  const [selectedInvoiceIds, setSelectedInvoiceIds] = useState<Set<string>>(new Set());
+  const [pinnedInvoiceIds, setPinnedInvoiceIds] = useState<Set<string>>(new Set());
+  const [invoiceSortBy, setInvoiceSortBy] = useState<string>('invoiceNumber');
+  const [invoiceSortDir, setInvoiceSortDir] = useState<'asc' | 'desc'>('desc');
+
+  // Auto-heal empty freelance invoices safely once on mount
+  const hasAutoHealed = useRef(false);
+  useEffect(() => {
+    if (!hasAutoHealed.current && freelanceInvoices.length === 0) {
+      hasAutoHealed.current = true;
+      resetFreelanceMockData();
+    }
+  }, [freelanceInvoices.length, resetFreelanceMockData]);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
@@ -155,32 +189,322 @@ export const FreelanceInvoicesView: React.FC = () => {
     setPreviewInvoice(created);
   };
 
+  const sortedInvoices = useMemo(() => {
+    return [...filteredInvoices].sort((a, b) => {
+      const aPinned = pinnedInvoiceIds.has(a.id);
+      const bPinned = pinnedInvoiceIds.has(b.id);
+      if (aPinned && !bPinned) return -1;
+      if (!aPinned && bPinned) return 1;
+
+      if (invoiceSortBy === 'invoiceNumber') {
+        const cmp = a.invoiceNumber.localeCompare(b.invoiceNumber);
+        return invoiceSortDir === 'asc' ? cmp : -cmp;
+      }
+      if (invoiceSortBy === 'client') {
+        const cmp = a.clientName.localeCompare(b.clientName);
+        return invoiceSortDir === 'asc' ? cmp : -cmp;
+      }
+      if (invoiceSortBy === 'amount') {
+        return invoiceSortDir === 'asc' ? a.totalAmount - b.totalAmount : b.totalAmount - a.totalAmount;
+      }
+      if (invoiceSortBy === 'status') {
+        const cmp = a.status.localeCompare(b.status);
+        return invoiceSortDir === 'asc' ? cmp : -cmp;
+      }
+      if (invoiceSortBy === 'date') {
+        const cmp = a.issueDate.localeCompare(b.issueDate);
+        return invoiceSortDir === 'asc' ? cmp : -cmp;
+      }
+      return 0;
+    });
+  }, [filteredInvoices, pinnedInvoiceIds, invoiceSortBy, invoiceSortDir]);
+
+  const invoiceColumns: ColumnDefinition<FreelanceInvoice>[] = useMemo(() => [
+    {
+      key: 'invoiceNumber',
+      header: t('free_inv_table_num', language) || 'Invoice #',
+      width: '2.5*',
+      minWidth: '220px',
+      sortable: true,
+      renderCell: (inv) => (
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 flex items-center justify-center font-bold text-xs shrink-0 border border-neutral-200 dark:border-neutral-700">
+            <FileText size={16} />
+          </div>
+          <div className="min-w-0">
+            <div className="font-semibold text-neutral-900 dark:text-white font-mono hover:text-[#C4785A] transition-colors">
+              {inv.invoiceNumber}
+            </div>
+            <div className="text-[11px] text-neutral-400 truncate flex items-center gap-1.5">
+              <span>{inv.clientName}</span>
+              {inv.clientCompany && (
+                <>
+                  <span>·</span>
+                  <span className="text-[#C4785A] font-medium">{inv.clientCompany}</span>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: 'date',
+      header: `${t('free_inv_table_date', language)} / ${t('free_inv_table_due', language)}`,
+      width: '2*',
+      minWidth: '160px',
+      sortable: true,
+      renderCell: (inv) => (
+        <div className="text-[11px] text-neutral-600 dark:text-neutral-400 space-y-0.5">
+          <div className="flex items-center gap-1">
+            <span className="text-neutral-400">{t('free_inv_table_date', language)}:</span>
+            <span>{inv.issueDate}</span>
+          </div>
+          <div className="flex items-center gap-1 font-semibold text-neutral-800 dark:text-neutral-200">
+            <span className="text-neutral-400">{t('free_inv_table_due', language)}:</span>
+            <span>{inv.dueDate}</span>
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: 'amount',
+      header: t('free_inv_table_amount', language),
+      width: '1.8*',
+      minWidth: '140px',
+      sortable: true,
+      renderCell: (inv) => (
+        <span className="font-mono font-bold text-sm text-[#C4785A] tabular-nums">
+          {formatCurrencyAmount(inv.totalAmount, inv.currency)}
+        </span>
+      ),
+    },
+    {
+      key: 'status',
+      header: t('free_inv_table_status', language),
+      width: '1.5*',
+      minWidth: '120px',
+      sortable: true,
+      renderCell: (inv) => (
+        <span
+          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${
+            inv.status === 'Paid'
+              ? 'text-emerald-700 bg-emerald-50 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800'
+              : inv.status === 'Overdue'
+              ? 'text-rose-700 bg-rose-50 dark:bg-rose-950/60 dark:text-rose-400 border border-rose-200 dark:border-rose-800'
+              : inv.status === 'Sent'
+              ? 'text-blue-700 bg-blue-50 dark:bg-blue-950/60 dark:text-blue-400 border border-blue-200 dark:border-blue-800'
+              : 'text-neutral-600 bg-neutral-100 dark:bg-neutral-800 dark:text-neutral-400'
+          }`}
+        >
+          {inv.status === 'Paid'
+            ? t('free_invoice_status_paid', language)
+            : inv.status === 'Overdue'
+            ? t('free_invoice_status_overdue', language)
+            : inv.status === 'Sent'
+            ? t('free_invoice_status_sent', language)
+            : t('free_invoice_status_draft', language)}
+        </span>
+      ),
+    },
+  ], [language, t]);
+
+  const handleExportCSV = () => {
+    if (freelanceInvoices.length === 0) return;
+    const headers = [
+      language === 'ar' ? 'رقم الفاتورة' : 'Invoice Number',
+      language === 'ar' ? 'العميل' : 'Client',
+      language === 'ar' ? 'الشركة' : 'Company',
+      language === 'ar' ? 'تاريخ الإصدار' : 'Issue Date',
+      language === 'ar' ? 'تاريخ الاستحقاق' : 'Due Date',
+      language === 'ar' ? 'المجموع الفرعي' : 'Subtotal',
+      language === 'ar' ? 'نسبة الضريبة' : 'Tax Percent',
+      language === 'ar' ? 'المجموع الكلي' : 'Total Amount',
+      language === 'ar' ? 'العملة' : 'Currency',
+      language === 'ar' ? 'الحالة' : 'Status',
+    ];
+
+    const rows = sortedInvoices.map((inv) => [
+      `"${inv.invoiceNumber}"`,
+      `"${inv.clientName.replace(/"/g, '""')}"`,
+      `"${(inv.clientCompany || '').replace(/"/g, '""')}"`,
+      `"${inv.issueDate}"`,
+      `"${inv.dueDate}"`,
+      inv.subtotal,
+      inv.taxPercent,
+      inv.totalAmount,
+      `"${inv.currency}"`,
+      `"${inv.status}"`,
+    ]);
+
+    const csvContent = '\uFEFF' + [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `atrium_freelance_invoices_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleBatchMarkPaid = () => {
+    if (selectedInvoiceIds.size === 0) return;
+    selectedInvoiceIds.forEach((id) => {
+      updateInvoiceStatus(id, 'Paid');
+    });
+    const count = selectedInvoiceIds.size;
+    setSelectedInvoiceIds(new Set());
+    showToast({
+      type: 'success',
+      title: language === 'ar' ? 'تم التحديث' : language === 'fr' ? 'Mis à jour' : 'Updated',
+      message: `${count} ${language === 'ar' ? 'فواتير تم تعليمها كمدفوعة' : 'invoices marked as Paid'}`,
+      category: 'freelance_solo',
+    });
+  };
+
+  const handleBatchMarkSent = () => {
+    if (selectedInvoiceIds.size === 0) return;
+    selectedInvoiceIds.forEach((id) => {
+      updateInvoiceStatus(id, 'Sent');
+    });
+    const count = selectedInvoiceIds.size;
+    setSelectedInvoiceIds(new Set());
+    showToast({
+      type: 'info',
+      title: language === 'ar' ? 'تم التحديث' : language === 'fr' ? 'Mis à jour' : 'Updated',
+      message: `${count} ${language === 'ar' ? 'فواتير تم تعليمها كمرسلة' : 'invoices marked as Sent'}`,
+      category: 'freelance_solo',
+    });
+  };
+
+  const handleBatchDelete = () => {
+    if (selectedInvoiceIds.size === 0) return;
+    const count = selectedInvoiceIds.size;
+    if (confirm(language === 'ar' ? `هل أنت متأكد من حذف ${count} فواتير؟` : `Delete ${count} selected invoices?`)) {
+      selectedInvoiceIds.forEach((id) => {
+        deleteFreelanceInvoice(id);
+      });
+      setSelectedInvoiceIds(new Set());
+      showToast({
+        type: 'info',
+        title: language === 'ar' ? 'تم الحذف' : language === 'fr' ? 'Suppression' : 'Deleted',
+        message: `${count} ${language === 'ar' ? 'فواتير تم حذفها' : 'invoices deleted'}`,
+        category: 'freelance_solo',
+      });
+    }
+  };
+
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-neutral-200 dark:border-neutral-800">
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white">
-              {t('free_inv_title', language)}
-            </h1>
-            <span className="text-xs text-neutral-500">
-              {freelanceInvoices.length} {t('free_inv_title', language).toLowerCase()}
-            </span>
+        <div className="flex items-center gap-3.5">
+          <div className="w-11 h-11 rounded-2xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-800 dark:text-neutral-200">
+            <FileText size={22} />
           </div>
-          <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
-            {t('free_inv_subtitle', language)}
-          </p>
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-900 dark:text-white">
+                {t('free_inv_title', language)}
+              </h1>
+              <span className="text-xs text-neutral-500 dark:text-neutral-400">
+                {freelanceInvoices.length} {t('free_inv_title', language).toLowerCase()}
+              </span>
+            </div>
+            <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
+              {t('free_inv_subtitle', language)}
+            </p>
+          </div>
         </div>
 
-        <button
-          type="button"
-          onClick={() => setIsCreateModalOpen(true)}
-          className="h-10 px-4 rounded-xl bg-[#C4785A] text-white text-xs font-semibold flex items-center gap-1.5 hover:opacity-90 transition-opacity cursor-pointer shadow-xs self-start sm:self-auto"
-        >
-          <Plus size={14} />
-          <span>{t('free_inv_btn_new', language)}</span>
-        </button>
+        <div className="flex items-center gap-2.5 flex-wrap self-start sm:self-auto">
+          {/* Facility Pill: Atrium 1 ▾ */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setIsFacilityDropdownOpen(!isFacilityDropdownOpen)}
+              className="h-10 px-4 rounded-full bg-[#F4EFEA] dark:bg-neutral-800/80 border border-[#E8DFD8] dark:border-neutral-700 flex items-center gap-2 cursor-pointer hover:bg-[#EFE8E1] dark:hover:bg-neutral-800 transition-colors shadow-2xs"
+            >
+              <Home size={15} className="text-[#C4785A]" />
+              <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
+                {currentBranch?.name || 'Studio Main'}
+              </span>
+              <ChevronDown
+                size={14}
+                className={`text-neutral-500 transition-transform ${
+                  isFacilityDropdownOpen ? 'rotate-180' : ''
+                }`}
+              />
+            </button>
+
+            {/* Facility Dropdown Menu */}
+            {isFacilityDropdownOpen && (
+              <div className="absolute right-0 rtl:right-auto rtl:left-0 mt-2 w-64 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
+                <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+                  {language === 'ar' ? 'الفروع والمراكز' : language === 'fr' ? 'Établissements & Espaces' : 'Facilities & Branches'}
+                </div>
+                {businesses.map((biz) => {
+                  const isCurrent = biz.id === currentBusinessId;
+                  const matchingBranch = branches.find((b) => b.businessId === biz.id);
+                  return (
+                    <button
+                      key={biz.id}
+                      type="button"
+                      onClick={() => {
+                        switchBusiness(biz.id);
+                        if (matchingBranch) switchBranch(matchingBranch.id);
+                        setIsFacilityDropdownOpen(false);
+                      }}
+                      className={`w-full px-3 py-2 text-left rtl:text-right flex items-center justify-between text-xs transition-colors cursor-pointer ${
+                        isCurrent
+                          ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold'
+                          : 'text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <Building2 size={14} className={isCurrent ? 'text-[#C4785A]' : 'text-neutral-400'} />
+                        <span className="truncate">{biz.name}</span>
+                      </div>
+                      {isCurrent && <Check size={14} />}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Export CSV Button */}
+          <button
+            type="button"
+            onClick={handleExportCSV}
+            className="h-10 px-3.5 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold rounded-full transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer"
+            title="Export CSV"
+          >
+            <Download size={14} />
+            <span className="hidden sm:inline">CSV</span>
+          </button>
+
+          {/* Seed Demo Data Button */}
+          <button
+            type="button"
+            onClick={resetFreelanceMockData}
+            className="h-10 px-3.5 bg-[#FCEEE8] dark:bg-neutral-800 hover:bg-[#F8DFD4] dark:hover:bg-neutral-700 text-[#C4785A] text-xs font-semibold rounded-full transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer"
+            title={language === 'ar' ? 'إعادة شحن بيانات تجريبية' : language === 'fr' ? 'Recharger Données Démo' : 'Seed Mock Data'}
+          >
+            <Sparkles size={14} />
+            <span className="hidden sm:inline">{language === 'ar' ? 'بيانات تجريبية' : language === 'fr' ? 'Données Démo' : 'Demo Data'}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setIsCreateModalOpen(true)}
+            className="h-10 px-4 rounded-full bg-[#C4785A] hover:bg-[var(--color-accent-hover)] text-white text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+          >
+            <Plus size={14} />
+            <span>{t('free_inv_btn_new', language)}</span>
+          </button>
+        </div>
       </div>
 
       {/* KPI Overview Strip */}
@@ -226,6 +550,47 @@ export const FreelanceInvoicesView: React.FC = () => {
         </div>
       </div>
 
+      {/* Batch Selection Toolbar */}
+      {selectedInvoiceIds.size > 0 && (
+        <div className="flex items-center justify-between p-3 px-4 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 animate-in fade-in slide-in-from-top-2">
+          <div className="flex items-center gap-3">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#C4785A] animate-pulse" />
+            <span className="text-xs font-bold text-neutral-900 dark:text-white">
+              {selectedInvoiceIds.size} {language === 'ar' ? 'فواتير محددة' : language === 'fr' ? 'factures sélectionnées' : 'invoices selected'}
+            </span>
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              onClick={() => setSelectedInvoiceIds(new Set())}
+              className="px-3 py-1.5 text-xs text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white font-medium cursor-pointer"
+            >
+              {language === 'ar' ? 'إلغاء التحديد' : language === 'fr' ? 'Désélectionner' : 'Deselect'}
+            </button>
+            <button
+              onClick={handleBatchMarkPaid}
+              className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+            >
+              <CheckCircle size={13} />
+              <span>{language === 'ar' ? 'تعليم كمدفوعة' : language === 'fr' ? 'Marquer Payé' : 'Mark Paid'}</span>
+            </button>
+            <button
+              onClick={handleBatchMarkSent}
+              className="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+            >
+              <Send size={13} />
+              <span>{language === 'ar' ? 'تعليم كمرسلة' : language === 'fr' ? 'Marquer Envoyé' : 'Mark Sent'}</span>
+            </button>
+            <button
+              onClick={handleBatchDelete}
+              className="px-3.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+            >
+              <Trash2 size={13} />
+              <span>{language === 'ar' ? 'حذف المحدد' : language === 'fr' ? 'Supprimer' : 'Delete'}</span>
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Filter and Search Bar */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         <Seek
@@ -261,144 +626,143 @@ export const FreelanceInvoicesView: React.FC = () => {
         </div>
       </div>
 
-      {/* Invoices Data Grid Table */}
-      <div className="p-5 rounded-2xl bg-white dark:bg-neutral-900/60 border border-neutral-200 dark:border-neutral-800 shadow-2xs space-y-4">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead>
-              <tr className="border-b border-neutral-200 dark:border-neutral-800 text-neutral-400 uppercase text-[10px] tracking-wider font-semibold">
-                <th className={`pb-3 font-semibold ${isRtl ? 'text-right' : 'text-left'}`}>{t('free_inv_table_num', language)}</th>
-                <th className={`pb-3 font-semibold ${isRtl ? 'text-right' : 'text-left'}`}>{t('free_inv_table_client', language)}</th>
-                <th className={`pb-3 font-semibold ${isRtl ? 'text-right' : 'text-left'}`}>{t('free_inv_table_date', language)} / {t('free_inv_table_due', language)}</th>
-                <th className={`pb-3 font-semibold ${isRtl ? 'text-left' : 'text-right'}`}>{t('free_inv_table_amount', language)}</th>
-                <th className="pb-3 font-semibold text-center">{t('free_inv_table_status', language)}</th>
-                <th className={`pb-3 font-semibold ${isRtl ? 'text-left' : 'text-right'}`}>{t('free_inv_table_actions', language)}</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800/60">
-              {filteredInvoices.map((inv) => (
-                <tr
-                  key={inv.id}
-                  className="hover:bg-neutral-50/80 dark:hover:bg-neutral-800/40 transition-colors"
+      {/* Universal Collection (List view & Grid view with 6-button corner-fan) */}
+      <UniversalDataCollection<FreelanceInvoice>
+        items={sortedInvoices}
+        keyExtractor={(inv) => inv.id}
+        defaultViewMode="list"
+        columns={invoiceColumns}
+        sortBy={invoiceSortBy}
+        sortDirection={invoiceSortDir}
+        onSortChange={(key) => {
+          if (invoiceSortBy === key) {
+            setInvoiceSortDir((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+          } else {
+            setInvoiceSortBy(key);
+            setInvoiceSortDir('asc');
+          }
+        }}
+        renderCard={(inv) => (
+          <div className="flex flex-col justify-between w-full h-full space-y-3">
+            <div className="flex items-start justify-between gap-2">
+              <span className="font-mono font-bold text-neutral-900 dark:text-white text-sm">
+                {inv.invoiceNumber}
+              </span>
+              <span
+                className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold shrink-0 ${
+                  inv.status === 'Paid'
+                    ? 'text-emerald-700 bg-emerald-50 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-200'
+                    : inv.status === 'Overdue'
+                    ? 'text-rose-700 bg-rose-50 dark:bg-rose-950/60 dark:text-rose-400 border border-rose-200'
+                    : inv.status === 'Sent'
+                    ? 'text-blue-700 bg-blue-50 dark:bg-blue-950/60 dark:text-blue-400 border border-blue-200'
+                    : 'text-neutral-600 bg-neutral-100 dark:bg-neutral-800 dark:text-neutral-400'
+                }`}
+              >
+                {inv.status === 'Paid'
+                  ? t('free_invoice_status_paid', language)
+                  : inv.status === 'Overdue'
+                  ? t('free_invoice_status_overdue', language)
+                  : inv.status === 'Sent'
+                  ? t('free_invoice_status_sent', language)
+                  : t('free_invoice_status_draft', language)}
+              </span>
+            </div>
+
+            <div>
+              <h4 className="text-sm font-bold text-neutral-900 dark:text-white leading-snug truncate">
+                {inv.clientName}
+              </h4>
+              <div className="text-[11px] text-neutral-500 truncate mt-0.5">
+                {inv.clientCompany || t('free_inv_direct_client', language)}
+              </div>
+            </div>
+
+            <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 space-y-2">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-neutral-400 text-[11px] flex items-center gap-1">
+                  <Calendar size={11} />
+                  {t('free_inv_table_due', language)}: {inv.dueDate}
+                </span>
+                <span className="font-mono font-black text-sm text-[#C4785A] tabular-nums">
+                  {formatCurrencyAmount(inv.totalAmount, inv.currency)}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-end gap-1.5 pt-1">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setPreviewInvoice(inv);
+                  }}
+                  className="px-2.5 py-1 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-[11px] font-semibold flex items-center gap-1 transition-colors cursor-pointer"
                 >
-                  <td className="py-3.5 font-bold text-neutral-900 dark:text-white font-mono">
-                    {inv.invoiceNumber}
-                  </td>
-                  <td className="py-3.5">
-                    <span className="font-bold text-neutral-900 dark:text-white block">
-                      {inv.clientName}
-                    </span>
-                    <span className="text-[11px] text-neutral-500">
-                      {inv.clientCompany || t('free_inv_direct_client', language)}
-                    </span>
-                  </td>
-                  <td className="py-3.5 text-neutral-600 dark:text-neutral-400 text-[11px]">
-                    <div className="flex items-center gap-1.5">
-                      <span>{t('free_inv_table_date', language)}: {inv.issueDate}</span>
-                      <span aria-hidden="true">·</span>
-                      <span className="font-semibold text-neutral-800 dark:text-neutral-200">
-                        {t('free_inv_table_due', language)}: {inv.dueDate}
-                      </span>
-                    </div>
-                  </td>
-                  <td className={`py-3.5 font-mono font-bold text-sm text-[#C4785A] tabular-nums ${isRtl ? 'text-left' : 'text-right'}`}>
-                    {formatCurrencyAmount(inv.totalAmount, inv.currency)}
-                  </td>
-                  <td className="py-3.5 text-center">
-                    <span
-                      className={`text-[11px] font-semibold ${
-                        inv.status === 'Paid'
-                          ? 'text-emerald-600 dark:text-emerald-400'
-                          : inv.status === 'Overdue'
-                          ? 'text-rose-600 dark:text-rose-400 font-bold'
-                          : inv.status === 'Sent'
-                          ? 'text-blue-600 dark:text-blue-400'
-                          : 'text-neutral-500'
-                      }`}
-                    >
-                      {inv.status === 'Paid'
-                        ? t('free_invoice_status_paid', language)
-                        : inv.status === 'Overdue'
-                        ? t('free_invoice_status_overdue', language)
-                        : inv.status === 'Sent'
-                        ? t('free_invoice_status_sent', language)
-                        : t('free_invoice_status_draft', language)}
-                    </span>
-                  </td>
-                  <td className="py-3.5 text-right">
-                    <div className="flex items-center justify-end gap-1.5">
-                      <button
-                        type="button"
-                        onClick={() => setPreviewInvoice(inv)}
-                        className="h-7 px-2.5 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-[11px] font-semibold flex items-center gap-1 transition-colors cursor-pointer"
-                        title={t('free_inv_doc_print', language)}
-                      >
-                        <Printer size={11} />
-                        <span>{t('free_inv_doc_print', language)}</span>
-                      </button>
+                  <Eye size={11} />
+                  <span>{t('free_inv_doc_print', language)}</span>
+                </button>
 
-                      {inv.status !== 'Paid' && (
-                        <button
-                          type="button"
-                          onClick={() => updateInvoiceStatus(inv.id, 'Paid')}
-                          className="h-7 px-2 rounded-lg bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 hover:bg-emerald-100 text-[11px] font-semibold flex items-center gap-1 transition-colors cursor-pointer"
-                          title={t('free_inv_doc_mark_paid_btn', language)}
-                        >
-                          <CheckCircle size={11} />
-                          <span>{t('free_inv_doc_mark_paid_btn', language)}</span>
-                        </button>
-                      )}
-
-                      {inv.status === 'Draft' && (
-                        <button
-                          type="button"
-                          onClick={() => updateInvoiceStatus(inv.id, 'Sent')}
-                          className="h-7 px-2 rounded-lg bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300 hover:bg-blue-100 text-[11px] font-semibold flex items-center gap-1 transition-colors cursor-pointer"
-                          title={t('free_invoice_status_sent', language)}
-                        >
-                          <Send size={11} />
-                          <span>{t('free_invoice_status_sent', language)}</span>
-                        </button>
-                      )}
-
-                      {inv.status !== 'Paid' && (
-                        <button
-                          type="button"
-                          onClick={() => setInvoiceToDelete(inv)}
-                          className="h-7 w-7 rounded-lg text-neutral-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 flex items-center justify-center transition-colors cursor-pointer"
-                          title={t('common_delete', language)}
-                        >
-                          <Trash2 size={12} />
-                        </button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {filteredInvoices.length === 0 && (
-          <div className="py-12 text-center rounded-2xl border border-dashed border-neutral-200 dark:border-neutral-800 p-8 space-y-3">
-            <FileText size={32} className="mx-auto text-neutral-300 dark:text-neutral-600" />
-            <h4 className="text-sm font-bold text-neutral-900 dark:text-white">
-              {t('free_inv_empty_title', language)}
-            </h4>
-            <p className="text-xs text-neutral-500 max-w-sm mx-auto">
-              {t('free_inv_empty_desc', language)}
-            </p>
-            <button
-              type="button"
-              onClick={() => setIsCreateModalOpen(true)}
-              className="mt-2 px-4 py-2 rounded-xl bg-[#C4785A] text-white text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer inline-flex items-center gap-1.5 shadow-xs"
-            >
-              <Plus size={14} />
-              <span>{t('free_inv_btn_new', language)}</span>
-            </button>
+                {inv.status !== 'Paid' && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      updateInvoiceStatus(inv.id, 'Paid');
+                    }}
+                    className="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 hover:bg-emerald-100 text-[11px] font-semibold flex items-center gap-1 transition-colors cursor-pointer"
+                  >
+                    <CheckCircle size={11} />
+                    <span>{t('free_inv_doc_mark_paid_btn', language)}</span>
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
         )}
-      </div>
+        onItemClick={(inv) => setPreviewInvoice(inv)}
+        onViewDetails={(inv) => setPreviewInvoice(inv)}
+        onTogglePin={(inv) => {
+          setPinnedInvoiceIds((prev) => {
+            const next = new Set(prev);
+            if (next.has(inv.id)) {
+              next.delete(inv.id);
+              showToast?.({
+                type: 'info',
+                title: 'Unpinned',
+                message: `${inv.invoiceNumber} unpinned`,
+              });
+            } else {
+              next.add(inv.id);
+              showToast?.({
+                type: 'info',
+                title: 'Pinned',
+                message: `${inv.invoiceNumber} pinned to top`,
+              });
+            }
+            return next;
+          });
+        }}
+        onDelete={(inv) => setInvoiceToDelete(inv)}
+        customActions={(inv) => [
+          {
+            id: 'print',
+            tooltip: t('free_inv_doc_print', language),
+            icon: <Printer size={13} />,
+            iconColor: '#C4785A',
+            onClick: (e: React.MouseEvent) => {
+              e.stopPropagation();
+              setPreviewInvoice(inv);
+            },
+          },
+        ]}
+        isPinned={(inv) => pinnedInvoiceIds.has(inv.id)}
+        selectedIds={selectedInvoiceIds}
+        onSelectionChange={setSelectedInvoiceIds}
+        emptyTitle={t('free_inv_empty_title', language)}
+        emptyDescription={t('free_inv_empty_desc', language)}
+        primaryActionLabel={t('free_inv_btn_new', language)}
+        onAddFirstItem={() => setIsCreateModalOpen(true)}
+      />
 
       {/* Manual Invoice Builder Modal */}
       {isCreateModalOpen && (

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   TrendingUp,
   Clock,
@@ -17,6 +17,7 @@ import {
   Building2,
   ChevronDown,
   Check,
+  Sparkles,
 } from 'lucide-react';
 import { useAtriumStore } from '../../../services/store';
 import { formatDuration, formatCurrencyAmount } from '../../../utils/rules';
@@ -46,10 +47,17 @@ export const FreelanceDashboardView: React.FC = () => {
     switchBranch,
     setScreen,
     updateInvoiceStatus,
+    resetFreelanceMockData,
   } = useAtriumStore();
 
   const [previewInvoice, setPreviewInvoice] = useState<FreelanceInvoice | null>(null);
   const [isFacilityDropdownOpen, setIsFacilityDropdownOpen] = useState(false);
+
+  useEffect(() => {
+    if (freelanceClients.length === 0 && freelanceProjects.length === 0) {
+      resetFreelanceMockData?.();
+    }
+  }, [freelanceClients.length, freelanceProjects.length, resetFreelanceMockData]);
 
   // Compute stats
   const paidInvoices = freelanceInvoices.filter((i) => i.status === 'Paid');
@@ -179,6 +187,16 @@ export const FreelanceDashboardView: React.FC = () => {
               </div>
             )}
           </div>
+
+          <button
+            type="button"
+            onClick={() => resetFreelanceMockData?.()}
+            className="h-10 px-3.5 rounded-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:text-[#C4785A] dark:hover:text-[#C4785A] text-xs font-semibold flex items-center gap-1.5 hover:bg-neutral-50 dark:hover:bg-neutral-700/60 transition-colors cursor-pointer shadow-2xs"
+            title={t('common_reset_demo') || 'Recharger Données Démo'}
+          >
+            <Sparkles size={14} className="text-[#C4785A]" />
+            <span className="hidden sm:inline">{t('common_reset_demo') || 'Démo'}</span>
+          </button>
 
           <button
             type="button"

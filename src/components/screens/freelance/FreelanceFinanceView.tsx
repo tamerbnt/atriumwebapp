@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   Wallet,
   Plus,
@@ -12,12 +12,23 @@ import {
   FileText,
   AlertCircle,
   HelpCircle,
+  Building2,
+  ChevronDown,
+  Check,
+  Sparkles,
+  Download,
+  Trash2,
+  Pin,
+  CheckCircle2,
+  Receipt,
 } from 'lucide-react';
 import { useAtriumStore } from '../../../services/store';
 import { formatCurrencyAmount } from '../../../utils/rules';
 import { FreelanceExpense, ExpenseCategory, CurrencyCode } from '../../../types/index';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
+import { Seek } from '../../ui/Seek';
+import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { useTranslation } from '../../../utils/useTranslation';
 
 export const FreelanceFinanceView: React.FC = () => {
@@ -28,10 +39,34 @@ export const FreelanceFinanceView: React.FC = () => {
     timeLogs,
     addFreelanceExpense,
     deleteFreelanceExpense,
+    businesses,
+    branches,
+    currentBusinessId,
+    currentBusiness,
+    switchBusiness,
+    switchBranch,
+    resetFreelanceMockData,
+    showToast,
   } = useAtriumStore();
 
   const [taxRate, setTaxRate] = useState<number>(20); // 20% estimated tax provision
   const [isAddExpenseModalOpen, setIsAddExpenseModalOpen] = useState(false);
+  const [isFacilityDropdownOpen, setIsFacilityDropdownOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState<string>('All');
+
+  // Selection & Pinning State for UniversalDataCollection
+  const [selectedExpenseIds, setSelectedExpenseIds] = useState<Set<string>>(new Set());
+  const [pinnedExpenseIds, setPinnedExpenseIds] = useState<Set<string>>(new Set());
+  const [expenseSortBy, setExpenseSortBy] = useState<string>('amount');
+  const [expenseSortDir, setExpenseSortDir] = useState<'asc' | 'desc'>('desc');
+
+  // Auto-heal if store empty
+  useEffect(() => {
+    if (freelanceExpenses.length === 0 && freelanceInvoices.length === 0) {
+      resetFreelanceMockData?.();
+    }
+  }, [freelanceExpenses.length, freelanceInvoices.length, resetFreelanceMockData]);
 
   // New Expense Form
   const [vendor, setVendor] = useState('');
@@ -81,6 +116,103 @@ export const FreelanceFinanceView: React.FC = () => {
   const grossEhr = totalBillableHours > 0 ? Math.round(currencyTotals.totalEurEquiv / totalBillableHours) : 85;
   const netEhr = totalBillableHours > 0 ? Math.round(netTakeHomeEur / totalBillableHours) : 60;
 
+  // Filtered & Sorted Expenses
+  const filteredExpenses = useMemo(() => {
+    return freelanceExpenses.filter((exp) => {
+      if (categoryFilter !== 'All' && exp.category !== categoryFilter) return false;
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        const matchesVendor = exp.vendor.toLowerCase().includes(q);
+        const matchesDesc = exp.description.toLowerCase().includes(q);
+        const matchesCategory = exp.category.toLowerCase().includes(q);
+        if (!matchesVendor && !matchesDesc && !matchesCategory) return false;
+      }
+      return true;
+    });
+  }, [freelanceExpenses, categoryFilter, searchQuery]);
+
+  const sortedExpenses = useMemo(() => {
+    return [...filteredExpenses].sort((a, b) => {
+      const aPinned = pinnedExpenseIds.has(a.id);
+      const bPinned = pinnedExpenseIds.has(b.id);
+      if (aPinned && !bPinned) return -1;
+      if (!aPinned && bPinned) return 1;
+
+      if (expenseSortBy === 'vendor') {
+        const cmp = a.vendor.localeCompare(b.vendor);
+        return expenseSortDir === 'asc' ? cmp : -cmp;
+      }
+      if (expenseSortBy === 'category') {
+        const cmp = a.category.localeCompare(b.category);
+        return expenseSortDir === 'asc' ? cmp : -cmp;
+      }
+      if (expenseSortBy === 'amount') {
+        return expenseSortDir === 'asc' ? a.amount - b.amount : b.amount - a.amount;
+      }
+      if (expenseSortBy === 'date') {
+        const dateA = new Date(a.date || '2026-01-01').getTime();
+        const dateB = new Date(b.date || '2026-01-01').getTime();
+        return expenseSortDir === 'asc' ? dateA - dateB : dateB - dateA;
+      }
+      return 0;
+    });
+  }, [filteredExpenses, pinnedExpenseIds, expenseSortBy, expenseSortDir]);
+
+  const handleTogglePinExpense = (exp: FreelanceExpense) => {
+    setPinnedExpenseIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(exp.id)) {
+        next.delete(exp.id);
+      } else {
+        next.add(exp.id);
+      }
+      return next;
+    });
+  };
+
+  const handleBatchDeleteExpenses = () => {
+    const targetIds = Array.from(selectedExpenseIds);
+    targetIds.forEach((id) => deleteFreelanceExpense(id));
+    setSelectedExpenseIds(new Set());
+    showToast?.({
+      type: 'warning',
+      title: language === 'ar' ? 'تم حذف المصاريف' : language === 'fr' ? 'Dépenses supprimées' : 'Expenses Removed',
+      message: `${targetIds.length} ${language === 'ar' ? 'مصروف تم حذفه بنجاح' : language === 'fr' ? 'dépenses supprimées' : 'expenses removed'}.`,
+    });
+  };
+
+  const handleExportCSV = () => {
+    const headers = [
+      language === 'ar' ? 'المورد / الخدمة' : language === 'fr' ? 'Fournisseur / Service' : 'Vendor',
+      language === 'ar' ? 'الفئة' : language === 'fr' ? 'Catégorie' : 'Category',
+      language === 'ar' ? 'الوصف' : language === 'fr' ? 'Description' : 'Description',
+      language === 'ar' ? 'المبلغ' : language === 'fr' ? 'Montant' : 'Amount',
+      language === 'ar' ? 'العملة' : language === 'fr' ? 'Devise' : 'Currency',
+      language === 'ar' ? 'معفى ضريبياً' : language === 'fr' ? 'Déductible' : 'Tax Deductible',
+      language === 'ar' ? 'التاريخ' : language === 'fr' ? 'Date' : 'Date',
+    ];
+    const rows = sortedExpenses.map((exp) => [
+      `"${exp.vendor.replace(/"/g, '""')}"`,
+      `"${exp.category}"`,
+      `"${exp.description.replace(/"/g, '""')}"`,
+      exp.amount,
+      exp.currency,
+      exp.isTaxDeductible ? 'Yes' : 'No',
+      `"${exp.date || ''}"`,
+    ]);
+    const csvContent =
+      '\uFEFF' + [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `atrium-expenses-${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   const handleCreateExpense = (e: React.FormEvent) => {
     e.preventDefault();
     if (!vendor.trim() || !description.trim()) return;
@@ -99,6 +231,84 @@ export const FreelanceFinanceView: React.FC = () => {
     setDescription('');
     setIsAddExpenseModalOpen(false);
   };
+
+  // Columns for UniversalDataCollection
+  const expenseColumns: ColumnDefinition<FreelanceExpense>[] = useMemo(() => [
+    {
+      key: 'vendor',
+      header: t('free_fin_vendor_service', language),
+      width: '2.5*',
+      sortable: true,
+      renderCell: (exp) => {
+        const isPinned = pinnedExpenseIds.has(exp.id);
+        return (
+          <div className="flex items-center gap-3 min-w-0">
+            {isPinned && <span className="w-1.5 h-6 rounded-full bg-[#C4785A] shrink-0" />}
+            <div className="w-8 h-8 rounded-xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-600 dark:text-neutral-300 font-bold text-xs shrink-0">
+              {exp.vendor.charAt(0).toUpperCase()}
+            </div>
+            <div className="min-w-0">
+              <div className="font-bold text-sm text-neutral-900 dark:text-white truncate flex items-center gap-1.5">
+                <span>{exp.vendor}</span>
+                {isPinned && <Pin size={11} className="text-[#C4785A] shrink-0" />}
+              </div>
+              <div className="text-xs text-neutral-400 truncate">{exp.description}</div>
+            </div>
+          </div>
+        );
+      },
+    },
+    {
+      key: 'category',
+      header: t('free_fin_expense_category', language),
+      width: '1.8*',
+      sortable: true,
+      renderCell: (exp) => (
+        <span className="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300">
+          {exp.category}
+        </span>
+      ),
+    },
+    {
+      key: 'amount',
+      header: t('common_amount', language),
+      width: '1.6*',
+      sortable: true,
+      renderCell: (exp) => (
+        <div className="font-mono font-bold text-sm text-neutral-900 dark:text-white tabular-nums">
+          {formatCurrencyAmount(exp.amount, exp.currency)}
+        </div>
+      ),
+    },
+    {
+      key: 'date',
+      header: language === 'ar' ? 'التاريخ' : language === 'fr' ? 'Date' : 'Date',
+      width: '1.4*',
+      sortable: true,
+      renderCell: (exp) => (
+        <span className="text-xs text-neutral-500 tabular-nums">
+          {exp.date || '2026-02-15'}
+        </span>
+      ),
+    },
+    {
+      key: 'deductible',
+      header: t('free_fin_deductible', language),
+      width: '1.4*',
+      renderCell: (exp) => (
+        exp.isTaxDeductible ? (
+          <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+            <CheckCircle2 size={13} />
+            <span>{language === 'ar' ? 'معفى' : language === 'fr' ? 'Oui' : 'Deductible'}</span>
+          </span>
+        ) : (
+          <span className="text-xs text-neutral-400">
+            {language === 'ar' ? 'لا' : language === 'fr' ? 'Non' : 'No'}
+          </span>
+        )
+      ),
+    },
+  ], [language, pinnedExpenseIds, t]);
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
@@ -122,14 +332,88 @@ export const FreelanceFinanceView: React.FC = () => {
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={() => setIsAddExpenseModalOpen(true)}
-          className="h-10 px-4 rounded-xl bg-[#C4785A] text-white text-xs font-semibold flex items-center gap-1.5 hover:opacity-90 transition-opacity cursor-pointer shadow-xs self-start sm:self-auto"
-        >
-          <Plus size={14} />
-          <span>{t('free_fin_btn_add_expense', language)}</span>
-        </button>
+        <div className="flex items-center gap-2.5 self-start sm:self-auto flex-wrap">
+          {/* Facility Switcher Dropdown */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setIsFacilityDropdownOpen(!isFacilityDropdownOpen)}
+              className="h-10 px-3.5 rounded-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 text-xs font-semibold flex items-center gap-2 hover:bg-neutral-50 dark:hover:bg-neutral-700/60 transition-colors cursor-pointer shadow-2xs"
+            >
+              <Building2 size={14} className="text-[#C4785A]" />
+              <span className="truncate max-w-[130px]">
+                {currentBusiness?.name || 'Studio Main'}
+              </span>
+              <ChevronDown size={13} className="text-neutral-400" />
+            </button>
+
+            {isFacilityDropdownOpen && (
+              <div className="absolute right-0 top-full mt-1.5 w-60 bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 shadow-xl z-50 p-1.5 space-y-1">
+                <div className="px-2.5 py-1 text-[11px] font-semibold text-neutral-400 uppercase tracking-wider">
+                  {t('hub_switch_business') || 'Espaces & Studios'}
+                </div>
+                {businesses.map((biz) => {
+                  const isCurrent = biz.id === currentBusinessId;
+                  return (
+                    <button
+                      key={biz.id}
+                      type="button"
+                      onClick={() => {
+                        switchBusiness(biz.id);
+                        const firstBranch = branches.find((b) => b.businessId === biz.id);
+                        if (firstBranch) switchBranch(firstBranch.id);
+                        setIsFacilityDropdownOpen(false);
+                      }}
+                      className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-medium flex items-center justify-between transition-colors ${
+                        isCurrent
+                          ? 'bg-[#C4785A]/10 text-[#C4785A]'
+                          : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <Building2 size={14} className={isCurrent ? 'text-[#C4785A]' : 'text-neutral-400'} />
+                        <span className="truncate">{biz.name}</span>
+                      </div>
+                      {isCurrent && <Check size={14} />}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Demo Data Recharge Button */}
+          <button
+            type="button"
+            onClick={() => resetFreelanceMockData?.()}
+            className="h-10 px-3.5 rounded-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:text-[#C4785A] dark:hover:text-[#C4785A] text-xs font-semibold flex items-center gap-1.5 hover:bg-neutral-50 dark:hover:bg-neutral-700/60 transition-colors cursor-pointer shadow-2xs"
+            title={t('common_reset_demo') || 'Recharger Données Démo'}
+          >
+            <Sparkles size={14} className="text-[#C4785A]" />
+            <span className="hidden sm:inline">{t('common_reset_demo') || 'Démo'}</span>
+          </button>
+
+          {/* Export CSV Button */}
+          <button
+            type="button"
+            onClick={handleExportCSV}
+            className="h-10 px-3.5 rounded-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-semibold flex items-center gap-1.5 hover:bg-neutral-50 dark:hover:bg-neutral-700/60 transition-colors cursor-pointer shadow-2xs"
+            title="Export Expenses CSV"
+          >
+            <Download size={14} />
+            <span className="hidden sm:inline">{language === 'ar' ? 'تصدير' : language === 'fr' ? 'Exporter' : 'Export'}</span>
+          </button>
+
+          {/* Add Expense Button */}
+          <button
+            type="button"
+            onClick={() => setIsAddExpenseModalOpen(true)}
+            className="h-10 px-4 rounded-full bg-[#C4785A] text-white text-xs font-bold flex items-center gap-1.5 hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
+          >
+            <Plus size={14} />
+            <span>{t('free_fin_btn_add_expense', language)}</span>
+          </button>
+        </div>
       </div>
 
       {/* Multi-Currency Inflow Cards */}
@@ -252,90 +536,150 @@ export const FreelanceFinanceView: React.FC = () => {
         </div>
       </div>
 
-      {/* Overhead & Subscriptions Ledger Table */}
-      <div className="p-5 rounded-2xl bg-white dark:bg-neutral-900/60 border border-neutral-200 dark:border-neutral-800 shadow-2xs space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
-            {t('free_fin_operational_overhead', language)} ({freelanceExpenses.length})
-          </h3>
-          <span className="text-xs text-neutral-500">
-            {t('free_fin_total_monthly_cost', language)}: ~€{totalExpensesEurEquiv.toLocaleString()}
-          </span>
+      {/* Overhead & Subscriptions Ledger Table with UniversalDataCollection */}
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[26px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+        {/* Table Controls */}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <Receipt size={16} className="text-[#C4785A]" />
+            <span className="text-sm font-bold text-neutral-900 dark:text-white">
+              {t('free_fin_operational_overhead', language)}
+            </span>
+            <span className="text-xs text-neutral-400 font-semibold tabular-nums ml-1">
+              ({sortedExpenses.length}) · ~€{totalExpensesEurEquiv.toLocaleString()}
+            </span>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2.5 ml-auto">
+            <Seek
+              value={searchQuery}
+              onChange={setSearchQuery}
+              placeholder={t('free_fin_ph_vendor', language) || 'Search vendor...'}
+              shutSize={36}
+              openWidth={220}
+            />
+
+            <LabelSelect
+              field="Category"
+              label={t('free_fin_expense_category', language)}
+              value={categoryFilter}
+              onChange={(val) => setCategoryFilter(val?.target?.value ?? String(val))}
+              options={[
+                { value: 'All', label: language === 'ar' ? 'جميع الفئات' : language === 'fr' ? 'Toutes les catégories' : 'All Categories' },
+                { value: 'Software', label: t('free_fin_expense_software', language) },
+                { value: 'Office', label: t('free_fin_expense_workspace', language) },
+                { value: 'Hardware', label: t('free_fin_expense_hardware', language) },
+                { value: 'Subcontractor', label: t('free_fin_expense_subcontractor', language) },
+                { value: 'Travel', label: t('free_fin_expense_travel', language) },
+                { value: 'Other', label: t('free_fin_expense_other', language) },
+              ]}
+              width={160}
+              height={36}
+              corner={18}
+            />
+          </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead>
-              <tr className="border-b border-neutral-200 dark:border-neutral-800 text-neutral-400 uppercase text-[10px] tracking-wider font-semibold">
-                <th className={`pb-3 font-semibold ${isRtl ? 'text-right' : 'text-left'}`}>{t('free_fin_vendor_service', language)}</th>
-                <th className={`pb-3 font-semibold ${isRtl ? 'text-right' : 'text-left'}`}>{t('free_fin_expense_category', language)}</th>
-                <th className={`pb-3 font-semibold ${isRtl ? 'text-right' : 'text-left'}`}>{t('common_notes', language)}</th>
-                <th className={`pb-3 font-semibold ${isRtl ? 'text-left' : 'text-right'}`}>{t('common_amount', language)}</th>
-                <th className="pb-3 font-semibold text-center">{t('free_fin_deductible', language)}</th>
-                <th className={`pb-3 font-semibold ${isRtl ? 'text-left' : 'text-right'}`}>{t('common_action', language)}</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800/60">
-              {freelanceExpenses.map((exp) => (
-                <tr
-                  key={exp.id}
-                  className="hover:bg-neutral-50/80 dark:hover:bg-neutral-800/40 transition-colors"
-                >
-                  <td className="py-3 font-bold text-neutral-900 dark:text-white">
-                    {exp.vendor}
-                  </td>
-                  <td className="py-3 text-neutral-600 dark:text-neutral-400">
-                    {exp.category === 'Software'
-                      ? t('free_fin_expense_software', language)
-                      : exp.category === 'Hardware'
-                      ? t('free_fin_expense_hardware', language)
-                      : exp.category === 'Office'
-                      ? t('free_fin_expense_workspace', language)
-                      : exp.category === 'Subcontractor'
-                      ? t('free_fin_expense_subcontractor', language)
-                      : exp.category === 'Travel'
-                      ? t('free_fin_expense_travel', language)
-                      : t('free_fin_expense_other', language)}
-                  </td>
-                  <td className="py-3 text-neutral-500 max-w-xs truncate">
-                    {exp.description}
-                  </td>
-                  <td className={`py-3 ${isRtl ? 'text-left' : 'text-right'} font-mono font-bold text-neutral-900 dark:text-white tabular-nums`}>
+        {/* Floating Batch Action Toolbar */}
+        {selectedExpenseIds.size > 0 && (
+          <div className="flex items-center justify-between p-3 px-4 rounded-2xl bg-neutral-900 text-white shadow-xl animate-in fade-in slide-in-from-bottom-2 duration-150">
+            <div className="flex items-center gap-3 text-xs font-semibold">
+              <span className="px-2 py-0.5 rounded-full bg-[#C4785A] text-white font-bold text-[11px]">
+                {selectedExpenseIds.size}
+              </span>
+              <span>{language === 'ar' ? 'مصاريف محددة' : language === 'fr' ? 'charges sélectionnées' : 'expenses selected'}</span>
+              <button
+                type="button"
+                onClick={() => setSelectedExpenseIds(new Set())}
+                className="text-neutral-400 hover:text-white underline text-xs cursor-pointer ml-1"
+              >
+                {language === 'ar' ? 'إلغاء التحديد' : language === 'fr' ? 'Désélectionner' : 'Deselect all'}
+              </button>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleBatchDeleteExpenses}
+                className="h-8 px-3 rounded-full bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+              >
+                <Trash2 size={13} />
+                <span>{language === 'ar' ? 'حذف المحدد' : language === 'fr' ? 'Supprimer' : 'Batch Delete'}</span>
+              </button>
+            </div>
+          </div>
+        )}
+
+        <UniversalDataCollection<FreelanceExpense>
+          items={sortedExpenses}
+          keyExtractor={(exp) => exp.id}
+          columns={expenseColumns}
+          selectedIds={selectedExpenseIds}
+          onSelectionChange={setSelectedExpenseIds}
+          isPinned={(exp) => pinnedExpenseIds.has(exp.id)}
+          onTogglePin={handleTogglePinExpense}
+          onDelete={(exp) => deleteFreelanceExpense(exp.id)}
+          sortBy={expenseSortBy}
+          sortDirection={expenseSortDir}
+          onSortChange={(colKey) => {
+            if (expenseSortBy === colKey) {
+              setExpenseSortDir((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+            } else {
+              setExpenseSortBy(colKey);
+              setExpenseSortDir('desc');
+            }
+          }}
+          showViewToggle={true}
+          emptyTitle={t('free_fin_empty_expenses', language)}
+          emptyDescription={t('free_fin_empty_expenses_desc', language)}
+          renderCard={(exp) => {
+            const isPinned = pinnedExpenseIds.has(exp.id);
+            return (
+              <div
+                key={exp.id}
+                className="p-5 rounded-[22px] border border-[#E9EEF0] dark:border-neutral-700/60 bg-white dark:bg-neutral-800 shadow-2xs relative space-y-3"
+              >
+                {isPinned && (
+                  <div className="absolute top-3 left-3 text-[#C4785A]">
+                    <Pin size={12} className="fill-[#C4785A]" />
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between pl-4">
+                  <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-neutral-100 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300">
+                    {exp.category}
+                  </span>
+                  <span className="text-xs text-neutral-400 tabular-nums">{exp.date || '2026-02-15'}</span>
+                </div>
+
+                <div>
+                  <h4 className="text-base font-bold text-neutral-900 dark:text-white">{exp.vendor}</h4>
+                  <p className="text-xs text-neutral-500 mt-0.5 line-clamp-2">{exp.description}</p>
+                </div>
+
+                <div className="pt-2 border-t border-neutral-100 dark:border-neutral-700/60 flex items-center justify-between">
+                  <span className="font-mono text-base font-black text-[#C4785A] tabular-nums">
                     {formatCurrencyAmount(exp.amount, exp.currency)}
-                  </td>
-                  <td className="py-3 text-center">
-                    {exp.isTaxDeductible ? (
-                      <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
-                        {language === 'ar' ? 'نعم' : language === 'fr' ? 'Oui' : 'Yes'}
-                      </span>
-                    ) : (
-                      <span className="text-[11px] text-neutral-400">
-                        {language === 'ar' ? 'لا' : language === 'fr' ? 'Non' : 'No'}
+                  </span>
+                  <div className="flex items-center gap-1.5">
+                    {exp.isTaxDeductible && (
+                      <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
+                        Deductible
                       </span>
                     )}
-                  </td>
-                  <td className={`py-3 ${isRtl ? 'text-left' : 'text-right'}`}>
                     <button
                       type="button"
                       onClick={() => deleteFreelanceExpense(exp.id)}
-                      className="text-neutral-400 hover:text-rose-500 p-1 cursor-pointer transition-colors"
-                      title={language === 'ar' ? 'حذف المصروف' : language === 'fr' ? 'Supprimer la charge' : 'Remove expense'}
+                      className="p-1 text-neutral-400 hover:text-rose-500 transition-colors cursor-pointer"
                     >
-                      <X size={14} />
+                      <Trash2 size={13} />
                     </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {freelanceExpenses.length === 0 && (
-          <div className="py-10 text-center text-xs text-neutral-500 dark:text-neutral-400 border border-dashed border-neutral-200 dark:border-neutral-800 rounded-2xl p-6">
-            <p className="font-semibold">{t('free_fin_empty_expenses', language)}</p>
-            <p className="mt-1 text-[11px]">{t('free_fin_empty_expenses_desc', language)}</p>
-          </div>
-        )}
+                  </div>
+                </div>
+              </div>
+            );
+          }}
+        />
       </div>
 
       {/* Add Expense Modal */}
@@ -404,16 +748,15 @@ export const FreelanceFinanceView: React.FC = () => {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3 items-end">
+              <div className="grid grid-cols-2 gap-3">
                 <div>
                   <LabelInput
                     field="Amount"
-                    label={`${t('free_fin_expense_amount', language)} *`}
+                    label={`${t('common_amount', language)} *`}
                     type="number"
-                    min="1"
                     required
-                    value={amount}
-                    onChange={(val) => setAmount(Number(val?.target?.value || val || 0))}
+                    value={String(amount)}
+                    onChange={(val) => setAmount(Number(val))}
                     width="100%"
                     height={46}
                     corner={14}
@@ -421,7 +764,7 @@ export const FreelanceFinanceView: React.FC = () => {
                 </div>
                 <LabelSelect
                   field="Currency"
-                  label={t('free_clients_currency', language)}
+                  label={`${t('common_currency', language)} *`}
                   value={currency}
                   onChange={(val) =>
                     setCurrency((val?.target?.value ?? String(val)) as CurrencyCode)
@@ -436,35 +779,31 @@ export const FreelanceFinanceView: React.FC = () => {
                 />
               </div>
 
-              <div className="flex items-center gap-2 pt-1">
-                <input
-                  type="checkbox"
-                  id="taxDeduct"
-                  checked={isTaxDeductible}
-                  onChange={(e) => setIsTaxDeductible(e.target.checked)}
-                  className="rounded text-[#C4785A]"
-                />
-                <label
-                  htmlFor="taxDeduct"
-                  className="font-medium text-neutral-700 dark:text-neutral-300"
-                >
-                  {t('free_fin_deductible', language)}
+              <div className="pt-2">
+                <label className="flex items-center gap-2 cursor-pointer text-neutral-700 dark:text-neutral-300 font-medium">
+                  <input
+                    type="checkbox"
+                    checked={isTaxDeductible}
+                    onChange={(e) => setIsTaxDeductible(e.target.checked)}
+                    className="rounded text-[#C4785A] focus:ring-0"
+                  />
+                  <span>{t('free_fin_tax_deductible_prompt', language)}</span>
                 </label>
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-neutral-100 dark:border-neutral-800">
                 <button
                   type="button"
                   onClick={() => setIsAddExpenseModalOpen(false)}
-                  className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+                  className="h-10 px-4 rounded-xl border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-300 font-semibold hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
                 >
-                  {t('common_cancel', language)}
+                  {t('action_cancel', language)}
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-[#C4785A] text-white text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
+                  className="h-10 px-5 rounded-xl bg-[#C4785A] text-white font-bold hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
                 >
-                  {t('common_save', language)}
+                  {t('free_fin_btn_save_expense', language)}
                 </button>
               </div>
             </form>

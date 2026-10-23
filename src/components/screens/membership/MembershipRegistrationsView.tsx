@@ -19,6 +19,11 @@ import {
   Mail,
   ArrowRight,
   Filter,
+  Eye,
+  Trash2,
+  Pin,
+  UserX,
+  ExternalLink,
 } from 'lucide-react';
 import { useAtriumStore } from '../../../services/store';
 import { RegistrationLead } from '../../../types/index';
@@ -26,6 +31,7 @@ import { Avatar } from '../../ui/Avatar';
 import { Modal } from '../../ui/Modal';
 import { Seek } from '../../ui/Seek';
 import { LabelSelect } from '../../ui/LabelSelect';
+import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { localizeStatus } from '../../../utils/rules';
 import { t } from '../../../utils/i18n';
 
@@ -45,22 +51,29 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
     switchBranch,
     terminology,
     updateLeadStatus,
+    deleteLead,
     convertLeadToMember,
     currentBusiness,
     language,
+    showToast,
   } = useAtriumStore();
 
   const isPOS = currentBusiness?.category === 'pos_inventory';
 
   const [statusFilter, setStatusFilter] = useState<'All' | 'Pending' | 'Approved' | 'Declined'>('All');
   const [searchQuery, setSearchQuery] = useState('');
-  const [isSearchActive, setIsSearchActive] = useState(false);
   const [planFilter, setPlanFilter] = useState<string>('All');
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [isFacilityDropdownOpen, setIsFacilityDropdownOpen] = useState(false);
   const [selectedLead, setSelectedLead] = useState<RegistrationLead | null>(null);
   const [conversionLead, setConversionLead] = useState<RegistrationLead | null>(null);
   const [selectedPlanId, setSelectedPlanId] = useState<string>('');
+
+  // Selection & Pinning State for UniversalDataCollection
+  const [selectedLeadIds, setSelectedLeadIds] = useState<Set<string>>(new Set());
+  const [pinnedLeadIds, setPinnedLeadIds] = useState<Set<string>>(new Set());
+  const [leadSortBy, setLeadSortBy] = useState<string>('date');
+  const [leadSortDir, setLeadSortDir] = useState<'asc' | 'desc'>('desc');
 
   const filteredLeads = useMemo(() => {
     return leads.filter((lead) => {
@@ -79,8 +92,51 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
     });
   }, [leads, statusFilter, planFilter, searchQuery]);
 
+  // Sort with pinning prioritized
+  const sortedLeads = useMemo(() => {
+    return [...filteredLeads].sort((a, b) => {
+      const aPinned = pinnedLeadIds.has(a.id);
+      const bPinned = pinnedLeadIds.has(b.id);
+      if (aPinned && !bPinned) return -1;
+      if (!aPinned && bPinned) return 1;
+
+      if (leadSortBy === 'applicant') {
+        const cmp = a.fullName.localeCompare(b.fullName);
+        return leadSortDir === 'asc' ? cmp : -cmp;
+      }
+      if (leadSortBy === 'plan') {
+        const cmp = (a.preferredPlanName || '').localeCompare(b.preferredPlanName || '');
+        return leadSortDir === 'asc' ? cmp : -cmp;
+      }
+      if (leadSortBy === 'source') {
+        const cmp = a.source.localeCompare(b.source);
+        return leadSortDir === 'asc' ? cmp : -cmp;
+      }
+      if (leadSortBy === 'status') {
+        const cmp = a.status.localeCompare(b.status);
+        return leadSortDir === 'asc' ? cmp : -cmp;
+      }
+      // Default: date
+      const dateA = new Date(a.createdAt).getTime();
+      const dateB = new Date(b.createdAt).getTime();
+      return leadSortDir === 'asc' ? dateA - dateB : dateB - dateA;
+    });
+  }, [filteredLeads, pinnedLeadIds, leadSortBy, leadSortDir]);
+
   const pendingCount = useMemo(() => leads.filter((l) => l.status === 'Pending').length, [leads]);
   const approvedCount = useMemo(() => leads.filter((l) => l.status === 'Approved').length, [leads]);
+
+  const handleTogglePinLead = (lead: RegistrationLead) => {
+    setPinnedLeadIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(lead.id)) {
+        next.delete(lead.id);
+      } else {
+        next.add(lead.id);
+      }
+      return next;
+    });
+  };
 
   const handleStartConversion = (lead: RegistrationLead) => {
     setConversionLead(lead);
@@ -102,26 +158,85 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
     }
   };
 
+  // Batch actions
+  const handleBatchApprove = () => {
+    const targetIds = Array.from(selectedLeadIds);
+    const plan = plans[0];
+    targetIds.forEach((id) => {
+      const lead = leads.find((l) => l.id === id);
+      if (lead && lead.status === 'Pending') {
+        convertLeadToMember(
+          lead.id,
+          lead.preferredPlanId || (plan ? plan.id : 'standard_pkg'),
+          lead.preferredPlanName || (plan ? plan.name : 'Standard Package'),
+          plan ? plan.durationDays : 365
+        );
+      }
+    });
+    setSelectedLeadIds(new Set());
+    showToast?.({
+      type: 'success',
+      title: language === 'ar' ? 'تم اعتماد الطلبات' : language === 'fr' ? 'Dossiers validés' : 'Leads Converted',
+      message: `${targetIds.length} ${language === 'ar' ? 'طلب تم تحويلهم بنجاح' : language === 'fr' ? 'demandes approuvées et inscrites' : 'leads approved and converted to members'}.`,
+    });
+  };
+
+  const handleBatchDecline = () => {
+    const targetIds = Array.from(selectedLeadIds);
+    targetIds.forEach((id) => updateLeadStatus(id, 'Declined'));
+    setSelectedLeadIds(new Set());
+    showToast?.({
+      type: 'info',
+      title: language === 'ar' ? 'تم رفض الطلبات' : language === 'fr' ? 'Dossiers refusés' : 'Leads Declined',
+      message: `${targetIds.length} ${language === 'ar' ? 'طلب تم رفضهم' : language === 'fr' ? 'demandes passées en refusé' : 'leads marked as declined'}.`,
+    });
+  };
+
+  const handleBatchDelete = () => {
+    const targetIds = Array.from(selectedLeadIds);
+    if (deleteLead) {
+      targetIds.forEach((id) => deleteLead(id));
+    } else {
+      targetIds.forEach((id) => updateLeadStatus(id, 'Declined'));
+    }
+    setSelectedLeadIds(new Set());
+    showToast?.({
+      type: 'warning',
+      title: language === 'ar' ? 'حذف من السجل' : language === 'fr' ? 'Suppression effectuée' : 'Leads Removed',
+      message: `${targetIds.length} ${language === 'ar' ? 'طلب تم حذفه من السجل' : language === 'fr' ? 'demandes supprimées' : 'leads removed from registry'}.`,
+    });
+  };
+
   const handleExportCSV = () => {
-    const headers = ['Full Name', 'Phone', 'Email', 'Preferred Plan', 'Source', 'Status', 'Submitted Date'];
-    const rows = filteredLeads.map((l) => [
-      `"${l.fullName}"`,
+    const headers = [
+      language === 'ar' ? 'مقدم الطلب' : language === 'fr' ? 'Candidat' : 'Applicant Name',
+      language === 'ar' ? 'الهاتف' : language === 'fr' ? 'Téléphone' : 'Phone',
+      language === 'ar' ? 'البريد الإلكتروني' : language === 'fr' ? 'E-mail' : 'Email',
+      language === 'ar' ? 'الباقة المفضلة' : language === 'fr' ? 'Formule souhaitée' : 'Preferred Plan',
+      language === 'ar' ? 'قناة الاستقطاب' : language === 'fr' ? 'Canal d\'acquisition' : 'Source',
+      language === 'ar' ? 'الحالة' : language === 'fr' ? 'Statut' : 'Status',
+      language === 'ar' ? 'تاريخ التقديم' : language === 'fr' ? 'Date de soumission' : 'Submitted Date',
+    ];
+    const rows = sortedLeads.map((l) => [
+      `"${l.fullName.replace(/"/g, '""')}"`,
       `"${l.phoneNumber}"`,
       `"${l.email}"`,
-      `"${l.preferredPlanName || plans[0]?.name || 'Standard Package'}"`,
-      `"${l.source}"`,
-      `"${l.status}"`,
+      `"${(l.preferredPlanName || plans[0]?.name || 'Standard Package').replace(/"/g, '""')}"`,
+      `"${l.source.replace(/"/g, '""')}"`,
+      `"${localizeStatus(l.status, language)}"`,
       `"${new Date(l.createdAt).toLocaleDateString()}"`,
     ]);
     const csvContent =
-      'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
-    const encodedUri = encodeURI(csvContent);
+      '\uFEFF' + [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
+    link.setAttribute('href', url);
     link.setAttribute('download', `atrium-leads-${new Date().toISOString().split('T')[0]}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   const toggleFullscreen = () => {
@@ -131,6 +246,152 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
       document.exitFullscreen().catch(() => {});
     }
   };
+
+  // Columns definition for UniversalDataCollection
+  const leadColumns: ColumnDefinition<RegistrationLead>[] = useMemo(() => [
+    {
+      key: 'applicant',
+      header: language === 'ar' ? 'مقدم الطلب' : language === 'fr' ? 'Candidat / Prospect' : 'Applicant',
+      width: '2.5*',
+      sortable: true,
+      renderCell: (lead) => {
+        const isPinned = pinnedLeadIds.has(lead.id);
+        return (
+          <div className="flex items-center gap-3 min-w-0">
+            {isPinned && (
+              <span className="w-1.5 h-6 rounded-full bg-[#C4785A] shrink-0" title="Pinned" />
+            )}
+            <Avatar name={lead.fullName} size={36} />
+            <div className="min-w-0">
+              <div className="text-sm font-bold text-neutral-900 dark:text-white truncate flex items-center gap-1.5">
+                <span>{lead.fullName}</span>
+                {isPinned && <Pin size={11} className="text-[#C4785A] shrink-0" />}
+              </div>
+              <div className="text-xs text-neutral-500 dark:text-neutral-400 truncate">
+                {lead.phoneNumber} · {lead.email}
+              </div>
+            </div>
+          </div>
+        );
+      },
+    },
+    {
+      key: 'source',
+      header: language === 'ar' ? 'قناة الاستقطاب' : language === 'fr' ? 'Canal d\'acquisition' : 'Acquisition Source',
+      width: '1.8*',
+      sortable: true,
+      renderCell: (lead) => (
+        <div>
+          <span className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
+            {lead.source}
+          </span>
+          {lead.notes && (
+            <span className="block text-[11px] text-neutral-400 truncate max-w-xs mt-0.5">
+              {lead.notes}
+            </span>
+          )}
+        </div>
+      ),
+    },
+    {
+      key: 'plan',
+      header: language === 'ar' ? 'الباقة المفضلة' : language === 'fr' ? 'Formule souhaitée' : `Preferred ${terminology.plan}`,
+      width: '1.8*',
+      sortable: true,
+      renderCell: (lead) => (
+        <div>
+          <span className="inline-block px-2.5 py-0.5 rounded-full bg-[#FDF4F0] dark:bg-neutral-800 text-[#C4785A] text-xs font-bold border border-[#F5E2D8] dark:border-neutral-700">
+            {lead.preferredPlanName || plans[0]?.name || 'Standard Package'}
+          </span>
+          {lead.preferredStartDate && (
+            <span className="block text-[11px] text-neutral-400 mt-0.5">
+              {language === 'ar' ? 'بدء: ' : language === 'fr' ? 'Début : ' : 'Start: '}
+              {lead.preferredStartDate}
+            </span>
+          )}
+        </div>
+      ),
+    },
+    {
+      key: 'date',
+      header: language === 'ar' ? 'تاريخ التقديم' : language === 'fr' ? 'Date de soumission' : 'Submission Date',
+      width: '1.4*',
+      sortable: true,
+      renderCell: (lead) => (
+        <span className="text-xs text-neutral-500 dark:text-neutral-400 tabular-nums">
+          {new Date(lead.createdAt).toLocaleDateString()}
+        </span>
+      ),
+    },
+    {
+      key: 'status',
+      header: language === 'ar' ? 'الحالة' : language === 'fr' ? 'Statut' : 'Status',
+      width: '1.4*',
+      sortable: true,
+      renderCell: (lead) => {
+        const isApp = lead.status === 'Approved';
+        const isDec = lead.status === 'Declined';
+        return (
+          <span
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${
+              isApp
+                ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200'
+                : isDec
+                ? 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200'
+                : 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200'
+            }`}
+          >
+            <span
+              className={`w-1.5 h-1.5 rounded-full ${
+                isApp ? 'bg-emerald-500' : isDec ? 'bg-rose-500' : 'bg-amber-500'
+              }`}
+            />
+            {localizeStatus(lead.status, language)}
+          </span>
+        );
+      },
+    },
+    {
+      key: 'actions',
+      header: language === 'ar' ? 'إجراءات الاعتماد' : language === 'fr' ? 'Actions' : 'Actions',
+      width: '1.6*',
+      renderCell: (lead) => (
+        <div className="flex items-center justify-end gap-1.5" onClick={(e) => e.stopPropagation()}>
+          {lead.status === 'Pending' ? (
+            <>
+              <button
+                type="button"
+                onClick={() => handleStartConversion(lead)}
+                style={{ backgroundColor: 'var(--color-accent)' }}
+                className="h-7 px-2.5 text-xs font-bold text-white rounded-full flex items-center gap-1 hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
+                title={language === 'ar' ? 'اعتماد' : language === 'fr' ? 'Valider' : 'Convert'}
+              >
+                <UserCheck size={13} />
+                <span>{language === 'ar' ? 'اعتماد' : language === 'fr' ? 'Valider' : 'Convert'}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => updateLeadStatus(lead.id, 'Declined')}
+                className="h-7 w-7 rounded-full flex items-center justify-center text-neutral-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-colors cursor-pointer"
+                title={language === 'ar' ? 'رفض الطلب' : language === 'fr' ? 'Refuser le dossier' : 'Decline Lead'}
+              >
+                <X size={14} />
+              </button>
+            </>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setSelectedLead(lead)}
+              className="h-7 px-2.5 rounded-full border border-neutral-200 dark:border-neutral-700 text-xs font-semibold text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center gap-1 cursor-pointer transition-colors"
+            >
+              <Eye size={12} />
+              <span>{language === 'ar' ? 'معاينة' : language === 'fr' ? 'Fiche' : 'View'}</span>
+            </button>
+          )}
+        </div>
+      ),
+    },
+  ], [language, pinnedLeadIds, terminology.plan, plans, updateLeadStatus]);
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200 relative">
@@ -154,7 +415,7 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
           </div>
         </div>
 
-        <div className="flex items-center gap-3 relative">
+        <div className="flex items-center gap-3 relative flex-wrap sm:flex-nowrap">
           {/* Facility Pill: Atrium 1 ▾ */}
           <div className="relative">
             <button
@@ -427,156 +688,108 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
           </div>
         </div>
 
-        {/* List / Grid Display */}
-        {viewMode === 'list' ? (
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse text-left">
-              <thead>
-                <tr className="border-b border-neutral-200/60 dark:border-neutral-800/80 text-[11px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider h-11">
-                  <th className="px-5">{language === 'ar' ? 'مقدم الطلب' : language === 'fr' ? 'Candidat / Prospect' : 'Applicant'}</th>
-                  <th className="px-4">{language === 'ar' ? 'قناة الاستقطاب' : language === 'fr' ? 'Canal d\'acquisition' : 'Acquisition Source'}</th>
-                  <th className="px-4">{language === 'ar' ? 'الباقة المفضلة' : language === 'fr' ? 'Formule souhaitée' : `Preferred ${terminology.plan}`}</th>
-                  <th className="px-4">{language === 'ar' ? 'تاريخ التقديم' : language === 'fr' ? 'Date de soumission' : 'Submission Date'}</th>
-                  <th className="px-4">{language === 'ar' ? 'الحالة' : language === 'fr' ? 'Statut' : 'Status'}</th>
-                  <th className="px-4 text-right">{language === 'ar' ? 'إجراءات الاعتماد' : language === 'fr' ? 'Actions d\'approbation' : 'Approval Actions'}</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-neutral-200/40 dark:divide-neutral-800/60">
-                {filteredLeads.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="py-16 text-center text-xs text-neutral-400">
-                      {language === 'ar' ? 'لا توجد طلبات تسجيل تطابق هذا الفلتر.' : language === 'fr' ? 'Aucune demande d\'inscription ne correspond au filtre.' : 'No registration requests matching the current filter.'}
-                    </td>
-                  </tr>
-                ) : (
-                  filteredLeads.map((lead) => (
-                    <tr
-                      key={lead.id}
-                      onClick={() => setSelectedLead(lead)}
-                      className={`h-16 transition-colors cursor-pointer ${
-                        selectedLead?.id === lead.id
-                          ? 'bg-[#FCEEE8]/60 dark:bg-neutral-800'
-                          : 'hover:bg-neutral-50/80 dark:hover:bg-neutral-800/50'
-                      }`}
-                    >
-                      {/* Lead Info */}
-                      <td className="px-5 py-3">
-                        <div className="flex items-center gap-3">
-                          <Avatar name={lead.fullName} size={38} />
-                          <div>
-                            <div className="text-sm font-bold text-neutral-900 dark:text-white">
-                              {lead.fullName}
-                            </div>
-                            <div className="text-xs text-neutral-500 dark:text-neutral-400">
-                              {lead.phoneNumber} · {lead.email}
-                            </div>
-                          </div>
-                        </div>
-                      </td>
+        {/* Floating Batch Action Toolbar */}
+        {selectedLeadIds.size > 0 && (
+          <div className="flex items-center justify-between p-3 px-4 rounded-2xl bg-neutral-900 text-white shadow-xl animate-in fade-in slide-in-from-bottom-2 duration-150">
+            <div className="flex items-center gap-3 text-xs font-semibold">
+              <span className="px-2 py-0.5 rounded-full bg-[#C4785A] text-white font-bold text-[11px]">
+                {selectedLeadIds.size}
+              </span>
+              <span>{language === 'ar' ? 'طلب محدد' : language === 'fr' ? 'dossiers sélectionnés' : 'leads selected'}</span>
+              <button
+                type="button"
+                onClick={() => setSelectedLeadIds(new Set())}
+                className="text-neutral-400 hover:text-white underline text-xs cursor-pointer ml-1"
+              >
+                {language === 'ar' ? 'إلغاء التحديد' : language === 'fr' ? 'Désélectionner' : 'Deselect all'}
+              </button>
+            </div>
 
-                      {/* Acquisition Source */}
-                      <td className="px-4 py-3">
-                        <span className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
-                          {lead.source}
-                        </span>
-                        {lead.notes && (
-                          <span className="block text-[11px] text-neutral-400 truncate max-w-xs">
-                            {lead.notes}
-                          </span>
-                        )}
-                      </td>
-
-                      {/* Preferred Plan */}
-                      <td className="px-4 py-3">
-                        <span className="text-xs font-bold text-[#C4785A]">
-                          {lead.preferredPlanName || plans[0]?.name || 'Standard Package'}
-                        </span>
-                        {lead.preferredStartDate && (
-                          <span className="block text-[11px] text-neutral-400">
-                            Start: {lead.preferredStartDate}
-                          </span>
-                        )}
-                      </td>
-
-                      {/* Date */}
-                      <td className="px-4 py-3 text-xs text-neutral-500 dark:text-neutral-400 tabular-nums">
-                        {new Date(lead.createdAt).toLocaleDateString()}
-                      </td>
-
-                      {/* Status Badge */}
-                      <td className="px-4 py-3">
-                        <span
-                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${
-                            lead.status === 'Approved'
-                              ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200'
-                              : lead.status === 'Declined'
-                              ? 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200'
-                              : 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200'
-                          }`}
-                        >
-                          <span
-                            className={`w-1.5 h-1.5 rounded-full ${
-                              lead.status === 'Approved'
-                                ? 'bg-emerald-500'
-                                : lead.status === 'Declined'
-                                ? 'bg-rose-500'
-                                : 'bg-amber-500'
-                            }`}
-                          />
-                          {localizeStatus(lead.status, language)}
-                        </span>
-                      </td>
-
-                      {/* Actions */}
-                      <td className="px-4 py-3 text-right" onClick={(e) => e.stopPropagation()}>
-                        {lead.status === 'Pending' ? (
-                          <div className="inline-flex items-center gap-2">
-                            <button
-                              type="button"
-                              onClick={() => handleStartConversion(lead)}
-                              style={{
-                                backgroundColor: 'var(--color-accent)',
-                              }}
-                              className="h-8 px-3 text-xs font-bold text-white rounded-full flex items-center gap-1.5 hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
-                            >
-                              <UserCheck size={14} />
-                              <span>{language === 'ar' ? 'اعتماد' : language === 'fr' ? 'Valider' : 'Convert'}</span>
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => updateLeadStatus(lead.id, 'Declined')}
-                              className="h-8 px-2 text-xs font-semibold text-neutral-400 hover:text-rose-600 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
-                              title={language === 'ar' ? 'رفض الطلب' : language === 'fr' ? 'Refuser le dossier' : 'Decline Lead'}
-                            >
-                              <X size={15} />
-                            </button>
-                          </div>
-                        ) : (
-                          <span className="text-xs text-neutral-400">
-                            {language === 'ar' ? 'تمت المعالجة في ' : language === 'fr' ? 'Traité le ' : 'Processed '}{new Date(lead.updatedAt).toLocaleDateString()}
-                          </span>
-                        )}
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleBatchApprove}
+                className="h-8 px-3 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+              >
+                <UserCheck size={13} />
+                <span>{language === 'ar' ? 'اعتماد وتحويل' : language === 'fr' ? 'Valider la sélection' : 'Batch Approve'}</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleBatchDecline}
+                className="h-8 px-3 rounded-full bg-neutral-800 hover:bg-neutral-700 text-neutral-200 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+              >
+                <X size={13} />
+                <span>{language === 'ar' ? 'رفض' : language === 'fr' ? 'Refuser' : 'Decline'}</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleBatchDelete}
+                className="h-8 px-3 rounded-full bg-rose-600/80 hover:bg-rose-700 text-white text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+              >
+                <Trash2 size={13} />
+                <span>{language === 'ar' ? 'حذف' : language === 'fr' ? 'Supprimer' : 'Delete'}</span>
+              </button>
+            </div>
           </div>
-        ) : (
-          /* Grid View matching desktop cards */
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredLeads.map((lead) => (
+        )}
+
+        {/* UniversalDataCollection Component */}
+        <UniversalDataCollection<RegistrationLead>
+          items={sortedLeads}
+          keyExtractor={(lead) => lead.id}
+          defaultViewMode={viewMode}
+          columns={leadColumns}
+          selectedIds={selectedLeadIds}
+          onSelectionChange={setSelectedLeadIds}
+          isPinned={(lead) => pinnedLeadIds.has(lead.id)}
+          onTogglePin={handleTogglePinLead}
+          onItemClick={(lead) => setSelectedLead(lead)}
+          sortBy={leadSortBy}
+          sortDirection={leadSortDir}
+          onSortChange={(colKey) => {
+            if (leadSortBy === colKey) {
+              setLeadSortDir((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+            } else {
+              setLeadSortBy(colKey);
+              setLeadSortDir('asc');
+            }
+          }}
+          showViewToggle={false}
+          emptyTitle={
+            language === 'ar'
+              ? 'لا توجد طلبات تسجيل'
+              : language === 'fr'
+              ? 'Aucune demande d\'inscription'
+              : 'No Registration Requests'
+          }
+          emptyDescription={
+            language === 'ar'
+              ? 'لا توجد طلبات تطابق الفلتر الحالي، يمكنك إضافة طلب تسجيل جديد'
+              : language === 'fr'
+              ? 'Aucun prospect ne correspond aux critères actuels. Vous pouvez saisir une nouvelle demande.'
+              : 'No intake leads match current filters. You can record a new intake lead.'
+          }
+          renderCard={(lead) => {
+            const isPinned = pinnedLeadIds.has(lead.id);
+            return (
               <div
                 key={lead.id}
                 onClick={() => setSelectedLead(lead)}
-                className={`p-5 rounded-[20px] border transition-all cursor-pointer shadow-2xs ${
+                className={`p-5 rounded-[22px] border transition-all cursor-pointer relative shadow-2xs ${
                   selectedLead?.id === lead.id
                     ? 'border-[#C4785A] bg-[#FCEEE8]/40 dark:bg-neutral-800/80 ring-1 ring-[#C4785A]/30'
                     : 'border-[#E9EEF0] dark:border-neutral-700/60 bg-white dark:bg-neutral-800 hover:border-[#D5DFE3] dark:hover:border-neutral-600'
                 }`}
               >
-                <div className="flex items-center justify-between mb-3">
+                {/* Pin indicator */}
+                {isPinned && (
+                  <div className="absolute top-3 left-3 text-[#C4785A]" title="Pinned lead">
+                    <Pin size={12} className="fill-[#C4785A]" />
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between mb-3 pl-4">
                   <span
                     className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
                       lead.status === 'Approved'
@@ -594,46 +807,64 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
                 </div>
 
                 <div className="flex items-center gap-3 mb-3">
-                  <Avatar name={lead.fullName} size={40} />
-                  <div>
-                    <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
+                  <Avatar name={lead.fullName} size={42} />
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-sm font-bold text-neutral-900 dark:text-white truncate">
                       {lead.fullName}
                     </h3>
-                    <p className="text-xs text-neutral-500">{lead.phoneNumber}</p>
+                    <p className="text-xs text-neutral-500 truncate">{lead.phoneNumber}</p>
                   </div>
                 </div>
 
-                <div className="text-xs space-y-1 mb-4 text-neutral-600 dark:text-neutral-400">
+                <div className="text-xs space-y-1 mb-4 text-neutral-600 dark:text-neutral-400 pt-2 border-t border-neutral-100 dark:border-neutral-700/60">
                   <div className="flex justify-between">
                     <span className="text-neutral-400">{language === 'ar' ? 'الباقة:' : language === 'fr' ? 'Formule :' : 'Plan:'}</span>
-                    <span className="font-bold text-[#C4785A]">
-                      {lead.preferredPlanName || plans[0]?.name || (language === 'ar' ? 'الباقة القياسية' : language === 'fr' ? 'Formule Standard' : 'Standard Package')}
+                    <span className="font-bold text-[#C4785A] truncate max-w-[140px]">
+                      {lead.preferredPlanName || plans[0]?.name || 'Standard Package'}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-neutral-400">{language === 'ar' ? 'المصدر:' : language === 'fr' ? 'Source :' : 'Source:'}</span>
-                    <span>{lead.source}</span>
+                    <span className="truncate max-w-[140px]">{lead.source}</span>
                   </div>
                 </div>
 
-                {lead.status === 'Pending' && (
+                {lead.status === 'Pending' ? (
+                  <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                    <button
+                      type="button"
+                      onClick={() => handleStartConversion(lead)}
+                      style={{ backgroundColor: 'var(--color-accent)' }}
+                      className="flex-1 h-8 rounded-full text-xs font-bold text-white flex items-center justify-center gap-1.5 hover:opacity-90 cursor-pointer shadow-xs"
+                    >
+                      <UserCheck size={13} />
+                      <span>{language === 'ar' ? 'اعتماد وتحويل' : language === 'fr' ? 'Valider' : 'Convert'}</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => updateLeadStatus(lead.id, 'Declined')}
+                      className="h-8 px-2.5 rounded-full border border-neutral-200 dark:border-neutral-700 text-xs font-semibold text-neutral-500 hover:text-rose-600 transition-colors cursor-pointer"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                ) : (
                   <button
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleStartConversion(lead);
+                      setSelectedLead(lead);
                     }}
-                    style={{ backgroundColor: 'var(--color-accent)' }}
-                    className="w-full h-8 rounded-full text-xs font-bold text-white flex items-center justify-center gap-1.5 hover:opacity-90 cursor-pointer shadow-xs"
+                    className="w-full h-8 rounded-full border border-neutral-200 dark:border-neutral-700 text-xs font-semibold text-neutral-600 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700/50 flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
                   >
-                    <UserCheck size={14} />
-                    <span>{language === 'ar' ? 'اعتماد وتحويل' : language === 'fr' ? 'Valider & Inscrire' : 'Approve & Convert'}</span>
+                    <Eye size={13} />
+                    <span>{language === 'ar' ? 'معاينة الملف' : language === 'fr' ? 'Voir le dossier' : 'View Dossier'}</span>
                   </button>
                 )}
               </div>
-            ))}
-          </div>
-        )}
+            );
+          }}
+        />
       </div>
 
       {/* Desktop Slide-out Inspector Drawer for Registration Lead */}

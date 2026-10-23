@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import {
   Users,
   Search,
@@ -19,6 +19,12 @@ import {
   Trash2,
   AlertTriangle,
   Pin,
+  Download,
+  Sparkles,
+  Home,
+  ChevronDown,
+  Building2,
+  Check,
 } from 'lucide-react';
 import { useAtriumStore } from '../../../services/store';
 import { formatCurrencyAmount, formatDuration } from '../../../utils/rules';
@@ -41,9 +47,28 @@ export const FreelanceClientsView: React.FC = () => {
     deleteFreelanceClient,
     startTimer,
     billUnbilledHours,
+    resetFreelanceMockData,
+    businesses,
+    branches,
+    currentBusinessId,
+    currentBranchId,
+    switchBusiness,
+    switchBranch,
     setScreen,
     showToast,
   } = useAtriumStore();
+
+  const currentBranch = branches.find((b) => b.id === currentBranchId);
+  const [isFacilityDropdownOpen, setIsFacilityDropdownOpen] = useState(false);
+
+  // Auto-heal empty freelance client directory safely once on mount
+  const hasAutoHealed = useRef(false);
+  useEffect(() => {
+    if (!hasAutoHealed.current && freelanceClients.length === 0) {
+      hasAutoHealed.current = true;
+      resetFreelanceMockData();
+    }
+  }, [freelanceClients.length, resetFreelanceMockData]);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
@@ -328,33 +353,254 @@ export const FreelanceClientsView: React.FC = () => {
     },
   ], [freelanceProjects, language, t]);
 
+  const handleExportCSV = () => {
+    if (freelanceClients.length === 0) return;
+    const headers = [
+      language === 'ar' ? 'معرف العميل' : 'Client ID',
+      language === 'ar' ? 'اسم العميل' : 'Client Name',
+      language === 'ar' ? 'الشركة' : 'Company',
+      language === 'ar' ? 'البريد الإلكتروني' : 'Email',
+      language === 'ar' ? 'الهاتف' : 'Phone',
+      language === 'ar' ? 'البلد' : 'Country',
+      language === 'ar' ? 'العملة' : 'Currency',
+      language === 'ar' ? 'سعر الساعة' : 'Hourly Rate',
+      language === 'ar' ? 'الحالة' : 'Status',
+      language === 'ar' ? 'ساعات الحجز الشهري' : 'Retainer Hours',
+      language === 'ar' ? 'مبلغ الحجز الشهري' : 'Retainer Amount',
+      language === 'ar' ? 'المشاريع' : 'Projects Count',
+      language === 'ar' ? 'الساعات غير المفوترة' : 'Unbilled Hours',
+    ];
+
+    const rows = sortedClients.map((client) => {
+      const clientProjects = freelanceProjects.filter((p) => p.clientId === client.id);
+      const unbilled = getClientUnbilledTime(client.id);
+      return [
+        `"${client.id}"`,
+        `"${client.name.replace(/"/g, '""')}"`,
+        `"${(client.company || '').replace(/"/g, '""')}"`,
+        `"${client.email}"`,
+        `"${client.phone || ''}"`,
+        `"${client.country || ''}"`,
+        `"${client.currency}"`,
+        client.hourlyRate,
+        `"${client.status}"`,
+        client.monthlyRetainerHours || 0,
+        client.monthlyRetainerAmount || 0,
+        clientProjects.length,
+        unbilled.hours,
+      ].join(',');
+    });
+
+    const csvContent = '\uFEFF' + [headers.join(','), ...rows].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `atrium_freelance_clients_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleBatchSetRetainer = () => {
+    if (selectedClientIds.size === 0) return;
+    selectedClientIds.forEach((id) => {
+      updateFreelanceClient(id, { status: 'ActiveRetainer' });
+    });
+    const count = selectedClientIds.size;
+    setSelectedClientIds(new Set());
+    showToast({
+      type: 'success',
+      title: language === 'ar' ? 'تم التحديث' : language === 'fr' ? 'Mis à jour' : 'Updated',
+      message: `${count} ${language === 'ar' ? 'عملاء تم تحويلهم لعقد شهري' : 'clients updated to Active Retainer'}`,
+      category: 'freelance_solo',
+    });
+  };
+
+  const handleBatchSetProject = () => {
+    if (selectedClientIds.size === 0) return;
+    selectedClientIds.forEach((id) => {
+      updateFreelanceClient(id, { status: 'ProjectBased' });
+    });
+    const count = selectedClientIds.size;
+    setSelectedClientIds(new Set());
+    showToast({
+      type: 'info',
+      title: language === 'ar' ? 'تم التحديث' : language === 'fr' ? 'Mis à jour' : 'Updated',
+      message: `${count} ${language === 'ar' ? 'عملاء تم تحويلهم لنمط المشاريع' : 'clients updated to Project Based'}`,
+      category: 'freelance_solo',
+    });
+  };
+
+  const handleBatchDelete = () => {
+    if (selectedClientIds.size === 0) return;
+    const count = selectedClientIds.size;
+    if (confirm(language === 'ar' ? `هل أنت متأكد من حذف ${count} عملاء؟` : `Delete ${count} selected clients?`)) {
+      selectedClientIds.forEach((id) => {
+        deleteFreelanceClient(id, false);
+      });
+      setSelectedClientIds(new Set());
+      showToast({
+        type: 'info',
+        title: language === 'ar' ? 'تم الحذف' : language === 'fr' ? 'Suppression' : 'Deleted',
+        message: `${count} ${language === 'ar' ? 'عملاء تم حذفهم' : 'clients deleted'}`,
+        category: 'freelance_solo',
+      });
+    }
+  };
+
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-neutral-200 dark:border-neutral-800">
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white">
-              {t('free_clients_crm_title', language)}
-            </h1>
-            <span className="text-xs text-neutral-500 dark:text-neutral-400">
-              {totalClientsCount} {t('free_clients_accounts', language)} · {activeRetainersCount} {t('free_clients_active_retainers', language)}
-            </span>
+        <div className="flex items-center gap-3.5">
+          <div className="w-11 h-11 rounded-2xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-800 dark:text-neutral-200">
+            <Users size={22} />
           </div>
-          <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
-            {t('free_clients_crm_subtitle', language)}
-          </p>
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-900 dark:text-white">
+                {t('free_clients_crm_title', language)}
+              </h1>
+              <span className="text-xs text-neutral-500 dark:text-neutral-400">
+                {totalClientsCount} {t('free_clients_accounts', language)} · {activeRetainersCount} {t('free_clients_active_retainers', language)}
+              </span>
+            </div>
+            <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
+              {t('free_clients_crm_subtitle', language)}
+            </p>
+          </div>
         </div>
 
-        <button
-          type="button"
-          onClick={handleOpenAddModal}
-          className="h-10 px-4 rounded-xl bg-[#C4785A] text-white text-xs font-semibold flex items-center gap-1.5 hover:opacity-90 transition-opacity cursor-pointer shadow-xs self-start sm:self-auto"
-        >
-          <Plus size={14} />
-          <span>{t('free_clients_add_new', language)}</span>
-        </button>
+        <div className="flex items-center gap-2.5 flex-wrap self-start sm:self-auto">
+          {/* Facility Pill: Atrium 1 ▾ */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setIsFacilityDropdownOpen(!isFacilityDropdownOpen)}
+              className="h-10 px-4 rounded-full bg-[#F4EFEA] dark:bg-neutral-800/80 border border-[#E8DFD8] dark:border-neutral-700 flex items-center gap-2 cursor-pointer hover:bg-[#EFE8E1] dark:hover:bg-neutral-800 transition-colors shadow-2xs"
+            >
+              <Home size={15} className="text-[#C4785A]" />
+              <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
+                {currentBranch?.name || 'Studio Main'}
+              </span>
+              <ChevronDown
+                size={14}
+                className={`text-neutral-500 transition-transform ${
+                  isFacilityDropdownOpen ? 'rotate-180' : ''
+                }`}
+              />
+            </button>
+
+            {/* Facility Dropdown Menu */}
+            {isFacilityDropdownOpen && (
+              <div className="absolute right-0 rtl:right-auto rtl:left-0 mt-2 w-64 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
+                <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+                  {language === 'ar' ? 'الفروع والمراكز' : language === 'fr' ? 'Établissements & Espaces' : 'Facilities & Branches'}
+                </div>
+                {businesses.map((biz) => {
+                  const isCurrent = biz.id === currentBusinessId;
+                  const matchingBranch = branches.find((b) => b.businessId === biz.id);
+                  return (
+                    <button
+                      key={biz.id}
+                      type="button"
+                      onClick={() => {
+                        switchBusiness(biz.id);
+                        if (matchingBranch) switchBranch(matchingBranch.id);
+                        setIsFacilityDropdownOpen(false);
+                      }}
+                      className={`w-full px-3 py-2 text-left rtl:text-right flex items-center justify-between text-xs transition-colors cursor-pointer ${
+                        isCurrent
+                          ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold'
+                          : 'text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <Building2 size={14} className={isCurrent ? 'text-[#C4785A]' : 'text-neutral-400'} />
+                        <span className="truncate">{biz.name}</span>
+                      </div>
+                      {isCurrent && <Check size={14} />}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Export CSV Button */}
+          <button
+            type="button"
+            onClick={handleExportCSV}
+            className="h-10 px-3.5 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold rounded-full transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer"
+            title="Export CSV"
+          >
+            <Download size={14} />
+            <span className="hidden sm:inline">CSV</span>
+          </button>
+
+          {/* Seed Demo Data Button */}
+          <button
+            type="button"
+            onClick={resetFreelanceMockData}
+            className="h-10 px-3.5 bg-[#FCEEE8] dark:bg-neutral-800 hover:bg-[#F8DFD4] dark:hover:bg-neutral-700 text-[#C4785A] text-xs font-semibold rounded-full transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer"
+            title={language === 'ar' ? 'إعادة شحن بيانات تجريبية' : language === 'fr' ? 'Recharger Données Démo' : 'Seed Mock Data'}
+          >
+            <Sparkles size={14} />
+            <span className="hidden sm:inline">{language === 'ar' ? 'بيانات تجريبية' : language === 'fr' ? 'Données Démo' : 'Demo Data'}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleOpenAddModal}
+            className="h-10 px-4 rounded-full bg-[#C4785A] hover:bg-[var(--color-accent-hover)] text-white text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+          >
+            <Plus size={14} />
+            <span>{t('free_clients_add_new', language)}</span>
+          </button>
+        </div>
       </div>
+
+      {/* Batch Selection Toolbar */}
+      {selectedClientIds.size > 0 && (
+        <div className="flex items-center justify-between p-3 px-4 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 animate-in fade-in slide-in-from-top-2">
+          <div className="flex items-center gap-3">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#C4785A] animate-pulse" />
+            <span className="text-xs font-bold text-neutral-900 dark:text-white">
+              {selectedClientIds.size} {language === 'ar' ? 'عملاء محددين' : language === 'fr' ? 'clients sélectionnés' : 'clients selected'}
+            </span>
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              onClick={() => setSelectedClientIds(new Set())}
+              className="px-3 py-1.5 text-xs text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white font-medium cursor-pointer"
+            >
+              {language === 'ar' ? 'إلغاء التحديد' : language === 'fr' ? 'Désélectionner' : 'Deselect'}
+            </button>
+            <button
+              onClick={handleBatchSetRetainer}
+              className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+            >
+              <CheckCircle size={13} />
+              <span>{language === 'ar' ? 'تحويل لعقد شهري' : language === 'fr' ? 'Passer en Retainer' : 'Set Active Retainer'}</span>
+            </button>
+            <button
+              onClick={handleBatchSetProject}
+              className="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+            >
+              <Briefcase size={13} />
+              <span>{language === 'ar' ? 'تحويل لمشروع' : language === 'fr' ? 'Passer au Projet' : 'Set Project Based'}</span>
+            </button>
+            <button
+              onClick={handleBatchDelete}
+              className="px-3.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+            >
+              <Trash2 size={13} />
+              <span>{language === 'ar' ? 'حذف المحدد' : language === 'fr' ? 'Supprimer' : 'Delete'}</span>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* KPI Overview Strip */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

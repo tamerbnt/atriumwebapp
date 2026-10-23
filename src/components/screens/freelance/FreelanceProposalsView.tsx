@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import {
   FileText,
   Plus,
@@ -15,6 +15,13 @@ import {
   Edit2,
   Trash2,
   AlertTriangle,
+  Download,
+  Home,
+  ChevronDown,
+  Building2,
+  Check,
+  Pin,
+  XCircle,
 } from 'lucide-react';
 import { useAtriumStore } from '../../../services/store';
 import { formatCurrencyAmount } from '../../../utils/rules';
@@ -22,6 +29,7 @@ import { FreelanceProposal, PricingModel, CurrencyCode } from '../../../types/in
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { Seek } from '../../ui/Seek';
+import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { useTranslation } from '../../../utils/useTranslation';
 
 export const FreelanceProposalsView: React.FC = () => {
@@ -32,8 +40,32 @@ export const FreelanceProposalsView: React.FC = () => {
     updateFreelanceProposal,
     deleteFreelanceProposal,
     convertProposalToProject,
+    resetFreelanceMockData,
+    businesses,
+    branches,
+    currentBusinessId,
+    currentBranchId,
+    switchBusiness,
+    switchBranch,
     setScreen,
+    showToast,
   } = useAtriumStore();
+
+  const currentBranch = branches.find((b) => b.id === currentBranchId);
+  const [isFacilityDropdownOpen, setIsFacilityDropdownOpen] = useState(false);
+  const [selectedProposalIds, setSelectedProposalIds] = useState<Set<string>>(new Set());
+  const [pinnedProposalIds, setPinnedProposalIds] = useState<Set<string>>(new Set());
+  const [proposalSortBy, setProposalSortBy] = useState<string>('title');
+  const [proposalSortDir, setProposalSortDir] = useState<'asc' | 'desc'>('asc');
+
+  // Auto-heal empty freelance proposals safely once on mount
+  const hasAutoHealed = useRef(false);
+  useEffect(() => {
+    if (!hasAutoHealed.current && freelanceProposals.length === 0) {
+      hasAutoHealed.current = true;
+      resetFreelanceMockData();
+    }
+  }, [freelanceProposals.length, resetFreelanceMockData]);
 
   const [isDraftModalOpen, setIsDraftModalOpen] = useState(false);
   const [proposalToEdit, setProposalToEdit] = useState<FreelanceProposal | null>(null);
@@ -171,44 +203,314 @@ export const FreelanceProposalsView: React.FC = () => {
     }
   };
 
+  const sortedProposals = useMemo(() => {
+    return [...filteredProposals].sort((a, b) => {
+      const aPinned = pinnedProposalIds.has(a.id);
+      const bPinned = pinnedProposalIds.has(b.id);
+      if (aPinned && !bPinned) return -1;
+      if (!aPinned && bPinned) return 1;
+
+      if (proposalSortBy === 'title') {
+        const cmp = a.title.localeCompare(b.title);
+        return proposalSortDir === 'asc' ? cmp : -cmp;
+      }
+      if (proposalSortBy === 'client') {
+        const cmp = a.clientName.localeCompare(b.clientName);
+        return proposalSortDir === 'asc' ? cmp : -cmp;
+      }
+      if (proposalSortBy === 'budget') {
+        return proposalSortDir === 'asc' ? a.proposedBudget - b.proposedBudget : b.proposedBudget - a.proposedBudget;
+      }
+      if (proposalSortBy === 'status') {
+        const cmp = a.status.localeCompare(b.status);
+        return proposalSortDir === 'asc' ? cmp : -cmp;
+      }
+      if (proposalSortBy === 'validUntil') {
+        const cmp = a.validUntil.localeCompare(b.validUntil);
+        return proposalSortDir === 'asc' ? cmp : -cmp;
+      }
+      return 0;
+    });
+  }, [filteredProposals, pinnedProposalIds, proposalSortBy, proposalSortDir]);
+
+  const proposalColumns: ColumnDefinition<FreelanceProposal>[] = useMemo(() => [
+    {
+      key: 'title',
+      header: language === 'ar' ? 'عرض السعر والعميل' : language === 'fr' ? 'Proposition & Client' : 'Proposal & Client',
+      width: '2.5*',
+      minWidth: '220px',
+      sortable: true,
+      renderCell: (proposal) => (
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 flex items-center justify-center font-bold text-xs shrink-0 border border-neutral-200 dark:border-neutral-700">
+            <FileText size={16} />
+          </div>
+          <div className="min-w-0">
+            <div className="font-semibold text-neutral-900 dark:text-white truncate hover:text-[#C4785A] transition-colors">
+              {proposal.title}
+            </div>
+            <div className="text-[11px] text-neutral-400 truncate flex items-center gap-1.5">
+              <span>{proposal.clientName}</span>
+              {proposal.clientCompany && (
+                <>
+                  <span>·</span>
+                  <span className="text-[#C4785A] font-medium">{proposal.clientCompany}</span>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: 'budget',
+      header: language === 'ar' ? 'الميزانية المقترحة' : language === 'fr' ? 'Budget Proposé' : 'Proposed Budget',
+      width: '2*',
+      minWidth: '150px',
+      sortable: true,
+      renderCell: (proposal) => (
+        <div>
+          <span className="font-bold text-neutral-900 dark:text-white tabular-nums block">
+            {formatCurrencyAmount(proposal.proposedBudget, proposal.currency)}
+          </span>
+          <span className="text-[10px] text-neutral-400">
+            {proposal.pricingModel} · {proposal.estimatedTimelineWeeks} {language === 'ar' ? 'أسابيع' : 'wks'}
+          </span>
+        </div>
+      ),
+    },
+    {
+      key: 'status',
+      header: language === 'ar' ? 'الحالة' : language === 'fr' ? 'Statut' : 'Status',
+      width: '1.8*',
+      minWidth: '130px',
+      sortable: true,
+      renderCell: (proposal) => (
+        <span
+          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${
+            proposal.status === 'Accepted'
+              ? 'text-emerald-700 bg-emerald-50 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800'
+              : proposal.status === 'Declined'
+              ? 'text-rose-700 bg-rose-50 dark:bg-rose-950/60 dark:text-rose-400 border border-rose-200 dark:border-rose-800'
+              : 'text-amber-700 bg-amber-50 dark:bg-amber-950/60 dark:text-amber-400 border border-amber-200 dark:border-amber-800'
+          }`}
+        >
+          {proposal.status === 'Accepted'
+            ? (language === 'ar' ? 'موقّع ونشط' : language === 'fr' ? 'Signé & Actif' : 'Signed & Active')
+            : proposal.status === 'Declined'
+            ? t('free_prop_status_rejected')
+            : (language === 'ar' ? 'بانتظار المراجعة' : language === 'fr' ? 'En attente' : 'Pending')}
+        </span>
+      ),
+    },
+    {
+      key: 'validUntil',
+      header: language === 'ar' ? 'صالح حتى' : language === 'fr' ? 'Validité' : 'Valid Until',
+      width: '1.5*',
+      minWidth: '120px',
+      sortable: true,
+      renderCell: (proposal) => (
+        <div className="flex items-center gap-1.5 text-xs text-neutral-700 dark:text-neutral-300">
+          <Calendar size={12} className="text-neutral-400" />
+          <span>{proposal.validUntil}</span>
+        </div>
+      ),
+    },
+  ], [language, t]);
+
+  const handleExportCSV = () => {
+    if (freelanceProposals.length === 0) return;
+    const headers = [
+      language === 'ar' ? 'معرف العرض' : 'Proposal ID',
+      language === 'ar' ? 'العنوان' : 'Title',
+      language === 'ar' ? 'العميل' : 'Client',
+      language === 'ar' ? 'الشركة' : 'Company',
+      language === 'ar' ? 'البريد الإلكتروني' : 'Email',
+      language === 'ar' ? 'نموذج التسعير' : 'Pricing Model',
+      language === 'ar' ? 'الميزانية المقترحة' : 'Proposed Budget',
+      language === 'ar' ? 'العملة' : 'Currency',
+      language === 'ar' ? 'الجدول الزمني (أسابيع)' : 'Timeline Weeks',
+      language === 'ar' ? 'الحالة' : 'Status',
+      language === 'ar' ? 'صالح حتى' : 'Valid Until',
+    ];
+
+    const rows = sortedProposals.map((p) => [
+      `"${p.id}"`,
+      `"${p.title.replace(/"/g, '""')}"`,
+      `"${p.clientName.replace(/"/g, '""')}"`,
+      `"${(p.clientCompany || '').replace(/"/g, '""')}"`,
+      `"${p.clientEmail}"`,
+      `"${p.pricingModel}"`,
+      p.proposedBudget,
+      `"${p.currency}"`,
+      p.estimatedTimelineWeeks,
+      `"${p.status}"`,
+      `"${p.validUntil}"`,
+    ]);
+
+    const csvContent = '\uFEFF' + [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `atrium_freelance_proposals_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleBatchAccept = () => {
+    if (selectedProposalIds.size === 0) return;
+    selectedProposalIds.forEach((id) => {
+      updateFreelanceProposal(id, { status: 'Accepted' });
+    });
+    const count = selectedProposalIds.size;
+    setSelectedProposalIds(new Set());
+    showToast({
+      type: 'success',
+      title: language === 'ar' ? 'تم التحديث' : language === 'fr' ? 'Mis à jour' : 'Updated',
+      message: `${count} ${language === 'ar' ? 'عروض أسعار تم قبولها' : 'proposals marked as Accepted'}`,
+      category: 'freelance_solo',
+    });
+  };
+
+  const handleBatchDecline = () => {
+    if (selectedProposalIds.size === 0) return;
+    selectedProposalIds.forEach((id) => {
+      updateFreelanceProposal(id, { status: 'Declined' });
+    });
+    const count = selectedProposalIds.size;
+    setSelectedProposalIds(new Set());
+    showToast({
+      type: 'info',
+      title: language === 'ar' ? 'تم التحديث' : language === 'fr' ? 'Mis à jour' : 'Updated',
+      message: `${count} ${language === 'ar' ? 'عروض أسعار تم رفضها' : 'proposals marked as Declined'}`,
+      category: 'freelance_solo',
+    });
+  };
+
+  const handleBatchDelete = () => {
+    if (selectedProposalIds.size === 0) return;
+    const count = selectedProposalIds.size;
+    if (confirm(language === 'ar' ? `هل أنت متأكد من حذف ${count} عروض أسعار؟` : `Delete ${count} selected proposals?`)) {
+      selectedProposalIds.forEach((id) => {
+        deleteFreelanceProposal(id);
+      });
+      setSelectedProposalIds(new Set());
+      showToast({
+        type: 'info',
+        title: language === 'ar' ? 'تم الحذف' : language === 'fr' ? 'Suppression' : 'Deleted',
+        message: `${count} ${language === 'ar' ? 'عروض أسعار تم حذفها' : 'proposals deleted'}`,
+        category: 'freelance_solo',
+      });
+    }
+  };
+
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-neutral-200 dark:border-neutral-800">
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white">
-              {t('free_prop_title')}
-            </h1>
-            <span className="text-xs text-neutral-500">
-              {t('free_prop_subtitle')}
-            </span>
+        <div className="flex items-center gap-3.5">
+          <div className="w-11 h-11 rounded-2xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-800 dark:text-neutral-200">
+            <FileText size={22} />
           </div>
-          <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
-            {language === 'ar'
-              ? 'تحويل طلبات العملاء إلى عروض أسعار دقيقة ومشاريع معتمدة على لوحة كانبان'
-              : language === 'fr'
-              ? 'Transformez les demandes qualifiées en devis signés et jalons Kanban'
-              : 'Turn qualified incoming leads into signed engagements and actionable Kanban milestones'}
-          </p>
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-900 dark:text-white">
+                {t('free_prop_title')}
+              </h1>
+              <span className="text-xs text-neutral-500 dark:text-neutral-400">
+                {freelanceProposals.length} {language === 'ar' ? 'عروض' : 'proposals'}
+              </span>
+            </div>
+            <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
+              {t('free_prop_subtitle')}
+            </p>
+          </div>
         </div>
 
-        <div className="flex items-center gap-3 self-start sm:self-auto">
-          <Seek
-            value={searchQuery}
-            onChange={setSearchQuery}
-            placeholder={
-              language === 'ar'
-                ? 'بحث عن عروض الأسعار حسب العنوان أو العميل...'
-                : language === 'fr'
-                ? 'Rechercher devis par titre, client...'
-                : 'Search proposals by title, client...'
-            }
-          />
+        <div className="flex items-center gap-2.5 flex-wrap self-start sm:self-auto">
+          {/* Facility Pill: Atrium 1 ▾ */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setIsFacilityDropdownOpen(!isFacilityDropdownOpen)}
+              className="h-10 px-4 rounded-full bg-[#F4EFEA] dark:bg-neutral-800/80 border border-[#E8DFD8] dark:border-neutral-700 flex items-center gap-2 cursor-pointer hover:bg-[#EFE8E1] dark:hover:bg-neutral-800 transition-colors shadow-2xs"
+            >
+              <Home size={15} className="text-[#C4785A]" />
+              <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
+                {currentBranch?.name || 'Studio Main'}
+              </span>
+              <ChevronDown
+                size={14}
+                className={`text-neutral-500 transition-transform ${
+                  isFacilityDropdownOpen ? 'rotate-180' : ''
+                }`}
+              />
+            </button>
+
+            {/* Facility Dropdown Menu */}
+            {isFacilityDropdownOpen && (
+              <div className="absolute right-0 rtl:right-auto rtl:left-0 mt-2 w-64 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
+                <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+                  {language === 'ar' ? 'الفروع والمراكز' : language === 'fr' ? 'Établissements & Espaces' : 'Facilities & Branches'}
+                </div>
+                {businesses.map((biz) => {
+                  const isCurrent = biz.id === currentBusinessId;
+                  const matchingBranch = branches.find((b) => b.businessId === biz.id);
+                  return (
+                    <button
+                      key={biz.id}
+                      type="button"
+                      onClick={() => {
+                        switchBusiness(biz.id);
+                        if (matchingBranch) switchBranch(matchingBranch.id);
+                        setIsFacilityDropdownOpen(false);
+                      }}
+                      className={`w-full px-3 py-2 text-left rtl:text-right flex items-center justify-between text-xs transition-colors cursor-pointer ${
+                        isCurrent
+                          ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold'
+                          : 'text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <Building2 size={14} className={isCurrent ? 'text-[#C4785A]' : 'text-neutral-400'} />
+                        <span className="truncate">{biz.name}</span>
+                      </div>
+                      {isCurrent && <Check size={14} />}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Export CSV Button */}
+          <button
+            type="button"
+            onClick={handleExportCSV}
+            className="h-10 px-3.5 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold rounded-full transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer"
+            title="Export CSV"
+          >
+            <Download size={14} />
+            <span className="hidden sm:inline">CSV</span>
+          </button>
+
+          {/* Seed Demo Data Button */}
+          <button
+            type="button"
+            onClick={resetFreelanceMockData}
+            className="h-10 px-3.5 bg-[#FCEEE8] dark:bg-neutral-800 hover:bg-[#F8DFD4] dark:hover:bg-neutral-700 text-[#C4785A] text-xs font-semibold rounded-full transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer"
+            title={language === 'ar' ? 'إعادة شحن بيانات تجريبية' : language === 'fr' ? 'Recharger Données Démo' : 'Seed Mock Data'}
+          >
+            <Sparkles size={14} />
+            <span className="hidden sm:inline">{language === 'ar' ? 'بيانات تجريبية' : language === 'fr' ? 'Données Démo' : 'Demo Data'}</span>
+          </button>
+
           <button
             type="button"
             onClick={() => setIsDraftModalOpen(true)}
-            className="h-10 px-4 rounded-xl bg-[#C4785A] text-white text-xs font-semibold flex items-center gap-1.5 hover:opacity-90 transition-opacity cursor-pointer shadow-xs shrink-0"
+            className="h-10 px-4 rounded-full bg-[#C4785A] hover:bg-[var(--color-accent-hover)] text-white text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
           >
             <Plus size={14} />
             <span>{t('free_prop_btn_new')}</span>
@@ -216,73 +518,120 @@ export const FreelanceProposalsView: React.FC = () => {
         </div>
       </div>
 
-      {/* Proposals Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        {filteredProposals.map((proposal) => (
-          <div
-            key={proposal.id}
-            className="p-6 rounded-2xl bg-white dark:bg-neutral-900/60 border border-neutral-200 dark:border-neutral-800 shadow-2xs space-y-4 hover:border-[#C4785A]/40 transition-all flex flex-col justify-between"
-          >
+      {/* Batch Selection Toolbar */}
+      {selectedProposalIds.size > 0 && (
+        <div className="flex items-center justify-between p-3 px-4 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 animate-in fade-in slide-in-from-top-2">
+          <div className="flex items-center gap-3">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#C4785A] animate-pulse" />
+            <span className="text-xs font-bold text-neutral-900 dark:text-white">
+              {selectedProposalIds.size} {language === 'ar' ? 'عروض محددة' : language === 'fr' ? 'devis sélectionnés' : 'proposals selected'}
+            </span>
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              onClick={() => setSelectedProposalIds(new Set())}
+              className="px-3 py-1.5 text-xs text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white font-medium cursor-pointer"
+            >
+              {language === 'ar' ? 'إلغاء التحديد' : language === 'fr' ? 'Désélectionner' : 'Deselect'}
+            </button>
+            <button
+              onClick={handleBatchAccept}
+              className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+            >
+              <CheckCircle size={13} />
+              <span>{language === 'ar' ? 'قبول العروض' : language === 'fr' ? 'Marquer Accepté' : 'Mark Accepted'}</span>
+            </button>
+            <button
+              onClick={handleBatchDecline}
+              className="px-3.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+            >
+              <XCircle size={13} />
+              <span>{language === 'ar' ? 'رفض العروض' : language === 'fr' ? 'Marquer Refusé' : 'Mark Declined'}</span>
+            </button>
+            <button
+              onClick={handleBatchDelete}
+              className="px-3.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+            >
+              <Trash2 size={13} />
+              <span>{language === 'ar' ? 'حذف المحدد' : language === 'fr' ? 'Supprimer' : 'Delete'}</span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Seek Search Bar */}
+      <div className="flex items-center justify-between gap-4">
+        <Seek
+          value={searchQuery}
+          onChange={setSearchQuery}
+          placeholder={
+            language === 'ar'
+              ? 'بحث عن عروض الأسعار حسب العنوان أو العميل...'
+              : language === 'fr'
+              ? 'Rechercher devis par titre, client...'
+              : 'Search proposals by title, client...'
+          }
+        />
+      </div>
+
+      {/* Universal Collection (List view & Grid view with 6-button corner-fan) */}
+      <UniversalDataCollection<FreelanceProposal>
+        items={sortedProposals}
+        keyExtractor={(p) => p.id}
+        defaultViewMode="grid"
+        columns={proposalColumns}
+        sortBy={proposalSortBy}
+        sortDirection={proposalSortDir}
+        onSortChange={(key) => {
+          if (proposalSortBy === key) {
+            setProposalSortDir((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+          } else {
+            setProposalSortBy(key);
+            setProposalSortDir('asc');
+          }
+        }}
+        renderCard={(proposal) => (
+          <div className="flex flex-col justify-between w-full h-full space-y-4">
             <div>
-              {/* Header Client & Status */}
               <div className="flex items-start justify-between gap-2">
                 <div>
-                  <span className="text-xs font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider block">
+                  <span className="text-[11px] font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider block">
                     {proposal.clientCompany || proposal.clientName}
                   </span>
-                  <h3 className="text-base font-bold text-neutral-900 dark:text-white mt-0.5">
+                  <h3 className="text-sm font-bold text-neutral-900 dark:text-white mt-0.5 leading-snug">
                     {proposal.title}
                   </h3>
                 </div>
 
-                <div className="flex items-center gap-1.5 shrink-0">
-                  <button
-                    type="button"
-                    onClick={() => handleOpenEditModal(proposal)}
-                    className="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
-                    title={language === 'ar' ? 'تعديل عرض السعر' : language === 'fr' ? 'Modifier le devis' : 'Edit proposal'}
-                  >
-                    <Edit2 size={13} />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setProposalToDelete(proposal)}
-                    className="p-1.5 rounded-lg text-neutral-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
-                    title={language === 'ar' ? 'حذف عرض السعر' : language === 'fr' ? 'Supprimer le devis' : 'Delete proposal'}
-                  >
-                    <Trash2 size={13} />
-                  </button>
-                  <span
-                    className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${
-                      proposal.status === 'Accepted'
-                        ? 'text-emerald-700 bg-emerald-50 dark:bg-emerald-950/60 dark:text-emerald-400'
-                        : proposal.status === 'Declined'
-                        ? 'text-rose-700 bg-rose-50 dark:bg-rose-950/60 dark:text-rose-400'
-                        : 'text-amber-700 bg-amber-50 dark:bg-amber-950/60 dark:text-amber-400'
-                    }`}
-                  >
-                    {proposal.status === 'Accepted'
-                      ? (language === 'ar' ? 'موقّع ونشط' : language === 'fr' ? 'Signé & Actif' : 'Signed & Active')
+                <span
+                  className={`text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0 ${
+                    proposal.status === 'Accepted'
+                      ? 'text-emerald-700 bg-emerald-50 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-200'
                       : proposal.status === 'Declined'
-                      ? t('free_prop_status_rejected')
-                      : (language === 'ar' ? 'بانتظار المراجعة' : language === 'fr' ? 'En attente' : 'Awaiting Review')}
-                  </span>
-                </div>
+                      ? 'text-rose-700 bg-rose-50 dark:bg-rose-950/60 dark:text-rose-400 border border-rose-200'
+                      : 'text-amber-700 bg-amber-50 dark:bg-amber-950/60 dark:text-amber-400 border border-amber-200'
+                  }`}
+                >
+                  {proposal.status === 'Accepted'
+                    ? (language === 'ar' ? 'موقّع ونشط' : language === 'fr' ? 'Signé & Actif' : 'Signed & Active')
+                    : proposal.status === 'Declined'
+                    ? t('free_prop_status_rejected')
+                    : (language === 'ar' ? 'بانتظار المراجعة' : language === 'fr' ? 'En attente' : 'Awaiting Review')}
+                </span>
               </div>
 
-              {/* Overview Summary */}
-              <p className="text-xs text-neutral-600 dark:text-neutral-300 mt-2 line-clamp-3 leading-relaxed">
+              <p className="text-xs text-neutral-600 dark:text-neutral-300 mt-2 line-clamp-2 leading-relaxed">
                 {proposal.overview}
               </p>
 
-              {/* Deliverable Scope Bullets */}
-              <div className="mt-4 pt-3 border-t border-neutral-100 dark:border-neutral-800/80 space-y-1.5 text-xs">
-                <span className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider block mb-1">
+              {/* Scope Bullets */}
+              <div className="mt-3 pt-2.5 border-t border-neutral-100 dark:border-neutral-800/80 space-y-1 text-[11px]">
+                <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block">
                   {t('free_prop_scope')} ({proposal.scopeItems.length})
                 </span>
-                {proposal.scopeItems.slice(0, 4).map((item, idx) => (
-                  <div key={idx} className="flex items-start gap-2 text-neutral-700 dark:text-neutral-300">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#C4785A] mt-1.5 shrink-0" />
+                {proposal.scopeItems.slice(0, 3).map((item, idx) => (
+                  <div key={idx} className="flex items-start gap-1.5 text-neutral-700 dark:text-neutral-300 truncate">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#C4785A] mt-1 shrink-0" />
                     <span className="truncate">{item}</span>
                   </div>
                 ))}
@@ -290,59 +639,84 @@ export const FreelanceProposalsView: React.FC = () => {
             </div>
 
             {/* Financial terms & conversion action */}
-            <div className="pt-4 border-t border-neutral-100 dark:border-neutral-800/80 flex items-center justify-between gap-2">
+            <div className="pt-3 border-t border-neutral-100 dark:border-neutral-800/80 flex items-center justify-between gap-2">
               <div>
                 <span className="text-[10px] text-neutral-400 uppercase tracking-wider block">
                   {t('free_prop_total_quote')}
                 </span>
-                <span className="text-lg font-black text-[#C4785A] tabular-nums block">
+                <span className="text-base font-black text-[#C4785A] tabular-nums block">
                   {formatCurrencyAmount(proposal.proposedBudget, proposal.currency)}
                 </span>
-                <span className="text-[11px] text-neutral-500">
-                  {proposal.estimatedTimelineWeeks} {language === 'ar' ? 'أسابيع' : language === 'fr' ? 'semaines' : 'weeks'} · {t('free_prop_valid_until')} {proposal.validUntil}
+                <span className="text-[10px] text-neutral-500">
+                  {proposal.estimatedTimelineWeeks}w · {proposal.validUntil}
                 </span>
               </div>
 
               {proposal.status === 'Pending' ? (
                 <button
                   type="button"
-                  onClick={() => handleConvert(proposal.id)}
-                  className="h-9 px-4 rounded-xl bg-emerald-600 text-white text-xs font-semibold flex items-center gap-1.5 hover:bg-emerald-700 transition-colors cursor-pointer shadow-xs"
-                  title={language === 'ar' ? 'قبول العميل: توليد تسليمات المشروع وفاتورة الدفعة الأولى' : language === 'fr' ? 'Client accepté : générer les livrables et la facture d\'acompte' : 'Client accepted: spawn project deliverables and deposit invoice'}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleConvert(proposal.id);
+                  }}
+                  className="h-8 px-3 rounded-lg bg-emerald-600 text-white text-xs font-semibold flex items-center gap-1 hover:bg-emerald-700 transition-colors cursor-pointer shadow-xs"
                 >
-                  <CheckCircle size={13} />
+                  <CheckCircle size={12} />
                   <span>{t('free_prop_btn_convert', language)}</span>
                 </button>
               ) : (
-                <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-                  <CheckCircle size={13} />
-                  <span>{language === 'ar' ? 'مشروع نشط في مساحة العمل' : language === 'fr' ? 'Projet Actif en Espace' : 'Active in Workspace'}</span>
+                <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                  <CheckCircle size={12} />
+                  <span>{language === 'ar' ? 'مشروع نشط' : 'Active Project'}</span>
                 </span>
               )}
             </div>
           </div>
-        ))}
-      </div>
-
-      {freelanceProposals.length === 0 && (
-        <div className="p-12 text-center rounded-2xl border border-dashed border-neutral-200 dark:border-neutral-800 bg-[#F8F9FA] dark:bg-neutral-900/40 space-y-3">
-          <FileText size={32} className="mx-auto text-neutral-300 dark:text-neutral-600" />
-          <h3 className="text-base font-bold text-neutral-900 dark:text-white">
-            {t('free_prop_empty_title')}
-          </h3>
-          <p className="text-xs text-neutral-500 max-w-sm mx-auto">
-            {t('free_prop_empty_desc')}
-          </p>
-          <button
-            type="button"
-            onClick={() => setIsDraftModalOpen(true)}
-            className="px-4 py-2 rounded-xl bg-[#C4785A] text-white text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer inline-flex items-center gap-1.5 shadow-xs"
-          >
-            <Plus size={14} />
-            <span>{t('free_prop_btn_new')}</span>
-          </button>
-        </div>
-      )}
+        )}
+        onItemClick={(proposal) => handleOpenEditModal(proposal)}
+        onEdit={(proposal) => handleOpenEditModal(proposal)}
+        onTogglePin={(proposal) => {
+          setPinnedProposalIds((prev) => {
+            const next = new Set(prev);
+            if (next.has(proposal.id)) {
+              next.delete(proposal.id);
+              showToast?.({
+                type: 'info',
+                title: 'Unpinned',
+                message: `${proposal.title} unpinned`,
+              });
+            } else {
+              next.add(proposal.id);
+              showToast?.({
+                type: 'info',
+                title: 'Pinned',
+                message: `${proposal.title} pinned to top`,
+              });
+            }
+            return next;
+          });
+        }}
+        onDelete={(proposal) => setProposalToDelete(proposal)}
+        customActions={(proposal) => [
+          {
+            id: 'convert',
+            tooltip: t('free_prop_btn_convert', language),
+            icon: <CheckCircle size={13} />,
+            iconColor: '#10B981',
+            onClick: (e: React.MouseEvent) => {
+              e.stopPropagation();
+              handleConvert(proposal.id);
+            },
+          },
+        ]}
+        isPinned={(proposal) => pinnedProposalIds.has(proposal.id)}
+        selectedIds={selectedProposalIds}
+        onSelectionChange={setSelectedProposalIds}
+        emptyTitle={t('free_prop_empty_title')}
+        emptyDescription={t('free_prop_empty_desc')}
+        primaryActionLabel={t('free_prop_btn_new')}
+        onAddFirstItem={() => setIsDraftModalOpen(true)}
+      />
 
       {/* Draft Proposal Modal */}
       {isDraftModalOpen && (

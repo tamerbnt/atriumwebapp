@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import {
   Kanban,
   Plus,
@@ -15,6 +15,16 @@ import {
   User,
   Edit2,
   Trash2,
+  Download,
+  Sparkles,
+  Home,
+  ChevronDown,
+  Building2,
+  Check,
+  LayoutGrid,
+  List,
+  Pin,
+  CheckCircle,
 } from 'lucide-react';
 import { useAtriumStore } from '../../../services/store';
 import { formatCurrencyAmount } from '../../../utils/rules';
@@ -29,6 +39,7 @@ import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { FilterSelect } from '../../ui/FilterSelect';
 import { Seek } from '../../ui/Seek';
+import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { useTranslation } from '../../../utils/useTranslation';
 import { TranslationKey } from '../../../utils/i18n';
 
@@ -48,6 +59,25 @@ const STAGES: { id: DeliverableStage; countColor: string }[] = [
   { id: 'Billed', countColor: 'text-neutral-400' },
 ];
 
+export interface FlatDeliverableItem {
+  id: string;
+  title: string;
+  description?: string;
+  stage: DeliverableStage;
+  estimatedHours: number;
+  loggedHours: number;
+  dueDate: string;
+  isCompleted: boolean;
+  projectId: string;
+  projectTitle: string;
+  clientId: string;
+  clientName: string;
+  currency: CurrencyCode;
+  hourlyRate?: number;
+  project: FreelanceProject;
+  deliverable: FreelanceDeliverable;
+}
+
 export const FreelanceDeliverablesView: React.FC = () => {
   const { t, language, isRtl } = useTranslation();
   const {
@@ -60,11 +90,36 @@ export const FreelanceDeliverablesView: React.FC = () => {
     addFreelanceProject,
     deleteFreelanceProject,
     startTimer,
+    resetFreelanceMockData,
+    businesses,
+    branches,
+    currentBusinessId,
+    currentBranchId,
+    switchBusiness,
+    switchBranch,
     setScreen,
+    showToast,
   } = useAtriumStore();
+
+  const currentBranch = branches.find((b) => b.id === currentBranchId);
+  const [isFacilityDropdownOpen, setIsFacilityDropdownOpen] = useState(false);
+  const [viewLayout, setViewLayout] = useState<'kanban' | 'collection'>('kanban');
+
+  // Auto-heal empty freelance deliverables safely once on mount
+  const hasAutoHealed = useRef(false);
+  useEffect(() => {
+    if (!hasAutoHealed.current && freelanceProjects.length === 0) {
+      hasAutoHealed.current = true;
+      resetFreelanceMockData();
+    }
+  }, [freelanceProjects.length, resetFreelanceMockData]);
 
   const [selectedProjectId, setSelectedProjectId] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedDeliverableIds, setSelectedDeliverableIds] = useState<Set<string>>(new Set());
+  const [pinnedDeliverableIds, setPinnedDeliverableIds] = useState<Set<string>>(new Set());
+  const [deliverableSortBy, setDeliverableSortBy] = useState<string>('title');
+  const [deliverableSortDir, setDeliverableSortDir] = useState<'asc' | 'desc'>('asc');
   const [isAddDeliverableModalOpen, setIsAddDeliverableModalOpen] = useState(false);
   const [isAddProjectModalOpen, setIsAddProjectModalOpen] = useState(false);
   const [deliverableToEdit, setDeliverableToEdit] = useState<{
@@ -206,6 +261,237 @@ export const FreelanceDeliverablesView: React.FC = () => {
     );
   };
 
+  const flatDeliverablesList: FlatDeliverableItem[] = useMemo(() => {
+    const list: FlatDeliverableItem[] = [];
+    activeProjects.forEach((project) => {
+      project.deliverables.forEach((deliv) => {
+        if (
+          !searchQuery.trim() ||
+          deliv.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          deliv.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          project.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          project.clientName.toLowerCase().includes(searchQuery.toLowerCase())
+        ) {
+          list.push({
+            id: deliv.id,
+            title: deliv.title,
+            description: deliv.description,
+            stage: deliv.stage,
+            estimatedHours: deliv.estimatedHours,
+            loggedHours: deliv.loggedHours,
+            dueDate: deliv.dueDate,
+            isCompleted: deliv.isCompleted,
+            projectId: project.id,
+            projectTitle: project.title,
+            clientId: project.clientId,
+            clientName: project.clientName,
+            currency: project.currency,
+            hourlyRate: project.hourlyRate,
+            project,
+            deliverable: deliv,
+          });
+        }
+      });
+    });
+    return list;
+  }, [activeProjects, searchQuery]);
+
+  const sortedDeliverables = useMemo(() => {
+    return [...flatDeliverablesList].sort((a, b) => {
+      const aPinned = pinnedDeliverableIds.has(a.id);
+      const bPinned = pinnedDeliverableIds.has(b.id);
+      if (aPinned && !bPinned) return -1;
+      if (!aPinned && bPinned) return 1;
+
+      if (deliverableSortBy === 'title') {
+        const cmp = a.title.localeCompare(b.title);
+        return deliverableSortDir === 'asc' ? cmp : -cmp;
+      }
+      if (deliverableSortBy === 'project') {
+        const cmp = a.projectTitle.localeCompare(b.projectTitle);
+        return deliverableSortDir === 'asc' ? cmp : -cmp;
+      }
+      if (deliverableSortBy === 'stage') {
+        const cmp = a.stage.localeCompare(b.stage);
+        return deliverableSortDir === 'asc' ? cmp : -cmp;
+      }
+      if (deliverableSortBy === 'dueDate') {
+        const cmp = a.dueDate.localeCompare(b.dueDate);
+        return deliverableSortDir === 'asc' ? cmp : -cmp;
+      }
+      if (deliverableSortBy === 'hours') {
+        return deliverableSortDir === 'asc' ? a.loggedHours - b.loggedHours : b.loggedHours - a.loggedHours;
+      }
+      return 0;
+    });
+  }, [flatDeliverablesList, pinnedDeliverableIds, deliverableSortBy, deliverableSortDir]);
+
+  const deliverableColumns: ColumnDefinition<FlatDeliverableItem>[] = useMemo(() => [
+    {
+      key: 'title',
+      header: language === 'ar' ? 'المهمة والمشروع' : language === 'fr' ? 'Livrable & Projet' : 'Deliverable & Project',
+      width: '2.5*',
+      minWidth: '220px',
+      sortable: true,
+      renderCell: (item) => (
+        <div className="flex items-center gap-3">
+          <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs shrink-0 border ${
+            item.isCompleted
+              ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 border-emerald-200 dark:border-emerald-800'
+              : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border-neutral-200 dark:border-neutral-700'
+          }`}>
+            {item.isCompleted ? <CheckCircle2 size={16} /> : <FileCheck size={16} />}
+          </div>
+          <div className="min-w-0">
+            <div className="font-semibold text-neutral-900 dark:text-white truncate hover:text-[#C4785A] transition-colors">
+              {item.title}
+            </div>
+            <div className="text-[11px] text-neutral-400 truncate flex items-center gap-1.5">
+              <span>{item.projectTitle}</span>
+              <span>·</span>
+              <span className="text-[#C4785A] font-medium">{item.clientName}</span>
+            </div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: 'stage',
+      header: t('free_deliv_field_stage', language) || 'Stage',
+      width: '1.8*',
+      minWidth: '130px',
+      sortable: true,
+      renderCell: (item) => (
+        <span
+          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${
+            item.stage === 'Approved'
+              ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
+              : item.stage === 'InProgress'
+              ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800'
+              : item.stage === 'ClientReview'
+              ? 'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800'
+              : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400'
+          }`}
+        >
+          {t(STAGE_KEYS[item.stage], language)}
+        </span>
+      ),
+    },
+    {
+      key: 'hours',
+      header: language === 'ar' ? 'ساعات الإنجاز' : language === 'fr' ? 'Heures Réalisées' : 'Hours Logged',
+      width: '2*',
+      minWidth: '150px',
+      sortable: true,
+      renderCell: (item) => {
+        const isCreep = item.loggedHours > item.estimatedHours;
+        const pct = Math.min(100, Math.round((item.loggedHours / (item.estimatedHours || 1)) * 100));
+        return (
+          <div className="space-y-1 min-w-[120px]">
+            <div className="flex items-center justify-between text-xs">
+              <span className={`font-semibold tabular-nums ${isCreep ? 'text-rose-600 dark:text-rose-400 font-bold' : 'text-neutral-800 dark:text-neutral-200'}`}>
+                {item.loggedHours}h / {item.estimatedHours}h
+              </span>
+              <span className="text-[10px] text-neutral-400 tabular-nums">{pct}%</span>
+            </div>
+            <div className="w-full h-1.5 rounded-full bg-neutral-200 dark:bg-neutral-800 overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all ${isCreep ? 'bg-rose-500' : pct >= 100 ? 'bg-emerald-500' : 'bg-[#C4785A]'}`}
+                style={{ width: `${pct}%` }}
+              />
+            </div>
+          </div>
+        );
+      },
+    },
+    {
+      key: 'dueDate',
+      header: language === 'ar' ? 'تاريخ التسليم' : language === 'fr' ? 'Échéance' : 'Due Date',
+      width: '1.5*',
+      minWidth: '120px',
+      sortable: true,
+      renderCell: (item) => (
+        <div className="flex items-center gap-1.5 text-xs text-neutral-700 dark:text-neutral-300">
+          <Calendar size={12} className="text-neutral-400" />
+          <span>{item.dueDate}</span>
+        </div>
+      ),
+    },
+  ], [language, t]);
+
+  const handleExportCSV = () => {
+    if (flatDeliverablesList.length === 0) return;
+    const headers = [
+      language === 'ar' ? 'معرف المهمة' : 'Deliverable ID',
+      language === 'ar' ? 'عنوان المهمة' : 'Deliverable Title',
+      language === 'ar' ? 'المشروع' : 'Project',
+      language === 'ar' ? 'العميل' : 'Client',
+      language === 'ar' ? 'المرحلة' : 'Stage',
+      language === 'ar' ? 'الساعات المقدرة' : 'Estimated Hours',
+      language === 'ar' ? 'الساعات المسجلة' : 'Logged Hours',
+      language === 'ar' ? 'تاريخ الاستحقاق' : 'Due Date',
+      language === 'ar' ? 'مكتمل' : 'Completed',
+    ];
+
+    const rows = sortedDeliverables.map((item) => [
+      `"${item.id}"`,
+      `"${item.title.replace(/"/g, '""')}"`,
+      `"${item.projectTitle.replace(/"/g, '""')}"`,
+      `"${item.clientName.replace(/"/g, '""')}"`,
+      `"${item.stage}"`,
+      item.estimatedHours,
+      item.loggedHours,
+      `"${item.dueDate}"`,
+      item.isCompleted ? 'Oui' : 'Non',
+    ]);
+
+    const csvContent = '\uFEFF' + [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `atrium_freelance_deliverables_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleBatchSetStage = (newStage: DeliverableStage) => {
+    if (selectedDeliverableIds.size === 0) return;
+    flatDeliverablesList.forEach((item) => {
+      if (selectedDeliverableIds.has(item.id)) {
+        updateDeliverableStage(item.projectId, item.id, newStage);
+      }
+    });
+    const count = selectedDeliverableIds.size;
+    setSelectedDeliverableIds(new Set());
+    showToast({
+      type: 'success',
+      title: language === 'ar' ? 'تم التحديث' : language === 'fr' ? 'Mis à jour' : 'Updated',
+      message: `${count} ${language === 'ar' ? 'مهام تم تحديث مرحلتها' : `deliverables moved to ${newStage}`}`,
+      category: 'freelance_solo',
+    });
+  };
+
+  const handleBatchDeleteDeliverables = () => {
+    if (selectedDeliverableIds.size === 0) return;
+    const count = selectedDeliverableIds.size;
+    if (confirm(language === 'ar' ? `هل أنت متأكد من حذف ${count} مهام؟` : `Delete ${count} selected deliverables?`)) {
+      flatDeliverablesList.forEach((item) => {
+        if (selectedDeliverableIds.has(item.id)) {
+          deleteDeliverable(item.projectId, item.id);
+        }
+      });
+      setSelectedDeliverableIds(new Set());
+      showToast({
+        type: 'info',
+        title: language === 'ar' ? 'تم الحذف' : language === 'fr' ? 'Suppression' : 'Deleted',
+        message: `${count} ${language === 'ar' ? 'مهام تم حذفها' : 'deliverables deleted'}`,
+        category: 'freelance_solo',
+      });
+    }
+  };
+
   // Scope Creep calculation
   const totalScopeCreepItems = flattenedDeliverables.filter(
     (item) => item.deliverable.loggedHours > item.deliverable.estimatedHours
@@ -215,42 +501,204 @@ export const FreelanceDeliverablesView: React.FC = () => {
     <div className="space-y-6 animate-in fade-in duration-200">
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-neutral-200 dark:border-neutral-800">
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white">
-              {t('free_deliv_title', language)}
-            </h1>
-            {totalScopeCreepItems > 0 && (
-              <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-400 border border-rose-200 dark:border-rose-800 flex items-center gap-1">
-                <AlertTriangle size={12} />
-                <span>{totalScopeCreepItems} {language === 'ar' ? 'تنبيه تجاوز الساعات' : language === 'fr' ? 'Alertes Dépassement' : 'Scope Creep Alerts'}</span>
-              </span>
-            )}
+        <div className="flex items-center gap-3.5">
+          <div className="w-11 h-11 rounded-2xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-800 dark:text-neutral-200">
+            <Kanban size={22} />
           </div>
-          <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
-            {t('free_deliv_subtitle', language)}
-          </p>
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-900 dark:text-white">
+                {t('free_deliv_title', language)}
+              </h1>
+              <span className="text-xs text-neutral-500 dark:text-neutral-400">
+                {flattenedDeliverables.length} {language === 'ar' ? 'مهام' : 'tasks'}
+              </span>
+              {totalScopeCreepItems > 0 && (
+                <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-400 border border-rose-200 dark:border-rose-800 flex items-center gap-1">
+                  <AlertTriangle size={12} />
+                  <span>{totalScopeCreepItems} {language === 'ar' ? 'تنبيه تجاوز' : language === 'fr' ? 'Dépassement' : 'Overrun'}</span>
+                </span>
+              )}
+            </div>
+            <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
+              {t('free_deliv_subtitle', language)}
+            </p>
+          </div>
         </div>
 
-        <div className="flex items-center gap-2.5 self-start sm:self-auto">
+        <div className="flex items-center gap-2.5 flex-wrap self-start sm:self-auto">
+          {/* View Mode Toggle: Kanban vs Collection */}
+          <div className="flex items-center p-1 bg-neutral-100 dark:bg-neutral-800 rounded-full border border-neutral-200/60 dark:border-neutral-700">
+            <button
+              type="button"
+              onClick={() => setViewLayout('kanban')}
+              className={`px-3 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+                viewLayout === 'kanban'
+                  ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-2xs'
+                  : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
+              }`}
+            >
+              <Kanban size={13} />
+              <span>{language === 'ar' ? 'لوحة كانبان' : 'Kanban'}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewLayout('collection')}
+              className={`px-3 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+                viewLayout === 'collection'
+                  ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-2xs'
+                  : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
+              }`}
+            >
+              <Layers size={13} />
+              <span>{language === 'ar' ? 'قائمة وتصنيف' : language === 'fr' ? 'Liste & Grille' : 'Collection'}</span>
+            </button>
+          </div>
+
+          {/* Facility Pill: Atrium 1 ▾ */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setIsFacilityDropdownOpen(!isFacilityDropdownOpen)}
+              className="h-10 px-4 rounded-full bg-[#F4EFEA] dark:bg-neutral-800/80 border border-[#E8DFD8] dark:border-neutral-700 flex items-center gap-2 cursor-pointer hover:bg-[#EFE8E1] dark:hover:bg-neutral-800 transition-colors shadow-2xs"
+            >
+              <Home size={15} className="text-[#C4785A]" />
+              <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
+                {currentBranch?.name || 'Studio Main'}
+              </span>
+              <ChevronDown
+                size={14}
+                className={`text-neutral-500 transition-transform ${
+                  isFacilityDropdownOpen ? 'rotate-180' : ''
+                }`}
+              />
+            </button>
+
+            {/* Facility Dropdown Menu */}
+            {isFacilityDropdownOpen && (
+              <div className="absolute right-0 rtl:right-auto rtl:left-0 mt-2 w-64 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
+                <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+                  {language === 'ar' ? 'الفروع والمراكز' : language === 'fr' ? 'Établissements & Espaces' : 'Facilities & Branches'}
+                </div>
+                {businesses.map((biz) => {
+                  const isCurrent = biz.id === currentBusinessId;
+                  const matchingBranch = branches.find((b) => b.businessId === biz.id);
+                  return (
+                    <button
+                      key={biz.id}
+                      type="button"
+                      onClick={() => {
+                        switchBusiness(biz.id);
+                        if (matchingBranch) switchBranch(matchingBranch.id);
+                        setIsFacilityDropdownOpen(false);
+                      }}
+                      className={`w-full px-3 py-2 text-left rtl:text-right flex items-center justify-between text-xs transition-colors cursor-pointer ${
+                        isCurrent
+                          ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold'
+                          : 'text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <Building2 size={14} className={isCurrent ? 'text-[#C4785A]' : 'text-neutral-400'} />
+                        <span className="truncate">{biz.name}</span>
+                      </div>
+                      {isCurrent && <Check size={14} />}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Export CSV Button */}
+          <button
+            type="button"
+            onClick={handleExportCSV}
+            className="h-10 px-3.5 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold rounded-full transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer"
+            title="Export CSV"
+          >
+            <Download size={14} />
+            <span className="hidden sm:inline">CSV</span>
+          </button>
+
+          {/* Seed Demo Data Button */}
+          <button
+            type="button"
+            onClick={resetFreelanceMockData}
+            className="h-10 px-3.5 bg-[#FCEEE8] dark:bg-neutral-800 hover:bg-[#F8DFD4] dark:hover:bg-neutral-700 text-[#C4785A] text-xs font-semibold rounded-full transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer"
+            title={language === 'ar' ? 'إعادة شحن بيانات تجريبية' : language === 'fr' ? 'Recharger Données Démo' : 'Seed Mock Data'}
+          >
+            <Sparkles size={14} />
+            <span className="hidden sm:inline">{language === 'ar' ? 'بيانات تجريبية' : language === 'fr' ? 'Données Démo' : 'Demo Data'}</span>
+          </button>
+
           <button
             type="button"
             onClick={() => setIsAddProjectModalOpen(true)}
-            className="h-9 px-3.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 text-xs font-semibold flex items-center gap-1.5 hover:bg-neutral-50 dark:hover:bg-neutral-700/60 transition-colors cursor-pointer shadow-2xs"
+            className="h-10 px-3.5 rounded-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 text-xs font-semibold flex items-center gap-1.5 hover:bg-neutral-50 dark:hover:bg-neutral-700/60 transition-colors cursor-pointer shadow-2xs"
           >
             <Plus size={13} />
             <span>{t('free_deliv_field_project', language)}</span>
           </button>
+
           <button
             type="button"
             onClick={() => setIsAddDeliverableModalOpen(true)}
-            className="h-9 px-3.5 rounded-xl bg-[#C4785A] text-white text-xs font-semibold flex items-center gap-1.5 hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
+            className="h-10 px-4 rounded-full bg-[#C4785A] hover:bg-[var(--color-accent-hover)] text-white text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
           >
             <Plus size={13} />
             <span>{t('free_deliv_btn_new', language)}</span>
           </button>
         </div>
       </div>
+
+      {/* Batch Selection Toolbar */}
+      {selectedDeliverableIds.size > 0 && (
+        <div className="flex items-center justify-between p-3 px-4 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 animate-in fade-in slide-in-from-top-2">
+          <div className="flex items-center gap-3">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#C4785A] animate-pulse" />
+            <span className="text-xs font-bold text-neutral-900 dark:text-white">
+              {selectedDeliverableIds.size} {language === 'ar' ? 'مهام محددة' : language === 'fr' ? 'livrables sélectionnés' : 'deliverables selected'}
+            </span>
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              onClick={() => setSelectedDeliverableIds(new Set())}
+              className="px-3 py-1.5 text-xs text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white font-medium cursor-pointer"
+            >
+              {language === 'ar' ? 'إلغاء التحديد' : language === 'fr' ? 'Désélectionner' : 'Deselect'}
+            </button>
+            <button
+              onClick={() => handleBatchSetStage('InProgress')}
+              className="px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+            >
+              <Clock size={12} />
+              <span>{t('free_deliv_stage_in_progress', language)}</span>
+            </button>
+            <button
+              onClick={() => handleBatchSetStage('ClientReview')}
+              className="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+            >
+              <Layers size={12} />
+              <span>{t('free_deliv_stage_review', language)}</span>
+            </button>
+            <button
+              onClick={() => handleBatchSetStage('Approved')}
+              className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+            >
+              <CheckCircle size={12} />
+              <span>{t('free_deliv_stage_delivered', language)}</span>
+            </button>
+            <button
+              onClick={handleBatchDeleteDeliverables}
+              className="px-3 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+            >
+              <Trash2 size={12} />
+              <span>{language === 'ar' ? 'حذف المحدد' : language === 'fr' ? 'Supprimer' : 'Delete'}</span>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Filter by Project Bar & Seek Search */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -326,6 +774,166 @@ export const FreelanceDeliverablesView: React.FC = () => {
             <span>{t('free_deliv_field_project', language)}</span>
           </button>
         </div>
+      ) : viewLayout === 'collection' ? (
+        <UniversalDataCollection<FlatDeliverableItem>
+          items={sortedDeliverables}
+          keyExtractor={(item) => item.id}
+          defaultViewMode="list"
+          columns={deliverableColumns}
+          sortBy={deliverableSortBy}
+          sortDirection={deliverableSortDir}
+          onSortChange={(key) => {
+            if (deliverableSortBy === key) {
+              setDeliverableSortDir((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+            } else {
+              setDeliverableSortBy(key);
+              setDeliverableSortDir('asc');
+            }
+          }}
+          renderCard={(item) => {
+            const isCreep = item.loggedHours > item.estimatedHours;
+            const pct = Math.min(100, Math.round((item.loggedHours / (item.estimatedHours || 1)) * 100));
+
+            return (
+              <div className="flex flex-col justify-between w-full h-full space-y-3">
+                <div className="flex items-start justify-between gap-2">
+                  <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 truncate max-w-[130px]">
+                    {item.projectTitle}
+                  </span>
+                  <span
+                    className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold shrink-0 ${
+                      item.stage === 'Approved'
+                        ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
+                        : item.stage === 'InProgress'
+                        ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800'
+                        : item.stage === 'ClientReview'
+                        ? 'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800'
+                        : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400'
+                    }`}
+                  >
+                    {t(STAGE_KEYS[item.stage], language)}
+                  </span>
+                </div>
+
+                <div>
+                  <h4 className="text-sm font-bold text-neutral-900 dark:text-white leading-snug truncate">
+                    {item.title}
+                  </h4>
+                  <div className="text-[11px] text-[#C4785A] font-medium mt-0.5 truncate">
+                    {item.clientName}
+                  </div>
+                  {item.description && (
+                    <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-1 line-clamp-2">
+                      {item.description}
+                    </p>
+                  )}
+                </div>
+
+                <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 space-y-2">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-neutral-500 flex items-center gap-1 text-[11px]">
+                      <Clock size={11} />
+                      {t('free_clients_ph_hours_label', language)}
+                    </span>
+                    <span className={`tabular-nums font-semibold text-xs ${isCreep ? 'text-rose-600 font-bold' : 'text-neutral-700 dark:text-neutral-300'}`}>
+                      {item.loggedHours}h / {item.estimatedHours}h ({pct}%)
+                    </span>
+                  </div>
+
+                  <div className="w-full h-1.5 rounded-full bg-neutral-200 dark:bg-neutral-800 overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all ${isCreep ? 'bg-rose-500' : pct >= 100 ? 'bg-emerald-500' : 'bg-[#C4785A]'}`}
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between text-[11px] text-neutral-500 pt-1">
+                    <span className="flex items-center gap-1">
+                      <Calendar size={11} />
+                      {item.dueDate}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleStartTimerForDeliverable(item.project, item.deliverable);
+                      }}
+                      className="px-2 py-0.5 rounded-md bg-[#FCEEE8] dark:bg-neutral-800 text-[#C4785A] font-semibold text-[10px] flex items-center gap-1 hover:bg-[#F8DFD4] cursor-pointer"
+                    >
+                      <Play size={10} />
+                      <span>{t('free_timer_start', language)}</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          }}
+          onItemClick={(item) => {
+            setDeliverableToEdit({ project: item.project, deliverable: item.deliverable });
+            setEditDeliverableForm({
+              title: item.title,
+              description: item.description || '',
+              estimatedHours: item.estimatedHours,
+              dueDate: item.dueDate,
+            });
+          }}
+          onEdit={(item) => {
+            setDeliverableToEdit({ project: item.project, deliverable: item.deliverable });
+            setEditDeliverableForm({
+              title: item.title,
+              description: item.description || '',
+              estimatedHours: item.estimatedHours,
+              dueDate: item.dueDate,
+            });
+          }}
+          onTogglePin={(item) => {
+            setPinnedDeliverableIds((prev) => {
+              const next = new Set(prev);
+              if (next.has(item.id)) {
+                next.delete(item.id);
+                showToast?.({
+                  type: 'info',
+                  title: 'Unpinned',
+                  message: `${item.title} unpinned`,
+                });
+              } else {
+                next.add(item.id);
+                showToast?.({
+                  type: 'info',
+                  title: 'Pinned',
+                  message: `${item.title} pinned to top`,
+                });
+              }
+              return next;
+            });
+          }}
+          onDelete={(item) => {
+            setDeliverableToDelete({
+              projectId: item.projectId,
+              deliverableId: item.id,
+              title: item.title,
+            });
+          }}
+          customActions={(item) => [
+            {
+              id: 'timer',
+              tooltip: t('free_timer_start', language),
+              icon: <Play size={13} />,
+              iconColor: '#C4785A',
+              onClick: (e: React.MouseEvent) => {
+                e.stopPropagation();
+                handleStartTimerForDeliverable(item.project, item.deliverable);
+              },
+            },
+          ]}
+          isPinned={(item) => pinnedDeliverableIds.has(item.id)}
+          selectedIds={selectedDeliverableIds}
+          onSelectionChange={setSelectedDeliverableIds}
+          emptyTitle={t('free_deliv_empty_column', language)}
+          emptyDescription={t('free_deliv_modal_add_desc', language)}
+          primaryActionLabel={t('free_deliv_btn_new', language)}
+          onAddFirstItem={() => setIsAddDeliverableModalOpen(true)}
+        />
       ) : (
       /* 5-Column Kanban Board */
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 items-start">
