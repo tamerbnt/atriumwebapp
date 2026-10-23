@@ -306,8 +306,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {
         id: 'shop',
         icon: <ShoppingBag size={19} />,
-        title: t('nav_pos_register', language),
-        label: terminology.shop,
+        title: t('nav_pos_register', language) || 'Caisse Enregistreuse',
+        label: language === 'ar' ? 'نقطة البيع' : language === 'fr' ? 'Caisse' : 'Register',
+      },
+      {
+        id: 'scheduler',
+        icon: <Boxes size={19} />,
+        title: language === 'ar' ? 'المخزون والمنتجات' : language === 'fr' ? 'Stock & Inventaire' : 'Inventory & Stock',
+        label: language === 'ar' ? 'المخزون' : language === 'fr' ? 'Stock' : 'Inventory',
+      },
+      {
+        id: 'registrations',
+        icon: <ClipboardList size={19} />,
+        title: language === 'ar' ? 'الطلبات والتذاكر المعلقة' : language === 'fr' ? 'Commandes & Tickets' : 'Orders & Parked',
+        label: language === 'ar' ? 'الطلبات' : language === 'fr' ? 'Commandes' : 'Orders',
       },
       {
         id: 'dashboard',
@@ -320,18 +332,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
         icon: <History size={19} />,
         title: t('nav_pos_ledger', language),
         label: t('nav_pos_ledger', language),
-      },
-      {
-        id: 'members',
-        icon: <Users size={19} />,
-        title: t('nav_pos_customers', language),
-        label: terminology.members,
-      },
-      {
-        id: 'analytics',
-        icon: <BarChart2 size={19} />,
-        title: t('nav_pos_analytics', language),
-        label: t('nav_analytics', language),
       },
       {
         id: 'finance',

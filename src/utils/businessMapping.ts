@@ -19,12 +19,12 @@ export const CATEGORY_METADATA: Record<
   { title: string; tagline: string; sampleKeywords: string[] }
 > = {
   membership_session: {
-    title: 'Gym & Fitness',
+    title: 'Membership',
     tagline: 'RFID Turnstiles, Subscriptions & Session Plans',
     sampleKeywords: ['CrossFit Club', 'Martial Arts Dojo', 'Pilates Studio', 'Boxing Club'],
   },
   appointment_service: {
-    title: 'Salon, Spa & Beauty',
+    title: 'Appointment',
     tagline: 'Stylist Timetables, Chair Bookings & Treatment Packs',
     sampleKeywords: ['Barbershop', 'Hair Salon', 'Day Spa', 'Aesthetic Clinic'],
   },

@@ -157,14 +157,14 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ isOpen, onCl
   }> = [
     {
       id: 'membership_session',
-      title: 'Gym & Fitness',
+      title: 'Membership',
       subtitle: 'Gyms, Martial arts, CrossFit clubs',
       icon: <Dumbbell size={20} className="text-[#C4785A]" />,
-      tagline: 'RFID Access & Class Timetables',
+      tagline: 'RFID Access & Member Plans',
     },
     {
       id: 'appointment_service',
-      title: 'Salon & Beauty',
+      title: 'Appointment',
       subtitle: 'Spas, Hair salons, Barbershops',
       icon: <Scissors size={20} className="text-[#C4785A]" />,
       tagline: 'Stylist Bookings & Treatment Packs',

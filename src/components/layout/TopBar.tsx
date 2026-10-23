@@ -30,6 +30,7 @@ import {
   CreditCard,
   Briefcase,
   Globe,
+  Activity,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../services/store';
 import { formatDuration } from '../../utils/rules';
@@ -880,6 +881,25 @@ export const TopBar: React.FC<TopBarProps> = ({
                 >
                   <Lock size={14} className="text-[#C4785A]" />
                   <span>Lock Terminal / Switch Staff</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setUserMenuOpen(false);
+                    setIsDiagnosticPanelOpen(true);
+                  }}
+                  className="w-full px-4 py-2 text-left text-xs text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center gap-2.5 cursor-pointer"
+                >
+                  <Activity size={14} className="text-emerald-500" />
+                  <div className="flex flex-col">
+                    <span className="font-semibold">
+                      {language === 'ar' ? 'فحص جاهزية الخادم وCRUD' : language === 'fr' ? 'Diagnostic CRUD & Serveur' : 'Backend & CRUD Diagnostics'}
+                    </span>
+                    <span className="text-[10px] text-neutral-400">
+                      {language === 'ar' ? 'اختبار العمليات الحية عبر الـ 7 أنشطة' : language === 'fr' ? 'Audit live des 7 métiers' : 'Live CRUD audit across all 7 verticals'}
+                    </span>
+                  </div>
                 </button>
 
                 <button

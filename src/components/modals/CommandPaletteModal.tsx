@@ -26,6 +26,7 @@ import {
   Kanban,
   Radio,
   Wallet,
+  Activity,
 } from 'lucide-react';
 import { useAtriumStore, ActiveScreen } from '../../services/store';
 import { t } from '../../utils/i18n';
@@ -205,6 +206,18 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
       icon: <Sparkles size={15} className="text-[#C4785A]" />,
       onSelect: () => {
         openOnboarding();
+        onClose();
+      },
+    });
+
+    list.push({
+      id: 'action-diagnostics',
+      title: language === 'ar' ? 'فحص جاهزية الخادم وقاعدة البيانات (CRUD)' : language === 'fr' ? 'Diagnostic CRUD & État de la Base de Données' : 'Backend & Database CRUD Diagnostics',
+      subtitle: language === 'ar' ? 'تشغيل فحص العمليات الحية والتحقق من التتبع الرباعي عبر الـ 7 أنشطة' : language === 'fr' ? 'Lancer l\'audit CRUD et vérifier la traçabilité quadruple' : 'Run live CRUD probes & verify quadruple traceability',
+      category: actionCategoryLabel,
+      icon: <Activity size={15} className="text-emerald-500" />,
+      onSelect: () => {
+        setScreen('settings');
         onClose();
       },
     });

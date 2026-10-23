@@ -244,14 +244,14 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
     },
     {
       id: 'membership_session',
-      title: 'Gym & Fitness',
+      title: 'Membership',
       subtitle: 'Gyms, Martial arts, CrossFit, Athletic clubs',
       icon: <Dumbbell size={18} className="text-[#C4785A]" />,
-      tagline: 'RFID Turnstiles & Session Plans',
+      tagline: 'RFID Turnstiles & Member Plans',
     },
     {
       id: 'appointment_service',
-      title: 'Salon & Beauty',
+      title: 'Appointment',
       subtitle: 'Hair salons, Spas, Barbershops, Clinics',
       icon: <Scissors size={18} className="text-[#C4785A]" />,
       tagline: 'Stylist Timetables & Service Packs',

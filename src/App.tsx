@@ -44,6 +44,25 @@ import { ProjectCreaView } from './components/screens/project/ProjectCreaView';
 import { ProjectSuperviseurView } from './components/screens/project/ProjectSuperviseurView';
 import { ProjectRhView } from './components/screens/project/ProjectRhView';
 import { ProjectComptaView } from './components/screens/project/ProjectComptaView';
+import { MembershipDashboardView } from './components/screens/membership/MembershipDashboardView';
+import { MembershipMembersView } from './components/screens/membership/MembershipMembersView';
+import { MembershipRegistrationsView } from './components/screens/membership/MembershipRegistrationsView';
+import { MembershipShopView } from './components/screens/membership/MembershipShopView';
+import { MembershipSchedulerView } from './components/screens/membership/MembershipSchedulerView';
+import { MembershipFinanceView } from './components/screens/membership/MembershipFinanceView';
+import { MembershipHistoryView } from './components/screens/membership/MembershipHistoryView';
+import { AppointmentDashboardView } from './components/screens/appointment/AppointmentDashboardView';
+import { AppointmentClientsView } from './components/screens/appointment/AppointmentClientsView';
+import { AppointmentScheduleView } from './components/screens/appointment/AppointmentScheduleView';
+import { AppointmentServicesView } from './components/screens/appointment/AppointmentServicesView';
+import { AppointmentFinanceView } from './components/screens/appointment/AppointmentFinanceView';
+import { AppointmentHistoryView } from './components/screens/appointment/AppointmentHistoryView';
+import { PosDashboardView } from './components/screens/pos/PosDashboardView';
+import { PosRegisterView } from './components/screens/pos/PosRegisterView';
+import { PosInventoryView } from './components/screens/pos/PosInventoryView';
+import { PosOrdersView } from './components/screens/pos/PosOrdersView';
+import { PosFinanceView } from './components/screens/pos/PosFinanceView';
+import { PosHistoryView } from './components/screens/pos/PosHistoryView';
 import { DesktopUpgradeModal } from './components/modals/DesktopUpgradeModal';
 import { CommandPaletteModal } from './components/modals/CommandPaletteModal';
 import { ToastStack } from './components/ui/ToastStack';
@@ -309,7 +328,88 @@ export default function App() {
       }
     }
 
+    const isMembership = currentBusiness?.category === 'membership_session';
+    if (isMembership) {
+      switch (activeScreen) {
+        case 'dashboard':
+          return <MembershipDashboardView onAddMember={handleOpenAddMember} />;
+        case 'members':
+          return (
+            <MembershipMembersView
+              onAddMember={handleOpenAddMember}
+              onEditMember={handleOpenEditMember}
+            />
+          );
+        case 'registrations':
+          return <MembershipRegistrationsView onAddLead={() => setIsLeadModalOpen(true)} />;
+        case 'shop':
+          return <MembershipShopView />;
+        case 'scheduler':
+          return <MembershipSchedulerView />;
+        case 'finance':
+          return <MembershipFinanceView />;
+        case 'history':
+          return <MembershipHistoryView />;
+        case 'analytics':
+          return <MembershipDashboardView onAddMember={handleOpenAddMember} />;
+        case 'settings':
+          return <SettingsScreen onOpenVoucherModal={() => setIsVoucherModalOpen(true)} />;
+        default:
+          return <MembershipDashboardView onAddMember={handleOpenAddMember} />;
+      }
+    }
+
+    const isAppointment = currentBusiness?.category === 'appointment_service';
+    if (isAppointment) {
+      switch (activeScreen) {
+        case 'dashboard':
+          return <AppointmentDashboardView />;
+        case 'members':
+          return <AppointmentClientsView />;
+        case 'scheduler':
+          return <AppointmentScheduleView />;
+        case 'shop':
+          return <AppointmentServicesView />;
+        case 'finance':
+          return <AppointmentFinanceView />;
+        case 'history':
+          return <AppointmentHistoryView />;
+        case 'registrations':
+          return <AppointmentScheduleView />;
+        case 'analytics':
+          return <AppointmentDashboardView />;
+        case 'settings':
+          return <SettingsScreen onOpenVoucherModal={() => setIsVoucherModalOpen(true)} />;
+        default:
+          return <AppointmentDashboardView />;
+      }
+    }
+
     const isPOS = currentBusiness?.category === 'pos_inventory';
+    if (isPOS) {
+      switch (activeScreen) {
+        case 'dashboard':
+          return <PosDashboardView />;
+        case 'shop':
+          return <PosRegisterView />;
+        case 'scheduler':
+          return <PosInventoryView />;
+        case 'registrations':
+          return <PosOrdersView />;
+        case 'finance':
+          return <PosFinanceView />;
+        case 'history':
+          return <PosHistoryView />;
+        case 'members':
+          return <PosOrdersView />;
+        case 'analytics':
+          return <PosDashboardView />;
+        case 'settings':
+          return <SettingsScreen onOpenVoucherModal={() => setIsVoucherModalOpen(true)} />;
+        default:
+          return <PosDashboardView />;
+      }
+    }
 
     switch (activeScreen) {
       case 'dashboard':
@@ -324,11 +424,11 @@ export default function App() {
           />
         );
       case 'registrations':
-        return isPOS ? <ShopScreen /> : <RegistrationsScreen onAddLead={() => setIsLeadModalOpen(true)} />;
+        return <RegistrationsScreen onAddLead={() => setIsLeadModalOpen(true)} />;
       case 'shop':
         return <ShopScreen />;
       case 'scheduler':
-        return isPOS ? <ShopScreen /> : <SchedulerScreen />;
+        return <SchedulerScreen />;
       case 'finance':
         return <FinanceStaffScreen />;
       case 'history':
@@ -336,7 +436,7 @@ export default function App() {
       case 'settings':
         return <SettingsScreen onOpenVoucherModal={() => setIsVoucherModalOpen(true)} />;
       default:
-        return isPOS ? <ShopScreen /> : <DashboardScreen onAddMember={handleOpenAddMember} />;
+        return <DashboardScreen onAddMember={handleOpenAddMember} />;
     }
   };
 
