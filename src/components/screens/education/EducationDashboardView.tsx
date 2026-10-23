@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Users,
   Calendar,
@@ -41,7 +41,18 @@ export const EducationDashboardView: React.FC = () => {
     eduEnrollments,
     eduAttendance,
     setScreen,
+    resetEduMockData,
+    showToast,
   } = useAtriumStore();
+
+  // Auto-healing
+  const hasAutoHealed = useRef(false);
+  useEffect(() => {
+    if (!hasAutoHealed.current && eduStudents.length === 0 && resetEduMockData) {
+      hasAutoHealed.current = true;
+      resetEduMockData();
+    }
+  }, [eduStudents.length, resetEduMockData]);
 
   const [activeRollCallSession, setActiveRollCallSession] = useState<EduSession | null>(null);
   const [isRollCallOpen, setIsRollCallOpen] = useState(false);
@@ -148,6 +159,24 @@ export const EducationDashboardView: React.FC = () => {
               </div>
             )}
           </div>
+
+          {/* Demo Data Recharge Button */}
+          <button
+            type="button"
+            onClick={() => {
+              resetEduMockData();
+              showToast({
+                type: 'success',
+                title: 'Demo Data Recharged',
+                message: 'All Education cohorts, students, sessions, and attendance metrics refreshed.',
+              });
+            }}
+            className="h-10 px-3.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-semibold flex items-center gap-1.5 hover:bg-neutral-50 dark:hover:bg-neutral-700/60 transition-colors cursor-pointer shadow-2xs"
+            title="Reload realistic Algerian academy demo data"
+          >
+            <Sparkles size={14} className="text-[#C4785A]" />
+            <span className="hidden sm:inline">Demo Data</span>
+          </button>
 
           <button
             type="button"

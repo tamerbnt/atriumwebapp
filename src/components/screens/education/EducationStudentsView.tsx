@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import {
   Users,
   Search,
@@ -19,6 +19,12 @@ import {
   ExternalLink,
   ChevronRight,
   BookOpen,
+  Home,
+  ChevronDown,
+  Download,
+  Sparkles,
+  Building2,
+  Check,
 } from 'lucide-react';
 import { useAtriumStore } from '../../../services/store';
 import { EduStudent, StudentStatus } from '../../../types';
@@ -42,6 +48,13 @@ export const EducationStudentsView: React.FC = () => {
     eduAttendance,
     eduGrades,
     eduCertificates,
+    currentBranch,
+    businesses,
+    branches,
+    currentBusinessId,
+    switchBusiness,
+    switchBranch,
+    resetEduMockData,
     addEduStudent,
     updateEduStudent,
     deleteEduStudent,
@@ -49,6 +62,15 @@ export const EducationStudentsView: React.FC = () => {
     setScreen,
     showToast,
   } = useAtriumStore();
+
+  // Auto-heal empty students directory safely once on mount
+  const hasAutoHealed = useRef(false);
+  useEffect(() => {
+    if (!hasAutoHealed.current && eduStudents.length === 0) {
+      hasAutoHealed.current = true;
+      resetEduMockData();
+    }
+  }, [eduStudents.length, resetEduMockData]);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [filterKey, setFilterKey] = useState<FilterKey>('all');
@@ -65,6 +87,7 @@ export const EducationStudentsView: React.FC = () => {
   const [pinnedStudentIds, setPinnedStudentIds] = useState<Set<string>>(new Set());
   const [studentSortBy, setStudentSortBy] = useState<string>('student');
   const [studentSortDir, setStudentSortDir] = useState<'asc' | 'desc'>('asc');
+  const [isFacilityDropdownOpen, setIsFacilityDropdownOpen] = useState(false);
 
   // Form State
   const [formData, setFormData] = useState<{
@@ -404,33 +427,237 @@ export const EducationStudentsView: React.FC = () => {
     },
   ], [eduEnrollments, t]);
 
+  const handleExportCSV = () => {
+    const headers = [
+      language === 'ar' ? 'الاسم الكامل' : language === 'fr' ? 'Nom complet' : 'Full Name',
+      language === 'ar' ? 'الهاتف' : language === 'fr' ? 'Téléphone' : 'Phone',
+      language === 'ar' ? 'البريد الإلكتروني' : language === 'fr' ? 'Email' : 'Email',
+      language === 'ar' ? 'الفوج' : language === 'fr' ? 'Promotion / Cohorte' : 'Cohort',
+      language === 'ar' ? 'المستوى الدراسي' : language === 'fr' ? 'Niveau Scolaire' : 'School Grade',
+      language === 'ar' ? 'نسبة الحضور' : language === 'fr' ? 'Taux de Présence' : 'Attendance Rate',
+      language === 'ar' ? 'حالة الحساب' : language === 'fr' ? 'Statut Étudiant' : 'Status',
+      language === 'ar' ? 'الولي / الوصي' : language === 'fr' ? 'Tuteur / Parent' : 'Guardian',
+      language === 'ar' ? 'هاتف الولي' : language === 'fr' ? 'Tél Tuteur' : 'Guardian Phone',
+    ];
+    const rows = sortedStudents.map((s) => {
+      const enroll = eduEnrollments.find((e) => e.studentId === s.id && e.status === 'Active');
+      return [
+        `"${s.fullName}"`,
+        `"${s.phone}"`,
+        `"${s.email || ''}"`,
+        `"${enroll ? enroll.cohortName : 'None'}"`,
+        `"${s.schoolGrade || ''}"`,
+        `"${s.attendanceRatePercent ?? 100}%"`,
+        `"${s.status}"`,
+        `"${s.guardianName || 'Adult / Self'}"`,
+        `"${s.guardianPhone || ''}"`,
+      ];
+    });
+    const csvContent = 'data:text/csv;charset=utf-8,\uFEFF' + [headers.join(','), ...rows.map((row) => row.join(','))].join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `students-roster-${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast({
+      type: 'success',
+      title: language === 'ar' ? 'تم التصدير' : language === 'fr' ? 'Exportation réussie' : 'Export Complete',
+      message: `${sortedStudents.length} ${language === 'ar' ? 'سجل طالب تم تصديره' : 'students exported successfully'}`,
+    });
+  };
+
+  const handleBatchGraduate = () => {
+    if (selectedStudentIds.size === 0) return;
+    const count = selectedStudentIds.size;
+    selectedStudentIds.forEach((id) => updateEduStudent(id, { status: 'Graduated' }));
+    setSelectedStudentIds(new Set());
+    showToast({
+      type: 'success',
+      title: language === 'ar' ? 'تم التخرج' : language === 'fr' ? 'Promotion Diplômée' : 'Batch Graduated',
+      message: `${count} ${language === 'ar' ? 'طلاب تم تسجيل تخرجهم' : 'students marked as graduated'}`,
+    });
+  };
+
+  const handleBatchSuspend = () => {
+    if (selectedStudentIds.size === 0) return;
+    const count = selectedStudentIds.size;
+    selectedStudentIds.forEach((id) => updateEduStudent(id, { status: 'Suspended' }));
+    setSelectedStudentIds(new Set());
+    showToast({
+      type: 'info',
+      title: language === 'ar' ? 'تم التجميد' : language === 'fr' ? 'Statut Suspendu' : 'Batch Suspended',
+      message: `${count} ${language === 'ar' ? 'طلاب تم تجميد حساباتهم' : 'student accounts suspended'}`,
+    });
+  };
+
+  const handleBatchDelete = () => {
+    if (selectedStudentIds.size === 0) return;
+    const count = selectedStudentIds.size;
+    if (confirm(language === 'ar' ? `هل أنت متأكد من حذف ${count} طالب؟` : language === 'fr' ? `Supprimer définitivement ${count} étudiants sélectionnés ?` : `Delete ${count} selected students?`)) {
+      selectedStudentIds.forEach((id) => deleteEduStudent(id));
+      setSelectedStudentIds(new Set());
+      showToast({
+        type: 'info',
+        title: language === 'ar' ? 'تم الحذف' : language === 'fr' ? 'Suppression' : 'Deleted',
+        message: `${count} ${language === 'ar' ? 'طلاب تم حذفهم' : 'students deleted'}`,
+      });
+    }
+  };
+
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
       {/* Top Header matching other category screens */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-neutral-200 dark:border-neutral-800">
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white">
-              {t('edu_students_title')}
-            </h1>
-            <span className="text-xs text-neutral-500 dark:text-neutral-400">
-              {totalStudentsCount} accounts · {activeMinorsCount} linked guardians
-            </span>
+        <div className="flex items-center gap-3.5">
+          <div className="w-11 h-11 rounded-2xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-800 dark:text-neutral-200">
+            <Users size={22} />
           </div>
-          <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
-            {t('edu_students_subtitle')}
-          </p>
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-900 dark:text-white">
+                {t('edu_students_title')}
+              </h1>
+              <span className="text-xs text-neutral-500 dark:text-neutral-400">
+                {totalStudentsCount} {language === 'ar' ? 'طالب' : 'students'} · {activeMinorsCount} {language === 'ar' ? 'قاصر' : 'minors'}
+              </span>
+            </div>
+            <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
+              {t('edu_students_subtitle')}
+            </p>
+          </div>
         </div>
 
-        <button
-          type="button"
-          onClick={handleOpenAdd}
-          className="h-10 px-4 rounded-xl bg-[#C4785A] text-white text-xs font-semibold flex items-center gap-1.5 hover:opacity-90 transition-opacity cursor-pointer shadow-xs self-start sm:self-auto"
-        >
-          <Plus size={14} />
-          <span>{t('edu_modal_add_student')}</span>
-        </button>
+        <div className="flex items-center gap-2.5 flex-wrap self-start sm:self-auto">
+          {/* Facility Pill: Atrium 1 ▾ */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setIsFacilityDropdownOpen(!isFacilityDropdownOpen)}
+              className="h-10 px-4 rounded-full bg-[#F4EFEA] dark:bg-neutral-800/80 border border-[#E8DFD8] dark:border-neutral-700 flex items-center gap-2 cursor-pointer hover:bg-[#EFE8E1] dark:hover:bg-neutral-800 transition-colors shadow-2xs"
+            >
+              <Home size={15} className="text-[#C4785A]" />
+              <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
+                {currentBranch?.name || 'Atrium 1'}
+              </span>
+              <ChevronDown
+                size={14}
+                className={`text-neutral-500 transition-transform ${
+                  isFacilityDropdownOpen ? 'rotate-180' : ''
+                }`}
+              />
+            </button>
+
+            {/* Facility Dropdown Menu */}
+            {isFacilityDropdownOpen && (
+              <div className="absolute right-0 rtl:right-auto rtl:left-0 mt-2 w-64 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
+                <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+                  {language === 'ar' ? 'الفروع والمراكز التعليمية' : language === 'fr' ? 'Centres & Campus' : 'Campuses & Branches'}
+                </div>
+                {businesses.map((biz) => {
+                  const isCurrent = biz.id === currentBusinessId;
+                  const matchingBranch = branches.find((b) => b.businessId === biz.id);
+                  return (
+                    <button
+                      key={biz.id}
+                      type="button"
+                      onClick={() => {
+                        switchBusiness(biz.id);
+                        if (matchingBranch) switchBranch(matchingBranch.id);
+                        setIsFacilityDropdownOpen(false);
+                      }}
+                      className={`w-full px-3 py-2 text-left rtl:text-right flex items-center justify-between text-xs transition-colors cursor-pointer ${
+                        isCurrent
+                          ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold'
+                          : 'text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <Building2 size={14} className={isCurrent ? 'text-[#C4785A]' : 'text-neutral-400'} />
+                        <span className="truncate">{biz.name}</span>
+                      </div>
+                      {isCurrent && <Check size={14} />}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Export CSV Button */}
+          <button
+            type="button"
+            onClick={handleExportCSV}
+            className="h-10 px-3.5 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold rounded-full transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer"
+            title="Export CSV"
+          >
+            <Download size={14} />
+            <span className="hidden sm:inline">CSV</span>
+          </button>
+
+          {/* Seed Demo Data Button */}
+          <button
+            type="button"
+            onClick={resetEduMockData}
+            className="h-10 px-3.5 bg-[#FCEEE8] dark:bg-neutral-800 hover:bg-[#F8DFD4] dark:hover:bg-neutral-700 text-[#C4785A] text-xs font-semibold rounded-full transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer"
+            title={language === 'ar' ? 'إعادة شحن بيانات تجريبية' : language === 'fr' ? 'Recharger Données Démo' : 'Seed Mock Data'}
+          >
+            <Sparkles size={14} />
+            <span className="hidden sm:inline">{language === 'ar' ? 'بيانات تجريبية' : language === 'fr' ? 'Données Démo' : 'Demo Data'}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleOpenAdd}
+            className="h-10 px-4 rounded-full bg-[#C4785A] hover:bg-[var(--color-accent-hover)] text-white text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+          >
+            <Plus size={14} />
+            <span>{t('edu_modal_add_student')}</span>
+          </button>
+        </div>
       </div>
+
+      {/* Batch Selection Toolbar */}
+      {selectedStudentIds.size > 0 && (
+        <div className="flex items-center justify-between p-3 px-4 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 animate-in fade-in slide-in-from-top-2">
+          <div className="flex items-center gap-3">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#C4785A] animate-pulse" />
+            <span className="text-xs font-bold text-neutral-900 dark:text-white">
+              {selectedStudentIds.size} {language === 'ar' ? 'طلاب محددين' : language === 'fr' ? 'étudiants sélectionnés' : 'students selected'}
+            </span>
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              onClick={() => setSelectedStudentIds(new Set())}
+              className="px-3 py-1.5 text-xs text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white font-medium cursor-pointer"
+            >
+              {language === 'ar' ? 'إلغاء التحديد' : language === 'fr' ? 'Désélectionner' : 'Deselect'}
+            </button>
+            <button
+              onClick={handleBatchGraduate}
+              className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+            >
+              <GraduationCap size={13} />
+              <span>{language === 'ar' ? 'تخرج المحدد' : language === 'fr' ? 'Diplômer' : 'Graduate Selected'}</span>
+            </button>
+            <button
+              onClick={handleBatchSuspend}
+              className="px-3.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+            >
+              <AlertCircle size={13} />
+              <span>{language === 'ar' ? 'تجميد الحساب' : language === 'fr' ? 'Suspendre' : 'Suspend'}</span>
+            </button>
+            <button
+              onClick={handleBatchDelete}
+              className="px-3.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+            >
+              <Trash2 size={13} />
+              <span>{language === 'ar' ? 'حذف المحدد' : language === 'fr' ? 'Supprimer' : 'Delete'}</span>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* KPI Overview Strip matching FreelanceClientsView */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

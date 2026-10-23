@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import {
   Wallet,
   DollarSign,
@@ -13,6 +13,16 @@ import {
   FileText,
   Search,
   ChevronRight,
+  Download,
+  Sparkles,
+  Building2,
+  Check,
+  Home,
+  ChevronDown,
+  Bell,
+  Receipt,
+  UserCheck,
+  Percent,
 } from 'lucide-react';
 import { useAtriumStore } from '../../../services/store';
 import { formatMoney } from '../../../utils/rules';
@@ -20,6 +30,7 @@ import { EduEnrollment } from '../../../types';
 import { Seek } from '../../ui/Seek';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
+import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { useTranslation } from '../../../utils/useTranslation';
 
 type PaymentFilterKey = 'all' | 'pending' | 'partial' | 'overdue' | 'paid';
@@ -31,11 +42,36 @@ export const EducationFinanceView: React.FC = () => {
     eduCohorts,
     recordTuitionPayment,
     currentBusiness,
+    currentBranch,
+    businesses,
+    branches,
+    currentBusinessId,
+    switchBusiness,
+    switchBranch,
+    resetEduMockData,
+    showToast,
   } = useAtriumStore();
+
+  // Auto-heal empty enrollments directory safely once on mount
+  const hasAutoHealed = useRef(false);
+  useEffect(() => {
+    if (!hasAutoHealed.current && eduEnrollments.length === 0) {
+      hasAutoHealed.current = true;
+      resetEduMockData();
+    }
+  }, [eduEnrollments.length, resetEduMockData]);
 
   const [filterKey, setFilterKey] = useState<PaymentFilterKey>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedEnrollmentIds, setSelectedEnrollmentIds] = useState<Set<string>>(new Set());
+  const [pinnedEnrollmentIds, setPinnedEnrollmentIds] = useState<Set<string>>(new Set());
+  const [financeSortBy, setFinanceSortBy] = useState<string>('student');
+  const [financeSortDir, setFinanceSortDir] = useState<'asc' | 'desc'>('asc');
+  const [isFacilityDropdownOpen, setIsFacilityDropdownOpen] = useState(false);
+
+  // Modals & Drawers
   const [selectedEnrollmentForPayment, setSelectedEnrollmentForPayment] = useState<EduEnrollment | null>(null);
+  const [detailEnrollment, setDetailEnrollment] = useState<EduEnrollment | null>(null);
   const [selectedInstallmentIndex, setSelectedInstallmentIndex] = useState<number>(0);
   const [paymentAmount, setPaymentAmount] = useState<number>(15000);
   const [paymentMethod, setPaymentMethod] = useState<string>('Cash');
@@ -58,19 +94,23 @@ export const EducationFinanceView: React.FC = () => {
     .filter((e) => e.paymentStatus === 'Overdue')
     .reduce((sum, e) => sum + e.balanceDue, 0);
 
-  const filteredEnrollments = eduEnrollments.filter((e) => {
-    const matchesFilter = filterKey === 'all' || e.paymentStatus.toLowerCase() === filterKey.toLowerCase();
-    if (!matchesFilter) return false;
+  // Filter & Search
+  const filteredEnrollments = useMemo(() => {
+    return eduEnrollments.filter((e) => {
+      const matchesFilter = filterKey === 'all' || e.paymentStatus.toLowerCase() === filterKey.toLowerCase();
+      if (!matchesFilter) return false;
 
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      return (
-        e.studentName.toLowerCase().includes(q) ||
-        e.cohortName.toLowerCase().includes(q)
-      );
-    }
-    return true;
-  });
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        return (
+          e.studentName.toLowerCase().includes(q) ||
+          e.cohortName.toLowerCase().includes(q) ||
+          e.studentId.toLowerCase().includes(q)
+        );
+      }
+      return true;
+    });
+  }, [eduEnrollments, filterKey, searchQuery]);
 
   const handleOpenPayment = (enrollment: EduEnrollment, instIndex: number = 0) => {
     setSelectedEnrollmentForPayment(enrollment);
@@ -99,41 +139,406 @@ export const EducationFinanceView: React.FC = () => {
       receiptNumber: `REC-${Date.now().toString().slice(-6)}`,
     });
 
+    showToast?.({
+      type: 'success',
+      title: 'Paiement Enregistré',
+      message: `${formatMoney(paymentAmount)} encaissés pour ${selectedEnrollmentForPayment.studentName} (${paymentMethod}).`,
+    });
+
     setSelectedEnrollmentForPayment(null);
   };
 
-  return (
-    <div className="space-y-6 animate-in fade-in duration-200">
-      {/* Top Header Row matching other category screens */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-neutral-200 dark:border-neutral-800">
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white">
-              {t('edu_finance_title')}
-            </h1>
-            <span className="text-xs text-neutral-500 dark:text-neutral-400">
-              {eduEnrollments.length} accounts · {formatMoney(totalCollected)} settled
+  // Batch Actions
+  const handleBatchMarkInstallmentPaid = () => {
+    if (selectedEnrollmentIds.size === 0) return;
+    let count = 0;
+    eduEnrollments.forEach((enr) => {
+      if (selectedEnrollmentIds.has(enr.id) && enr.balanceDue > 0) {
+        // find first unpaid installment
+        const nextIndex = enr.installments?.findIndex((i) => !i.isPaid) ?? 0;
+        const inst = enr.installments?.[nextIndex];
+        const amt = inst ? inst.amount : enr.balanceDue;
+        recordTuitionPayment(enr.id, Math.max(0, nextIndex), amt, 'Cash');
+        count++;
+      }
+    });
+
+    showToast?.({
+      type: 'success',
+      title: language === 'ar' ? 'تم تسجيل الدفعات' : 'Versements Encaissés',
+      message: `${count} échéances ont été validées en lot.`,
+    });
+    setSelectedEnrollmentIds(new Set());
+  };
+
+  const handleBatchSendReminder = () => {
+    showToast?.({
+      type: 'info',
+      title: language === 'ar' ? 'تم إرسال التنبيهات' : 'Rappels Émis',
+      message: `${selectedEnrollmentIds.size} rappels de paiement transmis via SMS & WhatsApp.`,
+    });
+    setSelectedEnrollmentIds(new Set());
+  };
+
+  // CSV Export
+  const handleExportCSV = () => {
+    const headers = [
+      'ID Inscription',
+      'Apprenant',
+      'ID Étudiant',
+      'Formation / Cohorte',
+      'Date Inscription',
+      'Frais de Scolarité (DZD)',
+      'Remise (DZD)',
+      'Montant Payé (DZD)',
+      'Reste à Payer (DZD)',
+      'Statut Paiement',
+      'Nombre Échéances',
+      'Échéances Payées',
+      'Statut Dossier',
+    ];
+
+    const rows = filteredEnrollments.map((enr) => {
+      const paidInstCount = enr.installments?.filter((i) => i.isPaid).length || 0;
+      const totalInstCount = enr.installments?.length || 0;
+      return [
+        `"${enr.id}"`,
+        `"${enr.studentName.replace(/"/g, '""')}"`,
+        `"${enr.studentId}"`,
+        `"${enr.cohortName.replace(/"/g, '""')}"`,
+        `"${enr.enrolledAt ? enr.enrolledAt.split('T')[0] : ''}"`,
+        enr.agreedTuition,
+        enr.discountAmount || 0,
+        enr.paidAmount,
+        enr.balanceDue,
+        `"${enr.paymentStatus}"`,
+        totalInstCount,
+        paidInstCount,
+        `"${enr.status}"`,
+      ].join(',');
+    });
+
+    const csvContent = '\uFEFF' + [headers.join(','), ...rows].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `scolarite_reglements_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    showToast?.({
+      type: 'success',
+      title: 'Grand Livre Exporté',
+      message: `${filteredEnrollments.length} contrats de scolarité exportés au format CSV.`,
+    });
+  };
+
+  // Column definitions for UniversalDataCollection
+  const columns: ColumnDefinition<EduEnrollment>[] = useMemo(
+    () => [
+      {
+        key: 'student',
+        header: t('edu_col_student'),
+        width: '2.5*',
+        minWidth: '200px',
+        sortable: true,
+        renderCell: (enr) => (
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 flex items-center justify-center font-bold text-xs shrink-0 border border-neutral-200 dark:border-neutral-700">
+              {enr.studentName.charAt(0)}
+            </div>
+            <div className="min-w-0">
+              <div className="font-semibold text-neutral-900 dark:text-white truncate">
+                {enr.studentName}
+              </div>
+              <div className="text-[10px] text-neutral-400">ID: {enr.studentId}</div>
+            </div>
+          </div>
+        ),
+      },
+      {
+        key: 'cohort',
+        header: t('edu_col_cohort'),
+        width: '2*',
+        minWidth: '170px',
+        sortable: true,
+        renderCell: (enr) => (
+          <div className="min-w-0">
+            <span className="font-medium text-neutral-800 dark:text-neutral-200 block truncate">
+              {enr.cohortName}
+            </span>
+            <span className="text-[10px] text-neutral-400">
+              {enr.enrolledAt ? `Depuis ${enr.enrolledAt.split('T')[0]}` : 'Actif'}
             </span>
           </div>
-          <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
-            {t('edu_finance_subtitle')}
-          </p>
+        ),
+      },
+      {
+        key: 'agreedTuition',
+        header: t('edu_field_tuition_fee'),
+        width: '1.4*',
+        minWidth: '120px',
+        sortable: true,
+        renderCell: (enr) => (
+          <span className="font-bold text-neutral-900 dark:text-white tabular-nums">
+            {formatMoney(enr.agreedTuition)}
+          </span>
+        ),
+      },
+      {
+        key: 'paidAndBalance',
+        header: language === 'ar' ? 'المسدد / الرصيد' : language === 'fr' ? 'Payé / Solde' : 'Paid / Balance',
+        width: '2.2*',
+        minWidth: '170px',
+        sortable: true,
+        renderCell: (enr) => {
+          const percent = enr.agreedTuition > 0 ? Math.round((enr.paidAmount / enr.agreedTuition) * 100) : 0;
+          return (
+            <div className="space-y-1">
+              <div className="flex items-center justify-between text-xs tabular-nums">
+                <span className="text-emerald-600 dark:text-emerald-400 font-semibold">
+                  {formatMoney(enr.paidAmount)}
+                </span>
+                <span className="text-rose-600 dark:text-rose-400 font-semibold">
+                  {formatMoney(enr.balanceDue)}
+                </span>
+              </div>
+              <div className="w-full h-1.5 rounded-full bg-neutral-100 dark:bg-neutral-800 overflow-hidden">
+                <div
+                  className={`h-full rounded-full ${percent >= 100 ? 'bg-emerald-500' : percent > 0 ? 'bg-amber-500' : 'bg-neutral-300'}`}
+                  style={{ width: `${Math.min(100, percent)}%` }}
+                />
+              </div>
+            </div>
+          );
+        },
+      },
+      {
+        key: 'installments',
+        header: language === 'ar' ? 'الأقساط' : language === 'fr' ? 'Échéances' : 'Schedule',
+        width: '2*',
+        minWidth: '150px',
+        renderCell: (enr) => {
+          const insts = enr.installments || [];
+          const paidCount = insts.filter((i) => i.isPaid).length;
+          return (
+            <div className="flex items-center gap-1.5 flex-wrap">
+              {insts.length > 0 ? (
+                insts.map((inst, idx) => (
+                  <span
+                    key={idx}
+                    title={`${formatMoney(inst.amount)} - Échéance ${inst.dueDate} (${inst.isPaid ? 'Payée' : 'En attente'})`}
+                    className={`px-1.5 py-0.5 rounded text-[10px] font-semibold tabular-nums border ${
+                      inst.isPaid
+                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800'
+                        : 'bg-neutral-100 text-neutral-600 border-neutral-200 dark:bg-neutral-800 dark:text-neutral-400 dark:border-neutral-700'
+                    }`}
+                  >
+                    V{idx + 1}: {inst.isPaid ? '✓' : formatMoney(inst.amount).replace('DZD', '').trim()}
+                  </span>
+                ))
+              ) : (
+                <span className="text-[11px] text-neutral-400">Paiement unique</span>
+              )}
+            </div>
+          );
+        },
+      },
+      {
+        key: 'status',
+        header: t('common_status'),
+        width: '1.4*',
+        minWidth: '110px',
+        sortable: true,
+        renderCell: (enr) => (
+          <span
+            className={`px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wider ${
+              enr.paymentStatus === 'Paid'
+                ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
+                : enr.paymentStatus === 'Overdue'
+                ? 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300 border border-rose-200 dark:border-rose-800'
+                : 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200 dark:border-amber-800'
+            }`}
+          >
+            {enr.paymentStatus === 'Paid'
+              ? t('edu_tuition_paid')
+              : enr.paymentStatus === 'Overdue'
+              ? t('edu_tuition_overdue')
+              : t('edu_tuition_partial')}
+          </span>
+        ),
+      },
+      {
+        key: 'actions',
+        header: t('edu_col_actions'),
+        width: '1.5*',
+        minWidth: '120px',
+        renderCell: (enr) => (
+          <div className="flex items-center gap-1.5 justify-end rtl:justify-start">
+            {enr.balanceDue > 0 ? (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleOpenPayment(enr, 0);
+                }}
+                className="px-2.5 py-1.5 rounded-lg bg-[#C4785A] text-white text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-2xs whitespace-nowrap"
+              >
+                {t('edu_btn_log_payment')}
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setReceiptToPrint({
+                    studentName: enr.studentName,
+                    cohortName: enr.cohortName,
+                    amount: enr.paidAmount,
+                    method: 'Comptant / Virement',
+                    date: enr.enrolledAt ? enr.enrolledAt.split('T')[0] : new Date().toISOString().split('T')[0],
+                    receiptNumber: `REC-${enr.id.slice(-6)}`,
+                  });
+                }}
+                className="px-2.5 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer flex items-center gap-1"
+              >
+                <Receipt size={12} />
+                <span>Reçu</span>
+              </button>
+            )}
+          </div>
+        ),
+      },
+    ],
+    [language, t]
+  );
+
+  return (
+    <div className="space-y-6 animate-in fade-in duration-200">
+      {/* Top Header matching other standardized category screens */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-neutral-200 dark:border-neutral-800">
+        <div className="flex items-center gap-3.5">
+          <div className="w-11 h-11 rounded-2xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-800 dark:text-neutral-200">
+            <Wallet size={22} className="text-[#C4785A]" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-900 dark:text-white">
+                {t('edu_finance_title')}
+              </h1>
+              <span className="text-xs text-neutral-500 dark:text-neutral-400">
+                {eduEnrollments.length} {language === 'ar' ? 'حسابات مسجلة' : 'dossiers'} · {formatMoney(totalCollected)} {language === 'ar' ? 'مستحصل' : 'recouvré'}
+              </span>
+            </div>
+            <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
+              {t('edu_finance_subtitle')}
+            </p>
+          </div>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2.5 flex-wrap self-start sm:self-auto">
+          {/* Facility Pill: Atlas Academy ▾ */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setIsFacilityDropdownOpen(!isFacilityDropdownOpen)}
+              className="h-10 px-4 rounded-full bg-[#F4EFEA] dark:bg-neutral-800/80 border border-[#E8DFD8] dark:border-neutral-700 flex items-center gap-2 cursor-pointer hover:bg-[#EFE8E1] dark:hover:bg-neutral-800 transition-colors shadow-2xs"
+            >
+              <Home size={15} className="text-[#C4785A]" />
+              <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
+                {currentBranch?.name || 'Atlas Academy'}
+              </span>
+              <ChevronDown
+                size={14}
+                className={`text-neutral-500 transition-transform ${
+                  isFacilityDropdownOpen ? 'rotate-180' : ''
+                }`}
+              />
+            </button>
+
+            {/* Facility Dropdown Menu */}
+            {isFacilityDropdownOpen && (
+              <div className="absolute right-0 rtl:right-auto rtl:left-0 mt-2 w-64 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
+                <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+                  {language === 'ar' ? 'الفروع والمراكز التعليمية' : language === 'fr' ? 'Centres & Campus' : 'Campuses & Branches'}
+                </div>
+                {businesses.map((biz) => {
+                  const isCurrent = biz.id === currentBusinessId;
+                  const matchingBranch = branches.find((b) => b.businessId === biz.id);
+                  return (
+                    <button
+                      key={biz.id}
+                      type="button"
+                      onClick={() => {
+                        switchBusiness(biz.id);
+                        if (matchingBranch) switchBranch(matchingBranch.id);
+                        setIsFacilityDropdownOpen(false);
+                      }}
+                      className={`w-full px-3 py-2 text-left rtl:text-right flex items-center justify-between text-xs transition-colors cursor-pointer ${
+                        isCurrent
+                          ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold'
+                          : 'text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <Building2 size={14} className={isCurrent ? 'text-[#C4785A]' : 'text-neutral-400'} />
+                        <span className="truncate">{biz.name}</span>
+                      </div>
+                      {isCurrent && <Check size={14} />}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Export CSV Button */}
+          <button
+            type="button"
+            onClick={handleExportCSV}
+            className="h-10 px-3.5 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold rounded-full transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer"
+            title="Export CSV"
+          >
+            <Download size={14} />
+            <span className="hidden sm:inline">CSV</span>
+          </button>
+
+          {/* Seed Demo Data Button */}
+          <button
+            type="button"
+            onClick={() => {
+              resetEduMockData();
+              showToast?.({
+                type: 'success',
+                title: 'Données Réinitialisées',
+                message: '20 contrats de scolarité et échéanciers algériens rechargés.',
+              });
+            }}
+            className="h-10 px-3.5 bg-[#FCEEE8] hover:bg-[#F8DFD4] dark:bg-neutral-800 text-[#C4785A] text-xs font-semibold rounded-full transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer"
+            title="Recharge Demo Data"
+          >
+            <Sparkles size={14} />
+            <span className="hidden sm:inline">Demo Data</span>
+          </button>
+
+          {/* Print Ledger */}
           <button
             type="button"
             onClick={() => window.print()}
-            className="h-10 px-4 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 text-xs font-semibold flex items-center gap-1.5 hover:bg-neutral-50 dark:hover:bg-neutral-700/60 transition-colors cursor-pointer shadow-2xs"
+            className="h-10 px-4 rounded-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 text-xs font-semibold flex items-center gap-1.5 hover:bg-neutral-50 dark:hover:bg-neutral-700/60 transition-colors cursor-pointer shadow-2xs"
           >
             <Printer size={14} />
             <span>{language === 'ar' ? 'طباعة كشف الحساب' : language === 'fr' ? 'Imprimer le grand livre' : 'Print Ledger'}</span>
           </button>
+
+          {/* Log Payment Direct Action */}
           {eduEnrollments.length > 0 && (
             <button
               type="button"
               onClick={() => handleOpenPayment(eduEnrollments[0], 0)}
-              className="h-10 px-4 rounded-xl bg-[#C4785A] text-white text-xs font-semibold flex items-center gap-1.5 hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
+              className="h-10 px-4 rounded-full bg-[#C4785A] text-white text-xs font-semibold flex items-center gap-1.5 hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
             >
               <Plus size={14} />
               <span>{t('edu_btn_log_payment')}</span>
@@ -153,7 +558,7 @@ export const EducationFinanceView: React.FC = () => {
             <span className="text-2xl font-extrabold text-neutral-900 dark:text-white tabular-nums block">
               {formatMoney(totalBilled)}
             </span>
-            <span className="text-xs text-neutral-500">across all active batches</span>
+            <span className="text-xs text-neutral-500">across {eduCohorts.length} cohorts</span>
           </div>
         </div>
 
@@ -167,7 +572,7 @@ export const EducationFinanceView: React.FC = () => {
               {formatMoney(totalCollected)}
             </span>
             <span className="text-xs text-emerald-600 dark:text-emerald-400">
-              {collectionVelocity}% velocity collected
+              {collectionVelocity}% recouvré
             </span>
           </div>
         </div>
@@ -181,7 +586,7 @@ export const EducationFinanceView: React.FC = () => {
             <span className="text-2xl font-extrabold text-amber-600 dark:text-amber-400 tabular-nums block">
               {formatMoney(totalOutstanding)}
             </span>
-            <span className="text-xs text-neutral-500">pending term collection</span>
+            <span className="text-xs text-neutral-500">échéances à terme</span>
           </div>
         </div>
 
@@ -194,10 +599,49 @@ export const EducationFinanceView: React.FC = () => {
             <span className="text-2xl font-extrabold text-rose-600 dark:text-rose-400 tabular-nums block">
               {formatMoney(overdueBalance)}
             </span>
-            <span className="text-xs text-rose-500">requires immediate contact</span>
+            <span className="text-xs text-rose-500">relances nécessaires</span>
           </div>
         </div>
       </div>
+
+      {/* Batch Action Toolbar when items selected */}
+      {selectedEnrollmentIds.size > 0 && (
+        <div className="p-3 bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 rounded-2xl flex flex-wrap items-center justify-between gap-3 animate-in fade-in slide-in-from-top-2 duration-150">
+          <div className="flex items-center gap-2">
+            <span className="w-6 h-6 rounded-full bg-[#C4785A] text-white flex items-center justify-center text-xs font-bold">
+              {selectedEnrollmentIds.size}
+            </span>
+            <span className="text-xs font-semibold text-neutral-900 dark:text-white">
+              {language === 'ar' ? 'عقود محددة' : 'dossiers sélectionnés'}
+            </span>
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              type="button"
+              onClick={() => setSelectedEnrollmentIds(new Set())}
+              className="px-3 py-1.5 text-xs text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white font-medium cursor-pointer"
+            >
+              {language === 'ar' ? 'إلغاء التحديد' : 'Désélectionner'}
+            </button>
+            <button
+              type="button"
+              onClick={handleBatchMarkInstallmentPaid}
+              className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+            >
+              <CheckCircle2 size={13} />
+              <span>{language === 'ar' ? 'تسجيل سداد القسط' : 'Encaisser Versement'}</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleBatchSendReminder}
+              className="px-3.5 py-1.5 rounded-xl bg-[#C4785A] hover:opacity-90 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+            >
+              <Bell size={13} />
+              <span>{language === 'ar' ? 'إرسال تذكير بالسداد' : 'Envoyer Rappel SMS'}</span>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Search & Segmented Filter Bar */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
@@ -234,109 +678,100 @@ export const EducationFinanceView: React.FC = () => {
         </div>
       </div>
 
-      {/* Tuition Accounts Table */}
-      <div className="overflow-hidden rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/60 shadow-2xs">
-        <table className="w-full text-left rtl:text-right border-collapse text-xs">
-          <thead>
-            <tr className="border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/50 text-[11px] font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
-              <th className="py-3.5 px-4">{t('edu_col_student')}</th>
-              <th className="py-3.5 px-4">{t('edu_col_cohort')}</th>
-              <th className="py-3.5 px-4">{t('edu_field_tuition_fee')}</th>
-              <th className="py-3.5 px-4">{language === 'ar' ? 'المسدد / الرصيد المتبقي' : language === 'fr' ? 'Payé / Solde' : 'Paid / Balance'}</th>
-              <th className="py-3.5 px-4">{t('common_status')}</th>
-              <th className="py-3.5 px-4 text-right rtl:text-left">{t('edu_col_actions')}</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800/80">
-            {filteredEnrollments.map((enr) => (
-              <tr
-                key={enr.id}
-                className="hover:bg-neutral-50 dark:hover:bg-neutral-800/40 transition-colors"
-              >
-                <td className="py-3.5 px-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 flex items-center justify-center font-bold text-xs shrink-0 border border-neutral-200 dark:border-neutral-700">
-                      {enr.studentName.charAt(0)}
-                    </div>
-                    <div>
-                      <div className="font-semibold text-neutral-900 dark:text-white">
-                        {enr.studentName}
-                      </div>
-                      <div className="text-[10px] text-neutral-400">ID: {enr.studentId}</div>
-                    </div>
-                  </div>
-                </td>
+      {/* UniversalDataCollection: List & Grid modes with selection & pinning */}
+      <UniversalDataCollection<EduEnrollment>
+        items={filteredEnrollments}
+        keyExtractor={(enr) => enr.id}
+        selectedIds={selectedEnrollmentIds}
+        isPinned={(enr) => pinnedEnrollmentIds.has(enr.id)}
+        onSelectionChange={setSelectedEnrollmentIds}
+        defaultViewMode="list"
+        columns={columns}
+        sortBy={financeSortBy}
+        sortDirection={financeSortDir}
+        onSortChange={(key) => {
+          if (financeSortBy === key) {
+            setFinanceSortDir((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+          } else {
+            setFinanceSortBy(key);
+            setFinanceSortDir('asc');
+          }
+        }}
+        renderCard={(enr) => {
+          const percent = enr.agreedTuition > 0 ? Math.round((enr.paidAmount / enr.agreedTuition) * 100) : 0;
+          return (
+            <div className="flex flex-col items-center justify-center w-full">
+              <div className="w-16 h-16 rounded-2xl bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 flex items-center justify-center text-xl font-bold shadow-xs mb-3 select-none border border-neutral-200 dark:border-neutral-700">
+                {enr.studentName.charAt(0)}
+              </div>
+              <h3 className="text-sm font-bold text-neutral-900 dark:text-white truncate max-w-[210px] mb-0.5 tracking-tight">
+                {enr.studentName}
+              </h3>
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-[#FCEEE8] dark:bg-neutral-800 text-[#C4785A] border border-[#F5E2D8] dark:border-neutral-700 mb-3 truncate max-w-[200px]">
+                {enr.cohortName}
+              </span>
 
-                <td className="py-3.5 px-4">
-                  <span className="font-medium text-neutral-800 dark:text-neutral-200 block truncate max-w-[180px]">
-                    {enr.cohortName}
+              <div className="w-full pt-3 border-t border-neutral-100 dark:border-neutral-800 text-xs space-y-2">
+                <div className="flex items-center justify-between text-[11px]">
+                  <span className="text-neutral-400">Contrat Total</span>
+                  <span className="font-bold text-neutral-900 dark:text-white tabular-nums">
+                    {formatMoney(enr.agreedTuition)}
                   </span>
-                </td>
-
-                <td className="py-3.5 px-4 font-bold text-neutral-900 dark:text-white tabular-nums">
-                  {formatMoney(enr.agreedTuition)}
-                </td>
-
-                <td className="py-3.5 px-4">
-                  <div className="tabular-nums">
-                    <span className="text-emerald-600 font-semibold">{formatMoney(enr.paidAmount)}</span>
-                    <span className="text-neutral-400"> / </span>
-                    <span className="text-rose-600 font-semibold">{formatMoney(enr.balanceDue)}</span>
-                  </div>
-                </td>
-
-                <td className="py-3.5 px-4">
-                  <div className="flex items-center gap-1.5">
-                    <span
-                      className={`px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase ${
-                        enr.paymentStatus === 'Paid'
-                          ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300'
-                          : enr.paymentStatus === 'Overdue'
-                          ? 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300'
-                          : 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300'
-                      }`}
-                    >
-                      {enr.paymentStatus === 'Paid'
-                        ? t('edu_tuition_paid')
+                </div>
+                <div className="flex items-center justify-between text-[11px]">
+                  <span className="text-emerald-600 font-semibold">{formatMoney(enr.paidAmount)}</span>
+                  <span className="text-rose-600 font-semibold">{formatMoney(enr.balanceDue)} dû</span>
+                </div>
+                <div className="w-full h-1.5 rounded-full bg-neutral-100 dark:bg-neutral-800 overflow-hidden">
+                  <div
+                    className={`h-full rounded-full ${percent >= 100 ? 'bg-emerald-500' : 'bg-[#C4785A]'}`}
+                    style={{ width: `${Math.min(100, percent)}%` }}
+                  />
+                </div>
+                <div className="flex items-center justify-between pt-1">
+                  <span
+                    className={`px-2 py-0.5 rounded text-[10px] font-semibold uppercase ${
+                      enr.paymentStatus === 'Paid'
+                        ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300'
                         : enr.paymentStatus === 'Overdue'
-                        ? t('edu_tuition_overdue')
-                        : t('edu_tuition_partial')}
-                    </span>
-                    <span className="text-[11px] text-neutral-500">
-                      {enr.installments?.filter((i) => i.isPaid).length || 0} /{' '}
-                      {enr.installments?.length || 2} Paid
-                    </span>
-                  </div>
-                </td>
-
-                <td className="py-3.5 px-4 text-right rtl:text-left">
-                  {enr.balanceDue > 0 ? (
+                        ? 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300'
+                        : 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300'
+                    }`}
+                  >
+                    {enr.paymentStatus}
+                  </span>
+                  {enr.balanceDue > 0 && (
                     <button
                       type="button"
-                      onClick={() => handleOpenPayment(enr, 0)}
-                      className="px-2.5 py-1.5 rounded-lg bg-[#C4785A] text-white text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-2xs"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleOpenPayment(enr, 0);
+                      }}
+                      className="px-2 py-1 bg-[#C4785A] text-white rounded-lg text-[10px] font-semibold hover:opacity-90"
                     >
-                      {t('edu_btn_log_payment')}
+                      Encaisser
                     </button>
-                  ) : (
-                    <span className="text-[11px] text-emerald-600 font-semibold">
-                      Completed
-                    </span>
                   )}
-                </td>
-              </tr>
-            ))}
-
-            {filteredEnrollments.length === 0 && (
-              <tr>
-                <td colSpan={6} className="py-10 text-center text-neutral-400 italic">
-                  No tuition records match your filters.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+                </div>
+              </div>
+            </div>
+          );
+        }}
+        onItemClick={(enr) => setDetailEnrollment(enr)}
+        onViewDetails={(enr) => setDetailEnrollment(enr)}
+        onEdit={(enr) => handleOpenPayment(enr, 0)}
+        onTogglePin={(enr) => {
+          setPinnedEnrollmentIds((prev) => {
+            const next = new Set(prev);
+            if (next.has(enr.id)) {
+              next.delete(enr.id);
+            } else {
+              next.add(enr.id);
+            }
+            return next;
+          });
+        }}
+      />
 
       {/* Record Payment Modal */}
       {selectedEnrollmentForPayment && (
@@ -367,6 +802,35 @@ export const EducationFinanceView: React.FC = () => {
                   {t('edu_fin_receivables')}: {formatMoney(selectedEnrollmentForPayment.balanceDue)}
                 </div>
               </div>
+
+              {selectedEnrollmentForPayment.installments && selectedEnrollmentForPayment.installments.length > 0 && (
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-semibold text-neutral-600 dark:text-neutral-400">
+                    Sélectionner l'échéance à solder
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {selectedEnrollmentForPayment.installments.map((inst, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => {
+                          setSelectedInstallmentIndex(idx);
+                          setPaymentAmount(inst.isPaid ? 0 : inst.amount);
+                        }}
+                        className={`p-2 rounded-xl border text-left rtl:text-right transition-colors cursor-pointer ${
+                          selectedInstallmentIndex === idx
+                            ? 'bg-[#FCEEE8] dark:bg-neutral-800 border-[#C4785A] text-[#C4785A] font-bold'
+                            : 'bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300'
+                        }`}
+                      >
+                        <div className="text-[10px] text-neutral-400">Échéance #{idx + 1}</div>
+                        <div className="font-bold tabular-nums">{formatMoney(inst.amount)}</div>
+                        <div className="text-[10px] text-neutral-500">{inst.isPaid ? '✓ Soldée' : `Due le ${inst.dueDate}`}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <LabelInput
                 id="payment-amount"
@@ -410,6 +874,120 @@ export const EducationFinanceView: React.FC = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Detail Drawer for Selected Enrollment */}
+      {detailEnrollment && (
+        <div className="fixed inset-0 z-50 flex justify-end bg-black/40 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="w-full max-w-md bg-white dark:bg-neutral-900 h-full shadow-2xl border-l border-neutral-200 dark:border-neutral-800 p-6 flex flex-col space-y-6 overflow-y-auto">
+            <div className="flex items-center justify-between pb-4 border-b border-neutral-100 dark:border-neutral-800">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-[#FCEEE8] text-[#C4785A] flex items-center justify-center font-bold text-sm">
+                  {detailEnrollment.studentName.charAt(0)}
+                </div>
+                <div>
+                  <h2 className="text-base font-bold text-neutral-900 dark:text-white">
+                    {detailEnrollment.studentName}
+                  </h2>
+                  <p className="text-xs text-neutral-500">
+                    {detailEnrollment.cohortName}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setDetailEnrollment(null)}
+                className="w-8 h-8 rounded-full flex items-center justify-center text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="p-3.5 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-800/40 border border-[#EDF1F3] dark:border-neutral-800">
+                <span className="text-[11px] text-neutral-400 block mb-0.5">Frais de Scolarité</span>
+                <span className="text-lg font-bold text-neutral-900 dark:text-white tabular-nums">
+                  {formatMoney(detailEnrollment.agreedTuition)}
+                </span>
+              </div>
+              <div className="p-3.5 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-800/40 border border-[#EDF1F3] dark:border-neutral-800">
+                <span className="text-[11px] text-neutral-400 block mb-0.5">Solde Restant</span>
+                <span className="text-lg font-bold text-rose-600 dark:text-rose-400 tabular-nums">
+                  {formatMoney(detailEnrollment.balanceDue)}
+                </span>
+              </div>
+            </div>
+
+            {/* Installments Table in Drawer */}
+            <div className="space-y-3">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-500">
+                Échéancier des versements
+              </h3>
+              <div className="space-y-2">
+                {detailEnrollment.installments?.map((inst, idx) => (
+                  <div
+                    key={idx}
+                    className="p-3 rounded-xl border border-neutral-200 dark:border-neutral-800 flex items-center justify-between text-xs"
+                  >
+                    <div>
+                      <div className="font-semibold text-neutral-900 dark:text-white">
+                        Versement #{idx + 1}
+                      </div>
+                      <div className="text-[11px] text-neutral-400">
+                        Échéance : {inst.dueDate} {inst.paidAt && `· Payé le ${inst.paidAt.split('T')[0]}`}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-bold text-neutral-900 dark:text-white tabular-nums">
+                        {formatMoney(inst.amount)}
+                      </div>
+                      <span
+                        className={`text-[10px] font-semibold ${
+                          inst.isPaid ? 'text-emerald-600' : 'text-amber-600'
+                        }`}
+                      >
+                        {inst.isPaid ? '✓ Soldé' : 'En attente'}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="mt-auto pt-4 border-t border-neutral-100 dark:border-neutral-800 flex gap-2">
+              {detailEnrollment.balanceDue > 0 && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleOpenPayment(detailEnrollment, 0);
+                    setDetailEnrollment(null);
+                  }}
+                  className="flex-1 h-10 rounded-xl bg-[#C4785A] text-white text-xs font-semibold flex items-center justify-center gap-1.5 shadow-xs"
+                >
+                  <Plus size={14} />
+                  <span>Encaisser un versement</span>
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => {
+                  setReceiptToPrint({
+                    studentName: detailEnrollment.studentName,
+                    cohortName: detailEnrollment.cohortName,
+                    amount: detailEnrollment.paidAmount,
+                    method: 'Comptant / Virement',
+                    date: new Date().toISOString().split('T')[0],
+                    receiptNumber: `REC-${detailEnrollment.id.slice(-6)}`,
+                  });
+                }}
+                className="h-10 px-4 rounded-xl border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold flex items-center justify-center gap-1.5"
+              >
+                <Printer size={14} />
+                <span>Reçu</span>
+              </button>
+            </div>
           </div>
         </div>
       )}

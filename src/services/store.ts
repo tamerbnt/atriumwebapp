@@ -539,12 +539,12 @@ let globalState: AppState = backfillTraceability((() => {
           devices: Array.isArray(parsed.devices) && parsed.devices.length > 0 ? parsed.devices : INITIAL_DEVICES,
           appointments: Array.isArray(parsed.appointments) && parsed.appointments.length > 0 ? parsed.appointments : INITIAL_APPOINTMENTS,
           servicesCatalog: Array.isArray(parsed.servicesCatalog) && parsed.servicesCatalog.length > 0 ? parsed.servicesCatalog : INITIAL_SALON_SERVICES,
-          freelanceClients: Array.isArray(parsed.freelanceClients) && parsed.freelanceClients.length > 0 ? parsed.freelanceClients : INITIAL_FREELANCE_CLIENTS,
-          freelanceProjects: Array.isArray(parsed.freelanceProjects) && parsed.freelanceProjects.length > 0 ? parsed.freelanceProjects : INITIAL_FREELANCE_PROJECTS,
-          timeLogs: Array.isArray(parsed.timeLogs) && parsed.timeLogs.length > 0 ? parsed.timeLogs : INITIAL_TIME_LOGS,
-          freelanceInvoices: Array.isArray(parsed.freelanceInvoices) && parsed.freelanceInvoices.length > 0 ? parsed.freelanceInvoices : INITIAL_FREELANCE_INVOICES,
-          freelanceProposals: Array.isArray(parsed.freelanceProposals) && parsed.freelanceProposals.length > 0 ? parsed.freelanceProposals : INITIAL_FREELANCE_PROPOSALS,
-          freelanceExpenses: Array.isArray(parsed.freelanceExpenses) && parsed.freelanceExpenses.length > 0 ? parsed.freelanceExpenses : INITIAL_FREELANCE_EXPENSES,
+          freelanceClients: Array.isArray(parsed.freelanceClients) && parsed.freelanceClients.length >= INITIAL_FREELANCE_CLIENTS.length ? parsed.freelanceClients : INITIAL_FREELANCE_CLIENTS,
+          freelanceProjects: Array.isArray(parsed.freelanceProjects) && parsed.freelanceProjects.length >= INITIAL_FREELANCE_PROJECTS.length ? parsed.freelanceProjects : INITIAL_FREELANCE_PROJECTS,
+          timeLogs: Array.isArray(parsed.timeLogs) && parsed.timeLogs.length >= INITIAL_TIME_LOGS.length ? parsed.timeLogs : INITIAL_TIME_LOGS,
+          freelanceInvoices: Array.isArray(parsed.freelanceInvoices) && parsed.freelanceInvoices.length >= INITIAL_FREELANCE_INVOICES.length ? parsed.freelanceInvoices : INITIAL_FREELANCE_INVOICES,
+          freelanceProposals: Array.isArray(parsed.freelanceProposals) && parsed.freelanceProposals.length >= INITIAL_FREELANCE_PROPOSALS.length ? parsed.freelanceProposals : INITIAL_FREELANCE_PROPOSALS,
+          freelanceExpenses: Array.isArray(parsed.freelanceExpenses) && parsed.freelanceExpenses.length >= INITIAL_FREELANCE_EXPENSES.length ? parsed.freelanceExpenses : INITIAL_FREELANCE_EXPENSES,
           activeTimer: parsed.activeTimer || INITIAL_ACTIVE_TIMER,
           parkedOrders: Array.isArray(parsed.parkedOrders) ? parsed.parkedOrders : INITIAL_PARKED_ORDERS,
           stockMovements: Array.isArray(parsed.stockMovements) ? parsed.stockMovements : INITIAL_STOCK_MOVEMENTS,
@@ -553,16 +553,16 @@ let globalState: AppState = backfillTraceability((() => {
           rentalBookings: Array.isArray(parsed.rentalBookings) && parsed.rentalBookings.length >= INITIAL_RENTAL_BOOKINGS.length ? parsed.rentalBookings : INITIAL_RENTAL_BOOKINGS,
           rentalRenters: Array.isArray(parsed.rentalRenters) && parsed.rentalRenters.length >= INITIAL_RENTAL_RENTERS.length ? parsed.rentalRenters : INITIAL_RENTAL_RENTERS,
           securityDeposits: Array.isArray(parsed.securityDeposits) && parsed.securityDeposits.length >= INITIAL_SECURITY_DEPOSITS.length ? parsed.securityDeposits : INITIAL_SECURITY_DEPOSITS,
-          eduCourses: Array.isArray(parsed.eduCourses) && parsed.eduCourses.length > 0 ? parsed.eduCourses : INITIAL_EDU_COURSES,
-          eduClassrooms: Array.isArray(parsed.eduClassrooms) && parsed.eduClassrooms.length > 0 ? parsed.eduClassrooms : INITIAL_EDU_CLASSROOMS,
-          eduCohorts: Array.isArray(parsed.eduCohorts) && parsed.eduCohorts.length > 0 ? parsed.eduCohorts : INITIAL_EDU_COHORTS,
-          eduStudents: Array.isArray(parsed.eduStudents) && parsed.eduStudents.length > 0 ? parsed.eduStudents : INITIAL_EDU_STUDENTS,
-          eduEnrollments: Array.isArray(parsed.eduEnrollments) && parsed.eduEnrollments.length > 0 ? parsed.eduEnrollments : INITIAL_EDU_ENROLLMENTS,
-          eduSessions: Array.isArray(parsed.eduSessions) && parsed.eduSessions.length > 0 ? parsed.eduSessions : INITIAL_EDU_SESSIONS,
-          eduAttendance: Array.isArray(parsed.eduAttendance) && parsed.eduAttendance.length > 0 ? parsed.eduAttendance : INITIAL_EDU_ATTENDANCE,
-          eduGrades: Array.isArray(parsed.eduGrades) && parsed.eduGrades.length > 0 ? parsed.eduGrades : INITIAL_EDU_GRADES,
-          eduCertificates: Array.isArray(parsed.eduCertificates) && parsed.eduCertificates.length > 0 ? parsed.eduCertificates : INITIAL_EDU_CERTIFICATES,
-          eduAdmissions: Array.isArray(parsed.eduAdmissions) && parsed.eduAdmissions.length > 0 ? parsed.eduAdmissions : INITIAL_EDU_ADMISSIONS,
+          eduCourses: Array.isArray(parsed.eduCourses) && parsed.eduCourses.length >= INITIAL_EDU_COURSES.length ? parsed.eduCourses : INITIAL_EDU_COURSES,
+          eduClassrooms: Array.isArray(parsed.eduClassrooms) && parsed.eduClassrooms.length >= INITIAL_EDU_CLASSROOMS.length ? parsed.eduClassrooms : INITIAL_EDU_CLASSROOMS,
+          eduCohorts: Array.isArray(parsed.eduCohorts) && parsed.eduCohorts.length >= INITIAL_EDU_COHORTS.length ? parsed.eduCohorts : INITIAL_EDU_COHORTS,
+          eduStudents: Array.isArray(parsed.eduStudents) && parsed.eduStudents.length >= INITIAL_EDU_STUDENTS.length ? parsed.eduStudents : INITIAL_EDU_STUDENTS,
+          eduEnrollments: Array.isArray(parsed.eduEnrollments) && parsed.eduEnrollments.length >= INITIAL_EDU_ENROLLMENTS.length ? parsed.eduEnrollments : INITIAL_EDU_ENROLLMENTS,
+          eduSessions: Array.isArray(parsed.eduSessions) && parsed.eduSessions.length >= INITIAL_EDU_SESSIONS.length ? parsed.eduSessions : INITIAL_EDU_SESSIONS,
+          eduAttendance: Array.isArray(parsed.eduAttendance) && parsed.eduAttendance.length >= INITIAL_EDU_ATTENDANCE.length ? parsed.eduAttendance : INITIAL_EDU_ATTENDANCE,
+          eduGrades: Array.isArray(parsed.eduGrades) && parsed.eduGrades.length >= INITIAL_EDU_GRADES.length ? parsed.eduGrades : INITIAL_EDU_GRADES,
+          eduCertificates: Array.isArray(parsed.eduCertificates) && parsed.eduCertificates.length >= INITIAL_EDU_CERTIFICATES.length ? parsed.eduCertificates : INITIAL_EDU_CERTIFICATES,
+          eduAdmissions: Array.isArray(parsed.eduAdmissions) && parsed.eduAdmissions.length >= INITIAL_EDU_ADMISSIONS.length ? parsed.eduAdmissions : INITIAL_EDU_ADMISSIONS,
           // PM Hydration
           activePmRole: parsed.activePmRole || 'direction',
           pmClients: Array.isArray(parsed.pmClients) && parsed.pmClients.length > 0 ? parsed.pmClients : INITIAL_PM_CLIENTS,
@@ -986,12 +986,48 @@ export function useAtriumStore() {
   const currentServices = (state.servicesCatalog || []).filter((s) => s.facilityId === state.currentBranchId);
   const currentParkedOrders = (state.parkedOrders || []).filter((p) => p.facilityId === state.currentBranchId);
   const currentStockMovements = (state.stockMovements || []).filter((sm) => sm.facilityId === state.currentBranchId);
-  const currentFreelanceClients = (state.freelanceClients || []).filter((c) => c.facilityId === state.currentBranchId);
-  const currentFreelanceProjects = (state.freelanceProjects || []).filter((p) => p.facilityId === state.currentBranchId);
-  const currentTimeLogs = (state.timeLogs || []).filter((t) => t.facilityId === state.currentBranchId);
-  const currentFreelanceInvoices = (state.freelanceInvoices || []).filter((i) => i.facilityId === state.currentBranchId);
-  const currentFreelanceProposals = (state.freelanceProposals || []).filter((pr) => pr.facilityId === state.currentBranchId);
-  const currentFreelanceExpenses = (state.freelanceExpenses || []).filter((e) => e.facilityId === state.currentBranchId);
+  const currentFreelanceClients = (() => {
+    const list = state.freelanceClients || [];
+    const direct = list.filter((c) => c.facilityId === state.currentBranchId);
+    if (direct.length > 0) return direct;
+    const defaultFreelance = list.filter((c) => c.facilityId === 'branch_freelance_main');
+    return defaultFreelance.length > 0 ? defaultFreelance : list;
+  })();
+  const currentFreelanceProjects = (() => {
+    const list = state.freelanceProjects || [];
+    const direct = list.filter((p) => p.facilityId === state.currentBranchId);
+    if (direct.length > 0) return direct;
+    const defaultFreelance = list.filter((p) => p.facilityId === 'branch_freelance_main');
+    return defaultFreelance.length > 0 ? defaultFreelance : list;
+  })();
+  const currentTimeLogs = (() => {
+    const list = state.timeLogs || [];
+    const direct = list.filter((t) => t.facilityId === state.currentBranchId);
+    if (direct.length > 0) return direct;
+    const defaultFreelance = list.filter((t) => t.facilityId === 'branch_freelance_main');
+    return defaultFreelance.length > 0 ? defaultFreelance : list;
+  })();
+  const currentFreelanceInvoices = (() => {
+    const list = state.freelanceInvoices || [];
+    const direct = list.filter((i) => i.facilityId === state.currentBranchId);
+    if (direct.length > 0) return direct;
+    const defaultFreelance = list.filter((i) => i.facilityId === 'branch_freelance_main');
+    return defaultFreelance.length > 0 ? defaultFreelance : list;
+  })();
+  const currentFreelanceProposals = (() => {
+    const list = state.freelanceProposals || [];
+    const direct = list.filter((pr) => pr.facilityId === state.currentBranchId);
+    if (direct.length > 0) return direct;
+    const defaultFreelance = list.filter((pr) => pr.facilityId === 'branch_freelance_main');
+    return defaultFreelance.length > 0 ? defaultFreelance : list;
+  })();
+  const currentFreelanceExpenses = (() => {
+    const list = state.freelanceExpenses || [];
+    const direct = list.filter((e) => e.facilityId === state.currentBranchId);
+    if (direct.length > 0) return direct;
+    const defaultFreelance = list.filter((e) => e.facilityId === 'branch_freelance_main');
+    return defaultFreelance.length > 0 ? defaultFreelance : list;
+  })();
   const currentRentableUnits = (() => {
     const list = state.rentableUnits || [];
     const direct = list.filter((u) => u.facilityId === state.currentBranchId || u.branchId === state.currentBranchId);
@@ -4489,6 +4525,141 @@ export function useAtriumStore() {
     });
   };
 
+  const resetEduMockData = () => {
+    const targetFacilityId = state.currentBranchId || 'branch_edu_main';
+    const targetAccountId = state.account.id || 'acc_01';
+    const targetBusinessId = state.currentBusinessId || 'biz_edu';
+
+    const freshStudents = INITIAL_EDU_STUDENTS.map((s) => ({
+      ...s,
+      facilityId: targetFacilityId,
+      branchId: targetFacilityId,
+      businessId: targetBusinessId,
+      accountId: targetAccountId,
+    }));
+    const freshCohorts = INITIAL_EDU_COHORTS.map((c) => ({
+      ...c,
+      facilityId: targetFacilityId,
+      branchId: targetFacilityId,
+      businessId: targetBusinessId,
+      accountId: targetAccountId,
+    }));
+    const freshEnrollments = INITIAL_EDU_ENROLLMENTS.map((e) => ({
+      ...e,
+      facilityId: targetFacilityId,
+      branchId: targetFacilityId,
+      businessId: targetBusinessId,
+      accountId: targetAccountId,
+    }));
+    const freshSessions = INITIAL_EDU_SESSIONS.map((sess) => ({
+      ...sess,
+      facilityId: targetFacilityId,
+      branchId: targetFacilityId,
+      businessId: targetBusinessId,
+      accountId: targetAccountId,
+    }));
+    const freshAttendance = INITIAL_EDU_ATTENDANCE.map((a) => ({
+      ...a,
+      facilityId: targetFacilityId,
+      branchId: targetFacilityId,
+      businessId: targetBusinessId,
+      accountId: targetAccountId,
+    }));
+    const freshGrades = INITIAL_EDU_GRADES.map((g) => ({
+      ...g,
+      facilityId: targetFacilityId,
+      branchId: targetFacilityId,
+      businessId: targetBusinessId,
+      accountId: targetAccountId,
+    }));
+    const freshCerts = INITIAL_EDU_CERTIFICATES.map((cert) => ({
+      ...cert,
+      facilityId: targetFacilityId,
+      branchId: targetFacilityId,
+      businessId: targetBusinessId,
+      accountId: targetAccountId,
+    }));
+    const freshAdmissions = INITIAL_EDU_ADMISSIONS.map((adm) => ({
+      ...adm,
+      facilityId: targetFacilityId,
+      branchId: targetFacilityId,
+      businessId: targetBusinessId,
+      accountId: targetAccountId,
+    }));
+
+    globalState = {
+      ...globalState,
+      eduStudents: freshStudents,
+      eduCohorts: freshCohorts,
+      eduEnrollments: freshEnrollments,
+      eduSessions: freshSessions,
+      eduAttendance: freshAttendance,
+      eduGrades: freshGrades,
+      eduCertificates: freshCerts,
+      eduAdmissions: freshAdmissions,
+    };
+    notify();
+    showToast({
+      type: 'success',
+      title: 'Données Démo Académie & Formation',
+      message: `${freshStudents.length} étudiants, ${freshCohorts.length} promotions et ${freshAdmissions.length} dossiers d'admission réinitialisés.`,
+      category: 'education_cohort',
+    });
+  };
+
+  const resetFreelanceMockData = () => {
+    const targetFacilityId = state.currentBranchId || 'branch_freelance_main';
+    const targetAccountId = state.account.id || 'acc_01';
+
+    const freshClients = INITIAL_FREELANCE_CLIENTS.map((c) => ({
+      ...c,
+      facilityId: targetFacilityId,
+      tenantId: targetAccountId,
+    }));
+    const freshProjects = INITIAL_FREELANCE_PROJECTS.map((p) => ({
+      ...p,
+      facilityId: targetFacilityId,
+      tenantId: targetAccountId,
+    }));
+    const freshTimeLogs = INITIAL_TIME_LOGS.map((t) => ({
+      ...t,
+      facilityId: targetFacilityId,
+      tenantId: targetAccountId,
+    }));
+    const freshInvoices = INITIAL_FREELANCE_INVOICES.map((inv) => ({
+      ...inv,
+      facilityId: targetFacilityId,
+      tenantId: targetAccountId,
+    }));
+    const freshProposals = INITIAL_FREELANCE_PROPOSALS.map((prop) => ({
+      ...prop,
+      facilityId: targetFacilityId,
+      tenantId: targetAccountId,
+    }));
+    const freshExpenses = INITIAL_FREELANCE_EXPENSES.map((exp) => ({
+      ...exp,
+      facilityId: targetFacilityId,
+      tenantId: targetAccountId,
+    }));
+
+    globalState = {
+      ...globalState,
+      freelanceClients: freshClients,
+      freelanceProjects: freshProjects,
+      timeLogs: freshTimeLogs,
+      freelanceInvoices: freshInvoices,
+      freelanceProposals: freshProposals,
+      freelanceExpenses: freshExpenses,
+    };
+    notify();
+    showToast({
+      type: 'success',
+      title: 'Données Démo Freelance & Studio',
+      message: `${freshClients.length} clients, ${freshProjects.length} projets et ${freshInvoices.length} factures réinitialisés.`,
+      category: 'freelance_solo',
+    });
+  };
+
   // ==========================================
   // Education & Academy Actions (Category 15)
   // ==========================================
@@ -4841,6 +5012,24 @@ export function useAtriumStore() {
       eduAdmissions: (globalState.eduAdmissions || []).map((l) =>
         l.id === leadId ? { ...l, stage } : l
       ),
+    };
+    notify();
+  };
+
+  const updateEduAdmissionLead = (leadId: string, updates: Partial<EduAdmissionLead>) => {
+    globalState = {
+      ...globalState,
+      eduAdmissions: (globalState.eduAdmissions || []).map((l) =>
+        l.id === leadId ? { ...l, ...updates } : l
+      ),
+    };
+    notify();
+  };
+
+  const deleteEduAdmissionLead = (leadId: string) => {
+    globalState = {
+      ...globalState,
+      eduAdmissions: (globalState.eduAdmissions || []).filter((l) => l.id !== leadId),
     };
     notify();
   };
@@ -5771,6 +5960,7 @@ export function useAtriumStore() {
     convertProposalToProject,
     addFreelanceExpense,
     deleteFreelanceExpense,
+    resetFreelanceMockData,
     // Rentals & Venue Actions
     createRentalBooking,
     updateRentalBooking,
@@ -5787,6 +5977,7 @@ export function useAtriumStore() {
     deductSecurityDeposit,
     resetVenueMockData,
     // Education & Academy Actions
+    resetEduMockData,
     addEduStudent,
     updateEduStudent,
     deleteEduStudent,
@@ -5803,6 +5994,8 @@ export function useAtriumStore() {
     addEduEnrollment,
     addEduAdmissionLead,
     updateAdmissionStage,
+    updateEduAdmissionLead,
+    deleteEduAdmissionLead,
     convertAdmissionToStudent,
     issueEduCertificate,
     addEduClassroom,

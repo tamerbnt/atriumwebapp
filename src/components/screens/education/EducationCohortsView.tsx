@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   BookOpen,
   GraduationCap,
@@ -16,6 +16,13 @@ import {
   Edit3,
   Check,
   Eye,
+  Home,
+  ChevronDown,
+  Download,
+  Sparkles,
+  Building2,
+  AlertCircle,
+  Play,
 } from 'lucide-react';
 import { useAtriumStore } from '../../../services/store';
 import { CohortStatus, EduCohort } from '../../../types';
@@ -23,7 +30,7 @@ import { formatMoney } from '../../../utils/rules';
 import { Seek } from '../../ui/Seek';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
-import { ActionNode } from '../../ui/ActionNode';
+import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { useTranslation } from '../../../utils/useTranslation';
 
 type CourseCat = 'All' | 'Language' | 'Technology' | 'Academic' | 'Arts';
@@ -37,15 +44,37 @@ export const EducationCohortsView: React.FC = () => {
     eduEnrollments,
     eduStudents,
     staff,
+    currentBranch,
+    businesses,
+    branches,
+    currentBusinessId,
+    switchBusiness,
+    switchBranch,
+    resetEduMockData,
     addEduCohort,
     updateEduCohort,
     deleteEduCohort,
+    showToast,
   } = useAtriumStore();
+
+  // Auto-heal empty cohorts directory safely once on mount
+  const hasAutoHealed = useRef(false);
+  useEffect(() => {
+    if (!hasAutoHealed.current && eduCohorts.length === 0) {
+      hasAutoHealed.current = true;
+      resetEduMockData();
+    }
+  }, [eduCohorts.length, resetEduMockData]);
 
   const [categoryFilter, setCategoryFilter] = useState<CourseCat>('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCohort, setSelectedCohort] = useState<EduCohort | null>(null);
   const [isAddCohortModalOpen, setIsAddCohortModalOpen] = useState(false);
+  const [selectedCohortIds, setSelectedCohortIds] = useState<Set<string>>(new Set());
+  const [pinnedCohortIds, setPinnedCohortIds] = useState<Set<string>>(new Set());
+  const [cohortSortBy, setCohortSortBy] = useState<string>('name');
+  const [cohortSortDir, setCohortSortDir] = useState<'asc' | 'desc'>('asc');
+  const [isFacilityDropdownOpen, setIsFacilityDropdownOpen] = useState(false);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -61,21 +90,167 @@ export const EducationCohortsView: React.FC = () => {
     status: 'Enrolling' as CohortStatus,
   });
 
-  const filteredCohorts = eduCohorts.filter((c) => {
-    if (categoryFilter !== 'All') {
-      const course = eduCourses.find((co) => co.id === c.courseId);
-      if (course?.category !== categoryFilter) return false;
-    }
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      const matchesName = c.name.toLowerCase().includes(q);
-      const matchesCode = (c.cohortCode || '').toLowerCase().includes(q);
-      const matchesInstructor = (c.instructorName || '').toLowerCase().includes(q);
-      const matchesCourse = (c.courseTitle || '').toLowerCase().includes(q);
-      if (!matchesName && !matchesCode && !matchesInstructor && !matchesCourse) return false;
-    }
-    return true;
-  });
+  const filteredCohorts = useMemo(() => {
+    return eduCohorts.filter((c) => {
+      if (categoryFilter !== 'All') {
+        const course = eduCourses.find((co) => co.id === c.courseId);
+        if (course?.category !== categoryFilter) return false;
+      }
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        const matchesName = c.name.toLowerCase().includes(q);
+        const matchesCode = (c.cohortCode || '').toLowerCase().includes(q);
+        const matchesInstructor = (c.instructorName || '').toLowerCase().includes(q);
+        const matchesCourse = (c.courseTitle || '').toLowerCase().includes(q);
+        if (!matchesName && !matchesCode && !matchesInstructor && !matchesCourse) return false;
+      }
+      return true;
+    });
+  }, [eduCohorts, categoryFilter, searchQuery, eduCourses]);
+
+  const sortedCohorts = useMemo(() => {
+    return [...filteredCohorts].sort((a, b) => {
+      const aPinned = pinnedCohortIds.has(a.id);
+      const bPinned = pinnedCohortIds.has(b.id);
+      if (aPinned && !bPinned) return -1;
+      if (!aPinned && bPinned) return 1;
+
+      if (cohortSortBy === 'name') {
+        const cmp = a.name.localeCompare(b.name);
+        return cohortSortDir === 'asc' ? cmp : -cmp;
+      }
+      if (cohortSortBy === 'occupancy') {
+        const aRate = a.enrolledCount / a.maxStudents;
+        const bRate = b.enrolledCount / b.maxStudents;
+        return cohortSortDir === 'asc' ? aRate - bRate : bRate - aRate;
+      }
+      if (cohortSortBy === 'tuition') {
+        return cohortSortDir === 'asc' ? a.tuitionFee - b.tuitionFee : b.tuitionFee - a.tuitionFee;
+      }
+      return 0;
+    });
+  }, [filteredCohorts, pinnedCohortIds, cohortSortBy, cohortSortDir]);
+
+  const cohortColumns: ColumnDefinition<EduCohort>[] = useMemo(() => [
+    {
+      key: 'name',
+      header: t('edu_cohorts_title'),
+      width: '2.5*',
+      minWidth: '220px',
+      sortable: true,
+      renderCell: (cohort) => (
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 text-[#C4785A] flex items-center justify-center font-bold text-xs shrink-0 border border-[#F5E2D8] dark:border-neutral-700">
+            <BookOpen size={16} />
+          </div>
+          <div className="min-w-0">
+            <div className="font-bold text-neutral-900 dark:text-white truncate hover:text-[#C4785A] transition-colors">
+              {cohort.name}
+            </div>
+            <div className="text-[11px] text-neutral-400 truncate">
+              {cohort.courseTitle}
+            </div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: 'instructor',
+      header: language === 'ar' ? 'الأستاذ والمدرّج' : language === 'fr' ? 'Formateur & Salle' : 'Instructor & Room',
+      width: '2*',
+      minWidth: '180px',
+      renderCell: (cohort) => (
+        <div className="space-y-0.5 text-xs">
+          <div className="font-medium text-neutral-800 dark:text-neutral-200 truncate">
+            {cohort.instructorName}
+          </div>
+          <div className="text-[11px] text-neutral-400 truncate">
+            {cohort.classroomName || 'Room 1'}
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: 'schedule',
+      header: language === 'ar' ? 'التوقيت والمواعيد' : language === 'fr' ? 'Planning & Période' : 'Schedule',
+      width: '2*',
+      minWidth: '170px',
+      renderCell: (cohort) => (
+        <div className="space-y-0.5 text-xs">
+          <div className="text-neutral-700 dark:text-neutral-300 font-medium">
+            {cohort.scheduleSummary}
+          </div>
+          <div className="text-[10px] text-neutral-400 font-mono">
+            {cohort.startDate} — {cohort.endDate}
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: 'occupancy',
+      header: language === 'ar' ? 'المقاعد والنسبة' : language === 'fr' ? 'Places Occupées' : 'Seats & Capacity',
+      width: '1.8*',
+      minWidth: '150px',
+      sortable: true,
+      renderCell: (cohort) => {
+        const pct = Math.min(100, Math.round((cohort.enrolledCount / cohort.maxStudents) * 100));
+        return (
+          <div className="space-y-1 text-xs">
+            <div className="flex items-center justify-between text-[11px]">
+              <span className="font-semibold text-neutral-700 dark:text-neutral-300 tabular-nums">
+                {cohort.enrolledCount} / {cohort.maxStudents}
+              </span>
+              <span className="font-bold text-[#C4785A] tabular-nums">{pct}%</span>
+            </div>
+            <div className="w-full h-1.5 rounded-full bg-neutral-100 dark:bg-neutral-800 overflow-hidden">
+              <div
+                className="h-full bg-[#C4785A] rounded-full transition-all"
+                style={{ width: `${pct}%` }}
+              />
+            </div>
+          </div>
+        );
+      },
+    },
+    {
+      key: 'tuition',
+      header: language === 'ar' ? 'رسوم التسجيل' : language === 'fr' ? 'Frais d\'inscription' : 'Tuition',
+      width: '1.5*',
+      minWidth: '130px',
+      sortable: true,
+      renderCell: (cohort) => (
+        <span className="font-bold text-neutral-900 dark:text-white tabular-nums">
+          {formatMoney(cohort.tuitionFee)}
+        </span>
+      ),
+    },
+    {
+      key: 'status',
+      header: language === 'ar' ? 'الحالة' : language === 'fr' ? 'Statut' : 'Status',
+      width: '1.2*',
+      minWidth: '110px',
+      renderCell: (cohort) => {
+        const isEnrolling = cohort.status === 'Enrolling';
+        const isRunning = cohort.status === 'InProgress';
+        const isCompleted = cohort.status === 'Completed';
+        return (
+          <span
+            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${
+              isEnrolling
+                ? 'bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300'
+                : isRunning
+                ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300'
+                : isCompleted
+                ? 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400'
+                : 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300'
+            }`}
+          >
+            {cohort.status}
+          </span>
+        );
+      },
+    },
+  ], [language, t]);
 
   const totalSeats = eduCohorts.reduce((sum, c) => sum + c.maxStudents, 0);
   const totalEnrolled = eduCohorts.reduce((sum, c) => sum + c.enrolledCount, 0);
@@ -133,6 +308,86 @@ export const EducationCohortsView: React.FC = () => {
     }
   };
 
+  const handleExportCSV = () => {
+    const headers = [
+      language === 'ar' ? 'اسم الفوج / الدفعة' : language === 'fr' ? 'Nom Cohorte' : 'Cohort Name',
+      language === 'ar' ? 'المقرر الدراسي' : language === 'fr' ? 'Cours' : 'Course Title',
+      language === 'ar' ? 'الأستاذ' : language === 'fr' ? 'Formateur' : 'Instructor',
+      language === 'ar' ? 'القاعة' : language === 'fr' ? 'Salle' : 'Classroom',
+      language === 'ar' ? 'تاريخ البداية' : language === 'fr' ? 'Date Début' : 'Start Date',
+      language === 'ar' ? 'تاريخ النهاية' : language === 'fr' ? 'Date Fin' : 'End Date',
+      language === 'ar' ? 'المواعيد' : language === 'fr' ? 'Horaires' : 'Schedule',
+      language === 'ar' ? 'المقاعد المسجلة' : language === 'fr' ? 'Inscrits' : 'Enrolled',
+      language === 'ar' ? 'السعة القصوى' : language === 'fr' ? 'Capacité' : 'Max Capacity',
+      language === 'ar' ? 'رسوم التسجيل' : language === 'fr' ? 'Frais (DZD)' : 'Tuition (DZD)',
+      language === 'ar' ? 'الحالة' : language === 'fr' ? 'Statut' : 'Status',
+    ];
+    const rows = sortedCohorts.map((c) => [
+      `"${c.name}"`,
+      `"${c.courseTitle}"`,
+      `"${c.instructorName}"`,
+      `"${c.classroomName || ''}"`,
+      `"${c.startDate}"`,
+      `"${c.endDate}"`,
+      `"${c.scheduleSummary}"`,
+      `"${c.enrolledCount}"`,
+      `"${c.maxStudents}"`,
+      `"${c.tuitionFee}"`,
+      `"${c.status}"`,
+    ]);
+    const csvContent = 'data:text/csv;charset=utf-8,\uFEFF' + [headers.join(','), ...rows.map((row) => row.join(','))].join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `cohorts-catalog-${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast({
+      type: 'success',
+      title: language === 'ar' ? 'تم التصدير' : language === 'fr' ? 'Exportation réussie' : 'Export Complete',
+      message: `${sortedCohorts.length} ${language === 'ar' ? 'أفواج تم تصديرها' : 'cohorts exported successfully'}`,
+    });
+  };
+
+  const handleBatchStart = () => {
+    if (selectedCohortIds.size === 0) return;
+    const count = selectedCohortIds.size;
+    selectedCohortIds.forEach((id) => updateEduCohort(id, { status: 'InProgress' }));
+    setSelectedCohortIds(new Set());
+    showToast({
+      type: 'success',
+      title: language === 'ar' ? 'بدء الدراسة' : language === 'fr' ? 'Cohortes Lancées' : 'Cohorts In Progress',
+      message: `${count} ${language === 'ar' ? 'أفواج بدأت دراستها' : 'cohorts marked as in progress'}`,
+    });
+  };
+
+  const handleBatchComplete = () => {
+    if (selectedCohortIds.size === 0) return;
+    const count = selectedCohortIds.size;
+    selectedCohortIds.forEach((id) => updateEduCohort(id, { status: 'Completed' }));
+    setSelectedCohortIds(new Set());
+    showToast({
+      type: 'info',
+      title: language === 'ar' ? 'اكتملت الدورة' : language === 'fr' ? 'Cohortes Clôturées' : 'Cohorts Completed',
+      message: `${count} ${language === 'ar' ? 'أفواج تم إنهاؤها' : 'cohorts marked as completed'}`,
+    });
+  };
+
+  const handleBatchDelete = () => {
+    if (selectedCohortIds.size === 0) return;
+    const count = selectedCohortIds.size;
+    if (confirm(language === 'ar' ? `هل أنت متأكد من حذف ${count} فوج؟` : language === 'fr' ? `Supprimer définitivement ${count} cohortes sélectionnées ?` : `Delete ${count} selected cohorts?`)) {
+      selectedCohortIds.forEach((id) => deleteEduCohort(id));
+      setSelectedCohortIds(new Set());
+      showToast({
+        type: 'info',
+        title: language === 'ar' ? 'تم الحذف' : language === 'fr' ? 'Suppression' : 'Deleted',
+        message: `${count} ${language === 'ar' ? 'أفواج تم حذفها' : 'cohorts deleted'}`,
+      });
+    }
+  };
+
   const cohortEnrolledStudents = selectedCohort
     ? eduEnrollments
         .filter((e) => e.cohortId === selectedCohort.id)
@@ -146,29 +401,154 @@ export const EducationCohortsView: React.FC = () => {
     <div className="space-y-6 animate-in fade-in duration-200">
       {/* Top Header Row matching other category screens */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-neutral-200 dark:border-neutral-800">
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white">
-              {t('edu_cohorts_title')}
-            </h1>
-            <span className="text-xs text-neutral-500 dark:text-neutral-400">
-              {eduCohorts.length} active batches · {eduCourses.length} syllabus courses
-            </span>
+        <div className="flex items-center gap-3.5">
+          <div className="w-11 h-11 rounded-2xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-800 dark:text-neutral-200">
+            <GraduationCap size={22} />
           </div>
-          <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
-            {t('edu_cohorts_subtitle')}
-          </p>
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-900 dark:text-white">
+                {t('edu_cohorts_title')}
+              </h1>
+              <span className="text-xs text-neutral-500 dark:text-neutral-400">
+                {eduCohorts.length} {language === 'ar' ? 'دفعات دراسية' : 'active batches'} · {eduCourses.length} {language === 'ar' ? 'برامج أكاديمية' : 'curricula'}
+              </span>
+            </div>
+            <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
+              {t('edu_cohorts_subtitle')}
+            </p>
+          </div>
         </div>
 
-        <button
-          type="button"
-          onClick={() => setIsAddCohortModalOpen(true)}
-          className="h-10 px-4 rounded-xl bg-[#C4785A] text-white text-xs font-semibold flex items-center gap-1.5 hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
-        >
-          <Plus size={14} />
-          <span>{t('edu_modal_add_cohort')}</span>
-        </button>
+        <div className="flex items-center gap-2.5 flex-wrap self-start sm:self-auto">
+          {/* Facility Pill: Atrium 1 ▾ */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setIsFacilityDropdownOpen(!isFacilityDropdownOpen)}
+              className="h-10 px-4 rounded-full bg-[#F4EFEA] dark:bg-neutral-800/80 border border-[#E8DFD8] dark:border-neutral-700 flex items-center gap-2 cursor-pointer hover:bg-[#EFE8E1] dark:hover:bg-neutral-800 transition-colors shadow-2xs"
+            >
+              <Home size={15} className="text-[#C4785A]" />
+              <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
+                {currentBranch?.name || 'Atrium 1'}
+              </span>
+              <ChevronDown
+                size={14}
+                className={`text-neutral-500 transition-transform ${
+                  isFacilityDropdownOpen ? 'rotate-180' : ''
+                }`}
+              />
+            </button>
+
+            {/* Facility Dropdown Menu */}
+            {isFacilityDropdownOpen && (
+              <div className="absolute right-0 rtl:right-auto rtl:left-0 mt-2 w-64 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
+                <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+                  {language === 'ar' ? 'الفروع والمراكز التعليمية' : language === 'fr' ? 'Centres & Campus' : 'Campuses & Branches'}
+                </div>
+                {businesses.map((biz) => {
+                  const isCurrent = biz.id === currentBusinessId;
+                  const matchingBranch = branches.find((b) => b.businessId === biz.id);
+                  return (
+                    <button
+                      key={biz.id}
+                      type="button"
+                      onClick={() => {
+                        switchBusiness(biz.id);
+                        if (matchingBranch) switchBranch(matchingBranch.id);
+                        setIsFacilityDropdownOpen(false);
+                      }}
+                      className={`w-full px-3 py-2 text-left rtl:text-right flex items-center justify-between text-xs transition-colors cursor-pointer ${
+                        isCurrent
+                          ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold'
+                          : 'text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <Building2 size={14} className={isCurrent ? 'text-[#C4785A]' : 'text-neutral-400'} />
+                        <span className="truncate">{biz.name}</span>
+                      </div>
+                      {isCurrent && <Check size={14} />}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Export CSV Button */}
+          <button
+            type="button"
+            onClick={handleExportCSV}
+            className="h-10 px-3.5 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold rounded-full transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer"
+            title="Export CSV"
+          >
+            <Download size={14} />
+            <span className="hidden sm:inline">CSV</span>
+          </button>
+
+          {/* Seed Demo Data Button */}
+          <button
+            type="button"
+            onClick={resetEduMockData}
+            className="h-10 px-3.5 bg-[#FCEEE8] dark:bg-neutral-800 hover:bg-[#F8DFD4] dark:hover:bg-neutral-700 text-[#C4785A] text-xs font-semibold rounded-full transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer"
+            title={language === 'ar' ? 'إعادة شحن بيانات تجريبية' : language === 'fr' ? 'Recharger Données Démo' : 'Seed Mock Data'}
+          >
+            <Sparkles size={14} />
+            <span className="hidden sm:inline">{language === 'ar' ? 'بيانات تجريبية' : language === 'fr' ? 'Données Démo' : 'Demo Data'}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setIsAddCohortModalOpen(true)}
+            className="h-10 px-4 rounded-full bg-[#C4785A] hover:bg-[var(--color-accent-hover)] text-white text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+          >
+            <Plus size={14} />
+            <span>{t('edu_modal_add_cohort')}</span>
+          </button>
+        </div>
       </div>
+
+      {/* Batch Selection Toolbar */}
+      {selectedCohortIds.size > 0 && (
+        <div className="flex items-center justify-between p-3 px-4 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 animate-in fade-in slide-in-from-top-2">
+          <div className="flex items-center gap-3">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#C4785A] animate-pulse" />
+            <span className="text-xs font-bold text-neutral-900 dark:text-white">
+              {selectedCohortIds.size} {language === 'ar' ? 'أفواج محددة' : language === 'fr' ? 'cohortes sélectionnées' : 'cohortes selected'}
+            </span>
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              onClick={() => setSelectedCohortIds(new Set())}
+              className="px-3 py-1.5 text-xs text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white font-medium cursor-pointer"
+            >
+              {language === 'ar' ? 'إلغاء التحديد' : language === 'fr' ? 'Désélectionner' : 'Deselect'}
+            </button>
+            <button
+              onClick={handleBatchStart}
+              className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+            >
+              <Play size={13} />
+              <span>{language === 'ar' ? 'بدء الدراسة' : language === 'fr' ? 'Lancer' : 'Start Term'}</span>
+            </button>
+            <button
+              onClick={handleBatchComplete}
+              className="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+            >
+              <CheckCircle2 size={13} />
+              <span>{language === 'ar' ? 'اختتام الدورة' : language === 'fr' ? 'Clôturer' : 'Complete'}</span>
+            </button>
+            <button
+              onClick={handleBatchDelete}
+              className="px-3.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+            >
+              <Trash2 size={13} />
+              <span>{language === 'ar' ? 'حذف المحدد' : language === 'fr' ? 'Supprimer' : 'Delete'}</span>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* KPI Overview Strip */}
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
@@ -257,83 +637,55 @@ export const EducationCohortsView: React.FC = () => {
         </div>
       </div>
 
-      {/* Cohort Cards Grid with ActionNode */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filteredCohorts.map((cohort) => {
+      {/* Universal Collection (List view & Grid view with 6-button corner-fan) */}
+      <UniversalDataCollection<EduCohort>
+        items={sortedCohorts}
+        keyExtractor={(c) => c.id}
+        defaultViewMode="grid"
+        columns={cohortColumns}
+        sortBy={cohortSortBy}
+        sortDirection={cohortSortDir}
+        onSortChange={(key) => {
+          if (cohortSortBy === key) {
+            setCohortSortDir((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+          } else {
+            setCohortSortBy(key);
+            setCohortSortDir('asc');
+          }
+        }}
+        renderCard={(cohort) => {
           const occupancyPercent = Math.min(
             100,
             Math.round((cohort.enrolledCount / cohort.maxStudents) * 100)
           );
-          const isSelected = selectedCohort?.id === cohort.id;
-
-          const cohortEnrollments = eduEnrollments.filter((e) => e.cohortId === cohort.id);
-          const studentAvatars = cohortEnrollments.map((enr) => {
-            const student = eduStudents.find((s) => s.id === enr.studentId);
-            return {
-              id: enr.id,
-              name: student?.fullName || enr.studentName,
-              color: '#C4785A',
-            };
-          });
+          const completedMilestones = cohort.syllabusMilestones?.filter((m) => m.completed).length || 0;
+          const totalMilestones = cohort.syllabusMilestones?.length || 0;
 
           return (
-            <ActionNode
-              key={cohort.id}
-              title={cohort.name}
-              description={`${cohort.courseTitle} · ${cohort.scheduleSummary}`}
-              tag={`${cohort.cohortCode || 'COHORT'} · ${cohort.status}`}
-              selected={isSelected}
-              onClick={() => setSelectedCohort(cohort)}
-              width="100%"
-              air={16}
-              corner={20}
-              avatars={studentAvatars}
-              moreAvatarsCount={
-                cohort.enrolledCount > studentAvatars.length
-                  ? cohort.enrolledCount - studentAvatars.length
-                  : undefined
-              }
-              actions={[
-                {
-                  id: 'inspect',
-                  label: 'Inspect Cohort',
-                  icon: <Eye size={14} />,
-                  onClick: () => setSelectedCohort(cohort),
-                },
-                {
-                  id: 'edit',
-                  label: 'Edit Cohort',
-                  icon: <Edit3 size={14} />,
-                  onClick: () => {
-                    setSelectedCohort(cohort);
-                  },
-                },
-                {
-                  id: 'delete',
-                  label: 'Delete Cohort',
-                  icon: <Trash2 size={14} />,
-                  onClick: () => {
-                    if (confirm(t('edu_confirm_delete_cohort'))) {
-                      deleteEduCohort(cohort.id);
-                    }
-                  },
-                },
-              ]}
-            >
-              <div className="space-y-2 mt-2 pt-2 border-t border-[#EDF1F3] dark:border-neutral-800">
-                <div className="flex items-center justify-between text-xs text-neutral-500 dark:text-neutral-400">
-                  <div className="flex items-center gap-1.5">
-                    <Calendar size={12} className="text-neutral-400" />
-                    <span>{cohort.startDate} — {cohort.endDate}</span>
-                  </div>
+            <div className="flex flex-col items-center justify-center w-full">
+              <div className="w-20 h-20 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 text-[#C4785A] flex items-center justify-center text-[28px] font-bold shadow-md mb-3 select-none border border-[#F5E2D8] dark:border-neutral-700">
+                <BookOpen size={28} />
+              </div>
+              <h3 className="text-[16px] font-bold text-neutral-900 dark:text-white truncate max-w-[210px] mb-1 tracking-tight text-center">
+                {cohort.name}
+              </h3>
+              <span className="inline-flex items-center px-3 py-0.5 rounded-full text-[11px] font-semibold bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 mb-2 truncate max-w-[200px]">
+                {cohort.courseTitle}
+              </span>
+
+              <div className="w-full pt-3 border-t border-neutral-100 dark:border-neutral-800 text-xs space-y-2">
+                <div className="flex items-center justify-between text-[11px]">
+                  <span className="text-neutral-400">{cohort.instructorName}</span>
                   <span className="font-bold text-neutral-900 dark:text-white tabular-nums">
                     {formatMoney(cohort.tuitionFee)}
                   </span>
                 </div>
 
-                <div className="flex items-center justify-between text-[11px] text-neutral-500">
-                  <span>{cohort.enrolledCount} of {cohort.maxStudents} Seats</span>
-                  <span className="text-[#C4785A] font-bold tabular-nums">{occupancyPercent}%</span>
+                <div className="flex items-center justify-between text-[11px]">
+                  <span className="text-neutral-500 font-medium">
+                    {cohort.enrolledCount} / {cohort.maxStudents} {language === 'ar' ? 'مقاعد' : 'seats'}
+                  </span>
+                  <span className="font-bold text-[#C4785A] tabular-nums">{occupancyPercent}%</span>
                 </div>
                 <div className="w-full h-1.5 rounded-full bg-neutral-100 dark:bg-neutral-800 overflow-hidden">
                   <div
@@ -341,11 +693,56 @@ export const EducationCohortsView: React.FC = () => {
                     style={{ width: `${occupancyPercent}%` }}
                   />
                 </div>
+
+                <div className="flex items-center justify-between pt-1 border-t border-neutral-100 dark:border-neutral-800/80 text-[11px]">
+                  <span className="text-neutral-400">
+                    {totalMilestones > 0 ? `${completedMilestones}/${totalMilestones} Milestones` : cohort.scheduleSummary}
+                  </span>
+                  <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                    {cohort.status}
+                  </span>
+                </div>
               </div>
-            </ActionNode>
+            </div>
           );
-        })}
-      </div>
+        }}
+        onItemClick={(cohort) => setSelectedCohort(cohort)}
+        onViewDetails={(cohort) => setSelectedCohort(cohort)}
+        onEdit={(cohort) => setSelectedCohort(cohort)}
+        onTogglePin={(cohort) => {
+          setPinnedCohortIds((prev) => {
+            const next = new Set(prev);
+            if (next.has(cohort.id)) {
+              next.delete(cohort.id);
+              showToast?.({
+                type: 'info',
+                title: 'Unpinned',
+                message: `${cohort.name} unpinned`,
+              });
+            } else {
+              next.add(cohort.id);
+              showToast?.({
+                type: 'info',
+                title: 'Pinned',
+                message: `${cohort.name} pinned to top`,
+              });
+            }
+            return next;
+          });
+        }}
+        onDelete={(cohort) => {
+          if (confirm(t('edu_confirm_delete_cohort'))) {
+            deleteEduCohort(cohort.id);
+          }
+        }}
+        isPinned={(cohort) => pinnedCohortIds.has(cohort.id)}
+        selectedIds={selectedCohortIds}
+        onSelectionChange={setSelectedCohortIds}
+        emptyTitle={t('edu_no_cohorts_found')}
+        emptyDescription={t('edu_no_cohorts_found')}
+        primaryActionLabel={t('edu_modal_add_cohort')}
+        onAddFirstItem={() => setIsAddCohortModalOpen(true)}
+      />
 
       {/* 360° Cohort Slide-over Drawer */}
       {selectedCohort && (
