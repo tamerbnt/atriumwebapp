@@ -7,6 +7,7 @@ import { LabelInput } from '../../ui/LabelInput';
 import { Seek } from '../../ui/Seek';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { FilterSelect } from '../../ui/FilterSelect';
+import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import {
   Users,
   Search,
@@ -32,6 +33,7 @@ import {
   Sparkles,
   ChevronRight,
   ShieldAlert,
+  Pin,
 } from 'lucide-react';
 import { useTranslation } from '../../../utils/useTranslation';
 
@@ -66,6 +68,10 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedWilaya, setSelectedWilaya] = useState('all');
   const [selectedTalent, setSelectedTalent] = useState<PMTalent | null>(pmTalents[0] || null);
+  const [selectedTalentIds, setSelectedTalentIds] = useState<Set<string>>(new Set());
+  const [pinnedTalentIds, setPinnedTalentIds] = useState<Set<string>>(new Set());
+  const [talentSortBy, setTalentSortBy] = useState<string>('talent');
+  const [talentSortDir, setTalentSortDir] = useState<'asc' | 'desc'>('asc');
 
   // Form State for Portal & Walk-in
   const [fullName, setFullName] = useState('');
@@ -162,6 +168,109 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
     document.body.removeChild(link);
   };
 
+  const sortedTalents = React.useMemo(() => {
+    return [...filteredTalents].sort((a, b) => {
+      const aPinned = pinnedTalentIds.has(a.id);
+      const bPinned = pinnedTalentIds.has(b.id);
+      if (aPinned && !bPinned) return -1;
+      if (!aPinned && bPinned) return 1;
+
+      if (talentSortBy === 'talent') {
+        const cmp = a.fullName.localeCompare(b.fullName);
+        return talentSortDir === 'asc' ? cmp : -cmp;
+      }
+      if (talentSortBy === 'score') {
+        return talentSortDir === 'asc' ? a.consolidatedScore - b.consolidatedScore : b.consolidatedScore - a.consolidatedScore;
+      }
+      return 0;
+    });
+  }, [filteredTalents, pinnedTalentIds, talentSortBy, talentSortDir]);
+
+  const talentColumns: ColumnDefinition<PMTalent>[] = React.useMemo(() => [
+    {
+      key: 'talent',
+      header: t('pm_rh_col_talent'),
+      width: '2.5*',
+      minWidth: '220px',
+      sortable: true,
+      renderCell: (talent) => (
+        <div className="flex items-center gap-3">
+          <img
+            src={talent.portraitPhotoUrl}
+            alt={talent.fullName}
+            className="w-10 h-10 rounded-full object-cover border border-zinc-200 shrink-0"
+          />
+          <div className="min-w-0">
+            <div className="font-bold text-zinc-900 dark:text-zinc-100 truncate">{talent.fullName}</div>
+            <span className="text-[11px] text-zinc-500 truncate block">{talent.phone}</span>
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: 'location',
+      header: t('pm_rh_col_location'),
+      width: '1.8*',
+      minWidth: '140px',
+      renderCell: (talent) => (
+        <div>
+          <div className="font-semibold text-zinc-800 dark:text-zinc-200">{talent.wilayaName}</div>
+          <span className="text-[11px] text-zinc-500">{talent.commune}</span>
+        </div>
+      ),
+    },
+    {
+      key: 'ccp',
+      header: t('pm_rh_col_ccp'),
+      width: '1.8*',
+      minWidth: '140px',
+      renderCell: (talent) => (
+        <div className="font-mono font-semibold text-zinc-700 dark:text-zinc-300">
+          <div>{talent.ccpNumber}</div>
+          <span className="text-[10px] text-zinc-400">Clé: {talent.ccpKey}</span>
+        </div>
+      ),
+    },
+    {
+      key: 'score',
+      header: t('pm_rh_col_consolidated_score'),
+      width: '1.5*',
+      minWidth: '130px',
+      sortable: true,
+      renderCell: (talent) => (
+        <div className="text-center">
+          <div className="inline-flex items-center gap-1 font-bold text-amber-500 font-mono">
+            <Star className="w-3.5 h-3.5 fill-amber-400" />
+            <span>{talent.consolidatedScore}</span>
+          </div>
+          <span className="text-[10px] text-zinc-400 block font-normal">
+            {talent.completedMissionsCount} missions
+          </span>
+        </div>
+      ),
+    },
+    {
+      key: 'mobility',
+      header: t('pm_rh_col_mobility'),
+      width: '1.5*',
+      minWidth: '120px',
+      renderCell: (talent) => (
+        <div className="space-y-0.5">
+          {talent.hasDriverLicense && (
+            <span className="inline-block px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-[10px] font-semibold text-zinc-600 dark:text-zinc-400 mr-1">
+              Permis B
+            </span>
+          )}
+          {talent.isVehicleOwner && (
+            <span className="inline-block px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-950/60 text-[10px] font-semibold text-blue-700 dark:text-blue-300">
+              Véhiculé
+            </span>
+          )}
+        </div>
+      ),
+    },
+  ], [t]);
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -237,87 +346,98 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
             </div>
           </div>
 
-          {/* Talents Table */}
-          <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs overflow-hidden">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-zinc-50 dark:bg-zinc-800/50 border-b border-zinc-200 dark:border-zinc-800 text-zinc-500 uppercase tracking-wider text-[10px] font-semibold">
-                <tr>
-                  <th className="py-3 px-4">{t('pm_rh_col_talent')}</th>
-                  <th className="py-3 px-4">{t('pm_rh_col_location')}</th>
-                  <th className="py-3 px-4">{t('pm_rh_col_ccp')}</th>
-                  <th className="py-3 px-4 text-center">{t('pm_rh_col_consolidated_score')}</th>
-                  <th className="py-3 px-4">{t('pm_rh_col_mobility')}</th>
-                  <th className="py-3 px-4 text-right">{t('common_actions')}</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
-                {filteredTalents.map((talent) => (
-                  <tr key={talent.id} className="hover:bg-zinc-50/60 dark:hover:bg-zinc-800/30 transition-colors">
-                    <td className="py-3 px-4">
-                      <div className="flex items-center gap-3">
-                        <img
-                          src={talent.portraitPhotoUrl}
-                          alt={talent.fullName}
-                          className="w-10 h-10 rounded-full object-cover border border-zinc-200"
-                        />
-                        <div>
-                          <div className="font-bold text-zinc-900 dark:text-zinc-100">{talent.fullName}</div>
-                          <span className="text-[11px] text-zinc-500">{talent.phone}</span>
-                        </div>
-                      </div>
-                    </td>
+          {/* Talents Universal Collection (List view & Grid view with 6-button corner fan) */}
+          <UniversalDataCollection<PMTalent>
+            items={sortedTalents}
+            keyExtractor={(t) => t.id}
+            defaultViewMode="list"
+            columns={talentColumns}
+            sortBy={talentSortBy}
+            sortDirection={talentSortDir}
+            onSortChange={(key) => {
+              if (talentSortBy === key) {
+                setTalentSortDir((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+              } else {
+                setTalentSortBy(key);
+                setTalentSortDir('asc');
+              }
+            }}
+            renderCard={(talent) => (
+              <div className="flex flex-col items-center justify-center w-full">
+                <img
+                  src={talent.portraitPhotoUrl}
+                  alt={talent.fullName}
+                  className="w-24 h-24 rounded-full object-cover border-2 border-[#C4785A] shadow-md mb-4"
+                />
+                <h3 className="text-[16px] font-bold text-zinc-900 dark:text-zinc-100 truncate max-w-[210px] mb-1 tracking-tight">
+                  {talent.fullName}
+                </h3>
+                <span className="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-semibold bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 mb-2 truncate max-w-[200px]">
+                  {talent.wilayaName} ({talent.commune})
+                </span>
 
-                    <td className="py-3 px-4">
-                      <div className="font-semibold text-zinc-800 dark:text-zinc-200">{talent.wilayaName}</div>
-                      <span className="text-[11px] text-zinc-500">{talent.commune}</span>
-                    </td>
+                <div className="flex items-center gap-1 font-bold text-amber-500 font-mono text-sm mb-3">
+                  <Star className="w-4 h-4 fill-amber-400" />
+                  <span>{talent.consolidatedScore}</span>
+                  <span className="text-[11px] text-zinc-400 font-normal ml-1">
+                    · {talent.completedMissionsCount} missions
+                  </span>
+                </div>
 
-                    <td className="py-3 px-4 font-mono font-semibold text-zinc-700 dark:text-zinc-300">
-                      <div>{talent.ccpNumber}</div>
-                      <span className="text-[10px] text-zinc-400">Clé: {talent.ccpKey}</span>
-                    </td>
-
-                    <td className="py-3 px-4 text-center">
-                      <div className="inline-flex items-center gap-1 font-bold text-amber-500 font-mono">
-                        <Star className="w-3.5 h-3.5 fill-amber-400" />
-                        <span>{talent.consolidatedScore}</span>
-                      </div>
-                      <span className="text-[10px] text-zinc-400 block font-normal">
-                        {talent.completedMissionsCount} missions · 0 abs.
+                <div className="w-full pt-3 border-t border-zinc-100 dark:border-zinc-800 text-xs space-y-1.5 text-center">
+                  <div className="font-mono text-zinc-600 dark:text-zinc-400 text-[11px]">
+                    CCP: {talent.ccpNumber} (Clé: {talent.ccpKey})
+                  </div>
+                  <div className="flex items-center justify-center gap-1.5 pt-1">
+                    {talent.hasDriverLicense && (
+                      <span className="px-2 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-[10px] font-semibold text-zinc-600 dark:text-zinc-400">
+                        Permis B
                       </span>
-                    </td>
-
-                    <td className="py-3 px-4">
-                      <div className="space-y-0.5">
-                        {talent.hasDriverLicense && (
-                          <span className="inline-block px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-[10px] font-semibold text-zinc-600 dark:text-zinc-400 mr-1">
-                            Permis B
-                          </span>
-                        )}
-                        {talent.isVehicleOwner && (
-                          <span className="inline-block px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-950/60 text-[10px] font-semibold text-blue-700 dark:text-blue-300">
-                            Véhiculé
-                          </span>
-                        )}
-                      </div>
-                    </td>
-
-                    <td className="py-3 px-4 text-right">
-                      <button
-                        onClick={() => {
-                          setSelectedTalent(talent);
-                          setActiveTab('dossier');
-                        }}
-                        className="px-3 py-1.5 text-xs font-semibold text-[#C4785A] hover:bg-[#C4785A]/10 rounded-lg transition-colors cursor-pointer"
-                      >
-                        Inspecter Dossier ➔
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                    )}
+                    {talent.isVehicleOwner && (
+                      <span className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-950/60 text-[10px] font-semibold text-blue-700 dark:text-blue-300">
+                        Véhiculé
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+            onItemClick={(talent) => {
+              setSelectedTalent(talent);
+              setActiveTab('dossier');
+            }}
+            onViewDetails={(talent) => {
+              setSelectedTalent(talent);
+              setActiveTab('dossier');
+            }}
+            onTogglePin={(talent) => {
+              setPinnedTalentIds((prev) => {
+                const next = new Set(prev);
+                if (next.has(talent.id)) {
+                  next.delete(talent.id);
+                  showToast?.({
+                    type: 'info',
+                    title: 'Unpinned',
+                    message: `${talent.fullName} unpinned`,
+                  });
+                } else {
+                  next.add(talent.id);
+                  showToast?.({
+                    type: 'info',
+                    title: 'Pinned',
+                    message: `${talent.fullName} pinned to top`,
+                  });
+                }
+                return next;
+              });
+            }}
+            isPinned={(talent) => pinnedTalentIds.has(talent.id)}
+            selectedIds={selectedTalentIds}
+            onSelectionChange={setSelectedTalentIds}
+            emptyTitle={t('pm_rh_no_talents') || 'Aucun talent trouvé'}
+            emptyDescription="Essayez de modifier votre filtre par wilaya ou vos termes de recherche."
+          />
         </div>
       )}
 

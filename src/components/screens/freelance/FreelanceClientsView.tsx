@@ -18,14 +18,15 @@ import {
   Building,
   Trash2,
   AlertTriangle,
+  Pin,
 } from 'lucide-react';
 import { useAtriumStore } from '../../../services/store';
 import { formatCurrencyAmount, formatDuration } from '../../../utils/rules';
 import { FreelanceClient, FreelanceClientStatus, CurrencyCode } from '../../../types/index';
 import { Seek } from '../../ui/Seek';
-import { ActionNode } from '../../ui/ActionNode';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
+import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { useTranslation } from '../../../utils/useTranslation';
 
 export const FreelanceClientsView: React.FC = () => {
@@ -41,6 +42,7 @@ export const FreelanceClientsView: React.FC = () => {
     startTimer,
     billUnbilledHours,
     setScreen,
+    showToast,
   } = useAtriumStore();
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -50,6 +52,10 @@ export const FreelanceClientsView: React.FC = () => {
   const [clientToEdit, setClientToEdit] = useState<FreelanceClient | null>(null);
   const [clientToDelete, setClientToDelete] = useState<FreelanceClient | null>(null);
   const [deleteCascade, setDeleteCascade] = useState(false);
+  const [selectedClientIds, setSelectedClientIds] = useState<Set<string>>(new Set());
+  const [pinnedClientIds, setPinnedClientIds] = useState<Set<string>>(new Set());
+  const [clientSortBy, setClientSortBy] = useState<string>('client');
+  const [clientSortDir, setClientSortDir] = useState<'asc' | 'desc'>('asc');
 
   // Form state
   const [formData, setFormData] = useState({
@@ -207,6 +213,121 @@ export const FreelanceClientsView: React.FC = () => {
     }
   };
 
+  const sortedClients = useMemo(() => {
+    return [...filteredClients].sort((a, b) => {
+      const aPinned = pinnedClientIds.has(a.id);
+      const bPinned = pinnedClientIds.has(b.id);
+      if (aPinned && !bPinned) return -1;
+      if (!aPinned && bPinned) return 1;
+
+      if (clientSortBy === 'client') {
+        const cmp = a.name.localeCompare(b.name);
+        return clientSortDir === 'asc' ? cmp : -cmp;
+      }
+      if (clientSortBy === 'rate') {
+        return clientSortDir === 'asc' ? a.hourlyRate - b.hourlyRate : b.hourlyRate - a.hourlyRate;
+      }
+      return 0;
+    });
+  }, [filteredClients, pinnedClientIds, clientSortBy, clientSortDir]);
+
+  const clientColumns: ColumnDefinition<FreelanceClient>[] = useMemo(() => [
+    {
+      key: 'client',
+      header: t('free_clients_table_client', language) || 'Client',
+      width: '2.5*',
+      minWidth: '220px',
+      sortable: true,
+      renderCell: (client) => (
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 flex items-center justify-center font-bold text-xs shrink-0 border border-neutral-200 dark:border-neutral-700">
+            {client.name.charAt(0)}
+          </div>
+          <div className="min-w-0">
+            <div className="font-semibold text-neutral-900 dark:text-white truncate hover:text-[#C4785A] transition-colors">
+              {client.name}
+            </div>
+            <div className="text-[11px] text-neutral-400 truncate">
+              {client.company || t('free_clients_private_client', language)}
+            </div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: 'status',
+      header: t('free_clients_table_status', language) || 'Status',
+      width: '1.8*',
+      minWidth: '140px',
+      renderCell: (client) => (
+        <span
+          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${
+            client.status === 'ActiveRetainer'
+              ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
+              : client.status === 'ProjectBased'
+              ? 'bg-[#FCEEE8] dark:bg-neutral-800 text-[#C4785A] border border-[#F5E2D8] dark:border-neutral-700'
+              : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400'
+          }`}
+        >
+          {client.status === 'ActiveRetainer'
+            ? t('free_clients_status_active_retainer', language)
+            : client.status === 'ProjectBased'
+            ? t('free_clients_status_project_based', language)
+            : client.status}
+        </span>
+      ),
+    },
+    {
+      key: 'rate',
+      header: t('free_clients_hourly_rate', language),
+      width: '1.8*',
+      minWidth: '150px',
+      sortable: true,
+      renderCell: (client) => (
+        <div className="text-xs">
+          <span className="font-semibold text-neutral-900 dark:text-white tabular-nums">
+            {formatCurrencyAmount(client.hourlyRate, client.currency)}{t('free_dash_per_hour', language)}
+          </span>
+          {client.monthlyRetainerHours ? (
+            <span className="block text-[10px] text-neutral-400">
+              {client.monthlyRetainerHours}h Retainer
+            </span>
+          ) : null}
+        </div>
+      ),
+    },
+    {
+      key: 'projects',
+      header: t('free_kpi_active_projects', language),
+      width: '1.2*',
+      minWidth: '100px',
+      renderCell: (client) => {
+        const count = freelanceProjects.filter((p) => p.clientId === client.id).length;
+        return (
+          <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 tabular-nums">
+            {count} {t('free_nav_deliverables', language)}
+          </span>
+        );
+      },
+    },
+    {
+      key: 'unbilled',
+      header: t('free_kpi_unbilled_hours', language),
+      width: '1.8*',
+      minWidth: '140px',
+      renderCell: (client) => {
+        const unbilled = getClientUnbilledTime(client.id);
+        return unbilled.amount > 0 ? (
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800 tabular-nums">
+            {unbilled.hours}h · {formatCurrencyAmount(unbilled.amount, client.currency)}
+          </span>
+        ) : (
+          <span className="text-neutral-400 text-xs">0h</span>
+        );
+      },
+    },
+  ], [freelanceProjects, language, t]);
+
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
       {/* Top Header */}
@@ -315,123 +436,127 @@ export const FreelanceClientsView: React.FC = () => {
         </div>
       </div>
 
-      {/* Clients Data Grid / Cards with ActionNode */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filteredClients.map((client) => {
+      {/* Universal Collection (List view & Grid view with 6-button corner-fan) */}
+      <UniversalDataCollection<FreelanceClient>
+        items={sortedClients}
+        keyExtractor={(c) => c.id}
+        defaultViewMode="list"
+        columns={clientColumns}
+        sortBy={clientSortBy}
+        sortDirection={clientSortDir}
+        onSortChange={(key) => {
+          if (clientSortBy === key) {
+            setClientSortDir((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+          } else {
+            setClientSortBy(key);
+            setClientSortDir('asc');
+          }
+        }}
+        renderCard={(client) => {
           const unbilled = getClientUnbilledTime(client.id);
           const clientProjects = freelanceProjects.filter((p) => p.clientId === client.id);
 
           return (
-            <ActionNode
-              key={client.id}
-              title={client.name}
-              description={client.company || t('free_clients_private_client', language)}
-              tag={
-                client.status === 'ActiveRetainer'
-                  ? t('free_clients_status_active_retainer', language)
-                  : client.status === 'ProjectBased'
-                  ? t('free_clients_status_project_based', language)
-                  : client.status
-              }
-              width="100%"
-              air={14}
-              corner={20}
-              onClick={() => setSelectedClient(client)}
-              icon={
-                <div className="w-full h-full rounded-[inherit] bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center font-bold text-xs text-neutral-800 dark:text-neutral-200">
-                  {client.name.charAt(0)}
-                </div>
-              }
-              avatars={[
-                {
-                  id: client.id,
-                  name: client.name,
-                },
-              ]}
-              actions={[
-                {
-                  id: 'timer',
-                  label: t('free_timer_start', language),
-                  icon: <Play size={13} />,
-                  onClick: () => handleQuickStartTimer(client),
-                  color: '#C4785A',
-                },
-                ...(unbilled.count > 0
-                  ? [
-                      {
-                        id: 'bill',
-                        label: `${t('free_clients_quick_bill', language)} (${unbilled.hours}h)`,
-                        icon: <FileText size={13} />,
-                        onClick: () => handleQuickBill(client),
-                      },
-                    ]
-                  : []),
-                {
-                  id: 'edit',
-                  label: t('free_clients_edit', language),
-                  icon: <Edit2 size={13} />,
-                  onClick: () => handleOpenEditModal(client),
-                },
-              ]}
-            >
-              {/* Rates & Retainer Details */}
-              <div className="py-2 my-1 border-t border-neutral-100 dark:border-neutral-800/80 space-y-1 text-xs">
+            <div className="flex flex-col items-center justify-center w-full">
+              <div className="w-24 h-24 rounded-2xl bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 flex items-center justify-center text-[32px] font-bold shadow-md mb-4 select-none border border-neutral-200 dark:border-neutral-700">
+                {client.name.charAt(0)}
+              </div>
+              <h3 className="text-[16px] font-bold text-neutral-900 dark:text-white truncate max-w-[210px] mb-1 tracking-tight">
+                {client.name}
+              </h3>
+              <span className="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-semibold bg-[#FCEEE8] dark:bg-neutral-800 text-[#C4785A] border border-[#F5E2D8] dark:border-neutral-700 mb-3 truncate max-w-[200px]">
+                {client.company || t('free_clients_private_client', language)}
+              </span>
+
+              <div className="w-full pt-3 border-t border-neutral-100 dark:border-neutral-800 text-xs space-y-1.5 text-center">
                 <div className="flex items-center justify-between text-neutral-600 dark:text-neutral-400">
-                  <span>{t('free_clients_hourly_rate', language)}:</span>
+                  <span className="text-[11px]">{t('free_clients_hourly_rate', language)}:</span>
                   <span className="font-semibold text-neutral-900 dark:text-white tabular-nums">
                     {formatCurrencyAmount(client.hourlyRate, client.currency)}{t('free_dash_per_hour', language)}
                   </span>
                 </div>
-                {client.monthlyRetainerHours && client.monthlyRetainerHours > 0 ? (
-                  <div className="flex items-center justify-between text-neutral-600 dark:text-neutral-400">
-                    <span>{t('free_clients_retainer_hours', language)}:</span>
-                    <span className="font-semibold text-neutral-900 dark:text-white tabular-nums">
-                      {client.monthlyRetainerHours}h ({formatCurrencyAmount(client.monthlyRetainerAmount || 0, client.currency)})
-                    </span>
-                  </div>
-                ) : null}
                 <div className="flex items-center justify-between text-neutral-600 dark:text-neutral-400">
-                  <span>{t('free_kpi_active_projects', language)}:</span>
+                  <span className="text-[11px]">{t('free_kpi_active_projects', language)}:</span>
                   <span className="font-semibold text-neutral-900 dark:text-white tabular-nums">
                     {clientProjects.length}
                   </span>
                 </div>
+
+                {unbilled.amount > 0 && (
+                  <div className="mt-2 p-1.5 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 flex items-center justify-between text-[11px]">
+                    <span className="text-amber-800 dark:text-amber-300 font-medium">
+                      {unbilled.hours}h unbilled
+                    </span>
+                    <span className="font-bold text-amber-900 dark:text-amber-200 tabular-nums">
+                      {formatCurrencyAmount(unbilled.amount, client.currency)}
+                    </span>
+                  </div>
+                )}
               </div>
-
-              {/* Unbilled Alert Strip */}
-              {unbilled.amount > 0 && (
-                <div className="mt-2 p-2 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 flex items-center justify-between text-[11px]">
-                  <span className="text-amber-800 dark:text-amber-300 font-medium">
-                    {unbilled.hours}h {t('free_kpi_unbilled_hours', language)}
-                  </span>
-                  <span className="font-bold text-amber-900 dark:text-amber-200 tabular-nums">
-                    {formatCurrencyAmount(unbilled.amount, client.currency)}
-                  </span>
-                </div>
-              )}
-            </ActionNode>
+            </div>
           );
-        })}
-      </div>
-
-      {filteredClients.length === 0 && (
-        <div className="p-12 text-center rounded-2xl border border-dashed border-neutral-200 dark:border-neutral-800">
-          <p className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">
-            {t('free_clients_no_clients', language)}
-          </p>
-          <p className="text-xs text-neutral-500 mt-1">
-            {t('free_clients_no_clients_desc', language)}
-          </p>
-          <button
-            type="button"
-            onClick={handleOpenAddModal}
-            className="mt-4 px-4 py-2 rounded-xl bg-[#C4785A] text-white text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer inline-flex items-center gap-1.5"
-          >
-            <Plus size={14} />
-            <span>{t('free_clients_add_new', language)}</span>
-          </button>
-        </div>
-      )}
+        }}
+        onItemClick={(client) => setSelectedClient(client)}
+        onViewDetails={(client) => setSelectedClient(client)}
+        onEdit={(client) => handleOpenEditModal(client)}
+        onTogglePin={(client) => {
+          setPinnedClientIds((prev) => {
+            const next = new Set(prev);
+            if (next.has(client.id)) {
+              next.delete(client.id);
+              showToast?.({
+                type: 'info',
+                title: 'Unpinned',
+                message: `${client.name} unpinned`,
+              });
+            } else {
+              next.add(client.id);
+              showToast?.({
+                type: 'info',
+                title: 'Pinned',
+                message: `${client.name} pinned to top`,
+              });
+            }
+            return next;
+          });
+        }}
+        onDelete={(client) => setClientToDelete(client)}
+        customActions={(client) => {
+          const unbilled = getClientUnbilledTime(client.id);
+          const actions = [
+            {
+              id: 'timer',
+              tooltip: t('free_timer_start', language),
+              icon: <Play size={13} />,
+              iconColor: '#C4785A',
+              onClick: (e: React.MouseEvent) => {
+                e.stopPropagation();
+                handleQuickStartTimer(client);
+              },
+            },
+          ];
+          if (unbilled.count > 0) {
+            actions.push({
+              id: 'bill',
+              tooltip: `${t('free_clients_quick_bill', language)} (${unbilled.hours}h)`,
+              icon: <FileText size={13} />,
+              iconColor: '#10B981',
+              onClick: (e: React.MouseEvent) => {
+                e.stopPropagation();
+                handleQuickBill(client);
+              },
+            });
+          }
+          return actions;
+        }}
+        isPinned={(client) => pinnedClientIds.has(client.id)}
+        selectedIds={selectedClientIds}
+        onSelectionChange={setSelectedClientIds}
+        emptyTitle={t('free_clients_no_clients', language)}
+        emptyDescription={t('free_clients_no_clients_desc', language)}
+        primaryActionLabel={t('free_clients_add_new', language)}
+        onAddFirstItem={handleOpenAddModal}
+      />
 
       {/* 360° Client Inspector Slide-over Drawer */}
       {selectedClient && (

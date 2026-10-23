@@ -17,6 +17,9 @@ import {
   AlertCircle,
   X,
   Cloud,
+  Pin,
+  LogIn,
+  LogOut,
 } from 'lucide-react';
 import { useAtriumStore } from '../../../services/store';
 import { RentalBooking, BookingStatus } from '../../../types/index';
@@ -25,6 +28,7 @@ import { useTranslation } from '../../../utils/useTranslation';
 import { BookingModal } from './BookingModal';
 import { VenueCloudSyncModal } from './VenueCloudSyncModal';
 import { Seek } from '../../ui/Seek';
+import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 
 export const VenueBookingsView: React.FC = () => {
   const { t, language } = useTranslation();
@@ -33,6 +37,7 @@ export const VenueBookingsView: React.FC = () => {
     checkInBooking,
     checkOutBooking,
     deleteRentalBooking,
+    showToast,
   } = useAtriumStore();
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -41,6 +46,11 @@ export const VenueBookingsView: React.FC = () => {
   const [isCloudSyncModalOpen, setIsCloudSyncModalOpen] = useState(false);
   const [bookingToEdit, setBookingToEdit] = useState<RentalBooking | null>(null);
   const [printedBooking, setPrintedBooking] = useState<RentalBooking | null>(null);
+
+  const [selectedBookingIds, setSelectedBookingIds] = useState<Set<string>>(new Set());
+  const [pinnedBookingIds, setPinnedBookingIds] = useState<Set<string>>(new Set());
+  const [bookingSortBy, setBookingSortBy] = useState<string>('date');
+  const [bookingSortDir, setBookingSortDir] = useState<'asc' | 'desc'>('asc');
 
   const filteredBookings = rentalBookings.filter((b) => {
     const matchesSearch =
@@ -58,6 +68,182 @@ export const VenueBookingsView: React.FC = () => {
 
     return matchesSearch && matchesStatus;
   });
+
+  const sortedBookings = React.useMemo(() => {
+    return [...filteredBookings].sort((a, b) => {
+      const aPinned = pinnedBookingIds.has(a.id);
+      const bPinned = pinnedBookingIds.has(b.id);
+      if (aPinned && !bPinned) return -1;
+      if (!aPinned && bPinned) return 1;
+
+      if (bookingSortBy === 'date') {
+        const cmp = a.startDateTime.localeCompare(b.startDateTime);
+        return bookingSortDir === 'asc' ? cmp : -cmp;
+      }
+      if (bookingSortBy === 'event' || bookingSortBy === 'renter') {
+        const cmp = a.purpose.localeCompare(b.purpose);
+        return bookingSortDir === 'asc' ? cmp : -cmp;
+      }
+      if (bookingSortBy === 'space') {
+        const cmp = a.unitName.localeCompare(b.unitName);
+        return bookingSortDir === 'asc' ? cmp : -cmp;
+      }
+      if (bookingSortBy === 'financials') {
+        return bookingSortDir === 'asc' ? a.totalAmount - b.totalAmount : b.totalAmount - a.totalAmount;
+      }
+      if (bookingSortBy === 'caution') {
+        return bookingSortDir === 'asc' ? a.depositAmount - b.depositAmount : b.depositAmount - a.depositAmount;
+      }
+      if (bookingSortBy === 'status') {
+        return bookingSortDir === 'asc' ? a.status.localeCompare(b.status) : b.status.localeCompare(a.status);
+      }
+      return 0;
+    });
+  }, [filteredBookings, pinnedBookingIds, bookingSortBy, bookingSortDir]);
+
+  const bookingColumns: ColumnDefinition<RentalBooking>[] = React.useMemo(() => [
+    {
+      key: 'event',
+      header: t('venue_col_event_renter'),
+      width: '2.5*',
+      minWidth: '220px',
+      sortable: true,
+      renderCell: (b) => (
+        <div className="min-w-0">
+          <div className="font-semibold text-neutral-900 dark:text-white truncate">
+            {b.purpose}
+          </div>
+          <div className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5 truncate">
+            {b.renterName} {b.renterCompany && `· ${b.renterCompany}`}
+          </div>
+          <div className="text-[10px] text-neutral-400 font-mono mt-0.5">
+            {b.renterPhone}
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: 'space',
+      header: t('venue_col_space_unit'),
+      width: '1.8*',
+      minWidth: '150px',
+      sortable: true,
+      renderCell: (b) => (
+        <div className="whitespace-nowrap">
+          <div className="font-medium text-neutral-900 dark:text-white">
+            {b.unitName}
+          </div>
+          <div className="text-[11px] text-neutral-400">
+            {b.unitType} · {t('venue_guests_count', language, { count: b.attendeeCount })}
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: 'date',
+      header: t('venue_col_date_window'),
+      width: '2*',
+      minWidth: '160px',
+      sortable: true,
+      renderCell: (b) => (
+        <div className="whitespace-nowrap text-xs">
+          <div className="font-mono font-medium text-neutral-900 dark:text-white">
+            {b.startDateTime.split('T')[0]}
+          </div>
+          <div className="text-[11px] text-neutral-500 dark:text-neutral-400 font-mono">
+            {b.startDateTime.split('T')[1]?.slice(0, 5)} - {b.endDateTime.split('T')[1]?.slice(0, 5)} ({b.durationHours}h)
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: 'financials',
+      header: t('venue_col_financials'),
+      width: '1.8*',
+      minWidth: '140px',
+      sortable: true,
+      renderCell: (b) => (
+        <div className="whitespace-nowrap text-xs">
+          <div className="font-semibold text-neutral-900 dark:text-white tabular-nums">
+            {formatCurrencyAmount(b.totalAmount, b.currency)}
+          </div>
+          <div className="text-[11px]">
+            {b.balanceDue > 0 ? (
+              <span className="text-amber-600 font-medium tabular-nums">
+                {t('venue_balance_due', language, { amount: formatCurrencyAmount(b.balanceDue, b.currency) })}
+              </span>
+            ) : (
+              <span className="text-emerald-600 font-medium">{t('venue_fully_settled')}</span>
+            )}
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: 'caution',
+      header: t('venue_col_caution'),
+      width: '1.5*',
+      minWidth: '120px',
+      sortable: true,
+      renderCell: (b) => (
+        <div className="whitespace-nowrap text-xs">
+          <div className="font-medium text-neutral-800 dark:text-neutral-200 tabular-nums">
+            {formatCurrencyAmount(b.depositAmount, b.currency)}
+          </div>
+          <span
+            className={`inline-block text-[10px] font-semibold uppercase px-2 py-0.5 rounded-full mt-0.5 ${
+              b.depositStatus === 'Held'
+                ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300'
+                : b.depositStatus === 'Pending'
+                ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300'
+                : 'bg-neutral-100 text-neutral-600 dark:bg-neutral-700 dark:text-neutral-300'
+            }`}
+          >
+            {b.depositStatus === 'Held'
+              ? t('venue_held_status')
+              : b.depositStatus === 'Refunded'
+              ? t('venue_refunded_status')
+              : b.depositStatus === 'Retained' || (b.depositStatus as string) === 'Deducted'
+              ? t('venue_deducted_status')
+              : b.depositStatus}
+          </span>
+        </div>
+      ),
+    },
+    {
+      key: 'status',
+      header: t('venue_col_status'),
+      width: '1.4*',
+      minWidth: '110px',
+      sortable: true,
+      renderCell: (b) => (
+        <span
+          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold tracking-wide uppercase ${
+            b.status === 'CheckedIn'
+              ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300'
+              : b.status === 'Confirmed'
+              ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300'
+              : b.status === 'Tentative'
+              ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300'
+              : b.status === 'Completed'
+              ? 'bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300'
+              : 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300'
+          }`}
+        >
+          {b.status === 'CheckedIn' && <span className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse" />}
+          {b.status === 'CheckedIn'
+            ? t('venue_filter_in_use')
+            : b.status === 'Confirmed'
+            ? t('venue_filter_confirmed')
+            : b.status === 'Tentative'
+            ? t('venue_filter_inquiries')
+            : b.status === 'Completed'
+            ? t('venue_filter_completed')
+            : b.status}
+        </span>
+      ),
+    },
+  ], [language, t]);
 
   const handleEdit = (b: RentalBooking) => {
     setBookingToEdit(b);
@@ -135,184 +321,217 @@ export const VenueBookingsView: React.FC = () => {
         </div>
       </div>
 
-      {/* Bookings Table View */}
-      <div className="bg-white dark:bg-neutral-800/60 rounded-3xl border border-[#E9EEF0] dark:border-neutral-800 shadow-2xs overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left rtl:text-right text-xs border-collapse">
-            <thead>
-              <tr className="border-b border-[#E9EEF0] dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-800/80 text-neutral-500 dark:text-neutral-400 font-medium">
-                <th className="py-3 px-4">{t('venue_col_event_renter')}</th>
-                <th className="py-3 px-4">{t('venue_col_space_unit')}</th>
-                <th className="py-3 px-4">{t('venue_col_date_window')}</th>
-                <th className="py-3 px-4">{t('venue_col_financials')}</th>
-                <th className="py-3 px-4">{t('venue_col_caution')}</th>
-                <th className="py-3 px-4">{t('venue_col_status')}</th>
-                <th className="py-3 px-4 text-right rtl:text-left">{t('venue_col_actions')}</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[#E9EEF0] dark:divide-neutral-800">
-              {filteredBookings.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="py-12 text-center text-neutral-400">
-                    {t('venue_no_bookings_match')}
-                  </td>
-                </tr>
+      {/* Universal Bookings Collection */}
+      <UniversalDataCollection<RentalBooking>
+        items={sortedBookings}
+        keyExtractor={(b) => b.id}
+        defaultViewMode="list"
+        columns={bookingColumns}
+        sortBy={bookingSortBy}
+        sortDirection={bookingSortDir}
+        onSortChange={(key) => {
+          if (bookingSortBy === key) {
+            setBookingSortDir((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+          } else {
+            setBookingSortBy(key);
+            setBookingSortDir('asc');
+          }
+        }}
+        renderCard={(b) => (
+          <div className="flex flex-col justify-between w-full h-full">
+            <div>
+              {/* Header */}
+              <div className="flex items-center justify-between gap-2 mb-2">
+                <span className="text-xs font-bold text-neutral-900 dark:text-white truncate">
+                  {b.unitName}
+                </span>
+                <span
+                  className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase ${
+                    b.status === 'CheckedIn'
+                      ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300'
+                      : b.status === 'Confirmed'
+                      ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300'
+                      : b.status === 'Tentative'
+                      ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300'
+                      : b.status === 'Completed'
+                      ? 'bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300'
+                      : 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300'
+                  }`}
+                >
+                  {b.status === 'CheckedIn'
+                    ? t('venue_filter_in_use')
+                    : b.status === 'Confirmed'
+                    ? t('venue_filter_confirmed')
+                    : b.status === 'Tentative'
+                    ? t('venue_filter_inquiries')
+                    : b.status === 'Completed'
+                    ? t('venue_filter_completed')
+                    : b.status}
+                </span>
+              </div>
+
+              <h3 className="font-bold text-sm text-neutral-900 dark:text-white line-clamp-1 mb-1">
+                {b.purpose}
+              </h3>
+              <p className="text-[11px] text-neutral-500 dark:text-neutral-400 line-clamp-1 mb-2">
+                {b.renterName} {b.renterCompany && `· ${b.renterCompany}`}
+              </p>
+
+              {/* Time Window */}
+              <div className="p-2.5 bg-neutral-50 dark:bg-neutral-800/40 rounded-xl text-xs space-y-1 mb-3">
+                <div className="flex items-center justify-between font-mono text-[11px]">
+                  <span className="text-neutral-500">{b.startDateTime.split('T')[0]}</span>
+                  <span className="font-medium text-neutral-800 dark:text-neutral-200">
+                    {b.startDateTime.split('T')[1]?.slice(0, 5)} - {b.endDateTime.split('T')[1]?.slice(0, 5)}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-[11px] pt-1 border-t border-neutral-100 dark:border-neutral-800">
+                  <span className="text-neutral-400">{t('venue_inv_capacity')}</span>
+                  <span className="font-medium text-neutral-700 dark:text-neutral-300">
+                    {t('venue_guests_count', language, { count: b.attendeeCount })}
+                  </span>
+                </div>
+              </div>
+
+              {/* Financials Breakdown */}
+              <div className="flex items-center justify-between text-xs mb-3">
+                <div>
+                  <span className="text-[10px] text-neutral-400 uppercase font-medium block">
+                    {t('venue_col_financials')}
+                  </span>
+                  <span className="font-bold text-neutral-900 dark:text-white tabular-nums">
+                    {formatCurrencyAmount(b.totalAmount, b.currency)}
+                  </span>
+                </div>
+                <div className="text-right">
+                  <span className="text-[10px] text-neutral-400 uppercase font-medium block">
+                    {t('venue_col_caution')}
+                  </span>
+                  <span className="font-mono text-neutral-600 dark:text-neutral-300 tabular-nums">
+                    {formatCurrencyAmount(b.depositAmount, b.currency)}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Actions Footer */}
+            <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between gap-2">
+              {b.status === 'Confirmed' ? (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    checkInBooking(b.id);
+                  }}
+                  className="flex-1 py-1.5 px-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                >
+                  <LogIn size={13} />
+                  <span>{t('venue_btn_checkin_guest')}</span>
+                </button>
+              ) : b.status === 'CheckedIn' ? (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    checkOutBooking(b.id);
+                  }}
+                  className="flex-1 py-1.5 px-3 rounded-xl bg-neutral-800 hover:bg-neutral-900 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                >
+                  <LogOut size={13} />
+                  <span>{t('venue_btn_checkout_space')}</span>
+                </button>
               ) : (
-                filteredBookings.map((b) => (
-                  <tr
-                    key={b.id}
-                    className="hover:bg-neutral-50/50 dark:hover:bg-neutral-800/30 transition-colors"
-                  >
-                    {/* Event & Renter */}
-                    <td className="py-3.5 px-4 max-w-[220px]">
-                      <div className="font-semibold text-neutral-900 dark:text-white truncate">
-                        {b.purpose}
-                      </div>
-                      <div className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5 truncate">
-                        {b.renterName} {b.renterCompany && `· ${b.renterCompany}`}
-                      </div>
-                      <div className="text-[10px] text-neutral-400 font-mono mt-0.5">
-                        {b.renterPhone}
-                      </div>
-                    </td>
-
-                    {/* Space */}
-                    <td className="py-3.5 px-4 whitespace-nowrap">
-                      <div className="font-medium text-neutral-900 dark:text-white">
-                        {b.unitName}
-                      </div>
-                      <div className="text-[11px] text-neutral-400">
-                        {b.unitType} · {t('venue_guests_count', language, { count: b.attendeeCount })}
-                      </div>
-                    </td>
-
-                    {/* Date & Time */}
-                    <td className="py-3.5 px-4 whitespace-nowrap">
-                      <div className="font-mono text-neutral-900 dark:text-white">
-                        {b.startDateTime.split('T')[0]}
-                      </div>
-                      <div className="text-[11px] text-neutral-500 font-mono">
-                        {b.startDateTime.split('T')[1]?.slice(0, 5)} - {b.endDateTime.split('T')[1]?.slice(0, 5)} ({b.durationHours}h)
-                      </div>
-                    </td>
-
-                    {/* Financials */}
-                    <td className="py-3.5 px-4 whitespace-nowrap">
-                      <div className="font-semibold text-neutral-900 dark:text-white tabular-nums">
-                        {formatCurrencyAmount(b.totalAmount, b.currency)}
-                      </div>
-                      <div className="text-[11px]">
-                        {b.balanceDue > 0 ? (
-                          <span className="text-amber-600 font-medium tabular-nums">
-                            {t('venue_balance_due', language, { amount: formatCurrencyAmount(b.balanceDue, b.currency) })}
-                          </span>
-                        ) : (
-                          <span className="text-emerald-600 font-medium">{t('venue_fully_settled')}</span>
-                        )}
-                      </div>
-                    </td>
-
-                    {/* Caution */}
-                    <td className="py-3.5 px-4 whitespace-nowrap">
-                      <div className="font-medium text-neutral-800 dark:text-neutral-200 tabular-nums">
-                        {formatCurrencyAmount(b.depositAmount, b.currency)}
-                      </div>
-                      <span
-                        className={`inline-block text-[10px] font-semibold uppercase px-2 py-0.5 rounded-full mt-0.5 ${
-                          b.depositStatus === 'Held'
-                            ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300'
-                            : b.depositStatus === 'Pending'
-                            ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300'
-                            : 'bg-neutral-100 text-neutral-600 dark:bg-neutral-700 dark:text-neutral-300'
-                        }`}
-                      >
-                        {b.depositStatus === 'Held'
-                          ? t('venue_held_status')
-                          : b.depositStatus === 'Refunded'
-                          ? t('venue_refunded_status')
-                          : b.depositStatus === 'Retained' || (b.depositStatus as string) === 'Deducted'
-                          ? t('venue_deducted_status')
-                          : b.depositStatus}
-                      </span>
-                    </td>
-
-                    {/* Status */}
-                    <td className="py-3.5 px-4 whitespace-nowrap">
-                      <span
-                        className={`inline-block text-[11px] font-semibold px-2.5 py-1 rounded-full ${
-                          b.status === 'CheckedIn'
-                            ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300'
-                            : b.status === 'Confirmed'
-                            ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
-                            : b.status === 'Tentative'
-                            ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300'
-                            : 'bg-neutral-100 text-neutral-600 dark:bg-neutral-700 dark:text-neutral-300'
-                        }`}
-                      >
-                        {b.status === 'CheckedIn'
-                          ? t('venue_kpi_in_use')
-                          : b.status === 'Confirmed'
-                          ? t('venue_status_confirmed')
-                          : b.status === 'Tentative'
-                          ? t('venue_status_tentative')
-                          : t('venue_status_completed')}
-                      </span>
-                    </td>
-
-                    {/* Action buttons */}
-                    <td className="py-3.5 px-4 text-right rtl:text-left whitespace-nowrap">
-                      <div className="flex items-center justify-end rtl:justify-start gap-1.5">
-                        {b.status === 'Confirmed' && (
-                          <button
-                            onClick={() => checkInBooking(b.id)}
-                            className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[11px] font-medium transition-colors cursor-pointer"
-                          >
-                            {t('venue_btn_checkin_guest')}
-                          </button>
-                        )}
-                        {b.status === 'CheckedIn' && (
-                          <button
-                            onClick={() => checkOutBooking(b.id)}
-                            className="px-2.5 py-1 bg-neutral-800 hover:bg-neutral-900 text-white rounded-lg text-[11px] font-medium transition-colors cursor-pointer"
-                          >
-                            {t('venue_btn_checkout_space')}
-                          </button>
-                        )}
-
-                        <button
-                          onClick={() => setPrintedBooking(b)}
-                          className="p-1.5 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
-                          title={t('venue_btn_print_voucher')}
-                        >
-                          <Printer size={14} />
-                        </button>
-                        <button
-                          onClick={() => handleEdit(b)}
-                          className="p-1.5 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
-                          title={t('venue_btn_edit_res')}
-                        >
-                          <Edit2 size={14} />
-                        </button>
-                        <button
-                          onClick={() => {
-                            if (confirm(t('venue_confirm_cancel_res', language, { renter: b.renterName }))) {
-                              deleteRentalBooking(b.id);
-                            }
-                          }}
-                          className="p-1.5 text-neutral-400 hover:text-red-500 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/40 cursor-pointer"
-                          title={t('venue_btn_delete_res')}
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setPrintedBooking(b);
+                  }}
+                  className="flex-1 py-1.5 px-3 rounded-xl bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                >
+                  <Printer size={13} />
+                  <span>{t('venue_btn_print_voucher')}</span>
+                </button>
               )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+            </div>
+          </div>
+        )}
+        onItemClick={(b) => handleEdit(b)}
+        onViewDetails={(b) => handleEdit(b)}
+        onEdit={(b) => handleEdit(b)}
+        onTogglePin={(b) => {
+          setPinnedBookingIds((prev) => {
+            const next = new Set(prev);
+            if (next.has(b.id)) {
+              next.delete(b.id);
+              showToast({
+                type: 'info',
+                title: 'Unpinned',
+                message: `${b.purpose} unpinned`,
+              });
+            } else {
+              next.add(b.id);
+              showToast({
+                type: 'info',
+                title: 'Pinned',
+                message: `${b.purpose} pinned to top`,
+              });
+            }
+            return next;
+          });
+        }}
+        onDelete={(b) => {
+          if (confirm(t('venue_confirm_cancel_res', language, { renter: b.renterName }))) {
+            deleteRentalBooking(b.id);
+          }
+        }}
+        customActions={(b) => [
+          ...(b.status === 'Confirmed'
+            ? [
+                {
+                  id: 'checkin',
+                  tooltip: t('venue_btn_checkin_guest') || 'Check In',
+                  icon: <LogIn size={13} />,
+                  iconColor: '#9333EA',
+                  onClick: (e: React.MouseEvent) => {
+                    e.stopPropagation();
+                    checkInBooking(b.id);
+                  },
+                },
+              ]
+            : b.status === 'CheckedIn'
+            ? [
+                {
+                  id: 'checkout',
+                  tooltip: t('venue_btn_checkout_space') || 'Check Out',
+                  icon: <LogOut size={13} />,
+                  iconColor: '#2563EB',
+                  onClick: (e: React.MouseEvent) => {
+                    e.stopPropagation();
+                    checkOutBooking(b.id);
+                  },
+                },
+              ]
+            : []),
+          {
+            id: 'print',
+            tooltip: t('venue_btn_print_voucher') || 'Print Voucher',
+            icon: <Printer size={13} />,
+            iconColor: '#6B7280',
+            onClick: (e: React.MouseEvent) => {
+              e.stopPropagation();
+              setPrintedBooking(b);
+            },
+          },
+        ]}
+        isPinned={(b) => pinnedBookingIds.has(b.id)}
+        selectedIds={selectedBookingIds}
+        onSelectionChange={setSelectedBookingIds}
+        emptyTitle={t('venue_no_bookings_match')}
+        emptyDescription={t('venue_bookings_page_sub')}
+        primaryActionLabel={t('venue_btn_new_res')}
+        onAddFirstItem={handleNewBooking}
+      />
 
       {/* Printable Rental Voucher Modal */}
       {printedBooking && (

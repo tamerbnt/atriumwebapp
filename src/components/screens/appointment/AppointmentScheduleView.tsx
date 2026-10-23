@@ -22,6 +22,9 @@ import {
   Eye,
   UserPlus,
   Check,
+  Pin,
+  Edit2,
+  Trash2,
 } from 'lucide-react';
 import { useAtriumStore } from '../../../services/store';
 import { Appointment, AppointmentStatus, StaffMember } from '../../../types/index';
@@ -30,6 +33,7 @@ import { formatMoney, localizeStatus } from '../../../utils/rules';
 import { t, getLocalizedService, getLocalizedServiceCategory, getLocalizedServiceName } from '../../../utils/i18n';
 import { Seek } from '../../ui/Seek';
 import { LabelSelect } from '../../ui/LabelSelect';
+import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 
 const TIME_SLOTS = [
   '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
@@ -52,6 +56,7 @@ export const AppointmentScheduleView: React.FC = () => {
     updateAppointmentStatus,
     checkoutAppointment,
     language,
+    showToast,
   } = useAtriumStore();
 
   const [selectedDate, setSelectedDate] = useState<string>(
@@ -71,6 +76,12 @@ export const AppointmentScheduleView: React.FC = () => {
     time: string;
     staffId: string;
   } | null>(null);
+
+  // Collection State
+  const [selectedAptIds, setSelectedAptIds] = useState<Set<string>>(new Set());
+  const [pinnedAptIds, setPinnedAptIds] = useState<Set<string>>(new Set());
+  const [aptSortBy, setAptSortBy] = useState<string>('time');
+  const [aptSortDir, setAptSortDir] = useState<'asc' | 'desc'>('asc');
 
   // Active stylists for the current facility
   const salonStylists = useMemo(() => {
@@ -93,6 +104,145 @@ export const AppointmentScheduleView: React.FC = () => {
       return true;
     });
   }, [appointments, selectedDate, selectedStylistId, statusFilter, searchQuery]);
+
+  const sortedDayAppointments = useMemo(() => {
+    return [...dayAppointments].sort((a, b) => {
+      const aPinned = pinnedAptIds.has(a.id);
+      const bPinned = pinnedAptIds.has(b.id);
+      if (aPinned && !bPinned) return -1;
+      if (!aPinned && bPinned) return 1;
+
+      if (aptSortBy === 'time') {
+        const cmp = a.startTime.localeCompare(b.startTime);
+        return aptSortDir === 'asc' ? cmp : -cmp;
+      }
+      if (aptSortBy === 'client') {
+        const cmp = a.clientName.localeCompare(b.clientName);
+        return aptSortDir === 'asc' ? cmp : -cmp;
+      }
+      if (aptSortBy === 'service') {
+        const cmp = a.serviceName.localeCompare(b.serviceName);
+        return aptSortDir === 'asc' ? cmp : -cmp;
+      }
+      if (aptSortBy === 'stylist') {
+        const cmp = a.staffName.localeCompare(b.staffName);
+        return aptSortDir === 'asc' ? cmp : -cmp;
+      }
+      if (aptSortBy === 'price') {
+        return aptSortDir === 'asc' ? a.price - b.price : b.price - a.price;
+      }
+      if (aptSortBy === 'status') {
+        return aptSortDir === 'asc' ? a.status.localeCompare(b.status) : b.status.localeCompare(a.status);
+      }
+      return 0;
+    });
+  }, [dayAppointments, pinnedAptIds, aptSortBy, aptSortDir]);
+
+  const appointmentColumns: ColumnDefinition<Appointment>[] = useMemo(() => [
+    {
+      key: 'time',
+      header: t('salon_timeline', language) || 'Time',
+      width: '1.4*',
+      minWidth: '120px',
+      sortable: true,
+      renderCell: (apt) => (
+        <div className="flex items-center gap-2">
+          <div className="w-10 h-10 rounded-xl bg-[#C4785A]/10 text-[#C4785A] font-bold text-xs flex flex-col items-center justify-center shrink-0">
+            <span className="text-[11px] font-bold leading-tight font-mono">{apt.startTime}</span>
+            <span className="text-[9px] text-neutral-400 font-medium font-mono">{apt.durationMinutes}m</span>
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: 'client',
+      header: language === 'ar' ? 'الزبون' : language === 'fr' ? 'Client' : 'Client',
+      width: '2.2*',
+      minWidth: '180px',
+      sortable: true,
+      renderCell: (apt) => (
+        <div className="min-w-0">
+          <div className="font-bold text-neutral-900 dark:text-white truncate text-xs">
+            {apt.clientName}
+          </div>
+          <div className="text-[10px] text-neutral-400 font-mono truncate">
+            {apt.clientPhone}
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: 'service',
+      header: language === 'ar' ? 'الخدمة' : language === 'fr' ? 'Prestation' : 'Service',
+      width: '2.5*',
+      minWidth: '200px',
+      sortable: true,
+      renderCell: (apt) => (
+        <div className="min-w-0 text-xs">
+          <div className="font-semibold text-neutral-800 dark:text-neutral-200 truncate">
+            {getLocalizedServiceName(apt.serviceId, apt.serviceName, language)}
+          </div>
+          {apt.notes && (
+            <div className="text-[10px] text-neutral-400 italic truncate">
+              "{apt.notes}"
+            </div>
+          )}
+        </div>
+      ),
+    },
+    {
+      key: 'stylist',
+      header: language === 'ar' ? 'المصفف / الأخصائي' : language === 'fr' ? 'Praticien / Styliste' : 'Staff / Stylist',
+      width: '2*',
+      minWidth: '160px',
+      sortable: true,
+      renderCell: (apt) => (
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="w-7 h-7 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 font-bold text-[10px] flex items-center justify-center shrink-0">
+            {apt.staffName.split(' ').map((n) => n[0]).join('')}
+          </div>
+          <span className="text-xs text-neutral-700 dark:text-neutral-300 font-medium truncate">
+            {apt.staffName}
+          </span>
+        </div>
+      ),
+    },
+    {
+      key: 'price',
+      header: language === 'ar' ? 'السعر' : language === 'fr' ? 'Tarif' : 'Price',
+      width: '1.4*',
+      minWidth: '110px',
+      sortable: true,
+      renderCell: (apt) => (
+        <span className="font-bold text-neutral-900 dark:text-white text-xs tabular-nums font-mono">
+          {formatMoney(apt.price)}
+        </span>
+      ),
+    },
+    {
+      key: 'status',
+      header: language === 'ar' ? 'الحالة' : language === 'fr' ? 'Statut' : 'Status',
+      width: '1.6*',
+      minWidth: '130px',
+      sortable: true,
+      renderCell: (apt) => (
+        <span
+          className={`inline-flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider ${
+            apt.status === 'InChair'
+              ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
+              : apt.status === 'Completed'
+              ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
+              : apt.status === 'Cancelled'
+              ? 'bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300'
+              : 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950/60 dark:text-indigo-300'
+          }`}
+        >
+          {apt.status === 'InChair' && <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />}
+          {apt.status === 'InChair' ? t('salon_kpi_in_chair', language) : localizeStatus(apt.status, language)}
+        </span>
+      ),
+    },
+  ], [language]);
 
   // Summary Metrics
   const stats = useMemo(() => {
@@ -609,100 +759,160 @@ export const AppointmentScheduleView: React.FC = () => {
       {/* List View */}
       {viewMode === 'list' && (
         <div className="flex-1 overflow-auto p-6">
-          <div className="bg-white dark:bg-[#18181B] rounded-3xl border border-neutral-200/80 dark:border-neutral-800 shadow-xs overflow-hidden">
-            <div className="p-4 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
-              <div>
-                <h2 className="text-sm font-bold text-neutral-900 dark:text-white">
-                  {t('salon_schedule_title', language)} • {formattedDateLabel}
-                </h2>
-                <p className="text-xs text-neutral-500">
-                  {t('salon_bookings_scheduled', language).replace('{count}', String(dayAppointments.length))}
-                </p>
-              </div>
-            </div>
+          <UniversalDataCollection<Appointment>
+            items={sortedDayAppointments}
+            keyExtractor={(apt) => apt.id}
+            defaultViewMode="list"
+            columns={appointmentColumns}
+            sortBy={aptSortBy}
+            sortDirection={aptSortDir}
+            onSortChange={(key) => {
+              if (aptSortBy === key) {
+                setAptSortDir((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+              } else {
+                setAptSortBy(key);
+                setAptSortDir('asc');
+              }
+            }}
+            renderCard={(apt) => (
+              <div className="flex flex-col justify-between w-full h-full">
+                <div>
+                  <div className="flex items-center justify-between gap-2 mb-2">
+                    <span className="font-mono text-xs font-bold text-neutral-900 dark:text-white bg-[#C4785A]/10 text-[#C4785A] px-2.5 py-1 rounded-lg">
+                      {apt.startTime} ({apt.durationMinutes}m)
+                    </span>
+                    <span
+                      className={`inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider ${
+                        apt.status === 'InChair'
+                          ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
+                          : apt.status === 'Completed'
+                          ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
+                          : apt.status === 'Cancelled'
+                          ? 'bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300'
+                          : 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950/60 dark:text-indigo-300'
+                      }`}
+                    >
+                      {apt.status === 'InChair' && <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />}
+                      {apt.status === 'InChair' ? t('salon_kpi_in_chair', language) : localizeStatus(apt.status, language)}
+                    </span>
+                  </div>
 
-            <div className="divide-y divide-neutral-100 dark:divide-neutral-800">
-              {dayAppointments.length === 0 ? (
-                <div className="p-12 text-center text-neutral-500">
-                  <Calendar size={32} className="mx-auto mb-2 text-neutral-400 opacity-60" />
-                  <p className="text-sm font-semibold">{t('salon_empty_appointments', language)}</p>
-                  <p className="text-xs text-neutral-400 mt-1">{t('salon_empty_appointments_sub', language)}</p>
-                </div>
-              ) : (
-                dayAppointments.map((apt) => (
-                  <div
-                    key={apt.id}
-                    onClick={() => handleOpenEditModal(apt)}
-                    className="p-4 hover:bg-neutral-50 dark:hover:bg-neutral-900/40 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3 cursor-pointer"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-2xl bg-[#C4785A]/10 text-[#C4785A] font-bold text-sm flex flex-col items-center justify-center">
-                        <span className="text-[11px] leading-tight font-bold">{apt.startTime}</span>
-                        <span className="text-[9px] text-neutral-400 font-medium">{apt.durationMinutes}m</span>
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h3 className="text-sm font-bold text-neutral-900 dark:text-white">{apt.clientName}</h3>
-                          <span
-                            className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                              apt.status === 'InChair'
-                                ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
-                                : apt.status === 'Completed'
-                                ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
-                                : apt.status === 'Cancelled'
-                                ? 'bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300'
-                                : 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950/60 dark:text-indigo-300'
-                            }`}
-                          >
-                            {apt.status === 'InChair' ? `• ${t('salon_kpi_in_chair', language)}` : localizeStatus(apt.status, language)}
-                          </span>
-                        </div>
-                        <p className="text-xs text-neutral-600 dark:text-neutral-400">
-                          {getLocalizedServiceName(apt.serviceId, apt.serviceName, language)} • {t('salon_stylist_label', language).replace('{stylist}', apt.staffName)}
-                        </p>
-                        {apt.notes && (
-                          <p className="text-[11px] text-neutral-400 italic mt-0.5">"{apt.notes}"</p>
-                        )}
-                      </div>
+                  <h3 className="font-bold text-sm text-neutral-900 dark:text-white line-clamp-1 mb-0.5">
+                    {apt.clientName}
+                  </h3>
+                  <p className="text-[11px] text-neutral-400 font-mono mb-2">
+                    {apt.clientPhone}
+                  </p>
+
+                  <div className="p-2.5 bg-neutral-50 dark:bg-neutral-800/40 rounded-xl text-xs space-y-1 mb-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-neutral-400 text-[10px] uppercase font-medium">
+                        {language === 'ar' ? 'الخدمة' : 'Service'}
+                      </span>
+                      <span className="font-semibold text-neutral-800 dark:text-neutral-200 truncate max-w-[140px]">
+                        {getLocalizedServiceName(apt.serviceId, apt.serviceName, language)}
+                      </span>
                     </div>
-
-                    <div className="flex items-center gap-3 self-end sm:self-center">
-                      <div className="text-right">
-                        <p className="text-sm font-bold text-neutral-900 dark:text-white">{formatMoney(apt.price)}</p>
-                        <p className="text-[10px] text-neutral-400">{apt.clientPhone}</p>
-                      </div>
-
-                      {apt.status !== 'Completed' && apt.status !== 'Cancelled' && (
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleOneClickCheckout(apt);
-                          }}
-                          className="px-3 py-1.5 text-xs font-bold rounded-xl bg-[#C4785A] hover:bg-[#b56b4f] text-white flex items-center gap-1.5 shadow-2xs transition-colors cursor-pointer"
-                          title={t('salon_quick_checkout', language)}
-                        >
-                          <CreditCard size={13} />
-                          <span>{t('salon_quick_checkout', language)}</span>
-                        </button>
-                      )}
-
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleOpenEditModal(apt);
-                        }}
-                        className="px-3 py-1.5 text-xs font-semibold rounded-xl bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-200 transition-colors cursor-pointer"
-                      >
-                        {t('common_edit', language)}
-                      </button>
+                    <div className="flex items-center justify-between pt-1 border-t border-neutral-100 dark:border-neutral-800">
+                      <span className="text-neutral-400 text-[10px] uppercase font-medium">
+                        {language === 'ar' ? 'المصفف' : 'Staff'}
+                      </span>
+                      <span className="font-medium text-neutral-700 dark:text-neutral-300 truncate max-w-[140px]">
+                        {apt.staffName}
+                      </span>
                     </div>
                   </div>
-                ))
-              )}
-            </div>
-          </div>
+
+                  {apt.notes && (
+                    <p className="text-[11px] text-neutral-400 italic mb-2 line-clamp-1">
+                      "{apt.notes}"
+                    </p>
+                  )}
+                </div>
+
+                <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between gap-2">
+                  <span className="text-xs font-bold font-mono text-neutral-900 dark:text-white tabular-nums">
+                    {formatMoney(apt.price)}
+                  </span>
+
+                  {apt.status !== 'Completed' && apt.status !== 'Cancelled' && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleOneClickCheckout(apt);
+                      }}
+                      className="py-1 px-3 rounded-xl bg-[#C4785A] hover:bg-[#b56b4f] text-white text-xs font-bold flex items-center gap-1 transition-colors cursor-pointer shadow-2xs"
+                    >
+                      <CreditCard size={12} />
+                      <span>{t('salon_quick_checkout', language)}</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+            onItemClick={(apt) => handleOpenEditModal(apt)}
+            onViewDetails={(apt) => handleOpenEditModal(apt)}
+            onEdit={(apt) => handleOpenEditModal(apt)}
+            onTogglePin={(apt) => {
+              setPinnedAptIds((prev) => {
+                const next = new Set(prev);
+                if (next.has(apt.id)) {
+                  next.delete(apt.id);
+                  showToast({
+                    type: 'info',
+                    title: 'Unpinned',
+                    message: `${apt.clientName} unpinned`,
+                  });
+                } else {
+                  next.add(apt.id);
+                  showToast({
+                    type: 'info',
+                    title: 'Pinned',
+                    message: `${apt.clientName} pinned to top`,
+                  });
+                }
+                return next;
+              });
+            }}
+            customActions={(apt) => [
+              ...(apt.status !== 'Completed' && apt.status !== 'Cancelled'
+                ? [
+                    {
+                      id: 'checkout',
+                      tooltip: t('salon_quick_checkout', language) || 'Checkout',
+                      icon: <CreditCard size={13} />,
+                      iconColor: '#C4785A',
+                      onClick: (e: React.MouseEvent) => {
+                        e.stopPropagation();
+                        handleOneClickCheckout(apt);
+                      },
+                    },
+                  ]
+                : []),
+              ...(apt.status === 'Confirmed'
+                ? [
+                    {
+                      id: 'start',
+                      tooltip: t('salon_kpi_in_chair', language) || 'Start Service',
+                      icon: <Play size={13} />,
+                      iconColor: '#D97706',
+                      onClick: (e: React.MouseEvent) => {
+                        e.stopPropagation();
+                        updateAppointmentStatus(apt.id, 'InChair');
+                      },
+                    },
+                  ]
+                : []),
+            ]}
+            isPinned={(apt) => pinnedAptIds.has(apt.id)}
+            selectedIds={selectedAptIds}
+            onSelectionChange={setSelectedAptIds}
+            emptyTitle={t('salon_empty_appointments', language)}
+            emptyDescription={t('salon_empty_appointments_sub', language)}
+            primaryActionLabel={t('salon_new_booking', language)}
+            onAddFirstItem={() => handleOpenAddModal('10:00')}
+          />
         </div>
       )}
 

@@ -31,6 +31,7 @@ import {
   Split,
   Edit2,
   Settings2,
+  Pin,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
 import { Product, PaymentDetail, ParkedOrder, StockMovement } from '../../../types/index';
@@ -41,6 +42,7 @@ import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { FilterSelect } from '../../ui/FilterSelect';
 import { useTranslation } from '../../../utils/useTranslation';
+import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 
 interface CartItem {
   product: Product;
@@ -202,6 +204,158 @@ export const PosRegisterView: React.FC<PosRegisterViewProps> = ({ initialTab = '
       return matchCat;
     });
   }, [products, categoryFilter, stockStatusFilter]);
+
+  const [selectedProductIds, setSelectedProductIds] = useState<Set<string>>(new Set());
+  const [pinnedProductIds, setPinnedProductIds] = useState<Set<string>>(new Set());
+  const [invSortBy, setInvSortBy] = useState<string>('name');
+  const [invSortDir, setInvSortDir] = useState<'asc' | 'desc'>('asc');
+
+  const sortedInventory = useMemo(() => {
+    return [...filteredInventory].sort((a, b) => {
+      const aPinned = pinnedProductIds.has(a.id);
+      const bPinned = pinnedProductIds.has(b.id);
+      if (aPinned && !bPinned) return -1;
+      if (!aPinned && bPinned) return 1;
+
+      if (invSortBy === 'name' || invSortBy === 'item') {
+        const cmp = a.name.localeCompare(b.name);
+        return invSortDir === 'asc' ? cmp : -cmp;
+      }
+      if (invSortBy === 'category') {
+        const cmp = a.category.localeCompare(b.category);
+        return invSortDir === 'asc' ? cmp : -cmp;
+      }
+      if (invSortBy === 'sku') {
+        const cmp = a.sku.localeCompare(b.sku);
+        return invSortDir === 'asc' ? cmp : -cmp;
+      }
+      if (invSortBy === 'cost') {
+        const aCost = a.costPrice || a.cost?.amount || Math.round(a.price.amount * 0.6);
+        const bCost = b.costPrice || b.cost?.amount || Math.round(b.price.amount * 0.6);
+        return invSortDir === 'asc' ? aCost - bCost : bCost - aCost;
+      }
+      if (invSortBy === 'retail' || invSortBy === 'price') {
+        return invSortDir === 'asc' ? a.price.amount - b.price.amount : b.price.amount - a.price.amount;
+      }
+      if (invSortBy === 'stock') {
+        return invSortDir === 'asc' ? a.stockQuantity - b.stockQuantity : b.stockQuantity - a.stockQuantity;
+      }
+      if (invSortBy === 'val' || invSortBy === 'valuation') {
+        const aVal = a.price.amount * a.stockQuantity;
+        const bVal = b.price.amount * b.stockQuantity;
+        return invSortDir === 'asc' ? aVal - bVal : bVal - aVal;
+      }
+      return 0;
+    });
+  }, [filteredInventory, pinnedProductIds, invSortBy, invSortDir]);
+
+  const productColumns: ColumnDefinition<Product>[] = useMemo(() => [
+    {
+      key: 'name',
+      header: t('shop_col_item'),
+      width: '2.5*',
+      minWidth: '220px',
+      sortable: true,
+      renderCell: (p) => (
+        <div className="min-w-0">
+          <div className="font-bold text-neutral-900 dark:text-white truncate">
+            {p.name}
+          </div>
+          <div className="text-[10px] text-neutral-400 truncate">
+            {p.description || t('shop_standard_article')}
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: 'category',
+      header: t('shop_col_category'),
+      width: '1.2*',
+      minWidth: '110px',
+      sortable: true,
+      renderCell: (p) => (
+        <span className="px-2 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-800 text-[10px] font-bold text-neutral-700 dark:text-neutral-300">
+          {p.category}
+        </span>
+      ),
+    },
+    {
+      key: 'sku',
+      header: t('shop_col_sku'),
+      width: '1.5*',
+      minWidth: '130px',
+      sortable: true,
+      renderCell: (p) => (
+        <div className="font-mono text-[11px] text-neutral-500">
+          <div>{p.sku}</div>
+          {p.barcode && <div className="text-[10px] text-neutral-400">{p.barcode}</div>}
+        </div>
+      ),
+    },
+    {
+      key: 'cost',
+      header: t('shop_col_cost'),
+      width: '1.2*',
+      minWidth: '110px',
+      sortable: true,
+      renderCell: (p) => {
+        const costAmt = p.costPrice || p.cost?.amount || Math.round(p.price.amount * 0.6);
+        return (
+          <span className="font-mono text-neutral-500 tabular-nums">
+            {formatMoney(costAmt)}
+          </span>
+        );
+      },
+    },
+    {
+      key: 'retail',
+      header: t('shop_col_retail'),
+      width: '1.2*',
+      minWidth: '110px',
+      sortable: true,
+      renderCell: (p) => (
+        <span className="font-mono font-bold text-neutral-900 dark:text-white tabular-nums">
+          {formatMoney(p.price.amount)}
+        </span>
+      ),
+    },
+    {
+      key: 'stock',
+      header: t('shop_col_stock'),
+      width: '1.4*',
+      minWidth: '120px',
+      sortable: true,
+      renderCell: (p) => {
+        const isOut = p.stockQuantity <= 0;
+        const isLow = !isOut && p.stockQuantity <= (p.reorderLevel || 5);
+        return (
+          <span
+            className={`inline-flex items-center gap-1 font-bold px-2.5 py-0.5 rounded-full text-[10px] tabular-nums ${
+              isOut
+                ? 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300'
+                : isLow
+                ? 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300'
+                : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300'
+            }`}
+          >
+            {p.stockQuantity} {p.unit || t('shop_unit_pcs')}
+          </span>
+        );
+      },
+    },
+    {
+      key: 'val',
+      header: t('shop_col_val'),
+      width: '1.3*',
+      minWidth: '120px',
+      sortable: true,
+      renderCell: (p) => (
+        <span className="font-mono font-bold text-[#C4785A] tabular-nums">
+          {formatMoney(p.price.amount * p.stockQuantity)}
+        </span>
+      ),
+    },
+  ], [t]);
 
   // Inventory valuation KPIs
   const inventoryStats = useMemo(() => {
@@ -1604,117 +1758,153 @@ export const PosRegisterView: React.FC<PosRegisterViewProps> = ({ initialTab = '
             </div>
           </div>
 
-          {/* Inventory Table */}
-          <div className="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 overflow-hidden shadow-2xs">
-            <div className="overflow-x-auto">
-              <table className={`w-full text-xs ${isRtl ? 'text-right' : 'text-left'}`}>
-                <thead className="bg-neutral-50 dark:bg-neutral-800/60 text-neutral-400 font-bold uppercase tracking-wider text-[10px] border-b border-neutral-200 dark:border-neutral-800">
-                  <tr>
-                    <th className="py-3 px-4">{t('shop_col_item')}</th>
-                    <th className="py-3 px-4">{t('shop_col_category')}</th>
-                    <th className="py-3 px-4">{t('shop_col_sku')}</th>
-                    <th className={`py-3 px-4 ${isRtl ? 'text-left' : 'text-right'}`}>{t('shop_col_cost')}</th>
-                    <th className={`py-3 px-4 ${isRtl ? 'text-left' : 'text-right'}`}>{t('shop_col_retail')}</th>
-                    <th className="py-3 px-4 text-center">{t('shop_col_stock')}</th>
-                    <th className={`py-3 px-4 ${isRtl ? 'text-left' : 'text-right'}`}>{t('shop_col_val')}</th>
-                    <th className={`py-3 px-4 ${isRtl ? 'text-left' : 'text-right'}`}>{t('shop_col_actions')}</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
-                  {filteredInventory.length === 0 ? (
-                    <tr>
-                      <td colSpan={8} className="py-12 text-center text-neutral-400">
-                        {t('shop_table_empty')}
-                      </td>
-                    </tr>
-                  ) : (
-                    filteredInventory.map((p) => {
-                      const isOut = p.stockQuantity <= 0;
-                      const isLow = !isOut && p.stockQuantity <= (p.reorderLevel || 5);
-                      const costAmt = p.costPrice || p.cost?.amount || Math.round(p.price.amount * 0.6);
+          {/* Universal Inventory Collection */}
+          <UniversalDataCollection<Product>
+            items={sortedInventory}
+            keyExtractor={(p) => p.id}
+            defaultViewMode="list"
+            columns={productColumns}
+            sortBy={invSortBy}
+            sortDirection={invSortDir}
+            onSortChange={(key) => {
+              if (invSortBy === key) {
+                setInvSortDir((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+              } else {
+                setInvSortBy(key);
+                setInvSortDir('asc');
+              }
+            }}
+            renderCard={(p) => {
+              const isOut = p.stockQuantity <= 0;
+              const isLow = !isOut && p.stockQuantity <= (p.reorderLevel || 5);
+              const costAmt = p.costPrice || p.cost?.amount || Math.round(p.price.amount * 0.6);
 
-                      return (
-                        <tr key={p.id} className="hover:bg-neutral-50/70 dark:hover:bg-neutral-800/40 transition-colors">
-                          <td className="py-3 px-4 font-bold text-neutral-900 dark:text-white">
-                            <div className="truncate max-w-[220px]">{p.name}</div>
-                            <div className="text-[10px] font-normal text-neutral-400 truncate max-w-[220px]">
-                              {p.description || t('shop_standard_article')}
-                            </div>
-                          </td>
-                          <td className="py-3 px-4 text-neutral-600 dark:text-neutral-300">
-                            <span className="px-2 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-800 text-[10px] font-bold">
-                              {p.category}
-                            </span>
-                          </td>
-                          <td className="py-3 px-4 font-mono text-[11px] text-neutral-500">
-                            <div>{p.sku}</div>
-                            {p.barcode && <div className="text-[10px] text-neutral-400">{p.barcode}</div>}
-                          </td>
-                          <td className={`py-3 px-4 font-mono text-neutral-500 ${isRtl ? 'text-left' : 'text-right'}`}>
-                            {formatMoney(costAmt)}
-                          </td>
-                          <td className={`py-3 px-4 font-mono font-bold text-neutral-900 dark:text-white ${isRtl ? 'text-left' : 'text-right'}`}>
-                            {formatMoney(p.price.amount)}
-                          </td>
-                          <td className="py-3 px-4 text-center">
-                            <span className={`inline-flex items-center gap-1 font-bold px-2 py-0.5 rounded-full text-[10px] ${
-                              isOut
-                                ? 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300'
-                                : isLow
-                                ? 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300'
-                                : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300'
-                            }`}>
-                              {p.stockQuantity} {p.unit || t('shop_unit_pcs')}
-                            </span>
-                          </td>
-                          <td className={`py-3 px-4 font-mono font-bold text-[#C4785A] ${isRtl ? 'text-left' : 'text-right'}`}>
-                            {formatMoney(p.price.amount * p.stockQuantity)}
-                          </td>
-                          <td className={`py-3 px-4 ${isRtl ? 'text-left' : 'text-right'}`}>
-                            <div className={`flex items-center gap-1 ${isRtl ? 'justify-start' : 'justify-end'}`}>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setSelectedProductForAdjust(p);
-                                  setAdjustQuantity(10);
-                                  setAdjustMode('add');
-                                  setIsAdjustStockModalOpen(true);
-                                }}
-                                title={t('shop_adjust_tooltip')}
-                                className="p-1.5 rounded-lg text-[#C4785A] hover:bg-orange-50 dark:hover:bg-orange-950/40 cursor-pointer"
-                              >
-                                <ArrowDownUp size={14} />
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => handleOpenEditProduct(p)}
-                                title={t('shop_edit_tooltip')}
-                                className="p-1.5 rounded-lg text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
-                              >
-                                <Edit2 size={14} />
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  if (window.confirm(t('shop_delete_confirm', { name: p.name }))) {
-                                    deleteProduct(p.id);
-                                  }
-                                }}
-                                title={t('shop_delete_tooltip')}
-                                className="p-1.5 rounded-lg text-neutral-400 hover:text-red-500 cursor-pointer"
-                              >
-                                <Trash2 size={14} />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
+              return (
+                <div className="flex flex-col justify-between w-full h-full">
+                  <div>
+                    <div className="flex items-center justify-between gap-2 mb-2">
+                      <span className="px-2 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-800 text-[10px] font-bold text-neutral-600 dark:text-neutral-300">
+                        {p.category}
+                      </span>
+                      <span
+                        className={`inline-flex items-center gap-1 font-bold px-2 py-0.5 rounded-full text-[10px] tabular-nums ${
+                          isOut
+                            ? 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300'
+                            : isLow
+                            ? 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300'
+                            : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300'
+                        }`}
+                      >
+                        {p.stockQuantity} {p.unit || t('shop_unit_pcs')}
+                      </span>
+                    </div>
+
+                    <h3 className="font-bold text-sm text-neutral-900 dark:text-white line-clamp-1 mb-1">
+                      {p.name}
+                    </h3>
+                    <p className="text-[11px] text-neutral-400 line-clamp-2 mb-3">
+                      {p.description || t('shop_standard_article')}
+                    </p>
+
+                    <div className="grid grid-cols-2 gap-2 p-2.5 bg-neutral-50 dark:bg-neutral-800/40 rounded-xl text-xs mb-3">
+                      <div>
+                        <span className="text-neutral-400 block text-[9px] uppercase font-medium">
+                          {t('shop_col_cost')}
+                        </span>
+                        <span className="font-mono text-neutral-600 dark:text-neutral-300 tabular-nums">
+                          {formatMoney(costAmt)}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-neutral-400 block text-[9px] uppercase font-medium">
+                          {t('shop_col_retail')}
+                        </span>
+                        <span className="font-mono font-bold text-neutral-900 dark:text-white tabular-nums">
+                          {formatMoney(p.price.amount)}
+                        </span>
+                      </div>
+                      <div className="col-span-2 pt-1 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between">
+                        <span className="text-neutral-400 text-[10px] font-mono">
+                          {p.sku}
+                        </span>
+                        <span className="font-mono font-bold text-[#C4785A] text-xs tabular-nums">
+                          {formatMoney(p.price.amount * p.stockQuantity)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedProductForAdjust(p);
+                        setAdjustQuantity(10);
+                        setAdjustMode('add');
+                        setIsAdjustStockModalOpen(true);
+                      }}
+                      className="w-full py-1.5 px-3 rounded-xl bg-orange-50 dark:bg-orange-950/40 hover:bg-orange-100 dark:hover:bg-orange-900/60 text-[#C4785A] text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                    >
+                      <ArrowDownUp size={13} />
+                      <span>{t('shop_adjust_tooltip') || 'Adjust Stock'}</span>
+                    </button>
+                  </div>
+                </div>
+              );
+            }}
+            onItemClick={(p) => handleOpenEditProduct(p)}
+            onViewDetails={(p) => handleOpenEditProduct(p)}
+            onEdit={(p) => handleOpenEditProduct(p)}
+            onTogglePin={(p) => {
+              setPinnedProductIds((prev) => {
+                const next = new Set(prev);
+                if (next.has(p.id)) {
+                  next.delete(p.id);
+                  showToast({
+                    type: 'info',
+                    title: 'Unpinned',
+                    message: `${p.name} unpinned`,
+                  });
+                } else {
+                  next.add(p.id);
+                  showToast({
+                    type: 'info',
+                    title: 'Pinned',
+                    message: `${p.name} pinned to top`,
+                  });
+                }
+                return next;
+              });
+            }}
+            onDelete={(p) => {
+              if (window.confirm(t('shop_delete_confirm', { name: p.name }))) {
+                deleteProduct(p.id);
+              }
+            }}
+            customActions={(p) => [
+              {
+                id: 'adjust',
+                tooltip: t('shop_adjust_tooltip') || 'Adjust Stock',
+                icon: <ArrowDownUp size={13} />,
+                iconColor: '#C4785A',
+                onClick: (e) => {
+                  e.stopPropagation();
+                  setSelectedProductForAdjust(p);
+                  setAdjustQuantity(10);
+                  setAdjustMode('add');
+                  setIsAdjustStockModalOpen(true);
+                },
+              },
+            ]}
+            isPinned={(p) => pinnedProductIds.has(p.id)}
+            selectedIds={selectedProductIds}
+            onSelectionChange={setSelectedProductIds}
+            emptyTitle={t('shop_table_empty')}
+            emptyDescription={t('shop_empty_cat_sub')}
+            primaryActionLabel={t('shop_add_product')}
+            onAddFirstItem={handleOpenAddProduct}
+          />
 
           {/* Recent Stock Movements Log */}
           {stockMovements.length > 0 && (

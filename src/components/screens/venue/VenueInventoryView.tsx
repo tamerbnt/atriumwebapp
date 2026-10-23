@@ -12,6 +12,9 @@ import {
   Check,
   X,
   Search,
+  Pin,
+  Calendar,
+  Clock,
 } from 'lucide-react';
 import { useAtriumStore } from '../../../services/store';
 import { RentableUnit, RentableUnitType, RentableUnitStatus } from '../../../types/index';
@@ -21,6 +24,7 @@ import { BookingModal } from './BookingModal';
 import { Seek } from '../../ui/Seek';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
+import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 
 export const VenueInventoryView: React.FC = () => {
   const { t, language } = useTranslation();
@@ -36,6 +40,10 @@ export const VenueInventoryView: React.FC = () => {
   const [selectedTypeFilter, setSelectedTypeFilter] = useState<'All' | RentableUnitType>('All');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [unitToEdit, setUnitToEdit] = useState<RentableUnit | null>(null);
+  const [selectedUnitIds, setSelectedUnitIds] = useState<Set<string>>(new Set());
+  const [pinnedUnitIds, setPinnedUnitIds] = useState<Set<string>>(new Set());
+  const [unitSortBy, setUnitSortBy] = useState<string>('name');
+  const [unitSortDir, setUnitSortDir] = useState<'asc' | 'desc'>('asc');
 
   // Booking modal trigger
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
@@ -61,6 +69,42 @@ export const VenueInventoryView: React.FC = () => {
     const matchesType = selectedTypeFilter === 'All' || u.type === selectedTypeFilter;
     return matchesSearch && matchesType;
   });
+
+  const sortedUnits = React.useMemo(() => {
+    return [...filteredUnits].sort((a, b) => {
+      const aPinned = pinnedUnitIds.has(a.id);
+      const bPinned = pinnedUnitIds.has(b.id);
+      if (aPinned && !bPinned) return -1;
+      if (!aPinned && bPinned) return 1;
+
+      if (unitSortBy === 'name' || unitSortBy === 'code') {
+        const cmp = a.name.localeCompare(b.name);
+        return unitSortDir === 'asc' ? cmp : -cmp;
+      }
+      if (unitSortBy === 'type') {
+        const cmp = a.type.localeCompare(b.type);
+        return unitSortDir === 'asc' ? cmp : -cmp;
+      }
+      if (unitSortBy === 'capacity') {
+        return unitSortDir === 'asc' ? a.capacity - b.capacity : b.capacity - a.capacity;
+      }
+      if (unitSortBy === 'surface') {
+        const aSurf = a.surfaceAreaSqm || 0;
+        const bSurf = b.surfaceAreaSqm || 0;
+        return unitSortDir === 'asc' ? aSurf - bSurf : bSurf - aSurf;
+      }
+      if (unitSortBy === 'rates' || unitSortBy === 'hourlyRate') {
+        return unitSortDir === 'asc' ? a.hourlyRate - b.hourlyRate : b.hourlyRate - a.hourlyRate;
+      }
+      if (unitSortBy === 'dailyRate') {
+        return unitSortDir === 'asc' ? a.dailyRate - b.dailyRate : b.dailyRate - a.dailyRate;
+      }
+      if (unitSortBy === 'status') {
+        return unitSortDir === 'asc' ? a.status.localeCompare(b.status) : b.status.localeCompare(a.status);
+      }
+      return 0;
+    });
+  }, [filteredUnits, pinnedUnitIds, unitSortBy, unitSortDir]);
 
   const handleOpenAdd = () => {
     setUnitToEdit(null);
@@ -159,6 +203,126 @@ export const VenueInventoryView: React.FC = () => {
     updateRentableUnit(unit.id, { status: nextStatus });
   };
 
+  const unitColumns: ColumnDefinition<RentableUnit>[] = React.useMemo(() => [
+    {
+      key: 'name',
+      header: t('venue_inv_space') || (language === 'ar' ? 'المساحة أو القاعة' : language === 'fr' ? 'Espace & Unité' : 'Space & Unit'),
+      width: '2.5*',
+      minWidth: '220px',
+      sortable: true,
+      renderCell: (unit) => (
+        <div className="flex items-center gap-3">
+          <div
+            className="w-9 h-9 rounded-xl flex items-center justify-center font-mono font-bold text-xs shrink-0 text-white shadow-xs"
+            style={{ backgroundColor: unit.colorHex || '#8B5CF6' }}
+          >
+            {unit.code.slice(0, 3)}
+          </div>
+          <div className="min-w-0">
+            <div className="font-bold text-neutral-900 dark:text-white truncate">
+              {unit.name}
+            </div>
+            <div className="text-[11px] text-neutral-400 font-mono truncate">
+              {unit.code} · {unit.type}
+            </div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: 'type',
+      header: t('venue_inv_type') || (language === 'ar' ? 'النوع' : 'Type'),
+      width: '1.2*',
+      minWidth: '110px',
+      sortable: true,
+      renderCell: (unit) => {
+        const localizedType =
+          unit.type === 'Hall'
+            ? t('venue_type_hall')
+            : unit.type === 'Studio'
+            ? t('venue_type_studio')
+            : unit.type === 'Room'
+            ? t('venue_type_room')
+            : unit.type === 'Court'
+            ? t('venue_type_court')
+            : t('venue_type_desk');
+        return (
+          <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300">
+            {localizedType}
+          </span>
+        );
+      },
+    },
+    {
+      key: 'capacity',
+      header: t('venue_inv_capacity') || (language === 'ar' ? 'السعة والمساحة' : language === 'fr' ? 'Capacité & Surface' : 'Capacity & Area'),
+      width: '1.6*',
+      minWidth: '140px',
+      sortable: true,
+      renderCell: (unit) => (
+        <div className="text-xs">
+          <div className="font-semibold text-neutral-800 dark:text-neutral-200 tabular-nums">
+            {t('venue_card_capacity', language, { count: unit.capacity })}
+          </div>
+          <div className="text-[11px] text-neutral-400 tabular-nums">
+            {unit.surfaceAreaSqm ? t('venue_inv_surface_unit', language, { surface: unit.surfaceAreaSqm }) : '--'}
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: 'rates',
+      header: t('venue_inv_rates') || (language === 'ar' ? 'التعريفة' : language === 'fr' ? 'Tarifs' : 'Rates'),
+      width: '2*',
+      minWidth: '170px',
+      sortable: true,
+      renderCell: (unit) => (
+        <div className="text-xs">
+          <div className="font-bold text-neutral-900 dark:text-white tabular-nums">
+            {formatCurrencyAmount(unit.hourlyRate, unit.currency)} <span className="text-[10px] text-neutral-400 font-normal">/ {t('venue_unit_hr') || 'hr'}</span>
+          </div>
+          <div className="text-[11px] text-neutral-500 dark:text-neutral-400 tabular-nums">
+            {formatCurrencyAmount(unit.dailyRate, unit.currency)} <span className="text-[10px] text-neutral-400 font-normal">/ {t('venue_unit_day') || 'day'}</span>
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: 'status',
+      header: t('venue_inv_status') || (language === 'ar' ? 'الحالة' : language === 'fr' ? 'Statut' : 'Status'),
+      width: '1.4*',
+      minWidth: '120px',
+      sortable: true,
+      renderCell: (unit) => {
+        const localizedStatus =
+          unit.status === 'Available'
+            ? (language === 'ar' ? 'متاحة' : language === 'fr' ? 'Disponible' : 'Available')
+            : unit.status === 'Occupied'
+            ? t('venue_kpi_in_use')
+            : (language === 'ar' ? 'صيانة' : language === 'fr' ? 'Maintenance' : 'Maintenance');
+        return (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleToggleStatus(unit);
+            }}
+            className={`px-2.5 py-1 rounded-full text-[10px] font-semibold tracking-wide uppercase transition-colors cursor-pointer ${
+              unit.status === 'Available'
+                ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300 hover:bg-emerald-200'
+                : unit.status === 'Occupied'
+                ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300 hover:bg-purple-200'
+                : 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 hover:bg-amber-200'
+            }`}
+            title={localizedStatus}
+          >
+            {localizedStatus}
+          </button>
+        );
+      },
+    },
+  ], [language, t]);
+
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       {/* Header */}
@@ -215,168 +379,205 @@ export const VenueInventoryView: React.FC = () => {
         </div>
       </div>
 
-      {/* Grid of Rentable Units */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredUnits.length === 0 ? (
-          <div className="col-span-full p-12 text-center bg-neutral-50 dark:bg-neutral-800/30 rounded-3xl border border-neutral-200 dark:border-neutral-800">
-            <DoorOpen size={36} className="mx-auto text-neutral-400 mb-2" />
-            <h3 className="text-base font-semibold text-neutral-900 dark:text-white">
-              {t('venue_inv_empty_title')}
-            </h3>
-            <p className="text-xs text-neutral-400 mt-1">
-              {t('venue_inv_empty_desc')}
-            </p>
-          </div>
-        ) : (
-          filteredUnits.map((unit) => {
-            const localizedType =
-              unit.type === 'Hall'
-                ? t('venue_type_hall')
-                : unit.type === 'Studio'
-                ? t('venue_type_studio')
-                : unit.type === 'Room'
-                ? t('venue_type_room')
-                : unit.type === 'Court'
-                ? t('venue_type_court')
-                : t('venue_type_desk');
+      {/* Standardized Collection of Rentable Units */}
+      <UniversalDataCollection<RentableUnit>
+        items={sortedUnits}
+        keyExtractor={(u) => u.id}
+        defaultViewMode="grid"
+        columns={unitColumns}
+        sortBy={unitSortBy}
+        sortDirection={unitSortDir}
+        onSortChange={(key) => {
+          if (unitSortBy === key) {
+            setUnitSortDir((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+          } else {
+            setUnitSortBy(key);
+            setUnitSortDir('asc');
+          }
+        }}
+        renderCard={(unit) => {
+          const localizedType =
+            unit.type === 'Hall'
+              ? t('venue_type_hall')
+              : unit.type === 'Studio'
+              ? t('venue_type_studio')
+              : unit.type === 'Room'
+              ? t('venue_type_room')
+              : unit.type === 'Court'
+              ? t('venue_type_court')
+              : t('venue_type_desk');
 
-            const localizedStatus =
-              unit.status === 'Available'
-                ? (language === 'ar' ? 'متاحة' : language === 'fr' ? 'Disponible' : 'Available')
-                : unit.status === 'Occupied'
-                ? t('venue_kpi_in_use')
-                : (language === 'ar' ? 'صيانة' : language === 'fr' ? 'Maintenance' : 'Maintenance');
+          const localizedStatus =
+            unit.status === 'Available'
+              ? (language === 'ar' ? 'متاحة' : language === 'fr' ? 'Disponible' : 'Available')
+              : unit.status === 'Occupied'
+              ? t('venue_kpi_in_use')
+              : (language === 'ar' ? 'صيانة' : language === 'fr' ? 'Maintenance' : 'Maintenance');
 
-            return (
-              <div
-                key={unit.id}
-                className="p-6 rounded-3xl bg-white dark:bg-neutral-800/60 border border-[#E9EEF0] dark:border-neutral-800 flex flex-col justify-between hover:border-neutral-300 dark:hover:border-neutral-700 transition-all shadow-2xs"
-              >
-                <div>
-                  {/* Header row */}
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <span
-                        className="w-3 h-3 rounded-full shrink-0"
-                        style={{ backgroundColor: unit.colorHex || '#8B5CF6' }}
-                      />
-                      <span className="text-xs font-mono font-semibold text-neutral-500 uppercase">
-                        {unit.code}
-                      </span>
-                      <span className="text-[11px] text-neutral-400">· {localizedType}</span>
-                    </div>
-
-                    <button
-                      onClick={() => handleToggleStatus(unit)}
-                      className={`px-2.5 py-1 rounded-full text-[10px] font-semibold tracking-wide uppercase transition-colors cursor-pointer ${
-                        unit.status === 'Available'
-                          ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300 hover:bg-emerald-200'
-                          : unit.status === 'Occupied'
-                          ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300 hover:bg-purple-200'
-                          : 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 hover:bg-amber-200'
-                      }`}
-                      title={localizedStatus}
-                    >
-                      {localizedStatus}
-                    </button>
-                  </div>
-
-                  <h3 className="font-bold text-base text-neutral-900 dark:text-white">
-                    {unit.name}
-                  </h3>
-                  <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1 line-clamp-2">
-                    {unit.description}
-                  </p>
-
-                  {/* Specs */}
-                  <div className="grid grid-cols-2 gap-2 mt-4 p-3 bg-neutral-50 dark:bg-neutral-800/40 rounded-2xl text-xs">
-                    <div>
-                      <span className="text-neutral-400 block text-[10px] uppercase font-medium">
-                        {t('venue_inv_capacity')}
-                      </span>
-                      <span className="font-semibold text-neutral-900 dark:text-white tabular-nums">
-                        {t('venue_card_capacity', language, { count: unit.capacity })}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-neutral-400 block text-[10px] uppercase font-medium">
-                        {t('venue_inv_surface')}
-                      </span>
-                      <span className="font-semibold text-neutral-900 dark:text-white tabular-nums">
-                        {unit.surfaceAreaSqm ? t('venue_inv_surface_unit', language, { surface: unit.surfaceAreaSqm }) : '--'}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-neutral-400 block text-[10px] uppercase font-medium">
-                        {t('venue_inv_hourly_rate')}
-                      </span>
-                      <span className="font-semibold text-neutral-900 dark:text-white tabular-nums">
-                        {formatCurrencyAmount(unit.hourlyRate, unit.currency)}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-neutral-400 block text-[10px] uppercase font-medium">
-                        {t('venue_inv_daily_rate')}
-                      </span>
-                      <span className="font-semibold text-neutral-900 dark:text-white tabular-nums">
-                        {formatCurrencyAmount(unit.dailyRate, unit.currency)}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Amenities pills */}
-                  {unit.amenities.length > 0 && (
-                    <div className="mt-3 flex flex-wrap gap-1">
-                      {unit.amenities.map((amenity, idx) => (
-                        <span
-                          key={idx}
-                          className="text-[10px] bg-neutral-100 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300 px-2 py-0.5 rounded-md"
-                        >
-                          {amenity}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Actions Footer */}
-                <div className="mt-5 pt-3 border-t border-neutral-100 dark:border-neutral-700/50 flex items-center justify-between">
-                  <div className="flex items-center gap-1.5">
-                    <button
-                      onClick={() => handleOpenEdit(unit)}
-                      className="p-2 text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
-                      title={t('common_edit')}
-                    >
-                      <Edit2 size={14} />
-                    </button>
-                    <button
-                      onClick={() => {
-                        if (confirm(`${t('common_delete')} ${unit.name}?`)) {
-                          deleteRentableUnit(unit.id);
-                        }
-                      }}
-                      className="p-2 text-neutral-400 hover:text-red-500 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors cursor-pointer"
-                      title={t('common_delete')}
-                    >
-                      <Trash2 size={14} />
-                    </button>
+          return (
+            <div className="flex flex-col justify-between w-full h-full">
+              <div>
+                {/* Header row */}
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="w-3 h-3 rounded-full shrink-0"
+                      style={{ backgroundColor: unit.colorHex || '#8B5CF6' }}
+                    />
+                    <span className="text-xs font-mono font-semibold text-neutral-500 uppercase">
+                      {unit.code}
+                    </span>
+                    <span className="text-[11px] text-neutral-400">· {localizedType}</span>
                   </div>
 
                   <button
-                    onClick={() => {
-                      setSelectedUnitForBooking(unit.id);
-                      setIsBookingModalOpen(true);
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleToggleStatus(unit);
                     }}
-                    className="px-3.5 py-1.5 bg-neutral-900 hover:bg-neutral-800 dark:bg-white dark:hover:bg-neutral-100 text-white dark:text-neutral-900 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
+                    className={`px-2.5 py-0.5 rounded-full text-[10px] font-semibold tracking-wide uppercase transition-colors cursor-pointer ${
+                      unit.status === 'Available'
+                        ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300 hover:bg-emerald-200'
+                        : unit.status === 'Occupied'
+                        ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300 hover:bg-purple-200'
+                        : 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 hover:bg-amber-200'
+                    }`}
+                    title={localizedStatus}
                   >
-                    {t('venue_reserve_space')}
+                    {localizedStatus}
                   </button>
                 </div>
+
+                <h3 className="font-bold text-base text-neutral-900 dark:text-white">
+                  {unit.name}
+                </h3>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1 line-clamp-2">
+                  {unit.description}
+                </p>
+
+                {/* Specs */}
+                <div className="grid grid-cols-2 gap-2 mt-4 p-3 bg-neutral-50 dark:bg-neutral-800/40 rounded-2xl text-xs">
+                  <div>
+                    <span className="text-neutral-400 block text-[10px] uppercase font-medium">
+                      {t('venue_inv_capacity')}
+                    </span>
+                    <span className="font-semibold text-neutral-900 dark:text-white tabular-nums">
+                      {t('venue_card_capacity', language, { count: unit.capacity })}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-neutral-400 block text-[10px] uppercase font-medium">
+                      {t('venue_inv_surface')}
+                    </span>
+                    <span className="font-semibold text-neutral-900 dark:text-white tabular-nums">
+                      {unit.surfaceAreaSqm ? t('venue_inv_surface_unit', language, { surface: unit.surfaceAreaSqm }) : '--'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-neutral-400 block text-[10px] uppercase font-medium">
+                      {t('venue_inv_hourly_rate')}
+                    </span>
+                    <span className="font-semibold text-neutral-900 dark:text-white tabular-nums">
+                      {formatCurrencyAmount(unit.hourlyRate, unit.currency)}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-neutral-400 block text-[10px] uppercase font-medium">
+                      {t('venue_inv_daily_rate')}
+                    </span>
+                    <span className="font-semibold text-neutral-900 dark:text-white tabular-nums">
+                      {formatCurrencyAmount(unit.dailyRate, unit.currency)}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Amenities pills */}
+                {unit.amenities.length > 0 && (
+                  <div className="mt-3 flex flex-wrap gap-1">
+                    {unit.amenities.map((amenity, idx) => (
+                      <span
+                        key={idx}
+                        className="text-[10px] bg-neutral-100 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300 px-2 py-0.5 rounded-md"
+                      >
+                        {amenity}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
-            );
-          })
-        )}
-      </div>
+
+              {/* Quick Book Footer */}
+              <div className="mt-4 pt-3 border-t border-neutral-100 dark:border-neutral-700/50 flex items-center justify-between">
+                <span className="text-[11px] text-neutral-400">
+                  {unit.currency || 'DZD'}
+                </span>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedUnitForBooking(unit.id);
+                    setIsBookingModalOpen(true);
+                  }}
+                  className="px-3.5 py-1.5 bg-neutral-900 hover:bg-neutral-800 dark:bg-white dark:hover:bg-neutral-100 text-white dark:text-neutral-900 rounded-xl text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1.5 shadow-2xs"
+                >
+                  <Calendar size={13} />
+                  <span>{t('venue_reserve_space')}</span>
+                </button>
+              </div>
+            </div>
+          );
+        }}
+        onItemClick={(unit) => handleOpenEdit(unit)}
+        onViewDetails={(unit) => handleOpenEdit(unit)}
+        onEdit={(unit) => handleOpenEdit(unit)}
+        onTogglePin={(unit) => {
+          setPinnedUnitIds((prev) => {
+            const next = new Set(prev);
+            if (next.has(unit.id)) {
+              next.delete(unit.id);
+              showToast({
+                type: 'info',
+                title: 'Unpinned',
+                message: `${unit.name} unpinned`,
+              });
+            } else {
+              next.add(unit.id);
+              showToast({
+                type: 'info',
+                title: 'Pinned',
+                message: `${unit.name} pinned to top`,
+              });
+            }
+            return next;
+          });
+        }}
+        onDelete={(unit) => {
+          if (confirm(`${t('common_delete')} ${unit.name}?`)) {
+            deleteRentableUnit(unit.id);
+          }
+        }}
+        customActions={(unit) => [
+          {
+            id: 'book',
+            tooltip: t('venue_reserve_space') || 'Book Space',
+            icon: <Calendar size={13} />,
+            iconColor: '#8B5CF6',
+            onClick: (e) => {
+              e.stopPropagation();
+              setSelectedUnitForBooking(unit.id);
+              setIsBookingModalOpen(true);
+            },
+          },
+        ]}
+        isPinned={(unit) => pinnedUnitIds.has(unit.id)}
+        selectedIds={selectedUnitIds}
+        onSelectionChange={setSelectedUnitIds}
+        emptyTitle={t('venue_inv_empty_title')}
+        emptyDescription={t('venue_inv_empty_desc')}
+        primaryActionLabel={t('venue_inv_btn_new_space')}
+        onAddFirstItem={handleOpenAdd}
+      />
 
       {/* Add / Edit Unit Modal */}
       {isAddModalOpen && (

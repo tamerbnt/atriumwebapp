@@ -27,6 +27,7 @@ import { CertificateModal } from './CertificateModal';
 import { Seek } from '../../ui/Seek';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
+import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { useTranslation } from '../../../utils/useTranslation';
 
 type FilterKey = 'all' | 'active' | 'minors' | 'overdue' | 'graduated';
@@ -46,6 +47,7 @@ export const EducationStudentsView: React.FC = () => {
     deleteEduStudent,
     addEduEnrollment,
     setScreen,
+    showToast,
   } = useAtriumStore();
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -59,6 +61,10 @@ export const EducationStudentsView: React.FC = () => {
   const [studentToEdit, setStudentToEdit] = useState<EduStudent | null>(null);
   const [isCertModalOpen, setIsCertModalOpen] = useState(false);
   const [selectedCertForPreview, setSelectedCertForPreview] = useState<any | null>(null);
+  const [selectedStudentIds, setSelectedStudentIds] = useState<Set<string>>(new Set());
+  const [pinnedStudentIds, setPinnedStudentIds] = useState<Set<string>>(new Set());
+  const [studentSortBy, setStudentSortBy] = useState<string>('student');
+  const [studentSortDir, setStudentSortDir] = useState<'asc' | 'desc'>('asc');
 
   // Form State
   const [formData, setFormData] = useState<{
@@ -264,6 +270,140 @@ export const EducationStudentsView: React.FC = () => {
     ? eduCertificates.filter((c) => c.studentId === selectedStudent.id)
     : [];
 
+  const sortedStudents = useMemo(() => {
+    return [...filteredStudents].sort((a, b) => {
+      const aPinned = pinnedStudentIds.has(a.id);
+      const bPinned = pinnedStudentIds.has(b.id);
+      if (aPinned && !bPinned) return -1;
+      if (!aPinned && bPinned) return 1;
+
+      if (studentSortBy === 'student') {
+        const cmp = a.fullName.localeCompare(b.fullName);
+        return studentSortDir === 'asc' ? cmp : -cmp;
+      }
+      if (studentSortBy === 'attendance') {
+        const aRate = a.attendanceRatePercent ?? 100;
+        const bRate = b.attendanceRatePercent ?? 100;
+        return studentSortDir === 'asc' ? aRate - bRate : bRate - aRate;
+      }
+      return 0;
+    });
+  }, [filteredStudents, pinnedStudentIds, studentSortBy, studentSortDir]);
+
+  const studentColumns: ColumnDefinition<EduStudent>[] = useMemo(() => [
+    {
+      key: 'student',
+      header: t('edu_col_student'),
+      width: '2.5*',
+      minWidth: '220px',
+      sortable: true,
+      renderCell: (student) => (
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 flex items-center justify-center font-bold text-xs shrink-0 border border-neutral-200 dark:border-neutral-700">
+            {student.fullName.charAt(0)}
+          </div>
+          <div className="min-w-0">
+            <div className="font-semibold text-neutral-900 dark:text-white truncate hover:text-[#C4785A] transition-colors">
+              {student.fullName}
+            </div>
+            <div className="text-[11px] text-neutral-400 truncate">
+              {student.phone} {student.email && `· ${student.email}`}
+            </div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: 'cohort',
+      header: t('edu_col_cohort'),
+      width: '2*',
+      minWidth: '180px',
+      renderCell: (student) => {
+        const enrollment = eduEnrollments.find(
+          (e) => e.studentId === student.id && e.status === 'Active'
+        );
+        return enrollment ? (
+          <div>
+            <span className="font-medium text-neutral-800 dark:text-neutral-200 block truncate max-w-[180px]">
+              {enrollment.cohortName}
+            </span>
+            <span className="text-[10px] text-neutral-400">
+              Enrolled {enrollment.enrolledAt ? enrollment.enrolledAt.split('T')[0] : 'Active'}
+            </span>
+          </div>
+        ) : (
+          <span className="text-neutral-400 italic">No Active Cohort</span>
+        );
+      },
+    },
+    {
+      key: 'attendance',
+      header: t('edu_col_attendance'),
+      width: '1.5*',
+      minWidth: '130px',
+      sortable: true,
+      renderCell: (student) => {
+        const rate = student.attendanceRatePercent ?? 100;
+        return (
+          <div className="flex items-center gap-2">
+            <div className="w-12 h-1.5 rounded-full bg-neutral-100 dark:bg-neutral-800 overflow-hidden">
+              <div
+                className={`h-full rounded-full ${rate >= 85 ? 'bg-emerald-500' : 'bg-rose-500'}`}
+                style={{ width: `${rate}%` }}
+              />
+            </div>
+            <span className="font-semibold text-neutral-700 dark:text-neutral-300 tabular-nums">
+              {rate}%
+            </span>
+          </div>
+        );
+      },
+    },
+    {
+      key: 'tuition',
+      header: t('edu_col_tuition_status'),
+      width: '1.8*',
+      minWidth: '140px',
+      renderCell: (student) => {
+        const enrollment = eduEnrollments.find(
+          (e) => e.studentId === student.id && e.status === 'Active'
+        );
+        return enrollment ? (
+          <span
+            className={`px-2 py-0.5 rounded-md text-[10px] font-semibold tracking-wide uppercase ${
+              enrollment.paymentStatus === 'Paid'
+                ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300'
+                : enrollment.paymentStatus === 'Overdue'
+                ? 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300'
+                : 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300'
+            }`}
+          >
+            {enrollment.paymentStatus} · {formatMoney(enrollment.paidAmount)}
+          </span>
+        ) : (
+          <span className="text-neutral-400">—</span>
+        );
+      },
+    },
+    {
+      key: 'guardian',
+      header: t('edu_drawer_guardian'),
+      width: '2*',
+      minWidth: '160px',
+      renderCell: (student) =>
+        student.guardianName ? (
+          <div className="text-neutral-700 dark:text-neutral-300">
+            <span className="font-medium">{student.guardianName}</span>
+            <span className="text-[10px] text-neutral-400 block">
+              {student.guardianRelation || 'Guardian'} · {student.guardianPhone}
+            </span>
+          </div>
+        ) : (
+          <span className="text-neutral-400">Adult / Self</span>
+        ),
+    },
+  ], [eduEnrollments, t]);
+
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
       {/* Top Header matching other category screens */}
@@ -376,177 +516,109 @@ export const EducationStudentsView: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Table View */}
-      {filteredStudents.length === 0 ? (
-        <div className="p-12 text-center rounded-2xl border border-dashed border-neutral-200 dark:border-neutral-800 bg-[#F8F9FA]/50 dark:bg-neutral-900/20">
-          <p className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">
-            {t('edu_no_students_enrolled')}
-          </p>
-          <button
-            type="button"
-            onClick={handleOpenAdd}
-            className="mt-4 px-4 py-2 rounded-xl bg-[#C4785A] text-white text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer inline-flex items-center gap-1.5"
-          >
-            <Plus size={14} />
-            <span>{t('edu_modal_add_student')}</span>
-          </button>
-        </div>
-      ) : (
-        <div className="overflow-hidden rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/60 shadow-2xs">
-          <table className="w-full text-left rtl:text-right border-collapse text-xs">
-            <thead>
-              <tr className="border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/50 text-[11px] font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
-                <th className="py-3.5 px-4">{t('edu_col_student')}</th>
-                <th className="py-3.5 px-4">{t('edu_col_cohort')}</th>
-                <th className="py-3.5 px-4">{t('edu_col_attendance')}</th>
-                <th className="py-3.5 px-4">{t('edu_col_tuition_status')}</th>
-                <th className="py-3.5 px-4">{t('edu_drawer_guardian')}</th>
-                <th className="py-3.5 px-4 text-right rtl:text-left">{t('edu_col_actions')}</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800/80">
-              {filteredStudents.map((student) => {
-                const enrollment = eduEnrollments.find(
-                  (e) => e.studentId === student.id && e.status === 'Active'
-                );
-                const isSelected = selectedStudent?.id === student.id;
+      {/* Universal Collection View (List with 46px Action Strip & Grid with 6-button Corner Fan) */}
+      <UniversalDataCollection<EduStudent>
+        items={sortedStudents}
+        keyExtractor={(s) => s.id}
+        defaultViewMode="list"
+        columns={studentColumns}
+        sortBy={studentSortBy}
+        sortDirection={studentSortDir}
+        onSortChange={(key) => {
+          if (studentSortBy === key) {
+            setStudentSortDir((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+          } else {
+            setStudentSortBy(key);
+            setStudentSortDir('asc');
+          }
+        }}
+        renderCard={(student) => {
+          const enrollment = eduEnrollments.find(
+            (e) => e.studentId === student.id && e.status === 'Active'
+          );
+          const rate = student.attendanceRatePercent ?? 100;
 
-                return (
-                  <tr
-                    key={student.id}
-                    onClick={() => setSelectedStudent(student)}
-                    className={`transition-colors cursor-pointer group ${
-                      isSelected
-                        ? 'bg-[#FCEEE8]/50 dark:bg-neutral-800/60'
-                        : 'hover:bg-neutral-50 dark:hover:bg-neutral-800/40'
-                    }`}
-                  >
-                    <td className="py-3.5 px-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 flex items-center justify-center font-bold text-xs shrink-0 border border-neutral-200 dark:border-neutral-700">
-                          {student.fullName.charAt(0)}
-                        </div>
-                        <div>
-                          <div className="font-semibold text-neutral-900 dark:text-white group-hover:text-[#C4785A] transition-colors">
-                            {student.fullName}
-                          </div>
-                          <div className="text-[11px] text-neutral-400">
-                            {student.phone} {student.email && `· ${student.email}`}
-                          </div>
-                        </div>
-                      </div>
-                    </td>
+          return (
+            <div className="flex flex-col items-center justify-center w-full">
+              <div className="w-24 h-24 rounded-2xl bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 flex items-center justify-center text-[32px] font-bold shadow-md mb-4 select-none border border-neutral-200 dark:border-neutral-700">
+                {student.fullName.charAt(0)}
+              </div>
+              <h3 className="text-[16px] font-bold text-neutral-900 dark:text-white truncate max-w-[210px] mb-1 tracking-tight">
+                {student.fullName}
+              </h3>
+              <span className="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-semibold bg-[#FCEEE8] dark:bg-neutral-800 text-[#C4785A] border border-[#F5E2D8] dark:border-neutral-700 mb-3 truncate max-w-[200px]">
+                {enrollment ? enrollment.cohortName : 'No Active Cohort'}
+              </span>
 
-                    <td className="py-3.5 px-4">
-                      {enrollment ? (
-                        <div>
-                          <span className="font-medium text-neutral-800 dark:text-neutral-200 block truncate max-w-[180px]">
-                            {enrollment.cohortName}
-                          </span>
-                          <span className="text-[10px] text-neutral-400">
-                            Enrolled {enrollment.enrolledAt ? enrollment.enrolledAt.split('T')[0] : 'Active'}
-                          </span>
-                        </div>
-                      ) : (
-                        <span className="text-neutral-400 italic">No Active Cohort</span>
-                      )}
-                    </td>
-
-                    <td className="py-3.5 px-4">
-                      <div className="flex items-center gap-2">
-                        <div className="w-12 h-1.5 rounded-full bg-neutral-100 dark:bg-neutral-800 overflow-hidden">
-                          <div
-                            className={`h-full rounded-full ${
-                              (student.attendanceRatePercent ?? 100) >= 85
-                                ? 'bg-emerald-500'
-                                : 'bg-rose-500'
-                            }`}
-                            style={{
-                              width: `${student.attendanceRatePercent ?? 100}%`,
-                            }}
-                          />
-                        </div>
-                        <span className="font-semibold text-neutral-700 dark:text-neutral-300 tabular-nums">
-                          {student.attendanceRatePercent ?? 100}%
-                        </span>
-                      </div>
-                    </td>
-
-                    <td className="py-3.5 px-4">
-                      {enrollment ? (
-                        <span
-                          className={`px-2 py-0.5 rounded-md text-[10px] font-semibold tracking-wide uppercase ${
-                            enrollment.paymentStatus === 'Paid'
-                              ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300'
-                              : enrollment.paymentStatus === 'Overdue'
-                              ? 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300'
-                              : 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300'
-                          }`}
-                        >
-                          {enrollment.paymentStatus} · {formatMoney(enrollment.paidAmount)}
-                        </span>
-                      ) : (
-                        <span className="text-neutral-400">—</span>
-                      )}
-                    </td>
-
-                    <td className="py-3.5 px-4">
-                      {student.guardianName ? (
-                        <div className="text-neutral-700 dark:text-neutral-300">
-                          <span className="font-medium">{student.guardianName}</span>
-                          <span className="text-[10px] text-neutral-400 block">
-                            {student.guardianRelation || 'Guardian'} · {student.guardianPhone}
-                          </span>
-                        </div>
-                      ) : (
-                        <span className="text-neutral-400">Adult / Self</span>
-                      )}
-                    </td>
-
-                    <td className="py-3.5 px-4 text-right rtl:text-left">
-                      <div className="flex items-center justify-end rtl:justify-start gap-1.5">
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedStudent(student);
-                          }}
-                          className="px-2.5 py-1.5 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-[#C4785A] hover:text-white text-xs font-semibold flex items-center gap-1 transition-colors cursor-pointer"
-                        >
-                          <span>Profile 360°</span>
-                          <ChevronRight size={13} className="rtl:rotate-180" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleOpenEdit(student);
-                          }}
-                          className="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
-                          title="Edit student"
-                        >
-                          <Edit2 size={13} />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDelete(student);
-                          }}
-                          className="p-1.5 rounded-lg text-neutral-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
-                          title="Delete student"
-                        >
-                          <Trash2 size={13} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      )}
+              <div className="w-full pt-3 border-t border-neutral-100 dark:border-neutral-800 text-xs space-y-2 text-center">
+                <div className="flex items-center justify-between text-[11px]">
+                  <span className="text-neutral-400">{t('edu_col_attendance')}</span>
+                  <span className="font-bold tabular-nums text-neutral-700 dark:text-neutral-300">
+                    {rate}%
+                  </span>
+                </div>
+                <div className="w-full h-1.5 rounded-full bg-neutral-100 dark:bg-neutral-800 overflow-hidden">
+                  <div
+                    className={`h-full rounded-full ${rate >= 85 ? 'bg-emerald-500' : 'bg-rose-500'}`}
+                    style={{ width: `${rate}%` }}
+                  />
+                </div>
+                <div className="flex items-center justify-between pt-1 text-[11px]">
+                  <span className="text-neutral-400">Status</span>
+                  <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                    {student.status}
+                  </span>
+                </div>
+              </div>
+            </div>
+          );
+        }}
+        onItemClick={(student) => setSelectedStudent(student)}
+        onViewDetails={(student) => setSelectedStudent(student)}
+        onEdit={(student) => handleOpenEdit(student)}
+        onTogglePin={(student) => {
+          setPinnedStudentIds((prev) => {
+            const next = new Set(prev);
+            if (next.has(student.id)) {
+              next.delete(student.id);
+              showToast?.({
+                type: 'info',
+                title: 'Unpinned',
+                message: `${student.fullName} unpinned`,
+              });
+            } else {
+              next.add(student.id);
+              showToast?.({
+                type: 'info',
+                title: 'Pinned',
+                message: `${student.fullName} pinned to top`,
+              });
+            }
+            return next;
+          });
+        }}
+        onDelete={(student) => handleDelete(student)}
+        customActions={(student) => [
+          {
+            id: 'cert',
+            tooltip: t('edu_drawer_issue_certificate'),
+            icon: <Award size={13} />,
+            iconColor: '#C4785A',
+            onClick: (e) => {
+              e.stopPropagation();
+              setSelectedStudent(student);
+              setIsCertModalOpen(true);
+            },
+          },
+        ]}
+        isPinned={(student) => pinnedStudentIds.has(student.id)}
+        selectedIds={selectedStudentIds}
+        onSelectionChange={setSelectedStudentIds}
+        emptyTitle={t('edu_no_students_enrolled')}
+        emptyDescription={t('edu_no_students_enrolled')}
+        primaryActionLabel={t('edu_modal_add_student')}
+        onAddFirstItem={handleOpenAdd}
+      />
 
       {/* 360° Student Slide-over Drawer matching FreelanceClientsView */}
       {selectedStudent && (
