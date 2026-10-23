@@ -104,8 +104,10 @@ import {
   DEFAULT_RECEIPT_CONFIG,
   INITIAL_RENTABLE_UNITS,
   INITIAL_RENTAL_BOOKINGS,
+  createInitialRentalBookings,
   INITIAL_RENTAL_RENTERS,
   INITIAL_SECURITY_DEPOSITS,
+  createInitialSecurityDeposits,
   INITIAL_EDU_COURSES,
   INITIAL_EDU_CLASSROOMS,
   INITIAL_EDU_COHORTS,
@@ -990,10 +992,37 @@ export function useAtriumStore() {
   const currentFreelanceInvoices = (state.freelanceInvoices || []).filter((i) => i.facilityId === state.currentBranchId);
   const currentFreelanceProposals = (state.freelanceProposals || []).filter((pr) => pr.facilityId === state.currentBranchId);
   const currentFreelanceExpenses = (state.freelanceExpenses || []).filter((e) => e.facilityId === state.currentBranchId);
-  const currentRentableUnits = (state.rentableUnits || []).filter((u) => u.facilityId === state.currentBranchId);
-  const currentRentalBookings = (state.rentalBookings || []).filter((b) => b.facilityId === state.currentBranchId);
-  const currentRentalRenters = (state.rentalRenters || []).filter((r) => r.facilityId === state.currentBranchId);
-  const currentSecurityDeposits = (state.securityDeposits || []).filter((d) => d.facilityId === state.currentBranchId);
+  const currentRentableUnits = (() => {
+    const list = state.rentableUnits || [];
+    const direct = list.filter((u) => u.facilityId === state.currentBranchId || u.branchId === state.currentBranchId);
+    if (direct.length > 0) return direct;
+    const defaultVenue = list.filter((u) => u.facilityId === 'branch_venue_main' || u.branchId === 'branch_venue_main');
+    return defaultVenue.length > 0 ? defaultVenue : list;
+  })();
+
+  const currentRentalBookings = (() => {
+    const list = state.rentalBookings || [];
+    const direct = list.filter((b) => b.facilityId === state.currentBranchId || b.branchId === state.currentBranchId);
+    if (direct.length > 0) return direct;
+    const defaultVenue = list.filter((b) => b.facilityId === 'branch_venue_main' || b.branchId === 'branch_venue_main');
+    return defaultVenue.length > 0 ? defaultVenue : list;
+  })();
+
+  const currentRentalRenters = (() => {
+    const list = state.rentalRenters || [];
+    const direct = list.filter((r) => r.facilityId === state.currentBranchId || r.branchId === state.currentBranchId);
+    if (direct.length > 0) return direct;
+    const defaultVenue = list.filter((r) => r.facilityId === 'branch_venue_main' || r.branchId === 'branch_venue_main');
+    return defaultVenue.length > 0 ? defaultVenue : list;
+  })();
+
+  const currentSecurityDeposits = (() => {
+    const list = state.securityDeposits || [];
+    const direct = list.filter((d) => d.facilityId === state.currentBranchId || d.branchId === state.currentBranchId);
+    if (direct.length > 0) return direct;
+    const defaultVenue = list.filter((d) => d.facilityId === 'branch_venue_main' || d.branchId === 'branch_venue_main');
+    return defaultVenue.length > 0 ? defaultVenue : list;
+  })();
   const currentEduCourses = (state.eduCourses || []).filter((c) => c.facilityId === state.currentBranchId);
   const currentEduClassrooms = (state.eduClassrooms || []).filter((cr) => cr.facilityId === state.currentBranchId);
   const currentEduCohorts = (state.eduCohorts || []).filter((ch) => ch.facilityId === state.currentBranchId);
@@ -4411,18 +4440,51 @@ export function useAtriumStore() {
   };
 
   const resetVenueMockData = () => {
+    const targetFacilityId = state.currentBranchId || 'branch_venue_main';
+    const targetAccountId = state.account.id || 'acc_01';
+    const targetBusinessId = state.currentBusinessId || 'biz_venue';
+
+    const freshBookings = createInitialRentalBookings().map((b) => ({
+      ...b,
+      facilityId: targetFacilityId,
+      branchId: targetFacilityId,
+      businessId: targetBusinessId,
+      accountId: targetAccountId,
+    }));
+    const freshDeposits = createInitialSecurityDeposits().map((d) => ({
+      ...d,
+      facilityId: targetFacilityId,
+      branchId: targetFacilityId,
+      businessId: targetBusinessId,
+      accountId: targetAccountId,
+    }));
+    const freshUnits = INITIAL_RENTABLE_UNITS.map((u) => ({
+      ...u,
+      facilityId: targetFacilityId,
+      branchId: targetFacilityId,
+      businessId: targetBusinessId,
+      accountId: targetAccountId,
+    }));
+    const freshRenters = INITIAL_RENTAL_RENTERS.map((r) => ({
+      ...r,
+      facilityId: targetFacilityId,
+      branchId: targetFacilityId,
+      businessId: targetBusinessId,
+      accountId: targetAccountId,
+    }));
+
     globalState = {
       ...globalState,
-      rentableUnits: INITIAL_RENTABLE_UNITS,
-      rentalRenters: INITIAL_RENTAL_RENTERS,
-      rentalBookings: INITIAL_RENTAL_BOOKINGS,
-      securityDeposits: INITIAL_SECURITY_DEPOSITS,
+      rentableUnits: targetFacilityId === 'branch_venue_main' ? freshUnits : [...freshUnits, ...INITIAL_RENTABLE_UNITS],
+      rentalRenters: targetFacilityId === 'branch_venue_main' ? freshRenters : [...freshRenters, ...INITIAL_RENTAL_RENTERS],
+      rentalBookings: targetFacilityId === 'branch_venue_main' ? freshBookings : [...freshBookings, ...createInitialRentalBookings()],
+      securityDeposits: targetFacilityId === 'branch_venue_main' ? freshDeposits : [...freshDeposits, ...createInitialSecurityDeposits()],
     };
     notify();
     showToast({
       type: 'success',
       title: 'Données Démo Espace & Lieux',
-      message: `${INITIAL_RENTAL_RENTERS.length} locataires, ${INITIAL_RENTABLE_UNITS.length} espaces, et ${INITIAL_RENTAL_BOOKINGS.length} réservations chargés.`,
+      message: `${freshRenters.length} locataires, ${freshUnits.length} espaces, et ${freshBookings.length} réservations chargés.`,
       category: 'rental_booking',
     });
   };

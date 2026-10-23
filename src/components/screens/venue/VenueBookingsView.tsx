@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Calendar,
   Clock,
@@ -55,6 +55,15 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({ hideHeader
     resetVenueMockData,
     showToast,
   } = useAtriumStore();
+
+  // Auto-heal empty bookings safely once on mount
+  const hasAutoHealed = useRef(false);
+  useEffect(() => {
+    if (!hasAutoHealed.current && rentalBookings.length === 0) {
+      hasAutoHealed.current = true;
+      resetVenueMockData();
+    }
+  }, [rentalBookings.length, resetVenueMockData]);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<string>('All');

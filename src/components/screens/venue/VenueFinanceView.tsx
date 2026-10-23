@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   ShieldCheck,
   DollarSign,
@@ -44,6 +44,15 @@ export const VenueFinanceView: React.FC = () => {
     resetVenueMockData,
     showToast,
   } = useAtriumStore();
+
+  // Auto-heal empty caution escrow records safely once on mount
+  const hasAutoHealed = useRef(false);
+  useEffect(() => {
+    if (!hasAutoHealed.current && (securityDeposits.length === 0 || rentalBookings.length === 0)) {
+      hasAutoHealed.current = true;
+      resetVenueMockData();
+    }
+  }, [securityDeposits.length, rentalBookings.length, resetVenueMockData]);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'All' | 'Held' | 'Released' | 'Deducted'>('All');

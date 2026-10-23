@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Calendar,
   Clock,
@@ -42,6 +42,15 @@ export const VenueDashboardView: React.FC = () => {
   const [isCloudSyncModalOpen, setIsCloudSyncModalOpen] = useState(false);
   const [selectedUnitForBooking, setSelectedUnitForBooking] = useState<string | undefined>(undefined);
   const [activeBookingDetail, setActiveBookingDetail] = useState<RentalBooking | null>(null);
+
+  // Auto-heal empty venue datasets safely once on mount if empty
+  const hasAutoHealed = useRef(false);
+  useEffect(() => {
+    if (!hasAutoHealed.current && (rentableUnits.length === 0 || rentalBookings.length === 0)) {
+      hasAutoHealed.current = true;
+      resetVenueMockData();
+    }
+  }, [rentableUnits.length, rentalBookings.length, resetVenueMockData]);
 
   // Today's date calculations
   const todayStr = new Date().toISOString().split('T')[0];
@@ -264,7 +273,7 @@ export const VenueDashboardView: React.FC = () => {
                         {currentBooking.purpose}
                       </div>
                       <div className="text-neutral-400 text-[10px] tabular-nums">
-                        {t('venue_until_time', language, { time: currentBooking.endDateTime.split('T')[1]?.slice(0, 5) })}
+                        {t('venue_until_time', language, { time: (currentBooking.endDateTime?.split('T')[1] || currentBooking.endDateTime || '').slice(0, 5) })}
                       </div>
                     </div>
                   ) : nextBooking ? (
@@ -273,7 +282,7 @@ export const VenueDashboardView: React.FC = () => {
                         {nextBooking.renterName}
                       </div>
                       <div className="text-neutral-400 text-[10px] tabular-nums">
-                        {nextBooking.startDateTime.split('T')[1]?.slice(0, 5)} - {nextBooking.endDateTime.split('T')[1]?.slice(0, 5)}
+                        {(nextBooking.startDateTime?.split('T')[1] || nextBooking.startDateTime || '').slice(0, 5)} - {(nextBooking.endDateTime?.split('T')[1] || nextBooking.endDateTime || '').slice(0, 5)}
                       </div>
                     </div>
                   ) : (
@@ -337,7 +346,7 @@ export const VenueDashboardView: React.FC = () => {
                   <div className="flex items-start gap-3.5">
                     <div className="w-12 h-12 rounded-xl bg-neutral-100 dark:bg-neutral-700 flex flex-col items-center justify-center shrink-0 tabular-nums">
                       <span className="text-[10px] text-neutral-400 font-medium uppercase">
-                        {b.startDateTime.split('T')[1]?.slice(0, 5)}
+                        {(b.startDateTime?.split('T')[1] || b.startDateTime || '').slice(0, 5)}
                       </span>
                       <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
                         {b.durationHours}h

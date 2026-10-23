@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Calendar as CalendarIcon,
   ChevronLeft,
@@ -34,6 +34,15 @@ export const VenueTimelineView: React.FC = () => {
     deleteRentalBooking,
     resetVenueMockData,
   } = useAtriumStore();
+
+  // Auto-heal empty venue datasets safely once on mount if empty
+  const hasAutoHealed = useRef(false);
+  useEffect(() => {
+    if (!hasAutoHealed.current && (rentableUnits.length === 0 || rentalBookings.length === 0)) {
+      hasAutoHealed.current = true;
+      resetVenueMockData();
+    }
+  }, [rentableUnits.length, rentalBookings.length, resetVenueMockData]);
 
   const [selectedDate, setSelectedDate] = useState<string>(
     new Date().toISOString().split('T')[0]
@@ -79,10 +88,13 @@ export const VenueTimelineView: React.FC = () => {
     setIsBookingModalOpen(true);
   };
 
-  // Calculate block position and width
+  // Calculate block position and width safely
   const getBookingLayout = (booking: RentalBooking) => {
-    const startParts = booking.startDateTime.split('T')[1]?.slice(0, 5).split(':').map(Number);
-    const endParts = booking.endDateTime.split('T')[1]?.slice(0, 5).split(':').map(Number);
+    const startTimePart = (booking.startDateTime?.split('T')[1] || booking.startDateTime || '08:00').slice(0, 5);
+    const endTimePart = (booking.endDateTime?.split('T')[1] || booking.endDateTime || '12:00').slice(0, 5);
+
+    const startParts = startTimePart.includes(':') ? startTimePart.split(':').map(Number) : [8, 0];
+    const endParts = endTimePart.includes(':') ? endTimePart.split(':').map(Number) : [12, 0];
 
     const startH = (startParts[0] || 8) + (startParts[1] || 0) / 60;
     const endH = (endParts[0] || 12) + (endParts[1] || 0) / 60;

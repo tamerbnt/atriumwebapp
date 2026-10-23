@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Plus,
   DoorOpen,
@@ -46,6 +46,15 @@ export const VenueInventoryView: React.FC = () => {
     resetVenueMockData,
     showToast,
   } = useAtriumStore();
+
+  // Auto-heal empty rentable units safely once on mount
+  const hasAutoHealed = useRef(false);
+  useEffect(() => {
+    if (!hasAutoHealed.current && rentableUnits.length === 0) {
+      hasAutoHealed.current = true;
+      resetVenueMockData();
+    }
+  }, [rentableUnits.length, resetVenueMockData]);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTypeFilter, setSelectedTypeFilter] = useState<'All' | RentableUnitType>('All');

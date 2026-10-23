@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Users,
   Search,
@@ -46,6 +46,15 @@ export const VenueRentersView: React.FC = () => {
     resetVenueMockData,
     showToast,
   } = useAtriumStore();
+
+  // Auto-heal empty renters directory safely once on mount
+  const hasAutoHealed = useRef(false);
+  useEffect(() => {
+    if (!hasAutoHealed.current && rentalRenters.length === 0) {
+      hasAutoHealed.current = true;
+      resetVenueMockData();
+    }
+  }, [rentalRenters.length, resetVenueMockData]);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
