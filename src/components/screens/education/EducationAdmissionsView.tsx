@@ -65,6 +65,7 @@ export const EducationAdmissionsView: React.FC = () => {
   const [isAddLeadModalOpen, setIsAddLeadModalOpen] = useState(false);
   const [conversionLead, setConversionLead] = useState<EduAdmissionLead | null>(null);
   const [targetCohortId, setTargetCohortId] = useState<string>(eduCohorts[0]?.id || '');
+  const [conversionDeposit, setConversionDeposit] = useState<number>(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedLeadIds, setSelectedLeadIds] = useState<Set<string>>(new Set());
   const [pinnedLeadIds, setPinnedLeadIds] = useState<Set<string>>(new Set());
@@ -115,8 +116,9 @@ export const EducationAdmissionsView: React.FC = () => {
 
   const handleConfirmConversion = () => {
     if (!conversionLead || !targetCohortId) return;
-    convertAdmissionToStudent(conversionLead.id, targetCohortId);
+    convertAdmissionToStudent(conversionLead.id, targetCohortId, conversionDeposit);
     setConversionLead(null);
+    setConversionDeposit(0);
   };
 
   const filteredAdmissions = useMemo(() => {
@@ -728,9 +730,19 @@ export const EducationAdmissionsView: React.FC = () => {
                 onChange={(val) => setTargetCohortId(val?.target?.value ?? String(val))}
                 options={eduCohorts.map((c) => ({
                   value: c.id,
-                  label: `${c.name} (${c.cohortCode || c.courseTitle})`,
+                  label: `${c.name} (${c.cohortCode || c.courseTitle}) — ${c.tuitionFee.toLocaleString()} DZD`,
                 }))}
                 placeholder="Select Starting Cohort..."
+              />
+
+              <LabelInput
+                label="Acompte Initial Reçu (DZD)"
+                type="number"
+                min="0"
+                step="1000"
+                value={conversionDeposit === 0 ? '' : conversionDeposit}
+                placeholder="0 DZD (Optionnel - Règlement à l'inscription)"
+                onChange={(e) => setConversionDeposit(Math.max(0, Number(e.target.value) || 0))}
               />
 
               <div className="flex items-center justify-end gap-3 pt-3 border-t border-neutral-100 dark:border-neutral-800">

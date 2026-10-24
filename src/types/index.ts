@@ -7,7 +7,8 @@ export type BusinessCategory =
   | 'project_milestone'   // Projects & Agency (FacilityType: 13)
   | 'rental_booking'      // Rentals & Venue (FacilityType: 14)
   | 'education_cohort'    // Education & Training (FacilityType: 15)
-  | 'freelance_solo';     // Freelancers & Solo Work (FacilityType: 16)
+  | 'freelance_solo'      // Freelancers & Solo Work (FacilityType: 16)
+  | 'trading_commercial'; // B2B Trading & Wholesale (FacilityType: 17)
 
 export type SupportedLanguage = 'en' | 'fr' | 'ar';
 export type AppTheme = 'light' | 'dark';
@@ -1438,6 +1439,232 @@ export interface PMEquipmentStock {
   }>;
   createdAt: string;
 }
+
+// ============================================================
+// Category 8: B2B Commercial Trading & Wholesale Types
+// ============================================================
+
+export type CommercialDocType = 'devis' | 'commande' | 'bl' | 'facture' | 'avoir' | 'retour';
+export type PurchaseDocType = 'po' | 'br' | 'facture_fournisseur' | 'avoir_fournisseur' | 'retour_fournisseur';
+export type StockVoucherType = 'entree' | 'sortie' | 'transfert';
+
+export interface B2bClient {
+  id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  staffId?: string;
+  tenantId: string;
+  facilityId: string;
+  companyName: string;
+  sector?: string;
+  email: string;
+  phone: string;
+  fax?: string;
+  address: string;
+  city: string;
+  postalCode?: string;
+  country: string;
+  rc: string; // Registre de Commerce
+  nif: string; // 15-digit tax ID
+  nis: string; // Statistical ID
+  ai: string; // Article d'Imposition (NART)
+  ribCcp?: string;
+  tags?: string[];
+  // Primary Contact
+  contactName: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  contactRole?: string;
+  // Financial terms
+  creditLimit: number;
+  outstandingBalance: number;
+  paymentTermsDays: number;
+  defaultPaymentMethod?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface B2bSupplier {
+  id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  staffId?: string;
+  tenantId: string;
+  facilityId: string;
+  supplierName: string;
+  sector?: string;
+  email: string;
+  phone: string;
+  fax?: string;
+  address: string;
+  city: string;
+  postalCode?: string;
+  country: string;
+  rc?: string;
+  nif?: string;
+  nis?: string;
+  ai?: string;
+  ribCcp?: string;
+  contactName?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  paymentTermsDays: number;
+  outstandingPayable: number;
+  tags?: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface WarehouseDepot {
+  id: string;
+  accountId?: string;
+  businessId: string;
+  branchId: string;
+  staffId?: string;
+  tenantId: string;
+  facilityId: string;
+  code: string; // e.g. "DEP-01"
+  name: string;
+  address: string;
+  city: string;
+  managerName?: string;
+  isMain: boolean;
+  totalSkusCount: number;
+  totalValuationDzd: number;
+  createdAt: string;
+}
+
+export interface CommercialDocItem {
+  id: string;
+  productId?: string;
+  description: string;
+  isService: boolean;
+  quantity: number;
+  unit: string; // e.g. 'u', 'm', 'kg', 'm²', 'carton', 'forfait'
+  unitPriceHt: number;
+  tvaPercent: number; // 0, 9, 19
+  discountPercent?: number;
+  totalHt: number;
+  totalTtc: number;
+}
+
+export interface CommercialDocument {
+  id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  staffId?: string;
+  tenantId: string;
+  facilityId: string;
+  type: CommercialDocType;
+  docNumber: string; // e.g. "DEV-2026-0042", "BL-2026-0118", "FAC-2026-0095"
+  clientId: string;
+  clientName: string;
+  clientNif?: string;
+  clientRc?: string;
+  clientAi?: string;
+  depotId: string;
+  depotName?: string;
+  date: string;
+  validityDays?: number;
+  dueDate?: string;
+  paymentMethod: string;
+  paymentTerms: string;
+  status: 'Draft' | 'Validated' | 'Delivered' | 'Paid' | 'Canceled';
+  items: CommercialDocItem[];
+  // Calculations
+  totalHtRaw: number;
+  generalDiscountPercent: number;
+  totalHtFinal: number;
+  totalTva: number;
+  timbreFiscal: number;
+  totalTtc: number;
+  guaranteeRetentionPercent: number; // Retenue de garantie (e.g. 5% or 10%)
+  guaranteeRetentionAmount: number;
+  netToPay: number;
+  currency: string; // 'DZD', 'EUR', 'USD'
+  notesTop?: string;
+  notesBottom?: string;
+  includeStampSignature: boolean;
+  linkedDocId?: string; // e.g. Devis that spawned this BL, or BL that spawned this Facture
+  linkedDocNumber?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PurchaseDocItem {
+  id: string;
+  productId?: string;
+  description: string;
+  orderedQty: number;
+  receivedQty: number;
+  unit: string;
+  unitCostHt: number;
+  tvaPercent: number;
+  totalHt: number;
+}
+
+export interface PurchaseDocument {
+  id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  staffId?: string;
+  tenantId: string;
+  facilityId: string;
+  type: PurchaseDocType;
+  docNumber: string; // e.g. "PO-2026-0031", "BR-2026-0028", "FF-2026-0019"
+  supplierId: string;
+  supplierName: string;
+  depotId: string;
+  depotName?: string;
+  orderDate: string;
+  deliveryExpectedDate?: string;
+  actualDeliveryDate?: string;
+  status: 'Draft' | 'Ordered' | 'PartiallyReceived' | 'Received' | 'Paid' | 'Canceled';
+  items: PurchaseDocItem[];
+  totalHt: number;
+  totalTva: number;
+  totalTtc: number;
+  currency: string;
+  linkedPoId?: string;
+  linkedPoNumber?: string;
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StockMovementVoucher {
+  id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  staffId?: string;
+  tenantId: string;
+  facilityId: string;
+  voucherNumber: string; // e.g. "BE-2026-0081", "BS-2026-0044", "BT-2026-0012"
+  type: StockVoucherType;
+  date: string;
+  depotSourceId: string;
+  depotSourceName: string;
+  depotTargetId?: string; // For transfers
+  depotTargetName?: string;
+  reason: 'reception_achat' | 'ajustement_inventaire' | 'sortie_client' | 'consommation_interne' | 'rebut_casse' | 'transfert';
+  operatorName: string;
+  items: Array<{
+    productId: string;
+    productName: string;
+    quantity: number;
+    unitCostDzd: number;
+    unit: string;
+  }>;
+  totalValuationDzd: number;
+  notes?: string;
+  createdAt: string;
+}
+
 
 
 

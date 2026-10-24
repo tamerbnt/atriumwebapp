@@ -1,0 +1,5 @@
+{
+  "summary":  "Comprehensive investigation and architectural analysis of the standard French/North African 'Gestion Commerciale' (Trading, Purchasing, Multi-Depot Stock & B2B Invoicing) ERP screenshots. Details exact document workflows (Devis, BL, BR, Factures Avoir), legal Algerian commercial prerequisites (Timbre, NIF/NIS/RC, Transfert de propriété), evaluates whether to introduce an 8th category ('Wholesale & B2B Distribution') vs modular integration into Category 6 POS, and provides clear decision trade-offs.",
+  "updatedAt":  "2026-10-23T23:55:47.624501660Z",
+  "userFacing":  true
+}

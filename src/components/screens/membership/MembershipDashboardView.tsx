@@ -58,8 +58,9 @@ export const MembershipDashboardView: React.FC<MembershipDashboardViewProps> = (
     checkoutAppointment,
   } = useAtriumStore();
 
-  const isSalon = currentBusiness.category === 'appointment_service';
-  const isPOS = currentBusiness.category === 'pos_inventory';
+  // Isolated strictly to Membership & Fitness (Categories 6 and 7 own their respective views)
+  const isSalon = false;
+  const isPOS = false;
 
   // Retail & POS Specific Analytics
   const posMetrics = useMemo(() => {

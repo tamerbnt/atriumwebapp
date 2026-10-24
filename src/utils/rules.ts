@@ -231,6 +231,15 @@ export const TERMINOLOGY_STORE: Record<
     scheduler: { en: 'Deliverables & Deadlines', fr: 'Livrables & Délais', ar: 'المشاريع والمواعيد' },
     facility: { en: 'Studio / Workspace', fr: 'Studio / Espace', ar: 'مساحة العمل' },
   },
+  trading_commercial: {
+    members: { en: 'B2B Clients', fr: 'Clients B2B', ar: 'الزبائن والشركات' },
+    memberSingle: { en: 'B2B Client', fr: 'Client B2B', ar: 'زبون تجاري' },
+    registration: { en: 'Sales & Quotations', fr: 'Devis & Bons de Vente', ar: 'العروض وطلبيات البيع' },
+    plan: { en: 'Catalog & Services', fr: 'Catalogue & Services', ar: 'كتالوج المنتجات والخدمات' },
+    shop: { en: 'Warehouse & Stock', fr: 'Dépôts & Stock', ar: 'المستودعات والمخزون' },
+    scheduler: { en: 'Purchases & Receiving', fr: 'Achats & Réceptions', ar: 'المشتريات والاستلام' },
+    facility: { en: 'Distribution Depot', fr: 'Dépôt / Entrepôt', ar: 'المستودع الرئيسي' },
+  },
 };
 
 export function getCategoryTerminology(category: BusinessCategory, lang: SupportedLanguage) {

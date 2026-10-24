@@ -53,6 +53,11 @@ export const CATEGORY_METADATA: Record<
     tagline: 'Floating Stopwatch, Pomodoro, Retainers & 1-Click Invoicing',
     sampleKeywords: ['Full-Stack Dev', 'UI/UX Designer', 'Video Editor', 'Solo Consultant'],
   },
+  trading_commercial: {
+    title: 'Commercial Trading & Wholesale',
+    tagline: 'Quotes, Delivery Slips, Supplier POs & Multi-Depot Stock',
+    sampleKeywords: ['Wholesaler / Grossiste', 'Distributor SARL', 'Quincaillerie Gros', 'Import / Export'],
+  },
 };
 
 /**
@@ -470,6 +475,35 @@ export const BUSINESS_KEYWORDS_MAP: Record<BusinessCategory, string[]> = {
     'مطور',
     'كاتب محتوى',
     'مونتير',
+  ],
+  trading_commercial: [
+    'negoce',
+    'négoce',
+    'grossiste',
+    'wholesale',
+    'distributeur',
+    'distribution',
+    'import export',
+    'commerce de gros',
+    'quincaillerie gros',
+    'materiaux de construction',
+    'fournisseur',
+    'b2b',
+    'btp fourniture',
+    'depot de stockage',
+    'entrepot',
+    'entrepôt',
+    'commercial trading',
+    'vente en gros',
+    'bon de commande',
+    'bon de livraison',
+    'devis facture',
+    'facturation b2b',
+    'تجارة الجملة',
+    'مستودع',
+    'توزيع',
+    'استيراد وتصدير',
+    'مواد البناء',
   ],
 };
 

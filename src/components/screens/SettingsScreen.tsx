@@ -28,6 +28,7 @@ import {
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../services/store';
 import { Modal } from '../ui/Modal';
+import { ConfirmDialog } from '../ui/ConfirmDialog';
 import { validateVoucherCode } from '../../utils/rules';
 import { LabelInput } from '../ui/LabelInput';
 import { t, getSystemDefaultLanguage, SUPPORTED_LANGUAGES } from '../../utils/i18n';
@@ -69,9 +70,11 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
     syncErrorMessage,
     exportDatabase,
     importDatabase,
+    resetToDefaultDemoData,
   } = useAtriumStore();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
   const [isRestoreModalOpen, setIsRestoreModalOpen] = useState(false);
   const [pendingBackupContent, setPendingBackupContent] = useState<string | null>(null);
   const [pendingBackupMeta, setPendingBackupMeta] = useState<{
@@ -776,6 +779,15 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
               <FileUp size={14} className="text-[#C4785A]" />
               <span>{t('settings_restore_backup', language)}</span>
             </button>
+
+            <button
+              type="button"
+              onClick={() => setIsResetConfirmOpen(true)}
+              className="h-9 px-3.5 rounded-xl bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-900/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-900/60 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
+            >
+              <RotateCw size={14} className="text-rose-600 dark:text-rose-400" />
+              <span>{language === 'ar' ? 'إعادة تعيين البيانات' : language === 'fr' ? 'Réinitialiser démo' : 'Reset Demo Data'}</span>
+            </button>
           </div>
         </div>
 
@@ -1264,6 +1276,26 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
           </div>
         </div>
       </Modal>
+
+      <ConfirmDialog
+        isOpen={isResetConfirmOpen}
+        onClose={() => setIsResetConfirmOpen(false)}
+        onConfirm={() => {
+          setIsResetConfirmOpen(false);
+          resetToDefaultDemoData(currentBusiness.category);
+        }}
+        title={language === 'ar' ? 'إعادة تعيين بيانات العرض التوضيحي' : language === 'fr' ? 'Réinitialiser les données de démonstration' : 'Reset Demo Data'}
+        description={
+          language === 'ar'
+            ? `هل أنت متأكد من إعادة تعيين سجلات منشأة "${currentBusiness.name}" إلى بيانات الاختبار القياسية؟ يمكنك التراجع فوراً من الإشعار.`
+            : language === 'fr'
+            ? `Voulez-vous réinitialiser les données de démonstration pour "${currentBusiness.name}" (${currentBusiness.category}) ? Vous pourrez annuler l'action immédiatement depuis la notification.`
+            : `Are you sure you want to restore factory demo records for "${currentBusiness.name}"? You will be able to undo immediately from the toast.`
+        }
+        confirmLabel={language === 'ar' ? 'إعادة التعيين الآن' : language === 'fr' ? 'Réinitialiser maintenant' : 'Reset Now'}
+        cancelLabel={language === 'ar' ? 'إلغاء' : language === 'fr' ? 'Conserver mes données' : 'Cancel'}
+        variant="warning"
+      />
 
       <BackendDiagnosticPanel
         isOpen={isDiagnosticPanelOpen}

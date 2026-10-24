@@ -27,6 +27,8 @@ import {
   Boxes,
   CreditCard,
   Receipt,
+  Truck,
+  Building2,
 } from 'lucide-react';
 import { useAtriumStore, ActiveScreen } from '../../services/store';
 import { FiveCubesLogo } from '../auth/AtriumMonolith';

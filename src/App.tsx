@@ -56,6 +56,13 @@ import { PosInventoryView } from './components/screens/pos/PosInventoryView';
 import { PosOrdersView } from './components/screens/pos/PosOrdersView';
 import { PosFinanceView } from './components/screens/pos/PosFinanceView';
 import { PosHistoryView } from './components/screens/pos/PosHistoryView';
+import { TradingDashboardView } from './components/screens/trading/TradingDashboardView';
+import { TradingSalesView } from './components/screens/trading/TradingSalesView';
+import { TradingPurchasesView } from './components/screens/trading/TradingPurchasesView';
+import { TradingInventoryView } from './components/screens/trading/TradingInventoryView';
+import { TradingDirectoryView } from './components/screens/trading/TradingDirectoryView';
+import { TradingCatalogView } from './components/screens/trading/TradingCatalogView';
+import { TradingFinanceView } from './components/screens/trading/TradingFinanceView';
 import { DesktopUpgradeModal } from './components/modals/DesktopUpgradeModal';
 import { CommandPaletteModal } from './components/modals/CommandPaletteModal';
 import { ToastStack } from './components/ui/ToastStack';
@@ -318,6 +325,38 @@ export default function App() {
           return <SettingsScreen onOpenVoucherModal={() => setIsVoucherModalOpen(true)} />;
         default:
           return <EducationDashboardView />;
+      }
+    }
+
+    const isTrading = currentBusiness?.category === 'trading_commercial';
+    if (isTrading) {
+      switch (activeScreen) {
+        case 'dashboard':
+        case 'trading_dashboard':
+          return <TradingDashboardView />;
+        case 'trading_sales':
+        case 'registrations':
+          return <TradingSalesView />;
+        case 'trading_purchases':
+        case 'scheduler':
+          return <TradingPurchasesView />;
+        case 'trading_inventory':
+        case 'shop':
+          return <TradingInventoryView />;
+        case 'trading_directory':
+        case 'members':
+          return <TradingDirectoryView />;
+        case 'trading_catalog':
+          return <TradingCatalogView />;
+        case 'trading_finance':
+        case 'finance':
+          return <TradingFinanceView />;
+        case 'analytics':
+          return <AnalyticsScreen />;
+        case 'settings':
+          return <SettingsScreen onOpenVoucherModal={() => setIsVoucherModalOpen(true)} />;
+        default:
+          return <TradingDashboardView />;
       }
     }
 

@@ -78,6 +78,15 @@ import {
   PMEquipmentStock,
   SalonWorkstation,
   StylistPayout,
+  B2bClient,
+  B2bSupplier,
+  WarehouseDepot,
+  CommercialDocument,
+  PurchaseDocument,
+  StockMovementVoucher,
+  CommercialDocType,
+  PurchaseDocType,
+  StockVoucherType,
 } from '../types/index';
 import {
   INITIAL_ACCOUNT,
@@ -136,6 +145,13 @@ import {
   INITIAL_PM_PAYROLL_BATCHES,
   INITIAL_PM_CCP_SLIPS,
   INITIAL_PM_EQUIPMENT_STOCK,
+  INITIAL_WAREHOUSES,
+  INITIAL_B2B_CLIENTS,
+  INITIAL_B2B_SUPPLIERS,
+  INITIAL_COMMERCIAL_DOCS,
+  INITIAL_PURCHASE_DOCS,
+  INITIAL_STOCK_VOUCHERS,
+  INITIAL_TRADING_PRODUCTS,
 } from './seedData';
 
 import { checkQuota, getCategoryTerminology, validateVoucherCode, calculateDaysRemaining, formatMoney } from '../utils/rules';
@@ -158,6 +174,7 @@ import {
 } from '../lib/supabase/index';
 
 
+export const ATRIUM_STORAGE_VERSION = 2;
 const STORAGE_KEY = 'atrium_erp_desktop_v2';
 
 export type ActiveScreen =
@@ -202,11 +219,20 @@ export type ActiveScreen =
   | 'pm_compta_payroll'
   | 'pm_compta_ccp'
   | 'pm_compta_expenses'
-  | 'pm_compta_stock';
+  | 'pm_compta_stock'
+  // B2B Trading & Commercial Management (Category 8: trading_commercial)
+  | 'trading_dashboard'
+  | 'trading_sales'
+  | 'trading_purchases'
+  | 'trading_inventory'
+  | 'trading_directory'
+  | 'trading_catalog'
+  | 'trading_finance';
 
 export type SupabaseStatus = 'connected' | 'connecting' | 'offline' | 'unconfigured';
 
 interface AppState {
+  storageVersion: number;
   account: Account;
   subscription: AccountSubscription;
   businesses: Business[];
@@ -287,6 +313,13 @@ interface AppState {
   // Salon, Spa & Beauty Care
   salonWorkstations: SalonWorkstation[];
   stylistPayouts: StylistPayout[];
+  // B2B Commercial Trading & Wholesale (Category 8: trading_commercial)
+  b2bClients: B2bClient[];
+  b2bSuppliers: B2bSupplier[];
+  warehouses: WarehouseDepot[];
+  commercialDocs: CommercialDocument[];
+  purchaseDocs: PurchaseDocument[];
+  stockVouchers: StockMovementVoucher[];
   // Toast notifications
   toasts: ToastNotification[];
 }
@@ -304,6 +337,7 @@ const DEFAULT_USER: CurrentUser = {
 const initialLangConfig = getInitialLanguageConfig();
 
 const DEFAULT_STATE: AppState = {
+  storageVersion: ATRIUM_STORAGE_VERSION,
   account: INITIAL_ACCOUNT,
   subscription: {
     id: 'sub_active',
@@ -325,7 +359,7 @@ const DEFAULT_STATE: AppState = {
   members: INITIAL_MEMBERS,
   leads: INITIAL_LEADS,
   plansByBranch: INITIAL_PLANS_BY_BRANCH,
-  products: INITIAL_PRODUCTS,
+  products: [...INITIAL_PRODUCTS, ...INITIAL_TRADING_PRODUCTS],
   sales: INITIAL_SALES,
   staff: INITIAL_STAFF,
   schedule: INITIAL_SCHEDULE,
@@ -389,6 +423,13 @@ const DEFAULT_STATE: AppState = {
   pmEquipmentStock: INITIAL_PM_EQUIPMENT_STOCK,
   salonWorkstations: INITIAL_SALON_WORKSTATIONS,
   stylistPayouts: INITIAL_STYLIST_PAYOUTS,
+  // B2B Commercial Trading & Wholesale
+  b2bClients: INITIAL_B2B_CLIENTS,
+  b2bSuppliers: INITIAL_B2B_SUPPLIERS,
+  warehouses: INITIAL_WAREHOUSES,
+  commercialDocs: INITIAL_COMMERCIAL_DOCS,
+  purchaseDocs: INITIAL_PURCHASE_DOCS,
+  stockVouchers: INITIAL_STOCK_VOUCHERS,
   toasts: [],
 };
 
@@ -462,6 +503,12 @@ function backfillTraceability(state: AppState): AppState {
     pmPayrollBatches: (state.pmPayrollBatches || []).map(patch),
     pmCcpSlips: (state.pmCcpSlips || []).map(patch),
     pmEquipmentStock: (state.pmEquipmentStock || []).map(patch),
+    b2bClients: (state.b2bClients || []).map(patch),
+    b2bSuppliers: (state.b2bSuppliers || []).map(patch),
+    warehouses: (state.warehouses || []).map(patch),
+    commercialDocs: (state.commercialDocs || []).map(patch),
+    purchaseDocs: (state.purchaseDocs || []).map(patch),
+    stockVouchers: (state.stockVouchers || []).map(patch),
   };
 }
 
@@ -497,39 +544,49 @@ let globalState: AppState = backfillTraceability((() => {
         const hasValidBranch = branches.some((br: any) => br.id === parsed.currentBranchId);
         const currentBranchId = hasValidBranch ? parsed.currentBranchId : (validBranchesForBiz[0]?.id || branches[0].id);
 
-        // Smart merge for products so new POS catalog items appear even if older localStorage exists
-        const storedProducts = Array.isArray(parsed.products) ? parsed.products : [];
-        const storedProdIds = new Set(storedProducts.map((p: any) => p.id));
-        const mergedProducts = [
-          ...storedProducts,
-          ...INITIAL_PRODUCTS.filter((p) => !storedProdIds.has(p.id)),
-        ];
+        const isVersion2 = parsed.storageVersion === ATRIUM_STORAGE_VERSION;
 
-        // Smart merge for sales
-        const storedSales = Array.isArray(parsed.sales) ? parsed.sales : [];
-        const storedSaleIds = new Set(storedSales.map((s: any) => s.id));
-        const mergedSales = [
-          ...storedSales,
-          ...INITIAL_SALES.filter((s) => !storedSaleIds.has(s.id)),
-        ];
+        let mergedProducts = [];
+        let mergedSales = [];
+        let mergedMembers = [];
+        let mergedStaff = [];
 
-        // Smart merge for members (including authentic salon clients)
-        const storedMembers = Array.isArray(parsed.members) ? parsed.members : [];
-        const storedMemberIds = new Set(storedMembers.map((m: any) => m.id));
-        const mergedMembers = [
-          ...storedMembers,
-          ...INITIAL_MEMBERS.filter((m) => !storedMemberIds.has(m.id)),
-          ...INITIAL_SALON_CLIENTS.filter((m) => !storedMemberIds.has(m.id)),
-        ];
+        if (isVersion2) {
+          mergedProducts = Array.isArray(parsed.products) ? parsed.products : INITIAL_PRODUCTS;
+          mergedSales = Array.isArray(parsed.sales) ? parsed.sales : INITIAL_SALES;
+          mergedMembers = Array.isArray(parsed.members) ? parsed.members : INITIAL_MEMBERS;
+          mergedStaff = Array.isArray(parsed.staff) ? parsed.staff : INITIAL_STAFF;
+        } else {
+          // One-time legacy upgrade backfill
+          const storedProducts = Array.isArray(parsed.products) ? parsed.products : [];
+          const storedProdIds = new Set(storedProducts.map((p: any) => p.id));
+          mergedProducts = [
+            ...storedProducts,
+            ...INITIAL_PRODUCTS.filter((p) => !storedProdIds.has(p.id)),
+          ];
 
+          const storedSales = Array.isArray(parsed.sales) ? parsed.sales : [];
+          const storedSaleIds = new Set(storedSales.map((s: any) => s.id));
+          mergedSales = [
+            ...storedSales,
+            ...INITIAL_SALES.filter((s) => !storedSaleIds.has(s.id)),
+          ];
 
-        // Smart merge for staff
-        const storedStaff = Array.isArray(parsed.staff) ? parsed.staff : [];
-        const storedStaffIds = new Set(storedStaff.map((s: any) => s.id));
-        const mergedStaff = [
-          ...storedStaff,
-          ...INITIAL_STAFF.filter((s) => !storedStaffIds.has(s.id)),
-        ];
+          const storedMembers = Array.isArray(parsed.members) ? parsed.members : [];
+          const storedMemberIds = new Set(storedMembers.map((m: any) => m.id));
+          mergedMembers = [
+            ...storedMembers,
+            ...INITIAL_MEMBERS.filter((m) => !storedMemberIds.has(m.id)),
+            ...INITIAL_SALON_CLIENTS.filter((m) => !storedMemberIds.has(m.id)),
+          ];
+
+          const storedStaff = Array.isArray(parsed.staff) ? parsed.staff : [];
+          const storedStaffIds = new Set(storedStaff.map((s: any) => s.id));
+          mergedStaff = [
+            ...storedStaff,
+            ...INITIAL_STAFF.filter((s) => !storedStaffIds.has(s.id)),
+          ];
+        }
 
         const langConfig = getInitialLanguageConfig();
         const effectiveLanguage = langConfig.isAuto ? getSystemDefaultLanguage() : (parsed.language || langConfig.language);
@@ -538,6 +595,7 @@ let globalState: AppState = backfillTraceability((() => {
         return {
           ...DEFAULT_STATE,
           ...parsed,
+          storageVersion: ATRIUM_STORAGE_VERSION,
           language: effectiveLanguage,
           isLanguageAuto: effectiveIsAuto,
           businesses,
@@ -546,55 +604,62 @@ let globalState: AppState = backfillTraceability((() => {
           currentBranchId,
           subscription: parsed.subscription?.plan ? parsed.subscription : DEFAULT_STATE.subscription,
           members: mergedMembers,
-          leads: Array.isArray(parsed.leads) && parsed.leads.length > 0 ? parsed.leads : INITIAL_LEADS,
+          leads: Array.isArray(parsed.leads) ? parsed.leads : INITIAL_LEADS,
           products: mergedProducts,
           sales: mergedSales,
           staff: mergedStaff,
-          schedule: Array.isArray(parsed.schedule) && parsed.schedule.length > 0 ? parsed.schedule : INITIAL_SCHEDULE,
-          devices: Array.isArray(parsed.devices) && parsed.devices.length > 0 ? parsed.devices : INITIAL_DEVICES,
-          appointments: Array.isArray(parsed.appointments) && parsed.appointments.length >= INITIAL_APPOINTMENTS.length ? parsed.appointments : INITIAL_APPOINTMENTS,
-          servicesCatalog: Array.isArray(parsed.servicesCatalog) && parsed.servicesCatalog.length >= INITIAL_SALON_SERVICES.length ? parsed.servicesCatalog : INITIAL_SALON_SERVICES,
-          salonWorkstations: Array.isArray(parsed.salonWorkstations) && parsed.salonWorkstations.length > 0 ? parsed.salonWorkstations : INITIAL_SALON_WORKSTATIONS,
-          stylistPayouts: Array.isArray(parsed.stylistPayouts) && parsed.stylistPayouts.length > 0 ? parsed.stylistPayouts : INITIAL_STYLIST_PAYOUTS,
-          freelanceClients: Array.isArray(parsed.freelanceClients) && parsed.freelanceClients.length >= INITIAL_FREELANCE_CLIENTS.length ? parsed.freelanceClients : INITIAL_FREELANCE_CLIENTS,
-          freelanceProjects: Array.isArray(parsed.freelanceProjects) && parsed.freelanceProjects.length >= INITIAL_FREELANCE_PROJECTS.length ? parsed.freelanceProjects : INITIAL_FREELANCE_PROJECTS,
-          timeLogs: Array.isArray(parsed.timeLogs) && parsed.timeLogs.length >= INITIAL_TIME_LOGS.length ? parsed.timeLogs : INITIAL_TIME_LOGS,
-          freelanceInvoices: Array.isArray(parsed.freelanceInvoices) && parsed.freelanceInvoices.length >= INITIAL_FREELANCE_INVOICES.length ? parsed.freelanceInvoices : INITIAL_FREELANCE_INVOICES,
-          freelanceProposals: Array.isArray(parsed.freelanceProposals) && parsed.freelanceProposals.length >= INITIAL_FREELANCE_PROPOSALS.length ? parsed.freelanceProposals : INITIAL_FREELANCE_PROPOSALS,
-          freelanceExpenses: Array.isArray(parsed.freelanceExpenses) && parsed.freelanceExpenses.length >= INITIAL_FREELANCE_EXPENSES.length ? parsed.freelanceExpenses : INITIAL_FREELANCE_EXPENSES,
+          schedule: Array.isArray(parsed.schedule) ? parsed.schedule : INITIAL_SCHEDULE,
+          devices: Array.isArray(parsed.devices) ? parsed.devices : INITIAL_DEVICES,
+          appointments: Array.isArray(parsed.appointments) ? parsed.appointments : INITIAL_APPOINTMENTS,
+          servicesCatalog: Array.isArray(parsed.servicesCatalog) ? parsed.servicesCatalog : INITIAL_SALON_SERVICES,
+          salonWorkstations: Array.isArray(parsed.salonWorkstations) ? parsed.salonWorkstations : INITIAL_SALON_WORKSTATIONS,
+          stylistPayouts: Array.isArray(parsed.stylistPayouts) ? parsed.stylistPayouts : INITIAL_STYLIST_PAYOUTS,
+          freelanceClients: Array.isArray(parsed.freelanceClients) ? parsed.freelanceClients : INITIAL_FREELANCE_CLIENTS,
+          freelanceProjects: Array.isArray(parsed.freelanceProjects) ? parsed.freelanceProjects : INITIAL_FREELANCE_PROJECTS,
+          timeLogs: Array.isArray(parsed.timeLogs) ? parsed.timeLogs : INITIAL_TIME_LOGS,
+          freelanceInvoices: Array.isArray(parsed.freelanceInvoices) ? parsed.freelanceInvoices : INITIAL_FREELANCE_INVOICES,
+          freelanceProposals: Array.isArray(parsed.freelanceProposals) ? parsed.freelanceProposals : INITIAL_FREELANCE_PROPOSALS,
+          freelanceExpenses: Array.isArray(parsed.freelanceExpenses) ? parsed.freelanceExpenses : INITIAL_FREELANCE_EXPENSES,
           activeTimer: parsed.activeTimer || INITIAL_ACTIVE_TIMER,
           parkedOrders: Array.isArray(parsed.parkedOrders) ? parsed.parkedOrders : INITIAL_PARKED_ORDERS,
           stockMovements: Array.isArray(parsed.stockMovements) ? parsed.stockMovements : INITIAL_STOCK_MOVEMENTS,
           receiptConfig: parsed.receiptConfig || DEFAULT_RECEIPT_CONFIG,
-          rentableUnits: Array.isArray(parsed.rentableUnits) && parsed.rentableUnits.length >= INITIAL_RENTABLE_UNITS.length ? parsed.rentableUnits : INITIAL_RENTABLE_UNITS,
-          rentalBookings: Array.isArray(parsed.rentalBookings) && parsed.rentalBookings.length >= INITIAL_RENTAL_BOOKINGS.length ? parsed.rentalBookings : INITIAL_RENTAL_BOOKINGS,
-          rentalRenters: Array.isArray(parsed.rentalRenters) && parsed.rentalRenters.length >= INITIAL_RENTAL_RENTERS.length ? parsed.rentalRenters : INITIAL_RENTAL_RENTERS,
-          securityDeposits: Array.isArray(parsed.securityDeposits) && parsed.securityDeposits.length >= INITIAL_SECURITY_DEPOSITS.length ? parsed.securityDeposits : INITIAL_SECURITY_DEPOSITS,
-          eduCourses: Array.isArray(parsed.eduCourses) && parsed.eduCourses.length >= INITIAL_EDU_COURSES.length ? parsed.eduCourses : INITIAL_EDU_COURSES,
-          eduClassrooms: Array.isArray(parsed.eduClassrooms) && parsed.eduClassrooms.length >= INITIAL_EDU_CLASSROOMS.length ? parsed.eduClassrooms : INITIAL_EDU_CLASSROOMS,
-          eduCohorts: Array.isArray(parsed.eduCohorts) && parsed.eduCohorts.length >= INITIAL_EDU_COHORTS.length ? parsed.eduCohorts : INITIAL_EDU_COHORTS,
-          eduStudents: Array.isArray(parsed.eduStudents) && parsed.eduStudents.length >= INITIAL_EDU_STUDENTS.length ? parsed.eduStudents : INITIAL_EDU_STUDENTS,
-          eduEnrollments: Array.isArray(parsed.eduEnrollments) && parsed.eduEnrollments.length >= INITIAL_EDU_ENROLLMENTS.length ? parsed.eduEnrollments : INITIAL_EDU_ENROLLMENTS,
-          eduSessions: Array.isArray(parsed.eduSessions) && parsed.eduSessions.length >= INITIAL_EDU_SESSIONS.length ? parsed.eduSessions : INITIAL_EDU_SESSIONS,
-          eduAttendance: Array.isArray(parsed.eduAttendance) && parsed.eduAttendance.length >= INITIAL_EDU_ATTENDANCE.length ? parsed.eduAttendance : INITIAL_EDU_ATTENDANCE,
-          eduGrades: Array.isArray(parsed.eduGrades) && parsed.eduGrades.length >= INITIAL_EDU_GRADES.length ? parsed.eduGrades : INITIAL_EDU_GRADES,
-          eduCertificates: Array.isArray(parsed.eduCertificates) && parsed.eduCertificates.length >= INITIAL_EDU_CERTIFICATES.length ? parsed.eduCertificates : INITIAL_EDU_CERTIFICATES,
-          eduAdmissions: Array.isArray(parsed.eduAdmissions) && parsed.eduAdmissions.length >= INITIAL_EDU_ADMISSIONS.length ? parsed.eduAdmissions : INITIAL_EDU_ADMISSIONS,
+          rentableUnits: Array.isArray(parsed.rentableUnits) ? parsed.rentableUnits : INITIAL_RENTABLE_UNITS,
+          rentalBookings: Array.isArray(parsed.rentalBookings) ? parsed.rentalBookings : INITIAL_RENTAL_BOOKINGS,
+          rentalRenters: Array.isArray(parsed.rentalRenters) ? parsed.rentalRenters : INITIAL_RENTAL_RENTERS,
+          securityDeposits: Array.isArray(parsed.securityDeposits) ? parsed.securityDeposits : INITIAL_SECURITY_DEPOSITS,
+          eduCourses: Array.isArray(parsed.eduCourses) ? parsed.eduCourses : INITIAL_EDU_COURSES,
+          eduClassrooms: Array.isArray(parsed.eduClassrooms) ? parsed.eduClassrooms : INITIAL_EDU_CLASSROOMS,
+          eduCohorts: Array.isArray(parsed.eduCohorts) ? parsed.eduCohorts : INITIAL_EDU_COHORTS,
+          eduStudents: Array.isArray(parsed.eduStudents) ? parsed.eduStudents : INITIAL_EDU_STUDENTS,
+          eduEnrollments: Array.isArray(parsed.eduEnrollments) ? parsed.eduEnrollments : INITIAL_EDU_ENROLLMENTS,
+          eduSessions: Array.isArray(parsed.eduSessions) ? parsed.eduSessions : INITIAL_EDU_SESSIONS,
+          eduAttendance: Array.isArray(parsed.eduAttendance) ? parsed.eduAttendance : INITIAL_EDU_ATTENDANCE,
+          eduGrades: Array.isArray(parsed.eduGrades) ? parsed.eduGrades : INITIAL_EDU_GRADES,
+          eduCertificates: Array.isArray(parsed.eduCertificates) ? parsed.eduCertificates : INITIAL_EDU_CERTIFICATES,
+          eduAdmissions: Array.isArray(parsed.eduAdmissions) ? parsed.eduAdmissions : INITIAL_EDU_ADMISSIONS,
           // PM Hydration
           activePmRole: parsed.activePmRole || 'direction',
-          pmClients: Array.isArray(parsed.pmClients) && parsed.pmClients.length > 0 ? parsed.pmClients : INITIAL_PM_CLIENTS,
-          pmProjects: Array.isArray(parsed.pmProjects) && parsed.pmProjects.length > 0 ? parsed.pmProjects : INITIAL_PM_PROJECTS,
-          pmMilestones: Array.isArray(parsed.pmMilestones) && parsed.pmMilestones.length > 0 ? parsed.pmMilestones : INITIAL_PM_MILESTONES,
-          pmCollateralCatalog: Array.isArray(parsed.pmCollateralCatalog) && parsed.pmCollateralCatalog.length > 0 ? parsed.pmCollateralCatalog : INITIAL_PM_COLLATERAL_CATALOG,
-          pmPrintOrders: Array.isArray(parsed.pmPrintOrders) && parsed.pmPrintOrders.length > 0 ? parsed.pmPrintOrders : INITIAL_PM_PRINT_ORDERS,
-          pmBatDeliverables: Array.isArray(parsed.pmBatDeliverables) && parsed.pmBatDeliverables.length > 0 ? parsed.pmBatDeliverables : INITIAL_PM_BAT_DELIVERABLES,
-          pmTalents: Array.isArray(parsed.pmTalents) && parsed.pmTalents.length > 0 ? parsed.pmTalents : INITIAL_PM_TALENTS,
-          pmMissions: Array.isArray(parsed.pmMissions) && parsed.pmMissions.length > 0 ? parsed.pmMissions : INITIAL_PM_MISSIONS,
-          pmAttendances: Array.isArray(parsed.pmAttendances) && parsed.pmAttendances.length > 0 ? parsed.pmAttendances : INITIAL_PM_ATTENDANCES,
-          pmExpenses: Array.isArray(parsed.pmExpenses) && parsed.pmExpenses.length > 0 ? parsed.pmExpenses : INITIAL_PM_EXPENSES,
-          pmPayrollBatches: Array.isArray(parsed.pmPayrollBatches) && parsed.pmPayrollBatches.length > 0 ? parsed.pmPayrollBatches : INITIAL_PM_PAYROLL_BATCHES,
-          pmCcpSlips: Array.isArray(parsed.pmCcpSlips) && parsed.pmCcpSlips.length > 0 ? parsed.pmCcpSlips : INITIAL_PM_CCP_SLIPS,
-          pmEquipmentStock: Array.isArray(parsed.pmEquipmentStock) && parsed.pmEquipmentStock.length > 0 ? parsed.pmEquipmentStock : INITIAL_PM_EQUIPMENT_STOCK,
+          pmClients: Array.isArray(parsed.pmClients) ? parsed.pmClients : INITIAL_PM_CLIENTS,
+          pmProjects: Array.isArray(parsed.pmProjects) ? parsed.pmProjects : INITIAL_PM_PROJECTS,
+          pmMilestones: Array.isArray(parsed.pmMilestones) ? parsed.pmMilestones : INITIAL_PM_MILESTONES,
+          pmCollateralCatalog: Array.isArray(parsed.pmCollateralCatalog) ? parsed.pmCollateralCatalog : INITIAL_PM_COLLATERAL_CATALOG,
+          pmPrintOrders: Array.isArray(parsed.pmPrintOrders) ? parsed.pmPrintOrders : INITIAL_PM_PRINT_ORDERS,
+          pmBatDeliverables: Array.isArray(parsed.pmBatDeliverables) ? parsed.pmBatDeliverables : INITIAL_PM_BAT_DELIVERABLES,
+          pmTalents: Array.isArray(parsed.pmTalents) ? parsed.pmTalents : INITIAL_PM_TALENTS,
+          pmMissions: Array.isArray(parsed.pmMissions) ? parsed.pmMissions : INITIAL_PM_MISSIONS,
+          pmAttendances: Array.isArray(parsed.pmAttendances) ? parsed.pmAttendances : INITIAL_PM_ATTENDANCES,
+          pmExpenses: Array.isArray(parsed.pmExpenses) ? parsed.pmExpenses : INITIAL_PM_EXPENSES,
+          pmPayrollBatches: Array.isArray(parsed.pmPayrollBatches) ? parsed.pmPayrollBatches : INITIAL_PM_PAYROLL_BATCHES,
+          pmCcpSlips: Array.isArray(parsed.pmCcpSlips) ? parsed.pmCcpSlips : INITIAL_PM_CCP_SLIPS,
+          pmEquipmentStock: Array.isArray(parsed.pmEquipmentStock) ? parsed.pmEquipmentStock : INITIAL_PM_EQUIPMENT_STOCK,
+          // B2B Trading & Commercial Hydration
+          b2bClients: Array.isArray(parsed.b2bClients) ? parsed.b2bClients : INITIAL_B2B_CLIENTS,
+          b2bSuppliers: Array.isArray(parsed.b2bSuppliers) ? parsed.b2bSuppliers : INITIAL_B2B_SUPPLIERS,
+          warehouses: Array.isArray(parsed.warehouses) ? parsed.warehouses : INITIAL_WAREHOUSES,
+          commercialDocs: Array.isArray(parsed.commercialDocs) ? parsed.commercialDocs : INITIAL_COMMERCIAL_DOCS,
+          purchaseDocs: Array.isArray(parsed.purchaseDocs) ? parsed.purchaseDocs : INITIAL_PURCHASE_DOCS,
+          stockVouchers: Array.isArray(parsed.stockVouchers) ? parsed.stockVouchers : INITIAL_STOCK_VOUCHERS,
           currentUser: parsed.currentUser || DEFAULT_USER,
           isAuthenticated: parsed.isAuthenticated !== undefined ? parsed.isAuthenticated : true,
           isOnboardingOpen: false,
@@ -5334,7 +5399,7 @@ export function useAtriumStore() {
     notify();
   };
 
-  const convertAdmissionToStudent = (leadId: string, cohortId: string) => {
+  const convertAdmissionToStudent = (leadId: string, cohortId: string, initialDeposit: number = 0) => {
     const lead = (globalState.eduAdmissions || []).find((l) => l.id === leadId);
     const cohort = (globalState.eduCohorts || []).find((c) => c.id === cohortId);
     if (!lead || !cohort) return;
@@ -5358,6 +5423,10 @@ export function useAtriumStore() {
     const tranche1 = Math.round(tuition * 0.5);
     const tranche2 = tuition - tranche1;
 
+    const paid = Math.min(tuition, Math.max(0, initialDeposit));
+    const isFirstPaid = paid >= tranche1;
+    const isFullyPaid = paid >= tuition;
+
     const newEnrollment: EduEnrollment = {
       ...trace,
       id: `enr_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
@@ -5370,14 +5439,14 @@ export function useAtriumStore() {
       enrolledAt: new Date().toISOString(),
       agreedTuition: tuition,
       discountAmount: 0,
-      paidAmount: 0,
-      balanceDue: tuition,
+      paidAmount: paid,
+      balanceDue: Math.max(0, tuition - paid),
       currency: cohort.currency,
-      paymentStatus: 'Pending',
+      paymentStatus: isFullyPaid ? 'Paid' : paid > 0 ? 'Partial' : 'Pending',
       status: 'Active',
       installments: [
-        { dueDate: cohort.startDate, amount: tranche1, isPaid: false },
-        { dueDate: cohort.endDate, amount: tranche2, isPaid: false },
+        { dueDate: cohort.startDate, amount: tranche1, isPaid: isFirstPaid },
+        { dueDate: cohort.endDate, amount: tranche2, isPaid: isFullyPaid },
       ],
     };
 
@@ -5396,7 +5465,7 @@ export function useAtriumStore() {
     showToast({
       type: 'success',
       title: 'Student Enrolled',
-      message: `${newStudent.fullName} admitted & enrolled in ${cohort.name}!`,
+      message: `${newStudent.fullName} admitted & enrolled in ${cohort.name}!${paid > 0 ? ` (Acompte: ${paid.toLocaleString()} DZD)` : ''}`,
       syncStatus: isSupabaseConfigured() ? 'synced' : 'local',
       table: 'edu_students',
       category: 'education_cohort',
@@ -6497,14 +6566,547 @@ export function useAtriumStore() {
   };
 
   const resetAllData = () => {
-    globalState = DEFAULT_STATE;
+    const previousSnapshot = { ...globalState };
+    globalState = {
+      ...DEFAULT_STATE,
+      storageVersion: ATRIUM_STORAGE_VERSION,
+      language: globalState.language,
+      theme: globalState.theme,
+      currentUser: globalState.currentUser,
+    };
     notify();
+    showToast({
+      type: 'info',
+      title: 'Toutes les données réinitialisées',
+      message: 'La base de données locale a été réinitialisée avec les données de démonstration.',
+      action: {
+        label: 'Annuler',
+        onClick: () => {
+          globalState = previousSnapshot;
+          notify();
+          showToast({
+            type: 'success',
+            title: 'Annulation effectuée',
+            message: 'Les données précédentes ont été rétablies.',
+          });
+        },
+      },
+    });
+  };
+
+  const resetToDefaultDemoData = (targetCategory?: BusinessCategory) => {
+    const previousSnapshot = { ...globalState };
+    if (!targetCategory) {
+      resetAllData();
+      return;
+    }
+
+    let updates: Partial<AppState> = {};
+    if (targetCategory === 'rental_booking') {
+      updates = {
+        rentableUnits: INITIAL_RENTABLE_UNITS,
+        rentalBookings: INITIAL_RENTAL_BOOKINGS,
+        rentalRenters: INITIAL_RENTAL_RENTERS,
+        securityDeposits: INITIAL_SECURITY_DEPOSITS,
+      };
+    } else if (targetCategory === 'education_cohort') {
+      updates = {
+        eduCourses: INITIAL_EDU_COURSES,
+        eduClassrooms: INITIAL_EDU_CLASSROOMS,
+        eduCohorts: INITIAL_EDU_COHORTS,
+        eduStudents: INITIAL_EDU_STUDENTS,
+        eduEnrollments: INITIAL_EDU_ENROLLMENTS,
+        eduSessions: INITIAL_EDU_SESSIONS,
+        eduAttendance: INITIAL_EDU_ATTENDANCE,
+        eduGrades: INITIAL_EDU_GRADES,
+        eduCertificates: INITIAL_EDU_CERTIFICATES,
+        eduAdmissions: INITIAL_EDU_ADMISSIONS,
+      };
+    } else if (targetCategory === 'freelance_solo') {
+      updates = {
+        freelanceClients: INITIAL_FREELANCE_CLIENTS,
+        freelanceProjects: INITIAL_FREELANCE_PROJECTS,
+        timeLogs: INITIAL_TIME_LOGS,
+        freelanceInvoices: INITIAL_FREELANCE_INVOICES,
+        freelanceProposals: INITIAL_FREELANCE_PROPOSALS,
+        freelanceExpenses: INITIAL_FREELANCE_EXPENSES,
+      };
+    } else if (targetCategory === 'pos_inventory') {
+      updates = {
+        products: INITIAL_PRODUCTS,
+        sales: INITIAL_SALES,
+        stockMovements: INITIAL_STOCK_MOVEMENTS,
+        parkedOrders: INITIAL_PARKED_ORDERS,
+      };
+    } else if (targetCategory === 'appointment_service') {
+      updates = {
+        appointments: INITIAL_APPOINTMENTS,
+        servicesCatalog: INITIAL_SALON_SERVICES,
+        salonWorkstations: INITIAL_SALON_WORKSTATIONS,
+        stylistPayouts: INITIAL_STYLIST_PAYOUTS,
+      };
+    } else if (targetCategory === 'project_milestone') {
+      updates = {
+        pmClients: INITIAL_PM_CLIENTS,
+        pmProjects: INITIAL_PM_PROJECTS,
+        pmMilestones: INITIAL_PM_MILESTONES,
+        pmCollateralCatalog: INITIAL_PM_COLLATERAL_CATALOG,
+        pmPrintOrders: INITIAL_PM_PRINT_ORDERS,
+        pmBatDeliverables: INITIAL_PM_BAT_DELIVERABLES,
+        pmTalents: INITIAL_PM_TALENTS,
+        pmMissions: INITIAL_PM_MISSIONS,
+        pmAttendances: INITIAL_PM_ATTENDANCES,
+        pmExpenses: INITIAL_PM_EXPENSES,
+        pmPayrollBatches: INITIAL_PM_PAYROLL_BATCHES,
+        pmCcpSlips: INITIAL_PM_CCP_SLIPS,
+        pmEquipmentStock: INITIAL_PM_EQUIPMENT_STOCK,
+      };
+    } else if (targetCategory === 'membership_session') {
+      updates = {
+        members: INITIAL_MEMBERS,
+        leads: INITIAL_LEADS,
+        schedule: INITIAL_SCHEDULE,
+        devices: INITIAL_DEVICES,
+      };
+    } else if (targetCategory === 'trading_commercial') {
+      updates = {
+        b2bClients: INITIAL_B2B_CLIENTS,
+        b2bSuppliers: INITIAL_B2B_SUPPLIERS,
+        warehouses: INITIAL_WAREHOUSES,
+        commercialDocs: INITIAL_COMMERCIAL_DOCS,
+        purchaseDocs: INITIAL_PURCHASE_DOCS,
+        stockVouchers: INITIAL_STOCK_VOUCHERS,
+      };
+    }
+
+    globalState = {
+      ...globalState,
+      ...updates,
+      storageVersion: ATRIUM_STORAGE_VERSION,
+    };
+    notify();
+
+    showToast({
+      type: 'info',
+      title: 'Données de démo réinitialisées',
+      message: `Le jeu de données de ${targetCategory} a été réinitialisé.`,
+      action: {
+        label: 'Annuler',
+        onClick: () => {
+          globalState = previousSnapshot;
+          notify();
+          showToast({
+            type: 'success',
+            title: 'Annulation effectuée',
+            message: 'Les données précédentes ont été rétablies.',
+          });
+        },
+      },
+    });
+  };
+
+  // ============================================================
+  // Category 8: B2B Commercial Trading & Wholesale Actions
+  // ============================================================
+
+  const createCommercialDoc = (doc: Omit<CommercialDocument, 'id' | 'createdAt' | 'updatedAt'>) => {
+    const id = `cdoc_${Date.now()}`;
+    const newDoc: CommercialDocument = {
+      ...doc,
+      id,
+      accountId: doc.accountId || globalState.account?.id || 'acc_01',
+      businessId: doc.businessId || globalState.currentBusinessId,
+      branchId: doc.branchId || globalState.currentBranchId,
+      facilityId: doc.facilityId || globalState.currentBranchId,
+      tenantId: doc.tenantId || globalState.account?.id || 'acc_01',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    globalState = {
+      ...globalState,
+      commercialDocs: [newDoc, ...(globalState.commercialDocs || [])],
+    };
+    notify();
+    showToast({
+      type: 'success',
+      title: 'Document commercial créé',
+      message: `${newDoc.docNumber} (${newDoc.clientName}) a été enregistré.`,
+      category: 'trading_commercial',
+    });
+    return newDoc;
+  };
+
+  const updateCommercialDoc = (id: string, updates: Partial<CommercialDocument>) => {
+    globalState = {
+      ...globalState,
+      commercialDocs: (globalState.commercialDocs || []).map((d) =>
+        d.id === id ? { ...d, ...updates, updatedAt: new Date().toISOString() } : d
+      ),
+    };
+    notify();
+    showToast({
+      type: 'info',
+      title: 'Document mis à jour',
+      message: `Modifications enregistrées.`,
+      category: 'trading_commercial',
+    });
+  };
+
+  const deleteCommercialDoc = (id: string) => {
+    const doc = (globalState.commercialDocs || []).find((d) => d.id === id);
+    globalState = {
+      ...globalState,
+      commercialDocs: (globalState.commercialDocs || []).filter((d) => d.id !== id),
+    };
+    notify();
+    showToast({
+      type: 'warning',
+      title: 'Document supprimé',
+      message: `${doc?.docNumber || id} a été retiré.`,
+      category: 'trading_commercial',
+    });
+  };
+
+  const convertCommercialDoc = (sourceDocId: string, targetType: CommercialDocType) => {
+    const sourceDoc = (globalState.commercialDocs || []).find((d) => d.id === sourceDocId);
+    if (!sourceDoc) return null;
+
+    const currentYear = new Date().getFullYear();
+    const count = (globalState.commercialDocs || []).filter((d) => d.type === targetType).length + 1;
+    const prefix = targetType === 'bl' ? 'BL' : targetType === 'facture' ? 'FAC' : targetType === 'commande' ? 'BC' : 'AV';
+    const docNumber = `${prefix}-${currentYear}-${count.toString().padStart(4, '0')}`;
+
+    const newDoc: CommercialDocument = {
+      ...sourceDoc,
+      id: `cdoc_${Date.now()}`,
+      type: targetType,
+      docNumber,
+      date: new Date().toISOString().split('T')[0],
+      status: targetType === 'facture' ? 'Validated' : targetType === 'bl' ? 'Delivered' : 'Draft',
+      linkedDocId: sourceDoc.id,
+      linkedDocNumber: sourceDoc.docNumber,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    const updatedSource = {
+      ...sourceDoc,
+      status: targetType === 'bl' ? ('Delivered' as const) : ('Validated' as const),
+      updatedAt: new Date().toISOString(),
+    };
+
+    globalState = {
+      ...globalState,
+      commercialDocs: [
+        newDoc,
+        ...globalState.commercialDocs.map((d) => (d.id === sourceDocId ? updatedSource : d)),
+      ],
+    };
+    notify();
+
+    showToast({
+      type: 'success',
+      title: `Conversion effectuée`,
+      message: `${sourceDoc.docNumber} converti en ${newDoc.docNumber}.`,
+      category: 'trading_commercial',
+    });
+
+    return newDoc;
+  };
+
+  const createPurchaseDoc = (doc: Omit<PurchaseDocument, 'id' | 'createdAt' | 'updatedAt'>) => {
+    const id = `pdoc_${Date.now()}`;
+    const newDoc: PurchaseDocument = {
+      ...doc,
+      id,
+      accountId: doc.accountId || globalState.account?.id || 'acc_01',
+      businessId: doc.businessId || globalState.currentBusinessId,
+      branchId: doc.branchId || globalState.currentBranchId,
+      facilityId: doc.facilityId || globalState.currentBranchId,
+      tenantId: doc.tenantId || globalState.account?.id || 'acc_01',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    globalState = {
+      ...globalState,
+      purchaseDocs: [newDoc, ...(globalState.purchaseDocs || [])],
+    };
+    notify();
+    showToast({
+      type: 'success',
+      title: 'Commande Fournisseur Créée',
+      message: `${newDoc.docNumber} (${newDoc.supplierName}) enregistrée.`,
+      category: 'trading_commercial',
+    });
+    return newDoc;
+  };
+
+  const updatePurchaseDoc = (id: string, updates: Partial<PurchaseDocument>) => {
+    globalState = {
+      ...globalState,
+      purchaseDocs: (globalState.purchaseDocs || []).map((p) =>
+        p.id === id ? { ...p, ...updates, updatedAt: new Date().toISOString() } : p
+      ),
+    };
+    notify();
+  };
+
+  const receivePurchaseDoc = (poId: string) => {
+    const po = (globalState.purchaseDocs || []).find((p) => p.id === poId);
+    if (!po) return null;
+
+    const currentYear = new Date().getFullYear();
+    const count = (globalState.purchaseDocs || []).filter((p) => p.type === 'br').length + 1;
+    const brNumber = `BR-${currentYear}-${count.toString().padStart(4, '0')}`;
+
+    const receivedItems = po.items.map((it) => ({
+      ...it,
+      receivedQty: it.orderedQty,
+    }));
+
+    const newBr: PurchaseDocument = {
+      ...po,
+      id: `pdoc_${Date.now()}`,
+      type: 'br',
+      docNumber: brNumber,
+      status: 'Received',
+      actualDeliveryDate: new Date().toISOString().split('T')[0],
+      items: receivedItems,
+      linkedPoId: po.id,
+      linkedPoNumber: po.docNumber,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    const voucherCount = (globalState.stockVouchers || []).length + 1;
+    const voucherNumber = `BE-${currentYear}-${voucherCount.toString().padStart(4, '0')}`;
+    const newVoucher: StockMovementVoucher = {
+      id: `svouch_${Date.now()}`,
+      voucherNumber,
+      type: 'entree',
+      date: new Date().toISOString().split('T')[0],
+      depotSourceId: po.depotId,
+      depotSourceName: po.depotName || 'Dépôt Central Oued Smar',
+      reason: 'reception_achat',
+      operatorName: globalState.currentUser?.fullName || 'Responsable Réception',
+      tenantId: po.tenantId,
+      facilityId: po.facilityId,
+      items: po.items.map((it) => ({
+        productId: it.productId || '',
+        productName: it.description,
+        quantity: it.orderedQty,
+        unitCostDzd: it.unitCostHt,
+        unit: it.unit,
+      })),
+      totalValuationDzd: po.totalHt,
+      notes: `Entrée automatique suite à la réception ${brNumber} (PO: ${po.docNumber}).`,
+      createdAt: new Date().toISOString(),
+    };
+
+    const updatedProducts = (globalState.products || []).map((prod) => {
+      const match = po.items.find((it) => it.productId === prod.id || it.description === prod.name);
+      if (match) {
+        return {
+          ...prod,
+          stockQuantity: (prod.stockQuantity || 0) + match.orderedQty,
+        };
+      }
+      return prod;
+    });
+
+    const updatedPo: PurchaseDocument = {
+      ...po,
+      status: 'Received',
+      updatedAt: new Date().toISOString(),
+    };
+
+    globalState = {
+      ...globalState,
+      purchaseDocs: [
+        newBr,
+        ...globalState.purchaseDocs.map((p) => (p.id === poId ? updatedPo : p)),
+      ],
+      stockVouchers: [newVoucher, ...(globalState.stockVouchers || [])],
+      products: updatedProducts,
+    };
+    notify();
+
+    showToast({
+      type: 'success',
+      title: 'Réception à Quai Validée',
+      message: `${brNumber} généré. Les stocks ont été automatiquement incrémentés.`,
+      category: 'trading_commercial',
+    });
+
+    return newBr;
+  };
+
+  const createStockVoucher = (voucher: Omit<StockMovementVoucher, 'id' | 'createdAt'>) => {
+    const id = `svouch_${Date.now()}`;
+    const newVoucher: StockMovementVoucher = {
+      ...voucher,
+      id,
+      createdAt: new Date().toISOString(),
+    };
+
+    const updatedProducts = (globalState.products || []).map((prod) => {
+      const match = voucher.items.find((it) => it.productId === prod.id);
+      if (match) {
+        const delta = voucher.type === 'entree' ? match.quantity : voucher.type === 'sortie' ? -match.quantity : 0;
+        return {
+          ...prod,
+          stockQuantity: Math.max(0, (prod.stockQuantity || 0) + delta),
+        };
+      }
+      return prod;
+    });
+
+    globalState = {
+      ...globalState,
+      stockVouchers: [newVoucher, ...(globalState.stockVouchers || [])],
+      products: updatedProducts,
+    };
+    notify();
+
+    showToast({
+      type: 'info',
+      title: `Mouvement de stock enregistré`,
+      message: `${newVoucher.voucherNumber} (${voucher.reason}) validé.`,
+      category: 'trading_commercial',
+    });
+
+    return newVoucher;
+  };
+
+  const createB2bClient = (client: Omit<B2bClient, 'id' | 'createdAt' | 'updatedAt'>) => {
+    const id = `b2b_cli_${Date.now()}`;
+    const newClient: B2bClient = {
+      ...client,
+      id,
+      tenantId: client.tenantId || globalState.account?.id || 'acc_01',
+      facilityId: client.facilityId || globalState.currentBranchId,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    globalState = {
+      ...globalState,
+      b2bClients: [newClient, ...(globalState.b2bClients || [])],
+    };
+    notify();
+    showToast({
+      type: 'success',
+      title: 'Client B2B Créé',
+      message: `${newClient.companyName} ajouté au répertoire commercial.`,
+      category: 'trading_commercial',
+    });
+    return newClient;
+  };
+
+  const updateB2bClient = (id: string, updates: Partial<B2bClient>) => {
+    globalState = {
+      ...globalState,
+      b2bClients: (globalState.b2bClients || []).map((c) =>
+        c.id === id ? { ...c, ...updates, updatedAt: new Date().toISOString() } : c
+      ),
+    };
+    notify();
+  };
+
+  const deleteB2bClient = (id: string) => {
+    globalState = {
+      ...globalState,
+      b2bClients: (globalState.b2bClients || []).filter((c) => c.id !== id),
+    };
+    notify();
+  };
+
+  const createB2bSupplier = (supplier: Omit<B2bSupplier, 'id' | 'createdAt' | 'updatedAt'>) => {
+    const id = `b2b_sup_${Date.now()}`;
+    const newSup: B2bSupplier = {
+      ...supplier,
+      id,
+      tenantId: supplier.tenantId || globalState.account?.id || 'acc_01',
+      facilityId: supplier.facilityId || globalState.currentBranchId,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    globalState = {
+      ...globalState,
+      b2bSuppliers: [newSup, ...(globalState.b2bSuppliers || [])],
+    };
+    notify();
+    showToast({
+      type: 'success',
+      title: 'Fournisseur Référencé',
+      message: `${newSup.supplierName} enregistré.`,
+      category: 'trading_commercial',
+    });
+    return newSup;
+  };
+
+  const updateB2bSupplier = (id: string, updates: Partial<B2bSupplier>) => {
+    globalState = {
+      ...globalState,
+      b2bSuppliers: (globalState.b2bSuppliers || []).map((s) =>
+        s.id === id ? { ...s, ...updates, updatedAt: new Date().toISOString() } : s
+      ),
+    };
+    notify();
+  };
+
+  const deleteB2bSupplier = (id: string) => {
+    globalState = {
+      ...globalState,
+      b2bSuppliers: (globalState.b2bSuppliers || []).filter((s) => s.id !== id),
+    };
+    notify();
+  };
+
+  const createWarehouseDepot = (depot: Omit<WarehouseDepot, 'id' | 'createdAt'>) => {
+    const id = `depot_${Date.now()}`;
+    const newDepot: WarehouseDepot = {
+      ...depot,
+      id,
+      createdAt: new Date().toISOString(),
+    };
+    globalState = {
+      ...globalState,
+      warehouses: [...(globalState.warehouses || []), newDepot],
+    };
+    notify();
+    showToast({
+      type: 'success',
+      title: 'Dépôt Créé',
+      message: `${newDepot.name} (${newDepot.code}) opérationnel.`,
+      category: 'trading_commercial',
+    });
+    return newDepot;
+  };
+
+  const resetTradingMockData = () => {
+    globalState = {
+      ...globalState,
+      b2bClients: INITIAL_B2B_CLIENTS,
+      b2bSuppliers: INITIAL_B2B_SUPPLIERS,
+      warehouses: INITIAL_WAREHOUSES,
+      commercialDocs: INITIAL_COMMERCIAL_DOCS,
+      purchaseDocs: INITIAL_PURCHASE_DOCS,
+      stockVouchers: INITIAL_STOCK_VOUCHERS,
+    };
+    notify();
+    showToast({
+      type: 'info',
+      title: 'Négoce Commercial Réinitialisé',
+      message: 'Données de démonstration B2B restaurées.',
+      category: 'trading_commercial',
+    });
   };
 
   const exportDatabase = (): string => {
     return JSON.stringify(
       {
         ...globalState,
+        storageVersion: ATRIUM_STORAGE_VERSION,
         exportedAt: new Date().toISOString(),
         version: 'atrium_v2_full',
       },
@@ -6534,6 +7136,7 @@ export function useAtriumStore() {
       globalState = {
         ...DEFAULT_STATE,
         ...parsed,
+        storageVersion: ATRIUM_STORAGE_VERSION,
         toasts: [],
       };
       notify();
@@ -6666,6 +7269,7 @@ export function useAtriumStore() {
     revokeDevice,
     redeemVoucher,
     resetAllData,
+    resetToDefaultDemoData,
     exportDatabase,
     importDatabase,
     // Appointment & Salon Actions
@@ -6824,6 +7428,44 @@ export function useAtriumStore() {
     completeOnboarding,
     openDesktopUpgradeModal,
     closeDesktopUpgradeModal,
+    // B2B Trading & Commercial Collections & Actions
+    b2bClients: (state.b2bClients || []).filter(
+      (c) => c.facilityId === state.currentBranchId || c.branchId === state.currentBranchId
+    ),
+    allB2bClients: state.b2bClients || [],
+    b2bSuppliers: state.b2bSuppliers || [],
+    warehouses: (state.warehouses || []).filter(
+      (w) => w.businessId === state.currentBusinessId
+    ),
+    allWarehouses: state.warehouses || [],
+    commercialDocs: (state.commercialDocs || []).filter(
+      (d) => d.facilityId === state.currentBranchId || d.branchId === state.currentBranchId
+    ),
+    allCommercialDocs: state.commercialDocs || [],
+    purchaseDocs: (state.purchaseDocs || []).filter(
+      (p) => p.facilityId === state.currentBranchId || p.branchId === state.currentBranchId
+    ),
+    allPurchaseDocs: state.purchaseDocs || [],
+    stockVouchers: (state.stockVouchers || []).filter(
+      (v) => v.facilityId === state.currentBranchId || v.branchId === state.currentBranchId
+    ),
+    allStockVouchers: state.stockVouchers || [],
+    createCommercialDoc,
+    updateCommercialDoc,
+    deleteCommercialDoc,
+    convertCommercialDoc,
+    createPurchaseDoc,
+    updatePurchaseDoc,
+    receivePurchaseDoc,
+    createStockVoucher,
+    createB2bClient,
+    updateB2bClient,
+    deleteB2bClient,
+    createB2bSupplier,
+    updateB2bSupplier,
+    deleteB2bSupplier,
+    createWarehouseDepot,
+    resetTradingMockData,
     // Toast Notifications
     toasts: state.toasts || [],
     showToast,
