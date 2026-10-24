@@ -1,14 +1,22 @@
 // Atrium ERP & CRM — Core Type Definitions
 
 export type BusinessCategory =
-  | 'membership_session'  // Gym & Fitness (FacilityType: 1)
-  | 'appointment_service' // Salon & Beauty (FacilityType: 5)
-  | 'pos_inventory'       // Restaurant & Retail (FacilityType: 6)
-  | 'project_milestone'   // Projects & Agency (FacilityType: 13)
-  | 'rental_booking'      // Rentals & Venue (FacilityType: 14)
-  | 'education_cohort'    // Education & Training (FacilityType: 15)
-  | 'freelance_solo'      // Freelancers & Solo Work (FacilityType: 16)
-  | 'trading_commercial'; // B2B Trading & Wholesale (FacilityType: 17)
+  | 'membership_session'       // Gym & Fitness (FacilityType: 1)
+  | 'appointment_service'      // Salon & Beauty (FacilityType: 5)
+  | 'pos_inventory'            // Restaurant & Retail (FacilityType: 6)
+  | 'project_milestone'        // Projects & Agency (FacilityType: 13)
+  | 'rental_booking'           // Universal Rentals (Hotels, Venues, Cars, Gear) (FacilityType: 14)
+  | 'education_cohort'         // Education & Training (FacilityType: 15)
+  | 'freelance_solo'           // Freelancers & Solo Work (FacilityType: 16)
+  | 'trading_commercial'       // B2B Trading & Wholesale (FacilityType: 17)
+  | 'medical_clinic'           // Universal Healthcare & Clinical Practice (FacilityType: 18)
+  | 'auto_garage'              // Automotive Repair, Garages & Fleet (FacilityType: 19)
+  | 'real_estate'              // Real Estate Brokerage & Property Leases (FacilityType: 20)
+  | 'manufacturing_production' // Light Manufacturing & Workshop BOM (FacilityType: 21)
+  | 'legal_accounting'         // Law Firms, Notaries & Accounting Cabinets (FacilityType: 22)
+  | 'logistics_delivery'       // Couriers, Parcel Dispatch & COD Logistics (FacilityType: 23)
+  | 'construction_contractor'  // BTP, General Contracting & Progress Billings (FacilityType: 24)
+  | 'agriculture_farming';     // Agro-Business, Crop Parcels & Livestock (FacilityType: 25);
 
 export type SupportedLanguage = 'en' | 'fr' | 'ar';
 export type AppTheme = 'light' | 'dark';
@@ -1664,6 +1672,394 @@ export interface StockMovementVoucher {
   notes?: string;
   createdAt: string;
 }
+
+// ==========================================
+// CATEGORY 9: MEDICAL & HEALTHCARE CLINIC
+// ==========================================
+export interface MedicalPatient {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  staffId: string;
+  fullName: string;
+  nationalId?: string;
+  phone: string;
+  gender: Gender;
+  dateOfBirth: string;
+  bloodGroup?: 'A+' | 'A-' | 'B+' | 'B-' | 'AB+' | 'AB-' | 'O+' | 'O-';
+  allergies?: string[];
+  chronicConditions?: string[];
+  emergencyContact?: string;
+  emergencyPhone?: string;
+  notes?: string;
+  createdAt: string;
+}
+
+export interface MedicalConsultation {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  staffId: string; // Doctor
+  patientId: string;
+  patientName: string;
+  consultationDate: string;
+  chiefComplaint: string;
+  vitals?: {
+    bloodPressure?: string;
+    temperatureCelsius?: number;
+    heartRateBpm?: number;
+    weightKg?: number;
+    heightCm?: number;
+    bmi?: number;
+    bloodSugarMgDl?: number;
+  };
+  clinicalExam?: string;
+  diagnosis: string;
+  icdCode?: string;
+  status: 'InWaitingQueue' | 'InConsultation' | 'Completed' | 'Cancelled';
+  consultationFeeDzd: number;
+  copayAmountDzd: number;
+  insuranceShareDzd: number;
+  isPaid: boolean;
+  notes?: string;
+  createdAt: string;
+}
+
+export interface MedicalPrescriptionItem {
+  drugName: string;
+  form: string;
+  dosage: string;
+  frequency: string;
+  durationDays: number;
+  instructions?: string;
+}
+
+export interface MedicalPrescription {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  staffId: string;
+  consultationId: string;
+  patientId: string;
+  patientName: string;
+  prescriptionDate: string;
+  items: MedicalPrescriptionItem[];
+  qrCodeHash: string;
+  isSigned: boolean;
+  notes?: string;
+  createdAt: string;
+}
+
+// ==========================================
+// CATEGORY 10: AUTO GARAGE & FLEET REPAIR
+// ==========================================
+export interface GarageVehicle {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  staffId: string;
+  licensePlate: string;
+  vin: string;
+  brand: string;
+  model: string;
+  year: number;
+  engineType: string;
+  color?: string;
+  ownerName: string;
+  ownerPhone: string;
+  currentOdometer: number;
+  createdAt: string;
+}
+
+export interface GarageWorkOrder {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  staffId: string;
+  orderNumber: string;
+  vehicleId: string;
+  vehiclePlate: string;
+  vehicleModel: string;
+  clientName: string;
+  clientPhone: string;
+  intakeOdometer: number;
+  fuelLevelFraction: string;
+  intakeNotes: string;
+  damagesMap?: Array<{ x: number; y: number; label: string; severity: 'scratch' | 'dent' | 'crack' }>;
+  status: 'Intake' | 'Diagnosing' | 'DevisAwaitingApproval' | 'InRepair' | 'Testing' | 'Ready' | 'Delivered' | 'Cancelled';
+  assignedTechnicianName?: string;
+  partsTotalDzd: number;
+  laborTotalDzd: number;
+  totalAmountDzd: number;
+  isPaid: boolean;
+  startDate: string;
+  completedDate?: string;
+  createdAt: string;
+}
+
+// ==========================================
+// CATEGORY 11: REAL ESTATE & PROPERTY LEASES
+// ==========================================
+export interface RealEstateProperty {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  staffId: string;
+  title: string;
+  propertyType: 'Apartment' | 'Villa' | 'Commercial' | 'Office' | 'Land' | 'Warehouse';
+  listingType: 'Rental' | 'Sale';
+  surfaceM2: number;
+  roomsCount: number;
+  address: string;
+  cityWilaya: string;
+  priceDzd: number;
+  ownerName: string;
+  ownerPhone: string;
+  status: 'Available' | 'Rented' | 'Sold' | 'UnderMaintenance';
+  amenities?: string[];
+  createdAt: string;
+}
+
+export interface RealEstateLease {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  staffId: string;
+  leaseNumber: string;
+  propertyId: string;
+  propertyTitle: string;
+  tenantName: string;
+  tenantPhone: string;
+  startDate: string;
+  endDate: string;
+  monthlyRentDzd: number;
+  securityDepositDzd: number;
+  agencyFeeDzd: number;
+  paymentCycle: 'Monthly' | 'Quarterly' | 'Yearly';
+  status: 'Active' | 'Expired' | 'Terminated';
+  createdAt: string;
+}
+
+// ==========================================
+// CATEGORY 12: MANUFACTURING & WORKSHOP BOM
+// ==========================================
+export interface ManufacturingBom {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  staffId: string;
+  finishedProductId: string;
+  finishedProductName: string;
+  bomCode: string;
+  batchYield: number;
+  unit: string;
+  standardLaborHours: number;
+  components: Array<{
+    rawProductId: string;
+    rawProductName: string;
+    quantity: number;
+    unit: string;
+    unitCostDzd: number;
+  }>;
+  estimatedCostDzd: number;
+  isActive: boolean;
+  createdAt: string;
+}
+
+export interface ManufacturingOrder {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  staffId: string;
+  orderNumber: string;
+  bomId: string;
+  productName: string;
+  targetQuantity: number;
+  actualQuantityProduced?: number;
+  batchLotNumber: string;
+  startDate: string;
+  dueDate: string;
+  status: 'Draft' | 'Scheduled' | 'MaterialsIssued' | 'InProduction' | 'QC' | 'Completed' | 'Cancelled';
+  totalMaterialCostDzd: number;
+  totalLaborCostDzd: number;
+  totalCostDzd: number;
+  createdAt: string;
+}
+
+// ==========================================
+// CATEGORY 13: LEGAL & ACCOUNTING CABINETS
+// ==========================================
+export interface LegalMatter {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  staffId: string;
+  matterNumber: string;
+  title: string;
+  category: 'Commercial' | 'Civil' | 'Penal' | 'Labor' | 'TaxAdvisory' | 'NotaryAct';
+  clientName: string;
+  clientPhone: string;
+  adversePartyName?: string;
+  courtJurisdiction?: string;
+  assignedLawyer: string;
+  retainerAmountDzd: number;
+  trustEscrowBalanceDzd: number;
+  status: 'Active' | 'PendingHearing' | 'UnderDeliberation' | 'Closed' | 'Archived';
+  nextHearingDate?: string;
+  createdAt: string;
+}
+
+export interface LegalHearing {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  staffId: string;
+  matterId: string;
+  matterNumber: string;
+  hearingDate: string;
+  courtRoom: string;
+  presidingJudge?: string;
+  objective: string;
+  outcomeNotes?: string;
+  nextDate?: string;
+  status: 'Scheduled' | 'Attended' | 'Postponed' | 'Ruled';
+  createdAt: string;
+}
+
+// ==========================================
+// CATEGORY 14: LOGISTICS & COURIER DISPATCH
+// ==========================================
+export interface LogisticsShipment {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  staffId: string;
+  trackingCode: string;
+  merchantName: string;
+  recipientName: string;
+  recipientPhone: string;
+  destinationWilaya: string;
+  destinationAddress: string;
+  codAmountDzd: number;
+  shippingFeeDzd: number;
+  weightKg: number;
+  status: 'Created' | 'HubIntake' | 'Sorted' | 'OutForDelivery' | 'Delivered' | 'Postponed' | 'Returned' | 'Cancelled';
+  assignedDriverName?: string;
+  podSignatureUrl?: string;
+  createdAt: string;
+}
+
+export interface LogisticsManifest {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  staffId: string;
+  manifestNumber: string;
+  driverName: string;
+  driverPhone: string;
+  vehiclePlate: string;
+  dispatchDate: string;
+  zoneWilaya: string;
+  shipmentIds: string[];
+  totalShipmentsCount: number;
+  totalCodExpectedDzd: number;
+  totalCodCollectedDzd: number;
+  status: 'Draft' | 'Dispatched' | 'Completed' | 'Reconciled';
+  createdAt: string;
+}
+
+// ==========================================
+// CATEGORY 15: CONSTRUCTION & BTP CONTRACTING
+// ==========================================
+export interface ContractorProject {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  staffId: string;
+  projectCode: string;
+  projectName: string;
+  clientName: string;
+  siteLocation: string;
+  contractAmountDzd: number;
+  retentionGuaranteePercent: number;
+  retentionAmountDzd: number;
+  startDate: string;
+  targetEndDate: string;
+  supervisorName: string;
+  progressPercent: number;
+  status: 'Tendering' | 'SitePreparation' | 'InProgress' | 'ProvisionalHandover' | 'DefinitiveHandover' | 'Archived';
+  createdAt: string;
+}
+
+export interface ContractorBoqItem {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  staffId: string;
+  projectId: string;
+  itemCode: string;
+  designation: string;
+  unit: 'm2' | 'm3' | 'ml' | 'kg' | 'ton' | 'forfait' | 'unit';
+  plannedQty: number;
+  executedQty: number;
+  unitPriceDzd: number;
+  totalPlannedDzd: number;
+  totalExecutedDzd: number;
+  createdAt: string;
+}
+
+// ==========================================
+// CATEGORY 16: AGRI-BUSINESS & LIVESTOCK FARMING
+// ==========================================
+export interface AgriParcel {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  staffId: string;
+  name: string;
+  surfaceHectares: number;
+  irrigationType: 'Drip' | 'Pivot' | 'Sprinkler' | 'Gravity' | 'Rainfed';
+  soilType: string;
+  currentCrop?: string;
+  plantingDate?: string;
+  expectedHarvestDate?: string;
+  status: 'Fallow' | 'Planted' | 'Growing' | 'Harvesting';
+  createdAt: string;
+}
+
+export interface AgriLivestock {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  staffId: string;
+  earTagNumber: string;
+  species: 'Bovine' | 'Ovine' | 'Caprine' | 'Poultry' | 'Equine';
+  breed: string;
+  gender: Gender;
+  birthDate: string;
+  healthStatus: 'Healthy' | 'InTreatment' | 'Quarantined' | 'Sold' | 'Deceased';
+  dailyProductionLiters?: number;
+  notes?: string;
+  createdAt: string;
+}
+
 
 
 

@@ -63,6 +63,14 @@ import { TradingInventoryView } from './components/screens/trading/TradingInvent
 import { TradingDirectoryView } from './components/screens/trading/TradingDirectoryView';
 import { TradingCatalogView } from './components/screens/trading/TradingCatalogView';
 import { TradingFinanceView } from './components/screens/trading/TradingFinanceView';
+import { MedicalClinicView } from './components/screens/medical/MedicalClinicView';
+import { AutoGarageView } from './components/screens/garage/AutoGarageView';
+import { RealEstateView } from './components/screens/realestate/RealEstateView';
+import { ManufacturingView } from './components/screens/manufacturing/ManufacturingView';
+import { LegalCabinetView } from './components/screens/legal/LegalCabinetView';
+import { LogisticsView } from './components/screens/logistics/LogisticsView';
+import { ContractorView } from './components/screens/contractor/ContractorView';
+import { AgricultureView } from './components/screens/agriculture/AgricultureView';
 import { DesktopUpgradeModal } from './components/modals/DesktopUpgradeModal';
 import { CommandPaletteModal } from './components/modals/CommandPaletteModal';
 import { ToastStack } from './components/ui/ToastStack';
@@ -358,6 +366,62 @@ export default function App() {
         default:
           return <TradingDashboardView />;
       }
+    }
+
+    if (currentBusiness?.category === 'medical_clinic') {
+      if (activeScreen === 'settings') {
+        return <SettingsScreen onOpenVoucherModal={() => setIsVoucherModalOpen(true)} />;
+      }
+      return <MedicalClinicView />;
+    }
+
+    if (currentBusiness?.category === 'auto_garage') {
+      if (activeScreen === 'settings') {
+        return <SettingsScreen onOpenVoucherModal={() => setIsVoucherModalOpen(true)} />;
+      }
+      return <AutoGarageView />;
+    }
+
+    if (currentBusiness?.category === 'real_estate') {
+      if (activeScreen === 'settings') {
+        return <SettingsScreen onOpenVoucherModal={() => setIsVoucherModalOpen(true)} />;
+      }
+      return <RealEstateView />;
+    }
+
+    if (currentBusiness?.category === 'manufacturing_production') {
+      if (activeScreen === 'settings') {
+        return <SettingsScreen onOpenVoucherModal={() => setIsVoucherModalOpen(true)} />;
+      }
+      return <ManufacturingView />;
+    }
+
+    if (currentBusiness?.category === 'legal_accounting') {
+      if (activeScreen === 'settings') {
+        return <SettingsScreen onOpenVoucherModal={() => setIsVoucherModalOpen(true)} />;
+      }
+      return <LegalCabinetView />;
+    }
+
+    if (currentBusiness?.category === 'logistics_delivery') {
+      if (activeScreen === 'settings') {
+        return <SettingsScreen onOpenVoucherModal={() => setIsVoucherModalOpen(true)} />;
+      }
+      return <LogisticsView />;
+    }
+
+    if (currentBusiness?.category === 'construction_contractor') {
+      if (activeScreen === 'settings') {
+        return <SettingsScreen onOpenVoucherModal={() => setIsVoucherModalOpen(true)} />;
+      }
+      return <ContractorView />;
+    }
+
+    if (currentBusiness?.category === 'agriculture_farming') {
+      if (activeScreen === 'settings') {
+        return <SettingsScreen onOpenVoucherModal={() => setIsVoucherModalOpen(true)} />;
+      }
+      return <AgricultureView />;
     }
 
     const isMembership = currentBusiness?.category === 'membership_session';

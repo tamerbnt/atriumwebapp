@@ -101,6 +101,7 @@ export const TopBar: React.FC<TopBarProps> = ({
   const isTrading = currentBusiness?.category === 'trading_commercial';
 
   const getBreadcrumb = () => {
+    const cat = currentBusiness?.category;
     const homeLabel = isProjectMilestone
       ? 'NCH Activator'
       : isFreelance
@@ -113,6 +114,22 @@ export const TopBar: React.FC<TopBarProps> = ({
       ? t('nav_pos_register', language)
       : isTrading
       ? t('nav_trading_dashboard', language)
+      : cat === 'medical_clinic'
+      ? (language === 'ar' ? 'المركز الطبي' : language === 'fr' ? 'Cabinet Médical' : 'Medical Clinic')
+      : cat === 'auto_garage'
+      ? (language === 'ar' ? 'ورشة السيارات' : language === 'fr' ? 'Garage Automobile' : 'Auto Garage')
+      : cat === 'real_estate'
+      ? (language === 'ar' ? 'الوكالة العقارية' : language === 'fr' ? 'Gestion Immobilière' : 'Real Estate')
+      : cat === 'manufacturing_production'
+      ? (language === 'ar' ? 'المصنع والإنتاج' : language === 'fr' ? 'Manufacture & BOM' : 'Manufacturing')
+      : cat === 'legal_accounting'
+      ? (language === 'ar' ? 'مكتب المحاماة' : language === 'fr' ? 'Cabinet Juridique' : 'Legal Cabinet')
+      : cat === 'logistics_delivery'
+      ? (language === 'ar' ? 'اللوجستيك والتوصيل' : language === 'fr' ? 'Messagerie Express' : 'Logistics Dispatch')
+      : cat === 'construction_contractor'
+      ? (language === 'ar' ? 'إدارة المشاريع BTP' : language === 'fr' ? 'Chantiers BTP' : 'Contractor BTP')
+      : cat === 'agriculture_farming'
+      ? (language === 'ar' ? 'المستثمرة الفلاحية' : language === 'fr' ? 'Exploitation Agricole' : 'Agriculture & Farm')
       : t('nav_home', language);
 
     // Dedicated settings breadcrumb
