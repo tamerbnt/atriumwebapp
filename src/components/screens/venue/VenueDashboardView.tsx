@@ -23,6 +23,7 @@ import { useTranslation } from '../../../utils/useTranslation';
 import { BookingModal } from './BookingModal';
 import { VenueCloudSyncModal } from './VenueCloudSyncModal';
 import { ActionNode } from '../../ui/ActionNode';
+import { AtriumButton } from '../../ui/AtriumButton';
 
 export const VenueDashboardView: React.FC = () => {
   const { t, language, isRtl } = useTranslation();
@@ -99,42 +100,53 @@ export const VenueDashboardView: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
-          <button
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <AtriumButton
             type="button"
+            variant="outline"
+            size="sm"
+            icon={<Sparkles size={15} />}
             onClick={resetVenueMockData}
-            className="px-3.5 py-2.5 bg-[#FCEEE8] dark:bg-neutral-800 hover:bg-[#F8DFD4] dark:hover:bg-neutral-700 text-[#C4785A] text-xs font-semibold rounded-xl transition-colors flex items-center gap-2 cursor-pointer shadow-2xs"
             title={language === 'ar' ? 'إعادة شحن بيانات تجريبية' : language === 'fr' ? 'Recharger Données Démo' : 'Seed Mock Data'}
           >
-            <Sparkles size={15} />
             <span className="hidden sm:inline">{language === 'ar' ? 'بيانات تجريبية' : language === 'fr' ? 'Données Démo' : 'Demo Data'}</span>
-          </button>
-          <button
+          </AtriumButton>
+
+          <AtriumButton
+            type="button"
+            variant="secondary"
+            size="sm"
+            icon={<Cloud size={15} className="text-purple-600 dark:text-purple-400" />}
             onClick={() => setIsCloudSyncModalOpen(true)}
-            className="px-3.5 py-2.5 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-xs font-semibold text-neutral-800 dark:text-neutral-200 rounded-xl transition-colors flex items-center gap-2 cursor-pointer"
             title="Inspect Supabase live tables and row writes"
           >
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <Cloud size={15} className="text-purple-600 dark:text-purple-400" />
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse mr-1" />
             Supabase Cloud
-          </button>
-          <button
+          </AtriumButton>
+
+          <AtriumButton
+            type="button"
+            variant="secondary"
+            size="sm"
+            icon={<Calendar size={15} />}
             onClick={() => setScreen('scheduler')}
-            className="px-4 py-2.5 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-xs font-semibold text-neutral-800 dark:text-neutral-200 rounded-xl transition-colors flex items-center gap-2 cursor-pointer"
           >
-            <Calendar size={15} />
             {t('nav_venue_timeline')}
-          </button>
-          <button
+          </AtriumButton>
+
+          <AtriumButton
+            type="button"
+            variant="primary"
+            size="sm"
+            glow
+            icon={<Plus size={16} />}
             onClick={() => {
               setSelectedUnitForBooking(undefined);
               setIsBookingModalOpen(true);
             }}
-            className="px-5 py-2.5 bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white text-xs font-semibold rounded-xl shadow-xs transition-colors flex items-center gap-2 cursor-pointer"
           >
-            <Plus size={16} />
             {t('venue_btn_new_booking')}
-          </button>
+          </AtriumButton>
         </div>
       </div>
 

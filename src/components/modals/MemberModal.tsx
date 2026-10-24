@@ -4,6 +4,7 @@ import { Member, Gender } from '../../types/index';
 import { Modal } from '../ui/Modal';
 import { LabelInput } from '../ui/LabelInput';
 import { LabelSelect } from '../ui/LabelSelect';
+import { AtriumButton } from '../ui/AtriumButton';
 import { t } from '../../utils/i18n';
 
 interface MemberModalProps {
@@ -325,20 +326,16 @@ export const MemberModal: React.FC<MemberModalProps> = ({
 
         {/* Footer actions */}
         <div className="flex items-center justify-end gap-3 pt-3 border-t border-neutral-200/60 dark:border-neutral-800/80">
-          <button
+          <AtriumButton
             type="button"
+            variant="ghost"
             onClick={onClose}
-            className="h-10 px-4 text-xs font-semibold text-neutral-500 hover:text-neutral-800 dark:hover:text-white cursor-pointer"
           >
             {t('action_cancel', language)}
-          </button>
-          <button
+          </AtriumButton>
+          <AtriumButton
             type="submit"
-            style={{
-              backgroundColor: 'var(--color-accent)',
-              borderRadius: 'var(--radius-button)',
-            }}
-            className="h-10 px-6 text-xs font-semibold text-white cursor-pointer shadow-xs hover:opacity-90 active:scale-98 transition-all"
+            variant="primary"
           >
             {memberToEdit
               ? t('action_save', language)
@@ -347,7 +344,7 @@ export const MemberModal: React.FC<MemberModalProps> = ({
               : language === 'fr'
               ? `Inscrire ${terminology.memberSingle.toLowerCase()}`
               : `Enroll ${terminology.memberSingle}`}
-          </button>
+          </AtriumButton>
         </div>
       </form>
     </Modal>

@@ -28,6 +28,7 @@ import { FreelanceExpense, ExpenseCategory, CurrencyCode } from '../../../types/
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { Seek } from '../../ui/Seek';
+import { AtriumButton } from '../../ui/AtriumButton';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { useTranslation } from '../../../utils/useTranslation';
 
@@ -383,36 +384,37 @@ export const FreelanceFinanceView: React.FC = () => {
           </div>
 
           {/* Demo Data Recharge Button */}
-          <button
-            type="button"
+          <AtriumButton
+            variant="outline"
+            size="sm"
+            icon={<Sparkles size={14} className="text-[#C4785A]" />}
             onClick={() => resetFreelanceMockData?.()}
-            className="h-10 px-3.5 rounded-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:text-[#C4785A] dark:hover:text-[#C4785A] text-xs font-semibold flex items-center gap-1.5 hover:bg-neutral-50 dark:hover:bg-neutral-700/60 transition-colors cursor-pointer shadow-2xs"
             title={t('common_reset_demo') || 'Recharger Données Démo'}
           >
-            <Sparkles size={14} className="text-[#C4785A]" />
             <span className="hidden sm:inline">{t('common_reset_demo') || 'Démo'}</span>
-          </button>
+          </AtriumButton>
 
           {/* Export CSV Button */}
-          <button
-            type="button"
+          <AtriumButton
+            variant="outline"
+            size="sm"
+            icon={<Download size={14} />}
             onClick={handleExportCSV}
-            className="h-10 px-3.5 rounded-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-semibold flex items-center gap-1.5 hover:bg-neutral-50 dark:hover:bg-neutral-700/60 transition-colors cursor-pointer shadow-2xs"
             title="Export Expenses CSV"
           >
-            <Download size={14} />
             <span className="hidden sm:inline">{language === 'ar' ? 'تصدير' : language === 'fr' ? 'Exporter' : 'Export'}</span>
-          </button>
+          </AtriumButton>
 
           {/* Add Expense Button */}
-          <button
-            type="button"
+          <AtriumButton
+            variant="primary"
+            size="sm"
+            glow
+            icon={<Plus size={14} />}
             onClick={() => setIsAddExpenseModalOpen(true)}
-            className="h-10 px-4 rounded-full bg-[#C4785A] text-white text-xs font-bold flex items-center gap-1.5 hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
           >
-            <Plus size={14} />
             <span>{t('free_fin_btn_add_expense', language)}</span>
-          </button>
+          </AtriumButton>
         </div>
       </div>
 
@@ -792,19 +794,22 @@ export const FreelanceFinanceView: React.FC = () => {
               </div>
 
               <div className="flex items-center justify-end gap-3 pt-3 border-t border-neutral-100 dark:border-neutral-800">
-                <button
+                <AtriumButton
+                  variant="outline"
+                  size="sm"
                   type="button"
                   onClick={() => setIsAddExpenseModalOpen(false)}
-                  className="h-10 px-4 rounded-xl border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-300 font-semibold hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
                 >
                   {t('action_cancel', language)}
-                </button>
-                <button
+                </AtriumButton>
+                <AtriumButton
+                  variant="primary"
+                  size="sm"
+                  glow
                   type="submit"
-                  className="h-10 px-5 rounded-xl bg-[#C4785A] text-white font-bold hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
                 >
                   {t('free_fin_btn_save_expense', language)}
-                </button>
+                </AtriumButton>
               </div>
             </form>
           </div>

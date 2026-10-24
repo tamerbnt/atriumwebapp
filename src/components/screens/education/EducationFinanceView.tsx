@@ -27,6 +27,7 @@ import {
 import { useAtriumStore } from '../../../services/store';
 import { formatMoney } from '../../../utils/rules';
 import { EduEnrollment } from '../../../types';
+import { AtriumButton } from '../../ui/AtriumButton';
 import { Seek } from '../../ui/Seek';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
@@ -495,19 +496,21 @@ export const EducationFinanceView: React.FC = () => {
           </div>
 
           {/* Export CSV Button */}
-          <button
-            type="button"
+          <AtriumButton
+            variant="outline"
+            size="sm"
+            icon={<Download size={14} />}
             onClick={handleExportCSV}
-            className="h-10 px-3.5 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold rounded-full transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer"
             title="Export CSV"
           >
-            <Download size={14} />
             <span className="hidden sm:inline">CSV</span>
-          </button>
+          </AtriumButton>
 
           {/* Seed Demo Data Button */}
-          <button
-            type="button"
+          <AtriumButton
+            variant="outline"
+            size="sm"
+            icon={<Sparkles size={14} className="text-[#C4785A]" />}
             onClick={() => {
               resetEduMockData();
               showToast?.({
@@ -516,33 +519,32 @@ export const EducationFinanceView: React.FC = () => {
                 message: '20 contrats de scolarité et échéanciers algériens rechargés.',
               });
             }}
-            className="h-10 px-3.5 bg-[#FCEEE8] hover:bg-[#F8DFD4] dark:bg-neutral-800 text-[#C4785A] text-xs font-semibold rounded-full transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer"
             title="Recharge Demo Data"
           >
-            <Sparkles size={14} />
             <span className="hidden sm:inline">Demo Data</span>
-          </button>
+          </AtriumButton>
 
           {/* Print Ledger */}
-          <button
-            type="button"
+          <AtriumButton
+            variant="outline"
+            size="sm"
+            icon={<Printer size={14} />}
             onClick={() => window.print()}
-            className="h-10 px-4 rounded-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 text-xs font-semibold flex items-center gap-1.5 hover:bg-neutral-50 dark:hover:bg-neutral-700/60 transition-colors cursor-pointer shadow-2xs"
           >
-            <Printer size={14} />
             <span>{language === 'ar' ? 'طباعة كشف الحساب' : language === 'fr' ? 'Imprimer le grand livre' : 'Print Ledger'}</span>
-          </button>
+          </AtriumButton>
 
           {/* Log Payment Direct Action */}
           {eduEnrollments.length > 0 && (
-            <button
-              type="button"
+            <AtriumButton
+              variant="primary"
+              size="sm"
+              glow
+              icon={<Plus size={14} />}
               onClick={() => handleOpenPayment(eduEnrollments[0], 0)}
-              className="h-10 px-4 rounded-full bg-[#C4785A] text-white text-xs font-semibold flex items-center gap-1.5 hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
             >
-              <Plus size={14} />
               <span>{t('edu_btn_log_payment')}</span>
-            </button>
+            </AtriumButton>
           )}
         </div>
       </div>
@@ -859,19 +861,22 @@ export const EducationFinanceView: React.FC = () => {
               />
 
               <div className="pt-2 flex justify-end gap-2 border-t border-neutral-100 dark:border-neutral-800">
-                <button
+                <AtriumButton
+                  variant="outline"
+                  size="sm"
                   type="button"
                   onClick={() => setSelectedEnrollmentForPayment(null)}
-                  className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 font-semibold cursor-pointer"
                 >
                   {t('common_cancel')}
-                </button>
-                <button
+                </AtriumButton>
+                <AtriumButton
+                  variant="primary"
+                  size="sm"
+                  glow
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-[#C4785A] text-white font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
                 >
                   {t('edu_btn_save_payment')}
-                </button>
+                </AtriumButton>
               </div>
             </form>
           </div>
@@ -958,20 +963,24 @@ export const EducationFinanceView: React.FC = () => {
 
             <div className="mt-auto pt-4 border-t border-neutral-100 dark:border-neutral-800 flex gap-2">
               {detailEnrollment.balanceDue > 0 && (
-                <button
-                  type="button"
+                <AtriumButton
+                  variant="primary"
+                  size="sm"
+                  glow
+                  icon={<Plus size={14} />}
+                  className="flex-1 justify-center"
                   onClick={() => {
                     handleOpenPayment(detailEnrollment, 0);
                     setDetailEnrollment(null);
                   }}
-                  className="flex-1 h-10 rounded-xl bg-[#C4785A] text-white text-xs font-semibold flex items-center justify-center gap-1.5 shadow-xs"
                 >
-                  <Plus size={14} />
-                  <span>Encaisser un versement</span>
-                </button>
+                  Encaisser un versement
+                </AtriumButton>
               )}
-              <button
-                type="button"
+              <AtriumButton
+                variant="outline"
+                size="sm"
+                icon={<Printer size={14} />}
                 onClick={() => {
                   setReceiptToPrint({
                     studentName: detailEnrollment.studentName,
@@ -982,11 +991,9 @@ export const EducationFinanceView: React.FC = () => {
                     receiptNumber: `REC-${detailEnrollment.id.slice(-6)}`,
                   });
                 }}
-                className="h-10 px-4 rounded-xl border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold flex items-center justify-center gap-1.5"
               >
-                <Printer size={14} />
-                <span>Reçu</span>
-              </button>
+                Reçu
+              </AtriumButton>
             </div>
           </div>
         </div>
@@ -1042,14 +1049,16 @@ export const EducationFinanceView: React.FC = () => {
             </div>
 
             <div className="pt-2 flex justify-end gap-2 border-t border-neutral-100 dark:border-neutral-800">
-              <button
-                type="button"
+              <AtriumButton
+                variant="primary"
+                size="md"
+                glow
+                icon={<Printer size={15} />}
+                className="w-full justify-center"
                 onClick={() => window.print()}
-                className="w-full h-10 text-xs font-semibold text-white bg-[#C4785A] hover:opacity-90 rounded-xl flex items-center justify-center gap-1.5 shadow-xs cursor-pointer"
               >
-                <Printer size={15} />
-                <span>Print Official Receipt</span>
-              </button>
+                Print Official Receipt
+              </AtriumButton>
             </div>
           </div>
         </div>

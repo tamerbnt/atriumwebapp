@@ -3,6 +3,7 @@ import { useAtriumStore } from '../../services/store';
 import { Modal } from '../ui/Modal';
 import { LabelInput } from '../ui/LabelInput';
 import { LabelSelect } from '../ui/LabelSelect';
+import { AtriumButton } from '../ui/AtriumButton';
 import { t } from '../../utils/i18n';
 
 interface LeadModalProps {
@@ -150,23 +151,19 @@ export const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose }) => {
         </div>
 
         <div className="flex justify-end gap-3 pt-3">
-          <button
+          <AtriumButton
             type="button"
+            variant="ghost"
             onClick={onClose}
-            className="h-10 px-4 text-xs font-semibold text-neutral-500 cursor-pointer"
           >
             {t('action_cancel', language)}
-          </button>
-          <button
+          </AtriumButton>
+          <AtriumButton
             type="submit"
-            style={{
-              backgroundColor: 'var(--color-accent)',
-              borderRadius: 'var(--radius-button)',
-            }}
-            className="h-10 px-5 text-xs font-semibold text-white cursor-pointer shadow-xs"
+            variant="primary"
           >
             {t('action_save', language)}
-          </button>
+          </AtriumButton>
         </div>
       </form>
     </Modal>

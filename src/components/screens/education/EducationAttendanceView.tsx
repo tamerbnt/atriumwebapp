@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { useAtriumStore } from '../../../services/store';
 import { RollCallModal } from './RollCallModal';
+import { AtriumButton } from '../../ui/AtriumButton';
 import { Seek } from '../../ui/Seek';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
@@ -546,8 +547,10 @@ export const EducationAttendanceView: React.FC = () => {
           </div>
 
           {/* Demo Data Button */}
-          <button
-            type="button"
+          <AtriumButton
+            variant="outline"
+            size="sm"
+            icon={<Sparkles size={14} className="text-[#C4785A]" />}
             onClick={() => {
               resetEduMockData();
               showToast({
@@ -556,22 +559,20 @@ export const EducationAttendanceView: React.FC = () => {
                 message: 'All Education cohorts, students, sessions, and attendance metrics refreshed.',
               });
             }}
-            className="h-10 px-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-semibold flex items-center gap-1.5 hover:bg-neutral-50 dark:hover:bg-neutral-700/60 transition-colors cursor-pointer shadow-2xs"
             title="Reload realistic Algerian academy demo data"
           >
-            <Sparkles size={14} className="text-[#C4785A]" />
             <span className="hidden sm:inline">Demo Data</span>
-          </button>
+          </AtriumButton>
 
           {/* CSV Export Button */}
-          <button
-            type="button"
+          <AtriumButton
+            variant="outline"
+            size="sm"
+            icon={<Download size={14} />}
             onClick={handleExportCSV}
-            className="h-10 px-3.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-semibold flex items-center gap-1.5 hover:bg-neutral-50 dark:hover:bg-neutral-700/60 transition-colors cursor-pointer shadow-2xs"
           >
-            <Download size={14} />
             <span className="hidden sm:inline">{t('common_export_csv') || 'Export CSV'}</span>
-          </button>
+          </AtriumButton>
 
           <FilterSelect
             label={t('edu_label_cohort')}
@@ -584,17 +585,21 @@ export const EducationAttendanceView: React.FC = () => {
           />
 
           {activeTab === 'attendance' ? (
-            <button
-              type="button"
+            <AtriumButton
+              variant="primary"
+              size="sm"
+              glow
+              icon={<CheckCircle2 size={15} />}
               onClick={() => setIsRollCallOpen(true)}
-              className="h-10 px-4 rounded-xl bg-[#C4785A] text-white text-xs font-semibold flex items-center gap-1.5 hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
             >
-              <CheckCircle2 size={15} />
-              <span>{t('edu_btn_roll_call')}</span>
-            </button>
+              {t('edu_btn_roll_call')}
+            </AtriumButton>
           ) : (
-            <button
-              type="button"
+            <AtriumButton
+              variant="primary"
+              size="sm"
+              glow
+              icon={<Plus size={14} />}
               onClick={() => {
                 setGradeForm((prev) => ({
                   ...prev,
@@ -602,11 +607,9 @@ export const EducationAttendanceView: React.FC = () => {
                 }));
                 setIsGradeModalOpen(true);
               }}
-              className="h-10 px-4 rounded-xl bg-[#C4785A] text-white text-xs font-semibold flex items-center gap-1.5 hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
             >
-              <Plus size={14} />
-              <span>{t('edu_btn_record_grade')}</span>
-            </button>
+              {t('edu_btn_record_grade')}
+            </AtriumButton>
           )}
         </div>
       </div>
@@ -932,19 +935,22 @@ export const EducationAttendanceView: React.FC = () => {
               </div>
 
               <div className="flex items-center justify-end gap-3 pt-4 border-t border-neutral-100 dark:border-neutral-800">
-                <button
+                <AtriumButton
+                  variant="outline"
+                  size="sm"
                   type="button"
                   onClick={() => setIsGradeModalOpen(false)}
-                  className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 font-semibold cursor-pointer"
                 >
                   {t('common_cancel')}
-                </button>
-                <button
+                </AtriumButton>
+                <AtriumButton
+                  variant="primary"
+                  size="sm"
+                  glow
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-[#C4785A] text-white font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
                 >
                   {t('edu_grade_save')}
-                </button>
+                </AtriumButton>
               </div>
             </form>
           </div>

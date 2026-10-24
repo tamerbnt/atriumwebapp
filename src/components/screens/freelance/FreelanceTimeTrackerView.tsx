@@ -31,6 +31,7 @@ import { FreelanceClient, FreelanceProject, CurrencyCode, TimeLogEntry } from '.
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { Seek } from '../../ui/Seek';
+import { AtriumButton } from '../../ui/AtriumButton';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { useTranslation } from '../../../utils/useTranslation';
 
@@ -620,34 +621,35 @@ export const FreelanceTimeTrackerView: React.FC = () => {
             )}
           </div>
 
-          <button
-            type="button"
+          <AtriumButton
+            variant="outline"
+            size="sm"
+            icon={<Sparkles size={13} className="text-[#C4785A]" />}
             onClick={() => resetFreelanceMockData?.()}
-            className="h-9 px-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:text-[#C4785A] dark:hover:text-[#C4785A] text-xs font-semibold flex items-center gap-1.5 hover:bg-neutral-50 dark:hover:bg-neutral-700/60 transition-colors cursor-pointer shadow-2xs"
             title={t('common_reset_demo') || 'Recharger Données Démo'}
           >
-            <Sparkles size={13} className="text-[#C4785A]" />
             <span className="hidden sm:inline">{t('common_reset_demo') || 'Démo'}</span>
-          </button>
+          </AtriumButton>
 
-          <button
-            type="button"
+          <AtriumButton
+            variant="outline"
+            size="sm"
+            icon={<Download size={13} />}
             onClick={handleExportCSV}
-            className="h-9 px-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-semibold flex items-center gap-1.5 hover:bg-neutral-50 dark:hover:bg-neutral-700/60 transition-colors cursor-pointer shadow-2xs"
             title="Export Timesheet CSV"
           >
-            <Download size={13} />
             <span className="hidden sm:inline">{language === 'ar' ? 'تصدير' : language === 'fr' ? 'Exporter' : 'Export'}</span>
-          </button>
+          </AtriumButton>
 
-          <button
-            type="button"
+          <AtriumButton
+            variant="primary"
+            size="sm"
+            glow
+            icon={<Plus size={13} />}
             onClick={handleOpenManualModal}
-            className="h-9 px-3.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 text-xs font-semibold flex items-center gap-1.5 hover:bg-neutral-50 dark:hover:bg-neutral-700/60 transition-colors cursor-pointer shadow-2xs"
           >
-            <Plus size={13} />
             <span>{t('free_time_btn_manual', language)}</span>
-          </button>
+          </AtriumButton>
         </div>
       </div>
 
@@ -1192,19 +1194,22 @@ export const FreelanceTimeTrackerView: React.FC = () => {
               </div>
 
               <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
-                <button
+                <AtriumButton
+                  variant="outline"
+                  size="sm"
                   type="button"
                   onClick={() => setIsManualModalOpen(false)}
-                  className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
                 >
                   {t('common_cancel', language)}
-                </button>
-                <button
+                </AtriumButton>
+                <AtriumButton
+                  variant="primary"
+                  size="sm"
+                  glow
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-[#C4785A] text-white text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
                 >
                   {t('common_save', language)}
-                </button>
+                </AtriumButton>
               </div>
             </form>
           </div>
@@ -1321,19 +1326,22 @@ export const FreelanceTimeTrackerView: React.FC = () => {
               </div>
 
               <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
-                <button
+                <AtriumButton
+                  variant="outline"
+                  size="sm"
                   type="button"
                   onClick={() => setLogToEdit(null)}
-                  className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
                 >
                   {t('common_cancel', language)}
-                </button>
-                <button
+                </AtriumButton>
+                <AtriumButton
+                  variant="primary"
+                  size="sm"
+                  glow
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-[#C4785A] text-white text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
                 >
                   {t('common_save', language)}
-                </button>
+                </AtriumButton>
               </div>
             </form>
           </div>
@@ -1361,23 +1369,25 @@ export const FreelanceTimeTrackerView: React.FC = () => {
             </p>
 
             <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
-              <button
+              <AtriumButton
+                variant="outline"
+                size="sm"
                 type="button"
                 onClick={() => setLogToDelete(null)}
-                className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
               >
                 {t('common_cancel', language)}
-              </button>
-              <button
+              </AtriumButton>
+              <AtriumButton
+                variant="danger"
+                size="sm"
                 type="button"
                 onClick={() => {
                   deleteTimeLog(logToDelete.id);
                   setLogToDelete(null);
                 }}
-                className="px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold transition-colors cursor-pointer shadow-xs"
               >
                 {t('common_delete', language)}
-              </button>
+              </AtriumButton>
             </div>
           </div>
         </div>

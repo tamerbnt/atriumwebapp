@@ -29,6 +29,7 @@ import { FreelanceProposal, PricingModel, CurrencyCode } from '../../../types/in
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { Seek } from '../../ui/Seek';
+import { AtriumButton } from '../../ui/AtriumButton';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { useTranslation } from '../../../utils/useTranslation';
 
@@ -486,35 +487,36 @@ export const FreelanceProposalsView: React.FC = () => {
           </div>
 
           {/* Export CSV Button */}
-          <button
-            type="button"
+          <AtriumButton
+            variant="outline"
+            size="sm"
+            icon={<Download size={14} />}
             onClick={handleExportCSV}
-            className="h-10 px-3.5 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold rounded-full transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer"
             title="Export CSV"
           >
-            <Download size={14} />
             <span className="hidden sm:inline">CSV</span>
-          </button>
+          </AtriumButton>
 
           {/* Seed Demo Data Button */}
-          <button
-            type="button"
+          <AtriumButton
+            variant="outline"
+            size="sm"
+            icon={<Sparkles size={14} className="text-[#C4785A]" />}
             onClick={resetFreelanceMockData}
-            className="h-10 px-3.5 bg-[#FCEEE8] dark:bg-neutral-800 hover:bg-[#F8DFD4] dark:hover:bg-neutral-700 text-[#C4785A] text-xs font-semibold rounded-full transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer"
             title={language === 'ar' ? 'إعادة شحن بيانات تجريبية' : language === 'fr' ? 'Recharger Données Démo' : 'Seed Mock Data'}
           >
-            <Sparkles size={14} />
             <span className="hidden sm:inline">{language === 'ar' ? 'بيانات تجريبية' : language === 'fr' ? 'Données Démo' : 'Demo Data'}</span>
-          </button>
+          </AtriumButton>
 
-          <button
-            type="button"
+          <AtriumButton
+            variant="primary"
+            size="sm"
+            glow
+            icon={<Plus size={14} />}
             onClick={() => setIsDraftModalOpen(true)}
-            className="h-10 px-4 rounded-full bg-[#C4785A] hover:bg-[var(--color-accent-hover)] text-white text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
           >
-            <Plus size={14} />
             <span>{t('free_prop_btn_new')}</span>
-          </button>
+          </AtriumButton>
         </div>
       </div>
 
@@ -872,19 +874,22 @@ export const FreelanceProposalsView: React.FC = () => {
               </div>
 
               <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
-                <button
+                <AtriumButton
+                  variant="outline"
+                  size="sm"
                   type="button"
                   onClick={() => setIsDraftModalOpen(false)}
-                  className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
                 >
                   {t('free_clients_cancel')}
-                </button>
-                <button
+                </AtriumButton>
+                <AtriumButton
+                  variant="primary"
+                  size="sm"
+                  glow
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-[#C4785A] text-white text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
                 >
                   {language === 'ar' ? 'حفظ عرض السعر' : language === 'fr' ? 'Enregistrer le Devis' : 'Save Proposal'}
-                </button>
+                </AtriumButton>
               </div>
             </form>
           </div>
@@ -1042,19 +1047,22 @@ export const FreelanceProposalsView: React.FC = () => {
               </div>
 
               <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
-                <button
+                <AtriumButton
+                  variant="outline"
+                  size="sm"
                   type="button"
                   onClick={() => setProposalToEdit(null)}
-                  className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
                 >
                   {t('free_clients_cancel')}
-                </button>
-                <button
+                </AtriumButton>
+                <AtriumButton
+                  variant="primary"
+                  size="sm"
+                  glow
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-[#C4785A] text-white text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
                 >
                   {language === 'ar' ? 'حفظ التعديلات' : language === 'fr' ? 'Enregistrer les Modifications' : 'Save Changes'}
-                </button>
+                </AtriumButton>
               </div>
             </form>
           </div>
@@ -1086,23 +1094,25 @@ export const FreelanceProposalsView: React.FC = () => {
             </p>
 
             <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
-              <button
+              <AtriumButton
+                variant="outline"
+                size="sm"
                 type="button"
                 onClick={() => setProposalToDelete(null)}
-                className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
               >
                 {t('free_clients_cancel')}
-              </button>
-              <button
+              </AtriumButton>
+              <AtriumButton
+                variant="danger"
+                size="sm"
                 type="button"
                 onClick={() => {
                   deleteFreelanceProposal(proposalToDelete.id);
                   setProposalToDelete(null);
                 }}
-                className="px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold transition-colors cursor-pointer shadow-xs"
               >
                 {t('free_prop_delete_modal_title', language)}
-              </button>
+              </AtriumButton>
             </div>
           </div>
         </div>

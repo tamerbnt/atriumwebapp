@@ -13,6 +13,7 @@ import {
 import { useAtriumStore } from '../../../services/store';
 import { AttendanceStatus, EduSession } from '../../../types';
 import { LabelSelect } from '../../ui/LabelSelect';
+import { AtriumButton } from '../../ui/AtriumButton';
 import { useTranslation } from '../../../utils/useTranslation';
 
 interface RollCallModalProps {
@@ -309,20 +310,23 @@ export const RollCallModal: React.FC<RollCallModalProps> = ({
 
           {/* Action Footer */}
           <div className="pt-4 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-end gap-3 sticky bottom-0 bg-white dark:bg-neutral-900 pb-2">
-            <button
+            <AtriumButton
+              variant="outline"
+              size="sm"
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 font-semibold cursor-pointer"
             >
               {t('common_cancel')}
-            </button>
-            <button
+            </AtriumButton>
+            <AtriumButton
+              variant="primary"
+              size="sm"
+              glow
               type="submit"
               disabled={studentsInCohort.length === 0}
-              className="px-5 py-2 rounded-xl bg-[#C4785A] text-white font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-xs disabled:opacity-50"
             >
               {t('edu_save_roll_call')}
-            </button>
+            </AtriumButton>
           </div>
         </form>
       </div>

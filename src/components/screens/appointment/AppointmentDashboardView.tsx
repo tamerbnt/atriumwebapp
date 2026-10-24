@@ -22,6 +22,7 @@ import {
 import { useAtriumStore } from '../../../services/store';
 import { Appointment, AppointmentStatus } from '../../../types/index';
 import { AppointmentModal } from '../../modals/AppointmentModal';
+import { AtriumButton } from '../../ui/AtriumButton';
 import { formatMoney } from '../../../utils/rules';
 import { t } from '../../../utils/i18n';
 
@@ -236,23 +237,26 @@ export const AppointmentDashboardView: React.FC<AppointmentDashboardViewProps> =
           </div>
 
           {/* 1-Click Demo Data Recharge Button */}
-          <button
+          <AtriumButton
+            variant="outline"
+            size="sm"
+            icon={<Sparkles className="w-3.5 h-3.5" />}
             onClick={() => resetSalonMockData()}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#C4785A] hover:bg-[#C4785A]/10 border border-[#C4785A]/30 rounded-lg transition-colors shadow-xs"
             title="Recharger le catalogue de soins, les diagnostics et les rendez-vous d'Alger"
           >
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Recharger Démo Salon</span>
-          </button>
+            Recharger Démo Salon
+          </AtriumButton>
 
           {/* New Appointment Primary Action */}
-          <button
+          <AtriumButton
+            variant="primary"
+            size="sm"
+            glow
+            icon={<Plus className="w-3.5 h-3.5" />}
             onClick={() => setIsNewAptModalOpen(true)}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-white bg-[#C4785A] hover:bg-[#b3684a] rounded-lg transition-colors shadow-xs"
           >
-            <Plus className="w-3.5 h-3.5" />
-            <span>Nouveau RDV</span>
-          </button>
+            Nouveau RDV
+          </AtriumButton>
         </div>
       </div>
 

@@ -12,6 +12,7 @@ import { useAtriumStore } from '../../../services/store';
 import { EduCertificate } from '../../../types';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
+import { AtriumButton } from '../../ui/AtriumButton';
 import { useTranslation } from '../../../utils/useTranslation';
 
 interface CertificateModalProps {
@@ -98,14 +99,14 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
           </div>
           <div className="flex items-center gap-2">
             {activeCert && (
-              <button
-                type="button"
+              <AtriumButton
+                variant="outline"
+                size="sm"
+                icon={<Printer size={14} />}
                 onClick={handlePrint}
-                className="px-3.5 py-2 text-xs font-semibold text-neutral-700 dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-700/60 rounded-xl flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
               >
-                <Printer size={14} />
                 <span>{t('edu_cert_print')}</span>
-              </button>
+              </AtriumButton>
             )}
             <button
               onClick={onClose}
@@ -203,20 +204,23 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
               </div>
 
               <div className="pt-4 flex justify-end gap-3 border-t border-neutral-100 dark:border-neutral-800">
-                <button
+                <AtriumButton
+                  variant="outline"
+                  size="sm"
                   type="button"
                   onClick={onClose}
-                  className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 font-semibold cursor-pointer"
                 >
                   {t('common_cancel')}
-                </button>
-                <button
+                </AtriumButton>
+                <AtriumButton
+                  variant="primary"
+                  size="sm"
+                  glow
+                  icon={<FileCheck size={14} />}
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-[#C4785A] text-white font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-xs flex items-center gap-1.5"
                 >
-                  <FileCheck size={14} />
-                  <span>{t('edu_cert_generate')}</span>
-                </button>
+                  {t('edu_cert_generate')}
+                </AtriumButton>
               </div>
             </form>
           ) : (

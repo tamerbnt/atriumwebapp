@@ -3,6 +3,7 @@ import { Shield, Sparkles, CheckCircle2, AlertCircle, KeyRound, Copy } from 'luc
 import { useAtriumStore } from '../../services/store';
 import { Modal } from '../ui/Modal';
 import { LabelInput } from '../ui/LabelInput';
+import { AtriumButton } from '../ui/AtriumButton';
 import { validateVoucherCode } from '../../utils/rules';
 import { t } from '../../utils/i18n';
 
@@ -104,17 +105,15 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({ isOpen, onClose }) =
             </span>
           </div>
 
-          <button
+          <AtriumButton
             type="submit"
-            style={{
-              backgroundColor: 'var(--color-accent)',
-              borderRadius: 'var(--radius-button)',
-            }}
-            className="w-full h-11 text-xs font-bold text-white flex items-center justify-center gap-2 hover:opacity-90 active:scale-98 transition-all cursor-pointer shadow-xs"
+            variant="primary"
+            size="md"
+            icon={<Sparkles size={16} />}
+            className="w-full !py-3"
           >
-            <Sparkles size={16} />
-            <span>{t('voucher_redeem_btn', language)}</span>
-          </button>
+            {t('voucher_redeem_btn', language)}
+          </AtriumButton>
         </form>
 
         {/* Feedback Alert */}

@@ -25,6 +25,7 @@ import { formatMoney } from '../../../utils/rules';
 import { useTranslation } from '../../../utils/useTranslation';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { Modal } from '../../ui/Modal';
+import { AtriumButton } from '../../ui/AtriumButton';
 
 export interface PosDashboardViewProps {
   onAddMember?: () => void;
@@ -403,33 +404,37 @@ export const PosDashboardView: React.FC<PosDashboardViewProps> = () => {
 
         {/* Quick Actions & 1-Click Demo Recharge */}
         <div className="flex items-center gap-2.5 flex-wrap">
-          <button
+          <AtriumButton
             type="button"
+            variant="outline"
+            size="sm"
+            icon={<Sparkles size={14} className="text-[#C4785A]" />}
             onClick={resetPosMockData}
-            className="h-10 px-3.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 hover:bg-neutral-50 dark:hover:bg-neutral-800 text-xs font-bold text-neutral-700 dark:text-neutral-200 flex items-center gap-2 cursor-pointer shadow-2xs transition-colors"
             title="Reload high-fidelity Algerian retail demo items and transactions"
           >
-            <Sparkles size={14} className="text-[#C4785A]" />
-            <span>{language === 'ar' ? 'إعادة شحن البيانات التجريبية' : 'Recharger Démo POS'}</span>
-          </button>
+            {language === 'ar' ? 'إعادة شحن البيانات التجريبية' : 'Recharger Démo POS'}
+          </AtriumButton>
 
-          <button
+          <AtriumButton
             type="button"
+            variant="secondary"
+            size="sm"
+            icon={<FileText size={14} className="text-[#C4785A]" />}
             onClick={() => setIsZReportOpen(true)}
-            className="h-10 px-3.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 hover:border-[#C4785A] text-xs font-bold text-neutral-800 dark:text-neutral-200 flex items-center gap-2 cursor-pointer shadow-2xs transition-colors"
           >
-            <FileText size={14} className="text-[#C4785A]" />
-            <span>{language === 'ar' ? 'تقرير Z اليومي' : 'Rapport Z Clôture'}</span>
-          </button>
+            {language === 'ar' ? 'تقرير Z اليومي' : 'Rapport Z Clôture'}
+          </AtriumButton>
 
-          <button
+          <AtriumButton
             type="button"
+            variant="primary"
+            size="sm"
+            glow
+            icon={<Plus size={15} />}
             onClick={() => setScreen('shop')}
-            className="h-10 px-4 rounded-xl bg-[#C4785A] hover:bg-[#b36a4d] text-white text-xs font-bold flex items-center gap-2 cursor-pointer shadow-xs transition-colors"
           >
-            <Plus size={15} />
-            <span>{language === 'ar' ? 'فتح شاشة الصندوق (POS)' : 'Accéder à la Caisse'}</span>
-          </button>
+            {language === 'ar' ? 'فتح شاشة الصندوق (POS)' : 'Accéder à la Caisse'}
+          </AtriumButton>
         </div>
       </div>
 

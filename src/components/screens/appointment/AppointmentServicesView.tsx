@@ -24,6 +24,7 @@ import { useAtriumStore } from '../../../services/store';
 import { ServiceItem } from '../../../types/index';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { Seek } from '../../ui/Seek';
+import { AtriumButton } from '../../ui/AtriumButton';
 import { formatMoney } from '../../../utils/rules';
 import { AppointmentModal } from '../../modals/AppointmentModal';
 
@@ -433,32 +434,36 @@ export const AppointmentServicesView: React.FC = () => {
           </div>
 
           {/* 1-Click Demo Recharge */}
-          <button
+          <AtriumButton
+            variant="outline"
+            size="sm"
+            icon={<Sparkles className="w-3.5 h-3.5" />}
             onClick={() => resetSalonMockData()}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#C4785A] hover:bg-[#C4785A]/10 border border-[#C4785A]/30 rounded-lg transition-colors shadow-xs"
             title="Restaurer le catalogue officiel des 16 prestations de luxe"
           >
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Recharger Catalogue</span>
-          </button>
+            Recharger Catalogue
+          </AtriumButton>
 
           {/* Export CSV */}
-          <button
+          <AtriumButton
+            variant="secondary"
+            size="sm"
+            icon={<Download className="w-3.5 h-3.5" />}
             onClick={handleExportCSV}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg transition-colors"
           >
-            <Download className="w-3.5 h-3.5" />
-            <span>Export CSV</span>
-          </button>
+            Export CSV
+          </AtriumButton>
 
           {/* New Service Action */}
-          <button
+          <AtriumButton
+            variant="primary"
+            size="sm"
+            glow
+            icon={<Plus className="w-3.5 h-3.5" />}
             onClick={handleOpenCreateModal}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-white bg-[#C4785A] hover:bg-[#b3684a] rounded-lg transition-colors shadow-xs"
           >
-            <Plus className="w-3.5 h-3.5" />
-            <span>Nouvelle Prestation</span>
-          </button>
+            Nouvelle Prestation
+          </AtriumButton>
         </div>
       </div>
 

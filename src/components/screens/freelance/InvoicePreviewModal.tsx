@@ -13,6 +13,7 @@ import {
 import { FreelanceInvoice } from '../../../types/index';
 import { formatCurrencyAmount } from '../../../utils/rules';
 import { useAtriumStore } from '../../../services/store';
+import { AtriumButton } from '../../ui/AtriumButton';
 import { useTranslation } from '../../../utils/useTranslation';
 
 interface InvoicePreviewModalProps {
@@ -86,14 +87,14 @@ export const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({
           </div>
 
           <div className="flex items-center gap-2">
-            <button
-              type="button"
+            <AtriumButton
+              variant="outline"
+              size="sm"
+              icon={<Printer size={13} />}
               onClick={handlePrint}
-              className="h-8 px-3 rounded-full border border-neutral-200 dark:border-neutral-700 text-xs font-semibold flex items-center gap-1.5 text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
             >
-              <Printer size={13} />
               <span>{t('free_inv_doc_print', language)}</span>
-            </button>
+            </AtriumButton>
             <button
               type="button"
               onClick={onClose}
@@ -296,24 +297,26 @@ export const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({
           </span>
           <div className="flex items-center gap-2">
             {invoice.status !== 'Paid' && onMarkPaid && (
-              <button
-                type="button"
+              <AtriumButton
+                variant="primary"
+                size="sm"
+                glow
+                className="bg-emerald-600 hover:bg-emerald-700 shadow-[0_2px_8px_rgba(16,185,129,0.28)] hover:shadow-[0_4px_16px_rgba(16,185,129,0.40)]"
                 onClick={() => {
                   onMarkPaid(invoice.id);
                   onClose();
                 }}
-                className="h-9 px-4 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-colors cursor-pointer shadow-xs"
               >
                 {t('free_inv_doc_mark_paid_btn', language)}
-              </button>
+              </AtriumButton>
             )}
-            <button
-              type="button"
+            <AtriumButton
+              variant="outline"
+              size="sm"
               onClick={onClose}
-              className="h-9 px-4 rounded-full border border-neutral-200 dark:border-neutral-700 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-200 cursor-pointer"
             >
               {t('free_clients_cancel', language)}
-            </button>
+            </AtriumButton>
           </div>
         </div>
       </div>

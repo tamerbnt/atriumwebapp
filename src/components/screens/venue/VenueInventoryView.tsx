@@ -28,6 +28,7 @@ import { BookingModal } from './BookingModal';
 import { Seek } from '../../ui/Seek';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
+import { AtriumButton } from '../../ui/AtriumButton';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 
 export const VenueInventoryView: React.FC = () => {
@@ -485,35 +486,40 @@ export const VenueInventoryView: React.FC = () => {
           </div>
 
           {/* Export CSV Button */}
-          <button
+          <AtriumButton
             type="button"
+            variant="secondary"
+            size="sm"
+            icon={<Download size={14} />}
             onClick={handleExportUnitsCSV}
-            className="h-10 px-3.5 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold rounded-full transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer"
             title="Export CSV"
           >
-            <Download size={14} />
             <span className="hidden sm:inline">CSV</span>
-          </button>
+          </AtriumButton>
 
           {/* Seed Demo Data Button */}
-          <button
+          <AtriumButton
             type="button"
+            variant="outline"
+            size="sm"
+            icon={<Sparkles size={14} />}
             onClick={resetVenueMockData}
-            className="h-10 px-3.5 bg-[#FCEEE8] dark:bg-neutral-800 hover:bg-[#F8DFD4] dark:hover:bg-neutral-700 text-[#C4785A] text-xs font-semibold rounded-full transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer"
             title={language === 'ar' ? 'إعادة شحن بيانات تجريبية' : language === 'fr' ? 'Recharger Données Démo' : 'Seed Mock Data'}
           >
-            <Sparkles size={14} />
             <span className="hidden sm:inline">{language === 'ar' ? 'بيانات تجريبية' : language === 'fr' ? 'Données Démo' : 'Demo Data'}</span>
-          </button>
+          </AtriumButton>
 
           {/* New Space Button */}
-          <button
+          <AtriumButton
+            type="button"
+            variant="primary"
+            size="sm"
+            glow
+            icon={<Plus size={16} />}
             onClick={handleOpenAdd}
-            className="h-10 px-5 bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white text-xs font-semibold rounded-full shadow-xs transition-colors flex items-center gap-2 cursor-pointer"
           >
-            <Plus size={16} />
-            <span>{t('venue_inv_btn_new_space')}</span>
-          </button>
+            {t('venue_inv_btn_new_space')}
+          </AtriumButton>
         </div>
       </div>
 

@@ -24,6 +24,7 @@ import { formatMoney } from '../../../utils/rules';
 import { useTranslation } from '../../../utils/useTranslation';
 import { RollCallModal } from './RollCallModal';
 import { EduSession } from '../../../types';
+import { AtriumButton } from '../../ui/AtriumButton';
 
 export const EducationDashboardView: React.FC = () => {
   const { t, language, isRtl } = useTranslation();
@@ -161,8 +162,11 @@ export const EducationDashboardView: React.FC = () => {
           </div>
 
           {/* Demo Data Recharge Button */}
-          <button
+          <AtriumButton
             type="button"
+            variant="outline"
+            size="sm"
+            icon={<Sparkles size={14} className="text-[#C4785A]" />}
             onClick={() => {
               resetEduMockData();
               showToast({
@@ -171,40 +175,44 @@ export const EducationDashboardView: React.FC = () => {
                 message: 'All Education cohorts, students, sessions, and attendance metrics refreshed.',
               });
             }}
-            className="h-10 px-3.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-semibold flex items-center gap-1.5 hover:bg-neutral-50 dark:hover:bg-neutral-700/60 transition-colors cursor-pointer shadow-2xs"
             title="Reload realistic Algerian academy demo data"
           >
-            <Sparkles size={14} className="text-[#C4785A]" />
             <span className="hidden sm:inline">Demo Data</span>
-          </button>
+          </AtriumButton>
 
-          <button
+          <AtriumButton
             type="button"
+            variant="secondary"
+            size="sm"
+            icon={<Calendar size={14} />}
             onClick={() => setScreen('scheduler')}
-            className="h-10 px-4 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 text-xs font-semibold flex items-center gap-1.5 hover:bg-neutral-50 dark:hover:bg-neutral-700/60 transition-colors cursor-pointer shadow-2xs"
           >
-            <Calendar size={14} />
-            <span>{t('nav_edu_timetable')}</span>
-          </button>
-          <button
+            {t('nav_edu_timetable')}
+          </AtriumButton>
+
+          <AtriumButton
             type="button"
+            variant="secondary"
+            size="sm"
+            icon={<Plus size={14} />}
             onClick={() => setScreen('members')}
-            className="h-10 px-4 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 text-xs font-semibold flex items-center gap-1.5 hover:bg-neutral-50 dark:hover:bg-neutral-700/60 transition-colors cursor-pointer shadow-2xs"
           >
-            <Plus size={14} />
-            <span>{t('edu_btn_new_student')}</span>
-          </button>
-          <button
+            {t('edu_btn_new_student')}
+          </AtriumButton>
+
+          <AtriumButton
             type="button"
+            variant="primary"
+            size="sm"
+            glow
+            icon={<CheckCircle2 size={15} />}
             onClick={() => {
               setActiveRollCallSession(null);
               setIsRollCallOpen(true);
             }}
-            className="h-10 px-4 rounded-xl bg-[#C4785A] text-white text-xs font-semibold flex items-center gap-1.5 hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
           >
-            <CheckCircle2 size={15} />
-            <span>{t('edu_btn_roll_call')}</span>
-          </button>
+            {t('edu_btn_roll_call')}
+          </AtriumButton>
         </div>
       </div>
 

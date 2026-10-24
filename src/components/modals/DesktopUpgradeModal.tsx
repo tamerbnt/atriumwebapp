@@ -16,6 +16,7 @@ import {
   KeyRound,
 } from 'lucide-react';
 import { Modal } from '../ui/Modal';
+import { AtriumButton } from '../ui/AtriumButton';
 import { useAtriumStore } from '../../services/store';
 import { t } from '../../utils/i18n';
 
@@ -350,33 +351,34 @@ export const DesktopUpgradeModal: React.FC<DesktopUpgradeModalProps> = ({
             {language === 'ar' ? 'تحميل تطبيق أتريوم المكتبي' : language === 'fr' ? 'Télécharger l\'application de bureau Atrium' : 'Download Atrium Desktop Application'}
           </label>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <button
+            <AtriumButton
               type="button"
+              variant="primary"
+              size="md"
+              glow
+              icon={<Download size={16} />}
               onClick={() => handleDownload('windows')}
               disabled={downloadingPlatform !== null}
-              className="h-12 px-4 rounded-2xl bg-[#C4785A] hover:bg-[#b3684a] text-white text-xs font-bold flex items-center justify-center gap-2.5 shadow-md cursor-pointer transition-all active:scale-[0.99] disabled:opacity-75"
+              className="!py-3"
             >
-              <Download size={16} />
-              <span>
-                {downloadingPlatform === 'windows'
-                  ? (language === 'ar' ? 'جاري تجهيز مثبت ويندوز...' : language === 'fr' ? 'Préparation de l\'installateur Windows...' : 'Preparing Windows Installer...')
-                  : (language === 'ar' ? 'تحميل لنظام ويندوز (.exe)' : language === 'fr' ? 'Télécharger pour Windows (.exe)' : 'Download for Windows (.exe)')}
-              </span>
-            </button>
+              {downloadingPlatform === 'windows'
+                ? (language === 'ar' ? 'جاري تجهيز مثبت ويندوز...' : language === 'fr' ? 'Préparation de l\'installateur Windows...' : 'Preparing Windows Installer...')
+                : (language === 'ar' ? 'تحميل لنظام ويندوز (.exe)' : language === 'fr' ? 'Télécharger pour Windows (.exe)' : 'Download for Windows (.exe)')}
+            </AtriumButton>
 
-            <button
+            <AtriumButton
               type="button"
+              variant="secondary"
+              size="md"
+              icon={<Download size={16} />}
               onClick={() => handleDownload('mac')}
               disabled={downloadingPlatform !== null}
-              className="h-12 px-4 rounded-2xl bg-neutral-900 hover:bg-neutral-800 text-white text-xs font-bold flex items-center justify-center gap-2.5 shadow-md cursor-pointer transition-all active:scale-[0.99] disabled:opacity-75 dark:border dark:border-neutral-700"
+              className="!py-3"
             >
-              <Download size={16} />
-              <span>
-                {downloadingPlatform === 'mac'
-                  ? (language === 'ar' ? 'جاري تجهيز حزمة ماك...' : language === 'fr' ? 'Préparation du paquet macOS...' : 'Preparing macOS Package...')
-                  : (language === 'ar' ? 'تحميل لنظام ماك (.dmg)' : language === 'fr' ? 'Télécharger pour macOS (.dmg)' : 'Download for macOS (.dmg)')}
-              </span>
-            </button>
+              {downloadingPlatform === 'mac'
+                ? (language === 'ar' ? 'جاري تجهيز حزمة ماك...' : language === 'fr' ? 'Préparation du paquet macOS...' : 'Preparing macOS Package...')
+                : (language === 'ar' ? 'تحميل لنظام ماك (.dmg)' : language === 'fr' ? 'Télécharger pour macOS (.dmg)' : 'Download for macOS (.dmg)')}
+            </AtriumButton>
           </div>
         </div>
 

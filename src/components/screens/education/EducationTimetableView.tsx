@@ -21,6 +21,7 @@ import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { FilterSelect } from '../../ui/FilterSelect';
 import { Seek } from '../../ui/Seek';
+import { AtriumButton } from '../../ui/AtriumButton';
 import { useTranslation } from '../../../utils/useTranslation';
 
 export const EducationTimetableView: React.FC = () => {
@@ -141,14 +142,15 @@ export const EducationTimetableView: React.FC = () => {
               <span>{t('edu_conflict_warning')}</span>
             </div>
           )}
-          <button
-            type="button"
+          <AtriumButton
+            variant="primary"
+            size="sm"
+            glow
+            icon={<Plus size={14} />}
             onClick={() => setIsAddSessionModalOpen(true)}
-            className="h-10 px-4 rounded-xl bg-[#C4785A] text-white text-xs font-semibold flex items-center gap-1.5 hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
           >
-            <Plus size={14} />
-            <span>{t('edu_btn_add_session')}</span>
-          </button>
+            {t('edu_btn_add_session')}
+          </AtriumButton>
         </div>
       </div>
 
@@ -384,19 +386,22 @@ export const EducationTimetableView: React.FC = () => {
               />
 
               <div className="flex items-center justify-end gap-3 pt-4 border-t border-neutral-100 dark:border-neutral-800">
-                <button
+                <AtriumButton
+                  variant="outline"
+                  size="sm"
                   type="button"
                   onClick={() => setIsAddSessionModalOpen(false)}
-                  className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 font-semibold cursor-pointer"
                 >
                   {t('common_cancel')}
-                </button>
-                <button
+                </AtriumButton>
+                <AtriumButton
+                  variant="primary"
+                  size="sm"
+                  glow
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-[#C4785A] text-white font-semibold hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
                 >
                   {t('edu_btn_save_session')}
-                </button>
+                </AtriumButton>
               </div>
             </form>
           </div>

@@ -18,6 +18,7 @@ import { formatCurrencyAmount } from '../../../utils/rules';
 import { useTranslation } from '../../../utils/useTranslation';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
+import { AtriumButton } from '../../ui/AtriumButton';
 
 interface BookingModalProps {
   isOpen: boolean;
@@ -679,20 +680,22 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
         {/* Footer Actions */}
         <div className="px-6 py-4 border-t border-[#E9EEF0] dark:border-neutral-800 flex items-center justify-between shrink-0 bg-neutral-50/50 dark:bg-neutral-800/30">
-          <button
+          <AtriumButton
             type="button"
+            variant="ghost"
             onClick={onClose}
-            className="px-4 py-2 text-xs font-medium text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-colors cursor-pointer"
           >
             {t('action_cancel')}
-          </button>
-          <button
+          </AtriumButton>
+          <AtriumButton
+            type="button"
+            variant="primary"
+            glow
+            icon={<Check size={15} />}
             onClick={handleSubmit}
-            className="px-6 py-2.5 bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white text-xs font-semibold rounded-xl shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
           >
-            <Check size={15} />
             {bookingToEdit ? t('action_save') : t('venue_reserve_space')}
-          </button>
+          </AtriumButton>
         </div>
       </div>
     </div>
