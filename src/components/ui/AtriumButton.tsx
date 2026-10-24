@@ -31,15 +31,12 @@ export const AtriumButton: React.FC<AtriumButtonProps> = ({
     lg: 'px-5 py-3 text-base font-bold rounded-2xl gap-2.5',
   }[size];
 
-  // Variant styling with signature Terracotta (#C4785A) & ambient glow
+  // Variant styling with original Logo Terracotta (#C4785A) - clean, standard treatment
   let variantClasses = '';
   switch (variant) {
     case 'primary':
-      variantClasses = `bg-[#C4785A] hover:bg-[#b06749] text-white border border-transparent ${
-        glow
-          ? 'shadow-[0_2px_8px_rgba(196,120,90,0.28)] hover:shadow-[0_4px_16px_rgba(196,120,90,0.40)]'
-          : 'shadow-xs'
-      } active:scale-[0.98]`;
+      variantClasses =
+        'bg-[#C4785A] hover:bg-[#b06749] active:bg-[#9e573a] text-white border border-transparent shadow-xs active:scale-[0.98]';
       break;
     case 'secondary':
       variantClasses =
@@ -54,11 +51,8 @@ export const AtriumButton: React.FC<AtriumButtonProps> = ({
         'bg-transparent text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:text-neutral-900 dark:hover:text-white border border-transparent active:scale-[0.98]';
       break;
     case 'danger':
-      variantClasses = `bg-rose-600 hover:bg-rose-700 text-white border border-transparent ${
-        glow
-          ? 'shadow-[0_2px_8px_rgba(225,29,72,0.28)] hover:shadow-[0_4px_16px_rgba(225,29,72,0.40)]'
-          : 'shadow-xs'
-      } active:scale-[0.98]`;
+      variantClasses =
+        'bg-rose-600 hover:bg-rose-700 active:bg-rose-800 text-white border border-transparent shadow-xs active:scale-[0.98]';
       break;
   }
 
