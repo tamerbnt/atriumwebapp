@@ -21,6 +21,7 @@ import { t } from '../../utils/i18n';
 
 import { FiveCubesLogo } from './AtriumMonolith';
 import { LabelInput } from '../ui/LabelInput';
+import { AtriumButton } from '../ui/AtriumButton';
 
 interface LoginScreenProps {
   onStartOnboarding: () => void;
@@ -351,13 +352,16 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
               </label>
             </div>
 
-            <button
+            <AtriumButton
               type="submit"
-              className="w-full h-11 rounded-xl bg-[#C4785A] hover:bg-[#b3684a] active:scale-[0.99] text-white text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-md cursor-pointer mt-2"
+              variant="primary"
+              size="md"
+              className="w-full mt-2"
+              icon={<ArrowRight size={14} className={language === 'ar' ? 'rotate-180' : ''} />}
+              iconPosition="right"
             >
-              <span>{language === 'ar' ? 'تسجيل الدخول إلى Atrium' : language === 'fr' ? 'Se connecter à Atrium' : 'Sign In to Atrium'}</span>
-              <ArrowRight size={14} className={language === 'ar' ? 'rotate-180' : ''} />
-            </button>
+              {language === 'ar' ? 'تسجيل الدخول إلى Atrium' : language === 'fr' ? 'Se connecter à Atrium' : 'Sign In to Atrium'}
+            </AtriumButton>
           </form>
         ) : (
           /* TERMINAL PIN PAD FORM */

@@ -24,6 +24,7 @@ import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { Modal } from '../../ui/Modal';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
+import { AtriumButton } from '../../ui/AtriumButton';
 
 interface PosExpense {
   id: string;
@@ -350,23 +351,25 @@ export const PosFinanceView: React.FC = () => {
             <span>{language === 'ar' ? 'شحن العينة' : 'Démo Recharge'}</span>
           </button>
 
-          <button
+          <AtriumButton
             type="button"
+            variant="secondary"
+            size="sm"
             onClick={() => setIsZReportOpen(true)}
-            className="h-10 px-4 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-white text-xs font-bold flex items-center gap-2 cursor-pointer shadow-xs transition-colors"
+            icon={<Printer size={14} className="text-[#C4785A]" />}
           >
-            <Printer size={14} className="text-[#C4785A]" />
-            <span>{language === 'ar' ? 'إصدار تقرير Z اليومي' : 'Éditer Rapport Z'}</span>
-          </button>
+            {language === 'ar' ? 'إصدار تقرير Z اليومي' : 'Éditer Rapport Z'}
+          </AtriumButton>
 
-          <button
+          <AtriumButton
             type="button"
+            variant="primary"
+            size="sm"
             onClick={() => setIsExpenseModalOpen(true)}
-            className="h-10 px-4 rounded-xl bg-[#C4785A] hover:bg-[#b36a4d] text-white text-xs font-bold flex items-center gap-2 cursor-pointer shadow-xs transition-colors"
+            icon={<Plus size={15} />}
           >
-            <Plus size={15} />
-            <span>{language === 'ar' ? 'تسجيل مصاريف الصندوق' : 'Sortie de Caisse'}</span>
-          </button>
+            {language === 'ar' ? 'تسجيل مصاريف الصندوق' : 'Sortie de Caisse'}
+          </AtriumButton>
         </div>
       </div>
 

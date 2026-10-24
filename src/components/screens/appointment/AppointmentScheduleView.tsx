@@ -743,18 +743,20 @@ export const AppointmentScheduleView: React.FC = () => {
                               </div>
 
                               {apt.status === 'InChair' && (
-                                <button
+                                <AtriumButton
                                   type="button"
+                                  size="xs"
+                                  variant="primary"
+                                  className="mt-2 w-full text-[10px]"
+                                  icon={<CreditCard size={11} />}
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     handleOneClickCheckout(apt);
                                   }}
-                                  className="mt-2 w-full py-1 rounded-lg bg-[#C4785A] hover:bg-[#b0674c] text-white text-[10px] font-bold flex items-center justify-center gap-1 shadow-2xs transition-colors cursor-pointer"
                                   title={t('salon_quick_checkout', language)}
                                 >
-                                  <CreditCard size={11} />
-                                  <span>{t('salon_quick_checkout', language)}</span>
-                                </button>
+                                  {t('salon_quick_checkout', language)}
+                                </AtriumButton>
                               )}
                             </div>
                           ) : (
@@ -859,17 +861,17 @@ export const AppointmentScheduleView: React.FC = () => {
                   </span>
 
                   {apt.status !== 'Completed' && apt.status !== 'Cancelled' && (
-                    <button
-                      type="button"
+                    <AtriumButton
+                      size="xs"
+                      variant="primary"
+                      icon={<CreditCard size={12} />}
                       onClick={(e) => {
                         e.stopPropagation();
                         handleOneClickCheckout(apt);
                       }}
-                      className="py-1 px-3 rounded-xl bg-[#C4785A] hover:bg-[#b56b4f] text-white text-xs font-bold flex items-center gap-1 transition-colors cursor-pointer shadow-2xs"
                     >
-                      <CreditCard size={12} />
-                      <span>{t('salon_quick_checkout', language)}</span>
-                    </button>
+                      {t('salon_quick_checkout', language)}
+                    </AtriumButton>
                   )}
                 </div>
               </div>

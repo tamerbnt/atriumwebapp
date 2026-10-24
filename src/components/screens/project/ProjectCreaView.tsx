@@ -382,13 +382,14 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
           </button>
 
           {/* New Deliverable Upload Button */}
-          <button
+          <AtriumButton
+            variant="primary"
+            size="sm"
             onClick={() => setActiveTab('upload')}
-            className="px-3 py-1.5 text-xs font-semibold text-white bg-[#C4785A] hover:bg-[#b3684a] rounded-xl flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
+            icon={<UploadCloud className="w-4 h-4" />}
           >
-            <UploadCloud className="w-4 h-4" />
-            <span>Déposer un BAT</span>
-          </button>
+            Déposer un BAT
+          </AtriumButton>
         </div>
       </div>
 
@@ -454,18 +455,20 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
                   <div className="text-[11px] text-zinc-500">
                     {order.items.map((i) => i.itemTitle).join(', ')}
                   </div>
-                  <button
+                  <AtriumButton
                     type="button"
+                    size="xs"
+                    variant="primary"
+                    className="w-full"
+                    icon={<UploadCloud className="w-3.5 h-3.5" />}
                     onClick={() => {
                       setSelectedOrderId(order.id);
                       setSelectedProjectId(order.projectId);
                       setActiveTab('upload');
                     }}
-                    className="w-full py-1.5 text-xs font-semibold text-white bg-[#C4785A] hover:bg-[#b3684a] rounded-xl flex items-center justify-center gap-1 transition-colors cursor-pointer"
                   >
-                    <UploadCloud className="w-3.5 h-3.5" />
                     Créer le BAT ➔
-                  </button>
+                  </AtriumButton>
                 </div>
               ))}
           </div>

@@ -947,16 +947,17 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = ({
               <span className="text-xs text-neutral-400 font-mono">
                 ID: {inspectingClient.id}
               </span>
-              <button
+              <AtriumButton
+                variant="primary"
+                size="sm"
+                icon={<Calendar className="w-3.5 h-3.5" />}
                 onClick={() => {
                   setInspectingClient(null);
                   setIsNewBookingModalOpen(true);
                 }}
-                className="px-4 py-2 text-xs font-semibold text-white bg-[#C4785A] hover:bg-[#b3684a] rounded-xl transition-colors flex items-center gap-1.5"
               >
-                <Calendar className="w-3.5 h-3.5" />
-                <span>Programmer un Soin</span>
-              </button>
+                Programmer un Soin
+              </AtriumButton>
             </div>
           </div>
         </div>

@@ -1,5 +1,6 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { AlertTriangle, RefreshCw, Trash2 } from 'lucide-react';
+import { AtriumButton } from '../ui/AtriumButton';
 
 interface Props {
   children: ReactNode;
@@ -63,23 +64,27 @@ export class ErrorBoundary extends Component<Props, State> {
             )}
 
             <div className="flex flex-col gap-3 pt-2">
-              <button
+              <AtriumButton
                 type="button"
+                variant="primary"
+                size="md"
+                className="w-full"
+                icon={<RefreshCw className="w-4 h-4" />}
                 onClick={this.handleReload}
-                className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-[#C4785A] hover:bg-[#b3684a] text-white font-semibold text-sm transition-colors cursor-pointer"
               >
-                <RefreshCw className="w-4 h-4" />
                 Reload Application
-              </button>
+              </AtriumButton>
 
-              <button
+              <AtriumButton
                 type="button"
+                variant="secondary"
+                size="sm"
+                className="w-full"
+                icon={<Trash2 className="w-3.5 h-3.5" />}
                 onClick={this.handleResetState}
-                className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-neutral-300 font-medium text-xs transition-colors cursor-pointer"
               >
-                <Trash2 className="w-3.5 h-3.5" />
                 Clear Local Cache & Reset
-              </button>
+              </AtriumButton>
             </div>
           </div>
         </div>

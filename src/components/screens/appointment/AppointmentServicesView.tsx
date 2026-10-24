@@ -647,13 +647,14 @@ export const AppointmentServicesView: React.FC = () => {
                 >
                   Modifier
                 </button>
-                <button
+                <AtriumButton
+                  size="xs"
+                  variant="primary"
+                  icon={<Calendar className="w-3 h-3" />}
                   onClick={() => setIsBookingModalOpen(true)}
-                  className="px-3 py-1 text-xs font-semibold text-white bg-[#C4785A] hover:bg-[#b3684a] rounded-lg transition-colors flex items-center gap-1"
                 >
-                  <Calendar className="w-3 h-3" />
-                  <span>Réserver</span>
-                </button>
+                  Réserver
+                </AtriumButton>
               </div>
             </div>
           );

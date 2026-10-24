@@ -38,6 +38,7 @@ import { FilterSelect } from '../../ui/FilterSelect';
 import { formatMoney } from '../../../utils/rules';
 import { useTranslation } from '../../../utils/useTranslation';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { AtriumButton } from '../../ui/AtriumButton';
 
 interface ProjectSuperviseurViewProps {
   initialTab?: 'missions' | 'attendance' | 'staffing' | 'expense';
@@ -234,16 +235,18 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
         minWidth: '110px',
         align: 'right',
         renderCell: (m) => (
-          <button
+          <AtriumButton
             type="button"
+            size="xs"
+            variant="primary"
             onClick={() => {
               setSelectedMissionId(m.id);
               setActiveTab('attendance');
             }}
-            className="px-2.5 py-1 text-xs font-semibold text-white bg-[#C4785A] hover:bg-[#b3684a] rounded-lg cursor-pointer ml-auto"
+            className="ml-auto"
           >
             Pointer ➔
-          </button>
+          </AtriumButton>
         ),
       },
     ],
@@ -770,13 +773,14 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
               ]}
             />
 
-            <button
+            <AtriumButton
               type="submit"
-              className="w-full py-2.5 text-xs font-semibold text-white bg-[#C4785A] hover:bg-[#b3684a] rounded-xl flex items-center justify-center gap-2 shadow-xs transition-colors cursor-pointer"
+              variant="primary"
+              className="w-full"
+              icon={<Plus className="w-4 h-4" />}
             >
-              <Plus className="w-4 h-4" />
               Soumettre le Reçu à la Direction
-            </button>
+            </AtriumButton>
           </form>
         </div>
       )}

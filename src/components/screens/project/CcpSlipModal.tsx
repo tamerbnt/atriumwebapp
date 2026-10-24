@@ -2,6 +2,7 @@ import React from 'react';
 import { PMCcpSlip } from '../../../types/index';
 import { Printer, X, CheckCircle, ShieldCheck } from 'lucide-react';
 import { useTranslation } from '../../../utils/useTranslation';
+import { AtriumButton } from '../../ui/AtriumButton';
 
 interface CcpSlipModalProps {
   isOpen: boolean;
@@ -45,13 +46,14 @@ export const CcpSlipModal: React.FC<CcpSlipModalProps> = ({
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <button
+            <AtriumButton
+              size="xs"
+              variant="primary"
+              icon={<Printer className="w-3.5 h-3.5" />}
               onClick={handlePrint}
-              className="px-3.5 py-1.5 text-xs font-semibold text-white bg-[#C4785A] hover:bg-[#b3684a] rounded-lg flex items-center gap-1.5 transition-colors shadow-sm cursor-pointer"
             >
-              <Printer className="w-3.5 h-3.5" />
               {t('common_print')} (A4)
-            </button>
+            </AtriumButton>
             <button
               onClick={onClose}
               className="p-1.5 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 rounded-lg transition-colors cursor-pointer"

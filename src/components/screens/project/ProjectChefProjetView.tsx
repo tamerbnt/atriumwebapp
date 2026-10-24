@@ -33,6 +33,7 @@ import { FilterSelect } from '../../ui/FilterSelect';
 import { formatMoney } from '../../../utils/rules';
 import { useTranslation } from '../../../utils/useTranslation';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { AtriumButton } from '../../ui/AtriumButton';
 
 interface ProjectChefProjetViewProps {
   initialTab?: 'portfolio' | 'catalog' | 'orders' | 'bat' | 'expenses';
@@ -318,14 +319,16 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
         minWidth: '120px',
         align: 'right',
         renderCell: (item) => (
-          <button
+          <AtriumButton
             type="button"
+            size="xs"
+            variant="primary"
+            icon={<ShoppingBag className="w-3.5 h-3.5" />}
             onClick={() => handleAddToCart(item)}
-            className="px-3 py-1.5 text-xs font-semibold text-white bg-[#C4785A] hover:bg-[#b3684a] rounded-xl flex items-center gap-1.5 shadow-xs cursor-pointer ml-auto"
+            className="ml-auto"
           >
-            <ShoppingBag className="w-3.5 h-3.5" />
-            <span>Ajouter</span>
-          </button>
+            Ajouter
+          </AtriumButton>
         ),
       },
     ],
@@ -523,18 +526,20 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
           </button>
 
           {/* Cart Trigger */}
-          <button
+          <AtriumButton
+            variant="primary"
+            size="sm"
             onClick={() => setIsCartOpen(true)}
-            className="px-3 py-1.5 text-xs font-semibold text-white bg-[#C4785A] hover:bg-[#b3684a] rounded-xl flex items-center gap-1.5 shadow-sm transition-all cursor-pointer relative"
+            icon={<ShoppingBag className="w-3.5 h-3.5" />}
+            className="relative"
           >
-            <ShoppingBag className="w-3.5 h-3.5" />
             <span>Panier Print</span>
             {cartItems.length > 0 && (
-              <span className="w-5 h-5 rounded-full bg-white text-[#C4785A] font-bold text-[10px] flex items-center justify-center">
+              <span className="w-5 h-5 rounded-full bg-white text-[#C4785A] font-bold text-[10px] flex items-center justify-center ml-1">
                 {cartItems.reduce((acc, i) => acc + i.quantity, 0)}
               </span>
             )}
-          </button>
+          </AtriumButton>
         </div>
       </div>
 
@@ -710,14 +715,15 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                   <span className="font-mono font-bold text-sm text-zinc-900 dark:text-zinc-100 tabular-nums">
                     {formatMoney(item.unitCostDzd, 'DZD')}
                   </span>
-                  <button
+                  <AtriumButton
                     type="button"
+                    size="xs"
+                    variant="primary"
+                    icon={<Plus className="w-3.5 h-3.5" />}
                     onClick={() => handleAddToCart(item)}
-                    className="px-3 py-1.5 text-xs font-semibold text-white bg-[#C4785A] hover:bg-[#b3684a] rounded-xl flex items-center gap-1.5 shadow-xs cursor-pointer"
                   >
-                    <Plus className="w-3.5 h-3.5" />
-                    <span>Commander</span>
-                  </button>
+                    Commander
+                  </AtriumButton>
                 </div>
               </div>
             )}
@@ -1067,13 +1073,14 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                 ]}
               />
 
-              <button
+              <AtriumButton
                 type="submit"
-                className="w-full py-2.5 text-xs font-semibold text-white bg-[#C4785A] hover:bg-[#b3684a] rounded-xl flex items-center justify-center gap-2 shadow-xs transition-colors cursor-pointer"
+                variant="primary"
+                className="w-full"
+                icon={<Plus className="w-4 h-4" />}
               >
-                <Plus className="w-4 h-4" />
                 Déclarer & Imputer au Projet
-              </button>
+              </AtriumButton>
             </form>
           </div>
         </div>
@@ -1162,15 +1169,16 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
                   {formatMoney(cartTotalDzd, 'DZD')}
                 </span>
               </div>
-              <button
+              <AtriumButton
                 type="button"
+                variant="primary"
+                className="w-full"
                 onClick={handleTransmitToCrea}
                 disabled={cartItems.length === 0}
-                className="w-full py-2.5 text-xs font-semibold text-white bg-[#C4785A] hover:bg-[#b3684a] disabled:opacity-50 rounded-xl flex items-center justify-center gap-2 shadow-xs transition-colors cursor-pointer"
+                icon={<Send className="w-4 h-4" />}
               >
-                <Send className="w-4 h-4" />
                 Transmettre au Studio Créa pour BAT ➔
-              </button>
+              </AtriumButton>
             </div>
           </div>
         </div>
@@ -1201,20 +1209,22 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
               className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-[#C4785A]"
             />
             <div className="flex justify-end gap-2">
-              <button
+              <AtriumButton
                 type="button"
+                variant="ghost"
+                size="sm"
                 onClick={() => setIsCorrectionModalOpen(false)}
-                className="px-4 py-2 text-xs font-semibold text-zinc-600 hover:text-zinc-900 cursor-pointer"
               >
                 Annuler
-              </button>
-              <button
+              </AtriumButton>
+              <AtriumButton
                 type="button"
+                variant="primary"
+                size="sm"
                 onClick={handleRequestRevision}
-                className="px-4 py-2 text-xs font-semibold text-white bg-[#C4785A] hover:bg-[#b3684a] rounded-xl shadow-xs cursor-pointer"
               >
                 Envoyer au Studio Créa
-              </button>
+              </AtriumButton>
             </div>
           </div>
         </div>

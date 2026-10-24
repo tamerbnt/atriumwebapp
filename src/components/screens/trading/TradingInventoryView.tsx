@@ -471,20 +471,22 @@ export const TradingInventoryView: React.FC = () => {
                 onChange={(e: any) => setDepotCity(e.target.value)}
               />
 
-              <div className="flex justify-end gap-2 pt-3 border-t">
-                <button
+              <div className="flex justify-end gap-2 pt-3 border-t border-stone-200 dark:border-stone-800">
+                <AtriumButton
                   type="button"
+                  variant="ghost"
+                  size="sm"
                   onClick={() => setNewDepotModalOpen(false)}
-                  className="px-4 py-2 rounded-xl text-stone-600 hover:bg-stone-100"
                 >
                   Annuler
-                </button>
-                <button
+                </AtriumButton>
+                <AtriumButton
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-[#C4785A] text-white font-semibold hover:bg-[#b06749]"
+                  variant="primary"
+                  size="sm"
                 >
                   Créer le Dépôt
-                </button>
+                </AtriumButton>
               </div>
             </form>
           </div>

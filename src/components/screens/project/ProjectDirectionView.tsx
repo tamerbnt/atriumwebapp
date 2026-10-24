@@ -39,6 +39,7 @@ import { FilterSelect } from '../../ui/FilterSelect';
 import { formatMoney } from '../../../utils/rules';
 import { useTranslation } from '../../../utils/useTranslation';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { AtriumButton } from '../../ui/AtriumButton';
 
 interface ProjectDirectionViewProps {
   initialTab?: 'dashboard' | 'projects' | 'new_project' | 'approvals' | 'reports';
@@ -818,14 +819,15 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
             </div>
 
             <div className="flex items-center gap-2">
-              <button
+              <AtriumButton
                 type="button"
+                variant="primary"
+                size="sm"
+                icon={<Plus className="w-4 h-4" />}
                 onClick={() => setActivePmSubScreen('new_project')}
-                className="px-3.5 py-1.5 text-xs font-semibold text-white bg-[#C4785A] hover:bg-[#b3684a] rounded-xl flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
               >
-                <Plus className="w-4 h-4" />
-                <span>Nouveau Projet</span>
-              </button>
+                Nouveau Projet
+              </AtriumButton>
             </div>
           </div>
 
@@ -1108,13 +1110,14 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
               >
                 Réinitialiser
               </button>
-              <button
+              <AtriumButton
                 type="submit"
-                className="px-5 py-2.5 text-xs font-semibold text-white bg-[#C4785A] hover:bg-[#b3684a] rounded-xl flex items-center gap-2 shadow-sm transition-all cursor-pointer"
+                variant="primary"
+                size="md"
+                icon={<Sparkles className="w-4 h-4" />}
               >
-                <Sparkles className="w-4 h-4" />
                 Lancer le Projet & Dispatcher ➔
-              </button>
+              </AtriumButton>
             </div>
           </form>
         </div>

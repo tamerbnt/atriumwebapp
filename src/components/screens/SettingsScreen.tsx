@@ -555,13 +555,15 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
               </p>
             </div>
           </div>
-          <button
+          <AtriumButton
             type="button"
+            variant="primary"
+            size="xs"
             onClick={() => openDesktopUpgradeModal('general')}
-            className="px-3.5 py-1.5 rounded-xl bg-[#C4785A] text-white text-[11px] font-bold hover:bg-[#b3684a] transition-colors shrink-0 cursor-pointer self-start sm:self-auto"
+            className="shrink-0 self-start sm:self-auto"
           >
             {language === 'ar' ? 'الترقية على سطح المكتب' : language === 'fr' ? 'Passer sur Desktop' : 'Upgrade on Desktop'}
-          </button>
+          </AtriumButton>
         </div>
 
         {/* Quota gauges */}
@@ -899,13 +901,15 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
                 </p>
               </div>
             </div>
-            <button
+            <AtriumButton
               type="button"
+              variant="primary"
+              size="xs"
               onClick={() => openDesktopUpgradeModal('branch_limit')}
-              className="px-3 py-1.5 rounded-xl bg-[#C4785A] text-white text-[11px] font-bold hover:bg-[#b3684a] transition-colors shrink-0 cursor-pointer self-start sm:self-auto"
+              className="shrink-0 self-start sm:self-auto"
             >
               {language === 'ar' ? 'تحميل Atrium للكمبيوتر (Windows / Mac)' : language === 'fr' ? 'Télécharger Atrium Desktop (Windows / Mac)' : 'Download Atrium Desktop (Windows / Mac)'}
-            </button>
+            </AtriumButton>
           </div>
         )}
 

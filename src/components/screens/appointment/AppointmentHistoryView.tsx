@@ -573,13 +573,14 @@ export const AppointmentHistoryView: React.FC = () => {
 
             {/* Print action footer */}
             <div className="p-3 bg-neutral-50 dark:bg-neutral-900 border-t border-neutral-200 dark:border-neutral-800 flex justify-end gap-2">
-              <button
+              <AtriumButton
+                variant="primary"
+                className="w-full"
+                icon={<Printer className="w-3.5 h-3.5" />}
                 onClick={() => window.print?.()}
-                className="w-full py-2 text-xs font-semibold bg-[#C4785A] hover:bg-[#b3684a] text-white rounded-xl transition-colors flex items-center justify-center gap-1.5 shadow-xs"
               >
-                <Printer className="w-3.5 h-3.5" />
-                <span>Imprimer le Reçu</span>
-              </button>
+                Imprimer le Reçu
+              </AtriumButton>
             </div>
           </div>
         </div>

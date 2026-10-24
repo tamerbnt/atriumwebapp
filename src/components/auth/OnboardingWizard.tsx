@@ -42,6 +42,7 @@ import {
 } from '../../utils/businessMapping';
 import { LabelInput } from '../ui/LabelInput';
 import { Seek } from '../ui/Seek';
+import { AtriumButton } from '../ui/AtriumButton';
 
 interface OnboardingWizardProps {
   isOpen: boolean;
@@ -788,28 +789,29 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ isOpen, onCl
           )}
 
           {currentStep < 4 ? (
-            <button
+            <AtriumButton
               type="button"
+              variant="primary"
+              size="md"
               onClick={handleNext}
-              className="h-10 px-5 rounded-xl bg-[#C4785A] hover:bg-[#b3684a] text-xs font-bold text-white flex items-center gap-1.5 cursor-pointer shadow-md"
+              icon={<ChevronRight size={14} className={language === 'ar' ? 'rotate-180' : ''} />}
+              iconPosition="right"
             >
-              <span>{language === 'ar' ? 'متابعة' : language === 'fr' ? 'Continuer' : 'Continue'}</span>
-              <ChevronRight size={14} className={language === 'ar' ? 'rotate-180' : ''} />
-            </button>
+              {language === 'ar' ? 'متابعة' : language === 'fr' ? 'Continuer' : 'Continue'}
+            </AtriumButton>
           ) : (
-            <button
+            <AtriumButton
               type="button"
+              variant="primary"
+              size="md"
               onClick={handleCompleteLaunch}
-              disabled={isProvisioning}
-              className="h-11 px-6 rounded-xl bg-[#C4785A] hover:bg-[#b3684a] text-xs font-bold text-white flex items-center gap-2 cursor-pointer shadow-lg disabled:opacity-50"
+              loading={isProvisioning}
+              icon={<Rocket size={15} />}
             >
-              <Rocket size={15} />
-              <span>
-                {isProvisioning
-                  ? (language === 'ar' ? 'جارٍ الإطلاق...' : language === 'fr' ? 'Initialisation...' : 'Provisioning...')
-                  : (language === 'ar' ? 'إطلاق مساحة عمل Atrium ERP' : language === 'fr' ? 'Lancer l\'espace Atrium ERP' : 'Launch Atrium ERP Workspace')}
-              </span>
-            </button>
+              {isProvisioning
+                ? (language === 'ar' ? 'جارٍ الإطلاق...' : language === 'fr' ? 'Initialisation...' : 'Provisioning...')
+                : (language === 'ar' ? 'إطلاق مساحة عمل Atrium ERP' : language === 'fr' ? 'Lancer l\'espace Atrium ERP' : 'Launch Atrium ERP Workspace')}
+            </AtriumButton>
           )}
         </div>
       </div>

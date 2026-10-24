@@ -55,6 +55,7 @@ import { t } from '../../utils/i18n';
 import { AtriumMonolith, FiveCubesLogo } from './AtriumMonolith';
 import { LabelInput } from '../ui/LabelInput';
 import { Seek } from '../ui/Seek';
+import { AtriumButton } from '../ui/AtriumButton';
 
 interface PowerOnboardingScreenProps {
   onComplete: () => void;
@@ -773,28 +774,29 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
             )}
 
             {currentStep === 1 ? (
-              <button
+              <AtriumButton
                 type="button"
+                variant="primary"
+                size="md"
                 onClick={handleNext}
-                className="h-10 px-5 rounded-xl bg-[#C4785A] hover:bg-[#b3684a] text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-md transition-all active:scale-95"
+                icon={<ChevronRight size={14} className={language === 'ar' ? 'rotate-180' : ''} />}
+                iconPosition="right"
               >
-                <span>{language === 'ar' ? 'متابعة' : language === 'fr' ? 'Continuer' : 'Continue'}</span>
-                <ChevronRight size={14} className={language === 'ar' ? 'rotate-180' : ''} />
-              </button>
+                {language === 'ar' ? 'متابعة' : language === 'fr' ? 'Continuer' : 'Continue'}
+              </AtriumButton>
             ) : (
-              <button
+              <AtriumButton
                 type="button"
+                variant="primary"
+                size="md"
                 onClick={handleLaunchWorkspace}
-                disabled={isProvisioning}
-                className="h-11 px-6 rounded-xl bg-[#C4785A] hover:bg-[#b3684a] text-white text-xs font-bold flex items-center gap-2 cursor-pointer shadow-lg transition-all active:scale-95 disabled:opacity-50"
+                loading={isProvisioning}
+                icon={<Rocket size={15} />}
               >
-                <Rocket size={15} />
-                <span>
-                  {isProvisioning
-                    ? (language === 'ar' ? 'جارٍ الإطلاق...' : language === 'fr' ? 'Lancement...' : 'Launching...')
-                    : (language === 'ar' ? 'إطلاق مساحة العمل المجانية' : language === 'fr' ? 'Lancer l\'espace gratuit' : 'Launch Free Workspace')}
-                </span>
-              </button>
+                {isProvisioning
+                  ? (language === 'ar' ? 'جارٍ الإطلاق...' : language === 'fr' ? 'Lancement...' : 'Launching...')
+                  : (language === 'ar' ? 'إطلاق مساحة العمل المجانية' : language === 'fr' ? 'Lancer l\'espace gratuit' : 'Launch Free Workspace')}
+              </AtriumButton>
             )}
           </div>
         </div>

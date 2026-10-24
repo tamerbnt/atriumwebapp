@@ -22,6 +22,7 @@ import { CommercialDocType, CommercialDocument } from '../../../types';
 import { CommercialDocComposerModal } from './CommercialDocComposerModal';
 import { StockMovementModal } from './StockMovementModal';
 import { CommercialDocPrintModal } from './CommercialDocPrintModal';
+import { AtriumButton } from '../../ui/AtriumButton';
 import { useTranslation } from '../../../utils/useTranslation';
 
 interface TradingDashboardViewProps {
@@ -112,29 +113,32 @@ export const TradingDashboardView: React.FC<TradingDashboardViewProps> = () => {
 
         {/* Action Shortcut Bar */}
         <div className="flex flex-wrap items-center gap-2">
-          <button
+          <AtriumButton
+            variant="secondary"
+            size="sm"
             onClick={() => handleOpenComposer('devis')}
-            className="px-3 py-1.5 rounded-xl text-xs font-semibold border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 hover:border-stone-300 text-stone-700 dark:text-stone-300 flex items-center gap-1.5 transition-colors shadow-xs"
+            icon={<Plus size={14} className="text-[#C4785A]" />}
           >
-            <Plus size={14} className="text-[#C4785A]" />
-            <span>{t('trading_dash_btn_new_devis')}</span>
-          </button>
+            {t('trading_dash_btn_new_devis')}
+          </AtriumButton>
 
-          <button
+          <AtriumButton
+            variant="secondary"
+            size="sm"
             onClick={() => handleOpenComposer('bl')}
-            className="px-3 py-1.5 rounded-xl text-xs font-semibold border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 hover:border-stone-300 text-stone-700 dark:text-stone-300 flex items-center gap-1.5 transition-colors shadow-xs"
+            icon={<Truck size={14} className="text-[#C4785A]" />}
           >
-            <Truck size={14} className="text-[#C4785A]" />
-            <span>{t('trading_dash_btn_new_bl')}</span>
-          </button>
+            {t('trading_dash_btn_new_bl')}
+          </AtriumButton>
 
-          <button
+          <AtriumButton
+            variant="primary"
+            size="sm"
             onClick={() => handleOpenComposer('facture')}
-            className="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-[#C4785A] hover:bg-[#b06749] text-white shadow-xs flex items-center gap-1.5 transition-colors"
+            icon={<FileText size={14} />}
           >
-            <FileText size={14} />
-            <span>{t('trading_dash_btn_new_invoice')}</span>
-          </button>
+            {t('trading_dash_btn_new_invoice')}
+          </AtriumButton>
         </div>
       </div>
 

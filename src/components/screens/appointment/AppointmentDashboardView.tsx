@@ -408,21 +408,25 @@ export const AppointmentDashboardView: React.FC<AppointmentDashboardViewProps> =
 
                       <div className="pt-1 flex items-center gap-1.5">
                         {isInChair ? (
-                          <button
+                          <AtriumButton
+                            size="xs"
+                            variant="secondary"
+                            className="w-full text-emerald-600 dark:text-emerald-400 border-emerald-300 dark:border-emerald-800"
+                            icon={<CheckCircle2 className="w-3 h-3" />}
                             onClick={() => handleCompleteApt(apt)}
-                            className="w-full py-1 text-[11px] font-medium bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors flex items-center justify-center gap-1"
                           >
-                            <CheckCircle2 className="w-3 h-3" />
-                            <span>Terminer le Soin</span>
-                          </button>
+                            Terminer le Soin
+                          </AtriumButton>
                         ) : (
-                          <button
+                          <AtriumButton
+                            size="xs"
+                            variant="primary"
+                            className="w-full"
+                            icon={<Play className="w-3 h-3" />}
                             onClick={() => handleSeatClient(apt)}
-                            className="w-full py-1 text-[11px] font-medium bg-[#C4785A] hover:bg-[#b3684a] text-white rounded-lg transition-colors flex items-center justify-center gap-1"
                           >
-                            <Play className="w-3 h-3" />
-                            <span>Installer</span>
-                          </button>
+                            Installer
+                          </AtriumButton>
                         )}
                       </div>
                     </div>

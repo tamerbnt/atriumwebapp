@@ -11,6 +11,7 @@ import {
   Info,
 } from 'lucide-react';
 import { Modal } from '../ui/Modal';
+import { AtriumButton } from '../ui/AtriumButton';
 import { useAtriumStore } from '../../services/store';
 
 interface GoogleOAuthGuideModalProps {
@@ -65,14 +66,16 @@ export const GoogleOAuthGuideModal: React.FC<GoogleOAuthGuideModalProps> = ({
               Log in directly as workspace owner (mehdisamih79@gmail.com) in 1 click without waiting for Google Cloud review.
             </p>
           </div>
-          <button
+          <AtriumButton
             type="button"
+            variant="primary"
+            size="sm"
             onClick={handleBypass}
-            className="px-4 py-2 rounded-xl bg-[#C4785A] hover:bg-[#b3684a] text-white text-xs font-bold transition-all shrink-0 cursor-pointer flex items-center justify-center gap-1.5 shadow-xs"
+            icon={<ArrowRight size={13} />}
+            iconPosition="right"
           >
-            <span>Launch Workspace</span>
-            <ArrowRight size={13} />
-          </button>
+            Launch Workspace
+          </AtriumButton>
         </div>
 
         {/* Question 1: Is Google Auth Free? */}

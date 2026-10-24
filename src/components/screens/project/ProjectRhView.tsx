@@ -7,6 +7,7 @@ import { LabelInput } from '../../ui/LabelInput';
 import { Seek } from '../../ui/Seek';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { FilterSelect } from '../../ui/FilterSelect';
+import { AtriumButton } from '../../ui/AtriumButton';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import {
   Users,
@@ -363,13 +364,14 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
             <span>Demo Data</span>
           </button>
 
-          <button
+          <AtriumButton
+            variant="primary"
+            size="sm"
             onClick={() => setActiveTab('walkin')}
-            className="px-3.5 py-1.5 text-xs font-semibold text-white bg-[#C4785A] hover:bg-[#b3684a] rounded-xl flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
+            icon={<Plus className="w-4 h-4" />}
           >
-            <Plus className="w-4 h-4" />
             {t('pm_rh_btn_new_candidate')}
-          </button>
+          </AtriumButton>
           <button
             onClick={handleExportTalents}
             className="px-3 py-1.5 text-xs font-semibold text-zinc-700 dark:text-zinc-300 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 rounded-xl flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer"
@@ -810,12 +812,13 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
                 corner={14}
               />
 
-              <button
+              <AtriumButton
                 type="submit"
-                className="w-full py-2.5 bg-[#C4785A] hover:bg-[#b3684a] text-white rounded-xl text-xs font-bold shadow-md cursor-pointer transition-all"
+                variant="primary"
+                className="w-full"
               >
                 Envoyer ma Candidature ➔
-              </button>
+              </AtriumButton>
             </form>
           </div>
         </MobilePhoneSimulator>
@@ -907,12 +910,13 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
               </div>
             </div>
 
-            <button
+            <AtriumButton
               type="submit"
-              className="w-full py-2.5 px-4 bg-[#C4785A] hover:bg-[#b3684a] text-white rounded-xl text-xs font-bold shadow-xs transition-all cursor-pointer"
+              variant="primary"
+              className="w-full"
             >
               Enregistrer & Valider dans le Vivier RH
-            </button>
+            </AtriumButton>
           </form>
         </div>
       )}

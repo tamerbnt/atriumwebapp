@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { AlertTriangle, AlertCircle, Info, X } from 'lucide-react';
+import { AtriumButton } from './AtriumButton';
 
 export interface ConfirmDialogProps {
   isOpen: boolean;
@@ -99,24 +100,24 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
         </div>
 
         <div className="mt-6 flex items-center justify-end gap-3 pt-4 border-t border-neutral-100 dark:border-neutral-800/80">
-          <button
+          <AtriumButton
             type="button"
+            variant="secondary"
+            size="sm"
             disabled={isLoading}
             onClick={onClose}
-            className="px-4 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-200 text-xs font-semibold hover:bg-neutral-50 dark:hover:bg-neutral-700/60 transition-colors cursor-pointer"
           >
             {cancelLabel}
-          </button>
-          <button
+          </AtriumButton>
+          <AtriumButton
             type="button"
-            disabled={isLoading}
+            variant={variant === 'danger' ? 'danger' : 'primary'}
+            size="sm"
+            loading={isLoading}
             onClick={onConfirm}
-            className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${variantStyles.btnBg} ${
-              isLoading ? 'opacity-70 cursor-not-allowed' : ''
-            }`}
           >
-            {isLoading ? '...' : confirmLabel}
-          </button>
+            {confirmLabel}
+          </AtriumButton>
         </div>
       </div>
     </div>
