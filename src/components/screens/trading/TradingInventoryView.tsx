@@ -135,7 +135,7 @@ export const TradingInventoryView: React.FC = () => {
     },
     {
       key: 'stock',
-      header: 'Stock Réel',
+      header: t('trading_inventory_col_qty_on_hand', 'Stock Réel'),
       width: '110px',
       renderCell: (prod) => {
         const isLow = (prod.stockQuantity || 0) <= (prod.reorderLevel || 10);
@@ -150,7 +150,7 @@ export const TradingInventoryView: React.FC = () => {
             </span>
             {isLow && (
               <span className="block text-[9px] text-rose-500 font-semibold uppercase">
-                Alerte Réappro
+                {t('trading_inventory_low_stock_warning', 'Alerte Réappro')}
               </span>
             )}
           </div>
@@ -159,7 +159,7 @@ export const TradingInventoryView: React.FC = () => {
     },
     {
       key: 'cost',
-      header: 'Coût PMP (HT)',
+      header: t('trading_inventory_col_cost', 'Coût PMP (HT)'),
       width: '110px',
       renderCell: (prod) => (
         <span className="font-mono text-xs text-stone-600 dark:text-stone-400 tabular-nums">
@@ -169,7 +169,7 @@ export const TradingInventoryView: React.FC = () => {
     },
     {
       key: 'price',
-      header: 'Prix Vente HT',
+      header: t('trading_catalog_col_price', 'Prix Vente HT'),
       width: '110px',
       renderCell: (prod) => (
         <span className="font-mono text-xs font-semibold text-stone-800 dark:text-stone-200 tabular-nums">
@@ -179,7 +179,7 @@ export const TradingInventoryView: React.FC = () => {
     },
     {
       key: 'valuation',
-      header: 'Valorisation Stock',
+      header: t('trading_inventory_col_total_val', 'Valorisation Stock'),
       width: '140px',
       renderCell: (prod) => {
         const val = (prod.stockQuantity || 0) * (prod.cost?.amount || prod.costPrice || 0);
@@ -268,32 +268,32 @@ export const TradingInventoryView: React.FC = () => {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold tracking-tight text-stone-900 dark:text-stone-100">
-              Dépôts Logistiques & Inventaire
+              {t('trading_inventory_title', 'Dépôts Logistiques & Inventaire')}
             </h1>
             <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#C4785A]/15 text-[#C4785A]">
-              Valorisation : {formatMoney(totalValuation)}
+              {t('trading_inventory_total_valuation', 'Valorisation')} : {formatMoney(totalValuation)}
             </span>
           </div>
           <p className="text-xs text-stone-500 mt-1">
-            Gestion multi-dépôts, suivi des stocks en temps réel et bons d'entrée/sortie/transfert
+            {t('trading_inventory_subtitle', 'Gestion multi-dépôts, suivi des stocks en temps réel et bons d\'entrée/sortie/transfert')}
           </p>
         </div>
 
         <div className="flex items-center gap-2">
           <button
             onClick={() => setNewDepotModalOpen(true)}
-            className="px-3.5 py-2 rounded-xl text-xs font-semibold border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 hover:border-stone-300 text-stone-700 dark:text-stone-300 flex items-center gap-1.5 transition-colors shadow-xs"
+            className="px-3.5 py-2 rounded-xl text-xs font-semibold border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 hover:border-stone-300 text-stone-700 dark:text-stone-300 flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer"
           >
             <Building2 size={14} className="text-[#C4785A]" />
-            <span>Nouveau Dépôt</span>
+            <span>{t('trading_inventory_new_depot', 'Nouveau Dépôt')}</span>
           </button>
 
           <button
             onClick={() => setMovementModalOpen(true)}
-            className="px-4 py-2 rounded-xl text-xs font-semibold bg-[#C4785A] hover:bg-[#b06749] text-white shadow-xs flex items-center gap-1.5 transition-colors"
+            className="px-4 py-2 rounded-xl text-xs font-semibold bg-[#C4785A] hover:bg-[#b06749] text-white shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
           >
             <Plus size={15} />
-            <span>Nouveau Bon de Mouvement</span>
+            <span>{t('trading_inventory_new_movement', 'Nouveau Bon de Mouvement')}</span>
           </button>
         </div>
       </div>
@@ -302,7 +302,7 @@ export const TradingInventoryView: React.FC = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <button
           onClick={() => setSelectedDepotId('all')}
-          className={`p-4 rounded-2xl border text-left transition-all ${
+          className={`p-4 rounded-2xl border text-left transition-all cursor-pointer ${
             selectedDepotId === 'all'
               ? 'border-[#C4785A] bg-[#C4785A]/10 shadow-xs'
               : 'border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 hover:border-stone-300'
@@ -310,7 +310,7 @@ export const TradingInventoryView: React.FC = () => {
         >
           <div className="flex items-center justify-between mb-1">
             <span className="font-bold text-xs text-stone-900 dark:text-stone-100">
-              Tous les Dépôts
+              {t('trading_inventory_all_depots', 'Tous les Dépôts')}
             </span>
             <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-stone-200 dark:bg-stone-800 font-semibold">
               GLOBAL
@@ -325,7 +325,7 @@ export const TradingInventoryView: React.FC = () => {
           <button
             key={w.id}
             onClick={() => setSelectedDepotId(w.id)}
-            className={`p-4 rounded-2xl border text-left transition-all ${
+            className={`p-4 rounded-2xl border text-left transition-all cursor-pointer ${
               selectedDepotId === w.id
                 ? 'border-[#C4785A] bg-[#C4785A]/10 shadow-xs'
                 : 'border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 hover:border-stone-300'
@@ -352,24 +352,24 @@ export const TradingInventoryView: React.FC = () => {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setViewMode('stock_state')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
+            className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
               viewMode === 'stock_state'
                 ? 'bg-[#C4785A]/10 text-[#C4785A] font-bold border border-[#C4785A]/30'
                 : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 hover:bg-stone-100 dark:hover:bg-stone-800'
             }`}
           >
-            État des Stocks & Valorisation ({products.length})
+            {t('trading_inventory_tab_state', 'État des Stocks')} ({products.length})
           </button>
 
           <button
             onClick={() => setViewMode('vouchers')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
+            className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
               viewMode === 'vouchers'
                 ? 'bg-[#C4785A]/10 text-[#C4785A] font-bold border border-[#C4785A]/30'
                 : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 hover:bg-stone-100 dark:hover:bg-stone-800'
             }`}
           >
-            Bons de Mouvement (Entrées, Sorties & Transferts) ({stockVouchers.length})
+            {t('trading_inventory_tab_vouchers', 'Bons de Mouvements')} ({stockVouchers.length})
           </button>
         </div>
 

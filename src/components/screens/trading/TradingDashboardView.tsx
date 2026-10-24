@@ -99,14 +99,14 @@ export const TradingDashboardView: React.FC<TradingDashboardViewProps> = () => {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold tracking-tight text-stone-900 dark:text-stone-100">
-              Pilotage Commercial & Négoce B2B
+              {t('trading_dash_title')}
             </h1>
             <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#C4785A]/15 text-[#C4785A] border border-[#C4785A]/30">
-              Grossiste & Distribution
+              {t('trading_dash_wholesale_tag')}
             </span>
           </div>
           <p className="text-xs text-stone-500 mt-1">
-            Gestion unifiée des devis, bons de livraison, facturation fiscale et multi-dépôts
+            {t('trading_dash_subtitle')}
           </p>
         </div>
 
@@ -117,7 +117,7 @@ export const TradingDashboardView: React.FC<TradingDashboardViewProps> = () => {
             className="px-3 py-1.5 rounded-xl text-xs font-semibold border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 hover:border-stone-300 text-stone-700 dark:text-stone-300 flex items-center gap-1.5 transition-colors shadow-xs"
           >
             <Plus size={14} className="text-[#C4785A]" />
-            <span>Nouveau Devis</span>
+            <span>{t('trading_dash_btn_new_devis')}</span>
           </button>
 
           <button
@@ -125,7 +125,7 @@ export const TradingDashboardView: React.FC<TradingDashboardViewProps> = () => {
             className="px-3 py-1.5 rounded-xl text-xs font-semibold border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 hover:border-stone-300 text-stone-700 dark:text-stone-300 flex items-center gap-1.5 transition-colors shadow-xs"
           >
             <Truck size={14} className="text-[#C4785A]" />
-            <span>Nouveau BL</span>
+            <span>{t('trading_dash_btn_new_bl')}</span>
           </button>
 
           <button
@@ -133,7 +133,7 @@ export const TradingDashboardView: React.FC<TradingDashboardViewProps> = () => {
             className="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-[#C4785A] hover:bg-[#b06749] text-white shadow-xs flex items-center gap-1.5 transition-colors"
           >
             <FileText size={14} />
-            <span>Nouvelle Facture</span>
+            <span>{t('trading_dash_btn_new_invoice')}</span>
           </button>
         </div>
       </div>
@@ -147,10 +147,10 @@ export const TradingDashboardView: React.FC<TradingDashboardViewProps> = () => {
             </div>
             <div>
               <h3 className="text-xs font-bold text-amber-900 dark:text-amber-200">
-                Alerte de Facturation : {stats.unbilledBlsCount} Bon(s) de Livraison livrés non facturés
+                {t('trading_dash_unbilled_bl_alert_title', { count: stats.unbilledBlsCount })}
               </h3>
               <p className="text-[11px] text-amber-700/90 dark:text-amber-400/80 mt-0.5">
-                Total en attente de facturation : <span className="font-mono font-bold">{formatMoney(stats.unbilledBlAmount)}</span>. Convertissez vos BL en factures pour sécuriser votre créance client.
+                {t('trading_dash_unbilled_bl_alert_desc', { amount: formatMoney(stats.unbilledBlAmount) })}
               </p>
             </div>
           </div>
@@ -159,7 +159,7 @@ export const TradingDashboardView: React.FC<TradingDashboardViewProps> = () => {
             onClick={() => setScreen('trading_sales')}
             className="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-amber-600 hover:bg-amber-700 text-white shrink-0 shadow-xs flex items-center gap-1.5 transition-colors"
           >
-            <span>Consulter les BL</span>
+            <span>{t('trading_dash_view_bls')}</span>
             <ArrowRight size={14} />
           </button>
         </div>
@@ -170,7 +170,7 @@ export const TradingDashboardView: React.FC<TradingDashboardViewProps> = () => {
         {/* Card 1: Chiffre d'Affaires Facturé */}
         <div className="p-5 rounded-2xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-stone-500">Chiffre d'Affaires HT</span>
+            <span className="text-xs font-medium text-stone-500">{t('trading_dash_turnover_ht')}</span>
             <div className="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600">
               <TrendingUp size={16} />
             </div>
@@ -181,7 +181,7 @@ export const TradingDashboardView: React.FC<TradingDashboardViewProps> = () => {
             </span>
             <div className="flex items-center gap-1 mt-1 text-[11px] text-emerald-600 font-medium">
               <ArrowUpRight size={13} />
-              <span>Facturation validée ce mois</span>
+              <span>{t('trading_dash_invoiced_this_month')}</span>
             </div>
           </div>
         </div>
@@ -189,7 +189,7 @@ export const TradingDashboardView: React.FC<TradingDashboardViewProps> = () => {
         {/* Card 2: Créances Clients / Impayés */}
         <div className="p-5 rounded-2xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-stone-500">Créances à Recouvrer</span>
+            <span className="text-xs font-medium text-stone-500">{t('trading_dash_receivables')}</span>
             <div className="p-2 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-600">
               <Clock size={16} />
             </div>
@@ -199,7 +199,7 @@ export const TradingDashboardView: React.FC<TradingDashboardViewProps> = () => {
               {formatMoney(stats.totalUnpaidAmount)}
             </span>
             <div className="flex items-center gap-1 mt-1 text-[11px] text-stone-500">
-              <span>{stats.unpaidInvoicesCount} facture(s) en attente</span>
+              <span>{t('trading_dash_pending_invoices', { count: stats.unpaidInvoicesCount })}</span>
             </div>
           </div>
         </div>
@@ -207,7 +207,7 @@ export const TradingDashboardView: React.FC<TradingDashboardViewProps> = () => {
         {/* Card 3: Valorisation Globale Stock */}
         <div className="p-5 rounded-2xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-stone-500">Valeur Stock (Tous dépôts)</span>
+            <span className="text-xs font-medium text-stone-500">{t('trading_dash_stock_value')}</span>
             <div className="p-2 rounded-xl bg-[#C4785A]/10 text-[#C4785A]">
               <Boxes size={16} />
             </div>
@@ -217,7 +217,7 @@ export const TradingDashboardView: React.FC<TradingDashboardViewProps> = () => {
               {formatMoney(stats.totalStockValuation)}
             </span>
             <div className="flex items-center gap-1 mt-1 text-[11px] text-stone-500">
-              <span>{warehouses.length} dépôts actifs ({products.length} réf)</span>
+              <span>{t('trading_dash_active_depots', { warehouses: warehouses.length, products: products.length })}</span>
             </div>
           </div>
         </div>
@@ -225,17 +225,17 @@ export const TradingDashboardView: React.FC<TradingDashboardViewProps> = () => {
         {/* Card 4: Commandes Fournisseurs en cours */}
         <div className="p-5 rounded-2xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-stone-500">Achats Fournisseurs</span>
+            <span className="text-xs font-medium text-stone-500">{t('trading_dash_supplier_purchases')}</span>
             <div className="p-2 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600">
               <Truck size={16} />
             </div>
           </div>
           <div className="mt-3">
             <span className="text-2xl font-bold font-mono tracking-tight text-stone-900 dark:text-stone-100 tabular-nums">
-              {stats.pendingPurchasesCount} commande(s)
+              {t('trading_dash_orders_count', { count: stats.pendingPurchasesCount })}
             </span>
             <div className="flex items-center gap-1 mt-1 text-[11px] text-blue-600 font-medium">
-              <span>En attente de réception à quai</span>
+              <span>{t('trading_dash_orders_pending_dock')}</span>
             </div>
           </div>
         </div>
@@ -248,15 +248,15 @@ export const TradingDashboardView: React.FC<TradingDashboardViewProps> = () => {
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-sm font-bold text-stone-900 dark:text-stone-100">
-                Dernières Pièces Commerciales
+                {t('trading_dash_recent_docs')}
               </h2>
-              <p className="text-xs text-stone-500">Devis récents, BL et factures émises</p>
+              <p className="text-xs text-stone-500">{t('trading_dash_recent_docs_sub')}</p>
             </div>
             <button
               onClick={() => setScreen('trading_sales')}
               className="text-xs font-semibold text-[#C4785A] hover:underline flex items-center gap-1"
             >
-              <span>Voir tout le cycle des ventes</span>
+              <span>{t('trading_dash_view_sales_cycle')}</span>
               <ArrowRight size={13} />
             </button>
           </div>
@@ -334,7 +334,7 @@ export const TradingDashboardView: React.FC<TradingDashboardViewProps> = () => {
                         title="Convertir en Bon de Livraison"
                         className="px-2 py-1 text-[11px] font-semibold rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors"
                       >
-                        Convertir BL
+                        {t('trading_dash_convert_bl')}
                       </button>
                     )}
                     {doc.type === 'bl' && doc.status === 'Delivered' && (
@@ -343,7 +343,7 @@ export const TradingDashboardView: React.FC<TradingDashboardViewProps> = () => {
                         title="Convertir en Facture fiscale"
                         className="px-2 py-1 text-[11px] font-semibold rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-colors"
                       >
-                        Facturer
+                        {t('trading_dash_bill')}
                       </button>
                     )}
                   </div>
@@ -359,14 +359,14 @@ export const TradingDashboardView: React.FC<TradingDashboardViewProps> = () => {
           <div className="border border-stone-200 dark:border-stone-800 rounded-2xl bg-white dark:bg-stone-900 shadow-xs p-5 space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-sm font-bold text-stone-900 dark:text-stone-100">
-                État des Dépôts
+                {t('trading_dash_depots_state')}
               </h2>
               <button
                 onClick={() => setStockModalOpen(true)}
                 className="inline-flex items-center gap-1 text-xs font-semibold text-[#C4785A] hover:underline"
               >
                 <Plus size={13} />
-                <span>Mouvement</span>
+                <span>{t('trading_inventory_new_movement')}</span>
               </button>
             </div>
 
@@ -399,7 +399,7 @@ export const TradingDashboardView: React.FC<TradingDashboardViewProps> = () => {
           {/* Quick Shortcuts to other modules */}
           <div className="border border-stone-200 dark:border-stone-800 rounded-2xl bg-white dark:bg-stone-900 shadow-xs p-5 space-y-3">
             <h3 className="text-xs font-bold text-stone-700 dark:text-stone-300 uppercase tracking-wider">
-              Accès Opérationnel
+              {t('trading_dash_operational_access')}
             </h3>
             <div className="grid grid-cols-2 gap-2 text-xs">
               <button
@@ -407,9 +407,9 @@ export const TradingDashboardView: React.FC<TradingDashboardViewProps> = () => {
                 className="p-3 rounded-xl border border-stone-200 dark:border-stone-800 hover:border-[#C4785A] text-left transition-colors group"
               >
                 <span className="font-bold block text-stone-900 dark:text-stone-100 group-hover:text-[#C4785A]">
-                  Cycle Ventes
+                  {t('trading_dash_cycle_sales')}
                 </span>
-                <span className="text-[10px] text-stone-400">Devis, BL & Factures</span>
+                <span className="text-[10px] text-stone-400">{t('trading_dash_cycle_sales_sub')}</span>
               </button>
 
               <button
@@ -417,9 +417,9 @@ export const TradingDashboardView: React.FC<TradingDashboardViewProps> = () => {
                 className="p-3 rounded-xl border border-stone-200 dark:border-stone-800 hover:border-[#C4785A] text-left transition-colors group"
               >
                 <span className="font-bold block text-stone-900 dark:text-stone-100 group-hover:text-[#C4785A]">
-                  Cycle Achats
+                  {t('trading_dash_cycle_purchases')}
                 </span>
-                <span className="text-[10px] text-stone-400">Commandes & BR</span>
+                <span className="text-[10px] text-stone-400">{t('trading_dash_cycle_purchases_sub')}</span>
               </button>
 
               <button
@@ -427,9 +427,9 @@ export const TradingDashboardView: React.FC<TradingDashboardViewProps> = () => {
                 className="p-3 rounded-xl border border-stone-200 dark:border-stone-800 hover:border-[#C4785A] text-left transition-colors group"
               >
                 <span className="font-bold block text-stone-900 dark:text-stone-100 group-hover:text-[#C4785A]">
-                  Partenaires B2B
+                  {t('trading_dash_partners_b2b')}
                 </span>
-                <span className="text-[10px] text-stone-400">Clients & Fournisseurs</span>
+                <span className="text-[10px] text-stone-400">{t('trading_dash_partners_b2b_sub')}</span>
               </button>
 
               <button
@@ -437,9 +437,9 @@ export const TradingDashboardView: React.FC<TradingDashboardViewProps> = () => {
                 className="p-3 rounded-xl border border-stone-200 dark:border-stone-800 hover:border-[#C4785A] text-left transition-colors group"
               >
                 <span className="font-bold block text-stone-900 dark:text-stone-100 group-hover:text-[#C4785A]">
-                  Dépôts & Stock
+                  {t('trading_dash_depots_stock')}
                 </span>
-                <span className="text-[10px] text-stone-400">Bons Entrée & Sortie</span>
+                <span className="text-[10px] text-stone-400">{t('trading_dash_depots_stock_sub')}</span>
               </button>
             </div>
           </div>

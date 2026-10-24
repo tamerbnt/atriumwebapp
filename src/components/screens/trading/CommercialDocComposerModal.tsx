@@ -24,7 +24,7 @@ import {
 } from '../../../types';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
-import { formatMoney } from '../../../utils/rules';
+import { formatMoney, calculateCommercialTotals } from '../../../utils/rules';
 import { useTranslation } from '../../../utils/useTranslation';
 
 interface CommercialDocComposerModalProps {
@@ -242,43 +242,13 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
 
   // Calculations
   const calculations = useMemo(() => {
-    const totalHtRaw = items.reduce((sum, item) => sum + (item.totalHt || 0), 0);
-    const genDiscAmount = totalHtRaw * (generalDiscountPercent / 100);
-    const totalHtFinal = Math.max(0, totalHtRaw - genDiscAmount);
-
-    // TVA distribution
-    let totalTva = 0;
-    items.forEach((item) => {
-      const lineFraction = totalHtRaw > 0 ? (item.totalHt || 0) / totalHtRaw : 0;
-      const adjustedLineHt = totalHtFinal * lineFraction;
-      const lineTva = adjustedLineHt * ((item.tvaPercent || 0) / 100);
-      totalTva += lineTva;
+    return calculateCommercialTotals({
+      items,
+      generalDiscountPercent,
+      guaranteeRetentionPercent,
+      paymentMethod,
+      isCashFiscalStampEnabled,
     });
-
-    const isCash =
-      paymentMethod.toLowerCase().includes('espèces') ||
-      isCashFiscalStampEnabled;
-    let timbreFiscal = 0;
-    if (isCash) {
-      // Algerian Finance Law: 1% stamp capped at 2,500 DZD
-      const calculatedStamp = (totalHtFinal + totalTva) * 0.01;
-      timbreFiscal = Math.min(2500, Math.max(20, Math.round(calculatedStamp)));
-    }
-
-    const totalTtc = totalHtFinal + totalTva + timbreFiscal;
-    const guaranteeRetentionAmount =
-      totalTtc * (guaranteeRetentionPercent / 100);
-    const netToPay = totalTtc - guaranteeRetentionAmount;
-
-    return {
-      totalHtRaw: Math.round(totalHtRaw * 100) / 100,
-      totalHtFinal: Math.round(totalHtFinal * 100) / 100,
-      totalTva: Math.round(totalTva * 100) / 100,
-      timbreFiscal,
-      totalTtc: Math.round(totalTtc * 100) / 100,
-      guaranteeRetentionAmount: Math.round(guaranteeRetentionAmount * 100) / 100,
-      netToPay: Math.round(netToPay * 100) / 100,
-    };
   }, [
     items,
     generalDiscountPercent,
@@ -289,11 +259,11 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
 
   const handleSubmit = (targetStatus: 'Draft' | 'Validated' | 'Delivered' = 'Validated') => {
     if (!clientId) {
-      alert('Veuillez sélectionner un client destinataire.');
+      alert(t('trading_composer_alert_select_client'));
       return;
     }
     if (items.length === 0 || items.every((it) => !it.description)) {
-      alert('Veuillez ajouter au moins une ligne d\'article avec désignation.');
+      alert(t('trading_composer_alert_add_item'));
       return;
     }
 
@@ -356,14 +326,14 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-lg font-bold text-stone-900 dark:text-stone-100">
-                  {isEdit ? 'Modifier le document' : 'Nouveau Document Commercial'}
+                  {isEdit ? t('trading_composer_edit_title') : t('trading_composer_title')}
                 </h2>
                 <span className="px-2 py-0.5 rounded text-xs font-mono font-medium bg-[#C4785A]/15 text-[#C4785A]">
                   {generatedDocNumber}
                 </span>
               </div>
               <p className="text-xs text-stone-500 dark:text-stone-400">
-                Génération conforme aux normes fiscales algériennes (NIF, TVA, Retenue & Timbre)
+                {t('trading_composer_fiscal_standards')}
               </p>
             </div>
           </div>
@@ -380,16 +350,16 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
           {/* Top Bar: Doc Type Pill Selector */}
           <div>
             <label className="block text-xs font-semibold text-stone-600 dark:text-stone-300 uppercase tracking-wider mb-2">
-              Type de Pièce Commerciale
+              {t('trading_composer_doc_type')}
             </label>
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
               {(
                 [
-                  { type: 'devis', label: 'Devis / Proforma', badge: 'DEV' },
-                  { type: 'commande', label: 'Bon de Commande', badge: 'BC' },
-                  { type: 'bl', label: 'Bon de Livraison', badge: 'BL' },
-                  { type: 'facture', label: 'Facture Fiscale', badge: 'FAC' },
-                  { type: 'avoir', label: 'Avoir / Retour', badge: 'AV' },
+                  { type: 'devis', label: t('trading_doc_devis'), badge: 'DEV' },
+                  { type: 'commande', label: t('trading_doc_commande'), badge: 'BC' },
+                  { type: 'bl', label: t('trading_doc_bl'), badge: 'BL' },
+                  { type: 'facture', label: t('trading_doc_facture'), badge: 'FAC' },
+                  { type: 'avoir', label: t('trading_doc_avoir'), badge: 'AV' },
                 ] as const
               ).map((item) => {
                 const isSelected = docType === item.type;
@@ -417,7 +387,7 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
             {/* Client Picker */}
             <div className="md:col-span-1">
               <LabelSelect
-                label="Client B2B Destinataire *"
+                label={t('trading_composer_client_label')}
                 value={clientId}
                 onChange={(val) => setClientId(typeof val === 'string' ? val : val?.target?.value || val)}
                 options={b2bClients.map((c) => ({
@@ -452,7 +422,7 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
             {/* Warehouse Depot */}
             <div>
               <LabelSelect
-                label="Dépôt de Sortie / Stock *"
+                label={t('trading_composer_depot_label')}
                 value={depotId}
                 onChange={(val) => setDepotId(typeof val === 'string' ? val : val?.target?.value || val)}
                 options={warehouses.map((w) => ({
@@ -471,13 +441,13 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
               <div className="grid grid-cols-2 gap-2">
                 <LabelInput
                   type="date"
-                  label="Date d'Émission *"
+                  label={t('trading_composer_issue_date')}
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
                 />
                 <LabelInput
                   type="date"
-                  label="Échéance"
+                  label={t('trading_composer_due_date')}
                   value={dueDate}
                   onChange={(e) => setDueDate(e.target.value)}
                 />
@@ -485,7 +455,7 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
 
               <div className="grid grid-cols-2 gap-2">
                 <LabelSelect
-                  label="Règlement"
+                  label={t('trading_composer_payment_method')}
                   value={paymentMethod}
                   onChange={(val) => {
                     const v = typeof val === 'string' ? val : val?.target?.value || val;
@@ -503,7 +473,7 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
                   ]}
                 />
                 <LabelSelect
-                  label="Condition"
+                  label={t('trading_composer_payment_terms')}
                   value={paymentTerms}
                   onChange={(val) => setPaymentTerms(typeof val === 'string' ? val : val?.target?.value || val)}
                   options={[
@@ -523,7 +493,7 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
           <div>
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-xs font-semibold text-stone-700 dark:text-stone-300 uppercase tracking-wider">
-                Articles & Prestations de Service ({items.length})
+                {t('trading_composer_items_services')} ({items.length})
               </h3>
               <button
                 type="button"
@@ -531,7 +501,7 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
                 className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-medium bg-[#C4785A]/10 text-[#C4785A] hover:bg-[#C4785A]/20 transition-colors"
               >
                 <Plus size={14} />
-                <span>Ajouter une ligne</span>
+                <span>{t('trading_composer_add_line')}</span>
               </button>
             </div>
 
@@ -676,10 +646,10 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
               className="w-full px-4 py-3 bg-stone-50 dark:bg-stone-800/40 flex items-center justify-between text-xs font-semibold text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800/60 transition-colors"
             >
               <div className="flex items-center gap-2">
-                <span>Options avancées, Remise globale, Retenue de garantie & Fiscalité</span>
+                <span>{t('trading_composer_advanced_accordion')}</span>
                 {(generalDiscountPercent > 0 || guaranteeRetentionPercent > 0 || isCashFiscalStampEnabled) && (
                   <span className="px-2 py-0.5 rounded-full text-[10px] bg-[#C4785A]/15 text-[#C4785A] font-mono">
-                    Options actives
+                    {t('trading_composer_options_active')}
                   </span>
                 )}
               </div>
@@ -692,7 +662,7 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
                   <div>
                     <LabelInput
                       type="number"
-                      label="Remise Globale sur HT (%)"
+                      label={t('trading_composer_general_discount')}
                       value={generalDiscountPercent}
                       min={0}
                       max={100}
@@ -707,7 +677,7 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
                   <div>
                     <LabelInput
                       type="number"
-                      label="Retenue de Garantie BTP (%)"
+                      label={t('trading_composer_guarantee_retention')}
                       value={guaranteeRetentionPercent}
                       min={0}
                       max={20}
@@ -728,7 +698,7 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
                         className="rounded text-[#C4785A] focus:ring-[#C4785A]"
                       />
                       <span className="text-xs font-medium text-stone-700 dark:text-stone-300">
-                        Appliquer le timbre fiscal (1% plafonné à 2,500 DA)
+                        {t('trading_composer_fiscal_stamp')}
                       </span>
                     </label>
                   </div>
@@ -736,13 +706,13 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
                   <LabelInput
-                    label="Mention d'en-tête (Objet / Chantier)"
+                    label={t('trading_composer_notes_top')}
                     placeholder="Ex: Marché N° 14/2026 — Chantier Nouvelle Ville Sidi Abdellah"
                     value={notesTop}
                     onChange={(e) => setNotesTop(e.target.value)}
                   />
                   <LabelInput
-                    label="Mention de bas de page / Conditions légales"
+                    label={t('trading_composer_notes_bottom')}
                     placeholder="Ex: Marchandise vendue agréée, aucun retour après 48h..."
                     value={notesBottom}
                     onChange={(e) => setNotesBottom(e.target.value)}
@@ -757,7 +727,7 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
                       onChange={(e) => setIncludeStampSignature(e.target.checked)}
                       className="rounded text-[#C4785A] focus:ring-[#C4785A]"
                     />
-                    <span>Inclure l'emplacement Cachet et Signature de l'entreprise</span>
+                    <span>{t('trading_composer_include_stamp')}</span>
                   </label>
                 </div>
               </div>
@@ -768,7 +738,7 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
           <div className="p-4 rounded-xl border border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-800/40 space-y-2">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs font-mono">
               <div>
-                <span className="text-stone-500 block text-[11px]">Total HT Brut</span>
+                <span className="text-stone-500 block text-[11px]">{t('trading_composer_total_raw_ht')}</span>
                 <span className="text-stone-800 dark:text-stone-200 font-semibold text-sm">
                   {formatMoney(calculations.totalHtRaw)}
                 </span>
@@ -776,7 +746,9 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
 
               {generalDiscountPercent > 0 && (
                 <div>
-                  <span className="text-stone-500 block text-[11px]">Remise Globale ({generalDiscountPercent}%)</span>
+                  <span className="text-stone-500 block text-[11px]">
+                    {t('trading_composer_general_discount')} ({generalDiscountPercent}%)
+                  </span>
                   <span className="text-rose-600 font-semibold text-sm">
                     -{formatMoney(calculations.totalHtRaw - calculations.totalHtFinal)}
                   </span>
@@ -784,14 +756,14 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
               )}
 
               <div>
-                <span className="text-stone-500 block text-[11px]">Total HT Net</span>
+                <span className="text-stone-500 block text-[11px]">{t('trading_composer_total_final_ht')}</span>
                 <span className="text-stone-800 dark:text-stone-200 font-semibold text-sm">
                   {formatMoney(calculations.totalHtFinal)}
                 </span>
               </div>
 
               <div>
-                <span className="text-stone-500 block text-[11px]">Total TVA</span>
+                <span className="text-stone-500 block text-[11px]">{t('trading_composer_total_tva')}</span>
                 <span className="text-stone-800 dark:text-stone-200 font-semibold text-sm">
                   {formatMoney(calculations.totalTva)}
                 </span>
@@ -799,7 +771,7 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
 
               {calculations.timbreFiscal > 0 && (
                 <div>
-                  <span className="text-stone-500 block text-[11px]">Droit de Timbre</span>
+                  <span className="text-stone-500 block text-[11px]">{t('trading_composer_fiscal_stamp')}</span>
                   <span className="text-amber-600 font-semibold text-sm">
                     +{formatMoney(calculations.timbreFiscal)}
                   </span>
@@ -809,7 +781,7 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
               {calculations.guaranteeRetentionAmount > 0 && (
                 <div>
                   <span className="text-stone-500 block text-[11px]">
-                    Retenue Garantie ({guaranteeRetentionPercent}%)
+                    {t('trading_composer_guarantee_retention')} ({guaranteeRetentionPercent}%)
                   </span>
                   <span className="text-blue-600 font-semibold text-sm">
                     -{formatMoney(calculations.guaranteeRetentionAmount)}
@@ -818,7 +790,7 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
               )}
 
               <div className="col-span-2 sm:col-span-1 p-2 rounded-lg bg-[#C4785A]/10 border border-[#C4785A]/30 sm:ml-auto w-full text-right">
-                <span className="text-[#C4785A] block text-[11px] font-semibold uppercase">Net à Payer (TTC)</span>
+                <span className="text-[#C4785A] block text-[11px] font-semibold uppercase">{t('trading_composer_net_to_pay')}</span>
                 <span className="text-[#C4785A] font-bold text-base tabular-nums">
                   {formatMoney(calculations.netToPay)}
                 </span>
@@ -834,7 +806,7 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
             onClick={onClose}
             className="px-4 py-2 rounded-xl text-xs font-semibold text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
           >
-            Annuler
+            {t('trading_composer_btn_cancel')}
           </button>
 
           <div className="flex items-center gap-2">
@@ -843,7 +815,7 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
               onClick={() => handleSubmit('Draft')}
               className="px-4 py-2 rounded-xl text-xs font-semibold border border-stone-300 dark:border-stone-700 text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
             >
-              Enregistrer comme Brouillon
+              {t('trading_composer_save_draft')}
             </button>
 
             <button
@@ -852,7 +824,7 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
               className="px-5 py-2 rounded-xl text-xs font-semibold bg-[#C4785A] hover:bg-[#b06749] text-white shadow-xs transition-colors flex items-center gap-1.5"
             >
               <CheckCircle size={15} />
-              <span>{isEdit ? 'Enregistrer les Modifications' : 'Valider & Enregistrer'}</span>
+              <span>{isEdit ? t('trading_composer_btn_save_changes') : t('trading_composer_btn_validate')}</span>
             </button>
           </div>
         </div>

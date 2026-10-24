@@ -1810,10 +1810,11 @@ export const PosInventoryView: React.FC = () => {
         onClose={() => setIsSupplierModalOpen(false)}
         entityType="supplier"
         onSaved={(sup) => {
+          const supName = 'supplierName' in sup ? sup.supplierName : ('companyName' in sup ? sup.companyName : (sup as any).clientName || '');
           showToast({
             type: 'success',
             title: language === 'ar' ? 'مورد جديد' : 'Nouveau Fournisseur',
-            message: language === 'ar' ? 'تم تسجيل المورد الجديد بنجاح' : `Fournisseur ${sup.supplierName} enregistré avec succès.`,
+            message: language === 'ar' ? 'تم تسجيل المورد الجديد بنجاح' : `Fournisseur ${supName} enregistré avec succès.`,
           });
           setPoSupplierId(sup.id);
           setIsSupplierModalOpen(false);

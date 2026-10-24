@@ -153,7 +153,7 @@ export const TradingPurchasesView: React.FC = () => {
   const columns: ColumnDefinition<PurchaseDocument>[] = [
     {
       key: 'docNumber',
-      header: 'N° Document',
+      header: t('trading_sales_col_doc_num', 'N° Document'),
       width: '180px',
       renderCell: (doc) => {
         const badgeColor =
@@ -177,7 +177,7 @@ export const TradingPurchasesView: React.FC = () => {
     },
     {
       key: 'orderDate',
-      header: 'Date Commande',
+      header: t('trading_purchases_col_order_delivery', 'Date Commande'),
       width: '130px',
       renderCell: (doc) => (
         <span className="text-xs font-mono text-stone-700 dark:text-stone-300">
@@ -187,7 +187,7 @@ export const TradingPurchasesView: React.FC = () => {
     },
     {
       key: 'supplier',
-      header: 'Fournisseur Référencé',
+      header: t('trading_purchases_col_supplier', 'Fournisseur Référencé'),
       minWidth: '220px',
       renderCell: (doc) => (
         <div className="text-xs">
@@ -195,24 +195,24 @@ export const TradingPurchasesView: React.FC = () => {
             {doc.supplierName}
           </span>
           <span className="text-[10px] text-stone-400 font-mono">
-            Dépôt : {doc.depotName || 'Dépôt Central'}
+            {t('trading_sales_col_depot', 'Dépôt')} : {doc.depotName || 'Dépôt Central'}
           </span>
         </div>
       ),
     },
     {
       key: 'itemsCount',
-      header: 'Lignes',
+      header: language === 'ar' ? 'البنود' : 'Lignes',
       width: '90px',
       renderCell: (doc) => (
         <span className="text-xs font-mono text-stone-500">
-          {doc.items.length} article(s)
+          {doc.items.length} {language === 'ar' ? 'بند' : 'article(s)'}
         </span>
       ),
     },
     {
       key: 'totalTtc',
-      header: 'Montant Total TTC',
+      header: t('trading_composer_total_ttc', 'Montant Total TTC'),
       width: '140px',
       renderCell: (doc) => (
         <span className="font-mono font-bold text-xs text-stone-900 dark:text-stone-100 tabular-nums">
@@ -222,7 +222,7 @@ export const TradingPurchasesView: React.FC = () => {
     },
     {
       key: 'status',
-      header: 'Statut',
+      header: t('trading_sales_col_status', 'Statut'),
       width: '130px',
       renderCell: (doc) => {
         const isReceived = doc.status === 'Received';
@@ -234,7 +234,9 @@ export const TradingPurchasesView: React.FC = () => {
                 : 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300'
             }`}
           >
-            {doc.status}
+            {isReceived
+              ? language === 'ar' ? 'تم الاستلام' : 'Réceptionné'
+              : language === 'ar' ? 'قيد الطلب' : 'Commandé'}
           </span>
         );
       },
@@ -247,7 +249,7 @@ export const TradingPurchasesView: React.FC = () => {
         <div className="flex items-center justify-end gap-2">
           <button
             onClick={() => setPrintDoc(commercialDocFromPurchase(doc))}
-            title="Imprimer le bon (PDF A4)"
+            title={t('action_print', 'Imprimer')}
             className="p-1.5 text-stone-400 hover:text-[#C4785A] hover:bg-stone-100 dark:hover:bg-stone-800 rounded-lg transition-colors cursor-pointer"
           >
             <Printer size={14} />
@@ -256,16 +258,16 @@ export const TradingPurchasesView: React.FC = () => {
           {doc.type === 'po' && doc.status === 'Ordered' && (
             <button
               onClick={() => receivePurchaseDoc(doc.id)}
-              className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs flex items-center gap-1 transition-colors"
+              className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs flex items-center gap-1 transition-colors cursor-pointer"
             >
               <CheckCircle2 size={13} />
-              <span>Réceptionner à quai</span>
+              <span>{t('trading_purchases_receive_stock', 'Réceptionner à quai')}</span>
             </button>
           )}
 
           {doc.type === 'br' && (
             <span className="text-[10px] font-mono text-emerald-600 font-medium">
-              Stock incrémenté
+              {t('trading_purchases_received_badge', 'Stock incrémenté')}
             </span>
           )}
         </div>
@@ -280,23 +282,23 @@ export const TradingPurchasesView: React.FC = () => {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold tracking-tight text-stone-900 dark:text-stone-100">
-              Cycle des Achats & Réceptions Fournisseurs
+              {t('trading_purchases_title', 'Cycle des Achats & Réceptions Fournisseurs')}
             </h1>
             <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#C4785A]/15 text-[#C4785A]">
-              {purchaseDocs.length} commandes & réceptions
+              {purchaseDocs.length} {language === 'ar' ? 'طلب واستلام' : 'commandes & réceptions'}
             </span>
           </div>
           <p className="text-xs text-stone-500 mt-1">
-            Approvisionnement, bons de commande d'achat (PO) et entrée automatique en stock à quai (BR)
+            {t('trading_purchases_subtitle', 'Approvisionnement, bons de commande d\'achat (PO) et entrée automatique en stock à quai (BR)')}
           </p>
         </div>
 
         <button
           onClick={() => setIsPoModalOpen(true)}
-          className="px-4 py-2 rounded-xl text-xs font-semibold bg-[#C4785A] hover:bg-[#b06749] text-white shadow-xs flex items-center gap-1.5 transition-colors"
+          className="px-4 py-2 rounded-xl text-xs font-semibold bg-[#C4785A] hover:bg-[#b06749] text-white shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
         >
           <Plus size={15} />
-          <span>Créer Bon de Commande Achat (PO)</span>
+          <span>{t('trading_purchases_new_po', 'Créer Bon de Commande Achat (PO)')}</span>
         </button>
       </div>
 
@@ -305,22 +307,22 @@ export const TradingPurchasesView: React.FC = () => {
         <div className="flex items-center gap-2">
           {(
             [
-              { key: 'all', label: 'Toutes les Pièces' },
-              { key: 'po', label: 'Commandes d\'Achat (PO)' },
-              { key: 'br', label: 'Bons de Réception à Quai (BR)' },
-              { key: 'facture_fournisseur', label: 'Factures Fournisseurs' },
+              { key: 'all', label: t('trading_purchases_tab_all', 'Toutes les Pièces') },
+              { key: 'po', label: t('trading_purchases_tab_po', 'Commandes d\'Achat (PO)') },
+              { key: 'br', label: t('trading_purchases_tab_br', 'Bons de Réception à Quai (BR)') },
+              { key: 'facture_fournisseur', label: t('trading_purchases_tab_bills', 'Factures Fournisseurs') },
             ] as const
-          ).map((t) => (
+          ).map((item) => (
             <button
-              key={t.key}
-              onClick={() => setActiveTab(t.key)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
-                activeTab === t.key
+              key={item.key}
+              onClick={() => setActiveTab(item.key)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
+                activeTab === item.key
                   ? 'bg-[#C4785A]/10 text-[#C4785A] font-bold border border-[#C4785A]/30'
                   : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 hover:bg-stone-100 dark:hover:bg-stone-800'
               }`}
             >
-              {t.label}
+              {item.label}
             </button>
           ))}
         </div>
@@ -328,7 +330,7 @@ export const TradingPurchasesView: React.FC = () => {
         <div className="w-64">
           <input
             type="text"
-            placeholder="Rechercher document, fournisseur..."
+            placeholder={language === 'ar' ? 'بحث برقم المستند، المورد...' : 'Rechercher document, fournisseur...'}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full text-xs rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 px-3 py-1.5 text-stone-800 dark:text-stone-200 placeholder-stone-400 focus:outline-hidden focus:border-[#C4785A]"

@@ -14,6 +14,7 @@ import { StockMovementVoucher, StockVoucherType } from '../../../types';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { formatMoney } from '../../../utils/rules';
+import { useTranslation } from '../../../utils/useTranslation';
 
 interface StockMovementModalProps {
   isOpen: boolean;
@@ -28,6 +29,7 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
   initialType = 'entree',
   onSaved,
 }) => {
+  const { t } = useTranslation();
   const { warehouses, products, createStockVoucher, allStockVouchers, currentUser } =
     useAtriumStore();
 
@@ -171,10 +173,10 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
             </div>
             <div>
               <h2 className="text-lg font-bold text-stone-900 dark:text-stone-100">
-                Nouveau Mouvement de Stock
+                {t('trading_stock_modal_title')}
               </h2>
               <p className="text-xs text-stone-500">
-                Mise à jour automatique des quantités en temps réel
+                {t('trading_stock_modal_sub')}
               </p>
             </div>
           </div>
@@ -191,7 +193,7 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
           {/* Movement Type Switcher */}
           <div>
             <label className="block text-xs font-semibold text-stone-600 dark:text-stone-300 uppercase tracking-wider mb-2">
-              Sens du Mouvement
+              {t('trading_stock_dir')}
             </label>
             <div className="grid grid-cols-3 gap-2">
               <button
@@ -207,7 +209,7 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
                 }`}
               >
                 <TrendingUp size={16} />
-                <span>Bon d'Entrée (BE)</span>
+                <span>{t('trading_stock_be')}</span>
               </button>
 
               <button
@@ -223,7 +225,7 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
                 }`}
               >
                 <TrendingDown size={16} />
-                <span>Bon de Sortie (BS)</span>
+                <span>{t('trading_stock_bs')}</span>
               </button>
 
               <button
@@ -239,7 +241,7 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
                 }`}
               >
                 <ArrowRight size={16} />
-                <span>Transfert Dépôts (BT)</span>
+                <span>{t('trading_stock_bt')}</span>
               </button>
             </div>
           </div>
@@ -248,7 +250,7 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-xl border border-stone-200 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-800/20">
             <div>
               <LabelSelect
-                label={type === 'transfert' ? 'Dépôt Expéditeur (Source) *' : 'Dépôt Concerné *'}
+                label={type === 'transfert' ? t('trading_stock_depot_source') : t('trading_stock_depot_concerned')}
                 value={depotSourceId}
                 onChange={(val) => setDepotSourceId(typeof val === 'string' ? val : val?.target?.value || val)}
                 options={warehouses.map((w) => ({
@@ -261,7 +263,7 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
             {type === 'transfert' ? (
               <div>
                 <LabelSelect
-                  label="Dépôt Récepteur (Cible) *"
+                  label={t('trading_stock_depot_target')}
                   value={depotTargetId}
                   onChange={(val) => setDepotTargetId(typeof val === 'string' ? val : val?.target?.value || val)}
                   placeholder="-- Choisir le dépôt cible --"
@@ -276,7 +278,7 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
             ) : (
               <div>
                 <LabelSelect
-                  label="Motif du Mouvement *"
+                  label={t('trading_stock_reason')}
                   value={reason}
                   onChange={(val) => setReason((typeof val === 'string' ? val : val?.target?.value || val) as any)}
                   options={
@@ -298,7 +300,7 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
             <div>
               <LabelInput
                 type="date"
-                label="Date du Mouvement *"
+                label={t('trading_stock_date')}
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
                 required
@@ -307,7 +309,7 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
 
             <div>
               <LabelInput
-                label="Opérateur / Magasinier Responsable"
+                label={t('trading_stock_operator')}
                 value={operatorName}
                 onChange={(e) => setOperatorName(e.target.value)}
               />
@@ -318,7 +320,7 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
           <div>
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-xs font-semibold text-stone-600 dark:text-stone-400 uppercase tracking-wider">
-                Articles Mouvementés ({items.length})
+                {t('trading_stock_items_title')} ({items.length})
               </h3>
               <button
                 type="button"
@@ -326,7 +328,7 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
                 className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium bg-[#C4785A]/10 text-[#C4785A] hover:bg-[#C4785A]/20 transition-colors"
               >
                 <Plus size={13} />
-                <span>Ajouter article</span>
+                <span>{t('trading_stock_add_item')}</span>
               </button>
             </div>
 
@@ -344,7 +346,7 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
                     >
                       {products.map((p) => (
                         <option key={p.id} value={p.id}>
-                          {p.sku ? `[${p.sku}] ` : ''}{p.name} (Stock actuel: {p.stockQuantity})
+                          {p.sku ? `[${p.sku}] ` : ''}{p.name} (Stock: {p.stockQuantity})
                         </option>
                       ))}
                     </select>
@@ -379,7 +381,7 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
           {/* Notes */}
           <div>
             <LabelInput
-              label="Observations / Réf. Document (BL ou BR lié)"
+              label={t('trading_stock_observations')}
               placeholder="Ex: Entrée suite à livraison BR-2026-0028"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
@@ -388,7 +390,7 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
 
           {/* Total Valuation Footer */}
           <div className="p-3 rounded-xl bg-stone-50 dark:bg-stone-800/40 border border-stone-200 dark:border-stone-800 flex items-center justify-between text-xs font-mono">
-            <span className="text-stone-500">Valorisation Estimée du Mouvement :</span>
+            <span className="text-stone-500">{t('trading_stock_est_valuation')}</span>
             <span className="text-stone-900 dark:text-stone-100 font-bold text-sm">
               {formatMoney(totalValuation)}
             </span>
@@ -401,7 +403,7 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
               onClick={onClose}
               className="px-4 py-2 rounded-xl text-xs font-semibold text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
             >
-              Annuler
+              {t('trading_composer_btn_cancel')}
             </button>
 
             <button
@@ -409,7 +411,7 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
               className="px-5 py-2 rounded-xl text-xs font-semibold bg-[#C4785A] hover:bg-[#b06749] text-white shadow-xs transition-colors flex items-center gap-1.5"
             >
               <CheckCircle size={15} />
-              <span>Valider le Bon de Mouvement</span>
+              <span>{t('trading_stock_btn_validate')}</span>
             </button>
           </div>
         </form>

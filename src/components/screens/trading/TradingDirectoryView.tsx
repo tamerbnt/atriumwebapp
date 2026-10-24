@@ -272,14 +272,14 @@ export const TradingDirectoryView: React.FC = () => {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold tracking-tight text-stone-900 dark:text-stone-100">
-              Répertoire des Partenaires B2B
+              {t('trading_directory_title', 'Répertoire des Partenaires B2B')}
             </h1>
             <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#C4785A]/15 text-[#C4785A]">
-              {b2bClients.length} Clients • {b2bSuppliers.length} Fournisseurs
+              {b2bClients.length} {language === 'ar' ? 'عميل' : 'Clients'} • {b2bSuppliers.length} {language === 'ar' ? 'مورد' : 'Fournisseurs'}
             </span>
           </div>
           <p className="text-xs text-stone-500 mt-1">
-            Fiches légales certifiées, suivi des encours, limites de crédit et historique complet
+            {t('trading_directory_subtitle', 'Fiches légales certifiées, suivi des encours, limites de crédit et historique complet')}
           </p>
         </div>
 
@@ -288,10 +288,18 @@ export const TradingDirectoryView: React.FC = () => {
             setEditingEntity(null);
             setEntityModalOpen(true);
           }}
-          className="px-4 py-2 rounded-xl text-xs font-semibold bg-[#C4785A] hover:bg-[#b06749] text-white shadow-xs flex items-center gap-1.5 transition-colors"
+          className="px-4 py-2 rounded-xl text-xs font-semibold bg-[#C4785A] hover:bg-[#b06749] text-white shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
         >
           <Plus size={15} />
-          <span>{mode === 'clients' ? 'Nouveau Client B2B' : 'Nouveau Fournisseur'}</span>
+          <span>
+            {mode === 'clients'
+              ? language === 'ar'
+                ? 'عميل تجاري جديد'
+                : 'Nouveau Client B2B'
+              : language === 'ar'
+              ? 'مورد جديد'
+              : 'Nouveau Fournisseur'}
+          </span>
         </button>
       </div>
 
@@ -303,13 +311,13 @@ export const TradingDirectoryView: React.FC = () => {
               setMode('clients');
               setSelectedEntity(null);
             }}
-            className={`px-4 py-2 rounded-xl text-xs font-medium transition-all ${
+            className={`px-4 py-2 rounded-xl text-xs font-medium transition-all cursor-pointer ${
               mode === 'clients'
                 ? 'bg-[#C4785A]/10 text-[#C4785A] font-bold border border-[#C4785A]/30'
                 : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 hover:bg-stone-100 dark:hover:bg-stone-800'
             }`}
           >
-            Clients B2B ({b2bClients.length})
+            {t('trading_directory_tab_clients', 'Clients B2B')} ({b2bClients.length})
           </button>
 
           <button
@@ -317,20 +325,20 @@ export const TradingDirectoryView: React.FC = () => {
               setMode('suppliers');
               setSelectedEntity(null);
             }}
-            className={`px-4 py-2 rounded-xl text-xs font-medium transition-all ${
+            className={`px-4 py-2 rounded-xl text-xs font-medium transition-all cursor-pointer ${
               mode === 'suppliers'
                 ? 'bg-[#C4785A]/10 text-[#C4785A] font-bold border border-[#C4785A]/30'
                 : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 hover:bg-stone-100 dark:hover:bg-stone-800'
             }`}
           >
-            Fournisseurs Référencés ({b2bSuppliers.length})
+            {t('trading_directory_tab_suppliers', 'Fournisseurs Référencés')} ({b2bSuppliers.length})
           </button>
         </div>
 
         <div className="w-64">
           <input
             type="text"
-            placeholder="Rechercher nom, contact, NIF..."
+            placeholder={language === 'ar' ? 'بحث باسم الشركة، المسؤول، الرقم الجبائي...' : 'Rechercher nom, contact, NIF...'}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full text-xs rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 px-3 py-1.5 text-stone-800 dark:text-stone-200 placeholder-stone-400 focus:outline-hidden focus:border-[#C4785A]"

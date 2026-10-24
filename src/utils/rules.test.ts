@@ -247,3 +247,69 @@ test('Quadruple Traceability Standard: models uphold account_id, business_id, br
     assert.ok(st.facilityId || st.branchId, 'Staff must have facility/branch ID');
   }
 });
+
+test('Commercial B2B calculation engine accurately computes HT, Discount, TVA, Timbre Fiscal, Retenue de Garantie, and Net to Pay', async () => {
+  const { calculateCommercialTotals } = await import('./rules.ts');
+
+  // Case 1: Standard non-cash invoice with 19% TVA
+  const result1 = calculateCommercialTotals({
+    items: [
+      { quantity: 10, unitPriceHt: 1000, discountPercent: 0, tvaPercent: 19 },
+      { quantity: 5, unitPriceHt: 2000, discountPercent: 10, tvaPercent: 19 },
+    ],
+    generalDiscountPercent: 5,
+    guaranteeRetentionPercent: 0,
+    paymentMethod: 'Virement bancaire',
+  });
+
+  // Line 1: 10 * 1000 = 10,000
+  // Line 2: 5 * 2000 * 0.9 = 9,000
+  // Total HT Raw: 19,000
+  // General discount 5%: 950 => Total HT Final: 18,050
+  // TVA 19%: 18,050 * 0.19 = 3,429.50
+  // Timbre fiscal: 0 (non-cash)
+  // Total TTC: 21,479.50
+  // Net to Pay: 21,479.50
+  assert.equal(result1.totalHtRaw, 19000);
+  assert.equal(result1.totalHtFinal, 18050);
+  assert.equal(result1.totalTva, 3429.5);
+  assert.equal(result1.timbreFiscal, 0);
+  assert.equal(result1.totalTtc, 21479.5);
+  assert.equal(result1.netToPay, 21479.5);
+
+  // Case 2: Cash payment with Algerian Fiscal Stamp (1% capped at 2,500 DZD) and BTP Guarantee Retention (10%)
+  const result2 = calculateCommercialTotals({
+    items: [
+      { quantity: 2, unitPriceHt: 50000, discountPercent: 0, tvaPercent: 19 },
+    ],
+    generalDiscountPercent: 0,
+    guaranteeRetentionPercent: 10,
+    paymentMethod: 'Espèces / Cash',
+    isCashFiscalStampEnabled: true,
+  });
+
+  // HT: 100,000
+  // TVA 19%: 19,000
+  // (HT + TVA) = 119,000 => 1% = 1,190 DZD (under 2,500 cap)
+  // Timbre: 1,190
+  // TTC: 100,000 + 19,000 + 1,190 = 120,190
+  // Retenue garantie 10%: 12,019
+  // Net to pay: 108,171
+  assert.equal(result2.totalHtRaw, 100000);
+  assert.equal(result2.totalHtFinal, 100000);
+  assert.equal(result2.totalTva, 19000);
+  assert.equal(result2.timbreFiscal, 1190);
+  assert.equal(result2.totalTtc, 120190);
+  assert.equal(result2.guaranteeRetentionAmount, 12019);
+  assert.equal(result2.netToPay, 108171);
+
+  // Case 3: High value cash payment reaches 2,500 DZD ceiling
+  const result3 = calculateCommercialTotals({
+    items: [
+      { quantity: 1, unitPriceHt: 500000, discountPercent: 0, tvaPercent: 19 },
+    ],
+    paymentMethod: 'Espèces',
+  });
+  // 500,000 + 95,000 = 595,000 => 1% is 5,950 DZD, capped at 2,500 DZD
+  assert.equal(result3.timbreFiscal, 2500);
+});

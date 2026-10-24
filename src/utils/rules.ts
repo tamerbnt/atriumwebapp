@@ -290,3 +290,99 @@ export function formatCurrencyAmount(amount: number, currency: 'DZD' | 'EUR' | '
   }
 }
 
+/**
+ * Commercial Document Financial Calculation Engine (Category 8: B2B Trading & Distribution)
+ * Computes:
+ * - Total HT Raw (sum of line qty * unitPrice * (1 - lineDiscount%))
+ * - Total HT Final (after general discount)
+ * - Proportional VAT (TVA) distribution across items
+ * - Algerian Cash Fiscal Stamp Duty (Droit de timbre fiscal: 1% capped at 2,500 DZD, min 20 DZD when paying in cash)
+ * - Guarantee Retention (Retenue de garantie BTP: deducted from TTC)
+ * - Net Payable (Net à Payer)
+ */
+export interface CommercialCalculationItem {
+  quantity: number;
+  unitPriceHt: number;
+  discountPercent?: number;
+  tvaPercent?: number;
+}
+
+export interface CommercialCalculationInput {
+  items: CommercialCalculationItem[];
+  generalDiscountPercent?: number;
+  guaranteeRetentionPercent?: number;
+  paymentMethod?: string;
+  isCashFiscalStampEnabled?: boolean;
+}
+
+export interface CommercialCalculationResult {
+  totalHtRaw: number;
+  totalHtFinal: number;
+  totalTva: number;
+  timbreFiscal: number;
+  totalTtc: number;
+  guaranteeRetentionAmount: number;
+  netToPay: number;
+}
+
+export function calculateCommercialTotals(input: CommercialCalculationInput): CommercialCalculationResult {
+  const generalDiscountPercent = input.generalDiscountPercent || 0;
+  const guaranteeRetentionPercent = input.guaranteeRetentionPercent || 0;
+  const isCash =
+    Boolean(input.isCashFiscalStampEnabled) ||
+    Boolean(
+      input.paymentMethod &&
+        (input.paymentMethod.toLowerCase().includes('espèces') ||
+          input.paymentMethod.toLowerCase().includes('especes') ||
+          input.paymentMethod.toLowerCase().includes('cash') ||
+          input.paymentMethod.includes('نقدا') ||
+          input.paymentMethod.includes('كاش'))
+    );
+
+  let totalHtRaw = 0;
+  const computedLines = (input.items || []).map((item) => {
+    const qty = Number(item.quantity) || 0;
+    const pu = Number(item.unitPriceHt) || 0;
+    const lineDisc = Number(item.discountPercent) || 0;
+    const lineHt = qty * pu * (1 - lineDisc / 100);
+    totalHtRaw += lineHt;
+    return {
+      lineHt,
+      tvaPercent: Number(item.tvaPercent) || 0,
+    };
+  });
+
+  const genDiscAmount = totalHtRaw * (generalDiscountPercent / 100);
+  const totalHtFinal = Math.max(0, totalHtRaw - genDiscAmount);
+
+  // Proportional TVA distribution
+  let totalTva = 0;
+  computedLines.forEach((line) => {
+    const lineFraction = totalHtRaw > 0 ? line.lineHt / totalHtRaw : 0;
+    const adjustedLineHt = totalHtFinal * lineFraction;
+    const lineTva = adjustedLineHt * (line.tvaPercent / 100);
+    totalTva += lineTva;
+  });
+
+  let timbreFiscal = 0;
+  if (isCash && totalHtFinal + totalTva > 0) {
+    // Algerian Finance Law: 1% stamp capped at 2,500 DZD, min 20 DZD
+    const calculatedStamp = (totalHtFinal + totalTva) * 0.01;
+    timbreFiscal = Math.min(2500, Math.max(20, Math.round(calculatedStamp)));
+  }
+
+  const totalTtc = totalHtFinal + totalTva + timbreFiscal;
+  const guaranteeRetentionAmount = totalTtc * (guaranteeRetentionPercent / 100);
+  const netToPay = totalTtc - guaranteeRetentionAmount;
+
+  return {
+    totalHtRaw: Math.round(totalHtRaw * 100) / 100,
+    totalHtFinal: Math.round(totalHtFinal * 100) / 100,
+    totalTva: Math.round(totalTva * 100) / 100,
+    timbreFiscal,
+    totalTtc: Math.round(totalTtc * 100) / 100,
+    guaranteeRetentionAmount: Math.round(guaranteeRetentionAmount * 100) / 100,
+    netToPay: Math.round(netToPay * 100) / 100,
+  };
+}
+

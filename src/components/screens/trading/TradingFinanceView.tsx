@@ -106,7 +106,7 @@ export const TradingFinanceView: React.FC = () => {
   const columns: ColumnDefinition<CommercialDocument>[] = [
     {
       key: 'docNumber',
-      header: 'N° Facture',
+      header: t('trading_sales_col_doc_num', 'N° Facture'),
       width: '160px',
       renderCell: (doc) => (
         <span className="font-mono font-bold text-xs text-stone-900 dark:text-stone-100">
@@ -116,7 +116,7 @@ export const TradingFinanceView: React.FC = () => {
     },
     {
       key: 'date',
-      header: 'Date & Échéance',
+      header: t('trading_sales_col_date_due', 'Date & Échéance'),
       width: '140px',
       renderCell: (doc) => (
         <div className="text-xs font-mono">
@@ -127,7 +127,7 @@ export const TradingFinanceView: React.FC = () => {
     },
     {
       key: 'client',
-      header: 'Client B2B',
+      header: t('trading_sales_col_client', 'Client B2B'),
       minWidth: '220px',
       renderCell: (doc) => (
         <span className="text-xs font-bold text-stone-900 dark:text-stone-100">
@@ -137,7 +137,7 @@ export const TradingFinanceView: React.FC = () => {
     },
     {
       key: 'netToPay',
-      header: 'Montant Net TTC',
+      header: t('trading_sales_col_net_to_pay', 'Montant Net TTC'),
       width: '140px',
       renderCell: (doc) => (
         <span className="font-mono font-bold text-xs text-stone-900 dark:text-stone-100 tabular-nums">
@@ -147,7 +147,7 @@ export const TradingFinanceView: React.FC = () => {
     },
     {
       key: 'status',
-      header: 'État du Paiement',
+      header: t('trading_sales_col_status', 'État du Paiement'),
       width: '130px',
       renderCell: (doc) => (
         <span
@@ -157,7 +157,9 @@ export const TradingFinanceView: React.FC = () => {
               : 'bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300'
           }`}
         >
-          {doc.status === 'Paid' ? 'Encaissée / Soldée' : 'Non Encaissée'}
+          {doc.status === 'Paid'
+            ? language === 'ar' ? 'مسددة / مدفوعة' : 'Encaissée / Soldée'
+            : language === 'ar' ? 'غير مسددة' : 'Non Encaissée'}
         </span>
       ),
     },
@@ -170,10 +172,10 @@ export const TradingFinanceView: React.FC = () => {
           {doc.status !== 'Paid' && (
             <button
               onClick={() => setSettlementDoc(doc)}
-              className="px-3 py-1 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs transition-colors flex items-center gap-1"
+              className="px-3 py-1 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs transition-colors flex items-center gap-1 cursor-pointer"
             >
               <CheckCircle size={13} />
-              <span>Encaisser</span>
+              <span>{t('trading_finance_settle_invoice', 'Encaisser')}</span>
             </button>
           )}
         </div>
@@ -187,14 +189,14 @@ export const TradingFinanceView: React.FC = () => {
       <div>
         <div className="flex items-center gap-2">
           <h1 className="text-2xl font-bold tracking-tight text-stone-900 dark:text-stone-100">
-            Règlements, Trésorerie & Balance Âgée
+            {t('trading_finance_title', 'Règlements, Trésorerie & Balance Âgée')}
           </h1>
           <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#C4785A]/15 text-[#C4785A]">
-            Recouvrement B2B
+            {language === 'ar' ? 'تحصيل الشركات' : 'Recouvrement B2B'}
           </span>
         </div>
         <p className="text-xs text-stone-500 mt-1">
-          Suivi des échéances clients, encaissement des factures et balance des dettes fournisseurs
+          {t('trading_finance_subtitle', 'Suivi des échéances clients, encaissement des factures et balance des dettes fournisseurs')}
         </p>
       </div>
 
@@ -203,45 +205,53 @@ export const TradingFinanceView: React.FC = () => {
         {/* Bucket 1: 0 - 30 days */}
         <div className="p-4 rounded-2xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 shadow-xs">
           <span className="text-xs font-semibold text-stone-500 block mb-1">
-            0 à 30 jours (Courant)
+            {t('trading_finance_aging_current', '0 à 30 jours (Courant)')}
           </span>
           <div className="text-xl font-bold font-mono text-emerald-600 tabular-nums">
             {formatMoney(agingAnalysis.bucketCurrent)}
           </div>
-          <span className="text-[10px] text-stone-400 mt-1 block">Créances normales</span>
+          <span className="text-[10px] text-stone-400 mt-1 block">
+            {language === 'ar' ? 'مستحقات اعتيادية' : 'Créances normales'}
+          </span>
         </div>
 
         {/* Bucket 2: 31 - 60 days */}
         <div className="p-4 rounded-2xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 shadow-xs">
           <span className="text-xs font-semibold text-stone-500 block mb-1">
-            31 à 60 jours
+            {t('trading_finance_aging_31_60', '31 à 60 jours')}
           </span>
           <div className="text-xl font-bold font-mono text-amber-600 tabular-nums">
             {formatMoney(agingAnalysis.bucket31_60)}
           </div>
-          <span className="text-[10px] text-amber-600/80 mt-1 block">Relance de courtoisie</span>
+          <span className="text-[10px] text-amber-600/80 mt-1 block">
+            {language === 'ar' ? 'تذكير ودي' : 'Relance de courtoisie'}
+          </span>
         </div>
 
         {/* Bucket 3: 61 - 90 days */}
         <div className="p-4 rounded-2xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 shadow-xs">
           <span className="text-xs font-semibold text-stone-500 block mb-1">
-            61 à 90 jours
+            {t('trading_finance_aging_61_90', '61 à 90 jours')}
           </span>
           <div className="text-xl font-bold font-mono text-orange-600 tabular-nums">
             {formatMoney(agingAnalysis.bucket61_90)}
           </div>
-          <span className="text-[10px] text-orange-600/80 mt-1 block">Mise en demeure requise</span>
+          <span className="text-[10px] text-orange-600/80 mt-1 block">
+            {language === 'ar' ? 'إشعار بالسداد مطلوب' : 'Mise en demeure requise'}
+          </span>
         </div>
 
         {/* Bucket 4: > 90 days */}
         <div className="p-4 rounded-2xl border border-rose-300 dark:border-rose-900/60 bg-rose-50/40 dark:bg-rose-950/20 shadow-xs">
           <span className="text-xs font-semibold text-rose-700 dark:text-rose-400 block mb-1">
-            &gt; 90 jours (Contentieux)
+            {t('trading_finance_aging_90_plus', '> 90 jours (Contentieux)')}
           </span>
           <div className="text-xl font-bold font-mono text-rose-600 tabular-nums">
             {formatMoney(agingAnalysis.bucket90Plus)}
           </div>
-          <span className="text-[10px] text-rose-500 mt-1 block">Dossier juridique B2B</span>
+          <span className="text-[10px] text-rose-500 mt-1 block">
+            {language === 'ar' ? 'ملف نزاع قضائي تجاري' : 'Dossier juridique B2B'}
+          </span>
         </div>
       </div>
 
@@ -249,10 +259,10 @@ export const TradingFinanceView: React.FC = () => {
       <div className="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-2xl shadow-xs overflow-hidden">
         <div className="p-4 border-b border-stone-200 dark:border-stone-800 flex items-center justify-between">
           <h2 className="text-sm font-bold text-stone-900 dark:text-stone-100">
-            Factures Émises & Statut d'Encaissement ({invoices.length})
+            {t('trading_finance_unpaid_invoices', 'Factures Émises & Statut d\'Encaissement')} ({invoices.length})
           </h2>
           <span className="text-xs font-mono text-stone-500">
-            Total non encaissé : <strong className="text-rose-600">{formatMoney(agingAnalysis.totalUnpaid)}</strong>
+            {language === 'ar' ? 'إجمالي غير مسدد' : 'Total non encaissé'} : <strong className="text-rose-600">{formatMoney(agingAnalysis.totalUnpaid)}</strong>
           </span>
         </div>
 

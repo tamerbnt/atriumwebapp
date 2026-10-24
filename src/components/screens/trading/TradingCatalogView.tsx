@@ -228,23 +228,31 @@ export const TradingCatalogView: React.FC = () => {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold tracking-tight text-stone-900 dark:text-stone-100">
-              Catalogue Produits & Prestations
+              {t('trading_catalog_title', 'Catalogue Produits & Prestations')}
             </h1>
             <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#C4785A]/15 text-[#C4785A]">
-              {products.length} références
+              {products.length} {language === 'ar' ? 'عنصر' : 'références'}
             </span>
           </div>
           <p className="text-xs text-stone-500 mt-1">
-            Tarifs HT, taux de TVA réglementaires (0%, 9%, 19%) et gestion des unités de vente
+            {t('trading_catalog_subtitle', 'Tarifs HT, taux de TVA réglementaires (0%, 9%, 19%) et gestion des unités de vente')}
           </p>
         </div>
 
         <button
           onClick={handleOpenAdd}
-          className="px-4 py-2 rounded-xl text-xs font-semibold bg-[#C4785A] hover:bg-[#b06749] text-white shadow-xs flex items-center gap-1.5 transition-colors"
+          className="px-4 py-2 rounded-xl text-xs font-semibold bg-[#C4785A] hover:bg-[#b06749] text-white shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
         >
           <Plus size={15} />
-          <span>{activeTab === 'products' ? 'Nouvel Article' : 'Nouvelle Prestation'}</span>
+          <span>
+            {activeTab === 'products'
+              ? language === 'ar'
+                ? 'مادة جديدة'
+                : 'Nouvel Article'
+              : language === 'ar'
+              ? 'خدمة جديدة'
+              : 'Nouvelle Prestation'}
+          </span>
         </button>
       </div>
 
@@ -253,31 +261,31 @@ export const TradingCatalogView: React.FC = () => {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setActiveTab('products')}
-            className={`px-4 py-2 rounded-xl text-xs font-medium transition-all ${
+            className={`px-4 py-2 rounded-xl text-xs font-medium transition-all cursor-pointer ${
               activeTab === 'products'
                 ? 'bg-[#C4785A]/10 text-[#C4785A] font-bold border border-[#C4785A]/30'
                 : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100 dark:hover:bg-stone-800'
             }`}
           >
-            Articles & Matériaux de Stock
+            {t('trading_catalog_tab_products', 'Articles & Matériaux de Stock')}
           </button>
 
           <button
             onClick={() => setActiveTab('services')}
-            className={`px-4 py-2 rounded-xl text-xs font-medium transition-all ${
+            className={`px-4 py-2 rounded-xl text-xs font-medium transition-all cursor-pointer ${
               activeTab === 'services'
                 ? 'bg-[#C4785A]/10 text-[#C4785A] font-bold border border-[#C4785A]/30'
                 : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100 dark:hover:bg-stone-800'
             }`}
           >
-            Prestations & Services Immatériels
+            {t('trading_catalog_tab_services', 'Prestations & Services Immatériels')}
           </button>
         </div>
 
         <div className="w-64">
           <input
             type="text"
-            placeholder="Filtrer nom, SKU, catégorie..."
+            placeholder={language === 'ar' ? 'بحث بالاسم، الرمز، الفئة...' : 'Filtrer nom, SKU, catégorie...'}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full text-xs rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 px-3 py-1.5 text-stone-800 dark:text-stone-200 placeholder-stone-400 focus:outline-hidden focus:border-[#C4785A]"

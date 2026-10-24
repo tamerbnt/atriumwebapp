@@ -99,7 +99,7 @@ export const TradingSalesView: React.FC = () => {
   const columns: ColumnDefinition<CommercialDocument>[] = [
     {
       key: 'docNumber',
-      header: 'N° Document',
+      header: t('trading_sales_col_doc_num', 'N° Document'),
       width: '180px',
       renderCell: (doc) => {
         const typeBadge =
@@ -127,7 +127,7 @@ export const TradingSalesView: React.FC = () => {
     },
     {
       key: 'date',
-      header: 'Date & Échéance',
+      header: t('trading_sales_col_date_due', 'Date & Échéance'),
       width: '130px',
       renderCell: (doc) => (
         <div className="text-xs font-mono">
@@ -140,7 +140,7 @@ export const TradingSalesView: React.FC = () => {
     },
     {
       key: 'client',
-      header: 'Client Destinataire',
+      header: t('trading_sales_col_client', 'Client Destinataire'),
       minWidth: '220px',
       renderCell: (doc) => (
         <div className="text-xs">
@@ -156,7 +156,7 @@ export const TradingSalesView: React.FC = () => {
     },
     {
       key: 'depot',
-      header: 'Dépôt',
+      header: t('trading_sales_col_depot', 'Dépôt'),
       width: '140px',
       renderCell: (doc) => (
         <span className="text-xs text-stone-600 dark:text-stone-400 font-mono">
@@ -166,7 +166,7 @@ export const TradingSalesView: React.FC = () => {
     },
     {
       key: 'totalHt',
-      header: 'Total HT Net',
+      header: t('trading_sales_col_ht_net', 'Total HT Net'),
       width: '120px',
       renderCell: (doc) => (
         <span className="font-mono text-xs text-stone-700 dark:text-stone-300 tabular-nums">
@@ -176,7 +176,7 @@ export const TradingSalesView: React.FC = () => {
     },
     {
       key: 'netToPay',
-      header: 'Net à Payer (TTC)',
+      header: t('trading_sales_col_net_to_pay', 'Net à Payer (TTC)'),
       width: '140px',
       renderCell: (doc) => (
         <span className="font-mono font-bold text-xs text-stone-900 dark:text-stone-100 tabular-nums">
@@ -186,7 +186,7 @@ export const TradingSalesView: React.FC = () => {
     },
     {
       key: 'status',
-      header: 'Statut',
+      header: t('trading_sales_col_status', 'Statut'),
       width: '110px',
       renderCell: (doc) => {
         const isPaid = doc.status === 'Paid';
@@ -220,7 +220,7 @@ export const TradingSalesView: React.FC = () => {
               e.stopPropagation();
               setPrintDoc(doc);
             }}
-            title="Imprimer / PDF officiel"
+            title={t('action_print', 'Imprimer')}
             className="p-1.5 text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
           >
             <Printer size={14} />
@@ -231,7 +231,7 @@ export const TradingSalesView: React.FC = () => {
               e.stopPropagation();
               handleEdit(doc);
             }}
-            title="Modifier"
+            title={t('action_edit', 'Modifier')}
             className="p-1.5 text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
           >
             <Edit size={14} />
@@ -243,7 +243,7 @@ export const TradingSalesView: React.FC = () => {
                 e.stopPropagation();
                 handleConvert(doc);
               }}
-              title="Convertir en Bon de Livraison"
+              title={t('trading_sales_convert_to_bl', 'Convertir en Bon de Livraison')}
               className="px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors"
             >
               BL &rarr;
@@ -256,10 +256,10 @@ export const TradingSalesView: React.FC = () => {
                 e.stopPropagation();
                 handleConvert(doc);
               }}
-              title="Facturer ce bon de livraison"
+              title={t('trading_sales_convert_to_invoice', 'Facturer ce bon de livraison')}
               className="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-colors"
             >
-              Facturer &rarr;
+              {language === 'ar' ? 'فوترة ←' : 'Facturer →'}
             </button>
           )}
 
@@ -268,7 +268,7 @@ export const TradingSalesView: React.FC = () => {
               e.stopPropagation();
               setDeleteTarget(doc);
             }}
-            title="Supprimer"
+            title={t('action_delete', 'Supprimer')}
             className="p-1.5 text-stone-400 hover:text-rose-600 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
           >
             <Trash2 size={14} />
@@ -285,14 +285,14 @@ export const TradingSalesView: React.FC = () => {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold tracking-tight text-stone-900 dark:text-stone-100">
-              Cycle des Ventes & Facturation B2B
+              {t('trading_sales_title', 'Cycle des Ventes & Facturation B2B')}
             </h1>
             <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#C4785A]/15 text-[#C4785A]">
-              {commercialDocs.length} pièces
+              {commercialDocs.length} {language === 'ar' ? 'معاملة' : 'pièces'}
             </span>
           </div>
           <p className="text-xs text-stone-500 mt-1">
-            Gestion du flux complet : Devis &rarr; Bon de Commande &rarr; Bon de Livraison &rarr; Facture Fiscale &rarr; Avoir
+            {t('trading_sales_subtitle', 'Gestion du flux complet : Devis → Bon de Commande → Bon de Livraison → Facture Fiscale → Avoir')}
           </p>
         </div>
 
@@ -300,26 +300,26 @@ export const TradingSalesView: React.FC = () => {
         <div className="flex items-center gap-2">
           <button
             onClick={() => handleCreateNew('devis')}
-            className="px-3.5 py-2 rounded-xl text-xs font-semibold border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 hover:border-stone-300 text-stone-700 dark:text-stone-300 flex items-center gap-1.5 transition-colors shadow-xs"
+            className="px-3.5 py-2 rounded-xl text-xs font-semibold border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 hover:border-stone-300 text-stone-700 dark:text-stone-300 flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer"
           >
             <Plus size={14} className="text-[#C4785A]" />
-            <span>Nouveau Devis</span>
+            <span>{t('trading_sales_new_devis', 'Nouveau Devis')}</span>
           </button>
 
           <button
             onClick={() => handleCreateNew('bl')}
-            className="px-3.5 py-2 rounded-xl text-xs font-semibold border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 hover:border-stone-300 text-stone-700 dark:text-stone-300 flex items-center gap-1.5 transition-colors shadow-xs"
+            className="px-3.5 py-2 rounded-xl text-xs font-semibold border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 hover:border-stone-300 text-stone-700 dark:text-stone-300 flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer"
           >
             <Truck size={14} className="text-[#C4785A]" />
-            <span>Nouveau BL</span>
+            <span>{t('trading_sales_new_bl', 'Nouveau BL')}</span>
           </button>
 
           <button
             onClick={() => handleCreateNew('facture')}
-            className="px-4 py-2 rounded-xl text-xs font-semibold bg-[#C4785A] hover:bg-[#b06749] text-white shadow-xs flex items-center gap-1.5 transition-colors"
+            className="px-4 py-2 rounded-xl text-xs font-semibold bg-[#C4785A] hover:bg-[#b06749] text-white shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
           >
             <Plus size={15} />
-            <span>Nouvelle Facture</span>
+            <span>{t('trading_sales_new_invoice', 'Nouvelle Facture')}</span>
           </button>
         </div>
       </div>
@@ -329,12 +329,12 @@ export const TradingSalesView: React.FC = () => {
         <div className="flex items-center gap-1 sm:gap-2 overflow-x-auto">
           {(
             [
-              { key: 'all', label: 'Toutes les Pièces', count: tabCounts.all },
-              { key: 'devis', label: 'Devis & Proformas', count: tabCounts.devis },
-              { key: 'commande', label: 'Bons de Commande', count: tabCounts.commande },
-              { key: 'bl', label: 'Bons de Livraison (BL)', count: tabCounts.bl },
-              { key: 'facture', label: 'Factures Fiscales', count: tabCounts.facture },
-              { key: 'avoir', label: 'Avoirs & Retours', count: tabCounts.avoir },
+              { key: 'all', label: t('trading_doc_all', 'Toutes les Pièces'), count: tabCounts.all },
+              { key: 'devis', label: t('trading_doc_devis', 'Devis & Proformas'), count: tabCounts.devis },
+              { key: 'commande', label: t('trading_doc_commande', 'Bons de Commande'), count: tabCounts.commande },
+              { key: 'bl', label: t('trading_doc_bl', 'Bons de Livraison (BL)'), count: tabCounts.bl },
+              { key: 'facture', label: t('trading_doc_facture', 'Factures Fiscales'), count: tabCounts.facture },
+              { key: 'avoir', label: t('trading_doc_avoir', 'Avoirs & Retours'), count: tabCounts.avoir },
             ] as const
           ).map((tab) => {
             const isSelected = activeTab === tab.key;
@@ -342,7 +342,7 @@ export const TradingSalesView: React.FC = () => {
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
-                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium transition-all ${
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium transition-all cursor-pointer ${
                   isSelected
                     ? 'bg-[#C4785A]/10 text-[#C4785A] font-bold border border-[#C4785A]/30'
                     : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800'
@@ -367,7 +367,7 @@ export const TradingSalesView: React.FC = () => {
         <div className="w-64">
           <input
             type="text"
-            placeholder="Filtrer N° doc, client, NIF..."
+            placeholder={t('trading_sales_search_placeholder', 'Filtrer N° doc, client, NIF...')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full text-xs rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 px-3 py-1.5 text-stone-800 dark:text-stone-200 placeholder-stone-400 focus:outline-hidden focus:border-[#C4785A]"
@@ -395,13 +395,17 @@ export const TradingSalesView: React.FC = () => {
                 {doc.clientName}
               </p>
               <div className="flex justify-between text-xs font-mono pt-2 border-t border-stone-100 dark:border-stone-800">
-                <span className="text-stone-500">Net :</span>
+                <span className="text-stone-500">{t('trading_sales_col_net_to_pay', 'Net')} :</span>
                 <span className="font-bold">{formatMoney(doc.netToPay)}</span>
               </div>
             </div>
           )}
-          emptyTitle="Aucun document trouvé"
-          emptyDescription="Créez votre premier devis, bon de livraison ou facture fiscale en cliquant ci-dessus."
+          emptyTitle={language === 'ar' ? 'لا توجد معاملات مسجلة' : 'Aucun document trouvé'}
+          emptyDescription={
+            language === 'ar'
+              ? 'أنشئ أول عرض أسعار، وصل تسليم أو فاتورة تجارية بالنقر على الأزرار أعلاه.'
+              : 'Créez votre premier devis, bon de livraison ou facture fiscale en cliquant ci-dessus.'
+          }
         />
       </div>
 
@@ -428,9 +432,13 @@ export const TradingSalesView: React.FC = () => {
             setDeleteTarget(null);
           }
         }}
-        title="Supprimer la pièce commerciale ?"
-        description={`Êtes-vous certain de vouloir supprimer le document ${deleteTarget?.docNumber} (${deleteTarget?.clientName}) ? Cette opération est irréversible.`}
-        confirmLabel="Supprimer définitivement"
+        title={t('trading_sales_delete_title', 'Supprimer la pièce commerciale ?')}
+        description={
+          language === 'ar'
+            ? `هل أنت متأكد من حذف المستند ${deleteTarget?.docNumber} (${deleteTarget?.clientName})؟ هذا الإجراء لا يمكن التراجع عنه.`
+            : `Êtes-vous certain de vouloir supprimer le document ${deleteTarget?.docNumber} (${deleteTarget?.clientName}) ? Cette opération est irréversible.`
+        }
+        confirmLabel={t('action_delete', 'Supprimer définitivement')}
         variant="danger"
       />
     </div>

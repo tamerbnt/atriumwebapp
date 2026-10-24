@@ -177,11 +177,15 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
             <div>
               <h2 className="text-lg font-bold text-stone-900 dark:text-stone-100">
                 {isEdit
-                  ? `Modifier ${isSupplier ? 'le fournisseur' : 'le client B2B'}`
-                  : `Nouveau ${isSupplier ? 'Fournisseur' : 'Client Entreprise (B2B)'}`}
+                  ? isSupplier
+                    ? t('trading_entity_modal_edit_supplier')
+                    : t('trading_entity_modal_edit_client')
+                  : isSupplier
+                  ? t('trading_entity_modal_new_supplier')
+                  : t('trading_entity_modal_new_client')}
               </h2>
               <p className="text-xs text-stone-500">
-                Fiche légale conforme aux déclarations fiscales algériennes
+                {t('trading_entity_modal_sub')}
               </p>
             </div>
           </div>
@@ -199,12 +203,12 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
           <div>
             <h3 className="text-xs font-semibold text-stone-600 dark:text-stone-400 uppercase tracking-wider mb-3 flex items-center gap-2">
               <Building2 size={14} className="text-[#C4785A]" />
-              <span>Identité de l'Établissement</span>
+              <span>{t('trading_entity_company_identity')}</span>
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <LabelInput
-                label="Raison Sociale / Nom de l'Entreprise *"
+                label={t('trading_entity_company_name')}
                 placeholder="Ex: SARL Maghreb Travaux & Distribution"
                 value={companyName}
                 onChange={(e) => setCompanyName(e.target.value)}
@@ -212,7 +216,7 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
               />
 
               <LabelSelect
-                label="Secteur d'Activité"
+                label={t('trading_entity_sector')}
                 value={sector}
                 onChange={(val) => setSector(typeof val === 'string' ? val : val?.target?.value || val)}
                 options={[
@@ -228,7 +232,7 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
 
               <LabelInput
                 type="email"
-                label="Email Professionnel"
+                label={t('trading_entity_email')}
                 placeholder="direction@entreprise.dz"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -236,7 +240,7 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
 
               <LabelInput
                 type="tel"
-                label="Téléphone Standard / Fixe"
+                label={t('trading_entity_phone')}
                 placeholder="+213 21 00 00 00"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
@@ -245,7 +249,7 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
               <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div className="sm:col-span-2">
                   <LabelInput
-                    label="Adresse du Siège Social"
+                    label={t('trading_entity_address')}
                     placeholder="Rue, Zone Industrielle, Lot N°..."
                     value={address}
                     onChange={(e) => setAddress(e.target.value)}
@@ -253,7 +257,7 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
                 </div>
                 <div>
                   <LabelInput
-                    label="Ville / Wilaya"
+                    label={t('trading_entity_city')}
                     placeholder="Alger, Oran..."
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
@@ -268,17 +272,17 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
             <h3 className="text-xs font-semibold text-stone-700 dark:text-stone-300 uppercase tracking-wider flex items-center justify-between">
               <span className="flex items-center gap-2">
                 <FileText size={14} className="text-[#C4785A]" />
-                <span>Identifiants Fiscaux & Réglementaires Algériens</span>
+                <span>{t('trading_entity_fiscal_ids')}</span>
               </span>
               <span className="text-[10px] text-stone-400 font-normal">
-                Indispensable pour l'impression des Factures et BL conformes
+                {t('trading_entity_fiscal_sub')}
               </span>
             </h3>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
               <div>
                 <LabelInput
-                  label="Registre Comm. (RC)"
+                  label={t('trading_entity_rc')}
                   placeholder="Ex: 16/00-0982341B20"
                   value={rc}
                   onChange={(e) => setRc(e.target.value)}
@@ -287,7 +291,7 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
 
               <div>
                 <LabelInput
-                  label="N.I.F. (15 Chiffres)"
+                  label={t('trading_entity_nif')}
                   placeholder="Ex: 002016098234185"
                   value={nif}
                   onChange={(e) => setNif(e.target.value)}
@@ -296,7 +300,7 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
 
               <div>
                 <LabelInput
-                  label="N.I.S. (Statistique)"
+                  label={t('trading_entity_nis')}
                   placeholder="Ex: 0020160900142"
                   value={nis}
                   onChange={(e) => setNis(e.target.value)}
@@ -305,7 +309,7 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
 
               <div>
                 <LabelInput
-                  label="Art. d'Imposition (AI)"
+                  label={t('trading_entity_ai')}
                   placeholder="Ex: 16041289045"
                   value={ai}
                   onChange={(e) => setAi(e.target.value)}
@@ -315,7 +319,7 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
 
             <div>
               <LabelInput
-                label="RIB Bancaire ou CCP (20 chiffres + clé)"
+                label={t('trading_entity_rib')}
                 placeholder="Ex: 00100 00123 0000123456 42 (Banque Nationale d'Algérie)"
                 value={ribCcp}
                 onChange={(e) => setRibCcp(e.target.value)}
@@ -327,13 +331,13 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
           <div>
             <h3 className="text-xs font-semibold text-stone-600 dark:text-stone-400 uppercase tracking-wider mb-3 flex items-center gap-2">
               <User size={14} className="text-[#C4785A]" />
-              <span>Interlocuteur Principal (Directeur Achats / Gérant)</span>
+              <span>{t('trading_entity_primary_contact')}</span>
             </h3>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
               <div>
                 <LabelInput
-                  label="Nom & Prénom"
+                  label={t('trading_entity_contact_name')}
                   placeholder="Ex: Mourad Hadj-Said"
                   value={contactName}
                   onChange={(e) => setContactName(e.target.value)}
@@ -342,7 +346,7 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
 
               <div>
                 <LabelInput
-                  label="Fonction / Poste"
+                  label={t('trading_entity_contact_role')}
                   placeholder="Ex: Responsable des Achats"
                   value={contactRole}
                   onChange={(e) => setContactRole(e.target.value)}
@@ -352,7 +356,7 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
               <div>
                 <LabelInput
                   type="tel"
-                  label="Mobile Direct"
+                  label={t('trading_entity_contact_mobile')}
                   placeholder="+213 550 00 00 00"
                   value={contactPhone}
                   onChange={(e) => setContactPhone(e.target.value)}
@@ -362,7 +366,7 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
               <div>
                 <LabelInput
                   type="email"
-                  label="Email Direct"
+                  label={t('trading_entity_contact_email')}
                   placeholder="m.hadjsaid@entreprise.dz"
                   value={contactEmail}
                   onChange={(e) => setContactEmail(e.target.value)}
@@ -375,13 +379,13 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
           <div className="p-4 rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 space-y-4">
             <h3 className="text-xs font-semibold text-stone-600 dark:text-stone-400 uppercase tracking-wider flex items-center gap-2">
               <CreditCard size={14} className="text-[#C4785A]" />
-              <span>Conditions Commerciales & Plafond d'Encours</span>
+              <span>{t('trading_entity_commercial_terms')}</span>
             </h3>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
                 <LabelSelect
-                  label="Délai de Paiement Accordé"
+                  label={t('trading_entity_payment_terms_days')}
                   value={paymentTermsDays}
                   onChange={(val) => setPaymentTermsDays(Number(typeof val === 'object' && val?.target ? val.target.value : val))}
                   options={[
@@ -400,7 +404,7 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
                   <div>
                     <LabelInput
                       type="number"
-                      label="Plafond de Crédit Autorisé (DA)"
+                      label={t('trading_entity_credit_limit')}
                       value={creditLimit}
                       step={50000}
                       onChange={(e) => setCreditLimit(parseFloat(e.target.value) || 0)}
@@ -409,7 +413,7 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
 
                   <div>
                     <LabelSelect
-                      label="Mode de Règlement Privilégié"
+                      label={t('trading_entity_payment_pref')}
                       value={defaultPaymentMethod}
                       onChange={(val) => setDefaultPaymentMethod(typeof val === 'string' ? val : val?.target?.value || val)}
                       options={[
@@ -433,7 +437,7 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
               onClick={onClose}
               className="px-4 py-2 rounded-xl text-xs font-semibold text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
             >
-              Annuler
+              {t('trading_composer_btn_cancel')}
             </button>
 
             <button
@@ -441,7 +445,7 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
               className="px-5 py-2 rounded-xl text-xs font-semibold bg-[#C4785A] hover:bg-[#b06749] text-white shadow-xs transition-colors flex items-center gap-1.5"
             >
               <CheckCircle size={15} />
-              <span>{isEdit ? 'Enregistrer les Modifications' : 'Créer la Fiche'}</span>
+              <span>{isEdit ? t('trading_composer_btn_save_changes') : t('trading_entity_btn_create')}</span>
             </button>
           </div>
         </form>
