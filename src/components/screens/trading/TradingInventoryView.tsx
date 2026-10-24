@@ -15,6 +15,7 @@ import { StockMovementVoucher, WarehouseDepot, Product } from '../../../types';
 import { formatMoney } from '../../../utils/rules';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { StockMovementModal } from './StockMovementModal';
+import { LabelInput } from '../../ui/LabelInput';
 import { useTranslation } from '../../../utils/useTranslation';
 
 type ViewMode = 'stock_state' | 'vouchers';
@@ -442,7 +443,7 @@ export const TradingInventoryView: React.FC = () => {
                 label="Code Dépôt *"
                 placeholder="Ex: DEP-03"
                 value={depotCode}
-                onChange={(e) => setDepotCode(e.target.value)}
+                onChange={(e: any) => setDepotCode(e.target.value)}
                 required
               />
 
@@ -450,7 +451,7 @@ export const TradingInventoryView: React.FC = () => {
                 label="Nom du Dépôt / Hangar *"
                 placeholder="Ex: Dépôt Annaba Port"
                 value={depotName}
-                onChange={(e) => setDepotName(e.target.value)}
+                onChange={(e: any) => setDepotName(e.target.value)}
                 required
               />
 
@@ -458,14 +459,14 @@ export const TradingInventoryView: React.FC = () => {
                 label="Adresse Logistique"
                 placeholder="Ex: Quai Ouest, Zone Portuaire"
                 value={depotAddress}
-                onChange={(e) => setDepotAddress(e.target.value)}
+                onChange={(e: any) => setDepotAddress(e.target.value)}
               />
 
               <LabelInput
                 label="Ville"
                 placeholder="Ex: Annaba"
                 value={depotCity}
-                onChange={(e) => setDepotCity(e.target.value)}
+                onChange={(e: any) => setDepotCity(e.target.value)}
               />
 
               <div className="flex justify-end gap-2 pt-3 border-t">

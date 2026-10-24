@@ -98,6 +98,7 @@ export const TopBar: React.FC<TopBarProps> = ({
   const isEducation = currentBusiness?.category === 'education_cohort';
   const isPOS = currentBusiness?.category === 'pos_inventory';
   const isProjectMilestone = currentBusiness?.category === 'project_milestone';
+  const isTrading = currentBusiness?.category === 'trading_commercial';
 
   const getBreadcrumb = () => {
     const homeLabel = isProjectMilestone
@@ -110,6 +111,8 @@ export const TopBar: React.FC<TopBarProps> = ({
       ? t('nav_edu_dashboard', language)
       : isPOS
       ? t('nav_pos_register', language)
+      : isTrading
+      ? t('nav_trading_dashboard', language)
       : t('nav_home', language);
 
     // Dedicated settings breadcrumb
@@ -220,6 +223,7 @@ export const TopBar: React.FC<TopBarProps> = ({
 
     switch (activeScreen) {
       case 'dashboard':
+      case 'trading_dashboard':
         return (
           <div className="flex items-center gap-1.5 text-xs">
             <span className="font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-1.5">
@@ -227,6 +231,108 @@ export const TopBar: React.FC<TopBarProps> = ({
               {homeLabel}
             </span>
           </div>
+        );
+      case 'trading_sales':
+        return (
+          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs">
+            <button
+              type="button"
+              onClick={() => setScreen('trading_dashboard')}
+              className="text-neutral-400 hover:text-[#C4785A] font-medium transition-colors flex items-center gap-1 cursor-pointer"
+            >
+              <Home size={12} />
+              <span>{homeLabel}</span>
+            </button>
+            <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
+            <span className="text-neutral-900 dark:text-white font-semibold">
+              {t('nav_trading_sales', language)}
+            </span>
+          </nav>
+        );
+      case 'trading_purchases':
+        return (
+          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs">
+            <button
+              type="button"
+              onClick={() => setScreen('trading_dashboard')}
+              className="text-neutral-400 hover:text-[#C4785A] font-medium transition-colors flex items-center gap-1 cursor-pointer"
+            >
+              <Home size={12} />
+              <span>{homeLabel}</span>
+            </button>
+            <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
+            <span className="text-neutral-900 dark:text-white font-semibold">
+              {t('nav_trading_purchases', language)}
+            </span>
+          </nav>
+        );
+      case 'trading_inventory':
+        return (
+          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs">
+            <button
+              type="button"
+              onClick={() => setScreen('trading_dashboard')}
+              className="text-neutral-400 hover:text-[#C4785A] font-medium transition-colors flex items-center gap-1 cursor-pointer"
+            >
+              <Home size={12} />
+              <span>{homeLabel}</span>
+            </button>
+            <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
+            <span className="text-neutral-900 dark:text-white font-semibold">
+              {t('nav_trading_inventory', language)}
+            </span>
+          </nav>
+        );
+      case 'trading_directory':
+        return (
+          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs">
+            <button
+              type="button"
+              onClick={() => setScreen('trading_dashboard')}
+              className="text-neutral-400 hover:text-[#C4785A] font-medium transition-colors flex items-center gap-1 cursor-pointer"
+            >
+              <Home size={12} />
+              <span>{homeLabel}</span>
+            </button>
+            <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
+            <span className="text-neutral-900 dark:text-white font-semibold">
+              {t('nav_trading_directory', language)}
+            </span>
+          </nav>
+        );
+      case 'trading_catalog':
+        return (
+          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs">
+            <button
+              type="button"
+              onClick={() => setScreen('trading_dashboard')}
+              className="text-neutral-400 hover:text-[#C4785A] font-medium transition-colors flex items-center gap-1 cursor-pointer"
+            >
+              <Home size={12} />
+              <span>{homeLabel}</span>
+            </button>
+            <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
+            <span className="text-neutral-900 dark:text-white font-semibold">
+              {t('nav_trading_catalog', language)}
+            </span>
+          </nav>
+        );
+      case 'trading_finance':
+        return (
+          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs">
+            <button
+              type="button"
+              onClick={() => setScreen('trading_dashboard')}
+              className="text-neutral-400 hover:text-[#C4785A] font-medium transition-colors flex items-center gap-1 cursor-pointer"
+            >
+              <Home size={12} />
+              <span>{homeLabel}</span>
+            </button>
+            <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
+            <span className="text-neutral-900 dark:text-white font-semibold">
+              {t('nav_trading_finance', language)}
+            </span>
+          </nav>
         );
       case 'analytics':
         return (

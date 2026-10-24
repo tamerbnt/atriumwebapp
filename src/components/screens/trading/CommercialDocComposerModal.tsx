@@ -50,6 +50,8 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
     createCommercialDoc,
     updateCommercialDoc,
     allCommercialDocs,
+    currentBusiness,
+    currentBranchId,
   } = useAtriumStore();
 
   const isEdit = !!editingDoc;
@@ -296,6 +298,8 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
     }
 
     const docPayload: Omit<CommercialDocument, 'id' | 'createdAt' | 'updatedAt'> = {
+      tenantId: currentBusiness?.id || 'acc_01',
+      facilityId: currentBranchId || 'fac_01',
       type: docType,
       docNumber: generatedDocNumber,
       clientId,
@@ -415,14 +419,12 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
               <LabelSelect
                 label="Client B2B Destinataire *"
                 value={clientId}
-                onChange={(e) => setClientId(e.target.value)}
-              >
-                {b2bClients.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.companyName} {c.city ? `(${c.city})` : ''}
-                  </option>
-                ))}
-              </LabelSelect>
+                onChange={(val) => setClientId(typeof val === 'string' ? val : val?.target?.value || val)}
+                options={b2bClients.map((c) => ({
+                  value: c.id,
+                  label: `${c.companyName} ${c.city ? `(${c.city})` : ''}`,
+                }))}
+              />
               {selectedClient && (
                 <div className="mt-2 p-2 rounded-lg bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 text-[11px] space-y-1 text-stone-500">
                   <div className="flex justify-between">
@@ -452,14 +454,12 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
               <LabelSelect
                 label="Dépôt de Sortie / Stock *"
                 value={depotId}
-                onChange={(e) => setDepotId(e.target.value)}
-              >
-                {warehouses.map((w) => (
-                  <option key={w.id} value={w.id}>
-                    {w.code} — {w.name}
-                  </option>
-                ))}
-              </LabelSelect>
+                onChange={(val) => setDepotId(typeof val === 'string' ? val : val?.target?.value || val)}
+                options={warehouses.map((w) => ({
+                  value: w.id,
+                  label: `${w.code} — ${w.name}`,
+                }))}
+              />
               <div className="mt-2 text-[11px] text-stone-500 flex items-center gap-1.5">
                 <Building2 size={13} className="text-[#C4785A]" />
                 <span>{selectedDepot?.address}, {selectedDepot?.city}</span>
@@ -487,31 +487,34 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
                 <LabelSelect
                   label="Règlement"
                   value={paymentMethod}
-                  onChange={(e) => {
-                    setPaymentMethod(e.target.value);
-                    if (e.target.value.toLowerCase().includes('espèces')) {
+                  onChange={(val) => {
+                    const v = typeof val === 'string' ? val : val?.target?.value || val;
+                    setPaymentMethod(v);
+                    if (String(v).toLowerCase().includes('espèces')) {
                       setIsCashFiscalStampEnabled(true);
                     }
                   }}
-                >
-                  <option value="Virement bancaire">Virement bancaire</option>
-                  <option value="Chèque barré">Chèque barré</option>
-                  <option value="Chèque certifié">Chèque certifié</option>
-                  <option value="Espèces (Timbré)">Espèces (Timbre fiscal)</option>
-                  <option value="Traite / Effet">Traite / Effet commercial</option>
-                </LabelSelect>
+                  options={[
+                    { value: "Virement bancaire", label: "Virement bancaire" },
+                    { value: "Chèque barré", label: "Chèque barré" },
+                    { value: "Chèque certifié", label: "Chèque certifié" },
+                    { value: "Espèces (Timbré)", label: "Espèces (Timbre fiscal)" },
+                    { value: "Traite / Effet", label: "Traite / Effet commercial" },
+                  ]}
+                />
                 <LabelSelect
                   label="Condition"
                   value={paymentTerms}
-                  onChange={(e) => setPaymentTerms(e.target.value)}
-                >
-                  <option value="Comptant">Comptant à livraison</option>
-                  <option value="15 jours">15 jours</option>
-                  <option value="30 jours">30 jours fin de mois</option>
-                  <option value="45 jours">45 jours</option>
-                  <option value="60 jours">60 jours</option>
-                  <option value="90 jours">90 jours</option>
-                </LabelSelect>
+                  onChange={(val) => setPaymentTerms(typeof val === 'string' ? val : val?.target?.value || val)}
+                  options={[
+                    { value: "Comptant", label: "Comptant à livraison" },
+                    { value: "15 jours", label: "15 jours" },
+                    { value: "30 jours", label: "30 jours fin de mois" },
+                    { value: "45 jours", label: "45 jours" },
+                    { value: "60 jours", label: "60 jours" },
+                    { value: "90 jours", label: "90 jours" },
+                  ]}
+                />
               </div>
             </div>
           </div>

@@ -76,6 +76,8 @@ const TRANSLATIONS_EN = {
 
   // Category-Dedicated Navigation: POS Store
   nav_pos_register: 'Register & Stock',
+  nav_pos_inventory_tab_stock: 'Stock & Catalog',
+  nav_pos_inventory_tab_purchases: 'Supplier Restocking',
   nav_pos_sales_pulse: 'Sales Pulse',
   nav_pos_ledger: 'Sales Ledger',
   nav_pos_customers: 'Customer Accounts',
@@ -126,6 +128,14 @@ const TRANSLATIONS_EN = {
   nav_pm_compta_ccp: 'Algérie Poste CCP Slips',
   nav_pm_compta_expenses: 'Scanned Receipts & Audit',
   nav_pm_compta_stock: 'Asset & Equipment Inventory',
+  // Category-Dedicated Navigation: Commercial Trading & Wholesale
+  nav_trading_dashboard: 'Trading Pulse',
+  nav_trading_sales: 'Sales & Invoices',
+  nav_trading_purchases: 'Procurement & Orders',
+  nav_trading_inventory: 'Stock & Multi-Depot',
+  nav_trading_directory: 'B2B Directory',
+  nav_trading_catalog: 'Items & Services',
+  nav_trading_finance: 'Aging AR & Settlements',
 
   // TopBar
   topbar_search_placeholder: 'Search commands, clients, orders... (Ctrl+K)',
@@ -2732,6 +2742,8 @@ const TRANSLATIONS_FR: typeof TRANSLATIONS_EN = {
 
   // Category-Dedicated Navigation: POS Store
   nav_pos_register: 'Caisse & Stock',
+  nav_pos_inventory_tab_stock: 'Stock & Catalogue',
+  nav_pos_inventory_tab_purchases: 'Achats & Fournisseurs',
   nav_pos_sales_pulse: 'Activité des Ventes',
   nav_pos_ledger: 'Journal des Ventes',
   nav_pos_customers: 'Fichier Clients',
@@ -2782,6 +2794,14 @@ const TRANSLATIONS_FR: typeof TRANSLATIONS_EN = {
   nav_pm_compta_ccp: 'Formulaires CCP SFP 01',
   nav_pm_compta_expenses: 'Dépenses & Factures Scannées',
   nav_pm_compta_stock: 'Matériel Codé & Inventaire',
+  // Category-Dedicated Navigation: Commercial Trading & Wholesale
+  nav_trading_dashboard: 'Pulse Commercial',
+  nav_trading_sales: 'Cycle des Ventes',
+  nav_trading_purchases: 'Cycle des Achats',
+  nav_trading_inventory: 'Stocks & Multi-Dépôts',
+  nav_trading_directory: 'Répertoire B2B',
+  nav_trading_catalog: 'Articles & Services',
+  nav_trading_finance: 'Balance & Règlements',
 
   // TopBar
   topbar_search_placeholder: 'Rechercher une action, client, commande... (Ctrl+K)',
@@ -5388,6 +5408,8 @@ const TRANSLATIONS_AR: typeof TRANSLATIONS_EN = {
 
   // Category-Dedicated Navigation: POS Store
   nav_pos_register: 'نقطة البيع والمخزون',
+  nav_pos_inventory_tab_stock: 'المخزون والكتالوج',
+  nav_pos_inventory_tab_purchases: 'المشتريات والتموين',
   nav_pos_sales_pulse: 'نبض المبيعات والمؤشرات',
   nav_pos_ledger: 'سجل المبيعات والوصولات',
   nav_pos_customers: 'دليل الزبائن والحسابات',
@@ -5438,6 +5460,14 @@ const TRANSLATIONS_AR: typeof TRANSLATIONS_EN = {
   nav_pm_compta_ccp: 'حوالات بريد الجزائر SFP 01',
   nav_pm_compta_expenses: 'المصاريف والفواتير الممسوحة',
   nav_pm_compta_stock: 'جرد العتاد والمعدات المشفرة',
+  // Category-Dedicated Navigation: Commercial Trading & Wholesale
+  nav_trading_dashboard: 'لوحة التجارة B2B',
+  nav_trading_sales: 'المبيعات والفواتير',
+  nav_trading_purchases: 'المشتريات والطلبيات',
+  nav_trading_inventory: 'المخازن والمستودعات',
+  nav_trading_directory: 'دليل الشركاء B2B',
+  nav_trading_catalog: 'دليل المواد والخدمات',
+  nav_trading_finance: 'المالية ومستحقات الشركات',
 
   // TopBar
   topbar_search_placeholder: 'ابحث عن إجراء، زبون، فاتورة... (Ctrl+K)',

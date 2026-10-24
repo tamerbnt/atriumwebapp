@@ -515,6 +515,7 @@ export const POPULAR_BUSINESS_SEARCHES = [
   { label: 'Marketing Agency', query: 'marketing agency', category: 'project_milestone' as BusinessCategory },
   { label: 'Coworking / Studio', query: 'coworking space', category: 'rental_booking' as BusinessCategory },
   { label: 'Language Academy', query: 'language school', category: 'education_cohort' as BusinessCategory },
+  { label: 'Wholesale & Trading', query: 'wholesale distributor', category: 'trading_commercial' as BusinessCategory },
 ];
 
 export const getPopularBusinessSearches = (lang: string = 'en') => {
@@ -527,6 +528,7 @@ export const getPopularBusinessSearches = (lang: string = 'en') => {
       { label: 'وكالة إشهار واستشارات', query: 'وكالة تسويق', category: 'project_milestone' as BusinessCategory },
       { label: 'مساحة عمل واستوديو', query: 'مساحة عمل', category: 'rental_booking' as BusinessCategory },
       { label: 'مدرسة لغات وتكوين', query: 'مدرسة لغات', category: 'education_cohort' as BusinessCategory },
+      { label: 'تجارة وتوزيع بالجملة', query: 'تجارة الجملة', category: 'trading_commercial' as BusinessCategory },
     ];
   }
   if (lang === 'fr') {
@@ -538,6 +540,7 @@ export const getPopularBusinessSearches = (lang: string = 'en') => {
       { label: 'Agence Marketing & Conseil', query: 'agence marketing', category: 'project_milestone' as BusinessCategory },
       { label: 'Coworking & Studios', query: 'coworking', category: 'rental_booking' as BusinessCategory },
       { label: 'École de langues & Formation', query: 'ecole de langues', category: 'education_cohort' as BusinessCategory },
+      { label: 'Négoce & Distribution B2B', query: 'negoce distribution', category: 'trading_commercial' as BusinessCategory },
     ];
   }
   return POPULAR_BUSINESS_SEARCHES;

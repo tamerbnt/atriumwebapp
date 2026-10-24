@@ -250,14 +250,12 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
               <LabelSelect
                 label={type === 'transfert' ? 'Dépôt Expéditeur (Source) *' : 'Dépôt Concerné *'}
                 value={depotSourceId}
-                onChange={(e) => setDepotSourceId(e.target.value)}
-              >
-                {warehouses.map((w) => (
-                  <option key={w.id} value={w.id}>
-                    {w.code} — {w.name}
-                  </option>
-                ))}
-              </LabelSelect>
+                onChange={(val) => setDepotSourceId(typeof val === 'string' ? val : val?.target?.value || val)}
+                options={warehouses.map((w) => ({
+                  value: w.id,
+                  label: `${w.code} — ${w.name}`,
+                }))}
+              />
             </div>
 
             {type === 'transfert' ? (
@@ -265,38 +263,35 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
                 <LabelSelect
                   label="Dépôt Récepteur (Cible) *"
                   value={depotTargetId}
-                  onChange={(e) => setDepotTargetId(e.target.value)}
-                >
-                  <option value="">-- Choisir le dépôt cible --</option>
-                  {warehouses
+                  onChange={(val) => setDepotTargetId(typeof val === 'string' ? val : val?.target?.value || val)}
+                  placeholder="-- Choisir le dépôt cible --"
+                  options={warehouses
                     .filter((w) => w.id !== depotSourceId)
-                    .map((w) => (
-                      <option key={w.id} value={w.id}>
-                        {w.code} — {w.name}
-                      </option>
-                    ))}
-                </LabelSelect>
+                    .map((w) => ({
+                      value: w.id,
+                      label: `${w.code} — ${w.name}`,
+                    }))}
+                />
               </div>
             ) : (
               <div>
                 <LabelSelect
                   label="Motif du Mouvement *"
                   value={reason}
-                  onChange={(e) => setReason(e.target.value as any)}
-                >
-                  {type === 'entree' ? (
-                    <>
-                      <option value="reception_achat">Réception achat fournisseur</option>
-                      <option value="ajustement_inventaire">Ajustement inventaire positif (+)</option>
-                    </>
-                  ) : (
-                    <>
-                      <option value="sortie_client">Sortie livraison client</option>
-                      <option value="consommation_interne">Consommation interne atelier/chantier</option>
-                      <option value="rebut_casse">Rebut / Casse / Avarie (-)</option>
-                    </>
-                  )}
-                </LabelSelect>
+                  onChange={(val) => setReason((typeof val === 'string' ? val : val?.target?.value || val) as any)}
+                  options={
+                    type === 'entree'
+                      ? [
+                          { value: 'reception_achat', label: 'Réception achat fournisseur' },
+                          { value: 'ajustement_inventaire', label: 'Ajustement inventaire positif (+)' },
+                        ]
+                      : [
+                          { value: 'sortie_client', label: 'Sortie livraison client' },
+                          { value: 'consommation_interne', label: 'Consommation interne atelier/chantier' },
+                          { value: 'rebut_casse', label: 'Rebut / Casse / Avarie (-)' },
+                        ]
+                  }
+                />
               </div>
             )}
 

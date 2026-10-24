@@ -8,16 +8,17 @@ import {
   Clock,
   Printer,
   Calendar,
-  Building2,
   Trash2,
   AlertCircle,
+  X,
 } from 'lucide-react';
 import { useAtriumStore } from '../../../services/store';
-import { PurchaseDocument, PurchaseDocType } from '../../../types';
+import { PurchaseDocument, PurchaseDocType, CommercialDocument } from '../../../types';
 import { formatMoney } from '../../../utils/rules';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
+import { CommercialDocPrintModal } from './CommercialDocPrintModal';
 import { useTranslation } from '../../../utils/useTranslation';
 
 type PurchaseTab = 'all' | 'po' | 'br' | 'facture_fournisseur';
@@ -31,11 +32,57 @@ export const TradingPurchasesView: React.FC = () => {
     products,
     createPurchaseDoc,
     receivePurchaseDoc,
+    currentBusiness,
+    currentBranchId,
   } = useAtriumStore();
 
   const [activeTab, setActiveTab] = useState<PurchaseTab>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [isPoModalOpen, setIsPoModalOpen] = useState(false);
+  const [printDoc, setPrintDoc] = useState<CommercialDocument | null>(null);
+
+  const commercialDocFromPurchase = (p: PurchaseDocument): CommercialDocument => ({
+    id: p.id,
+    type: p.type === 'po' ? 'commande' : 'bl',
+    docNumber: p.docNumber,
+    clientId: p.supplierId,
+    clientName: p.supplierName,
+    depotId: p.depotId,
+    depotName: p.depotName,
+    date: p.orderDate,
+    dueDate: p.deliveryExpectedDate,
+    paymentMethod: 'Virement bancaire',
+    paymentTerms: '30 jours',
+    status: p.status === 'Received' ? 'Delivered' : 'Validated',
+    items: p.items.map((it) => ({
+      id: it.id,
+      productId: it.productId,
+      description: it.description,
+      isService: false,
+      quantity: it.orderedQty,
+      unit: it.unit,
+      unitPriceHt: it.unitCostHt,
+      tvaPercent: it.tvaPercent,
+      totalHt: it.totalHt,
+      totalTtc: it.totalHt * (1 + it.tvaPercent / 100),
+    })),
+    totalHtRaw: p.totalHt,
+    generalDiscountPercent: 0,
+    totalHtFinal: p.totalHt,
+    totalTva: p.totalTva,
+    timbreFiscal: 0,
+    totalTtc: p.totalTtc,
+    guaranteeRetentionPercent: 0,
+    guaranteeRetentionAmount: 0,
+    netToPay: p.totalTtc,
+    currency: p.currency,
+    notesTop: p.notes,
+    includeStampSignature: true,
+    createdAt: p.createdAt,
+    updatedAt: p.updatedAt,
+    tenantId: p.tenantId,
+    facilityId: p.facilityId,
+  });
 
   // New PO state
   const [supplierId, setSupplierId] = useState(b2bSuppliers[0]?.id || '');
@@ -44,6 +91,7 @@ export const TradingPurchasesView: React.FC = () => {
   const [poNotes, setPoNotes] = useState('');
   const [poItems, setPoItems] = useState([
     {
+      id: 'po_it_1',
       productId: products[0]?.id || '',
       description: products[0]?.name || '',
       orderedQty: 10,
@@ -80,6 +128,8 @@ export const TradingPurchasesView: React.FC = () => {
     const totalTva = totalHt * 0.19;
 
     createPurchaseDoc({
+      tenantId: currentBusiness?.id || 'acc_01',
+      facilityId: currentBranchId || 'fac_01',
       type: 'po',
       docNumber,
       supplierId: sup?.id || 'sup_01',
@@ -195,6 +245,14 @@ export const TradingPurchasesView: React.FC = () => {
       width: '160px',
       renderCell: (doc) => (
         <div className="flex items-center justify-end gap-2">
+          <button
+            onClick={() => setPrintDoc(commercialDocFromPurchase(doc))}
+            title="Imprimer le bon (PDF A4)"
+            className="p-1.5 text-stone-400 hover:text-[#C4785A] hover:bg-stone-100 dark:hover:bg-stone-800 rounded-lg transition-colors cursor-pointer"
+          >
+            <Printer size={14} />
+          </button>
+
           {doc.type === 'po' && doc.status === 'Ordered' && (
             <button
               onClick={() => receivePurchaseDoc(doc.id)}
@@ -321,26 +379,22 @@ export const TradingPurchasesView: React.FC = () => {
                 <LabelSelect
                   label="Fournisseur *"
                   value={supplierId}
-                  onChange={(e) => setSupplierId(e.target.value)}
-                >
-                  {b2bSuppliers.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.supplierName}
-                    </option>
-                  ))}
-                </LabelSelect>
+                  onChange={(val) => setSupplierId(typeof val === 'string' ? val : val?.target?.value || val)}
+                  options={b2bSuppliers.map((s) => ({
+                    value: s.id,
+                    label: s.supplierName,
+                  }))}
+                />
 
                 <LabelSelect
                   label="Dépôt de Destination *"
                   value={depotId}
-                  onChange={(e) => setDepotId(e.target.value)}
-                >
-                  {warehouses.map((w) => (
-                    <option key={w.id} value={w.id}>
-                      {w.code} — {w.name}
-                    </option>
-                  ))}
-                </LabelSelect>
+                  onChange={(val) => setDepotId(typeof val === 'string' ? val : val?.target?.value || val)}
+                  options={warehouses.map((w) => ({
+                    value: w.id,
+                    label: `${w.code} — ${w.name}`,
+                  }))}
+                />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
@@ -373,6 +427,7 @@ export const TradingPurchasesView: React.FC = () => {
                         if (!prod) return;
                         setPoItems([
                           {
+                            id: `po_it_${Date.now()}`,
                             productId: prod.id,
                             description: prod.name,
                             orderedQty: 10,
@@ -431,6 +486,12 @@ export const TradingPurchasesView: React.FC = () => {
           </div>
         </div>
       )}
+      {/* Printable A4 Modal */}
+      <CommercialDocPrintModal
+        isOpen={!!printDoc}
+        onClose={() => setPrintDoc(null)}
+        document={printDoc}
+      />
     </div>
   );
 };

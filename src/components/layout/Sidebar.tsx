@@ -498,6 +498,58 @@ export const Sidebar: React.FC<SidebarProps> = ({
         label: t('nav_settings', language),
       },
     ];
+  } else if (category === 'trading_commercial') {
+    // Dedicated Category 8: B2B Commercial Trading & Wholesale Architecture
+    dockNavItems = [
+      {
+        id: 'trading_dashboard',
+        icon: <Home size={19} />,
+        title: t('nav_trading_dashboard', language),
+        label: t('nav_home', language),
+      },
+      {
+        id: 'trading_sales',
+        icon: <FileText size={19} />,
+        title: t('nav_trading_sales', language),
+        label: language === 'ar' ? 'المبيعات' : language === 'fr' ? 'Ventes' : 'Sales',
+      },
+      {
+        id: 'trading_purchases',
+        icon: <Truck size={19} />,
+        title: t('nav_trading_purchases', language),
+        label: language === 'ar' ? 'المشتريات' : language === 'fr' ? 'Achats' : 'Purchases',
+      },
+      {
+        id: 'trading_inventory',
+        icon: <Boxes size={19} />,
+        title: t('nav_trading_inventory', language),
+        label: language === 'ar' ? 'المخزون' : language === 'fr' ? 'Stocks' : 'Stock',
+      },
+      {
+        id: 'trading_directory',
+        icon: <Building2 size={19} />,
+        title: t('nav_trading_directory', language),
+        label: language === 'ar' ? 'الشركاء' : language === 'fr' ? 'Répertoire' : 'Directory',
+      },
+      {
+        id: 'trading_catalog',
+        icon: <ShoppingBag size={19} />,
+        title: t('nav_trading_catalog', language),
+        label: language === 'ar' ? 'المواد' : language === 'fr' ? 'Articles' : 'Catalog',
+      },
+      {
+        id: 'trading_finance',
+        icon: <Wallet size={19} />,
+        title: t('nav_trading_finance', language),
+        label: t('nav_finance', language),
+      },
+      {
+        id: 'settings',
+        icon: <Settings size={19} />,
+        title: t('nav_settings', language),
+        label: t('nav_settings', language),
+      },
+    ];
   } else {
     // Membership / Gym & Fitness Architecture
     dockNavItems = [
@@ -690,7 +742,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* Center Vertical Dock Navigation */}
         <nav className="flex flex-col items-center gap-2.5 my-auto w-full">
           {dockNavItems.map((item, index) => {
-            const isActive = activeScreen === item.id;
+            const isActive =
+              activeScreen === item.id ||
+              (item.id === 'trading_dashboard' && activeScreen === 'dashboard') ||
+              (item.id === 'dashboard' && activeScreen === 'trading_dashboard');
 
             return (
               <button

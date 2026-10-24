@@ -27,6 +27,9 @@ import {
   Radio,
   Wallet,
   Activity,
+  Truck,
+  Boxes,
+  Building2,
 } from 'lucide-react';
 import { useAtriumStore, ActiveScreen } from '../../services/store';
 import { t } from '../../utils/i18n';
@@ -138,6 +141,30 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
           id: `nav-${nav.id}`,
           title: nav.label,
           subtitle: nav.role,
+          category: navCategoryLabel,
+          icon: nav.icon,
+          onSelect: () => {
+            setScreen(nav.id);
+            onClose();
+          },
+        });
+      });
+    } else if (category === 'trading_commercial') {
+      const tradingNav: Array<{ id: ActiveScreen; label: string; icon: React.ReactNode }> = [
+        { id: 'trading_dashboard', label: t('nav_trading_dashboard', language), icon: <Home size={15} /> },
+        { id: 'trading_sales', label: t('nav_trading_sales', language), icon: <FileText size={15} /> },
+        { id: 'trading_purchases', label: t('nav_trading_purchases', language), icon: <Truck size={15} /> },
+        { id: 'trading_inventory', label: t('nav_trading_inventory', language), icon: <Boxes size={15} /> },
+        { id: 'trading_directory', label: t('nav_trading_directory', language), icon: <Building2 size={15} /> },
+        { id: 'trading_catalog', label: t('nav_trading_catalog', language), icon: <ShoppingBag size={15} /> },
+        { id: 'trading_finance', label: t('nav_trading_finance', language), icon: <CreditCard size={15} /> },
+        { id: 'settings', label: t('nav_settings', language), icon: <Settings size={15} /> },
+      ];
+
+      tradingNav.forEach((nav) => {
+        list.push({
+          id: `nav-${nav.id}`,
+          title: nav.label,
           category: navCategoryLabel,
           icon: nav.icon,
           onSelect: () => {

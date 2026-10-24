@@ -7,6 +7,7 @@ import {
   Briefcase,
   GraduationCap,
   Laptop,
+  Truck,
   Check,
   ChevronRight,
   ChevronLeft,
@@ -283,6 +284,13 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
       subtitle: 'Bootcamps, Language schools, Academies',
       icon: <GraduationCap size={18} className="text-[#C4785A]" />,
       tagline: 'Cohort Timetables & Enrollments',
+    },
+    {
+      id: 'trading_commercial',
+      title: 'Commercial & Wholesale',
+      subtitle: 'Wholesalers, B2B Distribution, Material Supply',
+      icon: <Truck size={18} className="text-[#C4785A]" />,
+      tagline: 'Quotes, BLs, Supplier POs & Warehouses',
     },
   ];
 

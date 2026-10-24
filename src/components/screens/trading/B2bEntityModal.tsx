@@ -214,16 +214,17 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
               <LabelSelect
                 label="Secteur d'Activité"
                 value={sector}
-                onChange={(e) => setSector(e.target.value)}
-              >
-                <option value="BTPH & Gros Œuvre">BTPH & Gros Œuvre</option>
-                <option value="Second Œuvre & Rénovation">Second Œuvre & Rénovation</option>
-                <option value="Distribution & Quincaillerie">Distribution & Quincaillerie</option>
-                <option value="Électricité & Fluides">Électricité & Fluides</option>
-                <option value="Industrie & Sidérurgie">Industrie & Sidérurgie</option>
-                <option value="Agroalimentaire & FMCG">Agroalimentaire & FMCG</option>
-                <option value="Autre">Autre</option>
-              </LabelSelect>
+                onChange={(val) => setSector(typeof val === 'string' ? val : val?.target?.value || val)}
+                options={[
+                  "BTPH & Gros Œuvre",
+                  "Second Œuvre & Rénovation",
+                  "Distribution & Quincaillerie",
+                  "Électricité & Fluides",
+                  "Industrie & Sidérurgie",
+                  "Agroalimentaire & FMCG",
+                  "Autre"
+                ]}
+              />
 
               <LabelInput
                 type="email"
@@ -382,15 +383,16 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
                 <LabelSelect
                   label="Délai de Paiement Accordé"
                   value={paymentTermsDays}
-                  onChange={(e) => setPaymentTermsDays(parseInt(e.target.value, 10))}
-                >
-                  <option value="0">Comptant à la livraison (0 jour)</option>
-                  <option value="15">15 jours net</option>
-                  <option value="30">30 jours fin de mois</option>
-                  <option value="45">45 jours</option>
-                  <option value="60">60 jours</option>
-                  <option value="90">90 jours</option>
-                </LabelSelect>
+                  onChange={(val) => setPaymentTermsDays(Number(typeof val === 'object' && val?.target ? val.target.value : val))}
+                  options={[
+                    { value: 0, label: "Comptant à la livraison (0 jour)" },
+                    { value: 15, label: "15 jours net" },
+                    { value: 30, label: "30 jours fin de mois" },
+                    { value: 45, label: "45 jours" },
+                    { value: 60, label: "60 jours" },
+                    { value: 90, label: "90 jours" }
+                  ]}
+                />
               </div>
 
               {!isSupplier && (
@@ -409,14 +411,15 @@ export const B2bEntityModal: React.FC<B2bEntityModalProps> = ({
                     <LabelSelect
                       label="Mode de Règlement Privilégié"
                       value={defaultPaymentMethod}
-                      onChange={(e) => setDefaultPaymentMethod(e.target.value)}
-                    >
-                      <option value="Virement bancaire">Virement bancaire</option>
-                      <option value="Chèque barré">Chèque barré</option>
-                      <option value="Chèque certifié">Chèque certifié</option>
-                      <option value="Espèces (Timbré)">Espèces (Timbré)</option>
-                      <option value="Traite">Traite / Effet</option>
-                    </LabelSelect>
+                      onChange={(val) => setDefaultPaymentMethod(typeof val === 'string' ? val : val?.target?.value || val)}
+                      options={[
+                        { value: "Virement bancaire", label: "Virement bancaire" },
+                        { value: "Chèque barré", label: "Chèque barré" },
+                        { value: "Chèque certifié", label: "Chèque certifié" },
+                        { value: "Espèces (Timbré)", label: "Espèces (Timbré)" },
+                        { value: "Traite", label: "Traite / Effet" }
+                      ]}
+                    />
                   </div>
                 </>
               )}

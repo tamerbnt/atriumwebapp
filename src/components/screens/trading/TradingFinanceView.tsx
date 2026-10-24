@@ -298,14 +298,15 @@ export const TradingFinanceView: React.FC = () => {
               <LabelSelect
                 label="Mode de Règlement Encaissé *"
                 value={settleMethod}
-                onChange={(e) => setSettleMethod(e.target.value)}
-              >
-                <option value="Virement bancaire">Virement bancaire</option>
-                <option value="Chèque barré">Chèque barré</option>
-                <option value="Chèque certifié">Chèque certifié</option>
-                <option value="Espèces (Timbré)">Espèces (Timbre fiscal 1%)</option>
-                <option value="Traite / Effet">Traite / Effet commercial</option>
-              </LabelSelect>
+                onChange={(val) => setSettleMethod(typeof val === 'string' ? val : val?.target?.value || val)}
+                options={[
+                  { value: "Virement bancaire", label: "Virement bancaire" },
+                  { value: "Chèque barré", label: "Chèque barré" },
+                  { value: "Chèque certifié", label: "Chèque certifié" },
+                  { value: "Espèces (Timbré)", label: "Espèces (Timbre fiscal 1%)" },
+                  { value: "Traite / Effet", label: "Traite / Effet commercial" }
+                ]}
+              />
 
               <LabelInput
                 label="N° Chèque / Référence Virement"

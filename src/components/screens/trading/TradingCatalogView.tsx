@@ -332,19 +332,20 @@ export const TradingCatalogView: React.FC = () => {
                 <LabelSelect
                   label="Unité de Mesure"
                   value={unit}
-                  onChange={(e) => setUnit(e.target.value)}
-                >
-                  <option value="u">u (Unité)</option>
-                  <option value="pcs">pcs (Pièces)</option>
-                  <option value="sac">sac (Sac)</option>
-                  <option value="barre">barre (Barre)</option>
-                  <option value="fut">fût (Fût)</option>
-                  <option value="tonne">tonne (Tonne)</option>
-                  <option value="m">m (Mètre)</option>
-                  <option value="m²">m² (Mètre carré)</option>
-                  <option value="pack">pack (Couronne/Lot)</option>
-                  <option value="forfait">forfait (Prestation)</option>
-                </LabelSelect>
+                  onChange={(val) => setUnit(typeof val === 'string' ? val : val?.target?.value || val)}
+                  options={[
+                    { value: "u", label: "u (Unité)" },
+                    { value: "pcs", label: "pcs (Pièces)" },
+                    { value: "sac", label: "sac (Sac)" },
+                    { value: "barre", label: "barre (Barre)" },
+                    { value: "fut", label: "fût (Fût)" },
+                    { value: "tonne", label: "tonne (Tonne)" },
+                    { value: "m", label: "m (Mètre)" },
+                    { value: "m²", label: "m² (Mètre carré)" },
+                    { value: "pack", label: "pack (Couronne/Lot)" },
+                    { value: "forfait", label: "forfait (Prestation)" }
+                  ]}
+                />
               </div>
 
               <div className="grid grid-cols-3 gap-3">
@@ -366,12 +367,13 @@ export const TradingCatalogView: React.FC = () => {
                 <LabelSelect
                   label="Taux TVA"
                   value={taxRate}
-                  onChange={(e) => setTaxRate(parseInt(e.target.value, 10))}
-                >
-                  <option value="19">19% (Standard)</option>
-                  <option value="9">9% (Réduit)</option>
-                  <option value="0">0% (Exonéré)</option>
-                </LabelSelect>
+                  onChange={(val) => setTaxRate(Number(typeof val === 'object' && val?.target ? val.target.value : val))}
+                  options={[
+                    { value: 19, label: "19% (Standard)" },
+                    { value: 9, label: "9% (Réduit)" },
+                    { value: 0, label: "0% (Exonéré)" }
+                  ]}
+                />
               </div>
 
               <div className="flex justify-end gap-2 pt-3 border-t">
