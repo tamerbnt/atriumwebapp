@@ -39,6 +39,12 @@ export const MedicalClinicView: React.FC<MedicalClinicViewProps> = ({ initialTab
   const { t } = useTranslation();
 
   const [activeTab, setActiveTab] = useState<'dashboard' | 'queue' | 'patients' | 'prescriptions' | 'billing'>(initialTab);
+
+  React.useEffect(() => {
+    if (initialTab) {
+      setActiveTab(initialTab);
+    }
+  }, [initialTab]);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterTriage, setFilterTriage] = useState<'all' | 'urgent' | 'scheduled' | 'walkin'>('all');
 

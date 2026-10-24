@@ -796,30 +796,47 @@ export function dismissToast(id: string) {
   notify();
 }
 
-export function showToast(toastInput: {
-  type: ToastType;
-  title: string;
-  message: string;
-  duration?: number;
-  syncStatus?: ToastSyncStatus;
-  table?: string;
-  category?: BusinessCategory;
-  action?: {
-    label: string;
-    onClick: () => void;
-  };
-}) {
+export function showToast(
+  toastInputOrMessage:
+    | string
+    | {
+        type: ToastType;
+        title: string;
+        message: string;
+        duration?: number;
+        syncStatus?: ToastSyncStatus;
+        table?: string;
+        category?: BusinessCategory;
+        action?: {
+          label: string;
+          onClick: () => void;
+        };
+      },
+  toastType?: ToastType
+) {
+  const isString = typeof toastInputOrMessage === 'string';
+  const type: ToastType = isString ? (toastType || 'info') : toastInputOrMessage.type;
+  const title: string = isString
+    ? (type === 'success' ? 'Succès' : type === 'error' ? 'Erreur' : type === 'warning' ? 'Attention' : 'Notification')
+    : toastInputOrMessage.title;
+  const message: string = isString ? toastInputOrMessage : toastInputOrMessage.message;
+  const duration = isString ? 6000 : (toastInputOrMessage.duration ?? 6000);
+  const syncStatus = isString ? undefined : toastInputOrMessage.syncStatus;
+  const table = isString ? undefined : toastInputOrMessage.table;
+  const category = isString ? undefined : toastInputOrMessage.category;
+  const action = isString ? undefined : toastInputOrMessage.action;
+
   const id = `toast-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
   const newToast: ToastNotification = {
     id,
-    type: toastInput.type,
-    title: toastInput.title,
-    message: toastInput.message,
-    duration: toastInput.duration ?? 6000,
-    syncStatus: toastInput.syncStatus,
-    table: toastInput.table,
-    category: toastInput.category,
-    action: toastInput.action,
+    type,
+    title,
+    message,
+    duration,
+    syncStatus,
+    table,
+    category,
+    action,
     createdAt: Date.now(),
   };
 

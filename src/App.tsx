@@ -372,56 +372,117 @@ export default function App() {
       if (activeScreen === 'settings') {
         return <SettingsScreen onOpenVoucherModal={() => setIsVoucherModalOpen(true)} />;
       }
-      return <MedicalClinicView />;
+      const tabMap: Record<string, 'dashboard' | 'queue' | 'patients' | 'prescriptions' | 'billing'> = {
+        dashboard: 'dashboard',
+        scheduler: 'queue',
+        members: 'patients',
+        shop: 'prescriptions',
+        registrations: 'prescriptions',
+        finance: 'billing',
+      };
+      return <MedicalClinicView initialTab={tabMap[activeScreen] || 'dashboard'} />;
     }
 
     if (currentBusiness?.category === 'auto_garage') {
       if (activeScreen === 'settings') {
         return <SettingsScreen onOpenVoucherModal={() => setIsVoucherModalOpen(true)} />;
       }
-      return <AutoGarageView />;
+      const tabMap: Record<string, 'dashboard' | 'orders' | 'vehicles' | 'parts' | 'billing'> = {
+        dashboard: 'dashboard',
+        scheduler: 'orders',
+        registrations: 'orders',
+        members: 'vehicles',
+        shop: 'parts',
+        finance: 'billing',
+      };
+      return <AutoGarageView initialTab={tabMap[activeScreen] || 'dashboard'} />;
     }
 
     if (currentBusiness?.category === 'real_estate') {
       if (activeScreen === 'settings') {
         return <SettingsScreen onOpenVoucherModal={() => setIsVoucherModalOpen(true)} />;
       }
-      return <RealEstateView />;
+      const tabMap: Record<string, 'dashboard' | 'properties' | 'leases' | 'inspections' | 'finance'> = {
+        dashboard: 'dashboard',
+        members: 'properties',
+        scheduler: 'leases',
+        registrations: 'inspections',
+        finance: 'finance',
+      };
+      return <RealEstateView initialTab={tabMap[activeScreen] || 'dashboard'} />;
     }
 
     if (currentBusiness?.category === 'manufacturing_production') {
       if (activeScreen === 'settings') {
         return <SettingsScreen onOpenVoucherModal={() => setIsVoucherModalOpen(true)} />;
       }
-      return <ManufacturingView />;
+      const tabMap: Record<string, 'dashboard' | 'orders' | 'bom' | 'materials' | 'qc'> = {
+        dashboard: 'dashboard',
+        scheduler: 'orders',
+        shop: 'bom',
+        members: 'materials',
+        registrations: 'orders',
+        finance: 'qc',
+      };
+      return <ManufacturingView initialTab={tabMap[activeScreen] || 'dashboard'} />;
     }
 
     if (currentBusiness?.category === 'legal_accounting') {
       if (activeScreen === 'settings') {
         return <SettingsScreen onOpenVoucherModal={() => setIsVoucherModalOpen(true)} />;
       }
-      return <LegalCabinetView />;
+      const tabMap: Record<string, 'dashboard' | 'matters' | 'hearings' | 'vault' | 'trust'> = {
+        dashboard: 'dashboard',
+        members: 'matters',
+        scheduler: 'hearings',
+        registrations: 'vault',
+        finance: 'trust',
+      };
+      return <LegalCabinetView initialTab={tabMap[activeScreen] || 'dashboard'} />;
     }
 
     if (currentBusiness?.category === 'logistics_delivery') {
       if (activeScreen === 'settings') {
         return <SettingsScreen onOpenVoucherModal={() => setIsVoucherModalOpen(true)} />;
       }
-      return <LogisticsView />;
+      const tabMap: Record<string, 'dashboard' | 'shipments' | 'manifests' | 'scanner' | 'cod'> = {
+        dashboard: 'dashboard',
+        members: 'shipments',
+        scheduler: 'manifests',
+        registrations: 'scanner',
+        finance: 'cod',
+      };
+      return <LogisticsView initialTab={tabMap[activeScreen] || 'dashboard'} />;
     }
 
     if (currentBusiness?.category === 'construction_contractor') {
       if (activeScreen === 'settings') {
         return <SettingsScreen onOpenVoucherModal={() => setIsVoucherModalOpen(true)} />;
       }
-      return <ContractorView />;
+      const tabMap: Record<string, 'dashboard' | 'projects' | 'boq' | 'progress' | 'finance'> = {
+        dashboard: 'dashboard',
+        members: 'projects',
+        shop: 'boq',
+        scheduler: 'progress',
+        registrations: 'projects',
+        finance: 'finance',
+      };
+      return <ContractorView initialTab={tabMap[activeScreen] || 'dashboard'} />;
     }
 
     if (currentBusiness?.category === 'agriculture_farming') {
       if (activeScreen === 'settings') {
         return <SettingsScreen onOpenVoucherModal={() => setIsVoucherModalOpen(true)} />;
       }
-      return <AgricultureView />;
+      const tabMap: Record<string, 'dashboard' | 'parcels' | 'crops' | 'harvest' | 'livestock' | 'finance'> = {
+        dashboard: 'dashboard',
+        members: 'parcels',
+        scheduler: 'crops',
+        shop: 'harvest',
+        registrations: 'livestock',
+        finance: 'finance',
+      };
+      return <AgricultureView initialTab={tabMap[activeScreen] || 'dashboard'} />;
     }
 
     const isMembership = currentBusiness?.category === 'membership_session';

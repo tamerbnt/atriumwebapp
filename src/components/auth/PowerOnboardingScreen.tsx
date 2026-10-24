@@ -8,6 +8,13 @@ import {
   GraduationCap,
   Laptop,
   Truck,
+  Stethoscope,
+  Wrench,
+  Home,
+  Factory,
+  Scale,
+  HardHat,
+  Sprout,
   Check,
   ChevronRight,
   ChevronLeft,
@@ -237,6 +244,62 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
     tagline: string;
   }> = [
     {
+      id: 'medical_clinic',
+      title: 'Medical & Clinic',
+      subtitle: 'Doctors, Dentists, Poly-clinics, Cabinets',
+      icon: <Stethoscope size={18} className="text-[#C4785A]" />,
+      tagline: 'EHR, Triage Queue, Consultations & Chifa',
+    },
+    {
+      id: 'auto_garage',
+      title: 'Auto Garage & Repair',
+      subtitle: 'Workshops, Diagnostics, Mechanics, Body Shop',
+      icon: <Wrench size={18} className="text-[#C4785A]" />,
+      tagline: 'Repair Orders (OR), OBD-II & Parts Stock',
+    },
+    {
+      id: 'real_estate',
+      title: 'Real Estate & Leases',
+      subtitle: 'Agencies, Brokers, Rentals, Management',
+      icon: <Home size={18} className="text-[#C4785A]" />,
+      tagline: 'Property Registry, Quittances & Inspections',
+    },
+    {
+      id: 'manufacturing_production',
+      title: 'Manufacturing & Workshop',
+      subtitle: 'Light Industry, Assembly, Factories, BOM',
+      icon: <Factory size={18} className="text-[#C4785A]" />,
+      tagline: 'Nomenclatures (BOM), Work Orders & QC',
+    },
+    {
+      id: 'legal_accounting',
+      title: 'Legal & Accounting',
+      subtitle: 'Law Firms, Notaries, Bailiffs, CPAs',
+      icon: <Scale size={18} className="text-[#C4785A]" />,
+      tagline: 'Case Dockets, Hearings, Trust & Retainers',
+    },
+    {
+      id: 'logistics_delivery',
+      title: 'Delivery & Logistics',
+      subtitle: 'Couriers, Express Freight, 58 Wilayas',
+      icon: <Truck size={18} className="text-[#C4785A]" />,
+      tagline: 'AWB Waybills, Driver Run Sheets & COD',
+    },
+    {
+      id: 'construction_contractor',
+      title: 'Construction & BTP',
+      subtitle: 'Public Works, Civil Engineering, Building',
+      icon: <HardHat size={18} className="text-[#C4785A]" />,
+      tagline: 'BOQ Devis, Joint Surveys, DGP & 5% Guarantee',
+    },
+    {
+      id: 'agriculture_farming',
+      title: 'Agriculture & Livestock',
+      subtitle: 'Farms, Greenhouses, Orchards, Breeding',
+      icon: <Sprout size={18} className="text-[#C4785A]" />,
+      tagline: 'Parcels, DAR Safety, Weighbridge & Cheptel',
+    },
+    {
       id: 'freelance_solo',
       title: 'Freelancers & Solo',
       subtitle: 'Design, Dev, Consulting, Media Creators',
@@ -245,15 +308,15 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
     },
     {
       id: 'membership_session',
-      title: 'Membership',
+      title: 'Membership & Gym',
       subtitle: 'Gyms, Martial arts, CrossFit, Athletic clubs',
       icon: <Dumbbell size={18} className="text-[#C4785A]" />,
       tagline: 'RFID Turnstiles & Member Plans',
     },
     {
       id: 'appointment_service',
-      title: 'Appointment',
-      subtitle: 'Hair salons, Spas, Barbershops, Clinics',
+      title: 'Appointment & Spa',
+      subtitle: 'Hair salons, Spas, Barbershops, Esthétique',
       icon: <Scissors size={18} className="text-[#C4785A]" />,
       tagline: 'Stylist Timetables & Service Packs',
     },
@@ -562,7 +625,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                     <span className="text-[10px] text-neutral-400 font-semibold shrink-0">
                       {language === 'ar' ? 'الأنشطة الشائعة:' : language === 'fr' ? 'Populaire :' : 'Popular:'}
                     </span>
-                    {POPULAR_BUSINESS_SEARCHES.map((item) => {
+                    {getPopularBusinessSearches(language).map((item) => {
                       const isChipActive =
                         category === item.category &&
                         businessSearchQuery.toLowerCase().includes(item.label.toLowerCase().slice(0, 4));
@@ -598,7 +661,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                     </div>
                   )}
 
-                {/* 7 Verticals Compact Grid */}
+                {/* 16 Verticals Compact Grid */}
                 <div className="space-y-1.5 pt-1">
                   <div className="flex items-center justify-between">
                     <label className="block text-[11px] font-bold text-neutral-700">
@@ -608,7 +671,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                       Click any card to select
                     </span>
                   </div>
-                  <div className="grid grid-cols-2 gap-2 max-h-[160px] overflow-y-auto pr-1">
+                  <div className="grid grid-cols-2 gap-2 max-h-[220px] overflow-y-auto pr-1">
                     {verticals.map((v) => {
                       const isSelected = category === v.id;
                       const isSearchMatch = matchResult && matchResult.category === v.id;

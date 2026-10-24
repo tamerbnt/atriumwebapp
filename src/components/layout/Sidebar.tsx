@@ -29,6 +29,17 @@ import {
   Receipt,
   Truck,
   Building2,
+  Stethoscope,
+  Wrench,
+  Car,
+  Factory,
+  Scale,
+  HardHat,
+  Sprout,
+  Package,
+  Key,
+  FileCheck,
+  Briefcase,
 } from 'lucide-react';
 import { useAtriumStore, ActiveScreen } from '../../services/store';
 import { FiveCubesLogo } from '../auth/AtriumMonolith';
@@ -542,6 +553,332 @@ export const Sidebar: React.FC<SidebarProps> = ({
         icon: <Wallet size={19} />,
         title: t('nav_trading_finance', language),
         label: t('nav_finance', language),
+      },
+      {
+        id: 'settings',
+        icon: <Settings size={19} />,
+        title: t('nav_settings', language),
+        label: t('nav_settings', language),
+      },
+    ];
+  } else if (category === 'medical_clinic') {
+    // Dedicated Category 9: Medical Clinic & Healthcare Architecture
+    dockNavItems = [
+      {
+        id: 'dashboard',
+        icon: <Home size={19} />,
+        title: language === 'ar' ? 'لوحة العيادة' : language === 'fr' ? 'Tableau Clinique' : 'Clinic Pulse',
+        label: t('nav_home', language),
+      },
+      {
+        id: 'scheduler',
+        icon: <Clock size={19} />,
+        title: language === 'ar' ? 'قائمة الانتظار والفرز' : language === 'fr' ? 'File d\'Attente & Triage' : 'Queue & Triage',
+        label: language === 'ar' ? 'الانتظار' : language === 'fr' ? 'Triage' : 'Queue',
+      },
+      {
+        id: 'members',
+        icon: <Users size={19} />,
+        title: language === 'ar' ? 'ملفات المرضى' : language === 'fr' ? 'Dossiers Patients (EHR)' : 'Patients (EHR)',
+        label: language === 'ar' ? 'المرضى' : language === 'fr' ? 'Patients' : 'Patients',
+      },
+      {
+        id: 'shop',
+        icon: <Stethoscope size={19} />,
+        title: language === 'ar' ? 'الوصفات الطبية والفحوصات' : language === 'fr' ? 'Ordonnances & Actes' : 'Prescriptions & Care',
+        label: language === 'ar' ? 'الوصفات' : language === 'fr' ? 'Ordonnances' : 'Prescriptions',
+      },
+      {
+        id: 'finance',
+        icon: <CreditCard size={19} />,
+        title: language === 'ar' ? 'الفواتير والضمان الاجتماعي' : language === 'fr' ? 'Facturation & Chifa' : 'Billing & Insurance',
+        label: t('nav_finance', language),
+      },
+      {
+        id: 'settings',
+        icon: <Settings size={19} />,
+        title: t('nav_settings', language),
+        label: t('nav_settings', language),
+      },
+    ];
+  } else if (category === 'auto_garage') {
+    // Dedicated Category 10: Auto Garage & Fleet Maintenance
+    dockNavItems = [
+      {
+        id: 'dashboard',
+        icon: <Home size={19} />,
+        title: language === 'ar' ? 'لوحة الورشة' : language === 'fr' ? 'Tableau Atelier' : 'Workshop Pulse',
+        label: t('nav_home', language),
+      },
+      {
+        id: 'scheduler',
+        icon: <Wrench size={19} />,
+        title: language === 'ar' ? 'أوامر التصليح (OR)' : language === 'fr' ? 'Ordres de Réparation (OR)' : 'Work Orders (OR)',
+        label: language === 'ar' ? 'التصليح' : language === 'fr' ? 'Ordres (OR)' : 'Orders',
+      },
+      {
+        id: 'members',
+        icon: <Car size={19} />,
+        title: language === 'ar' ? 'المركبات واللوحات' : language === 'fr' ? 'Véhicules & Matricules' : 'Vehicles & Plates',
+        label: language === 'ar' ? 'المركبات' : language === 'fr' ? 'Véhicules' : 'Vehicles',
+      },
+      {
+        id: 'shop',
+        icon: <Boxes size={19} />,
+        title: language === 'ar' ? 'قطع الغيار والمخزون' : language === 'fr' ? 'Pièces & Stock Atelier' : 'Parts & Inventory',
+        label: language === 'ar' ? 'قطع الغيار' : language === 'fr' ? 'Pièces' : 'Parts',
+      },
+      {
+        id: 'finance',
+        icon: <Wallet size={19} />,
+        title: language === 'ar' ? 'الفواتير ورخص الخروج' : language === 'fr' ? 'Facturation & Bons de Sortie' : 'Billing & Gate Pass',
+        label: t('nav_finance', language),
+      },
+      {
+        id: 'settings',
+        icon: <Settings size={19} />,
+        title: t('nav_settings', language),
+        label: t('nav_settings', language),
+      },
+    ];
+  } else if (category === 'real_estate') {
+    // Dedicated Category 11: Real Estate & Property Lease Management
+    dockNavItems = [
+      {
+        id: 'dashboard',
+        icon: <Home size={19} />,
+        title: language === 'ar' ? 'لوحة الوكالة العقارية' : language === 'fr' ? 'Tableau Agence' : 'Agency Pulse',
+        label: t('nav_home', language),
+      },
+      {
+        id: 'members',
+        icon: <Building2 size={19} />,
+        title: language === 'ar' ? 'محفظة العقارات' : language === 'fr' ? 'Biens Immobiliers' : 'Properties',
+        label: language === 'ar' ? 'العقارات' : language === 'fr' ? 'Biens' : 'Properties',
+      },
+      {
+        id: 'scheduler',
+        icon: <Key size={19} />,
+        title: language === 'ar' ? 'عقود الكراء' : language === 'fr' ? 'Baux & Contrats de Location' : 'Lease Contracts',
+        label: language === 'ar' ? 'العقود' : language === 'fr' ? 'Contrats' : 'Leases',
+      },
+      {
+        id: 'registrations',
+        icon: <FileCheck size={19} />,
+        title: language === 'ar' ? 'معاينة الأماكن (État des Lieux)' : language === 'fr' ? 'États des Lieux' : 'Inspections',
+        label: language === 'ar' ? 'المعاينة' : language === 'fr' ? 'États des Lieux' : 'Inspections',
+      },
+      {
+        id: 'finance',
+        icon: <Receipt size={19} />,
+        title: language === 'ar' ? 'الوصولات ومستحقات الملاك' : language === 'fr' ? 'Quittances & Règlements Propriétaires' : 'Rent Receipts & Payouts',
+        label: language === 'ar' ? 'الوصولات' : language === 'fr' ? 'Quittances' : 'Receipts',
+      },
+      {
+        id: 'settings',
+        icon: <Settings size={19} />,
+        title: t('nav_settings', language),
+        label: t('nav_settings', language),
+      },
+    ];
+  } else if (category === 'manufacturing_production') {
+    // Dedicated Category 12: Light Manufacturing & Workshop Production
+    dockNavItems = [
+      {
+        id: 'dashboard',
+        icon: <Home size={19} />,
+        title: language === 'ar' ? 'لوحة ورشة التصنيع' : language === 'fr' ? 'Tableau Usine' : 'Plant Pulse',
+        label: t('nav_home', language),
+      },
+      {
+        id: 'scheduler',
+        icon: <Factory size={19} />,
+        title: language === 'ar' ? 'أوامر التصنيع (OF)' : language === 'fr' ? 'Ordres de Fabrication (OF)' : 'Work Orders (OF)',
+        label: language === 'ar' ? 'أوامر التصنيع' : language === 'fr' ? 'Ordres (OF)' : 'Orders',
+      },
+      {
+        id: 'shop',
+        icon: <Layers size={19} />,
+        title: language === 'ar' ? 'قوائم المكونات (BOM)' : language === 'fr' ? 'Nomenclatures (BOM)' : 'Bill of Materials',
+        label: language === 'ar' ? 'المكونات' : language === 'fr' ? 'Nomenclatures' : 'BOM',
+      },
+      {
+        id: 'members',
+        icon: <Boxes size={19} />,
+        title: language === 'ar' ? 'المواد الأولية والمخرجات' : language === 'fr' ? 'Matières Premières & Sorties' : 'Raw Materials',
+        label: language === 'ar' ? 'المواد' : language === 'fr' ? 'Matières' : 'Materials',
+      },
+      {
+        id: 'finance',
+        icon: <ShieldCheck size={19} />,
+        title: language === 'ar' ? 'مراقبة الجودة والتكاليف' : language === 'fr' ? 'Contrôle Qualité & Coûts' : 'QC & Costing',
+        label: language === 'ar' ? 'الجودة والتكلفة' : language === 'fr' ? 'Qualité & Coûts' : 'QC & Costs',
+      },
+      {
+        id: 'settings',
+        icon: <Settings size={19} />,
+        title: t('nav_settings', language),
+        label: t('nav_settings', language),
+      },
+    ];
+  } else if (category === 'legal_accounting') {
+    // Dedicated Category 13: Legal Cabinets & Accounting Firms
+    dockNavItems = [
+      {
+        id: 'dashboard',
+        icon: <Home size={19} />,
+        title: language === 'ar' ? 'لوحة مكتب المحاماة' : language === 'fr' ? 'Tableau Cabinet' : 'Cabinet Pulse',
+        label: t('nav_home', language),
+      },
+      {
+        id: 'members',
+        icon: <Briefcase size={19} />,
+        title: language === 'ar' ? 'ملفات القضايا والموكلين' : language === 'fr' ? 'Dossiers & Affaires' : 'Case Matters',
+        label: language === 'ar' ? 'القضايا' : language === 'fr' ? 'Dossiers' : 'Matters',
+      },
+      {
+        id: 'scheduler',
+        icon: <Calendar size={19} />,
+        title: language === 'ar' ? 'الجلسات والمواعيد القانونية' : language === 'fr' ? 'Audiences & Délais Légaux' : 'Court Hearings',
+        label: language === 'ar' ? 'الجلسات' : language === 'fr' ? 'Audiences' : 'Hearings',
+      },
+      {
+        id: 'registrations',
+        icon: <FileText size={19} />,
+        title: language === 'ar' ? 'الخزينة والمستندات' : language === 'fr' ? 'Coffre-fort & Pièces' : 'Document Vault',
+        label: language === 'ar' ? 'المستندات' : language === 'fr' ? 'Pièces' : 'Vault',
+      },
+      {
+        id: 'finance',
+        icon: <Scale size={19} />,
+        title: language === 'ar' ? 'حساب الحراسة والأتعاب' : language === 'fr' ? 'Compte Séquestre & Honoraires' : 'Trust Escrow & Fees',
+        label: language === 'ar' ? 'الأتعاب والودائع' : language === 'fr' ? 'Honoraires' : 'Fees & Trust',
+      },
+      {
+        id: 'settings',
+        icon: <Settings size={19} />,
+        title: t('nav_settings', language),
+        label: t('nav_settings', language),
+      },
+    ];
+  } else if (category === 'logistics_delivery') {
+    // Dedicated Category 14: Logistics, Couriers & Parcel Dispatch
+    dockNavItems = [
+      {
+        id: 'dashboard',
+        icon: <Home size={19} />,
+        title: language === 'ar' ? 'مركز الفرز والتوزيع' : language === 'fr' ? 'Hub Logistique' : 'Hub Pulse',
+        label: t('nav_home', language),
+      },
+      {
+        id: 'members',
+        icon: <Package size={19} />,
+        title: language === 'ar' ? 'الطرود والشحنات (AWB)' : language === 'fr' ? 'Colis & Expéditions (AWB)' : 'Shipments (AWB)',
+        label: language === 'ar' ? 'الطرود' : language === 'fr' ? 'Colis' : 'Parcels',
+      },
+      {
+        id: 'scheduler',
+        icon: <Truck size={19} />,
+        title: language === 'ar' ? 'مسارات التوصيل للسائقين' : language === 'fr' ? 'Feuilles de Route Chauffeurs' : 'Driver Manifests',
+        label: language === 'ar' ? 'مسارات التوزيع' : language === 'fr' ? 'Tournées' : 'Runs',
+      },
+      {
+        id: 'registrations',
+        icon: <Boxes size={19} />,
+        title: language === 'ar' ? 'ماسح الفرز والاستلام' : language === 'fr' ? 'Scanner & Réceptions Hub' : 'Hub Scanner',
+        label: language === 'ar' ? 'الماسح' : language === 'fr' ? 'Scanner' : 'Scanner',
+      },
+      {
+        id: 'finance',
+        icon: <CreditCard size={19} />,
+        title: language === 'ar' ? 'تحصيل COD ومستحقات التجار' : language === 'fr' ? 'Caisse COD & Règlements Marchands' : 'COD Cash & Settlements',
+        label: language === 'ar' ? 'COD والتجار' : language === 'fr' ? 'COD & Marchands' : 'COD & Payouts',
+      },
+      {
+        id: 'settings',
+        icon: <Settings size={19} />,
+        title: t('nav_settings', language),
+        label: t('nav_settings', language),
+      },
+    ];
+  } else if (category === 'construction_contractor') {
+    // Dedicated Category 15: Construction, Field Contracting & BTP
+    dockNavItems = [
+      {
+        id: 'dashboard',
+        icon: <Home size={19} />,
+        title: language === 'ar' ? 'لوحة متابعة الورشات' : language === 'fr' ? 'Supervision Chantiers' : 'Sites Pulse',
+        label: t('nav_home', language),
+      },
+      {
+        id: 'members',
+        icon: <HardHat size={19} />,
+        title: language === 'ar' ? 'المشاريع والورشات' : language === 'fr' ? 'Projets & Chantiers' : 'Projects & Sites',
+        label: language === 'ar' ? 'الورشات' : language === 'fr' ? 'Chantiers' : 'Sites',
+      },
+      {
+        id: 'shop',
+        icon: <ClipboardList size={19} />,
+        title: language === 'ar' ? 'الكشف الكمي والتقديري (BOQ)' : language === 'fr' ? 'Devis Quantitatif (BOQ)' : 'Bill of Quantities',
+        label: language === 'ar' ? 'الكشف الكمي' : language === 'fr' ? 'Devis BOQ' : 'BOQ',
+      },
+      {
+        id: 'scheduler',
+        icon: <FileCheck size={19} />,
+        title: language === 'ar' ? 'محاضر تقدم الأشغال' : language === 'fr' ? 'Attachements de Travaux' : 'Works Progress',
+        label: language === 'ar' ? 'تقدم الأشغال' : language === 'fr' ? 'Attachements' : 'Progress',
+      },
+      {
+        id: 'finance',
+        icon: <Wallet size={19} />,
+        title: language === 'ar' ? 'الكشوف المالية والضمان (DGP)' : language === 'fr' ? 'Décomptes (DGP) & Retenue' : 'Progress Billing (DGP)',
+        label: language === 'ar' ? 'الكشوف (DGP)' : language === 'fr' ? 'Décomptes' : 'Billing',
+      },
+      {
+        id: 'settings',
+        icon: <Settings size={19} />,
+        title: t('nav_settings', language),
+        label: t('nav_settings', language),
+      },
+    ];
+  } else if (category === 'agriculture_farming') {
+    // Dedicated Category 16: Agriculture, Farm & Livestock Management
+    dockNavItems = [
+      {
+        id: 'dashboard',
+        icon: <Home size={19} />,
+        title: language === 'ar' ? 'لوحة المستثمرة الفلاحية' : language === 'fr' ? 'Tableau du Domaine' : 'Farm Pulse',
+        label: t('nav_home', language),
+      },
+      {
+        id: 'members',
+        icon: <Sprout size={19} />,
+        title: language === 'ar' ? 'القطع والبيوت البلاستيكية' : language === 'fr' ? 'Parcelles & Serres' : 'Parcels & Greenhouses',
+        label: language === 'ar' ? 'القطع الفلاحية' : language === 'fr' ? 'Parcelles' : 'Parcels',
+      },
+      {
+        id: 'scheduler',
+        icon: <Calendar size={19} />,
+        title: language === 'ar' ? 'سجل العمليات الفلاحية (DAR)' : language === 'fr' ? 'Journal Cultural & Délais DAR' : 'Crop Cycle & DAR',
+        label: language === 'ar' ? 'العمليات' : language === 'fr' ? 'Opérations' : 'Cycles',
+      },
+      {
+        id: 'shop',
+        icon: <Scale size={19} />,
+        title: language === 'ar' ? 'المحاصيل والوزن العمومي' : language === 'fr' ? 'Récoltes & Pesage Public' : 'Harvest & Scale',
+        label: language === 'ar' ? 'المحاصيل' : language === 'fr' ? 'Récoltes' : 'Harvest',
+      },
+      {
+        id: 'registrations',
+        icon: <Layers size={19} />,
+        title: language === 'ar' ? 'تربية المواشي والإنتاج' : language === 'fr' ? 'Cheptel & Registre d\'Élevage' : 'Livestock Herd',
+        label: language === 'ar' ? 'المواشي' : language === 'fr' ? 'Cheptel' : 'Livestock',
+      },
+      {
+        id: 'finance',
+        icon: <Wallet size={19} />,
+        title: language === 'ar' ? 'مبيعات سوق الجملة والسيولة' : language === 'fr' ? 'Ventes Mandataires de Gros' : 'Wholesale Sales',
+        label: language === 'ar' ? 'المبيعات' : language === 'fr' ? 'Ventes' : 'Sales',
       },
       {
         id: 'settings',

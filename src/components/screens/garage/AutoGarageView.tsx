@@ -35,6 +35,12 @@ export const AutoGarageView: React.FC<AutoGarageViewProps> = ({ initialTab = 'da
   const { t } = useTranslation();
 
   const [activeTab, setActiveTab] = useState<'dashboard' | 'orders' | 'vehicles' | 'parts' | 'billing'>(initialTab);
+
+  React.useEffect(() => {
+    if (initialTab) {
+      setActiveTab(initialTab);
+    }
+  }, [initialTab]);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
 

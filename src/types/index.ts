@@ -1847,6 +1847,27 @@ export interface RealEstateLease {
   createdAt: string;
 }
 
+export interface RealEstateInspection {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  staffId: string;
+  leaseId: string;
+  propertyTitle: string;
+  tenantName: string;
+  type: 'CheckIn' | 'CheckOut';
+  inspectionDate: string;
+  meterElectricityKwh: number;
+  meterGasM3: number;
+  meterWaterM3: number;
+  keysCount: number;
+  generalCondition: 'Excellent' | 'Good' | 'Fair' | 'Poor';
+  observations: string;
+  isSigned: boolean;
+  createdAt: string;
+}
+
 // ==========================================
 // CATEGORY 12: MANUFACTURING & WORKSHOP BOM
 // ==========================================
@@ -2023,6 +2044,46 @@ export interface ContractorBoqItem {
   createdAt: string;
 }
 
+export interface ContractorDailyLog {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  staffId: string;
+  projectId: string;
+  date: string;
+  weather: 'Ensoleillé' | 'Pluvieux' | 'Venteux / Sirocco' | 'Canicule';
+  headcountWorkers: number;
+  equipmentOnSite: string[];
+  tasksAccomplished: string;
+  incidentsSafety: string;
+  supervisorSignature: string;
+  createdAt: string;
+}
+
+export interface ContractorDgp {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  staffId: string;
+  projectId: string;
+  dgpNumber: string; // e.g. DGP-04-CHANT-08
+  periodLabel: string; // e.g. Situation Mensuelle Mai 2026
+  grossCompletedDzd: number;
+  previousCumulDzd: number;
+  periodGrossDzd: number;
+  retentionGuaranteePercent: number; // usually 5%
+  retentionGuaranteeDzd: number;
+  advanceAmortizationDzd: number;
+  tvaPercent: number; // 9% or 19%
+  tvaAmountDzd: number;
+  netPayableDzd: number;
+  status: 'Draft' | 'SubmittedClient' | 'ApprovedBE' | 'Paid';
+  issuedDate: string;
+  createdAt: string;
+}
+
 // ==========================================
 // CATEGORY 16: AGRI-BUSINESS & LIVESTOCK FARMING
 // ==========================================
@@ -2059,6 +2120,50 @@ export interface AgriLivestock {
   notes?: string;
   createdAt: string;
 }
+
+export interface AgriTreatmentLog {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  staffId: string;
+  parcelId: string;
+  treatmentDate: string;
+  commercialProductName: string;
+  activeIngredient: string;
+  targetPestDisease: string;
+  dosagePerHa: string;
+  darDays: number; // Délai Avant Récolte (Pre-harvest interval)
+  harvestAllowedDate: string;
+  operatorName: string;
+  notes?: string;
+  createdAt: string;
+}
+
+export interface AgriHarvestTicket {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  staffId: string;
+  ticketNumber: string; // e.g. PES-2026-041
+  parcelId: string;
+  cropDesignation: string;
+  vehiclePlate: string;
+  driverName: string;
+  grossWeightKg: number;
+  tareWeightKg: number;
+  netWeightKg: number;
+  cratesCount?: number;
+  unitPriceDzdPerKg: number;
+  totalGrossDzd: number;
+  mandataireFeePercent: number; // e.g. 5%
+  netFarmPayoutDzd: number;
+  destinationWholesaleMarket: string; // e.g. Marché de Gros des Eucalyptus
+  date: string;
+  createdAt: string;
+}
+
 
 
 

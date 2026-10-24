@@ -633,7 +633,24 @@ export const TopBar: React.FC<TopBarProps> = ({
                 );
               })}
 
-              <div className="pt-1.5 mt-1 border-t border-neutral-100 dark:border-neutral-800 px-1">
+              <div className="pt-1.5 mt-1 border-t border-neutral-100 dark:border-neutral-800 px-1 space-y-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFacilityDropdownOpen(false);
+                    openOnboarding();
+                  }}
+                  className="w-full px-2.5 py-1.5 rounded-xl text-left flex items-center justify-between text-xs text-neutral-800 dark:text-neutral-200 hover:bg-[#FDF4F0] dark:hover:bg-neutral-800 font-semibold cursor-pointer transition-colors"
+                >
+                  <div className="flex items-center gap-2">
+                    <Rocket size={13} className="text-[#C4785A]" />
+                    <span>{language === 'ar' ? 'معالج إعداد منشأة جديدة' : language === 'fr' ? 'Créer une nouvelle entreprise (Onboarding)' : 'New Business Onboarding Wizard'}</span>
+                  </div>
+                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-[#C4785A]/15 text-[#C4785A]">
+                    16 Verticals
+                  </span>
+                </button>
+
                 <button
                   type="button"
                   onClick={() => {

@@ -22,12 +22,21 @@ import {
   Lock,
   Search,
   Laptop,
+  Truck,
+  Stethoscope,
+  Wrench,
+  Home,
+  Factory,
+  Scale,
+  HardHat,
+  Sprout,
 } from 'lucide-react';
 import { useAtriumStore } from '../../services/store';
 import { BusinessCategory, OnboardingParams } from '../../types/index';
 import { validateVoucherCode } from '../../utils/rules';
 import {
   findCategoryByBusinessSearch,
+  getPopularBusinessSearches,
   POPULAR_BUSINESS_SEARCHES,
   BusinessMatchResult,
 } from '../../utils/businessMapping';
@@ -156,16 +165,72 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ isOpen, onCl
     tagline: string;
   }> = [
     {
+      id: 'medical_clinic',
+      title: 'Medical Clinic & Health',
+      subtitle: 'Clinics, Doctors, Dentists, Cabinets',
+      icon: <Stethoscope size={20} className="text-[#C4785A]" />,
+      tagline: 'Patient Records, Triage & Prescriptions',
+    },
+    {
+      id: 'auto_garage',
+      title: 'Auto Garage & Repair',
+      subtitle: 'Mechanical workshops, Diagnostics, Body shop',
+      icon: <Wrench size={20} className="text-[#C4785A]" />,
+      tagline: 'Work Orders (OR), OBD-II & Parts',
+    },
+    {
+      id: 'real_estate',
+      title: 'Real Estate & Brokerage',
+      subtitle: 'Agencies, Property rentals, Leases',
+      icon: <Home size={20} className="text-[#C4785A]" />,
+      tagline: 'Listings, Quittances & Digital Inspections',
+    },
+    {
+      id: 'manufacturing_production',
+      title: 'Manufacturing & Workshop',
+      subtitle: 'Factories, Production lines, Assembly',
+      icon: <Factory size={20} className="text-[#C4785A]" />,
+      tagline: 'BOM Nomenclature, Work Orders & QC',
+    },
+    {
+      id: 'legal_accounting',
+      title: 'Legal & Accounting Cabinet',
+      subtitle: 'Lawyers, Notaries, Bailiffs, CPAs',
+      icon: <Scale size={20} className="text-[#C4785A]" />,
+      tagline: 'Case Dockets, Hearings & Trust Escrow',
+    },
+    {
+      id: 'logistics_delivery',
+      title: 'Logistics & Courier Delivery',
+      subtitle: 'Parcel hubs, Express freight, 58 Wilayas',
+      icon: <Truck size={20} className="text-[#C4785A]" />,
+      tagline: 'AWB Waybills, Run Sheets & COD Dispatch',
+    },
+    {
+      id: 'construction_contractor',
+      title: 'Construction & BTP Trades',
+      subtitle: 'Public works, Civil engineering, Sites',
+      icon: <HardHat size={20} className="text-[#C4785A]" />,
+      tagline: 'BOQ Devis, Joint Surveys & 5% Guarantee',
+    },
+    {
+      id: 'agriculture_farming',
+      title: 'Agriculture & Farm Estate',
+      subtitle: 'Farms, Greenhouses, Orchards, Livestock',
+      icon: <Sprout size={20} className="text-[#C4785A]" />,
+      tagline: 'Parcels, DAR Safety & Weighbridge Scales',
+    },
+    {
       id: 'membership_session',
-      title: 'Membership',
+      title: 'Membership & Gym',
       subtitle: 'Gyms, Martial arts, CrossFit clubs',
       icon: <Dumbbell size={20} className="text-[#C4785A]" />,
       tagline: 'RFID Access & Member Plans',
     },
     {
       id: 'appointment_service',
-      title: 'Appointment',
-      subtitle: 'Spas, Hair salons, Barbershops',
+      title: 'Appointment & Spa',
+      subtitle: 'Spas, Hair salons, Barbershops, Clinics',
       icon: <Scissors size={20} className="text-[#C4785A]" />,
       tagline: 'Stylist Bookings & Treatment Packs',
     },
@@ -203,6 +268,13 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ isOpen, onCl
       subtitle: 'Design, Dev, Consulting, Media Creators',
       icon: <Laptop size={20} className="text-[#C4785A]" />,
       tagline: 'Floating Stopwatch, Retainers & Invoices',
+    },
+    {
+      id: 'trading_commercial',
+      title: 'Commercial Trading & Wholesale',
+      subtitle: 'Wholesalers, B2B Distribution, Material Supply',
+      icon: <Truck size={20} className="text-[#C4785A]" />,
+      tagline: 'Quotes, BLs, Supplier POs & Warehouses',
     },
   ];
 
@@ -374,7 +446,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ isOpen, onCl
               {/* Popular Quick Suggestion Chips */}
               <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
                 <span className="text-[10px] text-neutral-500 font-semibold shrink-0">Popular:</span>
-                {POPULAR_BUSINESS_SEARCHES.map((item) => {
+                {getPopularBusinessSearches(language).map((item) => {
                   const isChipActive =
                     category === item.category &&
                     businessSearchQuery.toLowerCase().includes(item.label.toLowerCase().slice(0, 4));
@@ -411,7 +483,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ isOpen, onCl
               )}
             </div>
 
-            {/* 7 Business Category Cards Grid */}
+            {/* 16 Business Category Cards Grid */}
             <div className="pt-1">
               <div className="flex items-center justify-between mb-2">
                 <label className="block text-xs font-semibold text-neutral-300">
@@ -421,7 +493,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ isOpen, onCl
                   Click any card to override
                 </span>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 max-h-[250px] overflow-y-auto pr-1">
                 {categories.map((cat) => {
                   const isSelected = category === cat.id;
                   const isSearchMatch = matchResult && matchResult.category === cat.id;
