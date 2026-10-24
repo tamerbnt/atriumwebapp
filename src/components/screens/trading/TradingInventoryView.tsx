@@ -16,6 +16,8 @@ import { formatMoney } from '../../../utils/rules';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { StockMovementModal } from './StockMovementModal';
 import { LabelInput } from '../../ui/LabelInput';
+import { AtriumButton } from '../../ui/AtriumButton';
+import { Seek } from '../../ui/Seek';
 import { useTranslation } from '../../../utils/useTranslation';
 
 type ViewMode = 'stock_state' | 'vouchers';
@@ -280,21 +282,23 @@ export const TradingInventoryView: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2">
-          <button
+          <AtriumButton
+            variant="outline"
+            size="sm"
             onClick={() => setNewDepotModalOpen(true)}
-            className="px-3.5 py-2 rounded-xl text-xs font-semibold border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 hover:border-stone-300 text-stone-700 dark:text-stone-300 flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer"
+            icon={<Building2 size={14} className="text-[#C4785A]" />}
           >
-            <Building2 size={14} className="text-[#C4785A]" />
-            <span>{t('trading_inventory_new_depot', 'Nouveau Dépôt')}</span>
-          </button>
+            {t('trading_inventory_new_depot', 'Nouveau Dépôt')}
+          </AtriumButton>
 
-          <button
+          <AtriumButton
+            variant="primary"
+            size="sm"
             onClick={() => setMovementModalOpen(true)}
-            className="px-4 py-2 rounded-xl text-xs font-semibold bg-[#C4785A] hover:bg-[#b06749] text-white shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+            icon={<Plus size={15} />}
           >
-            <Plus size={15} />
-            <span>{t('trading_inventory_new_movement', 'Nouveau Bon de Mouvement')}</span>
-          </button>
+            {t('trading_inventory_new_movement', 'Nouveau Bon de Mouvement')}
+          </AtriumButton>
         </div>
       </div>
 
@@ -373,13 +377,11 @@ export const TradingInventoryView: React.FC = () => {
           </button>
         </div>
 
-        <div className="w-64">
-          <input
-            type="text"
-            placeholder="Filtrer article, bon, SKU..."
+        <div className="flex items-center">
+          <Seek
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full text-xs rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 px-3 py-1.5 text-stone-800 dark:text-stone-200 placeholder-stone-400 focus:outline-hidden focus:border-[#C4785A]"
+            onChange={setSearchQuery}
+            placeholder="Filtrer article, bon, SKU..."
           />
         </div>
       </div>

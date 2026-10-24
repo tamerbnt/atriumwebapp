@@ -29,6 +29,7 @@ import { useAtriumStore } from '../../../services/store';
 import { Member } from '../../../types/index';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { Seek } from '../../ui/Seek';
+import { AtriumButton } from '../../ui/AtriumButton';
 import { formatMoney } from '../../../utils/rules';
 import { AppointmentModal } from '../../modals/AppointmentModal';
 interface AppointmentClientsViewProps {
@@ -481,13 +482,13 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = ({
           </button>
 
           {/* New Appointment button */}
-          <button
+          <AtriumButton
+            variant="primary"
             onClick={() => setIsNewBookingModalOpen(true)}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-white bg-[#C4785A] hover:bg-[#b3684a] rounded-lg transition-colors shadow-xs"
+            icon={<Plus className="w-3.5 h-3.5" />}
           >
-            <Plus className="w-3.5 h-3.5" />
-            <span>Prendre RDV</span>
-          </button>
+            Prendre RDV
+          </AtriumButton>
         </div>
       </div>
 

@@ -38,6 +38,7 @@ import { Seek } from '../../ui/Seek';
 import { ActionNode } from '../../ui/ActionNode';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { AtriumButton } from '../../ui/AtriumButton';
 import { t } from '../../../utils/i18n';
 
 export interface MembershipMembersViewProps {
@@ -436,17 +437,13 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
           </div>
 
           {/* Add Member Primary Button */}
-          <button
-            type="button"
+          <AtriumButton
+            variant="primary"
             onClick={onAddMember}
-            style={{
-              backgroundColor: 'var(--color-accent)',
-            }}
-            className="h-10 px-5 rounded-full text-xs font-bold text-white flex items-center gap-2 cursor-pointer hover:opacity-90 active:scale-98 transition-all shadow-xs"
+            icon={<Plus size={15} strokeWidth={2.5} />}
           >
-            <Plus size={15} strokeWidth={2.5} />
-            <span>{t('action_add', language)} {terminology.memberSingle}</span>
-          </button>
+            {t('action_add', language)} {terminology.memberSingle}
+          </AtriumButton>
         </div>
       </div>
 

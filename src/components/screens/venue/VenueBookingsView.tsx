@@ -33,6 +33,7 @@ import { useTranslation } from '../../../utils/useTranslation';
 import { BookingModal } from './BookingModal';
 import { VenueCloudSyncModal } from './VenueCloudSyncModal';
 import { Seek } from '../../ui/Seek';
+import { AtriumButton } from '../../ui/AtriumButton';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 
 export interface VenueBookingsViewProps {
@@ -468,13 +469,13 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({ hideHeader
             </button>
 
             {/* New Reservation Button */}
-            <button
+            <AtriumButton
+              variant="primary"
               onClick={handleNewBooking}
-              className="h-10 px-5 bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white text-xs font-semibold rounded-full shadow-xs transition-colors flex items-center gap-2 cursor-pointer"
+              icon={<Plus size={16} />}
             >
-              <Plus size={16} />
-              <span>{t('venue_btn_new_res')}</span>
-            </button>
+              {t('venue_btn_new_res')}
+            </AtriumButton>
           </div>
         </div>
       )}

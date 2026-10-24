@@ -63,14 +63,54 @@ import { TradingInventoryView } from './components/screens/trading/TradingInvent
 import { TradingDirectoryView } from './components/screens/trading/TradingDirectoryView';
 import { TradingCatalogView } from './components/screens/trading/TradingCatalogView';
 import { TradingFinanceView } from './components/screens/trading/TradingFinanceView';
-import { MedicalClinicView } from './components/screens/medical/MedicalClinicView';
-import { AutoGarageView } from './components/screens/garage/AutoGarageView';
-import { RealEstateView } from './components/screens/realestate/RealEstateView';
-import { ManufacturingView } from './components/screens/manufacturing/ManufacturingView';
-import { LegalCabinetView } from './components/screens/legal/LegalCabinetView';
-import { LogisticsView } from './components/screens/logistics/LogisticsView';
-import { ContractorView } from './components/screens/contractor/ContractorView';
-import { AgricultureView } from './components/screens/agriculture/AgricultureView';
+import { MedicalDashboardView } from './components/screens/medical/MedicalDashboardView';
+import { MedicalQueueView } from './components/screens/medical/MedicalQueueView';
+import { MedicalPatientsView } from './components/screens/medical/MedicalPatientsView';
+import { MedicalPrescriptionsView } from './components/screens/medical/MedicalPrescriptionsView';
+import { MedicalBillingView } from './components/screens/medical/MedicalBillingView';
+
+import { AutoGarageDashboardView } from './components/screens/garage/AutoGarageDashboardView';
+import { AutoGarageOrdersView } from './components/screens/garage/AutoGarageOrdersView';
+import { AutoGarageVehiclesView } from './components/screens/garage/AutoGarageVehiclesView';
+import { AutoGaragePartsView } from './components/screens/garage/AutoGaragePartsView';
+import { AutoGarageBillingView } from './components/screens/garage/AutoGarageBillingView';
+
+import { RealEstateDashboardView } from './components/screens/realestate/RealEstateDashboardView';
+import { RealEstatePropertiesView } from './components/screens/realestate/RealEstatePropertiesView';
+import { RealEstateLeasesView } from './components/screens/realestate/RealEstateLeasesView';
+import { RealEstateInspectionsView } from './components/screens/realestate/RealEstateInspectionsView';
+import { RealEstateFinanceView } from './components/screens/realestate/RealEstateFinanceView';
+
+import { ManufacturingDashboardView } from './components/screens/manufacturing/ManufacturingDashboardView';
+import { ManufacturingOrdersView } from './components/screens/manufacturing/ManufacturingOrdersView';
+import { ManufacturingBomView } from './components/screens/manufacturing/ManufacturingBomView';
+import { ManufacturingMaterialsView } from './components/screens/manufacturing/ManufacturingMaterialsView';
+import { ManufacturingQcView } from './components/screens/manufacturing/ManufacturingQcView';
+
+import { LegalDashboardView } from './components/screens/legal/LegalDashboardView';
+import { LegalMattersView } from './components/screens/legal/LegalMattersView';
+import { LegalHearingsView } from './components/screens/legal/LegalHearingsView';
+import { LegalVaultView } from './components/screens/legal/LegalVaultView';
+import { LegalTrustView } from './components/screens/legal/LegalTrustView';
+
+import { LogisticsDashboardView } from './components/screens/logistics/LogisticsDashboardView';
+import { LogisticsShipmentsView } from './components/screens/logistics/LogisticsShipmentsView';
+import { LogisticsManifestsView } from './components/screens/logistics/LogisticsManifestsView';
+import { LogisticsScannerView } from './components/screens/logistics/LogisticsScannerView';
+import { LogisticsCodView } from './components/screens/logistics/LogisticsCodView';
+
+import { ContractorDashboardView } from './components/screens/contractor/ContractorDashboardView';
+import { ContractorSitesView } from './components/screens/contractor/ContractorSitesView';
+import { ContractorBoqView } from './components/screens/contractor/ContractorBoqView';
+import { ContractorDailyLogsView } from './components/screens/contractor/ContractorDailyLogsView';
+import { ContractorBillingView } from './components/screens/contractor/ContractorBillingView';
+
+import { AgricultureDashboardView } from './components/screens/agriculture/AgricultureDashboardView';
+import { AgricultureParcelsView } from './components/screens/agriculture/AgricultureParcelsView';
+import { AgricultureCyclesView } from './components/screens/agriculture/AgricultureCyclesView';
+import { AgricultureHarvestView } from './components/screens/agriculture/AgricultureHarvestView';
+import { AgricultureLivestockView } from './components/screens/agriculture/AgricultureLivestockView';
+import { AgricultureWholesaleView } from './components/screens/agriculture/AgricultureWholesaleView';
 import { DesktopUpgradeModal } from './components/modals/DesktopUpgradeModal';
 import { CommandPaletteModal } from './components/modals/CommandPaletteModal';
 import { ToastStack } from './components/ui/ToastStack';
@@ -372,117 +412,166 @@ export default function App() {
       if (activeScreen === 'settings') {
         return <SettingsScreen onOpenVoucherModal={() => setIsVoucherModalOpen(true)} />;
       }
-      const tabMap: Record<string, 'dashboard' | 'queue' | 'patients' | 'prescriptions' | 'billing'> = {
-        dashboard: 'dashboard',
-        scheduler: 'queue',
-        members: 'patients',
-        shop: 'prescriptions',
-        registrations: 'prescriptions',
-        finance: 'billing',
-      };
-      return <MedicalClinicView initialTab={tabMap[activeScreen] || 'dashboard'} />;
+      switch (activeScreen) {
+        case 'dashboard':
+          return <MedicalDashboardView />;
+        case 'scheduler':
+          return <MedicalQueueView />;
+        case 'members':
+          return <MedicalPatientsView />;
+        case 'shop':
+        case 'registrations':
+          return <MedicalPrescriptionsView />;
+        case 'finance':
+          return <MedicalBillingView />;
+        default:
+          return <MedicalDashboardView />;
+      }
     }
 
     if (currentBusiness?.category === 'auto_garage') {
       if (activeScreen === 'settings') {
         return <SettingsScreen onOpenVoucherModal={() => setIsVoucherModalOpen(true)} />;
       }
-      const tabMap: Record<string, 'dashboard' | 'orders' | 'vehicles' | 'parts' | 'billing'> = {
-        dashboard: 'dashboard',
-        scheduler: 'orders',
-        registrations: 'orders',
-        members: 'vehicles',
-        shop: 'parts',
-        finance: 'billing',
-      };
-      return <AutoGarageView initialTab={tabMap[activeScreen] || 'dashboard'} />;
+      switch (activeScreen) {
+        case 'dashboard':
+          return <AutoGarageDashboardView />;
+        case 'scheduler':
+        case 'registrations':
+          return <AutoGarageOrdersView />;
+        case 'members':
+          return <AutoGarageVehiclesView />;
+        case 'shop':
+          return <AutoGaragePartsView />;
+        case 'finance':
+          return <AutoGarageBillingView />;
+        default:
+          return <AutoGarageDashboardView />;
+      }
     }
 
     if (currentBusiness?.category === 'real_estate') {
       if (activeScreen === 'settings') {
         return <SettingsScreen onOpenVoucherModal={() => setIsVoucherModalOpen(true)} />;
       }
-      const tabMap: Record<string, 'dashboard' | 'properties' | 'leases' | 'inspections' | 'finance'> = {
-        dashboard: 'dashboard',
-        members: 'properties',
-        scheduler: 'leases',
-        registrations: 'inspections',
-        finance: 'finance',
-      };
-      return <RealEstateView initialTab={tabMap[activeScreen] || 'dashboard'} />;
+      switch (activeScreen) {
+        case 'dashboard':
+          return <RealEstateDashboardView />;
+        case 'members':
+          return <RealEstatePropertiesView />;
+        case 'scheduler':
+          return <RealEstateLeasesView />;
+        case 'registrations':
+          return <RealEstateInspectionsView />;
+        case 'finance':
+          return <RealEstateFinanceView />;
+        default:
+          return <RealEstateDashboardView />;
+      }
     }
 
     if (currentBusiness?.category === 'manufacturing_production') {
       if (activeScreen === 'settings') {
         return <SettingsScreen onOpenVoucherModal={() => setIsVoucherModalOpen(true)} />;
       }
-      const tabMap: Record<string, 'dashboard' | 'orders' | 'bom' | 'materials' | 'qc'> = {
-        dashboard: 'dashboard',
-        scheduler: 'orders',
-        shop: 'bom',
-        members: 'materials',
-        registrations: 'orders',
-        finance: 'qc',
-      };
-      return <ManufacturingView initialTab={tabMap[activeScreen] || 'dashboard'} />;
+      switch (activeScreen) {
+        case 'dashboard':
+          return <ManufacturingDashboardView />;
+        case 'scheduler':
+        case 'registrations':
+          return <ManufacturingOrdersView />;
+        case 'shop':
+          return <ManufacturingBomView />;
+        case 'members':
+          return <ManufacturingMaterialsView />;
+        case 'finance':
+          return <ManufacturingQcView />;
+        default:
+          return <ManufacturingDashboardView />;
+      }
     }
 
     if (currentBusiness?.category === 'legal_accounting') {
       if (activeScreen === 'settings') {
         return <SettingsScreen onOpenVoucherModal={() => setIsVoucherModalOpen(true)} />;
       }
-      const tabMap: Record<string, 'dashboard' | 'matters' | 'hearings' | 'vault' | 'trust'> = {
-        dashboard: 'dashboard',
-        members: 'matters',
-        scheduler: 'hearings',
-        registrations: 'vault',
-        finance: 'trust',
-      };
-      return <LegalCabinetView initialTab={tabMap[activeScreen] || 'dashboard'} />;
+      switch (activeScreen) {
+        case 'dashboard':
+          return <LegalDashboardView />;
+        case 'members':
+          return <LegalMattersView />;
+        case 'scheduler':
+          return <LegalHearingsView />;
+        case 'registrations':
+          return <LegalVaultView />;
+        case 'finance':
+          return <LegalTrustView />;
+        default:
+          return <LegalDashboardView />;
+      }
     }
 
     if (currentBusiness?.category === 'logistics_delivery') {
       if (activeScreen === 'settings') {
         return <SettingsScreen onOpenVoucherModal={() => setIsVoucherModalOpen(true)} />;
       }
-      const tabMap: Record<string, 'dashboard' | 'shipments' | 'manifests' | 'scanner' | 'cod'> = {
-        dashboard: 'dashboard',
-        members: 'shipments',
-        scheduler: 'manifests',
-        registrations: 'scanner',
-        finance: 'cod',
-      };
-      return <LogisticsView initialTab={tabMap[activeScreen] || 'dashboard'} />;
+      switch (activeScreen) {
+        case 'dashboard':
+          return <LogisticsDashboardView />;
+        case 'members':
+          return <LogisticsShipmentsView />;
+        case 'scheduler':
+          return <LogisticsManifestsView />;
+        case 'registrations':
+          return <LogisticsScannerView />;
+        case 'finance':
+          return <LogisticsCodView />;
+        default:
+          return <LogisticsDashboardView />;
+      }
     }
 
     if (currentBusiness?.category === 'construction_contractor') {
       if (activeScreen === 'settings') {
         return <SettingsScreen onOpenVoucherModal={() => setIsVoucherModalOpen(true)} />;
       }
-      const tabMap: Record<string, 'dashboard' | 'projects' | 'boq' | 'progress' | 'finance'> = {
-        dashboard: 'dashboard',
-        members: 'projects',
-        shop: 'boq',
-        scheduler: 'progress',
-        registrations: 'projects',
-        finance: 'finance',
-      };
-      return <ContractorView initialTab={tabMap[activeScreen] || 'dashboard'} />;
+      switch (activeScreen) {
+        case 'dashboard':
+          return <ContractorDashboardView />;
+        case 'members':
+        case 'registrations':
+          return <ContractorSitesView />;
+        case 'shop':
+          return <ContractorBoqView />;
+        case 'scheduler':
+          return <ContractorDailyLogsView />;
+        case 'finance':
+          return <ContractorBillingView />;
+        default:
+          return <ContractorDashboardView />;
+      }
     }
 
     if (currentBusiness?.category === 'agriculture_farming') {
       if (activeScreen === 'settings') {
         return <SettingsScreen onOpenVoucherModal={() => setIsVoucherModalOpen(true)} />;
       }
-      const tabMap: Record<string, 'dashboard' | 'parcels' | 'crops' | 'harvest' | 'livestock' | 'finance'> = {
-        dashboard: 'dashboard',
-        members: 'parcels',
-        scheduler: 'crops',
-        shop: 'harvest',
-        registrations: 'livestock',
-        finance: 'finance',
-      };
-      return <AgricultureView initialTab={tabMap[activeScreen] || 'dashboard'} />;
+      switch (activeScreen) {
+        case 'dashboard':
+          return <AgricultureDashboardView />;
+        case 'members':
+          return <AgricultureParcelsView />;
+        case 'scheduler':
+          return <AgricultureCyclesView />;
+        case 'shop':
+          return <AgricultureHarvestView />;
+        case 'registrations':
+          return <AgricultureLivestockView />;
+        case 'finance':
+          return <AgricultureWholesaleView />;
+        default:
+          return <AgricultureDashboardView />;
+      }
     }
 
     const isMembership = currentBusiness?.category === 'membership_session';

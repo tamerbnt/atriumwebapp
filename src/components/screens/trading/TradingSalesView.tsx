@@ -18,6 +18,8 @@ import { useAtriumStore } from '../../../services/store';
 import { CommercialDocument, CommercialDocType } from '../../../types';
 import { formatMoney } from '../../../utils/rules';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { AtriumButton } from '../../ui/AtriumButton';
+import { Seek } from '../../ui/Seek';
 import { CommercialDocComposerModal } from './CommercialDocComposerModal';
 import { CommercialDocPrintModal } from './CommercialDocPrintModal';
 import { ConfirmDialog } from '../../ui/ConfirmDialog';
@@ -298,29 +300,32 @@ export const TradingSalesView: React.FC = () => {
 
         {/* Primary Creation Action Button */}
         <div className="flex items-center gap-2">
-          <button
+          <AtriumButton
+            variant="outline"
+            size="sm"
             onClick={() => handleCreateNew('devis')}
-            className="px-3.5 py-2 rounded-xl text-xs font-semibold border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 hover:border-stone-300 text-stone-700 dark:text-stone-300 flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer"
+            icon={<Plus size={14} className="text-[#C4785A]" />}
           >
-            <Plus size={14} className="text-[#C4785A]" />
-            <span>{t('trading_sales_new_devis', 'Nouveau Devis')}</span>
-          </button>
+            {t('trading_sales_new_devis', 'Nouveau Devis')}
+          </AtriumButton>
 
-          <button
+          <AtriumButton
+            variant="outline"
+            size="sm"
             onClick={() => handleCreateNew('bl')}
-            className="px-3.5 py-2 rounded-xl text-xs font-semibold border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 hover:border-stone-300 text-stone-700 dark:text-stone-300 flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer"
+            icon={<Truck size={14} className="text-[#C4785A]" />}
           >
-            <Truck size={14} className="text-[#C4785A]" />
-            <span>{t('trading_sales_new_bl', 'Nouveau BL')}</span>
-          </button>
+            {t('trading_sales_new_bl', 'Nouveau BL')}
+          </AtriumButton>
 
-          <button
+          <AtriumButton
+            variant="primary"
+            size="sm"
             onClick={() => handleCreateNew('facture')}
-            className="px-4 py-2 rounded-xl text-xs font-semibold bg-[#C4785A] hover:bg-[#b06749] text-white shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+            icon={<Plus size={15} />}
           >
-            <Plus size={15} />
-            <span>{t('trading_sales_new_invoice', 'Nouvelle Facture')}</span>
-          </button>
+            {t('trading_sales_new_invoice', 'Nouvelle Facture')}
+          </AtriumButton>
         </div>
       </div>
 
@@ -364,13 +369,11 @@ export const TradingSalesView: React.FC = () => {
         </div>
 
         {/* Search input */}
-        <div className="w-64">
-          <input
-            type="text"
-            placeholder={t('trading_sales_search_placeholder', 'Filtrer N° doc, client, NIF...')}
+        <div className="flex items-center">
+          <Seek
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full text-xs rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 px-3 py-1.5 text-stone-800 dark:text-stone-200 placeholder-stone-400 focus:outline-hidden focus:border-[#C4785A]"
+            onChange={setSearchQuery}
+            placeholder={t('trading_sales_search_placeholder', 'Filtrer N° doc, client, NIF...')}
           />
         </div>
       </div>

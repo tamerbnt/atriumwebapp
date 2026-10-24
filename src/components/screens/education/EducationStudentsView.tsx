@@ -31,6 +31,7 @@ import { EduStudent, StudentStatus } from '../../../types';
 import { formatMoney } from '../../../utils/rules';
 import { CertificateModal } from './CertificateModal';
 import { Seek } from '../../ui/Seek';
+import { AtriumButton } from '../../ui/AtriumButton';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
@@ -607,14 +608,13 @@ export const EducationStudentsView: React.FC = () => {
             <span className="hidden sm:inline">{language === 'ar' ? 'بيانات تجريبية' : language === 'fr' ? 'Données Démo' : 'Demo Data'}</span>
           </button>
 
-          <button
-            type="button"
+          <AtriumButton
+            variant="primary"
             onClick={handleOpenAdd}
-            className="h-10 px-4 rounded-full bg-[#C4785A] hover:bg-[var(--color-accent-hover)] text-white text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+            icon={<Plus size={14} />}
           >
-            <Plus size={14} />
-            <span>{t('edu_modal_add_student')}</span>
-          </button>
+            {t('edu_modal_add_student')}
+          </AtriumButton>
         </div>
       </div>
 
