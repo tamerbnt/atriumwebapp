@@ -36,6 +36,7 @@ export const ManufacturingOrderModal: React.FC<ManufacturingOrderModalProps> = (
       return;
     }
 
+    const qtyNum = parseInt(quantity, 10) || 1;
     const created: ManufacturingOrder = {
       id: `of_${Date.now()}`,
       accountId: 'acc_01',
@@ -45,14 +46,21 @@ export const ManufacturingOrderModal: React.FC<ManufacturingOrderModalProps> = (
       orderNumber: `OF-2026-${Math.floor(1000 + Math.random() * 9000)}`,
       bomId: bom.id,
       productName: bom.finishedProductName,
-      quantityOrdered: parseInt(quantity) || 1,
+      targetQuantity: qtyNum,
+      quantityOrdered: qtyNum,
       quantityProduced: 0,
       quantityScrapped: 0,
+      batchLotNumber: `LOT-2026-${Math.floor(100 + Math.random() * 900)}`,
       startDate: new Date().toISOString(),
+      dueDate: new Date(dueDate).toISOString(),
       targetDueDate: new Date(dueDate).toISOString(),
       status: 'Planned',
       assignedStation: station,
+      totalMaterialCostDzd: (bom.estimatedCostDzd || 0) * qtyNum,
+      totalLaborCostDzd: 0,
+      totalCostDzd: (bom.estimatedCostDzd || 0) * qtyNum,
       notes: notes.trim() || undefined,
+      createdAt: new Date().toISOString(),
     };
 
     onSave(created);

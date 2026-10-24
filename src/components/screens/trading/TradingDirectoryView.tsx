@@ -20,6 +20,8 @@ import { useAtriumStore } from '../../../services/store';
 import { B2bClient, B2bSupplier } from '../../../types';
 import { formatMoney } from '../../../utils/rules';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { AtriumButton } from '../../ui/AtriumButton';
+import { Seek } from '../../ui/Seek';
 import { B2bEntityModal } from './B2bEntityModal';
 import { CommercialDocComposerModal } from './CommercialDocComposerModal';
 import { ConfirmDialog } from '../../ui/ConfirmDialog';
@@ -283,24 +285,22 @@ export const TradingDirectoryView: React.FC = () => {
           </p>
         </div>
 
-        <button
+        <AtriumButton
+          variant="primary"
           onClick={() => {
             setEditingEntity(null);
             setEntityModalOpen(true);
           }}
-          className="px-4 py-2 rounded-xl text-xs font-semibold bg-[#C4785A] hover:bg-[#b06749] text-white shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+          icon={<Plus size={15} />}
         >
-          <Plus size={15} />
-          <span>
-            {mode === 'clients'
-              ? language === 'ar'
-                ? 'عميل تجاري جديد'
-                : 'Nouveau Client B2B'
-              : language === 'ar'
-              ? 'مورد جديد'
-              : 'Nouveau Fournisseur'}
-          </span>
-        </button>
+          {mode === 'clients'
+            ? language === 'ar'
+              ? 'عميل تجاري جديد'
+              : 'Nouveau Client B2B'
+            : language === 'ar'
+            ? 'مورد جديد'
+            : 'Nouveau Fournisseur'}
+        </AtriumButton>
       </div>
 
       {/* Directory Mode Toggle & Search */}
@@ -335,13 +335,11 @@ export const TradingDirectoryView: React.FC = () => {
           </button>
         </div>
 
-        <div className="w-64">
-          <input
-            type="text"
-            placeholder={language === 'ar' ? 'بحث باسم الشركة، المسؤول، الرقم الجبائي...' : 'Rechercher nom, contact, NIF...'}
+        <div>
+          <Seek
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full text-xs rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 px-3 py-1.5 text-stone-800 dark:text-stone-200 placeholder-stone-400 focus:outline-hidden focus:border-[#C4785A]"
+            onChange={setSearchQuery}
+            placeholder={language === 'ar' ? 'بحث باسم الشركة، المسؤول، الرقم الجبائي...' : 'Rechercher nom, contact, NIF...'}
           />
         </div>
       </div>

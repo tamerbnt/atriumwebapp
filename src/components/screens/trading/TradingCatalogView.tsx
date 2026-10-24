@@ -14,6 +14,8 @@ import { useAtriumStore } from '../../../services/store';
 import { Product } from '../../../types';
 import { formatMoney } from '../../../utils/rules';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { AtriumButton } from '../../ui/AtriumButton';
+import { Seek } from '../../ui/Seek';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { useTranslation } from '../../../utils/useTranslation';
@@ -239,21 +241,19 @@ export const TradingCatalogView: React.FC = () => {
           </p>
         </div>
 
-        <button
+        <AtriumButton
+          variant="primary"
           onClick={handleOpenAdd}
-          className="px-4 py-2 rounded-xl text-xs font-semibold bg-[#C4785A] hover:bg-[#b06749] text-white shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+          icon={<Plus size={15} />}
         >
-          <Plus size={15} />
-          <span>
-            {activeTab === 'products'
-              ? language === 'ar'
-                ? 'مادة جديدة'
-                : 'Nouvel Article'
-              : language === 'ar'
-              ? 'خدمة جديدة'
-              : 'Nouvelle Prestation'}
-          </span>
-        </button>
+          {activeTab === 'products'
+            ? language === 'ar'
+              ? 'مادة جديدة'
+              : 'Nouvel Article'
+            : language === 'ar'
+            ? 'خدمة جديدة'
+            : 'Nouvelle Prestation'}
+        </AtriumButton>
       </div>
 
       {/* Segmented Toggle & Search */}
@@ -282,13 +282,11 @@ export const TradingCatalogView: React.FC = () => {
           </button>
         </div>
 
-        <div className="w-64">
-          <input
-            type="text"
-            placeholder={language === 'ar' ? 'بحث بالاسم، الرمز، الفئة...' : 'Filtrer nom, SKU, catégorie...'}
+        <div>
+          <Seek
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full text-xs rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 px-3 py-1.5 text-stone-800 dark:text-stone-200 placeholder-stone-400 focus:outline-hidden focus:border-[#C4785A]"
+            onChange={setSearchQuery}
+            placeholder={language === 'ar' ? 'بحث بالاسم، الرمز، الفئة...' : 'Filtrer nom, SKU, catégorie...'}
           />
         </div>
       </div>

@@ -24,6 +24,8 @@ import { Sale, ParkedOrder } from '../../../types/index';
 import { formatMoney } from '../../../utils/rules';
 import { useTranslation } from '../../../utils/useTranslation';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { AtriumButton } from '../../ui/AtriumButton';
+import { Seek } from '../../ui/Seek';
 import { Modal } from '../../ui/Modal';
 import { FilterSelect } from '../../ui/FilterSelect';
 
@@ -48,6 +50,7 @@ export const PosOrdersView: React.FC = () => {
   const [dateFilter, setDateFilter] = useState<'all' | 'today' | '7days' | 'month'>('all');
   const [tenderFilter, setTenderFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<'all' | 'completed' | 'refunded'>('all');
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Selection & Pinning
   const [selectedSaleIds, setSelectedSaleIds] = useState<Set<string>>(new Set());
@@ -77,6 +80,16 @@ export const PosOrdersView: React.FC = () => {
     const todayStr = new Date().toISOString().split('T')[0];
 
     return branchSales.filter((s) => {
+      // Search query filter
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        const matchesId = s.id.toLowerCase().includes(q);
+        const matchesMember = (s.memberName || '').toLowerCase().includes(q);
+        const matchesPhone = (s.customerPhone || '').toLowerCase().includes(q);
+        const matchesItems = s.items.some((it) => it.productName.toLowerCase().includes(q));
+        if (!matchesId && !matchesMember && !matchesPhone && !matchesItems) return false;
+      }
+
       // Date filter
       if (dateFilter === 'today') {
         if (!s.createdAt.startsWith(todayStr)) return false;
@@ -99,7 +112,7 @@ export const PosOrdersView: React.FC = () => {
 
       return true;
     });
-  }, [branchSales, dateFilter, tenderFilter, statusFilter]);
+  }, [branchSales, dateFilter, tenderFilter, statusFilter, searchQuery]);
 
   // Sorted sales with pinning
   const sortedSales = useMemo(() => {
@@ -523,23 +536,23 @@ export const PosOrdersView: React.FC = () => {
             <span>{language === 'ar' ? 'شحن العينة' : 'Démo Recharge'}</span>
           </button>
 
-          <button
-            type="button"
+          <AtriumButton
+            variant="secondary"
+            size="sm"
             onClick={handleExportCSV}
-            className="h-10 px-3.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 hover:bg-neutral-50 text-xs font-bold text-neutral-700 dark:text-neutral-200 flex items-center gap-1.5 cursor-pointer shadow-2xs"
+            icon={<Download size={14} />}
           >
-            <Download size={14} />
-            <span>{language === 'ar' ? 'تصدير CSV' : 'Export CSV'}</span>
-          </button>
+            {language === 'ar' ? 'تصدير CSV' : 'Export CSV'}
+          </AtriumButton>
 
-          <button
-            type="button"
+          <AtriumButton
+            variant="primary"
+            size="sm"
             onClick={() => setScreen('shop')}
-            className="h-10 px-4 rounded-xl bg-[#C4785A] text-white text-xs font-bold flex items-center gap-1.5 hover:opacity-90 cursor-pointer shadow-xs"
+            icon={<Receipt size={14} />}
           >
-            <Receipt size={14} />
-            <span>{language === 'ar' ? 'نقطة البيع' : 'Caisse'}</span>
-          </button>
+            {language === 'ar' ? 'نقطة البيع' : 'Caisse'}
+          </AtriumButton>
         </div>
       </div>
 
@@ -707,6 +720,12 @@ export const PosOrdersView: React.FC = () => {
                   { value: 'completed', label: language === 'ar' ? 'مسدد' : 'Encaissé' },
                   { value: 'refunded', label: language === 'ar' ? 'مسترجع (Avoir)' : 'Remboursé' },
                 ]}
+              />
+
+              <Seek
+                value={searchQuery}
+                onChange={setSearchQuery}
+                placeholder={language === 'ar' ? 'بحث برقم الوصل، الزبون، المادة...' : 'Rechercher ticket, client, produit...'}
               />
             </div>
           </div>

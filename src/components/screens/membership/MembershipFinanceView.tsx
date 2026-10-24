@@ -28,6 +28,7 @@ import { StaffMember, StaffRole } from '../../../types/index';
 import { Avatar } from '../../ui/Avatar';
 import { Modal } from '../../ui/Modal';
 import { Seek } from '../../ui/Seek';
+import { AtriumButton } from '../../ui/AtriumButton';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
@@ -436,17 +437,14 @@ export const MembershipFinanceView: React.FC = () => {
           </div>
 
           {/* Add Staff Button */}
-          <button
+          <AtriumButton
             type="button"
+            variant="primary"
             onClick={() => setIsAddStaffOpen(true)}
-            style={{
-              backgroundColor: 'var(--color-accent)',
-            }}
-            className="h-10 px-5 rounded-full text-xs font-bold text-white flex items-center gap-2 cursor-pointer hover:opacity-90 active:scale-98 transition-all shadow-xs"
+            icon={<Plus size={15} strokeWidth={2.5} />}
           >
-            <Plus size={15} strokeWidth={2.5} />
             <span>{t('finance_add_member_btn', language)}</span>
-          </button>
+          </AtriumButton>
         </div>
       </div>
 
@@ -852,14 +850,14 @@ export const MembershipFinanceView: React.FC = () => {
 
             {/* Close Button */}
             <div className="pt-2">
-              <button
+              <AtriumButton
                 type="button"
+                variant="primary"
                 onClick={() => setSelectedStaff(null)}
-                style={{ backgroundColor: 'var(--color-accent)' }}
-                className="w-full h-10 rounded-full text-xs font-bold text-white flex items-center justify-center cursor-pointer hover:opacity-90 shadow-xs"
+                className="w-full justify-center"
               >
-                Close Personnel File
-              </button>
+                <span>{language === 'ar' ? 'إغلاق الملف الشخصي' : language === 'fr' ? 'Fermer le dossier' : 'Close Personnel File'}</span>
+              </AtriumButton>
             </div>
           </div>
         </div>
@@ -960,22 +958,19 @@ export const MembershipFinanceView: React.FC = () => {
           </div>
 
           <div className="flex justify-end gap-3 pt-3">
-            <button
+            <AtriumButton
               type="button"
+              variant="ghost"
               onClick={() => setIsAddStaffOpen(false)}
-              className="h-10 px-4 text-xs font-semibold text-neutral-500 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
             >
-              Cancel
-            </button>
-            <button
+              <span>{language === 'ar' ? 'إلغاء' : language === 'fr' ? 'Annuler' : 'Cancel'}</span>
+            </AtriumButton>
+            <AtriumButton
               type="submit"
-              style={{
-                backgroundColor: 'var(--color-accent)',
-              }}
-              className="h-10 px-5 text-xs font-bold text-white rounded-full cursor-pointer hover:opacity-90 shadow-xs"
+              variant="primary"
             >
-              Save Staff Member
-            </button>
+              <span>{language === 'ar' ? 'حفظ الموظف' : language === 'fr' ? 'Enregistrer le collaborateur' : 'Save Staff Member'}</span>
+            </AtriumButton>
           </div>
         </form>
       </Modal>

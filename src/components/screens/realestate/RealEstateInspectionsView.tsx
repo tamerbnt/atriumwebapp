@@ -13,7 +13,7 @@ export const RealEstateInspectionsView: React.FC = () => {
   const filtered = inspections.filter(
     (insp) =>
       insp.propertyTitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      insp.inspectorName.toLowerCase().includes(searchQuery.toLowerCase())
+      (insp.inspectorName?.toLowerCase() || '').includes(searchQuery.toLowerCase())
   );
 
   const handlePrintInspection = () => {
@@ -97,19 +97,19 @@ export const RealEstateInspectionsView: React.FC = () => {
                 <div>
                   <span className="text-neutral-400">Électricité (Sonelgaz):</span>{' '}
                   <span className="font-mono font-bold text-neutral-700 dark:text-neutral-300">
-                    {insp.meterReadings.electricKwh} kWh
+                    {insp.meterReadings?.electricKwh ?? insp.meterElectricityKwh ?? 0} kWh
                   </span>
                 </div>
                 <div>
                   <span className="text-neutral-400">Gaz (Sonelgaz):</span>{' '}
                   <span className="font-mono font-bold text-neutral-700 dark:text-neutral-300">
-                    {insp.meterReadings.gasM3} m³
+                    {insp.meterReadings?.gasM3 ?? insp.meterGasM3 ?? 0} m³
                   </span>
                 </div>
                 <div>
                   <span className="text-neutral-400">Eau (Seaal):</span>{' '}
                   <span className="font-mono font-bold text-neutral-700 dark:text-neutral-300">
-                    {insp.meterReadings.waterM3} m³
+                    {insp.meterReadings?.waterM3 ?? insp.meterWaterM3 ?? 0} m³
                   </span>
                 </div>
               </div>

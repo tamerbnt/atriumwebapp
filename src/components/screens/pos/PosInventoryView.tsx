@@ -26,6 +26,8 @@ import { Product, StockMovement, PurchaseDocument, B2bSupplier } from '../../../
 import { formatMoney } from '../../../utils/rules';
 import { useTranslation } from '../../../utils/useTranslation';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { AtriumButton } from '../../ui/AtriumButton';
+import { Seek } from '../../ui/Seek';
 import { Modal } from '../../ui/Modal';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
@@ -58,6 +60,7 @@ export const PosInventoryView: React.FC = () => {
   // Filters
   const [categoryFilter, setCategoryFilter] = useState<string>('All');
   const [stockStatusFilter, setStockStatusFilter] = useState<'all' | 'low' | 'out'>('all');
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Selection & Pinning
   const [selectedProductIds, setSelectedProductIds] = useState<Set<string>>(new Set());
@@ -246,6 +249,14 @@ export const PosInventoryView: React.FC = () => {
   // Filtered inventory
   const filteredInventory = useMemo(() => {
     return products.filter((p) => {
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        const matchesName = p.name.toLowerCase().includes(q);
+        const matchesSku = p.sku.toLowerCase().includes(q);
+        const matchesBarcode = (p.barcode || '').toLowerCase().includes(q);
+        const matchesCatName = (p.category || '').toLowerCase().includes(q);
+        if (!matchesName && !matchesSku && !matchesBarcode && !matchesCatName) return false;
+      }
       const matchCat = categoryFilter === 'All' || p.category === categoryFilter;
       const isOut = p.stockQuantity <= 0;
       const isLow = !isOut && p.stockQuantity <= (p.reorderLevel || 5);
@@ -254,7 +265,7 @@ export const PosInventoryView: React.FC = () => {
       if (stockStatusFilter === 'low') return matchCat && isLow;
       return matchCat;
     });
-  }, [products, categoryFilter, stockStatusFilter]);
+  }, [products, categoryFilter, stockStatusFilter, searchQuery]);
 
   // Sorted inventory with pinning
   const sortedInventory = useMemo(() => {
@@ -827,23 +838,23 @@ export const PosInventoryView: React.FC = () => {
                 <span>{language === 'ar' ? 'شحن العينة' : 'Démo Recharge'}</span>
               </button>
 
-              <button
-                type="button"
+              <AtriumButton
+                variant="secondary"
+                size="sm"
                 onClick={handleExportInventoryCSV}
-                className="h-10 px-3.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 hover:bg-neutral-50 text-xs font-bold text-neutral-700 dark:text-neutral-200 flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                icon={<Download size={13} />}
               >
-                <Download size={13} />
-                <span>{language === 'ar' ? 'تصدير CSV' : 'Export CSV'}</span>
-              </button>
+                {language === 'ar' ? 'تصدير CSV' : 'Export CSV'}
+              </AtriumButton>
 
-              <button
-                type="button"
+              <AtriumButton
+                variant="primary"
+                size="sm"
                 onClick={handleOpenAddProduct}
-                className="h-10 px-4 rounded-xl bg-[#C4785A] text-white text-xs font-bold flex items-center gap-1.5 hover:opacity-90 cursor-pointer shadow-xs"
+                icon={<Plus size={15} />}
               >
-                <Plus size={15} />
-                <span>{language === 'ar' ? 'إضافة منتج جديد' : 'Nouveau Produit'}</span>
-              </button>
+                {language === 'ar' ? 'إضافة منتج جديد' : 'Nouveau Produit'}
+              </AtriumButton>
             </>
           ) : (
             <>
@@ -862,23 +873,23 @@ export const PosInventoryView: React.FC = () => {
                 </button>
               )}
 
-              <button
-                type="button"
+              <AtriumButton
+                variant="secondary"
+                size="sm"
                 onClick={() => setIsSupplierModalOpen(true)}
-                className="h-10 px-3.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 hover:bg-neutral-50 text-xs font-bold text-neutral-700 dark:text-neutral-200 flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                icon={<Building2 size={13} />}
               >
-                <Building2 size={13} />
-                <span>{language === 'ar' ? 'إضافة مورد' : 'Nouveau Fournisseur'}</span>
-              </button>
+                {language === 'ar' ? 'إضافة مورد' : 'Nouveau Fournisseur'}
+              </AtriumButton>
 
-              <button
-                type="button"
+              <AtriumButton
+                variant="primary"
+                size="sm"
                 onClick={handleOpenNewRetailPo}
-                className="h-10 px-4 rounded-xl bg-[#C4785A] text-white text-xs font-bold flex items-center gap-1.5 hover:opacity-90 cursor-pointer shadow-xs"
+                icon={<Plus size={15} />}
               >
-                <Plus size={15} />
-                <span>{language === 'ar' ? 'طلب توريد جديد' : 'Nouvelle Commande Fournisseur'}</span>
-              </button>
+                {language === 'ar' ? 'طلب توريد جديد' : 'Nouvelle Commande Fournisseur'}
+              </AtriumButton>
             </>
           )}
         </div>
@@ -1015,6 +1026,12 @@ export const PosInventoryView: React.FC = () => {
             value={categoryFilter}
             onChange={(val) => setCategoryFilter(typeof val === 'string' ? val : val.target?.value || val)}
             options={categories.map((c) => ({ value: c, label: c === 'All' ? t('shop_categories_all') : c }))}
+          />
+
+          <Seek
+            value={searchQuery}
+            onChange={setSearchQuery}
+            placeholder={language === 'ar' ? 'بحث بالاسم، الباركود، SKU...' : 'Recherche produit, code-barres...'}
           />
         </div>
 

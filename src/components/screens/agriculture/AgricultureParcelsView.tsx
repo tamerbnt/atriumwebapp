@@ -16,7 +16,7 @@ export const AgricultureParcelsView: React.FC = () => {
 
   const filteredParcels = parcels.filter((p) =>
     p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    p.currentCrop.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (p.currentCrop?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
     p.soilType.toLowerCase().includes(searchQuery.toLowerCase())
   );
 

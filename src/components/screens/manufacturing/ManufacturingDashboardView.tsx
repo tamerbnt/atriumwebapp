@@ -25,7 +25,7 @@ export const ManufacturingDashboardView: React.FC = () => {
   const activeOrders = orders.filter((o) => o.status === 'InProduction').length;
   const plannedOrders = orders.filter((o) => o.status === 'Planned').length;
   const completedOrders = orders.filter((o) => o.status === 'Completed').length;
-  const totalUnitsProduced = orders.reduce((acc, o) => acc + o.quantityProduced, 0);
+  const totalUnitsProduced = orders.reduce((acc, o) => acc + (o.quantityProduced || 0), 0);
 
   return (
     <div className="flex-1 flex flex-col h-full bg-[#FAF9F5] dark:bg-neutral-950 overflow-y-auto font-sans">
@@ -155,7 +155,7 @@ export const ManufacturingDashboardView: React.FC = () => {
                     </span>
                   </div>
                   <div className="text-[11px] text-neutral-500 mt-0.5">
-                    Poste: {order.assignedStation} · Échéance: {new Date(order.targetDueDate).toLocaleDateString()}
+                    Poste: {order.assignedStation || 'Atelier'} · Échéance: {new Date(order.targetDueDate || order.dueDate).toLocaleDateString()}
                   </div>
                 </div>
 

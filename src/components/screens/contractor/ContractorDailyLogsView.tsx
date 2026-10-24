@@ -18,7 +18,7 @@ export const ContractorDailyLogsView: React.FC = () => {
 
   // Form states
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
-  const [weather, setWeather] = useState('Ensoleillé');
+  const [weather, setWeather] = useState<ContractorDailyLog['weather']>('Ensoleillé');
   const [headcount, setHeadcount] = useState('20');
   const [tasks, setTasks] = useState('');
   const [equipment, setEquipment] = useState('Grue à tour, 2x Toupie béton');

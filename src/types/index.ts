@@ -1718,7 +1718,7 @@ export interface MedicalConsultation {
   clinicalExam?: string;
   diagnosis: string;
   icdCode?: string;
-  status: 'InWaitingQueue' | 'InConsultation' | 'Completed' | 'Cancelled';
+  status: 'InWaitingQueue' | 'InConsultation' | 'InProgress' | 'Completed' | 'Cancelled';
   consultationFeeDzd: number;
   copayAmountDzd: number;
   insuranceShareDzd: number;
@@ -1832,7 +1832,7 @@ export interface RealEstateLease {
   businessId: string;
   branchId: string;
   staffId: string;
-  leaseNumber: string;
+  leaseNumber?: string;
   propertyId: string;
   propertyTitle: string;
   tenantName: string;
@@ -1841,10 +1841,12 @@ export interface RealEstateLease {
   endDate: string;
   monthlyRentDzd: number;
   securityDepositDzd: number;
-  agencyFeeDzd: number;
-  paymentCycle: 'Monthly' | 'Quarterly' | 'Yearly';
+  agencyFeeDzd?: number;
+  agencyCommissionDzd?: number;
+  paymentCycle?: 'Monthly' | 'Quarterly' | 'Yearly';
+  paymentFrequency?: 'Monthly' | 'Quarterly' | 'Biannual' | 'Yearly' | 'Annual' | string;
   status: 'Active' | 'Expired' | 'Terminated';
-  createdAt: string;
+  createdAt?: string;
 }
 
 export interface RealEstateInspection {
@@ -1855,17 +1857,29 @@ export interface RealEstateInspection {
   staffId: string;
   leaseId: string;
   propertyTitle: string;
-  tenantName: string;
-  type: 'CheckIn' | 'CheckOut';
+  tenantName?: string;
+  type?: 'CheckIn' | 'CheckOut' | 'Entry' | 'Exit';
+  inspectionType?: 'CheckIn' | 'CheckOut' | 'Entry' | 'Exit' | string;
   inspectionDate: string;
-  meterElectricityKwh: number;
-  meterGasM3: number;
-  meterWaterM3: number;
-  keysCount: number;
+  inspectorName?: string;
+  meterReadings?: {
+    electricKwh?: number;
+    gasM3?: number;
+    waterM3?: number;
+    electricity?: number | string;
+    gas?: number | string;
+    water?: number | string;
+  };
+  meterElectricityKwh?: number;
+  meterGasM3?: number;
+  meterWaterM3?: number;
+  keysCount?: number;
+  keysDeliveredCount?: number;
   generalCondition: 'Excellent' | 'Good' | 'Fair' | 'Poor';
-  observations: string;
-  isSigned: boolean;
-  createdAt: string;
+  observations?: string;
+  notes?: string;
+  isSigned?: boolean;
+  createdAt?: string;
 }
 
 // ==========================================
@@ -1905,14 +1919,20 @@ export interface ManufacturingOrder {
   bomId: string;
   productName: string;
   targetQuantity: number;
+  quantityOrdered?: number;
   actualQuantityProduced?: number;
+  quantityProduced?: number;
+  quantityScrapped?: number;
+  assignedStation?: string;
+  targetDueDate?: string;
   batchLotNumber: string;
   startDate: string;
   dueDate: string;
-  status: 'Draft' | 'Scheduled' | 'MaterialsIssued' | 'InProduction' | 'QC' | 'Completed' | 'Cancelled';
+  status: 'Draft' | 'Planned' | 'Scheduled' | 'MaterialsIssued' | 'InProduction' | 'QC' | 'Completed' | 'Cancelled';
   totalMaterialCostDzd: number;
   totalLaborCostDzd: number;
   totalCostDzd: number;
+  notes?: string;
   createdAt: string;
 }
 
@@ -1927,7 +1947,7 @@ export interface LegalMatter {
   staffId: string;
   matterNumber: string;
   title: string;
-  category: 'Commercial' | 'Civil' | 'Penal' | 'Labor' | 'TaxAdvisory' | 'NotaryAct';
+  category: 'Commercial' | 'Civil' | 'Penal' | 'Labor' | 'TaxAdvisory' | 'NotaryAct' | 'Administrative' | 'RealEstate';
   clientName: string;
   clientPhone: string;
   adversePartyName?: string;
@@ -1947,15 +1967,22 @@ export interface LegalHearing {
   branchId: string;
   staffId: string;
   matterId: string;
-  matterNumber: string;
+  matterNumber?: string;
+  matterTitle?: string;
   hearingDate: string;
-  courtRoom: string;
+  hearingTime?: string;
+  courtName?: string;
+  courtRoom?: string;
+  benchJudge?: string;
   presidingJudge?: string;
-  objective: string;
+  purpose?: string;
+  objective?: string;
+  resultSummary?: string;
   outcomeNotes?: string;
+  isCompleted?: boolean;
   nextDate?: string;
-  status: 'Scheduled' | 'Attended' | 'Postponed' | 'Ruled';
-  createdAt: string;
+  status?: 'Scheduled' | 'Attended' | 'Postponed' | 'Ruled' | string;
+  createdAt?: string;
 }
 
 // ==========================================
@@ -1976,7 +2003,7 @@ export interface LogisticsShipment {
   codAmountDzd: number;
   shippingFeeDzd: number;
   weightKg: number;
-  status: 'Created' | 'HubIntake' | 'Sorted' | 'OutForDelivery' | 'Delivered' | 'Postponed' | 'Returned' | 'Cancelled';
+  status: 'Created' | 'HubIntake' | 'ReceivedAtHub' | 'Sorted' | 'OutForDelivery' | 'Delivered' | 'Postponed' | 'Returned' | 'Cancelled';
   assignedDriverName?: string;
   podSignatureUrl?: string;
   createdAt: string;

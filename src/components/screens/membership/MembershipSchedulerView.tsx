@@ -25,6 +25,7 @@ import { useAtriumStore } from '../../../services/store';
 import { ScheduleEvent } from '../../../types/index';
 import { Modal } from '../../ui/Modal';
 import { Seek } from '../../ui/Seek';
+import { AtriumButton } from '../../ui/AtriumButton';
 import { LabelInput } from '../../ui/LabelInput';
 import { FilterSelect } from '../../ui/FilterSelect';
 import { AppointmentScheduleView as StylistScheduleView } from '../appointment/AppointmentScheduleView';
@@ -422,17 +423,15 @@ export const MembershipSchedulerView: React.FC = () => {
           </div>
 
           {/* New Session Button */}
-          <button
+          <AtriumButton
             type="button"
+            variant="primary"
             onClick={() => setIsAddModalOpen(true)}
-            style={{
-              backgroundColor: 'var(--color-accent)',
-            }}
-            className="h-10 px-5 rounded-full text-xs font-bold text-white flex items-center gap-2 cursor-pointer hover:opacity-90 active:scale-98 transition-all shadow-xs shrink-0"
+            icon={<Plus size={15} strokeWidth={2.5} />}
+            className="shrink-0"
           >
-            <Plus size={15} strokeWidth={2.5} />
             <span>{isPOS ? (language === 'ar' ? 'إضافة وردية' : 'New Shift') : t('schedule_new_session', language)}</span>
-          </button>
+          </AtriumButton>
         </div>
       </div>
 
@@ -912,8 +911,9 @@ export const MembershipSchedulerView: React.FC = () => {
             </div>
 
             <div className="space-y-2 pt-4">
-              <button
+              <AtriumButton
                 type="button"
+                variant="primary"
                 onClick={() => {
                   showToast({
                     type: 'success',
@@ -921,20 +921,20 @@ export const MembershipSchedulerView: React.FC = () => {
                     message: `${selectedEvent.title} (+1)`,
                   });
                 }}
-                style={{ backgroundColor: 'var(--color-accent)' }}
-                className="w-full h-10 rounded-full text-xs font-bold text-white flex items-center justify-center gap-2 cursor-pointer hover:opacity-90 shadow-xs"
+                icon={<UserPlus size={14} />}
+                className="w-full justify-center"
               >
-                <UserPlus size={14} />
                 <span>{language === 'ar' ? 'تسجيل مشترك جديد في الحصة' : 'Enroll New Member in Session'}</span>
-              </button>
+              </AtriumButton>
 
-              <button
+              <AtriumButton
                 type="button"
+                variant="secondary"
                 onClick={() => setSelectedEvent(null)}
-                className="w-full h-10 rounded-full border border-neutral-200 dark:border-neutral-700 text-xs font-bold text-neutral-600 dark:text-neutral-300 flex items-center justify-center cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-800"
+                className="w-full justify-center"
               >
-                {language === 'ar' ? 'إغلاق' : 'Close'}
-              </button>
+                <span>{language === 'ar' ? 'إغلاق' : 'Close'}</span>
+              </AtriumButton>
             </div>
           </div>
         </div>
@@ -1024,23 +1024,20 @@ export const MembershipSchedulerView: React.FC = () => {
           </div>
 
           <div className="flex justify-end gap-3 pt-3">
-            <button
+            <AtriumButton
               type="button"
+              variant="ghost"
               onClick={() => setIsAddModalOpen(false)}
-              className="h-10 px-4 text-xs font-semibold text-neutral-500 rounded-full hover:bg-neutral-100 cursor-pointer"
             >
-              {t('action_cancel', language)}
-            </button>
-            <button
+              <span>{t('action_cancel', language)}</span>
+            </AtriumButton>
+            <AtriumButton
               type="button"
+              variant="primary"
               onClick={() => setIsAddModalOpen(false)}
-              style={{
-                backgroundColor: 'var(--color-accent)',
-              }}
-              className="h-10 px-5 text-xs font-bold text-white rounded-full cursor-pointer hover:opacity-90 shadow-xs"
             >
-              {language === 'ar' ? 'حفظ الحصة في الجدول' : language === 'fr' ? 'Enregistrer le créneau' : 'Save Schedule'}
-            </button>
+              <span>{language === 'ar' ? 'حفظ الحصة في الجدول' : language === 'fr' ? 'Enregistrer le créneau' : 'Save Schedule'}</span>
+            </AtriumButton>
           </div>
         </div>
       </Modal>

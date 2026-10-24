@@ -27,6 +27,7 @@ import { formatCurrencyAmount } from '../../../utils/rules';
 import { useTranslation } from '../../../utils/useTranslation';
 import { BookingModal } from './BookingModal';
 import { Seek } from '../../ui/Seek';
+import { AtriumButton } from '../../ui/AtriumButton';
 import { LabelInput } from '../../ui/LabelInput';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 
@@ -372,35 +373,36 @@ export const VenueRentersView: React.FC = () => {
           </div>
 
           {/* Export CSV Button */}
-          <button
+          <AtriumButton
             type="button"
+            variant="secondary"
             onClick={handleExportCSV}
-            className="h-10 px-3.5 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold rounded-full transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer"
+            icon={<Download size={14} />}
             title="Export CSV"
           >
-            <Download size={14} />
             <span className="hidden sm:inline">CSV</span>
-          </button>
+          </AtriumButton>
 
           {/* Seed Demo Data Button */}
-          <button
+          <AtriumButton
             type="button"
+            variant="secondary"
             onClick={resetVenueMockData}
-            className="h-10 px-3.5 bg-[#FCEEE8] dark:bg-neutral-800 hover:bg-[#F8DFD4] dark:hover:bg-neutral-700 text-[#C4785A] text-xs font-semibold rounded-full transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer"
+            icon={<Sparkles size={14} className="text-[#C4785A]" />}
             title={language === 'ar' ? 'إعادة شحن بيانات تجريبية' : language === 'fr' ? 'Recharger Données Démo' : 'Seed Mock Data'}
           >
-            <Sparkles size={14} />
             <span className="hidden sm:inline">{language === 'ar' ? 'بيانات تجريبية' : language === 'fr' ? 'Données Démo' : 'Demo Data'}</span>
-          </button>
+          </AtriumButton>
 
           {/* New Renter Button */}
-          <button
+          <AtriumButton
+            type="button"
+            variant="primary"
             onClick={handleOpenAdd}
-            className="h-10 px-5 bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white text-xs font-semibold rounded-full shadow-xs transition-colors flex items-center gap-2 cursor-pointer"
+            icon={<Plus size={15} />}
           >
-            <Plus size={16} />
             <span>{t('venue_renters_btn_add')}</span>
-          </button>
+          </AtriumButton>
         </div>
       </div>
 

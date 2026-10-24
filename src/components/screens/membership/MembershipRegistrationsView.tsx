@@ -30,6 +30,7 @@ import { RegistrationLead } from '../../../types/index';
 import { Avatar } from '../../ui/Avatar';
 import { Modal } from '../../ui/Modal';
 import { Seek } from '../../ui/Seek';
+import { AtriumButton } from '../../ui/AtriumButton';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { localizeStatus } from '../../../utils/rules';
@@ -471,17 +472,14 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
           </div>
 
           {/* Quick Registration Primary Action Button */}
-          <button
+          <AtriumButton
             type="button"
+            variant="primary"
             onClick={onAddLead}
-            style={{
-              backgroundColor: 'var(--color-accent)',
-            }}
-            className="h-10 px-5 rounded-full text-xs font-bold text-white flex items-center gap-2 cursor-pointer hover:opacity-90 active:scale-98 transition-all shadow-xs"
+            icon={<Plus size={15} strokeWidth={2.5} />}
           >
-            <Plus size={15} strokeWidth={2.5} />
             <span>{t('reg_add_lead', language)}</span>
-          </button>
+          </AtriumButton>
         </div>
       </div>
 
@@ -638,15 +636,15 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
             />
 
             {/* Export Data Button */}
-            <button
+            <AtriumButton
               type="button"
+              variant="secondary"
               onClick={handleExportCSV}
-              className="h-9 px-3.5 rounded-full border border-[#E9EEF0] dark:border-neutral-700/60 bg-white dark:bg-neutral-800 text-xs font-semibold text-neutral-700 dark:text-neutral-300 flex items-center gap-1.5 hover:bg-neutral-50 dark:hover:bg-neutral-700/50 cursor-pointer transition-colors shadow-2xs"
+              icon={<Download size={13} />}
               title="Download CSV export"
             >
-              <Download size={13} />
               <span>{language === 'ar' ? 'تصدير البيانات' : language === 'fr' ? 'Exporter les données' : 'Export Data'}</span>
-            </button>
+            </AtriumButton>
 
             {/* View Mode Toggle */}
             <div className="flex items-center gap-1 p-0.5 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
@@ -706,30 +704,33 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
             </div>
 
             <div className="flex items-center gap-2">
-              <button
+              <AtriumButton
                 type="button"
+                variant="primary"
+                size="xs"
                 onClick={handleBatchApprove}
-                className="h-8 px-3 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+                icon={<UserCheck size={13} />}
               >
-                <UserCheck size={13} />
                 <span>{language === 'ar' ? 'اعتماد وتحويل' : language === 'fr' ? 'Valider la sélection' : 'Batch Approve'}</span>
-              </button>
-              <button
+              </AtriumButton>
+              <AtriumButton
                 type="button"
+                variant="secondary"
+                size="xs"
                 onClick={handleBatchDecline}
-                className="h-8 px-3 rounded-full bg-neutral-800 hover:bg-neutral-700 text-neutral-200 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+                icon={<X size={13} />}
               >
-                <X size={13} />
                 <span>{language === 'ar' ? 'رفض' : language === 'fr' ? 'Refuser' : 'Decline'}</span>
-              </button>
-              <button
+              </AtriumButton>
+              <AtriumButton
                 type="button"
+                variant="danger"
+                size="xs"
                 onClick={handleBatchDelete}
-                className="h-8 px-3 rounded-full bg-rose-600/80 hover:bg-rose-700 text-white text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+                icon={<Trash2 size={13} />}
               >
-                <Trash2 size={13} />
                 <span>{language === 'ar' ? 'حذف' : language === 'fr' ? 'Supprimer' : 'Delete'}</span>
-              </button>
+              </AtriumButton>
             </div>
           </div>
         )}
@@ -831,35 +832,38 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
 
                 {lead.status === 'Pending' ? (
                   <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-                    <button
+                    <AtriumButton
                       type="button"
+                      variant="primary"
+                      size="xs"
                       onClick={() => handleStartConversion(lead)}
-                      style={{ backgroundColor: 'var(--color-accent)' }}
-                      className="flex-1 h-8 rounded-full text-xs font-bold text-white flex items-center justify-center gap-1.5 hover:opacity-90 cursor-pointer shadow-xs"
+                      icon={<UserCheck size={13} />}
+                      className="flex-1 justify-center"
                     >
-                      <UserCheck size={13} />
                       <span>{language === 'ar' ? 'اعتماد وتحويل' : language === 'fr' ? 'Valider' : 'Convert'}</span>
-                    </button>
+                    </AtriumButton>
                     <button
                       type="button"
                       onClick={() => updateLeadStatus(lead.id, 'Declined')}
-                      className="h-8 px-2.5 rounded-full border border-neutral-200 dark:border-neutral-700 text-xs font-semibold text-neutral-500 hover:text-rose-600 transition-colors cursor-pointer"
+                      className="h-7 w-7 rounded-lg border border-neutral-200 dark:border-neutral-700 text-xs font-semibold text-neutral-500 hover:text-rose-600 flex items-center justify-center transition-colors cursor-pointer"
                     >
                       <X size={14} />
                     </button>
                   </div>
                 ) : (
-                  <button
+                  <AtriumButton
                     type="button"
+                    variant="secondary"
+                    size="xs"
                     onClick={(e) => {
                       e.stopPropagation();
                       setSelectedLead(lead);
                     }}
-                    className="w-full h-8 rounded-full border border-neutral-200 dark:border-neutral-700 text-xs font-semibold text-neutral-600 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700/50 flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
+                    icon={<Eye size={13} />}
+                    className="w-full justify-center"
                   >
-                    <Eye size={13} />
-                    <span>{language === 'ar' ? 'معاينة الملف' : language === 'fr' ? 'Voir le dossier' : 'View Dossier'}</span>
-                  </button>
+                    <span>{language === 'ar' ? 'عرض تفاصيل الملف' : language === 'fr' ? 'Consulter le dossier' : 'View Full Dossier'}</span>
+                  </AtriumButton>
                 )}
               </div>
             );
@@ -965,13 +969,13 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
             <div className="space-y-2 pt-2">
               {selectedLead.status === 'Pending' ? (
                 <>
-                  <button
+                  <AtriumButton
                     type="button"
+                    variant="primary"
                     onClick={() => handleStartConversion(selectedLead)}
-                    style={{ backgroundColor: 'var(--color-accent)' }}
-                    className="w-full h-10 rounded-full text-xs font-bold text-white flex items-center justify-center gap-2 cursor-pointer hover:opacity-90 shadow-xs"
+                    icon={<UserCheck size={16} />}
+                    className="w-full justify-center"
                   >
-                    <UserCheck size={16} />
                     <span>
                       {language === 'ar'
                         ? 'اعتماد العضوية وتسجيل الاشتراك'
@@ -979,27 +983,28 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
                         ? 'Valider l\'adhésion & Inscrire'
                         : 'Approve & Convert to Member'}
                     </span>
-                  </button>
-                  <button
+                  </AtriumButton>
+                  <AtriumButton
                     type="button"
+                    variant="danger"
                     onClick={() => {
                       updateLeadStatus(selectedLead.id, 'Declined');
                       setSelectedLead(null);
                     }}
-                    className="w-full h-10 rounded-full border border-neutral-300 dark:border-neutral-700 text-xs font-bold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20 cursor-pointer transition-colors"
+                    className="w-full justify-center"
                   >
-                    {language === 'ar' ? 'رفض الطلب' : language === 'fr' ? 'Refuser la demande' : 'Decline Registration'}
-                  </button>
+                    <span>{language === 'ar' ? 'رفض الطلب' : language === 'fr' ? 'Refuser la demande' : 'Decline Registration'}</span>
+                  </AtriumButton>
                 </>
               ) : (
-                <button
+                <AtriumButton
                   type="button"
+                  variant="primary"
                   onClick={() => setSelectedLead(null)}
-                  style={{ backgroundColor: 'var(--color-accent)' }}
-                  className="w-full h-10 rounded-full text-xs font-bold text-white flex items-center justify-center cursor-pointer hover:opacity-90 shadow-xs"
+                  className="w-full justify-center"
                 >
-                  {language === 'ar' ? 'إغلاق الملف' : language === 'fr' ? 'Fermer le dossier' : 'Close Dossier'}
-                </button>
+                  <span>{language === 'ar' ? 'إغلاق الملف' : language === 'fr' ? 'Fermer le dossier' : 'Close Dossier'}</span>
+                </AtriumButton>
               )}
             </div>
           </div>
@@ -1075,22 +1080,19 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
             </div>
 
             <div className="flex items-center justify-end gap-3 pt-3">
-              <button
+              <AtriumButton
                 type="button"
+                variant="ghost"
                 onClick={() => setConversionLead(null)}
-                className="h-10 px-4 text-xs font-semibold text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full transition-colors cursor-pointer"
               >
-                {t('action_cancel', language)}
-              </button>
-              <button
+                <span>{t('action_cancel', language)}</span>
+              </AtriumButton>
+              <AtriumButton
                 type="button"
+                variant="primary"
                 onClick={handleConfirmConversion}
-                style={{
-                  backgroundColor: 'var(--color-accent)',
-                }}
-                className="h-10 px-5 text-xs font-bold text-white rounded-full flex items-center gap-2 hover:opacity-90 active:scale-98 transition-all cursor-pointer shadow-xs"
+                icon={<Check size={15} />}
               >
-                <Check size={15} />
                 <span>
                   {language === 'ar'
                     ? 'تأكيد وإنشاء المشترك'
@@ -1098,7 +1100,7 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
                     ? 'Confirmer & Créer l\'adhérent'
                     : 'Confirm & Create Member'}
                 </span>
-              </button>
+              </AtriumButton>
             </div>
           </div>
         )}

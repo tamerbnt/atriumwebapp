@@ -12,9 +12,9 @@ export const LegalHearingsView: React.FC = () => {
 
   const filtered = hearings.filter(
     (h) =>
-      h.matterTitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      h.courtName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      h.benchJudge.toLowerCase().includes(searchQuery.toLowerCase())
+      (h.matterTitle?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+      (h.courtName?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+      (h.benchJudge?.toLowerCase() || '').includes(searchQuery.toLowerCase())
   );
 
   return (

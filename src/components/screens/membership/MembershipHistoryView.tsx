@@ -22,6 +22,7 @@ import { useAtriumStore } from '../../../services/store';
 import { Sale } from '../../../types/index';
 import { formatMoney } from '../../../utils/rules';
 import { Seek } from '../../ui/Seek';
+import { AtriumButton } from '../../ui/AtriumButton';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { t } from '../../../utils/i18n';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
@@ -370,17 +371,14 @@ export const MembershipHistoryView: React.FC = () => {
           </div>
 
           {/* Action Button: New POS Sale */}
-          <button
+          <AtriumButton
             type="button"
+            variant="primary"
             onClick={() => setScreen('shop')}
-            style={{
-              backgroundColor: 'var(--color-accent)',
-            }}
-            className="h-10 px-5 rounded-full text-xs font-bold text-white flex items-center gap-2 cursor-pointer hover:opacity-90 active:scale-98 transition-all shadow-xs"
+            icon={<Receipt size={15} strokeWidth={2.5} />}
           >
-            <Receipt size={15} strokeWidth={2.5} />
             <span>{t('shop_title', language)}</span>
-          </button>
+          </AtriumButton>
         </div>
       </div>
 
@@ -817,23 +815,24 @@ export const MembershipHistoryView: React.FC = () => {
                 </button>
               )}
 
-              <button
+              <AtriumButton
                 type="button"
+                variant="secondary"
                 onClick={() => window.print()}
-                className="w-full h-10 rounded-full border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-xs font-bold text-neutral-700 dark:text-neutral-200 flex items-center justify-center gap-2 hover:bg-neutral-50 dark:hover:bg-neutral-700/50 cursor-pointer transition-colors shadow-2xs"
+                icon={<Printer size={15} />}
+                className="w-full justify-center"
               >
-                <Printer size={15} />
                 <span>{language === 'ar' ? 'طباعة الوصل الحراري' : language === 'fr' ? 'Imprimer le ticket thermique' : 'Print Thermal Receipt'}</span>
-              </button>
+              </AtriumButton>
 
-              <button
+              <AtriumButton
                 type="button"
+                variant="primary"
                 onClick={() => setSelectedSale(null)}
-                style={{ backgroundColor: 'var(--color-accent)' }}
-                className="w-full h-10 rounded-full text-xs font-bold text-white flex items-center justify-center cursor-pointer hover:opacity-90 transition-opacity shadow-xs"
+                className="w-full justify-center"
               >
-                {language === 'ar' ? 'إغلاق المعاينة' : language === 'fr' ? 'Fermer l\'inspecteur' : 'Close Inspector'}
-              </button>
+                <span>{language === 'ar' ? 'إغلاق المعاينة' : language === 'fr' ? 'Fermer l\'inspecteur' : 'Close Inspector'}</span>
+              </AtriumButton>
             </div>
           </div>
         </div>
@@ -888,15 +887,16 @@ export const MembershipHistoryView: React.FC = () => {
             </div>
 
             <div className="flex items-center justify-end gap-3 pt-2">
-              <button
+              <AtriumButton
                 type="button"
+                variant="ghost"
                 onClick={() => setIsRefundModalOpen(false)}
-                className="h-10 px-4 text-xs font-semibold text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full"
               >
-                {t('action_cancel', language)}
-              </button>
-              <button
+                <span>{t('action_cancel', language)}</span>
+              </AtriumButton>
+              <AtriumButton
                 type="button"
+                variant="danger"
                 onClick={() => {
                   refundSale(selectedSale.id, refundReason);
                   setRefundSuccessToast(
@@ -914,10 +914,9 @@ export const MembershipHistoryView: React.FC = () => {
                   setIsRefundModalOpen(false);
                   setTimeout(() => setRefundSuccessToast(null), 5000);
                 }}
-                className="h-10 px-5 text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 rounded-full shadow-xs"
               >
-                {language === 'ar' ? 'تأكيد الاسترجاع وإعادة التخزين' : language === 'fr' ? 'Confirmer le remboursement' : 'Confirm Refund & Restock'}
-              </button>
+                <span>{language === 'ar' ? 'تأكيد الاسترجاع وإعادة التخزين' : language === 'fr' ? 'Confirmer le remboursement' : 'Confirm Refund & Restock'}</span>
+              </AtriumButton>
             </div>
           </div>
         </div>

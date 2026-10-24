@@ -21,7 +21,7 @@ export const LegalMattersView: React.FC = () => {
       m.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       m.matterNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
       m.clientName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      m.courtJurisdiction.toLowerCase().includes(searchQuery.toLowerCase());
+      (m.courtJurisdiction?.toLowerCase() || '').includes(searchQuery.toLowerCase());
 
     if (!matchesSearch) return false;
     if (catFilter !== 'all') return m.category === catFilter;

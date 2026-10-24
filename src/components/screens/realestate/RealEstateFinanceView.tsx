@@ -19,7 +19,7 @@ export const RealEstateFinanceView: React.FC = () => {
 
   const totalMonthlyRents = leases.reduce((acc, l) => acc + l.monthlyRentDzd, 0);
   const totalDeposits = leases.reduce((acc, l) => acc + l.securityDepositDzd, 0);
-  const totalCommissions = leases.reduce((acc, l) => acc + l.agencyCommissionDzd, 0);
+  const totalCommissions = leases.reduce((acc, l) => acc + (l.agencyCommissionDzd || 0), 0);
 
   const handlePrintQuittance = (tenantName: string) => {
     showToast(
@@ -119,7 +119,7 @@ export const RealEstateFinanceView: React.FC = () => {
                     {formatMoney(lease.monthlyRentDzd, language)}
                   </td>
                   <td className="px-4 py-3 text-right font-mono text-emerald-600 font-semibold">
-                    {formatMoney(lease.agencyCommissionDzd, language)}
+                    {formatMoney(lease.agencyCommissionDzd || 0, language)}
                   </td>
                   <td className="px-4 py-3 text-center">
                     <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">

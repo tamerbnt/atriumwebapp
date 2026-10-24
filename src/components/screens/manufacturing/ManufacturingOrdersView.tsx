@@ -27,7 +27,7 @@ export const ManufacturingOrdersView: React.FC = () => {
     const matchesSearch =
       o.orderNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
       o.productName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      o.assignedStation.toLowerCase().includes(searchQuery.toLowerCase());
+      (o.assignedStation?.toLowerCase() || '').includes(searchQuery.toLowerCase());
 
     if (!matchesSearch) return false;
     if (statusFilter !== 'all') return o.status === statusFilter;
@@ -139,7 +139,7 @@ export const ManufacturingOrdersView: React.FC = () => {
                 <div className="text-right">
                   <div className="text-[10px] text-neutral-400">Échéance</div>
                   <div className="font-semibold text-neutral-700 dark:text-neutral-300">
-                    {new Date(order.targetDueDate).toLocaleDateString()}
+                    {new Date(order.targetDueDate || order.dueDate).toLocaleDateString()}
                   </div>
                 </div>
               </div>
