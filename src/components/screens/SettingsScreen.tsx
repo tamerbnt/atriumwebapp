@@ -31,6 +31,7 @@ import { Modal } from '../ui/Modal';
 import { ConfirmDialog } from '../ui/ConfirmDialog';
 import { validateVoucherCode } from '../../utils/rules';
 import { LabelInput } from '../ui/LabelInput';
+import { AtriumButton } from '../ui/AtriumButton';
 import { t, getSystemDefaultLanguage, SUPPORTED_LANGUAGES } from '../../utils/i18n';
 import { BackendDiagnosticPanel } from '../BackendDiagnosticPanel';
 
@@ -525,23 +526,19 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             <button
               type="button"
               onClick={() => openDesktopUpgradeModal('general')}
-              className="h-10 px-4 text-xs font-bold text-neutral-800 dark:text-neutral-200 border border-neutral-300 dark:border-neutral-700 rounded-full bg-white dark:bg-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-700 flex items-center gap-2 cursor-pointer transition-colors shadow-2xs"
+              className="h-10 px-4 text-xs font-bold text-neutral-800 dark:text-neutral-200 border border-neutral-300 dark:border-neutral-700 rounded-xl bg-white dark:bg-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-700 flex items-center gap-2 cursor-pointer transition-colors shadow-2xs"
             >
               <Download size={14} className="text-[#C4785A]" />
               <span>{t('settings_get_desktop', language)}</span>
             </button>
 
-            <button
-              type="button"
+            <AtriumButton
               onClick={onOpenVoucherModal}
-              style={{
-                backgroundColor: 'var(--color-accent)',
-              }}
-              className="h-10 px-5 text-xs font-bold text-white flex items-center gap-2 shrink-0 rounded-full hover:opacity-90 active:scale-98 transition-all cursor-pointer shadow-xs"
+              icon={<KeyRound size={15} />}
+              size="md"
             >
-              <KeyRound size={15} />
-              <span>{t('settings_redeem_voucher', language)}</span>
-            </button>
+              {t('settings_redeem_voucher', language)}
+            </AtriumButton>
           </div>
         </div>
 
@@ -561,7 +558,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
           <button
             type="button"
             onClick={() => openDesktopUpgradeModal('general')}
-            className="px-3.5 py-1.5 rounded-full bg-[#C4785A] text-white text-[11px] font-bold hover:bg-[#b3684a] transition-colors shrink-0 cursor-pointer self-start sm:self-auto"
+            className="px-3.5 py-1.5 rounded-xl bg-[#C4785A] text-white text-[11px] font-bold hover:bg-[#b3684a] transition-colors shrink-0 cursor-pointer self-start sm:self-auto"
           >
             {language === 'ar' ? 'الترقية على سطح المكتب' : language === 'fr' ? 'Passer sur Desktop' : 'Upgrade on Desktop'}
           </button>
@@ -658,7 +655,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             <button
               type="button"
               onClick={() => setIsDiagnosticPanelOpen(true)}
-              className="h-9 px-4 text-xs font-bold rounded-full border border-neutral-300 dark:border-neutral-700 bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900 hover:opacity-90 flex items-center gap-2 cursor-pointer transition-all shadow-2xs"
+              className="h-9 px-4 text-xs font-bold rounded-xl border border-neutral-300 dark:border-neutral-700 bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900 hover:opacity-90 flex items-center gap-2 cursor-pointer transition-all shadow-2xs"
             >
               <Activity size={13} className="text-[#C4785A]" />
               <span>
@@ -674,7 +671,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
               type="button"
               onClick={() => syncWithSupabase()}
               disabled={isSyncing}
-              className="h-9 px-4 text-xs font-bold rounded-full border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-800 dark:text-white hover:bg-neutral-50 dark:hover:bg-neutral-700/60 flex items-center gap-2 cursor-pointer transition-colors shadow-2xs disabled:opacity-60"
+              className="h-9 px-4 text-xs font-bold rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-800 dark:text-white hover:bg-neutral-50 dark:hover:bg-neutral-700/60 flex items-center gap-2 cursor-pointer transition-colors shadow-2xs disabled:opacity-60"
             >
               <RotateCw size={13} className={isSyncing ? 'animate-spin text-[#C4785A]' : ''} />
               <span>
@@ -875,17 +872,13 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
                 : `All physical locations under tenant business (${branches.length} registered · ${subscription.plan.maxBranches} permitted on ${subscription.plan.name})`}
             </p>
           </div>
-          <button
-            type="button"
+          <AtriumButton
             onClick={handleOpenAddBranch}
-            style={{
-              backgroundColor: 'var(--color-accent)',
-            }}
-            className="h-9 px-4 text-xs font-bold text-white flex items-center gap-1.5 rounded-full cursor-pointer hover:opacity-90 transition-opacity shadow-xs"
+            icon={<Plus size={14} />}
+            size="sm"
           >
-            <Plus size={14} />
-            <span>{t('settings_add_branch', language)}</span>
-          </button>
+            {t('settings_add_branch', language)}
+          </AtriumButton>
         </div>
 
         {/* Multi-Branch Desktop Alert when at capacity */}
@@ -909,7 +902,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             <button
               type="button"
               onClick={() => openDesktopUpgradeModal('branch_limit')}
-              className="px-3 py-1.5 rounded-full bg-[#C4785A] text-white text-[11px] font-bold hover:bg-[#b3684a] transition-colors shrink-0 cursor-pointer self-start sm:self-auto"
+              className="px-3 py-1.5 rounded-xl bg-[#C4785A] text-white text-[11px] font-bold hover:bg-[#b3684a] transition-colors shrink-0 cursor-pointer self-start sm:self-auto"
             >
               {language === 'ar' ? 'تحميل Atrium للكمبيوتر (Windows / Mac)' : language === 'fr' ? 'Télécharger Atrium Desktop (Windows / Mac)' : 'Download Atrium Desktop (Windows / Mac)'}
             </button>
@@ -1115,16 +1108,12 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             >
               {language === 'ar' ? 'إلغاء' : language === 'fr' ? 'Annuler' : 'Cancel'}
             </button>
-            <button
+            <AtriumButton
               type="submit"
-              style={{
-                backgroundColor: 'var(--color-accent)',
-                borderRadius: 'var(--radius-button)',
-              }}
-              className="h-10 px-5 text-xs font-semibold text-white cursor-pointer shadow-xs"
+              size="md"
             >
               {language === 'ar' ? 'إنشاء الفرع' : language === 'fr' ? 'Créer la succursale' : 'Create Branch'}
-            </button>
+            </AtriumButton>
           </div>
         </form>
       </Modal>
@@ -1266,13 +1255,13 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             >
               {language === 'ar' ? 'إلغاء' : language === 'fr' ? 'Annuler' : 'Cancel'}
             </button>
-            <button
-              type="button"
+            <AtriumButton
+              variant="danger"
               onClick={handleConfirmRestore}
-              className="h-10 px-5 text-xs font-semibold text-white bg-rose-600 hover:bg-rose-700 rounded-full cursor-pointer shadow-xs transition-colors"
+              size="md"
             >
               {language === 'ar' ? 'تأكيد واستعادة قاعدة البيانات' : language === 'fr' ? 'Confirmer et restaurer la base' : 'Confirm & Restore Database'}
-            </button>
+            </AtriumButton>
           </div>
         </div>
       </Modal>

@@ -28,6 +28,7 @@ import { AtriumButton } from '../../ui/AtriumButton';
 import { Seek } from '../../ui/Seek';
 import { Modal } from '../../ui/Modal';
 import { FilterSelect } from '../../ui/FilterSelect';
+import { LabelInput } from '../../ui/LabelInput';
 
 export const PosOrdersView: React.FC = () => {
   const { t, language, isRtl } = useTranslation();
@@ -1034,33 +1035,30 @@ export const PosOrdersView: React.FC = () => {
                 : 'Les articles seront automatiquement réintégrés dans l’inventaire physique avec traçabilité complète.'}
             </p>
 
-            <div>
-              <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300 block mb-1">
-                {language === 'ar' ? 'سبب الإرجاع / الملاحظة' : 'Motif de retour / avoir'}
-              </label>
-              <input
-                type="text"
-                value={refundReason}
-                onChange={(e) => setRefundReason(e.target.value)}
-                className="w-full h-10 px-3 text-xs rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white"
-              />
-            </div>
+            <LabelInput
+              label={language === 'ar' ? 'سبب الإرجاع / الملاحظة' : 'Motif de retour / avoir'}
+              value={refundReason}
+              onChange={(e) => setRefundReason(e.target.value)}
+              placeholder="Ex: Erreur de saisie, produit défectueux..."
+            />
 
             <div className="flex items-center justify-end gap-3 pt-2">
-              <button
+              <AtriumButton
                 type="button"
+                variant="ghost"
+                size="sm"
                 onClick={() => setSelectedSaleForRefund(null)}
-                className="h-10 px-4 text-xs font-semibold text-neutral-500 rounded-full hover:bg-neutral-100 cursor-pointer"
               >
                 {t('action_cancel')}
-              </button>
-              <button
+              </AtriumButton>
+              <AtriumButton
                 type="button"
+                variant="danger"
+                size="sm"
                 onClick={handleConfirmRefund}
-                className="h-10 px-5 text-xs font-bold text-white bg-red-600 rounded-full hover:bg-red-700 cursor-pointer"
               >
                 {language === 'ar' ? 'تأكيد الاسترجاع' : 'Valider le Remboursement'}
-              </button>
+              </AtriumButton>
             </div>
           </div>
         </Modal>

@@ -385,7 +385,7 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({ hideHeader
               <button
                 type="button"
                 onClick={() => setIsFacilityDropdownOpen(!isFacilityDropdownOpen)}
-                className="h-10 px-4 rounded-full bg-[#F4EFEA] dark:bg-neutral-800/80 border border-[#E8DFD8] dark:border-neutral-700 flex items-center gap-2 cursor-pointer hover:bg-[#EFE8E1] dark:hover:bg-neutral-800 transition-colors shadow-2xs"
+                className="h-10 px-4 rounded-xl bg-[#F4EFEA] dark:bg-neutral-800/80 border border-[#E8DFD8] dark:border-neutral-700 flex items-center gap-2 cursor-pointer hover:bg-[#EFE8E1] dark:hover:bg-neutral-800 transition-colors shadow-2xs"
               >
                 <Home size={15} className="text-[#C4785A]" />
                 <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
@@ -438,7 +438,7 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({ hideHeader
             {/* Supabase Cloud */}
             <button
               onClick={() => setIsCloudSyncModalOpen(true)}
-              className="h-10 px-3.5 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-xs font-semibold text-neutral-800 dark:text-neutral-200 rounded-full transition-colors flex items-center gap-2 cursor-pointer shadow-2xs"
+              className="h-10 px-3.5 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-xs font-semibold text-neutral-800 dark:text-neutral-200 rounded-xl transition-colors flex items-center gap-2 cursor-pointer shadow-2xs"
               title="Inspect Supabase live tables and row writes"
             >
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -447,26 +447,24 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({ hideHeader
             </button>
 
             {/* Export CSV Button */}
-            <button
-              type="button"
+            <AtriumButton
+              variant="secondary"
               onClick={handleExportBookingsCSV}
-              className="h-10 px-3.5 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold rounded-full transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer"
-              title="Export CSV"
+              icon={<Download size={14} />}
+              size="sm"
             >
-              <Download size={14} />
               <span className="hidden sm:inline">CSV</span>
-            </button>
+            </AtriumButton>
 
             {/* Seed Demo Data Button */}
-            <button
-              type="button"
+            <AtriumButton
+              variant="secondary"
               onClick={resetVenueMockData}
-              className="h-10 px-3.5 bg-[#FCEEE8] dark:bg-neutral-800 hover:bg-[#F8DFD4] dark:hover:bg-neutral-700 text-[#C4785A] text-xs font-semibold rounded-full transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer"
-              title={language === 'ar' ? 'إعادة شحن بيانات تجريبية' : language === 'fr' ? 'Recharger Données Démo' : 'Seed Mock Data'}
+              icon={<Sparkles size={14} />}
+              size="sm"
             >
-              <Sparkles size={14} />
               <span className="hidden sm:inline">{language === 'ar' ? 'بيانات تجريبية' : language === 'fr' ? 'Données Démo' : 'Demo Data'}</span>
-            </button>
+            </AtriumButton>
 
             {/* New Reservation Button */}
             <AtriumButton

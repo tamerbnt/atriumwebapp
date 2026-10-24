@@ -1699,82 +1699,79 @@ export const PosInventoryView: React.FC = () => {
                   key={idx}
                   className="p-3 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-850/50 flex flex-col sm:flex-row items-center gap-2.5"
                 >
-                  <div className="flex-1 w-full sm:w-auto">
-                    <select
-                      value={item.productId}
-                      onChange={(e) => {
-                        const sel = products.find((p) => p.id === e.target.value);
-                        if (!sel) return;
-                        setPoItems((prev) => {
-                          const next = [...prev];
-                          next[idx] = {
-                            ...next[idx],
-                            productId: sel.id,
-                            description: sel.name,
-                            unitCostHt: sel.costPrice || sel.cost?.amount || Math.round(sel.price.amount * 0.6),
-                            unit: sel.unit || 'pcs',
-                          };
-                          return next;
-                        });
-                      }}
-                      className="w-full text-xs font-semibold rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-2.5 py-2 text-neutral-900 dark:text-white"
-                    >
-                      {products.map((p) => (
-                        <option key={p.id} value={p.id}>
-                          {p.name} ({p.sku})
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-12 gap-2 items-center w-full">
+                    <div className="sm:col-span-6">
+                      <LabelSelect
+                        label="Produit"
+                        value={item.productId}
+                        onChange={(val) => {
+                          const prodId = typeof val === 'string' ? val : val?.target?.value || val;
+                          const sel = products.find((p) => p.id === prodId);
+                          if (!sel) return;
+                          setPoItems((prev) => {
+                            const next = [...prev];
+                            next[idx] = {
+                              ...next[idx],
+                              productId: sel.id,
+                              description: sel.name,
+                              unitCostHt: sel.costPrice || sel.cost?.amount || Math.round(sel.price.amount * 0.6),
+                              unit: sel.unit || 'pcs',
+                            };
+                            return next;
+                          });
+                        }}
+                        options={products.map((p) => ({
+                          value: p.id,
+                          label: `${p.name} (${p.sku})`,
+                        }))}
+                      />
+                    </div>
 
-                  <div className="w-28">
-                    <input
-                      type="number"
-                      min="1"
-                      value={item.orderedQty}
-                      onChange={(e) => {
-                        const val = parseInt(e.target.value) || 1;
-                        setPoItems((prev) => {
-                          const next = [...prev];
-                          next[idx] = { ...next[idx], orderedQty: val };
-                          return next;
-                        });
-                      }}
-                      className="w-full text-xs font-mono font-bold text-center rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-2 py-2 text-neutral-900 dark:text-white"
-                      placeholder="Qté"
-                    />
-                  </div>
+                    <div className="sm:col-span-2">
+                      <LabelInput
+                        type="number"
+                        min="1"
+                        label="Qté"
+                        value={item.orderedQty}
+                        onChange={(e) => {
+                          const val = parseInt(e.target.value) || 1;
+                          setPoItems((prev) => {
+                            const next = [...prev];
+                            next[idx] = { ...next[idx], orderedQty: val };
+                            return next;
+                          });
+                        }}
+                      />
+                    </div>
 
-                  <div className="w-32">
-                    <input
-                      type="number"
-                      value={item.unitCostHt}
-                      onChange={(e) => {
-                        const val = parseFloat(e.target.value) || 0;
-                        setPoItems((prev) => {
-                          const next = [...prev];
-                          next[idx] = { ...next[idx], unitCostHt: val };
-                          return next;
-                        });
-                      }}
-                      className="w-full text-xs font-mono text-center rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-2 py-2 text-neutral-900 dark:text-white"
-                      placeholder="Prix Achat"
-                    />
-                  </div>
+                    <div className="sm:col-span-3">
+                      <LabelInput
+                        type="number"
+                        label="Prix Achat"
+                        value={item.unitCostHt}
+                        onChange={(e) => {
+                          const val = parseFloat(e.target.value) || 0;
+                          setPoItems((prev) => {
+                            const next = [...prev];
+                            next[idx] = { ...next[idx], unitCostHt: val };
+                            return next;
+                          });
+                        }}
+                      />
+                    </div>
 
-                  <div className="w-28 text-right font-mono text-xs font-bold text-[#C4785A]">
-                    {formatMoney(item.orderedQty * item.unitCostHt)}
+                    <div className="sm:col-span-1 flex items-center justify-end">
+                      {poItems.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => setPoItems((prev) => prev.filter((_, i) => i !== idx))}
+                          className="p-1.5 text-neutral-400 hover:text-rose-600 rounded-lg cursor-pointer transition-colors"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      )}
+                    </div>
                   </div>
-
-                  {poItems.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => setPoItems((prev) => prev.filter((_, i) => i !== idx))}
-                      className="p-1.5 text-neutral-400 hover:text-rose-600 rounded-lg cursor-pointer"
-                    >
-                      <Trash2 size={14} />
-                    </button>
-                  )}
                 </div>
               ))}
             </div>
@@ -1804,19 +1801,21 @@ export const PosInventoryView: React.FC = () => {
           </div>
 
           <div className="flex items-center justify-end gap-3 pt-3">
-            <button
+            <AtriumButton
               type="button"
+              variant="ghost"
+              size="sm"
               onClick={() => setIsRetailPoModalOpen(false)}
-              className="h-10 px-4 text-xs font-semibold text-neutral-500 rounded-full hover:bg-neutral-100 cursor-pointer"
             >
               {t('action_cancel')}
-            </button>
-            <button
+            </AtriumButton>
+            <AtriumButton
               type="submit"
-              className="h-10 px-5 text-xs font-bold text-white bg-[#C4785A] rounded-full hover:opacity-90 cursor-pointer shadow-xs"
+              variant="primary"
+              size="sm"
             >
               {language === 'ar' ? 'تأكيد وإرسال الطلبية' : 'Émettre le Bon de Commande'}
-            </button>
+            </AtriumButton>
           </div>
         </form>
       </Modal>

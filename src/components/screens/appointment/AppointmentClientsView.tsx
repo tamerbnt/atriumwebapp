@@ -30,6 +30,9 @@ import { Member } from '../../../types/index';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { Seek } from '../../ui/Seek';
 import { AtriumButton } from '../../ui/AtriumButton';
+import { FilterSelect } from '../../ui/FilterSelect';
+import { LabelInput } from '../../ui/LabelInput';
+import { LabelSelect } from '../../ui/LabelSelect';
 import { formatMoney } from '../../../utils/rules';
 import { AppointmentModal } from '../../modals/AppointmentModal';
 interface AppointmentClientsViewProps {
@@ -463,23 +466,25 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = ({
           </div>
 
           {/* 1-Click Demo Recharge */}
-          <button
+          <AtriumButton
+            variant="outline"
+            size="sm"
             onClick={() => resetSalonMockData()}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#C4785A] hover:bg-[#C4785A]/10 border border-[#C4785A]/30 rounded-lg transition-colors shadow-xs"
+            icon={<Sparkles className="w-3.5 h-3.5" />}
             title="Restaurer les 15 dossiers clientes d'Alger"
           >
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Recharger Démo</span>
-          </button>
+            Recharger Démo
+          </AtriumButton>
 
           {/* Export CSV */}
-          <button
+          <AtriumButton
+            variant="secondary"
+            size="sm"
             onClick={handleExportCSV}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg transition-colors"
+            icon={<Download className="w-3.5 h-3.5" />}
           >
-            <Download className="w-3.5 h-3.5" />
-            <span>Export CSV</span>
-          </button>
+            Export CSV
+          </AtriumButton>
 
           {/* New Appointment button */}
           <AtriumButton
@@ -503,30 +508,26 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = ({
         </div>
 
         <div className="flex items-center gap-2.5 flex-wrap">
-          <select
+          <FilterSelect
             value={selectedStylistFilter}
-            onChange={(e) => setSelectedStylistFilter(e.target.value)}
-            className="text-xs bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-lg px-2.5 py-1.5 text-neutral-700 dark:text-neutral-300 focus:outline-none focus:border-[#C4785A]"
-          >
-            <option value="All">Toutes les stylistes</option>
-            {salonStylists.map((s) => (
-              <option key={s.id} value={s.fullName}>
-                {s.fullName}
-              </option>
-            ))}
-          </select>
+            onChange={(val) => setSelectedStylistFilter(val?.target?.value ?? String(val))}
+            options={[
+              { value: 'All', label: 'Toutes les stylistes' },
+              ...salonStylists.map((s) => ({ value: s.fullName, label: s.fullName })),
+            ]}
+          />
 
-          <select
+          <FilterSelect
             value={selectedHairFilter}
-            onChange={(e) => setSelectedHairFilter(e.target.value)}
-            className="text-xs bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-lg px-2.5 py-1.5 text-neutral-700 dark:text-neutral-300 focus:outline-none focus:border-[#C4785A]"
-          >
-            <option value="All">Tous types de cheveux</option>
-            <option value="Lisse">Cheveux Lisses</option>
-            <option value="Ondulé">Cheveux Ondulés</option>
-            <option value="Bouclé">Cheveux Bouclés</option>
-            <option value="Frisé">Cheveux Frisés</option>
-          </select>
+            onChange={(val) => setSelectedHairFilter(val?.target?.value ?? String(val))}
+            options={[
+              { value: 'All', label: 'Tous types de cheveux' },
+              { value: 'Lisse', label: 'Cheveux Lisses' },
+              { value: 'Ondulé', label: 'Cheveux Ondulés' },
+              { value: 'Bouclé', label: 'Cheveux Bouclés' },
+              { value: 'Frisé', label: 'Cheveux Frisés' },
+            ]}
+          />
         </div>
       </div>
 
@@ -814,51 +815,38 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = ({
                     <h3 className="text-xs font-bold text-neutral-900 dark:text-white">
                       Ajouter une Formulation Réalisée
                     </h3>
-                    <div>
-                      <label className="text-[11px] text-neutral-500 block mb-1">
-                        Formule exacte (Dosages, tubes, oxydant, patine)
-                      </label>
-                      <input
-                        type="text"
+                    <div className="space-y-3">
+                      <LabelInput
+                        label="Formule exacte (Dosages, tubes, oxydant, patine)"
                         value={newFormulaText}
                         onChange={(e) => setNewFormulaText(e.target.value)}
                         placeholder="Ex: Base 6.1 (40g) + Oxy 20vol (40g) + Dialight 9.11"
-                        className="w-full text-xs px-3 py-2 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 focus:outline-none focus:border-[#C4785A]"
                         required
                       />
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="text-[11px] text-neutral-500 block mb-1">Styliste</label>
-                        <select
+                      <div className="grid grid-cols-2 gap-3">
+                        <LabelSelect
+                          label="Styliste"
                           value={newFormulaStylist}
-                          onChange={(e) => setNewFormulaStylist(e.target.value)}
-                          className="w-full text-xs px-3 py-2 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 focus:outline-none focus:border-[#C4785A]"
-                        >
-                          {staff.map((s) => (
-                            <option key={s.id} value={s.fullName}>
-                              {s.fullName}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                      <div>
-                        <label className="text-[11px] text-neutral-500 block mb-1">Temps de pose / Remarques</label>
-                        <input
-                          type="text"
+                          onChange={(val) => setNewFormulaStylist(val?.target?.value ?? String(val))}
+                          options={staff.map((s) => ({ value: s.fullName, label: s.fullName }))}
+                        />
+                        <LabelInput
+                          label="Temps de pose / Remarques"
                           value={newFormulaNotes}
                           onChange={(e) => setNewFormulaNotes(e.target.value)}
                           placeholder="Pose: 35 min"
-                          className="w-full text-xs px-3 py-2 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 focus:outline-none focus:border-[#C4785A]"
                         />
                       </div>
                     </div>
-                    <button
-                      type="submit"
-                      className="px-4 py-1.5 text-xs font-semibold bg-[#C4785A] hover:bg-[#b3684a] text-white rounded-lg transition-colors"
-                    >
-                      Enregistrer la Formule
-                    </button>
+                    <div className="pt-1">
+                      <AtriumButton
+                        type="submit"
+                        variant="primary"
+                        size="sm"
+                      >
+                        Enregistrer la Formule
+                      </AtriumButton>
+                    </div>
                   </form>
 
                   {/* List of existing formulas */}

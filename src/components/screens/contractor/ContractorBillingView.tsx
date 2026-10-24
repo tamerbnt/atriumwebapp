@@ -4,6 +4,7 @@ import { useAtriumStore, showToast } from '../../../services/store';
 import { useContractorData } from './contractorData';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { Seek } from '../../ui/Seek';
+import { FilterSelect } from '../../ui/FilterSelect';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { ContractorDgp } from '../../../types';
@@ -117,18 +118,15 @@ export const ContractorBillingView: React.FC = () => {
 
       {/* Project Switcher Bar */}
       <div className="bg-white/60 dark:bg-neutral-900/60 border-b border-neutral-200 dark:border-neutral-800 px-6 py-2.5 flex items-center gap-2 overflow-x-auto text-xs">
-        <span className="text-neutral-500 font-medium">{isAr ? 'الورشة:' : 'Chantier:'}</span>
-        <select
+        <FilterSelect
+          label={isAr ? 'الورشة' : 'Chantier'}
           value={selectedProjectId}
-          onChange={(e) => setSelectedProjectId(e.target.value)}
-          className="px-3 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-800 dark:text-neutral-200 font-medium"
-        >
-          {projects.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.projectCode} - {p.projectName}
-            </option>
-          ))}
-        </select>
+          onChange={(val) => setSelectedProjectId(val?.target?.value ?? String(val))}
+          options={projects.map((p) => ({
+            value: p.id,
+            label: `${p.projectCode} - ${p.projectName}`,
+          }))}
+        />
       </div>
 
       {/* DGP Cards List */}

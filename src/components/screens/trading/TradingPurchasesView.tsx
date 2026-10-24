@@ -420,69 +420,73 @@ export const TradingPurchasesView: React.FC = () => {
                   Article Commandé :
                 </label>
                 {poItems.map((it, idx) => (
-                  <div key={idx} className="flex gap-2">
-                    <select
-                      className="flex-1 rounded border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 px-2 py-1.5"
-                      value={it.productId}
-                      onChange={(e) => {
-                        const prod = products.find((p) => p.id === e.target.value);
-                        if (!prod) return;
-                        setPoItems([
-                          {
-                            id: `po_it_${Date.now()}`,
-                            productId: prod.id,
-                            description: prod.name,
-                            orderedQty: 10,
-                            receivedQty: 0,
-                            unit: prod.unit || 'pcs',
-                            unitCostHt: prod.cost?.amount || 1000,
-                            tvaPercent: 19,
-                            totalHt: (prod.cost?.amount || 1000) * 10,
-                          },
-                        ]);
-                      }}
-                    >
-                      {products.map((p) => (
-                        <option key={p.id} value={p.id}>
-                          {p.name} (Coût : {p.cost?.amount} DA)
-                        </option>
-                      ))}
-                    </select>
+                  <div key={idx} className="grid grid-cols-1 sm:grid-cols-3 gap-2 items-center">
+                    <div className="sm:col-span-2">
+                      <LabelSelect
+                        label="Article"
+                        value={it.productId}
+                        onChange={(val) => {
+                          const prodId = typeof val === 'string' ? val : val?.target?.value || val;
+                          const prod = products.find((p) => p.id === prodId);
+                          if (!prod) return;
+                          setPoItems([
+                            {
+                              id: `po_it_${Date.now()}`,
+                              productId: prod.id,
+                              description: prod.name,
+                              orderedQty: it.orderedQty || 10,
+                              receivedQty: 0,
+                              unit: prod.unit || 'pcs',
+                              unitCostHt: prod.cost?.amount || 1000,
+                              tvaPercent: 19,
+                              totalHt: (prod.cost?.amount || 1000) * (it.orderedQty || 10),
+                            },
+                          ]);
+                        }}
+                        options={products.map((p) => ({
+                          value: p.id,
+                          label: `${p.name} (${formatMoney(p.cost?.amount || 1000)})`,
+                        }))}
+                      />
+                    </div>
 
-                    <input
-                      type="number"
-                      min="1"
-                      className="w-24 rounded border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 px-2 py-1.5 text-right font-mono"
-                      value={it.orderedQty}
-                      onChange={(e) => {
-                        const q = parseFloat(e.target.value) || 0;
-                        setPoItems([
-                          {
-                            ...it,
-                            orderedQty: q,
-                            totalHt: q * it.unitCostHt,
-                          },
-                        ]);
-                      }}
-                    />
+                    <div>
+                      <LabelInput
+                        type="number"
+                        min="1"
+                        label="Quantité"
+                        value={it.orderedQty}
+                        onChange={(e) => {
+                          const q = parseFloat(e.target.value) || 0;
+                          setPoItems([
+                            {
+                              ...it,
+                              orderedQty: q,
+                              totalHt: q * it.unitCostHt,
+                            },
+                          ]);
+                        }}
+                      />
+                    </div>
                   </div>
                 ))}
               </div>
 
-              <div className="flex justify-end gap-2 pt-3 border-t">
-                <button
-                  type="button"
+              <div className="flex justify-end gap-2 pt-3 border-t border-stone-200 dark:border-stone-800">
+                <AtriumButton
+                  variant="ghost"
+                  size="sm"
                   onClick={() => setIsPoModalOpen(false)}
-                  className="px-4 py-2 rounded-xl text-stone-600 hover:bg-stone-100"
                 >
                   Annuler
-                </button>
-                <button
+                </AtriumButton>
+                <AtriumButton
+                  variant="primary"
+                  size="sm"
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-[#C4785A] text-white font-semibold hover:bg-[#b06749]"
                 >
                   Valider la Commande (PO)
-                </button>
+                </AtriumButton>
               </div>
             </form>
           </div>

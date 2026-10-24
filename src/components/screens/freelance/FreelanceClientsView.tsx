@@ -1227,18 +1227,21 @@ export const FreelanceClientsView: React.FC = () => {
             </label>
 
             <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
-              <button
+              <AtriumButton
                 type="button"
+                variant="ghost"
+                size="sm"
                 onClick={() => {
                   setClientToDelete(null);
                   setDeleteCascade(false);
                 }}
-                className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
               >
                 {t('free_clients_cancel', language)}
-              </button>
-              <button
+              </AtriumButton>
+              <AtriumButton
                 type="button"
+                variant="danger"
+                size="sm"
                 onClick={() => {
                   if (clientToDelete) {
                     deleteFreelanceClient(clientToDelete.id, deleteCascade);
@@ -1249,10 +1252,9 @@ export const FreelanceClientsView: React.FC = () => {
                     setDeleteCascade(false);
                   }
                 }}
-                className="px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold transition-colors cursor-pointer shadow-xs"
               >
                 {t('free_clients_delete', language)}
-              </button>
+              </AtriumButton>
             </div>
           </div>
         </div>

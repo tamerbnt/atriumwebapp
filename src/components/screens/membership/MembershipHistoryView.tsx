@@ -321,7 +321,7 @@ export const MembershipHistoryView: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsFacilityDropdownOpen(!isFacilityDropdownOpen)}
-              className="h-10 px-4 rounded-full bg-[#F4EFEA] dark:bg-neutral-800/80 border border-[#E8DFD8] dark:border-neutral-700 flex items-center gap-2 cursor-pointer hover:bg-[#EFE8E1] dark:hover:bg-neutral-800 transition-colors shadow-2xs"
+              className="h-10 px-4 rounded-xl bg-[#F4EFEA] dark:bg-neutral-800/80 border border-[#E8DFD8] dark:border-neutral-700 flex items-center gap-2 cursor-pointer hover:bg-[#EFE8E1] dark:hover:bg-neutral-800 transition-colors shadow-2xs"
             >
               <Home size={15} className="text-[#C4785A]" />
               <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
@@ -538,21 +538,20 @@ export const MembershipHistoryView: React.FC = () => {
             </div>
 
             {/* Export Data Button */}
-            <button
-              type="button"
+            <AtriumButton
+              variant="secondary"
               onClick={handleExportCSV}
-              className="h-9 px-3.5 rounded-full border border-[#E9EEF0] dark:border-neutral-700/60 bg-white dark:bg-neutral-800 text-xs font-semibold text-neutral-700 dark:text-neutral-300 flex items-center gap-1.5 hover:bg-neutral-50 dark:hover:bg-neutral-700/50 cursor-pointer transition-colors shadow-2xs"
-              title="Download CSV audit log"
+              icon={<Download size={13} />}
+              size="sm"
             >
-              <Download size={13} />
               <span>{language === 'ar' ? 'تصدير السجل' : language === 'fr' ? 'Exporter le journal' : 'Export Ledger'}</span>
-            </button>
+            </AtriumButton>
 
             {/* Fullscreen Button */}
             <button
               type="button"
               onClick={toggleFullscreen}
-              className="w-9 h-9 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex items-center justify-center text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 cursor-pointer transition-colors shadow-2xs"
+              className="w-9 h-9 rounded-xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex items-center justify-center text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 cursor-pointer transition-colors shadow-2xs"
               title="Toggle Fullscreen"
             >
               <Maximize2 size={13} />

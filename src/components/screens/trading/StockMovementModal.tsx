@@ -13,6 +13,7 @@ import { useAtriumStore } from '../../../services/store';
 import { StockMovementVoucher, StockVoucherType } from '../../../types';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
+import { AtriumButton } from '../../ui/AtriumButton';
 import { formatMoney } from '../../../utils/rules';
 import { useTranslation } from '../../../utils/useTranslation';
 
@@ -332,47 +333,44 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
               </button>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-3">
               {items.map((it, idx) => (
                 <div
                   key={idx}
-                  className="flex items-center gap-2 p-2.5 rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900"
+                  className="grid grid-cols-1 sm:grid-cols-12 gap-2 items-center p-2.5 rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900"
                 >
-                  <div className="flex-1">
-                    <select
-                      className="w-full text-xs rounded border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 px-2 py-1.5"
+                  <div className="sm:col-span-8">
+                    <LabelSelect
+                      label="Article"
                       value={it.productId}
-                      onChange={(e) => handleProductSelect(idx, e.target.value)}
-                    >
-                      {products.map((p) => (
-                        <option key={p.id} value={p.id}>
-                          {p.sku ? `[${p.sku}] ` : ''}{p.name} (Stock: {p.stockQuantity})
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="w-24">
-                    <input
-                      type="number"
-                      min="1"
-                      placeholder="Qté"
-                      value={it.quantity}
-                      onChange={(e) => handleItemChange(idx, 'quantity', parseFloat(e.target.value) || 0)}
-                      className="w-full text-xs rounded border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 px-2 py-1.5 text-right font-mono"
+                      onChange={(val) => handleProductSelect(idx, typeof val === 'string' ? val : val?.target?.value || val)}
+                      options={products.map((p) => ({
+                        value: p.id,
+                        label: `${p.sku ? `[${p.sku}] ` : ''}${p.name} (Stock: ${p.stockQuantity})`,
+                      }))}
                     />
                   </div>
 
-                  <span className="text-xs text-stone-500 w-10 text-center">{it.unit}</span>
+                  <div className="sm:col-span-3">
+                    <LabelInput
+                      type="number"
+                      min="1"
+                      label={`Qté (${it.unit})`}
+                      value={it.quantity}
+                      onChange={(e) => handleItemChange(idx, 'quantity', parseFloat(e.target.value) || 0)}
+                    />
+                  </div>
 
-                  <button
-                    type="button"
-                    onClick={() => removeItemRow(idx)}
-                    disabled={items.length <= 1}
-                    className="p-1.5 text-stone-400 hover:text-rose-600 disabled:opacity-30 transition-colors"
-                  >
-                    <Trash2 size={15} />
-                  </button>
+                  <div className="sm:col-span-1 flex justify-center">
+                    <button
+                      type="button"
+                      onClick={() => removeItemRow(idx)}
+                      disabled={items.length <= 1}
+                      className="p-1.5 text-stone-400 hover:text-rose-600 disabled:opacity-30 transition-colors cursor-pointer"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -398,21 +396,23 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
 
           {/* Footer Actions */}
           <div className="flex items-center justify-end gap-3 pt-3 border-t border-stone-200 dark:border-stone-800">
-            <button
+            <AtriumButton
               type="button"
+              variant="ghost"
+              size="sm"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl text-xs font-semibold text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
             >
               {t('trading_composer_btn_cancel')}
-            </button>
+            </AtriumButton>
 
-            <button
+            <AtriumButton
               type="submit"
-              className="px-5 py-2 rounded-xl text-xs font-semibold bg-[#C4785A] hover:bg-[#b06749] text-white shadow-xs transition-colors flex items-center gap-1.5"
+              variant="primary"
+              size="sm"
+              icon={<CheckCircle size={15} />}
             >
-              <CheckCircle size={15} />
-              <span>{t('trading_stock_btn_validate')}</span>
-            </button>
+              {t('trading_stock_btn_validate')}
+            </AtriumButton>
           </div>
         </form>
       </div>

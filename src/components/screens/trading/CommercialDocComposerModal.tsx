@@ -24,6 +24,7 @@ import {
 } from '../../../types';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
+import { AtriumButton } from '../../ui/AtriumButton';
 import { formatMoney, calculateCommercialTotals } from '../../../utils/rules';
 import { useTranslation } from '../../../utils/useTranslation';
 
@@ -801,31 +802,31 @@ export const CommercialDocComposerModal: React.FC<CommercialDocComposerModalProp
 
         {/* Modal Footer Actions */}
         <div className="flex items-center justify-between px-6 py-4 border-t border-stone-200 dark:border-stone-800 bg-stone-50/70 dark:bg-stone-900/70 shrink-0">
-          <button
+          <AtriumButton
             type="button"
+            variant="ghost"
             onClick={onClose}
-            className="px-4 py-2 rounded-xl text-xs font-semibold text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
           >
             {t('trading_composer_btn_cancel')}
-          </button>
+          </AtriumButton>
 
           <div className="flex items-center gap-2">
-            <button
+            <AtriumButton
               type="button"
+              variant="secondary"
               onClick={() => handleSubmit('Draft')}
-              className="px-4 py-2 rounded-xl text-xs font-semibold border border-stone-300 dark:border-stone-700 text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
             >
               {t('trading_composer_save_draft')}
-            </button>
+            </AtriumButton>
 
-            <button
+            <AtriumButton
               type="button"
+              variant="primary"
               onClick={() => handleSubmit('Validated')}
-              className="px-5 py-2 rounded-xl text-xs font-semibold bg-[#C4785A] hover:bg-[#b06749] text-white shadow-xs transition-colors flex items-center gap-1.5"
+              icon={<CheckCircle size={15} />}
             >
-              <CheckCircle size={15} />
-              <span>{isEdit ? t('trading_composer_btn_save_changes') : t('trading_composer_btn_validate')}</span>
-            </button>
+              {isEdit ? t('trading_composer_btn_save_changes') : t('trading_composer_btn_validate')}
+            </AtriumButton>
           </div>
         </div>
       </div>

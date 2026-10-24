@@ -21,6 +21,7 @@ import {
 import { useAtriumStore } from '../../services/store';
 import { formatMoney } from '../../utils/rules';
 import { t } from '../../utils/i18n';
+import { AtriumButton } from '../ui/AtriumButton';
 
 export const AnalyticsScreen: React.FC = () => {
   const {
@@ -412,7 +413,7 @@ export const AnalyticsScreen: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsFacilityDropdownOpen(!isFacilityDropdownOpen)}
-              className="h-9 px-3.5 rounded-full bg-[#F4EFEA] dark:bg-neutral-800/80 border border-[#E8DFD8] dark:border-neutral-700 flex items-center gap-2 cursor-pointer hover:bg-[#EFE8E1] dark:hover:bg-neutral-800 transition-colors shadow-2xs"
+              className="h-9 px-3.5 rounded-xl bg-[#F4EFEA] dark:bg-neutral-800/80 border border-[#E8DFD8] dark:border-neutral-700 flex items-center gap-2 cursor-pointer hover:bg-[#EFE8E1] dark:hover:bg-neutral-800 transition-colors shadow-2xs"
             >
               <Building2 size={14} className="text-[#C4785A]" />
               <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
@@ -464,7 +465,7 @@ export const AnalyticsScreen: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsTimeDropdownOpen(!isTimeDropdownOpen)}
-              className="h-9 px-3.5 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700 flex items-center gap-2 text-xs font-semibold text-neutral-700 dark:text-neutral-200 cursor-pointer shadow-2xs hover:border-[#D5DFE3]"
+              className="h-9 px-3.5 rounded-xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700 flex items-center gap-2 text-xs font-semibold text-neutral-700 dark:text-neutral-200 cursor-pointer shadow-2xs hover:border-[#D5DFE3]"
             >
               <Calendar size={13} className="text-neutral-400" />
               <span>{timeRange}</span>
@@ -496,14 +497,14 @@ export const AnalyticsScreen: React.FC = () => {
           </div>
 
           {/* Export Report CSV */}
-          <button
-            type="button"
+          <AtriumButton
+            variant="secondary"
             onClick={handleExportCSV}
-            className="h-9 px-3.5 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700 text-xs font-semibold text-neutral-700 dark:text-neutral-200 flex items-center gap-1.5 hover:text-[#C4785A] hover:border-[#C4785A]/40 transition-colors cursor-pointer shadow-2xs"
+            icon={<Download size={13} />}
+            size="sm"
           >
-            <Download size={13} />
-            <span className="hidden sm:inline">Export CSV</span>
-          </button>
+            Export CSV
+          </AtriumButton>
         </div>
       </div>
 

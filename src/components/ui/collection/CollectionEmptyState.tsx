@@ -1,6 +1,8 @@
 import React from 'react';
 import { Users, RotateCcw, Plus } from 'lucide-react';
 
+import { AtriumButton } from '../AtriumButton';
+
 interface CollectionEmptyStateProps {
   title?: string;
   description?: string;
@@ -48,25 +50,24 @@ export const CollectionEmptyState: React.FC<CollectionEmptyStateProps> = ({
       {/* Action buttons row */}
       <div className="relative z-10 flex items-center gap-3">
         {onPrimaryAction && (
-          <button
-            type="button"
+          <AtriumButton
             onClick={onPrimaryAction}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#C4785A] hover:bg-[#b3684a] text-white font-medium text-[13px] shadow-sm transition-all active:scale-95 cursor-pointer"
+            icon={<Plus className="w-4 h-4" />}
+            size="md"
           >
-            <Plus className="w-4 h-4" />
-            <span>{primaryActionLabel}</span>
-          </button>
+            {primaryActionLabel}
+          </AtriumButton>
         )}
 
         {hasActiveFilters && onResetFilters && (
-          <button
-            type="button"
+          <AtriumButton
+            variant="secondary"
             onClick={onResetFilters}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 font-medium text-[13px] transition-all cursor-pointer"
+            icon={<RotateCcw className="w-3.5 h-3.5" />}
+            size="md"
           >
-            <RotateCcw className="w-3.5 h-3.5" />
-            <span>Reset Filters</span>
-          </button>
+            Reset Filters
+          </AtriumButton>
         )}
       </div>
     </div>

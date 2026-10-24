@@ -974,17 +974,17 @@ export const PosDashboardView: React.FC<PosDashboardViewProps> = () => {
               <button
                 type="button"
                 onClick={() => setSelectedSaleForRefund(null)}
-                className="h-10 px-4 text-xs font-semibold text-neutral-500 rounded-full hover:bg-neutral-100 cursor-pointer"
+                className="h-10 px-4 text-xs font-semibold text-neutral-500 rounded-xl hover:bg-neutral-100 cursor-pointer"
               >
                 {t('action_cancel')}
               </button>
-              <button
-                type="button"
+              <AtriumButton
+                variant="danger"
                 onClick={handleConfirmRefund}
-                className="h-10 px-5 text-xs font-bold text-white bg-red-600 rounded-full hover:bg-red-700 cursor-pointer"
+                size="md"
               >
                 {language === 'ar' ? 'تأكيد الاسترجاع' : 'Valider le Remboursement'}
-              </button>
+              </AtriumButton>
             </div>
           </div>
         </Modal>

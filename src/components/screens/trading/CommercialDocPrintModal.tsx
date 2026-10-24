@@ -12,6 +12,7 @@ import { CommercialDocument } from '../../../types';
 import { formatMoney } from '../../../utils/rules';
 import { numberToWordsFrench, numberToWordsArabic } from '../../../utils/algerianPtt';
 import { useAtriumStore } from '../../../services/store';
+import { AtriumButton } from '../../ui/AtriumButton';
 
 interface CommercialDocPrintModalProps {
   isOpen: boolean;
@@ -75,13 +76,14 @@ export const CommercialDocPrintModal: React.FC<CommercialDocPrintModalProps> = (
           </div>
 
           <div className="flex items-center gap-2">
-            <button
+            <AtriumButton
+              variant="primary"
+              size="xs"
               onClick={handlePrint}
-              className="px-4 py-1.5 rounded-lg text-xs font-semibold bg-[#C4785A] hover:bg-[#b06749] text-white flex items-center gap-1.5 transition-colors shadow-xs"
+              icon={<Printer size={14} />}
             >
-              <Printer size={15} />
-              <span>Imprimer (Ctrl+P)</span>
-            </button>
+              Imprimer (Ctrl+P)
+            </AtriumButton>
             <button
               onClick={onClose}
               className="p-1.5 text-stone-400 hover:text-white rounded-lg transition-colors"

@@ -23,6 +23,8 @@ import { useAtriumStore } from '../../../services/store';
 import { Appointment } from '../../../types/index';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { Seek } from '../../ui/Seek';
+import { AtriumButton } from '../../ui/AtriumButton';
+import { FilterSelect } from '../../ui/FilterSelect';
 import { formatMoney } from '../../../utils/rules';
 
 export const AppointmentHistoryView: React.FC = () => {
@@ -333,23 +335,25 @@ export const AppointmentHistoryView: React.FC = () => {
           </div>
 
           {/* 1-Click Demo Recharge */}
-          <button
+          <AtriumButton
+            variant="outline"
+            size="sm"
             onClick={() => resetSalonMockData()}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#C4785A] hover:bg-[#C4785A]/10 border border-[#C4785A]/30 rounded-lg transition-colors shadow-xs"
+            icon={<Sparkles className="w-3.5 h-3.5" />}
             title="Restaurer l'historique complet des soins d'Alger"
           >
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Recharger Démo</span>
-          </button>
+            Recharger Démo
+          </AtriumButton>
 
           {/* Export CSV */}
-          <button
+          <AtriumButton
+            variant="secondary"
+            size="sm"
             onClick={handleExportCSV}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg transition-colors"
+            icon={<Download className="w-3.5 h-3.5" />}
           >
-            <Download className="w-3.5 h-3.5" />
-            <span>Export CSV</span>
-          </button>
+            Export CSV
+          </AtriumButton>
         </div>
       </div>
 
@@ -364,16 +368,16 @@ export const AppointmentHistoryView: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2">
-          <select
+          <FilterSelect
             value={selectedMethodFilter}
-            onChange={(e) => setSelectedMethodFilter(e.target.value)}
-            className="text-xs bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-lg px-2.5 py-1.5 text-neutral-700 dark:text-neutral-300 focus:outline-none focus:border-[#C4785A]"
-          >
-            <option value="All">Tous les modes de règlement</option>
-            <option value="Cash">Espèces</option>
-            <option value="BaridiMob">BaridiMob</option>
-            <option value="Dahabia_CIB">CIB / Dahabia</option>
-          </select>
+            onChange={(val) => setSelectedMethodFilter(val?.target?.value ?? String(val))}
+            options={[
+              { value: 'All', label: 'Tous les modes de règlement' },
+              { value: 'Cash', label: 'Espèces' },
+              { value: 'BaridiMob', label: 'BaridiMob' },
+              { value: 'Dahabia_CIB', label: 'CIB / Dahabia' },
+            ]}
+          />
         </div>
       </div>
 

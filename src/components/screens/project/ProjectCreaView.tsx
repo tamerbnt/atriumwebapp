@@ -30,6 +30,7 @@ import { LabelInput } from '../../ui/LabelInput';
 import { Seek } from '../../ui/Seek';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { FilterSelect } from '../../ui/FilterSelect';
+import { AtriumButton } from '../../ui/AtriumButton';
 import { useTranslation } from '../../../utils/useTranslation';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 
@@ -736,14 +737,16 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
               />
             </div>
 
-            <button
+            <AtriumButton
               type="submit"
+              variant="primary"
+              size="md"
+              className="w-full justify-center"
               disabled={colorSpace !== 'CMJN' || Number(resolutionDpi) < 300 || !hasBleedIncluded}
-              className="w-full py-2.5 text-xs font-semibold text-white bg-[#C4785A] hover:bg-[#b3684a] disabled:opacity-40 rounded-xl flex items-center justify-center gap-2 shadow-xs transition-colors cursor-pointer"
+              icon={<UploadCloud className="w-4 h-4" />}
             >
-              <UploadCloud className="w-4 h-4" />
               Valider la Conformité & Déposer le BAT
-            </button>
+            </AtriumButton>
           </form>
         </div>
       )}

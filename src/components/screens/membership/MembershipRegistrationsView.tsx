@@ -422,7 +422,7 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
             <button
               type="button"
               onClick={() => setIsFacilityDropdownOpen(!isFacilityDropdownOpen)}
-              className="h-10 px-4 rounded-full bg-[#F4EFEA] dark:bg-neutral-800/80 border border-[#E8DFD8] dark:border-neutral-700 flex items-center gap-2 cursor-pointer hover:bg-[#EFE8E1] dark:hover:bg-neutral-800 transition-colors shadow-2xs"
+              className="h-10 px-4 rounded-xl bg-[#F4EFEA] dark:bg-neutral-800/80 border border-[#E8DFD8] dark:border-neutral-700 flex items-center gap-2 cursor-pointer hover:bg-[#EFE8E1] dark:hover:bg-neutral-800 transition-colors shadow-2xs"
             >
               <Home size={15} className="text-[#C4785A]" />
               <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
@@ -678,7 +678,7 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
             <button
               type="button"
               onClick={toggleFullscreen}
-              className="w-9 h-9 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex items-center justify-center text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 cursor-pointer transition-colors shadow-2xs"
+              className="w-9 h-9 rounded-xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex items-center justify-center text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 cursor-pointer transition-colors shadow-2xs"
               title="Toggle Fullscreen"
             >
               <Maximize2 size={13} />

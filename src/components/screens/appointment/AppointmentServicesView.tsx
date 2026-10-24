@@ -25,6 +25,8 @@ import { ServiceItem } from '../../../types/index';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { Seek } from '../../ui/Seek';
 import { AtriumButton } from '../../ui/AtriumButton';
+import { LabelInput } from '../../ui/LabelInput';
+import { LabelSelect } from '../../ui/LabelSelect';
 import { formatMoney } from '../../../utils/rules';
 import { AppointmentModal } from '../../modals/AppointmentModal';
 
@@ -680,114 +682,79 @@ export const AppointmentServicesView: React.FC = () => {
             </div>
 
             <form onSubmit={handleSubmitService} className="p-5 space-y-4">
-              <div>
-                <label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
-                  Nom du Soin / Prestation *
-                </label>
-                <input
-                  type="text"
-                  value={formName}
-                  onChange={(e) => setFormName(e.target.value)}
-                  placeholder="Ex: Balayage Californien & Toning Miel"
-                  className="w-full text-xs px-3 py-2 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 focus:outline-none focus:border-[#C4785A]"
+              <LabelInput
+                label="Nom du Soin / Prestation *"
+                value={formName}
+                onChange={(e) => setFormName(e.target.value)}
+                placeholder="Ex: Balayage Californien & Toning Miel"
+                required
+              />
+
+              <div className="grid grid-cols-2 gap-3">
+                <LabelSelect
+                  label="Catégorie"
+                  value={formCategory}
+                  onChange={(val) => setFormCategory((val?.target?.value ?? String(val)) as ServiceItem['category'])}
+                  options={[
+                    { value: "Hair", label: "Coiffure & Lissage" },
+                    { value: "Nails", label: "Bar à Ongles" },
+                    { value: "Facial", label: "Soins Visage & Spa" },
+                    { value: "Bridal", label: "Haute Mariée" },
+                    { value: "Massage", label: "Massages & Corps" },
+                    { value: "Barber", label: "Barbier" },
+                  ]}
+                />
+
+                <LabelInput
+                  label="Durée du Soin (minutes) *"
+                  type="number"
+                  min="15"
+                  step="5"
+                  value={formDuration}
+                  onChange={(e) => setFormDuration(Number(e.target.value))}
                   required
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
-                    Catégorie
-                  </label>
-                  <select
-                    value={formCategory}
-                    onChange={(e) => setFormCategory(e.target.value as ServiceItem['category'])}
-                    className="w-full text-xs px-3 py-2 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 focus:outline-none focus:border-[#C4785A]"
-                  >
-                    <option value="Hair">Coiffure & Lissage</option>
-                    <option value="Nails">Bar à Ongles</option>
-                    <option value="Facial">Soins Visage & Spa</option>
-                    <option value="Bridal">Haute Mariée</option>
-                    <option value="Massage">Massages & Corps</option>
-                    <option value="Barber">Barbier</option>
-                  </select>
-                </div>
+                <LabelInput
+                  label="Tarif Client TTC (DZD) *"
+                  type="number"
+                  min="500"
+                  step="500"
+                  value={formPrice}
+                  onChange={(e) => setFormPrice(Number(e.target.value))}
+                  required
+                />
 
-                <div>
-                  <label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
-                    Durée du Soin (minutes)
-                  </label>
-                  <input
-                    type="number"
-                    min="15"
-                    step="5"
-                    value={formDuration}
-                    onChange={(e) => setFormDuration(Number(e.target.value))}
-                    className="w-full text-xs px-3 py-2 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 focus:outline-none focus:border-[#C4785A]"
-                    required
-                  />
-                </div>
+                <LabelInput
+                  label="Coût Consommables (DZD)"
+                  type="number"
+                  min="0"
+                  step="100"
+                  value={formCostPrice}
+                  onChange={(e) => setFormCostPrice(Number(e.target.value))}
+                />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
-                    Tarif Client TTC (DZD) *
-                  </label>
-                  <input
-                    type="number"
-                    min="500"
-                    step="500"
-                    value={formPrice}
-                    onChange={(e) => setFormPrice(Number(e.target.value))}
-                    className="w-full text-xs px-3 py-2 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 focus:outline-none focus:border-[#C4785A] font-bold text-[#C4785A]"
-                    required
-                  />
-                </div>
+                <LabelInput
+                  label="Commission Styliste (%)"
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={formCommission}
+                  onChange={(e) => setFormCommission(Number(e.target.value))}
+                />
 
-                <div>
-                  <label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
-                    Coût Consommables (DZD)
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    step="100"
-                    value={formCostPrice}
-                    onChange={(e) => setFormCostPrice(Number(e.target.value))}
-                    className="w-full text-xs px-3 py-2 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 focus:outline-none focus:border-[#C4785A]"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
-                    Commission Styliste (%)
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    max="100"
-                    value={formCommission}
-                    onChange={(e) => setFormCommission(Number(e.target.value))}
-                    className="w-full text-xs px-3 py-2 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 focus:outline-none focus:border-[#C4785A]"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
-                    Temps de Pause / Nettoyage (min)
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    step="5"
-                    value={formBuffer}
-                    onChange={(e) => setFormBuffer(Number(e.target.value))}
-                    className="w-full text-xs px-3 py-2 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 focus:outline-none focus:border-[#C4785A]"
-                  />
-                </div>
+                <LabelInput
+                  label="Temps de Pause / Nettoyage (min)"
+                  type="number"
+                  min="0"
+                  step="5"
+                  value={formBuffer}
+                  onChange={(e) => setFormBuffer(Number(e.target.value))}
+                />
               </div>
 
               <div>
@@ -799,24 +766,25 @@ export const AppointmentServicesView: React.FC = () => {
                   value={formDescription}
                   onChange={(e) => setFormDescription(e.target.value)}
                   placeholder="Détaillez les produits appliqués et les étapes du protocole..."
-                  className="w-full text-xs px-3 py-2 rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 focus:outline-none focus:border-[#C4785A]"
+                  className="w-full text-xs px-3 py-2 rounded-xl bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 focus:outline-none focus:border-[#C4785A]"
                 />
               </div>
 
               <div className="pt-3 border-t border-neutral-200 dark:border-neutral-800 flex items-center justify-end gap-2">
-                <button
-                  type="button"
+                <AtriumButton
+                  variant="ghost"
+                  size="sm"
                   onClick={() => setIsServiceModalOpen(false)}
-                  className="px-4 py-2 text-xs font-medium text-neutral-600 dark:text-neutral-400 hover:text-neutral-900"
                 >
                   Annuler
-                </button>
-                <button
+                </AtriumButton>
+                <AtriumButton
+                  variant="primary"
+                  size="sm"
                   type="submit"
-                  className="px-5 py-2 text-xs font-semibold text-white bg-[#C4785A] hover:bg-[#b3684a] rounded-xl transition-colors shadow-xs"
                 >
                   {editingService ? 'Enregistrer les Modifications' : 'Créer la Prestation'}
-                </button>
+                </AtriumButton>
               </div>
             </form>
           </div>

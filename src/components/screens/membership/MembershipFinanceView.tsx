@@ -387,7 +387,7 @@ export const MembershipFinanceView: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsFacilityDropdownOpen(!isFacilityDropdownOpen)}
-              className="h-10 px-4 rounded-full bg-[#F4EFEA] dark:bg-neutral-800/80 border border-[#E8DFD8] dark:border-neutral-700 flex items-center gap-2 cursor-pointer hover:bg-[#EFE8E1] dark:hover:bg-neutral-800 transition-colors shadow-2xs"
+              className="h-10 px-4 rounded-xl bg-[#F4EFEA] dark:bg-neutral-800/80 border border-[#E8DFD8] dark:border-neutral-700 flex items-center gap-2 cursor-pointer hover:bg-[#EFE8E1] dark:hover:bg-neutral-800 transition-colors shadow-2xs"
             >
               <Home size={15} className="text-[#C4785A]" />
               <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
