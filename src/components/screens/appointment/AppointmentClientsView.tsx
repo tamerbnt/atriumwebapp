@@ -24,6 +24,9 @@ import {
   Send,
   Heart,
   Droplet,
+  Home,
+  RefreshCw,
+  Award,
 } from 'lucide-react';
 import { useAtriumStore } from '../../../services/store';
 import { Member } from '../../../types/index';
@@ -35,10 +38,13 @@ import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { formatMoney } from '../../../utils/rules';
 import { AppointmentModal } from '../../modals/AppointmentModal';
+
 interface AppointmentClientsViewProps {
   onAddMember?: () => void;
   onEditMember?: (member: Member) => void;
 }
+
+type ClientSegmentFilter = 'all' | 'vip' | 'allergies';
 
 export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = ({
   onAddMember,
@@ -58,115 +64,125 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = ({
     showToast,
   } = useAtriumStore();
 
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedStylistFilter, setSelectedStylistFilter] = useState('All');
-  const [selectedHairFilter, setSelectedHairFilter] = useState('All');
   const [isFacilityDropdownOpen, setIsFacilityDropdownOpen] = useState(false);
+  const [isNewBookingModalOpen, setIsNewBookingModalOpen] = useState(false);
+  const [segmentFilter, setSegmentFilter] = useState<ClientSegmentFilter>('all');
+  const [selectedStylistFilter, setSelectedStylistFilter] = useState<string>('All');
+  const [selectedHairFilter, setSelectedHairFilter] = useState<string>('All');
+  const [searchQuery, setSearchQuery] = useState('');
 
-  // Selection & Pinning State for UniversalDataCollection
+  // Selected & pinned sets
   const [selectedClientIds, setSelectedClientIds] = useState<Set<string>>(new Set());
-  const [pinnedClientIds, setPinnedClientIds] = useState<Set<string>>(new Set());
-  const [sortBy, setSortBy] = useState<string>('spent');
-  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
+  const [pinnedClientIds, setPinnedClientIds] = useState<Set<string>>(new Set(['mem_salon_01', 'mem_salon_03']));
 
-  // Drawer & Modal State
+  // Slide-over 360° Inspector
   const [inspectingClient, setInspectingClient] = useState<Member | null>(null);
   const [drawerTab, setDrawerTab] = useState<'diagnostic' | 'formulas' | 'history' | 'preferences'>('diagnostic');
-  const [isAddClientModalOpen, setIsAddClientModalOpen] = useState(false);
-  const [isNewBookingModalOpen, setIsNewBookingModalOpen] = useState(false);
 
-  // New formula form in drawer
+  // New color formula form in drawer
   const [newFormulaText, setNewFormulaText] = useState('');
-  const [newFormulaStylist, setNewFormulaStylist] = useState('');
+  const [newFormulaStylist, setNewFormulaStylist] = useState('Sarah Louati');
   const [newFormulaNotes, setNewFormulaNotes] = useState('');
 
-  // Auto-heal empty mock state on mount
+  // Ensure salon mock data is populated
   useEffect(() => {
-    const salonClients = (members || []).filter(
-      (m) => m.facilityId === (currentBranch?.id || 'branch_salon_hydra')
-    );
-    if (salonClients.length === 0) {
+    if (!members || members.length === 0 || !members.some((m) => m.id.startsWith('mem_salon_'))) {
       resetSalonMockData();
     }
-  }, [members, currentBranch, resetSalonMockData]);
+  }, [members, resetSalonMockData]);
 
-  // Filtered clients list
+  // Salon-specific clients
   const salonClients = useMemo(() => {
-    const targetBranchId = currentBranch?.id || 'branch_salon_hydra';
-    return (members || []).filter((m) => {
-      const matchBranch = m.facilityId === targetBranchId || (!m.facilityId && targetBranchId === 'branch_salon_hydra');
-      if (!matchBranch) return false;
+    return (members || []).filter(
+      (m) => m.id.startsWith('mem_salon_') || m.segmentData?.hairType
+    );
+  }, [members]);
 
-      const seg = m.segmentData || {};
-      if (selectedStylistFilter !== 'All' && seg.preferredStylistName !== selectedStylistFilter) {
+  // Stylists list
+  const salonStylists = useMemo(() => {
+    return staff || [
+      { id: 'st_01', fullName: 'Sarah Louati', role: 'Coloriste Senior' },
+      { id: 'st_02', fullName: 'Nadia Belkacem', role: 'Coiffeuse Styliste' },
+      { id: 'st_03', fullName: 'Amel Mansouri', role: 'Esthéticienne Cabine' },
+      { id: 'st_04', fullName: 'Lyna Cherif', role: 'Nail Artist' },
+    ];
+  }, [staff]);
+
+  // Metrics
+  const metrics = useMemo(() => {
+    const totalClients = salonClients.length;
+    const vipCount = salonClients.filter((c) => c.segmentData?.isVip || c.membershipPlanName === 'VIP').length;
+    const allergiesCount = salonClients.filter((c) => c.segmentData?.allergies && c.segmentData.allergies.length > 0).length;
+    const totalFormulasCount = salonClients.reduce((sum, c) => sum + (c.segmentData?.colorFormulas?.length || 0), 0);
+    const totalLifetimeSpend = salonClients.reduce((sum, c) => sum + (c.segmentData?.lifetimeSpent || 0), 0);
+    const vipRatio = totalClients > 0 ? Math.round((vipCount / totalClients) * 100) : 0;
+
+    return {
+      totalClients,
+      vipCount,
+      allergiesCount,
+      totalFormulasCount,
+      totalLifetimeSpend,
+      vipRatio,
+    };
+  }, [salonClients]);
+
+  // Filtered clients
+  const filteredClients = useMemo(() => {
+    return salonClients.filter((client) => {
+      // Segment filter
+      if (segmentFilter === 'vip' && !client.segmentData?.isVip && client.membershipPlanName !== 'VIP') {
         return false;
       }
-      if (selectedHairFilter !== 'All' && seg.hairType !== selectedHairFilter) {
+      if (segmentFilter === 'allergies' && (!client.segmentData?.allergies || client.segmentData.allergies.length === 0)) {
         return false;
       }
 
+      // Stylist filter
+      if (selectedStylistFilter !== 'All') {
+        if (client.segmentData?.preferredStylistName !== selectedStylistFilter) {
+          return false;
+        }
+      }
+
+      // Hair type filter
+      if (selectedHairFilter !== 'All') {
+        if (client.segmentData?.hairType !== selectedHairFilter) {
+          return false;
+        }
+      }
+
+      // Search query
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
-        const matchName = m.fullName.toLowerCase().includes(q);
-        const matchPhone = (m.phoneNumber || '').toLowerCase().includes(q);
-        const matchEmail = (m.email || '').toLowerCase().includes(q);
-        const matchFormula = (seg.colorFormulas || []).some((f: any) =>
-          f.formula?.toLowerCase().includes(q)
-        );
-        return matchName || matchPhone || matchEmail || matchFormula;
+        const matchesName = client.fullName.toLowerCase().includes(q);
+        const matchesPhone = (client.phoneNumber || '').toLowerCase().includes(q);
+        const matchesAllergies = (client.segmentData?.allergies || []).some((a: string) => a.toLowerCase().includes(q));
+        const matchesFormula = (client.segmentData?.colorFormulas || []).some((f: any) => f.formula.toLowerCase().includes(q));
+        if (!matchesName && !matchesPhone && !matchesAllergies && !matchesFormula) {
+          return false;
+        }
       }
 
       return true;
     });
-  }, [members, currentBranch, selectedStylistFilter, selectedHairFilter, searchQuery]);
+  }, [salonClients, segmentFilter, selectedStylistFilter, selectedHairFilter, searchQuery]);
 
-  // Stylists list for filter
-  const salonStylists = useMemo(() => {
-    return (staff || []).filter((s) => s.isActive);
-  }, [staff]);
-
-  // Handlers
-  const handleToggleSelectAll = () => {
-    if (selectedClientIds.size === salonClients.length) {
-      setSelectedClientIds(new Set());
-    } else {
-      setSelectedClientIds(new Set(salonClients.map((c) => c.id)));
-    }
-  };
-
-  const handleToggleSelectOne = (id: string) => {
-    const next = new Set(selectedClientIds);
-    if (next.has(id)) next.delete(id);
-    else next.add(id);
-    setSelectedClientIds(next);
-  };
-
-  const handleTogglePin = (id: string) => {
-    const next = new Set(pinnedClientIds);
-    if (next.has(id)) next.delete(id);
-    else next.add(id);
-    setPinnedClientIds(next);
-  };
-
-  const handleBatchDelete = () => {
-    const count = selectedClientIds.size;
-    selectedClientIds.forEach((id) => deleteMember(id));
-    setSelectedClientIds(new Set());
-    showToast({
-      type: 'info',
-      title: 'Fiches clientes supprimées',
-      message: `${count} dossiers clientes ont été retirés.`,
-      category: 'appointment_service',
+  const handleTogglePin = (clientId: string) => {
+    setPinnedClientIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(clientId)) next.delete(clientId);
+      else next.add(clientId);
+      return next;
     });
   };
 
   const handleBatchSetVIP = () => {
-    const count = selectedClientIds.size;
     selectedClientIds.forEach((id) => {
-      const client = members.find((m) => m.id === id);
+      const client = salonClients.find((c) => c.id === id);
       if (client) {
         updateMember(id, {
-          membershipPlanName: 'VIP Salon Lounge',
+          membershipPlanName: 'VIP',
           segmentData: {
             ...client.segmentData,
             isVip: true,
@@ -174,124 +190,128 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = ({
         });
       }
     });
-    setSelectedClientIds(new Set());
     showToast({
       type: 'success',
       title: 'Statut VIP attribué',
-      message: `${count} clientes ont été promues au statut VIP Salon.`,
+      message: `${selectedClientIds.size} clientes ont été promues au statut VIP Lounge.`,
       category: 'appointment_service',
     });
+    setSelectedClientIds(new Set());
+  };
+
+  const handleBatchDelete = () => {
+    selectedClientIds.forEach((id) => {
+      deleteMember(id);
+    });
+    showToast({
+      type: 'info',
+      title: 'Dossiers supprimés',
+      message: `${selectedClientIds.size} fiches clientes ont été retirées.`,
+      category: 'appointment_service',
+    });
+    setSelectedClientIds(new Set());
   };
 
   const handleAddFormula = (e: React.FormEvent) => {
     e.preventDefault();
     if (!inspectingClient || !newFormulaText.trim()) return;
 
-    const currentFormulas = inspectingClient.segmentData?.colorFormulas || [];
-    const newFormulaItem = {
-      id: `cf_${Date.now()}`,
+    const newFormula = {
+      id: `form_${Date.now()}`,
       date: new Date().toISOString().split('T')[0],
-      stylist: newFormulaStylist || staff[0]?.fullName || 'Sarah Louati',
       formula: newFormulaText.trim(),
+      stylist: newFormulaStylist,
       notes: newFormulaNotes.trim() || undefined,
     };
 
-    const updatedSeg = {
-      ...inspectingClient.segmentData,
-      colorFormulas: [newFormulaItem, ...currentFormulas],
-    };
+    const currentFormulas = inspectingClient.segmentData?.colorFormulas || [];
+    const updatedFormulas = [newFormula, ...currentFormulas];
 
-    updateMember(inspectingClient.id, { segmentData: updatedSeg });
-    setInspectingClient({ ...inspectingClient, segmentData: updatedSeg });
+    updateMember(inspectingClient.id, {
+      segmentData: {
+        ...inspectingClient.segmentData,
+        colorFormulas: updatedFormulas,
+      },
+    });
+
+    setInspectingClient({
+      ...inspectingClient,
+      segmentData: {
+        ...inspectingClient.segmentData,
+        colorFormulas: updatedFormulas,
+      },
+    });
+
     setNewFormulaText('');
     setNewFormulaNotes('');
 
     showToast({
       type: 'success',
       title: 'Formulation enregistrée',
-      message: `La nouvelle formule a été ajoutée au dossier de ${inspectingClient.fullName}.`,
+      message: `La recette technique a été ajoutée au dossier de ${inspectingClient.fullName}.`,
       category: 'appointment_service',
     });
   };
 
   const handleExportCSV = () => {
-    const headers = [
-      'Nom Complet',
-      'Téléphone',
-      'Email',
-      'Styliste Préféré',
-      'Type de Cheveux',
-      'Longueur',
-      'Allergies',
-      'Total Visites',
-      'Dépenses Totales (DZD)',
-    ];
-
-    const rows = salonClients.map((c) => {
-      const seg = c.segmentData || {};
-      return [
-        `"${c.fullName}"`,
-        `"${c.phoneNumber || ''}"`,
-        `"${c.email || ''}"`,
-        `"${seg.preferredStylistName || ''}"`,
-        `"${seg.hairType || ''}"`,
-        `"${seg.hairLength || ''}"`,
-        `"${(seg.allergies || []).join(', ')}"`,
-        c.remainingSessions || seg.totalVisits || 0,
-        seg.lifetimeSpent || 0,
-      ].join(',');
-    });
-
-    const csvContent = '\uFEFF' + [headers.join(','), ...rows].join('\n');
+    const headers = ['Nom Complet', 'Téléphone', 'Email', 'Type Cheveux', 'Longueur', 'Styliste Attitré', 'Visites', 'Dépense Cumulée (DZD)', 'Allergies'];
+    const rows = filteredClients.map((c) => [
+      `"${c.fullName}"`,
+      `"${c.phoneNumber || ''}"`,
+      `"${c.email || ''}"`,
+      `"${c.segmentData?.hairType || 'Ondulé'}"`,
+      `"${c.segmentData?.hairLength || 'Mi-long'}"`,
+      `"${c.segmentData?.preferredStylistName || 'Sarah Louati'}"`,
+      c.segmentData?.totalVisits || 1,
+      c.segmentData?.lifetimeSpent || 0,
+      `"${(c.segmentData?.allergies || []).join('; ')}"`,
+    ]);
+    const csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.setAttribute('download', `clientes_salon_hydra_${new Date().toISOString().split('T')[0]}.csv`);
+    link.setAttribute('download', `Salon_Clientes_${new Date().toISOString().split('T')[0]}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-
-    showToast({
-      type: 'success',
-      title: 'Export CSV réussi',
-      message: `${salonClients.length} dossiers clientes exportés avec succès.`,
-      category: 'appointment_service',
-    });
   };
 
-  // UniversalDataCollection column definitions
+  // Table Columns
   const columns: ColumnDefinition<Member>[] = [
     {
-      key: 'fullName',
+      key: 'name',
       header: 'Cliente & Contact',
+      minWidth: '220px',
       sortable: true,
       renderCell: (client) => {
-        const seg = client.segmentData || {};
+        const isVip = client.segmentData?.isVip || client.membershipPlanName === 'VIP';
+        const hasAllergies = client.segmentData?.allergies && client.segmentData.allergies.length > 0;
+
         return (
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-full bg-[#C4785A]/15 text-[#C4785A] font-bold text-xs flex items-center justify-center shrink-0">
               {client.fullName.charAt(0)}
             </div>
-            <div>
+            <div className="min-w-0">
               <div className="flex items-center gap-1.5">
-                <span className="font-semibold text-xs text-neutral-900 dark:text-white">
+                <span className="font-bold text-xs text-neutral-900 dark:text-white truncate">
                   {client.fullName}
                 </span>
-                {seg.isVip && (
-                  <span className="text-[10px] font-bold px-1.5 py-0.2 bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded-sm">
+                {isVip && (
+                  <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-500/15 text-amber-700 dark:text-amber-400">
                     VIP
                   </span>
                 )}
-              </div>
-              <div className="flex items-center gap-2 text-[11px] text-neutral-500 dark:text-neutral-400">
-                <span className="font-mono">{client.phoneNumber}</span>
-                {client.email && (
-                  <>
-                    <span>·</span>
-                    <span className="truncate max-w-[130px]">{client.email}</span>
-                  </>
+                {hasAllergies && (
+                  <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-rose-500/15 text-rose-700 dark:text-rose-400 flex items-center gap-0.5">
+                    <AlertTriangle className="w-2.5 h-2.5" />
+                    <span>Alerte</span>
+                  </span>
                 )}
+              </div>
+              <div className="text-[10px] text-neutral-400 font-mono truncate">
+                {client.phoneNumber || 'Sans téléphone'}
               </div>
             </div>
           </div>
@@ -299,52 +319,41 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = ({
       },
     },
     {
-      key: 'diagnostics',
-      header: 'Diagnostic Capillaire & Allergies',
+      key: 'diagnostic',
+      header: 'Diagnostic Capillaire',
+      minWidth: '180px',
       renderCell: (client) => {
-        const seg = client.segmentData || {};
-        const allergies = seg.allergies || [];
+        const seg = client.segmentData;
+        const hairType = seg?.hairType || 'Ondulé';
+        const hairLength = seg?.hairLength || 'Mi-long';
         return (
-          <div className="space-y-1">
-            <div className="flex items-center gap-1.5 text-xs text-neutral-700 dark:text-neutral-300">
-              <span className="font-medium">{seg.hairType || 'Cheveux Lisses'}</span>
-              <span>·</span>
-              <span className="text-neutral-500">{seg.hairLength || 'Mi-long'}</span>
-            </div>
-            {allergies.length > 0 ? (
-              <div className="flex items-center gap-1 text-[11px] text-rose-600 dark:text-rose-400 font-medium">
-                <AlertTriangle className="w-3 h-3 shrink-0" />
-                <span>Allergie : {allergies.join(', ')}</span>
-              </div>
-            ) : (
-              <div className="text-[11px] text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-                <CheckCircle2 className="w-3 h-3" />
-                <span>Cuir chevelu sain</span>
-              </div>
-            )}
+          <div className="text-xs">
+            <span className="font-semibold text-neutral-800 dark:text-neutral-200 block">
+              {hairType} · {hairLength}
+            </span>
+            <span className="text-[10px] text-neutral-400">
+              Cuir: {seg?.scalpCondition || 'Sensible'}
+            </span>
           </div>
         );
       },
     },
     {
       key: 'formula',
-      header: 'Dernière Formulation / Soin',
+      header: 'Dernière Formule',
+      minWidth: '200px',
       renderCell: (client) => {
-        const formulas = client.segmentData?.colorFormulas || [];
-        const lastFormula = formulas[0];
-        if (!lastFormula) {
-          return (
-            <span className="text-xs text-neutral-400 italic">
-              Aucune formule enregistrée
-            </span>
-          );
+        const formulas = client.segmentData?.colorFormulas;
+        if (!formulas || formulas.length === 0) {
+          return <span className="text-[11px] text-neutral-400 italic">Aucune formule</span>;
         }
+        const lastFormula = formulas[0];
         return (
-          <div className="max-w-[240px]">
-            <div className="text-xs font-mono text-neutral-800 dark:text-neutral-200 truncate">
+          <div className="text-xs">
+            <span className="font-mono text-neutral-900 dark:text-neutral-100 font-semibold block truncate max-w-[200px]">
               {lastFormula.formula}
-            </div>
-            <div className="text-[10px] text-neutral-400 flex items-center gap-1 mt-0.5">
+            </span>
+            <div className="flex items-center gap-1.5 text-[10px] text-neutral-400">
               <span>{lastFormula.date}</span>
               <span>·</span>
               <span>{lastFormula.stylist}</span>
@@ -356,6 +365,7 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = ({
     {
       key: 'stylist',
       header: 'Styliste Attitré',
+      width: '160px',
       sortable: true,
       renderCell: (client) => {
         const stylistName = client.segmentData?.preferredStylistName || 'Sarah Louati';
@@ -370,6 +380,7 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = ({
     {
       key: 'visits',
       header: 'Visites',
+      width: '110px',
       sortable: true,
       renderCell: (client) => {
         const visits = client.segmentData?.totalVisits || client.remainingSessions || 1;
@@ -383,11 +394,12 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = ({
     {
       key: 'spent',
       header: 'Total Dépensé (DZD)',
+      width: '150px',
       sortable: true,
       renderCell: (client) => {
         const spent = client.segmentData?.lifetimeSpent || 0;
         return (
-          <span className="text-xs font-bold text-[#C4785A] tabular-nums">
+          <span className="text-xs font-bold font-mono text-[#C4785A] tabular-nums">
             {formatMoney(spent)}
           </span>
         );
@@ -395,12 +407,13 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = ({
     },
     {
       key: 'actions',
-      header: 'Actions',
+      header: '',
+      width: '100px',
       renderCell: (client) => (
-        <div className="flex items-center justify-end gap-1.5">
+        <div className="flex items-center justify-end">
           <button
             onClick={() => setInspectingClient(client)}
-            className="px-2.5 py-1 text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 rounded-lg transition-colors"
+            className="px-2.5 py-1 text-xs font-semibold text-neutral-700 dark:text-neutral-300 hover:text-[#C4785A] bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-700 dark:hover:bg-neutral-600 rounded-lg transition-colors cursor-pointer"
           >
             Fiche 360°
           </button>
@@ -410,262 +423,412 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = ({
   ];
 
   return (
-    <div className="space-y-6">
-      {/* Header bar */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-2 border-b border-neutral-200 dark:border-neutral-800">
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white">
-              Fiches & Diagnostics Clientes
-            </h1>
-            <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-[#C4785A]/10 text-[#C4785A] border border-[#C4785A]/20">
-              {salonClients.length} Clientes
-            </span>
-          </div>
-          <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
-            Dossiers capillaires complets, historique des formulations, alertes allergies et suivi VIP.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2.5 flex-wrap">
-          {/* Branch Pill */}
-          <div className="relative">
-            <button
-              onClick={() => setIsFacilityDropdownOpen((prev) => !prev)}
-              className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 rounded-lg transition-colors border border-neutral-200 dark:border-neutral-700"
-            >
-              <Building2 className="w-3.5 h-3.5 text-[#C4785A]" />
-              <span className="font-semibold">{currentBranch?.name || 'Luxe Spa Hydra'}</span>
-              <ChevronDown className="w-3 h-3 text-neutral-400" />
-            </button>
-
-            {isFacilityDropdownOpen && (
-              <div className="absolute right-0 mt-1.5 w-60 bg-white dark:bg-neutral-900 rounded-xl shadow-xl border border-neutral-200 dark:border-neutral-800 py-1.5 z-50">
-                <div className="px-3 py-1 text-[11px] font-semibold text-neutral-400 uppercase tracking-wider">
-                  Salons & Instituts
-                </div>
-                {branches.map((b) => (
-                  <button
-                    key={b.id}
-                    onClick={() => {
-                      switchBranch(b.id);
-                      setIsFacilityDropdownOpen(false);
-                    }}
-                    className={`w-full text-left px-3 py-2 text-xs flex items-center justify-between hover:bg-neutral-50 dark:hover:bg-neutral-800/60 transition-colors ${
-                      b.id === currentBranch?.id
-                        ? 'text-[#C4785A] font-semibold bg-[#C4785A]/5'
-                        : 'text-neutral-700 dark:text-neutral-300'
-                    }`}
-                  >
-                    <span>{b.name}</span>
-                    <span className="text-[10px] text-neutral-400 font-mono">{b.code}</span>
-                  </button>
-                ))}
+    <div className="space-y-6 animate-in fade-in duration-200">
+      {/* Outer Workspace Panel */}
+      <div className="bg-white dark:bg-[#18181B] rounded-[28px] border border-[#E9EEF0] dark:border-neutral-800 p-6 lg:p-8 space-y-6 shadow-xs">
+        
+        {/* Header Row */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
+          <div className="flex items-center gap-3.5">
+            <div className="w-11 h-11 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#C4785A]">
+              <Scissors size={22} />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white">
+                  Fiches & Diagnostics Clientes
+                </h1>
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#C4785A]/15 text-[#C4785A] border border-[#C4785A]/30">
+                  {salonClients.length} Clientes
+                </span>
               </div>
-            )}
+              <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
+                Dossiers capillaires complets, historique des formulations, alertes allergies et suivi VIP.
+              </p>
+            </div>
           </div>
 
-          {/* 1-Click Demo Recharge */}
-          <AtriumButton
-            variant="outline"
-            size="sm"
-            onClick={() => resetSalonMockData()}
-            icon={<Sparkles className="w-3.5 h-3.5" />}
-            title="Restaurer les 15 dossiers clientes d'Alger"
-          >
-            Recharger Démo
-          </AtriumButton>
-
-          {/* Export CSV */}
-          <AtriumButton
-            variant="secondary"
-            size="sm"
-            onClick={handleExportCSV}
-            icon={<Download className="w-3.5 h-3.5" />}
-          >
-            Export CSV
-          </AtriumButton>
-
-          {/* New Appointment button */}
-          <AtriumButton
-            variant="primary"
-            onClick={() => setIsNewBookingModalOpen(true)}
-            icon={<Plus className="w-3.5 h-3.5" />}
-          >
-            Prendre RDV
-          </AtriumButton>
-        </div>
-      </div>
-
-      {/* Filter and Seek Toolbar */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-        <div className="flex-1 max-w-md">
-          <Seek
-            value={searchQuery}
-            onChange={setSearchQuery}
-            placeholder="Rechercher par cliente, téléphone, allergie, formule..."
-          />
-        </div>
-
-        <div className="flex items-center gap-2.5 flex-wrap">
-          <FilterSelect
-            value={selectedStylistFilter}
-            onChange={(val) => setSelectedStylistFilter(val?.target?.value ?? String(val))}
-            options={[
-              { value: 'All', label: 'Toutes les stylistes' },
-              ...salonStylists.map((s) => ({ value: s.fullName, label: s.fullName })),
-            ]}
-          />
-
-          <FilterSelect
-            value={selectedHairFilter}
-            onChange={(val) => setSelectedHairFilter(val?.target?.value ?? String(val))}
-            options={[
-              { value: 'All', label: 'Tous types de cheveux' },
-              { value: 'Lisse', label: 'Cheveux Lisses' },
-              { value: 'Ondulé', label: 'Cheveux Ondulés' },
-              { value: 'Bouclé', label: 'Cheveux Bouclés' },
-              { value: 'Frisé', label: 'Cheveux Frisés' },
-            ]}
-          />
-        </div>
-      </div>
-
-      {/* Floating Batch Action Toolbar */}
-      {selectedClientIds.size > 0 && (
-        <div className="p-3 bg-neutral-900 dark:bg-neutral-800 text-white rounded-xl flex items-center justify-between gap-4 shadow-xl">
-          <div className="flex items-center gap-2">
-            <span className="w-6 h-6 rounded-full bg-[#C4785A] text-white text-xs font-bold flex items-center justify-center">
-              {selectedClientIds.size}
-            </span>
-            <span className="text-xs font-medium">dossiers clientes sélectionnés</span>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handleBatchSetVIP}
-              className="px-3 py-1.5 text-xs font-semibold bg-amber-500 hover:bg-amber-600 text-neutral-900 rounded-lg transition-colors flex items-center gap-1.5"
-            >
-              <Star className="w-3.5 h-3.5" />
-              <span>Promouvoir VIP</span>
-            </button>
-
-            <button
-              onClick={handleBatchDelete}
-              className="px-3 py-1.5 text-xs font-semibold bg-rose-600 hover:bg-rose-700 text-white rounded-lg transition-colors flex items-center gap-1.5"
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-              <span>Supprimer</span>
-            </button>
-
-            <button
-              onClick={() => setSelectedClientIds(new Set())}
-              className="px-2.5 py-1.5 text-xs text-neutral-400 hover:text-white transition-colors"
-            >
-              Désélectionner
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* UniversalDataCollection: Client CRM */}
-      <UniversalDataCollection<Member>
-        items={salonClients}
-        keyExtractor={(client) => client.id}
-        columns={columns}
-        selectedIds={selectedClientIds}
-        onSelectionChange={setSelectedClientIds}
-        isPinned={(client) => pinnedClientIds.has(client.id)}
-        onTogglePin={(client) => handleTogglePin(client.id)}
-        sortBy={sortBy}
-        sortDirection={sortDir}
-        onSortChange={(key) => {
-          if (sortBy === key) {
-            setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
-          } else {
-            setSortBy(key);
-            setSortDir('desc');
-          }
-        }}
-        renderCard={(client) => {
-          const seg = client.segmentData || {};
-          const isPinned = pinnedClientIds.has(client.id);
-          const isSelected = selectedClientIds.has(client.id);
-
-          return (
-            <div
-              key={client.id}
-              className={`p-4 rounded-2xl border transition-all relative ${
-                isSelected
-                  ? 'border-[#C4785A] bg-[#C4785A]/5'
-                  : 'border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 hover:shadow-md'
-              }`}
-            >
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-[#C4785A]/15 text-[#C4785A] font-bold text-sm flex items-center justify-center">
-                    {client.fullName.charAt(0)}
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-xs text-neutral-900 dark:text-white">
-                      {client.fullName}
-                    </h3>
-                    <p className="text-[11px] text-neutral-500 font-mono">{client.phoneNumber}</p>
-                  </div>
-                </div>
-
-                <button
-                  onClick={() => handleTogglePin(client.id)}
-                  className={`p-1.5 rounded-lg transition-colors ${
-                    isPinned ? 'text-[#C4785A] bg-[#C4785A]/10' : 'text-neutral-400 hover:text-neutral-600'
+          <div className="flex items-center gap-2.5 flex-wrap self-start sm:self-auto">
+            {/* Facility Pill */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setIsFacilityDropdownOpen(!isFacilityDropdownOpen)}
+                className="h-10 px-4 rounded-xl bg-[#F4EFEA] dark:bg-neutral-800/80 border border-[#E8DFD8] dark:border-neutral-700 flex items-center gap-2 cursor-pointer hover:bg-[#EFE8E1] dark:hover:bg-neutral-800 transition-colors shadow-2xs"
+              >
+                <Home size={15} className="text-[#C4785A]" />
+                <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
+                  {currentBranch?.name || 'Luxe Spa Hydra'}
+                </span>
+                <ChevronDown
+                  size={14}
+                  className={`text-neutral-500 transition-transform ${
+                    isFacilityDropdownOpen ? 'rotate-180' : ''
                   }`}
-                >
-                  <Pin className="w-3.5 h-3.5" />
-                </button>
-              </div>
+                />
+              </button>
 
-              <div className="space-y-2 text-xs pt-2 border-t border-neutral-100 dark:border-neutral-800">
-                <div className="flex items-center justify-between text-neutral-600 dark:text-neutral-400">
-                  <span>Styliste attitré:</span>
-                  <span className="font-semibold text-neutral-900 dark:text-white">
-                    {seg.preferredStylistName || 'Sarah Louati'}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between text-neutral-600 dark:text-neutral-400">
-                  <span>Diagnostic:</span>
-                  <span className="font-medium text-neutral-800 dark:text-neutral-200">
-                    {seg.hairType || 'Ondulé'} · {seg.hairLength || 'Mi-long'}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-neutral-600 dark:text-neutral-400">Total Dépensé:</span>
-                  <span className="font-bold text-[#C4785A] tabular-nums">
-                    {formatMoney(seg.lifetimeSpent || 0)}
-                  </span>
-                </div>
-              </div>
-
-              {seg.colorFormulas?.[0] && (
-                <div className="mt-3 p-2 bg-neutral-100 dark:bg-neutral-800/80 rounded-xl text-[11px] font-mono text-neutral-700 dark:text-neutral-300 truncate">
-                  🧪 {seg.colorFormulas[0].formula}
+              {isFacilityDropdownOpen && (
+                <div className="absolute right-0 rtl:right-auto rtl:left-0 mt-2 w-64 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
+                  <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+                    Salons & Instituts
+                  </div>
+                  {branches.map((b) => (
+                    <button
+                      key={b.id}
+                      onClick={() => {
+                        switchBranch(b.id);
+                        setIsFacilityDropdownOpen(false);
+                      }}
+                      className="w-full px-3 py-2 text-left rtl:text-right text-xs hover:bg-neutral-50 dark:hover:bg-neutral-700/50 flex items-center justify-between"
+                    >
+                      <span className="font-semibold text-neutral-800 dark:text-neutral-200">{b.name}</span>
+                      {b.id === currentBranch?.id && <span className="text-[#C4785A] text-xs">✓</span>}
+                    </button>
+                  ))}
                 </div>
               )}
+            </div>
 
-              <div className="mt-4 pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between">
-                <span className="text-[11px] text-neutral-400">
-                  {seg.totalVisits || 1} visites
+            {/* Demo Data Reset */}
+            <button
+              type="button"
+              onClick={() => resetSalonMockData()}
+              className="h-10 px-3.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-xs font-semibold text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700/60 flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
+              title="Restaurer les 15 dossiers clientes d'Alger"
+            >
+              <RefreshCw size={13} className="text-neutral-500" />
+              <span>Démo Salon</span>
+            </button>
+
+            {/* Export CSV */}
+            <AtriumButton
+              variant="outline"
+              size="sm"
+              onClick={handleExportCSV}
+              icon={<Download size={14} className="text-[#C4785A]" />}
+            >
+              Export CSV
+            </AtriumButton>
+
+            {/* New Appointment button */}
+            <AtriumButton
+              variant="primary"
+              size="sm"
+              onClick={() => setIsNewBookingModalOpen(true)}
+              icon={<Plus size={15} />}
+            >
+              Prendre RDV
+            </AtriumButton>
+          </div>
+        </div>
+
+        {/* Top Metrics Pod Tray (SurfaceBgElevated: #F8F9FA, CornerRadius 24px) */}
+        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            
+            {/* Card 1: Dossiers Clientes Actives */}
+            <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
+                  Fiches & Dossiers VIP
                 </span>
+                <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#C4785A]/10 text-[#C4785A]">
+                  {metrics.vipCount} clientes VIP
+                </span>
+              </div>
+              <div className="mt-3">
+                <div className="text-2xl lg:text-3xl font-extrabold text-neutral-900 dark:text-neutral-100 font-mono">
+                  {metrics.totalClients}
+                </div>
+                <div className="flex items-center gap-1.5 text-[11px] text-neutral-500 mt-1">
+                  <Star size={13} className="text-amber-500" />
+                  <span>{metrics.vipRatio}% de clientes régulières VIP</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Card 2: Formulations Chimiques & Alertes */}
+            <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
+                  Formulations & Sécurité
+                </span>
+                <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-neutral-100 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300">
+                  {metrics.totalFormulasCount} recettes
+                </span>
+              </div>
+              <div className="mt-3">
+                <div className="text-2xl lg:text-3xl font-extrabold text-neutral-900 dark:text-neutral-100 font-mono">
+                  {metrics.totalFormulasCount}
+                </div>
+                <div className="flex items-center gap-1.5 text-[11px] text-neutral-500 mt-1">
+                  {metrics.allergiesCount > 0 ? (
+                    <span className="text-rose-500 font-semibold flex items-center gap-1">
+                      <AlertTriangle size={13} />
+                      {metrics.allergiesCount} dossier(s) avec alertes allergies
+                    </span>
+                  ) : (
+                    <span className="text-emerald-500 font-medium flex items-center gap-1">
+                      <CheckCircle2 size={13} />
+                      Tolérances cutanées validées
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Card 3: DARK ESPRESSO ANCHOR CARD (#1F1D1B) */}
+            <div className="bg-[#1F1D1B] rounded-[18px] p-4 lg:p-5 border border-neutral-800 shadow-sm text-white flex flex-col justify-between relative overflow-hidden group">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-[#E7E5E4]">
+                  Volume Recettes Clientes Globales
+                </span>
+                <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30 uppercase tracking-wider">
+                  Dossiers Salon
+                </span>
+              </div>
+              <div className="mt-3">
+                <div className="text-2xl lg:text-3xl font-extrabold text-white font-mono tracking-tight">
+                  {formatMoney(metrics.totalLifetimeSpend)}
+                </div>
+                <div className="flex items-center justify-between text-[11px] text-stone-400 mt-1.5">
+                  <span className="flex items-center gap-1">
+                    <Award size={12} className="text-[#FB923C]" />
+                    <span>Cumul historique prestations & soins</span>
+                  </span>
+                  <span className="font-mono text-stone-300">DZD</span>
+                </div>
+              </div>
+
+              {/* Decorative Subtle Background Sparkline */}
+              <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-[#FB923C]/5 rounded-full blur-2xl pointer-events-none" />
+            </div>
+
+          </div>
+        </div>
+
+        {/* Bottom Collection Pod Tray (SurfaceBgElevated: #F8F9FA) */}
+        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+          
+          {/* Controls Bar: Segment Tabs + Dropdown Filters + Seek Search */}
+          <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
+            {/* Segment Capsules */}
+            <div className="flex items-center gap-1.5 bg-neutral-200/60 dark:bg-neutral-800 p-1 rounded-2xl self-start">
+              <button
+                type="button"
+                onClick={() => setSegmentFilter('all')}
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
+                  segmentFilter === 'all'
+                    ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-xs'
+                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
+                }`}
+              >
+                <span>Toutes les Clientes</span>
+                <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono ${
+                  segmentFilter === 'all' ? 'bg-[#C4785A]/15 text-[#C4785A]' : 'bg-neutral-300/60 dark:bg-neutral-700 text-neutral-500'
+                }`}>
+                  {salonClients.length}
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setSegmentFilter('vip')}
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
+                  segmentFilter === 'vip'
+                    ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-xs'
+                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
+                }`}
+              >
+                <span>VIP Membres</span>
+                <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono ${
+                  segmentFilter === 'vip' ? 'bg-[#C4785A]/15 text-[#C4785A]' : 'bg-neutral-300/60 dark:bg-neutral-700 text-neutral-500'
+                }`}>
+                  {metrics.vipCount}
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setSegmentFilter('allergies')}
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
+                  segmentFilter === 'allergies'
+                    ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-xs'
+                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
+                }`}
+              >
+                <span>Sensibilités / Allergies</span>
+                <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono ${
+                  segmentFilter === 'allergies' ? 'bg-[#C4785A]/15 text-[#C4785A]' : 'bg-neutral-300/60 dark:bg-neutral-700 text-neutral-500'
+                }`}>
+                  {metrics.allergiesCount}
+                </span>
+              </button>
+            </div>
+
+            {/* Filter Selects & Seek Search */}
+            <div className="flex items-center gap-2 flex-wrap self-end lg:self-auto">
+              <FilterSelect
+                value={selectedStylistFilter}
+                onChange={(val) => setSelectedStylistFilter(val?.target?.value ?? String(val))}
+                options={[
+                  { value: 'All', label: 'Toutes les stylistes' },
+                  ...salonStylists.map((s) => ({ value: s.fullName, label: s.fullName })),
+                ]}
+              />
+
+              <FilterSelect
+                value={selectedHairFilter}
+                onChange={(val) => setSelectedHairFilter(val?.target?.value ?? String(val))}
+                options={[
+                  { value: 'All', label: 'Tous types de cheveux' },
+                  { value: 'Lisse', label: 'Cheveux Lisses' },
+                  { value: 'Ondulé', label: 'Cheveux Ondulés' },
+                  { value: 'Bouclé', label: 'Cheveux Bouclés' },
+                  { value: 'Frisé', label: 'Cheveux Frisés' },
+                ]}
+              />
+
+              <Seek
+                value={searchQuery}
+                onChange={setSearchQuery}
+                placeholder="Filtrer cliente, téléphone, allergie, formule..."
+                shutSize={36}
+                openWidth={260}
+              />
+            </div>
+          </div>
+
+          {/* Floating Batch Action Toolbar */}
+          {selectedClientIds.size > 0 && (
+            <div className="p-3 bg-neutral-900 dark:bg-neutral-800 text-white rounded-xl flex items-center justify-between gap-4 shadow-xl">
+              <div className="flex items-center gap-2">
+                <span className="w-6 h-6 rounded-full bg-[#C4785A] text-white text-xs font-bold flex items-center justify-center">
+                  {selectedClientIds.size}
+                </span>
+                <span className="text-xs font-medium">dossiers clientes sélectionnés</span>
+              </div>
+
+              <div className="flex items-center gap-2">
                 <button
-                  onClick={() => setInspectingClient(client)}
-                  className="px-3 py-1 text-xs font-semibold text-[#C4785A] hover:bg-[#C4785A]/10 rounded-lg transition-colors"
+                  type="button"
+                  onClick={handleBatchSetVIP}
+                  className="px-3 py-1.5 text-xs font-semibold bg-amber-500 hover:bg-amber-600 text-neutral-900 rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer"
                 >
-                  Voir Fiche 360°
+                  <Star className="w-3.5 h-3.5" />
+                  <span>Promouvoir VIP</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleBatchDelete}
+                  className="px-3 py-1.5 text-xs font-semibold bg-rose-600 hover:bg-rose-700 text-white rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>Supprimer</span>
                 </button>
               </div>
             </div>
-          );
-        }}
-      />
+          )}
+
+          {/* Table Container Inside Pod Tray */}
+          <div className="bg-white dark:bg-neutral-800 rounded-[18px] border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs overflow-hidden">
+            <UniversalDataCollection<Member>
+              items={filteredClients}
+              keyExtractor={(c) => c.id}
+              defaultViewMode="list"
+              columns={columns}
+              onItemClick={(c) => setInspectingClient(c)}
+              selectedIds={selectedClientIds}
+              onSelectionChange={setSelectedClientIds}
+              isPinned={(c) => pinnedClientIds.has(c.id)}
+              onTogglePin={(c) => handleTogglePin(c.id)}
+              emptyTitle="Aucun dossier cliente trouvé"
+              emptyDescription="Aucune cliente ne correspond aux filtres de recherche sélectionnés."
+              renderCard={(client) => {
+                const isPinned = pinnedClientIds.has(client.id);
+                const seg = client.segmentData || {};
+                return (
+                  <div
+                    className={`p-4 rounded-xl border transition-all ${
+                      isPinned
+                        ? 'border-[#C4785A] bg-[#C4785A]/5'
+                        : 'border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 shadow-2xs'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-[#C4785A]/15 text-[#C4785A] font-bold text-sm flex items-center justify-center">
+                          {client.fullName.charAt(0)}
+                        </div>
+                        <div>
+                          <h3 className="font-bold text-xs text-neutral-900 dark:text-white">
+                            {client.fullName}
+                          </h3>
+                          <p className="text-[11px] text-neutral-500 font-mono">{client.phoneNumber}</p>
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => handleTogglePin(client.id)}
+                        className={`p-1.5 rounded-lg transition-colors ${
+                          isPinned ? 'text-[#C4785A] bg-[#C4785A]/10' : 'text-neutral-400 hover:text-neutral-600'
+                        }`}
+                      >
+                        <Pin className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+
+                    <div className="space-y-2 text-xs pt-2 border-t border-neutral-100 dark:border-neutral-700">
+                      <div className="flex items-center justify-between text-neutral-600 dark:text-neutral-400">
+                        <span>Styliste attitré:</span>
+                        <span className="font-semibold text-neutral-900 dark:text-white">
+                          {seg.preferredStylistName || 'Sarah Louati'}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between text-neutral-600 dark:text-neutral-400">
+                        <span>Diagnostic:</span>
+                        <span className="font-medium text-neutral-800 dark:text-neutral-200">
+                          {seg.hairType || 'Ondulé'} · {seg.hairLength || 'Mi-long'}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-neutral-600 dark:text-neutral-400">Total Dépensé:</span>
+                        <span className="font-bold text-[#C4785A] tabular-nums font-mono">
+                          {formatMoney(seg.lifetimeSpent || 0)}
+                        </span>
+                      </div>
+                    </div>
+
+                    {seg.colorFormulas?.[0] && (
+                      <div className="mt-3 p-2 bg-neutral-100 dark:bg-neutral-700/60 rounded-xl text-[11px] font-mono text-neutral-700 dark:text-neutral-300 truncate">
+                        🧪 {seg.colorFormulas[0].formula}
+                      </div>
+                    )}
+
+                    <div className="mt-4 pt-2 border-t border-neutral-100 dark:border-neutral-700 flex items-center justify-between">
+                      <span className="text-[11px] text-neutral-400">
+                        {seg.totalVisits || 1} visites
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setInspectingClient(client)}
+                        className="px-3 py-1 text-xs font-semibold text-[#C4785A] hover:bg-[#C4785A]/10 rounded-lg transition-colors cursor-pointer"
+                      >
+                        Voir Fiche 360°
+                      </button>
+                    </div>
+                  </div>
+                );
+              }}
+            />
+          </div>
+
+        </div>
+
+      </div>
 
       {/* 360° Client Slide-Over Drawer */}
       {inspectingClient && (
@@ -695,8 +858,9 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = ({
               </div>
 
               <button
+                type="button"
                 onClick={() => setInspectingClient(null)}
-                className="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                className="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -705,8 +869,9 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = ({
             {/* Drawer Tabs */}
             <div className="flex items-center gap-1 px-5 pt-3 border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-900/50">
               <button
+                type="button"
                 onClick={() => setDrawerTab('diagnostic')}
-                className={`px-3 py-2 text-xs font-semibold border-b-2 transition-colors ${
+                className={`px-3 py-2 text-xs font-semibold border-b-2 transition-colors cursor-pointer ${
                   drawerTab === 'diagnostic'
                     ? 'border-[#C4785A] text-[#C4785A]'
                     : 'border-transparent text-neutral-500 hover:text-neutral-700'
@@ -715,8 +880,9 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = ({
                 Diagnostic & Sécurité
               </button>
               <button
+                type="button"
                 onClick={() => setDrawerTab('formulas')}
-                className={`px-3 py-2 text-xs font-semibold border-b-2 transition-colors ${
+                className={`px-3 py-2 text-xs font-semibold border-b-2 transition-colors cursor-pointer ${
                   drawerTab === 'formulas'
                     ? 'border-[#C4785A] text-[#C4785A]'
                     : 'border-transparent text-neutral-500 hover:text-neutral-700'
@@ -725,8 +891,9 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = ({
                 Formulations Chimiques ({inspectingClient.segmentData?.colorFormulas?.length || 0})
               </button>
               <button
+                type="button"
                 onClick={() => setDrawerTab('history')}
-                className={`px-3 py-2 text-xs font-semibold border-b-2 transition-colors ${
+                className={`px-3 py-2 text-xs font-semibold border-b-2 transition-colors cursor-pointer ${
                   drawerTab === 'history'
                     ? 'border-[#C4785A] text-[#C4785A]'
                     : 'border-transparent text-neutral-500 hover:text-neutral-700'
@@ -735,8 +902,9 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = ({
                 Historique Visites
               </button>
               <button
+                type="button"
                 onClick={() => setDrawerTab('preferences')}
-                className={`px-3 py-2 text-xs font-semibold border-b-2 transition-colors ${
+                className={`px-3 py-2 text-xs font-semibold border-b-2 transition-colors cursor-pointer ${
                   drawerTab === 'preferences'
                     ? 'border-[#C4785A] text-[#C4785A]'
                     : 'border-transparent text-neutral-500 hover:text-neutral-700'
@@ -810,7 +978,6 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = ({
 
               {drawerTab === 'formulas' && (
                 <div className="space-y-5">
-                  {/* Add formula form */}
                   <form onSubmit={handleAddFormula} className="p-4 rounded-xl bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700/60 space-y-3">
                     <h3 className="text-xs font-bold text-neutral-900 dark:text-white">
                       Ajouter une Formulation Réalisée
@@ -849,7 +1016,6 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = ({
                     </div>
                   </form>
 
-                  {/* List of existing formulas */}
                   <div className="space-y-3">
                     <h3 className="text-xs font-bold text-neutral-400 uppercase tracking-wider">
                       Historique des Recettes ({inspectingClient.segmentData?.colorFormulas?.length || 0})
@@ -857,10 +1023,10 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = ({
                     {(inspectingClient.segmentData?.colorFormulas || []).map((f: any) => (
                       <div
                         key={f.id}
-                        className="p-3.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 space-y-1.5"
+                        className="p-3.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 space-y-1.5 shadow-2xs"
                       >
                         <div className="flex items-center justify-between text-xs font-semibold">
-                          <span className="font-mono text-[#C4785A]">{f.formula}</span>
+                          <span className="font-mono text-[#C4785A] font-bold">{f.formula}</span>
                           <span className="text-[11px] text-neutral-400 font-mono">{f.date}</span>
                         </div>
                         <div className="text-[11px] text-neutral-500 flex items-center justify-between">
@@ -879,7 +1045,7 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = ({
                     <h3 className="text-xs font-bold text-neutral-400 uppercase tracking-wider">
                       Prestations Effectuées au Salon
                     </h3>
-                    <span className="text-xs font-bold text-[#C4785A]">
+                    <span className="text-xs font-bold font-mono text-[#C4785A]">
                       Cumul: {formatMoney(inspectingClient.segmentData?.lifetimeSpent || 0)}
                     </span>
                   </div>
@@ -890,7 +1056,7 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = ({
                       .map((apt) => (
                         <div
                           key={apt.id}
-                          className="p-3 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 flex items-center justify-between text-xs"
+                          className="p-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 flex items-center justify-between text-xs shadow-2xs"
                         >
                           <div>
                             <span className="font-semibold text-neutral-900 dark:text-white block">
@@ -900,7 +1066,7 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = ({
                               {apt.date} à {apt.startTime} · Styliste: {apt.staffName}
                             </span>
                           </div>
-                          <span className="font-bold text-neutral-900 dark:text-white tabular-nums">
+                          <span className="font-bold font-mono text-neutral-900 dark:text-white tabular-nums">
                             {formatMoney(apt.price)}
                           </span>
                         </div>

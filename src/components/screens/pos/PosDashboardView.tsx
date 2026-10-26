@@ -18,6 +18,10 @@ import {
   Plus,
   PlayCircle,
   FileText,
+  Home,
+  ChevronDown,
+  RefreshCw,
+  Warehouse,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
 import { Sale, Product } from '../../../types/index';
@@ -26,11 +30,14 @@ import { useTranslation } from '../../../utils/useTranslation';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { Modal } from '../../ui/Modal';
 import { AtriumButton } from '../../ui/AtriumButton';
+import { Seek } from '../../ui/Seek';
 
 export interface PosDashboardViewProps {
   onAddMember?: () => void;
   onOpenVoucherModal?: () => void;
 }
+
+type SalesFilterMode = 'all' | 'today' | 'refunded';
 
 export const PosDashboardView: React.FC<PosDashboardViewProps> = () => {
   const { t, language, isRtl } = useTranslation();
@@ -55,6 +62,9 @@ export const PosDashboardView: React.FC<PosDashboardViewProps> = () => {
   const [selectedSaleIds, setSelectedSaleIds] = useState<Set<string>>(new Set());
   const [pinnedSaleIds, setPinnedSaleIds] = useState<Set<string>>(new Set());
   const [isZReportOpen, setIsZReportOpen] = useState(false);
+  const [isFacilityDropdownOpen, setIsFacilityDropdownOpen] = useState(false);
+  const [filterMode, setFilterMode] = useState<SalesFilterMode>('all');
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Filter sales for current branch or retail
   const branchSales = useMemo(() => {
@@ -95,8 +105,6 @@ export const PosDashboardView: React.FC<PosDashboardViewProps> = () => {
       }
     });
 
-    const potentialGrossMargin = Math.max(0, inventoryRetailValue - inventoryCostValue);
-
     // Tender breakdown
     let cashVolume = 0;
     let cardVolume = 0;
@@ -106,18 +114,12 @@ export const PosDashboardView: React.FC<PosDashboardViewProps> = () => {
     activeTodaySales.forEach((s) => {
       if (s.paymentMethod === 'Cash') cashVolume += s.totalAmount;
       else if (s.paymentMethod === 'Card') cardVolume += s.totalAmount;
-      else if (s.paymentMethod === 'BankTransfer') baridiMobVolume += s.totalAmount;
-      else if (s.paymentMethod === 'Split') {
-        splitVolume += s.totalAmount;
-        if (s.payments) {
-          s.payments.forEach((p) => {
-            if (p.method === 'Cash') cashVolume += p.amount;
-            else if (p.method === 'Card') cardVolume += p.amount;
-            else if (p.method === 'BankTransfer') baridiMobVolume += p.amount;
-          });
-        }
-      }
+      else if (s.paymentMethod === 'BankTransfer' || (s.paymentMethod as string) === 'BaridiMob') baridiMobVolume += s.totalAmount;
+      else if (s.paymentMethod === 'Split') splitVolume += s.totalAmount;
+      else cashVolume += s.totalAmount;
     });
+
+    const expectedCashInDrawer = 15000 + cashVolume;
 
     return {
       totalTodayRevenue,
@@ -126,49 +128,57 @@ export const PosDashboardView: React.FC<PosDashboardViewProps> = () => {
       totalStockUnits,
       inventoryRetailValue,
       inventoryCostValue,
-      potentialGrossMargin,
       lowStockCount,
       outOfStockCount,
       cashVolume,
       cardVolume,
       baridiMobVolume,
       splitVolume,
+      expectedCashInDrawer,
     };
   }, [todaySales, products]);
 
-  // Top selling products from sales history
+  // Top selling products
   const topProducts = useMemo(() => {
-    const counter: Record<string, { product: Product | null; name: string; units: number; revenue: number }> = {};
-    branchSales.forEach((sale) => {
-      if (sale.status === 'Refunded') return;
-      sale.items.forEach((item) => {
-        const pId = item.productId;
-        if (!counter[pId]) {
-          const live = products.find((p) => p.id === pId) || null;
-          counter[pId] = {
-            product: live,
-            name: item.productName,
-            units: 0,
-            revenue: 0,
-          };
-        }
-        counter[pId].units += item.quantity;
-        counter[pId].revenue += item.totalPrice;
+    const map = new Map<string, { name: string; units: number; revenue: number }>();
+    branchSales.forEach((s) => {
+      if (s.status === 'Refunded') return;
+      s.items.forEach((it) => {
+        const existing = map.get(it.productId) || { name: it.productName, units: 0, revenue: 0 };
+        existing.units += it.quantity;
+        existing.revenue += it.totalPrice;
+        map.set(it.productId, existing);
       });
     });
-
-    return Object.values(counter)
+    return Array.from(map.values())
       .sort((a, b) => b.revenue - a.revenue)
-      .slice(0, 5);
-  }, [branchSales, products]);
+      .slice(0, 4);
+  }, [branchSales]);
 
-  // Columns for Recent Sales UniversalDataCollection
+  // Filtered sales for table
+  const filteredSales = useMemo(() => {
+    const today = new Date().toISOString().split('T')[0];
+    return branchSales.filter((s) => {
+      if (filterMode === 'today' && !s.createdAt.startsWith(today)) return false;
+      if (filterMode === 'refunded' && s.status !== 'Refunded') return false;
+
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        const matchesId = s.id.toLowerCase().includes(q);
+        const matchesCust = (s.memberName || '').toLowerCase().includes(q);
+        const matchesPhone = (s.customerPhone || '').toLowerCase().includes(q);
+        if (!matchesId && !matchesCust && !matchesPhone) return false;
+      }
+      return true;
+    });
+  }, [branchSales, filterMode, searchQuery]);
+
+  // Sales Table Columns
   const salesColumns: ColumnDefinition<Sale>[] = useMemo(() => [
     {
       key: 'id',
-      header: language === 'ar' ? 'رقم الوصل' : language === 'fr' ? 'N° Ticket' : 'Receipt #',
-      width: '1.4*',
-      minWidth: '130px',
+      header: language === 'ar' ? 'رقم الوصل' : 'Ticket #',
+      width: '140px',
       sortable: true,
       renderCell: (s) => (
         <div>
@@ -184,8 +194,7 @@ export const PosDashboardView: React.FC<PosDashboardViewProps> = () => {
     {
       key: 'customer',
       header: language === 'ar' ? 'الزبون / العميل' : language === 'fr' ? 'Client' : 'Customer',
-      width: '2*',
-      minWidth: '150px',
+      minWidth: '170px',
       sortable: true,
       renderCell: (s) => (
         <div>
@@ -203,8 +212,7 @@ export const PosDashboardView: React.FC<PosDashboardViewProps> = () => {
     {
       key: 'items',
       header: language === 'ar' ? 'المحتويات' : language === 'fr' ? 'Articles' : 'Items',
-      width: '2.5*',
-      minWidth: '180px',
+      minWidth: '200px',
       renderCell: (s) => (
         <div className="flex items-center gap-1.5 flex-wrap">
           {s.items.slice(0, 2).map((it, idx) => (
@@ -226,57 +234,62 @@ export const PosDashboardView: React.FC<PosDashboardViewProps> = () => {
     {
       key: 'tender',
       header: language === 'ar' ? 'طريقة الدفع' : language === 'fr' ? 'Règlement' : 'Tender',
-      width: '1.4*',
-      minWidth: '120px',
+      width: '130px',
       sortable: true,
       renderCell: (s) => {
         const isCash = s.paymentMethod === 'Cash';
         const isCard = s.paymentMethod === 'Card';
-        const isSplit = s.paymentMethod === 'Split';
         const label =
           isCash
             ? language === 'ar' ? 'نقداً (DZD)' : 'Espèces (DZD)'
             : isCard
             ? 'CIB / Edahabia'
-            : isSplit
-            ? language === 'ar' ? 'مختلط' : 'Multi-Règlement'
-            : 'BaridiMob / Virement';
+            : s.paymentMethod;
 
         return (
-          <span className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
-            {label}
-          </span>
+          <div className="flex items-center gap-1.5 text-xs">
+            {isCash ? (
+              <Banknote size={14} className="text-emerald-500 shrink-0" />
+            ) : isCard ? (
+              <CreditCard size={14} className="text-blue-500 shrink-0" />
+            ) : (
+              <Coins size={14} className="text-[#C4785A] shrink-0" />
+            )}
+            <span className="font-medium text-neutral-800 dark:text-neutral-200 truncate">
+              {label}
+            </span>
+          </div>
         );
       },
     },
     {
-      key: 'amount',
-      header: language === 'ar' ? 'المبلغ الإجمالي' : language === 'fr' ? 'Montant Total' : 'Amount Total',
-      width: '1.6*',
-      minWidth: '130px',
+      key: 'total',
+      header: language === 'ar' ? 'المبلغ الصافي' : language === 'fr' ? 'Total Payé' : 'Total Net',
+      width: '140px',
       sortable: true,
       renderCell: (s) => (
-        <span className="font-mono font-black text-sm text-[#C4785A] tabular-nums">
+        <span className="font-mono font-bold text-xs text-neutral-900 dark:text-white tabular-nums">
           {formatMoney(s.totalAmount)}
         </span>
       ),
     },
     {
       key: 'status',
-      header: language === 'ar' ? 'الحالة' : language === 'fr' ? 'État' : 'Status',
-      width: '1.2*',
-      minWidth: '110px',
+      header: language === 'ar' ? 'الحالة' : 'Statut',
+      width: '120px',
       sortable: true,
       renderCell: (s) => {
         const isRefunded = s.status === 'Refunded';
         return (
           <span
-            className={`text-[10px] font-bold uppercase tracking-wider ${
-              isRefunded ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400'
+            className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${
+              isRefunded
+                ? 'bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300'
+                : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
             }`}
           >
             {isRefunded
-              ? language === 'ar' ? 'مسترجع / Avoir' : 'Remboursé / Avoir'
+              ? language === 'ar' ? 'مسترجع (Avoir)' : 'Remboursé'
               : language === 'ar' ? 'مسدد' : 'Encaissé'}
           </span>
         );
@@ -285,18 +298,17 @@ export const PosDashboardView: React.FC<PosDashboardViewProps> = () => {
     {
       key: 'actions',
       header: '',
-      width: '1.8*',
-      minWidth: '140px',
+      width: '120px',
       renderCell: (s) => (
-        <div className="flex items-center gap-2 justify-end">
+        <div className="flex items-center justify-end gap-1">
           <button
             type="button"
             onClick={(e) => {
               e.stopPropagation();
               setSelectedSaleForReceipt(s);
             }}
-            className="h-8 px-2.5 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:border-[#C4785A] text-neutral-700 dark:text-neutral-200 text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
-            title="Reprint 80mm receipt"
+            className="h-8 px-2.5 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-xs font-semibold text-neutral-700 dark:text-neutral-200 flex items-center gap-1 cursor-pointer transition-colors"
+            title="Ticket Thermique 80mm"
           >
             <Printer size={13} className="text-[#C4785A]" />
             <span>{language === 'ar' ? 'وصل' : 'Reçu'}</span>
@@ -308,7 +320,7 @@ export const PosDashboardView: React.FC<PosDashboardViewProps> = () => {
                 e.stopPropagation();
                 setSelectedSaleForRefund(s);
               }}
-              className="h-8 px-2 rounded-lg text-neutral-400 hover:text-red-600 cursor-pointer transition-colors"
+              className="h-8 px-2 rounded-lg text-neutral-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer transition-colors"
               title="Refund / Avoir"
             >
               <RotateCcw size={13} />
@@ -356,8 +368,8 @@ export const PosDashboardView: React.FC<PosDashboardViewProps> = () => {
   };
 
   return (
-    <div className="space-y-6 pb-16" dir={isRtl ? 'rtl' : 'ltr'}>
-      {/* Printable Receipt CSS */}
+    <div className="space-y-6 animate-in fade-in duration-200">
+      {/* Thermal Receipt Print Stylesheet */}
       <style>{`
         @media print {
           body * {
@@ -381,170 +393,220 @@ export const PosDashboardView: React.FC<PosDashboardViewProps> = () => {
         }
       `}</style>
 
-      {/* Screen Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-black text-neutral-900 dark:text-white tracking-tight flex items-center gap-2.5">
-              <ShoppingBag className="text-[#C4785A]" size={26} />
-              <span>
-                {language === 'ar' ? 'لوحة قيادة المتجر والمبيعات' : language === 'fr' ? 'Tableau de Bord Caisse & Point de Vente' : 'Retail POS & Sales Command'}
-              </span>
-            </h1>
-            <span className="text-[11px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800">
-              {language === 'ar' ? 'الصندوق مفتوح' : 'Caisse Ouverte'}
-            </span>
+      {/* Outer Workspace Panel */}
+      <div className="bg-white dark:bg-[#18181B] rounded-[28px] border border-[#E9EEF0] dark:border-neutral-800 p-6 lg:p-8 space-y-6 shadow-xs">
+        
+        {/* Header Row */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
+          <div className="flex items-center gap-3.5">
+            <div className="w-11 h-11 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#C4785A]">
+              <ShoppingBag size={22} />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white">
+                  {language === 'ar' ? 'لوحة قيادة المتجر والمبيعات' : language === 'fr' ? 'Tableau de Bord Caisse & Point de Vente' : 'Retail POS & Sales Command'}
+                </h1>
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800">
+                  {language === 'ar' ? 'الصندوق مفتوح' : 'Caisse Ouverte'}
+                </span>
+              </div>
+              <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
+                {language === 'ar'
+                  ? 'مراقبة المبيعات الحية، رصيد الصندوق، المخزون الحرج، وإصدار وصلي 80 مم للزبائن'
+                  : 'Flux d’encaissements en temps réel, réconciliation du tiroir-caisse, valorisation du stock et audit des tickets.'}
+              </p>
+            </div>
           </div>
-          <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
-            {language === 'ar'
-              ? 'مراقبة المبيعات الحية، رصيد الصندوق، المخزون الحرج، وإصدار وصلي 80 مم للزبائن'
-              : 'Flux d’encaissements en temps réel, réconciliation du tiroir-caisse, valorisation du stock et audit des tickets.'}
-          </p>
-        </div>
 
-        {/* Quick Actions & 1-Click Demo Recharge */}
-        <div className="flex items-center gap-2.5 flex-wrap">
-          <AtriumButton
-            type="button"
-            variant="outline"
-            size="sm"
-            icon={<Sparkles size={14} className="text-[#C4785A]" />}
-            onClick={resetPosMockData}
-            title="Reload high-fidelity Algerian retail demo items and transactions"
-          >
-            {language === 'ar' ? 'إعادة شحن البيانات التجريبية' : 'Recharger Démo POS'}
-          </AtriumButton>
+          <div className="flex items-center gap-2.5 flex-wrap self-start sm:self-auto">
+            {/* Facility Pill */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setIsFacilityDropdownOpen(!isFacilityDropdownOpen)}
+                className="h-10 px-4 rounded-xl bg-[#F4EFEA] dark:bg-neutral-800/80 border border-[#E8DFD8] dark:border-neutral-700 flex items-center gap-2 cursor-pointer hover:bg-[#EFE8E1] dark:hover:bg-neutral-800 transition-colors shadow-2xs"
+              >
+                <Home size={15} className="text-[#C4785A]" />
+                <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
+                  {currentBranch?.name || 'Magasin Principal'}
+                </span>
+                <ChevronDown
+                  size={14}
+                  className={`text-neutral-500 transition-transform ${
+                    isFacilityDropdownOpen ? 'rotate-180' : ''
+                  }`}
+                />
+              </button>
 
-          <AtriumButton
-            type="button"
-            variant="secondary"
-            size="sm"
-            icon={<FileText size={14} className="text-[#C4785A]" />}
-            onClick={() => setIsZReportOpen(true)}
-          >
-            {language === 'ar' ? 'تقرير Z اليومي' : 'Rapport Z Clôture'}
-          </AtriumButton>
+              {isFacilityDropdownOpen && (
+                <div className="absolute right-0 rtl:right-auto rtl:left-0 mt-2 w-64 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
+                  <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+                    {language === 'ar' ? 'فروع ونقاط البيع' : 'Points de Vente & Magasins'}
+                  </div>
+                  {branches.map((b) => (
+                    <button
+                      key={b.id}
+                      onClick={() => {
+                        switchBranch(b.id);
+                        setIsFacilityDropdownOpen(false);
+                      }}
+                      className="w-full px-3 py-2 text-left rtl:text-right text-xs hover:bg-neutral-50 dark:hover:bg-neutral-700/50 flex items-center justify-between"
+                    >
+                      <span className="font-semibold text-neutral-800 dark:text-neutral-200">{b.name}</span>
+                      {b.id === currentBranch?.id && <span className="text-[#C4785A] text-xs">✓</span>}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
 
-          <AtriumButton
-            type="button"
-            variant="primary"
-            size="sm"
-            glow
-            icon={<Plus size={15} />}
-            onClick={() => setScreen('shop')}
-          >
-            {language === 'ar' ? 'فتح شاشة الصندوق (POS)' : 'Accéder à la Caisse'}
-          </AtriumButton>
-        </div>
-      </div>
+            {/* Demo Data Reset */}
+            <button
+              type="button"
+              onClick={resetPosMockData}
+              className="h-10 px-3.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-xs font-semibold text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700/60 flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
+              title="Recharger Démo POS"
+            >
+              <RefreshCw size={13} className="text-neutral-500" />
+              <span>{language === 'ar' ? 'بيانات تجريبية' : 'Démo POS'}</span>
+            </button>
 
-      {/* 4 Primary KPI Summary Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5">
-        {/* KPI 1: Today's Revenue */}
-        <div className="p-4 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-2xs space-y-1.5">
-          <div className="flex items-center justify-between text-neutral-400">
-            <span className="text-[10px] font-bold uppercase tracking-wider">
-              {language === 'ar' ? 'مبيعات اليوم' : language === 'fr' ? 'Chiffre d’Affaires du Jour' : 'Today’s Gross Revenue'}
-            </span>
-            <TrendingUp size={15} className="text-emerald-500" />
-          </div>
-          <div className="text-2xl font-black font-mono text-neutral-900 dark:text-white tabular-nums">
-            {formatMoney(posKpis.totalTodayRevenue)}
-          </div>
-          <div className="text-[11px] text-neutral-400 flex items-center gap-1.5">
-            <span className="text-emerald-600 font-bold">{posKpis.totalTransactions}</span>
-            <span>{language === 'ar' ? 'طلبات مسددة' : 'commandes réglées'}</span>
-          </div>
-        </div>
+            {/* Daily Z-Report Button */}
+            <AtriumButton
+              type="button"
+              variant="outline"
+              size="sm"
+              icon={<FileText size={14} className="text-[#C4785A]" />}
+              onClick={() => setIsZReportOpen(true)}
+            >
+              {language === 'ar' ? 'تقرير Z' : 'Rapport Z'}
+            </AtriumButton>
 
-        {/* KPI 2: Average Ticket Size */}
-        <div className="p-4 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-2xs space-y-1.5">
-          <div className="flex items-center justify-between text-neutral-400">
-            <span className="text-[10px] font-bold uppercase tracking-wider">
-              {language === 'ar' ? 'متوسط السلة' : language === 'fr' ? 'Panier Moyen' : 'Average Ticket Size'}
-            </span>
-            <Receipt size={15} className="text-[#C4785A]" />
-          </div>
-          <div className="text-2xl font-black font-mono text-[#C4785A] tabular-nums">
-            {formatMoney(posKpis.avgTicket)}
-          </div>
-          <div className="text-[11px] text-neutral-400">
-            {language === 'ar' ? 'متوسط قيمة الوصل الواحد' : 'Valeur moyenne par encaissement'}
-          </div>
-        </div>
-
-        {/* KPI 3: Inventory Retail Valuation */}
-        <div className="p-4 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-2xs space-y-1.5">
-          <div className="flex items-center justify-between text-neutral-400">
-            <span className="text-[10px] font-bold uppercase tracking-wider">
-              {language === 'ar' ? 'قيمة المخزون الإجمالية' : language === 'fr' ? 'Valeur Stock en Magasin' : 'Stock Retail Valuation'}
-            </span>
-            <Package size={15} className="text-blue-500" />
-          </div>
-          <div className="text-2xl font-black font-mono text-neutral-900 dark:text-white tabular-nums">
-            {formatMoney(posKpis.inventoryRetailValue)}
-          </div>
-          <div className="text-[11px] text-neutral-400 flex items-center gap-1.5">
-            <span className="font-mono text-neutral-500 font-bold">{posKpis.totalStockUnits}</span>
-            <span>{language === 'ar' ? 'وحدة فيزيائية متوفرة' : 'unités en stock'}</span>
+            {/* Access Register */}
+            <AtriumButton
+              type="button"
+              variant="primary"
+              size="sm"
+              icon={<Plus size={15} />}
+              onClick={() => setScreen('shop')}
+            >
+              {language === 'ar' ? 'شاشة الصندوق (POS)' : 'Accéder à la Caisse'}
+            </AtriumButton>
           </div>
         </div>
 
-        {/* KPI 4: Low Stock Warnings */}
-        <div className="p-4 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-2xs space-y-1.5">
-          <div className="flex items-center justify-between text-neutral-400">
-            <span className="text-[10px] font-bold uppercase tracking-wider">
-              {language === 'ar' ? 'تنبيهات المخزون الحرج' : language === 'fr' ? 'Alertes Réassort & Rupture' : 'Restock / Depletion'}
-            </span>
-            <AlertTriangle size={15} className="text-amber-500" />
-          </div>
-          <div className="text-2xl font-black font-mono text-amber-600 dark:text-amber-400 tabular-nums flex items-center gap-2">
-            <span>{posKpis.lowStockCount}</span>
-            {posKpis.outOfStockCount > 0 && (
-              <span className="text-xs text-red-500 font-bold">
-                ({posKpis.outOfStockCount} {language === 'ar' ? 'نفد' : 'ruptures'})
-              </span>
-            )}
-          </div>
-          <button
-            type="button"
-            onClick={() => setScreen('scheduler')}
-            className="text-[11px] font-bold text-[#C4785A] hover:underline flex items-center gap-1 cursor-pointer"
-          >
-            <span>{language === 'ar' ? 'فتح جدول المخزون' : 'Gérer l’inventaire'}</span>
-            <ArrowRight size={12} className={isRtl ? 'rotate-180' : ''} />
-          </button>
-        </div>
-      </div>
+        {/* Top Metrics Pod Tray (SurfaceBgElevated: #F8F9FA, CornerRadius 24px) */}
+        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            
+            {/* Card 1: Today's Gross Revenue */}
+            <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
+                  {language === 'ar' ? 'مبيعات اليوم المحققة' : 'Chiffre d’Affaires du Jour'}
+                </span>
+                <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#C4785A]/10 text-[#C4785A]">
+                  {posKpis.totalTransactions} tickets réglés
+                </span>
+              </div>
+              <div className="mt-3">
+                <div className="text-2xl lg:text-3xl font-extrabold text-neutral-900 dark:text-neutral-100 font-mono">
+                  {formatMoney(posKpis.totalTodayRevenue)}
+                </div>
+                <div className="flex items-center gap-1.5 text-[11px] text-neutral-500 mt-1">
+                  <Receipt size={13} className="text-[#C4785A]" />
+                  <span>Panier Moyen: <strong className="font-mono text-neutral-800 dark:text-neutral-200">{formatMoney(posKpis.avgTicket)}</strong></span>
+                </div>
+              </div>
+            </div>
 
-      {/* Two Column Grid: Tender Breakdown & Fast Operational Shortcuts */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-        {/* Left 7 cols: Payment Method Breakdown & Top Sellers */}
-        <div className="lg:col-span-7 space-y-5">
-          {/* Payment Method Distribution */}
-          <div className="p-5 rounded-3xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-2xs space-y-4">
+            {/* Card 2: Inventory Valuation & Stock Alerts */}
+            <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
+                  {language === 'ar' ? 'قيمة مخزون المتجر' : 'Valeur Stock en Magasin'}
+                </span>
+                <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-neutral-100 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300">
+                  {posKpis.totalStockUnits} unités
+                </span>
+              </div>
+              <div className="mt-3">
+                <div className="text-2xl lg:text-3xl font-extrabold text-neutral-900 dark:text-neutral-100 font-mono">
+                  {formatMoney(posKpis.inventoryRetailValue)}
+                </div>
+                <div className="flex items-center gap-1.5 text-[11px] text-neutral-500 mt-1">
+                  {posKpis.lowStockCount > 0 ? (
+                    <span className="text-rose-500 font-semibold flex items-center gap-1">
+                      <AlertTriangle size={13} />
+                      {posKpis.lowStockCount} article(s) en alerte réassort
+                    </span>
+                  ) : (
+                    <span className="text-emerald-500 font-medium flex items-center gap-1">
+                      <CheckCircle2 size={13} />
+                      Niveaux d'inventaire complets
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Card 3: DARK ESPRESSO ANCHOR CARD (#1F1D1B) */}
+            <div className="bg-[#1F1D1B] rounded-[18px] p-4 lg:p-5 border border-neutral-800 shadow-sm text-white flex flex-col justify-between relative overflow-hidden group">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-[#E7E5E4]">
+                  {language === 'ar' ? 'رصيد درج النقود المتوقع' : 'Tiroir-Caisse & Espèces en Session'}
+                </span>
+                <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30 uppercase tracking-wider">
+                  Session Active
+                </span>
+              </div>
+              <div className="mt-3">
+                <div className="text-2xl lg:text-3xl font-extrabold text-white font-mono tracking-tight">
+                  {formatMoney(posKpis.expectedCashInDrawer)}
+                </div>
+                <div className="flex items-center justify-between text-[11px] text-stone-400 mt-1.5">
+                  <span className="flex items-center gap-1">
+                    <Banknote size={12} className="text-[#FB923C]" />
+                    <span>Fond 15k DA + {formatMoney(posKpis.cashVolume)} encaissés</span>
+                  </span>
+                  <span className="font-mono text-stone-300">DZD</span>
+                </div>
+              </div>
+
+              {/* Decorative Subtle Background Sparkline */}
+              <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-[#FB923C]/5 rounded-full blur-2xl pointer-events-none" />
+            </div>
+
+          </div>
+        </div>
+
+        {/* Operational Pod Section: Payment Breakdown & Fast Access */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+          {/* Payment Method Breakdown (7 cols) */}
+          <div className="lg:col-span-7 bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-sm font-black text-neutral-900 dark:text-white uppercase tracking-wider">
+                <h3 className="text-sm font-bold text-neutral-900 dark:text-white uppercase tracking-wider">
                   {language === 'ar' ? 'توزيع المقبوضات حسب وسيلة الدفع' : 'Répartition des Encaissements'}
                 </h3>
                 <p className="text-[11px] text-neutral-400">
                   {language === 'ar' ? 'إجمالي المبالغ المحصلة في صندوق المحل اليوم' : 'Total ventilé par mode de paiement aujourd’hui'}
                 </p>
               </div>
-              <span className="font-mono text-xs font-bold text-neutral-500">
+              <span className="font-mono text-xs font-bold text-[#C4785A]">
                 {formatMoney(posKpis.totalTodayRevenue)}
               </span>
             </div>
 
             <div className="grid grid-cols-3 gap-3">
               {/* Cash */}
-              <div className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-800 space-y-1">
+              <div className="p-3.5 rounded-[18px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 space-y-1 shadow-2xs">
                 <div className="flex items-center gap-1.5 text-neutral-500 text-[10px] font-bold uppercase">
                   <Banknote size={13} className="text-emerald-500" />
                   <span>{language === 'ar' ? 'نقداً (Espèces)' : 'Espèces'}</span>
                 </div>
-                <div className="text-base font-black font-mono text-neutral-900 dark:text-white tabular-nums">
+                <div className="text-sm lg:text-base font-extrabold font-mono text-neutral-900 dark:text-white tabular-nums">
                   {formatMoney(posKpis.cashVolume)}
                 </div>
                 <div className="text-[10px] text-neutral-400">
@@ -554,13 +616,13 @@ export const PosDashboardView: React.FC<PosDashboardViewProps> = () => {
                 </div>
               </div>
 
-              {/* Card CIB / Edahabia */}
-              <div className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-800 space-y-1">
+              {/* Card */}
+              <div className="p-3.5 rounded-[18px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 space-y-1 shadow-2xs">
                 <div className="flex items-center gap-1.5 text-neutral-500 text-[10px] font-bold uppercase">
                   <CreditCard size={13} className="text-blue-500" />
                   <span>CIB / Edahabia</span>
                 </div>
-                <div className="text-base font-black font-mono text-neutral-900 dark:text-white tabular-nums">
+                <div className="text-sm lg:text-base font-extrabold font-mono text-neutral-900 dark:text-white tabular-nums">
                   {formatMoney(posKpis.cardVolume)}
                 </div>
                 <div className="text-[10px] text-neutral-400">
@@ -571,12 +633,12 @@ export const PosDashboardView: React.FC<PosDashboardViewProps> = () => {
               </div>
 
               {/* BaridiMob & Transfers */}
-              <div className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-800 space-y-1">
+              <div className="p-3.5 rounded-[18px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 space-y-1 shadow-2xs">
                 <div className="flex items-center gap-1.5 text-neutral-500 text-[10px] font-bold uppercase">
                   <Coins size={13} className="text-[#C4785A]" />
                   <span>BaridiMob / Mix</span>
                 </div>
-                <div className="text-base font-black font-mono text-neutral-900 dark:text-white tabular-nums">
+                <div className="text-sm lg:text-base font-extrabold font-mono text-neutral-900 dark:text-white tabular-nums">
                   {formatMoney(posKpis.baridiMobVolume + posKpis.splitVolume)}
                 </div>
                 <div className="text-[10px] text-neutral-400">
@@ -586,256 +648,258 @@ export const PosDashboardView: React.FC<PosDashboardViewProps> = () => {
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* Top Selling Products */}
-          <div className="p-5 rounded-3xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-2xs space-y-3">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-black text-neutral-900 dark:text-white uppercase tracking-wider">
-                {language === 'ar' ? 'أكثر الأصناف مبيعاً' : 'Articles les Plus Vendus'}
-              </h3>
-              <button
-                type="button"
-                onClick={() => setScreen('scheduler')}
-                className="text-xs font-bold text-[#C4785A] hover:underline cursor-pointer"
-              >
-                {language === 'ar' ? 'كامل الكتالوج' : 'Voir tout le catalogue'}
-              </button>
-            </div>
-
-            <div className="divide-y divide-neutral-100 dark:divide-neutral-800">
-              {topProducts.length === 0 ? (
-                <div className="py-6 text-center text-xs text-neutral-400">
-                  {language === 'ar' ? 'لا توجد بيانات مبيعات مسجلة حتى الآن.' : 'Aucune vente enregistrée pour le moment.'}
-                </div>
-              ) : (
-                topProducts.map((item, idx) => (
-                  <div key={idx} className="py-2.5 flex items-center justify-between gap-3 text-xs">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <span className="w-5 h-5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-[10px] font-mono font-bold flex items-center justify-center text-neutral-500 shrink-0">
+            {/* Top Selling Products List */}
+            <div className="pt-2">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 block mb-2">
+                {language === 'ar' ? 'أكثر الأصناف مبيعاً' : 'Top Articles Vendus Aujourd’hui'}
+              </span>
+              <div className="space-y-1.5">
+                {topProducts.map((item, idx) => (
+                  <div key={idx} className="p-2.5 rounded-xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <span className="w-5 h-5 rounded-full bg-neutral-100 dark:bg-neutral-700 text-[10px] font-mono font-bold flex items-center justify-center text-neutral-500 shrink-0">
                         0{idx + 1}
                       </span>
-                      <div className="min-w-0">
-                        <div className="font-bold text-neutral-900 dark:text-white truncate">
-                          {item.name}
-                        </div>
-                        <div className="text-[10px] text-neutral-400">
-                          {item.units} {language === 'ar' ? 'وحدة مباعة' : 'unités vendues'}
-                        </div>
-                      </div>
+                      <span className="font-bold text-neutral-900 dark:text-neutral-100 truncate">{item.name}</span>
+                      <span className="text-[10px] text-neutral-400">({item.units} vendus)</span>
                     </div>
-                    <div className={`font-mono font-bold text-[#C4785A] tabular-nums shrink-0 ${isRtl ? 'text-left' : 'text-right'}`}>
-                      {formatMoney(item.revenue)}
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Right 5 cols: Cash Drawer & Parked Tickets Fast Access */}
-        <div className="lg:col-span-5 space-y-5">
-          {/* Cash Drawer Status Card */}
-          <div className="p-5 rounded-3xl bg-neutral-900 text-white border border-neutral-800 shadow-sm space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Banknote size={18} className="text-[#C4785A]" />
-                <h3 className="text-xs font-black uppercase tracking-wider text-neutral-300">
-                  {language === 'ar' ? 'حالة درج النقود (Tiroir-Caisse)' : 'Tiroir-Caisse & Session'}
-                </h3>
-              </div>
-              <span className="text-[10px] font-mono text-emerald-400 bg-emerald-950/80 px-2 py-0.5 rounded-full">
-                {language === 'ar' ? 'نشط' : 'Actif'}
-              </span>
-            </div>
-
-            <div className="space-y-2 py-1">
-              <div className="flex justify-between text-xs text-neutral-400">
-                <span>{language === 'ar' ? 'رصيد الفتح (Fond initial) :' : 'Fond de caisse initial :'}</span>
-                <span className="font-mono text-white font-bold">15 000 DA</span>
-              </div>
-              <div className="flex justify-between text-xs text-neutral-400">
-                <span>{language === 'ar' ? 'المقبوض نقداً اليوم :' : 'Espèces collectées aujourd’hui :'}</span>
-                <span className="font-mono text-emerald-400 font-bold">+{formatMoney(posKpis.cashVolume)}</span>
-              </div>
-              <div className="flex justify-between items-baseline pt-2 border-t border-neutral-800 text-sm font-black">
-                <span>{language === 'ar' ? 'المبلغ التقديري بالدرج :' : 'Espèces attendues en caisse :'}</span>
-                <span className="font-mono text-xl text-[#C4785A] tabular-nums">
-                  {formatMoney(15000 + posKpis.cashVolume)}
-                </span>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => setScreen('finance')}
-              className="w-full py-2.5 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-white text-xs font-bold flex items-center justify-center gap-2 cursor-pointer transition-colors"
-            >
-              <span>{language === 'ar' ? 'إجراء الجرد والتسوية المالية' : 'Gérer la Caisse & Dépenses'}</span>
-              <ArrowRight size={13} className={isRtl ? 'rotate-180' : ''} />
-            </button>
-          </div>
-
-          {/* Parked / Held Tickets Card */}
-          <div className="p-5 rounded-3xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-2xs space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Clock size={16} className="text-amber-500" />
-                <h3 className="text-xs font-black uppercase tracking-wider text-neutral-700 dark:text-neutral-300">
-                  {language === 'ar' ? 'التذاكر المعلقة (En Attente)' : 'Tickets en Attente'}
-                </h3>
-              </div>
-              <span className="font-mono text-xs font-bold bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 px-2 py-0.5 rounded-full">
-                {parkedOrders.length}
-              </span>
-            </div>
-
-            {parkedOrders.length === 0 ? (
-              <p className="text-xs text-neutral-400 py-3 text-center">
-                {language === 'ar' ? 'لا توجد طلبات معلقة حالياً.' : 'Aucun ticket mis en pause.'}
-              </p>
-            ) : (
-              <div className="space-y-2">
-                {parkedOrders.slice(0, 3).map((po) => (
-                  <div
-                    key={po.id}
-                    className="p-3 rounded-2xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-800 flex items-center justify-between gap-3 text-xs"
-                  >
-                    <div>
-                      <div className="font-bold text-neutral-900 dark:text-white">
-                        {po.referenceName}
-                      </div>
-                      <div className="text-[10px] text-neutral-400">
-                        {po.items.length} {language === 'ar' ? 'أصناف' : 'articles'} · {new Date(po.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono font-bold text-[#C4785A]">
-                        {formatMoney(po.totalAmount)}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          resumeParkedOrder(po.id);
-                          setScreen('shop');
-                        }}
-                        className="p-1.5 rounded-lg bg-[#C4785A] text-white hover:opacity-90 cursor-pointer"
-                        title="Resume in register"
-                      >
-                        <PlayCircle size={14} />
-                      </button>
-                    </div>
+                    <span className="font-mono font-bold text-[#C4785A]">{formatMoney(item.revenue)}</span>
                   </div>
                 ))}
               </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Recent Sales Ledger via UniversalDataCollection */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-base font-black text-neutral-900 dark:text-white">
-              {language === 'ar' ? 'سجل العمليات والوصولات الأخيرة' : 'Journal Récent des Ventes'}
-            </h2>
-            <p className="text-xs text-neutral-500">
-              {language === 'ar' ? 'جميع مبيعات نقطة البيع المسجلة في هذا الفرع' : 'Historique des encaissements horodatés avec réimpression thermique 80mm.'}
-            </p>
+            </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          {/* Parked Tickets & Quick Resume (5 cols) */}
+          <div className="lg:col-span-5 bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <Clock size={16} className="text-amber-500" />
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-700 dark:text-neutral-300">
+                    {language === 'ar' ? 'التذاكر المعلقة (En Attente)' : 'Tickets en Attente'}
+                  </h3>
+                </div>
+                <span className="font-mono text-xs font-bold bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 px-2 py-0.5 rounded-full">
+                  {parkedOrders.length}
+                </span>
+              </div>
+
+              {parkedOrders.length === 0 ? (
+                <div className="p-6 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 text-center text-xs text-neutral-400">
+                  {language === 'ar' ? 'لا توجد طلبات معلقة حالياً.' : 'Aucun ticket mis en pause.'}
+                </div>
+              ) : (
+                <div className="space-y-2 max-h-56 overflow-y-auto">
+                  {parkedOrders.map((po) => (
+                    <div
+                      key={po.id}
+                      className="p-3 rounded-xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex items-center justify-between gap-3 text-xs shadow-2xs"
+                    >
+                      <div>
+                        <div className="font-bold text-neutral-900 dark:text-white">
+                          {po.referenceName}
+                        </div>
+                        <div className="text-[10px] text-neutral-400">
+                          {po.items.length} {language === 'ar' ? 'أصناف' : 'articles'} · {new Date(po.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono font-bold text-[#C4785A]">
+                          {formatMoney(po.totalAmount)}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            resumeParkedOrder(po.id);
+                            setScreen('shop');
+                          }}
+                          className="p-1.5 rounded-lg bg-[#C4785A] text-white hover:opacity-90 cursor-pointer"
+                          title="Reprendre en caisse"
+                        >
+                          <PlayCircle size={14} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <button
               type="button"
-              onClick={handleExportSalesCSV}
-              className="h-9 px-3.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-700 dark:text-neutral-200 text-xs font-bold flex items-center gap-1.5 hover:bg-neutral-50 dark:hover:bg-neutral-800 cursor-pointer transition-colors"
+              onClick={() => setScreen('shop')}
+              className="w-full py-2.5 rounded-xl bg-[#C4785A] text-white text-xs font-bold flex items-center justify-center gap-2 cursor-pointer hover:opacity-95 shadow-xs transition-opacity mt-4"
             >
-              <FileText size={13} />
-              <span>{language === 'ar' ? 'تصدير CSV' : 'Export CSV'}</span>
+              <Plus size={14} />
+              <span>{language === 'ar' ? 'فتح عملية بيع جديدة' : 'Nouvel Encaissement'}</span>
             </button>
           </div>
         </div>
 
-        <UniversalDataCollection<Sale>
-          items={branchSales}
-          keyExtractor={(s) => s.id}
-          defaultViewMode="list"
-          columns={salesColumns}
-          onItemClick={(s) => setSelectedSaleForReceipt(s)}
-          renderCard={(s) => {
-            const isRefunded = s.status === 'Refunded';
-            return (
-              <div className="flex flex-col justify-between h-full space-y-3">
-                <div>
-                  <div className="flex items-start justify-between gap-2 mb-2">
+        {/* Bottom Collection Pod Tray (SurfaceBgElevated: #F8F9FA) */}
+        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+          
+          {/* Controls Bar: Segment Tabs + Seek Search + Export */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+            {/* Segment Capsules */}
+            <div className="flex items-center gap-1.5 bg-neutral-200/60 dark:bg-neutral-800 p-1 rounded-2xl self-start">
+              <button
+                type="button"
+                onClick={() => setFilterMode('all')}
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
+                  filterMode === 'all'
+                    ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-xs'
+                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
+                }`}
+              >
+                <span>{language === 'ar' ? 'جميع المبيعات' : 'Toutes les Ventes'}</span>
+                <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono ${
+                  filterMode === 'all' ? 'bg-[#C4785A]/15 text-[#C4785A]' : 'bg-neutral-300/60 dark:bg-neutral-700 text-neutral-500'
+                }`}>
+                  {branchSales.length}
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setFilterMode('today')}
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
+                  filterMode === 'today'
+                    ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-xs'
+                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
+                }`}
+              >
+                <span>{language === 'ar' ? 'مبيعات اليوم' : 'Aujourd’hui'}</span>
+                <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono ${
+                  filterMode === 'today' ? 'bg-[#C4785A]/15 text-[#C4785A]' : 'bg-neutral-300/60 dark:bg-neutral-700 text-neutral-500'
+                }`}>
+                  {todaySales.length}
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setFilterMode('refunded')}
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
+                  filterMode === 'refunded'
+                    ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-xs'
+                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
+                }`}
+              >
+                <span>{language === 'ar' ? 'المسترجعة' : 'Avoirs'}</span>
+                <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono ${
+                  filterMode === 'refunded' ? 'bg-[#C4785A]/15 text-[#C4785A]' : 'bg-neutral-300/60 dark:bg-neutral-700 text-neutral-500'
+                }`}>
+                  {branchSales.filter((s) => s.status === 'Refunded').length}
+                </span>
+              </button>
+            </div>
+
+            <div className="flex items-center gap-2 self-end sm:self-auto">
+              <Seek
+                value={searchQuery}
+                onChange={setSearchQuery}
+                placeholder={language === 'ar' ? 'بحث برقم الوصل، الزبون...' : 'Filtrer N° ticket, client...'}
+                shutSize={36}
+                openWidth={260}
+              />
+              <button
+                type="button"
+                onClick={handleExportSalesCSV}
+                className="h-9 px-3.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-200 text-xs font-bold flex items-center gap-1.5 hover:bg-neutral-50 dark:hover:bg-neutral-700/60 cursor-pointer transition-colors shadow-2xs"
+              >
+                <FileText size={13} />
+                <span>{language === 'ar' ? 'تصدير' : 'Export CSV'}</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Table Container Inside Pod Tray */}
+          <div className="bg-white dark:bg-neutral-800 rounded-[18px] border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs overflow-hidden">
+            <UniversalDataCollection<Sale>
+              items={filteredSales}
+              keyExtractor={(s) => s.id}
+              defaultViewMode="list"
+              columns={salesColumns}
+              onItemClick={(s) => setSelectedSaleForReceipt(s)}
+              renderCard={(s) => {
+                const isRefunded = s.status === 'Refunded';
+                return (
+                  <div className="flex flex-col justify-between h-full space-y-3">
                     <div>
-                      <span className="font-mono font-bold text-xs text-neutral-900 dark:text-white block">
-                        #{s.id.slice(-6).toUpperCase()}
-                      </span>
-                      <span className="text-[10px] text-neutral-400 font-mono">
-                        {new Date(s.createdAt).toLocaleString()}
-                      </span>
-                    </div>
-                    <span
-                      className={`text-[10px] font-bold uppercase tracking-wider ${
-                        isRefunded ? 'text-red-600' : 'text-emerald-600'
-                      }`}
-                    >
-                      {isRefunded ? 'Remboursé' : 'Encaissé'}
-                    </span>
-                  </div>
-
-                  <div className="text-xs font-bold text-neutral-800 dark:text-neutral-200 mb-1">
-                    {s.memberName || 'Client de Passage'}
-                  </div>
-
-                  <div className="text-xs bg-neutral-50 dark:bg-neutral-800/50 p-2 rounded-xl space-y-0.5 text-neutral-600 dark:text-neutral-300">
-                    {s.items.map((it, idx) => (
-                      <div key={idx} className="flex justify-between text-[11px]">
-                        <span>{it.quantity}x {it.productName}</span>
-                        <span className="font-mono">{formatMoney(it.totalPrice)}</span>
+                      <div className="flex items-start justify-between gap-2 mb-2">
+                        <div>
+                          <span className="font-mono font-bold text-xs text-neutral-900 dark:text-white block">
+                            #{s.id.slice(-6).toUpperCase()}
+                          </span>
+                          <span className="text-[10px] text-neutral-400 font-mono">
+                            {new Date(s.createdAt).toLocaleString()}
+                          </span>
+                        </div>
+                        <span
+                          className={`text-[10px] font-bold uppercase tracking-wider ${
+                            isRefunded ? 'text-rose-600' : 'text-emerald-600'
+                          }`}
+                        >
+                          {isRefunded ? 'Remboursé' : 'Encaissé'}
+                        </span>
                       </div>
-                    ))}
-                  </div>
-                </div>
 
-                <div className="flex items-center justify-between pt-2 border-t border-neutral-100 dark:border-neutral-800">
-                  <span className="font-mono font-black text-sm text-[#C4785A] tabular-nums">
-                    {formatMoney(s.totalAmount)}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSelectedSaleForReceipt(s);
-                    }}
-                    className="h-7 px-2.5 rounded-lg border border-neutral-200 dark:border-neutral-700 text-xs font-bold flex items-center gap-1 cursor-pointer"
-                  >
-                    <Printer size={12} className="text-[#C4785A]" />
-                    <span>Reçu</span>
-                  </button>
-                </div>
-              </div>
-            );
-          }}
-          selectedIds={selectedSaleIds}
-          onSelectionChange={setSelectedSaleIds}
-          isPinned={(s) => pinnedSaleIds.has(s.id)}
-          onTogglePin={(s) => {
-            setPinnedSaleIds((prev) => {
-              const next = new Set(prev);
-              if (next.has(s.id)) next.delete(s.id);
-              else next.add(s.id);
-              return next;
-            });
-          }}
-          emptyTitle={language === 'ar' ? 'لا توجد مبيعات مسجلة' : 'Aucune vente enregistrée'}
-          emptyDescription={language === 'ar' ? 'قم بفتح شاشة الصندوق لبدء تسجيل العمليات' : 'Ouvrez la caisse enregistreuse pour débuter les encaissements.'}
-          primaryActionLabel={language === 'ar' ? 'شاشة الصندوق' : 'Ouvrir Caisse'}
-          onAddFirstItem={() => setScreen('shop')}
-        />
+                      <div className="text-xs font-bold text-neutral-800 dark:text-neutral-200 mb-1">
+                        {s.memberName || 'Client de Passage'}
+                      </div>
+
+                      <div className="text-xs bg-neutral-50 dark:bg-neutral-800/50 p-2 rounded-xl space-y-0.5 text-neutral-600 dark:text-neutral-300">
+                        {s.items.map((it, idx) => (
+                          <div key={idx} className="flex justify-between text-[11px]">
+                            <span>{it.quantity}x {it.productName}</span>
+                            <span className="font-mono">{formatMoney(it.totalPrice)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-2 border-t border-neutral-100 dark:border-neutral-800">
+                      <span className="font-mono font-black text-sm text-[#C4785A] tabular-nums">
+                        {formatMoney(s.totalAmount)}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedSaleForReceipt(s);
+                        }}
+                        className="h-7 px-2.5 rounded-lg border border-neutral-200 dark:border-neutral-700 text-xs font-bold flex items-center gap-1 cursor-pointer"
+                      >
+                        <Printer size={12} className="text-[#C4785A]" />
+                        <span>Reçu</span>
+                      </button>
+                    </div>
+                  </div>
+                );
+              }}
+              selectedIds={selectedSaleIds}
+              onSelectionChange={setSelectedSaleIds}
+              isPinned={(s) => pinnedSaleIds.has(s.id)}
+              onTogglePin={(s) => {
+                setPinnedSaleIds((prev) => {
+                  const next = new Set(prev);
+                  if (next.has(s.id)) next.delete(s.id);
+                  else next.add(s.id);
+                  return next;
+                });
+              }}
+              emptyTitle={language === 'ar' ? 'لا توجد مبيعات مسجلة' : 'Aucune vente enregistrée'}
+              emptyDescription={language === 'ar' ? 'قم بفتح شاشة الصندوق لبدء تسجيل العمليات' : 'Ouvrez la caisse enregistreuse pour débuter les encaissements.'}
+              primaryActionLabel={language === 'ar' ? 'شاشة الصندوق' : 'Ouvrir Caisse'}
+              onAddFirstItem={() => setScreen('shop')}
+            />
+          </div>
+
+        </div>
+
       </div>
 
       {/* MODAL: Thermal Receipt Reprint Slip */}

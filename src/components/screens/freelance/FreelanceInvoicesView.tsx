@@ -513,13 +513,31 @@ export const FreelanceInvoicesView: React.FC = () => {
                   type="button"
                   onClick={() => {
                     setIsQuickActionsOpen(false);
-                    billUnbilledHours();
-                    showToast({
-                      type: 'success',
-                      title: language === 'ar' ? 'فوترة الساعات' : 'Bill Hours',
-                      message: language === 'ar' ? 'تم تحويل الساعات غير المفوترة إلى مسودات' : 'Unbilled hours drafted into invoices',
-                      category: 'freelance_solo',
-                    });
+                    const clientsWithUnbilled = freelanceClients.filter((c) =>
+                      timeLogs.some((t) => t.clientId === c.id && t.isBillable && !t.isInvoiced)
+                    );
+                    if (clientsWithUnbilled.length > 0) {
+                      clientsWithUnbilled.forEach((c) => {
+                        try {
+                          billUnbilledHours(c.id);
+                        } catch (err) {
+                          console.error(err);
+                        }
+                      });
+                      showToast({
+                        type: 'success',
+                        title: language === 'ar' ? 'فوترة الساعات' : 'Bill Hours',
+                        message: language === 'ar' ? 'تم تحويل الساعات غير المفوترة إلى مسودات' : 'Unbilled hours drafted into invoices',
+                        category: 'freelance_solo',
+                      });
+                    } else {
+                      showToast({
+                        type: 'info',
+                        title: language === 'ar' ? 'لا توجد ساعات' : 'No Unbilled Hours',
+                        message: language === 'ar' ? 'لا توجد ساعات غير مفوترة حالياً' : 'All billable hours are already invoiced',
+                        category: 'freelance_solo',
+                      });
+                    }
                   }}
                   className="w-full h-10 px-2.5 rounded-xl hover:bg-[#F8F9FA] dark:hover:bg-neutral-700 flex items-center gap-2.5 text-xs text-neutral-800 dark:text-neutral-200 font-medium transition-colors cursor-pointer text-left rtl:text-right"
                 >

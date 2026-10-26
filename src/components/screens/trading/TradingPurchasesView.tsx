@@ -11,6 +11,10 @@ import {
   Trash2,
   AlertCircle,
   X,
+  Home,
+  ChevronDown,
+  RefreshCw,
+  ShoppingBag,
 } from 'lucide-react';
 import { useAtriumStore } from '../../../services/store';
 import { PurchaseDocument, PurchaseDocType, CommercialDocument } from '../../../types';
@@ -36,12 +40,17 @@ export const TradingPurchasesView: React.FC = () => {
     receivePurchaseDoc,
     currentBusiness,
     currentBranchId,
+    currentBranch,
+    branches,
+    switchBranch,
+    resetTradingMockData,
   } = useAtriumStore();
 
   const [activeTab, setActiveTab] = useState<PurchaseTab>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [isPoModalOpen, setIsPoModalOpen] = useState(false);
   const [printDoc, setPrintDoc] = useState<CommercialDocument | null>(null);
+  const [isFacilityDropdownOpen, setIsFacilityDropdownOpen] = useState(false);
 
   const commercialDocFromPurchase = (p: PurchaseDocument): CommercialDocument => ({
     id: p.id,
@@ -85,6 +94,36 @@ export const TradingPurchasesView: React.FC = () => {
     tenantId: p.tenantId,
     facilityId: p.facilityId,
   });
+
+  // Metrics
+  const metrics = useMemo(() => {
+    const totalPurchasesTtc = purchaseDocs.reduce((sum, p) => sum + (p.totalTtc || 0), 0);
+    const pendingPoList = purchaseDocs.filter((p) => p.type === 'po' && p.status === 'Ordered');
+    const pendingPoTtc = pendingPoList.reduce((sum, p) => sum + (p.totalTtc || 0), 0);
+    const receivedBrList = purchaseDocs.filter((p) => p.type === 'br' || p.status === 'Received');
+    const receivedBrTtc = receivedBrList.reduce((sum, p) => sum + (p.totalTtc || 0), 0);
+
+    const receivedRatio = purchaseDocs.length > 0 ? (receivedBrList.length / purchaseDocs.length) * 100 : 100;
+
+    return {
+      totalPurchasesTtc,
+      pendingPoCount: pendingPoList.length,
+      pendingPoTtc,
+      receivedBrCount: receivedBrList.length,
+      receivedBrTtc,
+      receivedRatio,
+    };
+  }, [purchaseDocs]);
+
+  // Tab counts
+  const tabCounts = useMemo(() => {
+    return {
+      all: purchaseDocs.length,
+      po: purchaseDocs.filter((p) => p.type === 'po').length,
+      br: purchaseDocs.filter((p) => p.type === 'br').length,
+      facture_fournisseur: purchaseDocs.filter((p) => p.type === 'facture_fournisseur').length,
+    };
+  }, [purchaseDocs]);
 
   // New PO state
   const [supplierId, setSupplierId] = useState(b2bSuppliers[0]?.id || '');
@@ -170,7 +209,7 @@ export const TradingPurchasesView: React.FC = () => {
             <span className={`px-2 py-0.5 rounded text-[10px] font-bold font-mono uppercase ${badgeColor}`}>
               {doc.type === 'po' ? 'PO' : doc.type === 'br' ? 'BR' : 'FF'}
             </span>
-            <span className="font-mono font-bold text-xs text-stone-900 dark:text-stone-100">
+            <span className="font-mono font-bold text-xs text-neutral-900 dark:text-neutral-100">
               {doc.docNumber}
             </span>
           </div>
@@ -182,7 +221,7 @@ export const TradingPurchasesView: React.FC = () => {
       header: t('trading_purchases_col_order_delivery', 'Date Commande'),
       width: '130px',
       renderCell: (doc) => (
-        <span className="text-xs font-mono text-stone-700 dark:text-stone-300">
+        <span className="text-xs font-mono text-neutral-700 dark:text-neutral-300">
           {doc.orderDate}
         </span>
       ),
@@ -193,10 +232,10 @@ export const TradingPurchasesView: React.FC = () => {
       minWidth: '220px',
       renderCell: (doc) => (
         <div className="text-xs">
-          <span className="font-bold text-stone-900 dark:text-stone-100 block">
+          <span className="font-bold text-neutral-900 dark:text-neutral-100 block">
             {doc.supplierName}
           </span>
-          <span className="text-[10px] text-stone-400 font-mono">
+          <span className="text-[10px] text-neutral-400 font-mono">
             {t('trading_sales_col_depot', 'Dépôt')} : {doc.depotName || 'Dépôt Central'}
           </span>
         </div>
@@ -205,9 +244,9 @@ export const TradingPurchasesView: React.FC = () => {
     {
       key: 'itemsCount',
       header: language === 'ar' ? 'البنود' : 'Lignes',
-      width: '90px',
+      width: '100px',
       renderCell: (doc) => (
-        <span className="text-xs font-mono text-stone-500">
+        <span className="text-xs font-mono text-neutral-500">
           {doc.items.length} {language === 'ar' ? 'بند' : 'article(s)'}
         </span>
       ),
@@ -215,9 +254,9 @@ export const TradingPurchasesView: React.FC = () => {
     {
       key: 'totalTtc',
       header: t('trading_composer_total_ttc', 'Montant Total TTC'),
-      width: '140px',
+      width: '150px',
       renderCell: (doc) => (
-        <span className="font-mono font-bold text-xs text-stone-900 dark:text-stone-100 tabular-nums">
+        <span className="font-mono font-bold text-xs text-neutral-900 dark:text-neutral-100 tabular-nums">
           {formatMoney(doc.totalTtc)}
         </span>
       ),
@@ -246,13 +285,13 @@ export const TradingPurchasesView: React.FC = () => {
     {
       key: 'actions',
       header: '',
-      width: '160px',
+      width: '170px',
       renderCell: (doc) => (
         <div className="flex items-center justify-end gap-2">
           <button
             onClick={() => setPrintDoc(commercialDocFromPurchase(doc))}
             title={t('action_print', 'Imprimer')}
-            className="p-1.5 text-stone-400 hover:text-[#C4785A] hover:bg-stone-100 dark:hover:bg-stone-800 rounded-lg transition-colors cursor-pointer"
+            className="p-1.5 text-neutral-400 hover:text-[#C4785A] hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-lg transition-colors cursor-pointer"
           >
             <Printer size={14} />
           </button>
@@ -268,7 +307,7 @@ export const TradingPurchasesView: React.FC = () => {
           )}
 
           {doc.type === 'br' && (
-            <span className="text-[10px] font-mono text-emerald-600 font-medium">
+            <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-medium">
               {t('trading_purchases_received_badge', 'Stock incrémenté')}
             </span>
           )}
@@ -278,99 +317,266 @@ export const TradingPurchasesView: React.FC = () => {
   ];
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6">
-      {/* Top Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold tracking-tight text-stone-900 dark:text-stone-100">
-              {t('trading_purchases_title', 'Cycle des Achats & Réceptions Fournisseurs')}
-            </h1>
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#C4785A]/15 text-[#C4785A]">
-              {purchaseDocs.length} {language === 'ar' ? 'طلب واستلام' : 'commandes & réceptions'}
-            </span>
+    <div className="space-y-6 animate-in fade-in duration-200">
+      {/* Outer Workspace Panel */}
+      <div className="bg-white dark:bg-[#18181B] rounded-[28px] border border-[#E9EEF0] dark:border-neutral-800 p-6 lg:p-8 space-y-6 shadow-xs">
+        
+        {/* Header Row */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
+          <div className="flex items-center gap-3.5">
+            <div className="w-11 h-11 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#C4785A]">
+              <Truck size={22} />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white">
+                  {t('trading_purchases_title', 'Cycle des Achats & Réceptions Fournisseurs')}
+                </h1>
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#C4785A]/15 text-[#C4785A] border border-[#C4785A]/30">
+                  {purchaseDocs.length} {language === 'ar' ? 'طلب واستلام' : 'commandes & réceptions'}
+                </span>
+              </div>
+              <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
+                {t('trading_purchases_subtitle', 'Approvisionnement, bons de commande d\'achat (PO) et entrée automatique en stock à quai (BR)')}
+              </p>
+            </div>
           </div>
-          <p className="text-xs text-stone-500 mt-1">
-            {t('trading_purchases_subtitle', 'Approvisionnement, bons de commande d\'achat (PO) et entrée automatique en stock à quai (BR)')}
-          </p>
-        </div>
 
-        <AtriumButton
-          variant="primary"
-          onClick={() => setIsPoModalOpen(true)}
-          icon={<Plus size={15} />}
-        >
-          {t('trading_purchases_new_po', 'Créer Bon de Commande Achat (PO)')}
-        </AtriumButton>
-      </div>
+          <div className="flex items-center gap-2.5 flex-wrap self-start sm:self-auto">
+            {/* Facility Pill */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setIsFacilityDropdownOpen(!isFacilityDropdownOpen)}
+                className="h-10 px-4 rounded-xl bg-[#F4EFEA] dark:bg-neutral-800/80 border border-[#E8DFD8] dark:border-neutral-700 flex items-center gap-2 cursor-pointer hover:bg-[#EFE8E1] dark:hover:bg-neutral-800 transition-colors shadow-2xs"
+              >
+                <Home size={15} className="text-[#C4785A]" />
+                <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
+                  {currentBranch?.name || 'Dépôt Central'}
+                </span>
+                <ChevronDown
+                  size={14}
+                  className={`text-neutral-500 transition-transform ${
+                    isFacilityDropdownOpen ? 'rotate-180' : ''
+                  }`}
+                />
+              </button>
 
-      {/* Tab Navigation */}
-      <div className="flex items-center justify-between border-b border-stone-200 dark:border-stone-800 pb-2">
-        <div className="flex items-center gap-2">
-          {(
-            [
-              { key: 'all', label: t('trading_purchases_tab_all', 'Toutes les Pièces') },
-              { key: 'po', label: t('trading_purchases_tab_po', 'Commandes d\'Achat (PO)') },
-              { key: 'br', label: t('trading_purchases_tab_br', 'Bons de Réception à Quai (BR)') },
-              { key: 'facture_fournisseur', label: t('trading_purchases_tab_bills', 'Factures Fournisseurs') },
-            ] as const
-          ).map((item) => (
+              {isFacilityDropdownOpen && (
+                <div className="absolute right-0 rtl:right-auto rtl:left-0 mt-2 w-64 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
+                  <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+                    {language === 'ar' ? 'المستودعات والفروع' : 'Dépôts & Points de Vente'}
+                  </div>
+                  {branches.map((b) => (
+                    <button
+                      key={b.id}
+                      onClick={() => {
+                        switchBranch(b.id);
+                        setIsFacilityDropdownOpen(false);
+                      }}
+                      className="w-full px-3 py-2 text-left rtl:text-right text-xs hover:bg-neutral-50 dark:hover:bg-neutral-700/50 flex items-center justify-between"
+                    >
+                      <span className="font-semibold text-neutral-800 dark:text-neutral-200">{b.name}</span>
+                      {b.id === currentBranch?.id && <span className="text-[#C4785A] text-xs">✓</span>}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Demo Data Reset */}
             <button
-              key={item.key}
-              onClick={() => setActiveTab(item.key)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
-                activeTab === item.key
-                  ? 'bg-[#C4785A]/10 text-[#C4785A] font-bold border border-[#C4785A]/30'
-                  : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 hover:bg-stone-100 dark:hover:bg-stone-800'
-              }`}
+              type="button"
+              onClick={() => resetTradingMockData && resetTradingMockData()}
+              className="h-10 px-3.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-xs font-semibold text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700/60 flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
+              title="Réinitialiser les données B2B de test"
             >
-              {item.label}
+              <RefreshCw size={13} className="text-neutral-500" />
+              <span>{language === 'ar' ? 'بيانات تجريبية' : 'Démo B2B'}</span>
             </button>
-          ))}
+
+            {/* Create PO Button */}
+            <AtriumButton
+              variant="primary"
+              onClick={() => setIsPoModalOpen(true)}
+              icon={<Plus size={15} />}
+            >
+              {t('trading_purchases_new_po', 'Créer Bon de Commande Achat (PO)')}
+            </AtriumButton>
+          </div>
         </div>
 
-        <div>
-          <Seek
-            value={searchQuery}
-            onChange={setSearchQuery}
-            placeholder={language === 'ar' ? 'بحث برقم المستند، المورد...' : 'Rechercher document, fournisseur...'}
-          />
-        </div>
-      </div>
-
-      {/* Table */}
-      <div className="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-2xl shadow-xs overflow-hidden">
-        <UniversalDataCollection
-          items={filteredDocs}
-          keyExtractor={(d) => d.id}
-          columns={columns}
-          renderCard={(doc) => (
-            <div className="p-4 border border-stone-200 dark:border-stone-800 rounded-xl space-y-2">
-              <span className="font-mono font-bold text-xs">{doc.docNumber}</span>
-              <p className="text-xs font-semibold">{doc.supplierName}</p>
-              <div className="flex justify-between text-xs font-mono pt-2 border-t">
-                <span className="text-stone-500">TTC :</span>
-                <span className="font-bold">{formatMoney(doc.totalTtc)}</span>
+        {/* Top Metrics Pod Tray (SurfaceBgElevated: #F8F9FA, CornerRadius 24px) */}
+        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            
+            {/* Card 1: Commandes Fournisseurs en Cours */}
+            <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
+                  {language === 'ar' ? 'طلبيات الشراء قيد التنفيذ' : 'Commandes d\'Achat (PO) Ouvertes'}
+                </span>
+                <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300">
+                  {metrics.pendingPoCount} en cours
+                </span>
+              </div>
+              <div className="mt-3">
+                <div className="text-2xl lg:text-3xl font-extrabold text-neutral-900 dark:text-neutral-100 font-mono">
+                  {formatMoney(metrics.pendingPoTtc)}
+                </div>
+                <div className="flex items-center gap-1.5 text-[11px] text-neutral-500 mt-1">
+                  <Clock size={13} className="text-blue-500" />
+                  <span>En attente de livraison quai fournisseur</span>
+                </div>
               </div>
             </div>
-          )}
-          emptyTitle="Aucune commande d'achat"
-          emptyDescription="Créez votre première commande d'achat fournisseur en cliquant sur le bouton ci-dessus."
-        />
+
+            {/* Card 2: Réceptions à Quai Effectuées */}
+            <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
+                  {language === 'ar' ? 'الاستلامات الفعلية بالمستودع' : 'Bons de Réception à Quai (BR)'}
+                </span>
+                <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300">
+                  {metrics.receivedBrCount} réceptions
+                </span>
+              </div>
+              <div className="mt-3">
+                <div className="text-2xl lg:text-3xl font-extrabold text-neutral-900 dark:text-neutral-100 font-mono">
+                  {formatMoney(metrics.receivedBrTtc)}
+                </div>
+                <div className="flex items-center gap-1.5 text-[11px] text-neutral-500 mt-1">
+                  <CheckCircle2 size={13} className="text-emerald-500" />
+                  <span>Stock incrémenté dans les dépôts désignés</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Card 3: DARK ESPRESSO ANCHOR CARD (#1F1D1B) */}
+            <div className="bg-[#1F1D1B] rounded-[18px] p-4 lg:p-5 border border-neutral-800 shadow-sm text-white flex flex-col justify-between relative overflow-hidden group">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-[#E7E5E4]">
+                  {language === 'ar' ? 'إجمالي تعهدات الشراء TTC' : 'Total Engagements Achats'}
+                </span>
+                <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30 uppercase tracking-wider">
+                  {metrics.receivedRatio.toFixed(0)}% Livré
+                </span>
+              </div>
+              <div className="mt-3">
+                <div className="text-2xl lg:text-3xl font-extrabold text-white font-mono tracking-tight">
+                  {formatMoney(metrics.totalPurchasesTtc)}
+                </div>
+                <div className="flex items-center justify-between text-[11px] text-stone-400 mt-1.5">
+                  <span className="flex items-center gap-1">
+                    <Boxes size={12} className="text-[#FB923C]" />
+                    <span>Flux réapprovisionnement multi-dépôts</span>
+                  </span>
+                  <span className="font-mono text-stone-300">TTC</span>
+                </div>
+              </div>
+
+              {/* Decorative Subtle Background Sparkline */}
+              <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-[#FB923C]/5 rounded-full blur-2xl pointer-events-none" />
+            </div>
+
+          </div>
+        </div>
+
+        {/* Bottom Collection Pod Tray (SurfaceBgElevated: #F8F9FA) */}
+        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+          
+          {/* Controls Bar: Segment Tabs + Seek Search */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+            {/* Segment Capsules */}
+            <div className="flex items-center gap-1 bg-neutral-200/60 dark:bg-neutral-800 p-1 rounded-2xl overflow-x-auto self-start">
+              {(
+                [
+                  { key: 'all', label: t('trading_purchases_tab_all', 'Toutes les Pièces'), count: tabCounts.all },
+                  { key: 'po', label: t('trading_purchases_tab_po', 'Commandes (PO)'), count: tabCounts.po },
+                  { key: 'br', label: t('trading_purchases_tab_br', 'Réceptions (BR)'), count: tabCounts.br },
+                  { key: 'facture_fournisseur', label: t('trading_purchases_tab_bills', 'Factures Fournisseurs'), count: tabCounts.facture_fournisseur },
+                ] as const
+              ).map((item) => {
+                const isSelected = activeTab === item.key;
+                return (
+                  <button
+                    key={item.key}
+                    type="button"
+                    onClick={() => setActiveTab(item.key)}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                      isSelected
+                        ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-xs'
+                        : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
+                    }`}
+                  >
+                    <span>{item.label}</span>
+                    <span
+                      className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono ${
+                        isSelected
+                          ? 'bg-[#C4785A] text-white'
+                          : 'bg-neutral-300/60 dark:bg-neutral-700 text-neutral-500'
+                      }`}
+                    >
+                      {item.count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Seek Search */}
+            <div className="self-end sm:self-auto">
+              <Seek
+                value={searchQuery}
+                onChange={setSearchQuery}
+                placeholder={language === 'ar' ? 'بحث برقم المستند، المورد...' : 'Rechercher document, fournisseur...'}
+                shutSize={36}
+                openWidth={280}
+              />
+            </div>
+          </div>
+
+          {/* Table Container Inside Pod Tray */}
+          <div className="bg-white dark:bg-neutral-800 rounded-[18px] border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs overflow-hidden">
+            <UniversalDataCollection
+              items={filteredDocs}
+              keyExtractor={(d) => d.id}
+              columns={columns}
+              renderCard={(doc) => (
+                <div className="p-4 border border-neutral-200 dark:border-neutral-700 rounded-xl space-y-2">
+                  <span className="font-mono font-bold text-xs">{doc.docNumber}</span>
+                  <p className="text-xs font-semibold">{doc.supplierName}</p>
+                  <div className="flex justify-between text-xs font-mono pt-2 border-t border-neutral-100 dark:border-neutral-700">
+                    <span className="text-neutral-500">TTC :</span>
+                    <span className="font-bold text-[#C4785A]">{formatMoney(doc.totalTtc)}</span>
+                  </div>
+                </div>
+              )}
+              emptyTitle={language === 'ar' ? 'لا توجد طلبيات شراء' : 'Aucune commande d\'achat'}
+              emptyDescription={
+                language === 'ar'
+                  ? 'أنشئ أول طلب شراء للموردين بالضغط على الزر أعلاه.'
+                  : 'Créez votre première commande d\'achat fournisseur en cliquant sur le bouton ci-dessus.'
+              }
+            />
+          </div>
+
+        </div>
+
       </div>
 
       {/* PO Creation Modal */}
       {isPoModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <div className="relative w-full max-w-2xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-2xl shadow-2xl p-6 space-y-4">
-            <div className="flex items-center justify-between border-b pb-3 border-stone-200 dark:border-stone-800">
-              <h2 className="text-base font-bold text-stone-900 dark:text-stone-100 flex items-center gap-2">
+          <div className="relative w-full max-w-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-2xl p-6 space-y-4">
+            <div className="flex items-center justify-between border-b pb-3 border-neutral-200 dark:border-neutral-800">
+              <h2 className="text-base font-bold text-neutral-900 dark:text-neutral-100 flex items-center gap-2">
                 <Truck size={18} className="text-[#C4785A]" />
                 <span>Nouvelle Commande d'Achat Fournisseur (PO)</span>
               </h2>
               <button
                 onClick={() => setIsPoModalOpen(false)}
-                className="p-1 text-stone-400 hover:text-stone-600"
+                className="p-1 text-neutral-400 hover:text-neutral-600 rounded-lg"
               >
                 <X size={18} />
               </button>
@@ -415,8 +621,8 @@ export const TradingPurchasesView: React.FC = () => {
               </div>
 
               {/* Items */}
-              <div className="space-y-2 pt-2 border-t border-stone-200 dark:border-stone-800">
-                <label className="font-semibold text-stone-700 dark:text-stone-300">
+              <div className="space-y-2 pt-2 border-t border-neutral-200 dark:border-neutral-800">
+                <label className="font-semibold text-neutral-700 dark:text-neutral-300">
                   Article Commandé :
                 </label>
                 {poItems.map((it, idx) => (
@@ -472,7 +678,7 @@ export const TradingPurchasesView: React.FC = () => {
                 ))}
               </div>
 
-              <div className="flex justify-end gap-2 pt-3 border-t border-stone-200 dark:border-stone-800">
+              <div className="flex justify-end gap-2 pt-3 border-t border-neutral-200 dark:border-neutral-800">
                 <AtriumButton
                   variant="ghost"
                   size="sm"
@@ -492,6 +698,7 @@ export const TradingPurchasesView: React.FC = () => {
           </div>
         </div>
       )}
+
       {/* Printable A4 Modal */}
       <CommercialDocPrintModal
         isOpen={!!printDoc}

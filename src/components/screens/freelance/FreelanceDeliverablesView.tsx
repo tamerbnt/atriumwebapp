@@ -631,7 +631,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
                   type="button"
                   onClick={() => {
                     setIsQuickActionsOpen(false);
-                    setScreen('freelance_timetracker');
+                    setScreen('analytics');
                   }}
                   className="w-full h-10 px-2.5 rounded-xl hover:bg-[#F8F9FA] dark:hover:bg-neutral-700 flex items-center gap-2.5 text-xs text-neutral-800 dark:text-neutral-200 font-medium transition-colors cursor-pointer text-left rtl:text-right"
                 >

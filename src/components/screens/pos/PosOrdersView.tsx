@@ -18,6 +18,10 @@ import {
   Sparkles,
   ArrowRight,
   Package,
+  Home,
+  ChevronDown,
+  RefreshCw,
+  TrendingUp,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
 import { Sale, ParkedOrder } from '../../../types/index';
@@ -36,6 +40,8 @@ export const PosOrdersView: React.FC = () => {
     sales,
     parkedOrders,
     currentBranch,
+    branches,
+    switchBranch,
     setScreen,
     resumeParkedOrder,
     deleteParkedOrder,
@@ -46,6 +52,7 @@ export const PosOrdersView: React.FC = () => {
   } = useAtriumStore();
 
   const [activeSubTab, setActiveSubTab] = useState<'sales' | 'parked'>('sales');
+  const [isFacilityDropdownOpen, setIsFacilityDropdownOpen] = useState(false);
 
   // Sales Filters
   const [dateFilter, setDateFilter] = useState<'all' | 'today' | '7days' | 'month'>('all');
@@ -59,14 +66,10 @@ export const PosOrdersView: React.FC = () => {
   const [selectedParkedIds, setSelectedParkedIds] = useState<Set<string>>(new Set());
   const [pinnedParkedIds, setPinnedParkedIds] = useState<Set<string>>(new Set());
 
-  // Sorting
-  const [salesSortBy, setSalesSortBy] = useState<string>('date');
-  const [salesSortDir, setSalesSortDir] = useState<'asc' | 'desc'>('desc');
-
-  // Modals
+  // Modal State
   const [selectedSaleForReceipt, setSelectedSaleForReceipt] = useState<Sale | null>(null);
   const [selectedSaleForRefund, setSelectedSaleForRefund] = useState<Sale | null>(null);
-  const [refundReason, setRefundReason] = useState('Customer Request / Avoir');
+  const [refundReason, setRefundReason] = useState('Demande Client / Avoir');
 
   // Filter sales for branch
   const branchSales = useMemo(() => {
@@ -75,81 +78,17 @@ export const PosOrdersView: React.FC = () => {
     );
   }, [sales, currentBranch.id]);
 
-  // Filtered sales
-  const filteredSales = useMemo(() => {
-    const now = Date.now();
-    const todayStr = new Date().toISOString().split('T')[0];
-
-    return branchSales.filter((s) => {
-      // Search query filter
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase();
-        const matchesId = s.id.toLowerCase().includes(q);
-        const matchesMember = (s.memberName || '').toLowerCase().includes(q);
-        const matchesPhone = (s.customerPhone || '').toLowerCase().includes(q);
-        const matchesItems = s.items.some((it) => it.productName.toLowerCase().includes(q));
-        if (!matchesId && !matchesMember && !matchesPhone && !matchesItems) return false;
-      }
-
-      // Date filter
-      if (dateFilter === 'today') {
-        if (!s.createdAt.startsWith(todayStr)) return false;
-      } else if (dateFilter === '7days') {
-        const saleTime = new Date(s.createdAt).getTime();
-        if (now - saleTime > 7 * 86400000) return false;
-      } else if (dateFilter === 'month') {
-        const saleTime = new Date(s.createdAt).getTime();
-        if (now - saleTime > 30 * 86400000) return false;
-      }
-
-      // Tender filter
-      if (tenderFilter !== 'all') {
-        if (s.paymentMethod !== tenderFilter) return false;
-      }
-
-      // Status filter
-      if (statusFilter === 'completed' && s.status === 'Refunded') return false;
-      if (statusFilter === 'refunded' && s.status !== 'Refunded') return false;
-
-      return true;
-    });
-  }, [branchSales, dateFilter, tenderFilter, statusFilter, searchQuery]);
-
-  // Sorted sales with pinning
-  const sortedSales = useMemo(() => {
-    return [...filteredSales].sort((a, b) => {
-      const aPinned = pinnedSaleIds.has(a.id);
-      const bPinned = pinnedSaleIds.has(b.id);
-      if (aPinned && !bPinned) return -1;
-      if (!aPinned && bPinned) return 1;
-
-      if (salesSortBy === 'date') {
-        const cmp = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-        return salesSortDir === 'asc' ? cmp : -cmp;
-      }
-      if (salesSortBy === 'amount') {
-        const cmp = a.totalAmount - b.totalAmount;
-        return salesSortDir === 'asc' ? cmp : -cmp;
-      }
-      if (salesSortBy === 'customer') {
-        const nameA = a.memberName || '';
-        const nameB = b.memberName || '';
-        const cmp = nameA.localeCompare(nameB);
-        return salesSortDir === 'asc' ? cmp : -cmp;
-      }
-      return 0;
-    });
-  }, [filteredSales, pinnedSaleIds, salesSortBy, salesSortDir]);
-
-  // Sales KPIs
+  // Aggregate stats
   const salesKpis = useMemo(() => {
     let totalGross = 0;
     let totalRefunded = 0;
     let completedCount = 0;
+    let refundedCount = 0;
 
     branchSales.forEach((s) => {
       if (s.status === 'Refunded') {
         totalRefunded += s.totalAmount;
+        refundedCount++;
       } else {
         totalGross += s.totalAmount;
         completedCount++;
@@ -161,18 +100,94 @@ export const PosOrdersView: React.FC = () => {
     return {
       totalGross,
       totalRefunded,
-      completedCount,
       netRevenue,
+      completedCount,
+      refundedCount,
     };
   }, [branchSales]);
 
-  // Columns for Sales Ledger UniversalDataCollection
+  // Filtered sales
+  const filteredSales = useMemo(() => {
+    const now = new Date();
+    const todayStr = now.toISOString().split('T')[0];
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+
+    return branchSales.filter((s) => {
+      // Date filter
+      if (dateFilter === 'today' && !s.createdAt.startsWith(todayStr)) return false;
+      if (dateFilter === '7days' && s.createdAt < sevenDaysAgo) return false;
+      if (dateFilter === 'month' && s.createdAt < monthStart) return false;
+
+      // Tender filter
+      if (tenderFilter !== 'all' && s.paymentMethod !== tenderFilter) return false;
+
+      // Status filter
+      if (statusFilter === 'completed' && s.status === 'Refunded') return false;
+      if (statusFilter === 'refunded' && s.status !== 'Refunded') return false;
+
+      // Search query
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        const matchesId = s.id.toLowerCase().includes(q);
+        const matchesName = (s.memberName || '').toLowerCase().includes(q);
+        const matchesPhone = (s.customerPhone || '').toLowerCase().includes(q);
+        const matchesCashier = (s.cashierName || '').toLowerCase().includes(q);
+        const matchesItem = s.items.some((it) => it.productName.toLowerCase().includes(q));
+        if (!matchesId && !matchesName && !matchesPhone && !matchesCashier && !matchesItem) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }, [branchSales, dateFilter, tenderFilter, statusFilter, searchQuery]);
+
+  // Filtered parked orders
+  const filteredParkedOrders = useMemo(() => {
+    return parkedOrders.filter((po) => {
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        const matchesId = po.id.toLowerCase().includes(q);
+        const matchesRef = po.referenceName.toLowerCase().includes(q);
+        const matchesCashier = ((po as any).cashierName || '').toLowerCase().includes(q);
+        if (!matchesId && !matchesRef && !matchesCashier) return false;
+      }
+      return true;
+    });
+  }, [parkedOrders, searchQuery]);
+
+  // CSV Export
+  const handleExportCSV = () => {
+    const headers = ['Receipt #', 'Date & Time', 'Customer', 'Phone', 'Payment Method', 'Cashier', 'Subtotal (DA)', 'Total (DA)', 'Status'];
+    const rows = filteredSales.map((s) => [
+      `"#${s.id.slice(-8).toUpperCase()}"`,
+      `"${new Date(s.createdAt).toLocaleString()}"`,
+      `"${s.memberName || 'Client de passage'}"`,
+      `"${s.customerPhone || ''}"`,
+      `"${s.paymentMethod}"`,
+      `"${s.cashierName || 'Caisse'}"`,
+      s.subtotal || s.totalAmount,
+      s.totalAmount,
+      `"${s.status || 'Completed'}"`,
+    ]);
+    const csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `POS_Sales_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // Sales Columns
   const salesColumns: ColumnDefinition<Sale>[] = useMemo(() => [
     {
       key: 'id',
-      header: language === 'ar' ? 'رقم الوصل' : language === 'fr' ? 'N° Ticket' : 'Receipt #',
-      width: '1.4*',
-      minWidth: '130px',
+      header: language === 'ar' ? 'رقم الوصل' : 'N° Ticket',
+      width: '140px',
       sortable: true,
       renderCell: (s) => (
         <div>
@@ -186,22 +201,9 @@ export const PosOrdersView: React.FC = () => {
       ),
     },
     {
-      key: 'date',
-      header: language === 'ar' ? 'التاريخ' : language === 'fr' ? 'Date' : 'Date',
-      width: '1.2*',
-      minWidth: '110px',
-      sortable: true,
-      renderCell: (s) => (
-        <span className="text-xs text-neutral-600 dark:text-neutral-300 font-mono">
-          {new Date(s.createdAt).toLocaleDateString()}
-        </span>
-      ),
-    },
-    {
       key: 'customer',
-      header: language === 'ar' ? 'الزبون' : language === 'fr' ? 'Client' : 'Customer',
-      width: '2*',
-      minWidth: '150px',
+      header: language === 'ar' ? 'الزبون / العميل' : language === 'fr' ? 'Client' : 'Customer',
+      minWidth: '170px',
       sortable: true,
       renderCell: (s) => (
         <div>
@@ -209,7 +211,7 @@ export const PosOrdersView: React.FC = () => {
             {s.memberName || t('shop_receipt_walkin')}
           </div>
           {s.customerPhone && (
-            <div className="text-[10px] text-neutral-400 font-mono">
+            <div className="text-[10px] text-neutral-400 font-mono truncate">
               {s.customerPhone}
             </div>
           )}
@@ -218,15 +220,14 @@ export const PosOrdersView: React.FC = () => {
     },
     {
       key: 'items',
-      header: language === 'ar' ? 'الأصناف' : language === 'fr' ? 'Détail Articles' : 'Items',
-      width: '2.5*',
-      minWidth: '180px',
+      header: language === 'ar' ? 'المحتويات' : language === 'fr' ? 'Articles' : 'Items',
+      minWidth: '200px',
       renderCell: (s) => (
         <div className="flex items-center gap-1.5 flex-wrap">
           {s.items.slice(0, 2).map((it, idx) => (
             <span
               key={idx}
-              className="text-[10px] text-neutral-600 dark:text-neutral-300 font-medium bg-neutral-100 dark:bg-neutral-800 px-1.5 py-0.5 rounded"
+              className="text-[11px] text-neutral-600 dark:text-neutral-300 font-medium bg-neutral-100 dark:bg-neutral-800 px-1.5 py-0.5 rounded"
             >
               {it.quantity}x {it.productName.split('(')[0].trim()}
             </span>
@@ -242,57 +243,62 @@ export const PosOrdersView: React.FC = () => {
     {
       key: 'tender',
       header: language === 'ar' ? 'طريقة الدفع' : language === 'fr' ? 'Règlement' : 'Tender',
-      width: '1.4*',
-      minWidth: '120px',
+      width: '140px',
       sortable: true,
       renderCell: (s) => {
         const isCash = s.paymentMethod === 'Cash';
         const isCard = s.paymentMethod === 'Card';
-        const isSplit = s.paymentMethod === 'Split';
         const label =
           isCash
-            ? 'Espèces'
+            ? language === 'ar' ? 'نقداً (DZD)' : 'Espèces'
             : isCard
             ? 'CIB / Edahabia'
-            : isSplit
-            ? 'Split Mixte'
-            : 'BaridiMob';
+            : s.paymentMethod;
 
         return (
-          <span className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
-            {label}
-          </span>
+          <div className="flex items-center gap-1.5 text-xs">
+            {isCash ? (
+              <Banknote size={14} className="text-emerald-500 shrink-0" />
+            ) : isCard ? (
+              <CreditCard size={14} className="text-blue-500 shrink-0" />
+            ) : (
+              <Coins size={14} className="text-[#C4785A] shrink-0" />
+            )}
+            <span className="font-medium text-neutral-800 dark:text-neutral-200 truncate">
+              {label}
+            </span>
+          </div>
         );
       },
     },
     {
-      key: 'amount',
-      header: language === 'ar' ? 'المبلغ' : language === 'fr' ? 'Total Payé' : 'Total Paid',
-      width: '1.5*',
-      minWidth: '130px',
+      key: 'total',
+      header: language === 'ar' ? 'المبلغ الصافي' : language === 'fr' ? 'Total Payé' : 'Total Net',
+      width: '140px',
       sortable: true,
       renderCell: (s) => (
-        <span className="font-mono font-black text-sm text-[#C4785A] tabular-nums">
+        <span className="font-mono font-bold text-xs text-neutral-900 dark:text-white tabular-nums">
           {formatMoney(s.totalAmount)}
         </span>
       ),
     },
     {
       key: 'status',
-      header: language === 'ar' ? 'الحالة' : language === 'fr' ? 'Statut' : 'Status',
-      width: '1.2*',
-      minWidth: '110px',
+      header: language === 'ar' ? 'الحالة' : 'Statut',
+      width: '120px',
       sortable: true,
       renderCell: (s) => {
         const isRefunded = s.status === 'Refunded';
         return (
           <span
-            className={`text-[10px] font-bold uppercase tracking-wider ${
-              isRefunded ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400'
+            className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${
+              isRefunded
+                ? 'bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300'
+                : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
             }`}
           >
             {isRefunded
-              ? language === 'ar' ? 'مسترجع (Avoir)' : 'Remboursé (Avoir)'
+              ? language === 'ar' ? 'مسترجع (Avoir)' : 'Remboursé'
               : language === 'ar' ? 'مسدد' : 'Encaissé'}
           </span>
         );
@@ -301,21 +307,20 @@ export const PosOrdersView: React.FC = () => {
     {
       key: 'actions',
       header: '',
-      width: '1.8*',
-      minWidth: '140px',
+      width: '120px',
       renderCell: (s) => (
-        <div className="flex items-center gap-2 justify-end">
+        <div className="flex items-center justify-end gap-1">
           <button
             type="button"
             onClick={(e) => {
               e.stopPropagation();
               setSelectedSaleForReceipt(s);
             }}
-            className="h-8 px-2.5 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:border-[#C4785A] text-neutral-700 dark:text-neutral-200 text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
-            title="Reprint 80mm receipt"
+            className="h-8 px-2.5 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-xs font-semibold text-neutral-700 dark:text-neutral-200 flex items-center gap-1 cursor-pointer transition-colors"
+            title="Ticket Thermique 80mm"
           >
             <Printer size={13} className="text-[#C4785A]" />
-            <span>Reçu</span>
+            <span>{language === 'ar' ? 'وصل' : 'Reçu'}</span>
           </button>
           {s.status !== 'Refunded' && (
             <button
@@ -324,7 +329,7 @@ export const PosOrdersView: React.FC = () => {
                 e.stopPropagation();
                 setSelectedSaleForRefund(s);
               }}
-              className="h-8 px-2 rounded-lg text-neutral-400 hover:text-red-600 cursor-pointer transition-colors"
+              className="h-8 px-2 rounded-lg text-neutral-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer transition-colors"
               title="Refund / Avoir"
             >
               <RotateCcw size={13} />
@@ -335,48 +340,28 @@ export const PosOrdersView: React.FC = () => {
     },
   ], [language, t]);
 
-  // Columns for Parked Orders UniversalDataCollection
+  // Parked Orders Columns
   const parkedColumns: ColumnDefinition<ParkedOrder>[] = useMemo(() => [
     {
-      key: 'ref',
-      header: language === 'ar' ? 'مرجع التذكرة' : language === 'fr' ? 'Réf Ticket' : 'Ticket Ref',
-      width: '2*',
-      minWidth: '160px',
+      key: 'reference',
+      header: language === 'ar' ? 'اسم التذكرة المعلقة' : 'Référence / Table / Client',
+      minWidth: '200px',
       sortable: true,
       renderCell: (po) => (
         <div>
           <span className="font-bold text-xs text-neutral-900 dark:text-white block">
             {po.referenceName}
           </span>
-          <span className="text-[10px] text-neutral-400 font-mono block">
-            {new Date(po.createdAt).toLocaleTimeString()}
+          <span className="text-[10px] text-neutral-400 font-mono">
+            {new Date(po.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} · {((po as any).cashierName || 'Caisse')}
           </span>
         </div>
       ),
     },
     {
-      key: 'customer',
-      header: language === 'ar' ? 'العميل' : language === 'fr' ? 'Client' : 'Customer',
-      width: '2*',
-      minWidth: '140px',
-      renderCell: (po) => (
-        <div>
-          <div className="font-bold text-xs text-neutral-800 dark:text-neutral-200 truncate">
-            {po.customerName || t('shop_receipt_walkin')}
-          </div>
-          {po.customerPhone && (
-            <div className="text-[10px] text-neutral-400 font-mono">
-              {po.customerPhone}
-            </div>
-          )}
-        </div>
-      ),
-    },
-    {
       key: 'items',
-      header: language === 'ar' ? 'الأصناف' : language === 'fr' ? 'Articles' : 'Items',
-      width: '3*',
-      minWidth: '200px',
+      header: language === 'ar' ? 'المحتويات' : 'Articles en Pause',
+      minWidth: '220px',
       renderCell: (po) => (
         <div className="flex items-center gap-1.5 flex-wrap">
           {po.items.slice(0, 3).map((it, idx) => (
@@ -397,12 +382,11 @@ export const PosOrdersView: React.FC = () => {
     },
     {
       key: 'total',
-      header: language === 'ar' ? 'المجموع' : language === 'fr' ? 'Total' : 'Total Due',
-      width: '1.6*',
-      minWidth: '130px',
+      header: language === 'ar' ? 'المجموع' : 'Total Dû',
+      width: '140px',
       sortable: true,
       renderCell: (po) => (
-        <span className="font-mono font-black text-sm text-[#C4785A] tabular-nums">
+        <span className="font-mono font-bold text-xs text-[#C4785A] tabular-nums">
           {formatMoney(po.totalAmount)}
         </span>
       ),
@@ -410,8 +394,7 @@ export const PosOrdersView: React.FC = () => {
     {
       key: 'actions',
       header: '',
-      width: '2*',
-      minWidth: '150px',
+      width: '160px',
       renderCell: (po) => (
         <div className="flex items-center gap-2 justify-end">
           <button
@@ -421,7 +404,7 @@ export const PosOrdersView: React.FC = () => {
               resumeParkedOrder(po.id);
               setScreen('shop');
             }}
-            className="h-8 px-3 rounded-xl bg-[#C4785A] text-white text-xs font-bold flex items-center gap-1 hover:opacity-90 cursor-pointer"
+            className="h-8 px-3 rounded-xl bg-[#C4785A] text-white text-xs font-bold flex items-center gap-1 hover:opacity-90 cursor-pointer shadow-xs"
           >
             <PlayCircle size={13} />
             <span>{language === 'ar' ? 'استئناف' : 'Reprendre'}</span>
@@ -432,15 +415,15 @@ export const PosOrdersView: React.FC = () => {
               e.stopPropagation();
               deleteParkedOrder(po.id);
             }}
-            className="h-8 px-2 rounded-xl text-neutral-400 hover:text-red-500 cursor-pointer"
-            title="Discard held order"
+            className="h-8 px-2 rounded-xl text-neutral-400 hover:text-rose-500 cursor-pointer"
+            title="Supprimer le ticket"
           >
             <Trash2 size={14} />
           </button>
         </div>
       ),
     },
-  ], [language, t, setScreen, resumeParkedOrder, deleteParkedOrder]);
+  ], [language, setScreen, resumeParkedOrder, deleteParkedOrder]);
 
   const handleConfirmRefund = () => {
     if (!selectedSaleForRefund) return;
@@ -454,32 +437,8 @@ export const PosOrdersView: React.FC = () => {
     setSelectedSaleForRefund(null);
   };
 
-  const handleExportCSV = () => {
-    const headers = ['Receipt #', 'Date & Time', 'Customer', 'Tender Method', 'Cashier', 'Subtotal (DA)', 'Discount (DA)', 'Total Paid (DA)', 'Status'];
-    const rows = filteredSales.map((s) => [
-      `"#${s.id.slice(-8).toUpperCase()}"`,
-      `"${new Date(s.createdAt).toLocaleString()}"`,
-      `"${s.memberName || 'Walk-in'}"`,
-      `"${s.paymentMethod}"`,
-      `"${s.cashierName || 'Cashier Desk'}"`,
-      s.subtotal || s.totalAmount,
-      s.discountAmount || 0,
-      s.totalAmount,
-      `"${s.status || 'Completed'}"`,
-    ]);
-    const csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', `Sales_Ledger_${currentBranch.name.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
   return (
-    <div className="space-y-6 pb-16" dir={isRtl ? 'rtl' : 'ltr'}>
+    <div className="space-y-6 animate-in fade-in duration-200">
       {/* Print stylesheet for 80mm slip */}
       <style>{`
         @media print {
@@ -504,166 +463,236 @@ export const PosOrdersView: React.FC = () => {
         }
       `}</style>
 
-      {/* Screen Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-black text-neutral-900 dark:text-white tracking-tight flex items-center gap-2.5">
-              <ClipboardList className="text-[#C4785A]" size={26} />
-              <span>
-                {language === 'ar' ? 'سجل الطلبات والمبيعات' : language === 'fr' ? 'Commandes & Tickets de Caisse' : 'Sales Ledger & Orders'}
-              </span>
-            </h1>
-            <span className="text-[11px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800">
-              {branchSales.length} {language === 'ar' ? 'عملية مسجلة' : 'ventes'}
-            </span>
-          </div>
-          <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
-            {language === 'ar'
-              ? 'متابعة سجل المبيعات المكتملة، التذاكر المعلقة، إصدار فواتير الإرجاع، والطباعة الحرارية 80 مم'
-              : 'Audit des encaissements, tickets en attente, traitement des avoirs et réimpression des reçus thermiques.'}
-          </p>
-        </div>
-
-        {/* Subtab Segmented Switcher & Export */}
-        <div className="flex items-center gap-2.5 flex-wrap">
-          <button
-            type="button"
-            onClick={resetPosMockData}
-            className="h-10 px-3.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 hover:bg-neutral-50 dark:hover:bg-neutral-800 text-xs font-bold text-neutral-700 dark:text-neutral-200 flex items-center gap-2 cursor-pointer shadow-2xs transition-colors"
-            title="Reload mock sales & tickets"
-          >
-            <Sparkles size={14} className="text-[#C4785A]" />
-            <span>{language === 'ar' ? 'شحن العينة' : 'Démo Recharge'}</span>
-          </button>
-
-          <AtriumButton
-            variant="secondary"
-            size="sm"
-            onClick={handleExportCSV}
-            icon={<Download size={14} />}
-          >
-            {language === 'ar' ? 'تصدير CSV' : 'Export CSV'}
-          </AtriumButton>
-
-          <AtriumButton
-            variant="primary"
-            size="sm"
-            onClick={() => setScreen('shop')}
-            icon={<Receipt size={14} />}
-          >
-            {language === 'ar' ? 'نقطة البيع' : 'Caisse'}
-          </AtriumButton>
-        </div>
-      </div>
-
-      {/* Segmented Subtabs: Completed Sales Ledger vs Parked Tickets */}
-      <div className="flex items-center gap-2 border-b border-neutral-200 dark:border-neutral-800 pb-2">
-        <button
-          type="button"
-          onClick={() => setActiveSubTab('sales')}
-          className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 cursor-pointer transition-all ${
-            activeSubTab === 'sales'
-              ? 'bg-[#C4785A] text-white shadow-xs'
-              : 'text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800'
-          }`}
-        >
-          <Receipt size={15} />
-          <span>{language === 'ar' ? 'المبيعات المسددة' : 'Encaissements Terminés'}</span>
-          <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-black ${
-            activeSubTab === 'sales' ? 'bg-white text-[#C4785A]' : 'bg-neutral-200 dark:bg-neutral-700'
-          }`}>
-            {branchSales.length}
-          </span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setActiveSubTab('parked')}
-          className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 cursor-pointer transition-all ${
-            activeSubTab === 'parked'
-              ? 'bg-[#C4785A] text-white shadow-xs'
-              : 'text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800'
-          }`}
-        >
-          <PauseCircle size={15} />
-          <span>{language === 'ar' ? 'التذاكر المعلقة' : 'Tickets en Attente'}</span>
-          {parkedOrders.length > 0 && (
-            <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-black ${
-              activeSubTab === 'parked' ? 'bg-white text-[#C4785A]' : 'bg-amber-100 text-amber-800'
-            }`}>
-              {parkedOrders.length}
-            </span>
-          )}
-        </button>
-      </div>
-
-      {/* ========================================================================= */}
-      {/* SUBTAB 1: COMPLETED SALES LEDGER                                          */}
-      {/* ========================================================================= */}
-      {activeSubTab === 'sales' && (
-        <div className="space-y-5">
-          {/* Sales KPIs Strip */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <div className="p-4 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-2xs space-y-1">
-              <div className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
-                {language === 'ar' ? 'إجمالي المبيعات' : 'Volume Brut des Ventes'}
-              </div>
-              <div className="text-xl font-black font-mono text-neutral-900 dark:text-white tabular-nums">
-                {formatMoney(salesKpis.totalGross)}
-              </div>
-              <div className="text-[10px] text-neutral-400">
-                {salesKpis.completedCount} {language === 'ar' ? 'عملية سداد' : 'tickets clôturés'}
-              </div>
+      {/* Outer Workspace Panel */}
+      <div className="bg-white dark:bg-[#18181B] rounded-[28px] border border-[#E9EEF0] dark:border-neutral-800 p-6 lg:p-8 space-y-6 shadow-xs">
+        
+        {/* Header Row */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
+          <div className="flex items-center gap-3.5">
+            <div className="w-11 h-11 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#C4785A]">
+              <ClipboardList size={22} />
             </div>
-
-            <div className="p-4 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-2xs space-y-1">
-              <div className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
-                {language === 'ar' ? 'صافي الإيرادات' : 'Chiffre d’Affaires Net'}
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white">
+                  {language === 'ar' ? 'سجل الطلبات والمبيعات' : language === 'fr' ? 'Commandes & Tickets de Caisse' : 'Sales Ledger & Orders'}
+                </h1>
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#C4785A]/15 text-[#C4785A] border border-[#C4785A]/30">
+                  {branchSales.length} {language === 'ar' ? 'عملية مسجلة' : 'ventes'}
+                </span>
               </div>
-              <div className="text-xl font-black font-mono text-[#C4785A] tabular-nums">
-                {formatMoney(salesKpis.netRevenue)}
-              </div>
-              <div className="text-[10px] text-neutral-400">
-                {language === 'ar' ? 'بعد خصم المرتجعات' : 'Déduction faite des avoirs'}
-              </div>
-            </div>
-
-            <div className="p-4 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-2xs space-y-1">
-              <div className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
-                {language === 'ar' ? 'المرتجعات (Avoirs)' : 'Avoirs & Remboursements'}
-              </div>
-              <div className="text-xl font-black font-mono text-red-600 dark:text-red-400 tabular-nums">
-                {formatMoney(salesKpis.totalRefunded)}
-              </div>
-              <div className="text-[10px] text-neutral-400">
-                {language === 'ar' ? 'المبالغ المسترجعة للزبائن' : 'Articles réintégrés en stock'}
-              </div>
-            </div>
-
-            <div className="p-4 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-2xs space-y-1">
-              <div className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
-                {language === 'ar' ? 'متوسط الوصل' : 'Panier Moyen Global'}
-              </div>
-              <div className="text-xl font-black font-mono text-emerald-600 dark:text-emerald-400 tabular-nums">
-                {salesKpis.completedCount > 0 ? formatMoney(Math.round(salesKpis.netRevenue / salesKpis.completedCount)) : '0 DA'}
-              </div>
-              <div className="text-[10px] text-neutral-400">
-                {language === 'ar' ? 'معدل سلة الزبون' : 'Ticket moyen par transaction'}
-              </div>
+              <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
+                {language === 'ar'
+                  ? 'متابعة سجل المبيعات المكتملة، التذاكر المعلقة، إصدار فواتير الإرجاع، والطباعة الحرارية 80 مم'
+                  : 'Audit des encaissements, tickets en attente, traitement des avoirs et réimpression des reçus thermiques.'}
+              </p>
             </div>
           </div>
 
-          {/* Interactive Filters Strip */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-2 flex-wrap">
-              {/* Date Filter Tabs */}
-              <div className="flex items-center p-0.5 rounded-xl bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-xs font-bold">
+          <div className="flex items-center gap-2.5 flex-wrap self-start sm:self-auto">
+            {/* Facility Pill */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setIsFacilityDropdownOpen(!isFacilityDropdownOpen)}
+                className="h-10 px-4 rounded-xl bg-[#F4EFEA] dark:bg-neutral-800/80 border border-[#E8DFD8] dark:border-neutral-700 flex items-center gap-2 cursor-pointer hover:bg-[#EFE8E1] dark:hover:bg-neutral-800 transition-colors shadow-2xs"
+              >
+                <Home size={15} className="text-[#C4785A]" />
+                <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
+                  {currentBranch?.name || 'Magasin Principal'}
+                </span>
+                <ChevronDown
+                  size={14}
+                  className={`text-neutral-500 transition-transform ${
+                    isFacilityDropdownOpen ? 'rotate-180' : ''
+                  }`}
+                />
+              </button>
+
+              {isFacilityDropdownOpen && (
+                <div className="absolute right-0 rtl:right-auto rtl:left-0 mt-2 w-64 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
+                  <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+                    {language === 'ar' ? 'فروع ونقاط البيع' : 'Points de Vente & Magasins'}
+                  </div>
+                  {branches.map((b) => (
+                    <button
+                      key={b.id}
+                      onClick={() => {
+                        switchBranch(b.id);
+                        setIsFacilityDropdownOpen(false);
+                      }}
+                      className="w-full px-3 py-2 text-left rtl:text-right text-xs hover:bg-neutral-50 dark:hover:bg-neutral-700/50 flex items-center justify-between"
+                    >
+                      <span className="font-semibold text-neutral-800 dark:text-neutral-200">{b.name}</span>
+                      {b.id === currentBranch?.id && <span className="text-[#C4785A] text-xs">✓</span>}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Demo Data Reset */}
+            <button
+              type="button"
+              onClick={resetPosMockData}
+              className="h-10 px-3.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-xs font-semibold text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700/60 flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
+              title="Recharger Démo POS"
+            >
+              <RefreshCw size={13} className="text-neutral-500" />
+              <span>{language === 'ar' ? 'شحن العينة' : 'Démo Recharge'}</span>
+            </button>
+
+            {/* CSV Export */}
+            <AtriumButton
+              variant="outline"
+              size="sm"
+              onClick={handleExportCSV}
+              icon={<Download size={14} className="text-[#C4785A]" />}
+            >
+              {language === 'ar' ? 'تصدير CSV' : 'Export CSV'}
+            </AtriumButton>
+
+            {/* Access Register */}
+            <AtriumButton
+              variant="primary"
+              size="sm"
+              onClick={() => setScreen('shop')}
+              icon={<Receipt size={14} />}
+            >
+              {language === 'ar' ? 'نقطة البيع' : 'Caisse'}
+            </AtriumButton>
+          </div>
+        </div>
+
+        {/* Top Metrics Pod Tray (SurfaceBgElevated: #F8F9FA, CornerRadius 24px) */}
+        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            
+            {/* Card 1: Volume Brut des Ventes */}
+            <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
+                  {language === 'ar' ? 'إجمالي المبيعات الإجمالي' : 'Volume Brut des Ventes'}
+                </span>
+                <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#C4785A]/10 text-[#C4785A]">
+                  {salesKpis.completedCount} tickets
+                </span>
+              </div>
+              <div className="mt-3">
+                <div className="text-2xl lg:text-3xl font-extrabold text-neutral-900 dark:text-neutral-100 font-mono">
+                  {formatMoney(salesKpis.totalGross)}
+                </div>
+                <div className="flex items-center gap-1.5 text-[11px] text-neutral-500 mt-1">
+                  <Receipt size={13} className="text-[#C4785A]" />
+                  <span>Ticket moyen: <strong className="font-mono text-neutral-800 dark:text-neutral-200">{salesKpis.completedCount > 0 ? formatMoney(Math.round(salesKpis.totalGross / salesKpis.completedCount)) : '0 DA'}</strong></span>
+                </div>
+              </div>
+            </div>
+
+            {/* Card 2: Tickets en Attente & Retours */}
+            <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
+                  {language === 'ar' ? 'التذاكر المعلقة والمرتجعات' : 'Tickets en Attente & Avoirs'}
+                </span>
+                <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300">
+                  {parkedOrders.length} en pause
+                </span>
+              </div>
+              <div className="mt-3">
+                <div className="text-2xl lg:text-3xl font-extrabold text-neutral-900 dark:text-neutral-100 font-mono">
+                  {formatMoney(salesKpis.totalRefunded)}
+                </div>
+                <div className="flex items-center gap-1.5 text-[11px] text-neutral-500 mt-1">
+                  <RotateCcw size={13} className="text-rose-500" />
+                  <span>{salesKpis.refundedCount} avoirs traités</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Card 3: DARK ESPRESSO ANCHOR CARD (#1F1D1B) */}
+            <div className="bg-[#1F1D1B] rounded-[18px] p-4 lg:p-5 border border-neutral-800 shadow-sm text-white flex flex-col justify-between relative overflow-hidden group">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-[#E7E5E4]">
+                  {language === 'ar' ? 'صافي الإيرادات المقبوضة' : 'Chiffre d’Affaires Net Encaissé'}
+                </span>
+                <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30 uppercase tracking-wider">
+                  Net Réalisé
+                </span>
+              </div>
+              <div className="mt-3">
+                <div className="text-2xl lg:text-3xl font-extrabold text-white font-mono tracking-tight">
+                  {formatMoney(salesKpis.netRevenue)}
+                </div>
+                <div className="flex items-center justify-between text-[11px] text-stone-400 mt-1.5">
+                  <span className="flex items-center gap-1">
+                    <TrendingUp size={12} className="text-[#FB923C]" />
+                    <span>Déduction faite des avoirs clients</span>
+                  </span>
+                  <span className="font-mono text-stone-300">DZD</span>
+                </div>
+              </div>
+
+              {/* Decorative Subtle Background Sparkline */}
+              <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-[#FB923C]/5 rounded-full blur-2xl pointer-events-none" />
+            </div>
+
+          </div>
+        </div>
+
+        {/* Bottom Collection Pod Tray (SurfaceBgElevated: #F8F9FA) */}
+        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+          
+          {/* Subtab Segmented Switcher & Search Bar */}
+          <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
+            
+            {/* Segment Capsules */}
+            <div className="flex items-center gap-1.5 bg-neutral-200/60 dark:bg-neutral-800 p-1 rounded-2xl self-start">
+              <button
+                type="button"
+                onClick={() => setActiveSubTab('sales')}
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
+                  activeSubTab === 'sales'
+                    ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-xs'
+                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
+                }`}
+              >
+                <Receipt size={14} />
+                <span>{language === 'ar' ? 'المبيعات المسددة' : 'Encaissements Terminés'}</span>
+                <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono ${
+                  activeSubTab === 'sales' ? 'bg-[#C4785A]/15 text-[#C4785A]' : 'bg-neutral-300/60 dark:bg-neutral-700 text-neutral-500'
+                }`}>
+                  {branchSales.length}
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveSubTab('parked')}
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
+                  activeSubTab === 'parked'
+                    ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-xs'
+                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
+                }`}
+              >
+                <PauseCircle size={14} />
+                <span>{language === 'ar' ? 'التذاكر المعلقة' : 'Tickets en Attente'}</span>
+                <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono ${
+                  activeSubTab === 'parked' ? 'bg-[#C4785A]/15 text-[#C4785A]' : 'bg-neutral-300/60 dark:bg-neutral-700 text-neutral-500'
+                }`}>
+                  {parkedOrders.length}
+                </span>
+              </button>
+            </div>
+
+            {/* Quick Date Capsules (when on sales tab) */}
+            {activeSubTab === 'sales' && (
+              <div className="flex items-center gap-1 bg-neutral-200/50 dark:bg-neutral-800/60 p-1 rounded-xl text-xs font-bold self-start lg:self-auto overflow-x-auto">
                 <button
                   type="button"
                   onClick={() => setDateFilter('all')}
-                  className={`px-3 py-1.5 rounded-lg cursor-pointer ${
-                    dateFilter === 'all' ? 'bg-[#C4785A] text-white' : 'text-neutral-500'
+                  className={`px-2.5 py-1 rounded-lg cursor-pointer ${
+                    dateFilter === 'all' ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-2xs' : 'text-neutral-500'
                   }`}
                 >
                   {language === 'ar' ? 'الكل' : 'Tous'}
@@ -671,8 +700,8 @@ export const PosOrdersView: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setDateFilter('today')}
-                  className={`px-3 py-1.5 rounded-lg cursor-pointer ${
-                    dateFilter === 'today' ? 'bg-[#C4785A] text-white' : 'text-neutral-500'
+                  className={`px-2.5 py-1 rounded-lg cursor-pointer ${
+                    dateFilter === 'today' ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-2xs' : 'text-neutral-500'
                   }`}
                 >
                   {language === 'ar' ? 'اليوم' : 'Aujourd’hui'}
@@ -680,8 +709,8 @@ export const PosOrdersView: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setDateFilter('7days')}
-                  className={`px-3 py-1.5 rounded-lg cursor-pointer ${
-                    dateFilter === '7days' ? 'bg-[#C4785A] text-white' : 'text-neutral-500'
+                  className={`px-2.5 py-1 rounded-lg cursor-pointer ${
+                    dateFilter === '7days' ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-2xs' : 'text-neutral-500'
                   }`}
                 >
                   {language === 'ar' ? '7 أيام' : '7 jours'}
@@ -689,232 +718,143 @@ export const PosOrdersView: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setDateFilter('month')}
-                  className={`px-3 py-1.5 rounded-lg cursor-pointer ${
-                    dateFilter === 'month' ? 'bg-[#C4785A] text-white' : 'text-neutral-500'
+                  className={`px-2.5 py-1 rounded-lg cursor-pointer ${
+                    dateFilter === 'month' ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-2xs' : 'text-neutral-500'
                   }`}
                 >
                   {language === 'ar' ? 'هذا الشهر' : 'Ce mois'}
                 </button>
               </div>
+            )}
 
-              {/* Tender Filter */}
-              <FilterSelect
-                label={language === 'ar' ? 'وسيلة الدفع' : 'Règlement'}
-                value={tenderFilter}
-                onChange={(val) => setTenderFilter(typeof val === 'string' ? val : val.target?.value || val)}
-                options={[
-                  { value: 'all', label: language === 'ar' ? 'جميع الوسائل' : 'Toutes les méthodes' },
-                  { value: 'Cash', label: 'Espèces' },
-                  { value: 'Card', label: 'CIB / Edahabia' },
-                  { value: 'BankTransfer', label: 'BaridiMob' },
-                  { value: 'Split', label: 'Split' },
-                ]}
-              />
-
-              {/* Status Filter */}
-              <FilterSelect
-                label={language === 'ar' ? 'الحالة' : 'Statut'}
-                value={statusFilter}
-                onChange={(val) => setStatusFilter((typeof val === 'string' ? val : val.target?.value || val) as any)}
-                options={[
-                  { value: 'all', label: language === 'ar' ? 'جميع الحالات' : 'Tous les statuts' },
-                  { value: 'completed', label: language === 'ar' ? 'مسدد' : 'Encaissé' },
-                  { value: 'refunded', label: language === 'ar' ? 'مسترجع (Avoir)' : 'Remboursé' },
-                ]}
-              />
-
+            {/* Seek Search */}
+            <div className="self-end lg:self-auto">
               <Seek
                 value={searchQuery}
                 onChange={setSearchQuery}
-                placeholder={language === 'ar' ? 'بحث برقم الوصل، الزبون، المادة...' : 'Rechercher ticket, client, produit...'}
+                placeholder={language === 'ar' ? 'بحث برقم الوصل، الزبون...' : 'Filtrer N° ticket, client...'}
+                shutSize={36}
+                openWidth={260}
               />
             </div>
           </div>
 
-          {/* Universal Sales Ledger Collection */}
-          <UniversalDataCollection<Sale>
-            items={sortedSales}
-            keyExtractor={(s) => s.id}
-            defaultViewMode="list"
-            columns={salesColumns}
-            sortBy={salesSortBy}
-            sortDirection={salesSortDir}
-            onSortChange={(key) => {
-              if (salesSortBy === key) {
-                setSalesSortDir((prev) => (prev === 'asc' ? 'desc' : 'asc'));
-              } else {
-                setSalesSortBy(key);
-                setSalesSortDir('asc');
-              }
-            }}
-            onItemClick={(s) => setSelectedSaleForReceipt(s)}
-            renderCard={(s) => {
-              const isRefunded = s.status === 'Refunded';
-              return (
-                <div className="flex flex-col justify-between h-full space-y-3">
-                  <div>
-                    <div className="flex items-start justify-between gap-2 mb-2">
+          {/* Table Container Inside Pod Tray */}
+          <div className="bg-white dark:bg-neutral-800 rounded-[18px] border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs overflow-hidden">
+            {activeSubTab === 'sales' ? (
+              <UniversalDataCollection<Sale>
+                items={filteredSales}
+                keyExtractor={(s) => s.id}
+                defaultViewMode="list"
+                columns={salesColumns}
+                onItemClick={(s) => setSelectedSaleForReceipt(s)}
+                renderCard={(s) => {
+                  const isRefunded = s.status === 'Refunded';
+                  return (
+                    <div className="flex flex-col justify-between h-full space-y-3">
                       <div>
-                        <span className="font-mono font-bold text-xs text-neutral-900 dark:text-white block">
-                          #{s.id.slice(-6).toUpperCase()}
-                        </span>
-                        <span className="text-[10px] text-neutral-400 font-mono">
-                          {new Date(s.createdAt).toLocaleString()}
-                        </span>
-                      </div>
-                      <span
-                        className={`text-[10px] font-bold uppercase tracking-wider ${
-                          isRefunded ? 'text-red-600' : 'text-emerald-600'
-                        }`}
-                      >
-                        {isRefunded ? 'Avoir' : 'Encaissé'}
-                      </span>
-                    </div>
-
-                    <div className="text-xs font-bold text-neutral-800 dark:text-neutral-200 mb-1">
-                      {s.memberName || 'Client Walk-in'}
-                    </div>
-
-                    <div className="text-xs bg-neutral-50 dark:bg-neutral-800/50 p-2.5 rounded-xl space-y-1 text-neutral-600 dark:text-neutral-300">
-                      {s.items.map((it, idx) => (
-                        <div key={idx} className="flex justify-between text-[11px]">
-                          <span>{it.quantity}x {it.productName}</span>
-                          <span className="font-mono font-bold">{formatMoney(it.totalPrice)}</span>
+                        <div className="flex items-start justify-between gap-2 mb-2">
+                          <div>
+                            <span className="font-mono font-bold text-xs text-neutral-900 dark:text-white block">
+                              #{s.id.slice(-6).toUpperCase()}
+                            </span>
+                            <span className="text-[10px] text-neutral-400 font-mono">
+                              {new Date(s.createdAt).toLocaleString()}
+                            </span>
+                          </div>
+                          <span
+                            className={`text-[10px] font-bold uppercase tracking-wider ${
+                              isRefunded ? 'text-rose-600' : 'text-emerald-600'
+                            }`}
+                          >
+                            {isRefunded ? 'Remboursé' : 'Encaissé'}
+                          </span>
                         </div>
-                      ))}
-                    </div>
-                  </div>
 
-                  <div className="flex items-center justify-between pt-2 border-t border-neutral-100 dark:border-neutral-800">
-                    <span className="font-mono font-black text-sm text-[#C4785A] tabular-nums">
-                      {formatMoney(s.totalAmount)}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedSaleForReceipt(s);
-                      }}
-                      className="h-8 px-2.5 rounded-lg border border-neutral-200 dark:border-neutral-700 text-xs font-bold flex items-center gap-1 cursor-pointer"
-                    >
-                      <Printer size={12} className="text-[#C4785A]" />
-                      <span>Reçu</span>
-                    </button>
-                  </div>
-                </div>
-              );
-            }}
-            selectedIds={selectedSaleIds}
-            onSelectionChange={setSelectedSaleIds}
-            isPinned={(s) => pinnedSaleIds.has(s.id)}
-            onTogglePin={(s) => {
-              setPinnedSaleIds((prev) => {
-                const next = new Set(prev);
-                if (next.has(s.id)) next.delete(s.id);
-                else next.add(s.id);
-                return next;
-              });
-            }}
-            emptyTitle={language === 'ar' ? 'لا توجد مبيعات مطابقة' : 'Aucune vente correspondante'}
-            emptyDescription={language === 'ar' ? 'جرب تغيير معايير البحث أو الفترة الزمنية' : 'Modifiez vos filtres ou effectuez un encaissement sur la caisse.'}
-            primaryActionLabel={language === 'ar' ? 'فتح شاشة الصندوق' : 'Ouvrir Caisse'}
-            onAddFirstItem={() => setScreen('shop')}
-          />
-        </div>
-      )}
+                        <div className="text-xs font-bold text-neutral-800 dark:text-neutral-200 mb-1">
+                          {s.memberName || 'Client de Passage'}
+                        </div>
 
-      {/* ========================================================================= */}
-      {/* SUBTAB 2: PARKED / HELD ORDERS                                            */}
-      {/* ========================================================================= */}
-      {activeSubTab === 'parked' && (
-        <div className="space-y-4">
-          <UniversalDataCollection<ParkedOrder>
-            items={parkedOrders}
-            keyExtractor={(po) => po.id}
-            defaultViewMode="grid"
-            columns={parkedColumns}
-            onItemClick={(po) => {
-              resumeParkedOrder(po.id);
-              setScreen('shop');
-            }}
-            renderCard={(po) => (
-              <div className="flex flex-col justify-between h-full space-y-3">
-                <div>
-                  <div className="flex items-start justify-between gap-2 mb-2">
-                    <div>
-                      <div className="text-xs font-black text-neutral-900 dark:text-white">
-                        {po.referenceName}
+                        <div className="text-xs bg-neutral-50 dark:bg-neutral-800/50 p-2 rounded-xl space-y-0.5 text-neutral-600 dark:text-neutral-300">
+                          {s.items.map((it, idx) => (
+                            <div key={idx} className="flex justify-between text-[11px]">
+                              <span>{it.quantity}x {it.productName}</span>
+                              <span className="font-mono">{formatMoney(it.totalPrice)}</span>
+                            </div>
+                          ))}
+                        </div>
                       </div>
-                      <div className="text-[10px] text-neutral-400 mt-0.5">
-                        {new Date(po.createdAt).toLocaleTimeString()} · {po.items.length} {language === 'ar' ? 'أصناف' : 'articles'}
+
+                      <div className="flex items-center justify-between pt-2 border-t border-neutral-100 dark:border-neutral-800">
+                        <span className="font-mono font-black text-sm text-[#C4785A] tabular-nums">
+                          {formatMoney(s.totalAmount)}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedSaleForReceipt(s);
+                          }}
+                          className="h-7 px-2.5 rounded-lg border border-neutral-200 dark:border-neutral-700 text-xs font-bold flex items-center gap-1 cursor-pointer"
+                        >
+                          <Printer size={12} className="text-[#C4785A]" />
+                          <span>Reçu</span>
+                        </button>
                       </div>
                     </div>
-                    <div className="text-sm font-black font-mono text-[#C4785A]">
-                      {formatMoney(po.totalAmount)}
+                  );
+                }}
+                selectedIds={selectedSaleIds}
+                onSelectionChange={setSelectedSaleIds}
+                isPinned={(s) => pinnedSaleIds.has(s.id)}
+                onTogglePin={(s) => {
+                  setPinnedSaleIds((prev) => {
+                    const next = new Set(prev);
+                    if (next.has(s.id)) next.delete(s.id);
+                    else next.add(s.id);
+                    return next;
+                  });
+                }}
+                emptyTitle={language === 'ar' ? 'لا توجد مبيعات مطابقة' : 'Aucune vente trouvée'}
+                emptyDescription={language === 'ar' ? 'لا توجد نتائج مطابقة لمعايير البحث الحالية.' : 'Aucun ticket ne correspond à vos filtres de recherche.'}
+              />
+            ) : (
+              <UniversalDataCollection<ParkedOrder>
+                items={filteredParkedOrders}
+                keyExtractor={(po) => po.id}
+                defaultViewMode="list"
+                columns={parkedColumns}
+                renderCard={(po) => (
+                  <div className="p-4 rounded-xl border border-neutral-200 dark:border-neutral-700 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-xs text-neutral-900 dark:text-white">{po.referenceName}</span>
+                      <span className="font-mono font-bold text-xs text-[#C4785A]">{formatMoney(po.totalAmount)}</span>
+                    </div>
+                    <div className="text-[11px] text-neutral-400">
+                      {po.items.length} article(s) · {new Date(po.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </div>
                   </div>
-
-                  <div className="text-xs bg-neutral-50 dark:bg-neutral-800/50 p-2.5 rounded-xl space-y-1">
-                    {po.items.map((it, idx) => (
-                      <div key={idx} className="flex justify-between text-[11px] text-neutral-600 dark:text-neutral-300">
-                        <span>{it.quantity}x {it.productName}</span>
-                        <span className="font-mono">{formatMoney(it.totalPrice)}</span>
-                      </div>
-                    ))}
-                  </div>
-
-                  {po.notes && (
-                    <div className="text-[11px] text-amber-600 dark:text-amber-400 italic mt-2">
-                      Note : {po.notes}
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex items-center gap-2 pt-2 border-t border-neutral-100 dark:border-neutral-800">
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      resumeParkedOrder(po.id);
-                      setScreen('shop');
-                    }}
-                    className="flex-1 h-9 rounded-xl bg-[#C4785A] text-white text-xs font-bold flex items-center justify-center gap-1.5 hover:opacity-90 cursor-pointer"
-                  >
-                    <PlayCircle size={14} />
-                    <span>{language === 'ar' ? 'استئناف في الصندوق' : 'Reprendre en Caisse'}</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      deleteParkedOrder(po.id);
-                    }}
-                    className="h-9 px-3 rounded-xl border border-neutral-200 dark:border-neutral-700 text-neutral-400 hover:text-red-500 cursor-pointer"
-                    title="Discard order"
-                  >
-                    <Trash2 size={14} />
-                  </button>
-                </div>
-              </div>
+                )}
+                selectedIds={selectedParkedIds}
+                onSelectionChange={setSelectedParkedIds}
+                isPinned={(po) => pinnedParkedIds.has(po.id)}
+                onTogglePin={(po) => {
+                  setPinnedParkedIds((prev) => {
+                    const next = new Set(prev);
+                    if (next.has(po.id)) next.delete(po.id);
+                    else next.add(po.id);
+                    return next;
+                  });
+                }}
+                emptyTitle={language === 'ar' ? 'لا توجد تذاكر معلقة' : 'Aucun ticket en attente'}
+                emptyDescription={language === 'ar' ? 'جميع الطلبات تمت معالجتها أو لا توجد تذاكر معلقة.' : 'Tous les encaissements ont été finalisés.'}
+              />
             )}
-            selectedIds={selectedParkedIds}
-            onSelectionChange={setSelectedParkedIds}
-            isPinned={(po) => pinnedParkedIds.has(po.id)}
-            onTogglePin={(po) => {
-              setPinnedParkedIds((prev) => {
-                const next = new Set(prev);
-                if (next.has(po.id)) next.delete(po.id);
-                else next.add(po.id);
-                return next;
-              });
-            }}
-            emptyTitle={language === 'ar' ? 'لا توجد طلبات معلقة' : 'Aucun ticket en pause'}
-            emptyDescription={language === 'ar' ? 'يمكنك تعليق أي طلب من شاشة الصندوق لخدمة زبون آخر مؤقتاً' : 'Mettez un panier en pause depuis la caisse enregistreuse pour libérer le terminal.'}
-            primaryActionLabel={language === 'ar' ? 'شاشة الصندوق' : 'Accéder à la Caisse'}
-            onAddFirstItem={() => setScreen('shop')}
-          />
+          </div>
+
         </div>
-      )}
+
+      </div>
 
       {/* MODAL: Thermal Receipt Reprint Slip */}
       {selectedSaleForReceipt && (
@@ -925,6 +865,7 @@ export const PosOrdersView: React.FC = () => {
           subtitle={`Ticket #${selectedSaleForReceipt.id.slice(-8).toUpperCase()}`}
         >
           <div className="space-y-4" dir="ltr">
+            {/* Printable Thermal Receipt Slip Container */}
             <div
               id="pos-orders-thermal-receipt"
               className="mx-auto max-w-[340px] bg-white text-black p-4 rounded-xl border border-neutral-300 font-mono text-[11px] leading-relaxed shadow-xs"
