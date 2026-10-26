@@ -324,7 +324,7 @@ export const AppointmentFinanceView: React.FC = () => {
   ];
 
   return (
-    <div className="bg-white dark:bg-[#18181B] rounded-[28px] border border-[#E9EEF0] dark:border-neutral-800 p-6 lg:p-8 space-y-6 shadow-xs pb-16">
+    <div className="bg-white dark:bg-[#18181B] rounded-[28px] border border-[#E9EEF0] dark:border-neutral-800 p-6 lg:p-8 space-y-6 shadow-xs">
       {/* Header bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -377,64 +377,44 @@ export const AppointmentFinanceView: React.FC = () => {
           </span>
         </div>
 
-        {/* 4 Cards Grid including Dark Espresso Anchor Card */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Card 1: Recette Soins */}
-          <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
+        {/* 3-Card Canonical Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {/* Card 1: Recette Soins & Revente */}
+          <div className="bg-white dark:bg-neutral-800 rounded-[20px] p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
             <div>
-              <div className="flex items-center justify-between text-neutral-500 dark:text-neutral-400 mb-2">
-                <span className="text-xs font-bold uppercase tracking-wider">
+              <div className="flex items-center justify-between text-neutral-500 dark:text-neutral-400">
+                <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
                   Recette Brute Soins
                 </span>
-                <Scissors size={16} className="text-[#C4785A]" />
-              </div>
-              <div className="text-2xl font-black font-mono text-neutral-900 dark:text-white tracking-tight tabular-nums">
-                {formatMoney(totalServicesRevenue)}
-              </div>
-            </div>
-            <div className="pt-3 border-t border-neutral-100 dark:border-neutral-700/50 mt-3 text-[11px] text-neutral-400">
-              <span>Prestations réalisées en cabine</span>
-            </div>
-          </div>
-
-          {/* Card 2: Revente Produits */}
-          <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
-            <div>
-              <div className="flex items-center justify-between text-neutral-500 dark:text-neutral-400 mb-2">
-                <span className="text-xs font-bold uppercase tracking-wider">
-                  Revente Produits
+                <span className="text-[10px] font-bold text-blue-600 bg-blue-50 dark:bg-blue-950/40 px-2 py-0.5 rounded-full">
+                  +{formatMoney(totalRetailRevenue)} revente
                 </span>
-                <ShoppingBag size={16} className="text-blue-500" />
-              </div>
-              <div className="text-2xl font-black font-mono text-neutral-900 dark:text-white tracking-tight tabular-nums">
-                {formatMoney(totalRetailRevenue)}
               </div>
             </div>
-            <div className="pt-3 border-t border-neutral-100 dark:border-neutral-700/50 mt-3 text-[11px] text-neutral-400">
-              <span>Shampooings & sérums recommandés</span>
+            <div className="text-2xl font-black font-mono text-neutral-900 dark:text-white tracking-tight tabular-nums">
+              {formatMoney(totalServicesRevenue)}
             </div>
           </div>
 
-          {/* Card 3: Marge Salon */}
-          <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
+          {/* Card 2: Bénéfice Net Institut */}
+          <div className="bg-white dark:bg-neutral-800 rounded-[20px] p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
             <div>
-              <div className="flex items-center justify-between text-neutral-500 dark:text-neutral-400 mb-2">
-                <span className="text-xs font-bold uppercase tracking-wider">
+              <div className="flex items-center justify-between text-neutral-500 dark:text-neutral-400">
+                <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
                   Bénéfice Net Institut
                 </span>
-                <TrendingUp size={16} className="text-emerald-500" />
-              </div>
-              <div className="text-2xl font-black font-mono text-emerald-600 dark:text-emerald-400 tracking-tight tabular-nums">
-                {formatMoney(netSalonProfit)}
+                <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
+                  Net Salon
+                </span>
               </div>
             </div>
-            <div className="pt-3 border-t border-neutral-100 dark:border-neutral-700/50 mt-3 text-[11px] text-neutral-400">
-              <span>Après déduction commissions d'équipe</span>
+            <div className="text-2xl font-black font-mono text-emerald-600 dark:text-emerald-400 tracking-tight tabular-nums">
+              {formatMoney(netSalonProfit)}
             </div>
           </div>
 
-          {/* Card 4: DARK ESPRESSO ANCHOR CARD (#1F1D1B) */}
-          <div className="bg-[#1F1D1B] rounded-[18px] p-4 lg:p-5 border border-neutral-800 shadow-sm text-white flex flex-col justify-between relative overflow-hidden group">
+          {/* Card 3: DARK ESPRESSO ANCHOR CARD (#1F1D1B) */}
+          <div className="bg-[#1F1D1B] rounded-[20px] p-5 border border-neutral-800 shadow-sm text-white flex flex-col justify-between h-[124px] relative overflow-hidden group">
             {/* Glowing Sparkline Graphic */}
             <div className="absolute -right-4 -bottom-6 opacity-20 group-hover:opacity-30 transition-opacity pointer-events-none">
               <svg width="140" height="90" viewBox="0 0 140 90" fill="none">
@@ -450,8 +430,8 @@ export const AppointmentFinanceView: React.FC = () => {
             </div>
 
             <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-bold text-neutral-300 uppercase tracking-wider">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-medium text-neutral-300">
                   Cagnotte Stylistes
                 </span>
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30">
@@ -463,7 +443,7 @@ export const AppointmentFinanceView: React.FC = () => {
               </div>
             </div>
 
-            <div className="pt-3 border-t border-neutral-800 mt-3 flex items-center justify-between text-[11px] text-neutral-400">
+            <div className="pt-1.5 border-t border-neutral-800/80 flex items-center justify-between text-[10px] text-neutral-400">
               <span>Total commissions dues</span>
               <span className="text-[#FB923C] font-semibold">Validation requise</span>
             </div>
@@ -471,65 +451,83 @@ export const AppointmentFinanceView: React.FC = () => {
         </div>
       </div>
 
-      {/* Tender Breakdown Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="p-4 rounded-[18px] bg-[#F8F9FA] dark:bg-neutral-800/40 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-2">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Banknote size={17} className="text-emerald-500" />
-              <h3 className="text-xs font-black uppercase text-neutral-700 dark:text-neutral-300">
-                Paiements Espèces (DZD)
-              </h3>
+      {/* TENDER BREAKDOWN POD TRAY */}
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-3">
+        <div className="flex items-center justify-between pb-2 border-b border-[#EDF1F3] dark:border-neutral-800/60">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#C4785A]">
+              <CreditCard size={16} />
             </div>
-            <span className="font-mono text-xs font-bold text-neutral-400">
-              {paymentBreakdown.total > 0 ? `${Math.round((paymentBreakdown.cash / paymentBreakdown.total) * 100)}%` : '0%'}
-            </span>
-          </div>
-          <div className="text-xl font-black font-mono text-neutral-900 dark:text-white tabular-nums">
-            {formatMoney(paymentBreakdown.cash)}
-          </div>
-          <div className="text-[11px] text-neutral-400">
-            Encaissé au comptoir accueil
+            <div>
+              <span className="text-xs font-bold text-neutral-900 dark:text-white uppercase tracking-wider">
+                Ventilation des Modes de Règlement
+              </span>
+              <span className="text-[11px] text-neutral-500 dark:text-neutral-400 block">
+                Encaissements comptoir salon, paiements BaridiMob et terminaux TPE Satim
+              </span>
+            </div>
           </div>
         </div>
 
-        <div className="p-4 rounded-[18px] bg-[#F8F9FA] dark:bg-neutral-800/40 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-2">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Smartphone size={17} className="text-[#C4785A]" />
-              <h3 className="text-xs font-black uppercase text-neutral-700 dark:text-neutral-300">
-                BaridiMob & Virement RIP
-              </h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="p-4 rounded-[18px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Banknote size={17} className="text-emerald-500" />
+                <h3 className="text-xs font-black uppercase text-neutral-700 dark:text-neutral-300">
+                  Paiements Espèces (DZD)
+                </h3>
+              </div>
+              <span className="font-mono text-xs font-bold text-neutral-400">
+                {paymentBreakdown.total > 0 ? `${Math.round((paymentBreakdown.cash / paymentBreakdown.total) * 100)}%` : '0%'}
+              </span>
             </div>
-            <span className="font-mono text-xs font-bold text-neutral-400">
-              {paymentBreakdown.total > 0 ? `${Math.round((paymentBreakdown.baridiMob / paymentBreakdown.total) * 100)}%` : '0%'}
-            </span>
+            <div className="text-xl font-black font-mono text-neutral-900 dark:text-white tabular-nums">
+              {formatMoney(paymentBreakdown.cash)}
+            </div>
+            <div className="text-[11px] text-neutral-400">
+              Encaissé au comptoir accueil
+            </div>
           </div>
-          <div className="text-xl font-black font-mono text-neutral-900 dark:text-white tabular-nums">
-            {formatMoney(paymentBreakdown.baridiMob)}
-          </div>
-          <div className="text-[11px] text-neutral-400">
-            Paiements instantanés confirmés
-          </div>
-        </div>
 
-        <div className="p-4 rounded-[18px] bg-[#F8F9FA] dark:bg-neutral-800/40 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-2">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <CreditCard size={17} className="text-blue-500" />
-              <h3 className="text-xs font-black uppercase text-neutral-700 dark:text-neutral-300">
-                Cartes CIB & Edahabia
-              </h3>
+          <div className="p-4 rounded-[18px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Smartphone size={17} className="text-[#C4785A]" />
+                <h3 className="text-xs font-black uppercase text-neutral-700 dark:text-neutral-300">
+                  BaridiMob & Virement RIP
+                </h3>
+              </div>
+              <span className="font-mono text-xs font-bold text-neutral-400">
+                {paymentBreakdown.total > 0 ? `${Math.round((paymentBreakdown.baridiMob / paymentBreakdown.total) * 100)}%` : '0%'}
+              </span>
             </div>
-            <span className="font-mono text-xs font-bold text-neutral-400">
-              {paymentBreakdown.total > 0 ? `${Math.round((paymentBreakdown.cib / paymentBreakdown.total) * 100)}%` : '0%'}
-            </span>
+            <div className="text-xl font-black font-mono text-neutral-900 dark:text-white tabular-nums">
+              {formatMoney(paymentBreakdown.baridiMob)}
+            </div>
+            <div className="text-[11px] text-neutral-400">
+              Paiements instantanés confirmés
+            </div>
           </div>
-          <div className="text-xl font-black font-mono text-neutral-900 dark:text-white tabular-nums">
-            {formatMoney(paymentBreakdown.cib)}
-          </div>
-          <div className="text-[11px] text-neutral-400">
-            TPE SATIM monétique bancaire
+
+          <div className="p-4 rounded-[18px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <CreditCard size={17} className="text-blue-500" />
+                <h3 className="text-xs font-black uppercase text-neutral-700 dark:text-neutral-300">
+                  Cartes CIB & Edahabia
+                </h3>
+              </div>
+              <span className="font-mono text-xs font-bold text-neutral-400">
+                {paymentBreakdown.total > 0 ? `${Math.round((paymentBreakdown.cib / paymentBreakdown.total) * 100)}%` : '0%'}
+              </span>
+            </div>
+            <div className="text-xl font-black font-mono text-neutral-900 dark:text-white tabular-nums">
+              {formatMoney(paymentBreakdown.cib)}
+            </div>
+            <div className="text-[11px] text-neutral-400">
+              TPE SATIM monétique bancaire
+            </div>
           </div>
         </div>
       </div>

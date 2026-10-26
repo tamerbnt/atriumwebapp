@@ -560,7 +560,7 @@ export const TradingInventoryView: React.FC = () => {
                     : t('trading_inventory_tab_vouchers', 'Bons de Mouvements')}
                 </span>
                 <span className="text-xs px-2 py-0.5 rounded-full bg-[#C4785A]/10 text-[#C4785A] font-semibold font-mono">
-                  {viewMode === 'stock_state' ? filteredProducts.length : vouchers.length}
+                  {viewMode === 'stock_state' ? filteredProducts.length : filteredVouchers.length}
                 </span>
               </div>
             </div>
@@ -608,11 +608,12 @@ export const TradingInventoryView: React.FC = () => {
               <div className="self-end sm:self-auto">
                 <Seek
                   value={searchQuery}
-                onChange={setSearchQuery}
-                placeholder={language === 'ar' ? 'بحث برمز المادة، التسمية، السند...' : 'Filtrer article, bon, SKU...'}
-                shutSize={36}
-                openWidth={280}
-              />
+                  onChange={setSearchQuery}
+                  placeholder={language === 'ar' ? 'بحث برمز المادة، التسمية، السند...' : 'Filtrer article, bon, SKU...'}
+                  shutSize={36}
+                  openWidth={280}
+                />
+              </div>
             </div>
           </div>
 

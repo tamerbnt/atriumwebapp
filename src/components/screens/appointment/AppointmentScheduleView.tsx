@@ -77,7 +77,7 @@ export const AppointmentScheduleView: React.FC = () => {
   const [selectedStylistId, setSelectedStylistId] = useState<string>('All');
   const [statusFilter, setStatusFilter] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState('');
-  const [viewMode, setViewMode] = useState<'columns' | 'list' | 'catalog'>('columns');
+  const [viewMode, setViewMode] = useState<'columns' | 'list'>('columns');
   const [isFacilityDropdownOpen, setIsFacilityDropdownOpen] = useState(false);
 
   // Modal control
@@ -467,18 +467,6 @@ export const AppointmentScheduleView: React.FC = () => {
               <Calendar size={14} />
               <span>{language === 'ar' ? 'مخطط كراسي المصففين' : language === 'fr' ? 'Matrice Stylistes' : 'Stylist Chair Matrix'}</span>
             </button>
-            <button
-              type="button"
-              onClick={() => setViewMode('catalog')}
-              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold cursor-pointer transition-all ${
-                viewMode === 'catalog'
-                  ? 'bg-[#C4785A] text-white shadow-xs'
-                  : 'text-neutral-600 dark:text-neutral-300 hover:text-neutral-900'
-              }`}
-            >
-              <Sparkles size={14} />
-              <span>{t('salon_view_catalog', language)}</span>
-            </button>
           </div>
 
           {/* Action Buttons */}
@@ -608,12 +596,10 @@ export const AppointmentScheduleView: React.FC = () => {
                 <span className="text-sm font-bold text-neutral-900 dark:text-white">
                   {viewMode === 'columns'
                     ? (language === 'ar' ? 'مخطط كراسي المصففين' : 'Planning des Postes de Coiffure')
-                    : viewMode === 'list'
-                    ? (language === 'ar' ? 'سجل المواعيد العام' : 'Registre des Rendez-Vous')
-                    : (language === 'ar' ? 'دليل الخدمات' : 'Catalogue des Soins')}
+                    : (language === 'ar' ? 'سجل المواعيد العام' : 'Registre des Rendez-Vous')}
                 </span>
                 <span className="px-2 py-0.5 rounded-full text-xs font-mono font-bold bg-[#C4785A]/10 text-[#C4785A]">
-                  {viewMode === 'catalog' ? servicesCatalog.length : dayAppointments.length}
+                  {dayAppointments.length}
                 </span>
               </div>
             </div>
@@ -1013,69 +999,6 @@ export const AppointmentScheduleView: React.FC = () => {
               />
             </div>
           )}
-
-          {/* Service Treatment Catalog View */}
-          {viewMode === 'catalog' && (
-            <div className="bg-white dark:bg-neutral-800 rounded-[20px] border border-[#E9EEF0] dark:border-neutral-700/80 shadow-2xs overflow-hidden p-5 lg:p-6">
-              <div className="flex items-center justify-between mb-5">
-                <div>
-                  <h2 className="text-base font-bold text-neutral-900 dark:text-white">
-                    {t('salon_catalog_title', language)}
-                  </h2>
-                  <p className="text-xs text-neutral-500">
-                    {t('salon_catalog_subtitle', language)}
-                  </p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {servicesCatalog.map((service) => {
-                  const localized = getLocalizedService(service, language);
-                  return (
-                    <div
-                      key={service.id}
-                      className="p-4 rounded-2xl border border-neutral-200/80 dark:border-neutral-800 hover:border-[#C4785A]/50 bg-neutral-50/50 dark:bg-neutral-900/40 transition-all hover:shadow-md"
-                    >
-                      <div className="flex items-center justify-between mb-2">
-                        <span
-                          className="px-2.5 py-0.5 text-[10px] font-bold rounded-md uppercase tracking-wider text-white"
-                          style={{ backgroundColor: service.colorCode || '#C4785A' }}
-                        >
-                          {getLocalizedServiceCategory(service.category, language)}
-                        </span>
-                        <span className="text-xs font-semibold text-neutral-500 flex items-center gap-1">
-                          <Clock size={12} /> {t('salon_duration_mins', language).replace('{duration}', String(service.durationMinutes))}
-                        </span>
-                      </div>
-
-                      <h3 className="text-sm font-bold text-neutral-900 dark:text-white mb-1">
-                        {localized.name}
-                      </h3>
-                      <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-3 min-h-[36px]">
-                        {localized.description || 'Premium salon aesthetic treatment.'}
-                      </p>
-
-                      <div className="flex items-center justify-between pt-2 border-t border-neutral-200/60 dark:border-neutral-800/80">
-                        <span className="text-sm font-bold text-[#C4785A]">
-                          {formatMoney(service.price)}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            handleOpenAddModal('10:00');
-                          }}
-                          className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-[#C4785A]/10 text-[#C4785A] hover:bg-[#C4785A] hover:text-white transition-colors cursor-pointer"
-                        >
-                          {t('salon_btn_new_appointment', language)}
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
         </div>
 
         {/* Booking / Action Modal */}

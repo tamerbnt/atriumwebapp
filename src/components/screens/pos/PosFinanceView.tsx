@@ -9,6 +9,7 @@ import {
   Plus,
   ArrowRight,
   TrendingUp,
+  TrendingDown,
   AlertCircle,
   CheckCircle2,
   Receipt,
@@ -338,7 +339,7 @@ export const PosFinanceView: React.FC = () => {
   ], [language]);
 
   return (
-    <div className="bg-white dark:bg-[#18181B] rounded-[28px] border border-[#E9EEF0] dark:border-neutral-800 p-6 lg:p-8 space-y-6 shadow-xs pb-16" dir={isRtl ? 'rtl' : 'ltr'}>
+    <div className="bg-white dark:bg-[#18181B] rounded-[28px] border border-[#E9EEF0] dark:border-neutral-800 p-6 lg:p-8 space-y-6 shadow-xs" dir={isRtl ? 'rtl' : 'ltr'}>
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -415,66 +416,44 @@ export const PosFinanceView: React.FC = () => {
           </div>
         </div>
 
-        {/* 4 Cards Grid including Dark Espresso Card */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* 3-Card Canonical Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {/* Card 1: Ventes Brutes */}
-          <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
+          <div className="bg-white dark:bg-neutral-800 rounded-[20px] p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
             <div>
-              <div className="flex items-center justify-between text-neutral-500 dark:text-neutral-400 mb-2">
-                <span className="text-xs font-bold uppercase tracking-wider">
+              <div className="flex items-center justify-between text-neutral-500 dark:text-neutral-400">
+                <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
                   {language === 'ar' ? 'إجمالي المبيعات' : 'Ventes Brutes Jour'}
                 </span>
-                <Receipt size={16} className="text-[#C4785A]" />
-              </div>
-              <div className="text-2xl font-black font-mono text-neutral-900 dark:text-white tracking-tight tabular-nums">
-                {formatMoney(financeTotals.totalGrossSales)}
+                <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
+                  {todaySales.length} {language === 'ar' ? 'عملية' : 'tickets'}
+                </span>
               </div>
             </div>
-            <div className="pt-3 border-t border-neutral-100 dark:border-neutral-700/50 mt-3 flex items-center justify-between text-[11px] text-neutral-500">
-              <span>{todaySales.length} {language === 'ar' ? 'عملية بيع' : 'tickets'}</span>
-              <span className="font-mono font-bold text-emerald-600">Espèces: {formatMoney(financeTotals.cashSales)}</span>
+            <div className="text-2xl font-black font-mono text-neutral-900 dark:text-white tracking-tight tabular-nums">
+              {formatMoney(financeTotals.totalGrossSales)}
             </div>
           </div>
 
           {/* Card 2: Sorties de Caisse */}
-          <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
+          <div className="bg-white dark:bg-neutral-800 rounded-[20px] p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
             <div>
-              <div className="flex items-center justify-between text-neutral-500 dark:text-neutral-400 mb-2">
-                <span className="text-xs font-bold uppercase tracking-wider">
+              <div className="flex items-center justify-between text-neutral-500 dark:text-neutral-400">
+                <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
                   {language === 'ar' ? 'سحوبات ومصاريف' : 'Sorties de Caisse'}
                 </span>
-                <TrendingUp size={16} className="text-red-500 rotate-180" />
-              </div>
-              <div className="text-2xl font-black font-mono text-red-600 dark:text-red-400 tracking-tight tabular-nums">
-                -{formatMoney(financeTotals.totalCashPayouts)}
-              </div>
-            </div>
-            <div className="pt-3 border-t border-neutral-100 dark:border-neutral-700/50 mt-3 flex items-center justify-between text-[11px] text-neutral-500">
-              <span>{expenses.length} {language === 'ar' ? 'دفعات نقدية' : 'dépenses'}</span>
-              <span className="text-neutral-400 truncate">Fournitures & Livreurs</span>
-            </div>
-          </div>
-
-          {/* Card 3: Solde Théorique */}
-          <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
-            <div>
-              <div className="flex items-center justify-between text-neutral-500 dark:text-neutral-400 mb-2">
-                <span className="text-xs font-bold uppercase tracking-wider">
-                  {language === 'ar' ? 'الرصيد النظري المتوقع' : 'Solde Théorique Attendu'}
+                <span className="text-[10px] font-bold text-red-600 bg-red-50 dark:bg-red-950/40 px-2 py-0.5 rounded-full">
+                  {expenses.length} {language === 'ar' ? 'دفعات' : 'dépenses'}
                 </span>
-                <Coins size={16} className="text-[#C4785A]" />
-              </div>
-              <div className="text-2xl font-black font-mono text-[#C4785A] tracking-tight tabular-nums">
-                {formatMoney(financeTotals.expectedCashInDrawer)}
               </div>
             </div>
-            <div className="pt-3 border-t border-neutral-100 dark:border-neutral-700/50 mt-3 text-[11px] text-neutral-500">
-              <span>Fond ({formatMoney(openingFloat)}) + Cash - Sorties</span>
+            <div className="text-2xl font-black font-mono text-red-600 dark:text-red-400 tracking-tight tabular-nums">
+              -{formatMoney(financeTotals.totalCashPayouts)}
             </div>
           </div>
 
-          {/* Card 4: DARK ESPRESSO ANCHOR CARD (#1F1D1B) */}
-          <div className="bg-[#1F1D1B] rounded-[18px] p-4 lg:p-5 border border-neutral-800 shadow-sm text-white flex flex-col justify-between relative overflow-hidden group">
+          {/* Card 3: DARK ESPRESSO ANCHOR CARD (#1F1D1B) */}
+          <div className="bg-[#1F1D1B] rounded-[20px] p-5 border border-neutral-800 shadow-sm text-white flex flex-col justify-between h-[124px] relative overflow-hidden group">
             {/* Glowing Sparkline Graphic */}
             <div className="absolute -right-4 -bottom-6 opacity-20 group-hover:opacity-30 transition-opacity pointer-events-none">
               <svg width="140" height="90" viewBox="0 0 140 90" fill="none">
@@ -490,9 +469,9 @@ export const PosFinanceView: React.FC = () => {
             </div>
 
             <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-bold text-neutral-300 uppercase tracking-wider">
-                  {language === 'ar' ? 'مراقبة الفارق (Écart)' : 'Pointage Caisse & Écart'}
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-medium text-neutral-300">
+                  {language === 'ar' ? 'الرصيد النظري & الفارق' : 'Solde Théorique & Écart'}
                 </span>
                 <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
                   !financeTotals.hasCounted
@@ -504,7 +483,7 @@ export const PosFinanceView: React.FC = () => {
                     : 'bg-red-950/80 text-red-300 border-red-700/40'
                 }`}>
                   {!financeTotals.hasCounted
-                    ? 'Saisie requise'
+                    ? 'Pointage requis'
                     : financeTotals.cashVariance === 0
                     ? 'Écart : 0 DA'
                     : financeTotals.cashVariance > 0
@@ -512,31 +491,21 @@ export const PosFinanceView: React.FC = () => {
                     : formatMoney(financeTotals.cashVariance)}
                 </span>
               </div>
-
-              {/* Physical count input */}
-              <div className="flex items-center gap-2 mt-1">
-                <input
-                  type="number"
-                  placeholder="Compté en DA"
-                  value={actualCashInput}
-                  onChange={(e) => setActualCashInput(e.target.value)}
-                  className="w-full h-8 px-2.5 text-xs font-mono font-bold rounded-lg bg-neutral-900 border border-neutral-700 text-white placeholder:text-neutral-500 focus:outline-hidden focus:border-[#FB923C]"
-                />
-                <span className="text-[11px] font-mono text-neutral-400">DA</span>
+              <div className="text-2xl font-black font-mono text-white tracking-tight tabular-nums">
+                {formatMoney(financeTotals.expectedCashInDrawer)}
               </div>
             </div>
 
-            <div className="pt-2 border-t border-neutral-800 mt-2 text-[11px] text-neutral-400 flex items-center justify-between">
-              <span>{language === 'ar' ? 'الحالة :' : 'Résultat :'}</span>
-              <span className="font-bold text-neutral-200">
-                {!financeTotals.hasCounted
-                  ? 'Entrez le montant compté'
-                  : financeTotals.cashVariance === 0
-                  ? 'Caisse parfaite (Juste)'
-                  : financeTotals.cashVariance > 0
-                  ? 'Excédent de caisse'
-                  : 'Déficit de caisse'}
-              </span>
+            {/* Quick Count Field in Espresso Card */}
+            <div className="flex items-center gap-2 pt-1.5 border-t border-neutral-800/80">
+              <span className="text-[10px] text-neutral-400 shrink-0 font-medium">{language === 'ar' ? 'المعدود :' : 'Compté :'}</span>
+              <input
+                type="number"
+                placeholder="DA réel"
+                value={actualCashInput}
+                onChange={(e) => setActualCashInput(e.target.value)}
+                className="w-full h-6 px-2 text-[11px] font-mono font-bold rounded-md bg-neutral-900 border border-neutral-700 text-white placeholder:text-neutral-500 focus:outline-hidden focus:border-[#FB923C]"
+              />
             </div>
           </div>
         </div>
@@ -660,7 +629,7 @@ export const PosFinanceView: React.FC = () => {
                 {language === 'ar' ? 'سجل مصاريف وسحوبات الصندوق' : 'Journal des Sorties de Caisse'}
               </span>
               <span className="text-xs px-2 py-0.5 rounded-full bg-[#C4785A]/10 text-[#C4785A] font-semibold font-mono">
-                {filteredPayouts.length}
+                {filteredExpenses.length}
               </span>
             </div>
           </div>

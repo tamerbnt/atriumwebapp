@@ -241,7 +241,7 @@ export const PosHistoryView: React.FC = () => {
   };
 
   return (
-    <div className="bg-white dark:bg-[#18181B] rounded-[28px] border border-[#E9EEF0] dark:border-neutral-800 p-6 lg:p-8 space-y-6 shadow-xs pb-16" dir={isRtl ? 'rtl' : 'ltr'}>
+    <div className="bg-white dark:bg-[#18181B] rounded-[28px] border border-[#E9EEF0] dark:border-neutral-800 p-6 lg:p-8 space-y-6 shadow-xs" dir={isRtl ? 'rtl' : 'ltr'}>
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -298,64 +298,44 @@ export const PosHistoryView: React.FC = () => {
           </span>
         </div>
 
-        {/* 4 Cards Grid including Dark Espresso Card */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* 3-Card Canonical Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {/* Card 1: Entrées */}
-          <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
+          <div className="bg-white dark:bg-neutral-800 rounded-[20px] p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
             <div>
-              <div className="flex items-center justify-between text-neutral-500 dark:text-neutral-400 mb-2">
-                <span className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+              <div className="flex items-center justify-between text-neutral-500 dark:text-neutral-400">
+                <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
                   {language === 'ar' ? 'الوحدات المضافة' : 'Entrées Physiques (+)'}
                 </span>
-                <Plus size={16} className="text-emerald-500" />
-              </div>
-              <div className="text-2xl font-black font-mono text-emerald-600 dark:text-emerald-400 tracking-tight tabular-nums">
-                +{movementStats.unitsIn}
+                <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
+                  Réassorts
+                </span>
               </div>
             </div>
-            <div className="pt-3 border-t border-neutral-100 dark:border-neutral-700/50 mt-3 text-[11px] text-neutral-400">
-              {language === 'ar' ? 'تموينات وتوريدات المخزن' : 'Réassorts fournisseurs'}
+            <div className="text-2xl font-black font-mono text-emerald-600 dark:text-emerald-400 tracking-tight tabular-nums">
+              +{movementStats.unitsIn}
             </div>
           </div>
 
           {/* Card 2: Sorties */}
-          <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
+          <div className="bg-white dark:bg-neutral-800 rounded-[20px] p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
             <div>
-              <div className="flex items-center justify-between text-neutral-500 dark:text-neutral-400 mb-2">
-                <span className="text-xs font-bold uppercase tracking-wider text-red-500">
+              <div className="flex items-center justify-between text-neutral-500 dark:text-neutral-400">
+                <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
                   {language === 'ar' ? 'الوحدات المخصومة' : 'Sorties Physiques (-)'}
                 </span>
-                <Minus size={16} className="text-red-500" />
-              </div>
-              <div className="text-2xl font-black font-mono text-red-600 dark:text-red-400 tracking-tight tabular-nums">
-                -{movementStats.unitsOut}
-              </div>
-            </div>
-            <div className="pt-3 border-t border-neutral-100 dark:border-neutral-700/50 mt-3 text-[11px] text-neutral-400">
-              {language === 'ar' ? 'مبيعات كاشير وإهلاك' : 'Ventes caisse & pertes'}
-            </div>
-          </div>
-
-          {/* Card 3: Total Audit Lines */}
-          <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
-            <div>
-              <div className="flex items-center justify-between text-neutral-500 dark:text-neutral-400 mb-2">
-                <span className="text-xs font-bold uppercase tracking-wider text-neutral-600 dark:text-neutral-300">
-                  {language === 'ar' ? 'إجمالي الحركات' : 'Total Événements'}
+                <span className="text-[10px] font-bold text-red-600 bg-red-50 dark:bg-red-950/40 px-2 py-0.5 rounded-full">
+                  Ventes & Pertes
                 </span>
-                <Boxes size={16} className="text-[#C4785A]" />
-              </div>
-              <div className="text-2xl font-black font-mono text-neutral-900 dark:text-white tracking-tight tabular-nums">
-                {movementStats.totalMovements}
               </div>
             </div>
-            <div className="pt-3 border-t border-neutral-100 dark:border-neutral-700/50 mt-3 text-[11px] text-neutral-400">
-              {language === 'ar' ? 'سجل غير قابل للتعديل' : 'Journal immuable horodaté'}
+            <div className="text-2xl font-black font-mono text-red-600 dark:text-red-400 tracking-tight tabular-nums">
+              -{movementStats.unitsOut}
             </div>
           </div>
 
-          {/* Card 4: DARK ESPRESSO ANCHOR CARD (#1F1D1B) */}
-          <div className="bg-[#1F1D1B] rounded-[18px] p-4 lg:p-5 border border-neutral-800 shadow-sm text-white flex flex-col justify-between relative overflow-hidden group">
+          {/* Card 3: DARK ESPRESSO ANCHOR CARD (#1F1D1B) */}
+          <div className="bg-[#1F1D1B] rounded-[20px] p-5 border border-neutral-800 shadow-sm text-white flex flex-col justify-between h-[124px] relative overflow-hidden group">
             {/* Glowing Sparkline Graphic */}
             <div className="absolute -right-4 -bottom-6 opacity-20 group-hover:opacity-30 transition-opacity pointer-events-none">
               <svg width="140" height="90" viewBox="0 0 140 90" fill="none">
@@ -371,21 +351,21 @@ export const PosHistoryView: React.FC = () => {
             </div>
 
             <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-bold text-neutral-300 uppercase tracking-wider">
-                  {language === 'ar' ? 'تدقيق الجرد والتسوية' : 'Audit & Ajustements'}
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-medium text-neutral-300">
+                  {language === 'ar' ? 'تدقيق الحركات والتسوية' : 'Audit Traçabilité & Flux Net'}
                 </span>
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30">
-                  {movementStats.adjustmentsCount} rectifications
+                  {movementStats.totalMovements} événements
                 </span>
               </div>
               <div className="text-2xl font-black font-mono tracking-tight text-white tabular-nums">
-                {movementStats.netUnitsDelta > 0 ? `+${movementStats.netUnitsDelta}` : movementStats.netUnitsDelta} <span className="text-sm font-medium text-neutral-400">unités nettes</span>
+                {movementStats.netUnitsDelta > 0 ? `+${movementStats.netUnitsDelta}` : movementStats.netUnitsDelta} <span className="text-xs font-normal text-neutral-400">unités nettes</span>
               </div>
             </div>
 
-            <div className="pt-3 border-t border-neutral-800 mt-3 flex items-center justify-between text-[11px] text-neutral-400">
-              <span>Flux net de période</span>
+            <div className="pt-1.5 border-t border-neutral-800/80 flex items-center justify-between text-[10px] text-neutral-400">
+              <span>{movementStats.adjustmentsCount} rectifications manuelles</span>
               <span className="text-[#FB923C] font-semibold">Registre certifié</span>
             </div>
           </div>

@@ -585,12 +585,18 @@ export const PosRegisterView: React.FC<PosRegisterViewProps> = ({ initialTab = '
       (s) => s.facilityId === currentBranch.id && s.status !== 'Refunded'
     );
     const turnover = todaySales.reduce((acc, s) => {
-      const amt = typeof s.totalAmount === 'number' ? s.totalAmount : s.totalAmount?.amount || 0;
+      const amt = typeof s.totalAmount === 'number' ? s.totalAmount : 0;
       return acc + amt;
     }, 0);
     const totalCash = todaySales.reduce((acc, s) => {
-      const cashPayments = s.paymentDetails?.filter((p) => p.method === 'Cash') || [];
-      return acc + cashPayments.reduce((cAcc, cp) => cAcc + cp.amount, 0);
+      if (s.paymentMethod === 'Cash') return acc + (s.totalAmount || 0);
+      if (s.paymentMethod === 'Split' && s.payments) {
+        const cashAmt = s.payments
+          .filter((p) => p.method === 'Cash')
+          .reduce((cAcc, cp) => cAcc + cp.amount, 0);
+        return acc + cashAmt;
+      }
+      return acc;
     }, 0);
     const parkedCount = parkedOrders.length;
     const parkedValuation = parkedOrders.reduce((acc, p) => acc + (p.totalAmount || 0), 0);
@@ -1065,187 +1071,266 @@ export const PosRegisterView: React.FC<PosRegisterViewProps> = ({ initialTab = '
   };
 
   return (
-    <div className="space-y-5 pb-16" dir={isRtl ? 'rtl' : 'ltr'}>
-      {/* Print stylesheet for thermal receipt */}
-      <style>{`
-        @media print {
-          body * {
-            visibility: hidden !important;
+    <div className="space-y-6 animate-in fade-in duration-200" dir={isRtl ? 'rtl' : 'ltr'}>
+      {/* Outer Workspace Panel */}
+      <div className="bg-white dark:bg-[#18181B] rounded-[28px] border border-[#E9EEF0] dark:border-neutral-800 p-6 lg:p-8 space-y-6 shadow-xs">
+        {/* Print stylesheet for thermal receipt */}
+        <style>{`
+          @media print {
+            body * {
+              visibility: hidden !important;
+            }
+            #pos-thermal-receipt-container, #pos-thermal-receipt-container * {
+              visibility: visible !important;
+            }
+            #pos-thermal-receipt-container {
+              position: absolute !important;
+              left: 0 !important;
+              top: 0 !important;
+              width: 80mm !important;
+              max-width: 80mm !important;
+              margin: 0 !important;
+              padding: 8px !important;
+              font-size: 11px !important;
+              background: white !important;
+              color: black !important;
+            }
           }
-          #pos-thermal-receipt-container, #pos-thermal-receipt-container * {
-            visibility: visible !important;
-          }
-          #pos-thermal-receipt-container {
-            position: absolute !important;
-            left: 0 !important;
-            top: 0 !important;
-            width: 80mm !important;
-            max-width: 80mm !important;
-            margin: 0 !important;
-            padding: 8px !important;
-            font-size: 11px !important;
-            background: white !important;
-            color: black !important;
-          }
-        }
-      `}</style>
+        `}</style>
 
-      {/* Screen Header & Facility Switcher */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-black text-neutral-900 dark:text-white tracking-tight flex items-center gap-2.5">
-              <ShoppingBag className="text-[#C4785A]" size={26} />
-              <span>{t('shop_hub_title')}</span>
-            </h1>
-            <span className="text-[11px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800">
-              {t('status_active')}
-            </span>
+        {/* Screen Header & Facility Switcher */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-3">
+              <h1 className="text-2xl font-black text-neutral-900 dark:text-white tracking-tight flex items-center gap-2.5">
+                <ShoppingBag className="text-[#C4785A]" size={26} />
+                <span>{t('shop_hub_title')}</span>
+              </h1>
+              <span className="text-[11px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800">
+                {t('status_active')}
+              </span>
+            </div>
+            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
+              {t('shop_hub_desc')}
+            </p>
           </div>
-          <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
-            {t('shop_hub_desc')}
-          </p>
+
+          <div className="flex items-center gap-2.5 flex-wrap">
+            {/* Branch / Store selector */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setIsFacilityDropdownOpen(!isFacilityDropdownOpen)}
+                className="flex items-center gap-2.5 px-3.5 py-2 rounded-2xl bg-[#F4EFEA] dark:bg-neutral-800/80 border border-[#E8DFD8] dark:border-neutral-700 text-xs font-semibold text-neutral-800 dark:text-neutral-200 shadow-2xs hover:border-[#C4785A] transition-colors cursor-pointer"
+              >
+                <Building2 size={15} className="text-[#C4785A]" />
+                <div className={isRtl ? 'text-right' : 'text-left'}>
+                  <div className="text-[10px] uppercase font-bold text-neutral-400 leading-none">{t('shop_active_store')}</div>
+                  <div className="text-xs font-bold leading-tight truncate max-w-[150px]">
+                    {currentBranch?.name || t('shop_main_branch')}
+                  </div>
+                </div>
+                <ChevronDown size={14} className="text-neutral-400 ml-1" />
+              </button>
+
+              {isFacilityDropdownOpen && (
+                <div className={`absolute ${isRtl ? 'left-0' : 'right-0'} mt-2 w-64 bg-white dark:bg-neutral-900 rounded-2xl shadow-xl border border-neutral-200 dark:border-neutral-800 py-1.5 z-40`}>
+                  <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+                    {t('shop_select_store')}
+                  </div>
+                  {branches.map((b) => (
+                    <button
+                      key={b.id}
+                      type="button"
+                      onClick={() => {
+                        switchBranch(b.id);
+                        setIsFacilityDropdownOpen(false);
+                      }}
+                      className={`w-full px-3 py-2 text-xs flex items-center justify-between hover:bg-neutral-50 dark:hover:bg-neutral-800 cursor-pointer ${
+                        isRtl ? 'text-right' : 'text-left'
+                      } ${
+                        b.id === currentBranch.id ? 'font-bold text-[#C4785A] bg-neutral-50 dark:bg-neutral-800/50' : 'text-neutral-700 dark:text-neutral-300'
+                      }`}
+                    >
+                      <span className="truncate">{b.name}</span>
+                      {b.id === currentBranch.id && <Check size={14} />}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Quick Demo Recharge */}
+            <button
+              type="button"
+              onClick={() => seedDemoInventory()}
+              className="h-10 px-3.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 hover:bg-neutral-50 text-xs font-bold text-neutral-700 dark:text-neutral-200 flex items-center gap-1.5 cursor-pointer shadow-2xs"
+            >
+              <Sparkles size={14} className="text-[#C4785A]" />
+              <span>{language === 'ar' ? 'شحن العينة' : 'Démo Recharge'}</span>
+            </button>
+
+            {/* Sound Toggle */}
+            <button
+              type="button"
+              onClick={() => setSoundEnabled(!soundEnabled)}
+              title={soundEnabled ? t('shop_sound_enabled_tip') : t('shop_sound_muted_tip')}
+              className={`p-2.5 rounded-xl border text-xs cursor-pointer transition-colors shadow-2xs ${
+                soundEnabled
+                  ? 'border-emerald-300 text-emerald-600 dark:border-emerald-800 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40'
+                  : 'border-neutral-200 text-neutral-400 dark:border-neutral-800 bg-white dark:bg-neutral-900'
+              }`}
+            >
+              {soundEnabled ? <Volume2 size={16} /> : <VolumeX size={16} />}
+            </button>
+          </div>
         </div>
 
-        {/* Branch / Store selector */}
-        <div className="relative">
-          <button
-            type="button"
-            onClick={() => setIsFacilityDropdownOpen(!isFacilityDropdownOpen)}
-            className="flex items-center gap-2.5 px-3.5 py-2 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-xs font-semibold text-neutral-800 dark:text-neutral-200 shadow-2xs hover:border-[#C4785A] transition-colors cursor-pointer"
-          >
-            <Building2 size={15} className="text-[#C4785A]" />
-            <div className={isRtl ? 'text-right' : 'text-left'}>
-              <div className="text-[10px] uppercase font-bold text-neutral-400 leading-none">{t('shop_active_store')}</div>
-              <div className="text-xs font-bold leading-tight truncate max-w-[150px]">
-                {currentBranch?.name || t('shop_main_branch')}
+        {/* TOP METRICS POD TRAY */}
+        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-[#E9EEF0] dark:border-neutral-800">
+            <div>
+              <h2 className="text-sm font-bold text-neutral-900 dark:text-white">
+                {language === 'ar' ? 'جلسة البيع & مؤشرات الصندوق' : language === 'fr' ? 'Session de Caisse & Indicateurs Directs' : 'Register Session & Live Sales'}
+              </h2>
+              <p className="text-xs text-neutral-400 dark:text-neutral-500">
+                {language === 'ar'
+                  ? 'متابعة العمليات اليومية، التذاكر المعلقة، والسيولة النقدية المتوقعة في الدرج'
+                  : 'Encaissements instantanés, gestion des paniers suspendus et liquidités physiques attendues au tiroir.'}
+              </p>
+            </div>
+
+            {/* View/Subtab Switcher */}
+            <div className="flex items-center gap-1.5 p-1 bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 text-xs shadow-2xs">
+              <button
+                type="button"
+                onClick={() => setActiveTab('register')}
+                className={`px-3 py-1.5 rounded-lg font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                  activeTab === 'register'
+                    ? 'bg-[#C4785A] text-white shadow-2xs'
+                    : 'text-neutral-600 dark:text-neutral-300 hover:text-neutral-900'
+                }`}
+              >
+                <Coins size={14} />
+                <span>{t('nav_pos_register')}</span>
+                {cart.length > 0 && (
+                  <span className={`px-1.5 py-0.2 rounded-full text-[9px] font-black ${
+                    activeTab === 'register' ? 'bg-white text-[#C4785A]' : 'bg-[#C4785A] text-white'
+                  }`}>
+                    {cart.reduce((a, b) => a + b.quantity, 0)}
+                  </span>
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveTab('parked')}
+                className={`px-3 py-1.5 rounded-lg font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                  activeTab === 'parked'
+                    ? 'bg-[#C4785A] text-white shadow-2xs'
+                    : 'text-neutral-600 dark:text-neutral-300 hover:text-neutral-900'
+                }`}
+              >
+                <PauseCircle size={14} />
+                <span>{t('shop_held_orders')}</span>
+                {parkedOrders.length > 0 && (
+                  <span className={`px-1.5 py-0.2 rounded-full text-[9px] font-black ${
+                    activeTab === 'parked' ? 'bg-white text-[#C4785A]' : 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
+                  }`}>
+                    {parkedOrders.length}
+                  </span>
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveTab('receipt_settings')}
+                className={`px-3 py-1.5 rounded-lg font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                  activeTab === 'receipt_settings'
+                    ? 'bg-[#C4785A] text-white shadow-2xs'
+                    : 'text-neutral-600 dark:text-neutral-300 hover:text-neutral-900'
+                }`}
+              >
+                <Settings2 size={14} />
+                <span>{t('shop_receipt_printed')}</span>
+              </button>
+            </div>
+          </div>
+
+          {/* 3-Card Canonical Metrics Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {/* Card 1: Today Register Turnover */}
+            <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
+              <div>
+                <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
+                  {language === 'ar' ? 'حجم مبيعات اليوم' : language === 'fr' ? 'Volume Ventes Caisse' : 'Today Register Turnover'}
+                </span>
+                <div className="mt-1">
+                  <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
+                    {sessionMetrics.todaySalesCount} {language === 'ar' ? 'عملية مسددة' : 'tickets clôturés'}
+                  </span>
+                </div>
+              </div>
+              <div className="text-2xl font-black text-neutral-900 dark:text-white tabular-nums font-mono">
+                {formatMoney(sessionMetrics.turnover)}
               </div>
             </div>
-            <ChevronDown size={14} className="text-neutral-400 ml-1" />
-          </button>
 
-          {isFacilityDropdownOpen && (
-            <div className={`absolute ${isRtl ? 'left-0' : 'right-0'} mt-2 w-64 bg-white dark:bg-neutral-900 rounded-2xl shadow-xl border border-neutral-200 dark:border-neutral-800 py-1.5 z-40`}>
-              <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
-                {t('shop_select_store')}
+            {/* Card 2: Parked Carts Queue */}
+            <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
+              <div>
+                <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
+                  {language === 'ar' ? 'تذاكر قيد الانتظار' : language === 'fr' ? 'Paniers Suspendus' : 'Parked Carts Queue'}
+                </span>
+                <div className="mt-1">
+                  <span className="text-[10px] font-bold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded-full">
+                    {sessionMetrics.parkedCount} {language === 'ar' ? 'تذكرة مؤقتة' : 'tickets en attente'}
+                  </span>
+                </div>
               </div>
-              {branches.map((b) => (
-                <button
-                  key={b.id}
-                  type="button"
-                  onClick={() => {
-                    switchBranch(b.id);
-                    setIsFacilityDropdownOpen(false);
-                  }}
-                  className={`w-full px-3 py-2 text-xs flex items-center justify-between hover:bg-neutral-50 dark:hover:bg-neutral-800 cursor-pointer ${
-                    isRtl ? 'text-right' : 'text-left'
-                  } ${
-                    b.id === currentBranch.id ? 'font-bold text-[#C4785A] bg-neutral-50 dark:bg-neutral-800/50' : 'text-neutral-700 dark:text-neutral-300'
-                  }`}
-                >
-                  <span className="truncate">{b.name}</span>
-                  {b.id === currentBranch.id && <Check size={14} />}
-                </button>
-              ))}
+              <div className="text-2xl font-black text-neutral-900 dark:text-white tabular-nums font-mono">
+                {formatMoney(sessionMetrics.parkedValuation)}
+              </div>
             </div>
-          )}
-        </div>
-      </div>
 
-      {/* Top POS Hub Navigation Tabs */}
-      <div className="flex items-center justify-between border-b border-neutral-200 dark:border-neutral-800 pb-2">
-        <div className="flex items-center gap-2 overflow-x-auto">
-          <button
-            type="button"
-            onClick={() => setActiveTab('register')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 cursor-pointer transition-all ${
-              activeTab === 'register'
-                ? 'bg-[#C4785A] text-white shadow-xs'
-                : 'text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800'
-            }`}
-          >
-            <Coins size={15} />
-            <span>{t('nav_pos_register')}</span>
-            {cart.length > 0 && (
-              <span className="mx-1 px-1.5 py-0.2 rounded-full bg-white text-[#C4785A] text-[10px] font-black">
-                {cart.reduce((a, b) => a + b.quantity, 0)}
-              </span>
-            )}
-          </button>
+            {/* Card 3: DARK ESPRESSO ANCHOR CARD (#1F1D1B) */}
+            <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm relative overflow-hidden group">
+              <div className="absolute -right-4 -bottom-6 opacity-20 group-hover:opacity-30 transition-opacity pointer-events-none">
+                <svg width="140" height="90" viewBox="0 0 140 90" fill="none">
+                  <path
+                    d="M10 65 L35 50 L60 55 L85 25 L110 30 L135 12"
+                    stroke="#FB923C"
+                    strokeWidth="3.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <circle cx="135" cy="12" r="4" fill="#FB923C" />
+                </svg>
+              </div>
 
-          <button
-            type="button"
-            onClick={() => setActiveTab('parked')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 cursor-pointer transition-all ${
-              activeTab === 'parked'
-                ? 'bg-[#C4785A] text-white shadow-xs'
-                : 'text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800'
-            }`}
-          >
-            <PauseCircle size={15} />
-            <span>{t('shop_held_orders')}</span>
-            {parkedOrders.length > 0 && (
-              <span className={`mx-1 px-2 py-0.5 rounded-full text-[10px] font-black ${
-                activeTab === 'parked' ? 'bg-white text-[#C4785A]' : 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
-              }`}>
-                {parkedOrders.length}
-              </span>
-            )}
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveTab('inventory')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 cursor-pointer transition-all ${
-              activeTab === 'inventory'
-                ? 'bg-[#C4785A] text-white shadow-xs'
-                : 'text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800'
-            }`}
-          >
-            <Package size={15} />
-            <span>{t('shop_inventory_count')}</span>
-            {inventoryStats.lowStockItems > 0 && (
-              <span className="mx-1 px-1.5 py-0.5 rounded-full bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300 text-[10px] font-black">
-                {inventoryStats.lowStockItems}
-              </span>
-            )}
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveTab('receipt_settings')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 cursor-pointer transition-all ${
-              activeTab === 'receipt_settings'
-                ? 'bg-[#C4785A] text-white shadow-xs'
-                : 'text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800'
-            }`}
-          >
-            <Settings2 size={15} />
-            <span>{t('shop_receipt_printed')}</span>
-          </button>
+              <div>
+                <span className="text-xs font-medium text-neutral-300">
+                  {language === 'ar' ? 'سيولة الدرج النقدية' : language === 'fr' ? 'Liquidités Tiroir-Caisse' : 'Drawer Cash Turnover'}
+                </span>
+                <div className="text-[11px] text-[#FB923C] font-semibold mt-0.5">
+                  <span className="bg-[#3D2817] px-2 py-0.5 rounded-full inline-block">
+                    {language === 'ar' ? 'نقداً محصلاً (DZD)' : 'Tiroir Actif (Espèces)'}
+                  </span>
+                </div>
+              </div>
+              <div className="text-2xl font-black text-white tabular-nums font-mono">
+                {formatMoney(sessionMetrics.totalCash)}
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Global Sound & Hardware indicators */}
-        <div className="hidden sm:flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setSoundEnabled(!soundEnabled)}
-            title={soundEnabled ? t('shop_sound_enabled_tip') : t('shop_sound_muted_tip')}
-            className={`p-2 rounded-xl border text-xs cursor-pointer transition-colors ${
-              soundEnabled
-                ? 'border-emerald-300 text-emerald-600 dark:border-emerald-800 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40'
-                : 'border-neutral-200 text-neutral-400 dark:border-neutral-800'
-            }`}
-          >
-            {soundEnabled ? <Volume2 size={15} /> : <VolumeX size={15} />}
-          </button>
-        </div>
-      </div>
-
-      {/* ========================================================================= */}
-      {/* TAB 1: POS REGISTER                                                     */}
-      {/* ========================================================================= */}
-      {activeTab === 'register' && (
+        {/* BOTTOM WORKSTATION POD TRAY */}
+        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+          {/* ========================================================================= */}
+          {/* TAB 1: POS REGISTER                                                     */}
+          {/* ========================================================================= */}
+          {activeTab === 'register' && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
           {/* LEFT 7-8 COLS: Catalog & Scanner */}
           <div className="lg:col-span-7 xl:col-span-8 space-y-4">
@@ -2331,6 +2416,10 @@ export const PosRegisterView: React.FC<PosRegisterViewProps> = ({ initialTab = '
           </div>
         </div>
       )}
+      {/* End of Bottom Workstation Pod Tray */}
+      </div>
+      {/* End of Outer Workspace Panel */}
+      </div>
 
       {/* ========================================================================= */}
       {/* MODAL: CHECKOUT / ENCAISSEMENT                                           */}
