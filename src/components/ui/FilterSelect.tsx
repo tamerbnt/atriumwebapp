@@ -19,6 +19,7 @@ export interface FilterSelectProps {
   searchable?: boolean;
   disabled?: boolean;
   className?: string;
+  ariaLabel?: string;
 }
 
 export const FilterSelect: React.FC<FilterSelectProps> = ({
@@ -31,6 +32,7 @@ export const FilterSelect: React.FC<FilterSelectProps> = ({
   searchable = false,
   disabled = false,
   className = '',
+  ariaLabel,
 }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const popoverRef = useRef<HTMLDivElement | null>(null);
@@ -114,6 +116,7 @@ export const FilterSelect: React.FC<FilterSelectProps> = ({
       <button
         type="button"
         disabled={disabled}
+        aria-label={ariaLabel}
         onClick={() => {
           if (!disabled) setIsOpen((prev) => !prev);
         }}

@@ -611,69 +611,84 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = ({
         {/* Bottom Collection Pod Tray (SurfaceBgElevated: #F8F9FA) */}
         <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
           
-          {/* Controls Bar: Segment Tabs + Dropdown Filters + Seek Search */}
+          {/* Standardized Collection Toolbar: Left Anchor + Right Controls */}
           <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
-            {/* Segment Capsules */}
-            <div className="flex items-center gap-1.5 bg-neutral-200/60 dark:bg-neutral-800 p-1 rounded-2xl self-start">
-              <button
-                type="button"
-                onClick={() => setSegmentFilter('all')}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
-                  segmentFilter === 'all'
-                    ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-xs'
-                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
-                }`}
-              >
-                <span>Toutes les Clientes</span>
-                <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono ${
-                  segmentFilter === 'all' ? 'bg-[#C4785A]/15 text-[#C4785A]' : 'bg-neutral-300/60 dark:bg-neutral-700 text-neutral-500'
-                }`}>
-                  {salonClients.length}
+            {/* Left Anchor: Icon + Title + Count Badge */}
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#C4785A]">
+                <Scissors size={18} />
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-bold text-neutral-900 dark:text-white">
+                  Dossiers Clientes & Diagnostics
                 </span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setSegmentFilter('vip')}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
-                  segmentFilter === 'vip'
-                    ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-xs'
-                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
-                }`}
-              >
-                <span>VIP Membres</span>
-                <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono ${
-                  segmentFilter === 'vip' ? 'bg-[#C4785A]/15 text-[#C4785A]' : 'bg-neutral-300/60 dark:bg-neutral-700 text-neutral-500'
-                }`}>
-                  {metrics.vipCount}
+                <span className="px-2 py-0.5 rounded-full text-xs font-mono font-bold bg-[#C4785A]/10 text-[#C4785A]">
+                  {filteredClients.length}
                 </span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setSegmentFilter('allergies')}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
-                  segmentFilter === 'allergies'
-                    ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-xs'
-                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
-                }`}
-              >
-                <span>Sensibilités / Allergies</span>
-                <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono ${
-                  segmentFilter === 'allergies' ? 'bg-[#C4785A]/15 text-[#C4785A]' : 'bg-neutral-300/60 dark:bg-neutral-700 text-neutral-500'
-                }`}>
-                  {metrics.allergiesCount}
-                </span>
-              </button>
+              </div>
             </div>
 
-            {/* Filter Selects & Seek Search */}
+            {/* Right Controls: Segment Tabs + FilterSelects + Seek Search */}
             <div className="flex items-center gap-2 flex-wrap self-end lg:self-auto">
+              {/* Segment Filter Capsules */}
+              <div className="flex items-center gap-1 bg-white dark:bg-neutral-800 p-1 rounded-xl border border-neutral-200 dark:border-neutral-700 shadow-2xs text-xs font-bold">
+                <button
+                  type="button"
+                  onClick={() => setSegmentFilter('all')}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+                    segmentFilter === 'all'
+                      ? 'bg-[#C4785A] text-white shadow-2xs'
+                      : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
+                  }`}
+                >
+                  <span>Toutes</span>
+                  <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono ${
+                    segmentFilter === 'all' ? 'bg-white/20 text-white' : 'bg-neutral-100 dark:bg-neutral-700 text-neutral-500'
+                  }`}>
+                    {salonClients.length}
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setSegmentFilter('vip')}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+                    segmentFilter === 'vip'
+                      ? 'bg-[#C4785A] text-white shadow-2xs'
+                      : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
+                  }`}
+                >
+                  <span>VIP</span>
+                  <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono ${
+                    segmentFilter === 'vip' ? 'bg-white/20 text-white' : 'bg-neutral-100 dark:bg-neutral-700 text-neutral-500'
+                  }`}>
+                    {metrics.vipCount}
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setSegmentFilter('allergies')}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+                    segmentFilter === 'allergies'
+                      ? 'bg-[#C4785A] text-white shadow-2xs'
+                      : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
+                  }`}
+                >
+                  <span>Allergies</span>
+                  <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono ${
+                    segmentFilter === 'allergies' ? 'bg-white/20 text-white' : 'bg-neutral-100 dark:bg-neutral-700 text-neutral-500'
+                  }`}>
+                    {metrics.allergiesCount}
+                  </span>
+                </button>
+              </div>
+
               <FilterSelect
                 value={selectedStylistFilter}
                 onChange={(val) => setSelectedStylistFilter(val?.target?.value ?? String(val))}
                 options={[
-                  { value: 'All', label: 'Toutes les stylistes' },
+                  { value: 'All', label: 'Toutes stylistes' },
                   ...salonStylists.map((s) => ({ value: s.fullName, label: s.fullName })),
                 ]}
               />
@@ -682,22 +697,23 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = ({
                 value={selectedHairFilter}
                 onChange={(val) => setSelectedHairFilter(val?.target?.value ?? String(val))}
                 options={[
-                  { value: 'All', label: 'Tous types de cheveux' },
-                  { value: 'Lisse', label: 'Cheveux Lisses' },
-                  { value: 'Ondulé', label: 'Cheveux Ondulés' },
-                  { value: 'Bouclé', label: 'Cheveux Bouclés' },
-                  { value: 'Frisé', label: 'Cheveux Frisés' },
+                  { value: 'All', label: 'Tous cheveux' },
+                  { value: 'Lisse', label: 'Lisses' },
+                  { value: 'Ondulé', label: 'Ondulés' },
+                  { value: 'Bouclé', label: 'Bouclés' },
+                  { value: 'Frisé', label: 'Frisés' },
                 ]}
               />
 
               <Seek
                 value={searchQuery}
                 onChange={setSearchQuery}
-                placeholder="Filtrer cliente, téléphone, allergie, formule..."
-                shutSize={36}
-                openWidth={260}
+                placeholder="Filtrer cliente, tel, allergie..."
+                shutSize={34}
+                openWidth={220}
               />
             </div>
+          </div>
           </div>
 
           {/* Floating Batch Action Toolbar */}

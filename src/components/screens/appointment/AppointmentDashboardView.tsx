@@ -166,7 +166,7 @@ export const AppointmentDashboardView: React.FC<AppointmentDashboardViewProps> =
         ? 'قم بتعيين حالة "En Fauteuil" لتحرير تتبع وقت الجلسة وحساب استهلاك المواد'
         : 'Passez le statut à "En Fauteuil" pour démarrer le chronométrage du soin et réserver le matériel.',
       btnLabel: language === 'ar' ? 'عرض الفنيين' : 'Plan des Postes',
-      action: () => setScreen?.('appointment_schedule'),
+      action: () => setScreen?.('scheduler'),
     },
     {
       step: 2,
@@ -175,7 +175,7 @@ export const AppointmentDashboardView: React.FC<AppointmentDashboardViewProps> =
         ? 'سجل نسب الأكسجين والصبغة المستخدمة لكل عميل لضمان تطابق النتيجة في الجلسات القادمة'
         : 'Notez le dosage de révélateur et la nuance appliquée pour un rendu parfait aux visites futures.',
       btnLabel: language === 'ar' ? 'سجل العملاء' : 'Fiches Clients',
-      action: () => setScreen?.('appointment_clients'),
+      action: () => setScreen?.('members'),
     },
     {
       step: 3,
@@ -184,7 +184,7 @@ export const AppointmentDashboardView: React.FC<AppointmentDashboardViewProps> =
         ? 'راجع سجل الحصص والمكافآت المستحقة لكل مصفف بنهاية نوبة العمل اليومية'
         : 'Validez la répartition des commissions et pourboires des stylistes avant la clôture.',
       btnLabel: language === 'ar' ? 'المالية والعمولات' : 'Journal Financier',
-      action: () => setScreen?.('appointment_finance'),
+      action: () => setScreen?.('finance'),
     },
   ], [language, setScreen]);
 
@@ -630,6 +630,18 @@ export const AppointmentDashboardView: React.FC<AppointmentDashboardViewProps> =
                         : 'Terminés'}
                     </button>
                   ))}
+                </div>
+              </div>
+
+              {/* Column Headers Card */}
+              <div className="bg-white dark:bg-neutral-800 rounded-[12px] border border-[#E9EEF0] dark:border-neutral-700/60 px-4 py-2 text-[11px] font-semibold text-neutral-400 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <span className="w-12 text-center">HEURE</span>
+                  <span>CLIENT / SOIN / POSTE</span>
+                </div>
+                <div className="flex items-center gap-6 pr-2">
+                  <span>TARIF</span>
+                  <span className="w-16 text-right">STATUT</span>
                 </div>
               </div>
 

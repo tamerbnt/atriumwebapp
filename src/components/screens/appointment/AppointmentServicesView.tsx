@@ -187,7 +187,6 @@ export const AppointmentServicesView: React.FC = () => {
     } else {
       addServiceItem({
         tenantId: 'acc_01',
-        facilityId: currentBranch?.id || 'branch_hydra',
         name: formName.trim(),
         category: formCategory,
         durationMinutes: Number(formDuration),
@@ -196,6 +195,7 @@ export const AppointmentServicesView: React.FC = () => {
         commissionRate: Number(formCommission),
         bufferMinutes: Number(formBuffer),
         color: formColor,
+        colorCode: formColor,
         description: formDescription.trim(),
         isActive: true,
       });

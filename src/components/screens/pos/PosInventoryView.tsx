@@ -936,12 +936,17 @@ export const PosInventoryView: React.FC = () => {
           <>
             {/* Top Metrics Pod Tray (SurfaceBgElevated: #F8F9FA, CornerRadius 24px) */}
             <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {/* Card 1: SKUs */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Card 1: SKUs & Units */}
                 <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
-                  <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
-                    {t('shop_kpi_skus')}
-                  </span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
+                      {t('shop_kpi_skus')}
+                    </span>
+                    <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#C4785A]/10 text-[#C4785A]">
+                      {inventoryStats.totalUnits.toLocaleString()} unités
+                    </span>
+                  </div>
                   <div className="mt-3">
                     <div className="text-2xl lg:text-3xl font-extrabold text-neutral-900 dark:text-neutral-100 tabular-nums font-mono">
                       {inventoryStats.totalSKUs}
@@ -952,11 +957,16 @@ export const PosInventoryView: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Card 2: Valorisation Vente */}
+                {/* Card 2: Valorisation Vente & Marge */}
                 <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
-                  <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
-                    {t('shop_kpi_retail_val')}
-                  </span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
+                      {t('shop_kpi_retail_val')}
+                    </span>
+                    <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400">
+                      +{formatMoney(inventoryStats.potentialProfit)} marge
+                    </span>
+                  </div>
                   <div className="mt-3">
                     <div className="text-2xl lg:text-3xl font-extrabold font-mono text-[#C4785A] tabular-nums">
                       {formatMoney(inventoryStats.retailValuation)}
@@ -967,22 +977,7 @@ export const PosInventoryView: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Card 3: Bénéfice Potentiel */}
-                <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
-                  <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
-                    {t('shop_kpi_margin')}
-                  </span>
-                  <div className="mt-3">
-                    <div className="text-2xl lg:text-3xl font-extrabold font-mono text-emerald-600 dark:text-emerald-400 tabular-nums">
-                      {formatMoney(inventoryStats.potentialProfit)}
-                    </div>
-                    <div className="text-[11px] text-neutral-400 mt-1">
-                      {t('shop_kpi_margin_sub')}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Card 4: DARK ESPRESSO ANCHOR CARD (#1F1D1B) — Low Stock & Ruptures */}
+                {/* Card 3: DARK ESPRESSO ANCHOR CARD (#1F1D1B) — Low Stock & Ruptures */}
                 <div className="bg-[#1F1D1B] rounded-[18px] p-4 lg:p-5 border border-neutral-800 shadow-sm text-white flex flex-col justify-between relative overflow-hidden group">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-semibold text-[#E7E5E4]">
@@ -1015,54 +1010,72 @@ export const PosInventoryView: React.FC = () => {
               </div>
             </div>
 
-      {/* Bottom Collection Pod Tray */}
-      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
-        {/* Filter and Action Strip */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div className="flex items-center gap-2 flex-wrap">
-          <div className="flex items-center p-0.5 rounded-xl bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-xs font-bold">
-            <button
-              type="button"
-              onClick={() => setStockStatusFilter('all')}
-              className={`px-3 py-1.5 rounded-lg cursor-pointer ${
-                stockStatusFilter === 'all' ? 'bg-[#C4785A] text-white' : 'text-neutral-500'
-              }`}
-            >
-              {t('shop_filter_all', { count: products.length })}
-            </button>
-            <button
-              type="button"
-              onClick={() => setStockStatusFilter('low')}
-              className={`px-3 py-1.5 rounded-lg cursor-pointer ${
-                stockStatusFilter === 'low' ? 'bg-amber-600 text-white' : 'text-neutral-500'
-              }`}
-            >
-              {t('shop_filter_low', { count: inventoryStats.lowStockItems })}
-            </button>
-            <button
-              type="button"
-              onClick={() => setStockStatusFilter('out')}
-              className={`px-3 py-1.5 rounded-lg cursor-pointer ${
-                stockStatusFilter === 'out' ? 'bg-red-600 text-white' : 'text-neutral-500'
-              }`}
-            >
-              {t('shop_filter_out', { count: inventoryStats.outOfStockItems })}
-            </button>
-          </div>
+            {/* Bottom Collection Pod Tray */}
+            <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+              {/* Filter and Action Strip */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                {/* Left Title / Icon / Count Anchor */}
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#C4785A]">
+                    <Boxes size={18} />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-bold text-neutral-900 dark:text-white">
+                      {language === 'ar' ? 'المخزون والمنتجات' : 'Catalogue & Stocks Magasin'}
+                    </span>
+                    <span className="px-2 py-0.5 rounded-full text-xs font-mono font-bold bg-[#C4785A]/10 text-[#C4785A]">
+                      {filteredProducts.length}
+                    </span>
+                  </div>
+                </div>
 
-          <FilterSelect
-            label={t('shop_filter_category_label')}
-            value={categoryFilter}
-            onChange={(val) => setCategoryFilter(typeof val === 'string' ? val : val.target?.value || val)}
-            options={categories.map((c) => ({ value: c, label: c === 'All' ? t('shop_categories_all') : c }))}
-          />
+                <div className="flex items-center gap-2 flex-wrap self-end sm:self-auto">
+                  <div className="flex items-center p-0.5 rounded-xl bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-xs font-bold">
+                    <button
+                      type="button"
+                      onClick={() => setStockStatusFilter('all')}
+                      className={`px-3 py-1.5 rounded-lg cursor-pointer ${
+                        stockStatusFilter === 'all' ? 'bg-[#C4785A] text-white' : 'text-neutral-500'
+                      }`}
+                    >
+                      {t('shop_filter_all', { count: products.length })}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setStockStatusFilter('low')}
+                      className={`px-3 py-1.5 rounded-lg cursor-pointer ${
+                        stockStatusFilter === 'low' ? 'bg-amber-600 text-white' : 'text-neutral-500'
+                      }`}
+                    >
+                      {t('shop_filter_low', { count: inventoryStats.lowStockItems })}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setStockStatusFilter('out')}
+                      className={`px-3 py-1.5 rounded-lg cursor-pointer ${
+                        stockStatusFilter === 'out' ? 'bg-red-600 text-white' : 'text-neutral-500'
+                      }`}
+                    >
+                      {t('shop_filter_out', { count: inventoryStats.outOfStockItems })}
+                    </button>
+                  </div>
 
-          <Seek
-            value={searchQuery}
-            onChange={setSearchQuery}
-            placeholder={language === 'ar' ? 'بحث بالاسم، الباركود، SKU...' : 'Recherche produit, code-barres...'}
-          />
-        </div>
+                  <FilterSelect
+                    label={t('shop_filter_category_label')}
+                    value={categoryFilter}
+                    onChange={(val) => setCategoryFilter(typeof val === 'string' ? val : val.target?.value || val)}
+                    options={categories.map((c) => ({ value: c, label: c === 'All' ? t('shop_categories_all') : c }))}
+                  />
+
+                  <Seek
+                    value={searchQuery}
+                    onChange={setSearchQuery}
+                    placeholder={language === 'ar' ? 'بحث بالاسم، الباركود، SKU...' : 'Recherche produit, code-barres...'}
+                    shutSize={36}
+                    openWidth={220}
+                  />
+                </div>
+              </div>
 
         {/* Batch Actions Toolbar */}
         {selectedProductIds.size > 0 && (
@@ -1211,25 +1224,33 @@ export const PosInventoryView: React.FC = () => {
     <div className="space-y-6">
       {/* Purchase KPI Summary Cards Pod Tray */}
       <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs space-y-1">
-            <div className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
-              {language === 'ar' ? 'الطلبيات قيد التوريد' : 'Commandes en Cours'}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Card 1: Commandes & Fournisseurs */}
+          <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
+                {language === 'ar' ? 'الطلبيات وشبكة الموردين' : 'Commandes & Fournisseurs'}
+              </span>
+              <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300">
+                {purchaseStats.suppliersCount} partenaires
+              </span>
             </div>
-            <div className="text-2xl font-black text-blue-600 dark:text-blue-400 tabular-nums font-mono mt-2">
-              {purchaseStats.pendingCount}
-            </div>
-            <div className="text-[11px] text-neutral-400 mt-1">
-              {language === 'ar' ? 'في انتظار وصول البضاعة' : 'En attente de réception à quai'}
+            <div className="mt-3">
+              <div className="text-2xl lg:text-3xl font-extrabold text-blue-600 dark:text-blue-400 tabular-nums font-mono">
+                {purchaseStats.pendingCount} <span className="text-xs font-normal text-neutral-400">en cours</span>
+              </div>
+              <div className="text-[11px] text-neutral-400 mt-1">
+                {language === 'ar' ? 'في انتظار وصول البضاعة إلى الرصيف' : 'Bons d’achat en attente de livraison à quai'}
+              </div>
             </div>
           </div>
 
-          <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs space-y-1">
-            <div className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
-              {language === 'ar' ? 'النواقص تحت حد التنبيه' : 'Articles en Alerte Stock'}
-            </div>
-            <div className="text-2xl font-black text-amber-600 dark:text-amber-400 tabular-nums flex items-center justify-between mt-2 font-mono">
-              <span>{purchaseStats.lowStockCount}</span>
+          {/* Card 2: Ruptures & Réassort */}
+          <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
+                {language === 'ar' ? 'النواقص تحت حد التنبيه' : 'Articles en Alerte Stock'}
+              </span>
               {purchaseStats.lowStockCount > 0 && (
                 <button
                   type="button"
@@ -1240,31 +1261,17 @@ export const PosInventoryView: React.FC = () => {
                 </button>
               )}
             </div>
-            <div className="text-[11px] text-neutral-400 mt-1">
-              {language === 'ar' ? 'تستلزم إعادة تموين سريعة' : 'Réassort recommandé'}
+            <div className="mt-3">
+              <div className="text-2xl lg:text-3xl font-extrabold text-amber-600 dark:text-amber-400 tabular-nums font-mono">
+                {purchaseStats.lowStockCount}
+              </div>
+              <div className="text-[11px] text-neutral-400 mt-1">
+                {language === 'ar' ? 'تستلزم إعادة تموين عاجلة' : 'Références sous le seuil de sécurité'}
+              </div>
             </div>
           </div>
 
-          <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs space-y-1">
-            <div className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
-              {language === 'ar' ? 'شبكة الموردين' : 'Fournisseurs Référencés'}
-            </div>
-            <div className="text-2xl font-black text-neutral-900 dark:text-white tabular-nums flex items-center justify-between mt-2 font-mono">
-              <span>{purchaseStats.suppliersCount}</span>
-              <button
-                type="button"
-                onClick={() => setIsSupplierModalOpen(true)}
-                className="text-[10px] px-2 py-0.5 rounded-lg bg-[#C4785A]/15 text-[#C4785A] font-bold hover:bg-[#C4785A]/25 transition-colors cursor-pointer"
-              >
-                + {language === 'ar' ? 'إضافة' : 'Nouveau'}
-              </button>
-            </div>
-            <div className="text-[11px] text-neutral-400 mt-1">
-              {language === 'ar' ? 'موردين معتمدين' : 'Grossistes & importateurs'}
-            </div>
-          </div>
-
-          {/* DARK ESPRESSO ANCHOR CARD (#1F1D1B) */}
+          {/* Card 3: DARK ESPRESSO ANCHOR CARD (#1F1D1B) */}
           <div className="bg-[#1F1D1B] rounded-[18px] p-4 lg:p-5 border border-neutral-800 shadow-sm text-white flex flex-col justify-between relative overflow-hidden group">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-[#E7E5E4]">
@@ -1281,7 +1288,7 @@ export const PosInventoryView: React.FC = () => {
               <div className="flex items-center justify-between text-[11px] text-stone-400 mt-1.5">
                 <span className="flex items-center gap-1">
                   <CheckCircle2 size={12} className="text-[#FB923C]" />
-                  <span>Réceptions conformes</span>
+                  <span>Réceptions conformes certifiées</span>
                 </span>
                 <span className="font-mono text-stone-300">TTC</span>
               </div>
@@ -1294,16 +1301,34 @@ export const PosInventoryView: React.FC = () => {
       {/* Bottom Purchases Collection Pod Tray */}
       <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div>
-            <h2 className="text-sm font-bold text-neutral-900 dark:text-white">
-              {language === 'ar' ? 'سجل طلبيات الشراء ووصولات الاستلام' : 'Commandes Fournisseurs & Bons de Réception'}
-            </h2>
-            <p className="text-[11px] text-neutral-400">
-              {language === 'ar' ? 'تتبع الطلبيات، التحقق عند الرصيف، وتحديث المخزون بنقرة واحدة' : 'Suivi des réceptions à quai avec incrémentation automatique du stock magasin'}
-            </p>
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#C4785A]">
+              <Truck size={18} />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-sm font-bold text-neutral-900 dark:text-white">
+                  {language === 'ar' ? 'سجل طلبيات الشراء ووصولات الاستلام' : 'Commandes Fournisseurs & Réceptions'}
+                </h2>
+                <span className="px-2 py-0.5 rounded-full text-xs font-mono font-bold bg-[#C4785A]/10 text-[#C4785A]">
+                  {(purchaseDocs || []).length}
+                </span>
+              </div>
+              <p className="text-[11px] text-neutral-400">
+                {language === 'ar' ? 'تتبع الطلبيات وتحديث المخزون بنقرة واحدة' : 'Suivi des réceptions à quai avec incrémentation automatique du stock'}
+              </p>
+            </div>
           </div>
 
           <div className="flex items-center gap-2">
+            <AtriumButton
+              variant="outline"
+              size="sm"
+              onClick={() => setIsSupplierModalOpen(true)}
+              icon={<Building2 size={13} />}
+            >
+              {language === 'ar' ? 'مورد جديد' : 'Nouveau Fournisseur'}
+            </AtriumButton>
             <AtriumButton
               size="sm"
               onClick={handleOpenNewRetailPo}

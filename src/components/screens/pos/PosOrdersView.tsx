@@ -645,96 +645,101 @@ export const PosOrdersView: React.FC = () => {
           
           {/* Subtab Segmented Switcher & Search Bar */}
           <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
-            
-            {/* Segment Capsules */}
-            <div className="flex items-center gap-1.5 bg-neutral-200/60 dark:bg-neutral-800 p-1 rounded-2xl self-start">
-              <button
-                type="button"
-                onClick={() => setActiveSubTab('sales')}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
-                  activeSubTab === 'sales'
-                    ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-xs'
-                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
-                }`}
-              >
-                <Receipt size={14} />
-                <span>{language === 'ar' ? 'المبيعات المسددة' : 'Encaissements Terminés'}</span>
-                <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono ${
-                  activeSubTab === 'sales' ? 'bg-[#C4785A]/15 text-[#C4785A]' : 'bg-neutral-300/60 dark:bg-neutral-700 text-neutral-500'
-                }`}>
-                  {branchSales.length}
+            {/* Left Title / Icon / Count Anchor */}
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#C4785A]">
+                <Receipt size={18} />
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-bold text-neutral-900 dark:text-white">
+                  {language === 'ar' ? 'سجل تذاكر المبيعات' : 'Grand Livre des Encaissements'}
                 </span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setActiveSubTab('parked')}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
-                  activeSubTab === 'parked'
-                    ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-xs'
-                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
-                }`}
-              >
-                <PauseCircle size={14} />
-                <span>{language === 'ar' ? 'التذاكر المعلقة' : 'Tickets en Attente'}</span>
-                <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono ${
-                  activeSubTab === 'parked' ? 'bg-[#C4785A]/15 text-[#C4785A]' : 'bg-neutral-300/60 dark:bg-neutral-700 text-neutral-500'
-                }`}>
-                  {parkedOrders.length}
+                <span className="px-2 py-0.5 rounded-full text-xs font-mono font-bold bg-[#C4785A]/10 text-[#C4785A]">
+                  {activeSubTab === 'sales' ? filteredSales.length : parkedOrders.length}
                 </span>
-              </button>
+              </div>
             </div>
 
-            {/* Quick Date Capsules (when on sales tab) */}
-            {activeSubTab === 'sales' && (
-              <div className="flex items-center gap-1 bg-neutral-200/50 dark:bg-neutral-800/60 p-1 rounded-xl text-xs font-bold self-start lg:self-auto overflow-x-auto">
+            <div className="flex items-center gap-2 flex-wrap self-end lg:self-auto">
+              {/* Segment Capsules */}
+              <div className="flex items-center gap-1.5 bg-neutral-200/60 dark:bg-neutral-800 p-1 rounded-2xl">
                 <button
                   type="button"
-                  onClick={() => setDateFilter('all')}
-                  className={`px-2.5 py-1 rounded-lg cursor-pointer ${
-                    dateFilter === 'all' ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-2xs' : 'text-neutral-500'
+                  onClick={() => setActiveSubTab('sales')}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
+                    activeSubTab === 'sales'
+                      ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-xs'
+                      : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
                   }`}
                 >
-                  {language === 'ar' ? 'الكل' : 'Tous'}
+                  <Receipt size={14} />
+                  <span>{language === 'ar' ? 'المبيعات' : 'Encaissés'}</span>
+                  <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono ${
+                    activeSubTab === 'sales' ? 'bg-[#C4785A]/15 text-[#C4785A]' : 'bg-neutral-300/60 dark:bg-neutral-700 text-neutral-500'
+                  }`}>
+                    {branchSales.length}
+                  </span>
                 </button>
+
                 <button
                   type="button"
-                  onClick={() => setDateFilter('today')}
-                  className={`px-2.5 py-1 rounded-lg cursor-pointer ${
-                    dateFilter === 'today' ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-2xs' : 'text-neutral-500'
+                  onClick={() => setActiveSubTab('parked')}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
+                    activeSubTab === 'parked'
+                      ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-xs'
+                      : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
                   }`}
                 >
-                  {language === 'ar' ? 'اليوم' : 'Aujourd’hui'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setDateFilter('7days')}
-                  className={`px-2.5 py-1 rounded-lg cursor-pointer ${
-                    dateFilter === '7days' ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-2xs' : 'text-neutral-500'
-                  }`}
-                >
-                  {language === 'ar' ? '7 أيام' : '7 jours'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setDateFilter('month')}
-                  className={`px-2.5 py-1 rounded-lg cursor-pointer ${
-                    dateFilter === 'month' ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-2xs' : 'text-neutral-500'
-                  }`}
-                >
-                  {language === 'ar' ? 'هذا الشهر' : 'Ce mois'}
+                  <PauseCircle size={14} />
+                  <span>{language === 'ar' ? 'المعلقة' : 'En Pause'}</span>
+                  <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono ${
+                    activeSubTab === 'parked' ? 'bg-[#C4785A]/15 text-[#C4785A]' : 'bg-neutral-300/60 dark:bg-neutral-700 text-neutral-500'
+                  }`}>
+                    {parkedOrders.length}
+                  </span>
                 </button>
               </div>
-            )}
 
-            {/* Seek Search */}
-            <div className="self-end lg:self-auto">
+              {/* Quick Date Capsules (when on sales tab) */}
+              {activeSubTab === 'sales' && (
+                <div className="flex items-center gap-1 bg-neutral-200/50 dark:bg-neutral-800/60 p-1 rounded-xl text-xs font-bold overflow-x-auto">
+                  <button
+                    type="button"
+                    onClick={() => setDateFilter('all')}
+                    className={`px-2.5 py-1 rounded-lg cursor-pointer ${
+                      dateFilter === 'all' ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-2xs' : 'text-neutral-500'
+                    }`}
+                  >
+                    {language === 'ar' ? 'الكل' : 'Tous'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDateFilter('today')}
+                    className={`px-2.5 py-1 rounded-lg cursor-pointer ${
+                      dateFilter === 'today' ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-2xs' : 'text-neutral-500'
+                    }`}
+                  >
+                    {language === 'ar' ? 'اليوم' : 'Aujourd’hui'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDateFilter('7days')}
+                    className={`px-2.5 py-1 rounded-lg cursor-pointer ${
+                      dateFilter === '7days' ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-2xs' : 'text-neutral-500'
+                    }`}
+                  >
+                    {language === 'ar' ? '7 أيام' : '7 jours'}
+                  </button>
+                </div>
+              )}
+
+              {/* Seek Search */}
               <Seek
                 value={searchQuery}
                 onChange={setSearchQuery}
                 placeholder={language === 'ar' ? 'بحث برقم الوصل، الزبون...' : 'Filtrer N° ticket, client...'}
                 shutSize={36}
-                openWidth={260}
+                openWidth={220}
               />
             </div>
           </div>

@@ -20,6 +20,11 @@ import {
   FileText,
   Home,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  Check,
+  Eye,
+  ShieldCheck,
   RefreshCw,
   Warehouse,
 } from 'lucide-react';
@@ -65,6 +70,39 @@ export const PosDashboardView: React.FC<PosDashboardViewProps> = () => {
   const [isFacilityDropdownOpen, setIsFacilityDropdownOpen] = useState(false);
   const [filterMode, setFilterMode] = useState<SalesFilterMode>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [activityFilter, setActivityFilter] = useState<'Tous' | 'Ventes' | 'Avoirs'>('Tous');
+  const [currentTipIndex, setCurrentTipIndex] = useState(0);
+
+  const posTips = useMemo(() => [
+    {
+      step: '1/4',
+      title: language === 'ar' ? 'إغلاق الصندوق اليومي (Rapport Z)' : 'Clôture de Caisse & Rapport Z',
+      desc: language === 'ar' ? 'قم بإنشاء وطباعة تقرير Z عند نهاية اليوم لمطابقة المبالغ النقدية وإرسال الحسابات.' : 'Générez et imprimez le rapport fiscal Z en fin de journée pour certifier le solde réel du tiroir-caisse.',
+      btnLabel: language === 'ar' ? 'فتح تقرير Z' : 'Générer le Rapport Z',
+      action: () => setIsZReportOpen(true),
+    },
+    {
+      step: '2/4',
+      title: language === 'ar' ? 'استئناف التذاكر المعلقة' : 'Gestion des Tickets en Pause',
+      desc: language === 'ar' ? 'لديك طلبات معلقة بانتظار استكمال التسديد لتفادي طوابير الانتظار عند الصندوق.' : 'Reprenez les paniers mis en attente pour fluidifier la file sans perdre les articles scannés.',
+      btnLabel: language === 'ar' ? 'Consulter les Paniers' : 'Voir les Paniers',
+      action: () => setScreen('orders'),
+    },
+    {
+      step: '3/4',
+      title: language === 'ar' ? 'تنبيهات انخفاض المخزون' : 'Réassort & Articles Critiques',
+      desc: language === 'ar' ? 'توجد أصناف وصلت إلى حد إعادة الطلب. قم بإصدار طلب تموين جديد للمورد.' : 'Plusieurs références ont atteint le seuil d’alerte. Déclenchez un bon de commande fournisseur.',
+      btnLabel: language === 'ar' ? 'فحص المخزون' : 'Vérifier l’Inventaire',
+      action: () => setScreen('inventory'),
+    },
+    {
+      step: '4/4',
+      title: language === 'ar' ? 'فتح جلسة بيع سريعة' : 'Mode Caisse Tactile',
+      desc: language === 'ar' ? 'استخدم قارئ الباركود والاختصارات السريعة لتسريع عمليات البيع في ساعات الذروة.' : 'Basculez sur la caisse tactile pour accélérer les encaissements au comptoir avec douchette.',
+      btnLabel: language === 'ar' ? 'Accéder à la Caisse' : 'Lancer la Caisse',
+      action: () => setScreen('shop'),
+    },
+  ], [language, setScreen]);
 
   // Filter sales for current branch or retail
   const branchSales = useMemo(() => {
@@ -78,6 +116,32 @@ export const PosDashboardView: React.FC<PosDashboardViewProps> = () => {
     const today = new Date().toISOString().split('T')[0];
     return branchSales.filter((s) => s.createdAt.startsWith(today));
   }, [branchSales]);
+
+  // Hourly velocity distribution (08:00 - 23:00)
+  const hourlySalesVelocity = useMemo(() => {
+    const buckets = Array(10).fill(0);
+    todaySales.forEach((s) => {
+      const hour = new Date(s.createdAt).getHours();
+      const bucketIdx = Math.min(9, Math.max(0, Math.floor(((hour - 8) / 14) * 10)));
+      buckets[bucketIdx] += s.totalAmount > 0 ? 1 : 0;
+    });
+    const max = Math.max(...buckets, 1);
+    return [20, 35, 55, 90, 85, 100, 65, 45, 25, 15].map((defaultHeight, idx) => {
+      if (todaySales.length > 0 && buckets[idx] > 0) {
+        return Math.max(15, Math.round((buckets[idx] / max) * 100));
+      }
+      return defaultHeight;
+    });
+  }, [todaySales]);
+
+  // Recent activity sales for right bottom pod
+  const recentActivitySales = useMemo(() => {
+    return branchSales.filter((s) => {
+      if (activityFilter === 'Ventes') return s.status !== 'Refunded';
+      if (activityFilter === 'Avoirs') return s.status === 'Refunded';
+      return true;
+    }).slice(0, 5);
+  }, [branchSales, activityFilter]);
 
   // Calculate POS metrics
   const posKpis = useMemo(() => {
@@ -496,110 +560,483 @@ export const PosDashboardView: React.FC<PosDashboardViewProps> = () => {
           </div>
         </div>
 
-        {/* Top Metrics Pod Tray (SurfaceBgElevated: #F8F9FA, CornerRadius 24px) */}
-        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            
-            {/* Card 1: Today's Gross Revenue */}
-            <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
+        {/* Row 1: Two-Column Pod Canvas matching Master Desktop Specification (~38% Left / ~62% Right) */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
+          
+          {/* ================= LEFT COLUMN (~38% - lg:col-span-5) ================= */}
+          <div className="lg:col-span-5 space-y-5 flex flex-col justify-between">
+            {/* 1. Summary Pod Tray */}
+            <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
-                  {language === 'ar' ? 'مبيعات اليوم المحققة' : 'Chiffre d’Affaires du Jour'}
-                </span>
-                <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#C4785A]/10 text-[#C4785A]">
-                  {posKpis.totalTransactions} tickets réglés
-                </span>
-              </div>
-              <div className="mt-3">
-                <div className="text-2xl lg:text-3xl font-extrabold text-neutral-900 dark:text-neutral-100 font-mono">
-                  {formatMoney(posKpis.totalTodayRevenue)}
+                <div>
+                  <h3 className="text-[13.5px] font-bold text-neutral-900 dark:text-white">
+                    {language === 'ar' ? 'ملخص المبيعات' : 'Résumé des Encaissements'}
+                  </h3>
+                  <p className="text-[11px] text-neutral-400">
+                    {language === 'ar'
+                      ? 'متابعة وتيرة العمليات والنشاط المالي.'
+                      : 'Suivi du débit horaire et volume des tickets.'}
+                  </p>
                 </div>
-                <div className="flex items-center gap-1.5 text-[11px] text-neutral-500 mt-1">
-                  <Receipt size={13} className="text-[#C4785A]" />
-                  <span>Panier Moyen: <strong className="font-mono text-neutral-800 dark:text-neutral-200">{formatMoney(posKpis.avgTicket)}</strong></span>
+
+                <div className="px-3 py-1 bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700 rounded-[12px] text-xs font-semibold text-neutral-700 dark:text-neutral-300 shadow-2xs flex items-center gap-1.5">
+                  <span>{language === 'ar' ? 'يومي' : 'Journalier'}</span>
+                  <ChevronDown size={12} className="text-neutral-400" />
+                </div>
+              </div>
+
+              {/* Inset Floating White Card */}
+              <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs space-y-4">
+                {/* Section A: Two Metric Columns with 1px Vertical Divider */}
+                <div className="grid grid-cols-2 gap-4 divide-x rtl:divide-x-reverse divide-[#EDF1F3] dark:divide-neutral-700">
+                  {/* Left Metric: Transactions count */}
+                  <div className="pr-3 rtl:pr-0 rtl:pl-3 space-y-1">
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-[18px] h-[18px] rounded-full bg-[#FCEEE8] dark:bg-neutral-700 flex items-center justify-center text-[#C4785A]">
+                        <Receipt size={10} />
+                      </div>
+                      <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
+                        {language === 'ar' ? 'تذاكر اليوم' : 'Tickets Encaissés'}
+                      </span>
+                    </div>
+                    <div className="flex items-baseline gap-1 mt-1">
+                      <span className="text-2xl font-black text-neutral-900 dark:text-white tabular-nums">
+                        {posKpis.totalTransactions}
+                      </span>
+                      <span className="text-xs text-neutral-400 font-semibold tabular-nums">
+                        /40 obj
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Right Metric: Today Revenue */}
+                  <div className="pl-4 rtl:pl-0 rtl:pr-4 space-y-1">
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-[18px] h-[18px] rounded-full bg-emerald-50 dark:bg-emerald-950/40 flex items-center justify-center text-emerald-600">
+                        <ShoppingBag size={10} />
+                      </div>
+                      <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
+                        {language === 'ar' ? 'مبيعات اليوم' : 'Volume Jour'}
+                      </span>
+                    </div>
+                    <div className="flex items-baseline gap-1 mt-1">
+                      <span className="text-xl font-black text-neutral-900 dark:text-white font-mono truncate">
+                        {formatMoney(posKpis.totalTodayRevenue)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Section B: Sales Velocity Histogram (10 capsule bars 08:00 - 23:00) */}
+                <div className="pt-2">
+                  <div className="h-[110px] w-full flex items-end justify-between gap-1.5 px-1">
+                    {hourlySalesVelocity.map((height, idx) => {
+                      const isPeak = height >= 75;
+                      return (
+                        <div key={idx} className="flex-1 flex flex-col items-center gap-1.5 group h-full justify-end">
+                          <div
+                            style={{ height: `${height}%` }}
+                            className={`w-full rounded-full transition-all duration-300 ${
+                              isPeak
+                                ? 'bg-[#C4785A] opacity-90 group-hover:opacity-100'
+                                : 'bg-[#E8DFD8] dark:bg-neutral-700 opacity-60 group-hover:opacity-85'
+                            }`}
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div className="flex justify-between text-[10px] font-medium text-neutral-400 pt-2 px-1">
+                    <span>08:00</span>
+                    <span>12:00</span>
+                    <span>16:00</span>
+                    <span>20:00</span>
+                    <span>23:00</span>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Card 2: Inventory Valuation & Stock Alerts */}
-            <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
-                  {language === 'ar' ? 'قيمة مخزون المتجر' : 'Valeur Stock en Magasin'}
-                </span>
-                <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-neutral-100 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300">
-                  {posKpis.totalStockUnits} unités
-                </span>
-              </div>
-              <div className="mt-3">
-                <div className="text-2xl lg:text-3xl font-extrabold text-neutral-900 dark:text-neutral-100 font-mono">
-                  {formatMoney(posKpis.inventoryRetailValue)}
-                </div>
-                <div className="flex items-center gap-1.5 text-[11px] text-neutral-500 mt-1">
-                  {posKpis.lowStockCount > 0 ? (
-                    <span className="text-rose-500 font-semibold flex items-center gap-1">
-                      <AlertTriangle size={13} />
-                      {posKpis.lowStockCount} article(s) en alerte réassort
-                    </span>
-                  ) : (
-                    <span className="text-emerald-500 font-medium flex items-center gap-1">
-                      <CheckCircle2 size={13} />
-                      Niveaux d'inventaire complets
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Card 3: DARK ESPRESSO ANCHOR CARD (#1F1D1B) */}
-            <div className="bg-[#1F1D1B] rounded-[18px] p-4 lg:p-5 border border-neutral-800 shadow-sm text-white flex flex-col justify-between relative overflow-hidden group">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-[#E7E5E4]">
-                  {language === 'ar' ? 'رصيد درج النقود المتوقع' : 'Tiroir-Caisse & Espèces en Session'}
-                </span>
-                <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30 uppercase tracking-wider">
-                  Session Active
-                </span>
-              </div>
-              <div className="mt-3">
-                <div className="text-2xl lg:text-3xl font-extrabold text-white font-mono tracking-tight">
-                  {formatMoney(posKpis.expectedCashInDrawer)}
-                </div>
-                <div className="flex items-center justify-between text-[11px] text-stone-400 mt-1.5">
-                  <span className="flex items-center gap-1">
-                    <Banknote size={12} className="text-[#FB923C]" />
-                    <span>Fond 15k DA + {formatMoney(posKpis.cashVolume)} encaissés</span>
+            {/* 2. Dual Compact KPI Tiles */}
+            <div className="grid grid-cols-2 gap-3.5">
+              {/* Tile 1: Average Ticket */}
+              <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[18px] p-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs flex flex-col justify-between h-[110px]">
+                <div>
+                  <span className="text-[11px] font-semibold text-[#64748B] dark:text-neutral-400 block truncate">
+                    {language === 'ar' ? 'متوسط السلة' : 'Panier Moyen'}
                   </span>
-                  <span className="font-mono text-stone-300">DZD</span>
+                  <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full inline-block mt-1">
+                    ↗ +5.4%
+                  </span>
+                </div>
+                <div className="text-xl font-black text-neutral-900 dark:text-white tabular-nums font-mono">
+                  {formatMoney(posKpis.avgTicket)}
                 </div>
               </div>
 
-              {/* Decorative Subtle Background Sparkline */}
-              <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-[#FB923C]/5 rounded-full blur-2xl pointer-events-none" />
+              {/* Tile 2: Cash Ratio */}
+              <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[18px] p-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs flex flex-col justify-between h-[110px]">
+                <div>
+                  <span className="text-[11px] font-semibold text-[#64748B] dark:text-neutral-400 block truncate">
+                    {language === 'ar' ? 'نسبة الدفع نقداً' : 'Part Espèces'}
+                  </span>
+                  <span className="text-[10px] font-bold text-amber-600 bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded-full inline-block mt-1">
+                    ● En Direct
+                  </span>
+                </div>
+                <div className="text-xl font-black text-neutral-900 dark:text-white tabular-nums">
+                  {posKpis.totalTodayRevenue > 0
+                    ? `${Math.round((posKpis.cashVolume / posKpis.totalTodayRevenue) * 100)}%`
+                    : '100%'}
+                </div>
+              </div>
             </div>
 
-          </div>
-        </div>
+            {/* 3. Sleek Prompt Banner (Atrium Tips Card) */}
+            <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[18px] p-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-[9.5px] font-bold bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] px-2 py-0.5 rounded-full uppercase">
+                    STEP {posTips[currentTipIndex].step}
+                  </span>
+                  <span className="text-[11.5px] font-bold text-neutral-800 dark:text-neutral-200">
+                    {posTips[currentTipIndex].title}
+                  </span>
+                </div>
 
-        {/* Operational Pod Section: Payment Breakdown & Fast Access */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-          {/* Payment Method Breakdown (7 cols) */}
-          <div className="lg:col-span-7 bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
-            <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5 text-neutral-400 text-xs">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setCurrentTipIndex((prev) => (prev > 0 ? prev - 1 : posTips.length - 1))
+                    }
+                    className="p-1 hover:text-neutral-700 dark:hover:text-neutral-200 cursor-pointer"
+                  >
+                    <ChevronLeft size={13} className="rtl:rotate-180" />
+                  </button>
+                  <span className="text-[10px] font-medium">{posTips[currentTipIndex].step}</span>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setCurrentTipIndex((prev) => (prev < posTips.length - 1 ? prev + 1 : 0))
+                    }
+                    className="p-1 hover:text-neutral-700 dark:hover:text-neutral-200 cursor-pointer"
+                  >
+                    <ChevronRight size={13} className="rtl:rotate-180" />
+                  </button>
+                </div>
+              </div>
+
+              <p className="text-xs text-neutral-600 dark:text-neutral-300 leading-relaxed">
+                {posTips[currentTipIndex].desc}
+              </p>
+
+              <button
+                type="button"
+                onClick={posTips[currentTipIndex].action}
+                className="w-full h-9 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 hover:bg-[#FBE5DC] text-[#C4785A] text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+              >
+                <span>{posTips[currentTipIndex].btnLabel}</span>
+              </button>
+            </div>
+          </div>
+
+          {/* ================= RIGHT COLUMN (~62% - lg:col-span-7) ================= */}
+          <div className="lg:col-span-7 space-y-5 flex flex-col justify-between">
+            {/* 1. Activity Pod Tray (Top) */}
+            <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
               <div>
-                <h3 className="text-sm font-bold text-neutral-900 dark:text-white uppercase tracking-wider">
-                  {language === 'ar' ? 'توزيع المقبوضات حسب وسيلة الدفع' : 'Répartition des Encaissements'}
+                <h3 className="text-[13.5px] font-bold text-neutral-900 dark:text-white">
+                  {language === 'ar' ? 'نشاط الصندوق والسيولة' : 'Activité Caisse & Trésorerie'}
                 </h3>
                 <p className="text-[11px] text-neutral-400">
-                  {language === 'ar' ? 'إجمالي المبالغ المحصلة في صندوق المحل اليوم' : 'Total ventilé par mode de paiement aujourd’hui'}
+                  {language === 'ar'
+                    ? 'متابعة تدفق المقبوضات ومطابقة درج النقود.'
+                    : 'Suivi opérationnel des encaissements et réconciliation du tiroir.'}
                 </p>
               </div>
-              <span className="font-mono text-xs font-bold text-[#C4785A]">
-                {formatMoney(posKpis.totalTodayRevenue)}
-              </span>
+
+              {/* 3 Inset Activity Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {/* Card 1: Gross Revenue Today */}
+                <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs relative overflow-hidden h-[155px] flex flex-col justify-between">
+                  <div className="relative z-10">
+                    <span className="text-[11px] font-semibold text-neutral-500 dark:text-neutral-400 block truncate">
+                      {language === 'ar' ? 'مبيعات اليوم' : 'Chiffre du Jour'}
+                    </span>
+                    <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full inline-block mt-1">
+                      {posKpis.totalTransactions} tickets
+                    </span>
+                  </div>
+                  <div className="text-xl font-black text-neutral-900 dark:text-white tabular-nums font-mono relative z-10">
+                    {formatMoney(posKpis.totalTodayRevenue)}
+                  </div>
+
+                  {/* Sparkline Graphic Background */}
+                  <svg
+                    className="absolute bottom-0 left-0 right-0 w-full h-[76px] pointer-events-none text-emerald-500/15 dark:text-emerald-500/10"
+                    viewBox="0 0 100 40"
+                    preserveAspectRatio="none"
+                  >
+                    <path
+                      d="M0 35 Q 20 15, 40 25 T 80 10 T 100 18 L 100 40 L 0 40 Z"
+                      fill="currentColor"
+                    />
+                    <path
+                      d="M0 35 Q 20 15, 40 25 T 80 10 T 100 18"
+                      fill="none"
+                      stroke="#10B981"
+                      strokeWidth="2"
+                    />
+                  </svg>
+                </div>
+
+                {/* Card 2: Stock Alerts & Ruptures */}
+                <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs relative overflow-hidden h-[155px] flex flex-col justify-between">
+                  <div className="relative z-10">
+                    <span className="text-[11px] font-semibold text-neutral-500 dark:text-neutral-400 block truncate">
+                      {language === 'ar' ? 'قيمة المخزون والتنبيهات' : 'Stock & Ruptures'}
+                    </span>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full inline-block mt-1 ${
+                      posKpis.lowStockCount > 0
+                        ? 'text-rose-600 bg-rose-50 dark:bg-rose-950/40'
+                        : 'text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40'
+                    }`}>
+                      {posKpis.lowStockCount > 0 ? `${posKpis.lowStockCount} alertes réassort` : 'Stock Nominal'}
+                    </span>
+                  </div>
+                  <div className="text-xl font-black text-neutral-900 dark:text-white tabular-nums font-mono relative z-10">
+                    {formatMoney(posKpis.inventoryRetailValue)}
+                  </div>
+
+                  {/* Sparkline Graphic Background */}
+                  <svg
+                    className="absolute bottom-0 left-0 right-0 w-full h-[76px] pointer-events-none text-purple-500/15 dark:text-purple-500/10"
+                    viewBox="0 0 100 40"
+                    preserveAspectRatio="none"
+                  >
+                    <path
+                      d="M0 30 Q 30 5, 60 20 T 100 5 L 100 40 L 0 40 Z"
+                      fill="currentColor"
+                    />
+                    <path
+                      d="M0 30 Q 30 5, 60 20 T 100 5"
+                      fill="none"
+                      stroke="#A855F7"
+                      strokeWidth="2"
+                    />
+                  </svg>
+                </div>
+
+                {/* Card 3: DARK ESPRESSO ANCHOR CARD (#1F1D1B) — Drawer Cash */}
+                <div className="bg-[#1F1D1B] rounded-[18px] p-4 border border-neutral-800 text-white relative overflow-hidden h-[155px] flex flex-col justify-between shadow-sm">
+                  <div className="relative z-10">
+                    <span className="text-[11px] font-medium text-neutral-300 block truncate">
+                      {language === 'ar' ? 'رصيد درج النقود المتوقع' : 'Tiroir-Caisse & Espèces'}
+                    </span>
+                    <span className="text-[10px] font-bold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30 px-2 py-0.5 rounded-full inline-block mt-1">
+                      Session Active
+                    </span>
+                  </div>
+                  <div className="text-xl font-black text-white tabular-nums font-mono relative z-10">
+                    {formatMoney(posKpis.expectedCashInDrawer)}
+                  </div>
+
+                  {/* Sparkline Amber Graphic Background */}
+                  <svg
+                    className="absolute bottom-0 left-0 right-0 w-full h-[76px] pointer-events-none text-[#F59E0B]/15"
+                    viewBox="0 0 100 40"
+                    preserveAspectRatio="none"
+                  >
+                    <path
+                      d="M0 25 Q 35 35, 70 12 T 100 20 L 100 40 L 0 40 Z"
+                      fill="currentColor"
+                    />
+                    <path
+                      d="M0 25 Q 35 35, 70 12 T 100 20"
+                      fill="none"
+                      stroke="#FB923C"
+                      strokeWidth="2"
+                    />
+                  </svg>
+                </div>
+              </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-3">
+            {/* 2. Recent Activity Pod Tray (Bottom - Fills Remaining Height) */}
+            <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-3 flex-1 flex flex-col">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <div>
+                  <h3 className="text-[13.5px] font-bold text-neutral-900 dark:text-white">
+                    {language === 'ar' ? 'النشاط الأخير ومبيعات اليوم' : 'Derniers Encaissements & Tickets'}
+                  </h3>
+                  <p className="text-[11px] text-neutral-400">
+                    {language === 'ar'
+                      ? 'متابعة سريعة للتذاكر الصادرة وإصدار وصولات 80 مم.'
+                      : 'Tickets émis en direct au comptoir de vente.'}
+                  </p>
+                </div>
+
+                {/* Filter Capsule Group */}
+                <div className="bg-white dark:bg-neutral-800 p-0.5 rounded-[10px] border border-[#E9EEF0] dark:border-neutral-700 flex items-center shadow-2xs">
+                  {(['Tous', 'Ventes', 'Avoirs'] as const).map((filter) => (
+                    <button
+                      key={filter}
+                      type="button"
+                      onClick={() => setActivityFilter(filter)}
+                      className={`px-3 py-1 rounded-[8px] text-xs font-semibold transition-all cursor-pointer ${
+                        activityFilter === filter
+                          ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold shadow-2xs'
+                          : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
+                      }`}
+                    >
+                      {filter === 'Tous' ? (language === 'ar' ? 'الكل' : 'Tous') : filter === 'Ventes' ? (language === 'ar' ? 'مبيعات' : 'Ventes') : (language === 'ar' ? 'مسترجعة' : 'Avoirs')}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Column Headers Card */}
+              <div className="bg-white dark:bg-neutral-800 rounded-[12px] border border-[#E9EEF0] dark:border-neutral-700/60 px-4 py-2 text-[11px] font-semibold text-neutral-400 flex items-center">
+                <span className="w-[32%] truncate">
+                  {language === 'ar' ? 'التذكرة والزبون' : 'TICKET & CLIENT'}
+                </span>
+                <span className="w-[28%] truncate">
+                  {language === 'ar' ? 'المحتويات وطريقة الدفع' : 'ARTICLES & RÈGLEMENT'}
+                </span>
+                <span className="w-[22%] text-right rtl:text-left truncate">
+                  {language === 'ar' ? 'المبلغ الصافي' : 'TOTAL PAYÉ'}
+                </span>
+                <span className="w-[18%] text-right rtl:text-left truncate">
+                  {language === 'ar' ? 'إجراءات' : 'ACTIONS'}
+                </span>
+              </div>
+
+              {/* Activity Rows List */}
+              <div className="space-y-2 flex-1">
+                {recentActivitySales.length === 0 ? (
+                  <div className="p-8 text-center bg-white dark:bg-neutral-800/40 rounded-[16px] border border-[#E9EEF0] dark:border-neutral-800 space-y-2 my-auto">
+                    <div className="w-10 h-10 rounded-full bg-neutral-100 dark:bg-neutral-700 flex items-center justify-center mx-auto text-neutral-400">
+                      <Receipt size={18} />
+                    </div>
+                    <p className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
+                      {language === 'ar' ? 'لا توجد مبيعات مسجلة' : 'Aucun ticket pour ce filtre'}
+                    </p>
+                    <p className="text-[11px] text-neutral-400">
+                      {language === 'ar' ? 'ستظهر المعاملات المكتملة هنا تلقائياً.' : 'Les tickets encaissés apparaîtront ici.'}
+                    </p>
+                  </div>
+                ) : (
+                  recentActivitySales.map((sale) => {
+                    const isRefunded = sale.status === 'Refunded';
+                    return (
+                      <div
+                        key={sale.id}
+                        className="bg-white dark:bg-neutral-800 rounded-[12px] p-3 border border-[#E9EEF0] dark:border-neutral-700/60 flex items-center justify-between shadow-2xs hover:border-[#C4785A]/40 transition-colors"
+                      >
+                        {/* Col 1: Ticket + Customer */}
+                        <div className="w-[32%] min-w-0 pr-2">
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-mono font-bold text-xs text-neutral-900 dark:text-white">
+                              #{sale.id.slice(-6).toUpperCase()}
+                            </span>
+                            <span className="text-[10px] text-neutral-400 font-mono">
+                              {new Date(sale.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                          </div>
+                          <div className="text-xs font-semibold text-neutral-700 dark:text-neutral-200 truncate">
+                            {sale.memberName || 'Client de Passage'}
+                          </div>
+                        </div>
+
+                        {/* Col 2: Articles & Payment */}
+                        <div className="w-[28%] min-w-0 pr-2">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300">
+                              {sale.items.length} {sale.items.length > 1 ? 'articles' : 'article'}
+                            </span>
+                            <span className="text-[10px] font-medium text-neutral-500 dark:text-neutral-400">
+                              {sale.paymentMethod}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Col 3: Total */}
+                        <div className="w-[22%] text-right rtl:text-left pr-2">
+                          <span className={`font-mono font-bold text-xs ${
+                            isRefunded ? 'text-rose-600 line-through' : 'text-[#C4785A]'
+                          }`}>
+                            {formatMoney(sale.totalAmount)}
+                          </span>
+                        </div>
+
+                        {/* Col 4: Actions (Print & Refund) */}
+                        <div className="w-[18%] flex items-center justify-end gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => setSelectedSaleForReceipt(sale)}
+                            className="p-1.5 text-neutral-400 hover:text-[#C4785A] hover:bg-[#FCEEE8] dark:hover:bg-neutral-700 rounded-lg cursor-pointer transition-colors"
+                            title="Reçu thermique 80mm"
+                          >
+                            <Printer size={14} />
+                          </button>
+                          {!isRefunded && (
+                            <button
+                              type="button"
+                              onClick={() => setSelectedSaleForRefund(sale)}
+                              className="p-1.5 text-neutral-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg cursor-pointer transition-colors"
+                              title="Avoir / Remboursement"
+                            >
+                              <RotateCcw size={13} />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        {/* Operational Pod Section: Payment Breakdown, Parked Tickets & Fast Navigation */}
+        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h3 className="text-sm font-bold text-neutral-900 dark:text-white uppercase tracking-wider">
+                {language === 'ar' ? 'التفصيل العملياتي والتذاكر المعلقة' : 'Opérations de Caisse & Paniers en Attente'}
+              </h3>
+              <p className="text-[11px] text-neutral-400">
+                {language === 'ar' ? 'متابعة طرق التسديد واستئناف التذاكر المحفوظة مؤقتاً' : 'Ventilation par mode de règlement et accès direct au grand livre des ventes.'}
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleExportSalesCSV}
+                className="h-9 px-3.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-200 text-xs font-bold flex items-center gap-1.5 hover:bg-neutral-50 dark:hover:bg-neutral-700/60 cursor-pointer transition-colors shadow-2xs"
+              >
+                <FileText size={13} />
+                <span>{language === 'ar' ? 'تصدير CSV' : 'Export Grand Livre'}</span>
+              </button>
+
+              <AtriumButton
+                variant="outline"
+                size="sm"
+                onClick={() => setScreen('orders')}
+                icon={<Receipt size={14} className="text-[#C4785A]" />}
+              >
+                {language === 'ar' ? 'سجل المبيعات الكامل' : 'Grand Livre des Tickets'}
+              </AtriumButton>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+            {/* Tender Breakdown (7 cols) */}
+            <div className="lg:col-span-7 grid grid-cols-3 gap-3">
               {/* Cash */}
               <div className="p-3.5 rounded-[18px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 space-y-1 shadow-2xs">
                 <div className="flex items-center gap-1.5 text-neutral-500 text-[10px] font-bold uppercase">
@@ -632,7 +1069,7 @@ export const PosDashboardView: React.FC<PosDashboardViewProps> = () => {
                 </div>
               </div>
 
-              {/* BaridiMob & Transfers */}
+              {/* BaridiMob */}
               <div className="p-3.5 rounded-[18px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 space-y-1 shadow-2xs">
                 <div className="flex items-center gap-1.5 text-neutral-500 text-[10px] font-bold uppercase">
                   <Coins size={13} className="text-[#C4785A]" />
@@ -649,253 +1086,46 @@ export const PosDashboardView: React.FC<PosDashboardViewProps> = () => {
               </div>
             </div>
 
-            {/* Top Selling Products List */}
-            <div className="pt-2">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 block mb-2">
-                {language === 'ar' ? 'أكثر الأصناف مبيعاً' : 'Top Articles Vendus Aujourd’hui'}
-              </span>
-              <div className="space-y-1.5">
-                {topProducts.map((item, idx) => (
-                  <div key={idx} className="p-2.5 rounded-xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex items-center justify-between text-xs">
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <span className="w-5 h-5 rounded-full bg-neutral-100 dark:bg-neutral-700 text-[10px] font-mono font-bold flex items-center justify-center text-neutral-500 shrink-0">
-                        0{idx + 1}
-                      </span>
-                      <span className="font-bold text-neutral-900 dark:text-neutral-100 truncate">{item.name}</span>
-                      <span className="text-[10px] text-neutral-400">({item.units} vendus)</span>
-                    </div>
-                    <span className="font-mono font-bold text-[#C4785A]">{formatMoney(item.revenue)}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Parked Tickets & Quick Resume (5 cols) */}
-          <div className="lg:col-span-5 bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4 flex flex-col justify-between">
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <Clock size={16} className="text-amber-500" />
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-700 dark:text-neutral-300">
-                    {language === 'ar' ? 'التذاكر المعلقة (En Attente)' : 'Tickets en Attente'}
-                  </h3>
+            {/* Parked Tickets (5 cols) */}
+            <div className="lg:col-span-5 p-3.5 rounded-[18px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex items-center justify-between gap-3">
+              <div>
+                <div className="flex items-center gap-1.5">
+                  <Clock size={14} className="text-amber-500" />
+                  <span className="text-xs font-bold text-neutral-900 dark:text-white">
+                    {language === 'ar' ? 'التذاكر المعلقة' : 'Paniers en Pause'}
+                  </span>
+                  <span className="px-2 py-0.2 rounded-full text-[10px] font-mono font-bold bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300">
+                    {parkedOrders.length}
+                  </span>
                 </div>
-                <span className="font-mono text-xs font-bold bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 px-2 py-0.5 rounded-full">
-                  {parkedOrders.length}
-                </span>
+                <p className="text-[10px] text-neutral-400 mt-0.5">
+                  {parkedOrders.length > 0 ? `${parkedOrders[0].referenceName} · ${formatMoney(parkedOrders[0].totalAmount)}` : 'Aucun ticket mis en pause'}
+                </p>
               </div>
 
-              {parkedOrders.length === 0 ? (
-                <div className="p-6 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 text-center text-xs text-neutral-400">
-                  {language === 'ar' ? 'لا توجد طلبات معلقة حالياً.' : 'Aucun ticket mis en pause.'}
-                </div>
+              {parkedOrders.length > 0 ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    resumeParkedOrder(parkedOrders[0].id);
+                    setScreen('shop');
+                  }}
+                  className="h-8 px-3 rounded-xl bg-[#C4785A] text-white text-xs font-bold flex items-center gap-1 hover:opacity-90 cursor-pointer shadow-xs"
+                >
+                  <PlayCircle size={13} />
+                  <span>Reprendre</span>
+                </button>
               ) : (
-                <div className="space-y-2 max-h-56 overflow-y-auto">
-                  {parkedOrders.map((po) => (
-                    <div
-                      key={po.id}
-                      className="p-3 rounded-xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex items-center justify-between gap-3 text-xs shadow-2xs"
-                    >
-                      <div>
-                        <div className="font-bold text-neutral-900 dark:text-white">
-                          {po.referenceName}
-                        </div>
-                        <div className="text-[10px] text-neutral-400">
-                          {po.items.length} {language === 'ar' ? 'أصناف' : 'articles'} · {new Date(po.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-mono font-bold text-[#C4785A]">
-                          {formatMoney(po.totalAmount)}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            resumeParkedOrder(po.id);
-                            setScreen('shop');
-                          }}
-                          className="p-1.5 rounded-lg bg-[#C4785A] text-white hover:opacity-90 cursor-pointer"
-                          title="Reprendre en caisse"
-                        >
-                          <PlayCircle size={14} />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <AtriumButton
+                  variant="primary"
+                  size="sm"
+                  onClick={() => setScreen('shop')}
+                  icon={<Plus size={13} />}
+                >
+                  Vente
+                </AtriumButton>
               )}
             </div>
-
-            <button
-              type="button"
-              onClick={() => setScreen('shop')}
-              className="w-full py-2.5 rounded-xl bg-[#C4785A] text-white text-xs font-bold flex items-center justify-center gap-2 cursor-pointer hover:opacity-95 shadow-xs transition-opacity mt-4"
-            >
-              <Plus size={14} />
-              <span>{language === 'ar' ? 'فتح عملية بيع جديدة' : 'Nouvel Encaissement'}</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Bottom Collection Pod Tray (SurfaceBgElevated: #F8F9FA) */}
-        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
-          
-          {/* Controls Bar: Segment Tabs + Seek Search + Export */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-            {/* Segment Capsules */}
-            <div className="flex items-center gap-1.5 bg-neutral-200/60 dark:bg-neutral-800 p-1 rounded-2xl self-start">
-              <button
-                type="button"
-                onClick={() => setFilterMode('all')}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
-                  filterMode === 'all'
-                    ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-xs'
-                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
-                }`}
-              >
-                <span>{language === 'ar' ? 'جميع المبيعات' : 'Toutes les Ventes'}</span>
-                <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono ${
-                  filterMode === 'all' ? 'bg-[#C4785A]/15 text-[#C4785A]' : 'bg-neutral-300/60 dark:bg-neutral-700 text-neutral-500'
-                }`}>
-                  {branchSales.length}
-                </span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setFilterMode('today')}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
-                  filterMode === 'today'
-                    ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-xs'
-                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
-                }`}
-              >
-                <span>{language === 'ar' ? 'مبيعات اليوم' : 'Aujourd’hui'}</span>
-                <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono ${
-                  filterMode === 'today' ? 'bg-[#C4785A]/15 text-[#C4785A]' : 'bg-neutral-300/60 dark:bg-neutral-700 text-neutral-500'
-                }`}>
-                  {todaySales.length}
-                </span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setFilterMode('refunded')}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
-                  filterMode === 'refunded'
-                    ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-xs'
-                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
-                }`}
-              >
-                <span>{language === 'ar' ? 'المسترجعة' : 'Avoirs'}</span>
-                <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono ${
-                  filterMode === 'refunded' ? 'bg-[#C4785A]/15 text-[#C4785A]' : 'bg-neutral-300/60 dark:bg-neutral-700 text-neutral-500'
-                }`}>
-                  {branchSales.filter((s) => s.status === 'Refunded').length}
-                </span>
-              </button>
-            </div>
-
-            <div className="flex items-center gap-2 self-end sm:self-auto">
-              <Seek
-                value={searchQuery}
-                onChange={setSearchQuery}
-                placeholder={language === 'ar' ? 'بحث برقم الوصل، الزبون...' : 'Filtrer N° ticket, client...'}
-                shutSize={36}
-                openWidth={260}
-              />
-              <button
-                type="button"
-                onClick={handleExportSalesCSV}
-                className="h-9 px-3.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-200 text-xs font-bold flex items-center gap-1.5 hover:bg-neutral-50 dark:hover:bg-neutral-700/60 cursor-pointer transition-colors shadow-2xs"
-              >
-                <FileText size={13} />
-                <span>{language === 'ar' ? 'تصدير' : 'Export CSV'}</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Table Container Inside Pod Tray */}
-          <div className="bg-white dark:bg-neutral-800 rounded-[18px] border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs overflow-hidden">
-            <UniversalDataCollection<Sale>
-              items={filteredSales}
-              keyExtractor={(s) => s.id}
-              defaultViewMode="list"
-              columns={salesColumns}
-              onItemClick={(s) => setSelectedSaleForReceipt(s)}
-              renderCard={(s) => {
-                const isRefunded = s.status === 'Refunded';
-                return (
-                  <div className="flex flex-col justify-between h-full space-y-3">
-                    <div>
-                      <div className="flex items-start justify-between gap-2 mb-2">
-                        <div>
-                          <span className="font-mono font-bold text-xs text-neutral-900 dark:text-white block">
-                            #{s.id.slice(-6).toUpperCase()}
-                          </span>
-                          <span className="text-[10px] text-neutral-400 font-mono">
-                            {new Date(s.createdAt).toLocaleString()}
-                          </span>
-                        </div>
-                        <span
-                          className={`text-[10px] font-bold uppercase tracking-wider ${
-                            isRefunded ? 'text-rose-600' : 'text-emerald-600'
-                          }`}
-                        >
-                          {isRefunded ? 'Remboursé' : 'Encaissé'}
-                        </span>
-                      </div>
-
-                      <div className="text-xs font-bold text-neutral-800 dark:text-neutral-200 mb-1">
-                        {s.memberName || 'Client de Passage'}
-                      </div>
-
-                      <div className="text-xs bg-neutral-50 dark:bg-neutral-800/50 p-2 rounded-xl space-y-0.5 text-neutral-600 dark:text-neutral-300">
-                        {s.items.map((it, idx) => (
-                          <div key={idx} className="flex justify-between text-[11px]">
-                            <span>{it.quantity}x {it.productName}</span>
-                            <span className="font-mono">{formatMoney(it.totalPrice)}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between pt-2 border-t border-neutral-100 dark:border-neutral-800">
-                      <span className="font-mono font-black text-sm text-[#C4785A] tabular-nums">
-                        {formatMoney(s.totalAmount)}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedSaleForReceipt(s);
-                        }}
-                        className="h-7 px-2.5 rounded-lg border border-neutral-200 dark:border-neutral-700 text-xs font-bold flex items-center gap-1 cursor-pointer"
-                      >
-                        <Printer size={12} className="text-[#C4785A]" />
-                        <span>Reçu</span>
-                      </button>
-                    </div>
-                  </div>
-                );
-              }}
-              selectedIds={selectedSaleIds}
-              onSelectionChange={setSelectedSaleIds}
-              isPinned={(s) => pinnedSaleIds.has(s.id)}
-              onTogglePin={(s) => {
-                setPinnedSaleIds((prev) => {
-                  const next = new Set(prev);
-                  if (next.has(s.id)) next.delete(s.id);
-                  else next.add(s.id);
-                  return next;
-                });
-              }}
-              emptyTitle={language === 'ar' ? 'لا توجد مبيعات مسجلة' : 'Aucune vente enregistrée'}
-              emptyDescription={language === 'ar' ? 'قم بفتح شاشة الصندوق لبدء تسجيل العمليات' : 'Ouvrez la caisse enregistreuse pour débuter les encaissements.'}
-              primaryActionLabel={language === 'ar' ? 'شاشة الصندوق' : 'Ouvrir Caisse'}
-              onAddFirstItem={() => setScreen('shop')}
-            />
           </div>
 
         </div>

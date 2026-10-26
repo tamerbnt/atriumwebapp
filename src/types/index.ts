@@ -426,16 +426,19 @@ export interface ServiceItem {
   businessId?: string;
   branchId?: string;
   staffId?: string;
+  tenantId?: string;
   facilityId: string;
   name: string;
   category: 'Hair' | 'Nails' | 'Facial' | 'Massage' | 'Bridal' | 'Barber';
   durationMinutes: number;
   price: number;
-  colorCode: string;
+  colorCode?: string;
+  color?: string;
   description?: string;
   costPrice?: number;
   commissionRate?: number;
   bufferMinutes?: number;
+  isActive?: boolean;
 }
 
 export interface Appointment {
@@ -487,6 +490,7 @@ export interface StylistPayout {
   retailSalesCount: number;
   retailSalesRevenue: number;
   retailCommissionAmount: number;
+  retailCommissionRate?: number;
   totalPayout: number;
   status: 'Pending' | 'Approved' | 'Paid';
   paidAt?: string;

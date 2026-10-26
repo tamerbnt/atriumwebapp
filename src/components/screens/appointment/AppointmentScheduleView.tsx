@@ -516,505 +516,577 @@ export const AppointmentScheduleView: React.FC = () => {
           </div>
         </div>
 
-        {/* Date Selector & Filters Bar */}
-        <div className="mt-4 pt-3 border-t border-neutral-200/60 dark:border-neutral-800/80 flex flex-wrap items-center justify-between gap-3">
-          {/* Date Picker Controls */}
-          <div className="flex items-center gap-1.5 bg-neutral-100 dark:bg-neutral-800 p-1 rounded-2xl">
-            <button
-              type="button"
-              onClick={handlePrevDay}
-              className="p-1.5 rounded-xl hover:bg-white dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-300 transition-all cursor-pointer"
-              title={t('salon_btn_prev_day', language)}
-            >
-              <ChevronLeft size={16} />
-            </button>
-            <button
-              type="button"
-              onClick={handleToday}
-              className="px-3 py-1 text-xs font-semibold rounded-xl bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white shadow-xs cursor-pointer"
-            >
-              {t('salon_btn_today', language)}
-            </button>
-            <button
-              type="button"
-              onClick={handleNextDay}
-              className="p-1.5 rounded-xl hover:bg-white dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-300 transition-all cursor-pointer"
-              title={t('salon_btn_next_day', language)}
-            >
-              <ChevronRight size={16} />
-            </button>
-            <div className="h-4 w-px bg-neutral-300 dark:bg-neutral-600 mx-1" />
-            <input
-              type="date"
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              className="px-2 py-1 text-xs font-semibold bg-transparent text-neutral-800 dark:text-neutral-200 border-none focus:outline-none cursor-pointer"
-            />
-            <span className="text-xs font-bold text-neutral-700 dark:text-neutral-300 pr-2">
-              • {formattedDateLabel}
-            </span>
-          </div>
         </div>
 
-        {/* Filter Pills & Search */}
-        <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex flex-wrap items-center gap-2">
-            {/* Status Filters */}
-            <div className="flex items-center gap-1">
-              {['All', 'Confirmed', 'InChair', 'Completed', 'Cancelled'].map((st) => (
-                <button
-                  key={st}
-                  type="button"
-                  onClick={() => setStatusFilter(st)}
-                  className={`px-2.5 py-1 text-xs rounded-lg transition-colors cursor-pointer ${
-                    statusFilter === st
-                      ? 'bg-[#C4785A] text-white font-semibold'
-                      : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700'
-                  }`}
-                >
-                  {st === 'All' ? t('common_all', language) : localizeStatus(st, language)}
-                </button>
-              ))}
+        {/* Top Metrics Pod Tray (SurfaceBgElevated: #F8F9FA, CornerRadius 24px) */}
+        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Card 1: Rendez-vous Prévus */}
+            <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
+                  {t('salon_kpi_total_bookings', language)}
+                </span>
+                <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#C4785A]/10 text-[#C4785A]">
+                  {stats.completedCount} terminés
+                </span>
+              </div>
+              <div className="mt-3">
+                <div className="text-2xl lg:text-3xl font-extrabold text-neutral-900 dark:text-neutral-100 font-mono">
+                  {stats.totalBookings}
+                </div>
+                <div className="flex items-center gap-1.5 text-[11px] text-neutral-400 mt-1">
+                  <Calendar size={13} className="text-[#C4785A]" />
+                  <span>Agenda journalier • {formattedDateLabel}</span>
+                </div>
+              </div>
             </div>
 
-            {/* Stylist Dropdown */}
-            <LabelSelect
-              field="Stylist"
-              label={t('salon_filter_stylist', language)}
-              value={selectedStylistId}
-              onChange={(val) => setSelectedStylistId(val?.target?.value ?? String(val))}
-              options={[
-                { value: 'All', label: `${t('salon_filter_all_stylists', language)} (${salonStylists.length})` },
-                ...salonStylists.map((st) => ({
-                  value: st.id,
-                  label: st.fullName,
-                  sublabel: st.role,
-                })),
-              ]}
-              width={190}
-              height={36}
-              corner={14}
-            />
-          </div>
+            {/* Card 2: Fauteuils Occupés & Utilisation */}
+            <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
+                  {t('salon_kpi_in_chair', language)}
+                </span>
+                <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                  <span>En Fauteuil</span>
+                </span>
+              </div>
+              <div className="mt-3">
+                <div className="text-2xl lg:text-3xl font-extrabold text-neutral-900 dark:text-neutral-100 font-mono">
+                  {stats.inChairCount} <span className="text-xs font-normal text-neutral-400">/ {salonStylists.length} postes</span>
+                </div>
+                <div className="flex items-center gap-1.5 text-[11px] text-neutral-400 mt-1">
+                  <Users size={13} className="text-blue-500" />
+                  <span>{salonStylists.length > 0 ? Math.round((stats.inChairCount / salonStylists.length) * 100) : 0}% taux d'occupation direct</span>
+                </div>
+              </div>
+            </div>
 
-          {/* Seek Kinetic Search */}
-          <Seek
-            value={searchQuery}
-            onChange={setSearchQuery}
-            placeholder={t('salon_search_placeholder', language)}
-            shutSize={34}
-            openWidth={230}
-          />
-        </div>
-
-        {/* Daily KPI Badges */}
-        <div className="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <div className="p-2.5 rounded-xl bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200/60 dark:border-neutral-800">
-            <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400 block">{t('salon_kpi_total_bookings', language)}</span>
-            <span className="text-lg font-bold text-neutral-900 dark:text-white">{stats.totalBookings}</span>
-          </div>
-          <div className="p-2.5 rounded-xl bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200/50 dark:border-amber-900/30">
-            <span className="text-[11px] font-medium text-amber-700 dark:text-amber-400 block flex items-center gap-1">
-              <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" /> {t('salon_kpi_in_chair', language)}
-            </span>
-            <span className="text-lg font-bold text-amber-900 dark:text-amber-200">{stats.inChairCount}</span>
-          </div>
-          <div className="p-2.5 rounded-xl bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200/50 dark:border-emerald-900/30">
-            <span className="text-[11px] font-medium text-emerald-700 dark:text-emerald-400 block">{t('salon_kpi_completed', language)}</span>
-            <span className="text-lg font-bold text-emerald-900 dark:text-emerald-200">{stats.completedCount}</span>
-          </div>
-          <div className="p-2.5 rounded-xl bg-purple-50/60 dark:bg-purple-950/20 border border-purple-200/50 dark:border-purple-900/30">
-            <span className="text-[11px] font-medium text-purple-700 dark:text-purple-400 block">{t('salon_kpi_est_revenue', language)}</span>
-            <span className="text-lg font-bold text-purple-900 dark:text-purple-200">{formatMoney(stats.revenue)}</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Board View: Multi-Stylist Column Schedule */}
-      {viewMode === 'columns' && (
-        <div className="flex-1 overflow-auto p-6">
-          <div className="min-w-[900px] bg-white dark:bg-[#18181B] rounded-3xl border border-neutral-200/80 dark:border-neutral-800 shadow-xs overflow-hidden">
-            {/* Column Headers */}
-            <div className="grid grid-cols-[100px_repeat(auto-fit,minmax(200px,1fr))] border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-900/80">
-              <div className="p-3.5 text-center text-xs font-bold text-neutral-500 uppercase tracking-wider border-r border-neutral-200 dark:border-neutral-800 flex items-center justify-center">
-                <Clock size={14} className="mr-1 text-neutral-400" /> {t('salon_timeline', language)}
+            {/* Card 3: DARK ESPRESSO ANCHOR CARD (#1F1D1B) */}
+            <div className="bg-[#1F1D1B] rounded-[18px] p-4 lg:p-5 border border-neutral-800 shadow-sm text-white flex flex-col justify-between relative overflow-hidden group">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-[#E7E5E4]">
+                  {t('salon_kpi_est_revenue', language)}
+                </span>
+                <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30 uppercase tracking-wider">
+                  Journée Active
+                </span>
+              </div>
+              <div className="mt-3">
+                <div className="text-2xl lg:text-3xl font-extrabold text-white font-mono tracking-tight">
+                  {formatMoney(stats.revenue)}
+                </div>
+                <div className="flex items-center justify-between text-[11px] text-stone-400 mt-1.5">
+                  <span className="flex items-center gap-1">
+                    <Sparkles size={12} className="text-[#FB923C]" />
+                    <span>Recette prévisionnelle TTC</span>
+                  </span>
+                  <span className="font-mono text-stone-300">DZD</span>
+                </div>
               </div>
 
-              {salonStylists.map((stylist, index) => {
-                const count = dayAppointments.filter((a) => a.staffId === stylist.id).length;
-                return (
-                  <div
-                    key={stylist.id}
-                    className={`p-3.5 ${
-                      index < salonStylists.length - 1 ? 'border-r border-neutral-200 dark:border-neutral-800' : ''
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-full bg-[#C4785A]/15 text-[#C4785A] font-bold text-xs flex items-center justify-center">
-                          {stylist.fullName.split(' ').map((n) => n[0]).join('')}
-                        </div>
-                        <div>
-                          <p className="text-xs font-bold text-neutral-900 dark:text-white leading-tight">
-                            {stylist.fullName}
-                          </p>
-                          <p className="text-[10px] text-neutral-500 font-medium">
-                            {stylist.role} • {t('salon_chair_num', language).replace('{number}', String(index + 1))}
-                          </p>
-                        </div>
-                      </div>
-                      <span className="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400">
-                        {count === 1
-                          ? t('salon_booking_count_single', language).replace('{count}', '1')
-                          : t('salon_booking_count_multi', language).replace('{count}', String(count))}
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
+              {/* Decorative Subtle Background Sparkline */}
+              <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-[#FB923C]/5 rounded-full blur-2xl pointer-events-none" />
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom Schedule Pod Tray (SurfaceBgElevated: #F8F9FA) */}
+        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+          
+          {/* Integrated Toolbar: Left Anchor + Controls Bar */}
+          <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
+            {/* Left Title / Icon / Count Anchor */}
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#C4785A]">
+                <Scissors size={18} />
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-bold text-neutral-900 dark:text-white">
+                  {viewMode === 'columns'
+                    ? (language === 'ar' ? 'مخطط كراسي المصففين' : 'Planning des Postes de Coiffure')
+                    : viewMode === 'list'
+                    ? (language === 'ar' ? 'سجل المواعيد العام' : 'Registre des Rendez-Vous')
+                    : (language === 'ar' ? 'دليل الخدمات' : 'Catalogue des Soins')}
+                </span>
+                <span className="px-2 py-0.5 rounded-full text-xs font-mono font-bold bg-[#C4785A]/10 text-[#C4785A]">
+                  {viewMode === 'catalog' ? servicesCatalog.length : dayAppointments.length}
+                </span>
+              </div>
             </div>
 
-            {/* Time Slot Rows Grid */}
-            <div className="divide-y divide-neutral-100 dark:divide-neutral-800/60">
-              {TIME_SLOTS.map((time) => {
-                return (
-                  <div
-                    key={time}
-                    className="grid grid-cols-[100px_repeat(auto-fit,minmax(200px,1fr))] min-h-[68px] hover:bg-neutral-50/40 dark:hover:bg-neutral-900/30 transition-colors"
+            {/* Right Controls: Date Navigator + Status Capsules + Stylist Select + Seek */}
+            <div className="flex items-center gap-2 flex-wrap self-end lg:self-auto">
+              {/* Date Navigator Capsules */}
+              <div className="flex items-center gap-1 bg-white dark:bg-neutral-800 p-1 rounded-xl border border-neutral-200 dark:border-neutral-700 shadow-2xs text-xs font-bold">
+                <button
+                  type="button"
+                  onClick={handlePrevDay}
+                  className="p-1 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-300 transition-all cursor-pointer"
+                  title={t('salon_btn_prev_day', language)}
+                >
+                  <ChevronLeft size={14} className="rtl:rotate-180" />
+                </button>
+                <button
+                  type="button"
+                  onClick={handleToday}
+                  className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] shadow-2xs cursor-pointer"
+                >
+                  {t('salon_btn_today', language)}
+                </button>
+                <input
+                  type="date"
+                  value={selectedDate}
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                  className="px-1.5 py-0.5 text-xs font-semibold bg-transparent text-neutral-800 dark:text-neutral-200 border-none focus:outline-none cursor-pointer"
+                />
+                <button
+                  type="button"
+                  onClick={handleNextDay}
+                  className="p-1 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-300 transition-all cursor-pointer"
+                  title={t('salon_btn_next_day', language)}
+                >
+                  <ChevronRight size={14} className="rtl:rotate-180" />
+                </button>
+              </div>
+
+              {/* Status Filters */}
+              <div className="flex items-center gap-1 bg-white dark:bg-neutral-800 p-1 rounded-xl border border-neutral-200 dark:border-neutral-700 shadow-2xs text-xs font-bold overflow-x-auto">
+                {['All', 'Confirmed', 'InChair', 'Completed'].map((st) => (
+                  <button
+                    key={st}
+                    type="button"
+                    onClick={() => setStatusFilter(st)}
+                    className={`px-2 py-0.5 rounded-lg transition-colors cursor-pointer text-xs ${
+                      statusFilter === st
+                        ? 'bg-[#C4785A] text-white font-semibold shadow-2xs'
+                        : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900'
+                    }`}
                   >
-                    {/* Time Label */}
-                    <div className="p-3 text-xs font-semibold text-neutral-500 text-center border-r border-neutral-200 dark:border-neutral-800 flex items-start justify-center pt-3">
-                      {time}
+                    {st === 'All' ? t('common_all', language) : localizeStatus(st, language)}
+                  </button>
+                ))}
+              </div>
+
+              {/* Stylist Dropdown */}
+              <LabelSelect
+                field="Stylist"
+                label={t('salon_filter_stylist', language)}
+                value={selectedStylistId}
+                onChange={(val) => setSelectedStylistId(val?.target?.value ?? String(val))}
+                options={[
+                  { value: 'All', label: `${t('salon_filter_all_stylists', language)} (${salonStylists.length})` },
+                  ...salonStylists.map((st) => ({
+                    value: st.id,
+                    label: st.fullName,
+                    sublabel: st.role,
+                  })),
+                ]}
+                width={170}
+                height={34}
+                corner={12}
+              />
+
+              {/* Seek Kinetic Search */}
+              <Seek
+                value={searchQuery}
+                onChange={setSearchQuery}
+                placeholder={t('salon_search_placeholder', language)}
+                shutSize={34}
+                openWidth={220}
+              />
+            </div>
+          </div>
+
+          {/* Matrix Columns View */}
+          {viewMode === 'columns' && (
+            <div className="bg-white dark:bg-neutral-800 rounded-[20px] border border-[#E9EEF0] dark:border-neutral-700/80 shadow-2xs overflow-hidden">
+              <div className="overflow-x-auto">
+                <div className="min-w-[760px]">
+                  {/* Column Headers */}
+                  <div className="grid grid-cols-[100px_repeat(auto-fit,minmax(200px,1fr))] border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-900/80">
+                    <div className="p-3.5 text-center text-xs font-bold text-neutral-500 uppercase tracking-wider border-r border-neutral-200 dark:border-neutral-800 flex items-center justify-center">
+                      <Clock size={14} className="mr-1 text-neutral-400" /> {t('salon_timeline', language)}
                     </div>
 
-                    {/* Stylist Columns */}
                     {salonStylists.map((stylist, index) => {
-                      // Find appointment starting at this time slot
-                      const apt = dayAppointments.find(
-                        (a) => a.staffId === stylist.id && a.startTime === time
-                      );
-
+                      const count = dayAppointments.filter((a) => a.staffId === stylist.id).length;
                       return (
                         <div
                           key={stylist.id}
-                          className={`p-1.5 relative group ${
-                            index < salonStylists.length - 1 ? 'border-r border-neutral-200/70 dark:border-neutral-800/70' : ''
+                          className={`p-3.5 ${
+                            index < salonStylists.length - 1 ? 'border-r border-neutral-200 dark:border-neutral-800' : ''
                           }`}
                         >
-                          {apt ? (
-                            <div
-                              onClick={() => handleOpenEditModal(apt)}
-                              className={`h-full w-full p-2.5 rounded-2xl cursor-pointer transition-all border shadow-xs hover:shadow-md ${
-                                apt.status === 'InChair'
-                                  ? 'bg-amber-50 dark:bg-amber-950/40 border-amber-300 dark:border-amber-700/60 ring-2 ring-amber-400/20'
-                                  : apt.status === 'Completed'
-                                  ? 'bg-emerald-50/70 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800'
-                                  : apt.status === 'Cancelled'
-                                  ? 'bg-neutral-100/70 dark:bg-neutral-900/50 border-neutral-200 dark:border-neutral-800 opacity-60'
-                                  : 'bg-indigo-50/80 dark:bg-indigo-950/30 border-indigo-200 dark:border-indigo-800'
-                              }`}
-                            >
-                              <div className="flex items-center justify-between gap-1 mb-1">
-                                <span className="text-xs font-bold text-neutral-900 dark:text-white truncate">
-                                  {apt.clientName}
-                                </span>
-                                <span
-                                  className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md uppercase tracking-wider ${
-                                    apt.status === 'InChair'
-                                      ? 'bg-amber-500 text-white animate-pulse'
-                                      : apt.status === 'Completed'
-                                      ? 'bg-emerald-600 text-white'
-                                      : apt.status === 'Cancelled'
-                                      ? 'bg-neutral-400 text-white'
-                                      : 'bg-indigo-600 text-white'
-                                  }`}
-                                >
-                                  {localizeStatus(apt.status, language)}
-                                </span>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <div className="w-8 h-8 rounded-full bg-[#C4785A]/15 text-[#C4785A] font-bold text-xs flex items-center justify-center">
+                                {stylist.fullName.split(' ').map((n) => n[0]).join('')}
                               </div>
-
-                              <p className="text-[11px] font-medium text-neutral-700 dark:text-neutral-300 truncate mb-1">
-                                {getLocalizedServiceName(apt.serviceId, apt.serviceName, language)}
-                              </p>
-
-                              <div className="flex items-center justify-between text-[10px] text-neutral-500 font-medium">
-                                <span>{apt.startTime} - {apt.endTime} ({apt.durationMinutes}m)</span>
-                                <span className="font-bold text-[#C4785A]">{formatMoney(apt.price)}</span>
+                              <div>
+                                <p className="text-xs font-bold text-neutral-900 dark:text-white leading-tight">
+                                  {stylist.fullName}
+                                </p>
+                                <p className="text-[10px] text-neutral-500 font-medium">
+                                  {stylist.role} • {t('salon_chair_num', language).replace('{number}', String(index + 1))}
+                                </p>
                               </div>
-
-                              {apt.status === 'InChair' && (
-                                <AtriumButton
-                                  type="button"
-                                  size="xs"
-                                  variant="primary"
-                                  className="mt-2 w-full text-[10px]"
-                                  icon={<CreditCard size={11} />}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleOneClickCheckout(apt);
-                                  }}
-                                  title={t('salon_quick_checkout', language)}
-                                >
-                                  {t('salon_quick_checkout', language)}
-                                </AtriumButton>
-                              )}
                             </div>
-                          ) : (
-                            <button
-                              type="button"
-                              onClick={() => handleOpenAddModal(time, stylist.id)}
-                              className="w-full h-full min-h-[50px] rounded-xl border border-dashed border-transparent group-hover:border-neutral-300 dark:group-hover:border-neutral-700 group-hover:bg-neutral-100/50 dark:group-hover:bg-neutral-800/40 flex items-center justify-center text-neutral-400 hover:text-[#C4785A] transition-all opacity-0 group-hover:opacity-100 cursor-pointer"
-                            >
-                              <span className="flex items-center gap-1 text-[11px] font-medium">
-                                <Plus size={13} /> {t('salon_book_slot', language)}
-                              </span>
-                            </button>
-                          )}
+                            <span className="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400">
+                              {count === 1
+                                ? t('salon_booking_count_single', language).replace('{count}', '1')
+                                : t('salon_booking_count_multi', language).replace('{count}', String(count))}
+                            </span>
+                          </div>
                         </div>
                       );
                     })}
                   </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      )}
 
-      {/* List View */}
-      {viewMode === 'list' && (
-        <div className="flex-1 overflow-auto p-6">
-          <UniversalDataCollection<Appointment>
-            items={sortedDayAppointments}
-            keyExtractor={(apt) => apt.id}
-            defaultViewMode="list"
-            columns={appointmentColumns}
-            sortBy={aptSortBy}
-            sortDirection={aptSortDir}
-            onSortChange={(key) => {
-              if (aptSortBy === key) {
-                setAptSortDir((prev) => (prev === 'asc' ? 'desc' : 'asc'));
-              } else {
-                setAptSortBy(key);
-                setAptSortDir('asc');
-              }
-            }}
-            renderCard={(apt) => (
-              <div className="flex flex-col justify-between w-full h-full">
+                  {/* Time Slot Rows Grid */}
+                  <div className="divide-y divide-neutral-100 dark:divide-neutral-800/60">
+                    {TIME_SLOTS.map((time) => {
+                      return (
+                        <div
+                          key={time}
+                          className="grid grid-cols-[100px_repeat(auto-fit,minmax(200px,1fr))] min-h-[68px] hover:bg-neutral-50/40 dark:hover:bg-neutral-900/30 transition-colors"
+                        >
+                          {/* Time Label */}
+                          <div className="p-3 text-xs font-semibold text-neutral-500 text-center border-r border-neutral-200 dark:border-neutral-800 flex items-start justify-center pt-3">
+                            {time}
+                          </div>
+
+                          {/* Stylist Columns */}
+                          {salonStylists.map((stylist, index) => {
+                            // Find appointment starting at this time slot
+                            const apt = dayAppointments.find(
+                              (a) => a.staffId === stylist.id && a.startTime === time
+                            );
+
+                            return (
+                              <div
+                                key={stylist.id}
+                                className={`p-1.5 relative group ${
+                                  index < salonStylists.length - 1 ? 'border-r border-neutral-200/70 dark:border-neutral-800/70' : ''
+                                }`}
+                              >
+                                {apt ? (
+                                  <div
+                                    onClick={() => handleOpenEditModal(apt)}
+                                    className={`h-full w-full p-2.5 rounded-2xl cursor-pointer transition-all border shadow-xs hover:shadow-md ${
+                                      apt.status === 'InChair'
+                                        ? 'bg-amber-50 dark:bg-amber-950/40 border-amber-300 dark:border-amber-700/60 ring-2 ring-amber-400/20'
+                                        : apt.status === 'Completed'
+                                        ? 'bg-emerald-50/70 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800'
+                                        : apt.status === 'Cancelled'
+                                        ? 'bg-neutral-100/70 dark:bg-neutral-900/50 border-neutral-200 dark:border-neutral-800 opacity-60'
+                                        : 'bg-indigo-50/80 dark:bg-indigo-950/30 border-indigo-200 dark:border-indigo-800'
+                                    }`}
+                                  >
+                                    <div className="flex items-center justify-between gap-1 mb-1">
+                                      <span className="text-xs font-bold text-neutral-900 dark:text-white truncate">
+                                        {apt.clientName}
+                                      </span>
+                                      <span
+                                        className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md uppercase tracking-wider ${
+                                          apt.status === 'InChair'
+                                            ? 'bg-amber-500 text-white animate-pulse'
+                                            : apt.status === 'Completed'
+                                            ? 'bg-emerald-600 text-white'
+                                            : apt.status === 'Cancelled'
+                                            ? 'bg-neutral-400 text-white'
+                                            : 'bg-indigo-600 text-white'
+                                        }`}
+                                      >
+                                        {localizeStatus(apt.status, language)}
+                                      </span>
+                                    </div>
+
+                                    <p className="text-[11px] font-medium text-neutral-700 dark:text-neutral-300 truncate mb-1">
+                                      {getLocalizedServiceName(apt.serviceId, apt.serviceName, language)}
+                                    </p>
+
+                                    <div className="flex items-center justify-between text-[10px] text-neutral-500 font-medium">
+                                      <span>{apt.startTime} - {apt.endTime} ({apt.durationMinutes}m)</span>
+                                      <span className="font-bold text-[#C4785A]">{formatMoney(apt.price)}</span>
+                                    </div>
+
+                                    {apt.status === 'InChair' && (
+                                      <AtriumButton
+                                        type="button"
+                                        size="xs"
+                                        variant="primary"
+                                        className="mt-2 w-full text-[10px]"
+                                        icon={<CreditCard size={11} />}
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleOneClickCheckout(apt);
+                                        }}
+                                        title={t('salon_quick_checkout', language)}
+                                      >
+                                        {t('salon_quick_checkout', language)}
+                                      </AtriumButton>
+                                    )}
+                                  </div>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleOpenAddModal(time, stylist.id)}
+                                    className="w-full h-full min-h-[50px] rounded-xl border border-dashed border-transparent group-hover:border-neutral-300 dark:group-hover:border-neutral-700 group-hover:bg-neutral-100/50 dark:group-hover:bg-neutral-800/40 flex items-center justify-center text-neutral-400 hover:text-[#C4785A] transition-all opacity-0 group-hover:opacity-100 cursor-pointer"
+                                  >
+                                    <span className="flex items-center gap-1 text-[11px] font-medium">
+                                      <Plus size={13} /> {t('salon_book_slot', language)}
+                                    </span>
+                                  </button>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* List View */}
+          {viewMode === 'list' && (
+            <div className="bg-white dark:bg-neutral-800 rounded-[20px] border border-[#E9EEF0] dark:border-neutral-700/80 shadow-2xs overflow-hidden p-3 lg:p-4">
+              <UniversalDataCollection<Appointment>
+                items={sortedDayAppointments}
+                keyExtractor={(apt) => apt.id}
+                defaultViewMode="list"
+                columns={appointmentColumns}
+                sortBy={aptSortBy}
+                sortDirection={aptSortDir}
+                onSortChange={(key) => {
+                  if (aptSortBy === key) {
+                    setAptSortDir((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+                  } else {
+                    setAptSortBy(key);
+                    setAptSortDir('asc');
+                  }
+                }}
+                renderCard={(apt) => (
+                  <div className="flex flex-col justify-between w-full h-full">
+                    <div>
+                      <div className="flex items-center justify-between gap-2 mb-2">
+                        <span className="font-mono text-xs font-bold text-neutral-900 dark:text-white bg-[#C4785A]/10 text-[#C4785A] px-2.5 py-1 rounded-lg">
+                          {apt.startTime} ({apt.durationMinutes}m)
+                        </span>
+                        <span
+                          className={`inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider ${
+                            apt.status === 'InChair'
+                              ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
+                              : apt.status === 'Completed'
+                              ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
+                              : apt.status === 'Cancelled'
+                              ? 'bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300'
+                              : 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950/60 dark:text-indigo-300'
+                          }`}
+                        >
+                          {apt.status === 'InChair' && <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />}
+                          {apt.status === 'InChair' ? t('salon_kpi_in_chair', language) : localizeStatus(apt.status, language)}
+                        </span>
+                      </div>
+
+                      <h3 className="font-bold text-sm text-neutral-900 dark:text-white line-clamp-1 mb-0.5">
+                        {apt.clientName}
+                      </h3>
+                      <p className="text-[11px] text-neutral-400 font-mono mb-2">
+                        {apt.clientPhone}
+                      </p>
+
+                      <div className="p-2.5 bg-neutral-50 dark:bg-neutral-800/40 rounded-xl text-xs space-y-1 mb-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-neutral-400 text-[10px] uppercase font-medium">
+                            {language === 'ar' ? 'الخدمة' : 'Service'}
+                          </span>
+                          <span className="font-semibold text-neutral-800 dark:text-neutral-200 truncate max-w-[140px]">
+                            {getLocalizedServiceName(apt.serviceId, apt.serviceName, language)}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between pt-1 border-t border-neutral-100 dark:border-neutral-800">
+                          <span className="text-neutral-400 text-[10px] uppercase font-medium">
+                            {language === 'ar' ? 'المصفف' : 'Staff'}
+                          </span>
+                          <span className="font-medium text-neutral-700 dark:text-neutral-300 truncate max-w-[140px]">
+                            {apt.staffName}
+                          </span>
+                        </div>
+                      </div>
+
+                      {apt.notes && (
+                        <p className="text-[11px] text-neutral-400 italic mb-2 line-clamp-1">
+                          "{apt.notes}"
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between gap-2">
+                      <span className="text-xs font-bold font-mono text-neutral-900 dark:text-white tabular-nums">
+                        {formatMoney(apt.price)}
+                      </span>
+
+                      {apt.status !== 'Completed' && apt.status !== 'Cancelled' && (
+                        <AtriumButton
+                          size="xs"
+                          variant="primary"
+                          icon={<CreditCard size={12} />}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleOneClickCheckout(apt);
+                          }}
+                        >
+                          {t('salon_quick_checkout', language)}
+                        </AtriumButton>
+                      )}
+                    </div>
+                  </div>
+                )}
+                onItemClick={(apt) => handleOpenEditModal(apt)}
+                onViewDetails={(apt) => handleOpenEditModal(apt)}
+                onEdit={(apt) => handleOpenEditModal(apt)}
+                onTogglePin={(apt) => {
+                  setPinnedAptIds((prev) => {
+                    const next = new Set(prev);
+                    if (next.has(apt.id)) {
+                      next.delete(apt.id);
+                      showToast({
+                        type: 'info',
+                        title: 'Unpinned',
+                        message: `${apt.clientName} unpinned`,
+                      });
+                    } else {
+                      next.add(apt.id);
+                      showToast({
+                        type: 'info',
+                        title: 'Pinned',
+                        message: `${apt.clientName} pinned to top`,
+                      });
+                    }
+                    return next;
+                  });
+                }}
+                customActions={(apt) => [
+                  ...(apt.status !== 'Completed' && apt.status !== 'Cancelled'
+                    ? [
+                        {
+                          id: 'checkout',
+                          tooltip: t('salon_quick_checkout', language) || 'Checkout',
+                          icon: <CreditCard size={13} />,
+                          iconColor: '#C4785A',
+                          onClick: (e: React.MouseEvent) => {
+                            e.stopPropagation();
+                            handleOneClickCheckout(apt);
+                          },
+                        },
+                      ]
+                    : []),
+                  ...(apt.status === 'Confirmed'
+                    ? [
+                        {
+                          id: 'start',
+                          tooltip: t('salon_kpi_in_chair', language) || 'Start Service',
+                          icon: <Play size={13} />,
+                          iconColor: '#D97706',
+                          onClick: (e: React.MouseEvent) => {
+                            e.stopPropagation();
+                            updateAppointmentStatus(apt.id, 'InChair');
+                          },
+                        },
+                      ]
+                    : []),
+                ]}
+                isPinned={(apt) => pinnedAptIds.has(apt.id)}
+                selectedIds={selectedAptIds}
+                onSelectionChange={setSelectedAptIds}
+                emptyTitle={t('salon_empty_appointments', language)}
+                emptyDescription={t('salon_empty_appointments_sub', language)}
+                primaryActionLabel={t('salon_new_booking', language)}
+                onAddFirstItem={() => handleOpenAddModal('10:00')}
+              />
+            </div>
+          )}
+
+          {/* Service Treatment Catalog View */}
+          {viewMode === 'catalog' && (
+            <div className="bg-white dark:bg-neutral-800 rounded-[20px] border border-[#E9EEF0] dark:border-neutral-700/80 shadow-2xs overflow-hidden p-5 lg:p-6">
+              <div className="flex items-center justify-between mb-5">
                 <div>
-                  <div className="flex items-center justify-between gap-2 mb-2">
-                    <span className="font-mono text-xs font-bold text-neutral-900 dark:text-white bg-[#C4785A]/10 text-[#C4785A] px-2.5 py-1 rounded-lg">
-                      {apt.startTime} ({apt.durationMinutes}m)
-                    </span>
-                    <span
-                      className={`inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider ${
-                        apt.status === 'InChair'
-                          ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
-                          : apt.status === 'Completed'
-                          ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
-                          : apt.status === 'Cancelled'
-                          ? 'bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300'
-                          : 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950/60 dark:text-indigo-300'
-                      }`}
-                    >
-                      {apt.status === 'InChair' && <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />}
-                      {apt.status === 'InChair' ? t('salon_kpi_in_chair', language) : localizeStatus(apt.status, language)}
-                    </span>
-                  </div>
-
-                  <h3 className="font-bold text-sm text-neutral-900 dark:text-white line-clamp-1 mb-0.5">
-                    {apt.clientName}
-                  </h3>
-                  <p className="text-[11px] text-neutral-400 font-mono mb-2">
-                    {apt.clientPhone}
+                  <h2 className="text-base font-bold text-neutral-900 dark:text-white">
+                    {t('salon_catalog_title', language)}
+                  </h2>
+                  <p className="text-xs text-neutral-500">
+                    {t('salon_catalog_subtitle', language)}
                   </p>
-
-                  <div className="p-2.5 bg-neutral-50 dark:bg-neutral-800/40 rounded-xl text-xs space-y-1 mb-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-neutral-400 text-[10px] uppercase font-medium">
-                        {language === 'ar' ? 'الخدمة' : 'Service'}
-                      </span>
-                      <span className="font-semibold text-neutral-800 dark:text-neutral-200 truncate max-w-[140px]">
-                        {getLocalizedServiceName(apt.serviceId, apt.serviceName, language)}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between pt-1 border-t border-neutral-100 dark:border-neutral-800">
-                      <span className="text-neutral-400 text-[10px] uppercase font-medium">
-                        {language === 'ar' ? 'المصفف' : 'Staff'}
-                      </span>
-                      <span className="font-medium text-neutral-700 dark:text-neutral-300 truncate max-w-[140px]">
-                        {apt.staffName}
-                      </span>
-                    </div>
-                  </div>
-
-                  {apt.notes && (
-                    <p className="text-[11px] text-neutral-400 italic mb-2 line-clamp-1">
-                      "{apt.notes}"
-                    </p>
-                  )}
                 </div>
+              </div>
 
-                <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between gap-2">
-                  <span className="text-xs font-bold font-mono text-neutral-900 dark:text-white tabular-nums">
-                    {formatMoney(apt.price)}
-                  </span>
-
-                  {apt.status !== 'Completed' && apt.status !== 'Cancelled' && (
-                    <AtriumButton
-                      size="xs"
-                      variant="primary"
-                      icon={<CreditCard size={12} />}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleOneClickCheckout(apt);
-                      }}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {servicesCatalog.map((service) => {
+                  const localized = getLocalizedService(service, language);
+                  return (
+                    <div
+                      key={service.id}
+                      className="p-4 rounded-2xl border border-neutral-200/80 dark:border-neutral-800 hover:border-[#C4785A]/50 bg-neutral-50/50 dark:bg-neutral-900/40 transition-all hover:shadow-md"
                     >
-                      {t('salon_quick_checkout', language)}
-                    </AtriumButton>
-                  )}
-                </div>
-              </div>
-            )}
-            onItemClick={(apt) => handleOpenEditModal(apt)}
-            onViewDetails={(apt) => handleOpenEditModal(apt)}
-            onEdit={(apt) => handleOpenEditModal(apt)}
-            onTogglePin={(apt) => {
-              setPinnedAptIds((prev) => {
-                const next = new Set(prev);
-                if (next.has(apt.id)) {
-                  next.delete(apt.id);
-                  showToast({
-                    type: 'info',
-                    title: 'Unpinned',
-                    message: `${apt.clientName} unpinned`,
-                  });
-                } else {
-                  next.add(apt.id);
-                  showToast({
-                    type: 'info',
-                    title: 'Pinned',
-                    message: `${apt.clientName} pinned to top`,
-                  });
-                }
-                return next;
-              });
-            }}
-            customActions={(apt) => [
-              ...(apt.status !== 'Completed' && apt.status !== 'Cancelled'
-                ? [
-                    {
-                      id: 'checkout',
-                      tooltip: t('salon_quick_checkout', language) || 'Checkout',
-                      icon: <CreditCard size={13} />,
-                      iconColor: '#C4785A',
-                      onClick: (e: React.MouseEvent) => {
-                        e.stopPropagation();
-                        handleOneClickCheckout(apt);
-                      },
-                    },
-                  ]
-                : []),
-              ...(apt.status === 'Confirmed'
-                ? [
-                    {
-                      id: 'start',
-                      tooltip: t('salon_kpi_in_chair', language) || 'Start Service',
-                      icon: <Play size={13} />,
-                      iconColor: '#D97706',
-                      onClick: (e: React.MouseEvent) => {
-                        e.stopPropagation();
-                        updateAppointmentStatus(apt.id, 'InChair');
-                      },
-                    },
-                  ]
-                : []),
-            ]}
-            isPinned={(apt) => pinnedAptIds.has(apt.id)}
-            selectedIds={selectedAptIds}
-            onSelectionChange={setSelectedAptIds}
-            emptyTitle={t('salon_empty_appointments', language)}
-            emptyDescription={t('salon_empty_appointments_sub', language)}
-            primaryActionLabel={t('salon_new_booking', language)}
-            onAddFirstItem={() => handleOpenAddModal('10:00')}
-          />
-        </div>
-      )}
+                      <div className="flex items-center justify-between mb-2">
+                        <span
+                          className="px-2.5 py-0.5 text-[10px] font-bold rounded-md uppercase tracking-wider text-white"
+                          style={{ backgroundColor: service.colorCode || '#C4785A' }}
+                        >
+                          {getLocalizedServiceCategory(service.category, language)}
+                        </span>
+                        <span className="text-xs font-semibold text-neutral-500 flex items-center gap-1">
+                          <Clock size={12} /> {t('salon_duration_mins', language).replace('{duration}', String(service.durationMinutes))}
+                        </span>
+                      </div>
 
-      {/* Service Treatment Catalog View */}
-      {viewMode === 'catalog' && (
-        <div className="flex-1 overflow-auto p-6">
-          <div className="bg-white dark:bg-[#18181B] rounded-3xl border border-neutral-200/80 dark:border-neutral-800 shadow-xs p-6">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h2 className="text-base font-bold text-neutral-900 dark:text-white">
-                  {t('salon_catalog_title', language)}
-                </h2>
-                <p className="text-xs text-neutral-500">
-                  {t('salon_catalog_subtitle', language)}
-                </p>
+                      <h3 className="text-sm font-bold text-neutral-900 dark:text-white mb-1">
+                        {localized.name}
+                      </h3>
+                      <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-3 min-h-[36px]">
+                        {localized.description || 'Premium salon aesthetic treatment.'}
+                      </p>
+
+                      <div className="flex items-center justify-between pt-2 border-t border-neutral-200/60 dark:border-neutral-800/80">
+                        <span className="text-sm font-bold text-[#C4785A]">
+                          {formatMoney(service.price)}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            handleOpenAddModal('10:00');
+                          }}
+                          className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-[#C4785A]/10 text-[#C4785A] hover:bg-[#C4785A] hover:text-white transition-colors cursor-pointer"
+                        >
+                          {t('salon_btn_new_appointment', language)}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
+          )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {servicesCatalog.map((service) => {
-                const localized = getLocalizedService(service, language);
-                return (
-                  <div
-                    key={service.id}
-                    className="p-4 rounded-2xl border border-neutral-200/80 dark:border-neutral-800 hover:border-[#C4785A]/50 bg-neutral-50/50 dark:bg-neutral-900/40 transition-all hover:shadow-md"
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <span
-                        className="px-2.5 py-0.5 text-[10px] font-bold rounded-md uppercase tracking-wider text-white"
-                        style={{ backgroundColor: service.colorCode || '#C4785A' }}
-                      >
-                        {getLocalizedServiceCategory(service.category, language)}
-                      </span>
-                      <span className="text-xs font-semibold text-neutral-500 flex items-center gap-1">
-                        <Clock size={12} /> {t('salon_duration_mins', language).replace('{duration}', String(service.durationMinutes))}
-                      </span>
-                    </div>
-
-                    <h3 className="text-sm font-bold text-neutral-900 dark:text-white mb-1">
-                      {localized.name}
-                    </h3>
-                    <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-3 min-h-[36px]">
-                      {localized.description || 'Premium salon aesthetic treatment.'}
-                    </p>
-
-                    <div className="flex items-center justify-between pt-2 border-t border-neutral-200/60 dark:border-neutral-800/80">
-                      <span className="text-sm font-bold text-[#C4785A]">
-                        {formatMoney(service.price)}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          handleOpenAddModal('10:00');
-                        }}
-                        className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-[#C4785A]/10 text-[#C4785A] hover:bg-[#C4785A] hover:text-white transition-colors cursor-pointer"
-                      >
-                        {t('salon_btn_new_appointment', language)}
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
         </div>
-      )}
 
-      {/* Booking / Action Modal */}
-      <AppointmentModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        appointment={activeAppointment}
-        initialDate={slotPrefill?.date || selectedDate}
-        initialTime={slotPrefill?.time || '10:00'}
-        initialStaffId={slotPrefill?.staffId}
-      />
-    </div>
+        {/* Booking / Action Modal */}
+        <AppointmentModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          appointment={activeAppointment}
+          initialDate={slotPrefill?.date || selectedDate}
+          initialTime={slotPrefill?.time || '10:00'}
+          initialStaffId={slotPrefill?.staffId}
+        />
+      </div>
   );
 };
 
