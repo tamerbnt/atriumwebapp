@@ -362,9 +362,9 @@ export const AppointmentScheduleView: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 flex flex-col min-w-0 bg-transparent overflow-hidden">
+    <div className="bg-white dark:bg-[#18181B] rounded-[28px] border border-[#E9EEF0] dark:border-neutral-800 p-6 lg:p-8 space-y-6 shadow-xs pb-16">
       {/* Top Header Bar */}
-      <div className="px-6 py-4 border-b border-neutral-200/80 dark:border-neutral-800 bg-white/50 dark:bg-neutral-900/40 backdrop-blur-md">
+      <div className="space-y-4">
         {checkoutToast && (
           <div className="mb-3 p-3 bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-300 dark:border-emerald-700 rounded-xl text-emerald-800 dark:text-emerald-200 text-xs font-semibold flex items-center justify-between shadow-xs animate-in slide-in-from-top-1">
             <div className="flex items-center gap-2">

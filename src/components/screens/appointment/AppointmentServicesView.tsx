@@ -19,6 +19,9 @@ import {
   X,
   AlertCircle,
   Calendar,
+  Sparkle,
+  SparkleIcon,
+  Tag,
 } from 'lucide-react';
 import { useAtriumStore } from '../../../services/store';
 import { ServiceItem } from '../../../types/index';
@@ -103,14 +106,34 @@ export const AppointmentServicesView: React.FC = () => {
     return counts;
   }, [servicesCatalog]);
 
+  // Top Metrics
+  const catalogMetrics = useMemo(() => {
+    const list = servicesCatalog || [];
+    const totalServices = list.length;
+    const avgPrice = totalServices > 0 ? Math.round(list.reduce((acc, s) => acc + s.price, 0) / totalServices) : 0;
+    const avgDuration = totalServices > 0 ? Math.round(list.reduce((acc, s) => acc + s.durationMinutes, 0) / totalServices) : 0;
+    const avgCommission = totalServices > 0 ? Math.round(list.reduce((acc, s) => acc + (s.commissionRate || 40), 0) / totalServices) : 40;
+    const totalValuation = list.reduce((acc, s) => acc + s.price, 0);
+    const totalCost = list.reduce((acc, s) => acc + (s.costPrice || 0), 0);
+    const avgGrossMargin = totalValuation > 0 ? Math.round(((totalValuation - totalCost) / totalValuation) * 100) : 0;
+
+    return {
+      totalServices,
+      avgPrice,
+      avgDuration,
+      avgCommission,
+      avgGrossMargin,
+    };
+  }, [servicesCatalog]);
+
   const handleOpenCreateModal = () => {
     setEditingService(null);
     setFormName('');
     setFormCategory('Hair');
     setFormDuration(60);
-    setFormPrice(6000);
-    setFormCostPrice(800);
-    setFormCommission(45);
+    setFormPrice(5000);
+    setFormCostPrice(500);
+    setFormCommission(40);
     setFormBuffer(10);
     setFormColor('#C4785A');
     setFormDescription('');
@@ -123,17 +146,25 @@ export const AppointmentServicesView: React.FC = () => {
     setFormCategory(service.category);
     setFormDuration(service.durationMinutes);
     setFormPrice(service.price);
-    setFormCostPrice(service.costPrice || 500);
+    setFormCostPrice(service.costPrice || 0);
     setFormCommission(service.commissionRate || 40);
-    setFormBuffer(service.bufferMinutes || 10);
-    setFormColor(service.colorCode || '#C4785A');
+    setFormBuffer(service.bufferMinutes || 0);
+    setFormColor(service.color || '#C4785A');
     setFormDescription(service.description || '');
     setIsServiceModalOpen(true);
   };
 
-  const handleSubmitService = (e: React.FormEvent) => {
+  const handleSaveService = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formName.trim()) return;
+    if (!formName.trim()) {
+      showToast({
+        type: 'error',
+        title: 'Nom requis',
+        message: 'Veuillez saisir le nom de la prestation.',
+        category: 'appointment_service',
+      });
+      return;
+    }
 
     if (editingService) {
       updateServiceItem(editingService.id, {
@@ -144,17 +175,19 @@ export const AppointmentServicesView: React.FC = () => {
         costPrice: Number(formCostPrice),
         commissionRate: Number(formCommission),
         bufferMinutes: Number(formBuffer),
-        colorCode: formColor,
+        color: formColor,
         description: formDescription.trim(),
       });
       showToast({
         type: 'success',
         title: 'Prestation mise à jour',
-        message: `Les détails de "${formName}" ont été enregistrés.`,
+        message: `${formName} a été mise à jour avec succès.`,
         category: 'appointment_service',
       });
     } else {
       addServiceItem({
+        tenantId: 'acc_01',
+        facilityId: currentBranch?.id || 'branch_hydra',
         name: formName.trim(),
         category: formCategory,
         durationMinutes: Number(formDuration),
@@ -162,59 +195,30 @@ export const AppointmentServicesView: React.FC = () => {
         costPrice: Number(formCostPrice),
         commissionRate: Number(formCommission),
         bufferMinutes: Number(formBuffer),
-        colorCode: formColor,
+        color: formColor,
         description: formDescription.trim(),
+        isActive: true,
       });
       showToast({
         type: 'success',
-        title: 'Nouvelle prestation ajoutée',
-        message: `"${formName}" est désormais disponible au catalogue.`,
+        title: 'Prestation ajoutée',
+        message: `${formName} a été enregistrée au catalogue.`,
         category: 'appointment_service',
       });
     }
-
     setIsServiceModalOpen(false);
-  };
-
-  const handleToggleSelectAll = () => {
-    if (selectedServiceIds.size === filteredServices.length) {
-      setSelectedServiceIds(new Set());
-    } else {
-      setSelectedServiceIds(new Set(filteredServices.map((s) => s.id)));
-    }
-  };
-
-  const handleToggleSelectOne = (id: string) => {
-    const next = new Set(selectedServiceIds);
-    if (next.has(id)) next.delete(id);
-    else next.add(id);
-    setSelectedServiceIds(next);
-  };
-
-  const handleTogglePin = (id: string) => {
-    const next = new Set(pinnedServiceIds);
-    if (next.has(id)) next.delete(id);
-    else next.add(id);
-    setPinnedServiceIds(next);
   };
 
   const handleBatchDelete = () => {
     const count = selectedServiceIds.size;
     batchDeleteServiceItems(Array.from(selectedServiceIds));
     setSelectedServiceIds(new Set());
-  };
-
-  const handleBatchAdjustCommission = (newRate: number) => {
-    selectedServiceIds.forEach((id) => {
-      updateServiceItem(id, { commissionRate: newRate });
-    });
     showToast({
-      type: 'success',
-      title: 'Taux de commission ajusté',
-      message: `${selectedServiceIds.size} prestations fixées à ${newRate}% de commission styliste.`,
+      type: 'info',
+      title: 'Suppression en masse',
+      message: `${count} prestations supprimées.`,
       category: 'appointment_service',
     });
-    setSelectedServiceIds(new Set());
   };
 
   const handleExportCSV = () => {
@@ -225,13 +229,11 @@ export const AppointmentServicesView: React.FC = () => {
       'Tarif Client (DZD)',
       'Coût Consommables (DZD)',
       'Commission Styliste (%)',
-      'Marge Brute (DZD)',
       'Description',
     ];
 
     const rows = filteredServices.map((s) => {
       const cost = s.costPrice || 0;
-      const margin = s.price - cost;
       return [
         `"${s.name}"`,
         `"${s.category}"`,
@@ -239,7 +241,6 @@ export const AppointmentServicesView: React.FC = () => {
         s.price,
         cost,
         s.commissionRate || 40,
-        margin,
         `"${s.description || ''}"`,
       ].join(',');
     });
@@ -249,38 +250,35 @@ export const AppointmentServicesView: React.FC = () => {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.setAttribute('download', `catalogue_prestations_salon_${new Date().toISOString().split('T')[0]}.csv`);
+    link.setAttribute('download', `Catalogue_Prestations_${currentBranch?.name || 'Salon'}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-
-    showToast({
-      type: 'success',
-      title: 'Catalogue exporté',
-      message: `${filteredServices.length} prestations exportées en CSV.`,
-      category: 'appointment_service',
-    });
   };
 
-  // Columns definition for UniversalDataCollection
+  // Columns for UniversalDataCollection
   const columns: ColumnDefinition<ServiceItem>[] = [
     {
       key: 'name',
-      header: 'Prestation & Description',
+      header: 'Prestation / Soin',
+      width: '2.5*',
+      minWidth: '220px',
       sortable: true,
       renderCell: (service) => (
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
           <div
-            className="w-3 h-10 rounded-full shrink-0"
-            style={{ backgroundColor: service.colorCode || '#C4785A' }}
+            className="w-3.5 h-3.5 rounded-full shrink-0 shadow-2xs"
+            style={{ backgroundColor: service.color || '#C4785A' }}
           />
-          <div>
-            <span className="font-semibold text-xs text-neutral-900 dark:text-white block">
+          <div className="min-w-0">
+            <span className="font-bold text-xs text-neutral-900 dark:text-white block truncate">
               {service.name}
             </span>
-            <span className="text-[11px] text-neutral-500 dark:text-neutral-400 line-clamp-1 max-w-[260px]">
-              {service.description || 'Prestation professionnelle sur mesure'}
-            </span>
+            {service.description && (
+              <span className="text-[10px] text-neutral-400 block truncate max-w-[220px]">
+                {service.description}
+              </span>
+            )}
           </div>
         </div>
       ),
@@ -288,18 +286,22 @@ export const AppointmentServicesView: React.FC = () => {
     {
       key: 'category',
       header: 'Catégorie',
+      width: '1.4*',
+      minWidth: '120px',
       sortable: true,
       renderCell: (service) => {
         const catMap: Record<string, string> = {
-          Hair: 'Coiffure & Lissage',
-          Nails: 'Bar à Ongles',
-          Facial: 'Soins Visage & Spa',
+          Hair: 'Coiffure',
+          Color: 'Colorimétrie',
+          Spa: 'Soins & Spa',
+          Nails: 'Onglerie Russe',
+          Facial: 'Soins Visage',
           Bridal: 'Haute Mariée',
           Massage: 'Massages & Corps',
-          Barber: 'Barbier & Soins',
+          Barber: 'Barbier',
         };
         return (
-          <span className="text-xs font-medium text-neutral-700 dark:text-neutral-300">
+          <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300">
             {catMap[service.category] || service.category}
           </span>
         );
@@ -308,6 +310,8 @@ export const AppointmentServicesView: React.FC = () => {
     {
       key: 'durationMinutes',
       header: 'Durée & Tampon',
+      width: '1.4*',
+      minWidth: '120px',
       sortable: true,
       renderCell: (service) => (
         <div className="flex items-center gap-1.5 text-xs text-neutral-700 dark:text-neutral-300">
@@ -315,7 +319,7 @@ export const AppointmentServicesView: React.FC = () => {
           <span className="font-semibold tabular-nums">{service.durationMinutes} min</span>
           {service.bufferMinutes ? (
             <span className="text-[10px] text-neutral-400 font-mono">
-              (+{service.bufferMinutes}m pause)
+              (+{service.bufferMinutes}m)
             </span>
           ) : null}
         </div>
@@ -324,9 +328,11 @@ export const AppointmentServicesView: React.FC = () => {
     {
       key: 'costPrice',
       header: 'Coût Produits',
+      width: '1.2*',
+      minWidth: '100px',
       sortable: true,
       renderCell: (service) => (
-        <span className="text-xs text-neutral-500 tabular-nums">
+        <span className="text-xs text-neutral-500 font-mono tabular-nums">
           {formatMoney(service.costPrice || 0)}
         </span>
       ),
@@ -334,6 +340,8 @@ export const AppointmentServicesView: React.FC = () => {
     {
       key: 'commissionRate',
       header: 'Comm. Styliste',
+      width: '1.2*',
+      minWidth: '110px',
       sortable: true,
       renderCell: (service) => (
         <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 tabular-nums">
@@ -343,33 +351,39 @@ export const AppointmentServicesView: React.FC = () => {
     },
     {
       key: 'price',
-      header: 'Tarif Client (DZD)',
+      header: 'Tarif Client',
+      width: '1.4*',
+      minWidth: '120px',
       sortable: true,
       renderCell: (service) => (
-        <span className="text-xs font-bold text-[#C4785A] tabular-nums">
+        <span className="text-xs font-bold text-neutral-900 dark:text-white font-mono tabular-nums">
           {formatMoney(service.price)}
         </span>
       ),
     },
     {
       key: 'actions',
-      header: 'Actions',
+      header: '',
+      width: '1*',
+      minWidth: '70px',
       renderCell: (service) => (
         <div className="flex items-center justify-end gap-1.5">
           <button
+            type="button"
             onClick={() => handleOpenEditModal(service)}
-            className="p-1.5 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
-            title="Modifier le tarif et les paramètres"
+            className="p-1.5 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors cursor-pointer"
+            title="Modifier le tarif"
           >
             <Edit2 className="w-3.5 h-3.5" />
           </button>
           <button
+            type="button"
             onClick={() => {
               if (confirm(`Supprimer définitivement la prestation "${service.name}" ?`)) {
                 deleteServiceItem(service.id);
               }
             }}
-            className="p-1.5 text-neutral-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition-colors"
+            className="p-1.5 text-neutral-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition-colors cursor-pointer"
             title="Supprimer du catalogue"
           >
             <Trash2 className="w-3.5 h-3.5" />
@@ -380,73 +394,34 @@ export const AppointmentServicesView: React.FC = () => {
   ];
 
   return (
-    <div className="space-y-6">
-      {/* Header bar */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-2 border-b border-neutral-200 dark:border-neutral-800">
+    <div className="bg-white dark:bg-[#18181B] rounded-[28px] border border-[#E9EEF0] dark:border-neutral-800 p-6 lg:p-8 space-y-6 shadow-xs pb-16">
+      {/* Header Row */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white">
-              Catalogue des Soins & Prestations
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-black text-neutral-900 dark:text-white tracking-tight flex items-center gap-2.5">
+              <Scissors className="text-[#C4785A]" size={26} />
+              <span>Catalogue des Soins & Prestations</span>
             </h1>
-            <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-[#C4785A]/10 text-[#C4785A] border border-[#C4785A]/20">
+            <span className="text-[11px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-300 dark:border-amber-800">
               {servicesCatalog.length} Prestations
             </span>
           </div>
-          <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
+          <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
             Barème tarifaire, durées cabines, coûts consommables et pourcentages de commission stylistes.
           </p>
         </div>
 
         <div className="flex items-center gap-2.5 flex-wrap">
-          {/* Branch Pill */}
-          <div className="relative">
-            <button
-              onClick={() => setIsFacilityDropdownOpen((prev) => !prev)}
-              className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 rounded-lg transition-colors border border-neutral-200 dark:border-neutral-700"
-            >
-              <Building2 className="w-3.5 h-3.5 text-[#C4785A]" />
-              <span className="font-semibold">{currentBranch?.name || 'Luxe Spa Hydra'}</span>
-              <ChevronDown className="w-3 h-3 text-neutral-400" />
-            </button>
-
-            {isFacilityDropdownOpen && (
-              <div className="absolute right-0 mt-1.5 w-60 bg-white dark:bg-neutral-900 rounded-xl shadow-xl border border-neutral-200 dark:border-neutral-800 py-1.5 z-50">
-                <div className="px-3 py-1 text-[11px] font-semibold text-neutral-400 uppercase tracking-wider">
-                  Salons & Instituts
-                </div>
-                {branches.map((b) => (
-                  <button
-                    key={b.id}
-                    onClick={() => {
-                      switchBranch(b.id);
-                      setIsFacilityDropdownOpen(false);
-                    }}
-                    className={`w-full text-left px-3 py-2 text-xs flex items-center justify-between hover:bg-neutral-50 dark:hover:bg-neutral-800/60 transition-colors ${
-                      b.id === currentBranch?.id
-                        ? 'text-[#C4785A] font-semibold bg-[#C4785A]/5'
-                        : 'text-neutral-700 dark:text-neutral-300'
-                    }`}
-                  >
-                    <span>{b.name}</span>
-                    <span className="text-[10px] text-neutral-400 font-mono">{b.code}</span>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* 1-Click Demo Recharge */}
           <AtriumButton
             variant="outline"
             size="sm"
-            icon={<Sparkles className="w-3.5 h-3.5" />}
+            icon={<Sparkles className="w-3.5 h-3.5 text-[#C4785A]" />}
             onClick={() => resetSalonMockData()}
-            title="Restaurer le catalogue officiel des 16 prestations de luxe"
           >
             Recharger Catalogue
           </AtriumButton>
 
-          {/* Export CSV */}
           <AtriumButton
             variant="secondary"
             size="sm"
@@ -456,11 +431,9 @@ export const AppointmentServicesView: React.FC = () => {
             Export CSV
           </AtriumButton>
 
-          {/* New Service Action */}
           <AtriumButton
             variant="primary"
             size="sm"
-            glow
             icon={<Plus className="w-3.5 h-3.5" />}
             onClick={handleOpenCreateModal}
           >
@@ -469,335 +442,369 @@ export const AppointmentServicesView: React.FC = () => {
         </div>
       </div>
 
-      {/* Category Pills & Seek Bar */}
-      <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
-        {/* Category Pills */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
-          {[
-            { id: 'All', label: 'Toutes', count: categoryCounts.All || 0 },
-            { id: 'Hair', label: 'Coiffure & Lissage', count: categoryCounts.Hair || 0 },
-            { id: 'Nails', label: 'Onglerie Russe', count: categoryCounts.Nails || 0 },
-            { id: 'Facial', label: 'Soins Visage', count: categoryCounts.Facial || 0 },
-            { id: 'Bridal', label: 'Haute Mariée', count: categoryCounts.Bridal || 0 },
-            { id: 'Massage', label: 'Massages & Corps', count: categoryCounts.Massage || 0 },
-            { id: 'Barber', label: 'Barbier', count: categoryCounts.Barber || 0 },
-          ].map((cat) => (
-            <button
-              key={cat.id}
-              onClick={() => setActiveCategory(cat.id)}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-lg whitespace-nowrap transition-colors flex items-center gap-1.5 ${
-                activeCategory === cat.id
-                  ? 'bg-[#C4785A] text-white shadow-xs'
-                  : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700'
-              }`}
-            >
-              <span>{cat.label}</span>
-              <span
-                className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
-                  activeCategory === cat.id ? 'bg-white/20 text-white' : 'bg-neutral-200 dark:bg-neutral-700 text-neutral-500'
-                }`}
-              >
-                {cat.count}
-              </span>
-            </button>
-          ))}
+      {/* TOP METRICS POD TRAY */}
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+        <div className="flex items-center justify-between pb-2 border-b border-[#E9EEF0] dark:border-neutral-800">
+          <div className="flex items-center gap-2">
+            <Tag size={18} className="text-[#C4785A]" />
+            <h2 className="text-xs font-black uppercase tracking-wider text-neutral-800 dark:text-neutral-200">
+              Indicateurs Clés de Rentabilité & Tarification
+            </h2>
+          </div>
+          <span className="text-xs text-neutral-400 font-medium">
+            {currentBranch?.name || 'Salon Principal'} · Grille Officielle
+          </span>
         </div>
 
-        {/* Search */}
-        <div className="w-full lg:w-72">
-          <Seek
-            value={searchQuery}
-            onChange={setSearchQuery}
-            placeholder="Rechercher une prestation..."
-          />
+        {/* 4 Cards Grid including Dark Espresso Anchor Card */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Card 1: Catalogue Volume & Avg Duration */}
+          <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between text-neutral-500 dark:text-neutral-400 mb-2">
+                <span className="text-xs font-bold uppercase tracking-wider">
+                  Total Prestations
+                </span>
+                <Scissors size={16} className="text-[#C4785A]" />
+              </div>
+              <div className="text-2xl font-black font-mono text-neutral-900 dark:text-white tracking-tight tabular-nums">
+                {catalogMetrics.totalServices}
+              </div>
+            </div>
+            <div className="pt-3 border-t border-neutral-100 dark:border-neutral-700/50 mt-3 text-[11px] text-neutral-400">
+              <span>Durée moyenne cabine : <strong className="text-neutral-700 dark:text-neutral-300 font-bold">{catalogMetrics.avgDuration} min</strong></span>
+            </div>
+          </div>
+
+          {/* Card 2: Average Service Price */}
+          <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between text-neutral-500 dark:text-neutral-400 mb-2">
+                <span className="text-xs font-bold uppercase tracking-wider">
+                  Tarif Moyen Soin
+                </span>
+                <DollarSign size={16} className="text-emerald-500" />
+              </div>
+              <div className="text-2xl font-black font-mono text-neutral-900 dark:text-white tracking-tight tabular-nums">
+                {formatMoney(catalogMetrics.avgPrice)}
+              </div>
+            </div>
+            <div className="pt-3 border-t border-neutral-100 dark:border-neutral-700/50 mt-3 text-[11px] text-neutral-400">
+              <span>Positionnement premium luxe</span>
+            </div>
+          </div>
+
+          {/* Card 3: Stylist Average Commission */}
+          <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between text-neutral-500 dark:text-neutral-400 mb-2">
+                <span className="text-xs font-bold uppercase tracking-wider">
+                  Comm. Stylistes
+                </span>
+                <Percent size={16} className="text-[#C4785A]" />
+              </div>
+              <div className="text-2xl font-black font-mono text-emerald-600 dark:text-emerald-400 tracking-tight tabular-nums">
+                {catalogMetrics.avgCommission}%
+              </div>
+            </div>
+            <div className="pt-3 border-t border-neutral-100 dark:border-neutral-700/50 mt-3 text-[11px] text-neutral-400">
+              <span>Part moyenne reversée à l’équipe</span>
+            </div>
+          </div>
+
+          {/* Card 4: DARK ESPRESSO ANCHOR CARD (#1F1D1B) */}
+          <div className="bg-[#1F1D1B] rounded-[18px] p-4 lg:p-5 border border-neutral-800 shadow-sm text-white flex flex-col justify-between relative overflow-hidden group">
+            {/* Glowing Sparkline Graphic */}
+            <div className="absolute -right-4 -bottom-6 opacity-20 group-hover:opacity-30 transition-opacity pointer-events-none">
+              <svg width="140" height="90" viewBox="0 0 140 90" fill="none">
+                <path
+                  d="M10 65 L35 50 L60 55 L85 25 L110 30 L135 12"
+                  stroke="#FB923C"
+                  strokeWidth="3.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <circle cx="135" cy="12" r="4" fill="#FB923C" />
+              </svg>
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-bold text-neutral-300 uppercase tracking-wider">
+                  Rentabilité Catalogue
+                </span>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30">
+                  Marge Nette ~{catalogMetrics.avgGrossMargin}%
+                </span>
+              </div>
+              <div className="text-2xl font-black font-mono tracking-tight text-white tabular-nums">
+                ~{catalogMetrics.avgGrossMargin}% <span className="text-sm font-medium text-neutral-400">marge brute</span>
+              </div>
+            </div>
+
+            <div className="pt-3 border-t border-neutral-800 mt-3 flex items-center justify-between text-[11px] text-neutral-400">
+              <span>Après coût consommables</span>
+              <span className="text-[#FB923C] font-semibold">Grille certifiée</span>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Batch Actions Toolbar */}
-      {selectedServiceIds.size > 0 && (
-        <div className="p-3 bg-neutral-900 dark:bg-neutral-800 text-white rounded-xl flex items-center justify-between gap-4 shadow-xl">
-          <div className="flex items-center gap-2">
-            <span className="w-6 h-6 rounded-full bg-[#C4785A] text-white text-xs font-bold flex items-center justify-center">
-              {selectedServiceIds.size}
-            </span>
-            <span className="text-xs font-medium">prestations sélectionnées</span>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => handleBatchAdjustCommission(45)}
-              className="px-3 py-1.5 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors flex items-center gap-1.5"
-            >
-              <Percent className="w-3.5 h-3.5" />
-              <span>Fixer 45% Comm.</span>
-            </button>
-
-            <button
-              onClick={() => handleBatchAdjustCommission(50)}
-              className="px-3 py-1.5 text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors flex items-center gap-1.5"
-            >
-              <Percent className="w-3.5 h-3.5" />
-              <span>Fixer 50% Comm.</span>
-            </button>
-
-            <button
-              onClick={handleBatchDelete}
-              className="px-3 py-1.5 text-xs font-semibold bg-rose-600 hover:bg-rose-700 text-white rounded-lg transition-colors flex items-center gap-1.5"
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-              <span>Supprimer</span>
-            </button>
-
-            <button
-              onClick={() => setSelectedServiceIds(new Set())}
-              className="px-2.5 py-1.5 text-xs text-neutral-400 hover:text-white transition-colors"
-            >
-              Désélectionner
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* UniversalDataCollection */}
-      <UniversalDataCollection<ServiceItem>
-        items={filteredServices}
-        keyExtractor={(service) => service.id}
-        columns={columns}
-        selectedIds={selectedServiceIds}
-        onSelectionChange={setSelectedServiceIds}
-        isPinned={(service) => pinnedServiceIds.has(service.id)}
-        onTogglePin={(service) => handleTogglePin(service.id)}
-        sortBy={sortBy}
-        sortDirection={sortDir}
-        onSortChange={(key) => {
-          if (sortBy === key) {
-            setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
-          } else {
-            setSortBy(key);
-            setSortDir('desc');
-          }
-        }}
-        renderCard={(service) => {
-          const isPinned = pinnedServiceIds.has(service.id);
-          const isSelected = selectedServiceIds.has(service.id);
-
-          return (
-            <div
-              key={service.id}
-              className={`p-4 rounded-2xl border transition-all relative ${
-                isSelected
-                  ? 'border-[#C4785A] bg-[#C4785A]/5'
-                  : 'border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 hover:shadow-md'
-              }`}
-            >
-              <div className="flex items-start justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <div
-                    className="w-3 h-3 rounded-full"
-                    style={{ backgroundColor: service.colorCode || '#C4785A' }}
-                  />
-                  <span className="text-[11px] font-semibold uppercase tracking-wider text-neutral-400">
-                    {service.category}
-                  </span>
-                </div>
-
-                <button
-                  onClick={() => handleTogglePin(service.id)}
-                  className={`p-1.5 rounded-lg transition-colors ${
-                    isPinned ? 'text-[#C4785A] bg-[#C4785A]/10' : 'text-neutral-400 hover:text-neutral-600'
+      {/* BOTTOM COLLECTION POD TRAY */}
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+        {/* Category Pills & Seek Bar */}
+        <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
+          {/* Category Tabs */}
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+            {[
+              { id: 'All', label: 'Toutes', count: categoryCounts.All || 0 },
+              { id: 'Hair', label: 'Coiffure', count: categoryCounts.Hair || 0 },
+              { id: 'Nails', label: 'Onglerie Russe', count: categoryCounts.Nails || 0 },
+              { id: 'Facial', label: 'Soins Visage', count: categoryCounts.Facial || 0 },
+              { id: 'Bridal', label: 'Haute Mariée', count: categoryCounts.Bridal || 0 },
+              { id: 'Massage', label: 'Massages & Corps', count: categoryCounts.Massage || 0 },
+              { id: 'Barber', label: 'Barbier', count: categoryCounts.Barber || 0 },
+            ].map((cat) => (
+              <button
+                key={cat.id}
+                type="button"
+                onClick={() => setActiveCategory(cat.id)}
+                className={`px-3 py-1.5 text-xs font-semibold rounded-xl whitespace-nowrap transition-colors flex items-center gap-1.5 cursor-pointer ${
+                  activeCategory === cat.id
+                    ? 'bg-[#C4785A] text-white shadow-xs'
+                    : 'bg-white dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-700 border border-[#E9EEF0] dark:border-neutral-700/60'
+                }`}
+              >
+                <span>{cat.label}</span>
+                <span
+                  className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
+                    activeCategory === cat.id ? 'bg-white/20 text-white' : 'bg-neutral-100 dark:bg-neutral-700 text-neutral-500'
                   }`}
                 >
-                  <Pin className="w-3.5 h-3.5" />
-                </button>
-              </div>
+                  {cat.count}
+                </span>
+              </button>
+            ))}
+          </div>
 
-              <h3 className="font-bold text-sm text-neutral-900 dark:text-white mb-1">
-                {service.name}
-              </h3>
+          {/* Search */}
+          <div className="w-full lg:w-72">
+            <Seek
+              value={searchQuery}
+              onChange={setSearchQuery}
+              placeholder="Rechercher une prestation..."
+            />
+          </div>
+        </div>
 
-              <p className="text-xs text-neutral-500 dark:text-neutral-400 line-clamp-2 mb-3 min-h-[32px]">
-                {service.description || 'Soin expert personnalisé.'}
-              </p>
+        {/* Batch Actions Toolbar */}
+        {selectedServiceIds.size > 0 && (
+          <div className="p-3 bg-neutral-900 text-white rounded-xl flex items-center justify-between gap-4 shadow-xl">
+            <div className="flex items-center gap-2">
+              <span className="w-6 h-6 rounded-full bg-[#C4785A] text-white text-xs font-bold flex items-center justify-center">
+                {selectedServiceIds.size}
+              </span>
+              <span className="text-xs font-medium">prestations sélectionnées</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleBatchDelete}
+                className="h-8 px-3 rounded-lg bg-red-600 hover:bg-red-700 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer"
+              >
+                <Trash2 size={13} />
+                <span>Supprimer</span>
+              </button>
+            </div>
+          </div>
+        )}
 
-              <div className="space-y-1.5 pt-3 border-t border-neutral-100 dark:border-neutral-800 text-xs">
-                <div className="flex items-center justify-between text-neutral-600 dark:text-neutral-400">
-                  <span>Durée en cabine:</span>
-                  <span className="font-semibold text-neutral-900 dark:text-white tabular-nums">
-                    {service.durationMinutes} min
-                  </span>
+        {/* Inset Container hosting UniversalDataCollection */}
+        <div className="bg-white dark:bg-neutral-800 rounded-[18px] border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs overflow-hidden">
+          <UniversalDataCollection<ServiceItem>
+            items={filteredServices}
+            keyExtractor={(s) => s.id}
+            defaultViewMode="list"
+            columns={columns}
+            sortBy={sortBy}
+            sortDirection={sortDir}
+            onSortChange={(key) => {
+              if (sortBy === key) {
+                setSortDir((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+              } else {
+                setSortBy(key);
+                setSortDir('asc');
+              }
+            }}
+            renderCard={(service) => (
+              <div className="flex flex-col justify-between h-full space-y-3">
+                <div>
+                  <div className="flex items-start justify-between gap-2 mb-1">
+                    <div className="flex items-center gap-2">
+                      <div
+                        className="w-3 h-3 rounded-full shrink-0 shadow-2xs"
+                        style={{ backgroundColor: service.color || '#C4785A' }}
+                      />
+                      <span className="font-bold text-xs text-neutral-900 dark:text-white truncate">
+                        {service.name}
+                      </span>
+                    </div>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300">
+                      {service.category}
+                    </span>
+                  </div>
+                  {service.description && (
+                    <p className="text-[11px] text-neutral-400 line-clamp-2 mt-1">
+                      {service.description}
+                    </p>
+                  )}
                 </div>
-                <div className="flex items-center justify-between text-neutral-600 dark:text-neutral-400">
-                  <span>Commission styliste:</span>
-                  <span className="font-semibold text-emerald-600 dark:text-emerald-400 tabular-nums">
-                    {service.commissionRate || 40}%
-                  </span>
-                </div>
-                <div className="flex items-center justify-between pt-1">
-                  <span className="font-bold text-neutral-700 dark:text-neutral-300">Tarif Client:</span>
-                  <span className="text-base font-extrabold text-[#C4785A] tabular-nums">
+
+                <div className="flex items-center justify-between pt-2 border-t border-neutral-100 dark:border-neutral-700/60">
+                  <div className="flex items-center gap-1 text-[11px] text-neutral-500">
+                    <Clock size={12} className="text-neutral-400" />
+                    <span>{service.durationMinutes} min</span>
+                  </div>
+                  <span className="font-mono font-bold text-sm text-[#C4785A] tabular-nums">
                     {formatMoney(service.price)}
                   </span>
                 </div>
               </div>
+            )}
+            selectedIds={selectedServiceIds}
+            onSelectionChange={setSelectedServiceIds}
+            isPinned={(s) => pinnedServiceIds.has(s.id)}
+            onTogglePin={(s) => {
+              setPinnedServiceIds((prev) => {
+                const next = new Set(prev);
+                if (next.has(s.id)) next.delete(s.id);
+                else next.add(s.id);
+                return next;
+              });
+            }}
+            emptyTitle="Aucune prestation trouvée"
+            emptyDescription="Ajoutez de nouvelles prestations au catalogue pour vos rendez-vous."
+            primaryActionLabel="Nouvelle Prestation"
+            onAddFirstItem={handleOpenCreateModal}
+          />
+        </div>
+      </div>
 
-              <div className="mt-4 pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between">
-                <button
-                  onClick={() => handleOpenEditModal(service)}
-                  className="text-xs text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 font-medium"
-                >
-                  Modifier
-                </button>
-                <AtriumButton
-                  size="xs"
-                  variant="primary"
-                  icon={<Calendar className="w-3 h-3" />}
-                  onClick={() => setIsBookingModalOpen(true)}
-                >
-                  Réserver
-                </AtriumButton>
-              </div>
-            </div>
-          );
-        }}
-      />
-
-      {/* Create / Edit Service Modal */}
+      {/* CREATE / EDIT SERVICE MODAL */}
       {isServiceModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
-          <div className="w-full max-w-lg bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl border border-neutral-200 dark:border-neutral-800 overflow-hidden animate-in zoom-in-95 duration-150">
-            <div className="p-5 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
-              <div>
-                <h2 className="text-base font-bold text-neutral-900 dark:text-white">
-                  {editingService ? 'Modifier la Prestation' : 'Nouvelle Prestation au Catalogue'}
-                </h2>
-                <span className="text-xs text-neutral-500">
-                  Définissez la durée, les coûts et le partage de commission.
-                </span>
-              </div>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+          <div className="bg-white dark:bg-neutral-900 rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-neutral-200 dark:border-neutral-800 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
+              <h3 className="text-base font-bold text-neutral-900 dark:text-white">
+                {editingService ? 'Modifier la Prestation' : 'Nouvelle Prestation de Luxe'}
+              </h3>
               <button
+                type="button"
                 onClick={() => setIsServiceModalOpen(false)}
-                className="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                className="text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 cursor-pointer"
               >
-                <X className="w-5 h-5" />
+                <X size={18} />
               </button>
             </div>
 
-            <form onSubmit={handleSubmitService} className="p-5 space-y-4">
+            <form onSubmit={handleSaveService} className="space-y-4">
               <LabelInput
-                label="Nom du Soin / Prestation *"
-                value={formName}
-                onChange={(e) => setFormName(e.target.value)}
-                placeholder="Ex: Balayage Californien & Toning Miel"
+                field="Name"
+                label="Intitulé du Soin"
                 required
+                value={formName}
+                onChange={setFormName}
+                placeholder="Ex: Balayage Californien & Gloss..."
+                width="100%"
+                height={42}
+                corner={10}
               />
 
               <div className="grid grid-cols-2 gap-3">
                 <LabelSelect
+                  field="Category"
                   label="Catégorie"
                   value={formCategory}
-                  onChange={(val) => setFormCategory((val?.target?.value ?? String(val)) as ServiceItem['category'])}
+                  onChange={(val) => setFormCategory(typeof val === 'string' ? (val as any) : (val.target?.value || val))}
                   options={[
-                    { value: "Hair", label: "Coiffure & Lissage" },
-                    { value: "Nails", label: "Bar à Ongles" },
-                    { value: "Facial", label: "Soins Visage & Spa" },
-                    { value: "Bridal", label: "Haute Mariée" },
-                    { value: "Massage", label: "Massages & Corps" },
-                    { value: "Barber", label: "Barbier" },
+                    { value: 'Hair', label: 'Coiffure & Lissage' },
+                    { value: 'Nails', label: 'Onglerie Russe' },
+                    { value: 'Facial', label: 'Soins Visage' },
+                    { value: 'Bridal', label: 'Haute Mariée' },
+                    { value: 'Massage', label: 'Massages & Corps' },
+                    { value: 'Barber', label: 'Barbier' },
                   ]}
+                  height={42}
+                  corner={10}
                 />
 
                 <LabelInput
-                  label="Durée du Soin (minutes) *"
+                  field="Duration"
+                  label="Durée cabine (minutes)"
                   type="number"
-                  min="15"
-                  step="5"
-                  value={formDuration}
-                  onChange={(e) => setFormDuration(Number(e.target.value))}
                   required
+                  value={String(formDuration)}
+                  onChange={(v) => setFormDuration(parseInt(v) || 30)}
+                  width="100%"
+                  height={42}
+                  corner={10}
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <LabelInput
-                  label="Tarif Client TTC (DZD) *"
+                  field="Price"
+                  label="Tarif Client (DZD)"
                   type="number"
-                  min="500"
-                  step="500"
-                  value={formPrice}
-                  onChange={(e) => setFormPrice(Number(e.target.value))}
                   required
+                  value={String(formPrice)}
+                  onChange={(v) => setFormPrice(parseFloat(v) || 0)}
+                  width="100%"
+                  height={42}
+                  corner={10}
                 />
 
                 <LabelInput
-                  label="Coût Consommables (DZD)"
-                  type="number"
-                  min="0"
-                  step="100"
-                  value={formCostPrice}
-                  onChange={(e) => setFormCostPrice(Number(e.target.value))}
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <LabelInput
+                  field="Commission"
                   label="Commission Styliste (%)"
                   type="number"
-                  min="0"
-                  max="100"
-                  value={formCommission}
-                  onChange={(e) => setFormCommission(Number(e.target.value))}
-                />
-
-                <LabelInput
-                  label="Temps de Pause / Nettoyage (min)"
-                  type="number"
-                  min="0"
-                  step="5"
-                  value={formBuffer}
-                  onChange={(e) => setFormBuffer(Number(e.target.value))}
+                  value={String(formCommission)}
+                  onChange={(v) => setFormCommission(parseFloat(v) || 0)}
+                  width="100%"
+                  height={42}
+                  corner={10}
                 />
               </div>
 
-              <div>
-                <label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300 block mb-1">
-                  Description & Protocole
-                </label>
-                <textarea
-                  rows={2}
-                  value={formDescription}
-                  onChange={(e) => setFormDescription(e.target.value)}
-                  placeholder="Détaillez les produits appliqués et les étapes du protocole..."
-                  className="w-full text-xs px-3 py-2 rounded-xl bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 focus:outline-none focus:border-[#C4785A]"
-                />
-              </div>
+              <LabelInput
+                field="Description"
+                label="Description & Protocole"
+                value={formDescription}
+                onChange={setFormDescription}
+                placeholder="Précisions sur les techniques et produits utilisés..."
+                width="100%"
+                height={42}
+                corner={10}
+              />
 
-              <div className="pt-3 border-t border-neutral-200 dark:border-neutral-800 flex items-center justify-end gap-2">
-                <AtriumButton
-                  variant="ghost"
-                  size="sm"
+              <div className="flex items-center justify-end gap-3 pt-3">
+                <button
+                  type="button"
                   onClick={() => setIsServiceModalOpen(false)}
+                  className="h-10 px-4 text-xs font-semibold text-neutral-500 rounded-full hover:bg-neutral-100 cursor-pointer"
                 >
                   Annuler
-                </AtriumButton>
-                <AtriumButton
-                  variant="primary"
-                  size="sm"
+                </button>
+                <button
                   type="submit"
+                  className="h-10 px-5 text-xs font-bold text-white bg-[#C4785A] rounded-full hover:opacity-90 cursor-pointer shadow-xs"
                 >
-                  {editingService ? 'Enregistrer les Modifications' : 'Créer la Prestation'}
-                </AtriumButton>
+                  Enregistrer
+                </button>
               </div>
             </form>
           </div>
         </div>
-      )}
-
-      {/* Appointment Modal */}
-      {isBookingModalOpen && (
-        <AppointmentModal
-          isOpen={isBookingModalOpen}
-          onClose={() => setIsBookingModalOpen(false)}
-        />
       )}
     </div>
   );

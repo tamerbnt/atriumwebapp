@@ -18,6 +18,9 @@ import {
   Search,
   RefreshCw,
   X,
+  History,
+  Activity,
+  Award,
 } from 'lucide-react';
 import { useAtriumStore } from '../../../services/store';
 import { Appointment } from '../../../types/index';
@@ -77,57 +80,49 @@ export const AppointmentHistoryView: React.FC = () => {
     });
   }, [appointments, selectedMethodFilter, searchQuery]);
 
-  const handleToggleSelectAll = () => {
-    if (selectedHistoryIds.size === historyAppointments.length) {
-      setSelectedHistoryIds(new Set());
-    } else {
-      setSelectedHistoryIds(new Set(historyAppointments.map((a) => a.id)));
-    }
-  };
+  // History KPIs
+  const historyStats = useMemo(() => {
+    const list = appointments || [];
+    const totalCount = list.length;
+    const completedCount = list.filter((a) => a.status === 'Completed').length;
+    const totalRevenue = list.filter((a) => a.status === 'Completed').reduce((sum, a) => sum + (a.price || 0), 0);
+    const formulasCount = list.filter((a) => a.colorFormula && a.colorFormula.trim().length > 0).length;
 
-  const handleToggleSelectOne = (id: string) => {
-    const next = new Set(selectedHistoryIds);
-    if (next.has(id)) next.delete(id);
-    else next.add(id);
-    setSelectedHistoryIds(next);
-  };
-
-  const handleTogglePin = (id: string) => {
-    const next = new Set(pinnedHistoryIds);
-    if (next.has(id)) next.delete(id);
-    else next.add(id);
-    setPinnedHistoryIds(next);
-  };
-
-  const handleBatchDelete = () => {
-    const count = selectedHistoryIds.size;
-    batchDeleteAppointments(Array.from(selectedHistoryIds));
-    setSelectedHistoryIds(new Set());
-  };
+    return {
+      totalCount,
+      completedCount,
+      totalRevenue,
+      formulasCount,
+    };
+  }, [appointments]);
 
   const handleExportCSV = () => {
     const headers = [
       'Date',
       'Heure',
-      'Cliente',
+      'Client',
       'Téléphone',
       'Prestation',
       'Styliste',
-      'Formule / Remarques',
-      'Mode de Règlement',
-      'Montant Encaissé (DZD)',
+      'Fauteuil / Cabine',
+      'Tarif (DZD)',
+      'Statut',
+      'Mode de Paiement',
+      'Formule Technique',
     ];
 
     const rows = historyAppointments.map((a) => [
-      `"${a.date}"`,
-      `"${a.startTime}"`,
+      a.date,
+      a.startTime,
       `"${a.clientName}"`,
-      `"${a.clientPhone}"`,
+      `"${a.clientPhone || ''}"`,
       `"${a.serviceName}"`,
       `"${a.staffName}"`,
-      `"${(a.colorFormula || a.notes || '').replace(/"/g, '""')}"`,
-      `"${a.paymentMethod || 'Espèces'}"`,
+      `"${a.chairId || 'Non assigné'}"`,
       a.price,
+      `"${a.status}"`,
+      `"${a.paymentMethod || 'Non payé'}"`,
+      `"${a.colorFormula || ''}"`,
     ].join(','));
 
     const csvContent = '\uFEFF' + [headers.join(','), ...rows].join('\n');
@@ -135,143 +130,156 @@ export const AppointmentHistoryView: React.FC = () => {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.setAttribute('download', `historique_soins_salon_${new Date().toISOString().split('T')[0]}.csv`);
+    link.setAttribute('download', `Historique_RendezVous_${currentBranch?.name || 'Salon'}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
 
     showToast({
       type: 'success',
-      title: 'Historique des soins exporté',
-      message: `${historyAppointments.length} fiches d'historique exportées en CSV.`,
+      title: 'Historique exporté',
+      message: `${historyAppointments.length} rendez-vous exportés en CSV.`,
       category: 'appointment_service',
     });
   };
 
-  // Columns definition for UniversalDataCollection
+  // Columns for UniversalDataCollection
   const columns: ColumnDefinition<Appointment>[] = [
     {
       key: 'date',
-      header: 'Date & Horodatage',
+      header: 'Date & Créneau',
+      width: '1.6*',
+      minWidth: '140px',
       sortable: true,
       renderCell: (apt) => (
-        <div className="flex items-center gap-2.5">
-          <div className="w-10 h-10 rounded-xl bg-neutral-100 dark:bg-neutral-800 flex flex-col items-center justify-center font-mono shrink-0">
-            <span className="text-[11px] font-bold text-neutral-900 dark:text-white leading-tight">
-              {apt.startTime}
-            </span>
-            <span className="text-[9px] text-neutral-400">{apt.durationMinutes}m</span>
-          </div>
-          <div>
-            <span className="font-semibold text-xs text-neutral-900 dark:text-white block font-mono">
-              {apt.date}
-            </span>
-            <span className="text-[10px] text-neutral-400 font-mono">Réf: {apt.id}</span>
-          </div>
+        <div className="text-xs">
+          <span className="font-bold text-neutral-900 dark:text-white font-mono block">
+            {apt.date}
+          </span>
+          <span className="text-[11px] text-[#C4785A] font-bold font-mono">
+            {apt.startTime} ({apt.durationMinutes}m)
+          </span>
         </div>
       ),
     },
     {
       key: 'clientName',
-      header: 'Cliente',
+      header: 'Client & Coordonnées',
+      width: '2.5*',
+      minWidth: '200px',
       sortable: true,
       renderCell: (apt) => (
-        <div>
-          <span className="font-semibold text-xs text-neutral-900 dark:text-white block">
+        <div className="min-w-0">
+          <span className="font-bold text-xs text-neutral-900 dark:text-white block truncate">
             {apt.clientName}
           </span>
-          <span className="text-[11px] text-neutral-500 font-mono">{apt.clientPhone}</span>
-        </div>
-      ),
-    },
-    {
-      key: 'serviceName',
-      header: 'Prestation Réalisée',
-      sortable: true,
-      renderCell: (apt) => (
-        <div className="space-y-0.5">
-          <span className="font-semibold text-xs text-neutral-900 dark:text-white block">
-            {apt.serviceName}
-          </span>
-          {apt.chairName && (
-            <span className="text-[10px] text-neutral-500 block truncate max-w-[200px]">
-              {apt.chairName}
+          {apt.clientPhone && (
+            <span className="text-[10px] text-neutral-400 font-mono block">
+              {apt.clientPhone}
             </span>
           )}
         </div>
       ),
     },
     {
-      key: 'colorFormula',
-      header: 'Formule & Protocole Appliqué',
+      key: 'serviceName',
+      header: 'Prestation & Technique',
+      width: '2.5*',
+      minWidth: '200px',
+      sortable: true,
       renderCell: (apt) => (
-        <div className="max-w-[220px]">
-          {apt.colorFormula ? (
-            <span className="text-xs font-mono text-[#C4785A] line-clamp-1">
+        <div className="min-w-0">
+          <span className="font-semibold text-xs text-neutral-800 dark:text-neutral-200 block truncate">
+            {apt.serviceName}
+          </span>
+          {apt.colorFormula && (
+            <span className="text-[10px] text-amber-700 dark:text-amber-300 font-mono block truncate">
               🧪 {apt.colorFormula}
             </span>
-          ) : apt.notes ? (
-            <span className="text-xs text-neutral-500 italic line-clamp-1">
-              "{apt.notes}"
-            </span>
-          ) : (
-            <span className="text-xs text-neutral-400 italic">Protocole standard</span>
           )}
         </div>
       ),
     },
     {
       key: 'staffName',
-      header: 'Styliste Attribué',
+      header: 'Styliste',
+      width: '1.5*',
+      minWidth: '130px',
       sortable: true,
       renderCell: (apt) => (
-        <div className="flex items-center gap-1.5 text-xs text-neutral-700 dark:text-neutral-300">
-          <User className="w-3.5 h-3.5 text-[#C4785A]" />
-          <span className="font-medium">{apt.staffName}</span>
+        <span className="text-xs text-neutral-600 dark:text-neutral-300 truncate block">
+          {apt.staffName}
+        </span>
+      ),
+    },
+    {
+      key: 'price',
+      header: 'Tarif & Règlement',
+      width: '1.5*',
+      minWidth: '130px',
+      sortable: true,
+      renderCell: (apt) => (
+        <div className="text-xs">
+          <span className="font-bold font-mono text-neutral-900 dark:text-white tabular-nums block">
+            {formatMoney(apt.price)}
+          </span>
+          <span className="text-[10px] text-neutral-400">
+            {apt.paymentMethod ? apt.paymentMethod : 'Non payé'}
+          </span>
         </div>
       ),
     },
     {
-      key: 'paymentMethod',
-      header: 'Règlement',
+      key: 'status',
+      header: 'Statut',
+      width: '1.2*',
+      minWidth: '100px',
       sortable: true,
       renderCell: (apt) => {
-        const method = apt.paymentMethod || 'Cash';
-        const methodLabels: Record<string, string> = {
-          Cash: 'Espèces',
-          BaridiMob: 'BaridiMob',
-          Dahabia_CIB: 'CIB / Dahabia',
-          Card: 'Carte Bancaire',
-        };
+        const isCompleted = apt.status === 'Completed';
+        const isInChair = apt.status === 'InChair';
+
         return (
-          <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300">
-            {methodLabels[method] || method}
+          <span
+            className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+              isCompleted
+                ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300'
+                : isInChair
+                ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300'
+                : 'bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300'
+            }`}
+          >
+            {isCompleted ? 'Terminé' : isInChair ? 'En Fauteuil' : 'Confirmé'}
           </span>
         );
       },
     },
     {
-      key: 'price',
-      header: 'Montant Encaissé',
-      sortable: true,
-      renderCell: (apt) => (
-        <span className="text-xs font-bold text-[#C4785A] tabular-nums">
-          {formatMoney(apt.price)}
-        </span>
-      ),
-    },
-    {
       key: 'actions',
-      header: 'Reçu',
+      header: '',
+      width: '1.2*',
+      minWidth: '80px',
       renderCell: (apt) => (
-        <div className="flex items-center justify-end gap-1.5">
+        <div className="flex items-center justify-end gap-1">
           <button
+            type="button"
             onClick={() => setReceiptAppointment(apt)}
-            className="p-1.5 text-neutral-500 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors flex items-center gap-1 text-xs"
-            title="Consulter et réimprimer le reçu de caisse"
+            className="p-1.5 text-neutral-400 hover:text-[#C4785A] hover:bg-[#FCEEE8] dark:hover:bg-neutral-800 rounded-lg transition-colors cursor-pointer"
+            title="Ticket Thermique 80mm"
           >
             <Printer className="w-3.5 h-3.5" />
-            <span>Ticket</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              if (confirm(`Supprimer le rendez-vous de ${apt.clientName} ?`)) {
+                deleteAppointment(apt.id);
+              }
+            }}
+            className="p-1.5 text-neutral-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition-colors cursor-pointer"
+            title="Supprimer"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
           </button>
         </div>
       ),
@@ -279,308 +287,322 @@ export const AppointmentHistoryView: React.FC = () => {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="bg-white dark:bg-[#18181B] rounded-[28px] border border-[#E9EEF0] dark:border-neutral-800 p-6 lg:p-8 space-y-6 shadow-xs pb-16">
       {/* Header bar */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-2 border-b border-neutral-200 dark:border-neutral-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white">
-              Historique des Soins & Archive Salon
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-black text-neutral-900 dark:text-white tracking-tight flex items-center gap-2.5">
+              <History className="text-[#C4785A]" size={26} />
+              <span>Historique & Traçabilité des Rendez-vous</span>
             </h1>
-            <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-[#C4785A]/10 text-[#C4785A] border border-[#C4785A]/20">
-              {historyAppointments.length} Soins Archivés
+            <span className="text-[11px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800">
+              {historyStats.completedCount} Soins Réalisés
             </span>
           </div>
-          <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
-            Journal complet des prestations effectuées, traçabilité des formules de coloration et réimpression des reçus.
+          <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
+            Recherche plein texte, formules de coloration enregistrées et édition des reçus thermiques 80mm.
           </p>
         </div>
 
         <div className="flex items-center gap-2.5 flex-wrap">
-          {/* Branch Pill */}
-          <div className="relative">
-            <button
-              onClick={() => setIsFacilityDropdownOpen((prev) => !prev)}
-              className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 rounded-lg transition-colors border border-neutral-200 dark:border-neutral-700"
-            >
-              <Building2 className="w-3.5 h-3.5 text-[#C4785A]" />
-              <span className="font-semibold">{currentBranch?.name || 'Luxe Spa Hydra'}</span>
-              <ChevronDown className="w-3 h-3 text-neutral-400" />
-            </button>
-
-            {isFacilityDropdownOpen && (
-              <div className="absolute right-0 mt-1.5 w-60 bg-white dark:bg-neutral-900 rounded-xl shadow-xl border border-neutral-200 dark:border-neutral-800 py-1.5 z-50">
-                <div className="px-3 py-1 text-[11px] font-semibold text-neutral-400 uppercase tracking-wider">
-                  Salons & Instituts
-                </div>
-                {branches.map((b) => (
-                  <button
-                    key={b.id}
-                    onClick={() => {
-                      switchBranch(b.id);
-                      setIsFacilityDropdownOpen(false);
-                    }}
-                    className={`w-full text-left px-3 py-2 text-xs flex items-center justify-between hover:bg-neutral-50 dark:hover:bg-neutral-800/60 transition-colors ${
-                      b.id === currentBranch?.id
-                        ? 'text-[#C4785A] font-semibold bg-[#C4785A]/5'
-                        : 'text-neutral-700 dark:text-neutral-300'
-                    }`}
-                  >
-                    <span>{b.name}</span>
-                    <span className="text-[10px] text-neutral-400 font-mono">{b.code}</span>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* 1-Click Demo Recharge */}
           <AtriumButton
             variant="outline"
             size="sm"
+            icon={<Sparkles className="w-3.5 h-3.5 text-[#C4785A]" />}
             onClick={() => resetSalonMockData()}
-            icon={<Sparkles className="w-3.5 h-3.5" />}
-            title="Restaurer l'historique complet des soins d'Alger"
           >
             Recharger Démo
           </AtriumButton>
 
-          {/* Export CSV */}
           <AtriumButton
             variant="secondary"
             size="sm"
-            onClick={handleExportCSV}
             icon={<Download className="w-3.5 h-3.5" />}
+            onClick={handleExportCSV}
           >
             Export CSV
           </AtriumButton>
         </div>
       </div>
 
-      {/* Filter and Seek Toolbar */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-        <div className="flex-1 max-w-md">
-          <Seek
-            value={searchQuery}
-            onChange={setSearchQuery}
-            placeholder="Rechercher par cliente, soin, styliste, formule..."
-          />
+      {/* TOP METRICS POD TRAY */}
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+        <div className="flex items-center justify-between pb-2 border-b border-[#E9EEF0] dark:border-neutral-800">
+          <div className="flex items-center gap-2">
+            <Activity size={18} className="text-[#C4785A]" />
+            <h2 className="text-xs font-black uppercase tracking-wider text-neutral-800 dark:text-neutral-200">
+              Registre d'Audit & Performances Historiques
+            </h2>
+          </div>
+          <span className="text-xs text-neutral-400 font-medium">
+            {currentBranch?.name || 'Salon'} · Base Certifiée
+          </span>
         </div>
 
-        <div className="flex items-center gap-2">
-          <FilterSelect
-            value={selectedMethodFilter}
-            onChange={(val) => setSelectedMethodFilter(val?.target?.value ?? String(val))}
-            options={[
-              { value: 'All', label: 'Tous les modes de règlement' },
-              { value: 'Cash', label: 'Espèces' },
-              { value: 'BaridiMob', label: 'BaridiMob' },
-              { value: 'Dahabia_CIB', label: 'CIB / Dahabia' },
-            ]}
+        {/* 4 Cards Grid including Dark Espresso Anchor Card */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Card 1: Completed Soins */}
+          <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between text-neutral-500 dark:text-neutral-400 mb-2">
+                <span className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                  Soins Clôturés
+                </span>
+                <CheckCircle2 size={16} className="text-emerald-500" />
+              </div>
+              <div className="text-2xl font-black font-mono text-emerald-600 dark:text-emerald-400 tracking-tight tabular-nums">
+                {historyStats.completedCount}
+              </div>
+            </div>
+            <div className="pt-3 border-t border-neutral-100 dark:border-neutral-700/50 mt-3 text-[11px] text-neutral-400">
+              <span>Sur {historyStats.totalCount} réservations au total</span>
+            </div>
+          </div>
+
+          {/* Card 2: Cumulative Revenue */}
+          <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between text-neutral-500 dark:text-neutral-400 mb-2">
+                <span className="text-xs font-bold uppercase tracking-wider">
+                  Recette Réalisée
+                </span>
+                <CreditCard size={16} className="text-[#C4785A]" />
+              </div>
+              <div className="text-2xl font-black font-mono text-neutral-900 dark:text-white tracking-tight tabular-nums">
+                {formatMoney(historyStats.totalRevenue)}
+              </div>
+            </div>
+            <div className="pt-3 border-t border-neutral-100 dark:border-neutral-700/50 mt-3 text-[11px] text-neutral-400">
+              <span>Règlements encaissés et validés</span>
+            </div>
+          </div>
+
+          {/* Card 3: Formules Techniques */}
+          <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between text-neutral-500 dark:text-neutral-400 mb-2">
+                <span className="text-xs font-bold uppercase tracking-wider">
+                  Formules Tracées
+                </span>
+                <Scissors size={16} className="text-amber-500" />
+              </div>
+              <div className="text-2xl font-black font-mono text-neutral-900 dark:text-white tracking-tight tabular-nums">
+                {historyStats.formulasCount}
+              </div>
+            </div>
+            <div className="pt-3 border-t border-neutral-100 dark:border-neutral-700/50 mt-3 text-[11px] text-neutral-400">
+              <span>Dosages & nuances archivés</span>
+            </div>
+          </div>
+
+          {/* Card 4: DARK ESPRESSO ANCHOR CARD (#1F1D1B) */}
+          <div className="bg-[#1F1D1B] rounded-[18px] p-4 lg:p-5 border border-neutral-800 shadow-sm text-white flex flex-col justify-between relative overflow-hidden group">
+            {/* Glowing Sparkline Graphic */}
+            <div className="absolute -right-4 -bottom-6 opacity-20 group-hover:opacity-30 transition-opacity pointer-events-none">
+              <svg width="140" height="90" viewBox="0 0 140 90" fill="none">
+                <path
+                  d="M10 65 L35 50 L60 55 L85 25 L110 30 L135 12"
+                  stroke="#FB923C"
+                  strokeWidth="3.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <circle cx="135" cy="12" r="4" fill="#FB923C" />
+              </svg>
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-bold text-neutral-300 uppercase tracking-wider">
+                  Audit & Conformité
+                </span>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30">
+                  Certifié 100%
+                </span>
+              </div>
+              <div className="text-2xl font-black font-mono tracking-tight text-white tabular-nums">
+                {historyStats.completedCount} <span className="text-sm font-medium text-neutral-400">reçus édités</span>
+              </div>
+            </div>
+
+            <div className="pt-3 border-t border-neutral-800 mt-3 flex items-center justify-between text-[11px] text-neutral-400">
+              <span>Support Reçus 80mm</span>
+              <span className="text-[#FB923C] font-semibold">Horodatage officiel</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* BOTTOM COLLECTION POD TRAY */}
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+        {/* Controls Bar: Title + Seek Search + FilterSelect */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div>
+            <h2 className="text-base font-black text-neutral-900 dark:text-white">
+              Registre Chronologique des Prestations
+            </h2>
+            <p className="text-xs text-neutral-500">
+              Historique complet des visites clientes avec formules et détails de règlement.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <div className="w-64">
+              <Seek
+                placeholder="Rechercher client, formule, soin..."
+                value={searchQuery}
+                onChange={setSearchQuery}
+              />
+            </div>
+
+            <FilterSelect
+              value={selectedMethodFilter}
+              onChange={setSelectedMethodFilter}
+              options={[
+                { value: 'All', label: 'Tous les paiements' },
+                { value: 'Cash', label: 'Espèces' },
+                { value: 'BaridiMob', label: 'BaridiMob' },
+                { value: 'Dahabia_CIB', label: 'Carte CIB / Edahabia' },
+                { value: 'Card', label: 'Carte bancaire' },
+              ]}
+              ariaLabel="Filtrer par mode de paiement"
+            />
+          </div>
+        </div>
+
+        {/* Inset Container hosting UniversalDataCollection */}
+        <div className="bg-white dark:bg-neutral-800 rounded-[18px] border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs overflow-hidden">
+          <UniversalDataCollection<Appointment>
+            items={historyAppointments}
+            keyExtractor={(a) => a.id}
+            defaultViewMode="list"
+            columns={columns}
+            sortBy={sortBy}
+            sortDirection={sortDir}
+            onSortChange={(key) => {
+              if (sortBy === key) {
+                setSortDir((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+              } else {
+                setSortBy(key);
+                setSortDir('asc');
+              }
+            }}
+            renderCard={(apt) => (
+              <div className="flex flex-col justify-between h-full space-y-3">
+                <div>
+                  <div className="flex items-start justify-between gap-2 mb-1">
+                    <span className="font-mono font-bold text-xs text-neutral-900 dark:text-white">
+                      {apt.date} · {apt.startTime}
+                    </span>
+                    <span
+                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                        apt.status === 'Completed'
+                          ? 'bg-emerald-100 text-emerald-700'
+                          : 'bg-amber-100 text-amber-700'
+                      }`}
+                    >
+                      {apt.status}
+                    </span>
+                  </div>
+
+                  <div className="font-bold text-xs text-neutral-900 dark:text-white">
+                    {apt.clientName}
+                  </div>
+                  <div className="text-[11px] text-[#C4785A] font-semibold mt-0.5">
+                    {apt.serviceName}
+                  </div>
+
+                  {apt.colorFormula && (
+                    <div className="text-[10px] text-amber-700 dark:text-amber-300 font-mono mt-1 bg-amber-50 dark:bg-amber-950/40 p-1.5 rounded-lg">
+                      🧪 {apt.colorFormula}
+                    </div>
+                  )}
+                </div>
+
+                <div className="pt-2 border-t border-neutral-100 dark:border-neutral-700/60 flex items-center justify-between">
+                  <span className="text-xs text-neutral-400">{apt.staffName}</span>
+                  <span className="font-mono font-bold text-sm text-neutral-900 dark:text-white">
+                    {formatMoney(apt.price)}
+                  </span>
+                </div>
+              </div>
+            )}
+            selectedIds={selectedHistoryIds}
+            onSelectionChange={setSelectedHistoryIds}
+            isPinned={(a) => pinnedHistoryIds.has(a.id)}
+            onTogglePin={(a) => {
+              setPinnedHistoryIds((prev) => {
+                const next = new Set(prev);
+                if (next.has(a.id)) next.delete(a.id);
+                else next.add(a.id);
+                return next;
+              });
+            }}
+            emptyTitle="Aucun historique trouvé"
+            emptyDescription="Les rendez-vous terminés apparaîtront ici."
           />
         </div>
       </div>
 
-      {/* Batch Action Toolbar */}
-      {selectedHistoryIds.size > 0 && (
-        <div className="p-3 bg-neutral-900 dark:bg-neutral-800 text-white rounded-xl flex items-center justify-between gap-4 shadow-xl">
-          <div className="flex items-center gap-2">
-            <span className="w-6 h-6 rounded-full bg-[#C4785A] text-white text-xs font-bold flex items-center justify-center">
-              {selectedHistoryIds.size}
-            </span>
-            <span className="text-xs font-medium">soins archivés sélectionnés</span>
-          </div>
+      {/* RECEIPT MODAL 80mm */}
+      {receiptAppointment && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+          <div className="bg-white dark:bg-neutral-900 rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-neutral-200 dark:border-neutral-800 space-y-4">
+            <div className="text-center font-mono text-xs border-b border-dashed border-neutral-300 dark:border-neutral-700 pb-3">
+              <div className="text-sm font-black uppercase tracking-wider text-neutral-900 dark:text-white">
+                {currentBranch?.name || 'LUXE SPA HYDRA'}
+              </div>
+              <div className="text-[10px] text-neutral-500">Institut de Coiffure & Beauté</div>
+              <div className="text-[9px] text-neutral-400 mt-1">{new Date().toLocaleString()}</div>
+            </div>
 
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handleBatchDelete}
-              className="px-3 py-1.5 text-xs font-semibold bg-rose-600 hover:bg-rose-700 text-white rounded-lg transition-colors flex items-center gap-1.5"
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-              <span>Supprimer l'archive</span>
-            </button>
-
-            <button
-              onClick={() => setSelectedHistoryIds(new Set())}
-              className="px-2.5 py-1.5 text-xs text-neutral-400 hover:text-white transition-colors"
-            >
-              Désélectionner
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* UniversalDataCollection */}
-      <UniversalDataCollection<Appointment>
-        items={historyAppointments}
-        keyExtractor={(apt) => apt.id}
-        columns={columns}
-        selectedIds={selectedHistoryIds}
-        onSelectionChange={setSelectedHistoryIds}
-        isPinned={(apt) => pinnedHistoryIds.has(apt.id)}
-        onTogglePin={(apt) => handleTogglePin(apt.id)}
-        sortBy={sortBy}
-        sortDirection={sortDir}
-        onSortChange={(key) => {
-          if (sortBy === key) {
-            setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
-          } else {
-            setSortBy(key);
-            setSortDir('desc');
-          }
-        }}
-        renderCard={(apt) => {
-          const isSelected = selectedHistoryIds.has(apt.id);
-          const isPinned = pinnedHistoryIds.has(apt.id);
-
-          return (
-            <div
-              key={apt.id}
-              className={`p-4 rounded-2xl border transition-all ${
-                isSelected
-                  ? 'border-[#C4785A] bg-[#C4785A]/5'
-                  : 'border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 hover:shadow-md'
-              }`}
-            >
-              <div className="flex items-start justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <span className="font-mono text-xs font-bold text-neutral-900 dark:text-white">
-                    {apt.startTime}
-                  </span>
-                  <span className="text-[11px] text-neutral-400">· {apt.date}</span>
-                </div>
-
-                <button
-                  onClick={() => handleTogglePin(apt.id)}
-                  className={`p-1.5 rounded-lg transition-colors ${
-                    isPinned ? 'text-[#C4785A] bg-[#C4785A]/10' : 'text-neutral-400 hover:text-neutral-600'
-                  }`}
-                >
-                  <Pin className="w-3.5 h-3.5" />
-                </button>
+            <div className="font-mono text-xs space-y-2">
+              <div className="flex justify-between">
+                <span className="text-neutral-500">Client :</span>
+                <span className="font-bold text-neutral-900 dark:text-white">{receiptAppointment.clientName}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-neutral-500">Soin :</span>
+                <span className="font-bold text-neutral-900 dark:text-white">{receiptAppointment.serviceName}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-neutral-500">Styliste :</span>
+                <span>{receiptAppointment.staffName}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-neutral-500">Mode :</span>
+                <span>{receiptAppointment.paymentMethod || 'Espèces'}</span>
               </div>
 
-              <h4 className="font-bold text-xs text-neutral-900 dark:text-white mb-0.5">
-                {apt.clientName}
-              </h4>
-              <p className="text-[11px] text-[#C4785A] font-semibold">{apt.serviceName}</p>
-
-              {apt.colorFormula && (
-                <p className="text-[10px] font-mono text-neutral-600 dark:text-neutral-300 mt-1 truncate">
-                  🧪 {apt.colorFormula}
-                </p>
+              {receiptAppointment.colorFormula && (
+                <div className="p-2 bg-neutral-100 dark:bg-neutral-800 rounded text-[10px] text-neutral-600 dark:text-neutral-300">
+                  Formule: {receiptAppointment.colorFormula}
+                </div>
               )}
 
-              <div className="mt-3 pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-xs">
-                <span className="font-bold text-[#C4785A]">{formatMoney(apt.price)}</span>
-                <button
-                  onClick={() => setReceiptAppointment(apt)}
-                  className="px-2 py-1 text-xs font-semibold bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-lg text-neutral-700 dark:text-neutral-300 flex items-center gap-1"
-                >
-                  <Printer className="w-3 h-3" />
-                  <span>Ticket</span>
-                </button>
+              <div className="pt-2 border-t border-dashed border-neutral-300 dark:border-neutral-700 flex justify-between font-black text-sm">
+                <span>TOTAL PAYÉ :</span>
+                <span>{formatMoney(receiptAppointment.price)}</span>
               </div>
             </div>
-          );
-        }}
-      />
 
-      {/* Detailed Printable Thermal / A4 Receipt Modal */}
-      {receiptAppointment && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <div className="w-full max-w-sm bg-white dark:bg-neutral-950 rounded-2xl shadow-2xl border border-neutral-200 dark:border-neutral-800 overflow-hidden font-mono text-xs">
-            {/* Header with Close */}
-            <div className="p-4 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
-              <span className="font-bold text-neutral-900 dark:text-white uppercase tracking-wider text-[11px]">
-                Reçu de Caisse Salon
-              </span>
+            <div className="flex items-center justify-end gap-2 pt-2">
               <button
-                onClick={() => setReceiptAppointment(null)}
-                className="p-1 rounded-lg text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200"
+                type="button"
+                onClick={() => window.print()}
+                className="h-9 px-4 rounded-full bg-[#C4785A] text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer"
               >
-                <X className="w-4 h-4" />
+                <Printer size={13} />
+                <span>Imprimer 80mm</span>
               </button>
-            </div>
-
-            {/* Receipt Paper Simulation */}
-            <div className="p-6 space-y-4 bg-white dark:bg-neutral-950 text-neutral-800 dark:text-neutral-200">
-              <div className="text-center space-y-1 pb-3 border-b border-dashed border-neutral-300 dark:border-neutral-700">
-                <h3 className="font-bold text-sm tracking-widest uppercase">
-                  LUXE BEAUTY LOUNGE
-                </h3>
-                <p className="text-[10px] text-neutral-500">
-                  22 Rue Djenane El Malik, Hydra, Alger
-                </p>
-                <p className="text-[10px] text-neutral-500">
-                  Tél : +213 23 48 90 12 · NIF : 001916012345678
-                </p>
-              </div>
-
-              <div className="space-y-1 text-[11px] pb-3 border-b border-dashed border-neutral-300 dark:border-neutral-700">
-                <div className="flex justify-between">
-                  <span className="text-neutral-500">Ticket N° :</span>
-                  <span className="font-bold">{receiptAppointment.id}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-neutral-500">Date & Heure :</span>
-                  <span>{receiptAppointment.date} {receiptAppointment.startTime}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-neutral-500">Cliente :</span>
-                  <span className="font-semibold">{receiptAppointment.clientName}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-neutral-500">Styliste :</span>
-                  <span>{receiptAppointment.staffName}</span>
-                </div>
-              </div>
-
-              {/* Items */}
-              <div className="space-y-2 pb-3 border-b border-dashed border-neutral-300 dark:border-neutral-700">
-                <div className="flex justify-between font-bold text-xs">
-                  <span>{receiptAppointment.serviceName}</span>
-                  <span className="tabular-nums">{formatMoney(receiptAppointment.price)}</span>
-                </div>
-                <div className="text-[10px] text-neutral-500">
-                  Durée : {receiptAppointment.durationMinutes} minutes
-                </div>
-                {receiptAppointment.colorFormula && (
-                  <div className="text-[10px] text-[#C4785A] pt-1 font-mono">
-                    Formule: {receiptAppointment.colorFormula}
-                  </div>
-                )}
-              </div>
-
-              {/* Total */}
-              <div className="space-y-1.5 pt-1">
-                <div className="flex justify-between text-sm font-black">
-                  <span>TOTAL TTC :</span>
-                  <span className="tabular-nums text-[#C4785A]">
-                    {formatMoney(receiptAppointment.price)}
-                  </span>
-                </div>
-                <div className="flex justify-between text-[11px] text-neutral-500">
-                  <span>Mode de paiement :</span>
-                  <span>{receiptAppointment.paymentMethod || 'Espèces'}</span>
-                </div>
-              </div>
-
-              <div className="text-center pt-4 text-[10px] text-neutral-400">
-                Merci de votre visite · Saha Chribatkoum
-              </div>
-            </div>
-
-            {/* Print action footer */}
-            <div className="p-3 bg-neutral-50 dark:bg-neutral-900 border-t border-neutral-200 dark:border-neutral-800 flex justify-end gap-2">
-              <AtriumButton
-                variant="primary"
-                className="w-full"
-                icon={<Printer className="w-3.5 h-3.5" />}
-                onClick={() => window.print?.()}
+              <button
+                type="button"
+                onClick={() => setReceiptAppointment(null)}
+                className="h-9 px-4 rounded-full text-neutral-500 hover:bg-neutral-100 text-xs font-semibold cursor-pointer"
               >
-                Imprimer le Reçu
-              </AtriumButton>
+                Fermer
+              </button>
             </div>
           </div>
         </div>

@@ -804,192 +804,221 @@ export const PosInventoryView: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 pb-16" dir={isRtl ? 'rtl' : 'ltr'}>
-      {/* Screen Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-black text-neutral-900 dark:text-white tracking-tight flex items-center gap-2.5">
-              <Boxes className="text-[#C4785A]" size={26} />
-              <span>
-                {language === 'ar' ? 'المخزون والكتالوج العام' : language === 'fr' ? 'Inventaire & Gestion des Stocks' : 'Inventory & Stock Catalog'}
+    <div className="space-y-6 animate-in fade-in duration-200" dir={isRtl ? 'rtl' : 'ltr'}>
+      {/* Outer Workspace Panel */}
+      <div className="bg-white dark:bg-[#18181B] rounded-[28px] border border-[#E9EEF0] dark:border-neutral-800 p-6 lg:p-8 space-y-6 shadow-xs">
+        {/* Screen Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-3">
+              <h1 className="text-2xl font-black text-neutral-900 dark:text-white tracking-tight flex items-center gap-2.5">
+                <Boxes className="text-[#C4785A]" size={26} />
+                <span>
+                  {language === 'ar' ? 'المخزون والكتالوج العام' : language === 'fr' ? 'Inventaire & Gestion des Stocks' : 'Inventory & Stock Catalog'}
+                </span>
+              </h1>
+              <span className="text-[11px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800">
+                {inventoryStats.totalSKUs} {language === 'ar' ? 'صنفاً' : 'articles'}
               </span>
-            </h1>
-            <span className="text-[11px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800">
-              {inventoryStats.totalSKUs} {language === 'ar' ? 'صنفاً' : 'articles'}
-            </span>
+            </div>
+            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
+              {language === 'ar'
+                ? 'مراقبة كميات السلع، التنبيه بالنواقص، تعديل أسعار التكلفة والتجزئة، وتصدير ملفات الجرد'
+                : 'Gestion des fiches produits, codes-barres EAN-13, seuils d’alerte, valorisation à l’achat et réassort groupé.'}
+            </p>
           </div>
-          <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
-            {language === 'ar'
-              ? 'مراقبة كميات السلع، التنبيه بالنواقص، تعديل أسعار التكلفة والتجزئة، وتصدير ملفات الجرد'
-              : 'Gestion des fiches produits, codes-barres EAN-13, seuils d’alerte, valorisation à l’achat et réassort groupé.'}
-          </p>
-        </div>
 
-        <div className="flex items-center gap-2.5 flex-wrap">
-          {activeSubTab === 'inventory' ? (
-            <>
-              <button
-                type="button"
-                onClick={resetPosMockData}
-                className="h-10 px-3.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 hover:bg-neutral-50 text-xs font-bold text-neutral-700 dark:text-neutral-200 flex items-center gap-2 cursor-pointer shadow-2xs"
-              >
-                <Sparkles size={14} className="text-[#C4785A]" />
-                <span>{language === 'ar' ? 'شحن العينة' : 'Démo Recharge'}</span>
-              </button>
-
-              <AtriumButton
-                variant="secondary"
-                size="sm"
-                onClick={handleExportInventoryCSV}
-                icon={<Download size={13} />}
-              >
-                {language === 'ar' ? 'تصدير CSV' : 'Export CSV'}
-              </AtriumButton>
-
-              <AtriumButton
-                variant="primary"
-                size="sm"
-                onClick={handleOpenAddProduct}
-                icon={<Plus size={15} />}
-              >
-                {language === 'ar' ? 'إضافة منتج جديد' : 'Nouveau Produit'}
-              </AtriumButton>
-            </>
-          ) : (
-            <>
-              {purchaseStats.lowStockCount > 0 && (
+          <div className="flex items-center gap-2.5 flex-wrap">
+            {activeSubTab === 'inventory' ? (
+              <>
                 <button
                   type="button"
-                  onClick={handlePreFillLowStockPo}
-                  className="h-10 px-3.5 rounded-xl border border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 text-xs font-bold flex items-center gap-2 cursor-pointer shadow-2xs hover:bg-amber-100"
+                  onClick={resetPosMockData}
+                  className="h-10 px-3.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 hover:bg-neutral-50 text-xs font-bold text-neutral-700 dark:text-neutral-200 flex items-center gap-2 cursor-pointer shadow-2xs"
                 >
-                  <AlertTriangle size={14} className="text-amber-600 dark:text-amber-400" />
-                  <span>
-                    {language === 'ar'
-                      ? `تموين النواقص (${purchaseStats.lowStockCount})`
-                      : `Réapprovisionner Ruptures (${purchaseStats.lowStockCount})`}
-                  </span>
+                  <Sparkles size={14} className="text-[#C4785A]" />
+                  <span>{language === 'ar' ? 'شحن العينة' : 'Démo Recharge'}</span>
                 </button>
-              )}
 
-              <AtriumButton
-                variant="secondary"
-                size="sm"
-                onClick={() => setIsSupplierModalOpen(true)}
-                icon={<Building2 size={13} />}
-              >
-                {language === 'ar' ? 'إضافة مورد' : 'Nouveau Fournisseur'}
-              </AtriumButton>
+                <AtriumButton
+                  variant="secondary"
+                  size="sm"
+                  onClick={handleExportInventoryCSV}
+                  icon={<Download size={13} />}
+                >
+                  {language === 'ar' ? 'تصدير CSV' : 'Export CSV'}
+                </AtriumButton>
 
-              <AtriumButton
-                variant="primary"
-                size="sm"
-                onClick={handleOpenNewRetailPo}
-                icon={<Plus size={15} />}
-              >
-                {language === 'ar' ? 'طلب توريد جديد' : 'Nouvelle Commande Fournisseur'}
-              </AtriumButton>
-            </>
-          )}
-        </div>
-      </div>
+                <AtriumButton
+                  variant="primary"
+                  size="sm"
+                  onClick={handleOpenAddProduct}
+                  icon={<Plus size={15} />}
+                >
+                  {language === 'ar' ? 'إضافة منتج جديد' : 'Nouveau Produit'}
+                </AtriumButton>
+              </>
+            ) : (
+              <>
+                {purchaseStats.lowStockCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={handlePreFillLowStockPo}
+                    className="h-10 px-3.5 rounded-xl border border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 text-xs font-bold flex items-center gap-2 cursor-pointer shadow-2xs hover:bg-amber-100"
+                  >
+                    <AlertTriangle size={14} className="text-amber-600 dark:text-amber-400" />
+                    <span>
+                      {language === 'ar'
+                        ? `تموين النواقص (${purchaseStats.lowStockCount})`
+                        : `Réapprovisionner Ruptures (${purchaseStats.lowStockCount})`}
+                    </span>
+                  </button>
+                )}
 
-      {/* Sub-tab Navigation: Catalog Stock vs Achats & Fournisseurs */}
-      <div className="flex items-center gap-1.5 p-1 bg-neutral-100 dark:bg-neutral-850 rounded-xl w-fit border border-neutral-200 dark:border-neutral-800">
-        <button
-          type="button"
-          onClick={() => setActiveSubTab('inventory')}
-          className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
-            activeSubTab === 'inventory'
-              ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-2xs'
-              : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
-          }`}
-        >
-          <Boxes size={14} className={activeSubTab === 'inventory' ? 'text-[#C4785A]' : ''} />
-          <span>{t('nav_pos_inventory_tab_stock') || (language === 'ar' ? 'المخزون والمنتجات' : 'État des Stocks & Catalogue')}</span>
-          <span className="text-[10px] font-mono text-neutral-400">({inventoryStats.totalSKUs})</span>
-        </button>
+                <AtriumButton
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setIsSupplierModalOpen(true)}
+                  icon={<Building2 size={13} />}
+                >
+                  {language === 'ar' ? 'إضافة مورد' : 'Nouveau Fournisseur'}
+                </AtriumButton>
 
-        <button
-          type="button"
-          onClick={() => setActiveSubTab('purchases')}
-          className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
-            activeSubTab === 'purchases'
-              ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-2xs'
-              : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
-          }`}
-        >
-          <Truck size={14} className={activeSubTab === 'purchases' ? 'text-[#C4785A]' : ''} />
-          <span>{t('nav_pos_inventory_tab_purchases') || (language === 'ar' ? 'المشتريات وإعادة التموين' : 'Achats & Fournisseurs')}</span>
-          {purchaseStats.pendingCount > 0 && (
-            <span className="px-1.5 py-0.2 rounded-full text-[10px] font-mono bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-300">
-              {purchaseStats.pendingCount}
-            </span>
-          )}
-        </button>
-      </div>
-
-      {activeSubTab === 'inventory' ? (
-        <>
-          {/* Inventory KPI Summary Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5">
-        <div className="p-4 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-2xs space-y-1">
-          <div className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
-            {t('shop_kpi_skus')}
-          </div>
-          <div className="text-xl font-black text-neutral-900 dark:text-white tabular-nums">
-            {inventoryStats.totalSKUs}
-          </div>
-          <div className="text-[10px] text-neutral-400">
-            {t('shop_kpi_skus_sub', { count: inventoryStats.totalUnits })}
-          </div>
-        </div>
-
-        <div className="p-4 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-2xs space-y-1">
-          <div className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
-            {t('shop_kpi_retail_val')}
-          </div>
-          <div className="text-xl font-black font-mono text-[#C4785A] tabular-nums">
-            {formatMoney(inventoryStats.retailValuation)}
-          </div>
-          <div className="text-[10px] text-neutral-400">
-            {t('shop_kpi_retail_val_sub', { cost: formatMoney(inventoryStats.costValuation) })}
-          </div>
-        </div>
-
-        <div className="p-4 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-2xs space-y-1">
-          <div className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
-            {t('shop_kpi_margin')}
-          </div>
-          <div className="text-xl font-black font-mono text-emerald-600 dark:text-emerald-400 tabular-nums">
-            {formatMoney(inventoryStats.potentialProfit)}
-          </div>
-          <div className="text-[10px] text-neutral-400">
-            {t('shop_kpi_margin_sub')}
-          </div>
-        </div>
-
-        <div className="p-4 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-2xs space-y-1">
-          <div className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
-            {t('shop_kpi_low_stock')}
-          </div>
-          <div className="text-xl font-black text-amber-600 dark:text-amber-400 tabular-nums flex items-center gap-2">
-            <span>{inventoryStats.lowStockItems}</span>
-            {inventoryStats.outOfStockItems > 0 && (
-              <span className="text-xs text-red-500 font-bold">
-                ({inventoryStats.outOfStockItems} {language === 'ar' ? 'نفد' : 'ruptures'})
-              </span>
+                <AtriumButton
+                  variant="primary"
+                  size="sm"
+                  onClick={handleOpenNewRetailPo}
+                  icon={<Plus size={15} />}
+                >
+                  {language === 'ar' ? 'طلب توريد جديد' : 'Nouvelle Commande Fournisseur'}
+                </AtriumButton>
+              </>
             )}
           </div>
-          <div className="text-[10px] text-neutral-400">
-            {t('shop_kpi_low_sub')}
-          </div>
         </div>
-      </div>
 
-      {/* Filter and Action Strip */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        {/* Sub-tab Navigation: Catalog Stock vs Achats & Fournisseurs */}
+        <div className="flex items-center gap-1.5 p-1 bg-neutral-100 dark:bg-neutral-850 rounded-xl w-fit border border-neutral-200 dark:border-neutral-800">
+          <button
+            type="button"
+            onClick={() => setActiveSubTab('inventory')}
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+              activeSubTab === 'inventory'
+                ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-2xs'
+                : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
+            }`}
+          >
+            <Boxes size={14} className={activeSubTab === 'inventory' ? 'text-[#C4785A]' : ''} />
+            <span>{t('nav_pos_inventory_tab_stock') || (language === 'ar' ? 'المخزون والمنتجات' : 'État des Stocks & Catalogue')}</span>
+            <span className="text-[10px] font-mono text-neutral-400">({inventoryStats.totalSKUs})</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveSubTab('purchases')}
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+              activeSubTab === 'purchases'
+                ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-2xs'
+                : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
+            }`}
+          >
+            <Truck size={14} className={activeSubTab === 'purchases' ? 'text-[#C4785A]' : ''} />
+            <span>{t('nav_pos_inventory_tab_purchases') || (language === 'ar' ? 'المشتريات وإعادة التموين' : 'Achats & Fournisseurs')}</span>
+            {purchaseStats.pendingCount > 0 && (
+              <span className="px-1.5 py-0.2 rounded-full text-[10px] font-mono bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-300">
+                {purchaseStats.pendingCount}
+              </span>
+            )}
+          </button>
+        </div>
+
+        {activeSubTab === 'inventory' ? (
+          <>
+            {/* Top Metrics Pod Tray (SurfaceBgElevated: #F8F9FA, CornerRadius 24px) */}
+            <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* Card 1: SKUs */}
+                <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
+                  <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
+                    {t('shop_kpi_skus')}
+                  </span>
+                  <div className="mt-3">
+                    <div className="text-2xl lg:text-3xl font-extrabold text-neutral-900 dark:text-neutral-100 tabular-nums font-mono">
+                      {inventoryStats.totalSKUs}
+                    </div>
+                    <div className="text-[11px] text-neutral-400 mt-1">
+                      {t('shop_kpi_skus_sub', { count: inventoryStats.totalUnits })}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Card 2: Valorisation Vente */}
+                <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
+                  <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
+                    {t('shop_kpi_retail_val')}
+                  </span>
+                  <div className="mt-3">
+                    <div className="text-2xl lg:text-3xl font-extrabold font-mono text-[#C4785A] tabular-nums">
+                      {formatMoney(inventoryStats.retailValuation)}
+                    </div>
+                    <div className="text-[11px] text-neutral-400 mt-1">
+                      {t('shop_kpi_retail_val_sub', { cost: formatMoney(inventoryStats.costValuation) })}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Card 3: Bénéfice Potentiel */}
+                <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
+                  <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
+                    {t('shop_kpi_margin')}
+                  </span>
+                  <div className="mt-3">
+                    <div className="text-2xl lg:text-3xl font-extrabold font-mono text-emerald-600 dark:text-emerald-400 tabular-nums">
+                      {formatMoney(inventoryStats.potentialProfit)}
+                    </div>
+                    <div className="text-[11px] text-neutral-400 mt-1">
+                      {t('shop_kpi_margin_sub')}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Card 4: DARK ESPRESSO ANCHOR CARD (#1F1D1B) — Low Stock & Ruptures */}
+                <div className="bg-[#1F1D1B] rounded-[18px] p-4 lg:p-5 border border-neutral-800 shadow-sm text-white flex flex-col justify-between relative overflow-hidden group">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold text-[#E7E5E4]">
+                      {t('shop_kpi_low_stock')}
+                    </span>
+                    <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30 uppercase tracking-wider">
+                      {inventoryStats.lowStockItems} {language === 'ar' ? 'تنبيه' : 'alertes'}
+                    </span>
+                  </div>
+                  <div className="mt-3">
+                    <div className="text-2xl lg:text-3xl font-extrabold text-white font-mono tracking-tight flex items-center gap-2">
+                      <span>{inventoryStats.lowStockItems}</span>
+                      {inventoryStats.outOfStockItems > 0 && (
+                        <span className="text-xs text-[#FB923C] font-bold">
+                          ({inventoryStats.outOfStockItems} {language === 'ar' ? 'نفد' : 'ruptures'})
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center justify-between text-[11px] text-stone-400 mt-1.5">
+                      <span className="flex items-center gap-1">
+                        <AlertTriangle size={12} className="text-[#FB923C]" />
+                        <span>Seuil critique atteint</span>
+                      </span>
+                      <span className="font-mono text-stone-300">SKUs</span>
+                    </div>
+                  </div>
+                  {/* Decorative subtle background sparkline */}
+                  <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-[#FB923C]/5 rounded-full blur-2xl pointer-events-none" />
+                </div>
+              </div>
+            </div>
+
+      {/* Bottom Collection Pod Tray */}
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+        {/* Filter and Action Strip */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-2 flex-wrap">
           <div className="flex items-center p-0.5 rounded-xl bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-xs font-bold">
             <button
@@ -1061,8 +1090,10 @@ export const PosInventoryView: React.FC = () => {
         )}
       </div>
 
-      {/* UniversalDataCollection: Products */}
-      <UniversalDataCollection<Product>
+        {/* Inset White Table Container */}
+        <div className="bg-white dark:bg-neutral-800 rounded-[18px] border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs overflow-hidden">
+          {/* UniversalDataCollection: Products */}
+          <UniversalDataCollection<Product>
         items={sortedInventory}
         keyExtractor={(p) => p.id}
         defaultViewMode="list"
@@ -1173,79 +1204,96 @@ export const PosInventoryView: React.FC = () => {
         primaryActionLabel={t('shop_add_product')}
         onAddFirstItem={handleOpenAddProduct}
       />
+          </div>
+        </div>
     </>
   ) : (
     <div className="space-y-6">
-      {/* Purchase KPI Summary Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5">
-        <div className="p-4 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-2xs space-y-1">
-          <div className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
-            {language === 'ar' ? 'الطلبيات قيد التوريد' : 'Commandes en Cours'}
+      {/* Purchase KPI Summary Cards Pod Tray */}
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs space-y-1">
+            <div className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+              {language === 'ar' ? 'الطلبيات قيد التوريد' : 'Commandes en Cours'}
+            </div>
+            <div className="text-2xl font-black text-blue-600 dark:text-blue-400 tabular-nums font-mono mt-2">
+              {purchaseStats.pendingCount}
+            </div>
+            <div className="text-[11px] text-neutral-400 mt-1">
+              {language === 'ar' ? 'في انتظار وصول البضاعة' : 'En attente de réception à quai'}
+            </div>
           </div>
-          <div className="text-xl font-black text-blue-600 dark:text-blue-400 tabular-nums">
-            {purchaseStats.pendingCount}
-          </div>
-          <div className="text-[10px] text-neutral-400">
-            {language === 'ar' ? 'في انتظار وصول البضاعة' : 'En attente de réception à quai'}
-          </div>
-        </div>
 
-        <div className="p-4 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-2xs space-y-1">
-          <div className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
-            {language === 'ar' ? 'النواقص تحت حد التنبيه' : 'Articles en Alerte Stock'}
+          <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs space-y-1">
+            <div className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+              {language === 'ar' ? 'النواقص تحت حد التنبيه' : 'Articles en Alerte Stock'}
+            </div>
+            <div className="text-2xl font-black text-amber-600 dark:text-amber-400 tabular-nums flex items-center justify-between mt-2 font-mono">
+              <span>{purchaseStats.lowStockCount}</span>
+              {purchaseStats.lowStockCount > 0 && (
+                <button
+                  type="button"
+                  onClick={handlePreFillLowStockPo}
+                  className="text-[10px] px-2 py-0.5 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 text-amber-700 dark:text-amber-300 font-bold transition-colors cursor-pointer"
+                >
+                  {language === 'ar' ? 'طلب فوري' : 'Commander'}
+                </button>
+              )}
+            </div>
+            <div className="text-[11px] text-neutral-400 mt-1">
+              {language === 'ar' ? 'تستلزم إعادة تموين سريعة' : 'Réassort recommandé'}
+            </div>
           </div>
-          <div className="text-xl font-black text-amber-600 dark:text-amber-400 tabular-nums flex items-center justify-between">
-            <span>{purchaseStats.lowStockCount}</span>
-            {purchaseStats.lowStockCount > 0 && (
+
+          <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs space-y-1">
+            <div className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+              {language === 'ar' ? 'شبكة الموردين' : 'Fournisseurs Référencés'}
+            </div>
+            <div className="text-2xl font-black text-neutral-900 dark:text-white tabular-nums flex items-center justify-between mt-2 font-mono">
+              <span>{purchaseStats.suppliersCount}</span>
               <button
                 type="button"
-                onClick={handlePreFillLowStockPo}
-                className="text-[10px] px-2 py-0.5 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 text-amber-700 dark:text-amber-300 font-bold transition-colors cursor-pointer"
+                onClick={() => setIsSupplierModalOpen(true)}
+                className="text-[10px] px-2 py-0.5 rounded-lg bg-[#C4785A]/15 text-[#C4785A] font-bold hover:bg-[#C4785A]/25 transition-colors cursor-pointer"
               >
-                {language === 'ar' ? 'طلب فوري' : 'Commander'}
+                + {language === 'ar' ? 'إضافة' : 'Nouveau'}
               </button>
-            )}
+            </div>
+            <div className="text-[11px] text-neutral-400 mt-1">
+              {language === 'ar' ? 'موردين معتمدين' : 'Grossistes & importateurs'}
+            </div>
           </div>
-          <div className="text-[10px] text-neutral-400">
-            {language === 'ar' ? 'تستلزم إعادة تموين سريعة' : 'Réassort recommandé'}
-          </div>
-        </div>
 
-        <div className="p-4 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-2xs space-y-1">
-          <div className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
-            {language === 'ar' ? 'إجمالي المشتريات المستلمة' : 'Total Réceptions (TTC)'}
-          </div>
-          <div className="text-xl font-black font-mono text-[#C4785A] tabular-nums">
-            {formatMoney(purchaseStats.totalPurchasedValue)}
-          </div>
-          <div className="text-[10px] text-neutral-400">
-            {purchaseStats.receivedCount} {language === 'ar' ? 'وصولات مستلمة' : 'bons réceptionnés'}
-          </div>
-        </div>
-
-        <div className="p-4 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-2xs space-y-1">
-          <div className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
-            {language === 'ar' ? 'شبكة الموردين' : 'Fournisseurs Référencés'}
-          </div>
-          <div className="text-xl font-black text-neutral-900 dark:text-white tabular-nums flex items-center justify-between">
-            <span>{purchaseStats.suppliersCount}</span>
-            <button
-              type="button"
-              onClick={() => setIsSupplierModalOpen(true)}
-              className="text-[10px] px-2 py-0.5 rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 text-neutral-700 dark:text-neutral-200 font-bold transition-colors cursor-pointer"
-            >
-              + {language === 'ar' ? 'إضافة' : 'Nouveau'}
-            </button>
-          </div>
-          <div className="text-[10px] text-neutral-400">
-            {language === 'ar' ? 'موردين معتمدين' : 'Grossistes & importateurs'}
+          {/* DARK ESPRESSO ANCHOR CARD (#1F1D1B) */}
+          <div className="bg-[#1F1D1B] rounded-[18px] p-4 lg:p-5 border border-neutral-800 shadow-sm text-white flex flex-col justify-between relative overflow-hidden group">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-[#E7E5E4]">
+                {language === 'ar' ? 'إجمالي المشتريات المستلمة' : 'Total Réceptions (TTC)'}
+              </span>
+              <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30 uppercase tracking-wider">
+                {purchaseStats.receivedCount} {language === 'ar' ? 'وصول' : 'bons'}
+              </span>
+            </div>
+            <div className="mt-3">
+              <div className="text-2xl lg:text-3xl font-extrabold text-white font-mono tracking-tight">
+                {formatMoney(purchaseStats.totalPurchasedValue)}
+              </div>
+              <div className="flex items-center justify-between text-[11px] text-stone-400 mt-1.5">
+                <span className="flex items-center gap-1">
+                  <CheckCircle2 size={12} className="text-[#FB923C]" />
+                  <span>Réceptions conformes</span>
+                </span>
+                <span className="font-mono text-stone-300">TTC</span>
+              </div>
+            </div>
+            <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-[#FB923C]/5 rounded-full blur-2xl pointer-events-none" />
           </div>
         </div>
       </div>
 
-      {/* Purchase Orders and Dock Receipts Table */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
+      {/* Bottom Purchases Collection Pod Tray */}
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <h2 className="text-sm font-bold text-neutral-900 dark:text-white">
               {language === 'ar' ? 'سجل طلبيات الشراء ووصولات الاستلام' : 'Commandes Fournisseurs & Bons de Réception'}
@@ -1256,20 +1304,21 @@ export const PosInventoryView: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-2">
-            <button
-              type="button"
+            <AtriumButton
+              size="sm"
               onClick={handleOpenNewRetailPo}
-              className="h-9 px-3.5 rounded-xl bg-[#C4785A] text-white text-xs font-bold flex items-center gap-1.5 hover:opacity-90 cursor-pointer shadow-xs"
+              icon={<Plus size={14} />}
             >
-              <Plus size={14} />
-              <span>{language === 'ar' ? 'طلب توريد جديد' : 'Nouvelle Commande Fournisseur'}</span>
-            </button>
+              {language === 'ar' ? 'طلب توريد جديد' : 'Nouvelle Commande Fournisseur'}
+            </AtriumButton>
           </div>
         </div>
 
-        <UniversalDataCollection
-          items={purchaseDocs || []}
-          columns={purchaseColumns}
+        {/* Inset White Container */}
+        <div className="bg-white dark:bg-neutral-800 rounded-[18px] border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs overflow-hidden">
+          <UniversalDataCollection
+            items={purchaseDocs || []}
+            columns={purchaseColumns}
           keyExtractor={(p) => p.id}
           renderCard={(doc) => (
             <div className="p-4 rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-2xs space-y-3">
@@ -1361,6 +1410,7 @@ export const PosInventoryView: React.FC = () => {
           ))}
         </div>
       </div>
+    </div>
     </div>
   )}
 
@@ -1836,6 +1886,7 @@ export const PosInventoryView: React.FC = () => {
           setIsSupplierModalOpen(false);
         }}
       />
+      </div>
     </div>
   );
 };
