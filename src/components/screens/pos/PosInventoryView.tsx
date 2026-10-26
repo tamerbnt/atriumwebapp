@@ -1024,7 +1024,7 @@ export const PosInventoryView: React.FC = () => {
                       {language === 'ar' ? 'المخزون والمنتجات' : 'Catalogue & Stocks Magasin'}
                     </span>
                     <span className="px-2 py-0.5 rounded-full text-xs font-mono font-bold bg-[#C4785A]/10 text-[#C4785A]">
-                      {filteredProducts.length}
+                      {filteredInventory.length}
                     </span>
                   </div>
                 </div>
@@ -1101,7 +1101,6 @@ export const PosInventoryView: React.FC = () => {
             </button>
           </div>
         )}
-      </div>
 
         {/* Inset White Table Container */}
         <div className="bg-white dark:bg-neutral-800 rounded-[18px] border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs overflow-hidden">

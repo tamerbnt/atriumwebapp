@@ -714,7 +714,6 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = ({
               />
             </div>
           </div>
-          </div>
 
           {/* Floating Batch Action Toolbar */}
           {selectedClientIds.size > 0 && (

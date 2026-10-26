@@ -93,6 +93,7 @@ export const PosRegisterView: React.FC<PosRegisterViewProps> = ({ initialTab = '
     parkOrder,
     resumeParkedOrder,
     deleteParkedOrder,
+    sales,
     stockMovements,
     receiptConfig,
     updateReceiptConfig,
@@ -577,6 +578,30 @@ export const PosRegisterView: React.FC<PosRegisterViewProps> = ({ initialTab = '
       outOfStockItems,
     };
   }, [products]);
+
+  // Session & Register KPIs for Top Metrics Pod Tray
+  const sessionMetrics = useMemo(() => {
+    const todaySales = (sales || []).filter(
+      (s) => s.facilityId === currentBranch.id && s.status !== 'Refunded'
+    );
+    const turnover = todaySales.reduce((acc, s) => {
+      const amt = typeof s.totalAmount === 'number' ? s.totalAmount : s.totalAmount?.amount || 0;
+      return acc + amt;
+    }, 0);
+    const totalCash = todaySales.reduce((acc, s) => {
+      const cashPayments = s.paymentDetails?.filter((p) => p.method === 'Cash') || [];
+      return acc + cashPayments.reduce((cAcc, cp) => cAcc + cp.amount, 0);
+    }, 0);
+    const parkedCount = parkedOrders.length;
+    const parkedValuation = parkedOrders.reduce((acc, p) => acc + (p.totalAmount || 0), 0);
+    return {
+      todaySalesCount: todaySales.length,
+      turnover,
+      totalCash,
+      parkedCount,
+      parkedValuation,
+    };
+  }, [sales, currentBranch.id, parkedOrders]);
 
   // Cart financial calculations
   const cartSubtotal = useMemo(() => {

@@ -6,6 +6,7 @@ import {
   Search,
   Filter,
   User,
+  Users,
   Scissors,
   Sparkles,
   ChevronLeft,

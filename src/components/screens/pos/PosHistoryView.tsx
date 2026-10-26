@@ -394,21 +394,25 @@ export const PosHistoryView: React.FC = () => {
 
       {/* BOTTOM COLLECTION POD TRAY */}
       <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
-        {/* Controls Bar: Title + Seek Search + FilterSelect + Actions */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-          <div>
-            <h2 className="text-base font-black text-neutral-900 dark:text-white">
-              {language === 'ar' ? 'جدول حركات المخزون والمراجعة' : 'Registre des Mouvements & Traçabilité'}
-            </h2>
-            <p className="text-xs text-neutral-500">
-              {language === 'ar'
-                ? 'قائمة مفصلة بكل عملية تغيير في أرصدة المنتجات'
-                : 'Historique chronologique des entrées/sorties et ajustements de stock.'}
-            </p>
+        {/* Controls Bar: Left Anchor + Seek Search + FilterSelect + Actions */}
+        <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
+          {/* Left Title / Icon / Count Anchor */}
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#C4785A]">
+              <History size={18} />
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-bold text-neutral-900 dark:text-white">
+                {language === 'ar' ? 'سجل حركات المخزون والمراجعة' : 'Registre des Mouvements de Stock'}
+              </span>
+              <span className="text-xs px-2 py-0.5 rounded-full bg-[#C4785A]/10 text-[#C4785A] font-semibold font-mono">
+                {sortedMovements.length}
+              </span>
+            </div>
           </div>
 
           <div className="flex items-center gap-2.5 flex-wrap">
-            <div className="w-56">
+            <div className="w-full sm:w-56">
               <Seek
                 placeholder={language === 'ar' ? 'بحث في الحركات...' : 'Rechercher un mouvement...'}
                 value={searchQuery}

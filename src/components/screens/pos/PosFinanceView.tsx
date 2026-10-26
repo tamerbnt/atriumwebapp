@@ -565,65 +565,83 @@ export const PosFinanceView: React.FC = () => {
         </div>
       </div>
 
-      {/* Tender Breakdown Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="p-4 rounded-[18px] bg-[#F8F9FA] dark:bg-neutral-800/40 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-2">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Banknote size={17} className="text-emerald-500" />
-              <h3 className="text-xs font-black uppercase text-neutral-700 dark:text-neutral-300">
-                {language === 'ar' ? 'الدفع نقداً' : 'Règlement Espèces'}
-              </h3>
+      {/* TENDER BREAKDOWN POD TRAY (SurfaceBgElevated: #F8F9FA, CornerRadius 24px) */}
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-3">
+        <div className="flex items-center justify-between pb-2 border-b border-[#EDF1F3] dark:border-neutral-800/60">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#C4785A]">
+              <CreditCard size={16} />
             </div>
-            <span className="font-mono text-xs font-bold text-neutral-400">
-              {financeTotals.totalGrossSales > 0 ? `${Math.round((financeTotals.cashSales / financeTotals.totalGrossSales) * 100)}%` : '0%'}
-            </span>
-          </div>
-          <div className="text-xl font-black font-mono text-neutral-900 dark:text-white tabular-nums">
-            {formatMoney(financeTotals.cashSales)}
-          </div>
-          <div className="text-[11px] text-neutral-400">
-            {language === 'ar' ? 'مدفوعات نقدية مسددة بالدينار الجزائري' : 'Total liquide perçu au comptoir'}
+            <div>
+              <span className="text-xs font-bold text-neutral-900 dark:text-white uppercase tracking-wider">
+                {language === 'ar' ? 'توزيع طرق الدفع والتحصيل' : 'Ventilation par Mode de Règlement'}
+              </span>
+              <span className="text-[11px] text-neutral-500 dark:text-neutral-400 block">
+                {language === 'ar' ? 'المطابقة الحسابية بين السيولة النقدية والتحصيلات الإلكترونية' : 'Répartition des encaissements comptoir et flux monétiques'}
+              </span>
+            </div>
           </div>
         </div>
 
-        <div className="p-4 rounded-[18px] bg-[#F8F9FA] dark:bg-neutral-800/40 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-2">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <CreditCard size={17} className="text-blue-500" />
-              <h3 className="text-xs font-black uppercase text-neutral-700 dark:text-neutral-300">
-                CIB & Carte Edahabia
-              </h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="p-4 rounded-[18px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Banknote size={17} className="text-emerald-500" />
+                <h3 className="text-xs font-black uppercase text-neutral-700 dark:text-neutral-300">
+                  {language === 'ar' ? 'الدفع نقداً' : 'Règlement Espèces'}
+                </h3>
+              </div>
+              <span className="font-mono text-xs font-bold text-neutral-400">
+                {financeTotals.totalGrossSales > 0 ? `${Math.round((financeTotals.cashSales / financeTotals.totalGrossSales) * 100)}%` : '0%'}
+              </span>
             </div>
-            <span className="font-mono text-xs font-bold text-neutral-400">
-              {financeTotals.totalGrossSales > 0 ? `${Math.round((financeTotals.cardSales / financeTotals.totalGrossSales) * 100)}%` : '0%'}
-            </span>
+            <div className="text-xl font-black font-mono text-neutral-900 dark:text-white tabular-nums">
+              {formatMoney(financeTotals.cashSales)}
+            </div>
+            <div className="text-[11px] text-neutral-400">
+              {language === 'ar' ? 'مدفوعات نقدية مسددة بالدينار الجزائري' : 'Total liquide perçu au comptoir'}
+            </div>
           </div>
-          <div className="text-xl font-black font-mono text-neutral-900 dark:text-white tabular-nums">
-            {formatMoney(financeTotals.cardSales)}
-          </div>
-          <div className="text-[11px] text-neutral-400">
-            {language === 'ar' ? 'معاملات إلكترونية عبر أجهزة TPE SATIM' : 'Transactions TPE monétique bancaire'}
-          </div>
-        </div>
 
-        <div className="p-4 rounded-[18px] bg-[#F8F9FA] dark:bg-neutral-800/40 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-2">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Coins size={17} className="text-[#C4785A]" />
-              <h3 className="text-xs font-black uppercase text-neutral-700 dark:text-neutral-300">
-                BaridiMob & Virements
-              </h3>
+          <div className="p-4 rounded-[18px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <CreditCard size={17} className="text-blue-500" />
+                <h3 className="text-xs font-black uppercase text-neutral-700 dark:text-neutral-300">
+                  CIB & Carte Edahabia
+                </h3>
+              </div>
+              <span className="font-mono text-xs font-bold text-neutral-400">
+                {financeTotals.totalGrossSales > 0 ? `${Math.round((financeTotals.cardSales / financeTotals.totalGrossSales) * 100)}%` : '0%'}
+              </span>
             </div>
-            <span className="font-mono text-xs font-bold text-neutral-400">
-              {financeTotals.totalGrossSales > 0 ? `${Math.round((financeTotals.baridiMobSales / financeTotals.totalGrossSales) * 100)}%` : '0%'}
-            </span>
+            <div className="text-xl font-black font-mono text-neutral-900 dark:text-white tabular-nums">
+              {formatMoney(financeTotals.cardSales)}
+            </div>
+            <div className="text-[11px] text-neutral-400">
+              {language === 'ar' ? 'معاملات إلكترونية عبر أجهزة TPE SATIM' : 'Transactions TPE monétique bancaire'}
+            </div>
           </div>
-          <div className="text-xl font-black font-mono text-neutral-900 dark:text-white tabular-nums">
-            {formatMoney(financeTotals.baridiMobSales)}
-          </div>
-          <div className="text-[11px] text-neutral-400">
-            {language === 'ar' ? 'تحويلات بريد الجزائر الفورية بريدي موب' : 'Virements RIP / CCP Algérie Poste'}
+
+          <div className="p-4 rounded-[18px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Coins size={17} className="text-[#C4785A]" />
+                <h3 className="text-xs font-black uppercase text-neutral-700 dark:text-neutral-300">
+                  BaridiMob & Virements
+                </h3>
+              </div>
+              <span className="font-mono text-xs font-bold text-neutral-400">
+                {financeTotals.totalGrossSales > 0 ? `${Math.round((financeTotals.baridiMobSales / financeTotals.totalGrossSales) * 100)}%` : '0%'}
+              </span>
+            </div>
+            <div className="text-xl font-black font-mono text-neutral-900 dark:text-white tabular-nums">
+              {formatMoney(financeTotals.baridiMobSales)}
+            </div>
+            <div className="text-[11px] text-neutral-400">
+              {language === 'ar' ? 'تحويلات بريد الجزائر الفورية بريدي موب' : 'Virements RIP / CCP Algérie Poste'}
+            </div>
           </div>
         </div>
       </div>
@@ -631,16 +649,20 @@ export const PosFinanceView: React.FC = () => {
       {/* BOTTOM COLLECTION POD TRAY */}
       <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
         {/* Controls Bar: Title + Seek Search + Category Filter + Actions */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-          <div>
-            <h2 className="text-base font-black text-neutral-900 dark:text-white">
-              {language === 'ar' ? 'سجل مصاريف وسحوبات الصندوق (Sorties de Caisse)' : 'Journal des Sorties de Caisse & Dépenses'}
-            </h2>
-            <p className="text-xs text-neutral-500">
-              {language === 'ar'
-                ? 'توثيق مدفوعات التموين السريع، الفواتير الصغيرة، ومشتريات الصيانة'
-                : 'Paiements directs aux livreurs, achats d’urgence, consommables et frais généraux décaissés.'}
-            </p>
+        <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
+          {/* Left Title / Icon / Count Anchor */}
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#C4785A]">
+              <TrendingDown size={18} />
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-bold text-neutral-900 dark:text-white">
+                {language === 'ar' ? 'سجل مصاريف وسحوبات الصندوق' : 'Journal des Sorties de Caisse'}
+              </span>
+              <span className="text-xs px-2 py-0.5 rounded-full bg-[#C4785A]/10 text-[#C4785A] font-semibold font-mono">
+                {filteredPayouts.length}
+              </span>
+            </div>
           </div>
 
           <div className="flex items-center gap-2.5 flex-wrap">

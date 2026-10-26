@@ -32,6 +32,7 @@ import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { formatMoney } from '../../../utils/rules';
 import { AppointmentModal } from '../../modals/AppointmentModal';
+import { ConfirmDialog } from '../../ui/ConfirmDialog';
 
 export const AppointmentServicesView: React.FC = () => {
   const {
@@ -61,6 +62,7 @@ export const AppointmentServicesView: React.FC = () => {
   const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
   const [editingService, setEditingService] = useState<ServiceItem | null>(null);
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const [serviceToDelete, setServiceToDelete] = useState<ServiceItem | null>(null);
 
   // Form State
   const [formName, setFormName] = useState('');
@@ -378,11 +380,7 @@ export const AppointmentServicesView: React.FC = () => {
           </button>
           <button
             type="button"
-            onClick={() => {
-              if (confirm(`Supprimer définitivement la prestation "${service.name}" ?`)) {
-                deleteServiceItem(service.id);
-              }
-            }}
+            onClick={() => setServiceToDelete(service)}
             className="p-1.5 text-neutral-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition-colors cursor-pointer"
             title="Supprimer du catalogue"
           >
@@ -552,48 +550,66 @@ export const AppointmentServicesView: React.FC = () => {
 
       {/* BOTTOM COLLECTION POD TRAY */}
       <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
-        {/* Category Pills & Seek Bar */}
+        {/* Integrated Toolbar: Left Anchor + Controls Bar */}
         <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
-          {/* Category Tabs */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
-            {[
-              { id: 'All', label: 'Toutes', count: categoryCounts.All || 0 },
-              { id: 'Hair', label: 'Coiffure', count: categoryCounts.Hair || 0 },
-              { id: 'Nails', label: 'Onglerie Russe', count: categoryCounts.Nails || 0 },
-              { id: 'Facial', label: 'Soins Visage', count: categoryCounts.Facial || 0 },
-              { id: 'Bridal', label: 'Haute Mariée', count: categoryCounts.Bridal || 0 },
-              { id: 'Massage', label: 'Massages & Corps', count: categoryCounts.Massage || 0 },
-              { id: 'Barber', label: 'Barbier', count: categoryCounts.Barber || 0 },
-            ].map((cat) => (
-              <button
-                key={cat.id}
-                type="button"
-                onClick={() => setActiveCategory(cat.id)}
-                className={`px-3 py-1.5 text-xs font-semibold rounded-xl whitespace-nowrap transition-colors flex items-center gap-1.5 cursor-pointer ${
-                  activeCategory === cat.id
-                    ? 'bg-[#C4785A] text-white shadow-xs'
-                    : 'bg-white dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-700 border border-[#E9EEF0] dark:border-neutral-700/60'
-                }`}
-              >
-                <span>{cat.label}</span>
-                <span
-                  className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
-                    activeCategory === cat.id ? 'bg-white/20 text-white' : 'bg-neutral-100 dark:bg-neutral-700 text-neutral-500'
-                  }`}
-                >
-                  {cat.count}
-                </span>
-              </button>
-            ))}
+          {/* Left Title / Icon / Count Anchor */}
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#C4785A]">
+              <Scissors size={18} />
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-bold text-neutral-900 dark:text-white">
+                Prestations & Forfaits
+              </span>
+              <span className="text-xs px-2 py-0.5 rounded-full bg-[#C4785A]/10 text-[#C4785A] font-semibold">
+                {filteredServices.length}
+              </span>
+            </div>
           </div>
 
-          {/* Search */}
-          <div className="w-full lg:w-72">
-            <Seek
-              value={searchQuery}
-              onChange={setSearchQuery}
-              placeholder="Rechercher une prestation..."
-            />
+          {/* Controls Bar: Category Filter Pills + Seek */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+            {/* Category Tabs */}
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
+              {[
+                { id: 'All', label: 'Toutes', count: categoryCounts.All || 0 },
+                { id: 'Hair', label: 'Coiffure', count: categoryCounts.Hair || 0 },
+                { id: 'Nails', label: 'Onglerie Russe', count: categoryCounts.Nails || 0 },
+                { id: 'Facial', label: 'Soins Visage', count: categoryCounts.Facial || 0 },
+                { id: 'Bridal', label: 'Haute Mariée', count: categoryCounts.Bridal || 0 },
+                { id: 'Massage', label: 'Massages & Corps', count: categoryCounts.Massage || 0 },
+                { id: 'Barber', label: 'Barbier', count: categoryCounts.Barber || 0 },
+              ].map((cat) => (
+                <button
+                  key={cat.id}
+                  type="button"
+                  onClick={() => setActiveCategory(cat.id)}
+                  className={`px-3 py-1.5 text-xs font-semibold rounded-xl whitespace-nowrap transition-colors flex items-center gap-1.5 cursor-pointer ${
+                    activeCategory === cat.id
+                      ? 'bg-[#C4785A] text-white shadow-xs'
+                      : 'bg-white dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-700 border border-[#E9EEF0] dark:border-neutral-700/60'
+                  }`}
+                >
+                  <span>{cat.label}</span>
+                  <span
+                    className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
+                      activeCategory === cat.id ? 'bg-white/20 text-white' : 'bg-neutral-100 dark:bg-neutral-700 text-neutral-500'
+                    }`}
+                  >
+                    {cat.count}
+                  </span>
+                </button>
+              ))}
+            </div>
+
+            {/* Search */}
+            <div className="w-full sm:w-64">
+              <Seek
+                value={searchQuery}
+                onChange={setSearchQuery}
+                placeholder="Rechercher une prestation..."
+              />
+            </div>
           </div>
         </div>
 
@@ -806,6 +822,29 @@ export const AppointmentServicesView: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Confirmation Dialog for deletion */}
+      <ConfirmDialog
+        isOpen={Boolean(serviceToDelete)}
+        onClose={() => setServiceToDelete(null)}
+        onConfirm={() => {
+          if (serviceToDelete) {
+            deleteServiceItem(serviceToDelete.id);
+            showToast({
+              type: 'info',
+              title: 'Prestation retirée',
+              message: `"${serviceToDelete.name}" a été supprimée du catalogue.`,
+              category: 'appointment_service',
+            });
+            setServiceToDelete(null);
+          }
+        }}
+        title="Supprimer la prestation"
+        description={`Êtes-vous sûr de vouloir supprimer définitivement "${serviceToDelete?.name}" du catalogue de soins ? Cette action est irréversible.`}
+        confirmLabel="Supprimer"
+        cancelLabel="Annuler"
+        variant="danger"
+      />
     </div>
   );
 };

@@ -86,14 +86,14 @@ export const PosDashboardView: React.FC<PosDashboardViewProps> = () => {
       title: language === 'ar' ? 'استئناف التذاكر المعلقة' : 'Gestion des Tickets en Pause',
       desc: language === 'ar' ? 'لديك طلبات معلقة بانتظار استكمال التسديد لتفادي طوابير الانتظار عند الصندوق.' : 'Reprenez les paniers mis en attente pour fluidifier la file sans perdre les articles scannés.',
       btnLabel: language === 'ar' ? 'Consulter les Paniers' : 'Voir les Paniers',
-      action: () => setScreen('orders'),
+      action: () => setScreen('registrations'),
     },
     {
       step: '3/4',
       title: language === 'ar' ? 'تنبيهات انخفاض المخزون' : 'Réassort & Articles Critiques',
       desc: language === 'ar' ? 'توجد أصناف وصلت إلى حد إعادة الطلب. قم بإصدار طلب تموين جديد للمورد.' : 'Plusieurs références ont atteint le seuil d’alerte. Déclenchez un bon de commande fournisseur.',
       btnLabel: language === 'ar' ? 'فحص المخزون' : 'Vérifier l’Inventaire',
-      action: () => setScreen('inventory'),
+      action: () => setScreen('scheduler'),
     },
     {
       step: '4/4',
@@ -1026,7 +1026,7 @@ export const PosDashboardView: React.FC<PosDashboardViewProps> = () => {
               <AtriumButton
                 variant="outline"
                 size="sm"
-                onClick={() => setScreen('orders')}
+                onClick={() => setScreen('registrations')}
                 icon={<Receipt size={14} className="text-[#C4785A]" />}
               >
                 {language === 'ar' ? 'سجل المبيعات الكامل' : 'Grand Livre des Tickets'}

@@ -501,57 +501,74 @@ export const TradingSalesView: React.FC = () => {
         {/* Bottom Collection Pod Tray (SurfaceBgElevated: #F8F9FA) */}
         <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
           
-          {/* Controls Bar: Segment Tabs + Seek Search */}
+          {/* Integrated Toolbar: Left Anchor + Controls Bar */}
           <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
-            
-            {/* Segment Capsules */}
-            <div className="flex items-center gap-1 bg-neutral-200/60 dark:bg-neutral-800 p-1 rounded-2xl overflow-x-auto self-start">
-              {(
-                [
-                  { key: 'all', label: t('trading_doc_all', 'Toutes les Pièces'), count: tabCounts.all },
-                  { key: 'devis', label: t('trading_doc_devis', 'Devis'), count: tabCounts.devis },
-                  { key: 'commande', label: t('trading_doc_commande', 'Commandes'), count: tabCounts.commande },
-                  { key: 'bl', label: t('trading_doc_bl', 'Livraisons (BL)'), count: tabCounts.bl },
-                  { key: 'facture', label: t('trading_doc_facture', 'Factures Fiscales'), count: tabCounts.facture },
-                  { key: 'avoir', label: t('trading_doc_avoir', 'Avoirs'), count: tabCounts.avoir },
-                ] as const
-              ).map((tab) => {
-                const isSelected = activeTab === tab.key;
-                return (
-                  <button
-                    key={tab.key}
-                    type="button"
-                    onClick={() => setActiveTab(tab.key)}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
-                      isSelected
-                        ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-xs'
-                        : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
-                    }`}
-                  >
-                    <span>{tab.label}</span>
-                    <span
-                      className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono ${
-                        isSelected
-                          ? 'bg-[#C4785A] text-white'
-                          : 'bg-neutral-300/60 dark:bg-neutral-700 text-neutral-500'
-                      }`}
-                    >
-                      {tab.count}
-                    </span>
-                  </button>
-                );
-              })}
+            {/* Left Title / Icon / Count Anchor */}
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#C4785A]">
+                <FileText size={18} />
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-bold text-neutral-900 dark:text-white">
+                  {t('trading_sales_docs_register', 'Registre des Ventes')}
+                </span>
+                <span className="text-xs px-2 py-0.5 rounded-full bg-[#C4785A]/10 text-[#C4785A] font-semibold font-mono">
+                  {filteredDocs.length}
+                </span>
+              </div>
             </div>
 
-            {/* Seek Search */}
-            <div className="self-end lg:self-auto">
-              <Seek
-                value={searchQuery}
-                onChange={setSearchQuery}
-                placeholder={t('trading_sales_search_placeholder', 'Filtrer N° doc, client, NIF...')}
-                shutSize={36}
-                openWidth={280}
-              />
+            {/* Controls Bar: Segment Tabs + Seek Search */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+              {/* Segment Capsules */}
+              <div className="flex items-center gap-1 bg-neutral-200/60 dark:bg-neutral-800 p-1 rounded-2xl overflow-x-auto self-start">
+                {(
+                  [
+                    { key: 'all', label: t('trading_doc_all', 'Toutes les Pièces'), count: tabCounts.all },
+                    { key: 'devis', label: t('trading_doc_devis', 'Devis'), count: tabCounts.devis },
+                    { key: 'commande', label: t('trading_doc_commande', 'Commandes'), count: tabCounts.commande },
+                    { key: 'bl', label: t('trading_doc_bl', 'Livraisons (BL)'), count: tabCounts.bl },
+                    { key: 'facture', label: t('trading_doc_facture', 'Factures Fiscales'), count: tabCounts.facture },
+                    { key: 'avoir', label: t('trading_doc_avoir', 'Avoirs'), count: tabCounts.avoir },
+                  ] as const
+                ).map((tab) => {
+                  const isSelected = activeTab === tab.key;
+                  return (
+                    <button
+                      key={tab.key}
+                      type="button"
+                      onClick={() => setActiveTab(tab.key)}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                        isSelected
+                          ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-xs'
+                          : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
+                      }`}
+                    >
+                      <span>{tab.label}</span>
+                      <span
+                        className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono ${
+                          isSelected
+                            ? 'bg-[#C4785A] text-white'
+                            : 'bg-neutral-300/60 dark:bg-neutral-700 text-neutral-500'
+                        }`}
+                      >
+                        {tab.count}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Seek Search */}
+              <div className="self-end sm:self-auto">
+                <Seek
+                  value={searchQuery}
+                  onChange={setSearchQuery}
+                  placeholder={t('trading_sales_search_placeholder', 'Filtrer N° doc, client, NIF...')}
+                  shutSize={36}
+                  openWidth={280}
+                />
+              </div>
             </div>
           </div>
 

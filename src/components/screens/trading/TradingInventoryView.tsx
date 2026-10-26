@@ -471,103 +471,143 @@ export const TradingInventoryView: React.FC = () => {
           </div>
         </div>
 
-        {/* Multi-Depot Selector Strip */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          <button
-            type="button"
-            onClick={() => setSelectedDepotId('all')}
-            className={`p-3.5 rounded-2xl border text-left rtl:text-right transition-all cursor-pointer ${
-              selectedDepotId === 'all'
-                ? 'border-[#C4785A] bg-[#C4785A]/10 shadow-2xs'
-                : 'border-neutral-200 dark:border-neutral-800 bg-[#F8F9FA] dark:bg-neutral-800/40 hover:border-neutral-300'
-            }`}
-          >
-            <div className="flex items-center justify-between mb-1">
-              <span className="font-bold text-xs text-neutral-900 dark:text-neutral-100">
-                {t('trading_inventory_all_depots', 'Tous les Dépôts')}
-              </span>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-neutral-200 dark:bg-neutral-700 font-semibold">
-                GLOBAL
-              </span>
+        {/* Multi-Depot Hub Pod Tray (SurfaceBgElevated: #F8F9FA, CornerRadius 24px) */}
+        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-3">
+          <div className="flex items-center justify-between pb-2 border-b border-[#EDF1F3] dark:border-neutral-800/60">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#C4785A]">
+                <Warehouse size={16} />
+              </div>
+              <div>
+                <span className="text-xs font-bold text-neutral-900 dark:text-white uppercase tracking-wider">
+                  {t('trading_inventory_depots_hub', 'Réseau des Dépôts & Hubs Logistiques')}
+                </span>
+                <span className="text-[11px] text-neutral-500 dark:text-neutral-400 block">
+                  Filtrage actif du stock par entrepôt physique ou valorisation consolidée
+                </span>
+              </div>
             </div>
-            <div className="text-xs font-bold font-mono text-[#C4785A]">
-              {formatMoney(metrics.totalValuation)}
-            </div>
-          </button>
+            <span className="text-xs font-mono font-semibold text-neutral-500">
+              {warehouses.length} {t('trading_depots_active', 'dépôts configurés')}
+            </span>
+          </div>
 
-          {warehouses.map((w) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             <button
-              key={w.id}
               type="button"
-              onClick={() => setSelectedDepotId(w.id)}
+              onClick={() => setSelectedDepotId('all')}
               className={`p-3.5 rounded-2xl border text-left rtl:text-right transition-all cursor-pointer ${
-                selectedDepotId === w.id
-                  ? 'border-[#C4785A] bg-[#C4785A]/10 shadow-2xs'
-                  : 'border-neutral-200 dark:border-neutral-800 bg-[#F8F9FA] dark:bg-neutral-800/40 hover:border-neutral-300'
+                selectedDepotId === 'all'
+                  ? 'border-[#C4785A] bg-white dark:bg-neutral-800 shadow-xs ring-2 ring-[#C4785A]/20'
+                  : 'border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-800/80 hover:border-neutral-300'
               }`}
             >
               <div className="flex items-center justify-between mb-1">
                 <span className="font-bold text-xs text-neutral-900 dark:text-neutral-100">
-                  {w.name}
+                  {t('trading_inventory_all_depots', 'Tous les Dépôts')}
                 </span>
                 <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-neutral-200 dark:bg-neutral-700 font-semibold">
-                  {w.code}
+                  GLOBAL
                 </span>
               </div>
-              <div className="text-[11px] text-neutral-500 mb-0.5">{w.city}</div>
-              <div className="text-xs font-mono font-bold text-neutral-800 dark:text-neutral-200">
-                {formatMoney(w.totalValuationDzd || 0)}
+              <div className="text-xs font-bold font-mono text-[#C4785A]">
+                {formatMoney(metrics.totalValuation)}
               </div>
             </button>
-          ))}
+
+            {warehouses.map((w) => (
+              <button
+                key={w.id}
+                type="button"
+                onClick={() => setSelectedDepotId(w.id)}
+                className={`p-3.5 rounded-2xl border text-left rtl:text-right transition-all cursor-pointer ${
+                  selectedDepotId === w.id
+                    ? 'border-[#C4785A] bg-white dark:bg-neutral-800 shadow-xs ring-2 ring-[#C4785A]/20'
+                    : 'border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-800/80 hover:border-neutral-300'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-1">
+                  <span className="font-bold text-xs text-neutral-900 dark:text-neutral-100">
+                    {w.name}
+                  </span>
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-neutral-200 dark:bg-neutral-700 font-semibold">
+                    {w.code}
+                  </span>
+                </div>
+                <div className="text-[11px] text-neutral-500 mb-0.5">{w.city}</div>
+                <div className="text-xs font-mono font-bold text-neutral-800 dark:text-neutral-200">
+                  {formatMoney(w.totalValuationDzd || 0)}
+                </div>
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Bottom Collection Pod Tray (SurfaceBgElevated: #F8F9FA) */}
         <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
           
-          {/* Controls Bar: Segment Tabs + Seek Search */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-            {/* Segment Capsules */}
-            <div className="flex items-center gap-1.5 bg-neutral-200/60 dark:bg-neutral-800 p-1 rounded-2xl self-start">
-              <button
-                type="button"
-                onClick={() => setViewMode('stock_state')}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
-                  viewMode === 'stock_state'
-                    ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-xs'
-                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
-                }`}
-              >
-                <span>{t('trading_inventory_tab_state', 'État des Stocks')}</span>
-                <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono ${
-                  viewMode === 'stock_state' ? 'bg-[#C4785A]/15 text-[#C4785A]' : 'bg-neutral-300/60 dark:bg-neutral-700 text-neutral-500'
-                }`}>
-                  {products.length}
+          {/* Integrated Toolbar: Left Anchor + Controls Bar */}
+          <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
+            {/* Left Title / Icon / Count Anchor */}
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#C4785A]">
+                <Boxes size={18} />
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-bold text-neutral-900 dark:text-white">
+                  {viewMode === 'stock_state'
+                    ? t('trading_inventory_tab_state', 'État des Stocks')
+                    : t('trading_inventory_tab_vouchers', 'Bons de Mouvements')}
                 </span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setViewMode('vouchers')}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
-                  viewMode === 'vouchers'
-                    ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-xs'
-                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
-                }`}
-              >
-                <span>{t('trading_inventory_tab_vouchers', 'Bons de Mouvements')}</span>
-                <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono ${
-                  viewMode === 'vouchers' ? 'bg-[#C4785A]/15 text-[#C4785A]' : 'bg-neutral-300/60 dark:bg-neutral-700 text-neutral-500'
-                }`}>
-                  {stockVouchers.length}
+                <span className="text-xs px-2 py-0.5 rounded-full bg-[#C4785A]/10 text-[#C4785A] font-semibold font-mono">
+                  {viewMode === 'stock_state' ? filteredProducts.length : vouchers.length}
                 </span>
-              </button>
+              </div>
             </div>
 
-            {/* Seek Search */}
-            <div className="self-end sm:self-auto">
-              <Seek
-                value={searchQuery}
+            {/* Controls Bar: Segment Tabs + Seek Search */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+              {/* Segment Capsules */}
+              <div className="flex items-center gap-1.5 bg-neutral-200/60 dark:bg-neutral-800 p-1 rounded-2xl self-start">
+                <button
+                  type="button"
+                  onClick={() => setViewMode('stock_state')}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
+                    viewMode === 'stock_state'
+                      ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-xs'
+                      : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
+                  }`}
+                >
+                  <span>{t('trading_inventory_tab_state', 'État des Stocks')}</span>
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono ${
+                    viewMode === 'stock_state' ? 'bg-[#C4785A]/15 text-[#C4785A]' : 'bg-neutral-300/60 dark:bg-neutral-700 text-neutral-500'
+                  }`}>
+                    {products.length}
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setViewMode('vouchers')}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
+                    viewMode === 'vouchers'
+                      ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-xs'
+                      : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
+                  }`}
+                >
+                  <span>{t('trading_inventory_tab_vouchers', 'Bons de Mouvements')}</span>
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono ${
+                    viewMode === 'vouchers' ? 'bg-[#C4785A]/15 text-[#C4785A]' : 'bg-neutral-300/60 dark:bg-neutral-700 text-neutral-500'
+                  }`}>
+                    {stockVouchers.length}
+                  </span>
+                </button>
+              </div>
+
+              {/* Seek Search */}
+              <div className="self-end sm:self-auto">
+                <Seek
+                  value={searchQuery}
                 onChange={setSearchQuery}
                 placeholder={language === 'ar' ? 'بحث برمز المادة، التسمية، السند...' : 'Filtrer article, bon, SKU...'}
                 shutSize={36}

@@ -478,60 +478,80 @@ export const TradingDirectoryView: React.FC = () => {
         {/* Bottom Collection Pod Tray (SurfaceBgElevated) */}
         <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
           
-          {/* Controls Bar: Segment Tabs + Seek Search */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-            {/* Segment Capsules */}
-            <div className="flex items-center gap-1.5 bg-neutral-200/60 dark:bg-neutral-800 p-1 rounded-2xl self-start">
-              <button
-                type="button"
-                onClick={() => {
-                  setMode('clients');
-                  setSelectedEntity(null);
-                }}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
-                  mode === 'clients'
-                    ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-xs'
-                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
-                }`}
-              >
-                <span>{t('trading_directory_tab_clients', 'Clients B2B')}</span>
-                <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono ${
-                  mode === 'clients' ? 'bg-[#C4785A]/15 text-[#C4785A]' : 'bg-neutral-300/60 dark:bg-neutral-700 text-neutral-500'
-                }`}>
-                  {b2bClients.length}
+          {/* Integrated Toolbar: Left Anchor + Controls Bar */}
+          <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
+            {/* Left Title / Icon / Count Anchor */}
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#C4785A]">
+                <Users size={18} />
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-bold text-neutral-900 dark:text-white">
+                  {mode === 'clients'
+                    ? t('trading_directory_clients_title', 'Portefeuille Clients')
+                    : t('trading_directory_suppliers_title', 'Fournisseurs Référencés')}
                 </span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setMode('suppliers');
-                  setSelectedEntity(null);
-                }}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
-                  mode === 'suppliers'
-                    ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-xs'
-                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
-                }`}
-              >
-                <span>{t('trading_directory_tab_suppliers', 'Fournisseurs Référencés')}</span>
-                <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono ${
-                  mode === 'suppliers' ? 'bg-[#C4785A]/15 text-[#C4785A]' : 'bg-neutral-300/60 dark:bg-neutral-700 text-neutral-500'
-                }`}>
-                  {b2bSuppliers.length}
+                <span className="text-xs px-2 py-0.5 rounded-full bg-[#C4785A]/10 text-[#C4785A] font-semibold font-mono">
+                  {mode === 'clients' ? filteredClients.length : filteredSuppliers.length}
                 </span>
-              </button>
+              </div>
             </div>
 
-            {/* Seek Search */}
-            <div className="self-end sm:self-auto">
-              <Seek
-                value={searchQuery}
-                onChange={setSearchQuery}
-                placeholder={language === 'ar' ? 'بحث باسم الشركة، المسؤول، NIF...' : 'Rechercher raison sociale, contact, NIF...'}
-                shutSize={36}
-                openWidth={280}
-              />
+            {/* Controls Bar: Segment Tabs + Seek Search */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+              {/* Segment Capsules */}
+              <div className="flex items-center gap-1.5 bg-neutral-200/60 dark:bg-neutral-800 p-1 rounded-2xl self-start">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMode('clients');
+                    setSelectedEntity(null);
+                  }}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
+                    mode === 'clients'
+                      ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-xs'
+                      : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
+                  }`}
+                >
+                  <span>{t('trading_directory_tab_clients', 'Clients B2B')}</span>
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono ${
+                    mode === 'clients' ? 'bg-[#C4785A]/15 text-[#C4785A]' : 'bg-neutral-300/60 dark:bg-neutral-700 text-neutral-500'
+                  }`}>
+                    {b2bClients.length}
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMode('suppliers');
+                    setSelectedEntity(null);
+                  }}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
+                    mode === 'suppliers'
+                      ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-xs'
+                      : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
+                  }`}
+                >
+                  <span>{t('trading_directory_tab_suppliers', 'Fournisseurs Référencés')}</span>
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono ${
+                    mode === 'suppliers' ? 'bg-[#C4785A]/15 text-[#C4785A]' : 'bg-neutral-300/60 dark:bg-neutral-700 text-neutral-500'
+                  }`}>
+                    {b2bSuppliers.length}
+                  </span>
+                </button>
+              </div>
+
+              {/* Seek Search */}
+              <div className="self-end sm:self-auto">
+                <Seek
+                  value={searchQuery}
+                  onChange={setSearchQuery}
+                  placeholder={language === 'ar' ? 'بحث باسم الشركة، المسؤول، NIF...' : 'Rechercher raison sociale, contact, NIF...'}
+                  shutSize={36}
+                  openWidth={280}
+                />
+              </div>
             </div>
           </div>
 
