@@ -398,249 +398,286 @@ export const EducationCohortsView: React.FC = () => {
         })
     : [];
 
+  const totalCohortValue = eduCohorts.reduce((sum, c) => sum + (c.enrolledCount * c.tuitionFee), 0);
+
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
-      {/* Top Header Row matching other category screens */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-neutral-200 dark:border-neutral-800">
-        <div className="flex items-center gap-3.5">
-          <div className="w-11 h-11 rounded-2xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-800 dark:text-neutral-200">
-            <GraduationCap size={22} />
+      {/* Outer Rounded Workspace Panel (WPF Spec: CornerRadius 28px, 1px CardBorderBrush) */}
+      <div className="bg-white dark:bg-[#18181B] rounded-[28px] border border-[#E9EEF0] dark:border-neutral-800 p-6 lg:p-8 space-y-6 shadow-xs">
+        
+        {/* Row 0 — Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
+          <div className="flex items-center gap-3.5">
+            <div className="w-11 h-11 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#C4785A]">
+              <GraduationCap size={22} />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-900 dark:text-white">
+                  {t('edu_cohorts_title')}
+                </h1>
+                <span className="text-xs text-neutral-500 dark:text-neutral-400">
+                  {eduCohorts.length} {language === 'ar' ? 'دفعات دراسية' : 'active batches'} · {eduCourses.length} {language === 'ar' ? 'برامج أكاديمية' : 'curricula'}
+                </span>
+              </div>
+              <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
+                {t('edu_cohorts_subtitle')}
+              </p>
+            </div>
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-900 dark:text-white">
-                {t('edu_cohorts_title')}
-              </h1>
-              <span className="text-xs text-neutral-500 dark:text-neutral-400">
-                {eduCohorts.length} {language === 'ar' ? 'دفعات دراسية' : 'active batches'} · {eduCourses.length} {language === 'ar' ? 'برامج أكاديمية' : 'curricula'}
+
+          <div className="flex items-center gap-2.5 flex-wrap self-start sm:self-auto">
+            {/* Facility Pill: Atrium 1 ▾ */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setIsFacilityDropdownOpen(!isFacilityDropdownOpen)}
+                className="h-10 px-4 rounded-xl bg-[#F4EFEA] dark:bg-neutral-800/80 border border-[#E8DFD8] dark:border-neutral-700 flex items-center gap-2 cursor-pointer hover:bg-[#EFE8E1] dark:hover:bg-neutral-800 transition-colors shadow-2xs"
+              >
+                <Home size={15} className="text-[#C4785A]" />
+                <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
+                  {currentBranch?.name || 'Campus 1'}
+                </span>
+                <ChevronDown
+                  size={14}
+                  className={`text-neutral-500 transition-transform ${
+                    isFacilityDropdownOpen ? 'rotate-180' : ''
+                  }`}
+                />
+              </button>
+
+              {/* Facility Dropdown Menu */}
+              {isFacilityDropdownOpen && (
+                <div className="absolute right-0 rtl:right-auto rtl:left-0 mt-2 w-64 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
+                  <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+                    {language === 'ar' ? 'الفروع والمراكز التعليمية' : language === 'fr' ? 'Centres & Campus' : 'Campuses & Branches'}
+                  </div>
+                  {businesses.map((biz) => {
+                    const isCurrent = biz.id === currentBusinessId;
+                    const matchingBranch = branches.find((b) => b.businessId === biz.id);
+                    return (
+                      <button
+                        key={biz.id}
+                        type="button"
+                        onClick={() => {
+                          switchBusiness(biz.id);
+                          if (matchingBranch) switchBranch(matchingBranch.id);
+                          setIsFacilityDropdownOpen(false);
+                        }}
+                        className={`w-full px-3 py-2 text-left rtl:text-right flex items-center justify-between text-xs transition-colors cursor-pointer ${
+                          isCurrent
+                            ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold'
+                            : 'text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 min-w-0">
+                          <Building2 size={14} className={isCurrent ? 'text-[#C4785A]' : 'text-neutral-400'} />
+                          <span className="truncate">{biz.name}</span>
+                        </div>
+                        {isCurrent && <Check size={14} />}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Seed Demo Data Button */}
+            <button
+              type="button"
+              onClick={resetEduMockData}
+              className="h-10 px-3.5 bg-[#FCEEE8] dark:bg-neutral-800 hover:bg-[#F8DFD4] dark:hover:bg-neutral-700 text-[#C4785A] text-xs font-semibold rounded-xl transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer"
+              title={language === 'ar' ? 'إعادة شحن بيانات تجريبية' : language === 'fr' ? 'Recharger Données Démo' : 'Seed Mock Data'}
+            >
+              <Sparkles size={14} />
+              <span className="hidden sm:inline">{language === 'ar' ? 'بيانات تجريبية' : language === 'fr' ? 'Données Démo' : 'Demo Data'}</span>
+            </button>
+
+            <AtriumButton
+              variant="primary"
+              onClick={() => setIsAddCohortModalOpen(true)}
+              icon={<Plus size={14} />}
+            >
+              {t('edu_modal_add_cohort')}
+            </AtriumButton>
+          </div>
+        </div>
+
+        {/* Batch Selection Toolbar */}
+        {selectedCohortIds.size > 0 && (
+          <div className="flex items-center justify-between p-3 px-4 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 animate-in fade-in slide-in-from-top-2">
+            <div className="flex items-center gap-3">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#C4785A] animate-pulse" />
+              <span className="text-xs font-bold text-neutral-900 dark:text-white">
+                {selectedCohortIds.size} {language === 'ar' ? 'أفواج محددة' : language === 'fr' ? 'cohortes sélectionnées' : 'cohortes selected'}
               </span>
             </div>
-            <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
-              {t('edu_cohorts_subtitle')}
+            <div className="flex items-center gap-2 flex-wrap">
+              <button
+                onClick={() => setSelectedCohortIds(new Set())}
+                className="px-3 py-1.5 text-xs text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white font-medium cursor-pointer"
+              >
+                {language === 'ar' ? 'إلغاء التحديد' : language === 'fr' ? 'Désélectionner' : 'Deselect'}
+              </button>
+              <button
+                onClick={handleBatchStart}
+                className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+              >
+                <Play size={13} />
+                <span>{language === 'ar' ? 'بدء الدراسة' : language === 'fr' ? 'Lancer' : 'Start Term'}</span>
+              </button>
+              <button
+                onClick={handleBatchComplete}
+                className="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+              >
+                <CheckCircle2 size={13} />
+                <span>{language === 'ar' ? 'اختتام الدورة' : language === 'fr' ? 'Clôturer' : 'Complete'}</span>
+              </button>
+              <button
+                onClick={handleBatchDelete}
+                className="px-3.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+              >
+                <Trash2 size={13} />
+                <span>{language === 'ar' ? 'حذف المحدد' : language === 'fr' ? 'Supprimer' : 'Delete'}</span>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Top Metrics Pod Tray (Screenshot_30: bg-[#F8F9FA], rounded-[24px], p-5) */}
+        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-3">
+          <div>
+            <h3 className="text-xs font-bold text-neutral-900 dark:text-white tracking-tight">
+              {language === 'ar' ? 'طاقة استيعاب الأفواج والبرامج' : language === 'fr' ? 'Capacité & Santé des Cohortes' : 'Capacity & Cohorts Health'}
+            </h3>
+            <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+              {language === 'ar' ? 'متابعة المقاعد الشاغرة والقيمة الإجمالية للأفواج' : language === 'fr' ? 'Indicateurs clés de remplissage et valeur des cycles' : 'Key enrollment, seat fill ratio, and cohort valuation'}
             </p>
           </div>
-        </div>
 
-        <div className="flex items-center gap-2.5 flex-wrap self-start sm:self-auto">
-          {/* Facility Pill: Atrium 1 ▾ */}
-          <div className="relative">
-            <button
-              type="button"
-              onClick={() => setIsFacilityDropdownOpen(!isFacilityDropdownOpen)}
-              className="h-10 px-4 rounded-full bg-[#F4EFEA] dark:bg-neutral-800/80 border border-[#E8DFD8] dark:border-neutral-700 flex items-center gap-2 cursor-pointer hover:bg-[#EFE8E1] dark:hover:bg-neutral-800 transition-colors shadow-2xs"
-            >
-              <Home size={15} className="text-[#C4785A]" />
-              <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
-                {currentBranch?.name || 'Atrium 1'}
-              </span>
-              <ChevronDown
-                size={14}
-                className={`text-neutral-500 transition-transform ${
-                  isFacilityDropdownOpen ? 'rotate-180' : ''
-                }`}
-              />
-            </button>
-
-            {/* Facility Dropdown Menu */}
-            {isFacilityDropdownOpen && (
-              <div className="absolute right-0 rtl:right-auto rtl:left-0 mt-2 w-64 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
-                <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
-                  {language === 'ar' ? 'الفروع والمراكز التعليمية' : language === 'fr' ? 'Centres & Campus' : 'Campuses & Branches'}
-                </div>
-                {businesses.map((biz) => {
-                  const isCurrent = biz.id === currentBusinessId;
-                  const matchingBranch = branches.find((b) => b.businessId === biz.id);
-                  return (
-                    <button
-                      key={biz.id}
-                      type="button"
-                      onClick={() => {
-                        switchBusiness(biz.id);
-                        if (matchingBranch) switchBranch(matchingBranch.id);
-                        setIsFacilityDropdownOpen(false);
-                      }}
-                      className={`w-full px-3 py-2 text-left rtl:text-right flex items-center justify-between text-xs transition-colors cursor-pointer ${
-                        isCurrent
-                          ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold'
-                          : 'text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2 min-w-0">
-                        <Building2 size={14} className={isCurrent ? 'text-[#C4785A]' : 'text-neutral-400'} />
-                        <span className="truncate">{biz.name}</span>
-                      </div>
-                      {isCurrent && <Check size={14} />}
-                    </button>
-                  );
-                })}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Inset White Card 1: Active Cohorts Ratio */}
+            <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
+              <div>
+                <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400 block mb-1">
+                  {language === 'ar' ? 'نسبة الأفواج النشطة' : language === 'fr' ? 'Ratio de cohortes' : 'Active Cohorts Ratio'}
+                </span>
+                <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
+                  ↗ 100%
+                </span>
               </div>
-            )}
-          </div>
+              <div className="mt-3">
+                <span className="text-[22px] font-bold text-neutral-900 dark:text-white tabular-nums tracking-tight">
+                  {eduCohorts.length}
+                </span>
+                <span className="text-xs text-neutral-400 tabular-nums ml-1">
+                  / {eduCohorts.length} {language === 'ar' ? 'دفعات دراسية' : 'batches'}
+                </span>
+              </div>
+            </div>
 
-          {/* Export CSV Button */}
-          <AtriumButton
-            type="button"
-            variant="secondary"
-            size="sm"
-            icon={<Download size={14} />}
-            onClick={handleExportCSV}
-            title="Export CSV"
-          >
-            <span className="hidden sm:inline">CSV</span>
-          </AtriumButton>
+            {/* Inset White Card 2: Seat Occupancy Rate */}
+            <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
+              <div>
+                <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400 block mb-1">
+                  {language === 'ar' ? 'نسبة امتلاء المقاعد' : language === 'fr' ? 'Taux de remplissage' : 'Seat Fill Rate'}
+                </span>
+                <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
+                  {t('edu_seats_filled', { enrolled: String(totalEnrolled), capacity: String(totalSeats) })}
+                </span>
+              </div>
+              <div className="mt-3">
+                <span className="text-[22px] font-bold text-neutral-900 dark:text-white tabular-nums tracking-tight">
+                  {globalOccupancy}%
+                </span>
+                <span className="text-xs text-neutral-400 ml-1">
+                  {totalEnrolled} / {totalSeats} {language === 'ar' ? 'مقعد' : 'seats'}
+                </span>
+              </div>
+            </div>
 
-          {/* Seed Demo Data Button */}
-          <AtriumButton
-            type="button"
-            variant="outline"
-            size="sm"
-            icon={<Sparkles size={14} />}
-            onClick={resetEduMockData}
-            title={language === 'ar' ? 'إعادة شحن بيانات تجريبية' : language === 'fr' ? 'Recharger Données Démo' : 'Seed Mock Data'}
-          >
-            <span className="hidden sm:inline">{language === 'ar' ? 'بيانات تجريبية' : language === 'fr' ? 'Données Démo' : 'Demo Data'}</span>
-          </AtriumButton>
-
-          <AtriumButton
-            type="button"
-            variant="primary"
-            size="sm"
-            glow
-            icon={<Plus size={14} />}
-            onClick={() => setIsAddCohortModalOpen(true)}
-          >
-            {t('edu_modal_add_cohort')}
-          </AtriumButton>
-        </div>
-      </div>
-
-      {/* Batch Selection Toolbar */}
-      {selectedCohortIds.size > 0 && (
-        <div className="flex items-center justify-between p-3 px-4 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 animate-in fade-in slide-in-from-top-2">
-          <div className="flex items-center gap-3">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#C4785A] animate-pulse" />
-            <span className="text-xs font-bold text-neutral-900 dark:text-white">
-              {selectedCohortIds.size} {language === 'ar' ? 'أفواج محددة' : language === 'fr' ? 'cohortes sélectionnées' : 'cohortes selected'}
-            </span>
-          </div>
-          <div className="flex items-center gap-2 flex-wrap">
-            <button
-              onClick={() => setSelectedCohortIds(new Set())}
-              className="px-3 py-1.5 text-xs text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white font-medium cursor-pointer"
-            >
-              {language === 'ar' ? 'إلغاء التحديد' : language === 'fr' ? 'Désélectionner' : 'Deselect'}
-            </button>
-            <button
-              onClick={handleBatchStart}
-              className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
-            >
-              <Play size={13} />
-              <span>{language === 'ar' ? 'بدء الدراسة' : language === 'fr' ? 'Lancer' : 'Start Term'}</span>
-            </button>
-            <button
-              onClick={handleBatchComplete}
-              className="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
-            >
-              <CheckCircle2 size={13} />
-              <span>{language === 'ar' ? 'اختتام الدورة' : language === 'fr' ? 'Clôturer' : 'Complete'}</span>
-            </button>
-            <button
-              onClick={handleBatchDelete}
-              className="px-3.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
-            >
-              <Trash2 size={13} />
-              <span>{language === 'ar' ? 'حذف المحدد' : language === 'fr' ? 'Supprimer' : 'Delete'}</span>
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* KPI Overview Strip */}
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-        <div className="p-4 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-900/40 border border-[#EDF1F3] dark:border-neutral-800">
-          <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400 block mb-1">
-            {t('edu_kpi_active_cohorts')}
-          </span>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-extrabold text-neutral-900 dark:text-white tabular-nums">
-              {eduCohorts.length}
-            </span>
-            <span className="text-xs text-neutral-500">running terms</span>
+            {/* Inset Card 3: DARK ESPRESSO CARD (#1F1D1B) — Total Cohort Tuition Value */}
+            <div className="bg-[#1F1D1B] rounded-[18px] p-4 lg:p-5 border border-neutral-800 shadow-sm flex flex-col justify-between text-white">
+              <div>
+                <span className="text-[11px] font-medium text-neutral-400 block mb-1">
+                  {language === 'ar' ? 'القيمة الإجمالية للدورات' : language === 'fr' ? 'Valeur Financière Cohortes' : 'Cohort Tuition Value'}
+                </span>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30 inline-block">
+                  {language === 'ar' ? 'إجمالي مستحقات الدورة' : language === 'fr' ? 'Chiffre d\'Affaires Engagé' : 'Contracted Intake'}
+                </span>
+              </div>
+              <div className="mt-3">
+                <span className="text-[22px] font-bold text-white tabular-nums tracking-tight">
+                  {formatMoney(totalCohortValue)}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-900/40 border border-[#EDF1F3] dark:border-neutral-800">
-          <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400 block mb-1">
-            Seat Occupancy Rate
-          </span>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-extrabold text-[#C4785A] tabular-nums">
-              {globalOccupancy}%
-            </span>
-            <span className="text-xs text-neutral-500">
-              {t('edu_seats_filled', { enrolled: String(totalEnrolled), capacity: String(totalSeats) })}
-            </span>
+        {/* Bottom Collection Pod Tray (Screenshot_30: bg-[#F8F9FA], rounded-[24px], p-5) */}
+        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+          
+          {/* Integrated Toolbar */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+            {/* Title & Count Badge */}
+            <div className="flex items-center gap-2">
+              <BookOpen size={18} className="text-neutral-700 dark:text-neutral-300" />
+              <h2 className="text-sm font-bold text-neutral-900 dark:text-white">
+                {language === 'ar' ? 'الأفواج والبرامج الدراسية' : language === 'fr' ? 'Cohortes & Programmes' : 'Academic Cohorts'}
+              </h2>
+              <span className="px-2 py-0.5 text-[11px] font-bold rounded-full bg-neutral-200/70 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300">
+                {filteredCohorts.length}
+              </span>
+            </div>
+
+            {/* Right Controls: Seek + Filter Capsules + Export CSV */}
+            <div className="flex items-center gap-2.5 flex-wrap">
+              {/* Kinetic Seek Search */}
+              <Seek
+                value={searchQuery}
+                onChange={setSearchQuery}
+                placeholder={t('edu_search_cohorts_ph')}
+                shutSize={36}
+                openWidth={220}
+              />
+
+              {/* Status Filter Capsules */}
+              <div className="flex items-center gap-1 p-1 bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 shadow-2xs">
+                {[
+                  { id: 'All', label: t('edu_filter_all_programs') },
+                  { id: 'Language', label: 'Languages' },
+                  { id: 'Technology', label: 'Tech & Code' },
+                  { id: 'Academic', label: 'Academic' },
+                  { id: 'Arts', label: 'Arts' },
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setCategoryFilter(tab.id as CourseCat)}
+                    className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-colors whitespace-nowrap cursor-pointer ${
+                      categoryFilter === tab.id
+                        ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A]'
+                        : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Export CSV Button */}
+              <button
+                type="button"
+                onClick={handleExportCSV}
+                className="h-9 px-3 bg-white hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold rounded-xl transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer"
+                title="Export CSV"
+              >
+                <Download size={13} />
+                <span className="hidden sm:inline">CSV</span>
+              </button>
+            </div>
           </div>
-        </div>
-
-        <div className="p-4 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-900/40 border border-[#EDF1F3] dark:border-neutral-800">
-          <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400 block mb-1">
-            {t('edu_kpi_total_students')}
-          </span>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-extrabold text-neutral-900 dark:text-white tabular-nums">
-              {totalEnrolled}
-            </span>
-            <span className="text-xs text-emerald-600 dark:text-emerald-400">in cohorts</span>
-          </div>
-        </div>
-
-        <div className="p-4 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-900/40 border border-[#EDF1F3] dark:border-neutral-800">
-          <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400 block mb-1">
-            Course Catalog
-          </span>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-extrabold text-neutral-900 dark:text-white tabular-nums">
-              {eduCourses.length}
-            </span>
-            <span className="text-xs text-neutral-500">accredited curricula</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Search & Segmented Category Filter Bar */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-        <Seek
-          value={searchQuery}
-          onChange={setSearchQuery}
-          placeholder={t('edu_search_cohorts_ph')}
-          shutSize={36}
-          openWidth={260}
-        />
-
-        <div className="flex items-center gap-1 p-1 bg-neutral-100 dark:bg-neutral-800/80 rounded-xl self-start sm:self-auto overflow-x-auto">
-          {[
-            { id: 'All', label: t('edu_filter_all_programs') },
-            { id: 'Language', label: 'Languages' },
-            { id: 'Technology', label: 'Technology & Code' },
-            { id: 'Academic', label: 'Academic & BAC' },
-            { id: 'Arts', label: 'Arts & Music' },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => setCategoryFilter(tab.id as CourseCat)}
-              className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors whitespace-nowrap cursor-pointer ${
-                categoryFilter === tab.id
-                  ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-2xs font-semibold'
-                  : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-      </div>
 
       {/* Universal Collection (List view & Grid view with 6-button corner-fan) */}
       <UniversalDataCollection<EduCohort>
@@ -748,6 +785,8 @@ export const EducationCohortsView: React.FC = () => {
         primaryActionLabel={t('edu_modal_add_cohort')}
         onAddFirstItem={() => setIsAddCohortModalOpen(true)}
       />
+        </div>
+      </div>
 
       {/* 360° Cohort Slide-over Drawer */}
       {selectedCohort && (

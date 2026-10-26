@@ -479,374 +479,434 @@ export const EducationAttendanceView: React.FC = () => {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
-      {/* Top Header Row matching other category screens */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-neutral-200 dark:border-neutral-800">
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white">
-              {t('edu_attendance_title')}
-            </h1>
-            <span className="text-xs text-neutral-500 dark:text-neutral-400">
-              {activeCohort?.name || t('edu_label_cohort')} · {t('edu_learners_count', { count: String(cohortStudents.length) })}
-            </span>
+      {/* Outer Rounded Workspace Panel (WPF Spec: CornerRadius 28px, 1px CardBorderBrush) */}
+      <div className="bg-white dark:bg-[#18181B] rounded-[28px] border border-[#E9EEF0] dark:border-neutral-800 p-6 lg:p-8 space-y-6 shadow-xs">
+        
+        {/* Row 0 — Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
+          <div className="flex items-center gap-3.5">
+            <div className="w-11 h-11 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#C4785A]">
+              <Award size={22} />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-900 dark:text-white">
+                  {t('edu_attendance_title')}
+                </h1>
+                <span className="text-xs text-neutral-500 dark:text-neutral-400">
+                  {activeCohort?.name || t('edu_label_cohort')} · {t('edu_learners_count', { count: String(cohortStudents.length) })}
+                </span>
+              </div>
+              <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
+                {t('edu_attendance_subtitle')}
+              </p>
+            </div>
           </div>
-          <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
-            {t('edu_attendance_subtitle')}
-          </p>
-        </div>
 
-        {/* Action Station */}
-        <div className="flex items-center gap-2.5 flex-wrap">
-          {/* Facility / Vertical Switcher Dropdown */}
-          <div className="relative">
+          <div className="flex items-center gap-2.5 flex-wrap self-start sm:self-auto">
+            {/* Facility Pill: Atrium 1 ▾ */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setIsFacilityDropdownOpen(!isFacilityDropdownOpen)}
+                className="h-10 px-4 rounded-xl bg-[#F4EFEA] dark:bg-neutral-800/80 border border-[#E8DFD8] dark:border-neutral-700 flex items-center gap-2 cursor-pointer hover:bg-[#EFE8E1] dark:hover:bg-neutral-800 transition-colors shadow-2xs"
+              >
+                <Building2 size={15} className="text-[#C4785A]" />
+                <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
+                  {currentBranch?.name || 'Campus 1'}
+                </span>
+                <ChevronDown
+                  size={14}
+                  className={`text-neutral-500 transition-transform ${
+                    isFacilityDropdownOpen ? 'rotate-180' : ''
+                  }`}
+                />
+              </button>
+
+              {/* Facility Dropdown Menu */}
+              {isFacilityDropdownOpen && (
+                <div className="absolute right-0 rtl:right-auto rtl:left-0 mt-2 w-64 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
+                  <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+                    {language === 'ar' ? 'الفروع والمراكز التعليمية' : language === 'fr' ? 'Centres & Campus' : 'Campuses & Branches'}
+                  </div>
+                  {businesses.map((biz) => {
+                    const isCurrent = biz.id === currentBusinessId;
+                    const matchingBranch = branches.find((b) => b.businessId === biz.id);
+                    return (
+                      <button
+                        key={biz.id}
+                        type="button"
+                        onClick={() => {
+                          switchBusiness(biz.id);
+                          if (matchingBranch) switchBranch(matchingBranch.id);
+                          setIsFacilityDropdownOpen(false);
+                        }}
+                        className={`w-full px-3 py-2 text-left rtl:text-right flex items-center justify-between text-xs transition-colors cursor-pointer ${
+                          isCurrent
+                            ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold'
+                            : 'text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 min-w-0">
+                          <Building2 size={14} className={isCurrent ? 'text-[#C4785A]' : 'text-neutral-400'} />
+                          <span className="truncate">{biz.name}</span>
+                        </div>
+                        {isCurrent && <Check size={14} />}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Seed Demo Data Button */}
             <button
               type="button"
-              onClick={() => setIsFacilityDropdownOpen(!isFacilityDropdownOpen)}
-              className="h-10 px-3.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 text-xs font-semibold flex items-center gap-2 hover:bg-neutral-50 dark:hover:bg-neutral-700/60 transition-colors cursor-pointer shadow-2xs"
+              onClick={resetEduMockData}
+              className="h-10 px-3.5 bg-[#FCEEE8] dark:bg-neutral-800 hover:bg-[#F8DFD4] dark:hover:bg-neutral-700 text-[#C4785A] text-xs font-semibold rounded-xl transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer"
+              title={language === 'ar' ? 'إعادة شحن بيانات تجريبية' : language === 'fr' ? 'Recharger Données Démo' : 'Seed Mock Data'}
             >
-              <Building2 size={14} className="text-[#C4785A]" />
-              <span className="truncate max-w-[130px] sm:max-w-[170px]">
-                {currentBusiness?.displayName || 'Atlas Academy'}
-              </span>
-              <ChevronDown size={13} className="text-neutral-400" />
+              <Sparkles size={14} />
+              <span className="hidden sm:inline">{language === 'ar' ? 'بيانات تجريبية' : language === 'fr' ? 'Données Démo' : 'Demo Data'}</span>
             </button>
 
-            {isFacilityDropdownOpen && (
-              <div className={`absolute ${isRtl ? 'left-0' : 'right-0'} mt-2 w-64 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150`}>
-                <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
-                  {t('topbar_fast_switch')}
-                </div>
-                {businesses.map((biz) => {
-                  const isCurrent = biz.id === currentBusinessId;
-                  const matchingBranch = branches.find((b) => b.businessId === biz.id);
-                  return (
-                    <button
-                      key={biz.id}
-                      type="button"
-                      onClick={() => {
-                        switchBusiness(biz.id);
-                        if (matchingBranch) switchBranch(matchingBranch.id);
-                        setIsFacilityDropdownOpen(false);
-                      }}
-                      className={`w-full px-3 py-2 text-left rtl:text-right flex items-center justify-between text-xs transition-colors cursor-pointer ${
-                        isCurrent
-                          ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold'
-                          : 'text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2 min-w-0">
-                        <Building2 size={14} className={isCurrent ? 'text-[#C4785A]' : 'text-neutral-400'} />
-                        <span className="truncate">{biz.displayName || biz.name}</span>
-                      </div>
-                      {isCurrent && <Check size={14} />}
-                    </button>
-                  );
-                })}
-              </div>
+            {activeTab === 'attendance' ? (
+              <AtriumButton
+                variant="primary"
+                onClick={() => setIsRollCallOpen(true)}
+                icon={<CheckCircle2 size={15} />}
+              >
+                {t('edu_btn_roll_call')}
+              </AtriumButton>
+            ) : (
+              <AtriumButton
+                variant="primary"
+                onClick={() => {
+                  setGradeForm((prev) => ({
+                    ...prev,
+                    studentId: cohortStudents[0]?.id || '',
+                  }));
+                  setIsGradeModalOpen(true);
+                }}
+                icon={<Plus size={14} />}
+              >
+                {t('edu_btn_record_grade')}
+              </AtriumButton>
             )}
           </div>
+        </div>
 
-          {/* Demo Data Button */}
-          <AtriumButton
-            variant="outline"
-            size="sm"
-            icon={<Sparkles size={14} className="text-[#C4785A]" />}
-            onClick={() => {
-              resetEduMockData();
-              showToast({
-                type: 'success',
-                title: 'Demo Data Recharged',
-                message: 'All Education cohorts, students, sessions, and attendance metrics refreshed.',
-              });
-            }}
-            title="Reload realistic Algerian academy demo data"
-          >
-            <span className="hidden sm:inline">Demo Data</span>
-          </AtriumButton>
+        {/* Top Metrics Pod Tray (Screenshot_30: bg-[#F8F9FA], rounded-[24px], p-5) */}
+        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-3">
+          <div>
+            <h3 className="text-xs font-bold text-neutral-900 dark:text-white tracking-tight">
+              {language === 'ar' ? 'مؤشرات الحضور والانضباط الأكاديمي' : language === 'fr' ? 'Assiduité & Santé Pédagogique' : 'Attendance Telemetry & Academic Health'}
+            </h3>
+            <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+              {language === 'ar' ? 'نسب الحضور الفعلي ومتوسط التحصيل العلمي للفوج' : language === 'fr' ? 'Taux de présence vérifiés et moyenne générale' : 'Verified attendance rate and weighted academic performance'}
+            </p>
+          </div>
 
-          {/* CSV Export Button */}
-          <AtriumButton
-            variant="outline"
-            size="sm"
-            icon={<Download size={14} />}
-            onClick={handleExportCSV}
-          >
-            <span className="hidden sm:inline">{t('common_export_csv') || 'Export CSV'}</span>
-          </AtriumButton>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Inset White Card 1: Cohort Attendance Rate */}
+            <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
+              <div>
+                <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400 block mb-1">
+                  {t('edu_kpi_cohort_att_rate')}
+                </span>
+                <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
+                  {t('edu_verified_rate')}
+                </span>
+              </div>
+              <div className="mt-3">
+                <span className="text-[22px] font-bold text-neutral-900 dark:text-white tabular-nums tracking-tight">
+                  {cohortAttRate}%
+                </span>
+                <span className="text-xs text-neutral-400 tabular-nums ml-1">
+                  attendance fidelity
+                </span>
+              </div>
+            </div>
 
-          <FilterSelect
-            label={t('edu_label_cohort')}
-            value={selectedCohortId}
-            onChange={(val) => setSelectedCohortId(typeof val === 'string' ? val : val.target?.value || val)}
-            options={eduCohorts.map((c) => ({
-              value: c.id,
-              label: `${c.name} (${c.cohortCode || c.courseTitle})`,
-            }))}
-          />
+            {/* Inset White Card 2: Active Roster */}
+            <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
+              <div>
+                <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400 block mb-1">
+                  {t('edu_kpi_active_roster')}
+                </span>
+                <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300">
+                  {activeCohort?.scheduleSummary || 'Regular session'}
+                </span>
+              </div>
+              <div className="mt-3">
+                <span className="text-[22px] font-bold text-neutral-900 dark:text-white tabular-nums tracking-tight">
+                  {cohortStudents.length}
+                </span>
+                <span className="text-xs text-neutral-400 ml-1">
+                  {t('edu_seats_of', { count: String(activeCohort?.maxStudents || 20) })}
+                </span>
+              </div>
+            </div>
 
+            {/* Inset Card 3: DARK ESPRESSO CARD (#1F1D1B) — Academic Performance */}
+            <div className="bg-[#1F1D1B] rounded-[18px] p-4 lg:p-5 border border-neutral-800 shadow-sm flex flex-col justify-between text-white">
+              <div>
+                <span className="text-[11px] font-medium text-neutral-400 block mb-1">
+                  {t('edu_kpi_academic_perf')}
+                </span>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30 inline-block">
+                  {t('edu_avg_weighted')}
+                </span>
+              </div>
+              <div className="mt-3">
+                <span className="text-[22px] font-bold text-white tabular-nums tracking-tight">
+                  {avgGrade}%
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Multi-Select Batch Action Toolbar for Attendance */}
+        {selectedStudentIds.size > 0 && activeTab === 'attendance' && (
+          <div className="p-3 px-4 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 flex items-center justify-between gap-3 flex-wrap animate-in slide-in-from-top-2 duration-150">
+            <div className="flex items-center gap-2">
+              <span className="w-6 h-6 rounded-full bg-[#C4785A] text-white text-xs font-bold flex items-center justify-center">
+                {selectedStudentIds.size}
+              </span>
+              <span className="text-xs font-semibold text-neutral-900 dark:text-white">
+                {selectedStudentIds.size} {selectedStudentIds.size === 1 ? 'student' : 'students'} selected
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2 flex-wrap">
+              <button
+                type="button"
+                onClick={() => handleBatchMarkStatus('Present')}
+                className="px-3 py-1.5 rounded-xl bg-emerald-600 text-white text-xs font-semibold flex items-center gap-1.5 hover:bg-emerald-700 transition-colors cursor-pointer"
+              >
+                <CheckCircle2 size={13} />
+                <span>Mark Present</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleBatchMarkStatus('Late')}
+                className="px-3 py-1.5 rounded-xl bg-amber-600 text-white text-xs font-semibold flex items-center gap-1.5 hover:bg-amber-700 transition-colors cursor-pointer"
+              >
+                <Clock size={13} />
+                <span>Mark Late</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleBatchMarkStatus('Absent')}
+                className="px-3 py-1.5 rounded-xl bg-rose-600 text-white text-xs font-semibold flex items-center gap-1.5 hover:bg-rose-700 transition-colors cursor-pointer"
+              >
+                <XCircle size={13} />
+                <span>Mark Absent</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setSelectedStudentIds(new Set())}
+                className="px-3 py-1.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-semibold hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
+              >
+                Deselect All
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Bottom Collection Pod Tray (Screenshot_30: bg-[#F8F9FA], rounded-[24px], p-5) */}
+        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+          
+          {/* Integrated Toolbar */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+            {/* Title & Mode Switcher */}
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <Users size={18} className="text-neutral-700 dark:text-neutral-300" />
+                <h2 className="text-sm font-bold text-neutral-900 dark:text-white">
+                  {activeTab === 'attendance' ? t('edu_tab_rollcall') : t('edu_tab_gradebook')}
+                </h2>
+                <span className="px-2 py-0.5 text-[11px] font-bold rounded-full bg-neutral-200/70 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300">
+                  {filteredCohortStudents.length}
+                </span>
+              </div>
+
+              {/* Mode Switcher Tabs */}
+              <div className="flex items-center gap-1 p-1 bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 shadow-2xs">
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('attendance')}
+                  className={`px-3 py-1 text-xs font-semibold rounded-lg transition-colors cursor-pointer ${
+                    activeTab === 'attendance'
+                      ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A]'
+                      : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
+                  }`}
+                >
+                  {t('edu_tab_rollcall')}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('gradebook')}
+                  className={`px-3 py-1 text-xs font-semibold rounded-lg transition-colors cursor-pointer ${
+                    activeTab === 'gradebook'
+                      ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A]'
+                      : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
+                  }`}
+                >
+                  {t('edu_tab_gradebook')}
+                </button>
+              </div>
+            </div>
+
+            {/* Right Controls: Cohort Select + Seek + Export CSV */}
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <div className="w-52">
+                <FilterSelect
+                  label=""
+                  value={selectedCohortId}
+                  onChange={(val) => setSelectedCohortId(typeof val === 'string' ? val : val.target?.value || val)}
+                  options={eduCohorts.map((c) => ({
+                    value: c.id,
+                    label: `${c.name} (${c.cohortCode || c.courseTitle})`,
+                  }))}
+                />
+              </div>
+
+              {/* Kinetic Seek Search */}
+              <Seek
+                value={searchQuery}
+                onChange={setSearchQuery}
+                placeholder={t('edu_search_in_cohort')}
+                shutSize={36}
+                openWidth={200}
+              />
+
+              {/* Export CSV Button */}
+              <button
+                type="button"
+                onClick={handleExportCSV}
+                className="h-9 px-3 bg-white hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold rounded-xl transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer"
+                title="Export CSV"
+              >
+                <Download size={13} />
+                <span className="hidden sm:inline">CSV</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Content Section: UniversalDataCollection for Attendance */}
           {activeTab === 'attendance' ? (
-            <AtriumButton
-              variant="primary"
-              size="sm"
-              glow
-              icon={<CheckCircle2 size={15} />}
-              onClick={() => setIsRollCallOpen(true)}
-            >
-              {t('edu_btn_roll_call')}
-            </AtriumButton>
+            <UniversalDataCollection<EduStudent>
+              items={filteredCohortStudents}
+              columns={studentColumns}
+              renderCard={renderStudentCard}
+              keyExtractor={(st) => st.id}
+              defaultViewMode="list"
+              isPinned={(st) => pinnedStudentIds.has(st.id)}
+              onTogglePin={togglePinStudent}
+              selectedIds={selectedStudentIds}
+              onSelectionChange={setSelectedStudentIds}
+              emptyTitle="No learners in cohort"
+              emptyDescription="No student records match the search criteria for this cohort"
+              primaryActionLabel={t('edu_btn_roll_call')}
+              onAddFirstItem={() => setIsRollCallOpen(true)}
+            />
           ) : (
-            <AtriumButton
-              variant="primary"
-              size="sm"
-              glow
-              icon={<Plus size={14} />}
-              onClick={() => {
-                setGradeForm((prev) => ({
-                  ...prev,
-                  studentId: cohortStudents[0]?.id || '',
-                }));
-                setIsGradeModalOpen(true);
-              }}
-            >
-              {t('edu_btn_record_grade')}
-            </AtriumButton>
+            /* Mode: Gradebook Matrix */
+            <div className="overflow-hidden rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/60 shadow-2xs">
+              <table className="w-full text-left rtl:text-right border-collapse text-xs">
+                <thead>
+                  <tr className="border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/50 text-[11px] font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
+                    <th className="py-3.5 px-4">{t('edu_col_student')}</th>
+                    {assessmentTitles.map((title) => (
+                      <th key={title} className="py-3.5 px-4">
+                        {title}
+                      </th>
+                    ))}
+                    <th className="py-3.5 px-4">{t('edu_avg_weighted')}</th>
+                    <th className="py-3.5 px-4 text-right rtl:text-left">{t('edu_col_actions')}</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800/80">
+                  {cohortStudents.map((st) => {
+                    const studentGrades = cohortGrades.filter((g) => g.studentId === st.id);
+                    const totalScore = studentGrades.reduce(
+                      (acc, g) => acc + (g.score / g.maxScore) * 100,
+                      0
+                    );
+                    const avgScore =
+                      studentGrades.length > 0 ? Math.round(totalScore / studentGrades.length) : 0;
+
+                    return (
+                      <tr
+                        key={st.id}
+                        className="hover:bg-neutral-50 dark:hover:bg-neutral-800/40 transition-colors"
+                      >
+                        <td className="py-3.5 px-4">
+                          <div className="font-semibold text-neutral-900 dark:text-white">
+                            {st.fullName}
+                          </div>
+                          <div className="text-[10px] text-neutral-400">{st.schoolGrade || 'Standard'}</div>
+                        </td>
+
+                        {assessmentTitles.map((title) => {
+                          const grade = studentGrades.find((g) => g.assessmentTitle === title);
+                          return (
+                            <td key={title} className="py-3.5 px-4 tabular-nums">
+                              {grade ? (
+                                <span className="font-semibold text-neutral-900 dark:text-white">
+                                  {grade.score} / {grade.maxScore}
+                                </span>
+                              ) : (
+                                <span className="text-neutral-400">—</span>
+                              )}
+                            </td>
+                          );
+                        })}
+
+                        <td className="py-3.5 px-4">
+                          {studentGrades.length > 0 ? (
+                            <span
+                              className={`font-bold tabular-nums text-xs ${
+                                avgScore >= 80
+                                  ? 'text-emerald-600 dark:text-emerald-400'
+                                  : avgScore >= 60
+                                  ? 'text-amber-600 dark:text-amber-400'
+                                  : 'text-rose-600 dark:text-rose-400'
+                              }`}
+                            >
+                              {avgScore}%
+                            </span>
+                          ) : (
+                            <span className="text-neutral-400 italic">—</span>
+                          )}
+                        </td>
+
+                        <td className="py-3.5 px-4 text-right rtl:text-left">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setGradeForm((prev) => ({
+                                ...prev,
+                                studentId: st.id,
+                              }));
+                              setIsGradeModalOpen(true);
+                            }}
+                            className="px-2.5 py-1.5 rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-[#C4785A] hover:text-white text-neutral-700 dark:text-neutral-300 text-xs font-semibold transition-colors cursor-pointer"
+                          >
+                            {t('edu_btn_record_grade')}
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
       </div>
-
-      {/* KPI Overview Strip */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="p-4 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-900/40 border border-[#EDF1F3] dark:border-neutral-800">
-          <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400 block mb-1">
-            {t('edu_kpi_cohort_att_rate')}
-          </span>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-extrabold text-neutral-900 dark:text-white tabular-nums">
-              {cohortAttRate}%
-            </span>
-            <span className="text-xs text-emerald-600 dark:text-emerald-400">{t('edu_verified_rate')}</span>
-          </div>
-        </div>
-
-        <div className="p-4 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-900/40 border border-[#EDF1F3] dark:border-neutral-800">
-          <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400 block mb-1">
-            {t('edu_kpi_active_roster')}
-          </span>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-extrabold text-neutral-900 dark:text-white tabular-nums">
-              {cohortStudents.length}
-            </span>
-            <span className="text-xs text-neutral-500">{t('edu_seats_of', { count: String(activeCohort?.maxStudents || 20) })}</span>
-          </div>
-        </div>
-
-        <div className="p-4 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-900/40 border border-[#EDF1F3] dark:border-neutral-800">
-          <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400 block mb-1">
-            {t('edu_kpi_academic_perf')}
-          </span>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-extrabold text-[#C4785A] tabular-nums">
-              {avgGrade}%
-            </span>
-            <span className="text-xs text-neutral-500">{t('edu_avg_weighted')}</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Segmented Mode Switcher & Search Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div className="flex items-center gap-1 p-1 bg-neutral-100 dark:bg-neutral-800/80 rounded-xl self-start overflow-x-auto">
-          <button
-            type="button"
-            onClick={() => setActiveTab('attendance')}
-            className={`px-4 py-2 text-xs font-medium rounded-lg transition-colors cursor-pointer ${
-              activeTab === 'attendance'
-                ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-2xs font-semibold'
-                : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
-            }`}
-          >
-            {t('edu_tab_rollcall')}
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab('gradebook')}
-            className={`px-4 py-2 text-xs font-medium rounded-lg transition-colors cursor-pointer ${
-              activeTab === 'gradebook'
-                ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-2xs font-semibold'
-                : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
-            }`}
-          >
-            {t('edu_tab_gradebook')}
-          </button>
-        </div>
-
-        <div className="w-full sm:w-72">
-          <Seek
-            value={searchQuery}
-            onChange={setSearchQuery}
-            placeholder={t('edu_search_in_cohort')}
-          />
-        </div>
-      </div>
-
-      {/* Multi-Select Batch Action Toolbar for Attendance */}
-      {selectedStudentIds.size > 0 && activeTab === 'attendance' && (
-        <div className="sticky top-2 z-40 p-3 rounded-2xl bg-white dark:bg-neutral-900 border border-[#C4785A]/40 shadow-xl flex items-center justify-between gap-3 flex-wrap animate-in slide-in-from-top-2 duration-150">
-          <div className="flex items-center gap-2">
-            <span className="w-6 h-6 rounded-full bg-[#C4785A] text-white text-xs font-bold flex items-center justify-center">
-              {selectedStudentIds.size}
-            </span>
-            <span className="text-xs font-semibold text-neutral-900 dark:text-white">
-              {selectedStudentIds.size} {selectedStudentIds.size === 1 ? 'student' : 'students'} selected
-            </span>
-          </div>
-
-          <div className="flex items-center gap-2 flex-wrap">
-            <button
-              type="button"
-              onClick={() => handleBatchMarkStatus('Present')}
-              className="px-3 py-1.5 rounded-xl bg-emerald-600 text-white text-xs font-semibold flex items-center gap-1.5 hover:bg-emerald-700 transition-colors cursor-pointer"
-            >
-              <CheckCircle2 size={13} />
-              <span>Mark Present</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => handleBatchMarkStatus('Late')}
-              className="px-3 py-1.5 rounded-xl bg-amber-600 text-white text-xs font-semibold flex items-center gap-1.5 hover:bg-amber-700 transition-colors cursor-pointer"
-            >
-              <Clock size={13} />
-              <span>Mark Late</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => handleBatchMarkStatus('Absent')}
-              className="px-3 py-1.5 rounded-xl bg-rose-600 text-white text-xs font-semibold flex items-center gap-1.5 hover:bg-rose-700 transition-colors cursor-pointer"
-            >
-              <XCircle size={13} />
-              <span>Mark Absent</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setSelectedStudentIds(new Set())}
-              className="px-3 py-1.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-semibold hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
-            >
-              Deselect All
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Content Section: UniversalDataCollection for Attendance */}
-      {activeTab === 'attendance' ? (
-        <UniversalDataCollection<EduStudent>
-          items={filteredCohortStudents}
-          columns={studentColumns}
-          renderCard={renderStudentCard}
-          keyExtractor={(st) => st.id}
-          defaultViewMode="list"
-          isPinned={(st) => pinnedStudentIds.has(st.id)}
-          onTogglePin={togglePinStudent}
-          selectedIds={selectedStudentIds}
-          onSelectionChange={setSelectedStudentIds}
-          emptyTitle="No learners in cohort"
-          emptyDescription="No student records match the search criteria for this cohort"
-          primaryActionLabel={t('edu_btn_roll_call')}
-          onAddFirstItem={() => setIsRollCallOpen(true)}
-        />
-      ) : (
-        /* Mode: Gradebook Matrix */
-        <div className="overflow-hidden rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/60 shadow-2xs">
-          <table className="w-full text-left rtl:text-right border-collapse text-xs">
-            <thead>
-              <tr className="border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/50 text-[11px] font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
-                <th className="py-3.5 px-4">{t('edu_col_student')}</th>
-                {assessmentTitles.map((title) => (
-                  <th key={title} className="py-3.5 px-4">
-                    {title}
-                  </th>
-                ))}
-                <th className="py-3.5 px-4">{t('edu_avg_weighted')}</th>
-                <th className="py-3.5 px-4 text-right rtl:text-left">{t('edu_col_actions')}</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800/80">
-              {cohortStudents.map((st) => {
-                const studentGrades = cohortGrades.filter((g) => g.studentId === st.id);
-                const totalScore = studentGrades.reduce(
-                  (acc, g) => acc + (g.score / g.maxScore) * 100,
-                  0
-                );
-                const avgScore =
-                  studentGrades.length > 0 ? Math.round(totalScore / studentGrades.length) : 0;
-
-                return (
-                  <tr
-                    key={st.id}
-                    className="hover:bg-neutral-50 dark:hover:bg-neutral-800/40 transition-colors"
-                  >
-                    <td className="py-3.5 px-4">
-                      <div className="font-semibold text-neutral-900 dark:text-white">
-                        {st.fullName}
-                      </div>
-                      <div className="text-[10px] text-neutral-400">{st.schoolGrade || 'Standard'}</div>
-                    </td>
-
-                    {assessmentTitles.map((title) => {
-                      const grade = studentGrades.find((g) => g.assessmentTitle === title);
-                      return (
-                        <td key={title} className="py-3.5 px-4 tabular-nums">
-                          {grade ? (
-                            <span className="font-semibold text-neutral-900 dark:text-white">
-                              {grade.score} / {grade.maxScore}
-                            </span>
-                          ) : (
-                            <span className="text-neutral-400">—</span>
-                          )}
-                        </td>
-                      );
-                    })}
-
-                    <td className="py-3.5 px-4">
-                      {studentGrades.length > 0 ? (
-                        <span
-                          className={`font-bold tabular-nums text-xs ${
-                            avgScore >= 80
-                              ? 'text-emerald-600 dark:text-emerald-400'
-                              : avgScore >= 60
-                              ? 'text-amber-600 dark:text-amber-400'
-                              : 'text-rose-600 dark:text-rose-400'
-                          }`}
-                        >
-                          {avgScore}%
-                        </span>
-                      ) : (
-                        <span className="text-neutral-400 italic">—</span>
-                      )}
-                    </td>
-
-                    <td className="py-3.5 px-4 text-right rtl:text-left">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setGradeForm((prev) => ({
-                            ...prev,
-                            studentId: st.id,
-                          }));
-                          setIsGradeModalOpen(true);
-                        }}
-                        className="px-2.5 py-1.5 rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-[#C4785A] hover:text-white text-neutral-700 dark:text-neutral-300 text-xs font-semibold transition-colors cursor-pointer"
-                      >
-                        {t('edu_btn_record_grade')}
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      )}
 
       {/* Record Grade Modal */}
       {isGradeModalOpen && (

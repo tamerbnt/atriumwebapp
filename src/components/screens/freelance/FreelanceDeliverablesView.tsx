@@ -104,6 +104,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
 
   const currentBranch = branches.find((b) => b.id === currentBranchId);
   const [isFacilityDropdownOpen, setIsFacilityDropdownOpen] = useState(false);
+  const [isQuickActionsOpen, setIsQuickActionsOpen] = useState(false);
   const [viewLayout, setViewLayout] = useState<'kanban' | 'collection'>('kanban');
 
   // Auto-heal empty freelance deliverables safely once on mount
@@ -493,29 +494,33 @@ export const FreelanceDeliverablesView: React.FC = () => {
     }
   };
 
-  // Scope Creep calculation
+  // Scope Creep and Hours calculation
   const totalScopeCreepItems = flattenedDeliverables.filter(
     (item) => item.deliverable.loggedHours > item.deliverable.estimatedHours
   ).length;
+  const totalLoggedHours = flattenedDeliverables.reduce((acc, item) => acc + (item.deliverable.loggedHours || 0), 0);
+  const totalEstimatedHours = flattenedDeliverables.reduce((acc, item) => acc + (item.deliverable.estimatedHours || 0), 0);
+  const inProgressDeliverablesCount = flattenedDeliverables.filter((item) => item.deliverable.stage === 'InProgress').length;
+  const reviewDeliverablesCount = flattenedDeliverables.filter((item) => item.deliverable.stage === 'ClientReview').length;
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-200">
-      {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-neutral-200 dark:border-neutral-800">
+    <div className="bg-white dark:bg-[#18181B] rounded-[28px] border border-[#E9EEF0] dark:border-neutral-800 p-6 lg:p-8 space-y-6 shadow-xs animate-in fade-in duration-200">
+      {/* Row 0: Workspace Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
-          <div className="w-11 h-11 rounded-2xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-800 dark:text-neutral-200">
-            <Kanban size={22} />
+          <div className="w-12 h-12 rounded-2xl bg-[#C4785A]/10 text-[#C4785A] flex items-center justify-center shrink-0">
+            <Kanban size={24} />
           </div>
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2.5">
               <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-900 dark:text-white">
                 {t('free_deliv_title', language)}
               </h1>
-              <span className="text-xs text-neutral-500 dark:text-neutral-400">
+              <span className="text-xs px-2.5 py-1 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 font-semibold">
                 {flattenedDeliverables.length} {language === 'ar' ? 'مهام' : 'tasks'}
               </span>
               {totalScopeCreepItems > 0 && (
-                <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-400 border border-rose-200 dark:border-rose-800 flex items-center gap-1">
+                <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-400 border border-rose-200 dark:border-rose-800 flex items-center gap-1">
                   <AlertTriangle size={12} />
                   <span>{totalScopeCreepItems} {language === 'ar' ? 'تنبيه تجاوز' : language === 'fr' ? 'Dépassement' : 'Overrun'}</span>
                 </span>
@@ -528,40 +533,12 @@ export const FreelanceDeliverablesView: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2.5 flex-wrap self-start sm:self-auto">
-          {/* View Mode Toggle: Kanban vs Collection */}
-          <div className="flex items-center p-1 bg-neutral-100 dark:bg-neutral-800 rounded-full border border-neutral-200/60 dark:border-neutral-700">
-            <button
-              type="button"
-              onClick={() => setViewLayout('kanban')}
-              className={`px-3 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
-                viewLayout === 'kanban'
-                  ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-2xs'
-                  : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
-              }`}
-            >
-              <Kanban size={13} />
-              <span>{language === 'ar' ? 'لوحة كانبان' : 'Kanban'}</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setViewLayout('collection')}
-              className={`px-3 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
-                viewLayout === 'collection'
-                  ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-2xs'
-                  : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
-              }`}
-            >
-              <Layers size={13} />
-              <span>{language === 'ar' ? 'قائمة وتصنيف' : language === 'fr' ? 'Liste & Grille' : 'Collection'}</span>
-            </button>
-          </div>
-
-          {/* Facility Pill: Atrium 1 ▾ */}
+          {/* Branch Switcher */}
           <div className="relative">
             <button
               type="button"
               onClick={() => setIsFacilityDropdownOpen(!isFacilityDropdownOpen)}
-              className="h-10 px-4 rounded-full bg-[#F4EFEA] dark:bg-neutral-800/80 border border-[#E8DFD8] dark:border-neutral-700 flex items-center gap-2 cursor-pointer hover:bg-[#EFE8E1] dark:hover:bg-neutral-800 transition-colors shadow-2xs"
+              className="h-[42px] px-4 rounded-[14px] bg-[#F8F9FA] dark:bg-neutral-800 border border-[#EDF1F3] dark:border-neutral-700 flex items-center gap-2 cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors shadow-2xs"
             >
               <Home size={15} className="text-[#C4785A]" />
               <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
@@ -569,13 +546,10 @@ export const FreelanceDeliverablesView: React.FC = () => {
               </span>
               <ChevronDown
                 size={14}
-                className={`text-neutral-500 transition-transform ${
-                  isFacilityDropdownOpen ? 'rotate-180' : ''
-                }`}
+                className={`text-neutral-500 transition-transform ${isFacilityDropdownOpen ? 'rotate-180' : ''}`}
               />
             </button>
 
-            {/* Facility Dropdown Menu */}
             {isFacilityDropdownOpen && (
               <div className="absolute right-0 rtl:right-auto rtl:left-0 mt-2 w-64 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
                 <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
@@ -611,103 +585,259 @@ export const FreelanceDeliverablesView: React.FC = () => {
             )}
           </div>
 
-          {/* Export CSV Button */}
-          <AtriumButton
-            type="button"
-            variant="secondary"
-            size="sm"
-            icon={<Download size={14} />}
-            onClick={handleExportCSV}
-            title="Export CSV"
-          >
-            <span className="hidden sm:inline">CSV</span>
-          </AtriumButton>
+          {/* Quick Actions Terracotta Button + Floating Popup */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setIsQuickActionsOpen(!isQuickActionsOpen)}
+              className="h-[42px] px-5 rounded-[14px] bg-[#C4785A] hover:bg-[#B3684A] text-white font-bold text-xs flex items-center gap-2 shadow-xs cursor-pointer transition-all active:scale-95"
+            >
+              <Plus size={15} />
+              <span>{language === 'ar' ? 'إجراءات سريعة' : language === 'fr' ? 'Actions Rapides' : 'Quick Actions'}</span>
+            </button>
 
-          {/* Seed Demo Data Button */}
-          <AtriumButton
-            type="button"
-            variant="outline"
-            size="sm"
-            icon={<Sparkles size={14} />}
-            onClick={resetFreelanceMockData}
-            title={language === 'ar' ? 'إعادة شحن بيانات تجريبية' : language === 'fr' ? 'Recharger Données Démo' : 'Seed Mock Data'}
-          >
-            <span className="hidden sm:inline">{language === 'ar' ? 'بيانات تجريبية' : language === 'fr' ? 'Données Démo' : 'Demo Data'}</span>
-          </AtriumButton>
-
-          <AtriumButton
-            type="button"
-            variant="secondary"
-            size="sm"
-            icon={<Plus size={13} />}
-            onClick={() => setIsAddProjectModalOpen(true)}
-          >
-            {t('free_deliv_field_project', language)}
-          </AtriumButton>
-
-          <AtriumButton
-            type="button"
-            variant="primary"
-            size="sm"
-            glow
-            icon={<Plus size={13} />}
-            onClick={() => setIsAddDeliverableModalOpen(true)}
-          >
-            {t('free_deliv_btn_new', language)}
-          </AtriumButton>
+            {isQuickActionsOpen && (
+              <div className="absolute right-0 rtl:right-auto rtl:left-0 mt-2 w-[240px] rounded-[18px] bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 p-2.5 shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-150 space-y-1">
+                <div className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+                  {language === 'ar' ? 'إجراءات سريعة' : language === 'fr' ? 'Actions Rapides' : 'Quick Actions'}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsQuickActionsOpen(false);
+                    setIsAddDeliverableModalOpen(true);
+                  }}
+                  className="w-full h-10 px-2.5 rounded-xl hover:bg-[#F8F9FA] dark:hover:bg-neutral-700 flex items-center gap-2.5 text-xs text-neutral-800 dark:text-neutral-200 font-medium transition-colors cursor-pointer text-left rtl:text-right"
+                >
+                  <div className="w-[30px] h-[30px] rounded-lg bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center shrink-0">
+                    <Plus size={15} />
+                  </div>
+                  <span>{t('free_deliv_btn_new', language)}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsQuickActionsOpen(false);
+                    setIsAddProjectModalOpen(true);
+                  }}
+                  className="w-full h-10 px-2.5 rounded-xl hover:bg-[#F8F9FA] dark:hover:bg-neutral-700 flex items-center gap-2.5 text-xs text-neutral-800 dark:text-neutral-200 font-medium transition-colors cursor-pointer text-left rtl:text-right"
+                >
+                  <div className="w-[30px] h-[30px] rounded-lg bg-emerald-500/15 text-emerald-600 flex items-center justify-center shrink-0">
+                    <Layers size={15} />
+                  </div>
+                  <span>{t('free_deliv_field_project', language)}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsQuickActionsOpen(false);
+                    setScreen('freelance_timetracker');
+                  }}
+                  className="w-full h-10 px-2.5 rounded-xl hover:bg-[#F8F9FA] dark:hover:bg-neutral-700 flex items-center gap-2.5 text-xs text-neutral-800 dark:text-neutral-200 font-medium transition-colors cursor-pointer text-left rtl:text-right"
+                >
+                  <div className="w-[30px] h-[30px] rounded-lg bg-amber-500/15 text-amber-600 flex items-center justify-center shrink-0">
+                    <Clock size={15} />
+                  </div>
+                  <span>{language === 'ar' ? 'تشغيل الميقاتي' : language === 'fr' ? 'Lancer Minuteur' : 'Start Timer'}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsQuickActionsOpen(false);
+                    handleExportCSV();
+                  }}
+                  className="w-full h-10 px-2.5 rounded-xl hover:bg-[#F8F9FA] dark:hover:bg-neutral-700 flex items-center gap-2.5 text-xs text-neutral-800 dark:text-neutral-200 font-medium transition-colors cursor-pointer text-left rtl:text-right"
+                >
+                  <div className="w-[30px] h-[30px] rounded-lg bg-blue-500/15 text-blue-600 flex items-center justify-center shrink-0">
+                    <Download size={15} />
+                  </div>
+                  <span>{language === 'ar' ? 'تصدير CSV' : language === 'fr' ? 'Exporter CSV' : 'Export CSV'}</span>
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Batch Selection Toolbar */}
-      {selectedDeliverableIds.size > 0 && (
-        <div className="flex items-center justify-between p-3 px-4 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 animate-in fade-in slide-in-from-top-2">
-          <div className="flex items-center gap-3">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#C4785A] animate-pulse" />
-            <span className="text-xs font-bold text-neutral-900 dark:text-white">
-              {selectedDeliverableIds.size} {language === 'ar' ? 'مهام محددة' : language === 'fr' ? 'livrables sélectionnés' : 'deliverables selected'}
-            </span>
+      {/* Top Metrics Pod Tray: 3 Inset Cards including Dark Espresso Card */}
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+        <div>
+          <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+            {language === 'ar' ? 'مؤشرات إنجاز المشاريع والمهام' : language === 'fr' ? 'Indicateurs des Livrables & Projets' : 'Deliverables & Production Performance'}
+          </h2>
+          <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+            {language === 'ar' ? 'متابعة مراحل التسليم وساعات العمل المنجزة وتجاوزات الميزانية' : language === 'fr' ? 'Suivi du cycle de production, du temps passé et des alertes de dépassement' : 'Track task pipeline, tracked hours against estimates, and creep risks'}
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Card 1: Active Production Pipeline */}
+          <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
+                {language === 'ar' ? 'مهام قيد الإنجاز والمراجعة' : language === 'fr' ? 'En cours & En Révision' : 'Active Production Queue'}
+              </span>
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+                {inProgressDeliverablesCount + reviewDeliverablesCount} {language === 'ar' ? 'نشطة' : 'active'}
+              </span>
+            </div>
+            <div className="mt-3">
+              <div className="text-2xl lg:text-3xl font-black text-neutral-900 dark:text-white">
+                {flattenedDeliverables.length}
+                <span className="text-xs font-semibold text-neutral-400 ml-1.5 font-normal">
+                  / {freelanceProjects.length} {language === 'ar' ? 'مشاريع' : 'projets'}
+                </span>
+              </div>
+              <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-1">
+                {inProgressDeliverablesCount} {language === 'ar' ? 'قيد العمل' : 'en cours'} · {reviewDeliverablesCount} {language === 'ar' ? 'بانتظار العميل' : 'en revue'}
+              </p>
+            </div>
           </div>
-          <div className="flex items-center gap-2 flex-wrap">
-            <button
-              onClick={() => setSelectedDeliverableIds(new Set())}
-              className="px-3 py-1.5 text-xs text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white font-medium cursor-pointer"
-            >
-              {language === 'ar' ? 'إلغاء التحديد' : language === 'fr' ? 'Désélectionner' : 'Deselect'}
-            </button>
-            <button
-              onClick={() => handleBatchSetStage('InProgress')}
-              className="px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
-            >
-              <Clock size={12} />
-              <span>{t('free_deliv_stage_in_progress', language)}</span>
-            </button>
-            <button
-              onClick={() => handleBatchSetStage('ClientReview')}
-              className="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
-            >
-              <Layers size={12} />
-              <span>{t('free_deliv_stage_review', language)}</span>
-            </button>
-            <button
-              onClick={() => handleBatchSetStage('Approved')}
-              className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
-            >
-              <CheckCircle size={12} />
-              <span>{t('free_deliv_stage_delivered', language)}</span>
-            </button>
-            <button
-              onClick={handleBatchDeleteDeliverables}
-              className="px-3 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
-            >
-              <Trash2 size={12} />
-              <span>{language === 'ar' ? 'حذف المحدد' : language === 'fr' ? 'Supprimer' : 'Delete'}</span>
-            </button>
+
+          {/* Card 2: Tracked Hours vs Estimated */}
+          <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
+                {language === 'ar' ? 'ساعات الإنتاج المحسوبة' : language === 'fr' ? 'Heures Déployées / Estimées' : 'Production Hours Logged'}
+              </span>
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
+                {totalEstimatedHours > 0 ? Math.round((totalLoggedHours / totalEstimatedHours) * 100) : 0}% {language === 'ar' ? 'منجز' : 'utilisé'}
+              </span>
+            </div>
+            <div className="mt-3">
+              <div className="text-2xl lg:text-3xl font-black text-neutral-900 dark:text-white">
+                {totalLoggedHours}h
+                <span className="text-xs font-semibold text-neutral-400 ml-1.5 font-normal">
+                  / {totalEstimatedHours}h {language === 'ar' ? 'مقدرة' : 'est.'}
+                </span>
+              </div>
+              <div className="w-full bg-neutral-100 dark:bg-neutral-700 h-1.5 rounded-full mt-2.5 overflow-hidden">
+                <div
+                  className="bg-[#C4785A] h-full rounded-full transition-all duration-500"
+                  style={{ width: `${Math.min(100, totalEstimatedHours > 0 ? (totalLoggedHours / totalEstimatedHours) * 100 : 0)}%` }}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Card 3: DARK ESPRESSO CARD (#1F1D1B) */}
+          <div className="bg-[#1F1D1B] rounded-[18px] p-4 lg:p-5 border border-neutral-800 shadow-sm text-white flex flex-col justify-between">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-medium text-neutral-300">
+                {language === 'ar' ? 'تجاوزات النطاق والميزانية' : language === 'fr' ? 'Dépassement & Dérive Scope' : 'Scope Creep & Overruns'}
+              </span>
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30">
+                {totalScopeCreepItems > 0 ? `${totalScopeCreepItems} ${language === 'ar' ? 'تنبيهات' : 'alertes'}` : (language === 'ar' ? 'تحت السيطرة' : 'Sous Contrôle')}
+              </span>
+            </div>
+            <div className="mt-3">
+              <div className="text-2xl lg:text-3xl font-black text-[#FB923C]">
+                {totalScopeCreepItems}
+                <span className="text-xs font-normal text-neutral-400 ml-1.5">
+                  {language === 'ar' ? 'مهام متجاوزة لساعاتها' : language === 'fr' ? 'tâches en dépassement' : 'tasks over budget'}
+                </span>
+              </div>
+              <p className="text-[11px] text-neutral-400 mt-1 flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-[#FB923C] animate-pulse" />
+                {totalScopeCreepItems > 0
+                  ? (language === 'ar' ? 'يتطلب إعادة فوترة أو تسوية مع العميل' : 'Facturation additionnelle ou recadrage requis')
+                  : (language === 'ar' ? 'كافة الساعات متوافقة مع ميزانيات المشاريع' : 'Toutes les heures respectent le devis initial')}
+              </p>
+            </div>
           </div>
         </div>
-      )}
+      </div>
 
-      {/* Filter by Project Bar & Seek Search */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* Bottom Collection Pod Tray */}
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+        {/* Integrated Toolbar */}
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-3 border-b border-[#EDF1F3] dark:border-neutral-800/60">
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <div className="w-9 h-9 rounded-xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex items-center justify-center text-neutral-700 dark:text-neutral-300">
+              <Layers size={16} />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
+                  {t('free_deliv_title', language)}
+                </h3>
+                <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 text-neutral-600 dark:text-neutral-300">
+                  {flattenedDeliverables.length}
+                </span>
+              </div>
+            </div>
+
+            {/* Kanban vs Collection Switcher */}
+            <div className="flex items-center p-0.5 bg-white dark:bg-neutral-800 rounded-full border border-neutral-200/80 dark:border-neutral-700 ml-2">
+              <button
+                type="button"
+                onClick={() => setViewLayout('kanban')}
+                className={`px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+                  viewLayout === 'kanban'
+                    ? 'bg-[#C4785A] text-white shadow-2xs'
+                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
+                }`}
+              >
+                <Kanban size={12} />
+                <span>{language === 'ar' ? 'لوحة كانبان' : 'Kanban'}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewLayout('collection')}
+                className={`px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+                  viewLayout === 'collection'
+                    ? 'bg-[#C4785A] text-white shadow-2xs'
+                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
+                }`}
+              >
+                <Layers size={12} />
+                <span>{language === 'ar' ? 'قائمة وتصنيف' : language === 'fr' ? 'Liste' : 'Collection'}</span>
+              </button>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 flex-wrap">
+            <Seek
+              value={searchQuery}
+              onChange={setSearchQuery}
+              placeholder={t('free_search_deliverables_ph', language)}
+            />
+
+            <AtriumButton
+              type="button"
+              variant="secondary"
+              size="sm"
+              icon={<Download size={14} />}
+              onClick={handleExportCSV}
+              title="Export CSV"
+            >
+              <span className="hidden sm:inline">CSV</span>
+            </AtriumButton>
+
+            <AtriumButton
+              type="button"
+              variant="secondary"
+              size="sm"
+              icon={<Plus size={13} />}
+              onClick={() => setIsAddProjectModalOpen(true)}
+            >
+              {t('free_deliv_field_project', language)}
+            </AtriumButton>
+
+            <AtriumButton
+              type="button"
+              variant="primary"
+              size="sm"
+              glow
+              icon={<Plus size={13} />}
+              onClick={() => setIsAddDeliverableModalOpen(true)}
+            >
+              {t('free_deliv_btn_new', language)}
+            </AtriumButton>
+          </div>
+        </div>
+
+        {/* Project Filter Bar */}
         <div className="flex items-center gap-2 overflow-x-auto pb-1 max-w-full">
           <span className="text-xs text-neutral-400 font-medium shrink-0 flex items-center gap-1">
             <Filter size={12} />
@@ -716,10 +846,10 @@ export const FreelanceDeliverablesView: React.FC = () => {
           <button
             type="button"
             onClick={() => setSelectedProjectId('all')}
-            className={`px-3 py-1.5 text-xs font-medium rounded-lg whitespace-nowrap transition-colors cursor-pointer ${
+            className={`px-3 py-1 text-xs font-medium rounded-lg whitespace-nowrap transition-colors cursor-pointer ${
               selectedProjectId === 'all'
                 ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 shadow-2xs'
-                : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900'
+                : 'bg-white dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 border border-[#E9EEF0] dark:border-neutral-700/60'
             }`}
           >
             {t('free_deliv_all_projects', language)} ({freelanceProjects.length})
@@ -730,23 +860,16 @@ export const FreelanceDeliverablesView: React.FC = () => {
               key={project.id}
               type="button"
               onClick={() => setSelectedProjectId(project.id)}
-              className={`px-3 py-1.5 text-xs font-medium rounded-lg whitespace-nowrap transition-colors cursor-pointer ${
+              className={`px-3 py-1 text-xs font-medium rounded-lg whitespace-nowrap transition-colors cursor-pointer ${
                 selectedProjectId === project.id
                   ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 shadow-2xs'
-                  : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900'
+                  : 'bg-white dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 border border-[#E9EEF0] dark:border-neutral-700/60'
               }`}
             >
               {project.title} · <span className="opacity-75">{project.clientName}</span>
             </button>
           ))}
-        </div>
 
-        <div className="flex items-center gap-2 shrink-0">
-          <Seek
-            value={searchQuery}
-            onChange={setSearchQuery}
-            placeholder={t('free_search_deliverables_ph', language)}
-          />
           {selectedProjectId !== 'all' && (
             <button
               type="button"
@@ -754,7 +877,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
                 const targetProj = freelanceProjects.find((p) => p.id === selectedProjectId);
                 if (targetProj) setProjectToDelete(targetProj);
               }}
-              className="px-2.5 py-1.5 rounded-lg border border-rose-200 dark:border-rose-900/60 text-rose-600 dark:text-rose-400 text-xs font-semibold flex items-center gap-1 hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer shrink-0"
+              className="px-2.5 py-1 rounded-lg border border-rose-200 dark:border-rose-900/60 text-rose-600 dark:text-rose-400 text-xs font-semibold flex items-center gap-1 hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer shrink-0 ml-auto"
               title={t('common_delete', language)}
             >
               <Trash2 size={12} />
@@ -762,7 +885,54 @@ export const FreelanceDeliverablesView: React.FC = () => {
             </button>
           )}
         </div>
-      </div>
+
+        {/* Batch Selection Toolbar */}
+        {selectedDeliverableIds.size > 0 && (
+          <div className="flex items-center justify-between p-3 px-4 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 animate-in fade-in slide-in-from-top-2">
+            <div className="flex items-center gap-3">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#C4785A] animate-pulse" />
+              <span className="text-xs font-bold text-neutral-900 dark:text-white">
+                {selectedDeliverableIds.size} {language === 'ar' ? 'مهام محددة' : language === 'fr' ? 'livrables sélectionnés' : 'deliverables selected'}
+              </span>
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <button
+                onClick={() => setSelectedDeliverableIds(new Set())}
+                className="px-3 py-1.5 text-xs text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white font-medium cursor-pointer"
+              >
+                {language === 'ar' ? 'إلغاء التحديد' : language === 'fr' ? 'Désélectionner' : 'Deselect'}
+              </button>
+              <button
+                onClick={() => handleBatchSetStage('InProgress')}
+                className="px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+              >
+                <Clock size={12} />
+                <span>{t('free_deliv_stage_in_progress', language)}</span>
+              </button>
+              <button
+                onClick={() => handleBatchSetStage('ClientReview')}
+                className="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+              >
+                <Layers size={12} />
+                <span>{t('free_deliv_stage_review', language)}</span>
+              </button>
+              <button
+                onClick={() => handleBatchSetStage('Approved')}
+                className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+              >
+                <CheckCircle size={12} />
+                <span>{t('free_deliv_stage_delivered', language)}</span>
+              </button>
+              <button
+                onClick={handleBatchDeleteDeliverables}
+                className="px-3 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+              >
+                <Trash2 size={12} />
+                <span>{language === 'ar' ? 'حذف المحدد' : language === 'fr' ? 'Supprimer' : 'Delete'}</span>
+              </button>
+            </div>
+          </div>
+        )}
 
       {freelanceProjects.length === 0 ? (
         <div className="p-12 text-center rounded-3xl border border-dashed border-neutral-200 dark:border-neutral-800 bg-[#F8F9FA] dark:bg-neutral-900/40 space-y-3">
@@ -1107,6 +1277,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
         })}
       </div>
       )}
+      </div>
 
       {/* Add Deliverable Modal */}
       {isAddDeliverableModalOpen && (

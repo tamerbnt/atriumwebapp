@@ -12,7 +12,9 @@ import { CollectionKebabMenu, KebabMenuItem } from './CollectionKebabMenu';
 
 export interface ActionButtonDef {
   id: string;
-  tooltip: string;
+  tooltip?: string;
+  label?: string;
+  variant?: string;
   icon: React.ReactNode;
   iconColor?: string;
   onClick: (e: React.MouseEvent) => void;
@@ -306,7 +308,7 @@ export const CollectionListRow: React.FC<CollectionListRowProps> = ({
                 key={action.id}
                 type="button"
                 onClick={action.onClick}
-                title={action.tooltip}
+                title={action.tooltip || action.label || ''}
                 style={{
                   transform: isHovered ? 'translateY(0) scale(1)' : 'translateY(-14px) scale(0.82)',
                   opacity: isHovered ? 1 : 0,

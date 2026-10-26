@@ -1,0 +1,6 @@
+{
+  "summary":  "Comprehensive Master Desktop UI/UX Alignment Plan for Atrium ERP & CRM based on the GymHome & StaffHome WPF specifications, Screenshot_29, and Screenshot_30. Details the two-column pod layout with Dark Espresso card (#1F1D1B) for category home dashboards, the standardized UniversalDataCollection pod tray architecture for list/grid screens, exact design tokens (SurfaceBgElevated #F8F9FA, CardBackgroundBrush #FFFFFF, CornerRadius 28px/24px/18px/12px), and a phased Category-by-Category execution roadmap starting with Category 14 (Venue & Event Rentals).",
+  "updatedAt":  "2026-10-26T13:27:41.611607322Z",
+  "requestFeedback":  true,
+  "userFacing":  true
+}

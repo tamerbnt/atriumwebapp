@@ -27,6 +27,7 @@ interface BookingModalProps {
   initialUnitId?: string;
   initialDate?: string;
   initialStartTime?: string;
+  initialRenterId?: string;
 }
 
 export const BookingModal: React.FC<BookingModalProps> = ({
@@ -36,6 +37,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   initialUnitId,
   initialDate,
   initialStartTime,
+  initialRenterId,
 }) => {
   const { t, language } = useTranslation();
   const {
@@ -83,6 +85,20 @@ export const BookingModal: React.FC<BookingModalProps> = ({
       setSelectedUnitId(initialUnitId);
     }
   }, [initialUnitId]);
+
+  // Sync renter when initialRenterId changes
+  useEffect(() => {
+    if (initialRenterId) {
+      setSelectedRenterId(initialRenterId);
+      const r = rentalRenters.find((item) => item.id === initialRenterId);
+      if (r) {
+        setRenterName(r.fullName);
+        setRenterPhone(r.phone);
+        setRenterEmail(r.email || '');
+        setRenterCompany(r.companyName || '');
+      }
+    }
+  }, [initialRenterId, rentalRenters]);
 
   // Sync when bookingToEdit is passed
   useEffect(() => {

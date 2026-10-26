@@ -509,239 +509,285 @@ export const EducationStudentsView: React.FC = () => {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
-      {/* Top Header matching other category screens */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-neutral-200 dark:border-neutral-800">
-        <div className="flex items-center gap-3.5">
-          <div className="w-11 h-11 rounded-2xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-800 dark:text-neutral-200">
-            <Users size={22} />
+      {/* Outer Rounded Workspace Panel (WPF Spec: CornerRadius 28px, 1px CardBorderBrush) */}
+      <div className="bg-white dark:bg-[#18181B] rounded-[28px] border border-[#E9EEF0] dark:border-neutral-800 p-6 lg:p-8 space-y-6 shadow-xs">
+        
+        {/* Row 0 — Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
+          <div className="flex items-center gap-3.5">
+            <div className="w-11 h-11 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#C4785A]">
+              <Users size={22} />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-900 dark:text-white">
+                  {t('edu_students_title')}
+                </h1>
+                <span className="text-xs text-neutral-500 dark:text-neutral-400">
+                  {totalStudentsCount} {language === 'ar' ? 'طالب' : 'students'} · {activeMinorsCount} {language === 'ar' ? 'قاصر' : 'minors'}
+                </span>
+              </div>
+              <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
+                {t('edu_students_subtitle')}
+              </p>
+            </div>
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-900 dark:text-white">
-                {t('edu_students_title')}
-              </h1>
-              <span className="text-xs text-neutral-500 dark:text-neutral-400">
-                {totalStudentsCount} {language === 'ar' ? 'طالب' : 'students'} · {activeMinorsCount} {language === 'ar' ? 'قاصر' : 'minors'}
+
+          <div className="flex items-center gap-2.5 flex-wrap self-start sm:self-auto">
+            {/* Facility Pill: Atrium 1 ▾ */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setIsFacilityDropdownOpen(!isFacilityDropdownOpen)}
+                className="h-10 px-4 rounded-xl bg-[#F4EFEA] dark:bg-neutral-800/80 border border-[#E8DFD8] dark:border-neutral-700 flex items-center gap-2 cursor-pointer hover:bg-[#EFE8E1] dark:hover:bg-neutral-800 transition-colors shadow-2xs"
+              >
+                <Home size={15} className="text-[#C4785A]" />
+                <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
+                  {currentBranch?.name || 'Campus 1'}
+                </span>
+                <ChevronDown
+                  size={14}
+                  className={`text-neutral-500 transition-transform ${
+                    isFacilityDropdownOpen ? 'rotate-180' : ''
+                  }`}
+                />
+              </button>
+
+              {/* Facility Dropdown Menu */}
+              {isFacilityDropdownOpen && (
+                <div className="absolute right-0 rtl:right-auto rtl:left-0 mt-2 w-64 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
+                  <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+                    {language === 'ar' ? 'الفروع والمراكز التعليمية' : language === 'fr' ? 'Centres & Campus' : 'Campuses & Branches'}
+                  </div>
+                  {businesses.map((biz) => {
+                    const isCurrent = biz.id === currentBusinessId;
+                    const matchingBranch = branches.find((b) => b.businessId === biz.id);
+                    return (
+                      <button
+                        key={biz.id}
+                        type="button"
+                        onClick={() => {
+                          switchBusiness(biz.id);
+                          if (matchingBranch) switchBranch(matchingBranch.id);
+                          setIsFacilityDropdownOpen(false);
+                        }}
+                        className={`w-full px-3 py-2 text-left rtl:text-right flex items-center justify-between text-xs transition-colors cursor-pointer ${
+                          isCurrent
+                            ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold'
+                            : 'text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 min-w-0">
+                          <Building2 size={14} className={isCurrent ? 'text-[#C4785A]' : 'text-neutral-400'} />
+                          <span className="truncate">{biz.name}</span>
+                        </div>
+                        {isCurrent && <Check size={14} />}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Seed Demo Data Button */}
+            <button
+              type="button"
+              onClick={resetEduMockData}
+              className="h-10 px-3.5 bg-[#FCEEE8] dark:bg-neutral-800 hover:bg-[#F8DFD4] dark:hover:bg-neutral-700 text-[#C4785A] text-xs font-semibold rounded-xl transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer"
+              title={language === 'ar' ? 'إعادة شحن بيانات تجريبية' : language === 'fr' ? 'Recharger Données Démo' : 'Seed Mock Data'}
+            >
+              <Sparkles size={14} />
+              <span className="hidden sm:inline">{language === 'ar' ? 'بيانات تجريبية' : language === 'fr' ? 'Données Démo' : 'Demo Data'}</span>
+            </button>
+
+            <AtriumButton
+              variant="primary"
+              onClick={handleOpenAdd}
+              icon={<Plus size={14} />}
+            >
+              {t('edu_modal_add_student')}
+            </AtriumButton>
+          </div>
+        </div>
+
+        {/* Batch Selection Toolbar */}
+        {selectedStudentIds.size > 0 && (
+          <div className="flex items-center justify-between p-3 px-4 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 animate-in fade-in slide-in-from-top-2">
+            <div className="flex items-center gap-3">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#C4785A] animate-pulse" />
+              <span className="text-xs font-bold text-neutral-900 dark:text-white">
+                {selectedStudentIds.size} {language === 'ar' ? 'طلاب محددين' : language === 'fr' ? 'étudiants sélectionnés' : 'students selected'}
               </span>
             </div>
-            <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
-              {t('edu_students_subtitle')}
+            <div className="flex items-center gap-2 flex-wrap">
+              <button
+                onClick={() => setSelectedStudentIds(new Set())}
+                className="px-3 py-1.5 text-xs text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white font-medium cursor-pointer"
+              >
+                {language === 'ar' ? 'إلغاء التحديد' : language === 'fr' ? 'Désélectionner' : 'Deselect'}
+              </button>
+              <button
+                onClick={handleBatchGraduate}
+                className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+              >
+                <GraduationCap size={13} />
+                <span>{language === 'ar' ? 'تخرج المحدد' : language === 'fr' ? 'Diplômer' : 'Graduate Selected'}</span>
+              </button>
+              <button
+                onClick={handleBatchSuspend}
+                className="px-3.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+              >
+                <AlertCircle size={13} />
+                <span>{language === 'ar' ? 'تجميد الحساب' : language === 'fr' ? 'Suspendre' : 'Suspend'}</span>
+              </button>
+              <button
+                onClick={handleBatchDelete}
+                className="px-3.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+              >
+                <Trash2 size={13} />
+                <span>{language === 'ar' ? 'حذف المحدد' : language === 'fr' ? 'Supprimer' : 'Delete'}</span>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Top Metrics Pod Tray (Screenshot_30: bg-[#F8F9FA], rounded-[24px], p-5) */}
+        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-3">
+          <div>
+            <h3 className="text-xs font-bold text-neutral-900 dark:text-white tracking-tight">
+              {language === 'ar' ? 'مؤشرات الانضباط والتحصيل الدراسي' : language === 'fr' ? 'Effectifs & Assiduité Scolaire' : 'Student Body & Attendance Health'}
+            </h3>
+            <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+              {language === 'ar' ? 'متابعة أداء وحضور ودفعات الطلبة' : language === 'fr' ? 'Indicateurs clés de présence et recouvrement' : 'Key enrollment, attendance, and tuition performance indicators'}
             </p>
           </div>
-        </div>
 
-        <div className="flex items-center gap-2.5 flex-wrap self-start sm:self-auto">
-          {/* Facility Pill: Atrium 1 ▾ */}
-          <div className="relative">
-            <button
-              type="button"
-              onClick={() => setIsFacilityDropdownOpen(!isFacilityDropdownOpen)}
-              className="h-10 px-4 rounded-full bg-[#F4EFEA] dark:bg-neutral-800/80 border border-[#E8DFD8] dark:border-neutral-700 flex items-center gap-2 cursor-pointer hover:bg-[#EFE8E1] dark:hover:bg-neutral-800 transition-colors shadow-2xs"
-            >
-              <Home size={15} className="text-[#C4785A]" />
-              <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
-                {currentBranch?.name || 'Atrium 1'}
-              </span>
-              <ChevronDown
-                size={14}
-                className={`text-neutral-500 transition-transform ${
-                  isFacilityDropdownOpen ? 'rotate-180' : ''
-                }`}
-              />
-            </button>
-
-            {/* Facility Dropdown Menu */}
-            {isFacilityDropdownOpen && (
-              <div className="absolute right-0 rtl:right-auto rtl:left-0 mt-2 w-64 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
-                <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
-                  {language === 'ar' ? 'الفروع والمراكز التعليمية' : language === 'fr' ? 'Centres & Campus' : 'Campuses & Branches'}
-                </div>
-                {businesses.map((biz) => {
-                  const isCurrent = biz.id === currentBusinessId;
-                  const matchingBranch = branches.find((b) => b.businessId === biz.id);
-                  return (
-                    <button
-                      key={biz.id}
-                      type="button"
-                      onClick={() => {
-                        switchBusiness(biz.id);
-                        if (matchingBranch) switchBranch(matchingBranch.id);
-                        setIsFacilityDropdownOpen(false);
-                      }}
-                      className={`w-full px-3 py-2 text-left rtl:text-right flex items-center justify-between text-xs transition-colors cursor-pointer ${
-                        isCurrent
-                          ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold'
-                          : 'text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2 min-w-0">
-                        <Building2 size={14} className={isCurrent ? 'text-[#C4785A]' : 'text-neutral-400'} />
-                        <span className="truncate">{biz.name}</span>
-                      </div>
-                      {isCurrent && <Check size={14} />}
-                    </button>
-                  );
-                })}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Inset White Card 1: Active Ratio */}
+            <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
+              <div>
+                <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400 block mb-1">
+                  {language === 'ar' ? 'نسبة النشاط' : language === 'fr' ? 'Ratio d\'activité' : 'Active Ratio'}
+                </span>
+                <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
+                  ↗ 100%
+                </span>
               </div>
-            )}
-          </div>
+              <div className="mt-3">
+                <span className="text-[22px] font-bold text-neutral-900 dark:text-white tabular-nums tracking-tight">
+                  {totalStudentsCount}
+                </span>
+                <span className="text-xs text-neutral-400 tabular-nums ml-1">
+                  / {totalStudentsCount} {language === 'ar' ? 'إجمالي الطلبة' : 'total'}
+                </span>
+              </div>
+            </div>
 
-          {/* Export CSV Button */}
-          <button
-            type="button"
-            onClick={handleExportCSV}
-            className="h-10 px-3.5 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold rounded-full transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer"
-            title="Export CSV"
-          >
-            <Download size={14} />
-            <span className="hidden sm:inline">CSV</span>
-          </button>
+            {/* Inset White Card 2: Attendance Rate */}
+            <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
+              <div>
+                <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400 block mb-1">
+                  {language === 'ar' ? 'معدل الحضور العام' : language === 'fr' ? 'Taux d\'assiduité' : 'Attendance Rate'}
+                </span>
+                <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
+                  {t('edu_verified_rate')}
+                </span>
+              </div>
+              <div className="mt-3">
+                <span className="text-[22px] font-bold text-neutral-900 dark:text-white tabular-nums tracking-tight">
+                  {averageAttendance}%
+                </span>
+                <span className="text-xs text-neutral-400 ml-1">
+                  {activeMinorsCount} {language === 'ar' ? 'قاصر تحت وصاية' : 'minors with guardian'}
+                </span>
+              </div>
+            </div>
 
-          {/* Seed Demo Data Button */}
-          <button
-            type="button"
-            onClick={resetEduMockData}
-            className="h-10 px-3.5 bg-[#FCEEE8] dark:bg-neutral-800 hover:bg-[#F8DFD4] dark:hover:bg-neutral-700 text-[#C4785A] text-xs font-semibold rounded-full transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer"
-            title={language === 'ar' ? 'إعادة شحن بيانات تجريبية' : language === 'fr' ? 'Recharger Données Démo' : 'Seed Mock Data'}
-          >
-            <Sparkles size={14} />
-            <span className="hidden sm:inline">{language === 'ar' ? 'بيانات تجريبية' : language === 'fr' ? 'Données Démo' : 'Demo Data'}</span>
-          </button>
-
-          <AtriumButton
-            variant="primary"
-            onClick={handleOpenAdd}
-            icon={<Plus size={14} />}
-          >
-            {t('edu_modal_add_student')}
-          </AtriumButton>
-        </div>
-      </div>
-
-      {/* Batch Selection Toolbar */}
-      {selectedStudentIds.size > 0 && (
-        <div className="flex items-center justify-between p-3 px-4 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 animate-in fade-in slide-in-from-top-2">
-          <div className="flex items-center gap-3">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#C4785A] animate-pulse" />
-            <span className="text-xs font-bold text-neutral-900 dark:text-white">
-              {selectedStudentIds.size} {language === 'ar' ? 'طلاب محددين' : language === 'fr' ? 'étudiants sélectionnés' : 'students selected'}
-            </span>
-          </div>
-          <div className="flex items-center gap-2 flex-wrap">
-            <button
-              onClick={() => setSelectedStudentIds(new Set())}
-              className="px-3 py-1.5 text-xs text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white font-medium cursor-pointer"
-            >
-              {language === 'ar' ? 'إلغاء التحديد' : language === 'fr' ? 'Désélectionner' : 'Deselect'}
-            </button>
-            <button
-              onClick={handleBatchGraduate}
-              className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
-            >
-              <GraduationCap size={13} />
-              <span>{language === 'ar' ? 'تخرج المحدد' : language === 'fr' ? 'Diplômer' : 'Graduate Selected'}</span>
-            </button>
-            <button
-              onClick={handleBatchSuspend}
-              className="px-3.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
-            >
-              <AlertCircle size={13} />
-              <span>{language === 'ar' ? 'تجميد الحساب' : language === 'fr' ? 'Suspendre' : 'Suspend'}</span>
-            </button>
-            <button
-              onClick={handleBatchDelete}
-              className="px-3.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
-            >
-              <Trash2 size={13} />
-              <span>{language === 'ar' ? 'حذف المحدد' : language === 'fr' ? 'Supprimer' : 'Delete'}</span>
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* KPI Overview Strip matching FreelanceClientsView */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="p-4 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-900/40 border border-[#EDF1F3] dark:border-neutral-800">
-          <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400 block mb-1">
-            {t('edu_kpi_total_students')}
-          </span>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-extrabold text-neutral-900 dark:text-white tabular-nums">
-              {totalStudentsCount}
-            </span>
-            <span className="text-xs text-neutral-500">
-              {activeMinorsCount} minors with guardian links
-            </span>
+            {/* Inset Card 3: DARK ESPRESSO CARD (#1F1D1B) — Total Collected Tuition */}
+            <div className="bg-[#1F1D1B] rounded-[18px] p-4 lg:p-5 border border-neutral-800 shadow-sm flex flex-col justify-between text-white">
+              <div>
+                <span className="text-[11px] font-medium text-neutral-400 block mb-1">
+                  {language === 'ar' ? 'إجمالي التحصيل الدراسي' : language === 'fr' ? 'Frais Scolaires Encaissés' : 'Collected Tuition'}
+                </span>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30 inline-block">
+                  {language === 'ar' ? 'التحصيل الأكاديمي' : language === 'fr' ? 'Trimestre Actuel' : 'Active Term Inflow'}
+                </span>
+              </div>
+              <div className="mt-3">
+                <span className="text-[22px] font-bold text-white tabular-nums tracking-tight">
+                  {formatMoney(totalBilledEquiv)}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-900/40 border border-[#EDF1F3] dark:border-neutral-800">
-          <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400 block mb-1">
-            {t('edu_kpi_attendance_rate')}
-          </span>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-extrabold text-neutral-900 dark:text-white tabular-nums">
-              {averageAttendance}%
-            </span>
-            <span className="text-xs text-emerald-600 dark:text-emerald-400">
-              {t('edu_verified_rate')}
-            </span>
+        {/* Bottom Collection Pod Tray (Screenshot_30: bg-[#F8F9FA], rounded-[24px], p-5) */}
+        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+          
+          {/* Integrated Toolbar */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+            {/* Title & Count Badge */}
+            <div className="flex items-center gap-2">
+              <Users size={18} className="text-neutral-700 dark:text-neutral-300" />
+              <h2 className="text-sm font-bold text-neutral-900 dark:text-white">
+                {language === 'ar' ? 'دليل الطلبة' : language === 'fr' ? 'Répertoire des Étudiants' : 'Students Directory'}
+              </h2>
+              <span className="px-2 py-0.5 text-[11px] font-bold rounded-full bg-neutral-200/70 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300">
+                {filteredStudents.length}
+              </span>
+            </div>
+
+            {/* Right Controls: Seek + Filter Capsules + Export CSV */}
+            <div className="flex items-center gap-2.5 flex-wrap">
+              {/* Kinetic Seek Search */}
+              <Seek
+                value={searchQuery}
+                onChange={setSearchQuery}
+                placeholder={t('edu_search_students_ph')}
+                shutSize={36}
+                openWidth={240}
+              />
+
+              {/* Status Filter Capsules */}
+              <div className="flex items-center gap-1 p-1 bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 shadow-2xs">
+                {[
+                  { id: 'all', label: t('edu_filter_all'), count: eduStudents.length },
+                  { id: 'active', label: t('edu_status_active'), count: eduStudents.filter((s) => s.status === 'Active').length },
+                  { id: 'minors', label: t('edu_filter_minors') },
+                  { id: 'overdue', label: t('edu_tuition_overdue') },
+                  { id: 'graduated', label: t('edu_status_graduated') },
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setFilterKey(tab.id as FilterKey)}
+                    className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-colors whitespace-nowrap cursor-pointer ${
+                      filterKey === tab.id
+                        ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A]'
+                        : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
+                    }`}
+                  >
+                    {tab.label}
+                    {tab.count !== undefined && (
+                      <span className="opacity-70 ml-1 text-[10px]">({tab.count})</span>
+                    )}
+                  </button>
+                ))}
+              </div>
+
+              {/* Export CSV Button */}
+              <button
+                type="button"
+                onClick={handleExportCSV}
+                className="h-9 px-3 bg-white hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold rounded-xl transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer"
+                title="Export CSV"
+              >
+                <Download size={13} />
+                <span className="hidden sm:inline">CSV</span>
+              </button>
+            </div>
           </div>
-        </div>
-
-        <div className="p-4 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-900/40 border border-[#EDF1F3] dark:border-neutral-800">
-          <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400 block mb-1">
-            {t('edu_fin_collected')}
-          </span>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-extrabold text-[#C4785A] tabular-nums">
-              {formatMoney(totalBilledEquiv)}
-            </span>
-            <span className="text-xs text-neutral-500">
-              collected this academic term
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Search & Segmented Filter Bar matching other screens */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-        {/* Seek Kinetic Search Box */}
-        <Seek
-          value={searchQuery}
-          onChange={setSearchQuery}
-          placeholder={t('edu_search_students_ph')}
-          shutSize={36}
-          openWidth={280}
-        />
-
-        {/* Segmented Filter Control */}
-        <div className="flex items-center gap-1 p-1 bg-neutral-100 dark:bg-neutral-800/80 rounded-xl self-start sm:self-auto overflow-x-auto">
-          {[
-            { id: 'all', label: t('edu_filter_all'), count: eduStudents.length },
-            { id: 'active', label: t('edu_status_active'), count: eduStudents.filter((s) => s.status === 'Active').length },
-            { id: 'minors', label: t('edu_filter_minors') },
-            { id: 'overdue', label: t('edu_tuition_overdue') },
-            { id: 'graduated', label: t('edu_status_graduated') },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => setFilterKey(tab.id as FilterKey)}
-              className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors whitespace-nowrap cursor-pointer ${
-                filterKey === tab.id
-                  ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-2xs font-semibold'
-                  : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
-              }`}
-            >
-              {tab.label}
-              {tab.count !== undefined && (
-                <span className="opacity-70 ml-1.5 text-[11px]">({tab.count})</span>
-              )}
-            </button>
-          ))}
-        </div>
-      </div>
 
       {/* Universal Collection View (List with 46px Action Strip & Grid with 6-button Corner Fan) */}
       <UniversalDataCollection<EduStudent>
@@ -846,6 +892,8 @@ export const EducationStudentsView: React.FC = () => {
         primaryActionLabel={t('edu_modal_add_student')}
         onAddFirstItem={handleOpenAdd}
       />
+        </div>
+      </div>
 
       {/* 360° Student Slide-over Drawer matching FreelanceClientsView */}
       {selectedStudent && (

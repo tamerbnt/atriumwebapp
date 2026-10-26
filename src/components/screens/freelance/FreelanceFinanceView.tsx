@@ -53,6 +53,7 @@ export const FreelanceFinanceView: React.FC = () => {
   const [taxRate, setTaxRate] = useState<number>(20); // 20% estimated tax provision
   const [isAddExpenseModalOpen, setIsAddExpenseModalOpen] = useState(false);
   const [isFacilityDropdownOpen, setIsFacilityDropdownOpen] = useState(false);
+  const [isQuickActionsOpen, setIsQuickActionsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('All');
 
@@ -312,63 +313,67 @@ export const FreelanceFinanceView: React.FC = () => {
   ], [language, pinnedExpenseIds, t]);
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-200">
-      {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-neutral-200 dark:border-neutral-800">
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white">
-              {t('free_fin_title', language)}
-            </h1>
-            <span className="text-xs text-neutral-500">
-              {language === 'ar'
-                ? 'تدفقات متعددة العملات، اشتراكات التشغيل وتقدير صافي الربح'
-                : language === 'fr'
-                ? 'Flux multi-devises, abonnements récurrents & prévision du revenu net'
-                : 'Multi-currency cashflow, overhead subscriptions & net take-home forecast'}
-            </span>
+    <div className="bg-white dark:bg-[#18181B] rounded-[28px] border border-[#E9EEF0] dark:border-neutral-800 p-6 lg:p-8 space-y-6 shadow-xs animate-in fade-in duration-200">
+      {/* Row 0: Workspace Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3.5">
+          <div className="w-12 h-12 rounded-2xl bg-[#C4785A]/10 text-[#C4785A] flex items-center justify-center shrink-0">
+            <Wallet size={24} />
           </div>
-          <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
-            {t('free_fin_subtitle', language)}
-          </p>
+          <div>
+            <div className="flex items-center gap-2.5">
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-900 dark:text-white">
+                {t('free_fin_title', language)}
+              </h1>
+              <span className="text-xs px-2.5 py-1 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 font-semibold">
+                €{currencyTotals.totalEurEquiv.toLocaleString()} {language === 'ar' ? 'إجمالي الدخل' : 'total'}
+              </span>
+            </div>
+            <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
+              {t('free_fin_subtitle', language)}
+            </p>
+          </div>
         </div>
 
         <div className="flex items-center gap-2.5 self-start sm:self-auto flex-wrap">
-          {/* Facility Switcher Dropdown */}
+          {/* Branch Switcher */}
           <div className="relative">
             <button
               type="button"
               onClick={() => setIsFacilityDropdownOpen(!isFacilityDropdownOpen)}
-              className="h-10 px-3.5 rounded-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 text-xs font-semibold flex items-center gap-2 hover:bg-neutral-50 dark:hover:bg-neutral-700/60 transition-colors cursor-pointer shadow-2xs"
+              className="h-[42px] px-4 rounded-[14px] bg-[#F8F9FA] dark:bg-neutral-800 border border-[#EDF1F3] dark:border-neutral-700 flex items-center gap-2 cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors shadow-2xs"
             >
-              <Building2 size={14} className="text-[#C4785A]" />
-              <span className="truncate max-w-[130px]">
+              <Building2 size={15} className="text-[#C4785A]" />
+              <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
                 {currentBusiness?.name || 'Studio Main'}
               </span>
-              <ChevronDown size={13} className="text-neutral-400" />
+              <ChevronDown
+                size={14}
+                className={`text-neutral-500 transition-transform ${isFacilityDropdownOpen ? 'rotate-180' : ''}`}
+              />
             </button>
 
             {isFacilityDropdownOpen && (
-              <div className="absolute right-0 top-full mt-1.5 w-60 bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 shadow-xl z-50 p-1.5 space-y-1">
-                <div className="px-2.5 py-1 text-[11px] font-semibold text-neutral-400 uppercase tracking-wider">
-                  {t('hub_switch_business') || 'Espaces & Studios'}
+              <div className="absolute right-0 rtl:right-auto rtl:left-0 mt-2 w-64 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
+                <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+                  {language === 'ar' ? 'الفروع والمراكز' : language === 'fr' ? 'Établissements & Espaces' : 'Facilities & Branches'}
                 </div>
                 {businesses.map((biz) => {
                   const isCurrent = biz.id === currentBusinessId;
+                  const matchingBranch = branches.find((b) => b.businessId === biz.id);
                   return (
                     <button
                       key={biz.id}
                       type="button"
                       onClick={() => {
                         switchBusiness(biz.id);
-                        const firstBranch = branches.find((b) => b.businessId === biz.id);
-                        if (firstBranch) switchBranch(firstBranch.id);
+                        if (matchingBranch) switchBranch(matchingBranch.id);
                         setIsFacilityDropdownOpen(false);
                       }}
-                      className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-medium flex items-center justify-between transition-colors ${
+                      className={`w-full px-3 py-2 text-left rtl:text-right flex items-center justify-between text-xs transition-colors cursor-pointer ${
                         isCurrent
-                          ? 'bg-[#C4785A]/10 text-[#C4785A]'
-                          : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+                          ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold'
+                          : 'text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50'
                       }`}
                     >
                       <div className="flex items-center gap-2 min-w-0">
@@ -383,116 +388,164 @@ export const FreelanceFinanceView: React.FC = () => {
             )}
           </div>
 
-          {/* Demo Data Recharge Button */}
-          <AtriumButton
-            variant="outline"
-            size="sm"
-            icon={<Sparkles size={14} className="text-[#C4785A]" />}
-            onClick={() => resetFreelanceMockData?.()}
-            title={t('common_reset_demo') || 'Recharger Données Démo'}
-          >
-            <span className="hidden sm:inline">{t('common_reset_demo') || 'Démo'}</span>
-          </AtriumButton>
+          {/* Quick Actions Terracotta Button + Floating Popup */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setIsQuickActionsOpen(!isQuickActionsOpen)}
+              className="h-[42px] px-5 rounded-[14px] bg-[#C4785A] hover:bg-[#B3684A] text-white font-bold text-xs flex items-center gap-2 shadow-xs cursor-pointer transition-all active:scale-95"
+            >
+              <Plus size={15} />
+              <span>{language === 'ar' ? 'إجراءات سريعة' : language === 'fr' ? 'Actions Rapides' : 'Quick Actions'}</span>
+            </button>
 
-          {/* Export CSV Button */}
-          <AtriumButton
-            variant="outline"
-            size="sm"
-            icon={<Download size={14} />}
-            onClick={handleExportCSV}
-            title="Export Expenses CSV"
-          >
-            <span className="hidden sm:inline">{language === 'ar' ? 'تصدير' : language === 'fr' ? 'Exporter' : 'Export'}</span>
-          </AtriumButton>
-
-          {/* Add Expense Button */}
-          <AtriumButton
-            variant="primary"
-            size="sm"
-            glow
-            icon={<Plus size={14} />}
-            onClick={() => setIsAddExpenseModalOpen(true)}
-          >
-            <span>{t('free_fin_btn_add_expense', language)}</span>
-          </AtriumButton>
-        </div>
-      </div>
-
-      {/* Multi-Currency Inflow Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="p-4 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-900/40 border border-[#EDF1F3] dark:border-neutral-800">
-          <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400 block mb-1">
-            {language === 'ar' ? 'اليورو المحصّل (حساب SEPA)' : language === 'fr' ? 'EUR Encaissé (Virement SEPA)' : 'EUR Collected (SEPA Wire)'}
-          </span>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-extrabold text-neutral-900 dark:text-white tabular-nums">
-              €{currencyTotals.eur.toLocaleString()}
-            </span>
-            <span className="text-xs text-neutral-500">
-              {language === 'ar' ? 'حساب بنكي أوروبي' : language === 'fr' ? 'Compte euro' : 'Euro account'}
-            </span>
-          </div>
-        </div>
-
-        <div className="p-4 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-900/40 border border-[#EDF1F3] dark:border-neutral-800">
-          <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400 block mb-1">
-            {language === 'ar' ? 'الدولار المحصّل (تحويل دولي)' : language === 'fr' ? 'USD Encaissé (Dépôt Direct)' : 'USD Collected (Direct Deposit)'}
-          </span>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-extrabold text-neutral-900 dark:text-white tabular-nums">
-              ${currencyTotals.usd.toLocaleString()}
-            </span>
-            <span className="text-xs text-neutral-500">
-              {language === 'ar' ? 'تحويل بنكي أمريكي' : language === 'fr' ? 'Virement bancaire US' : 'US bank wire'}
-            </span>
-          </div>
-        </div>
-
-        <div className="p-4 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-900/40 border border-[#EDF1F3] dark:border-neutral-800">
-          <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400 block mb-1">
-            {language === 'ar' ? 'الدينار الجزائري (بريدي موب وحساب CCP)' : language === 'fr' ? 'DZD Encaissé (BaridiMob & Local)' : 'DZD Collected (BaridiMob & Local)'}
-          </span>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-extrabold text-[#C4785A] tabular-nums">
-              {currencyTotals.dzd.toLocaleString()} DZD
-            </span>
-            <span className="text-xs text-neutral-500">
-              {language === 'ar' ? 'دينار جزائري' : language === 'fr' ? 'Dinars algériens' : 'Algerian Dinars'}
-            </span>
+            {isQuickActionsOpen && (
+              <div className="absolute right-0 rtl:right-auto rtl:left-0 mt-2 w-[240px] rounded-[18px] bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 p-2.5 shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-150 space-y-1">
+                <div className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+                  {language === 'ar' ? 'إجراءات سريعة' : language === 'fr' ? 'Actions Rapides' : 'Quick Actions'}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsQuickActionsOpen(false);
+                    setIsAddExpenseModalOpen(true);
+                  }}
+                  className="w-full h-10 px-2.5 rounded-xl hover:bg-[#F8F9FA] dark:hover:bg-neutral-700 flex items-center gap-2.5 text-xs text-neutral-800 dark:text-neutral-200 font-medium transition-colors cursor-pointer text-left rtl:text-right"
+                >
+                  <div className="w-[30px] h-[30px] rounded-lg bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center shrink-0">
+                    <Plus size={15} />
+                  </div>
+                  <span>{t('free_fin_btn_add_expense', language)}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsQuickActionsOpen(false);
+                    handleExportCSV();
+                  }}
+                  className="w-full h-10 px-2.5 rounded-xl hover:bg-[#F8F9FA] dark:hover:bg-neutral-700 flex items-center gap-2.5 text-xs text-neutral-800 dark:text-neutral-200 font-medium transition-colors cursor-pointer text-left rtl:text-right"
+                >
+                  <div className="w-[30px] h-[30px] rounded-lg bg-blue-500/15 text-blue-600 flex items-center justify-center shrink-0">
+                    <Download size={15} />
+                  </div>
+                  <span>{language === 'ar' ? 'تصدير CSV' : language === 'fr' ? 'Exporter CSV' : 'Export CSV'}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsQuickActionsOpen(false);
+                    resetFreelanceMockData?.();
+                  }}
+                  className="w-full h-10 px-2.5 rounded-xl hover:bg-[#F8F9FA] dark:hover:bg-neutral-700 flex items-center gap-2.5 text-xs text-neutral-800 dark:text-neutral-200 font-medium transition-colors cursor-pointer text-left rtl:text-right"
+                >
+                  <div className="w-[30px] h-[30px] rounded-lg bg-amber-500/15 text-amber-600 flex items-center justify-center shrink-0">
+                    <Sparkles size={15} />
+                  </div>
+                  <span>{language === 'ar' ? 'إعادة ضبط البيانات' : 'Reset Demo Data'}</span>
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Real-Time Net Take-Home & Tax Reserve Gauge */}
-      <div className="p-6 rounded-3xl bg-neutral-900 dark:bg-black text-white border border-neutral-800 shadow-xl space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-neutral-400">
-              <ShieldCheck size={14} className="text-[#C4785A]" />
-              <span>
-                {language === 'ar' ? 'الاحتياطي الضريبي ومحاكاة الأرباح الصافية' : language === 'fr' ? 'Provision fiscale & Simulation du bénéfice net' : 'Tax Reserve & Net Earnings Simulation'}
+      {/* Top Metrics Pod Tray: 3 Inset Cards including Dark Espresso Card */}
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+        <div>
+          <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+            {language === 'ar' ? 'ملخص السيولة والتدفقات المالية' : language === 'fr' ? 'Trésorerie & Encaissements Multi-Devises' : 'Cashflow & Revenue Overview'}
+          </h2>
+          <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+            {language === 'ar' ? 'حسابات بنكية متعددة العملات مع محاكاة تقديرية لصافي الأرباح بعد الضريبة' : language === 'fr' ? 'Comptes multi-devises et projection nette après charges et fiscalité' : 'Multi-currency revenue streams and net take-home forecast'}
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Card 1: EUR Inflow */}
+          <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
+                {language === 'ar' ? 'اليورو المحصّل (حساب SEPA)' : language === 'fr' ? 'EUR Encaissé (Virement SEPA)' : 'EUR Collected'}
+              </span>
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+                SEPA Wire
               </span>
             </div>
-            <h2 className="text-xl font-bold text-white mt-1">
-              {t('free_fin_net_income', language)}: <span className="text-emerald-400 font-mono tabular-nums">€{netTakeHomeEur.toLocaleString()}</span>
-            </h2>
+            <div className="mt-3">
+              <div className="text-2xl lg:text-3xl font-black text-neutral-900 dark:text-white font-mono">
+                €{currencyTotals.eur.toLocaleString()}
+              </div>
+              <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-1">
+                {language === 'ar' ? 'عملاء أوروبا ومشاريع الريموت' : 'Clients européens & missions remote'}
+              </p>
+            </div>
           </div>
 
-          <div className={isRtl ? 'text-left' : 'text-right'}>
-            <span className="text-xs text-neutral-400 block">{t('free_fin_tax_reserve', language)}</span>
-            <span className="text-lg font-bold text-amber-400 font-mono tabular-nums">
-              €{taxReserveAmount.toLocaleString()} ({taxRate}%)
-            </span>
+          {/* Card 2: USD & DZD Inflows */}
+          <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
+                {language === 'ar' ? 'الدولار والدينار الجزائري' : language === 'fr' ? 'USD & DZD Encaissés' : 'USD & Local Cash'}
+              </span>
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
+                BaridiMob / Direct
+              </span>
+            </div>
+            <div className="mt-3">
+              <div className="text-xl lg:text-2xl font-black text-neutral-900 dark:text-white font-mono">
+                ${currencyTotals.usd.toLocaleString()} <span className="text-sm font-normal text-neutral-400">/</span> {currencyTotals.dzd.toLocaleString()} DZD
+              </div>
+              <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-1">
+                {language === 'ar' ? 'تحويلات أمريكية وحسابات CCP المحلية' : 'Virements directs US & encaissements locaux'}
+              </p>
+            </div>
+          </div>
+
+          {/* Card 3: DARK ESPRESSO CARD (#1F1D1B) */}
+          <div className="bg-[#1F1D1B] rounded-[18px] p-4 lg:p-5 border border-neutral-800 shadow-sm text-white flex flex-col justify-between">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-medium text-neutral-300">
+                {language === 'ar' ? 'صافي الدخل التقديري' : language === 'fr' ? 'Bénéfice Net Projeté' : 'Net Take-Home'}
+              </span>
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30">
+                {taxRate}% {language === 'ar' ? 'احتياطي' : 'provision'}
+              </span>
+            </div>
+            <div className="mt-3">
+              <div className="text-2xl lg:text-3xl font-black text-[#FB923C] font-mono">
+                €{netTakeHomeEur.toLocaleString()}
+              </div>
+              <p className="text-[11px] text-neutral-400 mt-1 flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-[#FB923C] animate-pulse" />
+                <span>{language === 'ar' ? `احتياطي ضريبي: €${taxReserveAmount.toLocaleString()}` : `Provision fiscale: €${taxReserveAmount.toLocaleString()}`}</span>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Studio Profit Bridge & Tax Reserve Simulator Pod Tray */}
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <ShieldCheck size={16} className="text-[#C4785A]" />
+            <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
+              {language === 'ar' ? 'الاحتياطي الضريبي ومحاكاة الأرباح الصافية' : language === 'fr' ? 'Provision Fiscale & Simulation du Bénéfice Net' : 'Tax Reserve & Net Earnings Simulation'}
+            </h3>
+          </div>
+          <div className="flex items-center gap-2 text-xs font-mono">
+            <span className="text-neutral-500">{t('free_fin_tax_reserve', language)}:</span>
+            <span className="font-bold text-amber-600 dark:text-amber-400">€{taxReserveAmount.toLocaleString()} ({taxRate}%)</span>
           </div>
         </div>
 
         {/* Interactive Tax Percentage Slider */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between text-xs text-neutral-300">
-            <span>
-              {language === 'ar' ? 'معدل الضريبة التقديري والاشتراكات' : language === 'fr' ? 'Curseur de taux d\'imposition estimé' : 'Local / Flat Tax Rate Slider'}
+        <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 space-y-3">
+          <div className="flex items-center justify-between text-xs text-neutral-700 dark:text-neutral-300">
+            <span className="font-medium">
+              {language === 'ar' ? 'معدل الضريبة التقديري والاشتراكات الاجتماعية' : language === 'fr' ? 'Curseur de taux d\'imposition estimé' : 'Tax Rate & Social Contributions Slider'}
             </span>
-            <span className="font-bold font-mono text-[#C4785A] tabular-nums">{taxRate}%</span>
+            <span className="font-bold font-mono text-[#C4785A] text-sm tabular-nums">{taxRate}%</span>
           </div>
           <input
             type="range"
@@ -501,7 +554,7 @@ export const FreelanceFinanceView: React.FC = () => {
             step="1"
             value={taxRate}
             onChange={(e) => setTaxRate(Number(e.target.value))}
-            className="w-full accent-[#C4785A] h-2 bg-neutral-800 rounded-lg cursor-pointer"
+            className="w-full accent-[#C4785A] h-2 bg-neutral-200 dark:bg-neutral-700 rounded-lg cursor-pointer"
           />
           <div className="flex justify-between text-[10px] text-neutral-500 font-mono">
             <span>0% ({t('free_fin_tax_exempt_label', language)})</span>
@@ -509,76 +562,102 @@ export const FreelanceFinanceView: React.FC = () => {
             <span>20% ({t('free_fin_tax_standard_solo_label', language)})</span>
             <span>35% ({t('free_fin_tax_high_bracket_label', language)})</span>
           </div>
-        </div>
 
-        {/* 3-Column Profit Bridge Strip */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-neutral-800 text-xs">
-          <div>
-            <span className="text-neutral-400 block">
-              {t('free_fin_gross_revenue_equiv', language)}
-            </span>
-            <span className="text-base font-bold font-mono text-white tabular-nums">
-              €{currencyTotals.totalEurEquiv.toLocaleString()}
-            </span>
-          </div>
-          <div>
-            <span className="text-neutral-400 block">{t('free_fin_expenses_total', language)}</span>
-            <span className="text-base font-bold font-mono text-rose-400 tabular-nums">
-              -€{totalExpensesEurEquiv.toLocaleString()}
-            </span>
-          </div>
-          <div>
-            <span className="text-neutral-400 block">
-              {t('free_fin_net_hourly_yield', language)}
-            </span>
-            <span className="text-base font-bold font-mono text-emerald-400 tabular-nums">
-              €{netEhr}{t('free_dash_per_hour', language)} ({t('free_fin_gross_label', language)} €{grossEhr}{t('free_dash_per_hour', language)})
-            </span>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-3 border-t border-neutral-100 dark:border-neutral-700 text-xs">
+            <div>
+              <span className="text-neutral-400 block">{t('free_fin_gross_revenue_equiv', language)}</span>
+              <span className="text-base font-bold font-mono text-neutral-900 dark:text-white tabular-nums">
+                €{currencyTotals.totalEurEquiv.toLocaleString()}
+              </span>
+            </div>
+            <div>
+              <span className="text-neutral-400 block">{t('free_fin_expenses_total', language)}</span>
+              <span className="text-base font-bold font-mono text-rose-600 dark:text-rose-400 tabular-nums">
+                -€{totalExpensesEurEquiv.toLocaleString()}
+              </span>
+            </div>
+            <div>
+              <span className="text-neutral-400 block">{t('free_fin_net_hourly_yield', language)}</span>
+              <span className="text-base font-bold font-mono text-emerald-600 dark:text-emerald-400 tabular-nums">
+                €{netEhr}{t('free_dash_per_hour', language)} <span className="text-xs font-normal text-neutral-400">({t('free_fin_gross_label', language)} €{grossEhr}{t('free_dash_per_hour', language)})</span>
+              </span>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Overhead & Subscriptions Ledger Table with UniversalDataCollection */}
-      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[26px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
-        {/* Table Controls */}
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <Receipt size={16} className="text-[#C4785A]" />
-            <span className="text-sm font-bold text-neutral-900 dark:text-white">
-              {t('free_fin_operational_overhead', language)}
-            </span>
-            <span className="text-xs text-neutral-400 font-semibold tabular-nums ml-1">
-              ({sortedExpenses.length}) · ~€{totalExpensesEurEquiv.toLocaleString()}
-            </span>
-          </div>
+      {/* Bottom Collection Pod Tray */}
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+        {/* Integrated Toolbar */}
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-3 border-b border-[#EDF1F3] dark:border-neutral-800/60">
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <div className="w-9 h-9 rounded-xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex items-center justify-center text-neutral-700 dark:text-neutral-300">
+              <Receipt size={16} />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
+                  {t('free_fin_operational_overhead', language)}
+                </h3>
+                <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 text-neutral-600 dark:text-neutral-300">
+                  {sortedExpenses.length} · ~€{totalExpensesEurEquiv.toLocaleString()}
+                </span>
+              </div>
+            </div>
 
-          <div className="flex flex-wrap items-center gap-2.5 ml-auto">
-            <Seek
-              value={searchQuery}
-              onChange={setSearchQuery}
-              placeholder={t('free_fin_ph_vendor', language) || 'Search vendor...'}
-              shutSize={36}
-              openWidth={220}
-            />
-
-            <LabelSelect
-              field="Category"
-              label={t('free_fin_expense_category', language)}
-              value={categoryFilter}
-              onChange={(val) => setCategoryFilter(val?.target?.value ?? String(val))}
-              options={[
-                { value: 'All', label: language === 'ar' ? 'جميع الفئات' : language === 'fr' ? 'Toutes les catégories' : 'All Categories' },
+            {/* Category Filter Pills */}
+            <div className="flex items-center gap-1 p-0.5 bg-white dark:bg-neutral-800 rounded-full border border-neutral-200/80 dark:border-neutral-700 ml-2 overflow-x-auto">
+              {[
+                { value: 'All', label: language === 'ar' ? 'الكل' : 'Tous' },
                 { value: 'Software', label: t('free_fin_expense_software', language) },
                 { value: 'Office', label: t('free_fin_expense_workspace', language) },
                 { value: 'Hardware', label: t('free_fin_expense_hardware', language) },
                 { value: 'Subcontractor', label: t('free_fin_expense_subcontractor', language) },
-                { value: 'Travel', label: t('free_fin_expense_travel', language) },
-                { value: 'Other', label: t('free_fin_expense_other', language) },
-              ]}
-              width={160}
-              height={36}
-              corner={18}
+              ].map((cat) => (
+                <button
+                  key={cat.value}
+                  type="button"
+                  onClick={() => setCategoryFilter(cat.value)}
+                  className={`px-3 py-1 text-xs font-semibold rounded-full transition-all whitespace-nowrap cursor-pointer ${
+                    categoryFilter === cat.value
+                      ? 'bg-[#C4785A] text-white shadow-2xs'
+                      : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
+                  }`}
+                >
+                  {cat.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 flex-wrap">
+            <Seek
+              value={searchQuery}
+              onChange={setSearchQuery}
+              placeholder={t('free_fin_ph_vendor', language) || 'Search vendor...'}
+              shutSize={38}
+              openWidth={220}
             />
+
+            <AtriumButton
+              variant="secondary"
+              size="sm"
+              icon={<Download size={14} />}
+              onClick={handleExportCSV}
+              title="Export Expenses CSV"
+            >
+              <span className="hidden sm:inline">CSV</span>
+            </AtriumButton>
+
+            <AtriumButton
+              variant="primary"
+              size="sm"
+              glow
+              icon={<Plus size={14} />}
+              onClick={() => setIsAddExpenseModalOpen(true)}
+            >
+              <span>{t('free_fin_btn_add_expense', language)}</span>
+            </AtriumButton>
           </div>
         </div>
 

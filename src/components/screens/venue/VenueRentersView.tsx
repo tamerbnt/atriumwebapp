@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   Users,
   Search,
@@ -20,6 +20,9 @@ import {
   ChevronDown,
   Download,
   Sparkles,
+  Maximize2,
+  LayoutGrid,
+  List,
 } from 'lucide-react';
 import { useAtriumStore } from '../../../services/store';
 import { RentalRenter } from '../../../types/index';
@@ -58,6 +61,7 @@ export const VenueRentersView: React.FC = () => {
   }, [rentalRenters.length, resetVenueMockData]);
 
   const [searchQuery, setSearchQuery] = useState('');
+  const [filterType, setFilterType] = useState<'All' | 'Corporate' | 'Individual'>('All');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [renterToEdit, setRenterToEdit] = useState<RentalRenter | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -65,6 +69,7 @@ export const VenueRentersView: React.FC = () => {
   const [renterSortBy, setRenterSortBy] = useState<string>('renter');
   const [renterSortDir, setRenterSortDir] = useState<'asc' | 'desc'>('asc');
   const [isFacilityDropdownOpen, setIsFacilityDropdownOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
 
   // Quick book for selected renter
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
@@ -78,19 +83,28 @@ export const VenueRentersView: React.FC = () => {
   const [idDocNumber, setIdDocNumber] = useState('');
   const [notes, setNotes] = useState('');
 
-  const filteredRenters = rentalRenters.filter((r) => {
-    const q = searchQuery.toLowerCase();
-    return (
-      r.fullName.toLowerCase().includes(q) ||
-      (r.companyName && r.companyName.toLowerCase().includes(q)) ||
-      r.phone.includes(q) ||
-      r.email.toLowerCase().includes(q) ||
-      (r.idDocNumber && r.idDocNumber.toLowerCase().includes(q))
-    );
-  });
+  const filteredRenters = useMemo(() => {
+    return rentalRenters.filter((r) => {
+      if (filterType === 'Corporate' && !r.companyName) return false;
+      if (filterType === 'Individual' && r.companyName) return false;
+
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        return (
+          r.fullName.toLowerCase().includes(q) ||
+          (r.companyName && r.companyName.toLowerCase().includes(q)) ||
+          r.phone.includes(q) ||
+          r.email.toLowerCase().includes(q) ||
+          (r.idDocNumber && r.idDocNumber.toLowerCase().includes(q))
+        );
+      }
+      return true;
+    });
+  }, [rentalRenters, filterType, searchQuery]);
 
   const totalRentersCount = rentalRenters.length;
   const corporateCount = rentalRenters.filter((r) => Boolean(r.companyName)).length;
+  const individualCount = totalRentersCount - corporateCount;
   const totalRevenue = rentalRenters.reduce((sum, r) => sum + r.totalSpent, 0);
 
   const handleOpenAdd = () => {
@@ -158,7 +172,7 @@ export const VenueRentersView: React.FC = () => {
     setIsAddModalOpen(false);
   };
 
-  const sortedRenters = React.useMemo(() => {
+  const sortedRenters = useMemo(() => {
     return [...filteredRenters].sort((a, b) => {
       const aPinned = pinnedRenterIds.has(a.id);
       const bPinned = pinnedRenterIds.has(b.id);
@@ -179,10 +193,19 @@ export const VenueRentersView: React.FC = () => {
     });
   }, [filteredRenters, pinnedRenterIds, renterSortBy, renterSortDir]);
 
-  const renterColumns: ColumnDefinition<RentalRenter>[] = React.useMemo(() => [
+  const togglePinRenter = (id: string) => {
+    setPinnedRenterIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const renterColumns: ColumnDefinition<RentalRenter>[] = useMemo(() => [
     {
       key: 'renter',
-      header: t('venue_renters_field_fullname'),
+      header: language === 'ar' ? 'المستأجر / المنظم' : language === 'fr' ? 'Locataire / Organisateur' : 'Renter / Organizer',
       width: '2.5*',
       minWidth: '220px',
       sortable: true,
@@ -227,7 +250,7 @@ export const VenueRentersView: React.FC = () => {
       minWidth: '110px',
       sortable: true,
       renderCell: (renter) => (
-        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 tabular-nums">
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 tabular-nums">
           {renter.totalBookings} {language === 'ar' ? 'حجز' : language === 'fr' ? 'réservations' : 'bookings'}
         </span>
       ),
@@ -239,7 +262,7 @@ export const VenueRentersView: React.FC = () => {
       minWidth: '130px',
       sortable: true,
       renderCell: (renter) => (
-        <span className="font-bold text-neutral-900 dark:text-white tabular-nums">
+        <span className="font-bold text-neutral-900 dark:text-white tabular-nums font-mono">
           {formatCurrencyAmount(renter.totalSpent, renter.currency)}
         </span>
       ),
@@ -258,7 +281,7 @@ export const VenueRentersView: React.FC = () => {
       language === 'ar' ? 'العملة' : language === 'fr' ? 'Devise' : 'Currency',
       language === 'ar' ? 'ملاحظات' : language === 'fr' ? 'Remarques' : 'Notes',
     ];
-    const rows = sortedRenters.map((r) => [
+    const rows = filteredRenters.map((r) => [
       `"${r.fullName}"`,
       `"${r.companyName || ''}"`,
       `"${r.phone}"`,
@@ -266,412 +289,497 @@ export const VenueRentersView: React.FC = () => {
       `"${r.idDocNumber || ''}"`,
       `"${r.totalBookings}"`,
       `"${r.totalSpent}"`,
-      `"${r.currency}"`,
-      `"${(r.notes || '').replace(/"/g, '""')}"`,
+      `"${r.currency || 'DZD'}"`,
+      `"${r.notes || ''}"`,
     ]);
-    const csvContent = 'data:text/csv;charset=utf-8,\uFEFF' + [headers.join(','), ...rows.map((row) => row.join(','))].join('\n');
+    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `venue-renters-${new Date().toISOString().split('T')[0]}.csv`);
+    link.setAttribute('download', `atrium-venue-renters-${new Date().toISOString().split('T')[0]}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    showToast({
-      type: 'success',
-      title: language === 'ar' ? 'تم التصدير' : language === 'fr' ? 'Exportation réussie' : 'Export Complete',
-      message: `${sortedRenters.length} ${language === 'ar' ? 'سجل مستأجر تم تصديره' : 'renters exported successfully'}`,
-    });
+  };
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(() => {});
+    } else {
+      document.exitFullscreen().catch(() => {});
+    }
   };
 
   const handleBatchDelete = () => {
     if (selectedIds.size === 0) return;
-    const count = selectedIds.size;
-    if (confirm(language === 'ar' ? `هل أنت متأكد من حذف ${count} مستأجر؟` : language === 'fr' ? `Supprimer ${count} locataires sélectionnés ?` : `Delete ${count} selected renters?`)) {
+    if (window.confirm(`Delete ${selectedIds.size} selected renters?`)) {
       selectedIds.forEach((id) => deleteRentalRenter(id));
       setSelectedIds(new Set());
-      showToast({
-        type: 'info',
-        title: language === 'ar' ? 'تم الحذف' : language === 'fr' ? 'Suppression' : 'Deleted',
-        message: `${count} ${language === 'ar' ? 'مستأجرين تم حذفهم' : 'renters removed'}`,
-      });
     }
   };
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-3.5">
-          <div className="w-11 h-11 rounded-2xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-800 dark:text-neutral-200">
-            <Users size={22} />
+    <div className="space-y-6">
+      {/* Outer Workspace Panel matching Desktop Spec Screenshot 881 / 30 */}
+      <div className="bg-white dark:bg-[#18181B] rounded-[28px] border border-[#E9EEF0] dark:border-neutral-800 p-6 lg:p-8 space-y-6 shadow-xs">
+        {/* Row 0: Top Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5">
+            <div className="w-11 h-11 rounded-2xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-800 dark:text-neutral-200">
+              <Users size={22} />
+            </div>
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white">
+                {t('venue_renters_page_title')}
+              </h1>
+              <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
+                {t('venue_renters_page_sub')}
+              </p>
+            </div>
           </div>
+
+          <div className="flex items-center gap-3 relative flex-wrap">
+            {/* Facility Pill: Atrium 1 ▾ */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setIsFacilityDropdownOpen(!isFacilityDropdownOpen)}
+                className="h-10 px-4 rounded-xl bg-[#F4EFEA] dark:bg-neutral-800/80 border border-[#E8DFD8] dark:border-neutral-700 flex items-center gap-2 cursor-pointer hover:bg-[#EFE8E1] dark:hover:bg-neutral-800 transition-colors shadow-2xs"
+              >
+                <Home size={15} className="text-[#C4785A]" />
+                <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
+                  {currentBranch?.name || 'Atrium 1'}
+                </span>
+                <ChevronDown
+                  size={14}
+                  className={`text-neutral-500 transition-transform ${
+                    isFacilityDropdownOpen ? 'rotate-180' : ''
+                  }`}
+                />
+              </button>
+
+              {/* Facility Dropdown Menu */}
+              {isFacilityDropdownOpen && (
+                <div className="absolute right-0 rtl:right-auto rtl:left-0 mt-2 w-64 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
+                  <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+                    {language === 'ar' ? 'الفروع والمرافق' : language === 'fr' ? 'Succursales & Sites' : 'Branches & Venues'}
+                  </div>
+                  {businesses.map((biz) => {
+                    const isCurrent = biz.id === currentBusinessId;
+                    const matchingBranch = branches.find((b) => b.businessId === biz.id);
+                    return (
+                      <button
+                        key={biz.id}
+                        type="button"
+                        onClick={() => {
+                          switchBusiness(biz.id);
+                          if (matchingBranch) switchBranch(matchingBranch.id);
+                          setIsFacilityDropdownOpen(false);
+                        }}
+                        className={`w-full px-3 py-2 text-left rtl:text-right flex items-center justify-between text-xs transition-colors cursor-pointer ${
+                          isCurrent
+                            ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold'
+                            : 'text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 min-w-0">
+                          <Building2 size={14} className={isCurrent ? 'text-[#C4785A]' : 'text-neutral-400'} />
+                          <span className="truncate">{biz.name}</span>
+                        </div>
+                        {isCurrent && <Check size={14} />}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Seed Demo Data Button */}
+            <AtriumButton
+              type="button"
+              variant="outline"
+              size="sm"
+              icon={<Sparkles size={14} className="text-[#C4785A]" />}
+              onClick={resetVenueMockData}
+              title={language === 'ar' ? 'إعادة شحن بيانات تجريبية' : language === 'fr' ? 'Recharger Données Démo' : 'Seed Mock Data'}
+            >
+              <span className="hidden sm:inline">
+                {language === 'ar' ? 'بيانات تجريبية' : language === 'fr' ? 'Données Démo' : 'Demo Data'}
+              </span>
+            </AtriumButton>
+
+            {/* Add Renter Primary Button */}
+            <AtriumButton
+              type="button"
+              variant="primary"
+              onClick={handleOpenAdd}
+              icon={<Plus size={15} strokeWidth={2.5} />}
+            >
+              <span>{t('venue_renters_btn_add')}</span>
+            </AtriumButton>
+          </div>
+        </div>
+
+        {/* Row 1: Top Metrics Pod Tray matching Staff Management Screenshot 30 */}
+        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-900 dark:text-white">
-              {t('venue_renters_page_title')}
-            </h1>
-            <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
-              {t('venue_renters_page_sub')}
+            <h2 className="text-base font-bold text-neutral-900 dark:text-white">
+              {language === 'ar' ? 'دليل المستأجرين & مؤشرات النشاط' : language === 'fr' ? 'Dossiers Locataires & Indicateurs' : 'Renters Directory & Portfolio Health'}
+            </h2>
+            <p className="text-xs text-neutral-400 dark:text-neutral-500">
+              {language === 'ar'
+                ? 'متابعة حسابات منظمي الفعاليات والشركات والمداخيل التراكمية'
+                : language === 'fr'
+                ? 'Comptes des organisateurs, ratio entreprises et volume locatif cumulé'
+                : 'Key organizer accounts, corporate ratios, and cumulative venue spend'}
             </p>
           </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {/* Tile 1: Active Renter Base — Pure White Card */}
+            <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
+              <div>
+                <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
+                  {language === 'ar' ? 'إجمالي المستأجرين' : language === 'fr' ? 'Base Totale Locataires' : 'Total Renters'}
+                </span>
+                <div className="mt-1">
+                  <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
+                    ↗ 100% {language === 'ar' ? 'نشط' : language === 'fr' ? 'Actifs' : 'Active'}
+                  </span>
+                </div>
+              </div>
+              <div className="text-3xl font-black text-neutral-900 dark:text-white tabular-nums">
+                {totalRentersCount}
+              </div>
+            </div>
+
+            {/* Tile 2: Corporate Organizers — Pure White Card */}
+            <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
+              <div>
+                <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
+                  {t('venue_renters_kpi_corporate')}
+                </span>
+                <div className="mt-1">
+                  <span className="text-[10px] font-bold text-[#C4785A] bg-[#C4785A]/10 px-2 py-0.5 rounded-full">
+                    {corporateCount} {language === 'ar' ? 'شركات وهيئات' : language === 'fr' ? 'entreprises' : 'corporate'}
+                  </span>
+                </div>
+              </div>
+              <div className="text-3xl font-black text-neutral-900 dark:text-white tabular-nums">
+                {totalRentersCount > 0 ? Math.round((corporateCount / totalRentersCount) * 100) : 0}%
+              </div>
+            </div>
+
+            {/* Tile 3: DARK ESPRESSO CARD (#1F1D1B) — Cumulative Revenue */}
+            <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
+              <div>
+                <span className="text-xs font-medium text-neutral-300">
+                  {t('venue_renters_kpi_revenue')}
+                </span>
+                <div className="text-[11px] text-[#FB923C] font-semibold mt-0.5">
+                  <span className="bg-[#3D2817] px-2 py-0.5 rounded-full inline-block">
+                    {language === 'ar' ? 'حجم التعاقدات التراكمي' : language === 'fr' ? 'Masse locative cumulée' : 'Cumulative Bookings Turnover'}
+                  </span>
+                </div>
+              </div>
+              <div className="text-2xl font-black text-white tabular-nums font-mono">
+                {formatCurrencyAmount(totalRevenue, 'DZD')}
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div className="flex items-center gap-2.5 flex-wrap self-start sm:self-auto">
-          {/* Facility Pill: Atrium 1 ▾ */}
-          <div className="relative">
-            <button
-              type="button"
-              onClick={() => setIsFacilityDropdownOpen(!isFacilityDropdownOpen)}
-              className="h-10 px-4 rounded-full bg-[#F4EFEA] dark:bg-neutral-800/80 border border-[#E8DFD8] dark:border-neutral-700 flex items-center gap-2 cursor-pointer hover:bg-[#EFE8E1] dark:hover:bg-neutral-800 transition-colors shadow-2xs"
-            >
-              <Home size={15} className="text-[#C4785A]" />
-              <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
-                {currentBranch?.name || 'Atrium 1'}
+        {/* Row 2: Bottom Collection Pod Tray matching Staff Management Screenshot 30 */}
+        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+          {/* Integrated Toolbar Row */}
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            {/* Left: Icon + Title + Count Badge */}
+            <div className="flex items-center gap-2">
+              <Users size={16} className="text-neutral-500" />
+              <span className="text-sm font-bold text-neutral-900 dark:text-white">
+                {language === 'ar' ? 'دليل المستأجرين' : language === 'fr' ? 'Dossiers Locataires' : 'Venue Renters'}
               </span>
-              <ChevronDown
-                size={14}
-                className={`text-neutral-500 transition-transform ${
-                  isFacilityDropdownOpen ? 'rotate-180' : ''
-                }`}
-              />
-            </button>
+              <span className="text-xs text-neutral-400 font-semibold tabular-nums ml-1">
+                {sortedRenters.length}
+              </span>
+            </div>
 
-            {/* Facility Dropdown Menu */}
-            {isFacilityDropdownOpen && (
-              <div className="absolute right-0 rtl:right-auto rtl:left-0 mt-2 w-64 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
-                <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
-                  {language === 'ar' ? 'الفروع والمرافق' : language === 'fr' ? 'Succursales & Sites' : 'Branches & Venues'}
+            {/* Right: Seek, Capsules, CSV, View Toggles, Fullscreen */}
+            <div className="flex flex-wrap items-center gap-2.5 ml-auto">
+              {/* Expanding Seek Search Box */}
+              <Seek
+                value={searchQuery}
+                onChange={setSearchQuery}
+                placeholder={t('venue_renters_search_ph')}
+                shutSize={36}
+                openWidth={220}
+              />
+
+              {/* Status/Type Filter Capsules */}
+              <div className="flex items-center bg-white dark:bg-neutral-800 border border-neutral-200/80 dark:border-neutral-700 p-0.5 rounded-xl shadow-2xs">
+                <button
+                  type="button"
+                  onClick={() => setFilterType('All')}
+                  className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                    filterType === 'All'
+                      ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold shadow-2xs'
+                      : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
+                  }`}
+                >
+                  {language === 'ar' ? 'الكل' : language === 'fr' ? 'Tous' : 'All'} {totalRentersCount}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFilterType('Corporate')}
+                  className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                    filterType === 'Corporate'
+                      ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold shadow-2xs'
+                      : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
+                  }`}
+                >
+                  {language === 'ar' ? 'شركات' : language === 'fr' ? 'Entreprises' : 'Corporate'} {corporateCount}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFilterType('Individual')}
+                  className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                    filterType === 'Individual'
+                      ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold shadow-2xs'
+                      : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
+                  }`}
+                >
+                  {language === 'ar' ? 'أفراد' : language === 'fr' ? 'Particuliers' : 'Private'} {individualCount}
+                </button>
+              </div>
+
+              {/* Export CSV Button */}
+              <button
+                type="button"
+                onClick={handleExportCSV}
+                className="h-9 px-3 rounded-xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700/50 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
+              >
+                <Download size={13} />
+                <span>{language === 'ar' ? 'تصدير' : language === 'fr' ? 'Exporter' : 'Export Data'}</span>
+              </button>
+
+              {/* Fullscreen Expand Button */}
+              <button
+                type="button"
+                onClick={toggleFullscreen}
+                className="h-9 w-9 rounded-xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700/50 flex items-center justify-center transition-colors cursor-pointer shadow-2xs"
+                title="Fullscreen"
+              >
+                <Maximize2 size={14} />
+              </button>
+            </div>
+          </div>
+
+          {/* Batch Selection Banner */}
+          {selectedIds.size > 0 && (
+            <div className="flex items-center justify-between p-3 px-4 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 animate-in fade-in slide-in-from-top-2">
+              <div className="flex items-center gap-3">
+                <span className="w-2.5 h-2.5 rounded-full bg-[#C4785A] animate-pulse" />
+                <span className="text-xs font-bold text-neutral-900 dark:text-white">
+                  {selectedIds.size} {language === 'ar' ? 'مستأجرين محددين' : language === 'fr' ? 'locataires sélectionnés' : 'renters selected'}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setSelectedIds(new Set())}
+                  className="px-3 py-1 text-xs text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white font-medium cursor-pointer"
+                >
+                  {language === 'ar' ? 'إلغاء التحديد' : language === 'fr' ? 'Désélectionner' : 'Deselect'}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleBatchDelete}
+                  className="px-3.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                >
+                  <Trash2 size={13} />
+                  <span>{language === 'ar' ? 'حذف المحدد' : language === 'fr' ? 'Supprimer' : 'Delete Selected'}</span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Universal Collection Rendering */}
+          <UniversalDataCollection<RentalRenter>
+            items={sortedRenters}
+            keyExtractor={(r) => r.id}
+            defaultViewMode="list"
+            columns={renterColumns}
+            sortBy={renterSortBy}
+            sortDirection={renterSortDir}
+            onSortChange={(key) => {
+              if (renterSortBy === key) {
+                setRenterSortDir((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+              } else {
+                setRenterSortBy(key);
+                setRenterSortDir('asc');
+              }
+            }}
+            selectedIds={selectedIds}
+            onSelectionChange={setSelectedIds}
+            isPinned={(r) => pinnedRenterIds.has(r.id)}
+            onTogglePin={(r) => togglePinRenter(r.id)}
+            onEdit={handleOpenEdit}
+            onDelete={(r) => {
+              if (window.confirm(`Delete renter ${r.fullName}?`)) {
+                deleteRentalRenter(r.id);
+              }
+            }}
+            customActions={(r) => [
+              {
+                id: 'book',
+                label: language === 'ar' ? 'حجز قاعة' : language === 'fr' ? 'Réserver' : 'Book',
+                icon: <Calendar size={13} />,
+                variant: 'primary',
+                onClick: () => {
+                  setBookingRenterId(r.id);
+                  setIsBookingModalOpen(true);
+                },
+              },
+            ]}
+            renderCard={(renter) => (
+              <div className="flex flex-col items-center justify-center w-full">
+                <div className="w-20 h-20 rounded-full bg-[#FCEEE8] dark:bg-neutral-800 text-[#C4785A] flex items-center justify-center text-2xl font-bold shadow-xs mb-3 select-none border border-[#F5E2D8] dark:border-neutral-700">
+                  {renter.fullName.charAt(0).toUpperCase()}
                 </div>
-                {businesses.map((biz) => {
-                  const isCurrent = biz.id === currentBusinessId;
-                  const matchingBranch = branches.find((b) => b.businessId === biz.id);
-                  return (
-                    <button
-                      key={biz.id}
-                      type="button"
-                      onClick={() => {
-                        switchBusiness(biz.id);
-                        if (matchingBranch) switchBranch(matchingBranch.id);
-                        setIsFacilityDropdownOpen(false);
-                      }}
-                      className={`w-full px-3 py-2 text-left rtl:text-right flex items-center justify-between text-xs transition-colors cursor-pointer ${
-                        isCurrent
-                          ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold'
-                          : 'text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2 min-w-0">
-                        <Building2 size={14} className={isCurrent ? 'text-[#C4785A]' : 'text-neutral-400'} />
-                        <span className="truncate">{biz.name}</span>
-                      </div>
-                      {isCurrent && <Check size={14} />}
-                    </button>
-                  );
-                })}
+                <h3 className="text-base font-bold text-neutral-900 dark:text-white truncate max-w-[210px] mb-0.5 tracking-tight">
+                  {renter.fullName}
+                </h3>
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 mb-3 truncate max-w-[200px]">
+                  {renter.companyName || (language === 'ar' ? 'مستأجر خاص' : language === 'fr' ? 'Locataire Particulier' : 'Private Renter')}
+                </span>
+                <div className="w-full pt-3 border-t border-neutral-100 dark:border-neutral-800 text-xs space-y-1 text-center">
+                  <div className="font-mono text-neutral-600 dark:text-neutral-400 text-[11px]">{renter.phone}</div>
+                  <div className="truncate text-neutral-400 text-[11px]">{renter.email}</div>
+                  <div className="flex items-center justify-between pt-2 border-t border-neutral-100 dark:border-neutral-800">
+                    <span className="text-[11px] text-neutral-400 uppercase font-medium">
+                      {renter.totalBookings} {language === 'ar' ? 'حجز' : 'bookings'}
+                    </span>
+                    <span className="font-bold text-[#C4785A] tabular-nums font-mono">
+                      {formatCurrencyAmount(renter.totalSpent, renter.currency)}
+                    </span>
+                  </div>
+                </div>
               </div>
             )}
-          </div>
+          />
 
-          {/* Export CSV Button */}
-          <AtriumButton
-            type="button"
-            variant="secondary"
-            onClick={handleExportCSV}
-            icon={<Download size={14} />}
-            title="Export CSV"
-          >
-            <span className="hidden sm:inline">CSV</span>
-          </AtriumButton>
-
-          {/* Seed Demo Data Button */}
-          <AtriumButton
-            type="button"
-            variant="secondary"
-            onClick={resetVenueMockData}
-            icon={<Sparkles size={14} className="text-[#C4785A]" />}
-            title={language === 'ar' ? 'إعادة شحن بيانات تجريبية' : language === 'fr' ? 'Recharger Données Démo' : 'Seed Mock Data'}
-          >
-            <span className="hidden sm:inline">{language === 'ar' ? 'بيانات تجريبية' : language === 'fr' ? 'Données Démo' : 'Demo Data'}</span>
-          </AtriumButton>
-
-          {/* New Renter Button */}
-          <AtriumButton
-            type="button"
-            variant="primary"
-            onClick={handleOpenAdd}
-            icon={<Plus size={15} />}
-          >
-            <span>{t('venue_renters_btn_add')}</span>
-          </AtriumButton>
-        </div>
-      </div>
-
-      {/* Batch Selection Toolbar */}
-      {selectedIds.size > 0 && (
-        <div className="flex items-center justify-between p-3 px-4 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 animate-in fade-in slide-in-from-top-2">
-          <div className="flex items-center gap-3">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#C4785A] animate-pulse" />
-            <span className="text-xs font-bold text-neutral-900 dark:text-white">
-              {selectedIds.size} {language === 'ar' ? 'مستأجرين محددين' : language === 'fr' ? 'locataires sélectionnés' : 'renters selected'}
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setSelectedIds(new Set())}
-              className="px-3 py-1.5 text-xs text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white font-medium cursor-pointer"
-            >
-              {language === 'ar' ? 'إلغاء التحديد' : language === 'fr' ? 'Désélectionner' : 'Deselect'}
-            </button>
-            <button
-              onClick={handleBatchDelete}
-              className="px-3.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
-            >
-              <Trash2 size={13} />
-              <span>{language === 'ar' ? 'حذف المحدد' : language === 'fr' ? 'Supprimer' : 'Delete Selected'}</span>
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="p-5 rounded-2xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-800">
-          <div className="text-xs font-medium text-neutral-500 uppercase tracking-wider mb-1">
-            {t('venue_renters_kpi_total')}
-          </div>
-          <div className="text-2xl font-bold text-neutral-900 dark:text-white tabular-nums">
-            {totalRentersCount}
-          </div>
-          <div className="text-xs text-neutral-400 mt-1">
-            {corporateCount} {t('venue_renters_kpi_corporate')}
-          </div>
-        </div>
-
-        <div className="p-5 rounded-2xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-800">
-          <div className="text-xs font-medium text-neutral-500 uppercase tracking-wider mb-1">
-            {t('venue_renters_kpi_corporate')}
-          </div>
-          <div className="text-2xl font-bold text-neutral-900 dark:text-white tabular-nums">
-            {totalRentersCount > 0 ? Math.round((corporateCount / totalRentersCount) * 100) : 0}%
-          </div>
-          <div className="text-xs text-neutral-400 mt-1">
-            {language === 'ar' ? 'الشركات، الوكالات والمؤسسات' : language === 'fr' ? 'Entreprises, agences et institutions' : 'Agencies, production studios & forums'}
-          </div>
-        </div>
-
-        <div className="p-5 rounded-2xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-800">
-          <div className="text-xs font-medium text-neutral-500 uppercase tracking-wider mb-1">
-            {t('venue_renters_kpi_revenue')}
-          </div>
-          <div className="text-2xl font-bold text-neutral-900 dark:text-white tabular-nums">
-            {formatCurrencyAmount(totalRevenue, 'DZD')}
-          </div>
-          <div className="text-xs text-neutral-400 mt-1">
-            {language === 'ar' ? 'إجمالي المداخيل التراكمية' : language === 'fr' ? 'Chiffre d\'affaires cumulé' : 'Cumulative bookings turnover'}
+          {/* Footer Count matching Screenshot 30 */}
+          <div className="pt-2 text-center text-xs text-neutral-400 font-medium">
+            {sortedRenters.length} {language === 'ar' ? 'مستأجرين معروضين' : language === 'fr' ? 'membres affichés' : 'renters displayed'}
           </div>
         </div>
       </div>
-
-      {/* Seek Kinetic Search */}
-      <Seek
-        value={searchQuery}
-        onChange={setSearchQuery}
-        placeholder={t('venue_renters_search_ph')}
-        shutSize={38}
-        openWidth={300}
-      />
-
-      {/* Universal Collection (List view & Grid view with 6-button corner-fan) */}
-      <UniversalDataCollection<RentalRenter>
-        items={sortedRenters}
-        keyExtractor={(r) => r.id}
-        defaultViewMode="list"
-        columns={renterColumns}
-        sortBy={renterSortBy}
-        sortDirection={renterSortDir}
-        onSortChange={(key) => {
-          if (renterSortBy === key) {
-            setRenterSortDir((prev) => (prev === 'asc' ? 'desc' : 'asc'));
-          } else {
-            setRenterSortBy(key);
-            setRenterSortDir('asc');
-          }
-        }}
-        renderCard={(renter) => (
-          <div className="flex flex-col items-center justify-center w-full">
-            <div className="w-24 h-24 rounded-full bg-[#FCEEE8] dark:bg-neutral-800 text-[#C4785A] flex items-center justify-center text-[32px] font-bold shadow-md mb-4 select-none border border-[#F5E2D8] dark:border-neutral-700">
-              {renter.fullName.charAt(0).toUpperCase()}
-            </div>
-            <h3 className="text-[16px] font-bold text-neutral-900 dark:text-white truncate max-w-[210px] mb-1 tracking-tight">
-              {renter.fullName}
-            </h3>
-            <span className="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-semibold bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 mb-3 truncate max-w-[200px]">
-              {renter.companyName || (language === 'ar' ? 'مستأجر خاص' : language === 'fr' ? 'Locataire Particulier' : 'Private Renter')}
-            </span>
-            <div className="w-full pt-3 border-t border-neutral-100 dark:border-neutral-800 text-xs space-y-1 text-center">
-              <div className="font-mono text-neutral-600 dark:text-neutral-400">{renter.phone}</div>
-              <div className="truncate text-neutral-400 text-[11px]">{renter.email}</div>
-              <div className="flex items-center justify-between pt-2 border-t border-neutral-100 dark:border-neutral-800">
-                <span className="text-[11px] text-neutral-400 uppercase font-medium">
-                  {renter.totalBookings} {language === 'ar' ? 'حجز' : 'bookings'}
-                </span>
-                <span className="font-bold text-[#C4785A] tabular-nums">
-                  {formatCurrencyAmount(renter.totalSpent, renter.currency)}
-                </span>
-              </div>
-            </div>
-          </div>
-        )}
-        onItemClick={(renter) => handleOpenEdit(renter)}
-        onViewDetails={(renter) => handleOpenEdit(renter)}
-        onEdit={(renter) => handleOpenEdit(renter)}
-        onTogglePin={(renter) => {
-          setPinnedRenterIds((prev) => {
-            const next = new Set(prev);
-            if (next.has(renter.id)) {
-              next.delete(renter.id);
-              showToast({
-                type: 'info',
-                title: 'Unpinned',
-                message: `${renter.fullName} unpinned`,
-              });
-            } else {
-              next.add(renter.id);
-              showToast({
-                type: 'info',
-                title: 'Pinned',
-                message: `${renter.fullName} pinned to top`,
-              });
-            }
-            return next;
-          });
-        }}
-        onDelete={(renter) => {
-          if (confirm(`${t('venue_renters_btn_delete')} ${renter.fullName}?`)) {
-            deleteRentalRenter(renter.id);
-          }
-        }}
-        customActions={(renter) => [
-          {
-            id: 'book',
-            tooltip: t('venue_renters_btn_quick_book'),
-            icon: <Calendar size={13} />,
-            iconColor: '#C4785A',
-            onClick: (e) => {
-              e.stopPropagation();
-              setBookingRenterId(renter.id);
-              setIsBookingModalOpen(true);
-            },
-          },
-        ]}
-        isPinned={(renter) => pinnedRenterIds.has(renter.id)}
-        selectedIds={selectedIds}
-        onSelectionChange={setSelectedIds}
-        emptyTitle={t('venue_renters_no_renters')}
-        emptyDescription={t('venue_renters_no_renters_desc')}
-        primaryActionLabel={t('venue_renters_btn_add')}
-        onAddFirstItem={handleOpenAdd}
-      />
 
       {/* Add / Edit Renter Modal */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <div className="bg-white dark:bg-[#18181B] rounded-[28px] border border-neutral-200 dark:border-neutral-800 shadow-2xl max-w-md w-full p-6 space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-neutral-200 dark:border-neutral-800">
-              <h3 className="text-base font-bold text-neutral-900 dark:text-white">
-                {renterToEdit ? t('venue_renters_modal_edit_title') : t('venue_renters_modal_add_title')}
-              </h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-neutral-800 rounded-3xl border border-neutral-200 dark:border-neutral-700 shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="p-6 border-b border-neutral-100 dark:border-neutral-700/60 flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-bold text-neutral-900 dark:text-white">
+                  {renterToEdit ? t('venue_renters_btn_edit') : t('venue_renters_btn_add')}
+                </h3>
+                <p className="text-xs text-neutral-400 mt-0.5">
+                  {language === 'ar'
+                    ? 'تسجيل بيانات المنظم، وثائق الهوية والشركة'
+                    : language === 'fr'
+                    ? 'Enregistrer les coordonnées et documents de l\'organisateur'
+                    : 'Save organizer contact, ID document, and corporate details'}
+                </p>
+              </div>
               <button
+                type="button"
                 onClick={() => setIsAddModalOpen(false)}
-                className="p-1.5 text-neutral-400 hover:text-neutral-700 rounded-lg cursor-pointer"
+                className="w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-700 flex items-center justify-center text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors cursor-pointer"
               >
-                <X size={16} />
+                <X size={15} />
               </button>
             </div>
 
-            <form onSubmit={handleSaveRenter} className="space-y-3.5 text-xs">
+            <form onSubmit={handleSaveRenter} className="p-6 space-y-4">
               <LabelInput
-                id="renter-fullname"
-                label={t('venue_renters_field_fullname')}
-                placeholder="e.g. Amina Kaci"
+                label={language === 'ar' ? 'الاسم الكامل *' : language === 'fr' ? 'Nom Complet *' : 'Full Name *'}
+                placeholder="e.g. Tarek Benaissa"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 required
               />
 
               <LabelInput
-                id="renter-company"
-                label={t('venue_renters_field_company')}
-                placeholder="e.g. Kaci Events & Communications"
+                label={language === 'ar' ? 'اسم المؤسسة / الشركة المنظمة' : language === 'fr' ? 'Nom de l\'Entreprise / Organisation' : 'Company or Organization Name'}
+                placeholder="e.g. SARL Event Horizon"
                 value={companyName}
                 onChange={(e) => setCompanyName(e.target.value)}
               />
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <LabelInput
-                  id="renter-phone"
-                  label={t('venue_renters_field_phone')}
-                  type="tel"
-                  placeholder="+213 552 11 22 33"
+                  label={language === 'ar' ? 'رقم الهاتف *' : language === 'fr' ? 'Numéro de Téléphone *' : 'Telephone *'}
+                  placeholder="+213 550 12 34 56"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   required
                 />
                 <LabelInput
-                  id="renter-email"
-                  label={t('venue_renters_field_email')}
+                  label={language === 'ar' ? 'البريد الإلكتروني' : language === 'fr' ? 'Adresse E-mail' : 'Email Address'}
                   type="email"
-                  placeholder="contact@events.dz"
+                  placeholder="contact@organisation.dz"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
 
               <LabelInput
-                id="renter-id-doc"
-                label={t('venue_renters_field_id_doc')}
-                placeholder="e.g. ID-DZ-9912048"
+                label={language === 'ar' ? 'رقم بطاقة الهوية / السجل التجاري' : language === 'fr' ? 'N° Pièce d\'Identité / Registre du Commerce' : 'National ID / RC / NIF'}
+                placeholder="e.g. 16/00-1234567B19"
                 value={idDocNumber}
                 onChange={(e) => setIdDocNumber(e.target.value)}
               />
 
               <div>
-                <label className="block font-medium text-neutral-700 dark:text-neutral-300 mb-1">
-                  {t('venue_renters_field_notes')}
+                <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
+                  {language === 'ar' ? 'ملاحظات وتفضيلات الحجز' : language === 'fr' ? 'Remarques & Préférences' : 'Notes & Preferences'}
                 </label>
                 <textarea
-                  rows={2}
-                  placeholder="Special catering needs, preferred spaces, billing preferences..."
+                  rows={3}
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  className="w-full px-3 py-2 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-xs"
+                  placeholder={language === 'ar' ? 'متطلبات تقنية، سجل المدفوعات...' : language === 'fr' ? 'Exigences techniques, historique...' : 'Technical needs, catering...'}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-900 text-xs text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C4785A]"
                 />
               </div>
 
-              <div className="flex justify-end rtl:justify-start gap-2 pt-3 border-t border-neutral-200 dark:border-neutral-800">
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-neutral-100 dark:border-neutral-700/60">
                 <button
                   type="button"
                   onClick={() => setIsAddModalOpen(false)}
-                  className="px-4 py-2 text-neutral-600 hover:text-neutral-900 cursor-pointer"
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
                 >
-                  {t('common_cancel')}
+                  {language === 'ar' ? 'إلغاء' : language === 'fr' ? 'Annuler' : 'Cancel'}
                 </button>
-                <button
+                <AtriumButton
                   type="submit"
-                  className="px-5 py-2 bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white font-semibold rounded-xl cursor-pointer"
+                  variant="primary"
+                  icon={<Check size={14} />}
                 >
-                  {t('venue_renters_save_btn')}
-                </button>
+                  {renterToEdit ? (language === 'ar' ? 'تحديث البيانات' : language === 'fr' ? 'Mettre à jour' : 'Update Renter') : (language === 'ar' ? 'حفظ المستأجر' : language === 'fr' ? 'Enregistrer' : 'Save Renter')}
+                </AtriumButton>
               </div>
             </form>
           </div>
         </div>
       )}
 
-      {/* Booking Modal */}
+      {/* Global Booking Modal */}
       <BookingModal
         isOpen={isBookingModalOpen}
         onClose={() => setIsBookingModalOpen(false)}
+        initialRenterId={bookingRenterId}
       />
     </div>
   );

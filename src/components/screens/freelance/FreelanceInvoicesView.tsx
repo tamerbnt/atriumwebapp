@@ -67,6 +67,7 @@ export const FreelanceInvoicesView: React.FC = () => {
 
   const currentBranch = branches.find((b) => b.id === currentBranchId);
   const [isFacilityDropdownOpen, setIsFacilityDropdownOpen] = useState(false);
+  const [isQuickActionsOpen, setIsQuickActionsOpen] = useState(false);
   const [selectedInvoiceIds, setSelectedInvoiceIds] = useState<Set<string>>(new Set());
   const [pinnedInvoiceIds, setPinnedInvoiceIds] = useState<Set<string>>(new Set());
   const [invoiceSortBy, setInvoiceSortBy] = useState<string>('invoiceNumber');
@@ -396,20 +397,27 @@ export const FreelanceInvoicesView: React.FC = () => {
     }
   };
 
+  const paidCount = freelanceInvoices.filter((i) => i.status === 'Paid').length;
+  const paidTotal = freelanceInvoices.filter((i) => i.status === 'Paid').reduce((acc, i) => acc + (i.totalAmount || 0), 0);
+  const pendingCount = freelanceInvoices.filter((i) => i.status === 'Sent' || i.status === 'Draft').length;
+  const pendingTotal = freelanceInvoices.filter((i) => i.status === 'Sent' || i.status === 'Draft').reduce((acc, i) => acc + (i.totalAmount || 0), 0);
+  const overdueCount = freelanceInvoices.filter((i) => i.status === 'Overdue').length;
+  const overdueTotal = freelanceInvoices.filter((i) => i.status === 'Overdue').reduce((acc, i) => acc + (i.totalAmount || 0), 0);
+
   return (
-    <div className="space-y-6 animate-in fade-in duration-200">
-      {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-neutral-200 dark:border-neutral-800">
+    <div className="bg-white dark:bg-[#18181B] rounded-[28px] border border-[#E9EEF0] dark:border-neutral-800 p-6 lg:p-8 space-y-6 shadow-xs animate-in fade-in duration-200">
+      {/* Row 0: Workspace Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
-          <div className="w-11 h-11 rounded-2xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-800 dark:text-neutral-200">
-            <FileText size={22} />
+          <div className="w-12 h-12 rounded-2xl bg-[#C4785A]/10 text-[#C4785A] flex items-center justify-center shrink-0">
+            <FileText size={24} />
           </div>
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2.5">
               <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-900 dark:text-white">
                 {t('free_inv_title', language)}
               </h1>
-              <span className="text-xs text-neutral-500 dark:text-neutral-400">
+              <span className="text-xs px-2.5 py-1 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 font-semibold">
                 {freelanceInvoices.length} {t('free_inv_title', language).toLowerCase()}
               </span>
             </div>
@@ -420,12 +428,12 @@ export const FreelanceInvoicesView: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2.5 flex-wrap self-start sm:self-auto">
-          {/* Facility Pill: Atrium 1 ▾ */}
+          {/* Branch Switcher */}
           <div className="relative">
             <button
               type="button"
               onClick={() => setIsFacilityDropdownOpen(!isFacilityDropdownOpen)}
-              className="h-10 px-4 rounded-full bg-[#F4EFEA] dark:bg-neutral-800/80 border border-[#E8DFD8] dark:border-neutral-700 flex items-center gap-2 cursor-pointer hover:bg-[#EFE8E1] dark:hover:bg-neutral-800 transition-colors shadow-2xs"
+              className="h-[42px] px-4 rounded-[14px] bg-[#F8F9FA] dark:bg-neutral-800 border border-[#EDF1F3] dark:border-neutral-700 flex items-center gap-2 cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors shadow-2xs"
             >
               <Home size={15} className="text-[#C4785A]" />
               <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
@@ -433,13 +441,10 @@ export const FreelanceInvoicesView: React.FC = () => {
               </span>
               <ChevronDown
                 size={14}
-                className={`text-neutral-500 transition-transform ${
-                  isFacilityDropdownOpen ? 'rotate-180' : ''
-                }`}
+                className={`text-neutral-500 transition-transform ${isFacilityDropdownOpen ? 'rotate-180' : ''}`}
               />
             </button>
 
-            {/* Facility Dropdown Menu */}
             {isFacilityDropdownOpen && (
               <div className="absolute right-0 rtl:right-auto rtl:left-0 mt-2 w-64 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
                 <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
@@ -475,161 +480,280 @@ export const FreelanceInvoicesView: React.FC = () => {
             )}
           </div>
 
-          {/* Export CSV Button */}
-          <AtriumButton
-            type="button"
-            variant="secondary"
-            size="sm"
-            icon={<Download size={14} />}
-            onClick={handleExportCSV}
-            title="Export CSV"
-          >
-            <span className="hidden sm:inline">CSV</span>
-          </AtriumButton>
-
-          {/* Seed Demo Data Button */}
-          <AtriumButton
-            type="button"
-            variant="outline"
-            size="sm"
-            icon={<Sparkles size={14} />}
-            onClick={resetFreelanceMockData}
-            title={language === 'ar' ? 'إعادة شحن بيانات تجريبية' : language === 'fr' ? 'Recharger Données Démo' : 'Seed Mock Data'}
-          >
-            <span className="hidden sm:inline">{language === 'ar' ? 'بيانات تجريبية' : language === 'fr' ? 'Données Démo' : 'Demo Data'}</span>
-          </AtriumButton>
-
-          <AtriumButton
-            type="button"
-            variant="primary"
-            size="sm"
-            glow
-            icon={<Plus size={14} />}
-            onClick={() => setIsCreateModalOpen(true)}
-          >
-            {t('free_inv_btn_new', language)}
-          </AtriumButton>
-        </div>
-      </div>
-
-      {/* KPI Overview Strip */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="p-4 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-900/40 border border-[#EDF1F3] dark:border-neutral-800">
-          <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400 block mb-1">
-            {t('free_kpi_invoiced_ytd', language)}
-          </span>
-          <span className="text-2xl font-extrabold text-neutral-900 dark:text-white tabular-nums">
-            {freelanceInvoices.length}
-          </span>
-          <p className="text-[11px] text-neutral-500 mt-0.5">{t('free_kpi_active_clients', language)}</p>
-        </div>
-
-        <div className="p-4 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-900/40 border border-[#EDF1F3] dark:border-neutral-800">
-          <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400 block mb-1">
-            {t('free_inv_filter_paid', language)}
-          </span>
-          <span className="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400 tabular-nums">
-            {freelanceInvoices.filter((i) => i.status === 'Paid').length}
-          </span>
-          <p className="text-[11px] text-emerald-700/80 dark:text-emerald-400/80 mt-0.5">{t('free_inv_doc_paid_badge', language)}</p>
-        </div>
-
-        <div className="p-4 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-900/40 border border-[#EDF1F3] dark:border-neutral-800">
-          <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400 block mb-1">
-            {t('free_inv_filter_sent', language)}
-          </span>
-          <span className="text-2xl font-extrabold text-blue-600 dark:text-blue-400 tabular-nums">
-            {freelanceInvoices.filter((i) => i.status === 'Sent').length}
-          </span>
-          <p className="text-[11px] text-blue-700/80 dark:text-blue-400/80 mt-0.5">{t('free_invoice_status_sent', language)}</p>
-        </div>
-
-        <div className="p-4 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-900/40 border border-[#EDF1F3] dark:border-neutral-800">
-          <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400 block mb-1">
-            {t('free_inv_filter_overdue', language)}
-          </span>
-          <span className="text-2xl font-extrabold text-rose-600 dark:text-rose-400 tabular-nums">
-            {freelanceInvoices.filter((i) => i.status === 'Overdue').length}
-          </span>
-          <p className="text-[11px] text-rose-700/80 dark:text-rose-400/80 mt-0.5">{t('free_inv_doc_overdue_badge', language)}</p>
-        </div>
-      </div>
-
-      {/* Batch Selection Toolbar */}
-      {selectedInvoiceIds.size > 0 && (
-        <div className="flex items-center justify-between p-3 px-4 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 animate-in fade-in slide-in-from-top-2">
-          <div className="flex items-center gap-3">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#C4785A] animate-pulse" />
-            <span className="text-xs font-bold text-neutral-900 dark:text-white">
-              {selectedInvoiceIds.size} {language === 'ar' ? 'فواتير محددة' : language === 'fr' ? 'factures sélectionnées' : 'invoices selected'}
-            </span>
-          </div>
-          <div className="flex items-center gap-2 flex-wrap">
+          {/* Quick Actions Terracotta Button + Floating Popup */}
+          <div className="relative">
             <button
-              onClick={() => setSelectedInvoiceIds(new Set())}
-              className="px-3 py-1.5 text-xs text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white font-medium cursor-pointer"
-            >
-              {language === 'ar' ? 'إلغاء التحديد' : language === 'fr' ? 'Désélectionner' : 'Deselect'}
-            </button>
-            <button
-              onClick={handleBatchMarkPaid}
-              className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
-            >
-              <CheckCircle size={13} />
-              <span>{language === 'ar' ? 'تعليم كمدفوعة' : language === 'fr' ? 'Marquer Payé' : 'Mark Paid'}</span>
-            </button>
-            <button
-              onClick={handleBatchMarkSent}
-              className="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
-            >
-              <Send size={13} />
-              <span>{language === 'ar' ? 'تعليم كمرسلة' : language === 'fr' ? 'Marquer Envoyé' : 'Mark Sent'}</span>
-            </button>
-            <button
-              onClick={handleBatchDelete}
-              className="px-3.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
-            >
-              <Trash2 size={13} />
-              <span>{language === 'ar' ? 'حذف المحدد' : language === 'fr' ? 'Supprimer' : 'Delete'}</span>
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Filter and Search Bar */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-        <Seek
-          value={searchQuery}
-          onChange={setSearchQuery}
-          placeholder={t('free_search_clients_ph', language)}
-          openWidth={300}
-          shutSize={40}
-        />
-
-        {/* Segmented Filter Control */}
-        <div className="flex items-center gap-1 p-1 bg-neutral-100 dark:bg-neutral-800/80 rounded-xl self-start sm:self-auto overflow-x-auto">
-          {[
-            { id: 'all', label: t('free_inv_filter_all', language) },
-            { id: 'sent', label: t('free_inv_filter_sent', language) },
-            { id: 'paid', label: t('free_inv_filter_paid', language) },
-            { id: 'overdue', label: t('free_inv_filter_overdue', language) },
-            { id: 'draft', label: t('free_inv_filter_draft', language) },
-          ].map((tab) => (
-            <button
-              key={tab.id}
               type="button"
-              onClick={() => setSelectedStatus(tab.id)}
-              className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors whitespace-nowrap cursor-pointer ${
-                selectedStatus === tab.id
-                  ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-2xs'
-                  : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
-              }`}
+              onClick={() => setIsQuickActionsOpen(!isQuickActionsOpen)}
+              className="h-[42px] px-5 rounded-[14px] bg-[#C4785A] hover:bg-[#B3684A] text-white font-bold text-xs flex items-center gap-2 shadow-xs cursor-pointer transition-all active:scale-95"
             >
-              {tab.label}
+              <Plus size={15} />
+              <span>{language === 'ar' ? 'إجراءات سريعة' : language === 'fr' ? 'Actions Rapides' : 'Quick Actions'}</span>
             </button>
-          ))}
+
+            {isQuickActionsOpen && (
+              <div className="absolute right-0 rtl:right-auto rtl:left-0 mt-2 w-[240px] rounded-[18px] bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 p-2.5 shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-150 space-y-1">
+                <div className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+                  {language === 'ar' ? 'إجراءات سريعة' : language === 'fr' ? 'Actions Rapides' : 'Quick Actions'}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsQuickActionsOpen(false);
+                    setIsCreateModalOpen(true);
+                  }}
+                  className="w-full h-10 px-2.5 rounded-xl hover:bg-[#F8F9FA] dark:hover:bg-neutral-700 flex items-center gap-2.5 text-xs text-neutral-800 dark:text-neutral-200 font-medium transition-colors cursor-pointer text-left rtl:text-right"
+                >
+                  <div className="w-[30px] h-[30px] rounded-lg bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center shrink-0">
+                    <Plus size={15} />
+                  </div>
+                  <span>{t('free_inv_btn_new', language)}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsQuickActionsOpen(false);
+                    billUnbilledHours();
+                    showToast({
+                      type: 'success',
+                      title: language === 'ar' ? 'فوترة الساعات' : 'Bill Hours',
+                      message: language === 'ar' ? 'تم تحويل الساعات غير المفوترة إلى مسودات' : 'Unbilled hours drafted into invoices',
+                      category: 'freelance_solo',
+                    });
+                  }}
+                  className="w-full h-10 px-2.5 rounded-xl hover:bg-[#F8F9FA] dark:hover:bg-neutral-700 flex items-center gap-2.5 text-xs text-neutral-800 dark:text-neutral-200 font-medium transition-colors cursor-pointer text-left rtl:text-right"
+                >
+                  <div className="w-[30px] h-[30px] rounded-lg bg-emerald-500/15 text-emerald-600 flex items-center justify-center shrink-0">
+                    <Clock size={15} />
+                  </div>
+                  <span>{language === 'ar' ? 'فوترة الساعات المتبقية' : language === 'fr' ? 'Facturer Heures' : 'Bill Unbilled Hours'}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsQuickActionsOpen(false);
+                    handleExportCSV();
+                  }}
+                  className="w-full h-10 px-2.5 rounded-xl hover:bg-[#F8F9FA] dark:hover:bg-neutral-700 flex items-center gap-2.5 text-xs text-neutral-800 dark:text-neutral-200 font-medium transition-colors cursor-pointer text-left rtl:text-right"
+                >
+                  <div className="w-[30px] h-[30px] rounded-lg bg-blue-500/15 text-blue-600 flex items-center justify-center shrink-0">
+                    <Download size={15} />
+                  </div>
+                  <span>{language === 'ar' ? 'تصدير CSV' : language === 'fr' ? 'Exporter CSV' : 'Export CSV'}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsQuickActionsOpen(false);
+                    resetFreelanceMockData();
+                  }}
+                  className="w-full h-10 px-2.5 rounded-xl hover:bg-[#F8F9FA] dark:hover:bg-neutral-700 flex items-center gap-2.5 text-xs text-neutral-800 dark:text-neutral-200 font-medium transition-colors cursor-pointer text-left rtl:text-right"
+                >
+                  <div className="w-[30px] h-[30px] rounded-lg bg-amber-500/15 text-amber-600 flex items-center justify-center shrink-0">
+                    <Sparkles size={15} />
+                  </div>
+                  <span>{language === 'ar' ? 'إعادة ضبط البيانات' : 'Reset Demo Data'}</span>
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
+
+      {/* Top Metrics Pod Tray: 3 Inset Cards including Dark Espresso Card */}
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+        <div>
+          <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+            {language === 'ar' ? 'مؤشرات الفوترة والمستحقات المالية' : language === 'fr' ? 'Indicateurs de Facturation & Recouvrement' : 'Billing & Cash Flow Indicators'}
+          </h2>
+          <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+            {language === 'ar' ? 'حالة تحصيل فواتير العملاء ومتابعة المستحقات المتأخرة والتدفق النقدي' : language === 'fr' ? 'Suivi du chiffre encaissé, des encours de paiement et des créances échues' : 'Track collected revenues, pending client payments, and overdue balances'}
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Card 1: Paid Invoices & Volume */}
+          <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
+                {t('free_inv_filter_paid', language)}
+              </span>
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+                {paidCount} {language === 'ar' ? 'مدفوعة' : 'payées'}
+              </span>
+            </div>
+            <div className="mt-3">
+              <div className="text-2xl lg:text-3xl font-black text-emerald-600 dark:text-emerald-400 font-mono">
+                {formatCurrencyAmount(paidTotal, 'EUR')}
+              </div>
+              <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-1">
+                {paidCount} {language === 'ar' ? 'فواتير تم تسويتها بالكامل' : 'factures réglées avec succès'}
+              </p>
+            </div>
+          </div>
+
+          {/* Card 2: Pending & Sent Invoices */}
+          <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
+                {language === 'ar' ? 'فواتير مرسلة وبانتظار الدفع' : language === 'fr' ? 'Factures Envoyées / En Cours' : 'Sent & In Progress'}
+              </span>
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
+                {pendingCount} {language === 'ar' ? 'معلقة' : 'en attente'}
+              </span>
+            </div>
+            <div className="mt-3">
+              <div className="text-2xl lg:text-3xl font-black text-blue-600 dark:text-blue-400 font-mono">
+                {formatCurrencyAmount(pendingTotal, 'EUR')}
+              </div>
+              <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-1">
+                {pendingCount} {language === 'ar' ? 'بانتظار التحويل المصرفي أو الشيك' : 'en attente de règlement client'}
+              </p>
+            </div>
+          </div>
+
+          {/* Card 3: DARK ESPRESSO CARD (#1F1D1B) */}
+          <div className="bg-[#1F1D1B] rounded-[18px] p-4 lg:p-5 border border-neutral-800 shadow-sm text-white flex flex-col justify-between">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-medium text-neutral-300">
+                {t('free_inv_filter_overdue', language)}
+              </span>
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30">
+                {overdueCount > 0 ? `${overdueCount} ${language === 'ar' ? 'متأخرة' : 'en retard'}` : (language === 'ar' ? 'لا متأخرات' : 'À jour')}
+              </span>
+            </div>
+            <div className="mt-3">
+              <div className="text-2xl lg:text-3xl font-black text-[#FB923C] font-mono">
+                {formatCurrencyAmount(overdueTotal, 'EUR')}
+              </div>
+              <p className="text-[11px] text-neutral-400 mt-1 flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-[#FB923C] animate-pulse" />
+                {overdueCount > 0
+                  ? (language === 'ar' ? `${overdueCount} فواتير تجاوزت موعد الاستحقاق - تذكير فوري مطلوب` : `${overdueCount} créance(s) échue(s) nécessitant une relance client`)
+                  : (language === 'ar' ? 'جميع فواتير العملاء مسددة في مواعيدها' : 'Toutes les échéances sont respectées')}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom Collection Pod Tray */}
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+        {/* Integrated Toolbar */}
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-3 border-b border-[#EDF1F3] dark:border-neutral-800/60">
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <div className="w-9 h-9 rounded-xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex items-center justify-center text-neutral-700 dark:text-neutral-300">
+              <FileText size={16} />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
+                  {t('free_inv_title', language)}
+                </h3>
+                <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 text-neutral-600 dark:text-neutral-300">
+                  {freelanceInvoices.length}
+                </span>
+              </div>
+            </div>
+
+            {/* Status Filter Capsules */}
+            <div className="flex items-center gap-1 p-0.5 bg-white dark:bg-neutral-800 rounded-full border border-neutral-200/80 dark:border-neutral-700 ml-2 overflow-x-auto">
+              {[
+                { id: 'all', label: t('free_inv_filter_all', language) },
+                { id: 'sent', label: t('free_inv_filter_sent', language) },
+                { id: 'paid', label: t('free_inv_filter_paid', language) },
+                { id: 'overdue', label: t('free_inv_filter_overdue', language) },
+                { id: 'draft', label: t('free_inv_filter_draft', language) },
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setSelectedStatus(tab.id)}
+                  className={`px-3 py-1 text-xs font-semibold rounded-full transition-all whitespace-nowrap cursor-pointer ${
+                    selectedStatus === tab.id
+                      ? 'bg-[#C4785A] text-white shadow-2xs'
+                      : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 flex-wrap">
+            <Seek
+              value={searchQuery}
+              onChange={setSearchQuery}
+              placeholder={t('free_search_clients_ph', language)}
+              openWidth={260}
+              shutSize={38}
+            />
+
+            <AtriumButton
+              type="button"
+              variant="secondary"
+              size="sm"
+              icon={<Download size={14} />}
+              onClick={handleExportCSV}
+              title="Export CSV"
+            >
+              <span className="hidden sm:inline">CSV</span>
+            </AtriumButton>
+
+            <AtriumButton
+              type="button"
+              variant="primary"
+              size="sm"
+              glow
+              icon={<Plus size={14} />}
+              onClick={() => setIsCreateModalOpen(true)}
+            >
+              {t('free_inv_btn_new', language)}
+            </AtriumButton>
+          </div>
+        </div>
+
+        {/* Batch Selection Toolbar */}
+        {selectedInvoiceIds.size > 0 && (
+          <div className="flex items-center justify-between p-3 px-4 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 animate-in fade-in slide-in-from-top-2">
+            <div className="flex items-center gap-3">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#C4785A] animate-pulse" />
+              <span className="text-xs font-bold text-neutral-900 dark:text-white">
+                {selectedInvoiceIds.size} {language === 'ar' ? 'فواتير محددة' : language === 'fr' ? 'factures sélectionnées' : 'invoices selected'}
+              </span>
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <button
+                onClick={() => setSelectedInvoiceIds(new Set())}
+                className="px-3 py-1.5 text-xs text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white font-medium cursor-pointer"
+              >
+                {language === 'ar' ? 'إلغاء التحديد' : language === 'fr' ? 'Désélectionner' : 'Deselect'}
+              </button>
+              <button
+                onClick={handleBatchMarkPaid}
+                className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+              >
+                <CheckCircle size={13} />
+                <span>{language === 'ar' ? 'تعليم كمدفوعة' : language === 'fr' ? 'Marquer Payé' : 'Mark Paid'}</span>
+              </button>
+              <button
+                onClick={handleBatchMarkSent}
+                className="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+              >
+                <Send size={13} />
+                <span>{language === 'ar' ? 'تعليم كمرسلة' : language === 'fr' ? 'Marquer Envoyé' : 'Mark Sent'}</span>
+              </button>
+              <button
+                onClick={handleBatchDelete}
+                className="px-3.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+              >
+                <Trash2 size={13} />
+                <span>{language === 'ar' ? 'حذف المحدد' : language === 'fr' ? 'Supprimer' : 'Delete'}</span>
+              </button>
+            </div>
+          </div>
+        )}
 
       {/* Universal Collection (List view & Grid view with 6-button corner-fan) */}
       <UniversalDataCollection<FreelanceInvoice>
@@ -768,6 +892,7 @@ export const FreelanceInvoicesView: React.FC = () => {
         primaryActionLabel={t('free_inv_btn_new', language)}
         onAddFirstItem={() => setIsCreateModalOpen(true)}
       />
+      </div>
 
       {/* Manual Invoice Builder Modal */}
       {isCreateModalOpen && (

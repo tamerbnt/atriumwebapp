@@ -327,385 +327,481 @@ export const EducationAdmissionsView: React.FC = () => {
     }
   };
 
+  const totalLeads = eduAdmissions.length;
+  const admittedCount = eduAdmissions.filter((l) => l.stage === 'Admitted' || l.stage === 'Enrolled').length;
+  const conversionRate = totalLeads > 0 ? Math.round((admittedCount / totalLeads) * 100) : 0;
+  const projectedPipeline = totalLeads * 38000;
+
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
-      {/* Top Header Row matching other category screens */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-neutral-200 dark:border-neutral-800">
-        <div className="flex items-center gap-3.5">
-          <div className="w-11 h-11 rounded-2xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-800 dark:text-neutral-200">
-            <ClipboardList size={22} />
+      {/* Outer Rounded Workspace Panel (WPF Spec: CornerRadius 28px, 1px CardBorderBrush) */}
+      <div className="bg-white dark:bg-[#18181B] rounded-[28px] border border-[#E9EEF0] dark:border-neutral-800 p-6 lg:p-8 space-y-6 shadow-xs">
+        
+        {/* Row 0 — Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
+          <div className="flex items-center gap-3.5">
+            <div className="w-11 h-11 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#C4785A]">
+              <ClipboardList size={22} />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-900 dark:text-white">
+                  {t('edu_admissions_title')}
+                </h1>
+                <span className="text-xs text-neutral-500 dark:text-neutral-400">
+                  {eduAdmissions.length} active leads · 5 pipeline stages
+                </span>
+              </div>
+              <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
+                {t('edu_admissions_subtitle')}
+              </p>
+            </div>
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-900 dark:text-white">
-                {t('edu_admissions_title')}
-              </h1>
-              <span className="text-xs text-neutral-500 dark:text-neutral-400">
-                {eduAdmissions.length} active leads · 5 intake pipeline stages
+
+          <div className="flex items-center gap-2.5 flex-wrap self-start sm:self-auto">
+            {/* Facility Pill: Atrium 1 ▾ */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setIsFacilityDropdownOpen(!isFacilityDropdownOpen)}
+                className="h-10 px-4 rounded-xl bg-[#F4EFEA] dark:bg-neutral-800/80 border border-[#E8DFD8] dark:border-neutral-700 flex items-center gap-2 cursor-pointer hover:bg-[#EFE8E1] dark:hover:bg-neutral-800 transition-colors shadow-2xs"
+              >
+                <Home size={15} className="text-[#C4785A]" />
+                <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
+                  {currentBranch?.name || 'Campus 1'}
+                </span>
+                <ChevronDown
+                  size={14}
+                  className={`text-neutral-500 transition-transform ${
+                    isFacilityDropdownOpen ? 'rotate-180' : ''
+                  }`}
+                />
+              </button>
+
+              {/* Facility Dropdown Menu */}
+              {isFacilityDropdownOpen && (
+                <div className="absolute right-0 rtl:right-auto rtl:left-0 mt-2 w-64 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
+                  <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+                    {language === 'ar' ? 'الفروع والمراكز التعليمية' : language === 'fr' ? 'Centres & Campus' : 'Campuses & Branches'}
+                  </div>
+                  {businesses.map((biz) => {
+                    const isCurrent = biz.id === currentBusinessId;
+                    const matchingBranch = branches.find((b) => b.businessId === biz.id);
+                    return (
+                      <button
+                        key={biz.id}
+                        type="button"
+                        onClick={() => {
+                          switchBusiness(biz.id);
+                          if (matchingBranch) switchBranch(matchingBranch.id);
+                          setIsFacilityDropdownOpen(false);
+                        }}
+                        className={`w-full px-3 py-2 text-left rtl:text-right flex items-center justify-between text-xs transition-colors cursor-pointer ${
+                          isCurrent
+                            ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold'
+                            : 'text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 min-w-0">
+                          <Building2 size={14} className={isCurrent ? 'text-[#C4785A]' : 'text-neutral-400'} />
+                          <span className="truncate">{biz.name}</span>
+                        </div>
+                        {isCurrent && <Check size={14} />}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* View Mode Toggle: Kanban vs Collection */}
+            <div className="flex items-center p-1 bg-[#F4EFEA] dark:bg-neutral-800 rounded-xl border border-[#E8DFD8] dark:border-neutral-700 shadow-2xs">
+              <button
+                type="button"
+                onClick={() => setViewLayout('kanban')}
+                className={`px-3 py-1.5 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer ${
+                  viewLayout === 'kanban'
+                    ? 'bg-white dark:bg-neutral-900 text-[#C4785A] shadow-2xs'
+                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
+                }`}
+              >
+                <Columns size={13} />
+                <span>Kanban</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewLayout('collection')}
+                className={`px-3 py-1.5 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer ${
+                  viewLayout === 'collection'
+                    ? 'bg-white dark:bg-neutral-900 text-[#C4785A] shadow-2xs'
+                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
+                }`}
+              >
+                <LayoutGrid size={13} />
+                <span>{language === 'ar' ? 'جدول وبطاقات' : language === 'fr' ? 'Liste & Grille' : 'List & Grid'}</span>
+              </button>
+            </div>
+
+            {/* Seed Demo Data Button */}
+            <button
+              type="button"
+              onClick={resetEduMockData}
+              className="h-10 px-3.5 bg-[#FCEEE8] dark:bg-neutral-800 hover:bg-[#F8DFD4] dark:hover:bg-neutral-700 text-[#C4785A] text-xs font-semibold rounded-xl transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer"
+              title={language === 'ar' ? 'إعادة شحن بيانات تجريبية' : language === 'fr' ? 'Recharger Données Démo' : 'Seed Mock Data'}
+            >
+              <Sparkles size={14} />
+              <span className="hidden sm:inline">{language === 'ar' ? 'بيانات تجريبية' : language === 'fr' ? 'Données Démo' : 'Demo Data'}</span>
+            </button>
+
+            <AtriumButton
+              variant="primary"
+              onClick={() => setIsAddLeadModalOpen(true)}
+              icon={<Plus size={14} />}
+            >
+              {t('edu_btn_new_lead')}
+            </AtriumButton>
+          </div>
+        </div>
+
+        {/* Batch Selection Toolbar */}
+        {selectedLeadIds.size > 0 && (
+          <div className="flex items-center justify-between p-3 px-4 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 animate-in fade-in slide-in-from-top-2">
+            <div className="flex items-center gap-3">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#C4785A] animate-pulse" />
+              <span className="text-xs font-bold text-neutral-900 dark:text-white">
+                {selectedLeadIds.size} {language === 'ar' ? 'طلبات تسجيل محددة' : language === 'fr' ? 'dossiers sélectionnés' : 'leads selected'}
               </span>
             </div>
-            <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
-              {t('edu_admissions_subtitle')}
+            <div className="flex items-center gap-2 flex-wrap">
+              <button
+                onClick={() => setSelectedLeadIds(new Set())}
+                className="px-3 py-1.5 text-xs text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white font-medium cursor-pointer"
+              >
+                {language === 'ar' ? 'إلغاء التحديد' : language === 'fr' ? 'Désélectionner' : 'Deselect'}
+              </button>
+              <button
+                onClick={() => handleBatchSetStage('TrialClass')}
+                className="px-3.5 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+              >
+                <CheckCircle2 size={13} />
+                <span>{language === 'ar' ? 'حصة تجريبية' : 'Trial Class'}</span>
+              </button>
+              <button
+                onClick={() => handleBatchSetStage('Admitted')}
+                className="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+              >
+                <CheckCircle2 size={13} />
+                <span>{language === 'ar' ? 'قبول الملف' : 'Admit'}</span>
+              </button>
+              <button
+                onClick={handleBatchDelete}
+                className="px-3.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+              >
+                <Trash2 size={13} />
+                <span>{language === 'ar' ? 'حذف المحدد' : language === 'fr' ? 'Supprimer' : 'Delete'}</span>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Top Metrics Pod Tray (Screenshot_30: bg-[#F8F9FA], rounded-[24px], p-5) */}
+        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-3">
+          <div>
+            <h3 className="text-xs font-bold text-neutral-900 dark:text-white tracking-tight">
+              {language === 'ar' ? 'قمع القبول والتسجيلات' : language === 'fr' ? 'Pipeline d\'Admissions & Conversion' : 'Admissions Pipeline & Conversion Health'}
+            </h3>
+            <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+              {language === 'ar' ? 'متابعة مسار استقطاب الطلبة ومعدلات القبول' : language === 'fr' ? 'Performance de l\'entonnoir de recrutement scolaire' : 'Intake flow, trial classes, and enrollment conversions'}
             </p>
           </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Inset White Card 1: Active Leads Ratio */}
+            <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
+              <div>
+                <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400 block mb-1">
+                  {language === 'ar' ? 'ملفات قيد المعالجة' : language === 'fr' ? 'Prospects Actifs' : 'Active Pipeline'}
+                </span>
+                <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300">
+                  5 Étapes d'admission
+                </span>
+              </div>
+              <div className="mt-3">
+                <span className="text-[22px] font-bold text-neutral-900 dark:text-white tabular-nums tracking-tight">
+                  {totalLeads}
+                </span>
+                <span className="text-xs text-neutral-400 tabular-nums ml-1">
+                  / {totalLeads} {language === 'ar' ? 'ملف في المسار' : 'leads'}
+                </span>
+              </div>
+            </div>
+
+            {/* Inset White Card 2: Conversion / Admitted Count */}
+            <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
+              <div>
+                <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400 block mb-1">
+                  {language === 'ar' ? 'معدل التحويل للقبول' : language === 'fr' ? 'Taux d\'admission' : 'Admission Conversion'}
+                </span>
+                <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
+                  {admittedCount} {language === 'ar' ? 'مقبول' : 'admis'}
+                </span>
+              </div>
+              <div className="mt-3">
+                <span className="text-[22px] font-bold text-neutral-900 dark:text-white tabular-nums tracking-tight">
+                  {conversionRate}%
+                </span>
+                <span className="text-xs text-neutral-400 ml-1">
+                  {language === 'ar' ? 'نسبة التحويل' : 'conversion rate'}
+                </span>
+              </div>
+            </div>
+
+            {/* Inset Card 3: DARK ESPRESSO CARD (#1F1D1B) — Projected Admissions Pipeline */}
+            <div className="bg-[#1F1D1B] rounded-[18px] p-4 lg:p-5 border border-neutral-800 shadow-sm flex flex-col justify-between text-white">
+              <div>
+                <span className="text-[11px] font-medium text-neutral-400 block mb-1">
+                  {language === 'ar' ? 'القيمة المتوقعة للتسجيلات' : language === 'fr' ? 'Potentiel Recouvrement Frais' : 'Projected Tuition Pipeline'}
+                </span>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30 inline-block">
+                  {language === 'ar' ? 'أقساط متوقعة' : language === 'fr' ? 'Pipeline Actif' : 'Estimated Inflow'}
+                </span>
+              </div>
+              <div className="mt-3">
+                <span className="text-[22px] font-bold text-white tabular-nums tracking-tight">
+                  {projectedPipeline.toLocaleString()} DZD
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div className="flex items-center gap-2.5 flex-wrap self-start sm:self-auto">
-          {/* Facility Pill: Atrium 1 ▾ */}
-          <div className="relative">
-            <button
-              type="button"
-              onClick={() => setIsFacilityDropdownOpen(!isFacilityDropdownOpen)}
-              className="h-10 px-4 rounded-full bg-[#F4EFEA] dark:bg-neutral-800/80 border border-[#E8DFD8] dark:border-neutral-700 flex items-center gap-2 cursor-pointer hover:bg-[#EFE8E1] dark:hover:bg-neutral-800 transition-colors shadow-2xs"
-            >
-              <Home size={15} className="text-[#C4785A]" />
-              <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
-                {currentBranch?.name || 'Atrium 1'}
+        {/* Bottom Collection Pod Tray (Screenshot_30: bg-[#F8F9FA], rounded-[24px], p-5) */}
+        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+          
+          {/* Integrated Toolbar */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+            {/* Title & Count Badge */}
+            <div className="flex items-center gap-2">
+              <ClipboardList size={18} className="text-neutral-700 dark:text-neutral-300" />
+              <h2 className="text-sm font-bold text-neutral-900 dark:text-white">
+                {language === 'ar' ? 'طلبات التسجيل والقبول' : language === 'fr' ? 'Dossiers d\'Admission' : 'Admissions Pipeline'}
+              </h2>
+              <span className="px-2 py-0.5 text-[11px] font-bold rounded-full bg-neutral-200/70 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300">
+                {filteredAdmissions.length}
               </span>
-              <ChevronDown
-                size={14}
-                className={`text-neutral-500 transition-transform ${
-                  isFacilityDropdownOpen ? 'rotate-180' : ''
-                }`}
+            </div>
+
+            {/* Right Controls: Seek + Filter Capsules + Export CSV */}
+            <div className="flex items-center gap-2.5 flex-wrap">
+              {/* Kinetic Seek Search */}
+              <Seek
+                value={searchQuery}
+                onChange={setSearchQuery}
+                placeholder="Search leads by student, phone, desired course..."
+                shutSize={36}
+                openWidth={240}
               />
-            </button>
 
-            {/* Facility Dropdown Menu */}
-            {isFacilityDropdownOpen && (
-              <div className="absolute right-0 rtl:right-auto rtl:left-0 mt-2 w-64 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
-                <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
-                  {language === 'ar' ? 'الفروع والمراكز التعليمية' : language === 'fr' ? 'Centres & Campus' : 'Campuses & Branches'}
-                </div>
-                {businesses.map((biz) => {
-                  const isCurrent = biz.id === currentBusinessId;
-                  const matchingBranch = branches.find((b) => b.businessId === biz.id);
-                  return (
-                    <button
-                      key={biz.id}
-                      type="button"
-                      onClick={() => {
-                        switchBusiness(biz.id);
-                        if (matchingBranch) switchBranch(matchingBranch.id);
-                        setIsFacilityDropdownOpen(false);
-                      }}
-                      className={`w-full px-3 py-2 text-left rtl:text-right flex items-center justify-between text-xs transition-colors cursor-pointer ${
-                        isCurrent
-                          ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold'
-                          : 'text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2 min-w-0">
-                        <Building2 size={14} className={isCurrent ? 'text-[#C4785A]' : 'text-neutral-400'} />
-                        <span className="truncate">{biz.name}</span>
-                      </div>
-                      {isCurrent && <Check size={14} />}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-
-          {/* View Mode Toggle: Kanban vs Table/Cards */}
-          <div className="flex items-center p-1 bg-neutral-100 dark:bg-neutral-800/80 rounded-full border border-neutral-200 dark:border-neutral-700">
-            <button
-              type="button"
-              onClick={() => setViewLayout('kanban')}
-              className={`px-3 py-1 text-xs font-semibold rounded-full flex items-center gap-1.5 transition-colors cursor-pointer ${
-                viewLayout === 'kanban'
-                  ? 'bg-white dark:bg-neutral-900 text-[#C4785A] shadow-2xs'
-                  : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-white'
-              }`}
-            >
-              <Columns size={13} />
-              <span>Kanban</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setViewLayout('collection')}
-              className={`px-3 py-1 text-xs font-semibold rounded-full flex items-center gap-1.5 transition-colors cursor-pointer ${
-                viewLayout === 'collection'
-                  ? 'bg-white dark:bg-neutral-900 text-[#C4785A] shadow-2xs'
-                  : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-white'
-              }`}
-            >
-              <LayoutGrid size={13} />
-              <span>{language === 'ar' ? 'جدول وبطاقات' : language === 'fr' ? 'Liste & Grille' : 'List & Grid'}</span>
-            </button>
-          </div>
-
-          {/* Export CSV Button */}
-          <AtriumButton
-            type="button"
-            variant="secondary"
-            size="sm"
-            icon={<Download size={14} />}
-            onClick={handleExportCSV}
-            title="Export CSV"
-          >
-            <span className="hidden sm:inline">CSV</span>
-          </AtriumButton>
-
-          {/* Seed Demo Data Button */}
-          <AtriumButton
-            type="button"
-            variant="outline"
-            size="sm"
-            icon={<Sparkles size={14} />}
-            onClick={resetEduMockData}
-            title={language === 'ar' ? 'إعادة شحن بيانات تجريبية' : language === 'fr' ? 'Recharger Données Démo' : 'Seed Mock Data'}
-          >
-            <span className="hidden sm:inline">{language === 'ar' ? 'بيانات تجريبية' : language === 'fr' ? 'Données Démo' : 'Demo Data'}</span>
-          </AtriumButton>
-
-          <AtriumButton
-            type="button"
-            variant="primary"
-            size="sm"
-            glow
-            icon={<Plus size={14} />}
-            onClick={() => setIsAddLeadModalOpen(true)}
-          >
-            {t('edu_btn_new_lead')}
-          </AtriumButton>
-        </div>
-      </div>
-
-      {/* Batch Selection Toolbar */}
-      {selectedLeadIds.size > 0 && (
-        <div className="flex items-center justify-between p-3 px-4 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 animate-in fade-in slide-in-from-top-2">
-          <div className="flex items-center gap-3">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#C4785A] animate-pulse" />
-            <span className="text-xs font-bold text-neutral-900 dark:text-white">
-              {selectedLeadIds.size} {language === 'ar' ? 'طلبات تسجيل محددة' : language === 'fr' ? 'dossiers sélectionnés' : 'leads selected'}
-            </span>
-          </div>
-          <div className="flex items-center gap-2 flex-wrap">
-            <button
-              onClick={() => setSelectedLeadIds(new Set())}
-              className="px-3 py-1.5 text-xs text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white font-medium cursor-pointer"
-            >
-              {language === 'ar' ? 'إلغاء التحديد' : language === 'fr' ? 'Désélectionner' : 'Deselect'}
-            </button>
-            <button
-              onClick={() => handleBatchSetStage('TrialClass')}
-              className="px-3.5 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
-            >
-              <CheckCircle2 size={13} />
-              <span>{language === 'ar' ? 'حصة تجريبية' : 'Trial Class'}</span>
-            </button>
-            <button
-              onClick={() => handleBatchSetStage('Admitted')}
-              className="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
-            >
-              <CheckCircle2 size={13} />
-              <span>{language === 'ar' ? 'قبول الملف' : 'Admit'}</span>
-            </button>
-            <button
-              onClick={handleBatchDelete}
-              className="px-3.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
-            >
-              <Trash2 size={13} />
-              <span>{language === 'ar' ? 'حذف المحدد' : language === 'fr' ? 'Supprimer' : 'Delete'}</span>
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Search Bar */}
-      <Seek
-        value={searchQuery}
-        onChange={setSearchQuery}
-        placeholder="Search leads by student, phone, desired course..."
-        openWidth={320}
-        shutSize={40}
-      />
-
-      {/* Mode 1: Universal Collection (List / Grid View) */}
-      {viewLayout === 'collection' && (
-        <UniversalDataCollection<EduAdmissionLead>
-          items={sortedLeads}
-          keyExtractor={(l) => l.id}
-          defaultViewMode="list"
-          columns={leadColumns}
-          sortBy={leadSortBy}
-          sortDirection={leadSortDir}
-          onSortChange={(key) => {
-            if (leadSortBy === key) {
-              setLeadSortDir((prev) => (prev === 'asc' ? 'desc' : 'asc'));
-            } else {
-              setLeadSortBy(key);
-              setLeadSortDir('asc');
-            }
-          }}
-          renderCard={(lead) => (
-            <div className="flex flex-col items-center justify-center w-full">
-              <div className="w-20 h-20 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 text-[#C4785A] flex items-center justify-center text-[28px] font-bold shadow-md mb-3 select-none border border-[#F5E2D8] dark:border-neutral-700">
-                {lead.studentName.charAt(0)}
-              </div>
-              <h3 className="text-[16px] font-bold text-neutral-900 dark:text-white truncate max-w-[210px] mb-1 tracking-tight text-center">
-                {lead.studentName}
-              </h3>
-              <span className="inline-flex items-center px-3 py-0.5 rounded-full text-[11px] font-semibold bg-[#FCEEE8] dark:bg-neutral-800 text-[#C4785A] border border-[#F5E2D8] dark:border-neutral-700 mb-2 truncate max-w-[200px]">
-                {lead.desiredCourseTitle}
-              </span>
-
-              <div className="w-full pt-3 border-t border-neutral-100 dark:border-neutral-800 text-xs space-y-1.5 text-center">
-                <div className="font-mono text-neutral-600 dark:text-neutral-400 text-[11px]">{lead.phone}</div>
-                {lead.guardianName && (
-                  <div className="text-neutral-400 text-[11px]">Guardian: {lead.guardianName}</div>
-                )}
-                {lead.placementScore && (
-                  <div className="text-[11px] font-semibold text-[#C4785A]">{lead.placementScore}</div>
-                )}
-                <div className="flex items-center justify-between pt-2 border-t border-neutral-100 dark:border-neutral-800">
-                  <span className="text-[11px] text-neutral-400">Stage:</span>
-                  <span className="font-semibold text-neutral-800 dark:text-neutral-200">{lead.stage}</span>
-                </div>
-              </div>
+              {/* Export CSV Button */}
+              <button
+                type="button"
+                onClick={handleExportCSV}
+                className="h-9 px-3 bg-white hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold rounded-xl transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer"
+                title="Export CSV"
+              >
+                <Download size={13} />
+                <span className="hidden sm:inline">CSV</span>
+              </button>
             </div>
+          </div>
+
+          {/* Mode 1: Universal Collection (List / Grid View) */}
+          {viewLayout === 'collection' && (
+            <UniversalDataCollection<EduAdmissionLead>
+              items={sortedLeads}
+              keyExtractor={(l) => l.id}
+              defaultViewMode="list"
+              columns={leadColumns}
+              sortBy={leadSortBy}
+              sortDirection={leadSortDir}
+              onSortChange={(key) => {
+                if (leadSortBy === key) {
+                  setLeadSortDir((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+                } else {
+                  setLeadSortBy(key);
+                  setLeadSortDir('asc');
+                }
+              }}
+              renderCard={(lead) => (
+                <div className="flex flex-col items-center justify-center w-full">
+                  <div className="w-20 h-20 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 text-[#C4785A] flex items-center justify-center text-[28px] font-bold shadow-md mb-3 select-none border border-[#F5E2D8] dark:border-neutral-700">
+                    {lead.studentName.charAt(0)}
+                  </div>
+                  <h3 className="text-[16px] font-bold text-neutral-900 dark:text-white truncate max-w-[210px] mb-1 tracking-tight text-center">
+                    {lead.studentName}
+                  </h3>
+                  <span className="inline-flex items-center px-3 py-0.5 rounded-full text-[11px] font-semibold bg-[#FCEEE8] dark:bg-neutral-800 text-[#C4785A] border border-[#F5E2D8] dark:border-neutral-700 mb-2 truncate max-w-[200px]">
+                    {lead.desiredCourseTitle}
+                  </span>
+
+                  <div className="w-full pt-3 border-t border-neutral-100 dark:border-neutral-800 text-xs space-y-1.5 text-center">
+                    <div className="font-mono text-neutral-600 dark:text-neutral-400 text-[11px]">{lead.phone}</div>
+                    {lead.guardianName && (
+                      <div className="text-neutral-400 text-[11px]">Guardian: {lead.guardianName}</div>
+                    )}
+                    {lead.placementScore && (
+                      <div className="text-[11px] font-semibold text-[#C4785A]">{lead.placementScore}</div>
+                    )}
+                    <div className="flex items-center justify-between pt-2 border-t border-neutral-100 dark:border-neutral-800">
+                      <span className="text-[11px] text-neutral-400">Stage:</span>
+                      <span className="font-semibold text-neutral-800 dark:text-neutral-200">{lead.stage}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+              onItemClick={(lead) => {
+                if (lead.stage === 'Admitted') setConversionLead(lead);
+              }}
+              onViewDetails={(lead) => {
+                if (lead.stage === 'Admitted') setConversionLead(lead);
+              }}
+              onEdit={(lead) => {
+                if (lead.stage === 'Admitted') setConversionLead(lead);
+              }}
+              onTogglePin={(lead) => {
+                setPinnedLeadIds((prev) => {
+                  const next = new Set(prev);
+                  if (next.has(lead.id)) {
+                    next.delete(lead.id);
+                    showToast?.({ type: 'info', title: 'Unpinned', message: `${lead.studentName} unpinned` });
+                  } else {
+                    next.add(lead.id);
+                    showToast?.({ type: 'info', title: 'Pinned', message: `${lead.studentName} pinned to top` });
+                  }
+                  return next;
+                });
+              }}
+              onDelete={(lead) => {
+                if (confirm(`Delete admission record for ${lead.studentName}?`)) {
+                  deleteEduAdmissionLead(lead.id);
+                }
+              }}
+              isPinned={(lead) => pinnedLeadIds.has(lead.id)}
+              selectedIds={selectedLeadIds}
+              onSelectionChange={setSelectedLeadIds}
+              emptyTitle="No admission prospects"
+              emptyDescription="No student leads match the current filters"
+              primaryActionLabel={t('edu_btn_new_lead')}
+              onAddFirstItem={() => setIsAddLeadModalOpen(true)}
+            />
           )}
-          onItemClick={(lead) => {
-            if (lead.stage === 'Admitted') setConversionLead(lead);
-          }}
-          onViewDetails={(lead) => {
-            if (lead.stage === 'Admitted') setConversionLead(lead);
-          }}
-          onEdit={(lead) => {
-            if (lead.stage === 'Admitted') setConversionLead(lead);
-          }}
-          onTogglePin={(lead) => {
-            setPinnedLeadIds((prev) => {
-              const next = new Set(prev);
-              if (next.has(lead.id)) {
-                next.delete(lead.id);
-                showToast?.({ type: 'info', title: 'Unpinned', message: `${lead.studentName} unpinned` });
-              } else {
-                next.add(lead.id);
-                showToast?.({ type: 'info', title: 'Pinned', message: `${lead.studentName} pinned to top` });
-              }
-              return next;
-            });
-          }}
-          onDelete={(lead) => {
-            if (confirm(`Delete admission record for ${lead.studentName}?`)) {
-              deleteEduAdmissionLead(lead.id);
-            }
-          }}
-          isPinned={(lead) => pinnedLeadIds.has(lead.id)}
-          selectedIds={selectedLeadIds}
-          onSelectionChange={setSelectedLeadIds}
-          emptyTitle="No admission prospects"
-          emptyDescription="No student leads match the current filters"
-          primaryActionLabel={t('edu_btn_new_lead')}
-          onAddFirstItem={() => setIsAddLeadModalOpen(true)}
-        />
-      )}
 
-      {/* Mode 2: Kanban Pipeline Board */}
-      {viewLayout === 'kanban' && (
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 items-start">
-        {stages.map((stage) => {
-          const leadsInStage = filteredAdmissions.filter((l) => l.stage === stage.id);
+          {/* Mode 2: Kanban Pipeline Board */}
+          {viewLayout === 'kanban' && (
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 items-start">
+            {stages.map((stage) => {
+              const leadsInStage = filteredAdmissions.filter((l) => l.stage === stage.id);
 
-          return (
-            <div
-              key={stage.id}
-              className="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-[#F8F9FA] dark:bg-neutral-900/40 p-3.5 flex flex-col space-y-3 min-h-[480px]"
-            >
-              {/* Column Header */}
-              <div className="flex items-center justify-between pb-2 border-b border-neutral-200/80 dark:border-neutral-800">
-                <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
-                  {stage.title}
-                </span>
-                <span className="w-5 h-5 rounded-full bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 text-[10px] font-bold flex items-center justify-center">
-                  {leadsInStage.length}
-                </span>
-              </div>
+              return (
+                <div
+                  key={stage.id}
+                  className="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/60 p-3.5 flex flex-col space-y-3 min-h-[480px] shadow-2xs"
+                >
+                  {/* Column Header */}
+                  <div className="flex items-center justify-between pb-2 border-b border-neutral-200/80 dark:border-neutral-800">
+                    <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
+                      {stage.title}
+                    </span>
+                    <span className="w-5 h-5 rounded-full bg-[#F8F9FA] dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 text-[10px] font-bold flex items-center justify-center">
+                      {leadsInStage.length}
+                    </span>
+                  </div>
 
-              {/* Lead Cards List */}
-              <div className="space-y-2.5 flex-1">
-                {leadsInStage.map((lead) => (
-                  <div
-                    key={lead.id}
-                    className="p-3.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-2xs hover:border-[#C4785A]/50 transition-all space-y-2 group"
-                  >
-                    <div>
-                      <div className="flex items-center justify-between">
-                        <span className="font-bold text-neutral-900 dark:text-white text-xs group-hover:text-[#C4785A] transition-colors">
-                          {lead.studentName}
-                        </span>
-                        {lead.placementScore && (
-                          <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-[#FCEEE8] dark:bg-neutral-800 text-[#C4785A]">
-                            Score: {lead.placementScore}
+                  {/* Lead Cards List */}
+                  <div className="space-y-2.5 flex-1">
+                    {leadsInStage.map((lead) => (
+                      <div
+                        key={lead.id}
+                        className="p-3.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-2xs hover:border-[#C4785A]/50 transition-all space-y-2 group"
+                      >
+                        <div>
+                          <div className="flex items-center justify-between">
+                            <span className="font-bold text-neutral-900 dark:text-white text-xs group-hover:text-[#C4785A] transition-colors">
+                              {lead.studentName}
+                            </span>
+                            {lead.placementScore && (
+                              <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-[#FCEEE8] dark:bg-neutral-800 text-[#C4785A]">
+                                Score: {lead.placementScore}
+                              </span>
+                            )}
+                          </div>
+                          <span className="text-[11px] font-medium text-[#C4785A] block mt-0.5">
+                            {lead.desiredCourseTitle}
                           </span>
-                        )}
-                      </div>
-                      <span className="text-[11px] font-medium text-[#C4785A] block mt-0.5">
-                        {lead.desiredCourseTitle}
-                      </span>
-                    </div>
-
-                    <div className="space-y-1 text-[11px] text-neutral-500 dark:text-neutral-400">
-                      <div className="flex items-center gap-1.5">
-                        <Phone size={11} className="text-neutral-400" />
-                        <span>{lead.phone}</span>
-                      </div>
-                      {lead.guardianName && (
-                        <div className="text-[10px] text-neutral-400">
-                          {t('edu_guardian_prefix', { name: lead.guardianName })}
                         </div>
-                      )}
-                      {lead.source && (
-                        <div className="text-[10px] text-neutral-400">Source: {lead.source}</div>
-                      )}
-                    </div>
 
-                    {/* Stage Transition Controls */}
-                    <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800/80 flex items-center justify-between">
-                      {stage.id === 'Admitted' ? (
-                        <button
-                          type="button"
-                          onClick={() => setConversionLead(lead)}
-                          className="w-full py-1.5 px-2 rounded-lg bg-[#C4785A] text-white text-[11px] font-semibold flex items-center justify-center gap-1.5 cursor-pointer hover:opacity-90 shadow-2xs"
-                        >
-                          <UserCheck size={12} />
-                          <span>{t('edu_btn_convert_student')}</span>
-                        </button>
-                      ) : stage.id !== 'Enrolled' ? (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const nextIndex = stages.findIndex((s) => s.id === stage.id) + 1;
-                            if (nextIndex < stages.length) {
-                              updateAdmissionStage(lead.id, stages[nextIndex].id);
-                            }
-                          }}
-                          className="w-full py-1 text-center text-[10px] font-semibold text-neutral-600 dark:text-neutral-400 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-lg transition-colors flex items-center justify-center gap-1 cursor-pointer"
-                        >
-                          <span>Move Next</span>
-                          <ArrowRight size={11} className="rtl:rotate-180" />
-                        </button>
-                      ) : (
-                        <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1 mx-auto">
-                          <UserCheck size={11} /> Converted
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                ))}
+                        <div className="space-y-1 text-[11px] text-neutral-500 dark:text-neutral-400">
+                          <div className="flex items-center gap-1.5">
+                            <Phone size={11} className="text-neutral-400" />
+                            <span>{lead.phone}</span>
+                          </div>
+                          {lead.guardianName && (
+                            <div className="text-[10px] text-neutral-400">
+                              {t('edu_guardian_prefix', { name: lead.guardianName })}
+                            </div>
+                          )}
+                          {lead.source && (
+                            <div className="text-[10px] text-neutral-400">Source: {lead.source}</div>
+                          )}
+                        </div>
 
-                {leadsInStage.length === 0 && (
-                  <div className="py-8 text-center text-neutral-400 dark:text-neutral-500 text-[11px]">
-                    No leads in this stage
+                        {/* Stage Transition Controls */}
+                        <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800/80 flex items-center justify-between">
+                          {stage.id === 'Admitted' ? (
+                            <button
+                              type="button"
+                              onClick={() => setConversionLead(lead)}
+                              className="w-full py-1.5 px-2 rounded-lg bg-[#C4785A] text-white text-[11px] font-semibold flex items-center justify-center gap-1.5 cursor-pointer hover:opacity-90 shadow-2xs"
+                            >
+                              <UserCheck size={12} />
+                              <span>{t('edu_btn_convert_student')}</span>
+                            </button>
+                          ) : stage.id !== 'Enrolled' ? (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const nextIndex = stages.findIndex((s) => s.id === stage.id) + 1;
+                                if (nextIndex < stages.length) {
+                                  updateAdmissionStage(lead.id, stages[nextIndex].id);
+                                }
+                              }}
+                              className="w-full py-1 text-center text-[10px] font-semibold text-neutral-600 dark:text-neutral-400 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-lg transition-colors flex items-center justify-center gap-1 cursor-pointer"
+                            >
+                              <span>Move Next</span>
+                              <ArrowRight size={11} className="rtl:rotate-180" />
+                            </button>
+                          ) : (
+                            <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1 mx-auto">
+                              <UserCheck size={11} /> Converted
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+
+                    {leadsInStage.length === 0 && (
+                      <div className="py-8 text-center text-neutral-400 dark:text-neutral-500 text-[11px]">
+                        No leads in this stage
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-            </div>
-          );
-        })}
+                </div>
+              );
+            })}
+          </div>
+          )}
+        </div>
       </div>
-      )}
 
       {/* Convert Lead to Student Modal */}
       {conversionLead && (
