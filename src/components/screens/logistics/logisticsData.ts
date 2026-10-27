@@ -99,8 +99,24 @@ export const useLogisticsData = () => {
     setShipments((prev) => [shipment, ...prev]);
   };
 
+  const updateShipment = (shipment: LogisticsShipment) => {
+    setShipments((prev) => prev.map((s) => (s.id === shipment.id ? shipment : s)));
+  };
+
+  const deleteShipment = (id: string) => {
+    setShipments((prev) => prev.filter((s) => s.id !== id));
+  };
+
   const addManifest = (manifest: LogisticsManifest) => {
     setManifests((prev) => [manifest, ...prev]);
+  };
+
+  const updateManifest = (manifest: LogisticsManifest) => {
+    setManifests((prev) => prev.map((m) => (m.id === manifest.id ? manifest : m)));
+  };
+
+  const deleteManifest = (id: string) => {
+    setManifests((prev) => prev.filter((m) => m.id !== id));
   };
 
   const updateShipmentStatus = (id: string, status: LogisticsShipment['status']) => {
@@ -111,7 +127,12 @@ export const useLogisticsData = () => {
     shipments,
     manifests,
     addShipment,
+    updateShipment,
+    deleteShipment,
     addManifest,
+    updateManifest,
+    deleteManifest,
     updateShipmentStatus,
   };
 };
+

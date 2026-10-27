@@ -289,8 +289,24 @@ export const useContractorData = () => {
     setProjects((prev) => [project, ...prev]);
   };
 
+  const updateProject = (project: ContractorProject) => {
+    setProjects((prev) => prev.map((p) => (p.id === project.id ? project : p)));
+  };
+
+  const deleteProject = (id: string) => {
+    setProjects((prev) => prev.filter((p) => p.id !== id));
+  };
+
   const addBoqItem = (item: ContractorBoqItem) => {
     setBoqItems((prev) => [...prev, item]);
+  };
+
+  const updateBoqItem = (item: ContractorBoqItem) => {
+    setBoqItems((prev) => prev.map((b) => (b.id === item.id ? item : b)));
+  };
+
+  const deleteBoqItem = (id: string) => {
+    setBoqItems((prev) => prev.filter((b) => b.id !== id));
   };
 
   const addDailyLog = (log: ContractorDailyLog) => {
@@ -313,7 +329,11 @@ export const useContractorData = () => {
     selectedProjectId,
     setSelectedProjectId,
     addProject,
+    updateProject,
+    deleteProject,
     addBoqItem,
+    updateBoqItem,
+    deleteBoqItem,
     addDailyLog,
     addDgp,
     updateDgpStatus,

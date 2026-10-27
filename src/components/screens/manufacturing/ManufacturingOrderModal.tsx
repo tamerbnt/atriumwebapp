@@ -11,6 +11,7 @@ interface ManufacturingOrderModalProps {
   onClose: () => void;
   boms: ManufacturingBom[];
   onSave: (order: ManufacturingOrder) => void;
+  orderToEdit?: ManufacturingOrder | null;
 }
 
 export const ManufacturingOrderModal: React.FC<ManufacturingOrderModalProps> = ({
@@ -18,13 +19,28 @@ export const ManufacturingOrderModal: React.FC<ManufacturingOrderModalProps> = (
   onClose,
   boms,
   onSave,
+  orderToEdit,
 }) => {
   const { language, currentBusiness, currentBranch, currentUser } = useAtriumStore();
-  const [bomId, setBomId] = useState(boms[0]?.id || '');
-  const [quantity, setQuantity] = useState('10');
-  const [dueDate, setDueDate] = useState('2026-06-15');
-  const [station, setStation] = useState('Ligne Assemblage Principal');
+  const [bomId, setBomId] = useState(orderToEdit?.bomId || boms[0]?.id || '');
+  const [quantity, setQuantity] = useState(orderToEdit ? String(orderToEdit.targetQuantity || orderToEdit.quantityOrdered || 10) : '10');
+  const [dueDate, setDueDate] = useState(orderToEdit?.dueDate?.split('T')[0] || '2026-06-15');
+  const [station, setStation] = useState(orderToEdit?.assignedStation || 'Ligne Assemblage Principal');
   const [notes, setNotes] = useState('');
+
+  React.useEffect(() => {
+    if (orderToEdit) {
+      setBomId(orderToEdit.bomId || boms[0]?.id || '');
+      setQuantity(String(orderToEdit.targetQuantity || orderToEdit.quantityOrdered || 10));
+      setDueDate(orderToEdit.dueDate ? orderToEdit.dueDate.split('T')[0] : '2026-06-15');
+      setStation(orderToEdit.assignedStation || 'Ligne Assemblage Principal');
+    } else {
+      setBomId(boms[0]?.id || '');
+      setQuantity('10');
+      setDueDate('2026-06-15');
+      setStation('Ligne Assemblage Principal');
+    }
+  }, [orderToEdit, boms]);
 
   if (!isOpen) return null;
 
@@ -37,37 +53,39 @@ export const ManufacturingOrderModal: React.FC<ManufacturingOrderModalProps> = (
     }
 
     const qtyNum = parseInt(quantity, 10) || 1;
-    const created: ManufacturingOrder = {
-      id: `of_${Date.now()}`,
+    const saved: ManufacturingOrder = {
+      id: orderToEdit ? orderToEdit.id : `of_${Date.now()}`,
       accountId: 'acc_01',
       businessId: currentBusiness?.id || 'biz_manufacturing',
       branchId: currentBranch?.id || 'branch_manufacturing_main',
       staffId: currentUser?.id || 'staff_01',
-      orderNumber: `OF-2026-${Math.floor(1000 + Math.random() * 9000)}`,
+      orderNumber: orderToEdit ? orderToEdit.orderNumber : `OF-2026-${Math.floor(1000 + Math.random() * 9000)}`,
       bomId: bom.id,
       productName: bom.finishedProductName,
       targetQuantity: qtyNum,
       quantityOrdered: qtyNum,
-      quantityProduced: 0,
-      quantityScrapped: 0,
-      batchLotNumber: `LOT-2026-${Math.floor(100 + Math.random() * 900)}`,
-      startDate: new Date().toISOString(),
+      quantityProduced: orderToEdit?.quantityProduced || 0,
+      quantityScrapped: orderToEdit?.quantityScrapped || 0,
+      batchLotNumber: orderToEdit?.batchLotNumber || `LOT-2026-${Math.floor(100 + Math.random() * 900)}`,
+      startDate: orderToEdit?.startDate || new Date().toISOString(),
       dueDate: new Date(dueDate).toISOString(),
       targetDueDate: new Date(dueDate).toISOString(),
-      status: 'Planned',
+      status: orderToEdit?.status || 'Planned',
       assignedStation: station,
       totalMaterialCostDzd: (bom.estimatedCostDzd || 0) * qtyNum,
-      totalLaborCostDzd: 0,
-      totalCostDzd: (bom.estimatedCostDzd || 0) * qtyNum,
+      totalLaborCostDzd: orderToEdit?.totalLaborCostDzd || 0,
+      totalCostDzd: orderToEdit?.totalCostDzd || (bom.estimatedCostDzd || 0) * qtyNum,
       notes: notes.trim() || undefined,
-      createdAt: new Date().toISOString(),
+      createdAt: orderToEdit?.createdAt || new Date().toISOString(),
     };
 
-    onSave(created);
+
+    onSave(saved);
     showToast(
       language === 'ar' ? 'تم إنشاء أمر التصنيع بنجاح' : 'Ordre de fabrication (OF) lancé avec succès',
       'success'
     );
+
     onClose();
   };
 

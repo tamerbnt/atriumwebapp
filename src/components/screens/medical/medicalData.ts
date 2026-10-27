@@ -206,6 +206,14 @@ export const useMedicalData = () => {
     setPatients((prev) => [patient, ...prev]);
   };
 
+  const updatePatient = (updated: MedicalPatient) => {
+    setPatients((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
+  };
+
+  const deletePatient = (id: string) => {
+    setPatients((prev) => prev.filter((p) => p.id !== id));
+  };
+
   const addConsultation = (cons: MedicalConsultation) => {
     setConsultations((prev) => [cons, ...prev]);
   };
@@ -231,9 +239,12 @@ export const useMedicalData = () => {
     consultations,
     prescriptions,
     addPatient,
+    updatePatient,
+    deletePatient,
     addConsultation,
     addPrescription,
     updateConsultationStatus,
     markConsultationPaid,
   };
 };
+

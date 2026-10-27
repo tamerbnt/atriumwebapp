@@ -10,22 +10,46 @@ interface LegalMatterModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (matter: LegalMatter) => void;
+  matterToEdit?: LegalMatter | null;
 }
 
 export const LegalMatterModal: React.FC<LegalMatterModalProps> = ({
   isOpen,
   onClose,
   onSave,
+  matterToEdit,
 }) => {
   const { language, currentBusiness, currentBranch, currentUser } = useAtriumStore();
-  const [title, setTitle] = useState('');
-  const [category, setCategory] = useState<'Commercial' | 'Civil' | 'Penal' | 'Labor' | 'Administrative' | 'RealEstate'>('Commercial');
-  const [clientName, setClientName] = useState('');
-  const [clientPhone, setClientPhone] = useState('');
-  const [adverseParty, setAdverseParty] = useState('');
-  const [jurisdiction, setJurisdiction] = useState('Tribunal de Sidi M\'Hamed');
-  const [retainer, setRetainer] = useState('200000');
-  const [hearingDate, setHearingDate] = useState('2026-06-15');
+  const [title, setTitle] = useState(matterToEdit?.title || '');
+  const [category, setCategory] = useState<'Commercial' | 'Civil' | 'Penal' | 'Labor' | 'Administrative' | 'RealEstate'>(matterToEdit?.category || 'Commercial');
+  const [clientName, setClientName] = useState(matterToEdit?.clientName || '');
+  const [clientPhone, setClientPhone] = useState(matterToEdit?.clientPhone || '');
+  const [adverseParty, setAdverseParty] = useState(matterToEdit?.adversePartyName || '');
+  const [jurisdiction, setJurisdiction] = useState(matterToEdit?.courtJurisdiction || 'Tribunal de Sidi M\'Hamed');
+  const [retainer, setRetainer] = useState(matterToEdit ? String(matterToEdit.retainerAmountDzd) : '200000');
+  const [hearingDate, setHearingDate] = useState(matterToEdit?.nextHearingDate || '2026-06-15');
+
+  React.useEffect(() => {
+    if (matterToEdit) {
+      setTitle(matterToEdit.title);
+      setCategory(matterToEdit.category);
+      setClientName(matterToEdit.clientName);
+      setClientPhone(matterToEdit.clientPhone || '');
+      setAdverseParty(matterToEdit.adversePartyName || '');
+      setJurisdiction(matterToEdit.courtJurisdiction || 'Tribunal de Sidi M\'Hamed');
+      setRetainer(String(matterToEdit.retainerAmountDzd || 200000));
+      setHearingDate(matterToEdit.nextHearingDate || '2026-06-15');
+    } else {
+      setTitle('');
+      setCategory('Commercial');
+      setClientName('');
+      setClientPhone('');
+      setAdverseParty('');
+      setJurisdiction('Tribunal de Sidi M\'Hamed');
+      setRetainer('200000');
+      setHearingDate('2026-06-15');
+    }
+  }, [matterToEdit]);
 
   if (!isOpen) return null;
 
@@ -36,28 +60,29 @@ export const LegalMatterModal: React.FC<LegalMatterModalProps> = ({
       return;
     }
 
-    const created: LegalMatter = {
-      id: `mat_${Date.now()}`,
+    const saved: LegalMatter = {
+      id: matterToEdit ? matterToEdit.id : `mat_${Date.now()}`,
       accountId: 'acc_01',
       businessId: currentBusiness?.id || 'biz_legal',
       branchId: currentBranch?.id || 'branch_legal_main',
       staffId: currentUser?.id || 'staff_01',
-      matterNumber: `DOS-2026-${Math.floor(1000 + Math.random() * 9000)}`,
+      matterNumber: matterToEdit ? matterToEdit.matterNumber : `DOS-2026-${Math.floor(1000 + Math.random() * 9000)}`,
       title: title.trim(),
       category,
       clientName: clientName.trim(),
       clientPhone: clientPhone.trim(),
       adversePartyName: adverseParty.trim() || undefined,
       courtJurisdiction: jurisdiction.trim(),
-      assignedLawyer: 'Maître Titulaire',
+      assignedLawyer: matterToEdit?.assignedLawyer || 'Maître Titulaire',
       retainerAmountDzd: parseFloat(retainer) || 150000,
-      trustEscrowBalanceDzd: 0,
-      status: 'Active',
+      trustEscrowBalanceDzd: matterToEdit?.trustEscrowBalanceDzd || 0,
+      status: matterToEdit?.status || 'Active',
       nextHearingDate: hearingDate,
-      createdAt: new Date().toISOString(),
+      createdAt: matterToEdit?.createdAt || new Date().toISOString(),
     };
 
-    onSave(created);
+    onSave(saved);
+
     showToast(
       language === 'ar' ? 'تم فتح ملف القضية بنجاح' : 'Dossier juridique ouvert avec succès',
       'success'

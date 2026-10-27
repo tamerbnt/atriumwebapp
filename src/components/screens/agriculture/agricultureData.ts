@@ -278,16 +278,48 @@ export const useAgricultureData = () => {
     setParcels((prev) => [parcel, ...prev]);
   };
 
+  const updateParcel = (parcel: AgriParcel) => {
+    setParcels((prev) => prev.map((p) => (p.id === parcel.id ? parcel : p)));
+  };
+
+  const deleteParcel = (id: string) => {
+    setParcels((prev) => prev.filter((p) => p.id !== id));
+  };
+
   const addTreatmentLog = (treatment: AgriTreatmentLog) => {
     setTreatmentLogs((prev) => [treatment, ...prev]);
+  };
+
+  const updateTreatmentLog = (treatment: AgriTreatmentLog) => {
+    setTreatmentLogs((prev) => prev.map((t) => (t.id === treatment.id ? treatment : t)));
+  };
+
+  const deleteTreatmentLog = (id: string) => {
+    setTreatmentLogs((prev) => prev.filter((t) => t.id !== id));
   };
 
   const addHarvestTicket = (ticket: AgriHarvestTicket) => {
     setHarvestTickets((prev) => [ticket, ...prev]);
   };
 
+  const updateHarvestTicket = (ticket: AgriHarvestTicket) => {
+    setHarvestTickets((prev) => prev.map((t) => (t.id === ticket.id ? ticket : t)));
+  };
+
+  const deleteHarvestTicket = (id: string) => {
+    setHarvestTickets((prev) => prev.filter((t) => t.id !== id));
+  };
+
   const addLivestock = (animal: AgriLivestock) => {
     setLivestock((prev) => [animal, ...prev]);
+  };
+
+  const updateLivestock = (animal: AgriLivestock) => {
+    setLivestock((prev) => prev.map((a) => (a.id === animal.id ? animal : a)));
+  };
+
+  const deleteLivestock = (id: string) => {
+    setLivestock((prev) => prev.filter((a) => a.id !== id));
   };
 
   return {
@@ -298,8 +330,16 @@ export const useAgricultureData = () => {
     selectedParcelId,
     setSelectedParcelId,
     addParcel,
+    updateParcel,
+    deleteParcel,
     addTreatmentLog,
+    updateTreatmentLog,
+    deleteTreatmentLog,
     addHarvestTicket,
+    updateHarvestTicket,
+    deleteHarvestTicket,
     addLivestock,
+    updateLivestock,
+    deleteLivestock,
   };
 };

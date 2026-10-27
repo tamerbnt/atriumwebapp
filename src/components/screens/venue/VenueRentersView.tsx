@@ -38,6 +38,7 @@ export const VenueRentersView: React.FC = () => {
   const { t, language } = useTranslation();
   const {
     rentalRenters,
+    rentalBookings,
     createRentalRenter,
     updateRentalRenter,
     deleteRentalRenter,
@@ -70,6 +71,37 @@ export const VenueRentersView: React.FC = () => {
   const [renterSortDir, setRenterSortDir] = useState<'asc' | 'desc'>('asc');
   const [isFacilityDropdownOpen, setIsFacilityDropdownOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
+
+  // Selected renter for 390px inline side inspector
+  const [selectedRenter, setSelectedRenter] = useState<RentalRenter | null>(null);
+  const [drawerTab, setDrawerTab] = useState<'dossier' | 'bookings' | 'finances' | 'notes'>('dossier');
+  const [renterNotes, setRenterNotes] = useState('');
+  const [isSavingNotes, setIsSavingNotes] = useState(false);
+  const [notesSavedNotice, setNotesSavedNotice] = useState(false);
+
+  // Synchronize active renter
+  const activeRenter = useMemo(() => {
+    if (!selectedRenter) return null;
+    return rentalRenters.find((r) => r.id === selectedRenter.id) || selectedRenter;
+  }, [selectedRenter, rentalRenters]);
+
+  useEffect(() => {
+    if (activeRenter) {
+      setRenterNotes(activeRenter.notes || '');
+    }
+  }, [activeRenter?.id]);
+
+  const handleNotesChange = (val: string) => {
+    setRenterNotes(val);
+    if (!activeRenter) return;
+    setIsSavingNotes(true);
+    updateRentalRenter(activeRenter.id, { notes: val });
+    setTimeout(() => {
+      setIsSavingNotes(false);
+      setNotesSavedNotice(true);
+      setTimeout(() => setNotesSavedNotice(false), 2000);
+    }, 400);
+  };
 
   // Quick book for selected renter
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
@@ -603,70 +635,297 @@ export const VenueRentersView: React.FC = () => {
             </div>
           )}
 
-          {/* Universal Collection Rendering */}
-          <UniversalDataCollection<RentalRenter>
-            items={sortedRenters}
-            keyExtractor={(r) => r.id}
-            defaultViewMode="list"
-            columns={renterColumns}
-            sortBy={renterSortBy}
-            sortDirection={renterSortDir}
-            onSortChange={(key) => {
-              if (renterSortBy === key) {
-                setRenterSortDir((prev) => (prev === 'asc' ? 'desc' : 'asc'));
-              } else {
-                setRenterSortBy(key);
-                setRenterSortDir('asc');
-              }
-            }}
-            selectedIds={selectedIds}
-            onSelectionChange={setSelectedIds}
-            isPinned={(r) => pinnedRenterIds.has(r.id)}
-            onTogglePin={(r) => togglePinRenter(r.id)}
-            onEdit={handleOpenEdit}
-            onDelete={(r) => {
-              if (window.confirm(`Delete renter ${r.fullName}?`)) {
-                deleteRentalRenter(r.id);
-              }
-            }}
-            customActions={(r) => [
-              {
-                id: 'book',
-                label: language === 'ar' ? 'حجز قاعة' : language === 'fr' ? 'Réserver' : 'Book',
-                icon: <Calendar size={13} />,
-                variant: 'primary',
-                onClick: () => {
-                  setBookingRenterId(r.id);
-                  setIsBookingModalOpen(true);
-                },
-              },
-            ]}
-            renderCard={(renter) => (
-              <div className="flex flex-col items-center justify-center w-full">
-                <div className="w-20 h-20 rounded-full bg-[#FCEEE8] dark:bg-neutral-800 text-[#C4785A] flex items-center justify-center text-2xl font-bold shadow-xs mb-3 select-none border border-[#F5E2D8] dark:border-neutral-700">
-                  {renter.fullName.charAt(0).toUpperCase()}
-                </div>
-                <h3 className="text-base font-bold text-neutral-900 dark:text-white truncate max-w-[210px] mb-0.5 tracking-tight">
-                  {renter.fullName}
-                </h3>
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 mb-3 truncate max-w-[200px]">
-                  {renter.companyName || (language === 'ar' ? 'مستأجر خاص' : language === 'fr' ? 'Locataire Particulier' : 'Private Renter')}
-                </span>
-                <div className="w-full pt-3 border-t border-neutral-100 dark:border-neutral-800 text-xs space-y-1 text-center">
-                  <div className="font-mono text-neutral-600 dark:text-neutral-400 text-[11px]">{renter.phone}</div>
-                  <div className="truncate text-neutral-400 text-[11px]">{renter.email}</div>
-                  <div className="flex items-center justify-between pt-2 border-t border-neutral-100 dark:border-neutral-800">
-                    <span className="text-[11px] text-neutral-400 uppercase font-medium">
-                      {renter.totalBookings} {language === 'ar' ? 'حجز' : 'bookings'}
+          {/* Universal Collection Rendering with 390px Side Inspector */}
+          <div className="flex items-start gap-4">
+            <div className="flex-1 min-w-0">
+              <UniversalDataCollection<RentalRenter>
+                items={sortedRenters}
+                keyExtractor={(r) => r.id}
+                defaultViewMode="list"
+                columns={renterColumns}
+                sortBy={renterSortBy}
+                sortDirection={renterSortDir}
+                onSortChange={(key) => {
+                  if (renterSortBy === key) {
+                    setRenterSortDir((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+                  } else {
+                    setRenterSortBy(key);
+                    setRenterSortDir('asc');
+                  }
+                }}
+                selectedIds={selectedIds}
+                onSelectionChange={setSelectedIds}
+                isPinned={(r) => pinnedRenterIds.has(r.id)}
+                onTogglePin={(r) => togglePinRenter(r.id)}
+                onItemClick={(r) => setSelectedRenter(r)}
+                onViewDetails={(r) => setSelectedRenter(r)}
+                onEdit={handleOpenEdit}
+                onDelete={(r) => {
+                  if (window.confirm(`Delete renter ${r.fullName}?`)) {
+                    deleteRentalRenter(r.id);
+                    if (selectedRenter?.id === r.id) setSelectedRenter(null);
+                  }
+                }}
+                customActions={(r) => [
+                  {
+                    id: 'book',
+                    label: language === 'ar' ? 'حجز قاعة' : language === 'fr' ? 'Réserver' : 'Book',
+                    icon: <Calendar size={13} />,
+                    variant: 'primary',
+                    onClick: () => {
+                      setBookingRenterId(r.id);
+                      setIsBookingModalOpen(true);
+                    },
+                  },
+                ]}
+                renderCard={(renter) => (
+                  <div className="flex flex-col items-center justify-center w-full">
+                    <div className="w-20 h-20 rounded-full bg-[#FCEEE8] dark:bg-neutral-800 text-[#C4785A] flex items-center justify-center text-2xl font-bold shadow-xs mb-3 select-none border border-[#F5E2D8] dark:border-neutral-700">
+                      {renter.fullName.charAt(0).toUpperCase()}
+                    </div>
+                    <h3 className="text-base font-bold text-neutral-900 dark:text-white truncate max-w-[210px] mb-0.5 tracking-tight">
+                      {renter.fullName}
+                    </h3>
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 mb-3 truncate max-w-[200px]">
+                      {renter.companyName || (language === 'ar' ? 'مستأجر خاص' : language === 'fr' ? 'Locataire Particulier' : 'Private Renter')}
                     </span>
-                    <span className="font-bold text-[#C4785A] tabular-nums font-mono">
-                      {formatCurrencyAmount(renter.totalSpent, renter.currency)}
-                    </span>
+                    <div className="w-full pt-3 border-t border-neutral-100 dark:border-neutral-800 text-xs space-y-1 text-center">
+                      <div className="font-mono text-neutral-600 dark:text-neutral-400 text-[11px]">{renter.phone}</div>
+                      <div className="truncate text-neutral-400 text-[11px]">{renter.email}</div>
+                      <div className="flex items-center justify-between pt-2 border-t border-neutral-100 dark:border-neutral-800">
+                        <span className="text-[11px] text-neutral-400 uppercase font-medium">
+                          {renter.totalBookings} {language === 'ar' ? 'حجز' : 'bookings'}
+                        </span>
+                        <span className="font-bold text-[#C4785A] tabular-nums font-mono">
+                          {formatCurrencyAmount(renter.totalSpent, renter.currency)}
+                        </span>
+                      </div>
+                    </div>
                   </div>
+                )}
+              />
+            </div>
+
+            {/* 390px Inline Side Inspector Drawer */}
+            {activeRenter && (
+              <div className="w-[390px] shrink-0 bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 p-5 space-y-4 shadow-lg animate-in slide-in-from-right-4 duration-200">
+                {/* Header */}
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-12 h-12 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 text-[#C4785A] flex items-center justify-center text-lg font-black shrink-0 border border-[#F5E2D8] dark:border-neutral-700 shadow-2xs">
+                      {activeRenter.fullName.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="font-bold text-neutral-900 dark:text-white truncate text-base">
+                        {activeRenter.fullName}
+                      </h3>
+                      <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate">
+                        {activeRenter.companyName || (language === 'ar' ? 'مستأجر خاص' : language === 'fr' ? 'Particulier' : 'Private Renter')}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedRenter(null)}
+                    className="p-1 rounded-lg text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                  >
+                    <X size={16} />
+                  </button>
                 </div>
+
+                {/* Quick Action Ribbon */}
+                <div className="flex items-center gap-2 pt-1 border-t border-neutral-100 dark:border-neutral-800">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setBookingRenterId(activeRenter.id);
+                      setIsBookingModalOpen(true);
+                    }}
+                    className="flex-1 py-1.5 px-3 rounded-xl bg-[#C4785A] hover:bg-[#B3684A] text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors shadow-2xs"
+                  >
+                    <Calendar size={13} />
+                    <span>{language === 'ar' ? 'حجز قاعة' : language === 'fr' ? 'Réserver' : 'Book'}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleOpenEdit(activeRenter)}
+                    className="py-1.5 px-3 rounded-xl bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold flex items-center gap-1 transition-colors"
+                  >
+                    <Edit2 size={13} />
+                    <span>{language === 'ar' ? 'تعديل' : language === 'fr' ? 'Modifier' : 'Edit'}</span>
+                  </button>
+                </div>
+
+                {/* 4 Tabs */}
+                <div className="flex items-center bg-neutral-100 dark:bg-neutral-800/80 p-0.5 rounded-xl text-xs font-semibold">
+                  <button
+                    type="button"
+                    onClick={() => setDrawerTab('dossier')}
+                    className={`flex-1 py-1 text-center rounded-lg transition-all ${
+                      drawerTab === 'dossier'
+                        ? 'bg-white dark:bg-neutral-700 text-[#C4785A] font-bold shadow-2xs'
+                        : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
+                    }`}
+                  >
+                    Dossier
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDrawerTab('bookings')}
+                    className={`flex-1 py-1 text-center rounded-lg transition-all ${
+                      drawerTab === 'bookings'
+                        ? 'bg-white dark:bg-neutral-700 text-[#C4785A] font-bold shadow-2xs'
+                        : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
+                    }`}
+                  >
+                    Réservations
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDrawerTab('finances')}
+                    className={`flex-1 py-1 text-center rounded-lg transition-all ${
+                      drawerTab === 'finances'
+                        ? 'bg-white dark:bg-neutral-700 text-[#C4785A] font-bold shadow-2xs'
+                        : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
+                    }`}
+                  >
+                    Finances
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDrawerTab('notes')}
+                    className={`flex-1 py-1 text-center rounded-lg transition-all ${
+                      drawerTab === 'notes'
+                        ? 'bg-white dark:bg-neutral-700 text-[#C4785A] font-bold shadow-2xs'
+                        : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
+                    }`}
+                  >
+                    Notes
+                  </button>
+                </div>
+
+                {/* Tab 1: Dossier */}
+                {drawerTab === 'dossier' && (
+                  <div className="space-y-3 text-xs animate-in fade-in duration-150">
+                    <div className="p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-xl space-y-2 border border-neutral-100 dark:border-neutral-800">
+                      <div className="flex justify-between items-center">
+                        <span className="text-neutral-500 font-medium">Téléphone :</span>
+                        <a href={`tel:${activeRenter.phone}`} className="font-mono font-semibold text-neutral-900 dark:text-neutral-100 hover:underline">
+                          {activeRenter.phone}
+                        </a>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-neutral-500 font-medium">E-mail :</span>
+                        <a href={`mailto:${activeRenter.email}`} className="text-neutral-900 dark:text-neutral-100 truncate max-w-[200px] hover:underline">
+                          {activeRenter.email}
+                        </a>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-neutral-500 font-medium">Organisme / Entité :</span>
+                        <span className="font-semibold text-neutral-900 dark:text-neutral-100">
+                          {activeRenter.companyName || 'Particulier'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-neutral-500 font-medium">N° Pièce / NIF :</span>
+                        <span className="font-mono text-neutral-700 dark:text-neutral-300">
+                          {activeRenter.idDocNumber || 'Non renseigné'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Tab 2: Réservations */}
+                {drawerTab === 'bookings' && (
+                  <div className="space-y-2.5 text-xs animate-in fade-in duration-150">
+                    <div className="flex items-center justify-between">
+                      <span className="text-neutral-500 font-medium">Historique & Prévues</span>
+                      <span className="font-bold text-[#C4785A]">
+                        {rentalBookings.filter((b) => b.renterId === activeRenter.id).length} réservations
+                      </span>
+                    </div>
+
+                    <div className="space-y-2 max-h-[280px] overflow-y-auto pr-1">
+                      {rentalBookings.filter((b) => b.renterId === activeRenter.id).length === 0 ? (
+                        <div className="p-4 text-center text-neutral-400 bg-neutral-50 dark:bg-neutral-800/40 rounded-xl">
+                          Aucune réservation active pour le moment.
+                        </div>
+                      ) : (
+                        rentalBookings
+                          .filter((b) => b.renterId === activeRenter.id)
+                          .map((b) => (
+                            <div key={b.id} className="p-2.5 bg-neutral-50 dark:bg-neutral-800/60 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-1">
+                              <div className="flex items-center justify-between font-semibold">
+                                <span className="text-neutral-900 dark:text-white truncate max-w-[170px]">{b.purpose || 'Séance de réservation'}</span>
+                                <span className="font-mono text-[#C4785A]">{formatCurrencyAmount(b.totalAmount, b.currency)}</span>
+                              </div>
+                              <div className="flex items-center justify-between text-[11px] text-neutral-400">
+                                <span>{new Date(b.startDateTime).toLocaleDateString()}</span>
+                                <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600">
+                                  {b.status}
+                                </span>
+                              </div>
+                            </div>
+                          ))
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Tab 3: Finances */}
+                {drawerTab === 'finances' && (
+                  <div className="space-y-3 text-xs animate-in fade-in duration-150">
+                    <div className="p-4 bg-neutral-50 dark:bg-neutral-800/50 rounded-xl space-y-3 border border-neutral-100 dark:border-neutral-800">
+                      <div className="flex justify-between items-center">
+                        <span className="text-neutral-500">Chiffre d'affaires cumulé :</span>
+                        <span className="font-mono font-bold text-base text-neutral-900 dark:text-white">
+                          {formatCurrencyAmount(activeRenter.totalSpent, activeRenter.currency)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-neutral-500">Volume total de contrats :</span>
+                        <span className="font-bold text-neutral-900 dark:text-white">
+                          {activeRenter.totalBookings} créneaux
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-neutral-500">Panier moyen :</span>
+                        <span className="font-mono font-semibold text-neutral-800 dark:text-neutral-200">
+                          {activeRenter.totalBookings > 0
+                            ? formatCurrencyAmount(Math.round(activeRenter.totalSpent / activeRenter.totalBookings), activeRenter.currency)
+                            : '--'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Tab 4: Notes & Consignes */}
+                {drawerTab === 'notes' && (
+                  <div className="space-y-2 text-xs animate-in fade-in duration-150">
+                    <div className="flex items-center justify-between">
+                      <label className="text-neutral-500 font-medium">Consignes & Exigences :</label>
+                      {isSavingNotes ? (
+                        <span className="text-[10px] text-neutral-400 animate-pulse">Sauvegarde...</span>
+                      ) : notesSavedNotice ? (
+                        <span className="text-[10px] text-emerald-600 font-semibold flex items-center gap-1">
+                          <Check size={11} /> Sauvegardé
+                        </span>
+                      ) : null}
+                    </div>
+                    <textarea
+                      rows={6}
+                      value={renterNotes}
+                      onChange={(e) => handleNotesChange(e.target.value)}
+                      placeholder="Exigences techniques, sonorisation, badges sécurité, consignes traiteur..."
+                      className="w-full p-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/60 text-xs text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C4785A]"
+                    />
+                  </div>
+                )}
               </div>
             )}
-          />
+          </div>
 
           {/* Footer Count matching Screenshot 30 */}
           <div className="pt-2 text-center text-xs text-neutral-400 font-medium">

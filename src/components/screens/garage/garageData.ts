@@ -228,8 +228,36 @@ export const useGarageData = () => {
     setOrders((prev) => [order, ...prev]);
   };
 
+  const updateOrder = (order: RepairOrder) => {
+    setOrders((prev) => prev.map((o) => (o.id === order.id ? order : o)));
+  };
+
+  const deleteOrder = (id: string) => {
+    setOrders((prev) => prev.filter((o) => o.id !== id));
+  };
+
   const addVehicle = (vehicle: VehicleAsset) => {
     setVehicles((prev) => [vehicle, ...prev]);
+  };
+
+  const updateVehicle = (vehicle: VehicleAsset) => {
+    setVehicles((prev) => prev.map((v) => (v.id === vehicle.id ? vehicle : v)));
+  };
+
+  const deleteVehicle = (id: string) => {
+    setVehicles((prev) => prev.filter((v) => v.id !== id));
+  };
+
+  const addPart = (part: SparePart) => {
+    setParts((prev) => [part, ...prev]);
+  };
+
+  const updatePart = (part: SparePart) => {
+    setParts((prev) => prev.map((p) => (p.id === part.id ? part : p)));
+  };
+
+  const deletePart = (id: string) => {
+    setParts((prev) => prev.filter((p) => p.id !== id));
   };
 
   const updateOrderStatus = (id: string, status: RepairOrder['status']) => {
@@ -241,7 +269,15 @@ export const useGarageData = () => {
     vehicles,
     parts,
     addOrder,
+    updateOrder,
+    deleteOrder,
     addVehicle,
+    updateVehicle,
+    deleteVehicle,
+    addPart,
+    updatePart,
+    deletePart,
     updateOrderStatus,
   };
 };
+

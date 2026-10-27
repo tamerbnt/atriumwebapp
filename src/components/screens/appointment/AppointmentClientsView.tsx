@@ -755,6 +755,26 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = ({
               defaultViewMode="list"
               columns={columns}
               onItemClick={(c) => setInspectingClient(c)}
+              onViewDetails={(c) => setInspectingClient(c)}
+              onEdit={(c) => (onEditMember ? onEditMember(c) : setInspectingClient(c))}
+              onDelete={(c) => {
+                if (window.confirm(`Supprimer le dossier de ${c.fullName} ?`)) {
+                  deleteMember(c.id);
+                  if (inspectingClient?.id === c.id) setInspectingClient(null);
+                }
+              }}
+              customActions={(c) => [
+                {
+                  id: 'book',
+                  label: 'Prendre RDV',
+                  icon: <Calendar size={13} />,
+                  variant: 'primary',
+                  onClick: () => {
+                    setInspectingClient(c);
+                    setIsNewBookingModalOpen(true);
+                  },
+                },
+              ]}
               selectedIds={selectedClientIds}
               onSelectionChange={setSelectedClientIds}
               isPinned={(c) => pinnedClientIds.has(c.id)}

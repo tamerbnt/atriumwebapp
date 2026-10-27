@@ -10,22 +10,46 @@ interface LogisticsShipmentModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (shipment: LogisticsShipment) => void;
+  shipmentToEdit?: LogisticsShipment | null;
 }
 
 export const LogisticsShipmentModal: React.FC<LogisticsShipmentModalProps> = ({
   isOpen,
   onClose,
   onSave,
+  shipmentToEdit,
 }) => {
   const { language, currentBusiness, currentBranch, currentUser } = useAtriumStore();
-  const [merchantName, setMerchantName] = useState('');
-  const [recipientName, setRecipientName] = useState('');
-  const [recipientPhone, setRecipientPhone] = useState('');
-  const [destinationWilaya, setDestinationWilaya] = useState('16 - Alger');
-  const [address, setAddress] = useState('');
-  const [codAmount, setCodAmount] = useState('5000');
-  const [shippingFee, setShippingFee] = useState('600');
-  const [weightKg, setWeightKg] = useState('1.0');
+  const [merchantName, setMerchantName] = useState(shipmentToEdit?.merchantName || '');
+  const [recipientName, setRecipientName] = useState(shipmentToEdit?.recipientName || '');
+  const [recipientPhone, setRecipientPhone] = useState(shipmentToEdit?.recipientPhone || '');
+  const [destinationWilaya, setDestinationWilaya] = useState(shipmentToEdit?.destinationWilaya || '16 - Alger');
+  const [address, setAddress] = useState(shipmentToEdit?.destinationAddress || '');
+  const [codAmount, setCodAmount] = useState(shipmentToEdit ? String(shipmentToEdit.codAmountDzd) : '5000');
+  const [shippingFee, setShippingFee] = useState(shipmentToEdit ? String(shipmentToEdit.shippingFeeDzd) : '600');
+  const [weightKg, setWeightKg] = useState(shipmentToEdit ? String(shipmentToEdit.weightKg) : '1.0');
+
+  React.useEffect(() => {
+    if (shipmentToEdit) {
+      setMerchantName(shipmentToEdit.merchantName);
+      setRecipientName(shipmentToEdit.recipientName);
+      setRecipientPhone(shipmentToEdit.recipientPhone);
+      setDestinationWilaya(shipmentToEdit.destinationWilaya);
+      setAddress(shipmentToEdit.destinationAddress);
+      setCodAmount(String(shipmentToEdit.codAmountDzd));
+      setShippingFee(String(shipmentToEdit.shippingFeeDzd));
+      setWeightKg(String(shipmentToEdit.weightKg));
+    } else {
+      setMerchantName('');
+      setRecipientName('');
+      setRecipientPhone('');
+      setDestinationWilaya('16 - Alger');
+      setAddress('');
+      setCodAmount('5000');
+      setShippingFee('600');
+      setWeightKg('1.0');
+    }
+  }, [shipmentToEdit]);
 
   if (!isOpen) return null;
 
@@ -36,13 +60,13 @@ export const LogisticsShipmentModal: React.FC<LogisticsShipmentModalProps> = ({
       return;
     }
 
-    const created: LogisticsShipment = {
-      id: `ship_${Date.now()}`,
+    const saved: LogisticsShipment = {
+      id: shipmentToEdit ? shipmentToEdit.id : `ship_${Date.now()}`,
       accountId: 'acc_01',
       businessId: currentBusiness?.id || 'biz_logistics',
       branchId: currentBranch?.id || 'branch_logistics_main',
       staffId: currentUser?.id || 'staff_01',
-      trackingCode: `ATR-EXP-${Math.floor(10000 + Math.random() * 90000)}`,
+      trackingCode: shipmentToEdit ? shipmentToEdit.trackingCode : `ATR-EXP-${Math.floor(10000 + Math.random() * 90000)}`,
       merchantName: merchantName.trim() || 'Client Expéditeur Comptoir',
       recipientName: recipientName.trim(),
       recipientPhone: recipientPhone.trim(),
@@ -51,11 +75,13 @@ export const LogisticsShipmentModal: React.FC<LogisticsShipmentModalProps> = ({
       codAmountDzd: parseFloat(codAmount) || 0,
       shippingFeeDzd: parseFloat(shippingFee) || 600,
       weightKg: parseFloat(weightKg) || 1.0,
-      status: 'ReceivedAtHub',
-      createdAt: new Date().toISOString(),
+      status: shipmentToEdit?.status || 'ReceivedAtHub',
+      assignedDriverName: shipmentToEdit?.assignedDriverName,
+      createdAt: shipmentToEdit?.createdAt || new Date().toISOString(),
     };
 
-    onSave(created);
+    onSave(saved);
+
     showToast(
       language === 'ar' ? 'تم إنشاء الشحنة وتوليد الباركود بنجاح' : 'Colis enregistré avec succès (AWB)',
       'success'

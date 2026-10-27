@@ -97,14 +97,35 @@ export const useLegalData = () => {
     setMatters((prev) => [matter, ...prev]);
   };
 
+  const updateMatter = (matter: LegalMatter) => {
+    setMatters((prev) => prev.map((m) => (m.id === matter.id ? matter : m)));
+  };
+
+  const deleteMatter = (id: string) => {
+    setMatters((prev) => prev.filter((m) => m.id !== id));
+  };
+
   const addHearing = (hearing: LegalHearing) => {
     setHearings((prev) => [hearing, ...prev]);
+  };
+
+  const updateHearing = (hearing: LegalHearing) => {
+    setHearings((prev) => prev.map((h) => (h.id === hearing.id ? hearing : h)));
+  };
+
+  const deleteHearing = (id: string) => {
+    setHearings((prev) => prev.filter((h) => h.id !== id));
   };
 
   return {
     matters,
     hearings,
     addMatter,
+    updateMatter,
+    deleteMatter,
     addHearing,
+    updateHearing,
+    deleteHearing,
   };
 };
+

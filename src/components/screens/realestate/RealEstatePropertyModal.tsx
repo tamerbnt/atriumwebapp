@@ -10,23 +10,49 @@ interface RealEstatePropertyModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (prop: RealEstateProperty) => void;
+  propertyToEdit?: RealEstateProperty | null;
 }
 
 export const RealEstatePropertyModal: React.FC<RealEstatePropertyModalProps> = ({
   isOpen,
   onClose,
   onSave,
+  propertyToEdit,
 }) => {
   const { language, currentBusiness, currentBranch, currentUser } = useAtriumStore();
-  const [title, setTitle] = useState('');
-  const [propertyType, setPropertyType] = useState<'Apartment' | 'Villa' | 'Office' | 'Commercial' | 'Land' | 'Warehouse'>('Apartment');
-  const [surfaceM2, setSurfaceM2] = useState('120');
-  const [roomsCount, setRoomsCount] = useState('3');
-  const [address, setAddress] = useState('');
-  const [cityWilaya, setCityWilaya] = useState('Alger');
-  const [priceDzd, setPriceDzd] = useState('150000');
-  const [ownerName, setOwnerName] = useState('');
-  const [ownerPhone, setOwnerPhone] = useState('');
+  const [title, setTitle] = useState(propertyToEdit?.title || '');
+  const [propertyType, setPropertyType] = useState<'Apartment' | 'Villa' | 'Office' | 'Commercial' | 'Land' | 'Warehouse'>(propertyToEdit?.propertyType || 'Apartment');
+  const [surfaceM2, setSurfaceM2] = useState(propertyToEdit ? String(propertyToEdit.surfaceM2) : '120');
+  const [roomsCount, setRoomsCount] = useState(propertyToEdit ? String(propertyToEdit.roomsCount) : '3');
+  const [address, setAddress] = useState(propertyToEdit?.address || '');
+  const [cityWilaya, setCityWilaya] = useState(propertyToEdit?.cityWilaya || 'Alger');
+  const [priceDzd, setPriceDzd] = useState(propertyToEdit ? String(propertyToEdit.priceDzd) : '150000');
+  const [ownerName, setOwnerName] = useState(propertyToEdit?.ownerName || '');
+  const [ownerPhone, setOwnerPhone] = useState(propertyToEdit?.ownerPhone || '');
+
+  React.useEffect(() => {
+    if (propertyToEdit) {
+      setTitle(propertyToEdit.title);
+      setPropertyType(propertyToEdit.propertyType);
+      setSurfaceM2(String(propertyToEdit.surfaceM2));
+      setRoomsCount(String(propertyToEdit.roomsCount));
+      setAddress(propertyToEdit.address);
+      setCityWilaya(propertyToEdit.cityWilaya);
+      setPriceDzd(String(propertyToEdit.priceDzd));
+      setOwnerName(propertyToEdit.ownerName);
+      setOwnerPhone(propertyToEdit.ownerPhone);
+    } else {
+      setTitle('');
+      setPropertyType('Apartment');
+      setSurfaceM2('120');
+      setRoomsCount('3');
+      setAddress('');
+      setCityWilaya('Alger');
+      setPriceDzd('150000');
+      setOwnerName('');
+      setOwnerPhone('');
+    }
+  }, [propertyToEdit]);
 
   if (!isOpen) return null;
 
@@ -37,8 +63,8 @@ export const RealEstatePropertyModal: React.FC<RealEstatePropertyModalProps> = (
       return;
     }
 
-    const created: RealEstateProperty = {
-      id: `prop_${Date.now()}`,
+    const saved: RealEstateProperty = {
+      id: propertyToEdit ? propertyToEdit.id : `prop_${Date.now()}`,
       accountId: 'acc_01',
       businessId: currentBusiness?.id || 'biz_realestate',
       branchId: currentBranch?.id || 'branch_realestate_main',
@@ -53,12 +79,13 @@ export const RealEstatePropertyModal: React.FC<RealEstatePropertyModalProps> = (
       priceDzd: parseFloat(priceDzd) || 100000,
       ownerName: ownerName.trim(),
       ownerPhone: ownerPhone.trim(),
-      status: 'Available',
-      amenities: ['Chauffage central', 'Cuisine équipée', 'Ascenseur'],
-      createdAt: new Date().toISOString(),
+      status: propertyToEdit?.status || 'Available',
+      amenities: propertyToEdit?.amenities || ['Chauffage central', 'Cuisine équipée', 'Ascenseur'],
+      createdAt: propertyToEdit?.createdAt || new Date().toISOString(),
     };
 
-    onSave(created);
+
+    onSave(saved);
     showToast(
       language === 'ar' ? 'تم إضافة العقار إلى المحفظة بنجاح' : 'Bien immobilier ajouté avec succès',
       'success'

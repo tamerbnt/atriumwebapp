@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   ShoppingBag,
   Plus,
@@ -16,6 +16,14 @@ import {
   Layers,
   TrendingUp,
   Percent,
+  Download,
+  Maximize2,
+  Package,
+  Boxes,
+  Check,
+  X,
+  PackagePlus,
+  ArrowUpRight,
 } from 'lucide-react';
 import { useAtriumStore } from '../../../services/store';
 import { Product } from '../../../types';
@@ -40,6 +48,7 @@ export const TradingCatalogView: React.FC = () => {
     branches,
     switchBranch,
     resetTradingMockData,
+    showToast,
   } = useAtriumStore();
 
   const [activeTab, setActiveTab] = useState<CatalogTab>('products');
@@ -47,6 +56,50 @@ export const TradingCatalogView: React.FC = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isFacilityDropdownOpen, setIsFacilityDropdownOpen] = useState(false);
+
+  // Inspector & Collection State
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [pinnedIds, setPinnedIds] = useState<Set<string>>(new Set());
+  const [sortBy, setSortBy] = useState<string>('name');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
+  const [drawerTab, setDrawerTab] = useState<'fiche' | 'stock' | 'marge' | 'notes'>('fiche');
+  const [productNotes, setProductNotes] = useState('');
+  const [isSavingNotes, setIsSavingNotes] = useState(false);
+  const [notesSavedNotice, setNotesSavedNotice] = useState(false);
+
+  const activeProduct = useMemo(() => {
+    if (!selectedProduct) return null;
+    return products.find((p) => p.id === selectedProduct.id) || selectedProduct;
+  }, [selectedProduct, products]);
+
+  useEffect(() => {
+    if (activeProduct) {
+      setProductNotes(activeProduct.description || '');
+    }
+  }, [activeProduct?.id]);
+
+  const handleNotesChange = (val: string) => {
+    setProductNotes(val);
+    if (!activeProduct) return;
+    setIsSavingNotes(true);
+    updateProduct(activeProduct.id, { description: val });
+    setTimeout(() => {
+      setIsSavingNotes(false);
+      setNotesSavedNotice(true);
+      setTimeout(() => setNotesSavedNotice(false), 2000);
+    }, 400);
+  };
+
+  const handleReplenishStock = (prod: Product, delta = 10) => {
+    const nextStock = (prod.stockQuantity || 0) + delta;
+    updateProduct(prod.id, { stockQuantity: nextStock });
+    showToast?.({
+      type: 'success',
+      title: 'Stock Réapprovisionné',
+      message: `+${delta} ${prod.unit || 'u'} ajoutés à ${prod.name} (Nouveau stock: ${nextStock})`,
+    });
+  };
 
   // Form State
   const [name, setName] = useState('');
@@ -80,6 +133,79 @@ export const TradingCatalogView: React.FC = () => {
       return true;
     });
   }, [products, activeTab, searchQuery]);
+
+  const sortedItems = useMemo(() => {
+    return [...filteredItems].sort((a, b) => {
+      const aPinned = pinnedIds.has(a.id);
+      const bPinned = pinnedIds.has(b.id);
+      if (aPinned && !bPinned) return -1;
+      if (!aPinned && bPinned) return 1;
+
+      if (sortBy === 'name') {
+        const cmp = a.name.localeCompare(b.name);
+        return sortDir === 'asc' ? cmp : -cmp;
+      }
+      if (sortBy === 'sku') {
+        const cmp = (a.sku || '').localeCompare(b.sku || '');
+        return sortDir === 'asc' ? cmp : -cmp;
+      }
+      if (sortBy === 'price') {
+        const aP = a.price?.amount || 0;
+        const bP = b.price?.amount || 0;
+        return sortDir === 'asc' ? aP - bP : bP - aP;
+      }
+      if (sortBy === 'stock') {
+        const aS = a.stockQuantity || 0;
+        const bS = b.stockQuantity || 0;
+        return sortDir === 'asc' ? aS - bS : bS - aS;
+      }
+      return 0;
+    });
+  }, [filteredItems, pinnedIds, sortBy, sortDir]);
+
+  const handleExportCSV = () => {
+    const headers = [
+      'SKU',
+      'Désignation',
+      'Catégorie',
+      'Type',
+      'Unité',
+      'TVA %',
+      'Prix Vente HT',
+      'Coût Achat HT',
+      'Stock Réel',
+      'Seuil Alerte',
+    ];
+    const rows = filteredItems.map((p) => [
+      `"${p.sku || ''}"`,
+      `"${p.name}"`,
+      `"${p.category || ''}"`,
+      `"${p.unit === 'forfait' ? 'Service' : 'Produit'}"`,
+      `"${p.unit || 'u'}"`,
+      `"${p.taxRate ?? 19}"`,
+      `"${p.price?.amount || 0}"`,
+      `"${p.cost?.amount || p.costPrice || 0}"`,
+      `"${p.stockQuantity ?? ''}"`,
+      `"${p.reorderLevel ?? ''}"`,
+    ]);
+    const csvContent =
+      'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `atrium-trading-catalog-${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(() => {});
+    } else {
+      document.exitFullscreen().catch(() => {});
+    }
+  };
 
   // Catalog Metrics
   const stats = useMemo(() => {
@@ -516,37 +642,463 @@ export const TradingCatalogView: React.FC = () => {
                   onChange={setSearchQuery}
                   placeholder={language === 'ar' ? 'بحث بالاسم، الرمز، الفئة...' : 'Filtrer nom, SKU, catégorie...'}
                   shutSize={36}
-                  openWidth={280}
+                  openWidth={240}
                 />
               </div>
+
+              {/* Export CSV Button */}
+              <button
+                type="button"
+                onClick={handleExportCSV}
+                className="h-9 px-3 rounded-xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700/50 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
+              >
+                <Download size={13} />
+                <span>Exporter</span>
+              </button>
+
+              {/* Fullscreen Expand */}
+              <button
+                type="button"
+                onClick={toggleFullscreen}
+                className="h-9 w-9 rounded-xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700/50 flex items-center justify-center transition-colors cursor-pointer shadow-2xs"
+                title="Plein écran"
+              >
+                <Maximize2 size={14} />
+              </button>
             </div>
           </div>
 
-          {/* Table Container Inside Pod Tray */}
-          <div className="bg-white dark:bg-neutral-800 rounded-[18px] border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs overflow-hidden">
-            <UniversalDataCollection
-              items={filteredItems}
-              keyExtractor={(p) => p.id}
-              columns={columns}
-              renderCard={(p) => (
-                <div className="p-4 border border-neutral-200 dark:border-neutral-700 rounded-xl space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <span className="font-mono text-xs font-bold text-neutral-800 dark:text-neutral-200">{p.sku}</span>
-                    <span className="text-[10px] px-2 py-0.5 rounded font-mono font-bold bg-[#C4785A]/10 text-[#C4785A]">
-                      {p.category}
-                    </span>
-                  </div>
-                  <p className="font-bold text-xs text-neutral-900 dark:text-white">{p.name}</p>
-                  <div className="flex justify-between text-xs pt-1 border-t border-neutral-100 dark:border-neutral-700">
-                    <span className="text-neutral-500">Prix Vente HT :</span>
-                    <span className="font-bold text-[#C4785A]">{formatMoney(p.price?.amount || 0)}</span>
-                  </div>
-                </div>
-              )}
-              emptyTitle="Aucun article trouvé"
-            />
-          </div>
+          {/* Batch Selection Banner */}
+          {selectedIds.size > 0 && (
+            <div className="flex items-center justify-between p-3 px-4 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 animate-in fade-in slide-in-from-top-2">
+              <div className="flex items-center gap-3">
+                <span className="w-2.5 h-2.5 rounded-full bg-[#C4785A] animate-pulse" />
+                <span className="text-xs font-bold text-neutral-900 dark:text-white">
+                  {selectedIds.size} articles sélectionnés
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setSelectedIds(new Set())}
+                  className="px-3 py-1 text-xs text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white font-medium cursor-pointer"
+                >
+                  Désélectionner
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (window.confirm(`Supprimer ${selectedIds.size} articles ?`)) {
+                      selectedIds.forEach((id) => deleteProduct(id));
+                      setSelectedIds(new Set());
+                    }
+                  }}
+                  className="px-3.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                >
+                  <Trash2 size={13} />
+                  <span>Supprimer</span>
+                </button>
+              </div>
+            </div>
+          )}
 
+          {/* Dual Collection Table + 390px Inline Side Inspector */}
+          <div className="flex items-start gap-4">
+            <div className="flex-1 min-w-0">
+              <UniversalDataCollection<Product>
+                items={sortedItems}
+                keyExtractor={(p) => p.id}
+                defaultViewMode="list"
+                columns={columns}
+                sortBy={sortBy}
+                sortDirection={sortDir}
+                onSortChange={(key) => {
+                  if (sortBy === key) {
+                    setSortDir((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+                  } else {
+                    setSortBy(key);
+                    setSortDir('asc');
+                  }
+                }}
+                selectedIds={selectedIds}
+                onSelectionChange={setSelectedIds}
+                isPinned={(p) => pinnedIds.has(p.id)}
+                onTogglePin={(p) => {
+                  setPinnedIds((prev) => {
+                    const next = new Set(prev);
+                    if (next.has(p.id)) next.delete(p.id);
+                    else next.add(p.id);
+                    return next;
+                  });
+                }}
+                onItemClick={(p) => setSelectedProduct(p)}
+                onViewDetails={(p) => setSelectedProduct(p)}
+                onEdit={(p) => handleEdit(p)}
+                onDelete={(p) => {
+                  if (window.confirm(`Supprimer ${p.name} ?`)) {
+                    deleteProduct(p.id);
+                    if (selectedProduct?.id === p.id) setSelectedProduct(null);
+                  }
+                }}
+                customActions={(p) =>
+                  p.unit !== 'forfait'
+                    ? [
+                        {
+                          id: 'replenish',
+                          label: '+10 Stock',
+                          icon: <PackagePlus size={13} />,
+                          variant: 'primary',
+                          onClick: () => handleReplenishStock(p, 10),
+                        },
+                      ]
+                    : []
+                }
+                renderCard={(p) => {
+                  const marginPercent =
+                    (p.price?.amount || 0) > 0
+                      ? Math.round(
+                          (((p.price?.amount || 0) - (p.cost?.amount || p.costPrice || 0)) /
+                            (p.price?.amount || 1)) *
+                            100
+                        )
+                      : 0;
+                  const isLowStock = (p.stockQuantity || 0) <= (p.reorderLevel || 10);
+
+                  return (
+                    <div className="flex flex-col justify-between w-full h-full">
+                      <div>
+                        {/* Header: SKU & Category */}
+                        <div className="flex items-center justify-between mb-2.5">
+                          <span className="font-mono text-xs font-bold px-2 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200">
+                            {p.sku || 'N/A'}
+                          </span>
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#C4785A]/10 text-[#C4785A]">
+                            {p.category || 'Général'}
+                          </span>
+                        </div>
+
+                        {/* Title & Desc */}
+                        <h3 className="font-bold text-sm text-neutral-900 dark:text-white line-clamp-1 mb-1">
+                          {p.name}
+                        </h3>
+                        <p className="text-xs text-neutral-400 line-clamp-2 min-h-[32px]">
+                          {p.description || 'Article standard de négoce et distribution Atrium.'}
+                        </p>
+
+                        {/* Financial metrics */}
+                        <div className="mt-3 p-3 bg-neutral-50 dark:bg-neutral-800/40 rounded-xl space-y-1.5 text-xs">
+                          <div className="flex items-center justify-between">
+                            <span className="text-neutral-500">Prix Vente HT :</span>
+                            <span className="font-mono font-bold text-[#C4785A] text-sm tabular-nums">
+                              {formatMoney(p.price?.amount || 0)}
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between text-[11px] text-neutral-400">
+                            <span>Coût d'Achat :</span>
+                            <span className="font-mono tabular-nums">
+                              {formatMoney(p.cost?.amount || p.costPrice || 0)}
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between text-[11px] pt-1 border-t border-neutral-100 dark:border-neutral-700">
+                            <span className="text-neutral-500">Marge Brute :</span>
+                            <span className={`font-semibold font-mono ${marginPercent >= 25 ? 'text-emerald-600' : 'text-amber-600'}`}>
+                              {marginPercent}%
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Stock Footer */}
+                      <div className="mt-3 pt-2.5 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-xs">
+                        {p.unit !== 'forfait' ? (
+                          <>
+                            <div className="flex items-center gap-1.5">
+                              <span
+                                className={`w-2 h-2 rounded-full ${
+                                  (p.stockQuantity || 0) === 0
+                                    ? 'bg-rose-500'
+                                    : isLowStock
+                                    ? 'bg-amber-500 animate-pulse'
+                                    : 'bg-emerald-500'
+                                }`}
+                              />
+                              <span className="font-mono font-semibold text-neutral-700 dark:text-neutral-300">
+                                {p.stockQuantity || 0} {p.unit || 'u'} en stock
+                              </span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleReplenishStock(p, 10);
+                              }}
+                              className="px-2.5 py-1 rounded-lg bg-[#C4785A]/10 hover:bg-[#C4785A]/20 text-[#C4785A] text-[11px] font-bold transition-colors cursor-pointer"
+                            >
+                              +10 Stock
+                            </button>
+                          </>
+                        ) : (
+                          <div className="flex items-center gap-1.5 text-neutral-500">
+                            <Sparkles size={13} className="text-[#C4785A]" />
+                            <span>Prestation au Forfait</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                }}
+                emptyTitle="Aucun article trouvé"
+              />
+            </div>
+
+            {/* 390px Inline Side Inspector Drawer */}
+            {activeProduct && (
+              <div className="w-[390px] shrink-0 bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 p-5 space-y-4 shadow-lg animate-in slide-in-from-right-4 duration-200">
+                {/* Header */}
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-12 h-12 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 text-[#C4785A] flex items-center justify-center text-lg font-bold shrink-0 border border-[#F5E2D8] dark:border-neutral-700 shadow-2xs">
+                      <ShoppingBag size={22} />
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="font-bold text-neutral-900 dark:text-white truncate text-base">
+                        {activeProduct.name}
+                      </h3>
+                      <div className="flex items-center gap-1.5 text-xs text-neutral-400">
+                        <span className="font-mono font-semibold">{activeProduct.sku || 'SANS SKU'}</span>
+                        <span>·</span>
+                        <span>{activeProduct.category || 'Général'}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedProduct(null)}
+                    className="p-1 rounded-lg text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+
+                {/* Quick Action Ribbon */}
+                <div className="flex items-center gap-2 pt-1 border-t border-neutral-100 dark:border-neutral-800">
+                  {activeProduct.unit !== 'forfait' && (
+                    <button
+                      type="button"
+                      onClick={() => handleReplenishStock(activeProduct, 10)}
+                      className="flex-1 py-1.5 px-3 rounded-xl bg-[#C4785A] hover:bg-[#B3684A] text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors shadow-2xs"
+                    >
+                      <PackagePlus size={13} />
+                      <span>+10 Stock</span>
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => handleEdit(activeProduct)}
+                    className="py-1.5 px-3 rounded-xl bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold flex items-center gap-1 transition-colors"
+                  >
+                    <Edit size={13} />
+                    <span>Modifier</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (window.confirm(`Supprimer ${activeProduct.name} ?`)) {
+                        deleteProduct(activeProduct.id);
+                        setSelectedProduct(null);
+                      }
+                    }}
+                    className="p-2 rounded-xl bg-neutral-100 dark:bg-neutral-800 hover:bg-rose-100 dark:hover:bg-rose-950/40 text-neutral-500 hover:text-rose-600 transition-colors"
+                  >
+                    <Trash2 size={13} />
+                  </button>
+                </div>
+
+                {/* 4 Tabs */}
+                <div className="flex items-center bg-neutral-100 dark:bg-neutral-800/80 p-0.5 rounded-xl text-xs font-semibold">
+                  <button
+                    type="button"
+                    onClick={() => setDrawerTab('fiche')}
+                    className={`flex-1 py-1 text-center rounded-lg transition-all ${
+                      drawerTab === 'fiche'
+                        ? 'bg-white dark:bg-neutral-700 text-[#C4785A] font-bold shadow-2xs'
+                        : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
+                    }`}
+                  >
+                    Fiche
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDrawerTab('stock')}
+                    className={`flex-1 py-1 text-center rounded-lg transition-all ${
+                      drawerTab === 'stock'
+                        ? 'bg-white dark:bg-neutral-700 text-[#C4785A] font-bold shadow-2xs'
+                        : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
+                    }`}
+                  >
+                    Stock
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDrawerTab('marge')}
+                    className={`flex-1 py-1 text-center rounded-lg transition-all ${
+                      drawerTab === 'marge'
+                        ? 'bg-white dark:bg-neutral-700 text-[#C4785A] font-bold shadow-2xs'
+                        : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
+                    }`}
+                  >
+                    Marge
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDrawerTab('notes')}
+                    className={`flex-1 py-1 text-center rounded-lg transition-all ${
+                      drawerTab === 'notes'
+                        ? 'bg-white dark:bg-neutral-700 text-[#C4785A] font-bold shadow-2xs'
+                        : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
+                    }`}
+                  >
+                    Notes
+                  </button>
+                </div>
+
+                {/* Tab 1: Fiche */}
+                {drawerTab === 'fiche' && (
+                  <div className="space-y-3 text-xs animate-in fade-in duration-150">
+                    <div className="p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-xl space-y-2 border border-neutral-100 dark:border-neutral-800">
+                      <div className="flex justify-between items-center">
+                        <span className="text-neutral-500">Référence SKU :</span>
+                        <span className="font-mono font-bold text-neutral-900 dark:text-neutral-100">
+                          {activeProduct.sku || 'SANS SKU'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-neutral-500">Catégorie :</span>
+                        <span className="font-semibold text-neutral-900 dark:text-neutral-100">
+                          {activeProduct.category || 'Général'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-neutral-500">Unité de vente :</span>
+                        <span className="font-mono text-neutral-700 dark:text-neutral-300">
+                          {activeProduct.unit || 'u'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-neutral-500">Taux de TVA :</span>
+                        <span className="font-mono font-bold text-emerald-600">
+                          {activeProduct.taxRate ?? 19}%
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Tab 2: Stock */}
+                {drawerTab === 'stock' && (
+                  <div className="space-y-3 text-xs animate-in fade-in duration-150">
+                    {activeProduct.unit === 'forfait' ? (
+                      <div className="p-4 text-center text-neutral-400 bg-neutral-50 dark:bg-neutral-800/40 rounded-xl">
+                        Cet article est un service/forfait immatériel. Aucun stock physique géré.
+                      </div>
+                    ) : (
+                      <div className="p-4 bg-neutral-50 dark:bg-neutral-800/50 rounded-xl space-y-3 border border-neutral-100 dark:border-neutral-800">
+                        <div className="flex justify-between items-center">
+                          <span className="text-neutral-500">Stock Réel Disponible :</span>
+                          <span className="font-mono font-bold text-base text-neutral-900 dark:text-white">
+                            {activeProduct.stockQuantity || 0} {activeProduct.unit || 'u'}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-neutral-500">Seuil Réapprovisionnement :</span>
+                          <span className="font-mono text-neutral-800 dark:text-neutral-200">
+                            {activeProduct.reorderLevel || 10} {activeProduct.unit || 'u'}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-neutral-500">Valorisation Stock HT :</span>
+                          <span className="font-mono font-bold text-[#C4785A]">
+                            {formatMoney((activeProduct.stockQuantity || 0) * (activeProduct.cost?.amount || activeProduct.costPrice || 0))}
+                          </span>
+                        </div>
+                        <div className="pt-2">
+                          <button
+                            type="button"
+                            onClick={() => handleReplenishStock(activeProduct, 10)}
+                            className="w-full py-2 rounded-xl bg-[#C4785A] hover:bg-[#B3684A] text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors"
+                          >
+                            <PackagePlus size={14} />
+                            <span>Ajouter +10 {activeProduct.unit || 'u'} au stock</span>
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Tab 3: Marge */}
+                {drawerTab === 'marge' && (
+                  <div className="space-y-3 text-xs animate-in fade-in duration-150">
+                    <div className="p-4 bg-neutral-50 dark:bg-neutral-800/50 rounded-xl space-y-3 border border-neutral-100 dark:border-neutral-800">
+                      <div className="flex justify-between items-center">
+                        <span className="text-neutral-500">Prix de Vente HT :</span>
+                        <span className="font-mono font-bold text-base text-neutral-900 dark:text-white">
+                          {formatMoney(activeProduct.price?.amount || 0)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-neutral-500">Coût d'Achat HT :</span>
+                        <span className="font-mono text-neutral-800 dark:text-neutral-200">
+                          {formatMoney(activeProduct.cost?.amount || activeProduct.costPrice || 0)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center pt-2 border-t border-neutral-200 dark:border-neutral-700">
+                        <span className="text-neutral-500">Marge Brute Unitaire :</span>
+                        <span className="font-mono font-bold text-emerald-600">
+                          {formatMoney((activeProduct.price?.amount || 0) - (activeProduct.cost?.amount || activeProduct.costPrice || 0))}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-neutral-500">Taux de Marque :</span>
+                        <span className="font-mono font-bold text-emerald-600">
+                          {(activeProduct.price?.amount || 0) > 0
+                            ? Math.round(
+                                (((activeProduct.price?.amount || 0) - (activeProduct.cost?.amount || activeProduct.costPrice || 0)) /
+                                  (activeProduct.price?.amount || 1)) *
+                                  100
+                              )
+                            : 0}%
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Tab 4: Notes & Consignes */}
+                {drawerTab === 'notes' && (
+                  <div className="space-y-2 text-xs animate-in fade-in duration-150">
+                    <div className="flex items-center justify-between">
+                      <label className="text-neutral-500 font-medium">Spécifications & Consignes :</label>
+                      {isSavingNotes ? (
+                        <span className="text-[10px] text-neutral-400 animate-pulse">Sauvegarde...</span>
+                      ) : notesSavedNotice ? (
+                        <span className="text-[10px] text-emerald-600 font-semibold flex items-center gap-1">
+                          <Check size={11} /> Sauvegardé
+                        </span>
+                      ) : null}
+                    </div>
+                    <textarea
+                      rows={6}
+                      value={productNotes}
+                      onChange={(e) => handleNotesChange(e.target.value)}
+                      placeholder="Spécifications techniques, fiches de sécurité, fournisseur de référence, conditionnement..."
+                      className="w-full p-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/60 text-xs text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C4785A]"
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Modal */}

@@ -192,8 +192,24 @@ export const useRealEstateData = () => {
     setProperties((prev) => [prop, ...prev]);
   };
 
+  const updateProperty = (prop: RealEstateProperty) => {
+    setProperties((prev) => prev.map((p) => (p.id === prop.id ? prop : p)));
+  };
+
+  const deleteProperty = (id: string) => {
+    setProperties((prev) => prev.filter((p) => p.id !== id));
+  };
+
   const addLease = (lease: RealEstateLease) => {
     setLeases((prev) => [lease, ...prev]);
+  };
+
+  const updateLease = (lease: RealEstateLease) => {
+    setLeases((prev) => prev.map((l) => (l.id === lease.id ? lease : l)));
+  };
+
+  const deleteLease = (id: string) => {
+    setLeases((prev) => prev.filter((l) => l.id !== id));
   };
 
   return {
@@ -201,6 +217,11 @@ export const useRealEstateData = () => {
     leases,
     inspections,
     addProperty,
+    updateProperty,
+    deleteProperty,
     addLease,
+    updateLease,
+    deleteLease,
   };
 };
+

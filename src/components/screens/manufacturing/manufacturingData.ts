@@ -124,6 +124,26 @@ export const useManufacturingData = () => {
     setOrders((prev) => [order, ...prev]);
   };
 
+  const updateOrder = (order: ManufacturingOrder) => {
+    setOrders((prev) => prev.map((o) => (o.id === order.id ? order : o)));
+  };
+
+  const deleteOrder = (id: string) => {
+    setOrders((prev) => prev.filter((o) => o.id !== id));
+  };
+
+  const addBom = (bom: ManufacturingBom) => {
+    setBoms((prev) => [bom, ...prev]);
+  };
+
+  const updateBom = (bom: ManufacturingBom) => {
+    setBoms((prev) => prev.map((b) => (b.id === bom.id ? bom : b)));
+  };
+
+  const deleteBom = (id: string) => {
+    setBoms((prev) => prev.filter((b) => b.id !== id));
+  };
+
   const updateOrderStatus = (id: string, status: ManufacturingOrder['status']) => {
     setOrders((prev) => prev.map((o) => (o.id === id ? { ...o, status } : o)));
   };
@@ -132,6 +152,12 @@ export const useManufacturingData = () => {
     boms,
     orders,
     addOrder,
+    updateOrder,
+    deleteOrder,
+    addBom,
+    updateBom,
+    deleteBom,
     updateOrderStatus,
   };
 };
+

@@ -565,17 +565,88 @@ export const TradingDirectoryView: React.FC = () => {
               }`}
             >
               {mode === 'clients' ? (
-                <UniversalDataCollection
+                <UniversalDataCollection<B2bClient>
                   items={filteredClients}
                   keyExtractor={(c) => c.id}
                   columns={clientColumns}
                   onItemClick={(c) => setSelectedEntity(c)}
-                  renderCard={(c) => (
-                    <div className="p-4 border rounded-xl space-y-1">
-                      <span className="font-bold text-xs">{c.companyName}</span>
-                      <span className="text-[10px] text-neutral-400 block">NIF: {c.nif}</span>
-                    </div>
-                  )}
+                  onViewDetails={(c) => setSelectedEntity(c)}
+                  onEdit={(c) => {
+                    setEditingEntity(c);
+                    setEntityModalOpen(true);
+                  }}
+                  onDelete={(c) => setDeleteTarget(c)}
+                  customActions={(c) => [
+                    {
+                      id: 'doc',
+                      label: language === 'ar' ? 'إنشاء مستند' : 'Nouveau Document',
+                      icon: <FileText size={13} />,
+                      variant: 'primary',
+                      onClick: () => {
+                        setSelectedEntity(c);
+                        setComposerOpen(true);
+                      },
+                    },
+                  ]}
+                  renderCard={(c) => {
+                    const isOverLimit = (c.outstandingBalance || 0) > (c.creditLimit || 0);
+
+                    return (
+                      <div className="flex flex-col justify-between w-full h-full">
+                        <div>
+                          {/* Header: Avatar + Sector */}
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="w-12 h-12 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 text-[#C4785A] flex items-center justify-center font-bold text-base shrink-0 border border-[#F5E2D8] dark:border-neutral-700 shadow-2xs">
+                              {c.companyName.charAt(0).toUpperCase()}
+                            </div>
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 truncate max-w-[150px]">
+                              {c.sector || 'Entreprise B2B'}
+                            </span>
+                          </div>
+
+                          {/* Company Name & NIF */}
+                          <h3 className="font-bold text-base text-neutral-900 dark:text-white line-clamp-1 mb-0.5">
+                            {c.companyName}
+                          </h3>
+                          <div className="text-[11px] font-mono text-neutral-400 mb-3">
+                            NIF: {c.nif || 'Non renseigné'} {c.city ? `· ${c.city}` : ''}
+                          </div>
+
+                          {/* Encours & Plafond */}
+                          <div className="p-3 bg-neutral-50 dark:bg-neutral-800/40 rounded-xl space-y-1.5 text-xs">
+                            <div className="flex items-center justify-between">
+                              <span className="text-neutral-500">Encours Dû :</span>
+                              <span className={`font-mono font-bold tabular-nums ${isOverLimit ? 'text-rose-600' : 'text-[#C4785A]'}`}>
+                                {formatMoney(c.outstandingBalance || 0)}
+                              </span>
+                            </div>
+                            <div className="flex items-center justify-between text-[11px] text-neutral-400">
+                              <span>Plafond Autorisé :</span>
+                              <span className="font-mono tabular-nums">{formatMoney(c.creditLimit || 0)}</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Contact Person Footer */}
+                        <div className="mt-3 pt-2.5 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-xs">
+                          <span className="text-neutral-600 dark:text-neutral-300 truncate max-w-[160px] font-medium">
+                            {c.contactName || c.phone || 'Contact Direct'}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedEntity(c);
+                              setComposerOpen(true);
+                            }}
+                            className="px-2.5 py-1 rounded-lg bg-[#C4785A]/10 hover:bg-[#C4785A]/20 text-[#C4785A] text-[11px] font-bold transition-colors cursor-pointer"
+                          >
+                            + Facture/BL
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  }}
                   emptyTitle={language === 'ar' ? 'لم يتم العثور على عملاء تجاريين' : 'Aucun client B2B trouvé'}
                   emptyDescription={
                     language === 'ar'
@@ -584,14 +655,82 @@ export const TradingDirectoryView: React.FC = () => {
                   }
                 />
               ) : (
-                <UniversalDataCollection
+                <UniversalDataCollection<B2bSupplier>
                   items={filteredSuppliers}
                   keyExtractor={(s) => s.id}
                   columns={supplierColumns}
                   onItemClick={(s) => setSelectedEntity(s)}
+                  onViewDetails={(s) => setSelectedEntity(s)}
+                  onEdit={(s) => {
+                    setEditingEntity(s);
+                    setEntityModalOpen(true);
+                  }}
+                  onDelete={(s) => setDeleteTarget(s)}
+                  customActions={(s) => [
+                    {
+                      id: 'doc',
+                      label: language === 'ar' ? 'أمر شراء' : 'Bon de Commande',
+                      icon: <FileText size={13} />,
+                      variant: 'primary',
+                      onClick: () => {
+                        setSelectedEntity(s);
+                        setComposerOpen(true);
+                      },
+                    },
+                  ]}
                   renderCard={(s) => (
-                    <div className="p-4 border rounded-xl space-y-1">
-                      <span className="font-bold text-xs">{s.supplierName}</span>
+                    <div className="flex flex-col justify-between w-full h-full">
+                      <div>
+                        {/* Header: Avatar + Sector */}
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="w-12 h-12 rounded-2xl bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 flex items-center justify-center font-bold text-base shrink-0 border border-neutral-200 dark:border-neutral-700 shadow-2xs">
+                            {s.supplierName.charAt(0).toUpperCase()}
+                          </div>
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 truncate max-w-[150px]">
+                            {s.sector || 'Fournisseur Agréé'}
+                          </span>
+                        </div>
+
+                        {/* Supplier Name & NIF */}
+                        <h3 className="font-bold text-base text-neutral-900 dark:text-white line-clamp-1 mb-0.5">
+                          {s.supplierName}
+                        </h3>
+                        <div className="text-[11px] font-mono text-neutral-400 mb-3">
+                          NIF: {s.nif || 'Non renseigné'} {s.city ? `· ${s.city}` : ''}
+                        </div>
+
+                        {/* Dettes Achats */}
+                        <div className="p-3 bg-neutral-50 dark:bg-neutral-800/40 rounded-xl space-y-1.5 text-xs">
+                          <div className="flex items-center justify-between">
+                            <span className="text-neutral-500">Dettes Achats Exigibles :</span>
+                            <span className="font-mono font-bold text-amber-600 tabular-nums">
+                              {formatMoney(s.outstandingPayable || 0)}
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between text-[11px] text-neutral-400">
+                            <span>Modalités :</span>
+                            <span>{s.paymentTermsDays || 30} jours fin de mois</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Contact Person Footer */}
+                      <div className="mt-3 pt-2.5 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-xs">
+                        <span className="text-neutral-600 dark:text-neutral-300 truncate max-w-[160px] font-medium">
+                          {s.contactName || s.phone || 'Contact Commercial'}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedEntity(s);
+                            setComposerOpen(true);
+                          }}
+                          className="px-2.5 py-1 rounded-lg bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-700 dark:hover:bg-neutral-600 text-neutral-800 dark:text-neutral-200 text-[11px] font-bold transition-colors cursor-pointer"
+                        >
+                          + Bon Commande
+                        </button>
+                      </div>
                     </div>
                   )}
                   emptyTitle={language === 'ar' ? 'لم يتم العثور على موردين' : 'Aucun fournisseur trouvé'}

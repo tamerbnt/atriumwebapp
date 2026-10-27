@@ -35,6 +35,7 @@ export const VenueInventoryView: React.FC = () => {
   const { t, language } = useTranslation();
   const {
     rentableUnits,
+    rentalBookings,
     createRentableUnit,
     updateRentableUnit,
     deleteRentableUnit,
@@ -66,6 +67,36 @@ export const VenueInventoryView: React.FC = () => {
   const [unitSortBy, setUnitSortBy] = useState<string>('name');
   const [unitSortDir, setUnitSortDir] = useState<'asc' | 'desc'>('asc');
   const [isFacilityDropdownOpen, setIsFacilityDropdownOpen] = useState(false);
+
+  // Selected space for 390px inline side inspector
+  const [selectedUnit, setSelectedUnit] = useState<RentableUnit | null>(null);
+  const [drawerTab, setDrawerTab] = useState<'fiche' | 'planning' | 'rates' | 'notes'>('fiche');
+  const [unitNotes, setUnitNotes] = useState('');
+  const [isSavingNotes, setIsSavingNotes] = useState(false);
+  const [notesSavedNotice, setNotesSavedNotice] = useState(false);
+
+  const activeUnit = useMemo(() => {
+    if (!selectedUnit) return null;
+    return rentableUnits.find((u) => u.id === selectedUnit.id) || selectedUnit;
+  }, [selectedUnit, rentableUnits]);
+
+  useEffect(() => {
+    if (activeUnit) {
+      setUnitNotes(activeUnit.description || '');
+    }
+  }, [activeUnit?.id]);
+
+  const handleNotesChange = (val: string) => {
+    setUnitNotes(val);
+    if (!activeUnit) return;
+    setIsSavingNotes(true);
+    updateRentableUnit(activeUnit.id, { description: val });
+    setTimeout(() => {
+      setIsSavingNotes(false);
+      setNotesSavedNotice(true);
+      setTimeout(() => setNotesSavedNotice(false), 2000);
+    }, 400);
+  };
 
   // Booking modal trigger
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
@@ -696,192 +727,446 @@ export const VenueInventoryView: React.FC = () => {
             </div>
           )}
 
-          {/* Universal Rentable Units Collection */}
-          <UniversalDataCollection<RentableUnit>
-            items={sortedUnits}
-            keyExtractor={(u) => u.id}
-            defaultViewMode="grid"
-            columns={unitColumns}
-            sortBy={unitSortBy}
-            sortDirection={unitSortDir}
-            onSortChange={(key) => {
-              if (unitSortBy === key) {
-                setUnitSortDir((prev) => (prev === 'asc' ? 'desc' : 'asc'));
-              } else {
-                setUnitSortBy(key);
-                setUnitSortDir('asc');
-              }
-            }}
-            selectedIds={selectedUnitIds}
-            onSelectionChange={setSelectedUnitIds}
-            isPinned={(u) => pinnedUnitIds.has(u.id)}
-            onTogglePin={(u) => {
-              setPinnedUnitIds((prev) => {
-                const next = new Set(prev);
-                if (next.has(u.id)) next.delete(u.id);
-                else next.add(u.id);
-                return next;
-              });
-            }}
-            onEdit={handleOpenEdit}
-            onDelete={(u) => {
-              if (confirm(t('venue_inv_confirm_del', language, { name: u.name }))) {
-                deleteRentableUnit(u.id);
-              }
-            }}
-            customActions={(u) => [
-              {
-                id: 'book',
-                label: t('venue_reserve_space'),
-                icon: <Calendar size={13} />,
-                variant: 'primary',
-                onClick: () => {
-                  setSelectedUnitForBooking(u.id);
-                  setIsBookingModalOpen(true);
-                },
-              },
-            ]}
-            renderCard={(unit) => {
-              const localizedType =
-                unit.type === 'Hall'
-                  ? t('venue_type_hall')
-                  : unit.type === 'Studio'
-                  ? t('venue_type_studio')
-                  : unit.type === 'Room'
-                  ? t('venue_type_room')
-                  : unit.type === 'Court'
-                  ? t('venue_type_court')
-                  : t('venue_type_desk');
+          {/* Universal Rentable Units Collection with 390px Side Inspector */}
+          <div className="flex items-start gap-4">
+            <div className="flex-1 min-w-0">
+              <UniversalDataCollection<RentableUnit>
+                items={sortedUnits}
+                keyExtractor={(u) => u.id}
+                defaultViewMode="grid"
+                columns={unitColumns}
+                sortBy={unitSortBy}
+                sortDirection={unitSortDir}
+                onSortChange={(key) => {
+                  if (unitSortBy === key) {
+                    setUnitSortDir((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+                  } else {
+                    setUnitSortBy(key);
+                    setUnitSortDir('asc');
+                  }
+                }}
+                selectedIds={selectedUnitIds}
+                onSelectionChange={setSelectedUnitIds}
+                isPinned={(u) => pinnedUnitIds.has(u.id)}
+                onTogglePin={(u) => {
+                  setPinnedUnitIds((prev) => {
+                    const next = new Set(prev);
+                    if (next.has(u.id)) next.delete(u.id);
+                    else next.add(u.id);
+                    return next;
+                  });
+                }}
+                onItemClick={(u) => setSelectedUnit(u)}
+                onViewDetails={(u) => setSelectedUnit(u)}
+                onEdit={handleOpenEdit}
+                onDelete={(u) => {
+                  if (confirm(t('venue_inv_confirm_del', language, { name: u.name }))) {
+                    deleteRentableUnit(u.id);
+                    if (selectedUnit?.id === u.id) setSelectedUnit(null);
+                  }
+                }}
+                customActions={(u) => [
+                  {
+                    id: 'book',
+                    label: t('venue_reserve_space'),
+                    icon: <Calendar size={13} />,
+                    variant: 'primary',
+                    onClick: () => {
+                      setSelectedUnitForBooking(u.id);
+                      setIsBookingModalOpen(true);
+                    },
+                  },
+                ]}
+                renderCard={(unit) => {
+                  const localizedType =
+                    unit.type === 'Hall'
+                      ? t('venue_type_hall')
+                      : unit.type === 'Studio'
+                      ? t('venue_type_studio')
+                      : unit.type === 'Room'
+                      ? t('venue_type_room')
+                      : unit.type === 'Court'
+                      ? t('venue_type_court')
+                      : t('venue_type_desk');
 
-              const localizedStatus =
-                unit.status === 'Available'
-                  ? language === 'ar'
-                    ? 'متاحة'
-                    : language === 'fr'
-                    ? 'Disponible'
-                    : 'Available'
-                  : unit.status === 'Occupied'
-                  ? t('venue_kpi_in_use')
-                  : language === 'ar'
-                  ? 'صيانة'
-                  : language === 'fr'
-                  ? 'Maintenance'
-                  : 'Maintenance';
+                  const localizedStatus =
+                    unit.status === 'Available'
+                      ? language === 'ar'
+                        ? 'متاحة'
+                        : language === 'fr'
+                        ? 'Disponible'
+                        : 'Available'
+                      : unit.status === 'Occupied'
+                      ? t('venue_kpi_in_use')
+                      : language === 'ar'
+                      ? 'صيانة'
+                      : language === 'fr'
+                      ? 'Maintenance'
+                      : 'Maintenance';
 
-              return (
-                <div className="flex flex-col justify-between w-full h-full">
-                  <div>
-                    {/* Header row */}
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-2">
-                        <span
-                          className="w-3 h-3 rounded-full shrink-0"
-                          style={{ backgroundColor: unit.colorHex || '#8B5CF6' }}
-                        />
-                        <span className="text-xs font-mono font-semibold text-neutral-500 uppercase">
-                          {unit.code}
-                        </span>
-                        <span className="text-[11px] text-neutral-400">· {localizedType}</span>
-                      </div>
-
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleToggleStatus(unit);
-                        }}
-                        className={`px-2.5 py-0.5 rounded-full text-[10px] font-semibold tracking-wide uppercase transition-colors cursor-pointer ${
-                          unit.status === 'Available'
-                            ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300 hover:bg-emerald-200'
-                            : unit.status === 'Occupied'
-                            ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300 hover:bg-purple-200'
-                            : 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 hover:bg-amber-200'
-                        }`}
-                        title={localizedStatus}
-                      >
-                        {localizedStatus}
-                      </button>
-                    </div>
-
-                    <h3 className="font-bold text-base text-neutral-900 dark:text-white">
-                      {unit.name}
-                    </h3>
-                    <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1 line-clamp-2">
-                      {unit.description}
-                    </p>
-
-                    {/* Specs */}
-                    <div className="grid grid-cols-2 gap-2 mt-4 p-3 bg-neutral-50 dark:bg-neutral-800/40 rounded-2xl text-xs">
+                  return (
+                    <div className="flex flex-col justify-between w-full h-full">
                       <div>
-                        <span className="text-neutral-400 block text-[10px] uppercase font-medium">
-                          {t('venue_inv_capacity')}
-                        </span>
-                        <span className="font-semibold text-neutral-900 dark:text-white tabular-nums">
-                          {t('venue_card_capacity', language, { count: unit.capacity })}
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-neutral-400 block text-[10px] uppercase font-medium">
-                          {t('venue_inv_surface')}
-                        </span>
-                        <span className="font-semibold text-neutral-900 dark:text-white tabular-nums">
-                          {unit.surfaceAreaSqm ? t('venue_inv_surface_unit', language, { surface: unit.surfaceAreaSqm }) : '--'}
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-neutral-400 block text-[10px] uppercase font-medium">
-                          {t('venue_inv_hourly_rate')}
-                        </span>
-                        <span className="font-semibold text-neutral-900 dark:text-white tabular-nums font-mono">
-                          {formatCurrencyAmount(unit.hourlyRate, unit.currency)}
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-neutral-400 block text-[10px] uppercase font-medium">
-                          {t('venue_inv_daily_rate')}
-                        </span>
-                        <span className="font-semibold text-neutral-900 dark:text-white tabular-nums font-mono">
-                          {formatCurrencyAmount(unit.dailyRate, unit.currency)}
-                        </span>
-                      </div>
-                    </div>
+                        {/* Header row */}
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-2">
+                            <span
+                              className="w-3 h-3 rounded-full shrink-0"
+                              style={{ backgroundColor: unit.colorHex || '#8B5CF6' }}
+                            />
+                            <span className="text-xs font-mono font-semibold text-neutral-500 uppercase">
+                              {unit.code}
+                            </span>
+                            <span className="text-[11px] text-neutral-400">· {localizedType}</span>
+                          </div>
 
-                    {/* Amenities pills */}
-                    {unit.amenities.length > 0 && (
-                      <div className="mt-3 flex flex-wrap gap-1">
-                        {unit.amenities.map((amenity, idx) => (
-                          <span
-                            key={idx}
-                            className="text-[10px] bg-neutral-100 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300 px-2 py-0.5 rounded-md"
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleToggleStatus(unit);
+                            }}
+                            className={`px-2.5 py-0.5 rounded-full text-[10px] font-semibold tracking-wide uppercase transition-colors cursor-pointer ${
+                              unit.status === 'Available'
+                                ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300 hover:bg-emerald-200'
+                                : unit.status === 'Occupied'
+                                ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300 hover:bg-purple-200'
+                                : 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 hover:bg-amber-200'
+                            }`}
+                            title={localizedStatus}
                           >
-                            {amenity}
+                            {localizedStatus}
+                          </button>
+                        </div>
+
+                        <h3 className="font-bold text-base text-neutral-900 dark:text-white">
+                          {unit.name}
+                        </h3>
+                        <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1 line-clamp-2">
+                          {unit.description}
+                        </p>
+
+                        {/* Specs */}
+                        <div className="grid grid-cols-2 gap-2 mt-4 p-3 bg-neutral-50 dark:bg-neutral-800/40 rounded-2xl text-xs">
+                          <div>
+                            <span className="text-neutral-400 block text-[10px] uppercase font-medium">
+                              {t('venue_inv_capacity')}
+                            </span>
+                            <span className="font-semibold text-neutral-900 dark:text-white tabular-nums">
+                              {t('venue_card_capacity', language, { count: unit.capacity })}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-neutral-400 block text-[10px] uppercase font-medium">
+                              {t('venue_inv_surface')}
+                            </span>
+                            <span className="font-semibold text-neutral-900 dark:text-white tabular-nums">
+                              {unit.surfaceAreaSqm ? t('venue_inv_surface_unit', language, { surface: unit.surfaceAreaSqm }) : '--'}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-neutral-400 block text-[10px] uppercase font-medium">
+                              {t('venue_inv_hourly_rate')}
+                            </span>
+                            <span className="font-semibold text-neutral-900 dark:text-white tabular-nums font-mono">
+                              {formatCurrencyAmount(unit.hourlyRate, unit.currency)}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-neutral-400 block text-[10px] uppercase font-medium">
+                              {t('venue_inv_daily_rate')}
+                            </span>
+                            <span className="font-semibold text-neutral-900 dark:text-white tabular-nums font-mono">
+                              {formatCurrencyAmount(unit.dailyRate, unit.currency)}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Amenities pills */}
+                        {unit.amenities.length > 0 && (
+                          <div className="mt-3 flex flex-wrap gap-1">
+                            {unit.amenities.map((amenity, idx) => (
+                              <span
+                                key={idx}
+                                className="text-[10px] bg-neutral-100 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300 px-2 py-0.5 rounded-md"
+                              >
+                                {amenity}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Reserve button in card */}
+                      <div className="mt-4 pt-3 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between">
+                        <span className="text-xs font-bold text-neutral-900 dark:text-white tabular-nums font-mono">
+                          {formatCurrencyAmount(unit.hourlyRate, unit.currency)} / {t('venue_inv_hourly_short')}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedUnitForBooking(unit.id);
+                            setIsBookingModalOpen(true);
+                          }}
+                          className="px-3 py-1.5 bg-[#FDF4F0] hover:bg-[#FBE5DC] text-[#C4785A] rounded-xl text-xs font-bold transition-colors cursor-pointer"
+                        >
+                          {t('venue_btn_reserve')}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                }}
+              />
+            </div>
+
+            {/* 390px Inline Side Inspector Drawer */}
+            {activeUnit && (
+              <div className="w-[390px] shrink-0 bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 p-5 space-y-4 shadow-lg animate-in slide-in-from-right-4 duration-200">
+                {/* Header */}
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <span
+                      className="w-10 h-10 rounded-2xl shrink-0 flex items-center justify-center text-white shadow-2xs font-bold"
+                      style={{ backgroundColor: activeUnit.colorHex || '#8B5CF6' }}
+                    >
+                      <DoorOpen size={20} />
+                    </span>
+                    <div className="min-w-0">
+                      <h3 className="font-bold text-neutral-900 dark:text-white truncate text-base">
+                        {activeUnit.name}
+                      </h3>
+                      <div className="flex items-center gap-1.5 text-xs text-neutral-400">
+                        <span className="font-mono font-semibold">{activeUnit.code}</span>
+                        <span>·</span>
+                        <span>{activeUnit.type}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedUnit(null)}
+                    className="p-1 rounded-lg text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+
+                {/* Quick Action Ribbon */}
+                <div className="flex items-center gap-2 pt-1 border-t border-neutral-100 dark:border-neutral-800">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedUnitForBooking(activeUnit.id);
+                      setIsBookingModalOpen(true);
+                    }}
+                    className="flex-1 py-1.5 px-3 rounded-xl bg-[#C4785A] hover:bg-[#B3684A] text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors shadow-2xs"
+                  >
+                    <Calendar size={13} />
+                    <span>{t('venue_reserve_space')}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleToggleStatus(activeUnit)}
+                    className="py-1.5 px-3 rounded-xl bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold flex items-center gap-1 transition-colors"
+                  >
+                    <Clock size={13} />
+                    <span>{activeUnit.status}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleOpenEdit(activeUnit)}
+                    className="py-1.5 px-2.5 rounded-xl bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold flex items-center gap-1 transition-colors"
+                  >
+                    <Edit2 size={13} />
+                  </button>
+                </div>
+
+                {/* 4 Tabs */}
+                <div className="flex items-center bg-neutral-100 dark:bg-neutral-800/80 p-0.5 rounded-xl text-xs font-semibold">
+                  <button
+                    type="button"
+                    onClick={() => setDrawerTab('fiche')}
+                    className={`flex-1 py-1 text-center rounded-lg transition-all ${
+                      drawerTab === 'fiche'
+                        ? 'bg-white dark:bg-neutral-700 text-[#C4785A] font-bold shadow-2xs'
+                        : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
+                    }`}
+                  >
+                    Fiche Espace
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDrawerTab('planning')}
+                    className={`flex-1 py-1 text-center rounded-lg transition-all ${
+                      drawerTab === 'planning'
+                        ? 'bg-white dark:bg-neutral-700 text-[#C4785A] font-bold shadow-2xs'
+                        : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
+                    }`}
+                  >
+                    Planning
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDrawerTab('rates')}
+                    className={`flex-1 py-1 text-center rounded-lg transition-all ${
+                      drawerTab === 'rates'
+                        ? 'bg-white dark:bg-neutral-700 text-[#C4785A] font-bold shadow-2xs'
+                        : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
+                    }`}
+                  >
+                    Tarifs
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDrawerTab('notes')}
+                    className={`flex-1 py-1 text-center rounded-lg transition-all ${
+                      drawerTab === 'notes'
+                        ? 'bg-white dark:bg-neutral-700 text-[#C4785A] font-bold shadow-2xs'
+                        : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
+                    }`}
+                  >
+                    Consignes
+                  </button>
+                </div>
+
+                {/* Tab 1: Fiche */}
+                {drawerTab === 'fiche' && (
+                  <div className="space-y-3 text-xs animate-in fade-in duration-150">
+                    <div className="grid grid-cols-2 gap-2 p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-xl border border-neutral-100 dark:border-neutral-800">
+                      <div>
+                        <span className="text-neutral-400 block text-[10px] uppercase font-medium">Capacité d'accueil</span>
+                        <span className="font-bold text-neutral-900 dark:text-white text-sm">
+                          {activeUnit.capacity} places
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-neutral-400 block text-[10px] uppercase font-medium">Superficie</span>
+                        <span className="font-bold text-neutral-900 dark:text-white text-sm">
+                          {activeUnit.surfaceAreaSqm || '--'} m²
+                        </span>
+                      </div>
+                      <div className="mt-1">
+                        <span className="text-neutral-400 block text-[10px] uppercase font-medium">Type d'espace</span>
+                        <span className="font-semibold text-neutral-800 dark:text-neutral-200">
+                          {activeUnit.type}
+                        </span>
+                      </div>
+                      <div className="mt-1">
+                        <span className="text-neutral-400 block text-[10px] uppercase font-medium">Statut actuel</span>
+                        <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                          {activeUnit.status}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Amenities list */}
+                    <div>
+                      <span className="font-bold text-[11px] text-neutral-600 dark:text-neutral-400 block mb-1.5 uppercase">
+                        Équipements & Installations
+                      </span>
+                      <div className="flex flex-wrap gap-1">
+                        {activeUnit.amenities.map((a, i) => (
+                          <span
+                            key={i}
+                            className="px-2 py-0.5 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-[11px] font-medium"
+                          >
+                            ✓ {a}
                           </span>
                         ))}
                       </div>
-                    )}
+                    </div>
                   </div>
+                )}
 
-                  {/* Reserve button in card */}
-                  <div className="mt-4 pt-3 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between">
-                    <span className="text-xs font-bold text-neutral-900 dark:text-white tabular-nums font-mono">
-                      {formatCurrencyAmount(unit.hourlyRate, unit.currency)} / {t('venue_inv_hourly_short')}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedUnitForBooking(unit.id);
-                        setIsBookingModalOpen(true);
-                      }}
-                      className="px-3 py-1.5 bg-[#FDF4F0] hover:bg-[#FBE5DC] text-[#C4785A] rounded-xl text-xs font-bold transition-colors cursor-pointer"
-                    >
-                      {t('venue_btn_reserve')}
-                    </button>
+                {/* Tab 2: Planning */}
+                {drawerTab === 'planning' && (
+                  <div className="space-y-2.5 text-xs animate-in fade-in duration-150">
+                    <div className="flex items-center justify-between">
+                      <span className="text-neutral-500 font-medium">Créneaux réservés</span>
+                      <span className="font-bold text-[#C4785A]">
+                        {rentalBookings.filter((b) => b.unitId === activeUnit.id).length} réservations
+                      </span>
+                    </div>
+
+                    <div className="space-y-2 max-h-[280px] overflow-y-auto pr-1">
+                      {rentalBookings.filter((b) => b.unitId === activeUnit.id).length === 0 ? (
+                        <div className="p-4 text-center text-neutral-400 bg-neutral-50 dark:bg-neutral-800/40 rounded-xl">
+                          Aucun créneau planifié sur cet espace.
+                        </div>
+                      ) : (
+                        rentalBookings
+                          .filter((b) => b.unitId === activeUnit.id)
+                          .map((b) => (
+                            <div key={b.id} className="p-2.5 bg-neutral-50 dark:bg-neutral-800/60 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-1">
+                              <div className="flex items-center justify-between font-semibold">
+                                <span className="text-neutral-900 dark:text-white truncate max-w-[170px]">{b.purpose || 'Séance'}</span>
+                                <span className="font-mono text-[#C4785A]">{formatCurrencyAmount(b.totalAmount, b.currency)}</span>
+                              </div>
+                              <div className="flex items-center justify-between text-[11px] text-neutral-400">
+                                <span>{new Date(b.startDateTime).toLocaleDateString()}</span>
+                                <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-purple-50 dark:bg-purple-950/40 text-purple-600">
+                                  {b.status}
+                                </span>
+                              </div>
+                            </div>
+                          ))
+                      )}
+                    </div>
                   </div>
-                </div>
-              );
-            }}
-          />
+                )}
+
+                {/* Tab 3: Tarifs */}
+                {drawerTab === 'rates' && (
+                  <div className="space-y-3 text-xs animate-in fade-in duration-150">
+                    <div className="p-4 bg-neutral-50 dark:bg-neutral-800/50 rounded-xl space-y-3 border border-neutral-100 dark:border-neutral-800">
+                      <div className="flex justify-between items-center">
+                        <span className="text-neutral-500">Tarif Horaire :</span>
+                        <span className="font-mono font-bold text-base text-neutral-900 dark:text-white">
+                          {formatCurrencyAmount(activeUnit.hourlyRate, activeUnit.currency)} / h
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-neutral-500">Tarif Journée Entière :</span>
+                        <span className="font-mono font-bold text-neutral-900 dark:text-white">
+                          {formatCurrencyAmount(activeUnit.dailyRate, activeUnit.currency)} / j
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-neutral-500">Devise de facturation :</span>
+                        <span className="font-bold text-neutral-900 dark:text-white font-mono">
+                          {activeUnit.currency}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Tab 4: Consignes d'exploitation */}
+                {drawerTab === 'notes' && (
+                  <div className="space-y-2 text-xs animate-in fade-in duration-150">
+                    <div className="flex items-center justify-between">
+                      <label className="text-neutral-500 font-medium">Consignes d'accès & Entretien :</label>
+                      {isSavingNotes ? (
+                        <span className="text-[10px] text-neutral-400 animate-pulse">Sauvegarde...</span>
+                      ) : notesSavedNotice ? (
+                        <span className="text-[10px] text-emerald-600 font-semibold flex items-center gap-1">
+                          <Check size={11} /> Sauvegardé
+                        </span>
+                      ) : null}
+                    </div>
+                    <textarea
+                      rows={6}
+                      value={unitNotes}
+                      onChange={(e) => handleNotesChange(e.target.value)}
+                      placeholder="Consignes de climatisation, disposition des tables, clés des portes, codes alarme..."
+                      className="w-full p-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/60 text-xs text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C4785A]"
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
 
           {/* Footer Count matching Screenshot 30 */}
           <div className="pt-2 text-center text-xs text-neutral-400 font-medium">

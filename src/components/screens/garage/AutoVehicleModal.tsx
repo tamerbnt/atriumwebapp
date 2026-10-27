@@ -9,22 +9,46 @@ interface AutoVehicleModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (vehicle: VehicleAsset) => void;
+  vehicleToEdit?: VehicleAsset | null;
 }
 
 export const AutoVehicleModal: React.FC<AutoVehicleModalProps> = ({
   isOpen,
   onClose,
   onSave,
+  vehicleToEdit,
 }) => {
   const { language } = useAtriumStore();
-  const [plate, setPlate] = useState('');
-  const [brand, setBrand] = useState('');
-  const [model, setModel] = useState('');
-  const [year, setYear] = useState('2020');
-  const [vin, setVin] = useState('');
-  const [ownerName, setOwnerName] = useState('');
-  const [ownerPhone, setOwnerPhone] = useState('');
-  const [mileage, setMileage] = useState('50000');
+  const [plate, setPlate] = useState(vehicleToEdit?.plateNumber || '');
+  const [brand, setBrand] = useState(vehicleToEdit?.brand || '');
+  const [model, setModel] = useState(vehicleToEdit?.model || '');
+  const [year, setYear] = useState(vehicleToEdit ? String(vehicleToEdit.year) : '2020');
+  const [vin, setVin] = useState(vehicleToEdit?.vin || '');
+  const [ownerName, setOwnerName] = useState(vehicleToEdit?.ownerName || '');
+  const [ownerPhone, setOwnerPhone] = useState(vehicleToEdit?.ownerPhone || '');
+  const [mileage, setMileage] = useState(vehicleToEdit ? String(vehicleToEdit.mileageKm) : '50000');
+
+  React.useEffect(() => {
+    if (vehicleToEdit) {
+      setPlate(vehicleToEdit.plateNumber);
+      setBrand(vehicleToEdit.brand);
+      setModel(vehicleToEdit.model);
+      setYear(String(vehicleToEdit.year));
+      setVin(vehicleToEdit.vin);
+      setOwnerName(vehicleToEdit.ownerName);
+      setOwnerPhone(vehicleToEdit.ownerPhone);
+      setMileage(String(vehicleToEdit.mileageKm));
+    } else {
+      setPlate('');
+      setBrand('');
+      setModel('');
+      setYear('2020');
+      setVin('');
+      setOwnerName('');
+      setOwnerPhone('');
+      setMileage('50000');
+    }
+  }, [vehicleToEdit]);
 
   if (!isOpen) return null;
 
@@ -35,8 +59,8 @@ export const AutoVehicleModal: React.FC<AutoVehicleModalProps> = ({
       return;
     }
 
-    const created: VehicleAsset = {
-      id: `veh_${Date.now()}`,
+    const saved: VehicleAsset = {
+      id: vehicleToEdit ? vehicleToEdit.id : `veh_${Date.now()}`,
       plateNumber: plate.trim(),
       brand: brand.trim(),
       model: model.trim(),
@@ -45,16 +69,17 @@ export const AutoVehicleModal: React.FC<AutoVehicleModalProps> = ({
       ownerName: ownerName.trim(),
       ownerPhone: ownerPhone.trim(),
       mileageKm: parseInt(mileage) || 0,
-      lastServiceDate: new Date().toISOString().split('T')[0],
+      lastServiceDate: vehicleToEdit?.lastServiceDate || new Date().toISOString().split('T')[0],
     };
 
-    onSave(created);
+    onSave(saved);
     showToast(
-      language === 'ar' ? 'تم تسجيل المركبة بنجاح' : 'Véhicule enregistré avec succès',
+      language === 'ar' ? 'تم حفظ بيانات المركبة بنجاح' : 'Véhicule enregistré avec succès',
       'success'
     );
     onClose();
   };
+
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in">
