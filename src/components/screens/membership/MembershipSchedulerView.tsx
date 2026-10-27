@@ -28,7 +28,6 @@ import { Seek } from '../../ui/Seek';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { LabelInput } from '../../ui/LabelInput';
 import { FilterSelect } from '../../ui/FilterSelect';
-import { AppointmentScheduleView as StylistScheduleView } from '../appointment/AppointmentScheduleView';
 import { t } from '../../../utils/i18n';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 
@@ -48,12 +47,6 @@ export const MembershipSchedulerView: React.FC = () => {
     showToast,
   } = useAtriumStore();
 
-  if (currentBusiness.category === 'appointment_service') {
-    return <StylistScheduleView />;
-  }
-
-  const isPOS = currentBusiness.category === 'pos_inventory';
-
   // High-level View Switcher: Timeline Matrix vs Universal Collection
   const [mainViewMode, setMainViewMode] = useState<'timeline' | 'collection'>('collection');
 
@@ -72,13 +65,13 @@ export const MembershipSchedulerView: React.FC = () => {
   const [eventSortDir, setEventSortDir] = useState<'asc' | 'desc'>('asc');
 
   // New session modal fields
-  const [newTitle, setNewTitle] = useState(isPOS ? 'Morning Cashier & Floor Roster' : 'Morning Workout');
-  const [newCategory, setNewCategory] = useState(isPOS ? 'Morning Shift' : 'Fitness');
-  const [newTrainer, setNewTrainer] = useState(staff[0]?.fullName || (isPOS ? 'Amine Bentouati' : 'Coach Karim'));
-  const [newRoom, setNewRoom] = useState(isPOS ? 'Register Counter 01' : 'Studio A');
+  const [newTitle, setNewTitle] = useState('Morning Workout');
+  const [newCategory, setNewCategory] = useState('Fitness');
+  const [newTrainer, setNewTrainer] = useState(staff[0]?.fullName || 'Coach Karim');
+  const [newRoom, setNewRoom] = useState('Studio A');
   const [newStartTime, setNewStartTime] = useState('09:00');
   const [newEndTime, setNewEndTime] = useState('17:00');
-  const [newCapacity, setNewCapacity] = useState(isPOS ? 4 : 20);
+  const [newCapacity, setNewCapacity] = useState(20);
 
   const days = [
     { id: 1, label: t('day_monday', language), short: t('day_mon', language) },
@@ -163,9 +156,7 @@ export const MembershipSchedulerView: React.FC = () => {
     return schedule.reduce((acc, s) => acc + s.enrolledCount, 0);
   }, [schedule]);
 
-  const categories = isPOS
-    ? ['All', 'Morning Shift', 'Midday Rush', 'Closing Shift', 'Stock Restock', 'Delivery Intake']
-    : ['All', 'CrossFit', 'Yoga', 'Boxing', 'Pilates', 'HIIT', 'Fitness'];
+  const categories = ['All', 'CrossFit', 'Yoga', 'Boxing', 'Pilates', 'HIIT', 'Fitness'];
 
   const handleExportCSV = () => {
     const dayLabel = days.find((d) => d.id === selectedDay)?.label || 'All';
@@ -430,18 +421,16 @@ export const MembershipSchedulerView: React.FC = () => {
             icon={<Plus size={15} strokeWidth={2.5} />}
             className="shrink-0"
           >
-            <span>{isPOS ? (language === 'ar' ? 'إضافة وردية' : 'New Shift') : t('schedule_new_session', language)}</span>
+            <span>{t('schedule_new_session', language)}</span>
           </AtriumButton>
         </div>
       </div>
 
       {/* Row 1: Weekly Staff Coverage or Enrolled Athletes KPIs */}
-      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[26px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
         <div>
           <h2 className="text-base font-bold text-neutral-900 dark:text-white">
-            {isPOS
-              ? (language === 'ar' ? 'كفاءة ورديات الكاشير والمخازن' : 'Shift Allocation & Coverage Velocity')
-              : (language === 'ar' ? 'الطاقة الاستيعابية وجدول التمارين' : 'Weekly Session Matrix & Attendance Roster')}
+            {language === 'ar' ? 'الطاقة الاستيعابية وجدول التمارين' : 'Weekly Session Matrix & Attendance Roster'}
           </h2>
           <p className="text-xs text-neutral-400 dark:text-neutral-500">
             {language === 'ar'
@@ -465,7 +454,7 @@ export const MembershipSchedulerView: React.FC = () => {
             <div className="text-3xl font-black text-neutral-900 dark:text-white tabular-nums">
               {schedule.length}{' '}
               <span className="text-xs font-normal text-neutral-400">
-                {isPOS ? 'shifts' : 'sessions'}
+                sessions
               </span>
             </div>
           </div>
@@ -514,7 +503,7 @@ export const MembershipSchedulerView: React.FC = () => {
 
       {/* Row 2: Universal Cards & List View OR Timetable Timeline */}
       {mainViewMode === 'collection' ? (
-        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[26px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
           {/* Collection Filter & Action Header */}
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2">
@@ -715,7 +704,7 @@ export const MembershipSchedulerView: React.FC = () => {
         </div>
       ) : (
         /* Timetable Timeline Mode */
-        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[26px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <Calendar size={16} className="text-neutral-500" />
@@ -948,7 +937,7 @@ export const MembershipSchedulerView: React.FC = () => {
       <Modal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
-        title={isPOS ? 'Programmer une nouvelle vacation de caisse' : t('schedule_modal_title', language)}
+        title={t('schedule_modal_title', language)}
       >
         <div className="space-y-4">
           <LabelInput

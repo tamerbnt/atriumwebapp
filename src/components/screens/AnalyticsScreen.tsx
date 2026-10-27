@@ -614,7 +614,7 @@ export const AnalyticsScreen: React.FC = () => {
         {/* LEFT COLUMN: Hourly Flow & Occupancy Gauge (7 cols) */}
         <div className="lg:col-span-7 space-y-4">
           {/* Hourly Traffic Flow Card */}
-          <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[26px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+          <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div>
                 <h2 className="text-base font-bold text-neutral-900 dark:text-white">
@@ -708,7 +708,7 @@ export const AnalyticsScreen: React.FC = () => {
           </div>
 
           {/* Member Attendance / Customer Repeat Rate */}
-          <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[26px] p-5 space-y-3 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+          <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-3 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
             <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
               {isPOS ? (language === 'ar' ? 'توزيع وتيرة طلبيات الزبائن' : language === 'fr' ? 'Fréquence d\'Achat des Clients' : 'Customer Order Frequency Distribution') : 'Member Attendance Regularity'}
             </h3>
@@ -738,7 +738,7 @@ export const AnalyticsScreen: React.FC = () => {
         {/* RIGHT COLUMN: Revenue Breakdown + Best Sellers (5 cols) */}
         <div className="lg:col-span-5 space-y-4">
           {/* Revenue Distribution Card */}
-          <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[26px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+          <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
             <div>
               <h2 className="text-base font-bold text-neutral-900 dark:text-white">
                 {isPOS ? (language === 'ar' ? 'تفصيل طرق السداد والقبض' : language === 'fr' ? 'Répartition des Règlements Caisse' : 'Payment Tender Breakdown') : 'Revenue Breakdown'}
@@ -805,7 +805,7 @@ export const AnalyticsScreen: React.FC = () => {
           </div>
 
           {/* Top Selling Products Dynamically Ranked from Sales */}
-          <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[26px] p-5 space-y-3 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+          <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-3 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-bold text-neutral-900 dark:text-white flex items-center gap-1.5">
                 <Sparkles size={14} className="text-[#C4785A]" />

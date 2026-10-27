@@ -117,8 +117,6 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
     });
   }, [members, statusFilter, planFilter, searchQuery]);
 
-  const isPOS = currentBusiness.category === 'pos_inventory';
-  const isSalon = currentBusiness.category === 'appointment_service';
 
   const customerSalesMetrics = useMemo(() => {
     const memberSalesMap: Record<string, number> = {};
@@ -448,7 +446,7 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
       </div>
 
       {/* Row 1: "Roster & Retention Health" Banner Card matching Screenshot 881 */}
-      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[26px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
         <div>
           <h2 className="text-base font-bold text-neutral-900 dark:text-white">
             {terminology.members} & {language === 'ar' ? 'مؤشرات التجديد' : language === 'fr' ? 'Rétention & Renouvellements' : 'Retention Health'}
@@ -484,20 +482,16 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
           <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
             <div>
               <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
-                {isPOS
-                  ? (language === 'ar' ? 'حجم مشتريات الزبائن' : language === 'fr' ? 'Volume d\'achats clients' : 'Customer Ledger Volume')
-                  : (language === 'ar' ? 'تنبيهات انتهاء الاشتراك' : language === 'fr' ? 'Alertes de renouvellement' : 'Renewal & Retention Alert')}
+                {language === 'ar' ? 'تنبيهات انتهاء الاشتراك' : language === 'fr' ? 'Alertes de renouvellement' : 'Renewal & Retention Alert'}
               </span>
               <div className="mt-1">
                 <span className="text-[10px] font-bold text-[#C4785A] bg-[#C4785A]/10 px-2 py-0.5 rounded-full">
-                  {isPOS
-                    ? (language === 'ar' ? 'إجمالي المشتريات' : language === 'fr' ? 'Total des achats' : 'Total Account Spend')
-                    : `${expiringCount} ${language === 'ar' ? 'تنتهي قريباً' : language === 'fr' ? 'expirent bientôt' : 'expiring soon'}`}
+                  {expiringCount} {language === 'ar' ? 'تنتهي قريباً (<14j)' : language === 'fr' ? 'expirent sous 14j' : 'expiring (<14d)'}
                 </span>
               </div>
             </div>
             <div className="text-3xl font-black text-neutral-900 dark:text-white tabular-nums font-mono">
-              {isPOS ? formatMoney(customerSalesMetrics.totalSpend) : expiringCount}
+              {expiringCount}
             </div>
           </div>
 
@@ -505,26 +499,20 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
           <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-medium text-neutral-300">
-                {isPOS
-                  ? (language === 'ar' ? 'الزبائن المشترون النشطون' : language === 'fr' ? 'Clients acheteurs actifs' : 'Active Purchasing Customers')
-                  : (language === 'ar' ? 'الوافدون الجدد شهرياً' : language === 'fr' ? 'Adhésions du mois' : 'Monthly Inflow')}
+                {language === 'ar' ? 'الوافدون الجدد شهرياً' : language === 'fr' ? 'Adhésions du mois' : 'Monthly Inflow'}
               </span>
               <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30">
-                {isPOS ? 'Active POS' : `+${displayMembers.length} ${terminology.members.toLowerCase()}`}
+                +{displayMembers.length} {terminology.members.toLowerCase()}
               </span>
             </div>
             <div>
               <div className="text-2xl font-black text-[#FB923C] tabular-nums font-mono">
-                {isPOS
-                  ? `${customerSalesMetrics.purchasingCount} ${language === 'ar' ? 'زبون' : language === 'fr' ? 'clients' : 'customers'}`
-                  : `+${displayMembers.length} ${terminology.members.toLowerCase()}`}
+                +{displayMembers.length}
               </div>
               <p className="text-[11px] text-neutral-400 mt-0.5 flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-[#FB923C] animate-pulse" />
                 <span>
-                  {isPOS
-                    ? (language === 'ar' ? 'حسابات تمت تسوية طلباتها' : language === 'fr' ? 'Profils avec historique de commandes' : 'Profiles with settled POS order history')
-                    : (language === 'ar' ? 'باقات وحسابات جديدة هذا الشهر' : language === 'fr' ? 'Nouveaux forfaits et profils ce mois-ci' : 'New packages & client profiles this month')}
+                  {language === 'ar' ? 'باقات وحسابات جديدة هذا الشهر' : language === 'fr' ? 'Nouveaux forfaits et profils ce mois-ci' : 'New packages & client profiles this month'}
                 </span>
               </p>
             </div>
@@ -533,7 +521,7 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
       </div>
 
       {/* Row 2: Members Master Table Group matching Screenshot 881 */}
-      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[26px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
         {/* Table Control Header */}
         <div className="flex flex-wrap items-center justify-between gap-3">
           {/* Left: Icon + Title + Count */}
@@ -935,131 +923,7 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
                   </div>
                 </div>
 
-                {/* Sub-tab sections depending on category */}
-                {isPOS ? (
-                  <div className="space-y-2.5 text-xs">
-                    <div className="flex items-center justify-between">
-                      <h4 className="text-[11px] font-bold uppercase tracking-wider text-neutral-400 flex items-center gap-1.5">
-                        <Receipt size={12} className="text-[#C4785A]" />
-                        <span>{language === 'ar' ? 'طلبات وإيصالات نقطة البيع' : language === 'fr' ? 'Commandes & Reçus Caisse' : 'POS Orders & Receipts'}</span>
-                      </h4>
-                      <span className="text-[10px] font-bold text-neutral-400">
-                        {sales.filter((s) => s.memberId === selectedMember.id).length} {language === 'ar' ? 'طلبات' : language === 'fr' ? 'commandes' : 'orders'}
-                      </span>
-                    </div>
 
-                    {(() => {
-                      const customerSales = sales.filter((s) => s.memberId === selectedMember.id);
-                      if (customerSales.length === 0) {
-                        return (
-                          <div className="p-3 rounded-xl border border-dashed border-neutral-200 dark:border-neutral-800 text-center text-neutral-400">
-                            <p className="text-[11px]">{language === 'ar' ? 'لا توجد مشتريات مسجلة لهذا العميل' : language === 'fr' ? 'Aucun achat enregistré pour ce client' : 'No purchases recorded for this customer yet.'}</p>
-                          </div>
-                        );
-                      }
-
-                      return (
-                        <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
-                          {customerSales.map((sale) => (
-                            <div
-                              key={sale.id}
-                              className="p-2.5 rounded-xl border border-neutral-100 dark:border-neutral-800/80 bg-neutral-50/60 dark:bg-neutral-800/40 text-xs flex flex-col gap-1"
-                            >
-                              <div className="flex items-center justify-between">
-                                <span className="font-bold text-neutral-900 dark:text-white font-mono truncate">
-                                  #{sale.id.slice(-6).toUpperCase()}
-                                </span>
-                                <span className="font-bold text-emerald-600 font-mono">
-                                  {formatMoney(sale.totalAmount)}
-                                </span>
-                              </div>
-                              <div className="text-[11px] text-neutral-500 truncate">
-                                {sale.items.map((it) => `${it.quantity}x ${it.productName}`).join(', ')}
-                              </div>
-                              <div className="flex items-center justify-between text-[10px] text-neutral-400 pt-0.5 border-t border-neutral-200/50 dark:border-neutral-700/50">
-                                <span>{new Date(sale.createdAt).toLocaleDateString()}</span>
-                                <span className="font-medium text-neutral-600 dark:text-neutral-300">{sale.paymentMethod}</span>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      );
-                    })()}
-                  </div>
-                ) : isSalon ? (
-                  <div className="space-y-2.5 text-xs">
-                    <div className="flex items-center justify-between">
-                      <h4 className="text-[11px] font-bold uppercase tracking-wider text-neutral-400 flex items-center gap-1.5">
-                        <Scissors size={12} className="text-[#C4785A]" />
-                        <span>{language === 'ar' ? 'الحجوزات وجلسات العناية' : language === 'fr' ? 'Rendez-vous & Soins' : 'Bookings & Treatments'}</span>
-                      </h4>
-                      <button
-                        type="button"
-                        onClick={() => setIsBookModalOpen(true)}
-                        className="text-[11px] font-bold text-[#C4785A] hover:underline cursor-pointer"
-                      >
-                        {language === 'ar' ? '+ حجز موعد' : language === 'fr' ? '+ Réserver un soin' : '+ Book Service'}
-                      </button>
-                    </div>
-
-                    {(() => {
-                      const clientApts = appointments.filter((a) => a.clientId === selectedMember.id);
-                      if (clientApts.length === 0) {
-                        return (
-                          <div className="p-3 rounded-xl border border-dashed border-neutral-200 dark:border-neutral-800 text-center text-neutral-400">
-                            <p className="text-[11px]">{language === 'ar' ? 'لا توجد جلسات محجوزة بعد.' : language === 'fr' ? 'Aucun soin planifié pour le moment.' : 'No treatments booked yet.'}</p>
-                            <button
-                              type="button"
-                              onClick={() => setIsBookModalOpen(true)}
-                              className="mt-1 text-[11px] font-bold text-[#C4785A] cursor-pointer"
-                            >
-                              {language === 'ar' ? 'حجز أول موعد ←' : language === 'fr' ? 'Planifier le premier rendez-vous →' : 'Schedule first appointment →'}
-                            </button>
-                          </div>
-                        );
-                      }
-
-                      return (
-                        <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
-                          {clientApts.map((apt) => (
-                            <div
-                              key={apt.id}
-                              className="p-2.5 rounded-xl border border-neutral-100 dark:border-neutral-800/80 bg-neutral-50/60 dark:bg-neutral-800/40 text-xs flex flex-col gap-1"
-                            >
-                              <div className="flex items-center justify-between">
-                                <span className="font-bold text-neutral-900 dark:text-white truncate">
-                                  {apt.serviceName}
-                                </span>
-                                <span
-                                  className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md ${
-                                    apt.status === 'InChair'
-                                      ? 'bg-amber-500 text-white'
-                                      : apt.status === 'Completed'
-                                      ? 'bg-emerald-600 text-white'
-                                      : apt.status === 'Cancelled'
-                                      ? 'bg-neutral-400 text-white'
-                                      : 'bg-indigo-600 text-white'
-                                  }`}
-                                >
-                                  {localizeStatus(apt.status, language)}
-                                </span>
-                              </div>
-                              <div className="flex items-center justify-between text-[11px] text-neutral-500">
-                                <span>
-                                  {apt.date} • {apt.startTime} ({apt.durationMinutes}m)
-                                </span>
-                                <span className="font-bold text-[#C4785A]">{formatMoney(apt.price)}</span>
-                              </div>
-                              <div className="text-[10px] text-neutral-400 flex items-center gap-1">
-                                <span>{language === 'ar' ? 'المصفف:' : language === 'fr' ? 'Coiffeur :' : 'Stylist:'} {apt.staffName}</span>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      );
-                    })()}
-                  </div>
-                ) : (
                   /* Dedicated Gym & Fitness Tabs: Turnstile History, Pro-Shop Sales, and Class Bookings */
                   <div className="space-y-2.5 text-xs">
                     <div className="flex items-center justify-between pb-1">
@@ -1198,7 +1062,6 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
                       </div>
                     )}
                   </div>
-                )}
 
                 {/* Contact Information */}
                 <div className="space-y-2 text-xs">

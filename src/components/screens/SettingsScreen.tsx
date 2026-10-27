@@ -302,7 +302,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
       )}
 
       {/* Row 1: Language & Regional Localization */}
-      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[26px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div
@@ -483,7 +483,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
       </div>
 
       {/* Row 2: License Status Banner */}
-      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[26px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs relative overflow-hidden">
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs relative overflow-hidden">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
@@ -606,7 +606,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
       </div>
 
       {/* Row 1.5: Supabase Cloud & PostgreSQL Database Integration */}
-      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[26px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div
@@ -735,7 +735,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
       </div>
 
       {/* Row 1.8: Data Portability & Disaster Recovery Center */}
-      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[26px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-[#FDF4F0] dark:bg-[#2A2420] text-[#C4785A] flex items-center justify-center shrink-0 border border-[#F5E2D8] dark:border-[#4A3B33]">
@@ -860,7 +860,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
       </div>
 
       {/* Row 2: Branches Management */}
-      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[26px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-base font-bold text-neutral-900 dark:text-white">
@@ -945,7 +945,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
       </div>
 
       {/* Row 3: Authorized Devices & Terminals */}
-      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[26px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-base font-bold text-neutral-900 dark:text-white">

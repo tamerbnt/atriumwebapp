@@ -59,8 +59,6 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
     showToast,
   } = useAtriumStore();
 
-  const isPOS = currentBusiness?.category === 'pos_inventory';
-
   const [statusFilter, setStatusFilter] = useState<'All' | 'Pending' | 'Approved' | 'Declined'>('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [planFilter, setPlanFilter] = useState<string>('All');
@@ -484,7 +482,7 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
       </div>
 
       {/* Row 1: Pipeline Velocity & Intake Health Banner Card */}
-      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[26px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
         <div>
           <h2 className="text-base font-bold text-neutral-900 dark:text-white">
             {t('reg_pipeline_health_title', language)}
@@ -499,13 +497,11 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
           <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
             <div>
               <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
-                {isPOS
-                  ? (language === 'ar' ? 'الطلبات والاستفسارات المعلقة' : language === 'fr' ? 'Demandes et devis en attente' : 'Pending Wholesale & Inquiries')
-                  : t('reg_active_intake_label', language)}
+                {t('reg_active_intake_label', language)}
               </span>
               <div className="mt-1">
                 <span className="text-[10px] font-bold text-amber-700 bg-amber-100 dark:bg-amber-950/40 px-2 py-0.5 rounded-full">
-                  ↗ {pendingCount} {isPOS ? (language === 'ar' ? 'استفسارات' : language === 'fr' ? 'Demandes' : 'Inquiries') : (language === 'ar' ? 'في الانتظار' : language === 'fr' ? 'En attente' : 'Pending')}
+                  ↗ {pendingCount} {language === 'ar' ? 'في الانتظار' : language === 'fr' ? 'En attente' : 'Pending'}
                 </span>
               </div>
             </div>
@@ -518,9 +514,7 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
           <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
             <div>
               <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
-                {isPOS
-                  ? (language === 'ar' ? 'حسابات العملاء المحولة' : language === 'fr' ? 'Comptes clients convertis' : 'Converted Customer Accounts')
-                  : t('reg_converted_members_label', language)}
+                {t('reg_converted_members_label', language)}
               </span>
               <div className="mt-1">
                 <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
@@ -537,9 +531,7 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
           <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-medium text-neutral-300">
-                {isPOS
-                  ? (language === 'ar' ? 'معالجة الطلبات وسرعة الاستجابة' : language === 'fr' ? 'Traitement des commandes & SLA' : 'Order Intake & Lead SLA')
-                  : t('reg_intake_sla_label', language)}
+                {t('reg_intake_sla_label', language)}
               </span>
               <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30">
                 &lt; 15 min
@@ -552,9 +544,7 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
               <p className="text-[11px] text-neutral-400 mt-0.5 flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-[#FB923C] animate-pulse" />
                 <span>
-                  {isPOS
-                    ? (language === 'ar' ? 'سرعة معالجة الطلبات والاستفسارات' : language === 'fr' ? 'Vitesse de traitement au comptoir' : 'Direct counter & wholesale inquiry speed')
-                    : (language === 'ar' ? 'بوابة التسجيل الذاتي وموقع الجوال' : language === 'fr' ? 'Borne libre-service & web mobile' : 'Self-service Kiosk & Mobile Web')}
+                  {language === 'ar' ? 'بوابة التسجيل الذاتي وموقع الجوال' : language === 'fr' ? 'Borne libre-service & web mobile' : 'Self-service Kiosk & Mobile Web'}
                 </span>
               </p>
             </div>
@@ -563,7 +553,7 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
       </div>
 
       {/* Row 2: Registrations Master Table Group */}
-      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[26px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
         {/* Table Control Header */}
         <div className="flex flex-wrap items-center justify-between gap-3">
           {/* Left: Icon + Title + Count */}

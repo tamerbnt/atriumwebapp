@@ -449,7 +449,7 @@ export const MembershipFinanceView: React.FC = () => {
       </div>
 
       {/* Row 1: Workforce & Compensation Health Banner Card */}
-      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[26px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
         <div>
           <h2 className="text-base font-bold text-neutral-900 dark:text-white">
             {language === 'ar' ? 'فريق العمل والكتلة الشهرية للأجور' : language === 'fr' ? 'Équipe & Masse salariale mensuelle' : 'Workforce & Compensation Health'}
@@ -521,7 +521,7 @@ export const MembershipFinanceView: React.FC = () => {
       </div>
 
       {/* Row 2: Staff Roster Master Table Card */}
-      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[26px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
         {/* Table Control Header */}
         <div className="flex flex-wrap items-center justify-between gap-3">
           {/* Left: Icon + Title + Count */}
