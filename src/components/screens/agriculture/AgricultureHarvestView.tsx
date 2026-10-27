@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { Scale, Plus, Printer, Truck, DollarSign, CheckCircle2 } from 'lucide-react';
+import { Scale, Plus, Printer, Truck, DollarSign, CheckCircle2, X } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
+import { formatMoney } from '../../../utils/rules';
 import { useAgricultureData } from './agricultureData';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { Seek } from '../../ui/Seek';
+import { FilterSelect } from '../../ui/FilterSelect';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { AgriHarvestTicket } from '../../../types';
@@ -28,16 +30,22 @@ export const AgricultureHarvestView: React.FC = () => {
   const [unitPrice, setUnitPrice] = useState('75');
   const [market, setMarket] = useState('Marché de Gros des Eucalyptus, Alger');
 
-  const formatMoney = (amount: number) => {
-    return `${amount.toLocaleString()} DZD`;
-  };
-
   const filteredTickets = harvestTickets.filter((t) =>
     t.ticketNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
     t.cropDesignation.toLowerCase().includes(searchQuery.toLowerCase()) ||
     t.destinationWholesaleMarket.toLowerCase().includes(searchQuery.toLowerCase()) ||
     t.driverName.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const totalGrossKg = harvestTickets.reduce((acc, t) => acc + t.grossWeightKg, 0);
+  const totalTareKg = harvestTickets.reduce((acc, t) => acc + t.tareWeightKg, 0);
+  const totalNetKg = harvestTickets.reduce((acc, t) => acc + t.netWeightKg, 0);
+  const totalNetPayout = harvestTickets.reduce((acc, t) => acc + t.netFarmPayoutDzd, 0);
+
+  const parcelOptions = parcels.map((p) => ({
+    value: p.id,
+    label: `${p.name} (${p.currentCrop})`,
+  }));
 
   const handleCreateTicket = (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,9 +66,10 @@ export const AgricultureHarvestView: React.FC = () => {
       staffId: currentUser?.id || 'staff_01',
       ticketNumber: `PES-2026-${String(harvestTickets.length + 20).padStart(3, '0')}`,
       parcelId,
-      cropDesignation: crop.trim(),
+      date: new Date().toISOString().split('T')[0],
       vehiclePlate: vehiclePlate.trim(),
       driverName: driverName.trim(),
+      cropDesignation: crop.trim(),
       grossWeightKg: gross,
       tareWeightKg: tare,
       netWeightKg: net,
@@ -70,65 +79,147 @@ export const AgricultureHarvestView: React.FC = () => {
       mandataireFeePercent: feePct,
       netFarmPayoutDzd: netPayout,
       destinationWholesaleMarket: market.trim(),
-      date: new Date().toISOString().split('T')[0],
       createdAt: new Date().toISOString(),
     };
 
     addHarvestTicket(newTicket);
     setIsModalOpen(false);
     showToast(
-      isAr ? 'تم تسجيل وصل الوزن العمومي (Pont-Bascule)' : 'Bon de pesage & expédition enregistré',
+      isAr ? 'تم تسجيل وتأكيد وصل وزن المحصول' : 'Bon de pesée pont-bascule validé avec succès',
       'success'
     );
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-[#FAF9F5] dark:bg-neutral-950 overflow-hidden font-sans">
-      {/* Header */}
-      <div className="bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 px-6 py-4 flex flex-wrap items-center justify-between gap-4">
+    <div className="bg-white dark:bg-[#18181B] rounded-[28px] border border-[#E9EEF0] dark:border-neutral-800 p-6 lg:p-8 space-y-6 shadow-xs animate-in fade-in duration-200">
+      {/* Top Header Strip with Action Toolbar */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-orange-50 dark:bg-orange-950/40 text-[#C4785A] flex items-center justify-center font-bold shadow-sm border border-orange-100 dark:border-orange-900/30">
+          <div className="w-10 h-10 rounded-xl bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold shadow-xs">
             <Scale size={22} />
           </div>
           <div>
-            <h1 className="text-base font-bold text-neutral-900 dark:text-white flex items-center gap-2">
-              <span>{isAr ? 'المحاصيل والوزن العمومي (Pont-Bascule)' : 'Récoltes & Pesage Poids Public (Pont-Bascule)'}</span>
-              <span className="text-xs px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 font-mono">
-                {harvestTickets.length}
+            <div className="flex items-center gap-2">
+              <h1 className="text-xl font-bold text-neutral-900 dark:text-white">
+                {isAr ? 'وصولات الوزن وجني المحاصيل' : 'Pesées & Bons de Récolte'}
+              </h1>
+              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#C4785A]/15 text-[#C4785A]">
+                {harvestTickets.length} pesées
               </span>
-            </h1>
-            <p className="text-xs text-neutral-500">
+            </div>
+            <p className="text-xs text-neutral-500 dark:text-neutral-400">
               {isAr
-                ? 'قياس الوزن الإجمالي والفارغ والصافي للشاحنات، ووصولات سوق الجملة'
-                : 'Bons de pesage camion (brut / tare / net), cageots et expéditions mandataires'}
+                ? 'تسجيل الوزن بالقفان (الوزن الإجمالي، الفارغ والصافي)، والوجهة لأسواق الجملة'
+                : 'Pesées contradictoires au pont-bascule, tare des camions et bons de livraison'}
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <Seek
-            value={searchQuery}
-            onChange={setSearchQuery}
-            placeholder={isAr ? 'بحث بالوصل، المحصول...' : 'Rechercher ticket, produit...'}
-          />
-
+        <div className="flex items-center gap-2">
           <AtriumButton
             variant="primary"
             onClick={() => setIsModalOpen(true)}
-            icon={<Plus size={15} />}
+            icon={<Plus size={14} />}
           >
-            {isAr ? 'تذكرة وزن جديدة' : 'Nouveau Bon de Pesage'}
+            {isAr ? 'وصل وزن جديد' : 'Nouveau Bon de Pesée'}
           </AtriumButton>
         </div>
       </div>
 
-      {/* Tickets List */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-4">
+      {/* Canonical 3-Card Top Metrics Pod Tray */}
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+        <div>
+          <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+            {isAr ? 'مؤشرات الأوزان والشحن' : 'Tonnages Expédiés & Rapprochement Pont-Bascule'}
+          </h2>
+          <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+            {isAr
+              ? 'مجموع الأوزان المحققة، خصم وزن الشاحنات والصناديق ومحصول المزرعة الصافي'
+              : 'Pesées brutes enregistrées, tares déduites et tonnages expédiés aux mandataires'}
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {/* Card 1: Poids Brut */}
+          <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
+            <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
+              {isAr ? 'إجمالي الوزن الإجمالي (Brut)' : 'Poids Brut Enregistré'}
+            </span>
+            <div>
+              <div className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white font-mono tabular-nums">
+                {(totalGrossKg / 1000).toFixed(1)} <span className="text-sm font-sans font-normal text-neutral-500">Tonnes</span>
+              </div>
+              <p className="text-[11px] text-[#C4785A] mt-0.5 font-medium">
+                {harvestTickets.length} {isAr ? 'شحنات موزونة' : 'passages sur pont-bascule'}
+              </p>
+            </div>
+          </div>
+
+          {/* Card 2: Tare */}
+          <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
+            <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
+              {isAr ? 'وزن الشاحنات والصناديق (Tare)' : 'Tare Cumulée Véhicules & Caisses'}
+            </span>
+            <div>
+              <div className="text-2xl font-bold tracking-tight text-amber-600 dark:text-amber-400 font-mono tabular-nums">
+                {(totalTareKg / 1000).toFixed(1)} <span className="text-sm font-sans font-normal text-neutral-500">Tonnes</span>
+              </div>
+              <p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5 font-medium">
+                {isAr ? 'خصم دقيق للمركبة' : 'Tare contrôlée à vide'}
+              </p>
+            </div>
+          </div>
+
+          {/* Card 3: Dark Espresso Anchor Card */}
+          <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-medium text-neutral-300">
+                {isAr ? 'الوزن الصافي المفوتر' : 'Poids Net Marchand'}
+              </span>
+              <span className="bg-[#3D2817] text-[#FB923C] rounded-full px-2 py-0.5 text-[10px] font-bold">
+                Pont-Bascule
+              </span>
+            </div>
+            <div>
+              <div className="text-2xl font-black text-white font-mono tabular-nums">
+                {(totalNetKg / 1000).toFixed(1)} <span className="text-sm font-sans font-normal text-neutral-300">Tonnes Net</span>
+              </div>
+              <p className="text-[11px] text-emerald-400 mt-0.5 flex items-center gap-1 font-medium">
+                <CheckCircle2 size={11} />
+                {formatMoney(totalNetPayout)} {isAr ? 'صافي مستحق' : 'net mandataire calculé'}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Universal Collection Workstation Pod Tray */}
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <Truck size={16} className="text-neutral-500" />
+            <h2 className="text-sm font-bold text-neutral-900 dark:text-white">
+              {isAr ? 'سجل وصولات وزن المحاصيل المشحونة' : 'Registre des Bons de Pesée au Pont-Bascule'}
+            </h2>
+            <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-neutral-200 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300 font-mono">
+              {filteredTickets.length}
+            </span>
+          </div>
+
+          <div className="w-64">
+            <Seek
+              value={searchQuery}
+              onChange={setSearchQuery}
+              placeholder={isAr ? 'بحث برقم الوصل، السائق...' : 'Rechercher ticket, chauffeur...'}
+            />
+          </div>
+        </div>
+
         {filteredTickets.length === 0 ? (
-          <div className="h-64 flex flex-col items-center justify-center text-center p-6 bg-white dark:bg-neutral-900 rounded-2xl border border-dashed border-neutral-300 dark:border-neutral-800">
-            <Scale size={40} className="text-neutral-300 dark:text-neutral-700 mb-2" />
+          <div className="h-44 flex flex-col items-center justify-center text-center p-6 bg-white dark:bg-neutral-900 rounded-[20px] border border-dashed border-neutral-300 dark:border-neutral-800">
+            <Scale size={36} className="text-neutral-300 dark:text-neutral-700 mb-2" />
             <p className="text-sm font-medium text-neutral-500">
-              {isAr ? 'لا توجد وصولات وزن مطابقة' : 'Aucun bon de pesage trouvé'}
+              {isAr ? 'لا توجد وصولات وزن مطابقة للبحث' : 'Aucun bon de pesée correspondant'}
             </p>
           </div>
         ) : (
@@ -136,61 +227,60 @@ export const AgricultureHarvestView: React.FC = () => {
             {filteredTickets.map((t) => (
               <div
                 key={t.id}
-                className="bg-white dark:bg-neutral-900 p-5 rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-xs flex flex-wrap items-center justify-between gap-4"
+                className="bg-white dark:bg-neutral-900 p-5 rounded-[20px] border border-[#E9EEF0] dark:border-neutral-800 shadow-2xs flex flex-col lg:flex-row lg:items-center justify-between gap-4"
               >
-                <div className="space-y-1">
+                <div className="space-y-1.5 max-w-xl">
                   <div className="flex items-center gap-2">
-                    <span className="font-mono font-bold text-xs bg-orange-50 dark:bg-orange-950/40 text-[#C4785A] px-2.5 py-1 rounded-lg border border-orange-200 dark:border-orange-900/40">
+                    <span className="font-mono font-bold text-xs bg-[#C4785A]/10 text-[#C4785A] px-2.5 py-1 rounded-lg border border-[#C4785A]/20">
                       {t.ticketNumber}
                     </span>
-                    <span className="font-bold text-sm text-neutral-900 dark:text-white">
-                      {t.cropDesignation}
+                    <span className="text-xs text-neutral-400 font-mono">
+                      {t.date}
                     </span>
-                    <span className="text-xs text-neutral-500 font-mono">
-                      ({t.vehiclePlate} · {t.driverName})
+                    <span className="font-mono text-xs bg-neutral-100 dark:bg-neutral-800 px-2 py-0.5 rounded text-neutral-600 dark:text-neutral-400">
+                      {t.vehiclePlate}
                     </span>
                   </div>
 
-                  <div className="text-xs text-neutral-500 flex items-center gap-2">
-                    <span>Marché: <strong className="text-neutral-800 dark:text-neutral-200">{t.destinationWholesaleMarket}</strong></span>
+                  <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
+                    {t.cropDesignation}
+                  </h3>
+
+                  <div className="flex flex-wrap items-center gap-3 text-xs text-neutral-500 pt-0.5">
+                    <span>Brut: <strong className="font-mono text-neutral-800 dark:text-neutral-200">{t.grossWeightKg.toLocaleString()} kg</strong></span>
+                    <span>·</span>
+                    <span>Tare: <strong className="font-mono text-amber-600">{t.tareWeightKg.toLocaleString()} kg</strong></span>
+                    <span>·</span>
+                    <span>Net: <strong className="font-mono text-emerald-600 font-bold">{t.netWeightKg.toLocaleString()} kg</strong></span>
                     <span>·</span>
                     <span>{t.cratesCount} caisses</span>
-                    <span>·</span>
-                    <span>Date: {t.date}</span>
                   </div>
+
+                  <p className="text-[11px] text-neutral-400">
+                    Marché: {t.destinationWholesaleMarket} · Chauffeur: {t.driverName}
+                  </p>
                 </div>
 
-                <div className="flex items-center gap-6">
-                  <div className="grid grid-cols-3 gap-2 text-center font-mono text-xs">
-                    <div className="bg-neutral-50 dark:bg-neutral-800/60 px-2.5 py-1.5 rounded-xl">
-                      <div className="text-[10px] text-neutral-400">Poids Brut</div>
-                      <div className="font-semibold text-neutral-700 dark:text-neutral-300">{t.grossWeightKg} kg</div>
-                    </div>
-                    <div className="bg-neutral-50 dark:bg-neutral-800/60 px-2.5 py-1.5 rounded-xl">
-                      <div className="text-[10px] text-neutral-400">Tare Camion</div>
-                      <div className="font-semibold text-neutral-700 dark:text-neutral-300">{t.tareWeightKg} kg</div>
-                    </div>
-                    <div className="bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-1.5 rounded-xl border border-emerald-200 dark:border-emerald-800/40">
-                      <div className="text-[10px] text-emerald-600 font-bold uppercase">Net Récolte</div>
-                      <div className="font-bold text-emerald-600">{t.netWeightKg} kg</div>
-                    </div>
-                  </div>
-
-                  <div className="text-right font-mono text-xs">
-                    <div className="text-[10px] text-neutral-400 uppercase">Net Domaine</div>
-                    <div className="font-bold text-[#C4785A]">
+                <div className="flex items-center justify-between lg:justify-end gap-5 shrink-0 pt-3 lg:pt-0 border-t lg:border-t-0 border-zinc-100 dark:border-zinc-800">
+                  <div className="text-left lg:text-right">
+                    <span className="text-[10px] uppercase tracking-wider text-neutral-400 block font-medium">
+                      Net Mandataire (DZD)
+                    </span>
+                    <span className="text-base font-bold font-mono text-neutral-900 dark:text-white">
                       {formatMoney(t.netFarmPayoutDzd)}
-                    </div>
+                    </span>
+                    <span className="text-[10px] text-neutral-400 block">
+                      à {t.unitPriceDzdPerKg} DZD/kg (-6% com)
+                    </span>
                   </div>
 
-                  <AtriumButton
-                    variant="outline"
-                    size="sm"
+                  <button
                     onClick={() => setSelectedTicketForPrint(t)}
-                    icon={<Printer size={13} />}
+                    className="p-2.5 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 transition-colors"
+                    title="Imprimer le ticket de pesée"
                   >
-                    {isAr ? 'طباعة' : 'Imprimer'}
-                  </AtriumButton>
+                    <Printer size={16} />
+                  </button>
                 </div>
               </div>
             ))}
@@ -198,39 +288,38 @@ export const AgricultureHarvestView: React.FC = () => {
         )}
       </div>
 
-      {/* New Ticket Modal */}
+      {/* Add Weigh Ticket Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-neutral-900 rounded-3xl max-w-md w-full p-6 shadow-2xl border border-neutral-200 dark:border-neutral-800 space-y-4">
-            <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
-              <h2 className="text-base font-bold text-neutral-900 dark:text-white flex items-center gap-2">
-                <Scale size={18} className="text-[#C4785A]" />
-                <span>{isAr ? 'وصل وزن عمومي جديد (Pont-Bascule)' : 'Nouveau Bon de Pesage Camion'}</span>
-              </h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-neutral-900 rounded-[28px] border border-neutral-200 dark:border-neutral-800 p-6 w-full max-w-lg shadow-xl space-y-5">
+            <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
+              <div className="flex items-center gap-2">
+                <Scale size={20} className="text-[#C4785A]" />
+                <h3 className="font-bold text-base text-neutral-900 dark:text-white">
+                  {isAr ? 'تسجيل وصل وزن بالقفان (Pont-Bascule)' : 'Nouveau Bon de Pesée Récolte'}
+                </h3>
+              </div>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="text-neutral-400 hover:text-neutral-600 font-bold"
+                className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 p-1"
               >
-                ✕
+                <X size={18} />
               </button>
             </div>
 
-            <form onSubmit={handleCreateTicket} className="space-y-3">
+            <form onSubmit={handleCreateTicket} className="space-y-4">
               <LabelSelect
-                label={isAr ? 'القطعة المنتجة' : 'Parcelle de Provenance'}
+                label={isAr ? 'القطعة المصدر' : 'Parcelle d\'Origine'}
                 value={parcelId}
-                onChange={(e) => setParcelId(e.target.value)}
-                options={parcels.map((p) => ({
-                  value: p.id,
-                  label: `${p.name} (${p.currentCrop})`,
-                }))}
+                onChange={setParcelId}
+                options={parcelOptions}
               />
 
               <LabelInput
-                label={isAr ? 'المحصول المجني *' : 'Désignation de la Récolte *'}
-                placeholder="Ex: Tomates Calibre 1"
+                label={isAr ? 'تعيين المحصول والصنف' : 'Désignation Récolte / Calibre'}
                 value={crop}
-                onChange={(e) => setCrop(e.target.value)}
+                onChange={setCrop}
+                placeholder="Ex: Tomates Maraîchères Calibre 1"
                 required
               />
 
@@ -238,59 +327,82 @@ export const AgricultureHarvestView: React.FC = () => {
                 <LabelInput
                   label={isAr ? 'ترقيم الشاحنة' : 'Matricule Véhicule'}
                   value={vehiclePlate}
-                  onChange={(e) => setVehiclePlate(e.target.value)}
+                  onChange={setVehiclePlate}
+                  placeholder="00142-126-16"
+                  required
                 />
                 <LabelInput
-                  label={isAr ? 'اسم السائق' : 'Chauffeur'}
+                  label={isAr ? 'اسم السائق' : 'Nom du Chauffeur'}
                   value={driverName}
-                  onChange={(e) => setDriverName(e.target.value)}
+                  onChange={setDriverName}
+                  required
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-3 gap-2">
                 <LabelInput
-                  label={isAr ? 'الوزن الإجمالي (Gross Kg)' : 'Poids Brut (Kg)'}
+                  label={isAr ? 'الوزن الإجمالي (kg)' : 'Poids Brut (kg)'}
                   type="number"
                   value={grossWeight}
-                  onChange={(e) => setGrossWeight(e.target.value)}
+                  onChange={setGrossWeight}
                   required
                 />
                 <LabelInput
-                  label={isAr ? 'وزن الشاحنة فارغة (Tare Kg)' : 'Tare Véhicule (Kg)'}
+                  label={isAr ? 'الفارغ (kg)' : 'Tare (kg)'}
                   type="number"
                   value={tareWeight}
-                  onChange={(e) => setTareWeight(e.target.value)}
+                  onChange={setTareWeight}
                   required
+                />
+                <LabelInput
+                  label={isAr ? 'عدد الصناديق' : 'Nb Caisses'}
+                  type="number"
+                  value={cratesCount}
+                  onChange={setCratesCount}
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <LabelInput
-                  label={isAr ? 'عدد الصناديق' : 'Nombre de Caisses'}
-                  type="number"
-                  value={cratesCount}
-                  onChange={(e) => setCratesCount(e.target.value)}
-                />
-                <LabelInput
-                  label={isAr ? 'سعر الكيلوغرام المتوقع (دج)' : 'Prix Unitaire DZD / Kg'}
+                  label={isAr ? 'السعر الأحادي (DZD/kg)' : 'Prix Unitaire DZD / kg'}
                   type="number"
                   value={unitPrice}
-                  onChange={(e) => setUnitPrice(e.target.value)}
+                  onChange={setUnitPrice}
+                  required
+                />
+                <LabelInput
+                  label={isAr ? 'سوق الجملة / الوكيل' : 'Marché / Mandataire'}
+                  value={market}
+                  onChange={setMarket}
+                  required
                 />
               </div>
 
-              <LabelInput
-                label={isAr ? 'سوق الجملة / الوجهة' : 'Marché de Gros Destinataire'}
-                value={market}
-                onChange={(e) => setMarket(e.target.value)}
-              />
+              <div className="p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-xl space-y-1 text-xs">
+                <div className="flex justify-between">
+                  <span className="text-neutral-500">Poids Net Calculé:</span>
+                  <span className="font-mono font-bold text-neutral-900 dark:text-white">
+                    {Math.max(0, (parseFloat(grossWeight) || 0) - (parseFloat(tareWeight) || 0)).toLocaleString()} kg
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-neutral-500">Net Mandataire (après 6% com):</span>
+                  <span className="font-mono font-bold text-emerald-600">
+                    {formatMoney(
+                      Math.max(0, (parseFloat(grossWeight) || 0) - (parseFloat(tareWeight) || 0)) *
+                        (parseFloat(unitPrice) || 0) *
+                        0.94
+                    )}
+                  </span>
+                </div>
+              </div>
 
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
-                <AtriumButton variant="ghost" size="sm" onClick={() => setIsModalOpen(false)}>
+              <div className="flex justify-end gap-2 pt-2">
+                <AtriumButton variant="secondary" onClick={() => setIsModalOpen(false)}>
                   {isAr ? 'إلغاء' : 'Annuler'}
                 </AtriumButton>
-                <AtriumButton variant="primary" size="sm" type="submit">
-                  {isAr ? 'تأكيد الوزن' : 'Valider le Pesage'}
+                <AtriumButton variant="primary" type="submit">
+                  {isAr ? 'تأكيد وحفظ الوصل' : 'Valider la Pesée'}
                 </AtriumButton>
               </div>
             </form>
@@ -298,57 +410,64 @@ export const AgricultureHarvestView: React.FC = () => {
         </div>
       )}
 
-      {/* Print Preview Modal */}
+      {/* Print Weighing Ticket Modal */}
       {selectedTicketForPrint && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-neutral-300 text-neutral-900 space-y-4 font-mono text-xs">
-            <div className="text-center border-b pb-3 space-y-1">
-              <div className="font-extrabold text-base tracking-widest text-[#C4785A]">DOMAINE AGRICOLE ATRIUM</div>
-              <div className="text-xs text-neutral-500">TICKET OFFICIEL DE PESAGE PONT-BASCULE</div>
-              <div className="text-base font-bold mt-1">{selectedTicketForPrint.ticketNumber}</div>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-neutral-900 rounded-[28px] border border-neutral-200 dark:border-neutral-800 p-6 w-full max-w-lg shadow-xl space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
+              <div className="flex items-center gap-2">
+                <Printer size={18} className="text-[#C4785A]" />
+                <h3 className="font-bold text-base text-neutral-900 dark:text-white">
+                  Ticket Pont-Bascule #{selectedTicketForPrint.ticketNumber}
+                </h3>
+              </div>
+              <button
+                onClick={() => setSelectedTicketForPrint(null)}
+                className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 p-1"
+              >
+                <X size={18} />
+              </button>
             </div>
 
-            <div className="space-y-2 border-b pb-3">
-              <div className="flex justify-between">
-                <span>Culture Expédiée:</span>
-                <span className="font-bold">{selectedTicketForPrint.cropDesignation}</span>
+            <div className="p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700 space-y-2 text-xs font-mono">
+              <div className="font-sans font-bold text-sm text-neutral-900 dark:text-white mb-2">
+                {selectedTicketForPrint.cropDesignation}
               </div>
               <div className="flex justify-between">
-                <span>Véhicule / Chauffeur:</span>
+                <span className="text-neutral-500">Camion:</span>
                 <span>{selectedTicketForPrint.vehiclePlate} ({selectedTicketForPrint.driverName})</span>
               </div>
               <div className="flex justify-between">
-                <span>Poids Brut:</span>
-                <span>{selectedTicketForPrint.grossWeightKg} kg</span>
+                <span className="text-neutral-500">Poids Brut:</span>
+                <span>{selectedTicketForPrint.grossWeightKg.toLocaleString()} kg</span>
               </div>
-              <div className="flex justify-between">
-                <span>Tare Camion:</span>
-                <span>-{selectedTicketForPrint.tareWeightKg} kg</span>
+              <div className="flex justify-between text-amber-600">
+                <span>Tare Déduite:</span>
+                <span>-{selectedTicketForPrint.tareWeightKg.toLocaleString()} kg</span>
               </div>
-              <div className="flex justify-between font-bold text-sm pt-1 border-t text-emerald-700">
-                <span>POIDS NET RÉCOLTE:</span>
-                <span>{selectedTicketForPrint.netWeightKg} KG</span>
+              <div className="pt-1 border-t border-neutral-200 dark:border-neutral-700 flex justify-between font-bold text-emerald-600 text-sm">
+                <span>POIDS NET:</span>
+                <span>{selectedTicketForPrint.netWeightKg.toLocaleString()} kg</span>
               </div>
-              <div className="flex justify-between text-[#C4785A] font-bold">
-                <span>Net Exploitation (après 6%):</span>
-                <span>{formatMoney(selectedTicketForPrint.netFarmPayoutDzd)}</span>
+              <div className="flex justify-between pt-1 text-neutral-500">
+                <span>Destination:</span>
+                <span className="font-sans">{selectedTicketForPrint.destinationWholesaleMarket}</span>
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-2">
-              <AtriumButton variant="ghost" size="sm" onClick={() => setSelectedTicketForPrint(null)}>
+            <div className="flex justify-end gap-2 pt-2">
+              <AtriumButton variant="secondary" onClick={() => setSelectedTicketForPrint(null)}>
                 Fermer
               </AtriumButton>
               <AtriumButton
                 variant="primary"
-                size="sm"
+                icon={<Printer size={14} />}
                 onClick={() => {
                   window.print();
                   setSelectedTicketForPrint(null);
                 }}
-                icon={<Printer size={14} />}
               >
-                Imprimer
+                Imprimer le Ticket
               </AtriumButton>
             </div>
           </div>

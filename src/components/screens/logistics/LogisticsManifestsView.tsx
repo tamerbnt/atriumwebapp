@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Truck, Plus, Printer, Users, FileText, CheckCircle } from 'lucide-react';
+import { Truck, Plus, Printer, Users, FileText, CheckCircle2, ShieldCheck } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
 import { useLogisticsData } from './logisticsData';
 import { AtriumButton } from '../../ui/AtriumButton';
@@ -31,6 +31,9 @@ export const LogisticsManifestsView: React.FC = () => {
     m.driverName.toLowerCase().includes(searchQuery.toLowerCase()) ||
     (m.zoneWilaya || '').toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const totalParcelsInManifests = manifests.reduce((acc, m) => acc + (m.totalShipmentsCount || m.shipmentIds.length), 0);
+  const totalCodInManifests = manifests.reduce((acc, m) => acc + (m.totalCodExpectedDzd || 0), 0);
 
   const handleCreateManifest = (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,127 +70,188 @@ export const LogisticsManifestsView: React.FC = () => {
 
     addManifest(newManifest);
     setIsModalOpen(false);
-    setDriverName('');
     showToast(
-      isAr ? 'تم إنشاء مسار التوزيع وتسليم الطرود للسائق' : 'Feuille de route générée avec succès',
+      isAr ? 'تم إنشاء ورقة طريق السائق بنجاح' : 'Feuille de route chauffeur émise avec succès',
       'success'
     );
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-[#FAF9F5] dark:bg-neutral-950 overflow-hidden font-sans">
-      {/* Header */}
-      <div className="bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 px-6 py-4 flex flex-wrap items-center justify-between gap-4">
+    <div className="bg-white dark:bg-[#18181B] rounded-[28px] border border-[#E9EEF0] dark:border-neutral-800 p-6 lg:p-8 space-y-6 shadow-xs animate-in fade-in duration-200">
+      {/* Top Header Strip with Action Toolbar */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-orange-50 dark:bg-orange-950/40 text-[#C4785A] flex items-center justify-center font-bold shadow-sm border border-orange-100 dark:border-orange-900/30">
+          <div className="w-10 h-10 rounded-xl bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold shadow-xs">
             <Truck size={22} />
           </div>
           <div>
-            <h1 className="text-base font-bold text-neutral-900 dark:text-white flex items-center gap-2">
-              <span>{isAr ? 'مسارات التوزيع للسائقين (Tournées)' : 'Feuilles de Route Chauffeurs & Tournées'}</span>
-              <span className="text-xs px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 font-mono">
-                {manifests.length}
+            <div className="flex items-center gap-2">
+              <h1 className="text-xl font-bold text-neutral-900 dark:text-white">
+                {isAr ? 'أوراق الإرسال ومسارات الشاحنات' : 'Manifestes de Dispatch & Feuilles de Route'}
+              </h1>
+              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#C4785A]/15 text-[#C4785A]">
+                {manifests.length} manifestes
               </span>
-            </h1>
-            <p className="text-xs text-neutral-500">
+            </div>
+            <p className="text-xs text-neutral-500 dark:text-neutral-400">
               {isAr
-                ? 'تنظيم جولات التوصيل الميداني ومطابقة مبالغ الدفع عند الاستلام'
-                : 'Affectation des colis par zone, décharges chauffeurs et suivi du COD terrain'}
+                ? 'تنظيم رحلات التوزيع، تعيين السائقين، وجرد الطرود المحملة لكل مسار'
+                : 'Bordereaux de chargement camion, assignation des coursiers & validation des tournées'}
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <Seek
-            value={searchQuery}
-            onChange={setSearchQuery}
-            placeholder={isAr ? 'بحث بالسائق، المسار...' : 'Rechercher chauffeur, tournée...'}
-          />
-
+        <div className="flex items-center gap-2">
           <AtriumButton
             variant="primary"
             onClick={() => setIsModalOpen(true)}
-            icon={<Plus size={15} />}
+            icon={<Plus size={14} />}
           >
             {isAr ? 'مسار جديد' : 'Nouvelle Tournée'}
           </AtriumButton>
         </div>
       </div>
 
-      {/* Manifests List */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-4">
-        {filteredManifests.length === 0 ? (
-          <div className="h-64 flex flex-col items-center justify-center text-center p-6 bg-white dark:bg-neutral-900 rounded-2xl border border-dashed border-neutral-300 dark:border-neutral-800">
-            <Truck size={40} className="text-neutral-300 dark:text-neutral-700 mb-2" />
-            <p className="text-sm font-medium text-neutral-500">
-              {isAr ? 'لا توجد مسارات مطابقة' : 'Aucune tournée trouvée'}
-            </p>
+      {/* Canonical 3-Card Top Metrics Pod Tray */}
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+        <div>
+          <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+            {isAr ? 'مؤشرات مسارات التوزيع والشاحنات' : 'Dispatch des Camions & Tournées de Livraison'}
+          </h2>
+          <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+            {isAr ? 'متابعة أوراق الإرسال، عدد الطرود المحملة وإجمالي مبالغ COD المسندة للسائقين' : 'Tournées déployées, colis en cours de distribution et engagement financier'}
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {/* Card 1: Manifestes créés */}
+          <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
+            <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
+              {isAr ? 'أوراق الإرسال النشطة' : 'Feuilles de Route Actives'}
+            </span>
+            <div>
+              <div className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white font-mono tabular-nums">
+                {manifests.length}
+              </div>
+              <p className="text-[11px] text-emerald-600 dark:text-emerald-400 mt-0.5 font-medium">
+                {isAr ? 'مركبات في الخدمة' : 'Véhicules sur le terrain'}
+              </p>
+            </div>
           </div>
-        ) : (
-          <div className="space-y-3">
-            {filteredManifests.map((m) => (
-              <div
-                key={m.id}
-                className="bg-white dark:bg-neutral-900 p-5 rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-xs hover:border-[#C4785A]/40 transition-all flex flex-wrap items-center justify-between gap-4"
-              >
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono font-bold text-xs bg-orange-50 dark:bg-orange-950/40 text-[#C4785A] px-2.5 py-1 rounded-lg border border-orange-200 dark:border-orange-900/40">
-                      {m.manifestNumber}
-                    </span>
-                    <span className="font-bold text-sm text-neutral-900 dark:text-white">
-                      {m.driverName}
-                    </span>
-                    <span className="text-xs text-neutral-500 font-mono">
-                      ({m.driverPhone})
-                    </span>
-                  </div>
 
-                  <div className="text-xs text-neutral-500 flex items-center gap-2">
-                    <span>Zone: <strong className="text-neutral-800 dark:text-neutral-200">{m.zoneWilaya}</strong></span>
-                    <span>·</span>
-                    <span>Départ: {m.dispatchDate}</span>
-                  </div>
-                </div>
+          {/* Card 2: Colis confiés */}
+          <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
+            <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
+              {isAr ? 'إجمالي الطرود المسندة' : 'Colis en Tournée'}
+            </span>
+            <div>
+              <div className="text-2xl font-bold tracking-tight text-blue-600 dark:text-blue-400 font-mono tabular-nums">
+                {totalParcelsInManifests}
+              </div>
+              <p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5 font-medium">
+                {isAr ? 'موزعة على كافة المناطق' : 'Répartis sur les wilayas'}
+              </p>
+            </div>
+          </div>
 
-                <div className="flex items-center gap-6">
-                  <div className="grid grid-cols-2 gap-3 text-right font-mono text-xs">
-                    <div className="bg-neutral-50 dark:bg-neutral-800/60 px-3 py-1.5 rounded-xl">
-                      <div className="text-[10px] text-neutral-400">Colis assignés</div>
-                      <div className="font-bold text-neutral-900 dark:text-white">{m.totalShipmentsCount} colis</div>
-                    </div>
-                    <div className="bg-neutral-50 dark:bg-neutral-800/60 px-3 py-1.5 rounded-xl">
-                      <div className="text-[10px] text-neutral-400">COD Attendu</div>
-                      <div className="font-bold text-emerald-600">{formatMoney(m.totalCodExpectedDzd)}</div>
-                    </div>
-                  </div>
+          {/* Card 3: Dark Espresso Anchor Card */}
+          <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-medium text-neutral-300">
+                {isAr ? 'أموال COD المسندة للعهدة' : 'Masse COD en Tournée'}
+              </span>
+              <span className="bg-[#3D2817] text-[#FB923C] rounded-full px-2 py-0.5 text-[10px] font-bold">
+                Engagement
+              </span>
+            </div>
+            <div>
+              <div className="text-2xl font-black text-white font-mono tabular-nums">
+                {formatMoney(totalCodInManifests)}
+              </div>
+              <p className="text-[11px] text-emerald-400 mt-0.5 flex items-center gap-1 font-medium">
+                <CheckCircle2 size={11} />
+                {filteredManifests.length} {isAr ? 'مسار معروض' : 'manifestes listés'}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
 
-                  <span
-                    className={`text-xs font-bold px-2.5 py-1 rounded-full ${
-                      m.status === 'Completed'
-                        ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
-                        : 'bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300'
-                    }`}
-                  >
+      {/* Bottom Workstation Pod Tray */}
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+        {/* Integrated Toolbar */}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <Truck size={16} className="text-neutral-500" />
+            <span className="text-sm font-bold text-neutral-900 dark:text-white">
+              {isAr ? 'سجل رحلات التوزيع' : 'Bordereaux de Route Chauffeurs'}
+            </span>
+            <span className="px-2 py-0.5 text-[11px] font-bold bg-[#E9EEF0] dark:bg-neutral-700 rounded-full text-neutral-700 dark:text-neutral-300">
+              {filteredManifests.length}
+            </span>
+          </div>
+
+          <div className="w-full sm:w-auto">
+            <Seek
+              value={searchQuery}
+              onChange={setSearchQuery}
+              placeholder={isAr ? 'بحث بالمسار، السائق، المنطقة...' : 'Recherche manifeste, chauffeur, zone...'}
+            />
+          </div>
+        </div>
+
+        {/* Manifests Cards Container */}
+        <div className="space-y-3">
+          {filteredManifests.map((m) => (
+            <div
+              key={m.id}
+              className="p-5 rounded-[18px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4"
+            >
+              <div className="space-y-1.5 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="font-mono text-xs font-bold text-[#C4785A] bg-[#C4785A]/10 px-2.5 py-0.5 rounded-full">
+                    {m.manifestNumber}
+                  </span>
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-neutral-100 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300">
+                    {m.zoneWilaya}
+                  </span>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
                     {m.status}
                   </span>
-
-                  <AtriumButton
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      window.print();
-                      showToast('Impression de la feuille de route lancée', 'success');
-                    }}
-                    icon={<Printer size={14} />}
-                  >
-                    {isAr ? 'طباعة المسار' : 'Imprimer'}
-                  </AtriumButton>
+                </div>
+                <div className="text-sm font-bold text-neutral-900 dark:text-white">
+                  {m.driverName} • <span className="font-mono font-normal text-xs text-neutral-500">{m.driverPhone}</span>
+                </div>
+                <div className="text-xs text-neutral-500 dark:text-neutral-400">
+                  {isAr ? 'المركبة' : 'Véhicule'}: <span className="font-mono font-semibold text-neutral-700 dark:text-neutral-300">{m.vehiclePlate}</span> • {isAr ? 'التاريخ' : 'Date'}: {m.dispatchDate}
                 </div>
               </div>
-            ))}
-          </div>
-        )}
+
+              <div className="flex items-center gap-4 shrink-0 justify-between md:justify-end border-t md:border-t-0 pt-2 md:pt-0 border-neutral-100 dark:border-neutral-700">
+                <div className="text-right rtl:text-left">
+                  <div className="text-[10px] font-semibold text-neutral-400 uppercase">
+                    {m.totalShipmentsCount || m.shipmentIds.length} {isAr ? 'طرد' : 'colis'}
+                  </div>
+                  <div className="font-mono font-bold text-sm text-[#C4785A]">
+                    {formatMoney(m.totalCodExpectedDzd || 0)}
+                  </div>
+                </div>
+
+                <AtriumButton
+                  size="xs"
+                  variant="outline"
+                  onClick={() => {
+                    window.print();
+                    showToast('Impression de la feuille de route lancée', 'success');
+                  }}
+                  icon={<Printer size={13} />}
+                >
+                  {isAr ? 'طباعة' : 'Imprimer'}
+                </AtriumButton>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* New Manifest Modal */}

@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { Package, Plus, Printer, MapPin, CheckCircle, Truck } from 'lucide-react';
+import { Package, Plus, Printer, MapPin, CheckCircle2, Truck, ShieldCheck } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
 import { useLogisticsData } from './logisticsData';
 import { LogisticsShipmentModal } from './LogisticsShipmentModal';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { Seek } from '../../ui/Seek';
+import { FilterSelect } from '../../ui/FilterSelect';
 import { LogisticsShipment } from '../../../types';
 
 export const LogisticsShipmentsView: React.FC = () => {
@@ -33,6 +34,18 @@ export const LogisticsShipmentsView: React.FC = () => {
     return matchesSearch && matchesStatus;
   });
 
+  const outForDeliveryCount = shipments.filter((s) => s.status === 'OutForDelivery').length;
+  const deliveredCount = shipments.filter((s) => s.status === 'Delivered').length;
+  const totalCodValue = shipments.reduce((acc, s) => acc + s.codAmountDzd, 0);
+
+  const statusOptions = [
+    { value: 'all', label: isAr ? 'جميع الحالات' : 'Tous les statuts' },
+    { value: 'InHub', label: isAr ? 'بالمستودع (Hub)' : 'En Hub' },
+    { value: 'OutForDelivery', label: isAr ? 'في طريق التوصيل' : 'En livraison' },
+    { value: 'Delivered', label: isAr ? 'تم التسليم' : 'Livré' },
+    { value: 'Returned', label: isAr ? 'مرتجع (RTS)' : 'Retourné' },
+  ];
+
   const handleDeliver = (shipmentId: string) => {
     updateShipmentStatus(shipmentId, 'Delivered');
     showToast(
@@ -46,166 +59,205 @@ export const LogisticsShipmentsView: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-[#FAF9F5] dark:bg-neutral-950 overflow-hidden font-sans">
-      {/* Header Bar */}
-      <div className="bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 px-6 py-4 flex flex-wrap items-center justify-between gap-4">
+    <div className="bg-white dark:bg-[#18181B] rounded-[28px] border border-[#E9EEF0] dark:border-neutral-800 p-6 lg:p-8 space-y-6 shadow-xs animate-in fade-in duration-200">
+      {/* Top Header Strip with Action Toolbar */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-orange-50 dark:bg-orange-950/40 text-[#C4785A] flex items-center justify-center font-bold shadow-sm border border-orange-100 dark:border-orange-900/30">
+          <div className="w-10 h-10 rounded-xl bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold shadow-xs">
             <Package size={22} />
           </div>
           <div>
-            <h1 className="text-base font-bold text-neutral-900 dark:text-white flex items-center gap-2">
-              <span>{isAr ? 'إدارة الطرود والشحنات (AWB)' : 'Gestion des Colis & Expéditions (AWB)'}</span>
-              <span className="text-xs px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 font-mono">
-                {shipments.length}
+            <div className="flex items-center gap-2">
+              <h1 className="text-xl font-bold text-neutral-900 dark:text-white">
+                {isAr ? 'إدارة الطرود والشحنات (AWB)' : 'Gestion des Colis & Expéditions (AWB)'}
+              </h1>
+              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#C4785A]/15 text-[#C4785A]">
+                {shipments.length} AWB
               </span>
-            </h1>
-            <p className="text-xs text-neutral-500">
+            </div>
+            <p className="text-xs text-neutral-500 dark:text-neutral-400">
               {isAr
-                ? 'تتبع بوالص الشحن الجارية، التسليم للمستلم، والطباعة الحرارية'
-                : 'Suivi des bordereaux d’expédition, livraisons et étiquettes thermiques'}
+                ? 'تتبع الشحنات، طباعة بوليصات الشحن الحرارية وتأكيد تسليم الطرود'
+                : 'Suivi des lettres de voiture (AWB), étiquettes thermiques & bordereaux'}
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <Seek
-            value={searchQuery}
-            onChange={setSearchQuery}
-            placeholder={isAr ? 'بحث بالرمز، الاسم، الهاتف...' : 'Rechercher code, nom, tél...'}
-          />
-
+        <div className="flex items-center gap-2">
           <AtriumButton
             variant="primary"
             onClick={() => setIsModalOpen(true)}
-            icon={<Plus size={15} />}
+            icon={<Plus size={14} />}
           >
-            {isAr ? 'طرد جديد (AWB)' : 'Nouveau Colis (AWB)'}
+            {isAr ? 'شحنة جديدة (AWB)' : 'Nouveau Colis'}
           </AtriumButton>
         </div>
       </div>
 
-      {/* Filter Chips Bar */}
-      <div className="bg-white/60 dark:bg-neutral-900/60 border-b border-neutral-200 dark:border-neutral-800 px-6 py-2.5 flex items-center gap-2 overflow-x-auto text-xs">
-        <span className="text-neutral-500 font-medium mr-1">{isAr ? 'الحالة:' : 'Statut:'}</span>
-        {[
-          { key: 'all', label: isAr ? 'الكل' : 'Tous' },
-          { key: 'ReceivedAtHub', label: isAr ? 'في المركز' : 'Reçu Hub' },
-          { key: 'Sorted', label: isAr ? 'تم الفرز' : 'Trié' },
-          { key: 'OutForDelivery', label: isAr ? 'قيد التوزيع' : 'En Livraison' },
-          { key: 'Delivered', label: isAr ? 'تم التسليم' : 'Livré' },
-        ].map((f) => (
-          <button
-            key={f.key}
-            onClick={() => setStatusFilter(f.key)}
-            className={`px-3 py-1 rounded-lg font-medium transition-all cursor-pointer ${
-              statusFilter === f.key
-                ? 'bg-[#C4785A] text-white shadow-xs'
-                : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200'
-            }`}
-          >
-            {f.label}
-          </button>
-        ))}
+      {/* Canonical 3-Card Top Metrics Pod Tray */}
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+        <div>
+          <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+            {isAr ? 'مؤشرات الشحنات والتوزيع الميداني' : 'Flux des Expéditions & Dispatch'}
+          </h2>
+          <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+            {isAr ? 'متابعة الطرود المسجلة، الشحنات في الطريق وقيمة مبالغ الدفع عند الاستلام' : 'Colis en tournée active, taux de succès et masse financière COD'}
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {/* Card 1: Colis en Tournée */}
+          <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
+            <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
+              {isAr ? 'طرود قيد التوزيع في الطريق' : 'Colis en Tournée Active'}
+            </span>
+            <div>
+              <div className="text-2xl font-bold tracking-tight text-[#C4785A] font-mono tabular-nums">
+                {outForDeliveryCount}
+              </div>
+              <p className="text-[11px] text-amber-600 dark:text-amber-400 mt-0.5 font-medium">
+                {shipments.length} {isAr ? 'إجمالي الطرود' : 'expéditions totales'}
+              </p>
+            </div>
+          </div>
+
+          {/* Card 2: Colis Livrés */}
+          <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
+            <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
+              {isAr ? 'طرود تم تسليمها بنجاح' : 'Colis Livrés Réceptionnés'}
+            </span>
+            <div>
+              <div className="text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 font-mono tabular-nums">
+                {deliveredCount}
+              </div>
+              <p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5 font-medium">
+                {shipments.length > 0 ? Math.round((deliveredCount / shipments.length) * 100) : 0}% {isAr ? 'نسبة النجاح' : 'taux de livraison'}
+              </p>
+            </div>
+          </div>
+
+          {/* Card 3: Dark Espresso Anchor Card */}
+          <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-medium text-neutral-300">
+                {isAr ? 'إجمالي مبالغ COD المصرح بها' : 'Montant COD Global'}
+              </span>
+              <span className="bg-[#3D2817] text-[#FB923C] rounded-full px-2 py-0.5 text-[10px] font-bold">
+                Valeur Marchande
+              </span>
+            </div>
+            <div>
+              <div className="text-2xl font-black text-white font-mono tabular-nums">
+                {formatMoney(totalCodValue)}
+              </div>
+              <p className="text-[11px] text-emerald-400 mt-0.5 flex items-center gap-1 font-medium">
+                <CheckCircle2 size={11} />
+                {filteredShipments.length} {isAr ? 'شحنة معروضة' : 'colis affichés'}
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Shipments Grid */}
-      <div className="flex-1 overflow-y-auto p-6">
-        {filteredShipments.length === 0 ? (
-          <div className="h-64 flex flex-col items-center justify-center text-center p-6 bg-white dark:bg-neutral-900 rounded-2xl border border-dashed border-neutral-300 dark:border-neutral-800">
-            <Package size={40} className="text-neutral-300 dark:text-neutral-700 mb-2" />
-            <p className="text-sm font-medium text-neutral-500">
-              {isAr ? 'لا توجد طرود مطابقة للبحث' : 'Aucun colis correspondant'}
-            </p>
+      {/* Bottom Workstation Pod Tray */}
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+        {/* Integrated Toolbar */}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <Package size={16} className="text-neutral-500" />
+            <span className="text-sm font-bold text-neutral-900 dark:text-white">
+              {isAr ? 'جدول الطرود والشحنات' : 'Bordereau des Expéditions AWB'}
+            </span>
+            <span className="px-2 py-0.5 text-[11px] font-bold bg-[#E9EEF0] dark:bg-neutral-700 rounded-full text-neutral-700 dark:text-neutral-300">
+              {filteredShipments.length}
+            </span>
           </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-            {filteredShipments.map((s) => (
-              <div
-                key={s.id}
-                className="bg-white dark:bg-neutral-900 p-5 rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-xs hover:border-[#C4785A]/40 transition-all flex flex-col justify-between gap-3"
-              >
-                <div className="space-y-2.5">
-                  <div className="flex items-center justify-between">
-                    <span className="font-mono font-bold text-xs bg-orange-50 dark:bg-orange-950/40 text-[#C4785A] px-2.5 py-1 rounded-lg border border-orange-200 dark:border-orange-900/40">
-                      {s.trackingCode}
-                    </span>
-                    <span
-                      className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full ${
-                        s.status === 'Delivered'
-                          ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300'
-                          : s.status === 'OutForDelivery'
-                          ? 'bg-blue-100 dark:bg-blue-950/60 text-blue-800 dark:text-blue-300'
-                          : 'bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300'
-                      }`}
-                    >
-                      {s.status}
-                    </span>
-                  </div>
 
-                  <div>
-                    <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
-                      {s.recipientName}
-                    </h3>
-                    <div className="text-xs text-neutral-500 font-mono mt-0.5">
-                      {s.recipientPhone}
-                    </div>
-                  </div>
+          <div className="flex flex-wrap items-center gap-2.5">
+            <Seek
+              value={searchQuery}
+              onChange={setSearchQuery}
+              placeholder={isAr ? 'بحث بالكود، الزبون، الولاية...' : 'Recherche AWB, client, wilaya...'}
+            />
+            <FilterSelect
+              value={statusFilter}
+              onChange={setStatusFilter}
+              options={statusOptions}
+            />
+          </div>
+        </div>
 
-                  <div className="text-xs text-neutral-600 dark:text-neutral-400 flex items-start gap-1.5 bg-neutral-50 dark:bg-neutral-800/50 p-2.5 rounded-xl">
-                    <MapPin size={14} className="shrink-0 text-[#C4785A] mt-0.5" />
-                    <span>
-                      {s.destinationAddress} · <strong className="text-neutral-900 dark:text-white">{s.destinationWilaya}</strong>
-                    </span>
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-2 text-center font-mono text-xs pt-1">
-                    <div className="bg-neutral-50 dark:bg-neutral-800 p-2 rounded-xl">
-                      <div className="text-[10px] text-neutral-400 uppercase tracking-wider">COD</div>
-                      <div className="font-bold text-emerald-600 mt-0.5">{formatMoney(s.codAmountDzd)}</div>
-                    </div>
-                    <div className="bg-neutral-50 dark:bg-neutral-800 p-2 rounded-xl">
-                      <div className="text-[10px] text-neutral-400 uppercase tracking-wider">Frais</div>
-                      <div className="font-bold text-neutral-700 dark:text-neutral-300 mt-0.5">{formatMoney(s.shippingFeeDzd)}</div>
-                    </div>
-                    <div className="bg-neutral-50 dark:bg-neutral-800 p-2 rounded-xl">
-                      <div className="text-[10px] text-neutral-400 uppercase tracking-wider">Poids</div>
-                      <div className="font-bold text-neutral-700 dark:text-neutral-300 mt-0.5">{s.weightKg} kg</div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="pt-3 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-xs">
-                  <span className="text-neutral-400 text-[11px] truncate max-w-[140px]">
-                    Exp: {s.merchantName}
+        {/* Shipments Cards Container */}
+        <div className="space-y-3">
+          {filteredShipments.map((s) => (
+            <div
+              key={s.id}
+              className="p-4 rounded-[18px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 hover:border-[#C4785A]/40 transition-all shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4"
+            >
+              <div className="space-y-1.5 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="font-mono text-xs font-bold text-[#C4785A] bg-[#C4785A]/10 px-2.5 py-0.5 rounded-full">
+                    {s.trackingCode}
                   </span>
-
-                  <div className="flex items-center gap-2">
-                    <AtriumButton
-                      variant="outline"
-                      size="xs"
-                      onClick={() => handlePrintLabel(s)}
-                      icon={<Printer size={13} />}
-                    >
-                      {isAr ? 'ملصق' : 'Bordereau'}
-                    </AtriumButton>
-
-                    {s.status !== 'Delivered' && (
-                      <AtriumButton
-                        variant="primary"
-                        size="xs"
-                        onClick={() => handleDeliver(s.id)}
-                        icon={<CheckCircle size={13} />}
-                      >
-                        {isAr ? 'تسليم' : 'Livrer'}
-                      </AtriumButton>
-                    )}
-                  </div>
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-neutral-100 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300 flex items-center gap-1">
+                    <MapPin size={11} className="text-neutral-400" />
+                    {s.destinationWilaya}
+                  </span>
+                  <span
+                    className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                      s.status === 'Delivered'
+                        ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                        : s.status === 'OutForDelivery'
+                        ? 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300'
+                        : s.status === 'Returned'
+                        ? 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300'
+                        : 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
+                    }`}
+                  >
+                    {s.status}
+                  </span>
+                </div>
+                <div className="text-sm font-bold text-neutral-900 dark:text-white">
+                  {s.recipientName} • <span className="font-mono font-normal text-xs text-neutral-500">{s.recipientPhone}</span>
+                </div>
+                <div className="text-xs text-neutral-500 dark:text-neutral-400 truncate">
+                  {s.destinationAddress} • {isAr ? 'التاجر' : 'Marchand'}: <span className="font-semibold text-neutral-700 dark:text-neutral-300">{s.merchantName}</span>
                 </div>
               </div>
-            ))}
-          </div>
-        )}
+
+              <div className="flex items-center gap-4 shrink-0 justify-between md:justify-end border-t md:border-t-0 pt-2 md:pt-0 border-neutral-100 dark:border-neutral-700">
+                <div className="text-right rtl:text-left">
+                  <div className="text-[10px] font-semibold text-neutral-400 uppercase">COD</div>
+                  <div className="font-mono font-bold text-sm text-neutral-900 dark:text-white">
+                    {formatMoney(s.codAmountDzd)}
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <AtriumButton
+                    size="xs"
+                    variant="outline"
+                    onClick={() => handlePrintLabel(s)}
+                    icon={<Printer size={13} />}
+                  >
+                    {isAr ? 'بوليصة' : 'AWB'}
+                  </AtriumButton>
+
+                  {s.status !== 'Delivered' && (
+                    <AtriumButton
+                      size="xs"
+                      variant="primary"
+                      onClick={() => handleDeliver(s.id)}
+                      icon={<CheckCircle2 size={13} />}
+                    >
+                      {isAr ? 'تسليم' : 'Livrer'}
+                    </AtriumButton>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Shipment Modal */}

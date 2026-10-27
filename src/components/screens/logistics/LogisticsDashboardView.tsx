@@ -28,16 +28,16 @@ export const LogisticsDashboardView: React.FC = () => {
     .reduce((acc, s) => acc + s.codAmountDzd, 0);
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-[#FAF9F5] dark:bg-neutral-950 overflow-y-auto font-sans">
-      {/* Header */}
-      <div className="bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 px-6 py-4 flex flex-wrap items-center justify-between gap-4">
+    <div className="bg-white dark:bg-[#18181B] rounded-[28px] border border-[#E9EEF0] dark:border-neutral-800 p-6 lg:p-8 space-y-6 shadow-xs animate-in fade-in duration-200">
+      {/* Top Header Strip with Action Toolbar */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold shadow-xs">
-            <Truck size={20} />
+            <Truck size={22} />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-lg font-bold text-neutral-900 dark:text-white">
+              <h1 className="text-xl font-bold text-neutral-900 dark:text-white">
                 {language === 'ar' ? 'اللوجستيك ومراكز الفرز والتوزيع' : 'Messagerie Express & Hub Logistique'}
               </h1>
               <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#C4785A]/15 text-[#C4785A]">
@@ -63,116 +63,130 @@ export const LogisticsDashboardView: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="p-6 space-y-6 max-w-7xl">
-        {/* KPI Strip */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white dark:bg-neutral-900 p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 shadow-xs">
-            <span className="text-xs text-neutral-500">
-              {language === 'ar' ? 'طرود قيد التوصيل' : 'Colis en livraison'}
+      {/* Canonical 3-Card Top Metrics Pod Tray */}
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+        <div>
+          <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+            {language === 'ar' ? 'مؤشرات التوزيع وخدمات التوصيل' : 'Activité du Hub & Tournées Livreurs'}
+          </h2>
+          <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+            {language === 'ar' ? 'متابعة حركة الطرود عبر الولايات، نسبة النجاح والتحصيل النقدي عند الباب' : 'Flux de colis en transit, expéditions réussies et encaissement COD'}
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {/* Card 1: Colis en Tournée */}
+          <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
+            <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
+              {language === 'ar' ? 'طرود قيد التوزيع في الطريق' : 'Colis en Cours de Tournée'}
             </span>
-            <div className="mt-2 flex items-baseline gap-2">
-              <span className="text-2xl font-extrabold text-[#C4785A] tabular-nums">
+            <div>
+              <div className="text-2xl font-bold tracking-tight text-[#C4785A] font-mono tabular-nums">
                 {outForDelivery}
-              </span>
-              <span className="text-xs text-amber-600 font-semibold">
-                {language === 'ar' ? 'في الطريق' : 'En tournée'}
-              </span>
+              </div>
+              <p className="text-[11px] text-amber-600 dark:text-amber-400 mt-0.5 font-medium">
+                {manifests.length} {language === 'ar' ? 'بيان شحن شاحنة نشط' : 'manifestes inter-wilayas'}
+              </p>
             </div>
           </div>
 
-          <div className="bg-white dark:bg-neutral-900 p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 shadow-xs">
-            <span className="text-xs text-neutral-500">
-              {language === 'ar' ? 'طرود تم تسليمها' : 'Colis livrés'}
+          {/* Card 2: Colis Livrés */}
+          <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
+            <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
+              {language === 'ar' ? 'طرود تم تسليمها بنجاح' : 'Colis Livrés & Réceptionnés'}
             </span>
-            <div className="mt-2 flex items-baseline gap-2">
-              <span className="text-2xl font-extrabold text-emerald-600 tabular-nums">
+            <div>
+              <div className="text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 font-mono tabular-nums">
                 {deliveredToday}
-              </span>
-              <span className="text-xs text-emerald-600 font-semibold">
-                {language === 'ar' ? 'ناجحة' : 'Succès'}
-              </span>
+              </div>
+              <p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5 font-medium">
+                Sur {shipments.length} expéditions totales
+              </p>
             </div>
           </div>
 
-          <div className="bg-white dark:bg-neutral-900 p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 shadow-xs">
-            <span className="text-xs text-neutral-500">
-              {language === 'ar' ? 'أموال COD المحصلة' : 'Encaissements COD'}
-            </span>
-            <div className="mt-2 flex items-baseline gap-2">
-              <span className="text-2xl font-extrabold text-blue-600 tabular-nums">
+          {/* Card 3: Dark Espresso Anchor Card */}
+          <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-medium text-neutral-300">
+                {language === 'ar' ? 'أموال COD المحصلة' : 'Encaissements COD'}
+              </span>
+              <span className="bg-[#3D2817] text-[#FB923C] rounded-full px-2 py-0.5 text-[10px] font-bold">
+                Caisse Livreurs
+              </span>
+            </div>
+            <div>
+              <div className="text-2xl font-black text-white font-mono tabular-nums">
                 {formatMoney(totalCodCollected, language)}
-              </span>
-            </div>
-          </div>
-
-          <div className="bg-white dark:bg-neutral-900 p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 shadow-xs">
-            <span className="text-xs text-neutral-500">
-              {language === 'ar' ? 'مسارات التوزيع النشطة' : 'Feuilles de route'}
-            </span>
-            <div className="mt-2 flex items-baseline gap-2">
-              <span className="text-2xl font-extrabold text-neutral-900 dark:text-white tabular-nums">
-                {manifests.length}
-              </span>
-              <span className="text-xs text-neutral-400">
-                Livreurs
-              </span>
+              </div>
+              <p className="text-[11px] text-emerald-400 mt-0.5 flex items-center gap-1 font-medium">
+                <CheckCircle2 size={11} />
+                {deliveredToday} {language === 'ar' ? 'عملية تسليم مدفوعة' : 'remises encaissées'}
+              </p>
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Shipments List */}
-        <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 p-5 space-y-4 shadow-xs">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Package size={16} className="text-[#C4785A]" />
-              <h2 className="text-sm font-bold text-neutral-900 dark:text-white">
-                {language === 'ar' ? 'آخر الطرود المسجلة' : 'Dernières Expéditions (AWB)'}
-              </h2>
-            </div>
-            <button
-              onClick={() => setScreen('members')}
-              className="text-xs text-[#C4785A] hover:underline flex items-center gap-1 font-semibold cursor-pointer"
-            >
-              <span>{language === 'ar' ? 'عرض كل الشحنات' : 'Toutes les expéditions'}</span>
-              <ChevronRight size={14} />
-            </button>
+      {/* Bottom Workstation Pod Tray */}
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Package size={16} className="text-neutral-500" />
+            <h2 className="text-sm font-bold text-neutral-900 dark:text-white">
+              {language === 'ar' ? 'آخر الشحنات والطرود المسجلة' : 'Dernières Expéditions au Hub'}
+            </h2>
           </div>
+          <AtriumButton
+            variant="ghost"
+            size="xs"
+            onClick={() => setScreen('members')}
+            icon={<ChevronRight size={14} />}
+          >
+            {language === 'ar' ? 'عرض الكل' : 'Voir tout'}
+          </AtriumButton>
+        </div>
 
-          <div className="divide-y divide-neutral-100 dark:divide-neutral-800">
-            {shipments.map((s) => (
-              <div key={s.id} className="py-3 flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono font-bold text-xs text-[#C4785A]">
-                      {s.trackingCode}
-                    </span>
-                    <span className="text-xs font-bold text-neutral-900 dark:text-white">
-                      {s.recipientName}
-                    </span>
-                  </div>
-                  <div className="text-[11px] text-neutral-500 mt-0.5">
-                    Destination: {s.destinationWilaya} · Marchand: {s.merchantName}
-                  </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+          {shipments.slice(0, 6).map((s) => (
+            <div
+              key={s.id}
+              className="p-4 rounded-[18px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 hover:border-[#C4785A]/40 transition-all shadow-2xs space-y-3"
+            >
+              <div className="flex items-center justify-between">
+                <span className="font-mono text-xs font-bold text-[#C4785A]">
+                  {s.trackingCode}
+                </span>
+                <span
+                  className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                    s.status === 'Delivered'
+                      ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                      : s.status === 'OutForDelivery'
+                      ? 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300'
+                      : 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
+                  }`}
+                >
+                  {s.status}
+                </span>
+              </div>
+              <div>
+                <div className="font-bold text-sm text-neutral-900 dark:text-white">
+                  {s.recipientName}
                 </div>
-
-                <div className="flex items-center gap-3">
-                  <span className="text-xs font-mono font-bold text-neutral-900 dark:text-white">
-                    COD: {formatMoney(s.codAmountDzd, language)}
-                  </span>
-                  <span
-                    className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                      s.status === 'Delivered'
-                        ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
-                        : 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
-                    }`}
-                  >
-                    {s.status}
-                  </span>
+                <div className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
+                  {s.destinationWilaya} • {s.recipientPhone}
                 </div>
               </div>
-            ))}
-          </div>
+              <div className="pt-2 border-t border-[#EDF1F3] dark:border-neutral-700/60 flex items-center justify-between text-xs font-mono font-bold">
+                <span className="text-neutral-400 font-sans text-[11px]">
+                  COD: {s.weightKg} kg
+                </span>
+                <span className="text-neutral-900 dark:text-white">
+                  {formatMoney(s.codAmountDzd, language)}
+                </span>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 
