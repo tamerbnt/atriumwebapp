@@ -458,7 +458,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
   };
 
   return (
-    <div className="space-y-6">
+    <div className="bg-white dark:bg-[#18181B] rounded-[28px] border border-[#E9EEF0] dark:border-neutral-800 p-6 lg:p-8 space-y-6 shadow-xs animate-in fade-in duration-200">
       {/* Header with Facility Switcher & Demo Data */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
         <div>
@@ -540,6 +540,81 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
               </span>
             )}
           </AtriumButton>
+        </div>
+      </div>
+
+      {/* Top Metrics Pod Tray: 3 Inset Cards including Dark Espresso Card */}
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+        <div>
+          <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+            {language === 'ar' ? 'مؤشرات التنسيق الميداني والإنتاج الطباعي' : language === 'fr' ? 'Indicateurs de Coordination & Production Print' : 'Coordination & Print Production Metrics'}
+          </h2>
+          <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+            {language === 'ar' ? 'حالة المشاريع قيد التنفيذ، تتبع أوامر الطباعة واستهلاك ميزانية المشتريات الميدانية' : language === 'fr' ? 'Avancement des campagnes, commandes POSM en cours et consommation des plafonds terrain' : 'Campaign execution rate, POSM orders progress, and field expenses burn rate'}
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {/* Card 1: Active Retainers & Projects */}
+          <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
+                {language === 'ar' ? 'المشاريع الخاضعة للمتابعة' : language === 'fr' ? 'Campagnes Supervisées' : 'Supervised Projects'}
+              </span>
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+                {pmProjects.length} {language === 'ar' ? 'نشطة' : 'actives'}
+              </span>
+            </div>
+            <div>
+              <div className="text-2xl font-black text-neutral-900 dark:text-white tabular-nums font-mono">
+                {pmProjects.length}
+              </div>
+              <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">
+                {language === 'ar' ? 'مخططات الإنتاج قيد الإنجاز' : 'plannings opérationnels en cours'}
+              </p>
+            </div>
+          </div>
+
+          {/* Card 2: Print Orders & BAT pending */}
+          <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
+                {language === 'ar' ? 'أوامر الطباعة ومراجعة BAT' : language === 'fr' ? 'Commandes Print & BAT' : 'Print Orders & BAT'}
+              </span>
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
+                {pmPrintOrders.length} {language === 'ar' ? 'أمر' : 'ordres'}
+              </span>
+            </div>
+            <div>
+              <div className="text-2xl font-black text-blue-600 dark:text-blue-400 tabular-nums font-mono">
+                {pmBatDeliverables.filter((b) => b.approvalStatus === 'pending_review').length} {language === 'ar' ? 'BAT بانتظار التأشير' : 'BAT en attente'}
+              </div>
+              <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">
+                {pmPrintOrders.length} {language === 'ar' ? 'طلبيات طباعة في المطبعة' : 'commandes POSM transmises'}
+              </p>
+            </div>
+          </div>
+
+          {/* Card 3: DARK ESPRESSO ANCHOR CARD (#1F1D1B) — Total Field Expenses */}
+          <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-medium text-neutral-300">
+                {language === 'ar' ? 'المشتريات الميدانية (Slide 11)' : language === 'fr' ? 'Dépenses Terrain Consommées' : 'Field Expenses Spent'}
+              </span>
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30">
+                {burnRatePercent}% {language === 'ar' ? 'مستهلك' : 'consommé'}
+              </span>
+            </div>
+            <div>
+              <div className="text-2xl font-black text-[#FB923C] tabular-nums font-mono">
+                {formatMoney(totalExpensesSpent, 'DZD')}
+              </div>
+              <p className="text-[11px] text-neutral-400 mt-0.5 flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-[#FB923C] animate-pulse" />
+                <span>{language === 'ar' ? `سقف المشروع: ${formatMoney(fieldExpensesLimit, 'DZD')}` : `Plafond : ${formatMoney(fieldExpensesLimit, 'DZD')}`}</span>
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 

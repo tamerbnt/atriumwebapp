@@ -448,7 +448,7 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
   };
 
   return (
-    <div className="space-y-6">
+    <div className="bg-white dark:bg-[#18181B] rounded-[28px] border border-[#E9EEF0] dark:border-neutral-800 p-6 lg:p-8 space-y-6 shadow-xs animate-in fade-in duration-200">
       {/* Header with Facility Dropdown & Demo Data */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
         <div>
@@ -557,10 +557,69 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
         })}
       </div>
 
+      {/* Canonical 3-Card Top Metrics Pod Tray */}
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+        <div>
+          <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+            Trésorerie Agence & Décaissements Postaux
+          </h2>
+          <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+            Traçabilité des mandats postaux CCP SFP 01 et suivi des remboursements opérationnels
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {/* Card 1: Mandats CCP */}
+          <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
+            <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">Bordereaux CCP Émis</span>
+            <div>
+              <div className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white font-mono">
+                {pmCcpSlips.length}
+              </div>
+              <p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5">
+                {pmCcpSlips.filter((s) => s.isPrinted).length} imprimés et remis à la poste
+              </p>
+            </div>
+          </div>
+
+          {/* Card 2: Frais Remboursés */}
+          <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
+            <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">Remboursements DG Validés</span>
+            <div>
+              <div className="text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 font-mono">
+                {pmExpenses.filter((e) => e.status === 'approved_by_direction').length}
+              </div>
+              <p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5">
+                Sur {pmExpenses.length} justificatifs déclarés
+              </p>
+            </div>
+          </div>
+
+          {/* Card 3: Dark Espresso Anchor - Volume CCP SFP 01 */}
+          <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-medium text-neutral-300">Volume Mandats CCP SFP 01</span>
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30">
+                POSTE ALGÉRIE
+              </span>
+            </div>
+            <div>
+              <div className="text-2xl font-black text-[#FB923C] tabular-nums font-mono">
+                {formatMoney(pmCcpSlips.reduce((sum, s) => sum + s.amountDzd, 0), 'DZD')}
+              </div>
+              <p className="text-[11px] text-neutral-400 mt-0.5 flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-[#FB923C] animate-pulse" />
+                <span>Liquidité postale décaissement effectif</span>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* TAB 1: PAIES VALIDEES DG */}
       {activeTab === 'payroll' && (
-        <div className="space-y-4">
-          <div className="p-5 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+          <div className="p-5 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <span className="text-xs font-bold text-[#C4785A] uppercase tracking-wider block">
                 Génération des Mandats Postaux (Slide 10)
@@ -639,8 +698,8 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
 
       {/* TAB 2: BORDEREAUX CCP SFP 01 (UniversalDataCollection) */}
       {activeTab === 'ccp' && (
-        <div className="space-y-4">
-          <div className="p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs flex items-center justify-between">
+        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+          <div className="p-4 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex items-center justify-between">
             <Seek
               value={ccpSearch}
               onChange={setCcpSearch}
@@ -735,8 +794,8 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
 
       {/* TAB 3: REMBOURSEMENTS ACHATS (UniversalDataCollection) */}
       {activeTab === 'expenses' && (
-        <div className="space-y-4">
-          <div className="p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs flex items-center justify-between">
+        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+          <div className="p-4 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex items-center justify-between">
             <Seek
               value={expenseSearch}
               onChange={setExpenseSearch}
@@ -812,8 +871,8 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
 
       {/* TAB 4: STOCK & MOBILIER (UniversalDataCollection) */}
       {activeTab === 'stock' && (
-        <div className="space-y-4">
-          <div className="p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs flex flex-wrap items-center justify-between gap-4">
+        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+          <div className="p-4 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-wrap items-center justify-between gap-4">
             <div className="flex flex-wrap items-center gap-3 text-xs flex-1 max-w-xl">
               <Seek
                 value={stockSearch}

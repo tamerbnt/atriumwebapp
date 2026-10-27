@@ -395,7 +395,7 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
   ], [language, pinnedLeadIds, terminology.plan, plans, updateLeadStatus]);
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-200 relative">
+    <div className="bg-white dark:bg-[#18181B] rounded-[28px] border border-[#E9EEF0] dark:border-neutral-800 p-6 lg:p-8 space-y-6 shadow-xs animate-in fade-in duration-200 relative">
       {/* Row 0: Top Header matching Desktop App */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
@@ -533,25 +533,30 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
             </div>
           </div>
 
-          {/* Tile 3: Dark Obsidian Card */}
-          <div className="p-5 rounded-[20px] bg-[#18181B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
-            <div>
-              <span className="text-xs font-medium text-neutral-300">
+          {/* Tile 3: DARK ESPRESSO ANCHOR CARD (#1F1D1B) — Intake Velocity & SLA */}
+          <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-medium text-neutral-300">
                 {isPOS
                   ? (language === 'ar' ? 'معالجة الطلبات وسرعة الاستجابة' : language === 'fr' ? 'Traitement des commandes & SLA' : 'Order Intake & Lead SLA')
                   : t('reg_intake_sla_label', language)}
               </span>
-              <div className="text-[11px] text-[#C4785A] font-semibold mt-0.5">
-                {isPOS
-                  ? (language === 'ar' ? 'سرعة معالجة الطلبات والاستفسارات' : language === 'fr' ? 'Vitesse de traitement au comptoir' : 'Direct counter & wholesale inquiry speed')
-                  : (language === 'ar' ? 'بوابة التسجيل الذاتي وموقع الجوال' : language === 'fr' ? 'Borne libre-service & web mobile' : 'Self-service Kiosk & Mobile Web')}
-              </div>
-            </div>
-            <div className="text-2xl font-black text-white tabular-nums">
-              &lt; 15 min{' '}
-              <span className="text-xs font-normal text-neutral-400">
-                {t('reg_avg_processing_time', language)}
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30">
+                &lt; 15 min
               </span>
+            </div>
+            <div>
+              <div className="text-2xl font-black text-[#FB923C] tabular-nums font-mono">
+                &lt; 15 min
+              </div>
+              <p className="text-[11px] text-neutral-400 mt-0.5 flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-[#FB923C] animate-pulse" />
+                <span>
+                  {isPOS
+                    ? (language === 'ar' ? 'سرعة معالجة الطلبات والاستفسارات' : language === 'fr' ? 'Vitesse de traitement au comptoir' : 'Direct counter & wholesale inquiry speed')
+                    : (language === 'ar' ? 'بوابة التسجيل الذاتي وموقع الجوال' : language === 'fr' ? 'Borne libre-service & web mobile' : 'Self-service Kiosk & Mobile Web')}
+                </span>
+              </p>
             </div>
           </div>
         </div>

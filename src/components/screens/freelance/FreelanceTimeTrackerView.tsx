@@ -550,7 +550,7 @@ export const FreelanceTimeTrackerView: React.FC = () => {
   ], [language, pinnedLogIds, t]);
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-200">
+    <div className="bg-white dark:bg-[#18181B] rounded-[28px] border border-[#E9EEF0] dark:border-neutral-800 p-6 lg:p-8 space-y-6 shadow-xs animate-in fade-in duration-200">
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-neutral-200 dark:border-neutral-800">
         <div>
@@ -818,47 +818,77 @@ export const FreelanceTimeTrackerView: React.FC = () => {
         )}
       </div>
 
-      {/* 3 Metric Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="p-4 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-900/40 border border-[#EDF1F3] dark:border-neutral-800">
-          <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400 block mb-1">
-            {t('free_time_total_hours_logged', language)}
-          </span>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-extrabold text-neutral-900 dark:text-white tabular-nums">
-              {(totalSecondsAll / 3600).toFixed(1)}h
-            </span>
-            <span className="text-xs text-neutral-500">
-              {timeLogs.length} {t('free_time_tracked_sessions_unit', language)}
-            </span>
-          </div>
+      {/* Top Metrics Pod Tray: 3 Inset Cards including Dark Espresso Card */}
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+        <div>
+          <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+            {language === 'ar' ? 'مؤشرات تتبع الوقت والإنتاجية' : language === 'fr' ? 'Indicateurs de Temps & Productivité' : 'Time Tracking & Productivity Metrics'}
+          </h2>
+          <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+            {language === 'ar' ? 'تحليل ساعات العمل وساعات الفوترة وتراكم الأتعاب غير المفوترة' : language === 'fr' ? 'Analyse des heures pointées, du taux facturable et des honoraires en attente' : 'Logged hours breakdown, billability ratio, and unbilled invoice queue'}
+          </p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-900/40 border border-[#EDF1F3] dark:border-neutral-800">
-          <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400 block mb-1">
-            {t('free_time_billable_ratio', language)}
-          </span>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400 tabular-nums">
-              {billableRatio}%
-            </span>
-            <span className="text-xs text-neutral-500">
-              {(billableSeconds / 3600).toFixed(1)}h {t('free_time_billable_hours_unit', language)}
-            </span>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {/* Card 1: Total Hours Logged */}
+          <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
+                {t('free_time_total_hours_logged', language)}
+              </span>
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-neutral-100 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300">
+                {timeLogs.length} {t('free_time_tracked_sessions_unit', language)}
+              </span>
+            </div>
+            <div>
+              <div className="text-2xl font-black text-neutral-900 dark:text-white tabular-nums font-mono">
+                {(totalSecondsAll / 3600).toFixed(1)}h
+              </div>
+              <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">
+                {language === 'ar' ? 'إجمالي الساعات المسجلة' : 'Cumul des heures travaillées'}
+              </p>
+            </div>
           </div>
-        </div>
 
-        <div className="p-4 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-900/40 border border-[#EDF1F3] dark:border-neutral-800">
-          <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400 block mb-1">
-            {t('free_time_unbilled_total', language)}
-          </span>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-extrabold text-[#C4785A] tabular-nums">
-              {unbilledHours}h
-            </span>
-            <span className="text-xs text-neutral-500">
-              {t('free_time_awaiting_invoice', language)}
-            </span>
+          {/* Card 2: Billable Ratio */}
+          <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
+                {t('free_time_billable_ratio', language)}
+              </span>
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+                {(billableSeconds / 3600).toFixed(1)}h {language === 'ar' ? 'مفوترة' : 'facturables'}
+              </span>
+            </div>
+            <div>
+              <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400 tabular-nums font-mono">
+                {billableRatio}%
+              </div>
+              <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">
+                {language === 'ar' ? 'نسبة الساعات القابلة للفوترة' : 'Taux horaire valorisé'}
+              </p>
+            </div>
+          </div>
+
+          {/* Card 3: DARK ESPRESSO ANCHOR CARD (#1F1D1B) */}
+          <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-medium text-neutral-300">
+                {t('free_time_unbilled_total', language)}
+              </span>
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30">
+                {unbilledHours > 0 ? `${unbilledHours}h ${language === 'ar' ? 'جاهزة' : 'à facturer'}` : (language === 'ar' ? 'مفوتر بالكامل' : 'À jour')}
+              </span>
+            </div>
+            <div>
+              <div className="text-2xl font-black text-[#FB923C] tabular-nums font-mono">
+                {unbilledHours}h
+              </div>
+              <p className="text-[11px] text-neutral-400 mt-0.5 flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-[#FB923C] animate-pulse" />
+                <span>{t('free_time_awaiting_invoice', language)}</span>
+              </p>
+            </div>
           </div>
         </div>
       </div>

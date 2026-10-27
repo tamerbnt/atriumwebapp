@@ -433,7 +433,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
   };
 
   return (
-    <div className="space-y-6">
+    <div className="bg-white dark:bg-[#18181B] rounded-[28px] border border-[#E9EEF0] dark:border-neutral-800 p-6 lg:p-8 space-y-6 shadow-xs animate-in fade-in duration-200">
       {/* Top Header with Facility Switcher & Demo Data Button */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
         <div>
@@ -560,56 +560,83 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
       {/* SCREEN 1.1: COCKPIT & COMMAND CENTER */}
       {currentScreen === 'dashboard' && (
         <div className="space-y-6">
-          {/* KPI Ribbon matching Slide 5 */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200/80 dark:border-zinc-800 shadow-xs">
-              <div className="flex items-center justify-between text-xs text-zinc-500 mb-1">
-                <span className="font-semibold uppercase tracking-wider text-[11px]">{t('pm_kpi_budget_committed')}</span>
-                <span className="text-xs font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.5 rounded">
-                  +12 %
-                </span>
-              </div>
-              <div className="text-2xl font-bold font-mono tracking-tight text-zinc-900 dark:text-zinc-100 tabular-nums">
-                {formatMoney(totalTurnoverDzd, 'DZD')}
-              </div>
+          {/* Canonical 3-Card Top Metrics Pod Tray */}
+          <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+            <div>
+              <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+                {language === 'ar' ? 'مؤشرات القيادة الاستراتيجية والحوكمة المالية' : language === 'fr' ? 'Indicateurs de Pilotage Stratégique & Arbitrage' : 'Strategic Governance & Portfolio Indicators'}
+              </h2>
+              <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+                {language === 'ar' ? 'حجم الميزانيات الملتزم بها، المشاريع النشطة وشبكة المواهب الميدانية في 58 ولاية' : language === 'fr' ? 'Engagements budgétaires globaux, portefeuille actif et réseau national des talents' : 'Committed agency billings, running campaigns, and nationwide talent network'}
+              </p>
             </div>
 
-            <div
-              onClick={() => setActivePmSubScreen('projects')}
-              className="p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200/80 dark:border-zinc-800 shadow-xs cursor-pointer hover:border-[#C4785A] transition-colors"
-            >
-              <div className="flex items-center justify-between text-xs text-zinc-500 mb-1">
-                <span className="font-semibold uppercase tracking-wider text-[11px]">{t('pm_kpi_active_projects')}</span>
-                <span className="text-xs font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.5 rounded">
-                  Voir tout ➔
-                </span>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {/* Card 1: Active Retainers & Projects */}
+              <div
+                onClick={() => setActivePmSubScreen('projects')}
+                className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px] cursor-pointer hover:border-[#C4785A] transition-colors"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
+                    {t('pm_kpi_active_projects')}
+                  </span>
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+                    {pmProjects.length} {language === 'ar' ? 'حملات' : 'campagnes'}
+                  </span>
+                </div>
+                <div>
+                  <div className="text-2xl font-black text-neutral-900 dark:text-white tabular-nums font-mono">
+                    {pmProjects.length}
+                  </div>
+                  <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">
+                    {language === 'ar' ? 'مشاريع قيد التنفيذ والتسليم' : 'projets en cours de déploiement'}
+                  </p>
+                </div>
               </div>
-              <div className="text-2xl font-bold font-mono tracking-tight text-zinc-900 dark:text-zinc-100 tabular-nums">
-                {pmProjects.length}
-              </div>
-            </div>
 
-            <div className="p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200/80 dark:border-zinc-800 shadow-xs">
-              <div className="flex items-center justify-between text-xs text-zinc-500 mb-1">
-                <span className="font-semibold uppercase tracking-wider text-[11px]">{t('pm_kpi_field_talents')}</span>
+              {/* Card 2: Field Talents & 58 Wilayas */}
+              <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
+                    {t('pm_kpi_field_talents')}
+                  </span>
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
+                    58 Wilayas
+                  </span>
+                </div>
+                <div>
+                  <div className="text-2xl font-black text-blue-600 dark:text-blue-400 tabular-nums font-mono">
+                    {pmTalents.length}
+                  </div>
+                  <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">
+                    {language === 'ar' ? 'مشرفين ومنشطين معتمدين' : 'superviseurs & animateurs qualifiés'}
+                  </p>
+                </div>
               </div>
-              <div className="text-2xl font-bold font-mono tracking-tight text-zinc-900 dark:text-zinc-100 tabular-nums">
-                {pmTalents.length}
-              </div>
-            </div>
 
-            <div
-              onClick={() => setActivePmSubScreen('approvals')}
-              className="p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-red-200 dark:border-red-900/50 bg-red-50/20 dark:bg-red-950/10 shadow-xs cursor-pointer hover:border-red-400 transition-colors"
-            >
-              <div className="flex items-center justify-between text-xs text-red-700 dark:text-red-400 mb-1">
-                <span className="font-semibold uppercase tracking-wider text-[11px]">Paies & Frais en Attente</span>
-                <span className="w-5 h-5 rounded-full bg-red-600 text-white flex items-center justify-center font-bold text-xs">
-                  {totalPendingApprovals}
-                </span>
-              </div>
-              <div className="text-2xl font-bold font-mono tracking-tight text-red-700 dark:text-red-400 tabular-nums">
-                {totalPendingApprovals}
+              {/* Card 3: DARK ESPRESSO ANCHOR CARD (#1F1D1B) — Total Committed Budget */}
+              <div
+                onClick={() => setActivePmSubScreen('approvals')}
+                className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm cursor-pointer hover:border-[#FB923C]/50 transition-colors"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-medium text-neutral-300">
+                    {t('pm_kpi_budget_committed')}
+                  </span>
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30">
+                    {totalPendingApprovals > 0 ? `${totalPendingApprovals} ${language === 'ar' ? 'بانتظار التأشير' : 'en attente'}` : (language === 'ar' ? 'مؤشر بالكامل' : 'Validé')}
+                  </span>
+                </div>
+                <div>
+                  <div className="text-2xl font-black text-[#FB923C] tabular-nums font-mono">
+                    {formatMoney(totalTurnoverDzd, 'DZD')}
+                  </div>
+                  <p className="text-[11px] text-neutral-400 mt-0.5 flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-[#FB923C] animate-pulse" />
+                    <span>{language === 'ar' ? 'حجم الفوترة والتعاقدات المعتمدة' : 'Volume d\'affaires contracté'}</span>
+                  </p>
+                </div>
               </div>
             </div>
           </div>

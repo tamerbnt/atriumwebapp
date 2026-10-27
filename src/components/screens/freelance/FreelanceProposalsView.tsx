@@ -118,6 +118,21 @@ export const FreelanceProposalsView: React.FC = () => {
     );
   }, [freelanceProposals, searchQuery]);
 
+  const draftOrPendingProposals = useMemo(
+    () => freelanceProposals.filter((p) => p.status === 'Pending'),
+    [freelanceProposals]
+  );
+  const acceptedProposals = useMemo(
+    () => freelanceProposals.filter((p) => p.status === 'Accepted'),
+    [freelanceProposals]
+  );
+  const pipelineValue = useMemo(() => {
+    return draftOrPendingProposals.reduce((sum, p) => sum + (Number(p.proposedBudget) || 0), 0);
+  }, [draftOrPendingProposals]);
+  const wonValue = useMemo(() => {
+    return acceptedProposals.reduce((sum, p) => sum + (Number(p.proposedBudget) || 0), 0);
+  }, [acceptedProposals]);
+
   const handleScopeItemChange = (index: number, val: string) => {
     const next = [...formData.scopeItems];
     next[index] = val;
@@ -408,7 +423,7 @@ export const FreelanceProposalsView: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-200">
+    <div className="bg-white dark:bg-[#18181B] rounded-[28px] border border-[#E9EEF0] dark:border-neutral-800 p-6 lg:p-8 space-y-6 shadow-xs animate-in fade-in duration-200">
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-neutral-200 dark:border-neutral-800">
         <div className="flex items-center gap-3.5">
@@ -520,49 +535,126 @@ export const FreelanceProposalsView: React.FC = () => {
         </div>
       </div>
 
-      {/* Batch Selection Toolbar */}
-      {selectedProposalIds.size > 0 && (
-        <div className="flex items-center justify-between p-3 px-4 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 animate-in fade-in slide-in-from-top-2">
-          <div className="flex items-center gap-3">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#C4785A] animate-pulse" />
-            <span className="text-xs font-bold text-neutral-900 dark:text-white">
-              {selectedProposalIds.size} {language === 'ar' ? 'عروض محددة' : language === 'fr' ? 'devis sélectionnés' : 'proposals selected'}
-            </span>
+      {/* Top Metrics Pod Tray: 3 Inset Cards including Dark Espresso Card */}
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+        <div>
+          <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+            {language === 'ar' ? 'مؤشرات العروض التجارية والفرص التعاقدية' : language === 'fr' ? 'Indicateurs des Devis & Opportunités' : 'Proposals & Deal Pipeline Indicators'}
+          </h2>
+          <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+            {language === 'ar' ? 'متابعة العروض قيد الدراسة، الصفقات الموقعة وقيمة العقود الإجمالية' : language === 'fr' ? 'Suivi du pipeline de prospection, des propositions gagnées et du volume contracté' : 'Pipeline conversion status, active quotes, and total won contract value'}
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {/* Card 1: Pending Proposals */}
+          <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
+                {language === 'ar' ? 'عروض قيد المراجعة' : language === 'fr' ? 'Devis en Négociation' : 'Pending Review'}
+              </span>
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
+                {draftOrPendingProposals.length} {language === 'ar' ? 'عروض' : 'actifs'}
+              </span>
+            </div>
+            <div>
+              <div className="text-2xl font-black text-amber-600 dark:text-amber-400 tabular-nums font-mono">
+                {draftOrPendingProposals.length}
+              </div>
+              <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">
+                {language === 'ar' ? 'بانتظار موافقة وتوقيع العملاء' : 'En attente de signature client'}
+              </p>
+            </div>
           </div>
-          <div className="flex items-center gap-2 flex-wrap">
-            <button
-              onClick={() => setSelectedProposalIds(new Set())}
-              className="px-3 py-1.5 text-xs text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white font-medium cursor-pointer"
-            >
-              {language === 'ar' ? 'إلغاء التحديد' : language === 'fr' ? 'Désélectionner' : 'Deselect'}
-            </button>
-            <button
-              onClick={handleBatchAccept}
-              className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
-            >
-              <CheckCircle size={13} />
-              <span>{language === 'ar' ? 'قبول العروض' : language === 'fr' ? 'Marquer Accepté' : 'Mark Accepted'}</span>
-            </button>
-            <button
-              onClick={handleBatchDecline}
-              className="px-3.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
-            >
-              <XCircle size={13} />
-              <span>{language === 'ar' ? 'رفض العروض' : language === 'fr' ? 'Marquer Refusé' : 'Mark Declined'}</span>
-            </button>
-            <button
-              onClick={handleBatchDelete}
-              className="px-3.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
-            >
-              <Trash2 size={13} />
-              <span>{language === 'ar' ? 'حذف المحدد' : language === 'fr' ? 'Supprimer' : 'Delete'}</span>
-            </button>
+
+          {/* Card 2: Sent Devis Pipeline Value */}
+          <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
+                {language === 'ar' ? 'قيمة خط العروض (Pipeline)' : language === 'fr' ? 'Pipeline Devis Actif' : 'Active Pipeline'}
+              </span>
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
+                {draftOrPendingProposals.length} {language === 'ar' ? 'عرض' : 'devis'}
+              </span>
+            </div>
+            <div>
+              <div className="text-2xl font-black text-blue-600 dark:text-blue-400 tabular-nums font-mono">
+                {formatCurrencyAmount(pipelineValue, 'EUR')}
+              </div>
+              <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">
+                {language === 'ar' ? 'إجمالي الميزانيات المقترحة' : 'Cumul prévisionnel des devis'}
+              </p>
+            </div>
+          </div>
+
+          {/* Card 3: DARK ESPRESSO ANCHOR CARD (#1F1D1B) */}
+          <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-medium text-neutral-300">
+                {language === 'ar' ? 'عقود موقّعة ومحققة' : language === 'fr' ? 'Contrats Signés & Gagnés' : 'Won Contracts Value'}
+              </span>
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30">
+                {acceptedProposals.length} {language === 'ar' ? 'عقد' : 'gagnés'}
+              </span>
+            </div>
+            <div>
+              <div className="text-2xl font-black text-[#FB923C] tabular-nums font-mono">
+                {formatCurrencyAmount(wonValue, 'EUR')}
+              </div>
+              <p className="text-[11px] text-neutral-400 mt-0.5 flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-[#FB923C] animate-pulse" />
+                <span>{language === 'ar' ? 'قيمة المشاريع المحولة للإنتاج' : 'Volume converti en projets'}</span>
+              </p>
+            </div>
           </div>
         </div>
-      )}
+      </div>
 
-      {/* Seek Search Bar */}
-      <div className="flex items-center justify-between gap-4">
+      {/* Bottom Collection Pod Tray */}
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+        {/* Batch Selection Toolbar */}
+        {selectedProposalIds.size > 0 && (
+          <div className="flex items-center justify-between p-3 px-4 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 animate-in fade-in slide-in-from-top-2">
+            <div className="flex items-center gap-3">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#C4785A] animate-pulse" />
+              <span className="text-xs font-bold text-neutral-900 dark:text-white">
+                {selectedProposalIds.size} {language === 'ar' ? 'عروض محددة' : language === 'fr' ? 'devis sélectionnés' : 'proposals selected'}
+              </span>
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <button
+                onClick={() => setSelectedProposalIds(new Set())}
+                className="px-3 py-1.5 text-xs text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white font-medium cursor-pointer"
+              >
+                {language === 'ar' ? 'إلغاء التحديد' : language === 'fr' ? 'Désélectionner' : 'Deselect'}
+              </button>
+              <button
+                onClick={handleBatchAccept}
+                className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+              >
+                <CheckCircle size={13} />
+                <span>{language === 'ar' ? 'قبول العروض' : language === 'fr' ? 'Marquer Accepté' : 'Mark Accepted'}</span>
+              </button>
+              <button
+                onClick={handleBatchDecline}
+                className="px-3.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+              >
+                <XCircle size={13} />
+                <span>{language === 'ar' ? 'رفض العروض' : language === 'fr' ? 'Marquer Refusé' : 'Mark Declined'}</span>
+              </button>
+              <button
+                onClick={handleBatchDelete}
+                className="px-3.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+              >
+                <Trash2 size={13} />
+                <span>{language === 'ar' ? 'حذف المحدد' : language === 'fr' ? 'Supprimer' : 'Delete'}</span>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Seek Search Bar */}
+        <div className="flex items-center justify-between gap-4">
         <Seek
           value={searchQuery}
           onChange={setSearchQuery}
@@ -719,6 +811,7 @@ export const FreelanceProposalsView: React.FC = () => {
         primaryActionLabel={t('free_prop_btn_new')}
         onAddFirstItem={() => setIsDraftModalOpen(true)}
       />
+      </div>
 
       {/* Draft Proposal Modal */}
       {isDraftModalOpen && (

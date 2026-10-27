@@ -277,7 +277,7 @@ export const MembershipHistoryView: React.FC = () => {
   ], [language]);
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-200 relative">
+    <div className="bg-white dark:bg-[#18181B] rounded-[28px] border border-[#E9EEF0] dark:border-neutral-800 p-6 lg:p-8 space-y-6 shadow-xs animate-in fade-in duration-200 relative">
       {/* Toast Alert */}
       {refundSuccessToast && (
         <div className="p-3.5 bg-rose-50 dark:bg-rose-950/80 border border-rose-300 dark:border-rose-700 rounded-2xl text-rose-800 dark:text-rose-200 text-xs font-semibold flex items-center justify-between shadow-md animate-in slide-in-from-top-2">
@@ -431,19 +431,24 @@ export const MembershipHistoryView: React.FC = () => {
             </div>
           </div>
 
-          {/* Tile 3: Dark Obsidian Card */}
-          <div className="p-5 rounded-[20px] bg-[#18181B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
-            <div>
-              <span className="text-xs font-medium text-neutral-300">
+          {/* Tile 3: DARK ESPRESSO ANCHOR CARD (#1F1D1B) — Frontdesk Register & Terminal */}
+          <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-medium text-neutral-300">
                 {language === 'ar' ? 'حالة نقطة البيع النشطة' : language === 'fr' ? 'État du terminal actif' : 'Active Terminal State'}
               </span>
-              <div className="text-[11px] text-[#C4785A] font-semibold mt-0.5">
-                {language === 'ar' ? 'صندوق الاستقبال POS-01' : language === 'fr' ? 'Caisse d\'accueil POS-01' : 'Frontdesk Register POS-01'}
-              </div>
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30">
+                POS-01
+              </span>
             </div>
-            <div className="text-2xl font-black text-white tabular-nums flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
-              {language === 'ar' ? 'متصل ومحدث' : language === 'fr' ? 'En Ligne & Synchronisé' : 'Online & Synchronized'}
+            <div>
+              <div className="text-xl lg:text-2xl font-black text-[#FB923C] tabular-nums font-mono flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-[#FB923C] animate-pulse"></span>
+                <span>{language === 'ar' ? 'متصل ومحدث' : language === 'fr' ? 'En Ligne & Synchronisé' : 'Online & Synchronized'}</span>
+              </div>
+              <p className="text-[11px] text-neutral-400 mt-0.5">
+                {language === 'ar' ? 'صندوق الاستقبال POS-01' : language === 'fr' ? 'Caisse d\'accueil POS-01' : 'Frontdesk Register POS-01'}
+              </p>
             </div>
           </div>
         </div>

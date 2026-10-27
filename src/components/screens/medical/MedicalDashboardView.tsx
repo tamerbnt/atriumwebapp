@@ -32,16 +32,16 @@ export const MedicalDashboardView: React.FC = () => {
   const totalRevenue = consultations.reduce((acc, c) => acc + (c.isPaid ? c.consultationFeeDzd : 0), 0);
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-[#FAF9F5] dark:bg-neutral-950 overflow-y-auto font-sans">
-      {/* Top Header Strip with Action Toolbar (Zero duplicate tabs!) */}
-      <div className="bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 px-6 py-4 flex flex-wrap items-center justify-between gap-4">
+    <div className="bg-white dark:bg-[#18181B] rounded-[28px] border border-[#E9EEF0] dark:border-neutral-800 p-6 lg:p-8 space-y-6 shadow-xs animate-in fade-in duration-200">
+      {/* Top Header Strip with Action Toolbar */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold shadow-xs">
             <HeartPulse size={22} />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-lg font-bold text-neutral-900 dark:text-white">
+              <h1 className="text-xl font-bold text-neutral-900 dark:text-white">
                 {language === 'ar' ? 'المركز الطبي والعيادات السريرية' : language === 'fr' ? 'Cabinet Médical & Polyclinique' : 'Medical Clinic & Health Center'}
               </h1>
               <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#C4785A]/15 text-[#C4785A]">
@@ -74,86 +74,74 @@ export const MedicalDashboardView: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Content Area */}
-      <div className="p-6 space-y-6 max-w-7xl">
-        {/* KPI Strip */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white dark:bg-neutral-900 p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 shadow-xs">
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-neutral-500 dark:text-neutral-400 font-medium">
-                {language === 'ar' ? 'المرضى في الانتظار' : 'File d\'attente active'}
-              </span>
-              <div className="w-8 h-8 rounded-lg bg-amber-50 dark:bg-amber-950/40 text-amber-600 flex items-center justify-center">
-                <Clock size={16} />
-              </div>
-            </div>
-            <div className="mt-2 flex items-baseline gap-2">
-              <span className="text-2xl font-extrabold text-neutral-900 dark:text-white tabular-nums">
+      {/* Canonical 3-Card Top Metrics Pod Tray */}
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+        <div>
+          <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+            {language === 'ar' ? 'مؤشرات النشاط العيادي والتدفق' : 'Indicateurs d\'Activité Clinique & Flux Patients'}
+          </h2>
+          <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+            {language === 'ar' ? 'متابعة قائمة الانتظار، الملفات الطبية الإلكترونية وتغطية بطاقة الشفاء' : 'File d\'attente temps réel, dossiers médicaux partagés et télétransmission Chifa'}
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {/* Card 1: File d'attente active */}
+          <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
+            <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
+              {language === 'ar' ? 'المرضى في الانتظار' : 'File d\'Attente Active'}
+            </span>
+            <div>
+              <div className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white font-mono">
                 {waitingCount}
-              </span>
-              <span className="text-xs text-amber-600 font-semibold">
-                {language === 'ar' ? 'في الانتظار' : 'En attente'}
-              </span>
+              </div>
+              <p className="text-[11px] text-amber-600 dark:text-amber-400 mt-0.5 font-medium">
+                {inProgressCount} {language === 'ar' ? 'حالياً في الفحص' : 'actuellement en consultation'}
+              </p>
             </div>
           </div>
 
-          <div className="bg-white dark:bg-neutral-900 p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 shadow-xs">
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-neutral-500 dark:text-neutral-400 font-medium">
-                {language === 'ar' ? 'فحوصات مكتملة اليوم' : 'Consultations clôturées'}
-              </span>
-              <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 flex items-center justify-center">
-                <Activity size={16} />
-              </div>
-            </div>
-            <div className="mt-2 flex items-baseline gap-2">
-              <span className="text-2xl font-extrabold text-neutral-900 dark:text-white tabular-nums">
+          {/* Card 2: Consultations Clôturées */}
+          <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
+            <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
+              {language === 'ar' ? 'فحوصات مكتملة اليوم' : 'Consultations Clôturées'}
+            </span>
+            <div>
+              <div className="text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 font-mono">
                 {completedToday}
-              </span>
-              <span className="text-xs text-emerald-600 font-semibold">
-                {language === 'ar' ? 'اليوم' : 'Aujourd\'hui'}
-              </span>
+              </div>
+              <p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5">
+                Sur {patients.length} dossiers patients actifs
+              </p>
             </div>
           </div>
 
-          <div className="bg-white dark:bg-neutral-900 p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 shadow-xs">
+          {/* Card 3: Dark Espresso Anchor */}
+          <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
             <div className="flex items-center justify-between">
-              <span className="text-xs text-neutral-500 dark:text-neutral-400 font-medium">
-                {language === 'ar' ? 'إجمالي ملفات المرضى' : 'Dossiers Patients (EHR)'}
+              <span className="text-[11px] font-medium text-neutral-300">
+                {language === 'ar' ? 'المداخيل وأتعاب العيادة' : 'Honoraires & Télétransmission'}
               </span>
-              <div className="w-8 h-8 rounded-lg bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center">
-                <UserCheck size={16} />
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30">
+                CHIFA / CNAS 100%
+              </span>
+            </div>
+            <div>
+              <div className="text-2xl font-black text-[#FB923C] tabular-nums font-mono">
+                {formatMoney(totalRevenue, 'DZD')}
               </div>
-            </div>
-            <div className="mt-2 flex items-baseline gap-2">
-              <span className="text-2xl font-extrabold text-neutral-900 dark:text-white tabular-nums">
-                {patients.length}
-              </span>
-              <span className="text-xs text-neutral-400">
-                {language === 'ar' ? 'ملف مسجل' : 'Actifs'}
-              </span>
-            </div>
-          </div>
-
-          <div className="bg-white dark:bg-neutral-900 p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 shadow-xs">
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-neutral-500 dark:text-neutral-400 font-medium">
-                {language === 'ar' ? 'المداخيل المحصلة' : 'Recettes encaissées'}
-              </span>
-              <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-950/40 text-blue-600 flex items-center justify-center">
-                <CreditCard size={16} />
-              </div>
-            </div>
-            <div className="mt-2 flex items-baseline gap-2">
-              <span className="text-2xl font-extrabold text-neutral-900 dark:text-white tabular-nums">
-                {formatMoney(totalRevenue, language)}
-              </span>
+              <p className="text-[11px] text-neutral-400 mt-0.5 flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-[#FB923C] animate-pulse" />
+                <span>Recettes cliniques validées</span>
+              </p>
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Live Queue Overview Card */}
-        <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 p-5 space-y-4 shadow-xs">
+      {/* Live Queue Overview Pod Tray */}
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+        <div className="p-5 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Clock size={16} className="text-[#C4785A]" />
@@ -204,7 +192,7 @@ export const MedicalDashboardView: React.FC = () => {
                       : (language === 'ar' ? 'مكتمل' : 'Clôturé')}
                   </span>
                   <span className="text-xs font-mono font-bold text-neutral-800 dark:text-neutral-200">
-                    {formatMoney(cons.consultationFeeDzd, language)}
+                    {formatMoney(cons.consultationFeeDzd, 'DZD')}
                   </span>
                 </div>
               </div>

@@ -406,7 +406,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
   };
 
   return (
-    <div className="space-y-6">
+    <div className="bg-white dark:bg-[#18181B] rounded-[28px] border border-[#E9EEF0] dark:border-neutral-800 p-6 lg:p-8 space-y-6 shadow-xs animate-in fade-in duration-200">
       {/* Header with Facility Switcher & Simulator Toggle */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
         <div>
@@ -518,9 +518,68 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
         })}
       </div>
 
+      {/* Canonical 3-Card Top Metrics Pod Tray */}
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+        <div>
+          <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+            Supervision Opérationnelle & Déploiement Terrains
+          </h2>
+          <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+            Activation des activations marketing, suivi du pointage géolocalisé et conformité émargement
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {/* Card 1: Missions Déployées */}
+          <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
+            <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">Missions Déployées</span>
+            <div>
+              <div className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white font-mono">
+                {pmMissions.length}
+              </div>
+              <p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5">
+                Sur {new Set(pmMissions.map((m) => m.wilayaCode)).size} wilayas couvertes
+              </p>
+            </div>
+          </div>
+
+          {/* Card 2: Effectif Terrain Actif */}
+          <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
+            <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">Talents Actifs Mobilisés</span>
+            <div>
+              <div className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white font-mono">
+                {pmTalents.filter((t) => t.status === 'active').length}
+              </div>
+              <p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5">
+                Sur {pmTalents.length} profils qualifiés vivier
+              </p>
+            </div>
+          </div>
+
+          {/* Card 3: Dark Espresso Anchor - SLA Pointage */}
+          <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-medium text-neutral-300">SLA Conformité Clôture</span>
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30">
+                58 WILAYAS LIVE
+              </span>
+            </div>
+            <div>
+              <div className="text-2xl font-black text-[#FB923C] tabular-nums font-mono">
+                98.6%
+              </div>
+              <p className="text-[11px] text-neutral-400 mt-0.5 flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-[#FB923C] animate-pulse" />
+                <span>Émargements géolocalisés clôturés</span>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* TAB 1: MISSIONS TERRAIN (UniversalDataCollection) */}
       {activeTab === 'missions' && (
-        <div className="space-y-4">
+        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs">
             <div className="flex flex-wrap items-center gap-3 text-xs flex-1 max-w-xl">
               <Seek
@@ -597,8 +656,8 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
 
       {/* TAB 2: POINTAGE LIVE & PAIE (UniversalDataCollection) */}
       {activeTab === 'attendance' && (
-        <div className="space-y-4">
-          <div className="p-5 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+          <div className="p-5 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-xs font-bold text-[#C4785A] uppercase tracking-wider">
@@ -685,7 +744,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
 
       {/* TAB 3: VIVIER STAFFING */}
       {activeTab === 'staffing' && (
-        <div className="p-6 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs space-y-4">
+        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
               Vivier National des Animateurs Qualifiés (58 Wilayas)
@@ -697,7 +756,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
             {pmTalents.slice(0, 9).map((talent) => (
               <div
                 key={talent.id}
-                className="p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/30 flex items-center gap-3"
+                className="p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-neutral-800 flex items-center gap-3 shadow-2xs"
               >
                 <img
                   src={talent.portraitPhotoUrl}
@@ -724,15 +783,16 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
 
       {/* TAB 4: DECLARATION FRAIS */}
       {activeTab === 'expense' && (
-        <div className="p-6 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs max-w-xl mx-auto space-y-4">
-          <div>
-            <span className="text-xs font-bold text-[#C4785A] uppercase tracking-wider block">
-              Dépense d'Urgence Terrain (Slide 11)
-            </span>
-            <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-100 mt-0.5">
-              Frais de Régie & Consommables
-            </h3>
-          </div>
+        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+          <div className="p-6 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs max-w-xl mx-auto space-y-4">
+            <div>
+              <span className="text-xs font-bold text-[#C4785A] uppercase tracking-wider block">
+                Dépense d'Urgence Terrain (Slide 11)
+              </span>
+              <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-100 mt-0.5">
+                Frais de Régie & Consommables
+              </h3>
+            </div>
 
           {expenseSubmitted && (
             <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl text-xs text-emerald-800 dark:text-emerald-300">
@@ -782,6 +842,7 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
               Soumettre le Reçu à la Direction
             </AtriumButton>
           </form>
+          </div>
         </div>
       )}
 

@@ -316,7 +316,7 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
   };
 
   return (
-    <div className="space-y-6">
+    <div className="bg-white dark:bg-[#18181B] rounded-[28px] border border-[#E9EEF0] dark:border-neutral-800 p-6 lg:p-8 space-y-6 shadow-xs animate-in fade-in duration-200">
       {/* Top Header with Facility Dropdown & Demo Data */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
         <div>
@@ -425,15 +425,77 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
         })}
       </div>
 
+      {/* Canonical 3-Card Top Metrics Pod Tray */}
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+        <div>
+          <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+            Indicateurs Pré-Presse & Livrables BAT
+          </h2>
+          <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+            Conformité technique d'impression, validations clients et fichiers d'exécution prêts déblocage
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {/* Card 1: Total Livrables */}
+          <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
+            <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">Livrables BAT Conçus</span>
+            <div>
+              <div className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white font-mono">
+                {pmBatDeliverables.length}
+              </div>
+              <p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5">
+                {pmBatDeliverables.filter((b) => b.approvalStatus === 'pending_review').length} en cours de validation
+              </p>
+            </div>
+          </div>
+
+          {/* Card 2: Validés Imprimeur */}
+          <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
+            <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">BAT Bons à Tirer Validés</span>
+            <div>
+              <div className="text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 font-mono">
+                {pmBatDeliverables.filter((b) => b.approvalStatus === 'approved').length}
+              </div>
+              <p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5">
+                Prêts pour transfert aux imprimeurs
+              </p>
+            </div>
+          </div>
+
+          {/* Card 3: Dark Espresso Anchor - Conformité Pré-Presse */}
+          <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-medium text-neutral-300">Norme Déblocage Imprimerie</span>
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30">
+                CMJN · 300 DPI
+              </span>
+            </div>
+            <div>
+              <div className="text-2xl font-black text-[#FB923C] tabular-nums font-mono">
+                {pmBatDeliverables.length > 0
+                  ? Math.round((pmBatDeliverables.filter((b) => b.colorSpace === 'CMJN' && b.resolutionDpi >= 300).length / pmBatDeliverables.length) * 100)
+                  : 100}%
+              </div>
+              <p className="text-[11px] text-neutral-400 mt-0.5 flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-[#FB923C] animate-pulse" />
+                <span>Fonds perdus +3mm certifiés</span>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* TAB 1: KANBAN STUDIO */}
       {activeTab === 'kanban' && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Column 1: Commandes Reçues */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between pb-2 border-b border-zinc-200 dark:border-zinc-800">
-              <span className="text-xs font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300">
-                1. Reçus du Chef de Projet
-              </span>
+        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Column 1: Commandes Reçues */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between pb-2 border-b border-zinc-200 dark:border-zinc-800">
+                <span className="text-xs font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300">
+                  1. Reçus du Chef de Projet
+                </span>
               <span className="w-5 h-5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 font-mono text-xs flex items-center justify-center font-bold">
                 {pmPrintOrders.filter((o) => o.status === 'sent_to_crea').length}
               </span>
@@ -529,12 +591,13 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
               ))}
           </div>
         </div>
+      </div>
       )}
 
       {/* TAB 2: LIVRABLES BAT (UniversalDataCollection) */}
       {activeTab === 'production' && (
-        <div className="space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs">
+        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
             <Seek
               value={creaSearch}
               onChange={setCreaSearch}
@@ -646,134 +709,138 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
 
       {/* TAB 3: UPLOADER CONFORME AVEC REGLES PRE-PRESSE */}
       {activeTab === 'upload' && (
-        <div className="p-6 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs max-w-3xl mx-auto space-y-6">
-          <div>
-            <span className="text-xs font-bold text-[#C4785A] uppercase tracking-wider block">
-              Dépôt & Conformité Pré-Presse (Slide 8)
-            </span>
-            <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mt-1">
-              Validation Technique des Fichiers Imprimeur
-            </h2>
-            <p className="text-xs text-zinc-500">
-              Verrouillage strict : les fichiers doivent être en CMJN natif, minimum 300 DPI avec 3mm de fond perdu.
-            </p>
-          </div>
-
-          {uploadSuccess && (
-            <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 flex items-center gap-3 text-xs font-semibold">
-              <CheckCircle className="w-5 h-5 text-emerald-600" />
-              Livrable BAT enregistré et transmis au Chef de Projet !
+        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+          <div className="p-6 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs max-w-3xl mx-auto space-y-6">
+            <div>
+              <span className="text-xs font-bold text-[#C4785A] uppercase tracking-wider block">
+                Dépôt & Conformité Pré-Presse (Slide 8)
+              </span>
+              <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mt-1">
+                Validation Technique des Fichiers Imprimeur
+              </h2>
+              <p className="text-xs text-zinc-500">
+                Verrouillage strict : les fichiers doivent être en CMJN natif, minimum 300 DPI avec 3mm de fond perdu.
+              </p>
             </div>
-          )}
 
-          <form onSubmit={handleUploadSubmit} className="space-y-4">
-            <LabelSelect
-              field="Project"
-              label="Projet / Campagne"
-              value={selectedProjectId}
-              onChange={(val) => setSelectedProjectId(typeof val === 'string' ? val : val.target?.value || val)}
-              options={pmProjects.map((p) => ({ value: p.id, label: `${p.title} (${p.clientName})` }))}
-              height={46}
-              corner={12}
-            />
+            {uploadSuccess && (
+              <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 flex items-center gap-3 text-xs font-semibold">
+                <CheckCircle className="w-5 h-5 text-emerald-600" />
+                Livrable BAT enregistré et transmis au Chef de Projet !
+              </div>
+            )}
 
-            <LabelInput
-              field="ArtworkTitle"
-              label="Nom du Fichier d'Exécution"
-              placeholder="Ex: ROLLUP_OOREDOO_85x200_BAT"
-              value={artworkTitle}
-              onChange={setArtworkTitle}
-              required
-              height={46}
-              corner={12}
-            />
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <FilterSelect
-                label="Format Fichier"
-                value={fileFormat}
-                onChange={(val) => setFileFormat((typeof val === 'string' ? val : val.target?.value || val) as any)}
-                options={[
-                  { value: 'pdf', label: 'PDF Haute Résolution' },
-                  { value: 'ai', label: 'Adobe Illustrator (.ai)' },
-                  { value: 'psd', label: 'Photoshop (.psd)' },
-                  { value: 'tiff', label: 'TIFF Pré-presse' },
-                ]}
-              />
-
-              <FilterSelect
-                label="Espace Colorimétrique"
-                value={colorSpace}
-                onChange={(val) => setColorSpace((typeof val === 'string' ? val : val.target?.value || val) as any)}
-                options={[
-                  { value: 'CMJN', label: 'CMJN (Quadrichromie)' },
-                  { value: 'RVB', label: 'RVB (Rejeté imprimeur)' },
-                ]}
+            <form onSubmit={handleUploadSubmit} className="space-y-4">
+              <LabelSelect
+                field="Project"
+                label="Projet / Campagne"
+                value={selectedProjectId}
+                onChange={(val) => setSelectedProjectId(typeof val === 'string' ? val : val.target?.value || val)}
+                options={pmProjects.map((p) => ({ value: p.id, label: `${p.title} (${p.clientName})` }))}
+                height={46}
+                corner={12}
               />
 
               <LabelInput
-                field="Resolution"
-                label="Résolution (DPI)"
-                type="number"
-                value={resolutionDpi}
-                onChange={setResolutionDpi}
+                field="ArtworkTitle"
+                label="Nom du Fichier d'Exécution"
+                placeholder="Ex: ROLLUP_OOREDOO_85x200_BAT"
+                value={artworkTitle}
+                onChange={setArtworkTitle}
                 required
                 height={46}
                 corner={12}
               />
-            </div>
 
-            <div className="p-4 rounded-xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200 dark:border-zinc-800 flex items-center justify-between text-xs">
-              <div className="space-y-0.5">
-                <span className="font-semibold text-zinc-900 dark:text-zinc-100">
-                  Fond Perdu & Traits de Coupe (+3mm)
-                </span>
-                <p className="text-[11px] text-zinc-500">
-                  Indispensable pour éviter tout liseré blanc au massicotage.
-                </p>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <FilterSelect
+                  label="Format Fichier"
+                  value={fileFormat}
+                  onChange={(val) => setFileFormat((typeof val === 'string' ? val : val.target?.value || val) as any)}
+                  options={[
+                    { value: 'pdf', label: 'PDF Haute Résolution' },
+                    { value: 'ai', label: 'Adobe Illustrator (.ai)' },
+                    { value: 'psd', label: 'Photoshop (.psd)' },
+                    { value: 'tiff', label: 'TIFF Pré-presse' },
+                  ]}
+                />
+
+                <FilterSelect
+                  label="Espace Colorimétrique"
+                  value={colorSpace}
+                  onChange={(val) => setColorSpace((typeof val === 'string' ? val : val.target?.value || val) as any)}
+                  options={[
+                    { value: 'CMJN', label: 'CMJN (Quadrichromie)' },
+                    { value: 'RVB', label: 'RVB (Rejeté imprimeur)' },
+                  ]}
+                />
+
+                <LabelInput
+                  field="Resolution"
+                  label="Résolution (DPI)"
+                  type="number"
+                  value={resolutionDpi}
+                  onChange={setResolutionDpi}
+                  required
+                  height={46}
+                  corner={12}
+                />
               </div>
-              <input
-                type="checkbox"
-                checked={hasBleedIncluded}
-                onChange={(e) => setHasBleedIncluded(e.target.checked)}
-                className="w-4 h-4 rounded text-[#C4785A] focus:ring-[#C4785A]"
-              />
-            </div>
 
-            <AtriumButton
-              type="submit"
-              variant="primary"
-              size="md"
-              className="w-full justify-center"
-              disabled={colorSpace !== 'CMJN' || Number(resolutionDpi) < 300 || !hasBleedIncluded}
-              icon={<UploadCloud className="w-4 h-4" />}
-            >
-              Valider la Conformité & Déposer le BAT
-            </AtriumButton>
-          </form>
+              <div className="p-4 rounded-xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200 dark:border-zinc-800 flex items-center justify-between text-xs">
+                <div className="space-y-0.5">
+                  <span className="font-semibold text-zinc-900 dark:text-zinc-100">
+                    Fond Perdu & Traits de Coupe (+3mm)
+                  </span>
+                  <p className="text-[11px] text-zinc-500">
+                    Indispensable pour éviter tout liseré blanc au massicotage.
+                  </p>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={hasBleedIncluded}
+                  onChange={(e) => setHasBleedIncluded(e.target.checked)}
+                  className="w-4 h-4 rounded text-[#C4785A] focus:ring-[#C4785A]"
+                />
+              </div>
+
+              <AtriumButton
+                type="submit"
+                variant="primary"
+                size="md"
+                className="w-full justify-center"
+                disabled={colorSpace !== 'CMJN' || Number(resolutionDpi) < 300 || !hasBleedIncluded}
+                icon={<UploadCloud className="w-4 h-4" />}
+              >
+                Valider la Conformité & Déposer le BAT
+              </AtriumButton>
+            </form>
+          </div>
         </div>
       )}
 
       {/* TAB 4: BRIEFS & KEY VISUALS */}
       {activeTab === 'briefs' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {pmProjects.map((p) => (
-            <div
-              key={p.id}
-              className="p-5 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs space-y-3"
-            >
-              <div className="flex items-center justify-between text-xs">
-                <span className="font-bold text-[#C4785A] uppercase">{p.clientName}</span>
-                <span className="font-mono text-zinc-400">Échéance KV: {p.kvDeadline}</span>
+        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {pmProjects.map((p) => (
+              <div
+                key={p.id}
+                className="p-5 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs space-y-3"
+              >
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-bold text-[#C4785A] uppercase">{p.clientName}</span>
+                  <span className="font-mono text-zinc-400">Échéance KV: {p.kvDeadline}</span>
+                </div>
+                <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+                  {p.title}
+                </h3>
+                <p className="text-xs text-zinc-600 dark:text-zinc-400 line-clamp-3">
+                  {p.scopeOfWork}
+                </p>
               </div>
-              <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
-                {p.title}
-              </h3>
-              <p className="text-xs text-zinc-600 dark:text-zinc-400 line-clamp-3">
-                {p.scopeOfWork}
-              </p>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       )}
 

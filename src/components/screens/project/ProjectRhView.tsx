@@ -299,7 +299,7 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
   ], [t]);
 
   return (
-    <div className="space-y-6">
+    <div className="bg-white dark:bg-[#18181B] rounded-[28px] border border-[#E9EEF0] dark:border-neutral-800 p-6 lg:p-8 space-y-6 shadow-xs animate-in fade-in duration-200">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
         <div>
@@ -382,11 +382,102 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
         </div>
       </div>
 
+      {/* Sub-Tabs Navigation */}
+      <div className="flex border-b border-zinc-200 dark:border-zinc-800 gap-1 overflow-x-auto">
+        {[
+          { id: 'talents', label: 'Vivier National des Talents', icon: Users, count: pmTalents.length },
+          { id: 'dossier', label: selectedTalent ? `Dossier: ${selectedTalent.fullName}` : 'Dossier Candidat', icon: FileText },
+          { id: 'portal', label: 'Portail Candidature Mobile', icon: ExternalLink },
+          { id: 'walkin', label: 'Enrôlement Walk-In', icon: Plus },
+        ].map((tab) => {
+          const Icon = tab.icon;
+          const isActive = activeTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as any)}
+              className={`flex items-center gap-2 py-2.5 px-4 border-b-2 font-medium text-xs whitespace-nowrap transition-colors cursor-pointer ${
+                isActive
+                  ? 'border-[#C4785A] text-[#C4785A]'
+                  : 'border-transparent text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
+              }`}
+            >
+              <Icon className="w-4 h-4" />
+              <span>{tab.label}</span>
+              {tab.count !== undefined && tab.count > 0 && (
+                <span className="px-1.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300">
+                  {tab.count}
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Canonical 3-Card Top Metrics Pod Tray */}
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+        <div>
+          <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+            Ressources Humaines & Vivier Opérationnel
+          </h2>
+          <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+            Enrôlement, conformité documentaire légale et traçabilité bancaire CCP des équipes d'animation
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {/* Card 1: Total Talents Enrôlés */}
+          <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
+            <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">Vivier Total Enrôlé</span>
+            <div>
+              <div className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white font-mono">
+                {pmTalents.length}
+              </div>
+              <p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5">
+                Sur 58 wilayas d'Algérie
+              </p>
+            </div>
+          </div>
+
+          {/* Card 2: Profils Actifs Validés */}
+          <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
+            <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">Profils Actifs & Disponibles</span>
+            <div>
+              <div className="text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 font-mono">
+                {pmTalents.filter((t) => t.status === 'active').length}
+              </div>
+              <p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5">
+                Dossiers administratifs certifiés
+              </p>
+            </div>
+          </div>
+
+          {/* Card 3: Dark Espresso Anchor - Grille Paie Journalière */}
+          <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-medium text-neutral-300">Grille Paie Bancarisée CCP</span>
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30">
+                PTT SFP 01
+              </span>
+            </div>
+            <div>
+              <div className="text-2xl font-black text-[#FB923C] tabular-nums font-mono">
+                100%
+              </div>
+              <p className="text-[11px] text-neutral-400 mt-0.5 flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-[#FB923C] animate-pulse" />
+                <span>Comptes CCP & Clés RIP vérifiés</span>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* SCREEN 5.1: TALENT POOL DIRECTORY */}
       {activeTab === 'talents' && (
-        <div className="space-y-4">
+        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
           {/* Search & Filter Bar */}
-          <div className="p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs flex flex-wrap items-center justify-between gap-4">
+          <div className="p-4 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-wrap items-center justify-between gap-4">
             <div className="flex flex-wrap items-center gap-3 text-xs flex-1 max-w-xl">
               <Seek
                 value={searchTerm}
@@ -563,9 +654,10 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
 
       {/* SCREEN 5.2: COMPREHENSIVE TALENT DOSSIER 360° */}
       {activeTab === 'dossier' && (
-        <div className="p-6 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs max-w-4xl mx-auto space-y-6">
-          {selectedTalent ? (
-            <div className="space-y-6">
+        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+          <div className="p-6 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs max-w-4xl mx-auto space-y-6">
+            {selectedTalent ? (
+              <div className="space-y-6">
               {/* Dossier Header */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-zinc-200 dark:border-zinc-800">
                 <div className="flex items-center gap-4">
@@ -672,16 +764,18 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
           ) : (
             <p className="text-xs text-zinc-500 text-center py-8">{t('pm_rh_no_talent_selected')}</p>
           )}
+          </div>
         </div>
       )}
 
       {/* SCREEN 5.3A: PUBLIC CANDIDATE SELF-REGISTRATION (SIMULATOR) */}
       {activeTab === 'portal' && (
-        <MobilePhoneSimulator
-          title={t('pm_rh_title_portal')}
-          subtitle={t('pm_rh_portal_sub')}
-          defaultMode="mobile"
-        >
+        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+          <MobilePhoneSimulator
+            title={t('pm_rh_title_portal')}
+            subtitle={t('pm_rh_portal_sub')}
+            defaultMode="mobile"
+          >
           <div className="space-y-4">
             <div className="text-center pb-2 border-b border-zinc-200 dark:border-zinc-700">
               <span className="text-[10px] font-bold text-[#C4785A] uppercase tracking-wide">
@@ -822,15 +916,17 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
             </form>
           </div>
         </MobilePhoneSimulator>
+        </div>
       )}
 
       {/* SCREEN 5.3B: AGENCY DIRECT WALK-IN INTAKE */}
       {activeTab === 'walkin' && (
-        <div className="p-6 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs max-w-2xl mx-auto space-y-6">
-          <div>
-            <span className="text-xs font-semibold text-[#C4785A] uppercase tracking-wide">
-              Écran 5.3B · Saisie Express Agence
-            </span>
+        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+          <div className="p-6 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs max-w-2xl mx-auto space-y-6">
+            <div>
+              <span className="text-xs font-semibold text-[#C4785A] uppercase tracking-wide">
+                Écran 5.3B · Saisie Express Agence
+              </span>
             <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mt-1">
               Enregistrement Direct d'un Candidat Présent en Agence
             </h2>
@@ -918,6 +1014,7 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
               Enregistrer & Valider dans le Vivier RH
             </AtriumButton>
           </form>
+          </div>
         </div>
       )}
     </div>

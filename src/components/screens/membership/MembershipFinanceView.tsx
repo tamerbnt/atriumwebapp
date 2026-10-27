@@ -360,7 +360,7 @@ export const MembershipFinanceView: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-200 relative">
+    <div className="bg-white dark:bg-[#18181B] rounded-[28px] border border-[#E9EEF0] dark:border-neutral-800 p-6 lg:p-8 space-y-6 shadow-xs animate-in fade-in duration-200 relative">
       {/* Row 0: Top Header matching Desktop App */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
@@ -497,21 +497,24 @@ export const MembershipFinanceView: React.FC = () => {
             </div>
           </div>
 
-          {/* Tile 3: Dark Obsidian Card */}
-          <div className="p-5 rounded-[20px] bg-[#18181B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
-            <div>
-              <span className="text-xs font-medium text-neutral-300">
+          {/* Tile 3: DARK ESPRESSO ANCHOR CARD (#1F1D1B) — Security Ranks & Access */}
+          <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-medium text-neutral-300">
                 {language === 'ar' ? 'مستويات الصلاحيات الأمنية' : language === 'fr' ? 'Niveaux de sécurité configurés' : 'Security Ranks Configured'}
               </span>
-              <div className="text-[11px] text-[#C4785A] font-semibold mt-0.5">
-                {language === 'ar' ? 'صلاحيات الوحدات بحسب الدور' : language === 'fr' ? 'Droits d\'accès basés sur les rôles' : 'Role-Based Module Permissions'}
-              </div>
-            </div>
-            <div className="text-2xl font-black text-white tabular-nums">
-              {new Set(staff.map((s) => s.role)).size}{' '}
-              <span className="text-xs font-normal text-neutral-400">
-                {language === 'ar' ? 'أدوار أمنية' : language === 'fr' ? 'profils de sécurité' : 'security roles'}
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30">
+                {new Set(staff.map((s) => s.role)).size} {language === 'ar' ? 'أدوار' : 'rôles'}
               </span>
+            </div>
+            <div>
+              <div className="text-2xl font-black text-[#FB923C] tabular-nums font-mono">
+                {new Set(staff.map((s) => s.role)).size}
+              </div>
+              <p className="text-[11px] text-neutral-400 mt-0.5 flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-[#FB923C] animate-pulse" />
+                <span>{language === 'ar' ? 'صلاحيات الوحدات بحسب الدور' : language === 'fr' ? 'Droits d\'accès basés sur les rôles' : 'Role-Based Module Permissions'}</span>
+              </p>
             </div>
           </div>
         </div>

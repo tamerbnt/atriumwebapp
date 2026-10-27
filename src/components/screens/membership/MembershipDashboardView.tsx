@@ -483,7 +483,7 @@ export const MembershipDashboardView: React.FC<MembershipDashboardViewProps> = (
   });
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-200">
+    <div className="bg-white dark:bg-[#18181B] rounded-[28px] border border-[#E9EEF0] dark:border-neutral-800 p-6 lg:p-8 space-y-6 shadow-xs animate-in fade-in duration-200">
       {/* Toast Alert */}
       {checkoutToast && (
         <div className="p-3.5 bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-300 dark:border-emerald-700 rounded-2xl text-emerald-800 dark:text-emerald-200 text-xs font-semibold flex items-center justify-between shadow-md animate-in slide-in-from-top-2">
@@ -1208,72 +1208,65 @@ export const MembershipDashboardView: React.FC<MembershipDashboardViewProps> = (
                 )}
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[126px]">
-                  <div>
-                    <span className="text-[11px] font-semibold text-[#64748B] dark:text-neutral-400">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {/* Tile 1: Revenue Today */}
+                <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
                       {language === 'ar' ? 'إيرادات اليوم' : language === 'fr' ? 'Revenus du jour' : 'Revenue Today'}
                     </span>
-                    <div className="mt-0.5">
-                      <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
-                        ↗ 100% {language === 'ar' ? 'مسدد' : language === 'fr' ? 'Encaissé' : 'Settled'}
-                      </span>
-                    </div>
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+                      ↗ 100% {language === 'ar' ? 'مسدد' : language === 'fr' ? 'Encaissé' : 'Settled'}
+                    </span>
                   </div>
                   <div>
-                    <div className="text-xl font-black text-neutral-900 dark:text-white tabular-nums font-mono">
+                    <div className="text-2xl font-black text-neutral-900 dark:text-white tabular-nums font-mono">
                       {formatMoney(sales.reduce((sum, s) => sum + s.totalAmount, 0))}
                     </div>
-                    <div className="w-full h-0.5 bg-[#C4785A] mt-2.5 rounded-full opacity-80" />
+                    <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">
+                      {language === 'ar' ? 'مقبوضات الاشتراكات والمتجر' : 'Encaissements abonnements & boutique'}
+                    </p>
                   </div>
                 </div>
 
-                <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[126px]">
-                  <div>
-                    <span className="text-[11px] font-semibold text-[#64748B] dark:text-neutral-400">
+                {/* Tile 2: Active Members */}
+                <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
                       {language === 'ar' ? 'المشتركون النشطون' : language === 'fr' ? 'Adhérents actifs' : 'Active Members'}
                     </span>
-                    <div className="mt-0.5">
-                      <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
-                        {language === 'ar' ? 'مقارنة بالأمس' : language === 'fr' ? 'vs hier' : 'vs yesterday'}
-                      </span>
-                    </div>
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+                      {language === 'ar' ? 'اشتراكات سارية' : 'en règle'}
+                    </span>
                   </div>
-                  <div className="relative">
-                    <div className="text-xl font-black text-neutral-900 dark:text-white tabular-nums">
+                  <div>
+                    <div className="text-2xl font-black text-neutral-900 dark:text-white tabular-nums font-mono">
                       {members.filter((m) => m.status === 'Active').length}
                     </div>
-                    <svg
-                      className="w-full h-7 mt-1 text-emerald-500"
-                      viewBox="0 0 100 25"
-                      fill="none"
-                    >
-                      <path
-                        d="M0 20 Q 25 24 50 14 T 100 5"
-                        stroke="currentColor"
-                        strokeWidth="2.5"
-                        strokeLinecap="round"
-                      />
-                    </svg>
+                    <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">
+                      {members.length} {language === 'ar' ? 'ملفات مسجلة بالنظام' : 'adhérents au total'}
+                    </p>
                   </div>
                 </div>
 
-                <div className="p-4 rounded-[20px] bg-[#18181B] border border-neutral-800 text-white flex flex-col justify-between h-[126px] shadow-sm">
-                  <div>
+                {/* Tile 3: DARK ESPRESSO CARD (#1F1D1B) — Expiring Renewals */}
+                <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
+                  <div className="flex items-center justify-between">
                     <span className="text-[11px] font-medium text-neutral-300">
-                      {language === 'ar' ? 'أوشكت على الانتهاء' : language === 'fr' ? 'À renouveler (<14j)' : 'Expiring Soon'}
+                      {language === 'ar' ? 'تجديدات وشيكة (<14j)' : language === 'fr' ? 'À renouveler (<14j)' : 'Expiring Soon'}
                     </span>
-                    <div className="mt-0.5">
-                      <span className="text-[10px] font-bold text-amber-300 bg-amber-400/20 px-2 py-0.5 rounded-full">
-                        {language === 'ar' ? 'تنبيه التجديد' : language === 'fr' ? 'Relance active' : 'Renewal Alert'}
-                      </span>
-                    </div>
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30">
+                      {language === 'ar' ? 'تنبيه التجديد' : language === 'fr' ? 'Relance active' : 'Renewal Alert'}
+                    </span>
                   </div>
                   <div>
-                    <div className="text-xl font-black text-white tabular-nums">
+                    <div className="text-2xl font-black text-[#FB923C] tabular-nums font-mono">
                       {members.filter((m) => m.status === 'Active' && calculateDaysRemaining(false, m.expirationDate) <= 14).length}
                     </div>
-                    <div className="w-full h-0.5 bg-amber-500 mt-2.5 rounded-full opacity-80" />
+                    <p className="text-[11px] text-neutral-400 mt-0.5 flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-[#FB923C] animate-pulse" />
+                      <span>{language === 'ar' ? 'اشتراكات تحتاج متابعة سريعة' : 'abonnements en fin de cycle'}</span>
+                    </p>
                   </div>
                 </div>
               </div>
