@@ -363,7 +363,7 @@ export const AppointmentScheduleView: React.FC = () => {
   };
 
   return (
-    <div className="bg-white dark:bg-[#18181B] rounded-[28px] border border-[#E9EEF0] dark:border-neutral-800 p-6 lg:p-8 space-y-6 shadow-xs pb-16">
+    <div className="bg-white dark:bg-[#18181B] rounded-[28px] border border-[#E9EEF0] dark:border-neutral-800 p-6 lg:p-8 space-y-6 shadow-xs">
       {/* Top Header Bar */}
       <div className="space-y-4">
         {checkoutToast && (
@@ -511,7 +511,7 @@ export const AppointmentScheduleView: React.FC = () => {
         <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Card 1: Rendez-vous Prévus */}
-            <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
+            <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
                   {t('salon_kpi_total_bookings', language)}
@@ -520,11 +520,11 @@ export const AppointmentScheduleView: React.FC = () => {
                   {stats.completedCount} terminés
                 </span>
               </div>
-              <div className="mt-3">
+              <div>
                 <div className="text-2xl lg:text-3xl font-extrabold text-neutral-900 dark:text-neutral-100 font-mono">
                   {stats.totalBookings}
                 </div>
-                <div className="flex items-center gap-1.5 text-[11px] text-neutral-400 mt-1">
+                <div className="flex items-center gap-1.5 text-[11px] text-neutral-400 mt-0.5">
                   <Calendar size={13} className="text-[#C4785A]" />
                   <span>Agenda journalier • {formattedDateLabel}</span>
                 </div>
@@ -532,7 +532,7 @@ export const AppointmentScheduleView: React.FC = () => {
             </div>
 
             {/* Card 2: Fauteuils Occupés & Utilisation */}
-            <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
+            <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
                   {t('salon_kpi_in_chair', language)}
@@ -542,11 +542,11 @@ export const AppointmentScheduleView: React.FC = () => {
                   <span>En Fauteuil</span>
                 </span>
               </div>
-              <div className="mt-3">
+              <div>
                 <div className="text-2xl lg:text-3xl font-extrabold text-neutral-900 dark:text-neutral-100 font-mono">
                   {stats.inChairCount} <span className="text-xs font-normal text-neutral-400">/ {salonStylists.length} postes</span>
                 </div>
-                <div className="flex items-center gap-1.5 text-[11px] text-neutral-400 mt-1">
+                <div className="flex items-center gap-1.5 text-[11px] text-neutral-400 mt-0.5">
                   <Users size={13} className="text-blue-500" />
                   <span>{salonStylists.length > 0 ? Math.round((stats.inChairCount / salonStylists.length) * 100) : 0}% taux d'occupation direct</span>
                 </div>
@@ -554,7 +554,7 @@ export const AppointmentScheduleView: React.FC = () => {
             </div>
 
             {/* Card 3: DARK ESPRESSO ANCHOR CARD (#1F1D1B) */}
-            <div className="bg-[#1F1D1B] rounded-[18px] p-4 lg:p-5 border border-neutral-800 shadow-sm text-white flex flex-col justify-between relative overflow-hidden group">
+            <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 shadow-sm text-white flex flex-col justify-between h-[124px] relative overflow-hidden group">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-[#E7E5E4]">
                   {t('salon_kpi_est_revenue', language)}
@@ -563,11 +563,11 @@ export const AppointmentScheduleView: React.FC = () => {
                   Journée Active
                 </span>
               </div>
-              <div className="mt-3">
+              <div>
                 <div className="text-2xl lg:text-3xl font-extrabold text-white font-mono tracking-tight">
                   {formatMoney(stats.revenue)}
                 </div>
-                <div className="flex items-center justify-between text-[11px] text-stone-400 mt-1.5">
+                <div className="flex items-center justify-between text-[11px] text-stone-400 mt-0.5">
                   <span className="flex items-center gap-1">
                     <Sparkles size={12} className="text-[#FB923C]" />
                     <span>Recette prévisionnelle TTC</span>

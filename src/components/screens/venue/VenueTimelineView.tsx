@@ -77,6 +77,10 @@ export const VenueTimelineView: React.FC = () => {
     return u.type === selectedTypeFilter;
   });
 
+  const selectedDateBookings = rentalBookings.filter((b) => b.startDateTime.startsWith(selectedDate));
+  const selectedDateVolume = selectedDateBookings.reduce((sum, b) => sum + b.totalAmount, 0);
+  const occupiedSpacesCount = new Set(selectedDateBookings.map((b) => b.unitId)).size;
+
   // Date navigation
   const handlePrevDay = () => {
     const d = new Date(selectedDate);
@@ -246,6 +250,71 @@ export const VenueTimelineView: React.FC = () => {
             >
               {t('venue_btn_new_booking')}
             </AtriumButton>
+          </div>
+        </div>
+
+        {/* Row 1: Top Metrics Pod Tray */}
+        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+          <div>
+            <h2 className="text-base font-bold text-neutral-900 dark:text-white">
+              {language === 'ar' ? 'المخطط الزمني وإشغال القاعات' : language === 'fr' ? 'Planning des Salles & Occupation' : 'Timeline Matrix & Facility Utilization'}
+            </h2>
+            <p className="text-xs text-neutral-400 dark:text-neutral-500">
+              {language === 'ar' ? 'متابعة الجلسات المجدولة، الساعات المحجوزة والمداخيل اليومية' : language === 'fr' ? 'Sessions programmées, créneaux occupés et recettes prévisionnelles' : 'Scheduled sessions, occupied time slots, and daily booked revenue'}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {/* Tile 1: Spaces in Schedule — Pure White Card */}
+            <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
+              <div>
+                <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
+                  {language === 'ar' ? 'القاعات والمساحات المتاحة' : language === 'fr' ? 'Salles & Espaces Gérés' : 'Managed Venue Spaces'}
+                </span>
+                <div className="mt-1">
+                  <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
+                    {occupiedSpacesCount} {language === 'ar' ? 'قاعة محجوزة اليوم' : 'occupied today'}
+                  </span>
+                </div>
+              </div>
+              <div className="text-3xl font-black text-neutral-900 dark:text-white tabular-nums">
+                {rentableUnits.length}
+              </div>
+            </div>
+
+            {/* Tile 2: Sessions on Date — Pure White Card */}
+            <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
+              <div>
+                <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
+                  {language === 'ar' ? 'حجوزات التاريخ المحدد' : language === 'fr' ? 'Sessions Programmées' : 'Booked Sessions on Date'}
+                </span>
+                <div className="mt-1">
+                  <span className="text-[10px] font-bold text-[#C4785A] bg-[#C4785A]/10 px-2 py-0.5 rounded-full">
+                    {selectedDate}
+                  </span>
+                </div>
+              </div>
+              <div className="text-3xl font-black text-neutral-900 dark:text-white tabular-nums">
+                {selectedDateBookings.length}
+              </div>
+            </div>
+
+            {/* Tile 3: DARK ESPRESSO CARD (#1F1D1B) — Day Booked Volume */}
+            <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
+              <div>
+                <span className="text-xs font-medium text-neutral-300">
+                  {language === 'ar' ? 'حجم التعاقدات اليومي' : language === 'fr' ? 'Volume Réservé du Jour' : 'Day Booked Volume'}
+                </span>
+                <div className="text-[11px] text-[#FB923C] font-semibold mt-0.5">
+                  <span className="bg-[#3D2817] px-2 py-0.5 rounded-full inline-block">
+                    {language === 'ar' ? 'مداخيل الحجوزات' : 'Chiffre d\'affaires'}
+                  </span>
+                </div>
+              </div>
+              <div className="text-2xl font-black text-white tabular-nums font-mono">
+                {formatCurrencyAmount(selectedDateVolume, 'DZD')}
+              </div>
+            </div>
           </div>
         </div>
 

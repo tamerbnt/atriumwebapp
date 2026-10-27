@@ -589,9 +589,9 @@ export const FreelanceInvoicesView: React.FC = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {/* Card 1: Paid Invoices & Volume */}
-          <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
+          <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
                 {t('free_inv_filter_paid', language)}
@@ -600,18 +600,18 @@ export const FreelanceInvoicesView: React.FC = () => {
                 {paidCount} {language === 'ar' ? 'مدفوعة' : 'payées'}
               </span>
             </div>
-            <div className="mt-3">
-              <div className="text-2xl lg:text-3xl font-black text-emerald-600 dark:text-emerald-400 font-mono">
+            <div>
+              <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400 font-mono tabular-nums">
                 {formatCurrencyAmount(paidTotal, 'EUR')}
               </div>
-              <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-1">
+              <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">
                 {paidCount} {language === 'ar' ? 'فواتير تم تسويتها بالكامل' : 'factures réglées avec succès'}
               </p>
             </div>
           </div>
 
           {/* Card 2: Pending & Sent Invoices */}
-          <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
+          <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
                 {language === 'ar' ? 'فواتير مرسلة وبانتظار الدفع' : language === 'fr' ? 'Factures Envoyées / En Cours' : 'Sent & In Progress'}
@@ -620,18 +620,18 @@ export const FreelanceInvoicesView: React.FC = () => {
                 {pendingCount} {language === 'ar' ? 'معلقة' : 'en attente'}
               </span>
             </div>
-            <div className="mt-3">
-              <div className="text-2xl lg:text-3xl font-black text-blue-600 dark:text-blue-400 font-mono">
+            <div>
+              <div className="text-2xl font-black text-blue-600 dark:text-blue-400 font-mono tabular-nums">
                 {formatCurrencyAmount(pendingTotal, 'EUR')}
               </div>
-              <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-1">
+              <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">
                 {pendingCount} {language === 'ar' ? 'بانتظار التحويل المصرفي أو الشيك' : 'en attente de règlement client'}
               </p>
             </div>
           </div>
 
           {/* Card 3: DARK ESPRESSO CARD (#1F1D1B) */}
-          <div className="bg-[#1F1D1B] rounded-[18px] p-4 lg:p-5 border border-neutral-800 shadow-sm text-white flex flex-col justify-between">
+          <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-medium text-neutral-300">
                 {t('free_inv_filter_overdue', language)}
@@ -640,15 +640,17 @@ export const FreelanceInvoicesView: React.FC = () => {
                 {overdueCount > 0 ? `${overdueCount} ${language === 'ar' ? 'متأخرة' : 'en retard'}` : (language === 'ar' ? 'لا متأخرات' : 'À jour')}
               </span>
             </div>
-            <div className="mt-3">
-              <div className="text-2xl lg:text-3xl font-black text-[#FB923C] font-mono">
+            <div>
+              <div className="text-2xl font-black text-[#FB923C] font-mono tabular-nums">
                 {formatCurrencyAmount(overdueTotal, 'EUR')}
               </div>
-              <p className="text-[11px] text-neutral-400 mt-1 flex items-center gap-1.5">
+              <p className="text-[11px] text-neutral-400 mt-0.5 flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-[#FB923C] animate-pulse" />
-                {overdueCount > 0
-                  ? (language === 'ar' ? `${overdueCount} فواتير تجاوزت موعد الاستحقاق - تذكير فوري مطلوب` : `${overdueCount} créance(s) échue(s) nécessitant une relance client`)
-                  : (language === 'ar' ? 'جميع فواتير العملاء مسددة في مواعيدها' : 'Toutes les échéances sont respectées')}
+                <span>
+                  {overdueCount > 0
+                    ? (language === 'ar' ? `${overdueCount} فواتير تجاوزت موعد الاستحقاق - تذكير فوري مطلوب` : `${overdueCount} créance(s) échue(s) nécessitant une relance client`)
+                    : (language === 'ar' ? 'جميع فواتير العملاء مسددة في مواعيدها' : 'Toutes les échéances sont respectées')}
+                </span>
               </p>
             </div>
           </div>

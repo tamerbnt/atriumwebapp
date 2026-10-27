@@ -309,10 +309,10 @@ export const TradingFinanceView: React.FC = () => {
 
         {/* Top Metrics Pod Tray (SurfaceBgElevated: #F8F9FA, CornerRadius 24px) */}
         <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             
             {/* Card 1: Encaissements Réalisés */}
-            <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
+            <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
                   {language === 'ar' ? 'التحصيلات المحققة الفعلية' : 'Encaissements Clientèle Réalisés'}
@@ -321,11 +321,11 @@ export const TradingFinanceView: React.FC = () => {
                   {agingAnalysis.paidCount} soldées
                 </span>
               </div>
-              <div className="mt-3">
+              <div>
                 <div className="text-2xl lg:text-3xl font-extrabold text-neutral-900 dark:text-neutral-100 font-mono">
                   {formatMoney(agingAnalysis.totalPaidAmount)}
                 </div>
-                <div className="flex items-center gap-1.5 text-[11px] text-neutral-500 mt-1">
+                <div className="flex items-center gap-1.5 text-[11px] text-neutral-500 mt-0.5">
                   <CheckCircle size={13} className="text-emerald-500" />
                   <span>Règlements reçus par virement, chèque ou espèces</span>
                 </div>
@@ -333,7 +333,7 @@ export const TradingFinanceView: React.FC = () => {
             </div>
 
             {/* Card 2: Dettes Fournisseurs Exigibles */}
-            <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
+            <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
                   {language === 'ar' ? 'المستحقات الواجبة للموردين' : 'Dettes Fournisseurs Exigibles'}
@@ -342,11 +342,11 @@ export const TradingFinanceView: React.FC = () => {
                   {b2bSuppliers.length} fournisseurs
                 </span>
               </div>
-              <div className="mt-3">
+              <div>
                 <div className="text-2xl lg:text-3xl font-extrabold text-neutral-900 dark:text-neutral-100 font-mono">
                   {formatMoney(agingAnalysis.totalSupplierPayable)}
                 </div>
-                <div className="flex items-center gap-1.5 text-[11px] text-neutral-500 mt-1">
+                <div className="flex items-center gap-1.5 text-[11px] text-neutral-500 mt-0.5">
                   <Clock size={13} className="text-blue-500" />
                   <span>Échéancier de trésorerie décaissable</span>
                 </div>
@@ -354,7 +354,7 @@ export const TradingFinanceView: React.FC = () => {
             </div>
 
             {/* Card 3: DARK ESPRESSO ANCHOR CARD (#1F1D1B) */}
-            <div className="bg-[#1F1D1B] rounded-[18px] p-4 lg:p-5 border border-neutral-800 shadow-sm text-white flex flex-col justify-between relative overflow-hidden group">
+            <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm relative overflow-hidden group">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-[#E7E5E4]">
                   {language === 'ar' ? 'إجمالي مستحقات العملاء غير المحصلة' : 'Créances Clients Non Encaissées'}
@@ -363,11 +363,11 @@ export const TradingFinanceView: React.FC = () => {
                   {agingAnalysis.unpaidCount} ouvertes
                 </span>
               </div>
-              <div className="mt-3">
+              <div>
                 <div className="text-2xl lg:text-3xl font-extrabold text-white font-mono tracking-tight">
                   {formatMoney(agingAnalysis.totalUnpaid)}
                 </div>
-                <div className="flex items-center justify-between text-[11px] text-stone-400 mt-1.5">
+                <div className="flex items-center justify-between text-[11px] text-stone-400 mt-0.5">
                   <span className="flex items-center gap-1">
                     {agingAnalysis.bucket90Plus > 0 ? (
                       <span className="text-[#FB923C] font-semibold">{formatMoney(agingAnalysis.bucket90Plus)} en contentieux (&gt;90j)</span>

@@ -662,61 +662,71 @@ export const EducationStudentsView: React.FC = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {/* Inset White Card 1: Active Ratio */}
-            <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
-              <div>
-                <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400 block mb-1">
+            <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
                   {language === 'ar' ? 'نسبة النشاط' : language === 'fr' ? 'Ratio d\'activité' : 'Active Ratio'}
                 </span>
                 <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
                   ↗ 100%
                 </span>
               </div>
-              <div className="mt-3">
-                <span className="text-[22px] font-bold text-neutral-900 dark:text-white tabular-nums tracking-tight">
+              <div>
+                <span className="text-2xl font-bold text-neutral-900 dark:text-white tabular-nums tracking-tight font-mono">
                   {totalStudentsCount}
                 </span>
                 <span className="text-xs text-neutral-400 tabular-nums ml-1">
                   / {totalStudentsCount} {language === 'ar' ? 'إجمالي الطلبة' : 'total'}
                 </span>
+                <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">
+                  {language === 'ar' ? 'طلبة مسجلون ونشطون' : 'Étudiants régulièrement inscrits'}
+                </p>
               </div>
             </div>
 
             {/* Inset White Card 2: Attendance Rate */}
-            <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
-              <div>
-                <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400 block mb-1">
+            <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
                   {language === 'ar' ? 'معدل الحضور العام' : language === 'fr' ? 'Taux d\'assiduité' : 'Attendance Rate'}
                 </span>
                 <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
                   {t('edu_verified_rate')}
                 </span>
               </div>
-              <div className="mt-3">
-                <span className="text-[22px] font-bold text-neutral-900 dark:text-white tabular-nums tracking-tight">
+              <div>
+                <span className="text-2xl font-bold text-neutral-900 dark:text-white tabular-nums tracking-tight font-mono">
                   {averageAttendance}%
                 </span>
                 <span className="text-xs text-neutral-400 ml-1">
-                  {activeMinorsCount} {language === 'ar' ? 'قاصر تحت وصاية' : 'minors with guardian'}
+                  {activeMinorsCount} {language === 'ar' ? 'قاصر' : 'mineurs'}
                 </span>
+                <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">
+                  {language === 'ar' ? 'حضور الفصول والأفواج' : 'Assiduité globale certifiée'}
+                </p>
               </div>
             </div>
 
             {/* Inset Card 3: DARK ESPRESSO CARD (#1F1D1B) — Total Collected Tuition */}
-            <div className="bg-[#1F1D1B] rounded-[18px] p-4 lg:p-5 border border-neutral-800 shadow-sm flex flex-col justify-between text-white">
-              <div>
-                <span className="text-[11px] font-medium text-neutral-400 block mb-1">
+            <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-medium text-neutral-400">
                   {language === 'ar' ? 'إجمالي التحصيل الدراسي' : language === 'fr' ? 'Frais Scolaires Encaissés' : 'Collected Tuition'}
                 </span>
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30 inline-block">
                   {language === 'ar' ? 'التحصيل الأكاديمي' : language === 'fr' ? 'Trimestre Actuel' : 'Active Term Inflow'}
                 </span>
               </div>
-              <div className="mt-3">
-                <span className="text-[22px] font-bold text-white tabular-nums tracking-tight">
+              <div>
+                <span className="text-2xl font-bold text-[#FB923C] tabular-nums tracking-tight font-mono">
                   {formatMoney(totalBilledEquiv)}
                 </span>
+                <p className="text-[11px] text-neutral-400 mt-0.5 flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-[#FB923C] animate-pulse" />
+                  <span>{language === 'ar' ? 'المستحقات الأكاديمية المسواة' : 'Recouvrement scolarité actif'}</span>
+                </p>
               </div>
             </div>
           </div>

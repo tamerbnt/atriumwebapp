@@ -670,9 +670,9 @@ export const FreelanceDeliverablesView: React.FC = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {/* Card 1: Active Production Pipeline */}
-          <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
+          <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
                 {language === 'ar' ? 'مهام قيد الإنجاز والمراجعة' : language === 'fr' ? 'En cours & En Révision' : 'Active Production Queue'}
@@ -681,21 +681,21 @@ export const FreelanceDeliverablesView: React.FC = () => {
                 {inProgressDeliverablesCount + reviewDeliverablesCount} {language === 'ar' ? 'نشطة' : 'active'}
               </span>
             </div>
-            <div className="mt-3">
-              <div className="text-2xl lg:text-3xl font-black text-neutral-900 dark:text-white">
+            <div>
+              <div className="text-2xl font-black text-neutral-900 dark:text-white tabular-nums font-mono">
                 {flattenedDeliverables.length}
-                <span className="text-xs font-semibold text-neutral-400 ml-1.5 font-normal">
+                <span className="text-xs font-normal text-neutral-400 ml-1.5">
                   / {freelanceProjects.length} {language === 'ar' ? 'مشاريع' : 'projets'}
                 </span>
               </div>
-              <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-1">
+              <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">
                 {inProgressDeliverablesCount} {language === 'ar' ? 'قيد العمل' : 'en cours'} · {reviewDeliverablesCount} {language === 'ar' ? 'بانتظار العميل' : 'en revue'}
               </p>
             </div>
           </div>
 
           {/* Card 2: Tracked Hours vs Estimated */}
-          <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
+          <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
                 {language === 'ar' ? 'ساعات الإنتاج المحسوبة' : language === 'fr' ? 'Heures Déployées / Estimées' : 'Production Hours Logged'}
@@ -704,14 +704,14 @@ export const FreelanceDeliverablesView: React.FC = () => {
                 {totalEstimatedHours > 0 ? Math.round((totalLoggedHours / totalEstimatedHours) * 100) : 0}% {language === 'ar' ? 'منجز' : 'utilisé'}
               </span>
             </div>
-            <div className="mt-3">
-              <div className="text-2xl lg:text-3xl font-black text-neutral-900 dark:text-white">
+            <div>
+              <div className="text-2xl font-black text-neutral-900 dark:text-white tabular-nums font-mono">
                 {totalLoggedHours}h
-                <span className="text-xs font-semibold text-neutral-400 ml-1.5 font-normal">
+                <span className="text-xs font-normal text-neutral-400 ml-1.5">
                   / {totalEstimatedHours}h {language === 'ar' ? 'مقدرة' : 'est.'}
                 </span>
               </div>
-              <div className="w-full bg-neutral-100 dark:bg-neutral-700 h-1.5 rounded-full mt-2.5 overflow-hidden">
+              <div className="w-full bg-neutral-100 dark:bg-neutral-700 h-1.5 rounded-full mt-1.5 overflow-hidden">
                 <div
                   className="bg-[#C4785A] h-full rounded-full transition-all duration-500"
                   style={{ width: `${Math.min(100, totalEstimatedHours > 0 ? (totalLoggedHours / totalEstimatedHours) * 100 : 0)}%` }}
@@ -721,7 +721,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
           </div>
 
           {/* Card 3: DARK ESPRESSO CARD (#1F1D1B) */}
-          <div className="bg-[#1F1D1B] rounded-[18px] p-4 lg:p-5 border border-neutral-800 shadow-sm text-white flex flex-col justify-between">
+          <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-medium text-neutral-300">
                 {language === 'ar' ? 'تجاوزات النطاق والميزانية' : language === 'fr' ? 'Dépassement & Dérive Scope' : 'Scope Creep & Overruns'}
@@ -730,18 +730,20 @@ export const FreelanceDeliverablesView: React.FC = () => {
                 {totalScopeCreepItems > 0 ? `${totalScopeCreepItems} ${language === 'ar' ? 'تنبيهات' : 'alertes'}` : (language === 'ar' ? 'تحت السيطرة' : 'Sous Contrôle')}
               </span>
             </div>
-            <div className="mt-3">
-              <div className="text-2xl lg:text-3xl font-black text-[#FB923C]">
+            <div>
+              <div className="text-2xl font-black text-[#FB923C] tabular-nums font-mono">
                 {totalScopeCreepItems}
                 <span className="text-xs font-normal text-neutral-400 ml-1.5">
-                  {language === 'ar' ? 'مهام متجاوزة لساعاتها' : language === 'fr' ? 'tâches en dépassement' : 'tasks over budget'}
+                  {language === 'ar' ? 'مهام متجاوزة' : language === 'fr' ? 'dérives' : 'tasks over'}
                 </span>
               </div>
-              <p className="text-[11px] text-neutral-400 mt-1 flex items-center gap-1.5">
+              <p className="text-[11px] text-neutral-400 mt-0.5 flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-[#FB923C] animate-pulse" />
-                {totalScopeCreepItems > 0
-                  ? (language === 'ar' ? 'يتطلب إعادة فوترة أو تسوية مع العميل' : 'Facturation additionnelle ou recadrage requis')
-                  : (language === 'ar' ? 'كافة الساعات متوافقة مع ميزانيات المشاريع' : 'Toutes les heures respectent le devis initial')}
+                <span>
+                  {totalScopeCreepItems > 0
+                    ? (language === 'ar' ? 'يتطلب إعادة فوترة أو تسوية مع العميل' : 'Facturation additionnelle requise')
+                    : (language === 'ar' ? 'كافة الساعات متوافقة مع ميزانيات المشاريع' : 'Toutes les heures respectent le devis')}
+                </span>
               </p>
             </div>
           </div>

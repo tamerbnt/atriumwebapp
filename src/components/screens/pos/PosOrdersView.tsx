@@ -566,10 +566,10 @@ export const PosOrdersView: React.FC = () => {
 
         {/* Top Metrics Pod Tray (SurfaceBgElevated: #F8F9FA, CornerRadius 24px) */}
         <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             
             {/* Card 1: Volume Brut des Ventes */}
-            <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
+            <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
                   {language === 'ar' ? 'إجمالي المبيعات الإجمالي' : 'Volume Brut des Ventes'}
@@ -578,11 +578,11 @@ export const PosOrdersView: React.FC = () => {
                   {salesKpis.completedCount} tickets
                 </span>
               </div>
-              <div className="mt-3">
+              <div>
                 <div className="text-2xl lg:text-3xl font-extrabold text-neutral-900 dark:text-neutral-100 font-mono">
                   {formatMoney(salesKpis.totalGross)}
                 </div>
-                <div className="flex items-center gap-1.5 text-[11px] text-neutral-500 mt-1">
+                <div className="flex items-center gap-1.5 text-[11px] text-neutral-500 mt-0.5">
                   <Receipt size={13} className="text-[#C4785A]" />
                   <span>Ticket moyen: <strong className="font-mono text-neutral-800 dark:text-neutral-200">{salesKpis.completedCount > 0 ? formatMoney(Math.round(salesKpis.totalGross / salesKpis.completedCount)) : '0 DA'}</strong></span>
                 </div>
@@ -590,7 +590,7 @@ export const PosOrdersView: React.FC = () => {
             </div>
 
             {/* Card 2: Tickets en Attente & Retours */}
-            <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
+            <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
                   {language === 'ar' ? 'التذاكر المعلقة والمرتجعات' : 'Tickets en Attente & Avoirs'}
@@ -599,11 +599,11 @@ export const PosOrdersView: React.FC = () => {
                   {parkedOrders.length} en pause
                 </span>
               </div>
-              <div className="mt-3">
+              <div>
                 <div className="text-2xl lg:text-3xl font-extrabold text-neutral-900 dark:text-neutral-100 font-mono">
                   {formatMoney(salesKpis.totalRefunded)}
                 </div>
-                <div className="flex items-center gap-1.5 text-[11px] text-neutral-500 mt-1">
+                <div className="flex items-center gap-1.5 text-[11px] text-neutral-500 mt-0.5">
                   <RotateCcw size={13} className="text-rose-500" />
                   <span>{salesKpis.refundedCount} avoirs traités</span>
                 </div>
@@ -611,7 +611,7 @@ export const PosOrdersView: React.FC = () => {
             </div>
 
             {/* Card 3: DARK ESPRESSO ANCHOR CARD (#1F1D1B) */}
-            <div className="bg-[#1F1D1B] rounded-[18px] p-4 lg:p-5 border border-neutral-800 shadow-sm text-white flex flex-col justify-between relative overflow-hidden group">
+            <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm relative overflow-hidden group">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-[#E7E5E4]">
                   {language === 'ar' ? 'صافي الإيرادات المقبوضة' : 'Chiffre d’Affaires Net Encaissé'}
@@ -620,11 +620,11 @@ export const PosOrdersView: React.FC = () => {
                   Net Réalisé
                 </span>
               </div>
-              <div className="mt-3">
+              <div>
                 <div className="text-2xl lg:text-3xl font-extrabold text-white font-mono tracking-tight">
                   {formatMoney(salesKpis.netRevenue)}
                 </div>
-                <div className="flex items-center justify-between text-[11px] text-stone-400 mt-1.5">
+                <div className="flex items-center justify-between text-[11px] text-stone-400 mt-0.5">
                   <span className="flex items-center gap-1">
                     <TrendingUp size={12} className="text-[#FB923C]" />
                     <span>Déduction faite des avoirs clients</span>

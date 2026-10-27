@@ -528,7 +528,7 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             
             {/* Card 1: Dossiers Clientes Actives */}
-            <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
+            <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
                   Fiches & Dossiers VIP
@@ -537,11 +537,11 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = ({
                   {metrics.vipCount} clientes VIP
                 </span>
               </div>
-              <div className="mt-3">
+              <div>
                 <div className="text-2xl lg:text-3xl font-extrabold text-neutral-900 dark:text-neutral-100 font-mono">
                   {metrics.totalClients}
                 </div>
-                <div className="flex items-center gap-1.5 text-[11px] text-neutral-500 mt-1">
+                <div className="flex items-center gap-1.5 text-[11px] text-neutral-500 mt-0.5">
                   <Star size={13} className="text-amber-500" />
                   <span>{metrics.vipRatio}% de clientes régulières VIP</span>
                 </div>
@@ -549,7 +549,7 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = ({
             </div>
 
             {/* Card 2: Formulations Chimiques & Alertes */}
-            <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
+            <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
                   Formulations & Sécurité
@@ -558,11 +558,11 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = ({
                   {metrics.totalFormulasCount} recettes
                 </span>
               </div>
-              <div className="mt-3">
+              <div>
                 <div className="text-2xl lg:text-3xl font-extrabold text-neutral-900 dark:text-neutral-100 font-mono">
                   {metrics.totalFormulasCount}
                 </div>
-                <div className="flex items-center gap-1.5 text-[11px] text-neutral-500 mt-1">
+                <div className="flex items-center gap-1.5 text-[11px] text-neutral-500 mt-0.5">
                   {metrics.allergiesCount > 0 ? (
                     <span className="text-rose-500 font-semibold flex items-center gap-1">
                       <AlertTriangle size={13} />
@@ -579,7 +579,7 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = ({
             </div>
 
             {/* Card 3: DARK ESPRESSO ANCHOR CARD (#1F1D1B) */}
-            <div className="bg-[#1F1D1B] rounded-[18px] p-4 lg:p-5 border border-neutral-800 shadow-sm text-white flex flex-col justify-between relative overflow-hidden group">
+            <div className="bg-[#1F1D1B] rounded-[20px] p-5 border border-neutral-800 shadow-sm text-white flex flex-col justify-between h-[124px] relative overflow-hidden group">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-[#E7E5E4]">
                   Volume Recettes Clientes Globales

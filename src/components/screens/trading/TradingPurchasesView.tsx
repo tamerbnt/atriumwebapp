@@ -408,10 +408,10 @@ export const TradingPurchasesView: React.FC = () => {
 
         {/* Top Metrics Pod Tray (SurfaceBgElevated: #F8F9FA, CornerRadius 24px) */}
         <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             
             {/* Card 1: Commandes Fournisseurs en Cours */}
-            <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
+            <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
                   {language === 'ar' ? 'طلبيات الشراء قيد التنفيذ' : 'Commandes d\'Achat (PO) Ouvertes'}
@@ -420,11 +420,11 @@ export const TradingPurchasesView: React.FC = () => {
                   {metrics.pendingPoCount} en cours
                 </span>
               </div>
-              <div className="mt-3">
+              <div>
                 <div className="text-2xl lg:text-3xl font-extrabold text-neutral-900 dark:text-neutral-100 font-mono">
                   {formatMoney(metrics.pendingPoTtc)}
                 </div>
-                <div className="flex items-center gap-1.5 text-[11px] text-neutral-500 mt-1">
+                <div className="flex items-center gap-1.5 text-[11px] text-neutral-500 mt-0.5">
                   <Clock size={13} className="text-blue-500" />
                   <span>En attente de livraison quai fournisseur</span>
                 </div>
@@ -432,7 +432,7 @@ export const TradingPurchasesView: React.FC = () => {
             </div>
 
             {/* Card 2: Réceptions à Quai Effectuées */}
-            <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
+            <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
                   {language === 'ar' ? 'الاستلامات الفعلية بالمستودع' : 'Bons de Réception à Quai (BR)'}
@@ -441,11 +441,11 @@ export const TradingPurchasesView: React.FC = () => {
                   {metrics.receivedBrCount} réceptions
                 </span>
               </div>
-              <div className="mt-3">
+              <div>
                 <div className="text-2xl lg:text-3xl font-extrabold text-neutral-900 dark:text-neutral-100 font-mono">
                   {formatMoney(metrics.receivedBrTtc)}
                 </div>
-                <div className="flex items-center gap-1.5 text-[11px] text-neutral-500 mt-1">
+                <div className="flex items-center gap-1.5 text-[11px] text-neutral-500 mt-0.5">
                   <CheckCircle2 size={13} className="text-emerald-500" />
                   <span>Stock incrémenté dans les dépôts désignés</span>
                 </div>
@@ -453,7 +453,7 @@ export const TradingPurchasesView: React.FC = () => {
             </div>
 
             {/* Card 3: DARK ESPRESSO ANCHOR CARD (#1F1D1B) */}
-            <div className="bg-[#1F1D1B] rounded-[18px] p-4 lg:p-5 border border-neutral-800 shadow-sm text-white flex flex-col justify-between relative overflow-hidden group">
+            <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm relative overflow-hidden group">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-[#E7E5E4]">
                   {language === 'ar' ? 'إجمالي تعهدات الشراء TTC' : 'Total Engagements Achats'}
@@ -462,11 +462,11 @@ export const TradingPurchasesView: React.FC = () => {
                   {metrics.receivedRatio.toFixed(0)}% Livré
                 </span>
               </div>
-              <div className="mt-3">
+              <div>
                 <div className="text-2xl lg:text-3xl font-extrabold text-white font-mono tracking-tight">
                   {formatMoney(metrics.totalPurchasesTtc)}
                 </div>
-                <div className="flex items-center justify-between text-[11px] text-stone-400 mt-1.5">
+                <div className="flex items-center justify-between text-[11px] text-stone-400 mt-0.5">
                   <span className="flex items-center gap-1">
                     <Boxes size={12} className="text-[#FB923C]" />
                     <span>Flux réapprovisionnement multi-dépôts</span>

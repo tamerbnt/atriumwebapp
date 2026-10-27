@@ -460,9 +460,9 @@ export const FreelanceFinanceView: React.FC = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {/* Card 1: EUR Inflow */}
-          <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
+          <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
                 {language === 'ar' ? 'اليورو المحصّل (حساب SEPA)' : language === 'fr' ? 'EUR Encaissé (Virement SEPA)' : 'EUR Collected'}
@@ -471,18 +471,18 @@ export const FreelanceFinanceView: React.FC = () => {
                 SEPA Wire
               </span>
             </div>
-            <div className="mt-3">
-              <div className="text-2xl lg:text-3xl font-black text-neutral-900 dark:text-white font-mono">
+            <div>
+              <div className="text-2xl font-black text-neutral-900 dark:text-white font-mono tabular-nums">
                 €{currencyTotals.eur.toLocaleString()}
               </div>
-              <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-1">
+              <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">
                 {language === 'ar' ? 'عملاء أوروبا ومشاريع الريموت' : 'Clients européens & missions remote'}
               </p>
             </div>
           </div>
 
           {/* Card 2: USD & DZD Inflows */}
-          <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
+          <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
                 {language === 'ar' ? 'الدولار والدينار الجزائري' : language === 'fr' ? 'USD & DZD Encaissés' : 'USD & Local Cash'}
@@ -491,18 +491,18 @@ export const FreelanceFinanceView: React.FC = () => {
                 BaridiMob / Direct
               </span>
             </div>
-            <div className="mt-3">
-              <div className="text-xl lg:text-2xl font-black text-neutral-900 dark:text-white font-mono">
-                ${currencyTotals.usd.toLocaleString()} <span className="text-sm font-normal text-neutral-400">/</span> {currencyTotals.dzd.toLocaleString()} DZD
+            <div>
+              <div className="text-xl font-black text-neutral-900 dark:text-white font-mono tabular-nums">
+                ${currencyTotals.usd.toLocaleString()} <span className="text-xs font-normal text-neutral-400">/</span> {currencyTotals.dzd.toLocaleString()} DZD
               </div>
-              <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-1">
+              <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">
                 {language === 'ar' ? 'تحويلات أمريكية وحسابات CCP المحلية' : 'Virements directs US & encaissements locaux'}
               </p>
             </div>
           </div>
 
           {/* Card 3: DARK ESPRESSO CARD (#1F1D1B) */}
-          <div className="bg-[#1F1D1B] rounded-[18px] p-4 lg:p-5 border border-neutral-800 shadow-sm text-white flex flex-col justify-between">
+          <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-medium text-neutral-300">
                 {language === 'ar' ? 'صافي الدخل التقديري' : language === 'fr' ? 'Bénéfice Net Projeté' : 'Net Take-Home'}
@@ -511,11 +511,11 @@ export const FreelanceFinanceView: React.FC = () => {
                 {taxRate}% {language === 'ar' ? 'احتياطي' : 'provision'}
               </span>
             </div>
-            <div className="mt-3">
-              <div className="text-2xl lg:text-3xl font-black text-[#FB923C] font-mono">
+            <div>
+              <div className="text-2xl font-black text-[#FB923C] font-mono tabular-nums">
                 €{netTakeHomeEur.toLocaleString()}
               </div>
-              <p className="text-[11px] text-neutral-400 mt-1 flex items-center gap-1.5">
+              <p className="text-[11px] text-neutral-400 mt-0.5 flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-[#FB923C] animate-pulse" />
                 <span>{language === 'ar' ? `احتياطي ضريبي: €${taxReserveAmount.toLocaleString()}` : `Provision fiscale: €${taxReserveAmount.toLocaleString()}`}</span>
               </p>

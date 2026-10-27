@@ -610,61 +610,71 @@ export const FreelanceClientsView: React.FC = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {/* Inset White Card 1: Active Retainer Ratio */}
-            <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
-              <div>
-                <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400 block mb-1">
+            <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
                   {t('free_clients_total_network', language)}
                 </span>
                 <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
                   ↗ 100% actif
                 </span>
               </div>
-              <div className="mt-3">
-                <span className="text-[22px] font-bold text-neutral-900 dark:text-white tabular-nums tracking-tight">
+              <div>
+                <span className="text-2xl font-bold text-neutral-900 dark:text-white tabular-nums tracking-tight font-mono">
                   {totalClientsCount}
                 </span>
                 <span className="text-xs text-neutral-400 ml-1">
                   / {totalClientsCount} comptes
                 </span>
+                <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">
+                  {language === 'ar' ? 'إجمالي العملاء المسجلين' : 'Comptes actifs répertoriés'}
+                </p>
               </div>
             </div>
 
             {/* Inset White Card 2: Active Retainers */}
-            <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
-              <div>
-                <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400 block mb-1">
+            <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
                   {t('free_kpi_active_clients', language)}
                 </span>
                 <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
                   {activeRetainersCount} forfaits mensuels
                 </span>
               </div>
-              <div className="mt-3">
-                <span className="text-[22px] font-bold text-neutral-900 dark:text-white tabular-nums tracking-tight">
+              <div>
+                <span className="text-2xl font-bold text-neutral-900 dark:text-white tabular-nums tracking-tight font-mono">
                   {activeRetainersCount}
                 </span>
                 <span className="text-xs text-neutral-400 ml-1">
-                  clients sous contrat récurrent
+                  clients
                 </span>
+                <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">
+                  {language === 'ar' ? 'عقود حجز شهري نشطة' : 'Sous contrat récurrent actif'}
+                </p>
               </div>
             </div>
 
             {/* Inset Card 3: DARK ESPRESSO CARD (#1F1D1B) — Lifetime Billed */}
-            <div className="bg-[#1F1D1B] rounded-[18px] p-4 lg:p-5 border border-neutral-800 shadow-sm flex flex-col justify-between text-white">
-              <div>
-                <span className="text-[11px] font-medium text-neutral-400 block mb-1">
+            <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-medium text-neutral-400">
                   {t('free_kpi_invoiced_ytd', language)}
                 </span>
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30 inline-block">
-                  Facturation Totale Réglée
+                  Facturation Totale
                 </span>
               </div>
-              <div className="mt-3">
-                <span className="text-[22px] font-bold text-white tabular-nums tracking-tight">
+              <div>
+                <span className="text-2xl font-bold text-[#FB923C] tabular-nums tracking-tight font-mono">
                   {totalBilledEquiv.toLocaleString()} DZD
                 </span>
+                <p className="text-[11px] text-neutral-400 mt-0.5 flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-[#FB923C] animate-pulse" />
+                  <span>{language === 'ar' ? 'إجمالي المقبوضات المسواة' : 'Volume cumulé réglé'}</span>
+                </p>
               </div>
             </div>
           </div>

@@ -424,10 +424,10 @@ export const TradingSalesView: React.FC = () => {
 
         {/* Top Metrics Pod Tray (SurfaceBgElevated: #F8F9FA, CornerRadius 24px) */}
         <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             
             {/* Card 1: Facturé HT Global */}
-            <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
+            <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
                   {language === 'ar' ? 'إجمالي المبيعات المفوترة HT' : 'Facturation Nette H.T.'}
@@ -436,11 +436,11 @@ export const TradingSalesView: React.FC = () => {
                   {metrics.invoicesCount} factures
                 </span>
               </div>
-              <div className="mt-3">
+              <div>
                 <div className="text-2xl lg:text-3xl font-extrabold text-neutral-900 dark:text-neutral-100 font-mono">
                   {formatMoney(metrics.totalInvoicedHt)}
                 </div>
-                <div className="flex items-center gap-1.5 text-[11px] text-neutral-500 mt-1">
+                <div className="flex items-center gap-1.5 text-[11px] text-neutral-500 mt-0.5">
                   <CheckCircle2 size={13} className="text-emerald-500" />
                   <span>Taux de recouvrement: <strong className="font-mono text-neutral-800 dark:text-neutral-200">{metrics.recoveryRate.toFixed(0)}%</strong></span>
                 </div>
@@ -448,7 +448,7 @@ export const TradingSalesView: React.FC = () => {
             </div>
 
             {/* Card 2: Bons de Livraison en Transit / Non Facturés */}
-            <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 lg:p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between">
+            <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
                   {language === 'ar' ? 'سندات التسليم غير المفوترة' : 'BLs Livrés Non Facturés'}
@@ -457,11 +457,11 @@ export const TradingSalesView: React.FC = () => {
                   {metrics.unbilledBlCount} en attente
                 </span>
               </div>
-              <div className="mt-3">
+              <div>
                 <div className="text-2xl lg:text-3xl font-extrabold text-neutral-900 dark:text-neutral-100 font-mono">
                   {formatMoney(metrics.unbilledBlAmount)}
                 </div>
-                <div className="flex items-center gap-1.5 text-[11px] text-neutral-500 mt-1">
+                <div className="flex items-center gap-1.5 text-[11px] text-neutral-500 mt-0.5">
                   <Truck size={13} className="text-blue-500" />
                   <span>Convertibles en factures groupées</span>
                 </div>
@@ -469,7 +469,7 @@ export const TradingSalesView: React.FC = () => {
             </div>
 
             {/* Card 3: DARK ESPRESSO ANCHOR CARD (#1F1D1B) */}
-            <div className="bg-[#1F1D1B] rounded-[18px] p-4 lg:p-5 border border-neutral-800 shadow-sm text-white flex flex-col justify-between relative overflow-hidden group">
+            <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm relative overflow-hidden group">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-[#E7E5E4]">
                   {language === 'ar' ? 'الفواتير المستحقة غير المسددة' : 'Créances Clients Exigibles'}
@@ -478,11 +478,11 @@ export const TradingSalesView: React.FC = () => {
                   {metrics.unpaidInvoicesCount} en attente
                 </span>
               </div>
-              <div className="mt-3">
+              <div>
                 <div className="text-2xl lg:text-3xl font-extrabold text-white font-mono tracking-tight">
                   {formatMoney(metrics.totalUnpaidAmount)}
                 </div>
-                <div className="flex items-center justify-between text-[11px] text-stone-400 mt-1.5">
+                <div className="flex items-center justify-between text-[11px] text-stone-400 mt-0.5">
                   <span className="flex items-center gap-1">
                     <Clock size={12} className="text-[#FB923C]" />
                     <span>Échéances commerciales ouvertes</span>
