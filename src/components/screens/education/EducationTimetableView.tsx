@@ -281,10 +281,47 @@ export const EducationTimetableView: React.FC = () => {
           </div>
         </div>
 
-        {/* Main Collection Area + 390px Inspector Drawer */}
-        <div className="flex flex-col lg:flex-row gap-6 items-start">
-          <div className="flex-1 min-w-0 w-full">
-            <UniversalDataCollection<EduSession>
+        {/* Bottom Elevated Pod Tray Enclosing Collection & Inspector Drawer */}
+        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+          {/* Domain Filter Header Strip */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+                {isAr ? 'جدول الحصص والقاعات التدريبية' : 'Grille Générale des Séances & Horaires'}
+              </h2>
+              <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+                {isAr ? 'توزيع القاعات، الأفواج التدريبية وتفادي تضارب المواعيد' : 'Affectation des salles, rotation des formateurs et contrôle d’intégrité'}
+              </p>
+            </div>
+
+            {/* Authentic Education Classroom Filter Capsules */}
+            <div className="flex items-center gap-1.5 p-1 bg-white dark:bg-neutral-800 rounded-full border border-neutral-200/80 dark:border-neutral-700/60 shadow-2xs overflow-x-auto max-w-full">
+              {[
+                { id: 'all', label: isAr ? 'جميع القاعات' : 'Toutes les salles' },
+                ...eduClassrooms.map((cr) => ({ id: cr.id, label: cr.name })),
+              ].map((tab) => {
+                const isActive = selectedClassroomId === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setSelectedClassroomId(tab.id)}
+                    className="px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer"
+                    style={{
+                      backgroundColor: isActive ? '#FCEEE8' : 'transparent',
+                      color: isActive ? 'var(--color-accent)' : '#71717A',
+                    }}
+                  >
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Main Collection Area + 390px Inspector Drawer */}
+          <div className="flex flex-col lg:flex-row gap-6 items-start">
+            <div className="flex-1 min-w-0 w-full">
+              <UniversalDataCollection<EduSession>
               title={isAr ? 'جدول الحصص والتوقيت' : 'Grille Générale des Séances & Horaires'}
               subtitle={isAr ? 'توزيع القاعات، الأفواج والمدربين' : 'Suivi des cours, créneaux horaires et feuilles d’émargement'}
               items={filteredSessions}
@@ -569,6 +606,7 @@ export const EducationTimetableView: React.FC = () => {
               </div>
             </div>
           )}
+          </div>
         </div>
       </div>
 

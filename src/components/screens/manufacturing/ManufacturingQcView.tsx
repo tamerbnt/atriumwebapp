@@ -544,5 +544,7 @@ export const ManufacturingQcView: React.FC = () => {
         )}
       </div>
     </div>
-  );
+  </div>
+);
 };
+

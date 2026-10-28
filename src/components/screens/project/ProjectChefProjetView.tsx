@@ -618,40 +618,47 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
         </div>
       </div>
 
-      {/* Navigation Sub-Tabs */}
-      <div className="flex border-b border-zinc-200 dark:border-zinc-800 gap-1 overflow-x-auto">
-        {[
-          { id: 'portfolio', label: 'Pilotage & Budgets', icon: FolderKanban },
-          { id: 'catalog', label: 'Catalogue POSM', icon: ShoppingBag, count: pmCollateralCatalog.length },
-          { id: 'orders', label: 'Commandes Imprimeur', icon: Printer, count: pmPrintOrders.length },
-          { id: 'bat', label: 'Revue BAT', icon: FileCheck2, count: pmBatDeliverables.filter((b) => b.approvalStatus === 'pending_review').length },
-          { id: 'expenses', label: 'Dépenses Terrain', icon: DollarSign, count: projectExpenses.length },
-        ].map((tab) => {
-          const Icon = tab.icon;
-          const isActive = activeTab === tab.id;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
-              className={`flex items-center gap-2 py-2.5 px-4 border-b-2 font-medium text-xs whitespace-nowrap transition-colors cursor-pointer ${
-                isActive
-                  ? 'border-[#C4785A] text-[#C4785A]'
-                  : 'border-transparent text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
-              }`}
-            >
-              <Icon className="w-4 h-4" />
-              <span>{tab.label}</span>
-              {tab.count !== undefined && tab.count > 0 && (
-                <span className="px-1.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300">
-                  {tab.count}
-                </span>
-              )}
-            </button>
-          );
-        })}
-      </div>
+      {/* Bottom Elevated Pod Tray Enclosing Workstation Sub-Tabs & Collections */}
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+        {/* Domain Filter Header Strip */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+              {language === 'ar' ? 'سير العمليات ومخطط الإنتاج والتنفيذ' : 'Matrice de Déploiement & Pipeline Opérationnel'}
+            </h2>
+            <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+              {language === 'ar' ? 'متابعة مراحل الإنتاج، طباعة POSM، مراجعة BAT والمصاريف' : 'Pilotage des sprints, commandes imprimeur, BAT et dépenses terrain'}
+            </p>
+          </div>
 
-      {/* TAB 1: PILOTAGE & BUDGETS */}
+          {/* Authentic Project Review Stage Capsules */}
+          <div className="flex items-center gap-1.5 p-1 bg-white dark:bg-neutral-800 rounded-full border border-neutral-200/80 dark:border-neutral-700/60 shadow-2xs overflow-x-auto">
+            {[
+              { id: 'portfolio', label: language === 'ar' ? 'المشاريع والميزانية' : 'Pilotage & Budgets' },
+              { id: 'catalog', label: language === 'ar' ? 'كتالوج POSM' : 'Catalogue POSM' },
+              { id: 'orders', label: language === 'ar' ? 'أوامر الطباعة' : 'Commandes Print' },
+              { id: 'bat', label: language === 'ar' ? 'مراجعة BAT' : 'Revue BAT' },
+              { id: 'expenses', label: language === 'ar' ? 'مصاريف الميدان' : 'Dépenses Terrain' },
+            ].map((tab) => {
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id as any)}
+                  className="px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer"
+                  style={{
+                    backgroundColor: isActive ? '#FCEEE8' : 'transparent',
+                    color: isActive ? 'var(--color-accent)' : '#71717A',
+                  }}
+                >
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* TAB 1: PILOTAGE & BUDGETS */}
       {activeTab === 'portfolio' && (
         <div className="space-y-6">
           <div className="p-5 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -1258,6 +1265,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
           </div>
         </div>
       )}
+      </div>
 
       {/* BAT Revision Request Modal */}
       {isCorrectionModalOpen && (

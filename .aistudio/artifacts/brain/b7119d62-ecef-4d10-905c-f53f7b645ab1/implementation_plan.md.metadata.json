@@ -1,0 +1,6 @@
+{
+  "summary":  "Comprehensive architectural and UX specification for Atrium's new 4-step guided onboarding wizard. Solves category ambiguity by leading users through account setup, activity & team scale discovery, operational module selection, and an intelligent recommendation engine with 1-click override across all 16 verticals. Details the desktop-grade two-column split layout, dynamic scoring algorithm, tactile interactive chips, and full trilingual RTL support.",
+  "updatedAt":  "2026-10-28T22:20:50.468564405Z",
+  "requestFeedback":  true,
+  "userFacing":  true
+}

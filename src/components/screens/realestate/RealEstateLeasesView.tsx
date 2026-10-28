@@ -56,7 +56,13 @@ export const RealEstateLeasesView: React.FC = () => {
 
   const filteredLeases = useMemo(() => {
     return leases.filter((l) => {
-      if (statusFilter !== 'All' && l.status !== statusFilter) {
+      if (statusFilter === 'Renew') {
+        const end = new Date(l.endDate).getTime();
+        const diffDays = Math.ceil((end - Date.now()) / (1000 * 60 * 60 * 24));
+        if (diffDays > 30 || diffDays < 0) return false;
+      } else if (statusFilter === 'Caution') {
+        if (l.securityDepositDzd <= 0) return false;
+      } else if (statusFilter !== 'All' && l.status !== statusFilter) {
         return false;
       }
       if (searchQuery.trim()) {
@@ -355,8 +361,48 @@ export const RealEstateLeasesView: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Workspace: Left Collection + Right 390px Inspector Drawer */}
-      <div className="flex items-start gap-4">
+      {/* Bottom Elevated Pod Tray Enclosing Collection & Inspector Drawer */}
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+        {/* Domain Filter Header Strip */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+              {isAr ? 'سجل عقود الإيجار والالتزامات' : 'Registre des Baux & Contrats de Location'}
+            </h2>
+            <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+              {isAr ? 'إدارة العقود السارية، تجديد الإيجارات ومتابعة الودائع الضامنة' : 'Gestion des baux en cours, échéances de renouvellement et suivi des cautions'}
+            </p>
+          </div>
+
+          {/* Authentic Real Estate Lease Filter Capsules */}
+          <div className="flex items-center gap-1.5 p-1 bg-white dark:bg-neutral-800 rounded-full border border-neutral-200/80 dark:border-neutral-700/60 shadow-2xs overflow-x-auto">
+            {[
+              { id: 'All', label: isAr ? 'جميع العقود' : 'Tous les baux' },
+              { id: 'Active', label: isAr ? 'عقود سارية' : 'Baux actifs' },
+              { id: 'Renew', label: isAr ? 'تجديد < 30 يوم' : 'Renouvellement < 30j' },
+              { id: 'Terminated', label: isAr ? 'عقود مفسوخة' : 'Baux résiliés' },
+              { id: 'Caution', label: isAr ? 'الودائع الضامنة' : 'Cautions séquestre' },
+            ].map((tab) => {
+              const isActive = statusFilter === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setStatusFilter(tab.id)}
+                  className="px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer"
+                  style={{
+                    backgroundColor: isActive ? '#FCEEE8' : 'transparent',
+                    color: isActive ? 'var(--color-accent)' : '#71717A',
+                  }}
+                >
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Main Workspace: Left Collection + Right 390px Inspector Drawer */}
+        <div className="flex items-start gap-4">
         {/* Main Collection Container */}
         <div className="flex-1 min-w-0">
           <UniversalDataCollection<RealEstateLease>
@@ -675,6 +721,7 @@ export const RealEstateLeasesView: React.FC = () => {
             )}
           </div>
         )}
+        </div>
       </div>
 
       {/* New Lease Modal */}

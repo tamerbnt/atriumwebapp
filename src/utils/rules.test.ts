@@ -313,3 +313,43 @@ test('Commercial B2B calculation engine accurately computes HT, Discount, TVA, T
   // 500,000 + 95,000 = 595,000 => 1% is 5,950 DZD, capped at 2,500 DZD
   assert.equal(result3.timbreFiscal, 2500);
 });
+
+test('Intelligent Category Recommendation: accurately calculates category, confidence and matching features', async () => {
+  const { calculateCategoryRecommendation } = await import('./businessMapping.ts');
+
+  // Case 1: Crossfit gym with RFID memberships
+  const res1 = calculateCategoryRecommendation({
+    activityCategory: 'membership_session',
+    searchQuery: 'salle de sport crossfit',
+    selectedModuleIds: ['memberships_rfid', 'pos_cashier'],
+    teamScale: 'small',
+  });
+  assert.equal(res1.recommendedCategory, 'membership_session');
+  assert.ok(res1.confidencePercent >= 85);
+  assert.ok(res1.matchingFeatures.length > 0);
+
+  // Case 2: Dental / medical clinic with patient records
+  const res2 = calculateCategoryRecommendation({
+    searchQuery: 'cabinet dentaire soins',
+    selectedModuleIds: ['patient_records', 'appointments_agenda'],
+    teamScale: 'small',
+  });
+  assert.equal(res2.recommendedCategory, 'medical_clinic');
+  assert.ok(res2.confidencePercent >= 80);
+
+  // Case 3: Solo designer with time tracker
+  const res3 = calculateCategoryRecommendation({
+    selectedModuleIds: ['timetracker_pomodoro', 'invoicing_quotes'],
+    teamScale: 'solo',
+  });
+  assert.equal(res3.recommendedCategory, 'freelance_solo');
+
+  // Case 4: Automotive garage with work orders
+  const res4 = calculateCategoryRecommendation({
+    activityCategory: 'auto_garage',
+    selectedModuleIds: ['repair_orders', 'inventory_stock'],
+    teamScale: 'mid',
+  });
+  assert.equal(res4.recommendedCategory, 'auto_garage');
+});
+

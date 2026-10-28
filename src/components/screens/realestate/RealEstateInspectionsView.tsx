@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   FileCheck,
   Plus,
@@ -31,6 +31,18 @@ export const RealEstateInspectionsView: React.FC = () => {
 
   const [selectedInspection, setSelectedInspection] = useState<RealEstateInspection | null>(null);
   const [inspectorTab, setInspectorTab] = useState<'constat' | 'compteurs' | 'pieces'>('constat');
+  const [filterType, setFilterType] = useState<'all' | 'entry' | 'exit' | 'damages'>('all');
+
+  const filteredInspections = useMemo(() => {
+    return inspections.filter((insp) => {
+      const isEntry = insp.inspectionType === 'MoveIn' || (insp.inspectionType as string) === 'Entry';
+      const isExit = insp.inspectionType === 'MoveOut' || (insp.inspectionType as string) === 'Exit';
+      if (filterType === 'entry' && !isEntry) return false;
+      if (filterType === 'exit' && !isExit) return false;
+      if (filterType === 'damages' && insp.generalCondition === 'Good' && !insp.notes?.toLowerCase().includes('dégât')) return false;
+      return true;
+    });
+  }, [inspections, filterType]);
 
   const entryCount = inspections.filter((i) => i.inspectionType === 'MoveIn' || (i.inspectionType as string) === 'Entry').length;
   const exitCount = inspections.filter((i) => i.inspectionType === 'MoveOut' || (i.inspectionType as string) === 'Exit').length;
@@ -180,13 +192,52 @@ export const RealEstateInspectionsView: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Collection Area + 390px Inspector Drawer */}
-      <div className="flex flex-col lg:flex-row gap-6 items-start">
-        <div className="flex-1 min-w-0 w-full">
-          <UniversalDataCollection<RealEstateInspection>
-            title={isAr ? 'محاضر تسليم واستلام الأماكن' : 'Registre des États des Lieux d\'Entrée & Sortie'}
-            subtitle={isAr ? 'المعاينة الميدانية، العدادات وتسليم المفاتيح' : 'Procès-verbaux contradictoires, index compteurs et état d\'habitabilité'}
-            items={inspections}
+      {/* Bottom Elevated Pod Tray Enclosing Collection & Inspector Drawer */}
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+        {/* Domain Filter Header Strip */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+              {isAr ? 'محاضر تسليم واستلام الأماكن والنزاعات' : 'Registre des États des Lieux d\'Entrée & Sortie'}
+            </h2>
+            <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+              {isAr ? 'المعاينة الميدانية، العدادات وتسليم المفاتيح' : 'Procès-verbaux contradictoires, index compteurs et état d\'habitabilité'}
+            </p>
+          </div>
+
+          {/* Authentic Real Estate Inspection Filter Capsules */}
+          <div className="flex items-center gap-1.5 p-1 bg-white dark:bg-neutral-800 rounded-full border border-neutral-200/80 dark:border-neutral-700/60 shadow-2xs overflow-x-auto">
+            {[
+              { id: 'all', label: isAr ? 'جميع المحاضر' : 'Tous les constats' },
+              { id: 'entry', label: isAr ? 'دخول / استلام' : 'État entrant' },
+              { id: 'exit', label: isAr ? 'خروج / إخلاء' : 'État sortant' },
+              { id: 'damages', label: isAr ? 'أضرار مسجلة' : 'Constat sinistre' },
+            ].map((tab) => {
+              const isActive = filterType === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setFilterType(tab.id as any)}
+                  className="px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer"
+                  style={{
+                    backgroundColor: isActive ? '#FCEEE8' : 'transparent',
+                    color: isActive ? 'var(--color-accent)' : '#71717A',
+                  }}
+                >
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Main Collection Area + 390px Inspector Drawer */}
+        <div className="flex flex-col lg:flex-row gap-6 items-start">
+          <div className="flex-1 min-w-0 w-full">
+            <UniversalDataCollection<RealEstateInspection>
+              title={isAr ? 'محاضر تسليم واستلام الأماكن' : 'Registre des États des Lieux d\'Entrée & Sortie'}
+              subtitle={isAr ? 'المعاينة الميدانية، العدادات وتسليم المفاتيح' : 'Procès-verbaux contradictoires, index compteurs et état d\'habitabilité'}
+              items={filteredInspections}
             keyExtractor={(insp) => insp.id}
             searchPlaceholder={isAr ? 'بحث بالعقار، الخبير المعاين...' : 'Rechercher bien, inspecteur, notes...'}
             searchFilter={(insp, query) =>
@@ -498,5 +549,6 @@ export const RealEstateInspectionsView: React.FC = () => {
         )}
       </div>
     </div>
-  );
+  </div>
+);
 };

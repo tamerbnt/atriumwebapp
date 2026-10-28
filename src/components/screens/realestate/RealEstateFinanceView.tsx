@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Receipt,
   Printer,
@@ -32,6 +32,16 @@ export const RealEstateFinanceView: React.FC = () => {
   const [selectedLease, setSelectedLease] = useState<RealEstateLease | null>(null);
   const [inspectorTab, setInspectorTab] = useState<'quittance' | 'caution' | 'reversement'>('quittance');
   const [settledBailleurIds, setSettledBailleurIds] = useState<string[]>(['lease_01']);
+  const [settlementFilter, setSettlementFilter] = useState<'all' | 'loyers' | 'commissions' | 'reversements' | 'impayes'>('all');
+
+  const filteredFinanceLeases = useMemo(() => {
+    return leases.filter((l) => {
+      if (settlementFilter === 'reversements' && !settledBailleurIds.includes(l.id)) return false;
+      if (settlementFilter === 'impayes' && l.status === 'Active') return false;
+      if (settlementFilter === 'loyers' && l.status !== 'Active') return false;
+      return true;
+    });
+  }, [leases, settlementFilter, settledBailleurIds]);
 
   const totalMonthlyRents = leases.reduce((acc, l) => acc + l.monthlyRentDzd, 0);
   const totalDeposits = leases.reduce((acc, l) => acc + l.securityDepositDzd, 0);
@@ -198,13 +208,53 @@ export const RealEstateFinanceView: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Collection Area + 390px Inspector Drawer */}
-      <div className="flex flex-col lg:flex-row gap-6 items-start">
-        <div className="flex-1 min-w-0 w-full">
-          <UniversalDataCollection<RealEstateLease>
-            title={isAr ? 'سجل الوصولات ومستحقات الملاك' : 'Registre des Quittances & Règlements Bailleurs'}
-            subtitle={isAr ? 'إدارة الإيجارات وتصفية حسابات الملاك' : 'Émission des quittances, prélèvement des honoraires et reversements'}
-            items={leases}
+      {/* Bottom Elevated Pod Tray Enclosing Collection & Inspector Drawer */}
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+        {/* Domain Filter Header Strip */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+              {isAr ? 'سجل الوصولات ومستحقات الملاك العقاريين' : 'Registre des Quittances & Règlements Bailleurs'}
+            </h2>
+            <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+              {isAr ? 'إدارة الإيجارات وتصفية حسابات الملاك والعمولات' : 'Émission des quittances, prélèvement des honoraires et reversements'}
+            </p>
+          </div>
+
+          {/* Authentic Real Estate Settlement Filter Capsules */}
+          <div className="flex items-center gap-1.5 p-1 bg-white dark:bg-neutral-800 rounded-full border border-neutral-200/80 dark:border-neutral-700/60 shadow-2xs overflow-x-auto">
+            {[
+              { id: 'all', label: isAr ? 'جميع المعاملات' : 'Toutes opérations' },
+              { id: 'loyers', label: isAr ? 'إيجارات محصلة' : 'Loyers encaissés' },
+              { id: 'commissions', label: isAr ? 'أتعاب الوكالة' : 'Commissions agence' },
+              { id: 'reversements', label: isAr ? 'محول للملاك' : 'Reversements bailleurs' },
+              { id: 'impayes', label: isAr ? 'إيجارات متأخرة' : 'Impayés / Relances' },
+            ].map((tab) => {
+              const isActive = settlementFilter === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setSettlementFilter(tab.id as any)}
+                  className="px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer"
+                  style={{
+                    backgroundColor: isActive ? '#FCEEE8' : 'transparent',
+                    color: isActive ? 'var(--color-accent)' : '#71717A',
+                  }}
+                >
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Main Collection Area + 390px Inspector Drawer */}
+        <div className="flex flex-col lg:flex-row gap-6 items-start">
+          <div className="flex-1 min-w-0 w-full">
+            <UniversalDataCollection<RealEstateLease>
+              title={isAr ? 'سجل الوصولات ومستحقات الملاك' : 'Registre des Quittances & Règlements Bailleurs'}
+              subtitle={isAr ? 'إدارة الإيجارات وتصفية حسابات الملاك' : 'Émission des quittances, prélèvement des honoraires et reversements'}
+              items={filteredFinanceLeases}
             keyExtractor={(l) => l.id}
             searchPlaceholder={isAr ? 'بحث بالعقار أو المستأجر...' : 'Rechercher bien, locataire, bailleur, loyer...'}
             searchFilter={(l, query) =>
@@ -530,5 +580,6 @@ export const RealEstateFinanceView: React.FC = () => {
         )}
       </div>
     </div>
-  );
+  </div>
+);
 };

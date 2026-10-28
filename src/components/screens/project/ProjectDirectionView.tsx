@@ -817,7 +817,45 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
 
       {/* SCREEN 1.2: PORTEFEUILLE PROJETS (UniversalDataCollection) */}
       {currentScreen === 'projects' && (
-        <div className="space-y-4">
+        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+          {/* Domain Filter Header Strip */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+                {language === 'ar' ? 'سجل محفظة المشاريع والتعاقدات' : 'Portefeuille Projets & Gouvernance Grands Comptes'}
+              </h2>
+              <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+                {language === 'ar' ? 'متابعة المشاريع السنوية، العقود قيد التنفيذ والمشاريع المكتملة' : 'Retainers annuels, campagnes de communication et arbitrage direction'}
+              </p>
+            </div>
+
+            {/* Authentic Direction Project Status Filter Capsules */}
+            <div className="flex items-center gap-1.5 p-1 bg-white dark:bg-neutral-800 rounded-full border border-neutral-200/80 dark:border-neutral-700/60 shadow-2xs overflow-x-auto">
+              {[
+                { id: 'all', label: language === 'ar' ? 'جميع المشاريع' : 'Tous les comptes' },
+                { id: 'framing', label: language === 'ar' ? 'دفتر الشروط' : 'Cahier des charges' },
+                { id: 'production', label: language === 'ar' ? 'قيد الإنتاج' : 'En production' },
+                { id: 'field_execution', label: language === 'ar' ? 'الميدان الحي' : 'Terrain live' },
+                { id: 'completed', label: language === 'ar' ? 'مكتملة ومقفلة' : 'Clôturés' },
+              ].map((tab) => {
+                const isActive = projectStatusFilter === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setProjectStatusFilter(tab.id)}
+                    className="px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer"
+                    style={{
+                      backgroundColor: isActive ? '#FCEEE8' : 'transparent',
+                      color: isActive ? 'var(--color-accent)' : '#71717A',
+                    }}
+                  >
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           {/* Controls Bar */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs">
             <div className="flex flex-wrap items-center gap-3 text-xs flex-1 max-w-xl">
