@@ -471,11 +471,66 @@ export const ContractorSitesView: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Workspace: Left Collection + Right 390px Inspector Drawer */}
-      <div className="flex items-start gap-4">
-        {/* Main Collection Container */}
-        <div className="flex-1 min-w-0">
-          <UniversalDataCollection<ContractorProject>
+      {/* Bottom Workstation Pod Tray */}
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+        {/* Table Control Header */}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <HardHat size={16} className="text-neutral-500" />
+            <span className="text-sm font-bold text-neutral-900 dark:text-white">
+              {isAr ? 'دليل الورشات والمشاريع' : 'Registre Général des Chantiers'}
+            </span>
+            <span className="text-xs text-neutral-400 font-semibold tabular-nums ml-1">
+              {filteredProjects.length}
+            </span>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2.5 ml-auto">
+            <Seek
+              value={searchQuery}
+              onChange={setSearchQuery}
+              placeholder={isAr ? 'بحث برمز الورشة، المشروع...' : 'Rechercher code, projet, client...'}
+              shutSize={36}
+              openWidth={220}
+            />
+
+            {/* Contractor Domain Filter Capsules */}
+            <div className="flex items-center p-0.5 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 gap-0.5 text-xs font-semibold shadow-2xs">
+              {(
+                [
+                  { id: 'All', label: isAr ? 'الكل' : 'Tous' },
+                  { id: 'InProgress', label: isAr ? 'قيد الإنجاز' : 'En cours' },
+                  { id: 'ProvisionalHandover', label: isAr ? 'استلام مؤقت' : 'Réc. provisoire' },
+                  { id: 'DefinitiveHandover', label: isAr ? 'استلام نهائي' : 'Réc. définitive' },
+                ] as const
+              ).map((filter) => {
+                const isActive = filterStatus === filter.id;
+                return (
+                  <button
+                    key={filter.id}
+                    type="button"
+                    onClick={() => setFilterStatus(filter.id)}
+                    style={{
+                      backgroundColor: isActive ? '#FCEEE8' : 'transparent',
+                      color: isActive ? 'var(--color-accent)' : '#71717A',
+                    }}
+                    className={`px-3 py-1 rounded-full cursor-pointer transition-all ${
+                      isActive ? 'font-bold' : 'hover:text-neutral-900 dark:hover:text-white'
+                    }`}
+                  >
+                    {filter.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* Main Workspace: Left Collection + Right 390px Inspector Drawer */}
+        <div className="flex items-start gap-4">
+          {/* Main Collection Container */}
+          <div className="flex-1 min-w-0">
+            <UniversalDataCollection<ContractorProject>
             data={filteredProjects}
             columns={columns}
             keyExtractor={(p) => p.id}
@@ -904,6 +959,7 @@ export const ContractorSitesView: React.FC = () => {
           </div>
         )}
       </div>
+    </div>
 
       {/* New / Edit Project Modal */}
       <ContractorProjectModal

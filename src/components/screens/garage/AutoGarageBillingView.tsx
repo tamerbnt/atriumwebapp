@@ -20,6 +20,7 @@ import { useAtriumStore, showToast } from '../../../services/store';
 import { formatMoney } from '../../../utils/rules';
 import { useGarageData, RepairOrder } from './garageData';
 import { AtriumButton } from '../../ui/AtriumButton';
+import { Seek } from '../../ui/Seek';
 import { UniversalDataCollection } from '../../ui/collection/UniversalDataCollection';
 import { ActionButtonDef } from '../../ui/collection/CollectionListRow';
 
@@ -30,6 +31,25 @@ export const AutoGarageBillingView: React.FC = () => {
 
   const [selectedOrder, setSelectedOrder] = useState<RepairOrder | null>(null);
   const [inspectorTab, setInspectorTab] = useState<'decompte' | 'pieces' | 'sortie'>('decompte');
+  const [billingFilter, setBillingFilter] = useState<'all' | 'settled' | 'pending'>('all');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredBillingOrders = useMemo(() => {
+    return orders.filter((o) => {
+      if (billingFilter === 'settled' && o.status !== 'Delivered') return false;
+      if (billingFilter === 'pending' && o.status === 'Delivered') return false;
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        return (
+          o.vehiclePlate.toLowerCase().includes(q) ||
+          o.clientName.toLowerCase().includes(q) ||
+          o.orderNumber.toLowerCase().includes(q) ||
+          o.vehicleModel.toLowerCase().includes(q)
+        );
+      }
+      return true;
+    });
+  }, [orders, billingFilter, searchQuery]);
 
   const totalBilled = orders.reduce((acc, o) => acc + (o.finalCostDzd || o.estimatedCostDzd), 0);
   const deliveredOrders = orders.filter((o) => o.status === 'Delivered');
@@ -203,13 +223,65 @@ export const AutoGarageBillingView: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Collection Area + 390px Inspector Drawer */}
-      <div className="flex flex-col lg:flex-row gap-6 items-start">
-        <div className="flex-1 min-w-0 w-full">
-          <UniversalDataCollection<RepairOrder>
-            title={isAr ? 'سجل فواتير ورخص خروج الورشة' : 'Registre des Règlements & Sorties Atelier'}
-            subtitle={isAr ? 'متابعة الدفع والتسليم للزبائن' : 'Clôture financière, pièces consommées et autorisation de sortie'}
-            items={orders}
+      {/* Bottom Workstation Pod Tray */}
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+        {/* Table Control Header */}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <Receipt size={16} className="text-neutral-500" />
+            <span className="text-sm font-bold text-neutral-900 dark:text-white">
+              {isAr ? 'سجل فواتير ورخص خروج الورشة' : 'Registre des Règlements & Sorties Atelier'}
+            </span>
+            <span className="text-xs text-neutral-400 font-semibold tabular-nums ml-1">
+              {filteredBillingOrders.length}
+            </span>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2.5 ml-auto">
+            <Seek
+              value={searchQuery}
+              onChange={setSearchQuery}
+              placeholder={isAr ? 'بحث باللوحة، الزبون، N° OR...' : 'Rechercher N° OR, plaque, client...'}
+              shutSize={36}
+              openWidth={220}
+            />
+
+            {/* Billing Domain Filter Capsules */}
+            <div className="flex items-center p-0.5 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 gap-0.5 text-xs font-semibold shadow-2xs">
+              {(
+                [
+                  { id: 'all', label: isAr ? 'الكل' : 'Tous' },
+                  { id: 'settled', label: isAr ? 'تم الاستيفاء' : 'Réglés & Livrés' },
+                  { id: 'pending', label: isAr ? 'قيد التحصيل' : 'En attente' },
+                ] as const
+              ).map((filter) => {
+                const isActive = billingFilter === filter.id;
+                return (
+                  <button
+                    key={filter.id}
+                    type="button"
+                    onClick={() => setBillingFilter(filter.id)}
+                    style={{
+                      backgroundColor: isActive ? '#FCEEE8' : 'transparent',
+                      color: isActive ? 'var(--color-accent)' : '#71717A',
+                    }}
+                    className={`px-3 py-1 rounded-full cursor-pointer transition-all ${
+                      isActive ? 'font-bold' : 'hover:text-neutral-900 dark:hover:text-white'
+                    }`}
+                  >
+                    {filter.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* Main Collection Area + 390px Inspector Drawer */}
+        <div className="flex flex-col lg:flex-row gap-6 items-start">
+          <div className="flex-1 min-w-0 w-full">
+            <UniversalDataCollection<RepairOrder>
+              items={filteredBillingOrders}
             keyExtractor={(o) => o.id}
             searchPlaceholder={isAr ? 'بحث باللوحة، الزبون، N° OR...' : 'Rechercher matricule, client, modèle, N° OR...'}
             searchFilter={(o, query) =>
@@ -546,5 +618,6 @@ export const AutoGarageBillingView: React.FC = () => {
         )}
       </div>
     </div>
+  </div>
   );
 };

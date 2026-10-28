@@ -410,11 +410,46 @@ export const ManufacturingBomView: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Workspace: Left Collection + Right 390px Inspector Drawer */}
-      <div className="flex items-start gap-4">
-        {/* Main Collection Container */}
-        <div className="flex-1 min-w-0">
-          <UniversalDataCollection<ManufacturingBom>
+      {/* Bottom Elevated Pod Tray Enclosing Collection & Inspector Drawer */}
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+        {/* Domain Filter Header Strip */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+              {isAr ? 'قوائم المكونات الصناعية والتركيبات (BOM)' : 'Nomenclatures Produits & Formules BOM'}
+            </h2>
+            <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+              {isAr ? 'تفكيك المواد، كميات الاستهلاك المعيارية، وساعات العمل الصناعية' : 'Structures multi-niveaux, coûts de revient standard et temps gamme atelier'}
+            </p>
+          </div>
+
+          {/* Authentic Manufacturing BOM Filter Capsules */}
+          <div className="flex items-center gap-1.5 p-1 bg-white dark:bg-neutral-800 rounded-full border border-neutral-200/80 dark:border-neutral-700/60 shadow-2xs overflow-x-auto">
+            {[
+              { id: 'All', label: isAr ? 'جميع التركيبات' : 'Toutes BOM' },
+              { id: 'Active', label: isAr ? 'سارية بالإنتاج' : 'Actives série' },
+              { id: 'Inactive', label: isAr ? 'غير نشطة' : 'Inactives' },
+            ].map((f) => (
+              <button
+                key={f.id}
+                onClick={() => setFilterActive(f.id)}
+                className="px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer"
+                style={{
+                  backgroundColor: filterActive === f.id ? '#FCEEE8' : 'transparent',
+                  color: filterActive === f.id ? 'var(--color-accent)' : '#71717A',
+                }}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Main Workspace: Left Collection + Right 390px Inspector Drawer */}
+        <div className="flex items-start gap-4">
+          {/* Main Collection Container */}
+          <div className="flex-1 min-w-0">
+            <UniversalDataCollection<ManufacturingBom>
             data={filteredBoms}
             columns={columns}
             keyExtractor={(b) => b.id}
@@ -732,6 +767,7 @@ export const ManufacturingBomView: React.FC = () => {
             )}
           </div>
         )}
+      </div>
       </div>
 
       {/* New / Edit BOM Modal */}

@@ -405,11 +405,47 @@ export const LegalVaultView: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Workspace: Left Collection + Right 390px Inspector Drawer */}
-      <div className="flex items-start gap-4">
-        {/* Main Collection Container */}
-        <div className="flex-1 min-w-0">
-          <UniversalDataCollection<VaultItem>
+      {/* Bottom Elevated Pod Tray Enclosing Collection & Inspector Drawer */}
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+        {/* Domain Filter Header Strip */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+              {isAr ? 'خزينة الوثائق والمستندات القضائية المشفرة' : 'Coffre-Fort Numérique & Pièces Scellées'}
+            </h2>
+            <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+              {isAr ? 'حفظ العقود، السندات التنفيذية، وخبرات الطب الشرعي والهندسي' : 'Archivage probatoire scellé avec chiffrement fort AES-256 GCM'}
+            </p>
+          </div>
+
+          {/* Authentic Legal Vault Filter Capsules */}
+          <div className="flex items-center gap-1.5 p-1 bg-white dark:bg-neutral-800 rounded-full border border-neutral-200/80 dark:border-neutral-700/60 shadow-2xs overflow-x-auto">
+            {[
+              { id: 'All', label: isAr ? 'جميع الوثائق' : 'Toutes pièces' },
+              { id: 'Contrats', label: 'Contrats' },
+              { id: 'Actes Notariés', label: 'Actes Notariés' },
+              { id: 'Expertises', label: 'Expertises' },
+            ].map((f) => (
+              <button
+                key={f.id}
+                onClick={() => setCategoryFilter(f.id)}
+                className="px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer"
+                style={{
+                  backgroundColor: categoryFilter === f.id ? '#FCEEE8' : 'transparent',
+                  color: categoryFilter === f.id ? 'var(--color-accent)' : '#71717A',
+                }}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Main Workspace: Left Collection + Right 390px Inspector Drawer */}
+        <div className="flex items-start gap-4">
+          {/* Main Collection Container */}
+          <div className="flex-1 min-w-0">
+            <UniversalDataCollection<VaultItem>
             data={filteredItems}
             columns={columns}
             keyExtractor={(i) => i.id}
@@ -669,6 +705,7 @@ export const LegalVaultView: React.FC = () => {
             )}
           </div>
         )}
+      </div>
       </div>
 
       {/* New / Edit Vault Modal */}

@@ -372,11 +372,67 @@ export const AutoGarageOrdersView: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Workspace: Left Collection + Right 390px Inspector Drawer */}
-      <div className="flex items-start gap-4">
-        {/* Main Collection Container */}
-        <div className="flex-1 min-w-0">
-          <UniversalDataCollection<RepairOrder>
+      {/* Bottom Workstation Pod Tray */}
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+        {/* Table Control Header */}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <Wrench size={16} className="text-neutral-500" />
+            <span className="text-sm font-bold text-neutral-900 dark:text-white">
+              {isAr ? 'سجل أوامر التصليح' : 'Registre des Ordres de Réparation'}
+            </span>
+            <span className="text-xs text-neutral-400 font-semibold tabular-nums ml-1">
+              {filteredOrders.length}
+            </span>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2.5 ml-auto">
+            <Seek
+              value={searchQuery}
+              onChange={setSearchQuery}
+              placeholder={isAr ? 'بحث برقم الأمر، اللوحة، العميل...' : 'Rechercher N° OR, plaque, client...'}
+              shutSize={36}
+              openWidth={220}
+            />
+
+            {/* Auto Garage Domain Filter Capsules */}
+            <div className="flex items-center p-0.5 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 gap-0.5 text-xs font-semibold shadow-2xs">
+              {(
+                [
+                  { id: 'all', label: isAr ? 'الكل' : 'Tous' },
+                  { id: 'Diagnostic', label: 'Diagnostic' },
+                  { id: 'InRepair', label: isAr ? 'قيد التصليح' : 'En réparation' },
+                  { id: 'ReadyForPickup', label: isAr ? 'جاهز للتسليم' : 'Prêt à livrer' },
+                  { id: 'Delivered', label: isAr ? 'تم التسليم' : 'Livré' },
+                ] as const
+              ).map((filter) => {
+                const isActive = statusFilter === filter.id;
+                return (
+                  <button
+                    key={filter.id}
+                    type="button"
+                    onClick={() => setStatusFilter(filter.id)}
+                    style={{
+                      backgroundColor: isActive ? '#FCEEE8' : 'transparent',
+                      color: isActive ? 'var(--color-accent)' : '#71717A',
+                    }}
+                    className={`px-3 py-1 rounded-full cursor-pointer transition-all ${
+                      isActive ? 'font-bold' : 'hover:text-neutral-900 dark:hover:text-white'
+                    }`}
+                  >
+                    {filter.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* Main Workspace: Left Collection + Right 390px Inspector Drawer */}
+        <div className="flex items-start gap-4">
+          {/* Main Collection Container */}
+          <div className="flex-1 min-w-0">
+            <UniversalDataCollection<RepairOrder>
             data={filteredOrders}
             columns={columns}
             keyExtractor={(o) => o.id}
@@ -689,6 +745,7 @@ export const AutoGarageOrdersView: React.FC = () => {
           </div>
         )}
       </div>
+    </div>
 
       {/* New Order Modal */}
       <AutoOrderModal

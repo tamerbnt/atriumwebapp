@@ -277,34 +277,65 @@ export const MedicalBillingView: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Workspace Area with Dual Collection and 390px Inspector */}
-      <div className="flex items-start gap-4">
-        {/* Collection */}
-        <div className="flex-1 min-w-0 space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
-            <div className="flex items-center gap-2">
-              <Seek
-                value={searchQuery}
-                onChange={setSearchQuery}
-                placeholder={isAr ? 'بحث برقم الفاتورة أو اسم المريض...' : 'Rechercher facture, patient...'}
-              />
-              <FilterSelect
-                value={statusFilter}
-                onChange={(val) => setStatusFilter(val as any)}
-                options={[
-                  { value: 'all', label: isAr ? 'الكل' : 'Tous les états' },
-                  { value: 'paid', label: isAr ? 'تم التحصيل' : 'Factures réglées' },
-                  { value: 'pending', label: isAr ? 'قيد الانتظار' : 'En attente' },
-                ]}
-              />
-            </div>
-
-            <div className="text-xs text-neutral-500 dark:text-neutral-400">
-              {sortedConsultations.length} {isAr ? 'فاتورة' : 'factures'}
-            </div>
+      {/* Bottom Workstation Pod Tray */}
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+        {/* Table Control Header */}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <CreditCard size={16} className="text-neutral-500" />
+            <span className="text-sm font-bold text-neutral-900 dark:text-white">
+              {isAr ? 'دفتر الفواتير والتحصيل الطبي' : 'Journal de Facturation & Recouvrement'}
+            </span>
+            <span className="text-xs text-neutral-400 font-semibold tabular-nums ml-1">
+              {sortedConsultations.length}
+            </span>
           </div>
 
-          <UniversalDataCollection<MedicalConsultation>
+          <div className="flex flex-wrap items-center gap-2.5 ml-auto">
+            <Seek
+              value={searchQuery}
+              onChange={setSearchQuery}
+              placeholder={isAr ? 'بحث برقم الفاتورة أو اسم المريض...' : 'Rechercher facture, patient...'}
+              shutSize={36}
+              openWidth={220}
+            />
+
+            {/* Billing Domain Filter Capsules */}
+            <div className="flex items-center p-0.5 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 gap-0.5 text-xs font-semibold shadow-2xs">
+              {(
+                [
+                  { id: 'all', label: isAr ? 'الكل' : 'Toutes' },
+                  { id: 'paid', label: isAr ? 'تم التحصيل' : 'Encaissées' },
+                  { id: 'pending', label: isAr ? 'قيد الانتظار' : 'En attente' },
+                ] as const
+              ).map((filter) => {
+                const isActive = statusFilter === filter.id;
+                return (
+                  <button
+                    key={filter.id}
+                    type="button"
+                    onClick={() => setStatusFilter(filter.id)}
+                    style={{
+                      backgroundColor: isActive ? '#FCEEE8' : 'transparent',
+                      color: isActive ? 'var(--color-accent)' : '#71717A',
+                    }}
+                    className={`px-3 py-1 rounded-full cursor-pointer transition-all ${
+                      isActive ? 'font-bold' : 'hover:text-neutral-900 dark:hover:text-white'
+                    }`}
+                  >
+                    {filter.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* Main Workspace Area with Dual Collection and 390px Inspector */}
+        <div className="flex items-start gap-4">
+          {/* Collection */}
+          <div className="flex-1 min-w-0">
+            <UniversalDataCollection<MedicalConsultation>
             items={sortedConsultations}
             keyExtractor={(c) => c.id}
             defaultViewMode={viewMode}
@@ -583,5 +614,6 @@ export const MedicalBillingView: React.FC = () => {
         )}
       </div>
     </div>
+  </div>
   );
 };

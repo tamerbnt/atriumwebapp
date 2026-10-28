@@ -412,11 +412,47 @@ export const ContractorBoqView: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Workspace: Left Collection + Right 390px Inspector Drawer */}
-      <div className="flex items-start gap-4">
-        {/* Main Collection Container */}
-        <div className="flex-1 min-w-0">
-          <UniversalDataCollection<ContractorBoqItem>
+      {/* Bottom Elevated Pod Tray Enclosing Collection & Inspector Drawer */}
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+        {/* Domain Filter Header Strip */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+              {isAr ? 'قائمة بنود المقايسة والتسعير التعاقدي' : 'Nomenclature des Postes & Relevés Métrés'}
+            </h2>
+            <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+              {isAr ? 'تتبع الكميات المنفذة والأسعار الأحادية التعاقدية' : 'Bordereau quantitatif avec suivi d’avancement physique et financier'}
+            </p>
+          </div>
+
+          {/* Authentic BTP Execution Filter Capsules */}
+          <div className="flex items-center gap-1.5 p-1 bg-white dark:bg-neutral-800 rounded-full border border-neutral-200/80 dark:border-neutral-700/60 shadow-2xs overflow-x-auto">
+            {[
+              { id: 'all', label: isAr ? 'جميع البنود' : 'Tous les postes' },
+              { id: 'terrassement', label: isAr ? 'أعمال الحفر' : 'Terrassement' },
+              { id: 'gros_oeuvre', label: isAr ? 'الهيكل الخرساني' : 'Gros Œuvre' },
+              { id: 'second_oeuvre', label: isAr ? 'التشطيبات' : 'Second Œuvre' },
+            ].map((f) => (
+              <button
+                key={f.id}
+                onClick={() => setFilterProject('all')}
+                className="px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer"
+                style={{
+                  backgroundColor: filterProject === 'all' && f.id === 'all' ? '#FCEEE8' : 'transparent',
+                  color: filterProject === 'all' && f.id === 'all' ? 'var(--color-accent)' : '#71717A',
+                }}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Main Workspace: Left Collection + Right 390px Inspector Drawer */}
+        <div className="flex items-start gap-4">
+          {/* Main Collection Container */}
+          <div className="flex-1 min-w-0">
+            <UniversalDataCollection<ContractorBoqItem>
             data={filteredItems}
             columns={columns}
             keyExtractor={(item) => item.id}
@@ -684,6 +720,7 @@ export const ContractorBoqView: React.FC = () => {
             )}
           </div>
         )}
+      </div>
       </div>
 
       {/* New / Edit BOQ Modal */}

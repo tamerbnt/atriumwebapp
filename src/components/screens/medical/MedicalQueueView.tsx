@@ -337,36 +337,66 @@ export const MedicalQueueView: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Workspace Area */}
-      <div className="flex items-start gap-4">
-        {/* Collection / Visual Board Container */}
-        <div className="flex-1 min-w-0">
-          {displayLayout === 'collection' ? (
-            <div className="space-y-4">
-              <div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
-                <div className="flex items-center gap-2">
-                  <Seek
-                    value={searchQuery}
-                    onChange={setSearchQuery}
-                    placeholder={isAr ? 'بحث عن مريض أو تشخيص...' : 'Rechercher patient ou motif...'}
-                  />
-                  <FilterSelect
-                    value={statusFilter}
-                    onChange={(val) => setStatusFilter(val as any)}
-                    options={[
-                      { value: 'all', label: isAr ? 'الكل' : 'Tous les états' },
-                      { value: 'waiting', label: isAr ? 'في الانتظار' : 'En attente' },
-                      { value: 'in_progress', label: isAr ? 'في الفحص' : 'En consultation' },
-                      { value: 'completed', label: isAr ? 'مكتمل' : 'Clôturés' },
-                    ]}
-                  />
-                </div>
+      {/* Bottom Workstation Pod Tray */}
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+        {/* Table Control Header */}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <HeartPulse size={16} className="text-neutral-500" />
+            <span className="text-sm font-bold text-neutral-900 dark:text-white">
+              {isAr ? 'سجل الاستشارات والفرز' : 'Registre des Consultations & Triage'}
+            </span>
+            <span className="text-xs text-neutral-400 font-semibold tabular-nums ml-1">
+              {sortedConsultations.length}
+            </span>
+          </div>
 
-                <div className="text-xs text-neutral-500 dark:text-neutral-400">
-                  {sortedConsultations.length} {isAr ? 'استشارة' : 'consultations'}
-                </div>
-              </div>
+          <div className="flex flex-wrap items-center gap-2.5 ml-auto">
+            <Seek
+              value={searchQuery}
+              onChange={setSearchQuery}
+              placeholder={isAr ? 'بحث عن مريض أو تشخيص...' : 'Rechercher patient ou motif...'}
+              shutSize={36}
+              openWidth={220}
+            />
 
+            {/* Medical Triage Domain Filter Capsules */}
+            <div className="flex items-center p-0.5 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 gap-0.5 text-xs font-semibold shadow-2xs">
+              {(
+                [
+                  { id: 'all', label: isAr ? 'الكل' : 'Tous' },
+                  { id: 'waiting', label: isAr ? 'في الانتظار' : 'En attente' },
+                  { id: 'in_progress', label: isAr ? 'في الفحص' : 'En consultation' },
+                  { id: 'completed', label: isAr ? 'مكتمل' : 'Clôturés' },
+                ] as const
+              ).map((filter) => {
+                const isActive = statusFilter === filter.id;
+                return (
+                  <button
+                    key={filter.id}
+                    type="button"
+                    onClick={() => setStatusFilter(filter.id)}
+                    style={{
+                      backgroundColor: isActive ? '#FCEEE8' : 'transparent',
+                      color: isActive ? 'var(--color-accent)' : '#71717A',
+                    }}
+                    className={`px-3 py-1 rounded-full cursor-pointer transition-all ${
+                      isActive ? 'font-bold' : 'hover:text-neutral-900 dark:hover:text-white'
+                    }`}
+                  >
+                    {filter.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* Main Workspace Area (Collection + 390px Drawer) */}
+        <div className="flex items-start gap-4">
+          {/* Collection / Visual Board Container */}
+          <div className="flex-1 min-w-0">
+            {displayLayout === 'collection' ? (
               <UniversalDataCollection<MedicalConsultation>
                 items={sortedConsultations}
                 keyExtractor={(c) => c.id}
@@ -461,8 +491,7 @@ export const MedicalQueueView: React.FC = () => {
                 primaryActionLabel={isAr ? 'قبول مريض' : 'Admettre un patient'}
                 onAddFirstItem={() => setIsConsultModalOpen(true)}
               />
-            </div>
-          ) : (
+            ) : (
             /* Visual Queue Board View */
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {sortedConsultations.map((cons, index) => (
@@ -802,6 +831,7 @@ export const MedicalQueueView: React.FC = () => {
           </div>
         )}
       </div>
+    </div>
 
       <MedicalConsultationModal
         isOpen={isConsultModalOpen}

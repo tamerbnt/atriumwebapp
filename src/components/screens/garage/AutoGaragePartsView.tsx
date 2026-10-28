@@ -433,11 +433,77 @@ export const AutoGaragePartsView: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Workspace: Left Collection + Right 390px Inspector Drawer */}
-      <div className="flex items-start gap-4">
-        {/* Main Collection Container */}
-        <div className="flex-1 min-w-0">
-          <UniversalDataCollection<SparePart>
+      {/* Bottom Workstation Pod Tray */}
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+        {/* Table Control Header */}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <Boxes size={16} className="text-neutral-500" />
+            <span className="text-sm font-bold text-neutral-900 dark:text-white">
+              {isAr ? 'كتالوج قطع الغيار' : 'Catalogue Pièces de Rechange'}
+            </span>
+            <span className="text-xs text-neutral-400 font-semibold tabular-nums ml-1">
+              {filteredParts.length}
+            </span>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2.5 ml-auto">
+            <Seek
+              value={searchQuery}
+              onChange={setSearchQuery}
+              placeholder={isAr ? 'بحث بالرمز، الاسم، الفئة...' : 'Rechercher référence, rayon...'}
+              shutSize={36}
+              openWidth={220}
+            />
+
+            {/* Spare Parts Domain Filter Capsules */}
+            <div className="flex items-center p-0.5 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 gap-0.5 text-xs font-semibold shadow-2xs overflow-x-auto max-w-full">
+              {(
+                [
+                  { id: 'All', label: isAr ? 'الكل' : 'Toutes' },
+                  { id: 'Freinage', label: 'Freinage' },
+                  { id: 'Filtration', label: 'Filtration' },
+                  { id: 'Suspension', label: 'Suspension' },
+                  { id: 'Distribution', label: 'Distribution' },
+                  { id: 'Lubrifiants', label: 'Lubrifiants' },
+                ] as const
+              ).map((filter) => {
+                const isActive = categoryFilter === filter.id;
+                return (
+                  <button
+                    key={filter.id}
+                    type="button"
+                    onClick={() => setCategoryFilter(filter.id)}
+                    style={{
+                      backgroundColor: isActive ? '#FCEEE8' : 'transparent',
+                      color: isActive ? 'var(--color-accent)' : '#71717A',
+                    }}
+                    className={`px-3 py-1 rounded-full cursor-pointer transition-all whitespace-nowrap ${
+                      isActive ? 'font-bold' : 'hover:text-neutral-900 dark:hover:text-white'
+                    }`}
+                  >
+                    {filter.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            <AtriumButton
+              variant="secondary"
+              size="sm"
+              onClick={handleExportCsv}
+              icon={<Download size={13} />}
+            >
+              Export CSV
+            </AtriumButton>
+          </div>
+        </div>
+
+        {/* Main Workspace: Left Collection + Right 390px Inspector Drawer */}
+        <div className="flex items-start gap-4">
+          {/* Main Collection Container */}
+          <div className="flex-1 min-w-0">
+            <UniversalDataCollection<SparePart>
             data={filteredParts}
             columns={columns}
             keyExtractor={(p) => p.id}
@@ -770,6 +836,7 @@ export const AutoGaragePartsView: React.FC = () => {
           </div>
         )}
       </div>
+    </div>
 
       {/* New / Edit Part Modal */}
       {isModalOpen && (

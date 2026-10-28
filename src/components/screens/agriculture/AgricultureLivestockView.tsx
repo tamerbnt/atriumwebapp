@@ -442,11 +442,47 @@ export const AgricultureLivestockView: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Workspace: Left Collection + Right 390px Inspector Drawer */}
-      <div className="flex items-start gap-4">
-        {/* Main Collection Container */}
-        <div className="flex-1 min-w-0">
-          <UniversalDataCollection<AgriLivestock>
+      {/* Bottom Elevated Pod Tray Enclosing Collection & Inspector Drawer */}
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+        {/* Domain Filter Header Strip */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+              {isAr ? 'سجل القطيع والمتابعة البيطرية' : 'Registre Zootechnique & Fiches Sanitaires'}
+            </h2>
+            <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+              {isAr ? 'ترقيم الأذن، إنتاج الحليب، والفحوصات الوقائية' : 'Identification individuelle par boucle, lactation et contrôles vétérinaires'}
+            </p>
+          </div>
+
+          {/* Authentic Agriculture Livestock Filter Capsules */}
+          <div className="flex items-center gap-1.5 p-1 bg-white dark:bg-neutral-800 rounded-full border border-neutral-200/80 dark:border-neutral-700/60 shadow-2xs overflow-x-auto">
+            {[
+              { id: 'All', label: isAr ? 'جميع القطيع' : 'Tout le cheptel' },
+              { id: 'Bovine', label: isAr ? 'أبقار' : 'Bovins' },
+              { id: 'Ovine', label: isAr ? 'أغنام' : 'Ovins' },
+              { id: 'Caprine', label: isAr ? 'ماعز' : 'Caprins' },
+            ].map((f) => (
+              <button
+                key={f.id}
+                onClick={() => setSpeciesFilter(f.id)}
+                className="px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer"
+                style={{
+                  backgroundColor: speciesFilter === f.id ? '#FCEEE8' : 'transparent',
+                  color: speciesFilter === f.id ? 'var(--color-accent)' : '#71717A',
+                }}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Main Workspace: Left Collection + Right 390px Inspector Drawer */}
+        <div className="flex items-start gap-4">
+          {/* Main Collection Container */}
+          <div className="flex-1 min-w-0">
+            <UniversalDataCollection<AgriLivestock>
             data={filteredAnimals}
             columns={columns}
             keyExtractor={(a) => a.id}
@@ -818,6 +854,7 @@ export const AgricultureLivestockView: React.FC = () => {
             )}
           </div>
         )}
+      </div>
       </div>
 
       {/* New / Edit Animal Modal */}

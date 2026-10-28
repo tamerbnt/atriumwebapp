@@ -240,11 +240,46 @@ export const LegalHearingsView: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Content Area */}
-      {activeWorkflowView === 'collection' ? (
-        <div className="flex flex-col lg:flex-row gap-6 items-start">
-          <div className="flex-1 min-w-0 w-full">
-            <UniversalDataCollection<LegalHearing>
+      {/* Bottom Elevated Pod Tray Enclosing Collection & Inspector Drawer */}
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+        {/* Domain Filter Header Strip */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+              {isAr ? 'جدول الجلسات والمرافعات القضائية' : 'Rôle Général des Audiences & Comparutions'}
+            </h2>
+            <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+              {isAr ? 'مواعيد المحاكم، القضاة والقرارات' : 'Calendrier des comparutions et déroulement des audiences'}
+            </p>
+          </div>
+
+          {/* Authentic Legal Hearing Filter Capsules */}
+          <div className="flex items-center gap-1.5 p-1 bg-white dark:bg-neutral-800 rounded-full border border-neutral-200/80 dark:border-neutral-700/60 shadow-2xs overflow-x-auto">
+            {[
+              { id: 'all', label: isAr ? 'جميع الجلسات' : 'Toutes audiences' },
+              { id: 'upcoming', label: isAr ? 'الجلسات القادمة' : 'À venir' },
+              { id: 'delibere', label: isAr ? 'في المداولة' : 'En délibéré' },
+              { id: 'plaidee', label: isAr ? 'مفصول فيها' : 'Plaidées' },
+            ].map((tab, idx) => (
+              <button
+                key={tab.id}
+                className="px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer"
+                style={{
+                  backgroundColor: idx === 0 ? '#FCEEE8' : 'transparent',
+                  color: idx === 0 ? 'var(--color-accent)' : '#71717A',
+                }}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Main Content Area */}
+        {activeWorkflowView === 'collection' ? (
+          <div className="flex flex-col lg:flex-row gap-6 items-start">
+            <div className="flex-1 min-w-0 w-full">
+              <UniversalDataCollection<LegalHearing>
               title={isAr ? 'جدول الجلسات والمرافعات' : 'Rôle Général des Audiences & Plaidoiries'}
               subtitle={isAr ? 'مواعيد المحاكم، القضاة والقرارات' : 'Calendrier des comparutions et déroulement des audiences'}
               items={hearings}
@@ -613,6 +648,7 @@ export const LegalHearingsView: React.FC = () => {
           ))}
         </div>
       )}
+      </div>
     </div>
   );
 };

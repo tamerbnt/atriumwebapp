@@ -419,11 +419,47 @@ export const AgricultureCyclesView: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Workspace: Left Collection + Right 390px Inspector Drawer */}
-      <div className="flex items-start gap-4">
-        {/* Main Collection Container */}
-        <div className="flex-1 min-w-0">
-          <UniversalDataCollection<AgriTreatmentLog>
+      {/* Bottom Elevated Pod Tray Enclosing Collection & Inspector Drawer */}
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+        {/* Domain Filter Header Strip */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+              {isAr ? 'سجل التدخلات والمعالجات الفلاحية' : 'Carnet Phytosanitaire & Registre des Traitements'}
+            </h2>
+            <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+              {isAr ? 'تتبع فترات الأمان DAR، المواد الفعالة والجرعات المعتمدة' : 'Traçabilité des bouillies, homologations et délais de sécurité avant récolte'}
+            </p>
+          </div>
+
+          {/* Authentic Agriculture Phyto Filter Capsules */}
+          <div className="flex items-center gap-1.5 p-1 bg-white dark:bg-neutral-800 rounded-full border border-neutral-200/80 dark:border-neutral-700/60 shadow-2xs overflow-x-auto">
+            {[
+              { id: 'all', label: isAr ? 'جميع المعالجات' : 'Tous traitements' },
+              { id: 'fongi', label: 'Fongicides' },
+              { id: 'insecti', label: 'Insecticides' },
+              { id: 'fertili', label: 'Fertilisation NPK' },
+            ].map((tab, idx) => (
+              <button
+                key={tab.id}
+                onClick={() => setFilterParcel('all')}
+                className="px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer"
+                style={{
+                  backgroundColor: idx === 0 && filterParcel === 'all' ? '#FCEEE8' : 'transparent',
+                  color: idx === 0 && filterParcel === 'all' ? 'var(--color-accent)' : '#71717A',
+                }}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Main Workspace: Left Collection + Right 390px Inspector Drawer */}
+        <div className="flex items-start gap-4">
+          {/* Main Collection Container */}
+          <div className="flex-1 min-w-0">
+            <UniversalDataCollection<AgriTreatmentLog>
             data={filteredLogs}
             columns={columns}
             keyExtractor={(t) => t.id}
@@ -695,6 +731,7 @@ export const AgricultureCyclesView: React.FC = () => {
             )}
           </div>
         )}
+      </div>
       </div>
 
       {/* New / Edit Treatment Modal */}

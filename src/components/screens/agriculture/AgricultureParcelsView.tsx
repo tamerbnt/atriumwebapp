@@ -436,11 +436,47 @@ export const AgricultureParcelsView: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Workspace: Left Collection + Right 390px Inspector Drawer */}
-      <div className="flex items-start gap-4">
-        {/* Main Collection Container */}
-        <div className="flex-1 min-w-0">
-          <UniversalDataCollection<AgriParcel>
+      {/* Bottom Elevated Pod Tray Enclosing Collection & Inspector Drawer */}
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+        {/* Domain Filter Header Strip */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+              {isAr ? 'سجل القطع الفلاحية والبيوت المحمية' : 'Cadastre Parcellaire & Blocs de Serres'}
+            </h2>
+            <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+              {isAr ? 'تتبع المحاصيل الموسمية ونظم الري بالتقطير والمحوري' : 'Cartographie des assolements et statut hydrique par parcelle'}
+            </p>
+          </div>
+
+          {/* Authentic Agriculture Irrigation Capsules */}
+          <div className="flex items-center gap-1.5 p-1 bg-white dark:bg-neutral-800 rounded-full border border-neutral-200/80 dark:border-neutral-700/60 shadow-2xs overflow-x-auto">
+            {[
+              { id: 'All', label: isAr ? 'جميع القطع' : 'Toutes parcelles' },
+              { id: 'Drip', label: 'Goutte-à-goutte' },
+              { id: 'Pivot', label: 'Pivot' },
+              { id: 'Gravity', label: 'Gravitaire' },
+            ].map((f) => (
+              <button
+                key={f.id}
+                onClick={() => setFilterIrrigation(f.id)}
+                className="px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer"
+                style={{
+                  backgroundColor: filterIrrigation === f.id ? '#FCEEE8' : 'transparent',
+                  color: filterIrrigation === f.id ? 'var(--color-accent)' : '#71717A',
+                }}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Main Workspace: Left Collection + Right 390px Inspector Drawer */}
+        <div className="flex items-start gap-4">
+          {/* Main Collection Container */}
+          <div className="flex-1 min-w-0">
+            <UniversalDataCollection<AgriParcel>
             data={filteredParcels}
             columns={columns}
             keyExtractor={(p) => p.id}
@@ -827,6 +863,7 @@ export const AgricultureParcelsView: React.FC = () => {
             )}
           </div>
         )}
+      </div>
       </div>
 
       {/* New / Edit Parcel Modal */}

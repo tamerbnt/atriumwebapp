@@ -249,10 +249,45 @@ export const LogisticsScannerView: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Collection Area + 390px Inspector Drawer */}
-      <div className="flex flex-col lg:flex-row gap-6 items-start">
-        <div className="flex-1 min-w-0 w-full">
-          <UniversalDataCollection<LogisticsShipment>
+      {/* Bottom Elevated Pod Tray Enclosing Collection & Inspector Drawer */}
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+        {/* Domain Filter Header Strip */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+              {isAr ? 'قائمة الطرود الممسوحة والموجهة' : 'Colis Scannés & Affectation aux Quais'}
+            </h2>
+            <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+              {isAr ? 'متابعة فرز وتوجيه الشحنات نحو الولايات' : 'Statut de tri, poids et affectation des quais de transit'}
+            </p>
+          </div>
+
+          {/* Authentic Logistics Hub Filter Capsules */}
+          <div className="flex items-center gap-1.5 p-1 bg-white dark:bg-neutral-800 rounded-full border border-neutral-200/80 dark:border-neutral-700/60 shadow-2xs overflow-x-auto">
+            {[
+              { id: 'all', label: isAr ? 'جميع الطرود' : 'Tous les colis' },
+              { id: 'hub', label: isAr ? 'بالمستودع' : 'Au Hub Central' },
+              { id: 'sorted', label: isAr ? 'مفروز' : 'Trié sur quai' },
+              { id: 'shipped', label: isAr ? 'قيد النقل' : 'En transit' },
+            ].map((tab, idx) => (
+              <button
+                key={tab.id}
+                className="px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer"
+                style={{
+                  backgroundColor: idx === 0 ? '#FCEEE8' : 'transparent',
+                  color: idx === 0 ? 'var(--color-accent)' : '#71717A',
+                }}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Main Collection Area + 390px Inspector Drawer */}
+        <div className="flex flex-col lg:flex-row gap-6 items-start">
+          <div className="flex-1 min-w-0 w-full">
+            <UniversalDataCollection<LogisticsShipment>
             title={isAr ? 'سجل الطرود بالمستودع المركزي' : 'Registre des Colis au Hub & Aiguillage'}
             subtitle={isAr ? 'متابعة فرز وتوجيه الشحنات نحو الولايات' : 'Statut de tri, poids et affectation des quais de transit'}
             items={shipments}
@@ -560,6 +595,7 @@ export const LogisticsScannerView: React.FC = () => {
             </div>
           </div>
         )}
+      </div>
       </div>
     </div>
   );

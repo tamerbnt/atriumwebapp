@@ -307,9 +307,50 @@ export const MembershipShopView: React.FC = () => {
           </div>
         </div>
 
-        {/* Main Collection Area + 390px Inspector / Cart Drawer */}
-        <div className="flex flex-col lg:flex-row gap-6 items-start">
-          <div className="flex-1 min-w-0 w-full">
+        {/* Bottom Workstation Pod Tray */}
+        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+          {/* Workstation Header Bar */}
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <ShoppingBag size={16} className="text-neutral-500" />
+              <span className="text-sm font-bold text-neutral-900 dark:text-white">
+                {isAr ? 'كتالوج المنتجات والمكملات' : 'Catalogue Pro-Shop & Articles'}
+              </span>
+              <span className="text-xs text-neutral-400 font-semibold tabular-nums ml-1">
+                {filteredProducts.length}
+              </span>
+            </div>
+
+            {/* Right: Domain Filter Capsules for Product Categories */}
+            <div className="flex flex-wrap items-center gap-2.5 ml-auto">
+              <div className="flex items-center p-0.5 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 gap-0.5 text-xs font-semibold shadow-2xs overflow-x-auto max-w-full">
+                {categories.map((cat) => {
+                  const isActive = selectedCategory === cat;
+                  const label = cat === 'All' ? (isAr ? 'الكل' : 'Tous') : cat;
+                  return (
+                    <button
+                      key={cat}
+                      type="button"
+                      onClick={() => setSelectedCategory(cat)}
+                      style={{
+                        backgroundColor: isActive ? '#FCEEE8' : 'transparent',
+                        color: isActive ? 'var(--color-accent)' : '#71717A',
+                      }}
+                      className={`px-3 py-1 rounded-full cursor-pointer transition-all whitespace-nowrap ${
+                        isActive ? 'font-bold' : 'hover:text-neutral-900 dark:hover:text-white'
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* Main Collection Area + 390px Inspector / Cart Drawer */}
+          <div className="flex flex-col lg:flex-row gap-6 items-start">
+            <div className="flex-1 min-w-0 w-full">
             <UniversalDataCollection<Product>
               title={isAr ? 'كتالوج المنتجات والمكملات' : 'Catalogue Pro-Shop & Articles'}
               subtitle={isAr ? 'التغذية، المكملات والإكسسوارات الرياضية' : 'Gestion des références, prix de vente et rotation'}
@@ -667,5 +708,6 @@ export const MembershipShopView: React.FC = () => {
         </div>
       </div>
     </div>
+  </div>
   );
 };

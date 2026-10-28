@@ -28,6 +28,7 @@ export const MedicalPrescriptionsView: React.FC = () => {
   const { prescriptions } = useMedicalData();
 
   const [searchQuery, setSearchQuery] = useState('');
+  const [filterStatus, setFilterStatus] = useState<'all' | 'recent' | 'multi'>('all');
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [sortBy, setSortBy] = useState<string>('prescriptionDate');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
@@ -37,13 +38,20 @@ export const MedicalPrescriptionsView: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'posologie' | 'securite' | 'actions'>('posologie');
 
   const filtered = useMemo(() => {
-    return prescriptions.filter(
-      (rx) =>
+    return prescriptions.filter((rx) => {
+      const matchesSearch =
         rx.patientName.toLowerCase().includes(searchQuery.toLowerCase()) ||
         rx.qrCodeHash.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        rx.items.some((item) => item.drugName.toLowerCase().includes(searchQuery.toLowerCase()))
-    );
-  }, [prescriptions, searchQuery]);
+        rx.items.some((item) => item.drugName.toLowerCase().includes(searchQuery.toLowerCase()));
+      if (!matchesSearch) return false;
+      if (filterStatus === 'multi') return rx.items.length >= 3;
+      if (filterStatus === 'recent') {
+        const diffDays = (new Date().getTime() - new Date(rx.prescriptionDate).getTime()) / (1000 * 3600 * 24);
+        return diffDays <= 14;
+      }
+      return true;
+    });
+  }, [prescriptions, searchQuery, filterStatus]);
 
   const sortedPrescriptions = useMemo(() => {
     const list = [...filtered];
@@ -223,23 +231,65 @@ export const MedicalPrescriptionsView: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Workspace Area with Dual Collection and 390px Inspector */}
-      <div className="flex items-start gap-4">
-        {/* Collection */}
-        <div className="flex-1 min-w-0 space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
+      {/* Bottom Workstation Pod Tray */}
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+        {/* Table Control Header */}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <FileText size={16} className="text-neutral-500" />
+            <span className="text-sm font-bold text-neutral-900 dark:text-white">
+              {isAr ? 'أرشيف الوصفات الطبية' : 'Registre des Ordonnances Médicales'}
+            </span>
+            <span className="text-xs text-neutral-400 font-semibold tabular-nums ml-1">
+              {sortedPrescriptions.length}
+            </span>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2.5 ml-auto">
             <Seek
               value={searchQuery}
               onChange={setSearchQuery}
               placeholder={isAr ? 'بحث بمريض، دواء أو كود QR...' : 'Rechercher patient, médicament ou QR code...'}
+              shutSize={36}
+              openWidth={220}
             />
 
-            <div className="text-xs text-neutral-500 dark:text-neutral-400">
-              {sortedPrescriptions.length} {isAr ? 'وصفات' : 'ordonnances'}
+            {/* Prescription Domain Filter Capsules */}
+            <div className="flex items-center p-0.5 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 gap-0.5 text-xs font-semibold shadow-2xs">
+              {(
+                [
+                  { id: 'all', label: isAr ? 'الكل' : 'Toutes' },
+                  { id: 'recent', label: isAr ? 'حديثة (<14j)' : 'Récentes (<14j)' },
+                  { id: 'multi', label: isAr ? 'متعددة الأدوية' : 'Polymédicamentées (≥3)' },
+                ] as const
+              ).map((filter) => {
+                const isActive = filterStatus === filter.id;
+                return (
+                  <button
+                    key={filter.id}
+                    type="button"
+                    onClick={() => setFilterStatus(filter.id)}
+                    style={{
+                      backgroundColor: isActive ? '#FCEEE8' : 'transparent',
+                      color: isActive ? 'var(--color-accent)' : '#71717A',
+                    }}
+                    className={`px-3 py-1 rounded-full cursor-pointer transition-all ${
+                      isActive ? 'font-bold' : 'hover:text-neutral-900 dark:hover:text-white'
+                    }`}
+                  >
+                    {filter.label}
+                  </button>
+                );
+              })}
             </div>
           </div>
+        </div>
 
-          <UniversalDataCollection<MedicalPrescription>
+        {/* Main Workspace Area with Dual Collection and 390px Inspector */}
+        <div className="flex items-start gap-4">
+          {/* Collection */}
+          <div className="flex-1 min-w-0">
+            <UniversalDataCollection<MedicalPrescription>
             items={sortedPrescriptions}
             keyExtractor={(rx) => rx.id}
             defaultViewMode={viewMode}
@@ -486,5 +536,6 @@ export const MedicalPrescriptionsView: React.FC = () => {
         )}
       </div>
     </div>
+  </div>
   );
 };

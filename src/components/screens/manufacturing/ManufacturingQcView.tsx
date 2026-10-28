@@ -193,10 +193,44 @@ export const ManufacturingQcView: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Collection Area + 390px Inspector Drawer */}
-      <div className="flex flex-col lg:flex-row gap-6 items-start">
-        <div className="flex-1 min-w-0 w-full">
-          <UniversalDataCollection<ManufacturingOrder>
+      {/* Bottom Elevated Pod Tray Enclosing Collection & Inspector Drawer */}
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+        {/* Domain Filter Header Strip */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+              {isAr ? 'سجل الفحص المخبري ومراقبة الجودة (QC / ISO)' : 'Registre des Contrôles Qualité Libératoires (AQL)'}
+            </h2>
+            <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+              {isAr ? 'فحص المقاسات المترولوجية، اختبارات التحمل، وتصاريح إطلاق الدفعات' : 'Inspection dimensionnelle, tests destructifs, conformité ISO 9001 et libération'}
+            </p>
+          </div>
+
+          {/* Authentic Manufacturing QC Filter Capsules */}
+          <div className="flex items-center gap-1.5 p-1 bg-white dark:bg-neutral-800 rounded-full border border-neutral-200/80 dark:border-neutral-700/60 shadow-2xs overflow-x-auto">
+            {[
+              { id: 'all', label: isAr ? 'جميع الدفعات' : 'Tous les lots' },
+              { id: 'libere', label: isAr ? 'دفعات مطابقة' : 'Lots libérés' },
+              { id: 'quarantaine', label: isAr ? 'في الحجر' : 'En quarantaine' },
+            ].map((tab, idx) => (
+              <button
+                key={tab.id}
+                className="px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer"
+                style={{
+                  backgroundColor: idx === 0 ? '#FCEEE8' : 'transparent',
+                  color: idx === 0 ? 'var(--color-accent)' : '#71717A',
+                }}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Main Collection Area + 390px Inspector Drawer */}
+        <div className="flex flex-col lg:flex-row gap-6 items-start">
+          <div className="flex-1 min-w-0 w-full">
+            <UniversalDataCollection<ManufacturingOrder>
             title={isAr ? 'سجل الفحص والاختبارات' : 'Registre des Contrôles Qualité Libératoires'}
             subtitle={isAr ? 'تتبع الدفعات والمطابقة للمواصفات' : 'Inspection dimensionnelle, tests de résistance et libération'}
             items={orders}

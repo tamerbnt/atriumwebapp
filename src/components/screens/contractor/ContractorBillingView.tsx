@@ -322,10 +322,44 @@ export const ContractorBillingView: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Workspace Area with Dual Collection and 390px Inspector */}
-      <div className="flex items-start gap-4">
-        {/* Collection */}
-        <div className="flex-1 min-w-0 space-y-4">
+      {/* Bottom Elevated Pod Tray Enclosing Collection & Inspector Drawer */}
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+        {/* Domain Filter Header Strip */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+              {isAr ? 'كشوف الحساب والوضعيات المالية (DGP)' : 'Décomptes Généraux & Situations de Travaux (DGP)'}
+            </h2>
+            <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+              {isAr ? 'المطالبات المالية الدورية واقتطاعات الضمان النظامية' : 'Suivi des attestations de paiement, TVA 19% et retenues de garantie 5%'}
+            </p>
+          </div>
+
+          {/* Authentic BTP Billing Filter Capsules */}
+          <div className="flex items-center gap-1.5 p-1 bg-white dark:bg-neutral-800 rounded-full border border-neutral-200/80 dark:border-neutral-700/60 shadow-2xs overflow-x-auto">
+            {[
+              { id: 'all', label: isAr ? 'جميع الكشوفات' : 'Toutes les situations' },
+              { id: 'bet', label: isAr ? 'مقبولة BET' : 'Approuvées BET' },
+              { id: 'paid', label: isAr ? 'مسددة' : 'Mandatées / Réglées' },
+            ].map((tab, idx) => (
+              <button
+                key={tab.id}
+                className="px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer"
+                style={{
+                  backgroundColor: idx === 0 ? '#FCEEE8' : 'transparent',
+                  color: idx === 0 ? 'var(--color-accent)' : '#71717A',
+                }}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Main Workspace Area with Dual Collection and 390px Inspector */}
+        <div className="flex items-start gap-4">
+          {/* Collection */}
+          <div className="flex-1 min-w-0 space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
             <div className="flex items-center gap-2.5">
               <div className="w-56">
@@ -599,6 +633,7 @@ export const ContractorBillingView: React.FC = () => {
             </div>
           </div>
         )}
+      </div>
       </div>
 
       {/* Modal Nouvel Attachement DGP */}

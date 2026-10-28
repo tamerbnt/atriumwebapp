@@ -433,11 +433,47 @@ export const AgricultureHarvestView: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Workspace: Left Collection + Right 390px Inspector Drawer */}
-      <div className="flex items-start gap-4">
-        {/* Main Collection Container */}
-        <div className="flex-1 min-w-0">
-          <UniversalDataCollection<AgriHarvestTicket>
+      {/* Bottom Elevated Pod Tray Enclosing Collection & Inspector Drawer */}
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+        {/* Domain Filter Header Strip */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+              {isAr ? 'سجل وصولات الجني والوزن (بونت باسكول)' : 'Bons de Pesée Pont-Bascule & Expéditions'}
+            </h2>
+            <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+              {isAr ? 'تتبع الوزن القائم والفارغ والصافي وعائدات أسواق الجملة' : 'Relevés de tare et net expédié, commission mandataire et traçabilité des lots'}
+            </p>
+          </div>
+
+          {/* Authentic Agriculture Harvest Filter Capsules */}
+          <div className="flex items-center gap-1.5 p-1 bg-white dark:bg-neutral-800 rounded-full border border-neutral-200/80 dark:border-neutral-700/60 shadow-2xs overflow-x-auto">
+            {[
+              { id: 'all', label: isAr ? 'جميع الشحنات' : 'Toutes expéditions' },
+              { id: 'extra', label: 'Calibre Extra' },
+              { id: 'cat1', label: 'Catégorie I' },
+              { id: 'transfo', label: 'Transformation' },
+            ].map((tab, idx) => (
+              <button
+                key={tab.id}
+                onClick={() => setFilterParcel('all')}
+                className="px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer"
+                style={{
+                  backgroundColor: idx === 0 && filterParcel === 'all' ? '#FCEEE8' : 'transparent',
+                  color: idx === 0 && filterParcel === 'all' ? 'var(--color-accent)' : '#71717A',
+                }}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Main Workspace: Left Collection + Right 390px Inspector Drawer */}
+        <div className="flex items-start gap-4">
+          {/* Main Collection Container */}
+          <div className="flex-1 min-w-0">
+            <UniversalDataCollection<AgriHarvestTicket>
             data={filteredTickets}
             columns={columns}
             keyExtractor={(t) => t.id}
@@ -749,6 +785,7 @@ export const AgricultureHarvestView: React.FC = () => {
             )}
           </div>
         )}
+      </div>
       </div>
 
       {/* New / Edit Ticket Modal */}
