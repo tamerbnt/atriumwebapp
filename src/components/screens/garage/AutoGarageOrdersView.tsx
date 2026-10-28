@@ -102,8 +102,10 @@ export const AutoGarageOrdersView: React.FC = () => {
 
   const handleAdvanceStatus = (o: RepairOrder) => {
     const cycle: Record<RepairOrder['status'], RepairOrder['status']> = {
-      Diagnostic: 'InRepair',
-      InRepair: 'ReadyForPickup',
+      Diagnostic: 'WaitingParts',
+      WaitingParts: 'InRepair',
+      InRepair: 'Testing',
+      Testing: 'ReadyForPickup',
       ReadyForPickup: 'Delivered',
       Delivered: 'Diagnostic',
     };

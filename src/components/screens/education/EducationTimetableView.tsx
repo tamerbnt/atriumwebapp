@@ -17,19 +17,25 @@ import {
   ChevronDown,
   Building2,
   Check,
+  Eye,
+  Printer,
+  Trash2,
+  ClipboardList,
 } from 'lucide-react';
-import { useAtriumStore } from '../../../services/store';
+import { useAtriumStore, showToast } from '../../../services/store';
 import { EduSession } from '../../../types';
 import { RollCallModal } from './RollCallModal';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { FilterSelect } from '../../ui/FilterSelect';
-import { Seek } from '../../ui/Seek';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { useTranslation } from '../../../utils/useTranslation';
+import { UniversalDataCollection } from '../../ui/collection/UniversalDataCollection';
+import { ActionButtonDef } from '../../ui/collection/CollectionListRow';
 
 export const EducationTimetableView: React.FC = () => {
-  const { t, isRtl, language } = useTranslation();
+  const { t, language } = useTranslation();
+  const isAr = language === 'ar';
   const {
     eduSessions,
     eduCohorts,
@@ -49,7 +55,8 @@ export const EducationTimetableView: React.FC = () => {
   const [selectedCohortId, setSelectedCohortId] = useState<string>('all');
   const [selectedClassroomId, setSelectedClassroomId] = useState<string>('all');
   const [isAddSessionModalOpen, setIsAddSessionModalOpen] = useState(false);
-  const [selectedSessionForDetail, setSelectedSessionForDetail] = useState<EduSession | null>(null);
+  const [selectedSession, setSelectedSession] = useState<EduSession | null>(null);
+  const [inspectorTab, setInspectorTab] = useState<'seance' | 'salle' | 'emargement'>('seance');
   const [isRollCallOpen, setIsRollCallOpen] = useState(false);
   const [rollCallSession, setRollCallSession] = useState<EduSession | null>(null);
 
@@ -64,25 +71,13 @@ export const EducationTimetableView: React.FC = () => {
     topic: '',
   });
 
-  const [sessionSearch, setSessionSearch] = useState('');
-
-  // Filtered sessions
   const filteredSessions = eduSessions.filter((s) => {
     if (selectedCohortId !== 'all' && s.cohortId !== selectedCohortId) return false;
     if (selectedClassroomId !== 'all' && s.classroomId !== selectedClassroomId) return false;
-    if (sessionSearch.trim()) {
-      const q = sessionSearch.toLowerCase();
-      const match =
-        (s.topic || '').toLowerCase().includes(q) ||
-        (s.instructorName || '').toLowerCase().includes(q) ||
-        (s.cohortName || '').toLowerCase().includes(q) ||
-        (s.classroomName || '').toLowerCase().includes(q);
-      if (!match) return false;
-    }
     return true;
   });
 
-  // Conflict detection: sessions with overlapping time in same classroom or with same instructor
+  // Conflict detection
   const conflicts = new Set<string>();
   for (let i = 0; i < filteredSessions.length; i++) {
     for (let j = i + 1; j < filteredSessions.length; j++) {
@@ -126,15 +121,53 @@ export const EducationTimetableView: React.FC = () => {
     });
 
     setIsAddSessionModalOpen(false);
+    showToast(isAr ? 'تمت إضافة الحصة التدريبية' : 'Créneau d’enseignement ajouté au planning', 'success');
   };
+
+  const getSessionActions = (s: EduSession): ActionButtonDef[] => [
+    {
+      label: isAr ? 'معاينة الحصة' : 'Consulter Fiche',
+      icon: <Eye size={14} />,
+      onClick: () => setSelectedSession(s),
+    },
+    {
+      label: isAr ? 'مناداة الحضور' : 'Feuille d’Émargement',
+      icon: <ClipboardList size={14} />,
+      onClick: () => {
+        setRollCallSession(s);
+        setIsRollCallOpen(true);
+      },
+    },
+    {
+      label: isAr ? 'طباعة المحضر' : 'Imprimer Liste',
+      icon: <Printer size={14} />,
+      onClick: () => {
+        showToast(
+          isAr
+            ? `طباعة ورقة الحضور للفوج ${s.cohortName}`
+            : `Feuille d'émargement générée pour ${s.cohortName}`,
+          'info'
+        );
+      },
+    },
+    {
+      label: isAr ? 'حذف الحصة' : 'Supprimer',
+      icon: <Trash2 size={14} />,
+      onClick: () => {
+        deleteEduSession(s.id);
+        if (selectedSession?.id === s.id) {
+          setSelectedSession(null);
+        }
+        showToast(isAr ? 'تم حذف الحصة' : 'Séance retirée du planning', 'info');
+      },
+    },
+  ];
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
-      {/* Outer Rounded Workspace Panel (WPF Spec: CornerRadius 28px, 1px CardBorderBrush) */}
       <div className="bg-white dark:bg-[#18181B] rounded-[28px] border border-[#E9EEF0] dark:border-neutral-800 p-6 lg:p-8 space-y-6 shadow-xs">
-        
-        {/* Row 0 — Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
+        {/* Top Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
           <div className="flex items-center gap-3.5">
             <div className="w-11 h-11 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#C4785A]">
               <CalendarIcon size={22} />
@@ -145,7 +178,7 @@ export const EducationTimetableView: React.FC = () => {
                   {t('edu_timetable_title')}
                 </h1>
                 <span className="text-xs text-neutral-500 dark:text-neutral-400">
-                  {eduSessions.length} total slots · {eduClassrooms.length} campus rooms
+                  {eduSessions.length} créneaux · {eduClassrooms.length} salles
                 </span>
               </div>
               <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
@@ -155,62 +188,6 @@ export const EducationTimetableView: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-2.5 flex-wrap self-start sm:self-auto">
-            {/* Facility Pill: Atlas Academy ▾ */}
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => setIsFacilityDropdownOpen(!isFacilityDropdownOpen)}
-                className="h-10 px-4 rounded-xl bg-[#F4EFEA] dark:bg-neutral-800/80 border border-[#E8DFD8] dark:border-neutral-700 flex items-center gap-2 cursor-pointer hover:bg-[#EFE8E1] dark:hover:bg-neutral-800 transition-colors shadow-2xs"
-              >
-                <Home size={15} className="text-[#C4785A]" />
-                <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
-                  {currentBranch?.name || 'Campus 1'}
-                </span>
-                <ChevronDown
-                  size={14}
-                  className={`text-neutral-500 transition-transform ${
-                    isFacilityDropdownOpen ? 'rotate-180' : ''
-                  }`}
-                />
-              </button>
-
-              {/* Facility Dropdown Menu */}
-              {isFacilityDropdownOpen && (
-                <div className="absolute right-0 rtl:right-auto rtl:left-0 mt-2 w-64 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
-                  <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
-                    Centres & Campus
-                  </div>
-                  {businesses.map((biz) => {
-                    const isCurrent = biz.id === currentBusinessId;
-                    const matchingBranch = branches.find((b) => b.businessId === biz.id);
-                    return (
-                      <button
-                        key={biz.id}
-                        type="button"
-                        onClick={() => {
-                          switchBusiness(biz.id);
-                          if (matchingBranch) switchBranch(matchingBranch.id);
-                          setIsFacilityDropdownOpen(false);
-                        }}
-                        className={`w-full px-3 py-2 text-left rtl:text-right flex items-center justify-between text-xs transition-colors cursor-pointer ${
-                          isCurrent
-                            ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold'
-                            : 'text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2 min-w-0">
-                          <Building2 size={14} className={isCurrent ? 'text-[#C4785A]' : 'text-neutral-400'} />
-                          <span className="truncate">{biz.name}</span>
-                        </div>
-                        {isCurrent && <Check size={14} />}
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-
-            {/* Conflict Alert Capsule */}
             {conflicts.size > 0 && (
               <div className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-400 text-xs font-semibold">
                 <AlertTriangle size={14} />
@@ -218,7 +195,6 @@ export const EducationTimetableView: React.FC = () => {
               </div>
             )}
 
-            {/* New Session Button */}
             <AtriumButton
               variant="primary"
               size="sm"
@@ -231,7 +207,7 @@ export const EducationTimetableView: React.FC = () => {
           </div>
         </div>
 
-        {/* Top Metrics Pod Tray (Screenshot_30: bg-[#F8F9FA], rounded-[24px], p-5) */}
+        {/* Canonical 3-Card Top Metrics Pod Tray */}
         <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-3">
           <div>
             <h3 className="text-xs font-bold text-neutral-900 dark:text-white tracking-tight">
@@ -243,7 +219,6 @@ export const EducationTimetableView: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {/* Inset White Card 1: Total Slots */}
             <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
@@ -264,7 +239,6 @@ export const EducationTimetableView: React.FC = () => {
               </div>
             </div>
 
-            {/* Inset White Card 2: Classrooms Active */}
             <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
@@ -285,14 +259,13 @@ export const EducationTimetableView: React.FC = () => {
               </div>
             </div>
 
-            {/* Inset Card 3: DARK ESPRESSO CARD (#1F1D1B) — Conflict & Integrity Monitor */}
             <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-medium text-neutral-400">
                   Intégrité des Horaires
                 </span>
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30 inline-block">
-                  {conflicts.size > 0 ? `${conflicts.size} Conflits Détectés` : 'Aucun Chevauchement'}
+                  {conflicts.size > 0 ? `${conflicts.size} Conflits Détectés` : 'Optimal'}
                 </span>
               </div>
               <div>
@@ -308,263 +281,370 @@ export const EducationTimetableView: React.FC = () => {
           </div>
         </div>
 
-        {/* Bottom Pod Tray (Screenshot_30: bg-[#F8F9FA], rounded-[24px], p-5) */}
-        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
-          
-          {/* Integrated Toolbar */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <CalendarIcon size={18} className="text-neutral-700 dark:text-neutral-300" />
-              <h2 className="text-sm font-bold text-neutral-900 dark:text-white">
-                Grille des Séances
-              </h2>
-              <span className="px-2 py-0.5 text-[11px] font-bold rounded-full bg-neutral-200/70 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300">
-                {filteredSessions.length}
-              </span>
-            </div>
-
-            <div className="flex items-center gap-2.5 flex-wrap">
-              <FilterSelect
-                label={t('edu_label_cohort')}
-                value={selectedCohortId}
-                onChange={(val) => setSelectedCohortId(val?.target?.value ?? String(val))}
-                options={[
-                  { value: 'all', label: `All Cohorts (${eduCohorts.length})` },
-                  ...eduCohorts.map((c) => ({ value: c.id, label: c.name })),
-                ]}
-              />
-
-              <FilterSelect
-                label={t('edu_field_classroom')}
-                value={selectedClassroomId}
-                onChange={(val) => setSelectedClassroomId(val?.target?.value ?? String(val))}
-                options={[
-                  { value: 'all', label: `All Rooms (${eduClassrooms.length})` },
-                  ...eduClassrooms.map((r) => ({
-                    value: r.id,
-                    label: `${r.name} (Cap: ${r.capacity})`,
-                  })),
-                ]}
-              />
-
-              <Seek
-                value={sessionSearch}
-                onChange={setSessionSearch}
-                placeholder="Search topic, coach, room..."
-                openWidth={220}
-                shutSize={36}
-              />
-            </div>
-          </div>
-
-          {/* Schedule Grid */}
-          <div>
-            {filteredSessions.length === 0 ? (
-              <div className="p-12 text-center rounded-2xl border border-dashed border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/40">
-                <CalendarIcon size={36} className="mx-auto mb-2 text-neutral-400 opacity-50" />
-                <p className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">
-                  No scheduled sessions found
-                </p>
-                <p className="text-xs text-neutral-500 mt-1">
-                  Click "{t('edu_btn_add_session')}" above to add new timetable entries.
-                </p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                {filteredSessions.map((session) => {
-                  const hasConflict = conflicts.has(session.id);
-                  return (
-                    <div
-                      key={session.id}
-                      onClick={() => setSelectedSessionForDetail(session)}
-                      className={`p-5 rounded-[18px] border transition-all cursor-pointer relative overflow-hidden group shadow-2xs flex flex-col justify-between ${
-                        hasConflict
-                          ? 'border-rose-400 bg-rose-50/20 dark:bg-rose-950/20'
-                          : 'border-[#E9EEF0] dark:border-neutral-800 bg-white dark:bg-neutral-800 hover:border-[#C4785A]/40'
-                      }`}
-                    >
-                      <div>
-                        {/* Top Row: Time Badge & Conflict Flag */}
-                        <div className="flex items-center justify-between mb-3">
-                          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-neutral-100 dark:bg-neutral-700 text-neutral-800 dark:text-neutral-200 text-xs font-bold font-mono">
-                            <Clock size={13} className="text-[#C4785A]" />
-                            <span>
-                              {session.startTime} - {session.endTime}
-                            </span>
-                          </div>
-
-                          {hasConflict ? (
-                            <span className="flex items-center gap-1 text-[11px] font-bold text-rose-600 dark:text-rose-400">
-                              <AlertTriangle size={13} />
-                              Room Conflict
-                            </span>
-                          ) : (
-                            <span className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">
-                              {session.date}
-                            </span>
-                          )}
-                        </div>
-
-                        <h3 className="text-sm font-bold text-neutral-900 dark:text-white group-hover:text-[#C4785A] transition-colors">
-                          {session.cohortName}
-                        </h3>
-
-                        {session.topic && (
-                          <p className="text-xs text-neutral-600 dark:text-neutral-300 mt-1 line-clamp-2">
-                            {session.topic}
-                          </p>
-                        )}
-
-                        <div className="mt-3 pt-3 border-t border-neutral-100 dark:border-neutral-700/80 space-y-1.5 text-xs text-neutral-500 dark:text-neutral-400">
-                          <div className="flex items-center gap-2">
-                            <MapPin size={13} className="text-neutral-400 shrink-0" />
-                            <span className="truncate">{session.classroomName || 'Room A-101'}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <User size={13} className="text-neutral-400 shrink-0" />
-                            <span className="truncate">{t('edu_field_instructor')}: {session.instructorName}</span>
-                          </div>
-                        </div>
+        {/* Main Collection Area + 390px Inspector Drawer */}
+        <div className="flex flex-col lg:flex-row gap-6 items-start">
+          <div className="flex-1 min-w-0 w-full">
+            <UniversalDataCollection<EduSession>
+              title={isAr ? 'جدول الحصص والتوقيت' : 'Grille Générale des Séances & Horaires'}
+              subtitle={isAr ? 'توزيع القاعات، الأفواج والمدربين' : 'Suivi des cours, créneaux horaires et feuilles d’émargement'}
+              items={filteredSessions}
+              keyExtractor={(s) => s.id}
+              searchPlaceholder={isAr ? 'بحث بالفوج، القاعة، المدرب...' : 'Rechercher matière, cohorte, salle, formateur...'}
+              searchFilter={(s, query) =>
+                (s.topic || '').toLowerCase().includes(query.toLowerCase()) ||
+                (s.instructorName || '').toLowerCase().includes(query.toLowerCase()) ||
+                (s.cohortName || '').toLowerCase().includes(query.toLowerCase()) ||
+                (s.classroomName || '').toLowerCase().includes(query.toLowerCase()) ||
+                s.date.includes(query)
+              }
+              onSelectRow={(s) => setSelectedSession(s)}
+              customActions={(s) => getSessionActions(s)}
+              columns={[
+                {
+                  id: 'schedule',
+                  header: isAr ? 'التوقيت' : 'Horaire & Date',
+                  width: '160px',
+                  sortable: true,
+                  renderCell: (s) => (
+                    <div className="space-y-0.5 font-mono">
+                      <div className="font-bold text-xs text-[#C4785A] flex items-center gap-1.5">
+                        <CalendarIcon size={12} />
+                        <span>{s.date}</span>
                       </div>
-
-                      {/* Footer Action */}
-                      <div className="mt-4 pt-3 border-t border-neutral-100 dark:border-neutral-700/80 flex items-center justify-between">
-                        <span className="text-[10px] font-semibold uppercase px-2 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300">
-                          {session.status}
-                        </span>
-
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setRollCallSession(session);
-                            setIsRollCallOpen(true);
-                          }}
-                          className="px-2.5 py-1.5 rounded-lg bg-neutral-100 dark:bg-neutral-700 hover:bg-[#C4785A] hover:text-white text-neutral-700 dark:text-neutral-300 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
-                        >
-                          <CheckCircle2 size={13} />
-                          <span>{t('edu_btn_roll_call')}</span>
-                        </button>
+                      <div className="text-[11px] text-neutral-500 flex items-center gap-1">
+                        <Clock size={11} />
+                        <span>{s.startTime} - {s.endTime}</span>
                       </div>
                     </div>
-                  );
-                })}
-              </div>
-            )}
+                  ),
+                },
+                {
+                  id: 'cohort',
+                  header: isAr ? 'الفوج' : 'Cohorte / Promotion',
+                  width: '180px',
+                  renderCell: (s) => (
+                    <div>
+                      <span className="font-bold text-xs text-neutral-900 dark:text-neutral-100 block">
+                        {s.cohortName}
+                      </span>
+                      {s.topic && (
+                        <span className="text-[11px] text-neutral-500 line-clamp-1">
+                          {s.topic}
+                        </span>
+                      )}
+                    </div>
+                  ),
+                },
+                {
+                  id: 'room',
+                  header: isAr ? 'القاعة' : 'Salle Campus',
+                  width: '140px',
+                  renderCell: (s) => (
+                    <span className="text-xs font-semibold text-neutral-800 dark:text-neutral-200 flex items-center gap-1">
+                      <MapPin size={12} className="text-[#C4785A]" />
+                      <span>{s.classroomName || 'Non assignée'}</span>
+                    </span>
+                  ),
+                },
+                {
+                  id: 'instructor',
+                  header: isAr ? 'المدرب' : 'Formateur / Enseignant',
+                  width: '170px',
+                  renderCell: (s) => (
+                    <span className="text-xs font-medium text-neutral-700 dark:text-neutral-300 flex items-center gap-1">
+                      <User size={12} className="text-neutral-400" />
+                      <span>{s.instructorName || 'Formateur'}</span>
+                    </span>
+                  ),
+                },
+                {
+                  id: 'status',
+                  header: isAr ? 'الوضعية' : 'Statut Séance',
+                  width: '120px',
+                  renderCell: (s) => {
+                    const hasConflict = conflicts.has(s.id);
+                    return hasConflict ? (
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300 flex items-center gap-1">
+                        <AlertTriangle size={10} />
+                        Conflit
+                      </span>
+                    ) : (
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 flex items-center gap-1">
+                        <CheckCircle2 size={10} />
+                        Planifiée
+                      </span>
+                    );
+                  },
+                },
+              ]}
+              renderCard={(s) => {
+                const hasConflict = conflicts.has(s.id);
+                return (
+                  <div className="p-4 flex flex-col justify-between h-full space-y-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="font-mono text-xs font-bold text-[#C4785A] bg-[#C4785A]/10 px-2 py-0.5 rounded">
+                        {s.startTime} - {s.endTime}
+                      </div>
+                      {hasConflict ? (
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800">
+                          Conflit
+                        </span>
+                      ) : (
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                          Planifiée
+                        </span>
+                      )}
+                    </div>
+
+                    <div>
+                      <h4 className="font-bold text-xs text-neutral-900 dark:text-white line-clamp-1">
+                        {s.cohortName}
+                      </h4>
+                      <p className="text-[11px] text-neutral-500 mt-0.5 line-clamp-1">
+                        {s.topic || 'Séance de cours'}
+                      </p>
+                    </div>
+
+                    <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-xs text-neutral-500">
+                      <span>{s.classroomName || 'Salle'}</span>
+                      <span className="font-medium text-neutral-700 dark:text-neutral-300 truncate max-w-[120px]">
+                        {s.instructorName}
+                      </span>
+                    </div>
+                  </div>
+                );
+              }}
+            />
           </div>
+
+          {/* 390px Side Inspector Drawer */}
+          {selectedSession && (
+            <div className="w-full lg:w-[390px] shrink-0 bg-white dark:bg-neutral-850 rounded-2xl border border-[#EDF1F3] dark:border-neutral-800 shadow-lg flex flex-col h-[740px] overflow-hidden animate-in slide-in-from-right-4 duration-200">
+              {/* Inspector Top Header */}
+              <div className="p-4 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between bg-neutral-50 dark:bg-neutral-900/50">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold">
+                    <CalendarIcon size={16} />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-xs text-neutral-900 dark:text-white flex items-center gap-1.5 font-mono">
+                      {selectedSession.date} · {selectedSession.startTime}
+                    </h3>
+                    <p className="text-[10px] text-neutral-500 truncate max-w-[210px]">
+                      {selectedSession.cohortName}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setSelectedSession(null)}
+                  className="w-7 h-7 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-800 flex items-center justify-center text-neutral-500 transition-colors"
+                >
+                  <X size={15} />
+                </button>
+              </div>
+
+              {/* Tab Navigation */}
+              <div className="flex border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 px-3 pt-2 gap-2">
+                <button
+                  onClick={() => setInspectorTab('seance')}
+                  className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${
+                    inspectorTab === 'seance'
+                      ? 'border-[#C4785A] text-[#C4785A]'
+                      : 'border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
+                  }`}
+                >
+                  {isAr ? 'تفاصيل الحصة' : 'Séance & Cours'}
+                </button>
+                <button
+                  onClick={() => setInspectorTab('salle')}
+                  className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${
+                    inspectorTab === 'salle'
+                      ? 'border-[#C4785A] text-[#C4785A]'
+                      : 'border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
+                  }`}
+                >
+                  {isAr ? 'القاعة والتجهيزات' : 'Salle & Capacité'}
+                </button>
+                <button
+                  onClick={() => setInspectorTab('emargement')}
+                  className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${
+                    inspectorTab === 'emargement'
+                      ? 'border-[#C4785A] text-[#C4785A]'
+                      : 'border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
+                  }`}
+                >
+                  {isAr ? 'ورقة الحضور' : 'Émargement'}
+                </button>
+              </div>
+
+              {/* Inspector Body */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs">
+                {inspectorTab === 'seance' && (
+                  <div className="space-y-4">
+                    <div className="p-3 bg-neutral-50 dark:bg-neutral-900/60 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
+                      <span className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold block">
+                        Fiche Pédagogique
+                      </span>
+                      <div className="flex justify-between">
+                        <span className="text-neutral-500">Promotion / Cohorte:</span>
+                        <span className="font-bold text-neutral-900 dark:text-white">{selectedSession.cohortName}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-neutral-500">Date & Créneau:</span>
+                        <span className="font-mono font-bold text-neutral-900 dark:text-white">{selectedSession.date} ({selectedSession.startTime} - {selectedSession.endTime})</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-neutral-500">Formateur:</span>
+                        <span className="font-medium text-neutral-900 dark:text-white">{selectedSession.instructorName}</span>
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <span className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold">
+                        Sujet / Module Traité
+                      </span>
+                      <div className="p-3 bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 text-neutral-800 dark:text-neutral-200">
+                        {selectedSession.topic || 'Séance magistrale et travaux pratiques dirigés selon le syllabus de la formation.'}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {inspectorTab === 'salle' && (
+                  <div className="space-y-4">
+                    <div className="p-3 bg-neutral-50 dark:bg-neutral-900/60 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
+                      <span className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold block">
+                        Espace Pédagogique Assigné
+                      </span>
+                      <div className="flex justify-between">
+                        <span className="text-neutral-500">Salle de cours:</span>
+                        <span className="font-bold text-neutral-900 dark:text-white">{selectedSession.classroomName || 'Salle A1'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-neutral-500">Équipements:</span>
+                        <span className="text-neutral-700 dark:text-neutral-300">Vidéoprojecteur HD, Tableau blanc, Wi-Fi</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {inspectorTab === 'emargement' && (
+                  <div className="space-y-4">
+                    <div className="p-3 bg-neutral-50 dark:bg-neutral-900/60 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
+                      <span className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold block">
+                        Appel & Présences Étudiants
+                      </span>
+                      <p className="text-[11px] text-neutral-600 dark:text-neutral-400">
+                        Feuille d'émargement officielle de la séance. Les absences non justifiées sont transmises à l'administration.
+                      </p>
+                      <button
+                        onClick={() => {
+                          setRollCallSession(selectedSession);
+                          setIsRollCallOpen(true);
+                        }}
+                        className="w-full py-2 rounded-lg text-xs font-bold bg-[#C4785A] hover:bg-[#b06a4e] text-white transition-colors"
+                      >
+                        Lancer l'Appel des Présences
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Inspector Footer Actions */}
+              <div className="p-4 border-t border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/50 space-y-2">
+                <AtriumButton
+                  variant="primary"
+                  className="w-full justify-center"
+                  icon={<Printer size={14} />}
+                  onClick={() => {
+                    showToast(
+                      isAr ? 'جاري طباعة ورقة الحضور' : 'Impression de la feuille d’émargement',
+                      'success'
+                    );
+                  }}
+                >
+                  {isAr ? 'طباعة ورقة الحضور' : 'Imprimer Feuille d’Émargement'}
+                </AtriumButton>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Schedule Session Modal */}
+      {/* Add Session Modal */}
       {isAddSessionModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="relative w-full max-w-lg bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl border border-neutral-200 dark:border-neutral-800 p-6">
-            <div className="flex items-center justify-between pb-4 border-b border-neutral-100 dark:border-neutral-800">
-              <h2 className="text-base font-bold text-neutral-900 dark:text-white">
-                {t('edu_session_modal_title')}
-              </h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-neutral-900 rounded-[28px] border border-neutral-200 dark:border-neutral-800 p-6 w-full max-w-md shadow-xl space-y-5">
+            <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
+              <div className="flex items-center gap-2">
+                <CalendarIcon size={20} className="text-[#C4785A]" />
+                <h3 className="font-bold text-base text-neutral-900 dark:text-white">
+                  {t('edu_btn_add_session')}
+                </h3>
+              </div>
               <button
-                type="button"
                 onClick={() => setIsAddSessionModalOpen(false)}
-                className="w-8 h-8 rounded-full flex items-center justify-center text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+                className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 p-1"
               >
-                <X size={16} />
+                <X size={18} />
               </button>
             </div>
 
-            <form onSubmit={handleCreateSession} className="space-y-4 pt-4 text-xs">
+            <form onSubmit={handleCreateSession} className="space-y-4">
               <LabelSelect
-                field="Cohort"
                 label={t('edu_label_cohort')}
                 value={formData.cohortId}
-                onChange={(val) => setFormData({ ...formData, cohortId: typeof val === 'string' ? val : val.target?.value || val })}
-                options={eduCohorts.map((c) => ({
-                  value: c.id,
-                  label: `${c.name} (${c.cohortCode || c.courseTitle})`,
-                }))}
-                height={44}
-                corner={14}
+                onChange={(v) => setFormData({ ...formData, cohortId: v })}
+                options={eduCohorts.map((c) => ({ value: c.id, label: c.name }))}
               />
 
-              <div className="grid grid-cols-2 gap-3">
-                <LabelSelect
-                  field="Classroom"
-                  label={t('edu_field_classroom')}
-                  value={formData.classroomId}
-                  onChange={(val) => setFormData({ ...formData, classroomId: typeof val === 'string' ? val : val.target?.value || val })}
-                  options={eduClassrooms.map((r) => ({
-                    value: r.id,
-                    label: `${r.name} (Cap: ${r.capacity})`,
-                  }))}
-                  height={44}
-                  corner={14}
-                />
-                <LabelSelect
-                  field="Instructor"
-                  label={t('edu_field_instructor')}
-                  value={formData.instructorId}
-                  onChange={(val) => setFormData({ ...formData, instructorId: typeof val === 'string' ? val : val.target?.value || val })}
-                  options={staff.map((s) => ({
-                    value: s.id,
-                    label: `${s.fullName} (${s.role})`,
-                  }))}
-                  height={44}
-                  corner={14}
-                />
-              </div>
-
-              <LabelInput
-                id="session-date"
-                label={t('edu_field_session_date')}
-                type="date"
-                required
-                value={formData.date}
-                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+              <LabelSelect
+                label={t('edu_field_classroom')}
+                value={formData.classroomId}
+                onChange={(v) => setFormData({ ...formData, classroomId: v })}
+                options={eduClassrooms.map((r) => ({ value: r.id, label: `${r.name} (Cap: ${r.capacity})` }))}
               />
 
               <div className="grid grid-cols-2 gap-3">
                 <LabelInput
-                  id="session-start-time"
-                  label={t('edu_field_session_start')}
-                  type="time"
+                  label="Date"
+                  type="date"
+                  value={formData.date}
+                  onChange={(v) => setFormData({ ...formData, date: v })}
                   required
-                  value={formData.startTime}
-                  onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
                 />
-                <LabelInput
-                  id="session-end-time"
-                  label={t('edu_field_session_end')}
-                  type="time"
-                  required
-                  value={formData.endTime}
-                  onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
-                />
+                <div className="grid grid-cols-2 gap-1.5">
+                  <LabelInput
+                    label="Début"
+                    type="time"
+                    value={formData.startTime}
+                    onChange={(v) => setFormData({ ...formData, startTime: v })}
+                    required
+                  />
+                  <LabelInput
+                    label="Fin"
+                    type="time"
+                    value={formData.endTime}
+                    onChange={(v) => setFormData({ ...formData, endTime: v })}
+                    required
+                  />
+                </div>
               </div>
 
               <LabelInput
-                id="session-topic"
-                label={t('edu_field_session_topic')}
-                placeholder="e.g. Chapter 4: Calculus Limits & Functions"
+                label="Module / Thème du cours"
                 value={formData.topic}
-                onChange={(e) => setFormData({ ...formData, topic: e.target.value })}
+                onChange={(v) => setFormData({ ...formData, topic: v })}
+                placeholder="Ex: Programmation Web Avancée"
               />
 
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-neutral-100 dark:border-neutral-800">
-                <AtriumButton
-                  variant="outline"
-                  size="sm"
-                  type="button"
-                  onClick={() => setIsAddSessionModalOpen(false)}
-                >
-                  {t('common_cancel')}
+              <div className="flex justify-end gap-2 pt-2">
+                <AtriumButton variant="secondary" onClick={() => setIsAddSessionModalOpen(false)}>
+                  Annuler
                 </AtriumButton>
-                <AtriumButton
-                  variant="primary"
-                  size="sm"
-                  glow
-                  type="submit"
-                >
-                  {t('edu_btn_save_session')}
+                <AtriumButton variant="primary" type="submit">
+                  Ajouter au Planning
                 </AtriumButton>
               </div>
             </form>
@@ -573,7 +653,7 @@ export const EducationTimetableView: React.FC = () => {
       )}
 
       {/* Roll Call Modal */}
-      {isRollCallOpen && (
+      {isRollCallOpen && rollCallSession && (
         <RollCallModal
           session={rollCallSession}
           onClose={() => {

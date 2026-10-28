@@ -10,25 +10,27 @@ interface MedicalPatientModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (patient: MedicalPatient) => void;
+  patientToEdit?: MedicalPatient | null;
 }
 
 export const MedicalPatientModal: React.FC<MedicalPatientModalProps> = ({
   isOpen,
   onClose,
   onSave,
+  patientToEdit,
 }) => {
   const { language, currentBusiness, currentBranch, currentUser } = useAtriumStore();
-  const [fullName, setFullName] = useState('');
-  const [nationalId, setNationalId] = useState('');
-  const [phone, setPhone] = useState('');
-  const [dob, setDob] = useState('1990-01-01');
-  const [gender, setGender] = useState<'Male' | 'Female' | 'Other'>('Male');
-  const [bloodGroup, setBloodGroup] = useState<'A+' | 'A-' | 'B+' | 'B-' | 'AB+' | 'AB-' | 'O+' | 'O-'>('O+');
-  const [allergies, setAllergies] = useState('');
-  const [chronicConditions, setChronicConditions] = useState('');
-  const [emergencyContact, setEmergencyContact] = useState('');
-  const [emergencyPhone, setEmergencyPhone] = useState('');
-  const [notes, setNotes] = useState('');
+  const [fullName, setFullName] = useState(patientToEdit?.fullName || '');
+  const [nationalId, setNationalId] = useState(patientToEdit?.nationalId || '');
+  const [phone, setPhone] = useState(patientToEdit?.phone || '');
+  const [dob, setDob] = useState(patientToEdit?.dateOfBirth || '1990-01-01');
+  const [gender, setGender] = useState<'Male' | 'Female' | 'Other'>(patientToEdit?.gender || 'Male');
+  const [bloodGroup, setBloodGroup] = useState<'A+' | 'A-' | 'B+' | 'B-' | 'AB+' | 'AB-' | 'O+' | 'O-'>(patientToEdit?.bloodGroup || 'O+');
+  const [allergies, setAllergies] = useState(patientToEdit?.allergies?.join(', ') || '');
+  const [chronicConditions, setChronicConditions] = useState(patientToEdit?.chronicConditions?.join(', ') || '');
+  const [emergencyContact, setEmergencyContact] = useState(patientToEdit?.emergencyContact || '');
+  const [emergencyPhone, setEmergencyPhone] = useState(patientToEdit?.emergencyPhone || '');
+  const [notes, setNotes] = useState(patientToEdit?.notes || '');
 
   if (!isOpen) return null;
 
@@ -44,12 +46,12 @@ export const MedicalPatientModal: React.FC<MedicalPatientModalProps> = ({
       return;
     }
 
-    const newPatient: MedicalPatient = {
-      id: `pat_${Date.now()}`,
-      accountId: 'acc_01',
-      businessId: currentBusiness?.id || 'biz_medical',
-      branchId: currentBranch?.id || 'branch_medical_main',
-      staffId: currentUser?.id || 'staff_01',
+    const savedPatient: MedicalPatient = {
+      id: patientToEdit ? patientToEdit.id : `pat_${Date.now()}`,
+      accountId: patientToEdit?.accountId || 'acc_01',
+      businessId: patientToEdit?.businessId || currentBusiness?.id || 'biz_medical',
+      branchId: patientToEdit?.branchId || currentBranch?.id || 'branch_medical_main',
+      staffId: patientToEdit?.staffId || currentUser?.id || 'staff_01',
       fullName: fullName.trim(),
       nationalId: nationalId.trim() || undefined,
       phone: phone.trim(),
@@ -61,16 +63,10 @@ export const MedicalPatientModal: React.FC<MedicalPatientModalProps> = ({
       emergencyContact: emergencyContact.trim() || undefined,
       emergencyPhone: emergencyPhone.trim() || undefined,
       notes: notes.trim() || undefined,
-      createdAt: new Date().toISOString(),
+      createdAt: patientToEdit?.createdAt || new Date().toISOString(),
     };
 
-    onSave(newPatient);
-    showToast(
-      language === 'ar'
-        ? 'تم إنشاء الملف الطبي للمريض بنجاح'
-        : 'Dossier médical patient créé avec succès',
-      'success'
-    );
+    onSave(savedPatient);
     onClose();
   };
 
@@ -100,7 +96,9 @@ export const MedicalPatientModal: React.FC<MedicalPatientModalProps> = ({
               <UserPlus size={16} />
             </div>
             <h3 className="font-bold text-sm text-neutral-900 dark:text-white">
-              {language === 'ar' ? 'فتح ملف مريض جديد (EHR)' : 'Nouveau Dossier Patient (EHR)'}
+              {patientToEdit
+                ? (language === 'ar' ? 'تعديل الملف الطبي' : 'Modifier le Dossier Patient')
+                : (language === 'ar' ? 'فتح ملف مريض جديد (EHR)' : 'Nouveau Dossier Patient (EHR)')}
             </h3>
           </div>
           <button

@@ -13,20 +13,25 @@ import { CollectionEmptyState } from './CollectionEmptyState';
 import { KebabMenuItem } from './CollectionKebabMenu';
 
 export interface ColumnDefinition<T> {
-  key: string;
+  key?: string;
+  id?: string;
   header: string;
   width?: string; // e.g. "2.2*", "1.2*", "120px"
   minWidth?: string;
   sortable?: boolean;
-  renderCell: (item: T, isSelected: boolean) => React.ReactNode;
+  accessorKey?: string;
+  renderCell?: (item: T, isSelected: boolean) => React.ReactNode;
+  cell?: (item: T, isSelected?: boolean) => React.ReactNode;
 }
 
 export interface UniversalDataCollectionProps<T> {
-  items: T[];
+  items?: T[];
+  data?: T[];
   keyExtractor: (item: T) => string;
   defaultViewMode?: 'list' | 'grid';
   columns: ColumnDefinition<T>[];
-  renderCard: (item: T, isSelected: boolean) => React.ReactNode;
+  renderCard?: (item: T, isSelected: boolean) => React.ReactNode;
+  renderGridCard?: (item: T, isSelected?: boolean) => React.ReactNode;
 
   // Row and Card Click
   onItemClick?: (item: T) => void;
@@ -38,19 +43,32 @@ export interface UniversalDataCollectionProps<T> {
   onToggleStatus?: (item: T) => void;
   onTogglePin?: (item: T) => void;
   onDelete?: (item: T) => void;
-  customActions?: (item: T) => ActionButtonDef[];
+  customActions?: ((item: T) => ActionButtonDef[]) | ActionButtonDef[];
   extraKebabItems?: (item: T) => KebabMenuItem[];
 
   // Selection & Pin State
   selectedIds?: Set<string>;
   onSelectionChange?: (selectedIds: Set<string>) => void;
   isPinned?: (item: T) => boolean;
+  pinnedIds?: Set<string>;
+  onPinToggle?: (itemOrId: any) => void;
   isActive?: (item: T) => boolean;
 
   // Sorting
   sortBy?: string;
   sortDirection?: 'asc' | 'desc';
-  onSortChange?: (columnKey: string) => void;
+  sortDir?: 'asc' | 'desc';
+  onSortChange?: (field: string, direction: 'asc' | 'desc') => void;
+
+  // Search and Filters passthroughs
+  searchQuery?: string;
+  onSearchChange?: (val: string) => void;
+  searchPlaceholder?: string;
+  filterValue?: string;
+  onFilterChange?: (val: string) => void;
+  filterOptions?: { value: string; label: string }[];
+  viewMode?: 'list' | 'grid';
+  onViewModeChange?: (mode: 'list' | 'grid') => void;
 
   // View Mode Switcher Header Control
   showViewToggle?: boolean;
@@ -64,14 +82,22 @@ export interface UniversalDataCollectionProps<T> {
   onAddFirstItem?: () => void;
   onResetFilters?: () => void;
   hasActiveFilters?: boolean;
+
+  // Header & Search
+  title?: string;
+  subtitle?: string;
+  searchFilter?: (item: T, query: string) => boolean;
+  onSelectRow?: (item: T) => void;
 }
 
 export function UniversalDataCollection<T>({
   items,
+  data,
   keyExtractor,
   defaultViewMode = 'list',
   columns,
   renderCard,
+  renderGridCard,
   onItemClick,
   onViewDetails,
   onEdit,
@@ -84,10 +110,15 @@ export function UniversalDataCollection<T>({
   selectedIds = new Set<string>(),
   onSelectionChange,
   isPinned = () => false,
+  pinnedIds,
+  onPinToggle,
   isActive = () => true,
   sortBy,
   sortDirection = 'asc',
+  sortDir,
   onSortChange,
+  viewMode: controlledViewMode,
+  onViewModeChange,
   showViewToggle = true,
   headerActions,
   emptyTitle,
@@ -97,14 +128,70 @@ export function UniversalDataCollection<T>({
   onAddFirstItem,
   onResetFilters,
   hasActiveFilters = false,
+  title,
+  subtitle,
+  searchFilter,
+  searchQuery,
+  onSearchChange,
+  searchPlaceholder,
+  filterValue,
+  onFilterChange,
+  filterOptions,
+  onSelectRow,
 }: UniversalDataCollectionProps<T>) {
-  const [viewMode, setViewMode] = useState<'list' | 'grid'>(defaultViewMode);
+  const [internalViewMode, setInternalViewMode] = useState<'list' | 'grid'>(defaultViewMode);
+  const [internalSearchQuery, setInternalSearchQuery] = useState('');
+  const viewMode = controlledViewMode !== undefined ? controlledViewMode : internalViewMode;
+  const setViewMode = (mode: 'list' | 'grid') => {
+    setInternalViewMode(mode);
+    onViewModeChange?.(mode);
+  };
+
+  const effectiveSearchQuery = searchQuery !== undefined ? searchQuery : internalSearchQuery;
+  let rawItems = items || data || [];
+  if (searchFilter && effectiveSearchQuery.trim()) {
+    rawItems = rawItems.filter((item) => searchFilter(item, effectiveSearchQuery));
+  }
+  const actualItems = rawItems;
+  const effectiveSortDir = sortDir || sortDirection;
+
+  const cardRenderer = (item: T, isSelected: boolean) => {
+    if (renderCard) return renderCard(item, isSelected);
+    if (renderGridCard) return renderGridCard(item, isSelected);
+    return null;
+  };
+
+  const getCustomActions = (item: T): ActionButtonDef[] | undefined => {
+    if (!customActions) return undefined;
+    if (typeof customActions === 'function') {
+      return customActions(item);
+    }
+    return customActions;
+  };
+
+  const checkPinned = (item: T): boolean => {
+    const id = keyExtractor(item);
+    if (pinnedIds) return pinnedIds.has(id);
+    return isPinned(item);
+  };
+
+  const handleTogglePin = (item: T) => {
+    const id = keyExtractor(item);
+    if (onPinToggle) onPinToggle(id);
+    else if (onTogglePin) onTogglePin(item);
+  };
+
+  const handleSort = (key: string) => {
+    if (!onSortChange) return;
+    const nextDir = effectiveSortDir === 'asc' ? 'desc' : 'asc';
+    (onSortChange as any)(key, nextDir);
+  };
 
   // Multi-select select all calculation
-  const allItemIds = useMemo(() => items.map(keyExtractor), [items, keyExtractor]);
-  const isAllSelected = items.length > 0 && allItemIds.every((id) => selectedIds.has(id));
+  const allItemIds = useMemo(() => actualItems.map(keyExtractor), [actualItems, keyExtractor]);
+  const isAllSelected = actualItems.length > 0 && allItemIds.every((id) => selectedIds.has(id));
   const isPartiallySelected =
-    items.length > 0 && !isAllSelected && allItemIds.some((id) => selectedIds.has(id));
+    actualItems.length > 0 && !isAllSelected && allItemIds.some((id) => selectedIds.has(id));
 
   const handleToggleSelectAll = () => {
     if (!onSelectionChange) return;
@@ -128,7 +215,7 @@ export function UniversalDataCollection<T>({
   };
 
   // Render Empty State
-  if (items.length === 0) {
+  if (actualItems.length === 0) {
     return (
       <div className="w-full flex flex-col">
         {/* Optional View Switcher Bar Even When Empty */}
@@ -180,37 +267,68 @@ export function UniversalDataCollection<T>({
   return (
     <div className="w-full flex flex-col">
       {/* ================= TOP VIEW SWITCHER / HEADER CONTROLS ================= */}
-      <div className="flex items-center justify-between pb-2">
-        <div className="flex items-center gap-2">{headerActions}</div>
-
-        {showViewToggle && (
-          <div className="flex items-center bg-neutral-100 dark:bg-neutral-800/80 p-0.5 rounded-xl border border-neutral-200/50 dark:border-neutral-700/50">
-            <button
-              type="button"
-              onClick={() => setViewMode('list')}
-              className={`p-1.5 rounded-lg transition-all cursor-pointer ${
-                viewMode === 'list'
-                  ? 'bg-[#C4785A] text-white shadow-sm'
-                  : 'text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200'
-              }`}
-              title="List View"
-            >
-              <List className="w-4 h-4" />
-            </button>
-            <button
-              type="button"
-              onClick={() => setViewMode('grid')}
-              className={`p-1.5 rounded-lg transition-all cursor-pointer ${
-                viewMode === 'grid'
-                  ? 'bg-[#C4785A] text-white shadow-sm'
-                  : 'text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200'
-              }`}
-              title="Grid View"
-            >
-              <LayoutGrid className="w-4 h-4" />
-            </button>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3">
+        {title ? (
+          <div>
+            <div className="flex items-center gap-2">
+              <h2 className="text-sm font-bold text-neutral-900 dark:text-white">{title}</h2>
+              <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 font-mono">
+                {actualItems.length}
+              </span>
+            </div>
+            {subtitle && (
+              <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">{subtitle}</p>
+            )}
           </div>
+        ) : (
+          <div className="flex items-center gap-2">{headerActions}</div>
         )}
+
+        <div className="flex items-center gap-2.5 ml-auto">
+          {searchFilter && (
+            <div className="w-56">
+              <input
+                type="text"
+                placeholder={searchPlaceholder || 'Rechercher...'}
+                value={effectiveSearchQuery}
+                onChange={(e) => {
+                  setInternalSearchQuery(e.target.value);
+                  onSearchChange?.(e.target.value);
+                }}
+                className="w-full h-8 px-3 rounded-xl text-xs bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#C4785A]"
+              />
+            </div>
+          )}
+
+          {showViewToggle && (
+            <div className="flex items-center bg-neutral-100 dark:bg-neutral-800/80 p-0.5 rounded-xl border border-neutral-200/50 dark:border-neutral-700/50">
+              <button
+                type="button"
+                onClick={() => setViewMode('list')}
+                className={`p-1.5 rounded-lg transition-all cursor-pointer ${
+                  viewMode === 'list'
+                    ? 'bg-[#C4785A] text-white shadow-sm'
+                    : 'text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200'
+                }`}
+                title="List View"
+              >
+                <List className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode('grid')}
+                className={`p-1.5 rounded-lg transition-all cursor-pointer ${
+                  viewMode === 'grid'
+                    ? 'bg-[#C4785A] text-white shadow-sm'
+                    : 'text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200'
+                }`}
+                title="Grid View"
+              >
+                <LayoutGrid className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* ================= LIST VIEW ================= */}
@@ -240,12 +358,13 @@ export function UniversalDataCollection<T>({
 
             {/* Column Headers */}
             <div className="flex-1 flex items-center gap-3 overflow-hidden">
-              {columns.map((col) => {
-                const isCurrentSort = sortBy === col.key;
+              {columns.map((col, idx) => {
+                const colKey = col.key || col.id || col.accessorKey || `hdr_${idx}`;
+                const isCurrentSort = sortBy === colKey;
 
                 return (
                   <div
-                    key={col.key}
+                    key={colKey}
                     style={{
                       flex: col.width?.includes('*')
                         ? col.width.replace('*', '')
@@ -258,14 +377,14 @@ export function UniversalDataCollection<T>({
                     {col.sortable ? (
                       <button
                         type="button"
-                        onClick={() => onSortChange?.(col.key)}
+                        onClick={() => handleSort(colKey)}
                         className="group flex items-center gap-1.5 text-[12px] font-semibold text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors cursor-pointer"
                       >
                         <span className="truncate">{col.header}</span>
                         {/* Sort arrow badge pill */}
                         <span className="inline-flex items-center px-1 py-0.5 rounded-[5px] bg-neutral-100 dark:bg-neutral-800 text-neutral-400 group-hover:text-neutral-700 dark:group-hover:text-neutral-200 transition-colors">
                           {isCurrentSort ? (
-                            sortDirection === 'asc' ? (
+                            effectiveSortDir === 'asc' ? (
                               <ArrowUp className="w-2.5 h-3 text-[#C4785A]" />
                             ) : (
                               <ArrowDown className="w-2.5 h-3 text-[#C4785A]" />
@@ -291,10 +410,10 @@ export function UniversalDataCollection<T>({
 
           {/* Scrollable list of row cards */}
           <div className="flex flex-col">
-            {items.map((item) => {
+            {actualItems.map((item) => {
               const id = keyExtractor(item);
               const isSelected = selectedIds.has(id);
-              const pinned = isPinned(item);
+              const pinned = checkPinned(item);
               const active = isActive(item);
 
               return (
@@ -304,13 +423,13 @@ export function UniversalDataCollection<T>({
                   isSelected={isSelected}
                   isPinned={pinned}
                   isActive={active}
-                  onRowClick={() => onItemClick?.(item)}
+                  onRowClick={() => (onItemClick || onSelectRow)?.(item)}
                   onViewDetails={onViewDetails ? () => onViewDetails(item) : undefined}
                   onEdit={onEdit ? () => onEdit(item) : undefined}
                   onToggleStatus={onToggleStatus ? () => onToggleStatus(item) : undefined}
-                  onTogglePin={onTogglePin ? () => onTogglePin(item) : undefined}
+                  onTogglePin={() => handleTogglePin(item)}
                   onDelete={onDelete ? () => onDelete(item) : undefined}
-                  customActions={customActions ? customActions(item) : undefined}
+                  customActions={getCustomActions(item)}
                   extraKebabItems={extraKebabItems ? extraKebabItems(item) : undefined}
                 >
                   {/* Column 0: Multi-select row checkbox */}
@@ -329,21 +448,30 @@ export function UniversalDataCollection<T>({
                   </div>
 
                   {/* Render Columns */}
-                  {columns.map((col) => (
-                    <div
-                      key={col.key}
-                      style={{
-                        flex: col.width?.includes('*')
-                          ? col.width.replace('*', '')
-                          : undefined,
-                        width: !col.width?.includes('*') ? col.width : undefined,
-                        minWidth: col.minWidth || '90px',
-                      }}
-                      className="overflow-hidden flex items-center"
-                    >
-                      {col.renderCell(item, isSelected)}
-                    </div>
-                  ))}
+                  {columns.map((col, idx) => {
+                    const colKey = col.key || col.id || col.accessorKey || `col_${idx}`;
+                    const cellContent = col.renderCell
+                      ? col.renderCell(item, isSelected)
+                      : col.cell
+                      ? col.cell(item, isSelected)
+                      : null;
+
+                    return (
+                      <div
+                        key={colKey}
+                        style={{
+                          flex: col.width?.includes('*')
+                            ? col.width.replace('*', '')
+                            : undefined,
+                          width: !col.width?.includes('*') ? col.width : undefined,
+                          minWidth: col.minWidth || '90px',
+                        }}
+                        className="overflow-hidden flex items-center"
+                      >
+                        {cellContent}
+                      </div>
+                    );
+                  })}
                 </CollectionListRow>
               );
             })}
@@ -354,10 +482,10 @@ export function UniversalDataCollection<T>({
       {/* ================= GRID / CARD VIEW ================= */}
       {viewMode === 'grid' && (
         <div className="w-full flex flex-wrap items-start">
-          {items.map((item) => {
+          {actualItems.map((item) => {
             const id = keyExtractor(item);
             const isSelected = selectedIds.has(id);
-            const pinned = isPinned(item);
+            const pinned = checkPinned(item);
             const active = isActive(item);
 
             return (
@@ -367,16 +495,16 @@ export function UniversalDataCollection<T>({
                 isSelected={isSelected}
                 isPinned={pinned}
                 isActive={active}
-                onCardClick={() => onItemClick?.(item)}
+                onCardClick={() => (onItemClick || onSelectRow)?.(item)}
                 onViewDetails={onViewDetails ? () => onViewDetails(item) : undefined}
                 onEdit={onEdit ? () => onEdit(item) : undefined}
                 onPay={onPay ? () => onPay(item) : undefined}
                 onToggleStatus={onToggleStatus ? () => onToggleStatus(item) : undefined}
-                onTogglePin={onTogglePin ? () => onTogglePin(item) : undefined}
+                onTogglePin={() => handleTogglePin(item)}
                 onDelete={onDelete ? () => onDelete(item) : undefined}
-                customActions={customActions ? customActions(item) : undefined}
+                customActions={getCustomActions(item)}
               >
-                {renderCard(item, isSelected)}
+                {cardRenderer(item, isSelected)}
               </CollectionGridCard>
             );
           })}

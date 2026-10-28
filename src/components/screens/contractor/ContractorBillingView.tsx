@@ -1,5 +1,20 @@
-import React, { useState } from 'react';
-import { Wallet, Plus, Printer, CheckCircle2, FileText, ArrowRight, X, Building, ShieldCheck } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import {
+  Wallet,
+  Plus,
+  Printer,
+  CheckCircle2,
+  FileText,
+  ArrowRight,
+  X,
+  Building,
+  ShieldCheck,
+  Pin,
+  Download,
+  AlertCircle,
+  Building2,
+  DollarSign,
+} from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
 import { formatMoney } from '../../../utils/rules';
 import { useContractorData } from './contractorData';
@@ -9,6 +24,7 @@ import { FilterSelect } from '../../ui/FilterSelect';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { ContractorDgp } from '../../../types';
+import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 
 export const ContractorBillingView: React.FC = () => {
   const { language, currentBusiness, currentBranch, currentUser } = useAtriumStore();
@@ -16,8 +32,14 @@ export const ContractorBillingView: React.FC = () => {
   const { dgps, projects, selectedProjectId, setSelectedProjectId, addDgp, updateDgpStatus } = useContractorData();
 
   const [searchQuery, setSearchQuery] = useState('');
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
+  const [sortBy, setSortBy] = useState<string>('issuedDate');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [pinnedIds, setPinnedIds] = useState<Set<string>>(new Set());
+  const [selectedDgp, setSelectedDgp] = useState<ContractorDgp | null>(() => dgps[0] || null);
+  const [activeInspectorTab, setActiveInspectorTab] = useState<'decompte' | 'certificat' | 'actions'>('decompte');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedDgpForPrint, setSelectedDgpForPrint] = useState<ContractorDgp | null>(null);
 
   // Form states
   const [periodLabel, setPeriodLabel] = useState('Situation Travaux - Mois Courant');
@@ -28,10 +50,37 @@ export const ContractorBillingView: React.FC = () => {
   const selectedProject = projects.find((p) => p.id === selectedProjectId) || projects[0];
   const projectDgps = dgps.filter((d) => d.projectId === (selectedProject?.id || selectedProjectId));
 
-  const filteredDgps = projectDgps.filter((d) =>
-    d.dgpNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    d.periodLabel.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredDgps = useMemo(() => {
+    return projectDgps.filter((d) =>
+      d.dgpNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      d.periodLabel.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [projectDgps, searchQuery]);
+
+  const sortedDgps = useMemo(() => {
+    const list = [...filteredDgps];
+    list.sort((a, b) => {
+      const isPinnedA = pinnedIds.has(a.id);
+      const isPinnedB = pinnedIds.has(b.id);
+      if (isPinnedA && !isPinnedB) return -1;
+      if (!isPinnedA && isPinnedB) return 1;
+
+      if (sortBy === 'netPayableDzd') {
+        return sortDir === 'asc'
+          ? a.netPayableDzd - b.netPayableDzd
+          : b.netPayableDzd - a.netPayableDzd;
+      }
+      if (sortBy === 'dgpNumber') {
+        return sortDir === 'asc'
+          ? a.dgpNumber.localeCompare(b.dgpNumber)
+          : b.dgpNumber.localeCompare(a.dgpNumber);
+      }
+      return sortDir === 'asc'
+        ? (a.issuedDate || '').localeCompare(b.issuedDate || '')
+        : (b.issuedDate || '').localeCompare(a.issuedDate || '');
+    });
+    return list;
+  }, [filteredDgps, pinnedIds, sortBy, sortDir]);
 
   const totalBilledGross = projectDgps.reduce((acc, d) => acc + d.periodGrossDzd, 0);
   const totalRetention = projectDgps.reduce((acc, d) => acc + d.retentionGuaranteeDzd, 0);
@@ -41,6 +90,20 @@ export const ContractorBillingView: React.FC = () => {
     value: p.id,
     label: `${p.projectCode} - ${p.projectName.substring(0, 24)}...`,
   }));
+
+  const handleTogglePin = (id: string) => {
+    setPinnedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+    showToast(isAr ? 'تم تحديث التثبيت' : 'Situation épinglée', 'info');
+  };
+
+  const handlePrintDgp = (d: ContractorDgp) => {
+    showToast(isAr ? 'جاري طباعة الكشف المالي (DGP)...' : 'Génération du certificat de décompte...', 'info');
+  };
 
   const handleCreateDgp = (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,11 +140,89 @@ export const ContractorBillingView: React.FC = () => {
 
     addDgp(newDgp);
     setIsModalOpen(false);
+    setSelectedDgp(newDgp);
     showToast(
       isAr ? 'تم تحرير كشف الحساب والوضعية المالية (DGP)' : 'Situation DGP enregistrée avec succès',
       'success'
     );
   };
+
+  const columns: ColumnDefinition<ContractorDgp>[] = [
+    {
+      key: 'dgpNumber',
+      header: isAr ? 'رقم الكشف / الفترة' : 'Situation & Période',
+      sortable: true,
+      minWidth: '220px',
+      renderCell: (d) => {
+        const isPinned = pinnedIds.has(d.id);
+        return (
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-orange-50 dark:bg-orange-950/40 text-[#C4785A] flex items-center justify-center font-bold text-xs shrink-0 border border-orange-100 dark:border-neutral-800">
+              <Building2 size={16} />
+            </div>
+            <div className="min-w-0">
+              <div className="font-bold text-xs text-neutral-900 dark:text-white flex items-center gap-1.5 truncate">
+                {d.dgpNumber}
+                {isPinned && <span className="text-xs text-amber-500">📌</span>}
+              </div>
+              <div className="text-[11px] text-neutral-400 truncate max-w-[180px]">
+                {d.periodLabel}
+              </div>
+            </div>
+          </div>
+        );
+      },
+    },
+    {
+      key: 'periodGrossDzd',
+      header: isAr ? 'المبلغ الإجمالي HT' : 'Montant Brut HT',
+      sortable: true,
+      minWidth: '140px',
+      renderCell: (d) => (
+        <div className="font-mono text-xs text-neutral-800 dark:text-neutral-200">
+          {formatMoney(d.periodGrossDzd)}
+        </div>
+      ),
+    },
+    {
+      key: 'retentionGuaranteeDzd',
+      header: isAr ? 'اقتطاع الضمان (5%)' : 'Retenue (5%)',
+      minWidth: '130px',
+      renderCell: (d) => (
+        <div className="font-mono text-xs text-amber-600 dark:text-amber-400">
+          {formatMoney(d.retentionGuaranteeDzd)}
+        </div>
+      ),
+    },
+    {
+      key: 'netPayableDzd',
+      header: isAr ? 'الصافي للدفع TTC' : 'Net à Payer TTC',
+      sortable: true,
+      minWidth: '140px',
+      renderCell: (d) => (
+        <div className="font-mono font-bold text-xs text-[#C4785A]">
+          {formatMoney(d.netPayableDzd)}
+        </div>
+      ),
+    },
+    {
+      key: 'status',
+      header: isAr ? 'حالة الاعتماد' : 'Validation',
+      sortable: true,
+      minWidth: '120px',
+      renderCell: (d) => (
+        <span
+          className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
+            d.status === 'Paid'
+              ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
+              : 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300'
+          }`}
+        >
+          {d.status === 'Paid' ? (isAr ? 'مدفوع' : 'Réglé') : (isAr ? 'معتمد BET' : 'Approuvé BET')}
+        </span>
+      ),
+    },
+  ];
 
   return (
     <div className="bg-white dark:bg-[#18181B] rounded-[28px] border border-[#E9EEF0] dark:border-neutral-800 p-6 lg:p-8 space-y-6 shadow-xs animate-in fade-in duration-200">
@@ -119,7 +260,7 @@ export const ContractorBillingView: React.FC = () => {
         </div>
       </div>
 
-      {/* Canonical 3-Card Top Metrics Pod Tray */}
+      {/* KPI Pod Tray */}
       <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
         <div>
           <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
@@ -131,7 +272,6 @@ export const ContractorBillingView: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {/* Card 1: Situations Émises */}
           <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
             <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
               {isAr ? 'الكشوفات المحررة' : 'Situations Émises'}
@@ -146,7 +286,6 @@ export const ContractorBillingView: React.FC = () => {
             </div>
           </div>
 
-          {/* Card 2: Retenue de Garantie */}
           <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
             <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
               {isAr ? 'اقتطاع الضمان المحجوز (5%)' : 'Retenue de Garantie Cumulée'}
@@ -161,7 +300,6 @@ export const ContractorBillingView: React.FC = () => {
             </div>
           </div>
 
-          {/* Card 3: Dark Espresso Anchor Card */}
           <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-medium text-neutral-300">
@@ -184,281 +322,348 @@ export const ContractorBillingView: React.FC = () => {
         </div>
       </div>
 
-      {/* Universal Collection Workstation Pod Tray */}
-      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <FileText size={16} className="text-neutral-500" />
-            <h2 className="text-sm font-bold text-neutral-900 dark:text-white">
-              {isAr ? 'سجل كشوفات ومستحقات الأشغال' : 'Historique des Situations BTP'}
-            </h2>
-            <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-neutral-200 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300 font-mono">
-              {filteredDgps.length}
-            </span>
-          </div>
-
-          <div className="flex items-center gap-2.5">
-            <div className="w-56">
-              <FilterSelect
-                value={selectedProject?.id || selectedProjectId}
-                onChange={setSelectedProjectId}
-                options={projectOptions}
-              />
+      {/* Main Workspace Area with Dual Collection and 390px Inspector */}
+      <div className="flex items-start gap-4">
+        {/* Collection */}
+        <div className="flex-1 min-w-0 space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
+            <div className="flex items-center gap-2.5">
+              <div className="w-56">
+                <FilterSelect
+                  value={selectedProject?.id || selectedProjectId}
+                  onChange={setSelectedProjectId}
+                  options={projectOptions}
+                />
+              </div>
+              <div className="w-52">
+                <Seek
+                  value={searchQuery}
+                  onChange={setSearchQuery}
+                  placeholder={isAr ? 'بحث برقم الكشف...' : 'Filtrer situation, libellé...'}
+                />
+              </div>
             </div>
-            <div className="w-52">
-              <Seek
-                value={searchQuery}
-                onChange={setSearchQuery}
-                placeholder={isAr ? 'بحث برقم الكشف...' : 'Filtrer situation, libellé...'}
-              />
+
+            <div className="text-xs text-neutral-500 dark:text-neutral-400">
+              {sortedDgps.length} {isAr ? 'كشوفات' : 'situations'}
             </div>
           </div>
-        </div>
 
-        {filteredDgps.length === 0 ? (
-          <div className="h-44 flex flex-col items-center justify-center text-center p-6 bg-white dark:bg-neutral-900 rounded-[20px] border border-dashed border-neutral-300 dark:border-neutral-800">
-            <Wallet size={36} className="text-neutral-300 dark:text-neutral-700 mb-2" />
-            <p className="text-sm font-medium text-neutral-500">
-              {isAr ? 'لا توجد كشوفات مسجلة لهذا المشروع' : 'Aucune situation DGP enregistrée pour ce chantier'}
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {filteredDgps.map((d) => (
-              <div
-                key={d.id}
-                className="bg-white dark:bg-neutral-900 p-5 rounded-[20px] border border-[#E9EEF0] dark:border-neutral-800 shadow-2xs flex flex-col lg:flex-row lg:items-center justify-between gap-4"
-              >
-                <div className="space-y-1.5 max-w-xl">
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono font-bold text-xs bg-[#C4785A]/10 text-[#C4785A] px-2.5 py-1 rounded-lg border border-[#C4785A]/20">
-                      {d.dgpNumber}
+          <UniversalDataCollection<ContractorDgp>
+            items={sortedDgps}
+            keyExtractor={(d) => d.id}
+            defaultViewMode={viewMode}
+            columns={columns}
+            sortBy={sortBy}
+            sortDirection={sortDir}
+            onSortChange={(key) => {
+              if (sortBy === key) {
+                setSortDir((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+              } else {
+                setSortBy(key);
+                setSortDir('asc');
+              }
+            }}
+            selectedIds={selectedIds}
+            onSelectionChange={setSelectedIds}
+            isPinned={(d) => pinnedIds.has(d.id)}
+            onTogglePin={(d) => handleTogglePin(d.id)}
+            onItemClick={(d) => setSelectedDgp(d)}
+            customActions={(d) => [
+              {
+                id: 'print',
+                label: isAr ? 'طباعة' : 'Imprimer',
+                icon: <Printer size={13} />,
+                variant: 'primary',
+                onClick: () => handlePrintDgp(d),
+              },
+              {
+                id: 'cert',
+                label: isAr ? 'شهادة الدفع' : 'Certificat',
+                icon: <ShieldCheck size={13} />,
+                onClick: () => setSelectedDgp(d),
+              },
+            ]}
+            renderCard={(d) => {
+              const isPinned = pinnedIds.has(d.id);
+              return (
+                <div className="flex flex-col w-full space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-neutral-900 dark:text-white truncate">
+                      {d.dgpNumber} {isPinned && '📌'}
                     </span>
-                    <span
-                      className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${
-                        d.status === 'Paid'
-                          ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
-                          : d.status === 'ApprovedBE'
-                          ? 'bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300'
-                          : 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
-                      }`}
-                    >
-                      {d.status}
-                    </span>
-                    <span className="text-xs text-neutral-400 font-mono">
-                      Émis le {d.issuedDate}
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+                      {d.status === 'Paid' ? 'Réglé' : 'Approuvé BET'}
                     </span>
                   </div>
 
-                  <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
+                  <div className="text-xs text-neutral-500 line-clamp-1">
                     {d.periodLabel}
-                  </h3>
+                  </div>
 
-                  <div className="flex flex-wrap items-center gap-3 text-xs text-neutral-500 pt-0.5">
-                    <span>Montant Brut: <strong className="font-mono text-neutral-800 dark:text-neutral-200">{formatMoney(d.periodGrossDzd)}</strong></span>
-                    <span>·</span>
-                    <span>Retenue (5%): <strong className="font-mono text-amber-600">{formatMoney(d.retentionGuaranteeDzd)}</strong></span>
-                    <span>·</span>
-                    <span>Amort. Avance: <strong className="font-mono text-neutral-700 dark:text-neutral-300">{formatMoney(d.advanceAmortizationDzd)}</strong></span>
+                  <div className="bg-neutral-50 dark:bg-neutral-900/60 rounded-xl p-3 space-y-1.5 font-mono text-xs">
+                    <div className="flex justify-between">
+                      <span className="text-neutral-400">Montant Brut HT:</span>
+                      <span>{formatMoney(d.periodGrossDzd)}</span>
+                    </div>
+                    <div className="flex justify-between text-amber-600 dark:text-amber-400">
+                      <span>Retenue (5%):</span>
+                      <span>-{formatMoney(d.retentionGuaranteeDzd)}</span>
+                    </div>
+                    <div className="flex justify-between font-bold text-neutral-900 dark:text-white pt-1 border-t border-neutral-200 dark:border-neutral-700">
+                      <span>Net TTC:</span>
+                      <span className="text-[#C4785A]">{formatMoney(d.netPayableDzd)}</span>
+                    </div>
+                  </div>
+
+                  <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-xs text-neutral-400">
+                    <span>Date: {d.issuedDate}</span>
+                    <span>TVA 19%</span>
                   </div>
                 </div>
+              );
+            }}
+            emptyTitle={isAr ? 'لا توجد كشوفات' : 'Aucune situation DGP'}
+            emptyDescription={isAr ? 'قم بتحرير أول كشف أشغال للمشروع' : 'Créez votre première situation de travaux'}
+          />
+        </div>
 
-                <div className="flex items-center justify-between lg:justify-end gap-4 shrink-0 pt-3 lg:pt-0 border-t lg:border-t-0 border-zinc-100 dark:border-zinc-800">
-                  <div className="text-left lg:text-right">
-                    <span className="text-[10px] uppercase tracking-wider text-neutral-400 font-medium block">
-                      Net à Payer (TTC)
-                    </span>
-                    <span className="text-base font-bold font-mono text-neutral-900 dark:text-white">
-                      {formatMoney(d.netPayableDzd)}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => setSelectedDgpForPrint(d)}
-                      className="p-2 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 transition-colors"
-                      title="Imprimer le décompte"
-                    >
-                      <Printer size={16} />
-                    </button>
-
-                    {d.status === 'ApprovedBE' && (
-                      <AtriumButton
-                        size="xs"
-                        variant="primary"
-                        onClick={() => {
-                          updateDgpStatus(d.id, 'Paid');
-                          showToast(
-                            isAr ? 'تم تأكيد دفع الكشف المالي' : 'Décompte marqué comme réglé',
-                            'success'
-                          );
-                        }}
-                      >
-                        {isAr ? 'تأكيد القبض' : 'Encaisser'}
-                      </AtriumButton>
-                    )}
+        {/* 390px Inline Side Inspector Drawer */}
+        {selectedDgp && (
+          <div className="w-full lg:w-[390px] shrink-0 bg-white dark:bg-neutral-850 rounded-2xl border border-[#EDF1F3] dark:border-neutral-800 shadow-lg flex flex-col h-[740px] overflow-hidden animate-in slide-in-from-right-4 duration-200">
+            {/* Header */}
+            <div className="p-4 border-b border-neutral-100 dark:border-neutral-800 bg-[#F8F9FA] dark:bg-neutral-800/60 flex items-center justify-between">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-10 h-10 rounded-xl bg-orange-100 dark:bg-orange-950/60 text-[#C4785A] font-bold text-sm flex items-center justify-center shrink-0 border border-orange-200/60">
+                  <Wallet size={18} />
+                </div>
+                <div className="min-w-0">
+                  <h3 className="font-bold text-sm text-neutral-900 dark:text-white truncate">
+                    {selectedDgp.dgpNumber}
+                  </h3>
+                  <div className="flex items-center gap-1.5 text-xs text-neutral-400">
+                    <span className="font-mono">Date: {selectedDgp.issuedDate}</span>
                   </div>
                 </div>
               </div>
-            ))}
+
+              <button
+                type="button"
+                onClick={() => setSelectedDgp(null)}
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Navigation Tabs */}
+            <div className="flex items-center border-b border-neutral-100 dark:border-neutral-800 px-4 bg-white dark:bg-neutral-850 text-xs">
+              <button
+                type="button"
+                onClick={() => setActiveInspectorTab('decompte')}
+                className={`py-2.5 px-3 font-semibold border-b-2 transition-colors cursor-pointer ${
+                  activeInspectorTab === 'decompte'
+                    ? 'border-[#C4785A] text-[#C4785A]'
+                    : 'border-transparent text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-200'
+                }`}
+              >
+                {isAr ? 'البيان المالي' : 'Décompte'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveInspectorTab('certificat')}
+                className={`py-2.5 px-3 font-semibold border-b-2 transition-colors cursor-pointer ${
+                  activeInspectorTab === 'certificat'
+                    ? 'border-[#C4785A] text-[#C4785A]'
+                    : 'border-transparent text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-200'
+                }`}
+              >
+                {isAr ? 'الشهادة والضمان' : 'Certificat'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveInspectorTab('actions')}
+                className={`py-2.5 px-3 font-semibold border-b-2 transition-colors cursor-pointer ${
+                  activeInspectorTab === 'actions'
+                    ? 'border-[#C4785A] text-[#C4785A]'
+                    : 'border-transparent text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-200'
+                }`}
+              >
+                {isAr ? 'الإجراءات' : 'Actions'}
+              </button>
+            </div>
+
+            {/* Content Body */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs">
+              {activeInspectorTab === 'decompte' && (
+                <div className="space-y-4 animate-in fade-in duration-150">
+                  <div className="p-3.5 rounded-xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-800 space-y-2 font-mono">
+                    <div className="flex justify-between items-center text-neutral-600 dark:text-neutral-400">
+                      <span>Cumul précédent:</span>
+                      <span>{formatMoney(selectedDgp.previousCumulDzd || 0)}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-sm font-bold text-neutral-900 dark:text-white">
+                      <span>Montant du mois HT:</span>
+                      <span>{formatMoney(selectedDgp.periodGrossDzd)}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-amber-600 dark:text-amber-400">
+                      <span>Retenue garantie (5%):</span>
+                      <span>-{formatMoney(selectedDgp.retentionGuaranteeDzd)}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-neutral-500">
+                      <span>Amortissement avances:</span>
+                      <span>-{formatMoney(selectedDgp.advanceAmortizationDzd || 0)}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-blue-600 dark:text-blue-400">
+                      <span>TVA (19%):</span>
+                      <span>+{formatMoney(selectedDgp.tvaAmountDzd || 0)}</span>
+                    </div>
+                    <div className="pt-2 border-t border-neutral-200 dark:border-neutral-700 flex justify-between items-center font-bold text-sm">
+                      <span>Net à Mandater TTC:</span>
+                      <span className="text-[#C4785A]">{formatMoney(selectedDgp.netPayableDzd)}</span>
+                    </div>
+                  </div>
+
+                  <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900 text-emerald-800 dark:text-emerald-300 space-y-1">
+                    <span className="font-bold">Attachement des travaux validé</span>
+                    <p className="text-[11px] text-emerald-600 dark:text-emerald-400">
+                      Métrés contradictoires signés sur chantier avec le conducteur de travaux et le Maître d'Œuvre.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {activeInspectorTab === 'certificat' && (
+                <div className="space-y-3 animate-in fade-in duration-150">
+                  <div className="p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-800 space-y-2">
+                    <div className="flex items-center gap-2 font-bold text-neutral-900 dark:text-white">
+                      <ShieldCheck size={16} className="text-[#C4785A]" />
+                      <span>Certificat de Paiement BTP</span>
+                    </div>
+                    <div className="space-y-1.5 font-mono text-[11px] text-neutral-600 dark:text-neutral-400">
+                      <div>Marché: {selectedProject?.projectCode}</div>
+                      <div>Maître d'Ouvrage: {selectedProject?.clientName || 'Ministère / Promoteur'}</div>
+                      <div>Bureau d'Études: BET Technique & Architecture</div>
+                    </div>
+                  </div>
+
+                  <div className="p-3 rounded-xl bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/40 text-amber-800 dark:text-amber-300 space-y-1">
+                    <span className="font-bold">Libération de la caution</span>
+                    <p className="text-[11px]">
+                      La retenue de garantie cumulée ({formatMoney(totalRetention)}) sera débloquée 12 mois après la réception provisoire.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {activeInspectorTab === 'actions' && (
+                <div className="space-y-2.5 animate-in fade-in duration-150">
+                  <button
+                    type="button"
+                    onClick={() => handlePrintDgp(selectedDgp)}
+                    className="w-full p-3 rounded-xl bg-[#C4785A] text-white font-semibold flex items-center justify-between hover:bg-[#b0674b] transition-colors cursor-pointer"
+                  >
+                    <span className="flex items-center gap-2">
+                      <Printer size={16} />
+                      Imprimer décompte provisoire
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleTogglePin(selectedDgp.id)}
+                    className="w-full p-3 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 font-semibold flex items-center justify-between hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
+                  >
+                    <span className="flex items-center gap-2">
+                      <Pin size={16} />
+                      {pinnedIds.has(selectedDgp.id) ? 'Détacher' : 'Épingler la situation'}
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      updateDgpStatus(selectedDgp.id, 'Paid');
+                      setSelectedDgp({ ...selectedDgp, status: 'Paid' });
+                      showToast('Situation enregistrée comme réglée', 'success');
+                    }}
+                    className="w-full p-3 rounded-xl bg-emerald-600 text-white font-semibold flex items-center justify-between hover:bg-emerald-700 transition-colors cursor-pointer"
+                  >
+                    <span className="flex items-center gap-2">
+                      <CheckCircle2 size={16} />
+                      Marquer comme réglée
+                    </span>
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>
 
-      {/* New DGP Modal */}
+      {/* Modal Nouvel Attachement DGP */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-neutral-900 rounded-[28px] border border-neutral-200 dark:border-neutral-800 p-6 w-full max-w-lg shadow-xl space-y-5">
-            <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in">
+          <div className="bg-white dark:bg-neutral-900 rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-neutral-200 dark:border-neutral-800 space-y-5">
+            <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
               <div className="flex items-center gap-2">
-                <Wallet size={20} className="text-[#C4785A]" />
-                <h3 className="font-bold text-base text-neutral-900 dark:text-white">
-                  {isAr ? 'تحرير كشف حساب وأشغال (DGP)' : 'Émission Décompte Général Provisoire'}
+                <div className="w-8 h-8 rounded-lg bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold">
+                  <Plus size={16} />
+                </div>
+                <h3 className="font-bold text-sm text-neutral-900 dark:text-white">
+                  {isAr ? 'تحرير كشف حساب جديد (DGP)' : 'Établir une Nouvelle Situation DGP'}
                 </h3>
               </div>
               <button
+                type="button"
                 onClick={() => setIsModalOpen(false)}
-                className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 p-1"
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
               >
-                <X size={18} />
+                <X size={16} />
               </button>
             </div>
 
             <form onSubmit={handleCreateDgp} className="space-y-4">
               <LabelInput
-                label={isAr ? 'عنوان ومرحلة الكشف' : 'Libellé de la situation'}
+                label="Libellé de la période"
                 value={periodLabel}
-                onChange={setPeriodLabel}
-                placeholder="Situation N°03 - Travaux Mai 2026"
+                onChange={(e) => setPeriodLabel(e.target.value)}
                 required
               />
 
               <div className="grid grid-cols-2 gap-3">
                 <LabelInput
-                  label={isAr ? 'مبلغ الأشغال المنجزة الخام (DZD)' : 'Montant Brut Période (DZD)'}
+                  label="Montant brut du mois (HT DZD)"
                   type="number"
                   value={periodGross}
-                  onChange={setPeriodGross}
+                  onChange={(e) => setPeriodGross(e.target.value)}
                   required
                 />
                 <LabelInput
-                  label={isAr ? 'نسبة اقتطاع الضمان (%)' : 'Retenue Garantie (%)'}
+                  label="Retenue de garantie (%)"
                   type="number"
                   value={retentionPct}
-                  onChange={setRetentionPct}
+                  onChange={(e) => setRetentionPct(e.target.value)}
                   required
                 />
               </div>
 
               <LabelInput
-                label={isAr ? 'استرجاع التسبيق المالي (Amortissement Avance DZD)' : 'Remboursement Avance Forfaitaire (DZD)'}
+                label="Amortissement avances forfaitaires (DZD)"
                 type="number"
                 value={advanceAmort}
-                onChange={setAdvanceAmort}
-                required
+                onChange={(e) => setAdvanceAmort(e.target.value)}
               />
 
-              <div className="p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-xl space-y-1.5 text-xs">
-                <div className="flex justify-between text-neutral-500">
-                  <span>Retenue Garantie ({(parseFloat(retentionPct) || 5)}%):</span>
-                  <span className="font-mono text-amber-600 font-semibold">
-                    -{formatMoney(((parseFloat(periodGross) || 0) * (parseFloat(retentionPct) || 5)) / 100)}
-                  </span>
-                </div>
-                <div className="flex justify-between text-neutral-500">
-                  <span>TVA (19%):</span>
-                  <span className="font-mono text-neutral-700 dark:text-neutral-300">
-                    +{formatMoney((((parseFloat(periodGross) || 0) - ((parseFloat(periodGross) || 0) * (parseFloat(retentionPct) || 5)) / 100 - (parseFloat(advanceAmort) || 0)) * 0.19))}
-                  </span>
-                </div>
-                <div className="flex justify-between pt-1 border-t border-neutral-200 dark:border-neutral-700 font-bold text-neutral-900 dark:text-white">
-                  <span>Net à Payer Estimé:</span>
-                  <span className="font-mono text-[#C4785A]">
-                    {formatMoney(
-                      Math.max(
-                        0,
-                        ((parseFloat(periodGross) || 0) -
-                          ((parseFloat(periodGross) || 0) * (parseFloat(retentionPct) || 5)) / 100 -
-                          (parseFloat(advanceAmort) || 0)) * 1.19
-                      )
-                    )}
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex justify-end gap-2 pt-2">
-                <AtriumButton variant="secondary" onClick={() => setIsModalOpen(false)}>
-                  {isAr ? 'إلغاء' : 'Annuler'}
+              <div className="flex justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
+                <AtriumButton variant="outline" onClick={() => setIsModalOpen(false)}>
+                  Annuler
                 </AtriumButton>
                 <AtriumButton variant="primary" type="submit">
-                  {isAr ? 'إصدار الكشف' : 'Émettre la Situation'}
+                  Enregistrer situation
                 </AtriumButton>
               </div>
             </form>
-          </div>
-        </div>
-      )}
-
-      {/* Print DGP Modal */}
-      {selectedDgpForPrint && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-neutral-900 rounded-[28px] border border-neutral-200 dark:border-neutral-800 p-6 w-full max-w-lg shadow-xl space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
-              <div className="flex items-center gap-2">
-                <Printer size={18} className="text-[#C4785A]" />
-                <h3 className="font-bold text-base text-neutral-900 dark:text-white">
-                  {selectedDgpForPrint.dgpNumber}
-                </h3>
-              </div>
-              <button
-                onClick={() => setSelectedDgpForPrint(null)}
-                className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 p-1"
-              >
-                <X size={18} />
-              </button>
-            </div>
-
-            <div className="p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700 space-y-2 text-xs font-mono">
-              <div className="font-sans font-bold text-sm text-neutral-900 dark:text-white mb-2">
-                {selectedProject?.projectName}
-              </div>
-              <div className="flex justify-between">
-                <span className="text-neutral-500">Montant Brut Période:</span>
-                <span>{formatMoney(selectedDgpForPrint.periodGrossDzd)}</span>
-              </div>
-              <div className="flex justify-between text-amber-600">
-                <span>Retenue Garantie ({selectedDgpForPrint.retentionGuaranteePercent}%):</span>
-                <span>-{formatMoney(selectedDgpForPrint.retentionGuaranteeDzd)}</span>
-              </div>
-              <div className="flex justify-between text-neutral-500">
-                <span>Amortissement Avance:</span>
-                <span>-{formatMoney(selectedDgpForPrint.advanceAmortizationDzd)}</span>
-              </div>
-              <div className="flex justify-between text-neutral-500">
-                <span>TVA (19%):</span>
-                <span>+{formatMoney(selectedDgpForPrint.tvaAmountDzd)}</span>
-              </div>
-              <div className="pt-2 border-t border-neutral-300 dark:border-neutral-600 flex justify-between font-bold text-sm text-neutral-900 dark:text-white">
-                <span>NET MANDATÉ:</span>
-                <span className="text-[#C4785A]">{formatMoney(selectedDgpForPrint.netPayableDzd)}</span>
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-2 pt-2">
-              <AtriumButton variant="secondary" onClick={() => setSelectedDgpForPrint(null)}>
-                Fermer
-              </AtriumButton>
-              <AtriumButton
-                variant="primary"
-                icon={<Printer size={14} />}
-                onClick={() => {
-                  window.print();
-                  setSelectedDgpForPrint(null);
-                }}
-              >
-                Imprimer le Décompte
-              </AtriumButton>
-            </div>
           </div>
         </div>
       )}

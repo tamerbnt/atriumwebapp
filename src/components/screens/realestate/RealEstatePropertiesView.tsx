@@ -765,7 +765,7 @@ export const RealEstatePropertiesView: React.FC = () => {
                             </div>
                             <div className="flex justify-between">
                               <span className="text-neutral-500">{language === 'ar' ? 'الضمان' : 'Dépôt de garantie'}:</span>
-                              <span className="font-mono text-neutral-800 dark:text-neutral-200">{formatMoney(l.depositDzd)}</span>
+                              <span className="font-mono text-neutral-800 dark:text-neutral-200">{formatMoney(l.securityDepositDzd)}</span>
                             </div>
                           </div>
                         );

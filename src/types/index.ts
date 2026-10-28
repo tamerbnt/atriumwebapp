@@ -1806,6 +1806,22 @@ export interface GarageWorkOrder {
   createdAt: string;
 }
 
+export interface AutoPart {
+  id: string;
+  sku: string;
+  name: string;
+  category: 'Filtration' | 'Freinage' | 'Suspension' | 'Moteur' | 'Électrique' | 'Huiles & Fluides' | string;
+  stockQuantity: number;
+  minThreshold: number;
+  buyingPriceDzd: number;
+  sellingPriceDzd: number;
+  locationBin: string;
+  compatibility?: string[];
+  compatibilities?: string[];
+  supplier?: string;
+  oemReference?: string;
+}
+
 // ==========================================
 // CATEGORY 11: REAL ESTATE & PROPERTY LEASES
 // ==========================================
@@ -2083,11 +2099,16 @@ export interface ContractorDailyLog {
   staffId: string;
   projectId: string;
   date: string;
-  weather: 'Ensoleillé' | 'Pluvieux' | 'Venteux / Sirocco' | 'Canicule';
+  logDate?: string;
+  weather: 'Ensoleillé' | 'Pluvieux' | 'Venteux / Sirocco' | 'Canicule' | string;
+  weatherCondition?: string;
   headcountWorkers: number;
+  workforceCount?: number;
   equipmentOnSite: string[];
   tasksAccomplished: string;
+  worksSummary?: string;
   incidentsSafety: string;
+  incidentsOrDelays?: string;
   supervisorSignature: string;
   createdAt: string;
 }
@@ -2178,8 +2199,11 @@ export interface AgriHarvestTicket {
   branchId: string;
   staffId: string;
   ticketNumber: string; // e.g. PES-2026-041
+  ticketCode?: string;
   parcelId: string;
   cropDesignation: string;
+  cropVariety?: string;
+  qualityGrade?: string;
   vehiclePlate: string;
   driverName: string;
   grossWeightKg: number;
@@ -2191,7 +2215,9 @@ export interface AgriHarvestTicket {
   mandataireFeePercent: number; // e.g. 5%
   netFarmPayoutDzd: number;
   destinationWholesaleMarket: string; // e.g. Marché de Gros des Eucalyptus
+  destinationStorage?: string;
   date: string;
+  harvestDate?: string;
   createdAt: string;
 }
 

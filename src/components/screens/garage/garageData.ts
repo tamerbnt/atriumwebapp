@@ -39,6 +39,12 @@ export interface SparePart {
   buyingPriceDzd: number;
   sellingPriceDzd: number;
   locationBin: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  staffId?: string;
+  compatibility?: string[];
+  createdAt?: string;
 }
 
 const INITIAL_ORDERS: RepairOrder[] = [

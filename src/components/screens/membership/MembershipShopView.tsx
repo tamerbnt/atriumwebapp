@@ -6,7 +6,6 @@ import {
   Trash2,
   CreditCard,
   Banknote,
-  Search,
   CheckCircle2,
   Package,
   Receipt,
@@ -21,13 +20,17 @@ import {
   Tag,
   AlertTriangle,
   UserCheck,
+  Eye,
+  Share2,
+  X,
 } from 'lucide-react';
 import { useAtriumStore } from '../../../services/store';
 import { Product } from '../../../types/index';
 import { formatMoney } from '../../../utils/rules';
-import { Seek } from '../../ui/Seek';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { useTranslation } from '../../../utils/useTranslation';
+import { UniversalDataCollection } from '../../ui/collection/UniversalDataCollection';
+import { ActionButtonDef } from '../../ui/collection/CollectionListRow';
 
 interface CartItem {
   product: Product;
@@ -36,11 +39,11 @@ interface CartItem {
 }
 
 export const MembershipShopView: React.FC = () => {
-  const { t, language, isRtl } = useTranslation();
+  const { t, language } = useTranslation();
+  const isAr = language === 'ar';
   const {
     products,
     members,
-    staff,
     currentBranch,
     branches,
     businesses,
@@ -52,15 +55,15 @@ export const MembershipShopView: React.FC = () => {
     showToast,
   } = useAtriumStore();
 
-  const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [cart, setCart] = useState<CartItem[]>([]);
   const [selectedMemberId, setSelectedMemberId] = useState<string>('');
   const [paymentMethod, setPaymentMethod] = useState<'Cash' | 'Card' | 'BankTransfer'>('Cash');
   const [isFacilityDropdownOpen, setIsFacilityDropdownOpen] = useState(false);
-  const [lastReceipt, setLastReceipt] = useState<{ id: string; total: number; date: string } | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [inspectorTab, setInspectorTab] = useState<'fiche' | 'stock' | 'fournisseur'>('fiche');
+  const [sidePanelMode, setSidePanelMode] = useState<'cart' | 'inspector'>('cart');
 
-  // Filter gym products
   const categories = useMemo(() => {
     const set = new Set<string>();
     products.forEach((p) => {
@@ -71,16 +74,11 @@ export const MembershipShopView: React.FC = () => {
 
   const filteredProducts = useMemo(() => {
     return products.filter((p) => {
-      const matchesCat = selectedCategory === 'All' || p.category === selectedCategory;
-      const matchesSearch =
-        p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.sku.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (p.category && p.category.toLowerCase().includes(searchQuery.toLowerCase()));
-      return matchesCat && matchesSearch;
+      if (selectedCategory === 'All') return true;
+      return p.category === selectedCategory;
     });
-  }, [products, selectedCategory, searchQuery]);
+  }, [products, selectedCategory]);
 
-  // Metrics
   const lowStockCount = useMemo(() => {
     return products.filter((p) => p.stockQuantity <= (p.reorderLevel || 5)).length;
   }, [products]);
@@ -89,7 +87,6 @@ export const MembershipShopView: React.FC = () => {
     return products.reduce((sum, p) => sum + p.price.amount * p.stockQuantity, 0);
   }, [products]);
 
-  // Cart math
   const cartSubtotal = useMemo(() => {
     return cart.reduce((sum, item) => sum + item.product.price.amount * item.quantity, 0);
   }, [cart]);
@@ -100,13 +97,12 @@ export const MembershipShopView: React.FC = () => {
 
   const cartTotal = Math.max(0, cartSubtotal - cartDiscount);
 
-  // Cart actions
   const handleAddToCart = (product: Product) => {
     if (product.stockQuantity <= 0) {
       showToast({
         type: 'warning',
-        title: language === 'ar' ? 'نفاد الكمية' : 'Rupture de Stock',
-        message: `${product.name} ${language === 'ar' ? 'غير متوفر حالياً' : 'est en rupture de stock.'}`,
+        title: isAr ? 'نفاد الكمية' : 'Rupture de Stock',
+        message: `${product.name} ${isAr ? 'غير متوفر حالياً' : 'est en rupture de stock.'}`,
       });
       return;
     }
@@ -128,6 +124,7 @@ export const MembershipShopView: React.FC = () => {
       }
       return [...prev, { product, quantity: 1, discount: 0 }];
     });
+    setSidePanelMode('cart');
   };
 
   const handleUpdateQty = (productId: string, delta: number) => {
@@ -159,102 +156,65 @@ export const MembershipShopView: React.FC = () => {
 
     const newSale = processSale(saleItems, paymentMethod, selectedMemberId || undefined);
 
-    setLastReceipt({
-      id: newSale.id.slice(-6).toUpperCase(),
-      total: cartTotal,
-      date: new Date().toLocaleTimeString(),
-    });
-
     setCart([]);
     setSelectedMemberId('');
 
     showToast({
       type: 'success',
-      title: language === 'ar' ? 'تمت عملية البيع بنجاح' : 'Vente Clôturée avec Succès',
-      message: `${language === 'ar' ? 'وصل رقم' : 'Ticket'} #${newSale.id.slice(-6).toUpperCase()} · ${formatMoney(cartTotal)}`,
+      title: isAr ? 'تمت عملية البيع بنجاح' : 'Vente Clôturée avec Succès',
+      message: `${isAr ? 'وصل رقم' : 'Ticket'} #${newSale.id.slice(-6).toUpperCase()} · ${formatMoney(cartTotal)}`,
     });
   };
 
+  const getProductActions = (p: Product): ActionButtonDef[] => [
+    {
+      label: isAr ? 'معاينة المنتج' : 'Consulter Article',
+      icon: <Eye size={14} />,
+      onClick: () => {
+        setSelectedProduct(p);
+        setSidePanelMode('inspector');
+      },
+    },
+    {
+      label: isAr ? 'إضافة للسلة' : '+ Panier',
+      icon: <Plus size={14} />,
+      onClick: () => handleAddToCart(p),
+    },
+    {
+      label: isAr ? 'باركود' : 'Code-Barres',
+      icon: <Barcode size={14} />,
+      onClick: () => {
+        showToast({
+          type: 'info',
+          title: 'Étiquette Barcode',
+          message: `Impression étiquette EAN pour ${p.sku}`,
+        });
+      },
+    },
+  ];
+
   return (
     <div className="space-y-6">
-      {/* Outer Workspace Panel matching Desktop Spec (rounded-28, white background, subtle border) */}
-      <div className="bg-white dark:bg-[#18181B] rounded-[28px] border border-[#E9EEF0] dark:border-neutral-800 p-6 lg:p-8 space-y-6 shadow-xs">
-        {/* Row 0: Top Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="bg-white dark:bg-[#18181B] rounded-[28px] border border-[#E9EEF0] dark:border-neutral-800 p-6 lg:p-8 space-y-6 shadow-xs animate-in fade-in duration-200">
+        {/* Top Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
           <div className="flex items-center gap-3.5">
             <div className="w-11 h-11 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 flex items-center justify-center text-[#C4785A]">
               <Zap size={22} />
             </div>
             <div>
               <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white">
-                {language === 'ar' ? 'متجر المكملات والتغذية الرياضية' : language === 'fr' ? 'Pro-Shop & Nutrition Sportive' : 'Gym Pro-Shop & Nutrition'}
+                {isAr ? 'متجر المكملات والتغذية الرياضية' : 'Pro-Shop & Nutrition Sportive'}
               </h1>
               <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
-                {language === 'ar'
-                  ? 'مبيعات الصندوق المباشرة للبروتين، المكملات، الشيكرز والألبسة الرياضية.'
-                  : language === 'fr'
-                  ? 'Vente au comptoir de protéines, compléments alimentaires, shakers et textile.'
-                  : 'Counter sales of protein, fitness supplements, accessories, and gym apparel.'}
+                {isAr
+                  ? 'مبيعات الصندوق المباشرة للبروتين، المكملات، الشيكرز والألبسة الرياضية'
+                  : 'Vente au comptoir de protéines, compléments alimentaires, shakers et textile'}
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-3 relative flex-wrap">
-            {/* Facility Pill: Branch Switcher */}
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => setIsFacilityDropdownOpen(!isFacilityDropdownOpen)}
-                className="h-10 px-4 rounded-xl bg-[#F4EFEA] dark:bg-neutral-800/80 border border-[#E8DFD8] dark:border-neutral-700 flex items-center gap-2 cursor-pointer hover:bg-[#EFE8E1] dark:hover:bg-neutral-800 transition-colors shadow-2xs"
-              >
-                <Home size={15} className="text-[#C4785A]" />
-                <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
-                  {currentBranch?.name || 'Club Principal'}
-                </span>
-                <ChevronDown
-                  size={14}
-                  className={`text-neutral-500 transition-transform ${
-                    isFacilityDropdownOpen ? 'rotate-180' : ''
-                  }`}
-                />
-              </button>
-
-              {isFacilityDropdownOpen && (
-                <div className="absolute right-0 rtl:right-auto rtl:left-0 mt-2 w-64 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
-                  <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
-                    {language === 'ar' ? 'فروع النادي' : 'Clubs & Complexes'}
-                  </div>
-                  {businesses.map((biz) => {
-                    const isCurrent = biz.id === currentBusinessId;
-                    const matchingBranch = branches.find((b) => b.businessId === biz.id);
-                    return (
-                      <button
-                        key={biz.id}
-                        type="button"
-                        onClick={() => {
-                          switchBusiness(biz.id);
-                          if (matchingBranch) switchBranch(matchingBranch.id);
-                          setIsFacilityDropdownOpen(false);
-                        }}
-                        className={`w-full px-3 py-2 text-left rtl:text-right flex items-center justify-between text-xs transition-colors cursor-pointer ${
-                          isCurrent
-                            ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold'
-                            : 'text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700/50'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2 min-w-0">
-                          <Building2 size={14} className={isCurrent ? 'text-[#C4785A]' : 'text-neutral-400'} />
-                          <span className="truncate">{biz.name}</span>
-                        </div>
-                        {isCurrent && <Check size={14} />}
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-
-            {/* Seed Demo Inventory */}
             <AtriumButton
               type="button"
               variant="outline"
@@ -265,41 +225,37 @@ export const MembershipShopView: React.FC = () => {
                 showToast({
                   type: 'success',
                   title: 'Inventory Restocked',
-                  message: 'Pro-Shop supplements and merchandise demo stock replenished.',
+                  message: 'Pro-Shop supplements stock replenished.',
                 });
               }}
-              title={language === 'ar' ? 'إعادة شحن المخزون' : 'Réapprovisionner Stock'}
             >
-              <span className="hidden sm:inline">
-                {language === 'ar' ? 'شحن المخزون' : 'Stock Démo'}
-              </span>
+              <span className="hidden sm:inline">{isAr ? 'شحن المخزون' : 'Stock Démo'}</span>
             </AtriumButton>
           </div>
         </div>
 
-        {/* Row 1: Top Metrics Pod Tray matching Desktop Spec */}
+        {/* Canonical 3-Card Top Metrics Pod Tray */}
         <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
           <div>
             <h2 className="text-base font-bold text-neutral-900 dark:text-white">
-              {language === 'ar' ? 'مؤشرات مبيعات المتجر وتدفق الصندوق' : 'Indicateurs Pro-Shop & Rotation de Stock'}
+              {isAr ? 'مؤشرات مبيعات المتجر وتدفق الصندوق' : 'Indicateurs Pro-Shop & Rotation de Stock'}
             </h2>
             <p className="text-xs text-neutral-400 dark:text-neutral-500">
-              {language === 'ar'
+              {isAr
                 ? 'متابعة حركة المخزون، تنبيهات إعادة التوريد وسيولة صندوق المتجر'
                 : 'Valorisation des stocks, alertes de réassort et encaissements au comptoir'}
             </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {/* Card 1: Today Pro-Shop Turnover */}
             <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
               <div>
                 <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
-                  {language === 'ar' ? 'مبيعات المتجر اليوم' : 'Chiffre d\'Affaires Pro-Shop'}
+                  {isAr ? 'مبيعات المتجر اليوم' : 'Chiffre d’Affaires Pro-Shop'}
                 </span>
                 <div className="mt-1">
                   <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
-                    ↗ {products.length} {language === 'ar' ? 'أصناف معروضة' : 'articles au catalogue'}
+                    ↗ {products.length} {isAr ? 'أصناف معروضة' : 'articles catalogue'}
                   </span>
                 </div>
               </div>
@@ -308,11 +264,10 @@ export const MembershipShopView: React.FC = () => {
               </div>
             </div>
 
-            {/* Card 2: Low Stock Warnings */}
             <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
               <div>
                 <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
-                  {language === 'ar' ? 'تنبيهات انخفاض المخزون' : 'Alertes Réapprovisionnement'}
+                  {isAr ? 'تنبيهات انخفاض المخزون' : 'Alertes Réapprovisionnement'}
                 </span>
                 <div className="mt-1">
                   <span
@@ -329,37 +284,22 @@ export const MembershipShopView: React.FC = () => {
               <div className="text-2xl font-black text-neutral-900 dark:text-white tabular-nums font-mono">
                 {lowStockCount}{' '}
                 <span className="text-xs text-neutral-400 font-normal">
-                  {language === 'ar' ? 'منتجات' : 'références'}
+                  {isAr ? 'منتجات' : 'références'}
                 </span>
               </div>
             </div>
 
-            {/* Card 3: DARK ESPRESSO ANCHOR CARD (#1F1D1B) */}
-            <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm relative overflow-hidden group">
-              <div className="absolute -right-4 -bottom-6 opacity-20 group-hover:opacity-30 transition-opacity pointer-events-none">
-                <svg width="140" height="90" viewBox="0 0 140 90" fill="none">
-                  <path
-                    d="M10 65 L35 50 L60 55 L85 25 L110 30 L135 12"
-                    stroke="#FB923C"
-                    strokeWidth="3.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <circle cx="135" cy="12" r="4" fill="#FB923C" />
-                </svg>
-              </div>
-
+            <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
               <div>
                 <span className="text-xs font-medium text-neutral-300">
-                  {language === 'ar' ? 'قيمة مخزون الصالة الإجمالية' : 'Valorisation Globale du Stock'}
+                  {isAr ? 'قيمة مخزون الصالة الإجمالية' : 'Valorisation Globale Stock'}
                 </span>
                 <div className="text-[11px] text-[#FB923C] font-semibold mt-0.5">
                   <span className="bg-[#3D2817] px-2 py-0.5 rounded-full inline-block">
-                    {language === 'ar' ? 'أصول الصندوق الجاهزة للبيع' : 'Stock Marchandises (DZD)'}
+                    {isAr ? 'أصول الصندوق الجاهزة للبيع' : 'Stock Marchandises'}
                   </span>
                 </div>
               </div>
-
               <div className="text-2xl font-black text-white tabular-nums font-mono">
                 {formatMoney(totalCatalogInventoryValue)}
               </div>
@@ -367,252 +307,362 @@ export const MembershipShopView: React.FC = () => {
           </div>
         </div>
 
-        {/* Row 2: Bottom Workstation Pod Tray (Catalog + POS Cart Terminal) */}
-        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <ShoppingBag size={18} className="text-[#C4785A]" />
-              <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
-                {language === 'ar' ? 'محطة بيع المكملات السريعة' : 'Caisse Tactile & Catalogue Nutrition'}
-              </h3>
-            </div>
+        {/* Main Collection Area + 390px Inspector / Cart Drawer */}
+        <div className="flex flex-col lg:flex-row gap-6 items-start">
+          <div className="flex-1 min-w-0 w-full">
+            <UniversalDataCollection<Product>
+              title={isAr ? 'كتالوج المنتجات والمكملات' : 'Catalogue Pro-Shop & Articles'}
+              subtitle={isAr ? 'التغذية، المكملات والإكسسوارات الرياضية' : 'Gestion des références, prix de vente et rotation'}
+              items={filteredProducts}
+              keyExtractor={(p) => p.id}
+              searchPlaceholder={isAr ? 'بحث بالاسم، الكود، الفئة...' : 'Rechercher article, SKU, marque, catégorie...'}
+              searchFilter={(p, query) =>
+                p.name.toLowerCase().includes(query.toLowerCase()) ||
+                p.sku.toLowerCase().includes(query.toLowerCase()) ||
+                (p.category || '').toLowerCase().includes(query.toLowerCase())
+              }
+              onSelectRow={(p) => {
+                setSelectedProduct(p);
+                setSidePanelMode('inspector');
+              }}
+              customActions={(p) => getProductActions(p)}
+              columns={[
+                {
+                  id: 'sku',
+                  header: 'SKU / Réf',
+                  width: '120px',
+                  sortable: true,
+                  renderCell: (p) => (
+                    <span className="font-mono font-bold text-xs bg-[#C4785A]/10 text-[#C4785A] px-2 py-0.5 rounded border border-[#C4785A]/20">
+                      {p.sku}
+                    </span>
+                  ),
+                },
+                {
+                  id: 'name',
+                  header: isAr ? 'المنتج' : 'Désignation Article',
+                  renderCell: (p) => (
+                    <div>
+                      <span className="font-bold text-xs text-neutral-900 dark:text-neutral-100 block">
+                        {p.name}
+                      </span>
+                      <span className="text-[10px] text-neutral-400">
+                        {p.category || 'Fitness & Nutrition'}
+                      </span>
+                    </div>
+                  ),
+                },
+                {
+                  id: 'price',
+                  header: isAr ? 'السعر' : 'Prix Vente',
+                  width: '130px',
+                  sortable: true,
+                  renderCell: (p) => (
+                    <span className="font-mono text-xs font-bold text-neutral-900 dark:text-white">
+                      {formatMoney(p.price.amount)}
+                    </span>
+                  ),
+                },
+                {
+                  id: 'stock',
+                  header: isAr ? 'المخزون' : 'Stock Dispo',
+                  width: '120px',
+                  sortable: true,
+                  renderCell: (p) => {
+                    const isLow = p.stockQuantity <= (p.reorderLevel || 5);
+                    return (
+                      <span
+                        className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+                          p.stockQuantity <= 0
+                            ? 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300'
+                            : isLow
+                            ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
+                            : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                        }`}
+                      >
+                        {p.stockQuantity} unités
+                      </span>
+                    );
+                  },
+                },
+                {
+                  id: 'action',
+                  header: isAr ? 'إجراء' : 'Comptoir',
+                  width: '120px',
+                  renderCell: (p) => (
+                    <AtriumButton
+                      size="xs"
+                      variant="primary"
+                      onClick={() => handleAddToCart(p)}
+                      icon={<Plus size={12} />}
+                    >
+                      {isAr ? 'شراء' : '+ Panier'}
+                    </AtriumButton>
+                  ),
+                },
+              ]}
+              renderCard={(p) => {
+                const isLow = p.stockQuantity <= (p.reorderLevel || 5);
+                return (
+                  <div className="p-4 flex flex-col justify-between h-full space-y-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <span className="font-mono font-bold text-xs bg-[#C4785A]/10 text-[#C4785A] px-2 py-0.5 rounded">
+                        {p.sku}
+                      </span>
+                      <span
+                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                          p.stockQuantity <= 0
+                            ? 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300'
+                            : isLow
+                            ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
+                            : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                        }`}
+                      >
+                        {p.stockQuantity} en stock
+                      </span>
+                    </div>
 
-            {/* Seek Search Bar */}
-            <Seek
-              value={searchQuery}
-              onChange={setSearchQuery}
-              placeholder={language === 'ar' ? 'بحث بالاسم، الباركود أو الصنف...' : 'Recherche par produit, SKU ou catégorie...'}
+                    <div>
+                      <h4 className="font-bold text-xs text-neutral-900 dark:text-white line-clamp-2">
+                        {p.name}
+                      </h4>
+                      <p className="text-[10px] text-neutral-400 mt-0.5">
+                        {p.category || 'Pro-Shop'}
+                      </p>
+                    </div>
+
+                    <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between">
+                      <span className="font-mono font-bold text-sm text-[#C4785A]">
+                        {formatMoney(p.price.amount)}
+                      </span>
+                      <AtriumButton
+                        size="xs"
+                        variant="primary"
+                        onClick={() => handleAddToCart(p)}
+                        icon={<Plus size={11} />}
+                      >
+                        + Panier
+                      </AtriumButton>
+                    </div>
+                  </div>
+                );
+              }}
             />
           </div>
 
-          {/* Category Filter Capsules */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                type="button"
-                onClick={() => setSelectedCategory(cat)}
-                className={`h-8 px-3.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
-                  selectedCategory === cat
-                    ? 'bg-[#C4785A] text-white shadow-xs'
-                    : 'bg-white dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 border border-[#E9EEF0] dark:border-neutral-700/60 hover:bg-neutral-50 dark:hover:bg-neutral-700'
-                }`}
-              >
-                {cat === 'All' ? (language === 'ar' ? 'كافة الأصناف' : 'Tous les Articles') : cat}
-              </button>
-            ))}
-          </div>
-
-          {/* Split Workstation Layout: 7 cols Catalog / 5 cols Cart */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 pt-2">
-            {/* Catalog Grid (7 cols) */}
-            <div className="lg:col-span-7 space-y-3">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 max-h-[580px] overflow-y-auto pr-1">
-                {filteredProducts.map((p) => {
-                  const isOutOfStock = p.stockQuantity <= 0;
-                  const isLow = p.stockQuantity <= (p.reorderLevel || 5);
-
-                  return (
-                    <div
-                      key={p.id}
-                      className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between hover:border-[#C4785A]/40 transition-all group"
-                    >
-                      <div className="space-y-1.5">
-                        <div className="flex items-start justify-between gap-2">
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300">
-                            {p.category || 'Nutrition'}
-                          </span>
-                          <span
-                            className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                              isOutOfStock
-                                ? 'bg-rose-50 text-rose-600 dark:bg-rose-950/40 dark:text-rose-400'
-                                : isLow
-                                ? 'bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400'
-                                : 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400'
-                            }`}
-                          >
-                            {p.stockQuantity} {language === 'ar' ? 'قطعة' : 'en stock'}
-                          </span>
-                        </div>
-
-                        <h4 className="font-bold text-sm text-neutral-900 dark:text-white line-clamp-1 group-hover:text-[#C4785A] transition-colors">
-                          {p.name}
-                        </h4>
-                        <p className="text-[11px] text-neutral-400 line-clamp-1 font-mono">
-                          {p.sku}
-                        </p>
-                      </div>
-
-                      <div className="flex items-center justify-between pt-3 mt-2 border-t border-neutral-100 dark:border-neutral-750">
-                        <div className="text-base font-black text-neutral-900 dark:text-white tabular-nums font-mono">
-                          {formatMoney(p.price.amount)}
-                        </div>
-
-                        <button
-                          type="button"
-                          disabled={isOutOfStock}
-                          onClick={() => handleAddToCart(p)}
-                          className="h-8 px-3 rounded-xl bg-[#FCEEE8] dark:bg-neutral-700 hover:bg-[#C4785A] text-[#C4785A] hover:text-white text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-                        >
-                          <Plus size={14} />
-                          <span>{language === 'ar' ? 'إضافة' : 'Ajouter'}</span>
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
+          {/* 390px Side Inspector / Cart Drawer */}
+          <div className="w-full lg:w-[390px] shrink-0 bg-white dark:bg-neutral-850 rounded-2xl border border-[#EDF1F3] dark:border-neutral-800 shadow-lg flex flex-col h-[740px] overflow-hidden animate-in slide-in-from-right-4 duration-200">
+            {/* Top Toggle Switch between Cart and Inspector */}
+            <div className="p-3 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between bg-neutral-50 dark:bg-neutral-900/50">
+              <div className="inline-flex rounded-xl bg-neutral-200/60 dark:bg-neutral-800 p-0.5">
+                <button
+                  onClick={() => setSidePanelMode('cart')}
+                  className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+                    sidePanelMode === 'cart'
+                      ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-xs'
+                      : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'
+                  }`}
+                >
+                  Panier ({cart.length})
+                </button>
+                <button
+                  onClick={() => setSidePanelMode('inspector')}
+                  disabled={!selectedProduct}
+                  className={`px-3 py-1 rounded-lg text-xs font-bold transition-all disabled:opacity-40 ${
+                    sidePanelMode === 'inspector'
+                      ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-xs'
+                      : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'
+                  }`}
+                >
+                  Fiche Article
+                </button>
               </div>
+
+              {selectedProduct && sidePanelMode === 'inspector' && (
+                <button
+                  onClick={() => setSidePanelMode('cart')}
+                  className="w-7 h-7 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-800 flex items-center justify-center text-neutral-500"
+                >
+                  <X size={15} />
+                </button>
+              )}
             </div>
 
-            {/* Cart & Ticket Register Station (5 cols) */}
-            <div className="lg:col-span-5 bg-white dark:bg-neutral-800 rounded-[20px] p-5 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between space-y-4">
-              <div className="space-y-4">
-                <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-750">
-                  <div className="flex items-center gap-2">
-                    <Receipt size={17} className="text-[#C4785A]" />
-                    <span className="font-bold text-sm text-neutral-900 dark:text-white">
-                      {language === 'ar' ? 'تذكرة البيع الحالية' : 'Ticket de Caisse en Cours'}
-                    </span>
-                  </div>
-                  <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300">
-                    {cart.reduce((a, b) => a + b.quantity, 0)} {language === 'ar' ? 'عناصر' : 'articles'}
-                  </span>
-                </div>
-
-                {/* Member linking selector */}
-                <div>
-                  <label className="text-[11px] font-bold text-neutral-500 uppercase tracking-wider block mb-1">
-                    {language === 'ar' ? 'ربط بحساب مشترك (اختياري)' : 'Associer à un Adhérent (Optionnel)'}
-                  </label>
-                  <select
-                    value={selectedMemberId}
-                    onChange={(e) => setSelectedMemberId(e.target.value)}
-                    className="w-full h-9 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-900 text-xs px-3 text-neutral-800 dark:text-neutral-200 focus:outline-hidden focus:border-[#C4785A]"
+            {sidePanelMode === 'inspector' && selectedProduct ? (
+              /* Product Inspector */
+              <div className="flex-1 flex flex-col overflow-hidden">
+                <div className="flex border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 px-3 pt-2 gap-2">
+                  <button
+                    onClick={() => setInspectorTab('fiche')}
+                    className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${
+                      inspectorTab === 'fiche'
+                        ? 'border-[#C4785A] text-[#C4785A]'
+                        : 'border-transparent text-neutral-500'
+                    }`}
                   >
-                    <option value="">
-                      {language === 'ar' ? 'زبون عابر (بدون ملف)' : 'Client de passage (sans compte)'}
-                    </option>
-                    {members.map((m) => (
-                      <option key={m.id} value={m.id}>
-                        {m.fullName} ({m.phoneNumber})
-                      </option>
-                    ))}
-                  </select>
+                    Détails Article
+                  </button>
+                  <button
+                    onClick={() => setInspectorTab('stock')}
+                    className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${
+                      inspectorTab === 'stock'
+                        ? 'border-[#C4785A] text-[#C4785A]'
+                        : 'border-transparent text-neutral-500'
+                    }`}
+                  >
+                    Niveau Stock
+                  </button>
                 </div>
 
-                {/* Cart Items List */}
-                <div className="space-y-2.5 max-h-[220px] overflow-y-auto pr-1 divide-y divide-neutral-100 dark:divide-neutral-800">
+                <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs">
+                  <div className="p-4 bg-[#1F1D1B] rounded-xl text-white space-y-2 shadow-sm">
+                    <span className="text-[10px] text-neutral-400 font-mono">SKU: {selectedProduct.sku}</span>
+                    <h3 className="text-base font-bold text-white">{selectedProduct.name}</h3>
+                    <div className="text-2xl font-black font-mono text-[#FB923C]">
+                      {formatMoney(selectedProduct.price.amount)}
+                    </div>
+                  </div>
+
+                  <div className="p-3 bg-neutral-50 dark:bg-neutral-900/60 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-neutral-500">Catégorie:</span>
+                      <span className="font-semibold text-neutral-900 dark:text-white">{selectedProduct.category || 'Nutrition'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-neutral-500">Stock en rayon:</span>
+                      <span className="font-mono font-bold text-neutral-900 dark:text-white">{selectedProduct.stockQuantity} pcs</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-neutral-500">Seuil de réappro:</span>
+                      <span className="font-mono text-neutral-700 dark:text-neutral-300">{selectedProduct.reorderLevel || 5} pcs</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-4 border-t border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/50 space-y-2">
+                  <AtriumButton
+                    variant="primary"
+                    className="w-full justify-center"
+                    icon={<Plus size={14} />}
+                    onClick={() => handleAddToCart(selectedProduct)}
+                  >
+                    Ajouter au Panier
+                  </AtriumButton>
+                </div>
+              </div>
+            ) : (
+              /* POS Cart Panel */
+              <div className="flex-1 flex flex-col justify-between overflow-hidden">
+                <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                  <div className="flex items-center justify-between pb-2 border-b border-neutral-100 dark:border-neutral-800">
+                    <span className="text-xs font-bold text-neutral-900 dark:text-white">Articles ({cart.length})</span>
+                    {cart.length > 0 && (
+                      <button
+                        onClick={() => setCart([])}
+                        className="text-[11px] text-red-500 hover:underline"
+                      >
+                        Vider
+                      </button>
+                    )}
+                  </div>
+
                   {cart.length === 0 ? (
-                    <div className="text-center py-8 text-neutral-400 space-y-2">
-                      <ShoppingBag size={28} className="mx-auto opacity-30" />
-                      <p className="text-xs">
-                        {language === 'ar' ? 'انقر على المنتجات لإضافتها للتذكرة' : 'Sélectionnez des articles pour débuter le ticket'}
-                      </p>
+                    <div className="h-44 flex flex-col items-center justify-center text-center text-neutral-400 text-xs">
+                      <ShoppingBag size={32} className="text-neutral-300 dark:text-neutral-700 mb-2" />
+                      <p>Le panier est vide.</p>
+                      <span className="text-[10px] text-neutral-500 mt-1">Cliquez sur "+ Panier" pour ajouter des articles</span>
                     </div>
                   ) : (
-                    cart.map((item) => (
-                      <div key={item.product.id} className="pt-2 flex items-center justify-between gap-2">
-                        <div className="min-w-0 flex-1">
-                          <h5 className="font-bold text-xs text-neutral-900 dark:text-white truncate">
-                            {item.product.name}
-                          </h5>
-                          <span className="text-[11px] text-neutral-400 font-mono">
-                            {formatMoney(item.product.price.amount)} x {item.quantity}
-                          </span>
-                        </div>
+                    <div className="space-y-2">
+                      {cart.map((item) => (
+                        <div
+                          key={item.product.id}
+                          className="p-2.5 rounded-xl bg-neutral-50 dark:bg-neutral-900/60 border border-neutral-200 dark:border-neutral-800 flex items-center justify-between gap-2"
+                        >
+                          <div className="min-w-0 flex-1">
+                            <span className="font-bold text-xs text-neutral-900 dark:text-white truncate block">
+                              {item.product.name}
+                            </span>
+                            <span className="font-mono text-[11px] text-[#C4785A]">
+                              {formatMoney(item.product.price.amount)}
+                            </span>
+                          </div>
 
-                        {/* Quantity Stepper */}
-                        <div className="flex items-center gap-1.5 shrink-0">
-                          <button
-                            type="button"
-                            onClick={() => handleUpdateQty(item.product.id, -1)}
-                            className="w-6 h-6 rounded-lg bg-neutral-100 dark:bg-neutral-700 flex items-center justify-center hover:bg-neutral-200 cursor-pointer"
-                          >
-                            <Minus size={12} />
-                          </button>
-                          <span className="w-5 text-center text-xs font-bold font-mono">
-                            {item.quantity}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => handleUpdateQty(item.product.id, 1)}
-                            className="w-6 h-6 rounded-lg bg-neutral-100 dark:bg-neutral-700 flex items-center justify-center hover:bg-neutral-200 cursor-pointer"
-                          >
-                            <Plus size={12} />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveItem(item.product.id)}
-                            className="w-6 h-6 rounded-lg text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 flex items-center justify-center cursor-pointer ml-1"
-                          >
-                            <Trash2 size={12} />
-                          </button>
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            <button
+                              onClick={() => handleUpdateQty(item.product.id, -1)}
+                              className="w-6 h-6 rounded bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 flex items-center justify-center text-xs"
+                            >
+                              <Minus size={10} />
+                            </button>
+                            <span className="font-mono text-xs font-bold w-4 text-center">
+                              {item.quantity}
+                            </span>
+                            <button
+                              onClick={() => handleUpdateQty(item.product.id, 1)}
+                              className="w-6 h-6 rounded bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 flex items-center justify-center text-xs"
+                            >
+                              <Plus size={10} />
+                            </button>
+                            <button
+                              onClick={() => handleRemoveItem(item.product.id)}
+                              className="w-6 h-6 rounded text-neutral-400 hover:text-red-500 flex items-center justify-center ml-1"
+                            >
+                              <Trash2 size={12} />
+                            </button>
+                          </div>
                         </div>
-                      </div>
-                    ))
+                      ))}
+                    </div>
                   )}
                 </div>
-              </div>
 
-              {/* Bottom Payment Block */}
-              <div className="space-y-3 pt-3 border-t border-neutral-100 dark:border-neutral-750">
-                {/* Payment Tender Selectors */}
-                <div className="grid grid-cols-3 gap-1.5">
-                  {(['Cash', 'Card', 'BankTransfer'] as const).map((method) => (
+                {/* Checkout Section */}
+                <div className="p-4 border-t border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/50 space-y-3">
+                  <div className="flex justify-between text-xs">
+                    <span className="text-neutral-500">Total à Payer:</span>
+                    <span className="font-mono font-bold text-base text-neutral-900 dark:text-white">
+                      {formatMoney(cartTotal)}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
                     <button
-                      key={method}
-                      type="button"
-                      onClick={() => setPaymentMethod(method)}
-                      className={`h-8 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1 ${
-                        paymentMethod === method
-                          ? 'bg-[#C4785A] text-white shadow-2xs'
-                          : 'bg-neutral-100 dark:bg-neutral-700/60 text-neutral-600 dark:text-neutral-300'
+                      onClick={() => setPaymentMethod('Cash')}
+                      className={`p-2 rounded-lg text-xs font-semibold border flex items-center justify-center gap-1.5 ${
+                        paymentMethod === 'Cash'
+                          ? 'border-[#C4785A] bg-[#C4785A]/10 text-[#C4785A]'
+                          : 'border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-300'
                       }`}
                     >
-                      {method === 'Cash' ? (
-                        <>
-                          <Banknote size={12} />
-                          <span>{language === 'ar' ? 'نقداً' : 'Espèces'}</span>
-                        </>
-                      ) : method === 'Card' ? (
-                        <>
-                          <CreditCard size={12} />
-                          <span>{language === 'ar' ? 'ذهبية' : 'Dahabia'}</span>
-                        </>
-                      ) : (
-                        <>
-                          <Zap size={12} />
-                          <span>{language === 'ar' ? 'بريدي' : 'Baridi'}</span>
-                        </>
-                      )}
+                      <Banknote size={13} />
+                      <span>Espèces</span>
                     </button>
-                  ))}
-                </div>
+                    <button
+                      onClick={() => setPaymentMethod('Card')}
+                      className={`p-2 rounded-lg text-xs font-semibold border flex items-center justify-center gap-1.5 ${
+                        paymentMethod === 'Card'
+                          ? 'border-[#C4785A] bg-[#C4785A]/10 text-[#C4785A]'
+                          : 'border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-300'
+                      }`}
+                    >
+                      <CreditCard size={13} />
+                      <span>Carte CIB/Edahabia</span>
+                    </button>
+                  </div>
 
-                {/* Total and Checkout */}
-                <div className="flex items-baseline justify-between pt-1">
-                  <span className="text-xs font-bold text-neutral-500">
-                    {language === 'ar' ? 'الإجمالي للدفع:' : 'Net à Payer :'}
-                  </span>
-                  <span className="text-2xl font-black text-neutral-900 dark:text-white tabular-nums font-mono text-[#C4785A]">
-                    {formatMoney(cartTotal)}
-                  </span>
+                  <AtriumButton
+                    variant="primary"
+                    className="w-full justify-center"
+                    disabled={cart.length === 0}
+                    onClick={handleCheckout}
+                    icon={<Receipt size={14} />}
+                  >
+                    Encaisser ({formatMoney(cartTotal)})
+                  </AtriumButton>
                 </div>
-
-                <AtriumButton
-                  type="button"
-                  variant="primary"
-                  className="w-full"
-                  disabled={cart.length === 0}
-                  onClick={handleCheckout}
-                  icon={<Check size={16} strokeWidth={2.5} />}
-                >
-                  <span>
-                    {language === 'ar' ? 'إتمام وقبض الفاتورة' : 'Valider & Encaisser le Ticket'}
-                  </span>
-                </AtriumButton>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </div>

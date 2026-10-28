@@ -73,7 +73,7 @@ export const LegalMattersView: React.FC = () => {
         const matchesNum = m.matterNumber.toLowerCase().includes(q);
         const matchesTitle = m.title.toLowerCase().includes(q);
         const matchesClient = m.clientName.toLowerCase().includes(q);
-        const matchesJurisdiction = m.courtJurisdiction.toLowerCase().includes(q);
+        const matchesJurisdiction = m.courtJurisdiction ? m.courtJurisdiction.toLowerCase().includes(q) : false;
         if (!matchesNum && !matchesTitle && !matchesClient && !matchesJurisdiction) return false;
       }
       return true;
@@ -558,7 +558,7 @@ export const LegalMattersView: React.FC = () => {
                       </div>
                       <div className="flex items-center justify-between pt-1 border-t border-neutral-100 dark:border-neutral-800 text-[10px]">
                         <span className="text-neutral-500 truncate max-w-[120px]">{m.clientName}</span>
-                        <span className="text-[#C4785A] font-bold">{m.courtJurisdiction.split(' ')[0]}</span>
+                        <span className="text-[#C4785A] font-bold">{(m.courtJurisdiction || 'Tribunal').split(' ')[0]}</span>
                       </div>
                     </div>
                   </div>

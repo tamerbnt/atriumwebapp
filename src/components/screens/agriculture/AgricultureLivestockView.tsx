@@ -289,9 +289,9 @@ export const AgricultureLivestockView: React.FC = () => {
         if (a.healthStatus === 'InTreatment') {
           badgeColor = 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300';
           label = 'En Soins';
-        } else if (a.healthStatus === 'Sick' || a.healthStatus === 'Quarantine') {
+        } else if (a.healthStatus === 'Quarantined') {
           badgeColor = 'bg-red-50 text-red-700 border-red-200 dark:bg-red-950/40 dark:text-red-300';
-          label = a.healthStatus === 'Quarantine' ? 'Quarantaine' : 'Malade';
+          label = 'Quarantaine';
         }
         return (
           <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${badgeColor}`}>

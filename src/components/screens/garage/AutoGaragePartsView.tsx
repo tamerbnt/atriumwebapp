@@ -25,8 +25,7 @@ import {
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
 import { formatMoney } from '../../../utils/rules';
-import { AutoPart } from '../../../types';
-import { useGarageData } from './garageData';
+import { useGarageData, SparePart } from './garageData';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { Seek } from '../../ui/Seek';
 import { LabelInput } from '../../ui/LabelInput';
@@ -48,12 +47,12 @@ export const AutoGaragePartsView: React.FC = () => {
 
   // Modals & 390px Inspector Drawer State
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [partToEdit, setPartToEdit] = useState<AutoPart | null>(null);
+  const [partToEdit, setPartToEdit] = useState<SparePart | null>(null);
 
   // Form states inside Modal
   const [name, setName] = useState('');
   const [sku, setSku] = useState('');
-  const [category, setCategory] = useState('Freinage');
+  const [category, setCategory] = useState<SparePart['category']>('Freinage');
   const [stockQuantity, setStockQuantity] = useState('10');
   const [minThreshold, setMinThreshold] = useState('4');
   const [buyingPriceDzd, setBuyingPriceDzd] = useState('4000');
@@ -62,7 +61,7 @@ export const AutoGaragePartsView: React.FC = () => {
   const [compatibility, setCompatibility] = useState('Renault, Dacia, Peugeot');
 
   // 390px Inline Side Inspector
-  const [selectedPart, setSelectedPart] = useState<AutoPart | null>(() => {
+  const [selectedPart, setSelectedPart] = useState<SparePart | null>(() => {
     return parts[0] || null;
   });
   const [activeTab, setActiveTab] = useState<'fiche' | 'stock' | 'mouvements' | 'notes'>('fiche');
@@ -83,7 +82,7 @@ export const AutoGaragePartsView: React.FC = () => {
     setIsModalOpen(true);
   };
 
-  const openEditModal = (p: AutoPart) => {
+  const openEditModal = (p: SparePart) => {
     setPartToEdit(p);
     setName(p.name);
     setSku(p.sku);
@@ -104,7 +103,7 @@ export const AutoGaragePartsView: React.FC = () => {
       return;
     }
 
-    const payload: AutoPart = {
+    const payload: SparePart = {
       id: partToEdit?.id || `part_${Date.now()}`,
       accountId: partToEdit?.accountId || 'acc_01',
       businessId: currentBusiness?.id || 'biz_garage',
@@ -112,7 +111,7 @@ export const AutoGaragePartsView: React.FC = () => {
       staffId: currentUser?.id || 'staff_01',
       name: name.trim(),
       sku: sku.trim(),
-      category: category.trim(),
+      category: category as SparePart['category'],
       stockQuantity: parseInt(stockQuantity, 10) || 0,
       minThreshold: parseInt(minThreshold, 10) || 1,
       buyingPriceDzd: parseFloat(buyingPriceDzd) || 0,
@@ -157,7 +156,7 @@ export const AutoGaragePartsView: React.FC = () => {
   const totalValuation = parts.reduce((acc, p) => acc + p.stockQuantity * p.sellingPriceDzd, 0);
 
   // Actions
-  const handlePin = (p: AutoPart) => {
+  const handlePin = (p: SparePart) => {
     setPinnedIds((prev) => {
       const next = new Set(prev);
       if (next.has(p.id)) next.delete(p.id);
@@ -172,7 +171,7 @@ export const AutoGaragePartsView: React.FC = () => {
     );
   };
 
-  const handleDelete = (p: AutoPart) => {
+  const handleDelete = (p: SparePart) => {
     deletePart(p.id);
     if (selectedPart?.id === p.id) {
       setSelectedPart(null);
@@ -180,8 +179,8 @@ export const AutoGaragePartsView: React.FC = () => {
     showToast(isAr ? 'تم حذف القطعة من المخزن' : 'Référence retirée du stock', 'success');
   };
 
-  const handleQuickAddStock = (p: AutoPart) => {
-    const updated: AutoPart = {
+  const handleQuickAddStock = (p: SparePart) => {
+    const updated: SparePart = {
       ...p,
       stockQuantity: p.stockQuantity + 5,
     };
@@ -224,7 +223,7 @@ export const AutoGaragePartsView: React.FC = () => {
   };
 
   // Column definitions for UniversalDataCollection
-  const columns: ColumnDefinition<AutoPart>[] = [
+  const columns: ColumnDefinition<SparePart>[] = [
     {
       id: 'sku',
       header: isAr ? 'رمز القطعة' : 'SKU / Réf',
@@ -438,7 +437,7 @@ export const AutoGaragePartsView: React.FC = () => {
       <div className="flex items-start gap-4">
         {/* Main Collection Container */}
         <div className="flex-1 min-w-0">
-          <UniversalDataCollection<AutoPart>
+          <UniversalDataCollection<SparePart>
             data={filteredParts}
             columns={columns}
             keyExtractor={(p) => p.id}
@@ -720,7 +719,7 @@ export const AutoGaragePartsView: React.FC = () => {
                 </p>
                 <div className="space-y-1.5">
                   {(selectedPart.compatibility && selectedPart.compatibility.length > 0) ? (
-                    selectedPart.compatibility.map((c, i) => (
+                    selectedPart.compatibility.map((c: string, i: number) => (
                       <div key={i} className="p-2 rounded-xl bg-neutral-50 dark:bg-neutral-800/40 text-neutral-800 dark:text-neutral-200 flex items-center gap-2">
                         <CheckCircle2 size={13} className="text-emerald-500 shrink-0" />
                         <span>{c}</span>

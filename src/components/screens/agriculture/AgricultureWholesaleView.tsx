@@ -1,20 +1,41 @@
 import React, { useState } from 'react';
-import { DollarSign, Wallet, CheckCircle2, TrendingUp, Building2, Send, Clock, Printer } from 'lucide-react';
+import {
+  DollarSign,
+  Wallet,
+  CheckCircle2,
+  TrendingUp,
+  Building2,
+  Send,
+  Clock,
+  Printer,
+  Scale,
+  Truck,
+  Eye,
+  FileText,
+  Share2,
+  X,
+  Check,
+  ChevronRight,
+  Receipt,
+} from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
 import { formatMoney } from '../../../utils/rules';
 import { useAgricultureData } from './agricultureData';
 import { AtriumButton } from '../../ui/AtriumButton';
-import { Seek } from '../../ui/Seek';
 import { FilterSelect } from '../../ui/FilterSelect';
+import { AgriHarvestTicket } from '../../../types';
+import { UniversalDataCollection } from '../../ui/collection/UniversalDataCollection';
+import { ActionButtonDef } from '../../ui/collection/CollectionListRow';
 
 export const AgricultureWholesaleView: React.FC = () => {
   const { language } = useAtriumStore();
   const isAr = language === 'ar';
   const { harvestTickets } = useAgricultureData();
 
-  const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [settledTickets, setSettledTickets] = useState<string[]>(['pes_01']);
+  const [selectedTicket, setSelectedTicket] = useState<AgriHarvestTicket | null>(null);
+  const [inspectorTab, setInspectorTab] = useState<'decompte' | 'pesee' | 'tracabilite'>('decompte');
 
   const totalGrossSales = harvestTickets.reduce((acc, t) => acc + t.totalGrossDzd, 0);
   const totalMandataireFees = harvestTickets.reduce(
@@ -24,28 +45,22 @@ export const AgricultureWholesaleView: React.FC = () => {
   const totalNetFarm = totalGrossSales - totalMandataireFees;
 
   const filteredTickets = harvestTickets.filter((t) => {
-    const matchesSearch =
-      t.cropDesignation.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      t.destinationWholesaleMarket.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      t.ticketNumber.toLowerCase().includes(searchQuery.toLowerCase());
-
     const isSettled = settledTickets.includes(t.id);
-    const matchesStatus =
-      statusFilter === 'all' ||
-      (statusFilter === 'settled' && isSettled) ||
-      (statusFilter === 'pending' && !isSettled);
-
-    return matchesSearch && matchesStatus;
+    if (statusFilter === 'settled') return isSettled;
+    if (statusFilter === 'pending') return !isSettled;
+    return true;
   });
 
   const handleSettle = (id: string, ticketNumber: string, netAmount: number) => {
-    setSettledTickets((prev) => [...prev, id]);
-    showToast(
-      isAr
-        ? `تم استلام صافي مستحقات البيع (${formatMoney(netAmount)}) للوصل ${ticketNumber}`
-        : `Encaissement du net mandataire ${formatMoney(netAmount)} confirmé`,
-      'success'
-    );
+    if (!settledTickets.includes(id)) {
+      setSettledTickets((prev) => [...prev, id]);
+      showToast(
+        isAr
+          ? `تم استلام صافي مستحقات البيع (${formatMoney(netAmount)}) للوصل ${ticketNumber}`
+          : `Encaissement du net mandataire ${formatMoney(netAmount)} confirmé`,
+        'success'
+      );
+    }
   };
 
   const statusOptions = [
@@ -53,6 +68,50 @@ export const AgricultureWholesaleView: React.FC = () => {
     { value: 'settled', label: isAr ? 'تم التحصيل' : 'Encaissés' },
     { value: 'pending', label: isAr ? 'قيد التحصيل' : 'En attente de règlement' },
   ];
+
+  const getTicketActions = (t: AgriHarvestTicket): ActionButtonDef[] => {
+    const isSettled = settledTickets.includes(t.id);
+    return [
+      {
+        label: isAr ? 'معاينة التذكرة' : 'Consulter Bordereau',
+        icon: <Eye size={14} />,
+        onClick: () => setSelectedTicket(t),
+      },
+      ...(!isSettled
+        ? [
+            {
+              label: isAr ? 'تأكيد القبض' : 'Encaisser Net',
+              icon: <Send size={14} />,
+              onClick: () => handleSettle(t.id, t.ticketNumber, t.netFarmPayoutDzd),
+            },
+          ]
+        : []),
+      {
+        label: isAr ? 'وصل الوزن' : 'Bon de Pesée',
+        icon: <Printer size={14} />,
+        onClick: () => {
+          showToast(
+            isAr
+              ? `طباعة وصل ميزان الجسر رقم ${t.ticketNumber}`
+              : `Impression du bon de pesée pont-bascule ${t.ticketNumber}`,
+            'info'
+          );
+        },
+      },
+      {
+        label: isAr ? 'مشاركة الوصل' : 'Partager Bordereau',
+        icon: <Share2 size={14} />,
+        onClick: () => {
+          showToast(
+            isAr
+              ? `تم نسخ رابط تتبع الشحنة ${t.ticketNumber}`
+              : `Lien de télé-déclaration mandataire ${t.ticketNumber} copié`,
+            'success'
+          );
+        },
+      },
+    ];
+  };
 
   return (
     <div className="bg-white dark:bg-[#18181B] rounded-[28px] border border-[#E9EEF0] dark:border-neutral-800 p-6 lg:p-8 space-y-6 shadow-xs animate-in fade-in duration-200">
@@ -80,6 +139,13 @@ export const AgricultureWholesaleView: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2">
+          <div className="w-48">
+            <FilterSelect
+              value={statusFilter}
+              onChange={setStatusFilter}
+              options={statusOptions}
+            />
+          </div>
           <AtriumButton
             variant="outline"
             onClick={() => window.print()}
@@ -99,7 +165,7 @@ export const AgricultureWholesaleView: React.FC = () => {
           <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
             {isAr
               ? 'متابعة المبيعات الإجمالية بالأسواق، نسبة عمولة الوكيل القانونية والسيولة المقبوضة'
-              : 'Volumes marchands réalisés en criée, frais d\'intermédiation et encaissements'}
+              : 'Volumes marchands réalisés en criée, frais d’intermédiation et encaissements'}
           </p>
         </div>
 
@@ -157,118 +223,401 @@ export const AgricultureWholesaleView: React.FC = () => {
         </div>
       </div>
 
-      {/* Universal Collection Workstation Pod Tray */}
-      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <Building2 size={16} className="text-neutral-500" />
-            <h2 className="text-sm font-bold text-neutral-900 dark:text-white">
-              {isAr ? 'سجل تسويات وكلاء أسواق الجملة' : 'Bordereaux de Vente & Suivi Mandataires'}
-            </h2>
-            <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-neutral-200 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300 font-mono">
-              {filteredTickets.length}
-            </span>
-          </div>
-
-          <div className="flex items-center gap-2.5">
-            <div className="w-56">
-              <Seek
-                value={searchQuery}
-                onChange={setSearchQuery}
-                placeholder={isAr ? 'بحث بالمنتج، السوق...' : 'Filtrer produit, marché...'}
-              />
-            </div>
-            <div className="w-48">
-              <FilterSelect
-                value={statusFilter}
-                onChange={setStatusFilter}
-                options={statusOptions}
-              />
-            </div>
-          </div>
-        </div>
-
-        {filteredTickets.length === 0 ? (
-          <div className="h-44 flex flex-col items-center justify-center text-center p-6 bg-white dark:bg-neutral-900 rounded-[20px] border border-dashed border-neutral-300 dark:border-neutral-800">
-            <DollarSign size={36} className="text-neutral-300 dark:text-neutral-700 mb-2" />
-            <p className="text-sm font-medium text-neutral-500">
-              {isAr ? 'لا توجد وصولات بيع مطابقة للبحث' : 'Aucune expédition correspondant aux filtres'}
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {filteredTickets.map((t) => {
+      {/* Main Collection Area + 390px Inspector Drawer */}
+      <div className="flex flex-col lg:flex-row gap-6 items-start">
+        <div className="flex-1 min-w-0 w-full">
+          <UniversalDataCollection<AgriHarvestTicket>
+            title={isAr ? 'وصولات وسجلات سوق الجملة' : 'Bordereaux de Pesée & Ventes Mandataires'}
+            subtitle={isAr ? 'متابعة الشحنات والعمولات الفلاحية' : 'Suivi des réceptions en criée, pesées et nets payés'}
+            items={filteredTickets}
+            keyExtractor={(t) => t.id}
+            searchPlaceholder={isAr ? 'بحث بالمنتج، الوكيل، الوصل...' : 'Rechercher produit, mandataire, ticket, marché...'}
+            searchFilter={(t, query) =>
+              t.cropDesignation.toLowerCase().includes(query.toLowerCase()) ||
+              t.destinationWholesaleMarket.toLowerCase().includes(query.toLowerCase()) ||
+              t.ticketNumber.toLowerCase().includes(query.toLowerCase()) ||
+              t.driverName.toLowerCase().includes(query.toLowerCase())
+            }
+            onSelectRow={(t) => setSelectedTicket(t)}
+            customActions={(t) => getTicketActions(t)}
+            columns={[
+              {
+                id: 'ticketNumber',
+                header: isAr ? 'رقم الوصل' : 'N° Bordereau',
+                width: '130px',
+                sortable: true,
+                renderCell: (t) => (
+                  <div className="flex items-center gap-1.5 font-mono font-bold text-xs">
+                    <span className="bg-[#C4785A]/10 text-[#C4785A] px-2 py-0.5 rounded border border-[#C4785A]/20">
+                      {t.ticketNumber}
+                    </span>
+                  </div>
+                ),
+              },
+              {
+                id: 'crop',
+                header: isAr ? 'المنتوج الفلاحي' : 'Culture & Variété',
+                renderCell: (t) => (
+                  <div>
+                    <span className="font-bold text-xs text-neutral-900 dark:text-neutral-100 block">
+                      {t.cropDesignation}
+                    </span>
+                    <span className="text-[11px] text-neutral-500">
+                      {t.destinationWholesaleMarket}
+                    </span>
+                  </div>
+                ),
+              },
+              {
+                id: 'weight',
+                header: isAr ? 'الوزن الصافي' : 'Poids Net',
+                width: '120px',
+                sortable: true,
+                renderCell: (t) => (
+                  <div className="font-mono text-xs">
+                    <span className="font-bold text-neutral-900 dark:text-white">
+                      {t.netWeightKg.toLocaleString()} kg
+                    </span>
+                    <span className="text-[10px] text-neutral-400 block">
+                      Brut: {t.grossWeightKg.toLocaleString()} kg
+                    </span>
+                  </div>
+                ),
+              },
+              {
+                id: 'unitPrice',
+                header: isAr ? 'سعر الكريّة' : 'Cours Criée',
+                width: '120px',
+                renderCell: (t) => (
+                  <span className="font-mono text-xs font-semibold text-neutral-700 dark:text-neutral-300">
+                    {t.unitPriceDzdPerKg} DZD/kg
+                  </span>
+                ),
+              },
+              {
+                id: 'fee',
+                header: isAr ? 'العمولة (6%)' : 'Com. Mandataire',
+                width: '130px',
+                renderCell: (t) => (
+                  <span className="font-mono text-xs text-amber-600 dark:text-amber-400 font-medium">
+                    -{formatMoney((t.totalGrossDzd * t.mandataireFeePercent) / 100)}
+                  </span>
+                ),
+              },
+              {
+                id: 'netPayout',
+                header: isAr ? 'صافي المزرعة' : 'Net à Verser',
+                width: '140px',
+                sortable: true,
+                renderCell: (t) => (
+                  <span className="font-mono text-xs font-bold text-neutral-900 dark:text-white">
+                    {formatMoney(t.netFarmPayoutDzd)}
+                  </span>
+                ),
+              },
+              {
+                id: 'status',
+                header: isAr ? 'الوضعية' : 'Statut Trésorerie',
+                width: '130px',
+                renderCell: (t) => {
+                  const isSettled = settledTickets.includes(t.id);
+                  return (
+                    <span
+                      className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold inline-flex items-center gap-1 ${
+                        isSettled
+                          ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
+                          : 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
+                      }`}
+                    >
+                      {isSettled ? <CheckCircle2 size={11} /> : <Clock size={11} />}
+                      {isSettled ? (isAr ? 'مقبوض' : 'Encaissé') : (isAr ? 'في الانتظار' : 'En attente')}
+                    </span>
+                  );
+                },
+              },
+            ]}
+            renderCard={(t) => {
               const isSettled = settledTickets.includes(t.id);
               return (
-                <div
-                  key={t.id}
-                  className="bg-white dark:bg-neutral-900 p-5 rounded-[20px] border border-[#E9EEF0] dark:border-neutral-800 shadow-2xs flex flex-col lg:flex-row lg:items-center justify-between gap-4"
-                >
-                  <div className="space-y-1.5 max-w-xl">
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono font-bold text-xs bg-[#C4785A]/10 text-[#C4785A] px-2.5 py-1 rounded-lg border border-[#C4785A]/20">
-                        {t.ticketNumber}
-                      </span>
-                      <span
-                        className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${
-                          isSettled
-                            ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
-                            : 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
-                        }`}
-                      >
-                        {isSettled ? (isAr ? 'مقبوض' : 'Encaissé') : (isAr ? 'في الانتظار' : 'En Attente')}
-                      </span>
-                      <span className="text-xs text-neutral-400 font-mono">
-                        {t.date}
-                      </span>
-                    </div>
+                <div className="p-4 flex flex-col justify-between h-full space-y-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <span className="font-mono font-bold text-xs bg-[#C4785A]/10 text-[#C4785A] px-2 py-0.5 rounded border border-[#C4785A]/20">
+                      {t.ticketNumber}
+                    </span>
+                    <span
+                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                        isSettled
+                          ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
+                          : 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
+                      }`}
+                    >
+                      {isSettled ? (isAr ? 'مقبوض' : 'Encaissé') : (isAr ? 'En attente' : 'En attente')}
+                    </span>
+                  </div>
 
-                    <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
+                  <div>
+                    <h4 className="font-bold text-xs text-neutral-900 dark:text-white">
                       {t.cropDesignation}
-                    </h3>
-
-                    <div className="flex flex-wrap items-center gap-3 text-xs text-neutral-500 pt-0.5">
-                      <span>Poids Net: <strong className="font-mono text-neutral-800 dark:text-neutral-200">{t.netWeightKg.toLocaleString()} kg</strong></span>
-                      <span>·</span>
-                      <span>Prix Criée: <strong className="font-mono text-neutral-800 dark:text-neutral-200">{t.unitPriceDzdPerKg} DZD/kg</strong></span>
-                      <span>·</span>
-                      <span>Com. Mandataire (6%): <strong className="font-mono text-amber-600">-{formatMoney((t.totalGrossDzd * 6) / 100)}</strong></span>
-                    </div>
-
-                    <p className="text-[11px] text-neutral-400">
-                      Mandataire / Marché: {t.destinationWholesaleMarket} · Chauffeur: {t.driverName}
+                    </h4>
+                    <p className="text-[11px] text-neutral-500 mt-0.5">
+                      {t.destinationWholesaleMarket} · {t.driverName}
                     </p>
                   </div>
 
-                  <div className="flex items-center justify-between lg:justify-end gap-5 shrink-0 pt-3 lg:pt-0 border-t lg:border-t-0 border-zinc-100 dark:border-zinc-800">
-                    <div className="text-left lg:text-right">
-                      <span className="text-[10px] uppercase tracking-wider text-neutral-400 block font-medium">
-                        Net Revenu Domaine
+                  <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-xs">
+                    <div>
+                      <span className="text-[10px] text-neutral-400 block">Poids Net</span>
+                      <span className="font-mono font-bold text-neutral-700 dark:text-neutral-300">
+                        {t.netWeightKg.toLocaleString()} kg
                       </span>
-                      <span className="text-base font-bold font-mono text-neutral-900 dark:text-white">
+                    </div>
+                    <div className="text-right">
+                      <span className="text-[10px] text-neutral-400 block">Net Domaine</span>
+                      <span className="font-mono font-bold text-[#C4785A] text-sm">
                         {formatMoney(t.netFarmPayoutDzd)}
                       </span>
                     </div>
-
-                    {!isSettled ? (
-                      <AtriumButton
-                        size="xs"
-                        variant="primary"
-                        onClick={() => handleSettle(t.id, t.ticketNumber, t.netFarmPayoutDzd)}
-                        icon={<Send size={12} />}
-                      >
-                        {isAr ? 'تأكيد القبض' : 'Encaisser'}
-                      </AtriumButton>
-                    ) : (
-                      <div className="flex items-center gap-1.5 text-xs text-emerald-600 font-bold bg-emerald-50 dark:bg-emerald-950/40 px-3 py-1.5 rounded-xl border border-emerald-200 dark:border-emerald-800">
-                        <CheckCircle2 size={14} />
-                        <span>{isAr ? 'تم التحصيل' : 'Règlement Reçu'}</span>
-                      </div>
-                    )}
                   </div>
                 </div>
               );
-            })}
+            }}
+          />
+        </div>
+
+        {/* 390px Side Inspector Drawer */}
+        {selectedTicket && (
+          <div className="w-full lg:w-[390px] shrink-0 bg-white dark:bg-neutral-850 rounded-2xl border border-[#EDF1F3] dark:border-neutral-800 shadow-lg flex flex-col h-[740px] overflow-hidden animate-in slide-in-from-right-4 duration-200">
+            {/* Inspector Top Header */}
+            <div className="p-4 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between bg-neutral-50 dark:bg-neutral-900/50">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold">
+                  <Receipt size={16} />
+                </div>
+                <div>
+                  <h3 className="font-bold text-xs text-neutral-900 dark:text-white flex items-center gap-1.5 font-mono">
+                    {selectedTicket.ticketNumber}
+                  </h3>
+                  <p className="text-[10px] text-neutral-500">
+                    {selectedTicket.destinationWholesaleMarket}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedTicket(null)}
+                className="w-7 h-7 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-800 flex items-center justify-center text-neutral-500 transition-colors"
+              >
+                <X size={15} />
+              </button>
+            </div>
+
+            {/* Tab Navigation */}
+            <div className="flex border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 px-3 pt-2 gap-2">
+              <button
+                onClick={() => setInspectorTab('decompte')}
+                className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${
+                  inspectorTab === 'decompte'
+                    ? 'border-[#C4785A] text-[#C4785A]'
+                    : 'border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
+                }`}
+              >
+                {isAr ? 'البيان المالي' : 'Décompte'}
+              </button>
+              <button
+                onClick={() => setInspectorTab('pesee')}
+                className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${
+                  inspectorTab === 'pesee'
+                    ? 'border-[#C4785A] text-[#C4785A]'
+                    : 'border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
+                }`}
+              >
+                {isAr ? 'ميزان الجسر' : 'Pont-Bascule'}
+              </button>
+              <button
+                onClick={() => setInspectorTab('tracabilite')}
+                className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${
+                  inspectorTab === 'tracabilite'
+                    ? 'border-[#C4785A] text-[#C4785A]'
+                    : 'border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
+                }`}
+              >
+                {isAr ? 'النقل والتتبع' : 'Traçabilité'}
+              </button>
+            </div>
+
+            {/* Inspector Body */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs">
+              {inspectorTab === 'decompte' && (
+                <div className="space-y-4">
+                  <div className="p-3 bg-neutral-50 dark:bg-neutral-900/60 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
+                    <span className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold block">
+                      Calcul Décompte Mandataire (Criée)
+                    </span>
+                    <div className="flex items-center justify-between">
+                      <span className="text-neutral-600 dark:text-neutral-400">Poids Facturé:</span>
+                      <span className="font-mono font-bold text-neutral-900 dark:text-white">
+                        {selectedTicket.netWeightKg.toLocaleString()} kg
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-neutral-600 dark:text-neutral-400">Prix Moyen Vente:</span>
+                      <span className="font-mono font-bold text-neutral-900 dark:text-white">
+                        {selectedTicket.unitPriceDzdPerKg} DZD/kg
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between pt-1 border-t border-neutral-200 dark:border-neutral-800">
+                      <span className="text-neutral-800 dark:text-neutral-200 font-medium">Chiffre d'Affaires Brut:</span>
+                      <span className="font-mono font-bold text-neutral-900 dark:text-white">
+                        {formatMoney(selectedTicket.totalGrossDzd)}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-amber-600 dark:text-amber-400">
+                      <span>Commission Mandataire (6%):</span>
+                      <span className="font-mono font-bold">
+                        -{formatMoney((selectedTicket.totalGrossDzd * selectedTicket.mandataireFeePercent) / 100)}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="p-4 bg-[#1F1D1B] rounded-xl text-white space-y-2 shadow-sm">
+                    <div className="flex items-center justify-between text-neutral-300 text-[11px]">
+                      <span>Net Liquide à Verser Domaine</span>
+                      <span className="bg-[#3D2817] text-[#FB923C] text-[10px] font-bold px-2 py-0.5 rounded-full">
+                        Règlement
+                      </span>
+                    </div>
+                    <div className="text-2xl font-black font-mono tracking-tight text-white">
+                      {formatMoney(selectedTicket.netFarmPayoutDzd)}
+                    </div>
+                    <p className="text-[10px] text-neutral-400">
+                      Versement direct sur compte d'exploitation agricole après déduction des frais de carreau.
+                    </p>
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 rounded-xl border border-neutral-200 dark:border-neutral-800">
+                    <div>
+                      <span className="font-semibold block text-neutral-900 dark:text-white">Statut du Règlement</span>
+                      <span className="text-[10px] text-neutral-500">
+                        {settledTickets.includes(selectedTicket.id) ? 'Reçu et pointé en banque' : 'En attente de chèque / virement'}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => handleSettle(selectedTicket.id, selectedTicket.ticketNumber, selectedTicket.netFarmPayoutDzd)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
+                        settledTickets.includes(selectedTicket.id)
+                          ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 cursor-default'
+                          : 'bg-[#C4785A] hover:bg-[#b06a4e] text-white'
+                      }`}
+                    >
+                      {settledTickets.includes(selectedTicket.id) ? 'Encaissé ✓' : 'Marquer Encaissé'}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {inspectorTab === 'pesee' && (
+                <div className="space-y-4">
+                  <div className="p-3 bg-neutral-50 dark:bg-neutral-900/60 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2.5">
+                    <span className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold block flex items-center gap-1.5">
+                      <Scale size={13} className="text-[#C4785A]" />
+                      Ticket Pont-Bascule Électronique
+                    </span>
+
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div className="p-2.5 bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800">
+                        <span className="text-[10px] text-neutral-400 block">Poids Brut (Entrée)</span>
+                        <span className="font-mono font-bold text-neutral-900 dark:text-white text-sm">
+                          {selectedTicket.grossWeightKg.toLocaleString()} kg
+                        </span>
+                      </div>
+                      <div className="p-2.5 bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800">
+                        <span className="text-[10px] text-neutral-400 block">Tare Camion (Sortie)</span>
+                        <span className="font-mono font-bold text-neutral-700 dark:text-neutral-300 text-sm">
+                          {selectedTicket.tareWeightKg.toLocaleString()} kg
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="p-2.5 bg-emerald-50/70 dark:bg-emerald-950/30 rounded-lg border border-emerald-200 dark:border-emerald-800/60 flex items-center justify-between">
+                      <span className="text-emerald-800 dark:text-emerald-200 font-semibold">Poids Net Marchandise:</span>
+                      <span className="font-mono font-bold text-emerald-700 dark:text-emerald-300 text-sm">
+                        {selectedTicket.netWeightKg.toLocaleString()} kg
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <span className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold block">
+                      Spécifications Récolte
+                    </span>
+                    <div className="space-y-1 text-neutral-700 dark:text-neutral-300">
+                      <div className="flex justify-between p-2 rounded-lg bg-neutral-50 dark:bg-neutral-900/40">
+                        <span>Désignation:</span>
+                        <strong className="text-neutral-900 dark:text-white">{selectedTicket.cropDesignation}</strong>
+                      </div>
+                      <div className="flex justify-between p-2 rounded-lg bg-neutral-50 dark:bg-neutral-900/40">
+                        <span>Variété & Calibre:</span>
+                        <span className="font-mono">{selectedTicket.cropVariety || 'Standard Calibre 1'}</span>
+                      </div>
+                      <div className="flex justify-between p-2 rounded-lg bg-neutral-50 dark:bg-neutral-900/40">
+                        <span>Qualité d'agréage:</span>
+                        <span className="font-semibold text-emerald-600">{selectedTicket.qualityGrade || 'Extra / Grade A'}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {inspectorTab === 'tracabilite' && (
+                <div className="space-y-4">
+                  <div className="p-3 bg-neutral-50 dark:bg-neutral-900/60 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
+                    <span className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold block">
+                      Données d'Acheminement
+                    </span>
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-neutral-500">Marché de Gros:</span>
+                        <span className="font-bold text-neutral-900 dark:text-white">{selectedTicket.destinationWholesaleMarket}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-neutral-500">Chauffeur assigné:</span>
+                        <span className="font-medium text-neutral-900 dark:text-white">{selectedTicket.driverName}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-neutral-500">Matricule Camion:</span>
+                        <span className="font-mono font-bold text-neutral-900 dark:text-white">{selectedTicket.vehiclePlate}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-neutral-500">Date d'expédition:</span>
+                        <span className="font-mono text-neutral-900 dark:text-white">{selectedTicket.date}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-3 bg-neutral-100 dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 text-center space-y-1">
+                    <span className="text-[10px] text-neutral-400 font-mono block">QR Code Sécurisé Bordereau</span>
+                    <p className="font-bold text-xs text-neutral-900 dark:text-white">AGRI-PESEE-{selectedTicket.ticketNumber}</p>
+                    <span className="text-[9px] text-neutral-500 font-mono">Conforme aux règlements de police des marchés</span>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Inspector Footer Actions */}
+            <div className="p-4 border-t border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/50 space-y-2">
+              <AtriumButton
+                variant="primary"
+                className="w-full justify-center"
+                icon={<Printer size={14} />}
+                onClick={() => {
+                  showToast(
+                    isAr ? 'جاري طباعة كشف التسوية الفلاحية' : 'Impression du bordereau officiel mandataire',
+                    'success'
+                  );
+                }}
+              >
+                {isAr ? 'طباعة كشف التسوية' : 'Imprimer Bordereau Officiel'}
+              </AtriumButton>
+            </div>
           </div>
         )}
       </div>

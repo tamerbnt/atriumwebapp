@@ -616,7 +616,7 @@ export const RealEstateLeasesView: React.FC = () => {
                   <div className="flex justify-between items-center">
                     <span className="text-neutral-500">Honoraires d'agence:</span>
                     <span className="font-mono text-emerald-600 dark:text-emerald-400 font-bold">
-                      {formatMoney(selectedLease.agencyCommissionDzd)}
+                      {formatMoney(selectedLease.agencyCommissionDzd || 0)}
                     </span>
                   </div>
                 </div>

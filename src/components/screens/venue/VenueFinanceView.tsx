@@ -21,17 +21,23 @@ import {
   Check,
   Building2,
   Maximize2,
+  Eye,
+  Printer,
+  Share2,
+  Unlock,
 } from 'lucide-react';
 import { useAtriumStore } from '../../../services/store';
 import { SecurityDepositRecord } from '../../../types/index';
 import { formatCurrencyAmount } from '../../../utils/rules';
 import { useTranslation } from '../../../utils/useTranslation';
-import { Seek } from '../../ui/Seek';
 import { LabelInput } from '../../ui/LabelInput';
 import { AtriumButton } from '../../ui/AtriumButton';
+import { UniversalDataCollection } from '../../ui/collection/UniversalDataCollection';
+import { ActionButtonDef } from '../../ui/collection/CollectionListRow';
 
 export const VenueFinanceView: React.FC = () => {
   const { t, language } = useTranslation();
+  const isAr = language === 'ar';
   const {
     securityDeposits,
     rentalBookings,
@@ -47,7 +53,6 @@ export const VenueFinanceView: React.FC = () => {
     showToast,
   } = useAtriumStore();
 
-  // Auto-heal empty caution escrow records safely once on mount if empty
   const hasAutoHealed = useRef(false);
   useEffect(() => {
     if (!hasAutoHealed.current && (securityDeposits.length === 0 || rentalBookings.length === 0)) {
@@ -56,14 +61,14 @@ export const VenueFinanceView: React.FC = () => {
     }
   }, [securityDeposits.length, rentalBookings.length, resetVenueMockData]);
 
-  const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'All' | 'Held' | 'Released' | 'Deducted'>('All');
   const [deductionTarget, setDeductionTarget] = useState<SecurityDepositRecord | null>(null);
   const [deductionReason, setDeductionReason] = useState('');
   const [deductionAmount, setDeductionAmount] = useState<number>(0);
   const [isFacilityDropdownOpen, setIsFacilityDropdownOpen] = useState(false);
+  const [selectedDeposit, setSelectedDeposit] = useState<SecurityDepositRecord | null>(null);
+  const [inspectorTab, setInspectorTab] = useState<'caution' | 'degradations' | 'restitution'>('caution');
 
-  // Financial aggregates
   const totalHeldCount = securityDeposits.filter((d) => d.status === 'Held').length;
   const totalHeld = securityDeposits
     .filter((d) => d.status === 'Held')
@@ -73,23 +78,14 @@ export const VenueFinanceView: React.FC = () => {
     .filter((d) => d.status === 'Released')
     .reduce((sum, d) => sum + d.amount, 0);
 
-  const totalDeducted = securityDeposits
-    .filter((d) => d.status === 'Deducted')
-    .reduce((sum, d) => sum + d.amount, 0);
-
   const totalBookingRevenue = rentalBookings.reduce((sum, b) => sum + b.totalAmount, 0);
 
   const filteredDeposits = useMemo(() => {
     return securityDeposits.filter((d) => {
-      const matchesSearch =
-        d.renterName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        d.unitName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (d.deductionReason && d.deductionReason.toLowerCase().includes(searchQuery.toLowerCase()));
-
-      const matchesStatus = statusFilter === 'All' || d.status === statusFilter;
-      return matchesSearch && matchesStatus;
+      if (statusFilter === 'All') return true;
+      return d.status === statusFilter;
     });
-  }, [securityDeposits, searchQuery, statusFilter]);
+  }, [securityDeposits, statusFilter]);
 
   const handleOpenDeduct = (dep: SecurityDepositRecord) => {
     setDeductionTarget(dep);
@@ -158,20 +154,46 @@ export const VenueFinanceView: React.FC = () => {
     });
   };
 
-  const toggleFullscreen = () => {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen().catch(() => {});
-    } else {
-      document.exitFullscreen().catch(() => {});
-    }
-  };
+  const getDepositActions = (dep: SecurityDepositRecord): ActionButtonDef[] => [
+    {
+      label: isAr ? 'معاينة الضمان' : 'Consulter Caution',
+      icon: <Eye size={14} />,
+      onClick: () => setSelectedDeposit(dep),
+    },
+    ...(dep.status === 'Held'
+      ? [
+          {
+            label: isAr ? 'استرجاع الوديعة' : 'Restituer Caution',
+            icon: <Unlock size={14} />,
+            onClick: () => releaseSecurityDeposit(dep.id),
+          },
+          {
+            label: isAr ? 'اقتطاع ضرر' : 'Retenue Dégâts',
+            icon: <AlertTriangle size={14} />,
+            onClick: () => handleOpenDeduct(dep),
+          },
+        ]
+      : []),
+    {
+      label: isAr ? 'وصل الضمان' : 'Reçu Caution',
+      icon: <Printer size={14} />,
+      onClick: () => {
+        showToast({
+          type: 'info',
+          title: 'Reçu Caution',
+          message: `Reçu de séquestre caution émis pour ${dep.renterName}`,
+          category: 'rental_booking',
+        });
+      },
+    },
+  ];
 
   return (
     <div className="space-y-6">
-      {/* Outer Workspace Panel matching Desktop Spec */}
-      <div className="bg-white dark:bg-[#18181B] rounded-[28px] border border-[#E9EEF0] dark:border-neutral-800 p-6 lg:p-8 space-y-6 shadow-xs">
-        {/* Row 0: Top Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* Outer Workspace Panel */}
+      <div className="bg-white dark:bg-[#18181B] rounded-[28px] border border-[#E9EEF0] dark:border-neutral-800 p-6 lg:p-8 space-y-6 shadow-xs animate-in fade-in duration-200">
+        {/* Top Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
           <div className="flex items-center gap-3.5">
             <div className="w-11 h-11 rounded-2xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-800 dark:text-neutral-200">
               <ShieldCheck size={22} />
@@ -187,7 +209,7 @@ export const VenueFinanceView: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-3 relative flex-wrap">
-            {/* Facility Pill: Atrium 1 ▾ */}
+            {/* Facility Pill */}
             <div className="relative">
               <button
                 type="button"
@@ -206,7 +228,6 @@ export const VenueFinanceView: React.FC = () => {
                 />
               </button>
 
-              {/* Facility Dropdown Menu */}
               {isFacilityDropdownOpen && (
                 <div className="absolute right-0 rtl:right-auto rtl:left-0 mt-2 w-64 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
                   <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
@@ -242,19 +263,16 @@ export const VenueFinanceView: React.FC = () => {
               )}
             </div>
 
-            {/* Seed Demo Data Button */}
             <AtriumButton
               type="button"
               variant="outline"
               size="sm"
               icon={<Sparkles size={14} className="text-[#C4785A]" />}
               onClick={resetVenueMockData}
-              title={language === 'ar' ? 'إعادة شحن بيانات تجريبية' : language === 'fr' ? 'Recharger Données Démo' : 'Seed Mock Data'}
             >
-              <span className="hidden sm:inline">{language === 'ar' ? 'بيانات تجريبية' : language === 'fr' ? 'Données Démo' : 'Demo Data'}</span>
+              <span className="hidden sm:inline">{isAr ? 'بيانات تجريبية' : 'Demo Data'}</span>
             </AtriumButton>
 
-            {/* Export CSV Button */}
             <AtriumButton
               type="button"
               variant="secondary"
@@ -267,23 +285,20 @@ export const VenueFinanceView: React.FC = () => {
           </div>
         </div>
 
-        {/* Row 1: Top Metrics Pod Tray matching Staff Management Screenshot 30 */}
+        {/* Row 1: Top Metrics Pod Tray */}
         <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
           <div>
             <h2 className="text-base font-bold text-neutral-900 dark:text-white">
-              {language === 'ar' ? 'الودائع الضامنة & سيولة الحسابات' : language === 'fr' ? 'Trésorerie & Séquestre des Cautions' : 'Escrow Deposits & Venue Liquidity'}
+              {isAr ? 'الودائع الضامنة & سيولة الحسابات' : 'Trésorerie & Séquestre des Cautions'}
             </h2>
             <p className="text-xs text-neutral-400 dark:text-neutral-500">
-              {language === 'ar'
+              {isAr
                 ? 'متابعة أموال التأمين المحجوزة، مبالغ الإرجاع والاقتطاعات القانونية'
-                : language === 'fr'
-                ? 'Suivi des cautions bloquées, restitutions effectuées et retenues sur dégradations'
-                : 'Escrow reserves held in trust, refunded deposits, and damage retentions'}
+                : 'Suivi des cautions bloquées, restitutions effectuées et retenues sur dégradations'}
             </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {/* Tile 1: Total Gross Venue Revenue — Pure White Card */}
             <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
               <div>
                 <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
@@ -291,7 +306,7 @@ export const VenueFinanceView: React.FC = () => {
                 </span>
                 <div className="mt-1">
                   <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
-                    ↗ {rentalBookings.length} {language === 'ar' ? 'عقود' : 'dossiers'}
+                    ↗ {rentalBookings.length} {isAr ? 'عقود' : 'dossiers'}
                   </span>
                 </div>
               </div>
@@ -300,7 +315,6 @@ export const VenueFinanceView: React.FC = () => {
               </div>
             </div>
 
-            {/* Tile 2: Released Cautions / Refunds — Pure White Card */}
             <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
               <div>
                 <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
@@ -308,7 +322,7 @@ export const VenueFinanceView: React.FC = () => {
                 </span>
                 <div className="mt-1">
                   <span className="text-[10px] font-bold text-blue-600 bg-blue-50 dark:bg-blue-950/40 px-2 py-0.5 rounded-full">
-                    ✓ {language === 'ar' ? 'مستردة بالكامل' : 'Restitué'}
+                    ✓ {isAr ? 'مستردة بالكامل' : 'Restitué'}
                   </span>
                 </div>
               </div>
@@ -317,7 +331,6 @@ export const VenueFinanceView: React.FC = () => {
               </div>
             </div>
 
-            {/* Tile 3: DARK ESPRESSO CARD (#1F1D1B) — Held Caution Escrow */}
             <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
               <div>
                 <span className="text-xs font-medium text-neutral-300">
@@ -325,7 +338,7 @@ export const VenueFinanceView: React.FC = () => {
                 </span>
                 <div className="text-[11px] text-[#FB923C] font-semibold mt-0.5">
                   <span className="bg-[#3D2817] px-2 py-0.5 rounded-full inline-block">
-                    {totalHeldCount} {language === 'ar' ? 'ودائع محجوزة' : 'cautions actives'}
+                    {totalHeldCount} {isAr ? 'ودائع محجوزة' : 'cautions actives'}
                   </span>
                 </div>
               </div>
@@ -336,217 +349,366 @@ export const VenueFinanceView: React.FC = () => {
           </div>
         </div>
 
-        {/* Row 2: Bottom Collection Pod Tray matching Staff Management Screenshot 30 */}
-        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
-          {/* Integrated Toolbar Row */}
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            {/* Left: Icon + Title + Count Badge */}
-            <div className="flex items-center gap-2">
-              <ShieldCheck size={16} className="text-neutral-500" />
-              <span className="text-sm font-bold text-neutral-900 dark:text-white">
-                {language === 'ar' ? 'سجل الودائع الضامنة' : language === 'fr' ? 'Registre des Cautions' : 'Caution Escrow Register'}
-              </span>
-              <span className="text-xs text-neutral-400 font-semibold tabular-nums ml-1">
-                {filteredDeposits.length}
-              </span>
-            </div>
-
-            {/* Right: Seek, Capsules, Fullscreen */}
-            <div className="flex flex-wrap items-center gap-2.5 ml-auto">
-              {/* Expanding Seek Search Box */}
-              <Seek
-                value={searchQuery}
-                onChange={setSearchQuery}
-                placeholder={t('venue_fin_search_ph')}
-                shutSize={36}
-                openWidth={220}
-              />
-
-              {/* Status Filter Capsules */}
-              <div className="flex items-center bg-white dark:bg-neutral-800 border border-neutral-200/80 dark:border-neutral-700 p-0.5 rounded-xl shadow-2xs overflow-x-auto max-w-full">
-                {[
-                  { id: 'All' as const, label: t('venue_fin_tab_all') },
-                  { id: 'Held' as const, label: t('venue_fin_tab_held') },
-                  { id: 'Released' as const, label: t('venue_fin_tab_released') },
-                  { id: 'Deducted' as const, label: t('venue_fin_tab_deducted') },
-                ].map((item) => (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => setStatusFilter(item.id)}
-                    className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all whitespace-nowrap cursor-pointer ${
-                      statusFilter === item.id
-                        ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold shadow-2xs'
-                        : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
-                    }`}
-                  >
-                    {item.label}
-                  </button>
-                ))}
-              </div>
-
-              {/* Fullscreen Expand Button */}
-              <button
-                type="button"
-                onClick={toggleFullscreen}
-                className="h-9 w-9 rounded-xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700/50 flex items-center justify-center transition-colors cursor-pointer shadow-2xs"
-                title="Fullscreen"
-              >
-                <Maximize2 size={14} />
-              </button>
-            </div>
-          </div>
-
-          {/* Sticky Column Headers Card */}
-          <div className="w-full bg-white dark:bg-neutral-800 border border-neutral-200/90 dark:border-neutral-700/80 rounded-[12px] px-4 py-2.5 flex items-center text-xs font-semibold text-neutral-500 dark:text-neutral-400 shadow-2xs">
-            <span className="w-[30%] truncate">{t('venue_voucher_renter_name')}</span>
-            <span className="w-[20%] truncate">{t('venue_voucher_space')}</span>
-            <span className="w-[15%] truncate">{t('venue_col_financials')}</span>
-            <span className="w-[15%] truncate">{language === 'ar' ? 'طريقة الدفع' : 'Méthode'}</span>
-            <span className="w-[10%] text-center truncate">{t('venue_col_status')}</span>
-            <span className="w-[10%] text-right rtl:text-left truncate">{language === 'ar' ? 'الإجراء' : 'Actions'}</span>
-          </div>
-
-          {/* List of Escrow Row Cards */}
-          <div className="space-y-2">
-            {filteredDeposits.length === 0 ? (
-              <div className="p-8 text-center bg-white dark:bg-neutral-800/40 rounded-[16px] border border-[#E9EEF0] dark:border-neutral-700/60 text-neutral-400 text-xs">
-                {t('venue_fin_no_records')}
-              </div>
-            ) : (
-              filteredDeposits.map((dep) => (
-                <div
-                  key={dep.id}
-                  className="bg-white dark:bg-neutral-800 border border-neutral-200/90 dark:border-neutral-700/80 rounded-[12px] px-4 py-3 hover:bg-[#F8F9FA] dark:hover:bg-neutral-700/40 transition-colors flex items-center text-xs shadow-2xs"
-                >
-                  <div className="w-[30%] min-w-0 pr-2">
-                    <div className="font-bold text-neutral-900 dark:text-white truncate">
-                      {dep.renterName}
+        {/* Main Collection Area + 390px Inspector Drawer */}
+        <div className="flex flex-col lg:flex-row gap-6 items-start">
+          <div className="flex-1 min-w-0 w-full">
+            <UniversalDataCollection<SecurityDepositRecord>
+              title={isAr ? 'سجل الودائع الضامنة' : 'Registre des Cautions & Séquestres d\'Événements'}
+              subtitle={isAr ? 'إدارة أموال التأمين المحجوزة للمناسبات' : 'Fonds séquestrés, dégradations constatées et déblocages après événement'}
+              items={filteredDeposits}
+              keyExtractor={(d) => d.id}
+              searchPlaceholder={t('venue_fin_search_ph')}
+              searchFilter={(d, query) =>
+                d.renterName.toLowerCase().includes(query.toLowerCase()) ||
+                d.unitName.toLowerCase().includes(query.toLowerCase()) ||
+                (d.deductionReason || '').toLowerCase().includes(query.toLowerCase())
+              }
+              onSelectRow={(d) => setSelectedDeposit(d)}
+              customActions={(d) => getDepositActions(d)}
+              columns={[
+                {
+                  id: 'renter',
+                  header: t('venue_voucher_renter_name'),
+                  renderCell: (d) => (
+                    <div>
+                      <span className="font-bold text-xs text-neutral-900 dark:text-neutral-100 block">
+                        {d.renterName}
+                      </span>
+                      <span className="text-[10px] text-neutral-400 font-mono">
+                        {d.collectedAt}
+                      </span>
                     </div>
-                    <div className="text-[10px] text-neutral-400 font-mono">
-                      {dep.collectedAt}
-                    </div>
-                  </div>
-
-                  <div className="w-[20%] font-medium text-neutral-700 dark:text-neutral-300 truncate pr-2">
-                    {dep.unitName}
-                  </div>
-
-                  <div className="w-[15%] font-bold text-neutral-900 dark:text-white tabular-nums font-mono">
-                    {formatCurrencyAmount(dep.amount, dep.currency)}
-                  </div>
-
-                  <div className="w-[15%] text-neutral-500 dark:text-neutral-400 text-[11px] truncate">
-                    {dep.paymentMethod}
-                  </div>
-
-                  <div className="w-[10%] text-center">
+                  ),
+                },
+                {
+                  id: 'unit',
+                  header: t('venue_voucher_space'),
+                  width: '180px',
+                  renderCell: (d) => (
+                    <span className="text-xs font-medium text-neutral-700 dark:text-neutral-300">
+                      {d.unitName}
+                    </span>
+                  ),
+                },
+                {
+                  id: 'amount',
+                  header: t('venue_col_financials'),
+                  width: '140px',
+                  sortable: true,
+                  renderCell: (d) => (
+                    <span className="font-mono text-xs font-bold text-neutral-900 dark:text-white">
+                      {formatCurrencyAmount(d.amount, d.currency)}
+                    </span>
+                  ),
+                },
+                {
+                  id: 'method',
+                  header: isAr ? 'طريقة الدفع' : 'Mode Paiement',
+                  width: '130px',
+                  renderCell: (d) => (
+                    <span className="text-xs text-neutral-500 font-medium">
+                      {d.paymentMethod}
+                    </span>
+                  ),
+                },
+                {
+                  id: 'status',
+                  header: t('venue_col_status'),
+                  width: '130px',
+                  renderCell: (d) => (
                     <span
                       className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                        dep.status === 'Held'
+                        d.status === 'Held'
                           ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300'
-                          : dep.status === 'Released'
+                          : d.status === 'Released'
                           ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
                           : 'bg-red-50 text-red-700 dark:bg-red-900/40 dark:text-red-300'
                       }`}
                     >
-                      {dep.status === 'Held'
+                      {d.status === 'Held'
                         ? t('venue_held_status')
-                        : dep.status === 'Released'
+                        : d.status === 'Released'
                         ? t('venue_refunded_status')
                         : t('venue_deducted_status')}
                     </span>
+                  ),
+                },
+              ]}
+              renderCard={(d) => (
+                <div className="p-4 flex flex-col justify-between h-full space-y-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <span className="font-mono font-bold text-xs bg-[#C4785A]/10 text-[#C4785A] px-2 py-0.5 rounded">
+                      {formatCurrencyAmount(d.amount, d.currency)}
+                    </span>
+                    <span
+                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                        d.status === 'Held'
+                          ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300'
+                          : d.status === 'Released'
+                          ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
+                          : 'bg-red-50 text-red-700 dark:bg-red-900/40 dark:text-red-300'
+                      }`}
+                    >
+                      {d.status === 'Held' ? 'Bloquée' : d.status === 'Released' ? 'Restituée' : 'Retenue'}
+                    </span>
                   </div>
 
-                  <div className="w-[10%] flex items-center justify-end gap-1.5">
-                    {dep.status === 'Held' && (
-                      <>
-                        <button
-                          type="button"
-                          onClick={() => releaseSecurityDeposit(dep.id)}
-                          className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold transition-colors cursor-pointer"
-                          title={t('venue_fin_btn_release')}
-                        >
-                          {language === 'ar' ? 'إرجاع' : language === 'fr' ? 'Restituer' : 'Release'}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleOpenDeduct(dep)}
-                          className="px-2.5 py-1 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-[11px] font-bold transition-colors cursor-pointer"
-                          title={t('venue_fin_btn_deduct')}
-                        >
-                          {language === 'ar' ? 'اقتطاع' : language === 'fr' ? 'Retenue' : 'Deduct'}
-                        </button>
-                      </>
-                    )}
+                  <div>
+                    <h4 className="font-bold text-xs text-neutral-900 dark:text-white line-clamp-1">
+                      {d.renterName}
+                    </h4>
+                    <p className="text-[11px] text-neutral-500 mt-0.5">
+                      {d.unitName} · {d.paymentMethod}
+                    </p>
+                  </div>
+
+                  <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-xs text-neutral-400 font-mono">
+                    <span>{d.collectedAt}</span>
+                    <span className="font-bold text-neutral-700 dark:text-neutral-300">{d.currency}</span>
                   </div>
                 </div>
-              ))
-            )}
+              )}
+            />
           </div>
 
-          {/* Footer Count matching Screenshot 30 */}
-          <div className="pt-2 text-center text-xs text-neutral-400 font-medium">
-            {filteredDeposits.length} {language === 'ar' ? 'ودائع ضامنة معروضة' : language === 'fr' ? 'cautions affichées' : 'escrow deposits displayed'}
-          </div>
+          {/* 390px Side Inspector Drawer */}
+          {selectedDeposit && (
+            <div className="w-full lg:w-[390px] shrink-0 bg-white dark:bg-neutral-850 rounded-2xl border border-[#EDF1F3] dark:border-neutral-800 shadow-lg flex flex-col h-[740px] overflow-hidden animate-in slide-in-from-right-4 duration-200">
+              {/* Inspector Top Header */}
+              <div className="p-4 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between bg-neutral-50 dark:bg-neutral-900/50">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold">
+                    <ShieldCheck size={16} />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-xs text-neutral-900 dark:text-white flex items-center gap-1.5">
+                      Dépôt de Garantie Caution
+                    </h3>
+                    <p className="text-[10px] text-neutral-500 truncate max-w-[210px]">
+                      {selectedDeposit.renterName}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setSelectedDeposit(null)}
+                  className="w-7 h-7 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-800 flex items-center justify-center text-neutral-500 transition-colors"
+                >
+                  <X size={15} />
+                </button>
+              </div>
+
+              {/* Tab Navigation */}
+              <div className="flex border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 px-3 pt-2 gap-2">
+                <button
+                  onClick={() => setInspectorTab('caution')}
+                  className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${
+                    inspectorTab === 'caution'
+                      ? 'border-[#C4785A] text-[#C4785A]'
+                      : 'border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
+                  }`}
+                >
+                  {isAr ? 'الضمان والوديعة' : 'Caution'}
+                </button>
+                <button
+                  onClick={() => setInspectorTab('degradations')}
+                  className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${
+                    inspectorTab === 'degradations'
+                      ? 'border-[#C4785A] text-[#C4785A]'
+                      : 'border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
+                  }`}
+                >
+                  {isAr ? 'الأضرار والاقتطاع' : 'Dégradations'}
+                </button>
+                <button
+                  onClick={() => setInspectorTab('restitution')}
+                  className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${
+                    inspectorTab === 'restitution'
+                      ? 'border-[#C4785A] text-[#C4785A]'
+                      : 'border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
+                  }`}
+                >
+                  {isAr ? 'تاريخ الاسترجاع' : 'Restitution'}
+                </button>
+              </div>
+
+              {/* Inspector Body */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs">
+                {inspectorTab === 'caution' && (
+                  <div className="space-y-4">
+                    <div className="p-4 bg-[#1F1D1B] rounded-xl text-white space-y-2 shadow-sm">
+                      <div className="flex items-center justify-between text-neutral-300 text-[11px]">
+                        <span>Montant Caution Sous Séquestre</span>
+                        <span className="bg-[#3D2817] text-[#FB923C] text-[10px] font-bold px-2 py-0.5 rounded-full">
+                          {selectedDeposit.status}
+                        </span>
+                      </div>
+                      <div className="text-2xl font-black font-mono tracking-tight text-white">
+                        {formatCurrencyAmount(selectedDeposit.amount, selectedDeposit.currency)}
+                      </div>
+                      <p className="text-[10px] text-neutral-400">
+                        Bloqué sur compte séquestre de l'établissement jusqu'à l'état des lieux de sortie.
+                      </p>
+                    </div>
+
+                    <div className="p-3 bg-neutral-50 dark:bg-neutral-900/60 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
+                      <span className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold block">
+                        Détails de la Réservation
+                      </span>
+                      <div className="flex items-center justify-between">
+                        <span className="text-neutral-500">Espace Loué:</span>
+                        <span className="font-bold text-neutral-900 dark:text-white">{selectedDeposit.unitName}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-neutral-500">Client / Organisateur:</span>
+                        <span className="font-medium text-neutral-900 dark:text-white">{selectedDeposit.renterName}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-neutral-500">Moyen de Caution:</span>
+                        <span className="font-semibold text-neutral-800 dark:text-neutral-200">{selectedDeposit.paymentMethod}</span>
+                      </div>
+                    </div>
+
+                    {selectedDeposit.status === 'Held' && (
+                      <div className="p-3 rounded-xl border border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
+                        <div>
+                          <span className="font-semibold block text-neutral-900 dark:text-white">Restitution Intégrale</span>
+                          <span className="text-[10px] text-neutral-500">Après état des lieux sans dégradation</span>
+                        </div>
+                        <button
+                          onClick={() => {
+                            releaseSecurityDeposit(selectedDeposit.id);
+                            setSelectedDeposit({ ...selectedDeposit, status: 'Released', releasedAt: new Date().toISOString() });
+                          }}
+                          className="px-3 py-1.5 rounded-lg text-xs font-bold bg-[#C4785A] hover:bg-[#b06a4e] text-white transition-colors"
+                        >
+                          Restituer ✓
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {inspectorTab === 'degradations' && (
+                  <div className="space-y-4">
+                    <div className="p-3 bg-neutral-50 dark:bg-neutral-900/60 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
+                      <span className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold block">
+                        Constat de Dégradation & Retenue
+                      </span>
+                      <div className="p-2.5 bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300">
+                        {selectedDeposit.deductionReason || 'Aucune dégradation signalée lors de l\'état des lieux.'}
+                      </div>
+                    </div>
+
+                    {selectedDeposit.status === 'Held' && (
+                      <div className="p-3 rounded-xl border border-amber-200 dark:border-amber-800/60 bg-amber-50/50 dark:bg-amber-950/20 space-y-2">
+                        <span className="font-semibold text-amber-900 dark:text-amber-300 block">
+                          Appliquer une Retenue sur Caution
+                        </span>
+                        <p className="text-[11px] text-amber-700 dark:text-amber-400">
+                          En cas de casse, salissures anormales ou mobilier endommagé.
+                        </p>
+                        <button
+                          onClick={() => handleOpenDeduct(selectedDeposit)}
+                          className="w-full py-1.5 rounded-lg text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white transition-colors"
+                        >
+                          Ouvrir Dossier Dégradation
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {inspectorTab === 'restitution' && (
+                  <div className="space-y-4">
+                    <div className="p-3 bg-neutral-50 dark:bg-neutral-900/60 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
+                      <span className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold block">
+                        Historique des Mouvements
+                      </span>
+                      <div className="space-y-1.5">
+                        <div className="flex justify-between">
+                          <span className="text-neutral-500">Date d'encaissement:</span>
+                          <span className="font-mono text-neutral-900 dark:text-white">{selectedDeposit.collectedAt}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-neutral-500">Date de déblocage:</span>
+                          <span className="font-mono text-neutral-900 dark:text-white">{selectedDeposit.releasedAt || 'Toujours en cours'}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Inspector Footer Actions */}
+              <div className="p-4 border-t border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/50 space-y-2">
+                <AtriumButton
+                  variant="primary"
+                  className="w-full justify-center"
+                  icon={<Printer size={14} />}
+                  onClick={() => {
+                    showToast({
+                      type: 'info',
+                      title: 'Impression Reçu',
+                      message: `Bordereau de caution imprimé pour ${selectedDeposit.renterName}`,
+                      category: 'rental_booking',
+                    });
+                  }}
+                >
+                  {isAr ? 'طباعة وصل الوديعة' : 'Imprimer Reçu de Caution'}
+                </AtriumButton>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Deduct Caution Modal */}
+      {/* Deduction Modal */}
       {deductionTarget && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <div className="bg-white dark:bg-neutral-800 rounded-3xl border border-neutral-200 dark:border-neutral-700 max-w-md w-full p-6 space-y-4 shadow-2xl animate-in zoom-in-95 duration-150">
-            <div className="flex justify-between items-center border-b border-neutral-100 dark:border-neutral-700 pb-3">
-              <h3 className="text-base font-bold text-neutral-900 dark:text-white">
-                {t('venue_fin_btn_deduct')}
-              </h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-neutral-900 rounded-[28px] border border-neutral-200 dark:border-neutral-800 p-6 w-full max-w-md shadow-xl space-y-5">
+            <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
+              <div className="flex items-center gap-2">
+                <AlertTriangle size={20} className="text-red-500" />
+                <h3 className="font-bold text-base text-neutral-900 dark:text-white">
+                  {t('venue_deduct_modal_title')}
+                </h3>
+              </div>
               <button
-                type="button"
                 onClick={() => setDeductionTarget(null)}
-                className="w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-700 flex items-center justify-center text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors cursor-pointer"
+                className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 p-1"
               >
-                <X size={15} />
+                <X size={18} />
               </button>
             </div>
 
-            <form onSubmit={handleConfirmDeduct} className="space-y-4 text-xs">
-              <div className="p-3 bg-[#F8F9FA] dark:bg-neutral-700/40 rounded-xl space-y-1">
-                <div className="text-neutral-500">Locataire: <span className="font-bold text-neutral-800 dark:text-neutral-200">{deductionTarget.renterName}</span></div>
-                <div className="text-neutral-500">Caution Initiale: <span className="font-mono font-bold text-emerald-600">{formatCurrencyAmount(deductionTarget.amount, deductionTarget.currency)}</span></div>
+            <form onSubmit={handleConfirmDeduct} className="space-y-4">
+              <div className="p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-xl text-xs space-y-1">
+                <div>Locataire: <strong className="text-neutral-900 dark:text-white">{deductionTarget.renterName}</strong></div>
+                <div>Montant Caution: <strong className="font-mono text-[#C4785A]">{formatCurrencyAmount(deductionTarget.amount, deductionTarget.currency)}</strong></div>
               </div>
 
               <LabelInput
-                label="Montant de la Retenue (DZD) *"
+                label="Montant à Retenir (DZD)"
                 type="number"
-                min={1}
-                max={deductionTarget.amount}
-                value={deductionAmount}
-                onChange={(e) => setDeductionAmount(Number(e.target.value))}
+                value={deductionAmount.toString()}
+                onChange={(v) => setDeductionAmount(parseFloat(v) || 0)}
                 required
               />
 
               <LabelInput
-                label="Motif de la Dégradation / Pénalité *"
-                placeholder="e.g. Nettoyage exceptionnel ou dégâts matériels..."
+                label="Motif des Dégradations / Réparations"
                 value={deductionReason}
-                onChange={(e) => setDeductionReason(e.target.value)}
+                onChange={setDeductionReason}
+                placeholder="Ex: Nettoyage spécifique moquette, serrure cassée..."
                 required
               />
 
-              <div className="flex justify-end gap-2 pt-2 border-t border-neutral-100 dark:border-neutral-700">
-                <button
-                  type="button"
-                  onClick={() => setDeductionTarget(null)}
-                  className="px-4 py-2 rounded-xl text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-700 cursor-pointer font-semibold"
-                >
-                  Annuler
-                </button>
-                <AtriumButton
-                  type="submit"
-                  variant="primary"
-                  icon={<AlertTriangle size={14} />}
-                >
-                  Confirmer la Retenue
+              <div className="flex justify-end gap-2 pt-2">
+                <AtriumButton variant="secondary" onClick={() => setDeductionTarget(null)}>
+                  {t('venue_action_cancel')}
+                </AtriumButton>
+                <AtriumButton variant="primary" type="submit">
+                  {t('venue_action_confirm_deduct')}
                 </AtriumButton>
               </div>
             </form>

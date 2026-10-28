@@ -157,11 +157,18 @@ export const ContractorSitesView: React.FC = () => {
       branchId: p.branchId,
       staffId: p.staffId,
       projectId: p.id,
+      date: today,
       logDate: today,
+      weather: 'Ensoleillé',
       weatherCondition: 'Ensoleillé / 24°C',
+      headcountWorkers: 18,
       workforceCount: 18,
+      equipmentOnSite: ['Grue', 'Toupie à béton'],
+      tasksAccomplished: 'Poursuite ferraillage et coulage voiles périphériques niveau R+2.',
       worksSummary: 'Poursuite ferraillage et coulage voiles périphériques niveau R+2.',
+      incidentsSafety: 'R.A.S',
       incidentsOrDelays: 'R.A.S - Approvisionnement agrégats conforme.',
+      supervisorSignature: 'Chef de Chantier',
       createdAt: new Date().toISOString(),
     };
     addDailyLog(newLog);

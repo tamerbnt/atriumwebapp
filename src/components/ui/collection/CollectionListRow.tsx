@@ -11,13 +11,13 @@ import {
 import { CollectionKebabMenu, KebabMenuItem } from './CollectionKebabMenu';
 
 export interface ActionButtonDef {
-  id: string;
+  id?: string;
   tooltip?: string;
   label?: string;
   variant?: string;
   icon: React.ReactNode;
   iconColor?: string;
-  onClick: (e: React.MouseEvent) => void;
+  onClick: (e?: any) => void;
   isSpecialDelete?: boolean;
 }
 

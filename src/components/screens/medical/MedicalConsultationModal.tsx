@@ -9,7 +9,8 @@ import { AtriumButton } from '../../ui/AtriumButton';
 interface MedicalConsultationModalProps {
   isOpen: boolean;
   onClose: () => void;
-  patients: MedicalPatient[];
+  patients?: MedicalPatient[];
+  patient?: MedicalPatient;
   onSave: (cons: MedicalConsultation) => void;
   preselectedPatientId?: string;
 }
@@ -17,12 +18,17 @@ interface MedicalConsultationModalProps {
 export const MedicalConsultationModal: React.FC<MedicalConsultationModalProps> = ({
   isOpen,
   onClose,
-  patients,
+  patients = [],
+  patient,
   onSave,
   preselectedPatientId,
 }) => {
   const { language, currentBusiness, currentBranch, currentUser } = useAtriumStore();
-  const [patientId, setPatientId] = useState(preselectedPatientId || (patients[0]?.id || ''));
+  const effectivePatients = patient
+    ? (patients.some((p) => p.id === patient.id) ? patients : [patient, ...patients])
+    : patients;
+  const initialPatientId = patient?.id || preselectedPatientId || (effectivePatients[0]?.id || '');
+  const [patientId, setPatientId] = useState(initialPatientId);
   const [chiefComplaint, setChiefComplaint] = useState('');
   const [bp, setBp] = useState('120/80');
   const [temp, setTemp] = useState('37.0');
@@ -36,7 +42,7 @@ export const MedicalConsultationModal: React.FC<MedicalConsultationModalProps> =
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const pat = patients.find((p) => p.id === patientId);
+    const pat = effectivePatients.find((p) => p.id === patientId) || patient;
     if (!pat) {
       showToast(
         language === 'ar' ? 'يرجى اختيار مريض' : 'Veuillez sélectionner un patient',
@@ -83,7 +89,7 @@ export const MedicalConsultationModal: React.FC<MedicalConsultationModalProps> =
     onClose();
   };
 
-  const patientOptions = patients.map((p) => ({
+  const patientOptions = effectivePatients.map((p) => ({
     value: p.id,
     label: `${p.fullName} (${p.phone})`,
   }));
