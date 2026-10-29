@@ -589,6 +589,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
         label: language === 'ar' ? 'الوصفات' : language === 'fr' ? 'Ordonnances' : 'Prescriptions',
       },
       {
+        id: 'registrations',
+        icon: <FileText size={19} />,
+        title: language === 'ar' ? 'الشهادات والوثائق الطبية' : language === 'fr' ? 'Certificats Médicaux' : 'Medical Certificates',
+        label: language === 'ar' ? 'الشهادات' : language === 'fr' ? 'Certificats' : 'Certificates',
+      },
+      {
         id: 'finance',
         icon: <CreditCard size={19} />,
         title: language === 'ar' ? 'الفواتير والضمان الاجتماعي' : language === 'fr' ? 'Facturation & Chifa' : 'Billing & Insurance',

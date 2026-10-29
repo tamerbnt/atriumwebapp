@@ -17,8 +17,9 @@ import {
   LayoutGrid,
   List,
   Activity,
+  Tv,
+  Calendar,
   ArrowRight,
-  UserCheck,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
 import { formatMoney } from '../../../utils/rules';
@@ -28,13 +29,24 @@ import { AtriumButton } from '../../ui/AtriumButton';
 import { Seek } from '../../ui/Seek';
 import { FilterSelect } from '../../ui/FilterSelect';
 import { MedicalConsultationModal } from './MedicalConsultationModal';
+import { MedicalWaitingRoomTvModal } from './MedicalWaitingRoomTvModal';
+import { MedicalAgendaView } from './MedicalAgendaView';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 
 export const MedicalQueueView: React.FC = () => {
   const { language } = useAtriumStore();
   const isAr = language === 'ar';
-  const { consultations, patients, updateConsultationStatus, markConsultationPaid, addConsultation } = useMedicalData();
+  const {
+    consultations,
+    patients,
+    practitioners,
+    updateConsultationStatus,
+    markConsultationPaid,
+    addConsultation,
+  } = useMedicalData();
 
+  const [activeSubView, setActiveSubView] = useState<'queue' | 'agenda'>('queue');
+  const [isTvModalOpen, setIsTvModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'waiting' | 'in_progress' | 'completed'>('all');
   const [displayLayout, setDisplayLayout] = useState<'collection' | 'visual_queue'>('collection');
@@ -59,7 +71,7 @@ export const MedicalQueueView: React.FC = () => {
 
       if (!matchesSearch) return false;
       if (statusFilter === 'waiting') return c.status === 'InWaitingQueue';
-      if (statusFilter === 'in_progress') return c.status === 'InProgress';
+      if (statusFilter === 'in_progress') return c.status === 'InConsultation';
       if (statusFilter === 'completed') return c.status === 'Completed';
       return true;
     });
@@ -94,7 +106,7 @@ export const MedicalQueueView: React.FC = () => {
   }, [filtered, pinnedIds, sortBy, sortDir]);
 
   const waitingCount = consultations.filter((c) => c.status === 'InWaitingQueue').length;
-  const inProgressCount = consultations.filter((c) => c.status === 'InProgress').length;
+  const inProgressCount = consultations.filter((c) => c.status === 'InConsultation').length;
   const completedCount = consultations.filter((c) => c.status === 'Completed').length;
 
   const handleTogglePin = (id: string) => {
@@ -113,8 +125,8 @@ export const MedicalQueueView: React.FC = () => {
   };
 
   const handleStartExam = (c: MedicalConsultation) => {
-    updateConsultationStatus(c.id, 'InProgress');
-    setSelectedConsultation({ ...c, status: 'InProgress' });
+    updateConsultationStatus(c.id, 'InConsultation');
+    setSelectedConsultation({ ...c, status: 'InConsultation' });
     showToast(isAr ? 'تم استدعاء المريض لغرفة الكشف' : 'Patient appelé au cabinet de consultation', 'info');
   };
 
@@ -186,15 +198,15 @@ export const MedicalQueueView: React.FC = () => {
           className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
             c.status === 'InWaitingQueue'
               ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300'
-              : c.status === 'InProgress'
+              : c.status === 'InConsultation'
               ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300'
               : 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
           }`}
         >
-          {c.status === 'InProgress' && <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />}
+          {c.status === 'InConsultation' && <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />}
           {c.status === 'InWaitingQueue'
             ? (isAr ? 'في الانتظار' : 'En attente')
-            : c.status === 'InProgress'
+            : c.status === 'InConsultation'
             ? (isAr ? 'في الفحص' : 'En consultation')
             : (isAr ? 'مكتمل' : 'Terminé')}
         </span>
@@ -238,32 +250,70 @@ export const MedicalQueueView: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          {/* Hybrid Mode Switcher */}
+        <div className="flex flex-wrap items-center gap-2">
+          {/* SubView Mode Switcher: Queue vs Agenda */}
           <div className="flex items-center bg-neutral-100 dark:bg-neutral-800 p-0.5 rounded-xl border border-neutral-200/60 dark:border-neutral-700/60">
             <button
               type="button"
-              onClick={() => setDisplayLayout('collection')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                displayLayout === 'collection'
-                  ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-xs'
+              onClick={() => setActiveSubView('queue')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+                activeSubView === 'queue'
+                  ? 'bg-white dark:bg-neutral-700 text-[#0D9488] shadow-xs'
                   : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100'
               }`}
             >
-              {isAr ? 'الجدول والبطاقات' : 'Registre & Cards'}
+              <Clock size={13} />
+              <span>{isAr ? 'قائمة الفرز والانتظار' : 'File de Triage'}</span>
             </button>
             <button
               type="button"
-              onClick={() => setDisplayLayout('visual_queue')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                displayLayout === 'visual_queue'
-                  ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-xs'
+              onClick={() => setActiveSubView('agenda')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+                activeSubView === 'agenda'
+                  ? 'bg-white dark:bg-neutral-700 text-[#0D9488] shadow-xs'
                   : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100'
               }`}
             >
-              {isAr ? 'لوحة الانتظار' : 'File Visuelle'}
+              <Calendar size={13} />
+              <span>{isAr ? 'أجندة المواعيد' : 'Agenda Multi-Médecins'}</span>
             </button>
           </div>
+
+          {/* Waiting Room TV Button */}
+          <AtriumButton
+            variant="secondary"
+            onClick={() => setIsTvModalOpen(true)}
+            icon={<Tv size={14} className="text-[#0D9488]" />}
+          >
+            Écran TV Salle d'Attente
+          </AtriumButton>
+
+          {activeSubView === 'queue' && (
+            <div className="flex items-center bg-neutral-100 dark:bg-neutral-800 p-0.5 rounded-xl border border-neutral-200/60 dark:border-neutral-700/60">
+              <button
+                type="button"
+                onClick={() => setDisplayLayout('collection')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                  displayLayout === 'collection'
+                    ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-xs'
+                    : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100'
+                }`}
+              >
+                {isAr ? 'الجدول والبطاقات' : 'Registre'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setDisplayLayout('visual_queue')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                  displayLayout === 'visual_queue'
+                    ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-xs'
+                    : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100'
+                }`}
+              >
+                {isAr ? 'لوحة الانتظار' : 'File Visuelle'}
+              </button>
+            </div>
+          )}
 
           <AtriumButton
             variant="primary"
@@ -274,6 +324,11 @@ export const MedicalQueueView: React.FC = () => {
           </AtriumButton>
         </div>
       </div>
+
+      {activeSubView === 'agenda' ? (
+        <MedicalAgendaView />
+      ) : (
+        <>
 
       {/* KPI Pod Tray */}
       <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
@@ -447,12 +502,12 @@ export const MedicalQueueView: React.FC = () => {
                           className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                             c.status === 'InWaitingQueue'
                               ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
-                              : c.status === 'InProgress'
+                              : c.status === 'InConsultation'
                               ? 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300'
                               : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
                           }`}
                         >
-                          {c.status === 'InWaitingQueue' ? 'Attente' : c.status === 'InProgress' ? 'En cours' : 'Terminé'}
+                          {c.status === 'InWaitingQueue' ? 'Attente' : c.status === 'InConsultation' ? 'En cours' : 'Terminé'}
                         </span>
                       </div>
 
@@ -501,7 +556,7 @@ export const MedicalQueueView: React.FC = () => {
                   className={`bg-white dark:bg-neutral-800 rounded-2xl border p-5 shadow-2xs space-y-3.5 transition-all cursor-pointer ${
                     selectedConsultation?.id === cons.id
                       ? 'border-[#C4785A] ring-2 ring-[#C4785A]/30'
-                      : cons.status === 'InProgress'
+                      : cons.status === 'InConsultation'
                       ? 'border-blue-400 ring-1 ring-blue-400/30'
                       : 'border-[#E9EEF0] dark:border-neutral-700/60 hover:border-neutral-300'
                   }`}
@@ -519,12 +574,12 @@ export const MedicalQueueView: React.FC = () => {
                       className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
                         cons.status === 'InWaitingQueue'
                           ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
-                          : cons.status === 'InProgress'
+                          : cons.status === 'InConsultation'
                           ? 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300'
                           : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
                       }`}
                     >
-                      {cons.status === 'InWaitingQueue' ? 'Attente' : cons.status === 'InProgress' ? 'En cours' : 'Terminé'}
+                      {cons.status === 'InWaitingQueue' ? 'Attente' : cons.status === 'InConsultation' ? 'En cours' : 'Terminé'}
                     </span>
                   </div>
 
@@ -561,7 +616,7 @@ export const MedicalQueueView: React.FC = () => {
                       }}
                       className="px-2.5 py-1 rounded-lg bg-[#C4785A] text-white text-[11px] font-semibold hover:bg-[#b0674b] transition-colors cursor-pointer"
                     >
-                      {cons.status === 'InWaitingQueue' ? 'Appeler' : cons.status === 'InProgress' ? 'Clôturer' : 'Revoir'}
+                      {cons.status === 'InWaitingQueue' ? 'Appeler' : cons.status === 'InConsultation' ? 'Clôturer' : 'Revoir'}
                     </button>
                   </div>
                 </div>
@@ -788,7 +843,7 @@ export const MedicalQueueView: React.FC = () => {
                     </button>
                   )}
 
-                  {selectedConsultation.status === 'InProgress' && (
+                  {selectedConsultation.status === 'InConsultation' && (
                     <button
                       type="button"
                       onClick={() => handleFinishExam(selectedConsultation)}
@@ -832,12 +887,21 @@ export const MedicalQueueView: React.FC = () => {
         )}
       </div>
     </div>
+        </>
+      )}
 
       <MedicalConsultationModal
         isOpen={isConsultModalOpen}
         onClose={() => setIsConsultModalOpen(false)}
         patients={patients}
         onSave={addConsultation}
+      />
+
+      <MedicalWaitingRoomTvModal
+        isOpen={isTvModalOpen}
+        onClose={() => setIsTvModalOpen(false)}
+        consultations={consultations}
+        practitioners={practitioners}
       />
     </div>
   );

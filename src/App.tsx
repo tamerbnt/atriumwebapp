@@ -68,6 +68,7 @@ import { MedicalQueueView } from './components/screens/medical/MedicalQueueView'
 import { MedicalPatientsView } from './components/screens/medical/MedicalPatientsView';
 import { MedicalPrescriptionsView } from './components/screens/medical/MedicalPrescriptionsView';
 import { MedicalBillingView } from './components/screens/medical/MedicalBillingView';
+import { MedicalCertificatesView } from './components/screens/medical/MedicalCertificatesView';
 
 import { AutoGarageDashboardView } from './components/screens/garage/AutoGarageDashboardView';
 import { AutoGarageOrdersView } from './components/screens/garage/AutoGarageOrdersView';
@@ -420,8 +421,9 @@ export default function App() {
         case 'members':
           return <MedicalPatientsView />;
         case 'shop':
-        case 'registrations':
           return <MedicalPrescriptionsView />;
+        case 'registrations':
+          return <MedicalCertificatesView />;
         case 'finance':
           return <MedicalBillingView />;
         default:

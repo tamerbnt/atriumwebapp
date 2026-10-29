@@ -1698,6 +1698,69 @@ export interface StockMovementVoucher {
 // ==========================================
 // CATEGORY 9: MEDICAL & HEALTHCARE CLINIC
 // ==========================================
+export interface MedicalPractitioner {
+  id: string;
+  fullName: string;
+  name?: string; // Alias for fullName
+  specialty: string;
+  department: string;
+  licenseNumber: string; // Ordre des Médecins
+  roomNumber: string; // Cabinet 1, 2, Salle de Soins
+  cabinetRoom?: string; // Alias for roomNumber
+  phone: string;
+  email?: string;
+  commissionRatePercent: number; // e.g. 70%
+  commissionPercent?: number; // Alias
+  color: string;
+  isAvailable: boolean;
+  avatarUrl?: string;
+}
+
+export interface DoctorOrdonnanceConfig {
+  doctorId: string;
+  doctorName: string;
+  specialtyTitle: string;
+  academicCredentials: string;
+  licenseNumber: string;
+  cabinetPhone: string;
+  emergencyPhone: string;
+  clinicAddress: string;
+  paperFormat: 'A5' | 'A4';
+  printMode: 'full_digital' | 'preprinted_paper';
+  themeAccent: 'emerald' | 'navy' | 'burgundy' | 'obsidian' | 'terracotta';
+  showWatermark: boolean;
+  footerConsultationHours: string;
+  footerLegalNotice: string;
+  digitalStampText?: string;
+  isStampEnabled: boolean;
+  // Aliases for studio compatibility
+  paperSize?: 'A5' | 'A4';
+  usePreprintedStationery?: boolean;
+  accentColor?: string;
+  qualifications?: string;
+  councilOrderNumber?: string;
+  digitalStampUrl?: string;
+}
+
+export interface BiometricVitalsPoint {
+  date: string;
+  systolic: number;
+  diastolic: number;
+  pulseBpm: number;
+  tempCelsius: number;
+  weightKg: number;
+  bloodSugarMgDl?: number;
+  spO2Percent?: number;
+  // Aliases for flexible charting
+  systolicBp?: number;
+  diastolicBp?: number;
+  heartRateBpm?: number;
+  heightCm?: number;
+  spO2?: number;
+  temperatureCelsius?: number;
+  recordedByDoctor?: string;
+}
+
 export interface MedicalPatient {
   id: string;
   accountId: string;
@@ -1712,9 +1775,13 @@ export interface MedicalPatient {
   bloodGroup?: 'A+' | 'A-' | 'B+' | 'B-' | 'AB+' | 'AB-' | 'O+' | 'O-';
   allergies?: string[];
   chronicConditions?: string[];
+  chifaCardNumber?: string;
+  socialSecurityNumber?: string;
+  hasChifa100PercentAld?: boolean; // 100% ALD exoneration
   emergencyContact?: string;
   emergencyPhone?: string;
   notes?: string;
+  vitalsHistory?: BiometricVitalsPoint[];
   createdAt: string;
 }
 
@@ -1723,9 +1790,13 @@ export interface MedicalConsultation {
   accountId: string;
   businessId: string;
   branchId: string;
-  staffId: string; // Doctor
+  staffId: string; // Attending Doctor ID
+  doctorName?: string;
+  doctorSpecialty?: string;
+  cabinetRoom?: string;
   patientId: string;
   patientName: string;
+  patientAge?: number;
   consultationDate: string;
   chiefComplaint: string;
   vitals?: {
@@ -1736,43 +1807,176 @@ export interface MedicalConsultation {
     heightCm?: number;
     bmi?: number;
     bloodSugarMgDl?: number;
+    spO2Percent?: number;
   };
   clinicalExam?: string;
   diagnosis: string;
   icdCode?: string;
-  status: 'InWaitingQueue' | 'InConsultation' | 'InProgress' | 'Completed' | 'Cancelled';
+  treatmentPlan?: string;
+  status: 'InWaitingQueue' | 'TriageNurse' | 'InConsultation' | 'Completed' | 'Cancelled';
+  urgencyLevel?: 'Normal' | 'Prioritaire' | 'Urgence';
+  ticketNumber?: string; // e.g. T-104
+  ngapCode?: 'C' | 'CS' | 'K' | 'KE' | 'AMI';
   consultationFeeDzd: number;
   copayAmountDzd: number;
   insuranceShareDzd: number;
   isPaid: boolean;
+  paymentMethod?: 'Cash' | 'BaridiMob' | 'Card' | 'ChifaDirect';
   notes?: string;
   createdAt: string;
 }
 
+export interface MedicalAppointmentSlot {
+  id: string;
+  doctorId: string;
+  doctorName: string;
+  patientId?: string;
+  patientName: string;
+  patientPhone?: string;
+  date: string;
+  startTime: string; // HH:mm
+  durationMinutes: number; // 15, 30, 45
+  reason: string;
+  status: 'Booked' | 'Arrived' | 'InRoom' | 'Completed' | 'Cancelled' | 'NoShow';
+  urgency?: 'Normal' | 'Prioritaire';
+  notes?: string;
+}
+
 export interface MedicalPrescriptionItem {
   drugName: string;
-  form: string;
-  dosage: string;
-  frequency: string;
+  form?: string; // Comprimé, Sirop, Injectable, Pommade, Gélule
+  dosage: string; // e.g. 1000mg
+  frequency: string; // e.g. 1 sachet matin et soir au milieu des repas
   durationDays: number;
   instructions?: string;
 }
 
 export interface MedicalPrescription {
   id: string;
-  accountId: string;
-  businessId: string;
-  branchId: string;
-  staffId: string;
-  consultationId: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  staffId?: string;
+  doctorName?: string;
+  doctorSpecialty?: string;
+  prescribingDoctorId?: string;
+  prescribingDoctorName?: string;
+  consultationId?: string;
   patientId: string;
   patientName: string;
+  patientAge?: number;
   prescriptionDate: string;
   items: MedicalPrescriptionItem[];
   qrCodeHash: string;
-  isSigned: boolean;
+  isSigned?: boolean;
+  doctorConfig?: Partial<DoctorOrdonnanceConfig>;
   notes?: string;
-  createdAt: string;
+  createdAt?: string;
+}
+
+export interface MedicalLabParameter {
+  name: string;
+  value: string;
+  unit: string;
+  min: number;
+  max: number;
+  isAbnormal: boolean;
+  status: 'normal' | 'high' | 'low';
+}
+
+export interface MedicalLabRecord {
+  id: string;
+  patientId: string;
+  patientName: string;
+  doctorId?: string;
+  doctorName?: string;
+  orderingDoctor?: string; // alias
+  panelName?: string; // alias for testCategory
+  testCategory: 'Hématologie (NFS)' | 'Biochimie Sanguine' | 'Bilan Lipidique' | 'Inflammatoire & Cardiaque' | 'Imagerie & Échographie' | string;
+  date?: string;
+  testDate?: string; // alias
+  status?: 'Demande' | 'En Analyse' | 'Validé' | string;
+  parameters: MedicalLabParameter[];
+  clinicalConclusion?: string;
+  imagingReport?: string;
+  imagingModality?: 'Échographie Doppler' | 'Radiographie Thoracique' | 'Scanner TDM' | 'Électrocardiogramme (ECG)' | string;
+}
+
+export interface MedicalCertificateRecord {
+  id: string;
+  certificateType: 'ArretDeTravail' | 'AptitudePhysique' | 'CertificatDescriptifITT' | 'LettreOrientation';
+  patientId: string;
+  patientName: string;
+  patientDob?: string;
+  patientAddress?: string;
+  patientEmployer?: string;
+  doctorId: string;
+  doctorName: string;
+  doctorSpecialty: string;
+  issueDate: string;
+  startDate?: string;
+  endDate?: string;
+  durationDays?: number;
+  resumptionDate?: string; // Date de reprise
+  ittDays?: number; // Incapacité Totale de Travail
+  purpose?: string; // e.g. Licence sportive Football, Embauche
+  clinicalFindings: string;
+  qrHash: string;
+  isSigned: boolean;
+}
+
+export interface ChifaClaimRecord {
+  id: string;
+  claimNumber?: string;
+  bordereauNumber?: string;
+  monthPeriod?: string;
+  consultationId: string;
+  patientId?: string;
+  patientName: string;
+  chifaNumber: string;
+  socialSecurityNumber?: string;
+  ngapCode: 'C' | 'CS' | 'K' | 'KE' | string;
+  totalAmountDzd: number;
+  chifaCoveragePercent?: number; // 80 or 100
+  coverageRate?: number; // alias
+  chifaShareDzd?: number;
+  cnasShareDzd?: number; // alias
+  copayPaidDzd?: number;
+  ticketModerateurDzd?: number; // alias
+  claimDate?: string;
+  submissionDate?: string;
+  isTransmitted?: boolean;
+  status?: 'Pending' | 'Submitted' | 'Reimbursed' | 'Rejected' | string;
+  batchNumber?: string;
+}
+
+export interface ClinicConsumableItem {
+  id: string;
+  name: string;
+  category: 'Injection' | 'Pansement & Suture' | 'Hygiène & Protection' | 'Diagnostics Rapides';
+  currentStock: number;
+  minStockAlert: number;
+  unit: string;
+  unitCostDzd: number;
+}
+
+export interface DailyCashClosure {
+  id: string;
+  date: string;
+  closedByStaffName?: string;
+  closedBySecretary?: string;
+  totalConsultationsCount?: number;
+  openingCashFloatDzd?: number;
+  expectedCashDzd?: number;
+  countedCashDzd?: number;
+  totalCashCollectedDzd?: number;
+  totalBaridiMobDzd?: number;
+  totalChifaVouchersDzd?: number;
+  actualCashInDrawerDzd?: number;
+  discrepancyDzd: number;
+  notes?: string;
+  isClosed?: boolean;
+  verifiedAt?: string;
 }
 
 // ==========================================
