@@ -101,8 +101,11 @@ test('findCategoryByBusinessSearch accurately maps user search input to correct 
   const salonMatch2 = findCategoryByBusinessSearch('salon de coiffure');
   assert.equal(salonMatch2?.category, 'appointment_service');
 
-  const salonMatch3 = findCategoryByBusinessSearch('cabinet dentaire');
+  const salonMatch3 = findCategoryByBusinessSearch('institut de beaute');
   assert.equal(salonMatch3?.category, 'appointment_service');
+
+  const medMatch = findCategoryByBusinessSearch('cabinet dentaire');
+  assert.equal(medMatch?.category, 'medical_clinic');
 
   // 3. Restaurant / POS
   const restoMatch1 = findCategoryByBusinessSearch('pizzeria');
