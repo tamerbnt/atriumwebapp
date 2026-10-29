@@ -29,8 +29,8 @@ import {
   Users,
   CreditCard,
   Briefcase,
-  Globe,
   Activity,
+  Bell,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../services/store';
 import { formatDuration } from '../../utils/rules';
@@ -38,6 +38,7 @@ import { PMRole, SupportedLanguage } from '../../types/index';
 import { Seek } from '../ui/Seek';
 import { useTranslation } from '../../utils/useTranslation';
 import { BackendDiagnosticPanel } from '../BackendDiagnosticPanel';
+import { NotificationDropdown } from './NotificationDropdown';
 
 interface TopBarProps {
   onOpenVoucherModal: () => void;
@@ -85,11 +86,11 @@ export const TopBar: React.FC<TopBarProps> = ({
     openDesktopUpgradeModal,
     activePmRole,
     setActivePmRole,
+    unreadNotificationCount,
   } = useAtriumStore();
 
   const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const [facilityDropdownOpen, setFacilityDropdownOpen] = useState(false);
-  const [languageDropdownOpen, setLanguageDropdownOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [topBarSearch, setTopBarSearch] = useState('');
   const [isDiagnosticPanelOpen, setIsDiagnosticPanelOpen] = useState(false);
 
@@ -583,96 +584,7 @@ export const TopBar: React.FC<TopBarProps> = ({
           <Menu size={17} />
         </button>
 
-        {/* Global Facility Switcher Dropdown */}
-        <div className="relative shrink-0">
-          <button
-            type="button"
-            onClick={() => setFacilityDropdownOpen(!facilityDropdownOpen)}
-            className="h-8 px-2.5 rounded-full bg-[#F4EFEA] dark:bg-neutral-800 border border-[#E8DFD8] dark:border-neutral-700 flex items-center gap-1.5 cursor-pointer hover:bg-[#EFE8E1] dark:hover:bg-neutral-700/80 transition-colors shadow-2xs"
-            title="Switch Facility or Business Vertical"
-          >
-            <Building2 size={13} className="text-[#C4785A]" />
-            <span className="text-[11px] font-bold text-neutral-800 dark:text-neutral-200 max-w-[90px] sm:max-w-[130px] truncate">
-              {currentBusiness?.name || 'Facility'}
-            </span>
-            <ChevronDown size={11} className={`text-neutral-500 transition-transform ${facilityDropdownOpen ? 'rotate-180' : ''}`} />
-          </button>
-
-          {facilityDropdownOpen && (
-            <div className="absolute left-0 mt-2 w-64 rounded-2xl bg-white dark:bg-[#1E1B19] border border-neutral-200 dark:border-neutral-700 shadow-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
-              <div className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
-                {language === 'ar' ? 'تبديل المنشأة / الفرع' : language === 'fr' ? 'Changer d\'établissement / succursale' : 'Switch Vertical / Facility'}
-              </div>
-              {businesses.map((biz) => {
-                const isCurrent = biz.id === currentBusinessId;
-                const matchingBranch = branches.find((b) => b.businessId === biz.id);
-                return (
-                  <button
-                    key={biz.id}
-                    type="button"
-                    onClick={() => {
-                      switchBusiness(biz.id);
-                      if (matchingBranch) switchBranch(matchingBranch.id);
-                      setFacilityDropdownOpen(false);
-                    }}
-                    className={`w-full px-3 py-2 text-left flex items-center justify-between text-xs transition-colors cursor-pointer ${
-                      isCurrent
-                        ? 'bg-[#FCEEE8] dark:bg-neutral-800 text-[#C4785A] font-bold'
-                        : 'text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2 min-w-0">
-                      <Building2 size={13} className={isCurrent ? 'text-[#C4785A]' : 'text-neutral-400'} />
-                      <div className="truncate">
-                        <div className="truncate font-medium">{biz.name}</div>
-                        <div className="text-[10px] text-neutral-400 capitalize">{biz.category.replace('_', ' ')}</div>
-                      </div>
-                    </div>
-                    {isCurrent && <Check size={14} />}
-                  </button>
-                );
-              })}
-
-              <div className="pt-1.5 mt-1 border-t border-neutral-100 dark:border-neutral-800 px-1 space-y-1">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setFacilityDropdownOpen(false);
-                    openOnboarding();
-                  }}
-                  className="w-full px-2.5 py-1.5 rounded-xl text-left flex items-center justify-between text-xs text-neutral-800 dark:text-neutral-200 hover:bg-[#FDF4F0] dark:hover:bg-neutral-800 font-semibold cursor-pointer transition-colors"
-                >
-                  <div className="flex items-center gap-2">
-                    <Rocket size={13} className="text-[#C4785A]" />
-                    <span>{language === 'ar' ? 'معالج إعداد منشأة جديدة' : language === 'fr' ? 'Créer une nouvelle entreprise (Onboarding)' : 'New Business Onboarding Wizard'}</span>
-                  </div>
-                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-[#C4785A]/15 text-[#C4785A]">
-                    16 Verticals
-                  </span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setFacilityDropdownOpen(false);
-                    openDesktopUpgradeModal('branch_limit');
-                  }}
-                  className="w-full px-2.5 py-1.5 rounded-xl text-left flex items-center justify-between text-xs text-[#C4785A] hover:bg-[#FDF4F0] dark:hover:bg-neutral-800 font-semibold cursor-pointer transition-colors"
-                >
-                  <div className="flex items-center gap-2">
-                    <Plus size={13} />
-                    <span>{language === 'ar' ? 'إضافة منشأة أو فرع' : language === 'fr' ? 'Ajouter une succursale' : 'Add Facility or Branch'}</span>
-                  </div>
-                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-[#C4785A]/15 text-[#C4785A]">
-                    Desktop
-                  </span>
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-
-        <div className="hidden sm:block">
+        <div>
           {getBreadcrumb()}
         </div>
       </div>
@@ -773,138 +685,7 @@ export const TopBar: React.FC<TopBarProps> = ({
           />
         </button>
 
-        {/* Language Selector Capsule (EN / FR / عربي) */}
-        <div className="relative">
-          <button
-            type="button"
-            onClick={() => setLanguageDropdownOpen((prev) => !prev)}
-            className="h-8 px-2.5 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center gap-1.5 cursor-pointer hover:bg-neutral-200/70 dark:hover:bg-neutral-700/80 transition-colors text-xs font-semibold text-neutral-700 dark:text-neutral-300 shadow-2xs"
-            title={t('topbar_language', language)}
-          >
-            <Globe size={13} className="text-[#C4785A]" />
-            <span className="uppercase text-[11px] font-bold tracking-wider">
-              {language === 'ar' ? 'عربي' : language === 'fr' ? 'FR' : 'EN'}
-            </span>
-            {isLanguageAuto && (
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" title={t('topbar_auto_detected', language)} />
-            )}
-            <ChevronDown size={12} className={`text-neutral-400 transition-transform ${languageDropdownOpen ? 'rotate-180' : ''}`} />
-          </button>
 
-          {languageDropdownOpen && (
-            <div
-              className={`absolute top-full mt-1.5 z-50 w-48 rounded-2xl bg-white dark:bg-zinc-900 border border-neutral-200 dark:border-zinc-800 shadow-xl p-1.5 space-y-1 animate-in fade-in zoom-in-95 duration-100 ${
-                language === 'ar' ? 'left-0' : 'right-0'
-              }`}
-            >
-              <div className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
-                {t('topbar_language', language)}
-              </div>
-
-              {/* System Default */}
-              <button
-                type="button"
-                onClick={() => {
-                  setSystemDefaultLanguage();
-                  setLanguageDropdownOpen(false);
-                  showToast({
-                    type: 'info',
-                    title: t('topbar_auto_detected', language),
-                    message: t('settings_lang_changed_toast', language),
-                  });
-                }}
-                className={`w-full px-2.5 py-1.5 rounded-xl text-xs flex items-center justify-between cursor-pointer transition-colors ${
-                  isLanguageAuto
-                    ? 'bg-[#C4785A]/10 text-[#C4785A] font-bold'
-                    : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-zinc-800'
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <span className="text-sm">🌐</span>
-                  <span>{t('settings_system_default', language)}</span>
-                </div>
-                {isLanguageAuto && <Check size={13} className="text-[#C4785A]" />}
-              </button>
-
-              <div className="h-px bg-neutral-100 dark:bg-zinc-800 my-1" />
-
-              {/* English */}
-              <button
-                type="button"
-                onClick={() => {
-                  setLanguage('en', false);
-                  setLanguageDropdownOpen(false);
-                  showToast({
-                    type: 'success',
-                    title: 'Language Updated',
-                    message: 'Interface display language set to English.',
-                  });
-                }}
-                className={`w-full px-2.5 py-1.5 rounded-xl text-xs flex items-center justify-between cursor-pointer transition-colors ${
-                  !isLanguageAuto && language === 'en'
-                    ? 'bg-[#C4785A]/10 text-[#C4785A] font-bold'
-                    : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-zinc-800'
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <span className="text-sm">🇺🇸</span>
-                  <span>English</span>
-                </div>
-                {!isLanguageAuto && language === 'en' && <Check size={13} className="text-[#C4785A]" />}
-              </button>
-
-              {/* French */}
-              <button
-                type="button"
-                onClick={() => {
-                  setLanguage('fr', false);
-                  setLanguageDropdownOpen(false);
-                  showToast({
-                    type: 'success',
-                    title: 'Langue modifiée',
-                    message: 'La langue d\'affichage est maintenant le Français.',
-                  });
-                }}
-                className={`w-full px-2.5 py-1.5 rounded-xl text-xs flex items-center justify-between cursor-pointer transition-colors ${
-                  !isLanguageAuto && language === 'fr'
-                    ? 'bg-[#C4785A]/10 text-[#C4785A] font-bold'
-                    : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-zinc-800'
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <span className="text-sm">🇫🇷</span>
-                  <span>Français</span>
-                </div>
-                {!isLanguageAuto && language === 'fr' && <Check size={13} className="text-[#C4785A]" />}
-              </button>
-
-              {/* Arabic */}
-              <button
-                type="button"
-                onClick={() => {
-                  setLanguage('ar', false);
-                  setLanguageDropdownOpen(false);
-                  showToast({
-                    type: 'success',
-                    title: 'تم تحديث اللغة',
-                    message: 'تم تفعيل اللغة العربية والواجهة من اليمين إلى اليسار.',
-                  });
-                }}
-                className={`w-full px-2.5 py-1.5 rounded-xl text-xs flex items-center justify-between cursor-pointer transition-colors ${
-                  !isLanguageAuto && language === 'ar'
-                    ? 'bg-[#C4785A]/10 text-[#C4785A] font-bold'
-                    : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-zinc-800'
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <span className="text-sm">🇩🇿</span>
-                  <span>العربية (RTL)</span>
-                </div>
-                {!isLanguageAuto && language === 'ar' && <Check size={13} className="text-[#C4785A]" />}
-              </button>
-            </div>
-          )}
-        </div>
 
         {/* Supabase Cloud Connection Status Badge / Diagnostics Trigger */}
         <button
@@ -967,15 +748,37 @@ export const TopBar: React.FC<TopBarProps> = ({
           <RotateCw size={14} />
         </button>
 
-        {/* Rocket / Launch Icon */}
-        <button
-          type="button"
-          onClick={onOpenVoucherModal}
-          title={language === 'ar' ? 'مركز إطلاق وتراخيص Atrium' : language === 'fr' ? 'Centre de licences & activation Atrium' : 'Atrium Launch & License Center'}
-          className="w-8 h-8 rounded-full flex items-center justify-center text-neutral-500 dark:text-neutral-400 hover:text-[#C4785A] hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
-        >
-          <Rocket size={14} />
-        </button>
+
+        {/* TopBar Notification Bell & Center Trigger */}
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => setNotificationsOpen((prev) => !prev)}
+            title={language === 'ar' ? 'مركز الإشعارات والتنبيهات' : language === 'fr' ? 'Centre de notifications' : 'Notifications & Alerts'}
+            className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors cursor-pointer relative ${
+              notificationsOpen
+                ? 'bg-[#C4785A] text-white shadow-xs'
+                : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800'
+            }`}
+            aria-label="Open notifications menu"
+          >
+            <Bell size={14} />
+            {unreadNotificationCount > 0 && (
+              <span
+                className={`absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full text-[9px] font-bold flex items-center justify-center border-2 border-white dark:border-[#18181B] ${
+                  notificationsOpen ? 'bg-white text-[#C4785A]' : 'bg-[#C4785A] text-white'
+                }`}
+              >
+                {unreadNotificationCount > 9 ? '9+' : unreadNotificationCount}
+              </span>
+            )}
+          </button>
+
+          <NotificationDropdown
+            isOpen={notificationsOpen}
+            onClose={() => setNotificationsOpen(false)}
+          />
+        </div>
 
         {/* User Identity Menu Button */}
         <div className="relative">

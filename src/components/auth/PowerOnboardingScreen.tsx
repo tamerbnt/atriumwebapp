@@ -33,6 +33,15 @@ import {
   Briefcase,
   Stethoscope,
   Truck,
+  Copy,
+  ExternalLink,
+  MessageCircle,
+  X,
+  Phone,
+  Mail,
+  Lock,
+  User,
+  AlertCircle,
 } from 'lucide-react';
 import { useAtriumStore } from '../../services/store';
 import { BusinessCategory, OnboardingParams } from '../../types/index';
@@ -49,43 +58,89 @@ import {
   UniversalStrategicGoalId,
 } from '../modals/FeatureBlueprintModal';
 import { AtriumMonolith, FiveCubesLogo } from './AtriumMonolith';
+import { LabelInput } from '../ui/LabelInput';
 
 interface PowerOnboardingScreenProps {
   onComplete: () => void;
   onSkipToDashboard: () => void;
 }
 
-const ALGERIA_WILAYAS = [
-  '16 - Alger',
-  '31 - Oran',
-  '25 - Constantine',
-  '09 - Blida',
-  '15 - Tizi Ouzou',
-  '19 - Sétif',
-  '06 - Béjaïa',
-  '13 - Tlemcen',
-  '23 - Annaba',
-  '05 - Batna',
-  '35 - Boumerdès',
-  '42 - Tipaza',
-  '44 - Aïn Defla',
-  '10 - Bouira',
-  '14 - Tiaret',
-  '17 - Djelfa',
-  '26 - Médéa',
-  '27 - Mostaganem',
-  '28 - M\'Sila',
-  '29 - Mascara',
-  '30 - Ouargla',
-  '34 - Bordj Bou Arréridj',
-  '38 - Tissemsilt',
-  '39 - El Oued',
-  '40 - Khenchela',
-  '41 - Souk Ahras',
-  '43 - Mila',
-  '47 - Ghardaïa',
-  '48 - Relizane',
-  'Autre / International',
+export type SubscriptionPlanTier = 'free' | 'starter' | 'pro' | 'enterprise';
+
+export interface PlanMeta {
+  tier: SubscriptionPlanTier;
+  tierRank: 0 | 1 | 2 | 3;
+  name: string;
+  badgeFr: string;
+  badgeAr: string;
+  badgeEn: string;
+  priceFr: string;
+  priceAr: string;
+  priceEn: string;
+  descFr: string;
+  descAr: string;
+  descEn: string;
+  isRecommended?: boolean;
+}
+
+export const SUBSCRIPTION_PLANS: PlanMeta[] = [
+  {
+    tier: 'free',
+    tierRank: 0,
+    name: 'Free Web',
+    badgeFr: 'Gratuit à vie',
+    badgeAr: 'مجاني دائماً',
+    badgeEn: 'Free Forever',
+    priceFr: '0 DZD',
+    priceAr: '0 د.ج',
+    priceEn: '0 DZD',
+    descFr: '1 Établissement • 1 Caisse • 5 Staff',
+    descAr: '1 مؤسسة • 1 نقطة بيع • 5 موظفين',
+    descEn: '1 Entity • 1 Terminal • 5 Staff',
+  },
+  {
+    tier: 'starter',
+    tierRank: 1,
+    name: 'Starter',
+    badgeFr: 'TPE & Artisans',
+    badgeAr: 'للمهنيين المستقلين',
+    badgeEn: 'Small Businesses',
+    priceFr: '19 000 DZD',
+    priceAr: '19,000 د.ج',
+    priceEn: '19,000 DZD',
+    descFr: '1 Entreprise • 2 Branches • 10 Staff',
+    descAr: '1 مؤسسة • 2 فروع • 10 موظفين',
+    descEn: '1 Business • 2 Branches • 10 Staff',
+  },
+  {
+    tier: 'pro',
+    tierRank: 2,
+    name: 'Pro',
+    isRecommended: true,
+    badgeFr: 'Recommandé',
+    badgeAr: 'الأكثر طلباً',
+    badgeEn: 'Most Popular',
+    priceFr: '49 000 DZD',
+    priceAr: '49,000 د.ج',
+    priceEn: '49,000 DZD',
+    descFr: '3 Sociétés • 5 Branches • Staff illimité',
+    descAr: '3 مؤسسات • 5 فروع • موظفين غير محدود',
+    descEn: '3 Businesses • 5 Branches • Unlimited Staff',
+  },
+  {
+    tier: 'enterprise',
+    tierRank: 3,
+    name: 'Enterprise',
+    badgeFr: 'Grand Réseau',
+    badgeAr: 'للشركات الكبرى',
+    badgeEn: 'Multi-Sites',
+    priceFr: '99 000 DZD',
+    priceAr: '99,000 د.ج',
+    priceEn: '99,000 DZD',
+    descFr: 'Sociétés illimitées • Multi-dépôts • VIP',
+    descAr: 'مؤسسات غير محدودة • مستودعات متعددة',
+    descEn: 'Unlimited Businesses • Multi-depots • VIP',
+  },
 ];
 
 const REFERRAL_SOURCES = [
@@ -123,17 +178,33 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
   // Stage 2: 9 Conversational Question Cards (Indices 0 to 8)
   const [currentStep, setCurrentStep] = useState<number>(0);
 
-  // Step 0 State: Owner Account & Workspace Identity
-  const [workspaceName, setWorkspaceName] = useState('Atlas Creative Studio');
+  // Step 0 State: Admin Account & Authentication
   const [fullName, setFullName] = useState('Mehdi Samih');
   const [email, setEmail] = useState('mehdisamih79@gmail.com');
-  const [phone, setPhone] = useState('+213 550 12 34 56');
   const [password, setPassword] = useState('Atrium2026!');
-  const [selectedWilaya, setSelectedWilaya] = useState('16 - Alger');
-  const [branchAddress] = useState('14 Boulevard Didouche Mourad, Alger');
-  const [voucherCode, setVoucherCode] = useState('');
-  const [showVoucherDrawer, setShowVoucherDrawer] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(true);
+
+  // Step 8 State: Deferred Workspace Naming, Phone & Subscription Plan Switcher
+  const [workspaceName, setWorkspaceName] = useState('Atlas Creative Studio');
+  const [phone, setPhone] = useState('+213 550 12 34 56');
+  const [branchAddress] = useState('14 Boulevard Didouche Mourad, Alger');
+  const [selectedPlanTier, setSelectedPlanTier] = useState<SubscriptionPlanTier>('free');
+  const [voucherCode, setVoucherCode] = useState('');
+  const [showLicenseModal, setShowLicenseModal] = useState(false);
+  const [testVoucherCopied, setTestVoucherCopied] = useState(false);
+  const [paidVoucherError, setPaidVoucherError] = useState<string | null>(null);
+
+  // One-Click Google Authentication Simulator for Step 0
+  const handleGoogleLogin = () => {
+    setIsGoogleLoading(true);
+    setFullName('Mehdi Samih');
+    setEmail('mehdisamih79@gmail.com');
+    setTimeout(() => {
+      setIsGoogleLoading(false);
+      setCurrentStep(1);
+    }, 350);
+  };
 
   // Step 1 State: Operational Challenge / Frustration
   const [primaryFrustration, setPrimaryFrustration] = useState<
@@ -283,18 +354,31 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
 
   // Final submission handler
   const handleLaunchWorkspace = () => {
+    // If a paid tier is chosen without a valid voucher, prompt user
+    if (selectedPlanTier !== 'free' && (!voucherValidation || !voucherValidation.isValid)) {
+      setPaidVoucherError(
+        isAr
+          ? 'يرجى إدخال رمز قسيمة ترخيص صالح للخطة المختارة، أو تفعيل الخطة المجانية Free Web للمتابعة الفورية.'
+          : isFr
+          ? 'Veuillez saisir un code voucher valide pour la formule choisie, ou activer l’édition Free Web.'
+          : 'Please enter a valid license voucher for the selected paid plan, or switch to Free Web.'
+      );
+      return;
+    }
+
+    setPaidVoucherError(null);
     const finalBusinessName = workspaceName.trim() || 'Mon Entreprise Atrium';
     const finalBranchName = 'Siège Principal';
 
     const params: OnboardingParams = {
-      fullName: fullName.trim(),
-      email: email.trim(),
-      password: password.trim(),
-      phone: phone.trim(),
+      fullName: fullName.trim() || 'Admin Atrium',
+      email: email.trim() || 'contact@atrium-dz.com',
+      password: password.trim() || 'Atrium2026!',
+      phone: phone.trim() || '+213 550 12 34 56',
       businessName: finalBusinessName,
       category: activeCategory,
       branchName: finalBranchName,
-      branchAddress: `${branchAddress.trim()} (${selectedWilaya})`,
+      branchAddress: branchAddress.trim(),
       voucherCode: voucherValidation?.isValid ? voucherCode.trim() : undefined,
     };
 
@@ -306,17 +390,19 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
   const isAr = language === 'ar';
   const isFr = language === 'fr';
 
-
-
   // Question metadata
   const questionsMeta = [
     {
-      title: isAr ? 'أنشئ مساحة عملك الخاصة' : isFr ? 'Configurez votre espace de travail' : 'Claim your workspace name',
-      subtext: isAr
-        ? 'أدخل اسم مؤسستك وبيانات المسؤول والمقر للبدء الفوري'
+      title: isAr
+        ? 'أنشئ حساب المسؤول الرئيسي'
         : isFr
-        ? 'Entrez le nom de votre établissement, vos identifiants et votre wilaya'
-        : 'Enter your business title, admin credentials, and headquarters',
+        ? 'Créez votre compte administrateur'
+        : 'Create your administrator account',
+      subtext: isAr
+        ? 'سجّل الدخول عبر جوجل أو باستخدام بريدك الإلكتروني المهني'
+        : isFr
+        ? 'Connectez-vous via Google ou utilisez votre e-mail professionnel'
+        : 'Sign in with Google or continue with your work email',
     },
     {
       title: isAr ? 'ما هو التحدي التشغيلي الأكبر لك؟' : isFr ? 'Quel défi opérationnel souhaitez-vous résoudre ?' : 'Which operational challenge do you want to solve?',
@@ -375,12 +461,16 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
         : 'This helps us connect you with relevant local ecosystem guides and resources',
     },
     {
-      title: isAr ? 'نظام أتريوم المخصص لمؤسستك جاهز' : isFr ? 'Votre environnement Atrium est prêt' : 'Your tailored Atrium system is ready',
-      subtext: isAr
-        ? 'تم تكوين وتفعيل كافة الوحدات المناسبة لنشاطك، يمكنك البدء بنقرة واحدة'
+      title: isAr
+        ? 'تخصيص المساحة واختيار الخطة'
         : isFr
-        ? 'Architecture opérationnelle calibrée selon vos réponses. Lancez votre espace en 1 clic'
-        : 'Based on your answers, here is your bespoke vertical operating system',
+        ? 'Finalisez votre espace & choisissez votre forfait'
+        : 'Finalize your workspace & select your plan',
+      subtext: isAr
+        ? 'حدد اسم مؤسستك، رقم هاتفك وخطة التشغيل المناسبة لبدء العمل فوراً'
+        : isFr
+        ? 'Nommez votre établissement, renseignez votre contact et choisissez votre formule'
+        : 'Name your workspace, provide your contact number, and select your Atrium tier',
     },
   ];
 
@@ -512,130 +602,89 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
             <div className="min-h-0 flex-1 flex flex-col justify-center">
               
               {/* ------------------------------------------------------------- */}
-              {/* STEP 0: CLAIM WORKSPACE NAME & OWNER CREDENTIALS              */}
+              {/* STEP 0: GOOGLE SSO OR WORK EMAIL VIA PROPRIETARY LABELINPUT   */}
               {/* ------------------------------------------------------------- */}
               {currentStep === 0 && (
-                <div className="space-y-2.5 sm:space-y-3">
-                  <div>
-                    <label className="block text-[11px] font-semibold uppercase tracking-wider text-neutral-400 mb-1">
-                      {isAr ? 'اسم المؤسسة أو العلامة التجارية *' : isFr ? "Nom de l'entreprise ou marque *" : 'Business or Workspace Name *'}
-                    </label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-neutral-500">
-                        <Building2 className="w-4 h-4 text-[#C4785A]" />
-                      </div>
-                      <input
-                        type="text"
-                        value={workspaceName}
-                        onChange={(e) => setWorkspaceName(e.target.value)}
-                        placeholder="Ex: Atlas Creative Studio, Clinique El Chifa..."
-                        className="w-full bg-[#18181B] border border-white/15 focus:border-[#C4785A] focus:ring-1 focus:ring-[#C4785A] rounded-xl py-2 sm:py-2.5 pl-9 pr-3 text-xs sm:text-sm text-white placeholder-neutral-500 transition-all outline-none"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                    <div>
-                      <label className="block text-[11px] font-semibold uppercase tracking-wider text-neutral-400 mb-1">
-                        {isAr ? 'اسم المسؤول *' : isFr ? 'Nom du responsable *' : 'Owner Name *'}
-                      </label>
-                      <input
-                        type="text"
-                        value={fullName}
-                        onChange={(e) => setFullName(e.target.value)}
-                        className="w-full bg-[#18181B] border border-white/15 focus:border-[#C4785A] rounded-xl py-2 px-3 text-xs sm:text-sm text-white outline-none"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[11px] font-semibold uppercase tracking-wider text-neutral-400 mb-1">
-                        {isAr ? 'الولاية (المقر الرئيسي) *' : isFr ? 'Wilaya (Siège) *' : 'Wilaya / Location *'}
-                      </label>
-                      <select
-                        value={selectedWilaya}
-                        onChange={(e) => setSelectedWilaya(e.target.value)}
-                        className="w-full bg-[#18181B] border border-white/15 focus:border-[#C4785A] rounded-xl py-2 px-3 text-xs sm:text-sm text-white outline-none cursor-pointer"
-                      >
-                        {ALGERIA_WILAYAS.map((w) => (
-                          <option key={w} value={w} className="bg-neutral-900 text-white">
-                            {w}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                    <div>
-                      <label className="block text-[11px] font-semibold uppercase tracking-wider text-neutral-400 mb-1">
-                        {isAr ? 'البريد الإلكتروني المهني *' : isFr ? 'Email professionnel *' : 'Work Email *'}
-                      </label>
-                      <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className="w-full bg-[#18181B] border border-white/15 focus:border-[#C4785A] rounded-xl py-2 px-3 text-xs sm:text-sm text-white outline-none"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[11px] font-semibold uppercase tracking-wider text-neutral-400 mb-1">
-                        {isAr ? 'رقم الهاتف *' : isFr ? 'Téléphone *' : 'Phone *'}
-                      </label>
-                      <input
-                        type="tel"
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
-                        className="w-full bg-[#18181B] border border-white/15 focus:border-[#C4785A] rounded-xl py-2 px-3 text-xs sm:text-sm text-white outline-none"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] font-semibold uppercase tracking-wider text-neutral-400 mb-1">
-                      {isAr ? 'كلمة المرور *' : isFr ? 'Mot de passe *' : 'Password *'}
-                    </label>
-                    <input
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="w-full bg-[#18181B] border border-white/15 focus:border-[#C4785A] rounded-xl py-2 px-3 text-xs sm:text-sm text-white outline-none"
-                    />
-                  </div>
-
-                  {/* Promo Code / Voucher Drawer (Collapsible) */}
-                  <div className="pt-0.5">
-                    <button
-                      type="button"
-                      onClick={() => setShowVoucherDrawer(!showVoucherDrawer)}
-                      className="flex items-center gap-1.5 text-xs font-medium text-neutral-400 hover:text-neutral-200 transition-colors cursor-pointer"
-                    >
-                      <KeyRound className="w-3.5 h-3.5 text-[#C4785A]" />
-                      <span>
-                        {isAr
-                          ? 'هل تمتلك رمز قسيمة أو ترخيص مدى الحياة؟'
-                          : isFr
-                          ? 'Vous possédez un voucher ou une licence à vie ?'
-                          : 'Have a promo code or lifetime license voucher?'}
-                      </span>
-                      {showVoucherDrawer ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-                    </button>
-
-                    {showVoucherDrawer && (
-                      <div className="mt-2 p-2.5 rounded-xl bg-white/5 border border-white/10 flex items-center gap-2">
-                        <input
-                          type="text"
-                          value={voucherCode}
-                          onChange={(e) => setVoucherCode(e.target.value.toUpperCase())}
-                          placeholder="EX: ATR-PRO-2026-X89K"
-                          className="flex-1 bg-neutral-900 border border-white/15 rounded-lg px-2.5 py-1.5 text-xs text-white uppercase tracking-wider font-mono outline-none focus:border-[#C4785A]"
+                <div className="space-y-3">
+                  {/* Primary Google SSO One-Click Experience */}
+                  <button
+                    type="button"
+                    onClick={handleGoogleLogin}
+                    disabled={isGoogleLoading}
+                    className="w-full h-11 rounded-xl bg-white hover:bg-neutral-100 text-neutral-800 text-xs font-bold transition-all flex items-center justify-center gap-2.5 shadow-md cursor-pointer disabled:opacity-75 active:scale-[0.99]"
+                  >
+                    {isGoogleLoading ? (
+                      <div className="w-4 h-4 border-2 border-neutral-700 border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
+                        <path
+                          fill="#4285F4"
+                          d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
                         />
-                        {voucherValidation?.isValid && (
-                          <span className="flex items-center gap-1 text-[11px] text-emerald-400 font-semibold px-2 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/20">
-                            <Check className="w-3 h-3" />
-                            {(voucherValidation.tierName || 'ACTIVE').toUpperCase()}
-                          </span>
-                        )}
-                      </div>
+                        <path
+                          fill="#34A853"
+                          d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                        />
+                        <path
+                          fill="#FBBC05"
+                          d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
+                        />
+                        <path
+                          fill="#EA4335"
+                          d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
+                        />
+                      </svg>
                     )}
+                    <span>
+                      {isGoogleLoading
+                        ? (isAr ? 'جارِ التحقق...' : isFr ? 'Connexion en cours...' : 'Connecting...')
+                        : (isAr ? 'المتابعة باستخدام حساب Google' : isFr ? 'Continuer avec Google' : 'Continue with Google')}
+                    </span>
+                  </button>
+
+                  {/* Elegant Divider */}
+                  <div className="relative flex items-center justify-center my-1">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t border-white/10" />
+                    </div>
+                    <span className="relative px-3 text-[10px] uppercase font-bold tracking-wider text-neutral-400 bg-[#0C0C0E]">
+                      {isAr ? 'أو باستخدام بريدك المهني' : isFr ? 'OU AVEC UN E-MAIL PROFESSIONNEL' : 'OR WITH WORK EMAIL'}
+                    </span>
+                  </div>
+
+                  {/* Proprietary LabelInput Text Boxes */}
+                  <div className="space-y-3 pt-1">
+                    <LabelInput
+                      field="fullName"
+                      label={isAr ? 'الاسم واللقب للمسؤول' : isFr ? 'Nom & prénom du responsable' : 'Full Name'}
+                      value={fullName}
+                      onChange={(val) => setFullName(String(val))}
+                      prefix={<User className="w-3.5 h-3.5" />}
+                      height={42}
+                      corner={12}
+                    />
+
+                    <LabelInput
+                      field="email"
+                      type="email"
+                      label={isAr ? 'البريد الإلكتروني المهني' : isFr ? 'E-mail professionnel' : 'Work Email'}
+                      value={email}
+                      onChange={(val) => setEmail(String(val))}
+                      prefix={<Mail className="w-3.5 h-3.5" />}
+                      height={42}
+                      corner={12}
+                    />
+
+                    <LabelInput
+                      field="password"
+                      type="password"
+                      label={isAr ? 'كلمة المرور' : isFr ? 'Mot de passe sécurisé' : 'Secure Password'}
+                      value={password}
+                      onChange={(val) => setPassword(String(val))}
+                      prefix={<Lock className="w-3.5 h-3.5" />}
+                      height={42}
+                      corner={12}
+                    />
                   </div>
 
                   {/* Terms Checkbox */}
@@ -1183,101 +1232,232 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
               )}
 
               {/* ------------------------------------------------------------- */}
-              {/* STEP 8: BESPOKE OPERATING SYSTEM REVEAL & 1-CLICK LAUNCH      */}
+              {/* STEP 8: WORKSPACE IDENTITY & SUBSCRIPTION PLAN SWITCHER       */}
               {/* ------------------------------------------------------------- */}
               {currentStep === 8 && (
-                <div className="space-y-3">
-                  {/* Synthesis Reveal Card */}
-                  <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-[#1F1D1B] to-[#141416] border border-[#C4785A]/40 shadow-[0_0_20px_rgba(196,120,90,0.2)]">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-[11px] font-bold uppercase tracking-wider text-[#C4785A] flex items-center gap-1.5">
-                        <Sparkles className="w-3.5 h-3.5 text-[#C4785A]" />
-                        {isAr ? 'التهيئة المقترحة بالذكاء الاصطناعي' : isFr ? 'Configuration recommandée' : 'AI-Tailored Recommendation'}
-                      </span>
-                      <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400">
-                        {matchConfidence}% Match
-                      </span>
-                    </div>
-
-                    <h2 className="text-lg sm:text-xl font-black text-white mb-0.5 flex items-center gap-2">
-                      <span>{activeCategoryMeta.title}</span>
-                    </h2>
-                    <p className="text-xs text-neutral-400 leading-relaxed mb-3 line-clamp-2 sm:line-clamp-none">
-                      {isAr
-                        ? `تم ضبط بيئة العمل خصيصاً لمؤسستك "${workspaceName}" مع تفعيل ميزات التحصيل والمراقبة المناسبة لنشاطك (${selectedTrade ? (isAr ? selectedTrade.name.ar : selectedTrade.name.fr) : activeCategoryMeta.title}).`
-                        : isFr
-                        ? `Environnement calibré pour "${workspaceName}" avec activation des modules métier pour "${selectedTrade ? selectedTrade.name.fr : activeCategoryMeta.title}" et conformité fiscale DZD.`
-                        : `Workspace optimized for "${workspaceName}" with tailored operational screens and compliance tools.`}
-                    </p>
-
-                    {/* Pre-configured Modules Checklist */}
-                    <div className="space-y-1.5 border-t border-white/10 pt-2.5">
-                      <span className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">
-                        {isAr ? 'الوحدات المفعّلة فورياً في مساحة عملك:' : isFr ? 'Modules activés dès le lancement :' : 'Active Modules Ready on Launch:'}
-                      </span>
-                      <div className="grid grid-cols-2 gap-1.5 text-xs">
-                        <div className="flex items-center gap-1.5 text-neutral-300">
-                          <CheckCircle2 className="w-3.5 h-3.5 text-[#C4785A] shrink-0" />
-                          <span className="truncate">{isAr ? 'لوحة القيادة والمؤشرات الحية' : isFr ? 'Tableau de bord & Pulse' : 'Dashboard & Live Pulse'}</span>
+                <div className="space-y-2.5 sm:space-y-3">
+                  {/* Synthesis Vertical Match Pill */}
+                  <div className="p-3 rounded-xl bg-gradient-to-r from-[#1F1D1B] to-[#141416] border border-[#C4785A]/35 flex items-center justify-between">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="w-8 h-8 rounded-lg bg-[#C4785A]/20 border border-[#C4785A]/30 flex items-center justify-center shrink-0">
+                        <Sparkles className="w-4 h-4 text-[#C4785A]" />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="text-[10px] font-bold uppercase tracking-wider text-[#C4785A] truncate">
+                          {isAr ? 'النظام المقترح وفق نشاطك' : isFr ? 'Système Métier Calibré' : 'Calibrated Vertical Engine'}
                         </div>
-                        <div className="flex items-center gap-1.5 text-neutral-300">
-                          <CheckCircle2 className="w-3.5 h-3.5 text-[#C4785A] shrink-0" />
-                          <span className="truncate">{isAr ? 'إدارة العملاء وقاعدة البيانات' : isFr ? 'CRM Clients & Historique' : '360° Client Directory'}</span>
-                        </div>
-                        <div className="flex items-center gap-1.5 text-neutral-300">
-                          <CheckCircle2 className="w-3.5 h-3.5 text-[#C4785A] shrink-0" />
-                          <span className="truncate">{isAr ? 'الفوترة والمطابقة المالية بالدينار' : isFr ? 'Facturation & Caisse DZD' : 'Financial Ledger in DZD'}</span>
-                        </div>
-                        <div className="flex items-center gap-1.5 text-neutral-300">
-                          <CheckCircle2 className="w-3.5 h-3.5 text-[#C4785A] shrink-0" />
-                          <span className="truncate">{isAr ? 'سجل العمليات والتدقيق الإداري' : isFr ? 'Piste d’audit & Droits' : 'Full Audit Trail & Roles'}</span>
+                        <div className="text-xs sm:text-sm font-extrabold text-white truncate">
+                          {selectedTrade ? (isAr ? selectedTrade.name.ar : isFr ? selectedTrade.name.fr : selectedTrade.name.en) : activeCategoryMeta.title}
                         </div>
                       </div>
                     </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400">
+                        {matchConfidence}% Match
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setIsOverrideSelectorOpen(!isOverrideSelectorOpen)}
+                        className="p-1 text-neutral-400 hover:text-white transition-colors cursor-pointer"
+                        title={isAr ? 'تغيير يدوي' : isFr ? 'Changer' : 'Change'}
+                      >
+                        {isOverrideSelectorOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                      </button>
+                    </div>
                   </div>
 
-                  {/* Manual Category Override Expander (Full User Control) */}
-                  <div className="pt-0.5">
-                    <button
-                      type="button"
-                      onClick={() => setIsOverrideSelectorOpen(!isOverrideSelectorOpen)}
-                      className="text-xs text-neutral-400 hover:text-white flex items-center gap-1.5 transition-colors cursor-pointer"
-                    >
-                      <Building2 className="w-3.5 h-3.5 text-[#C4785A]" />
-                      <span>
-                        {isAr
-                          ? 'هل ترغب في تغيير أو اختيار فئة عمل أخرى يدوياً؟'
-                          : isFr
-                          ? "Choisir manuellement une autre catégorie d'activité ?"
-                          : 'Prefer to manually pick a different vertical?'}
-                      </span>
-                      {isOverrideSelectorOpen ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-                    </button>
+                  {/* Manual Category Override Dropdown (If expanded) */}
+                  {isOverrideSelectorOpen && (
+                    <div className="p-2 rounded-xl bg-white/5 border border-white/10 max-h-32 overflow-y-auto space-y-1 text-xs">
+                      {(Object.keys(CATEGORY_METADATA) as BusinessCategory[]).map((catKey) => {
+                        const meta = CATEGORY_METADATA[catKey];
+                        const isPicked = activeCategory === catKey;
+                        return (
+                          <button
+                            key={catKey}
+                            type="button"
+                            onClick={() => {
+                              setManualCategoryOverride(catKey);
+                              setIsOverrideSelectorOpen(false);
+                            }}
+                            className={`w-full flex items-center justify-between px-2.5 py-1 rounded-lg text-left transition-colors cursor-pointer ${
+                              isPicked
+                                ? 'bg-[#C4785A] text-white font-semibold'
+                                : 'hover:bg-white/5 text-neutral-300'
+                            }`}
+                          >
+                            <span>{meta.title}</span>
+                            {isPicked && <Check className="w-3.5 h-3.5 text-white" />}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
 
-                    {isOverrideSelectorOpen && (
-                      <div className="mt-2 p-2 rounded-xl bg-white/5 border border-white/10 max-h-36 overflow-y-auto space-y-1 text-xs">
-                        {(Object.keys(CATEGORY_METADATA) as BusinessCategory[]).map((catKey) => {
-                          const meta = CATEGORY_METADATA[catKey];
-                          const isPicked = activeCategory === catKey;
-                          return (
+                  {/* Section 1: Final Workspace Identity Fields using LabelInput */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <LabelInput
+                      field="workspaceName"
+                      label={isAr ? 'اسم المؤسسة / مساحة العمل' : isFr ? "Nom de l'entreprise ou marque" : 'Workspace / Business Name'}
+                      value={workspaceName}
+                      onChange={(val) => setWorkspaceName(String(val))}
+                      prefix={<Building2 className="w-3.5 h-3.5" />}
+                      height={42}
+                      corner={12}
+                    />
+
+                    <LabelInput
+                      field="phone"
+                      type="tel"
+                      label={isAr ? 'رقم هاتف الاتصال' : isFr ? 'Téléphone de contact' : 'Contact Phone'}
+                      value={phone}
+                      onChange={(val) => setPhone(String(val))}
+                      prefix={<Phone className="w-3.5 h-3.5" />}
+                      height={42}
+                      corner={12}
+                    />
+                  </div>
+
+                  {/* Section 2: Subscription Plan Switcher */}
+                  <div className="space-y-1.5 pt-0.5">
+                    <div className="flex items-center justify-between">
+                      <label className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+                        {isAr ? 'اختر خطة التشغيل المناسبة :' : isFr ? 'Choisissez votre plan Atrium OS :' : 'Select your Atrium OS Plan:'}
+                      </label>
+                      <span className="text-[10px] text-neutral-400">
+                        {isAr ? 'ترخيص دائم مدى الحياة' : isFr ? 'Licence perpétuelle sans abonnement mensuel' : 'Perpetual lifetime license'}
+                      </span>
+                    </div>
+
+                    {/* 4 Plan Tier Cards Grid */}
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                      {SUBSCRIPTION_PLANS.map((plan) => {
+                        const isSelected = selectedPlanTier === plan.tier;
+                        const badge = isAr ? plan.badgeAr : isFr ? plan.badgeFr : plan.badgeEn;
+                        const price = isAr ? plan.priceAr : isFr ? plan.priceFr : plan.priceEn;
+
+                        return (
+                          <button
+                            key={plan.tier}
+                            type="button"
+                            onClick={() => {
+                              setSelectedPlanTier(plan.tier);
+                              setPaidVoucherError(null);
+                            }}
+                            className={`flex flex-col text-left p-2 sm:p-2.5 rounded-xl border transition-all cursor-pointer relative group ${
+                              isSelected
+                                ? 'bg-[#221F1C] border-[#C4785A] shadow-[0_0_14px_rgba(196,120,90,0.35)]'
+                                : 'bg-[#18181B] border-white/10 hover:border-white/20 hover:bg-[#1C1C1F]'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between w-full mb-1">
+                              <span
+                                className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded ${
+                                  plan.isRecommended
+                                    ? 'bg-[#C4785A] text-white'
+                                    : plan.tier === 'free'
+                                    ? 'bg-emerald-500/20 text-emerald-400'
+                                    : 'bg-white/10 text-neutral-300'
+                                }`}
+                              >
+                                {badge}
+                              </span>
+                              <div
+                                className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center transition-colors shrink-0 ${
+                                  isSelected ? 'border-[#C4785A] bg-[#C4785A]' : 'border-white/20'
+                                }`}
+                              >
+                                {isSelected && <Check className="w-2.5 h-2.5 text-white" />}
+                              </div>
+                            </div>
+                            <span className="font-extrabold text-xs sm:text-sm text-white">{plan.name}</span>
+                            <span className="font-mono text-xs font-bold text-[#E09070] mt-0.5">{price}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {/* Tier Context & Voucher Form */}
+                    {selectedPlanTier === 'free' ? (
+                      <div className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-between text-xs">
+                        <div className="flex items-center gap-2 text-emerald-300">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                          <span className="text-[11px]">
+                            {isAr
+                              ? 'خطة Free Web مفعّلة فورياً • لا تتطلب أي رمز قسيمة أو دفع مالي.'
+                              : isFr
+                              ? 'Édition Free Web incluse • Lancement immédiat sans code voucher ni paiement.'
+                              : 'Free Web edition included • Instant launch with zero payment or voucher required.'}
+                          </span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="p-2.5 rounded-xl bg-white/5 border border-white/10 space-y-2">
+                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                          <div className="flex-1">
+                            <LabelInput
+                              field="voucherCode"
+                              label={
+                                isAr
+                                  ? `رمز قسيمة ترخيص (${selectedPlanTier.toUpperCase()})`
+                                  : isFr
+                                  ? `Code voucher licence (${selectedPlanTier.toUpperCase()})`
+                                  : `License voucher code (${selectedPlanTier.toUpperCase()})`
+                              }
+                              value={voucherCode}
+                              onChange={(val) => {
+                                setVoucherCode(String(val).toUpperCase());
+                                setPaidVoucherError(null);
+                              }}
+                              prefix={<KeyRound className="w-3.5 h-3.5" />}
+                              height={40}
+                              corner={10}
+                            />
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => setShowLicenseModal(true)}
+                            className="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-neutral-200 text-xs font-semibold border border-white/10 flex items-center justify-center gap-1.5 transition-all cursor-pointer whitespace-nowrap active:scale-95"
+                          >
+                            <Sparkles className="w-3.5 h-3.5 text-[#C4785A]" />
+                            <span>
+                              {isAr ? 'طلب ترخيص رسمي' : isFr ? 'Demander une licence' : 'Request License'}
+                            </span>
+                          </button>
+                        </div>
+
+                        {/* Voucher Status Indicator */}
+                        {voucherValidation?.isValid && (
+                          <div className="flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-xs">
+                            <span className="flex items-center gap-1.5 text-emerald-400 font-semibold text-[11px]">
+                              <Check className="w-3.5 h-3.5" />
+                              {isAr ? 'قسيمة ترخيص صالحة مدى الحياة :' : isFr ? 'Voucher valide à vie :' : 'Valid Lifetime Voucher:'}{' '}
+                              <span className="font-mono uppercase">{voucherValidation.tierName}</span>
+                            </span>
+                            <span className="text-[10px] text-emerald-300">100% Validé</span>
+                          </div>
+                        )}
+
+                        {/* Error notice if user tried to launch without entering voucher */}
+                        {paidVoucherError && (
+                          <div className="p-2 rounded-lg bg-red-500/15 border border-red-500/30 text-red-200 text-xs flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-1.5">
+                              <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
+                              <span className="text-[11px]">{paidVoucherError}</span>
+                            </div>
                             <button
-                              key={catKey}
                               type="button"
                               onClick={() => {
-                                setManualCategoryOverride(catKey);
-                                setIsOverrideSelectorOpen(false);
+                                setSelectedPlanTier('free');
+                                setPaidVoucherError(null);
                               }}
-                              className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left transition-colors cursor-pointer ${
-                                isPicked
-                                  ? 'bg-[#C4785A] text-white font-semibold'
-                                  : 'hover:bg-white/5 text-neutral-300'
-                              }`}
+                              className="text-[10px] font-bold text-white underline hover:text-neutral-200 cursor-pointer shrink-0"
                             >
-                              <span>{meta.title}</span>
-                              {isPicked && <Check className="w-3.5 h-3.5 text-white" />}
+                              {isAr ? 'تفعيل الخطة المجانية' : isFr ? 'Activer Free Web' : 'Use Free Web'}
                             </button>
-                          );
-                        })}
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
@@ -1368,15 +1548,20 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
 
               {/* Dynamic Identity Card */}
               <div className="relative z-10 mb-3 p-3 rounded-xl bg-neutral-900/80 border border-white/5 space-y-1">
-                <div className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
-                  {isAr ? 'مؤسستك المخصصة' : isFr ? 'Établissement' : 'Configured Entity'}
+                <div className="flex items-center justify-between">
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+                    {isAr ? 'مؤسستك المخصصة' : isFr ? 'Établissement' : 'Configured Entity'}
+                  </div>
+                  <span className="text-[10px] font-bold text-[#E09070] bg-[#C4785A]/15 px-2 py-0.5 rounded">
+                    {SUBSCRIPTION_PLANS.find((p) => p.tier === selectedPlanTier)?.name || 'Free Web'}
+                  </span>
                 </div>
                 <div className="text-sm font-extrabold text-white truncate">
                   {workspaceName || 'Atlas Creative Studio'}
                 </div>
                 <div className="flex items-center gap-1.5 text-xs text-neutral-400">
                   <MapPin className="w-3 h-3 text-[#C4785A] shrink-0" />
-                  <span className="truncate text-[11px]">{selectedWilaya} • {branchAddress}</span>
+                  <span className="truncate text-[11px]">{branchAddress}</span>
                 </div>
               </div>
 
@@ -1631,6 +1816,157 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
         }}
         language={language}
       />
+
+      {/* Commercial License & Voucher Request Modal */}
+      {showLicenseModal && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="relative w-full max-w-lg rounded-2xl bg-[#18181B] border border-[#C4785A]/40 shadow-2xl p-5 text-white animate-in fade-in zoom-in-95 duration-200">
+            {/* Header */}
+            <div className="flex items-center justify-between pb-3 mb-3 border-b border-white/10">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-[#C4785A]/20 border border-[#C4785A]/30 flex items-center justify-center">
+                  <Sparkles className="w-4 h-4 text-[#C4785A]" />
+                </div>
+                <div>
+                  <h3 className="font-extrabold text-sm sm:text-base text-white">
+                    {isAr ? 'الحصول على ترخيص Atrium OS' : isFr ? 'Obtenir une licence Atrium OS' : 'Get an Atrium OS License'}
+                  </h3>
+                  <p className="text-[11px] text-neutral-400">
+                    {isAr ? 'ترخيص دائم مدى الحياة بدون رسوم دورية' : isFr ? 'Licence perpétuelle à vie • Facture proforma & convention' : 'Perpetual lifetime license • Official invoice'}
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setShowLicenseModal(false)}
+                className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Selected Plan Recap Banner */}
+            <div className="p-3 rounded-xl bg-gradient-to-r from-[#221F1C] to-[#171618] border border-[#C4785A]/30 mb-3.5 flex items-center justify-between">
+              <div>
+                <span className="text-[10px] uppercase font-bold text-[#C4785A] tracking-wider">
+                  {isAr ? 'الخطة المطلوبة' : isFr ? 'Formule sélectionnée' : 'Selected Tier'}
+                </span>
+                <div className="text-base font-black text-white">
+                  {SUBSCRIPTION_PLANS.find((p) => p.tier === selectedPlanTier)?.name}
+                </div>
+              </div>
+              <div className="text-right">
+                <div className="text-sm font-extrabold font-mono text-[#E09070]">
+                  {SUBSCRIPTION_PLANS.find((p) => p.tier === selectedPlanTier)?.[isAr ? 'priceAr' : isFr ? 'priceFr' : 'priceEn']}
+                </div>
+                <div className="text-[10px] text-neutral-400">
+                  {isAr ? 'دفعة واحدة لمدى الحياة' : isFr ? 'Paiement unique à vie' : 'One-time payment'}
+                </div>
+              </div>
+            </div>
+
+            {/* Contact & Settlement Channels */}
+            <div className="space-y-2 mb-3.5 text-xs">
+              <div className="p-2.5 rounded-xl bg-neutral-900 border border-white/5 space-y-1.5">
+                <div className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 flex items-center gap-1.5">
+                  <CreditCard className="w-3.5 h-3.5 text-[#C4785A]" />
+                  <span>{isAr ? 'قنوات الدفع المعتمدة بالدينار' : isFr ? 'Canaux de règlement en Algérie' : 'Algerian Payment Options'}</span>
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-[11px] text-neutral-300">
+                  <div>• Virement Postal CCP / SFP 01</div>
+                  <div>• Virement Bancaire (BNA, BEA, CPA)</div>
+                  <div>• Application BaridiMob</div>
+                  <div>• Règlement espèces en agence</div>
+                </div>
+              </div>
+
+              {/* Commercial hotline & WhatsApp */}
+              <div className="flex flex-col sm:flex-row gap-2">
+                <a
+                  href={`https://wa.me/213550123456?text=${encodeURIComponent(
+                    `Bonjour, je souhaite acquérir la licence Atrium OS ${selectedPlanTier.toUpperCase()} pour mon établissement "${workspaceName}".`
+                  )}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex-1 px-3 py-2.5 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/30 text-emerald-300 font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer text-xs"
+                >
+                  <MessageCircle className="w-4 h-4 text-emerald-400" />
+                  <span>{isAr ? 'مراسلة عبر واتساب' : isFr ? 'Commander via WhatsApp' : 'Order via WhatsApp'}</span>
+                  <ExternalLink className="w-3 h-3 opacity-60" />
+                </a>
+
+                <a
+                  href="tel:+213550123456"
+                  className="px-3 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-neutral-200 font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer text-xs"
+                >
+                  <Phone className="w-3.5 h-3.5 text-[#C4785A]" />
+                  <span>+213 (0) 550 12 34 56</span>
+                </a>
+              </div>
+            </div>
+
+            {/* 1-Click Instant Demo Voucher generator */}
+            <div className="p-3 rounded-xl bg-[#201D1A] border border-dashed border-[#C4785A]/50">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#C4785A] flex items-center gap-1">
+                  <KeyRound className="w-3 h-3 text-[#C4785A]" />
+                  {isAr ? 'التقييم والتجربة الفورية' : isFr ? 'Évaluation & Essai immédiat' : 'Instant Evaluation Mode'}
+                </span>
+                <span className="text-[10px] text-neutral-400">Sandbox Code</span>
+              </div>
+              <p className="text-[11px] text-neutral-300 mb-2 leading-relaxed">
+                {isAr
+                  ? 'يمكنك تفعيل قسيمة ترخيص تجريبية معتمدة لهذا المستوى فوراً ومتابعة الإعداد:'
+                  : isFr
+                  ? 'Vous pouvez insérer automatiquement un voucher de démonstration actif pour ce niveau :'
+                  : 'You can instantly insert an active demonstration voucher for this tier:'}
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  const demoCode =
+                    selectedPlanTier === 'starter'
+                      ? 'ATR-STARTER-LIFE-2026-X89K'
+                      : selectedPlanTier === 'enterprise'
+                      ? 'ATR-ENTERPRISE-LIFE-2026-X89K'
+                      : 'ATR-PRO-LIFE-2026-X89K';
+                  setVoucherCode(demoCode);
+                  setTestVoucherCopied(true);
+                  setPaidVoucherError(null);
+                  setTimeout(() => {
+                    setShowLicenseModal(false);
+                    setTestVoucherCopied(false);
+                  }, 450);
+                }}
+                className={`w-full py-2 px-3 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                  testVoucherCopied
+                    ? 'bg-emerald-500 text-white'
+                    : 'bg-[#C4785A] hover:bg-[#b3684a] text-white shadow-md'
+                }`}
+              >
+                {testVoucherCopied ? (
+                  <>
+                    <Check className="w-3.5 h-3.5" />
+                    <span>{isAr ? 'تم تطبيق القسيمة بنجاح!' : isFr ? 'Voucher appliqué avec succès !' : 'Voucher Applied!'}</span>
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>
+                      {isAr
+                        ? `تطبيق رمز تجريبي: ATR-${selectedPlanTier.toUpperCase()}-LIFE-2026-X89K`
+                        : isFr
+                        ? `Appliquer le voucher test ATR-${selectedPlanTier.toUpperCase()}-LIFE-2026-X89K`
+                        : `Apply demo voucher ATR-${selectedPlanTier.toUpperCase()}-LIFE-2026-X89K`}
+                    </span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Footer Branding Bar (Compact, Single-Line, Viewport Budget) */}
       <footer className="w-full max-w-7xl mx-auto px-6 py-2 flex items-center justify-between text-[11px] text-neutral-400 border-t border-white/5 shrink-0">

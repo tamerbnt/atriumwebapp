@@ -863,6 +863,24 @@ export interface ToastNotification {
   createdAt: number;
 }
 
+export type NotificationCategory = 'alert' | 'activity' | 'system';
+
+export interface AppNotification {
+  id: string;
+  title: string;
+  message: string;
+  type: ToastType;
+  category: NotificationCategory;
+  read: boolean;
+  createdAt: number;
+  targetScreen?: string;
+  action?: {
+    label: string;
+    onClick?: () => void;
+    targetScreen?: string;
+  };
+}
+
 // ==========================================
 // Education, Academy & Training Types (Category 15)
 // ==========================================

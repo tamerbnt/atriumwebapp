@@ -47,6 +47,8 @@ import {
   ToastNotification,
   ToastType,
   ToastSyncStatus,
+  AppNotification,
+  NotificationCategory,
   EduCourse,
   EduClassroom,
   EduCohort,
@@ -320,10 +322,51 @@ interface AppState {
   commercialDocs: CommercialDocument[];
   purchaseDocs: PurchaseDocument[];
   stockVouchers: StockMovementVoucher[];
-  // Toast notifications
+  // Toast & Notifications Center
   toasts: ToastNotification[];
+  notifications: AppNotification[];
 }
 
+export const INITIAL_NOTIFICATIONS: AppNotification[] = [
+  {
+    id: 'notif-alert-stock',
+    title: 'Low Stock Threshold Warning',
+    message: 'Whey Isolate 1kg is down to 3 units in main depot. Restock required.',
+    type: 'warning',
+    category: 'alert',
+    read: false,
+    createdAt: Date.now() - 1000 * 60 * 12,
+    targetScreen: 'shop',
+    action: {
+      label: 'View Inventory',
+      targetScreen: 'shop',
+    },
+  },
+  {
+    id: 'notif-act-sale',
+    title: 'Transaction Settled',
+    message: 'Invoice #INV-2026-004 settled for 380,000 DZD by Algérie Telecom.',
+    type: 'success',
+    category: 'activity',
+    read: false,
+    createdAt: Date.now() - 1000 * 60 * 45,
+    targetScreen: 'finance',
+    action: {
+      label: 'Open Invoices',
+      targetScreen: 'finance',
+    },
+  },
+  {
+    id: 'notif-sys-cloud',
+    title: 'Realtime Cloud Ready',
+    message: 'Hybrid storage active. Workspace synchronized with PostgreSQL database.',
+    type: 'info',
+    category: 'system',
+    read: true,
+    createdAt: Date.now() - 1000 * 60 * 180,
+    targetScreen: 'settings',
+  },
+];
 
 const DEFAULT_USER: CurrentUser = {
   id: 'stf_01',
@@ -431,6 +474,7 @@ const DEFAULT_STATE: AppState = {
   purchaseDocs: INITIAL_PURCHASE_DOCS,
   stockVouchers: INITIAL_STOCK_VOUCHERS,
   toasts: [],
+  notifications: INITIAL_NOTIFICATIONS,
 };
 
 
@@ -668,6 +712,7 @@ let globalState: AppState = backfillTraceability((() => {
           desktopUpgradeReason: 'general',
           supabaseStatus: isSupabaseConfigured() ? 'connecting' : 'unconfigured',
           isSyncing: false,
+          notifications: Array.isArray(parsed.notifications) && parsed.notifications.length > 0 ? parsed.notifications : INITIAL_NOTIFICATIONS,
         };
       }
     }
@@ -796,6 +841,67 @@ export function dismissToast(id: string) {
   notify();
 }
 
+export function markNotificationAsRead(id: string) {
+  globalState = {
+    ...globalState,
+    notifications: (globalState.notifications || []).map((n) =>
+      n.id === id ? { ...n, read: true } : n
+    ),
+  };
+  notify();
+}
+
+export function markAllNotificationsAsRead() {
+  globalState = {
+    ...globalState,
+    notifications: (globalState.notifications || []).map((n) => ({ ...n, read: true })),
+  };
+  notify();
+}
+
+export function clearAllNotifications() {
+  globalState = {
+    ...globalState,
+    notifications: [],
+  };
+  notify();
+}
+
+export function removeNotification(id: string) {
+  globalState = {
+    ...globalState,
+    notifications: (globalState.notifications || []).filter((n) => n.id !== id),
+  };
+  notify();
+}
+
+export function addNotification(
+  notification: Omit<AppNotification, 'id' | 'createdAt' | 'read'> & {
+    id?: string;
+    read?: boolean;
+    createdAt?: number;
+  }
+) {
+  const newNotif: AppNotification = {
+    id: notification.id || `notif-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+    title: notification.title,
+    message: notification.message,
+    type: notification.type || 'info',
+    category: notification.category || 'activity',
+    read: notification.read ?? false,
+    createdAt: notification.createdAt || Date.now(),
+    targetScreen: notification.targetScreen,
+    action: notification.action,
+  };
+
+  globalState = {
+    ...globalState,
+    notifications: [newNotif, ...(globalState.notifications || [])].slice(0, 50),
+  };
+  notify();
+  return newNotif;
+}
+
 export function showToast(
   toastInputOrMessage:
     | string
@@ -820,7 +926,7 @@ export function showToast(
     ? (type === 'success' ? 'Succès' : type === 'error' ? 'Erreur' : type === 'warning' ? 'Attention' : 'Notification')
     : toastInputOrMessage.title;
   const message: string = isString ? toastInputOrMessage : toastInputOrMessage.message;
-  const duration = isString ? 6000 : (toastInputOrMessage.duration ?? 6000);
+  const duration = isString ? 3000 : (toastInputOrMessage.duration ?? 3000);
   const syncStatus = isString ? undefined : toastInputOrMessage.syncStatus;
   const table = isString ? undefined : toastInputOrMessage.table;
   const category = isString ? undefined : toastInputOrMessage.category;
@@ -840,9 +946,29 @@ export function showToast(
     createdAt: Date.now(),
   };
 
+  // Log into persistent notification history so user never misses critical updates
+  const notifCategory: NotificationCategory =
+    type === 'error' || type === 'warning'
+      ? 'alert'
+      : syncStatus
+      ? 'system'
+      : 'activity';
+
+  const newNotification: AppNotification = {
+    id: `notif-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+    title,
+    message,
+    type,
+    category: notifCategory,
+    read: false,
+    createdAt: Date.now(),
+    action,
+  };
+
   globalState = {
     ...globalState,
     toasts: [...(globalState.toasts || []), newToast],
+    notifications: [newNotification, ...(globalState.notifications || [])].slice(0, 60),
   };
   notify();
 
@@ -7483,9 +7609,16 @@ export function useAtriumStore() {
     deleteB2bSupplier,
     createWarehouseDepot,
     resetTradingMockData,
-    // Toast Notifications
+    // Toast Notifications & Notification Center
     toasts: state.toasts || [],
+    notifications: state.notifications || [],
+    unreadNotificationCount: (state.notifications || []).filter((n) => !n.read).length,
     showToast,
     dismissToast,
+    markNotificationAsRead,
+    markAllNotificationsAsRead,
+    clearAllNotifications,
+    removeNotification,
+    addNotification,
   };
 }

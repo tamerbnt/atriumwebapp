@@ -1089,6 +1089,7 @@
   position: relative;
   font-family: var(--font-ui);
   color: var(--fill-on, var(--ink));
+  --tst-r: 20px;
   --tst-mute: color-mix(in srgb, var(--fill-on, #17181a) 52%, var(--fill-slab, #ffffff));
   --tst-wash: color-mix(in srgb, var(--fill-on, #17181a) 6%, var(--fill-slab, #ffffff));
 }
@@ -1103,12 +1104,32 @@
   align-items: center;
   gap: 12px;
   padding: 0 12px 0 16px;
-  border-radius: var(--tst-r);
+  border-radius: var(--tst-r, 20px);
   background: var(--fill-slab, #ffffff);
   transform-origin: 50% 0;
   transition: background-color 220ms ease, box-shadow 220ms ease;
   box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.08), 0 0 0 1px var(--pane-edge, rgba(0,0,0,0.06));
 }
+
+/* Static item in list or dropdown matching exact card styling */
+.tst-toast-item {
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 12px 0 16px;
+  border-radius: var(--tst-r, 20px);
+  background: var(--fill-slab, #ffffff);
+  transition: background-color 220ms ease, box-shadow 220ms ease, transform 160ms ease;
+  box-shadow: 0 4px 18px -2px rgba(0, 0, 0, 0.06), 0 0 0 1px var(--pane-edge, rgba(0,0,0,0.06));
+}
+
+.tst-toast-item[data-kind="success"] .tst-icon { color: #1f9d55; }
+.tst-toast-item[data-kind="error"] .tst-icon { color: #e5484d; }
+.tst-toast-item[data-kind="warning"] .tst-icon { color: #e09a12; }
+.tst-toast-item[data-kind="info"] .tst-icon { color: var(--tst-mute); }
 
 /* tucked: the same near-white for both, and a faint edge so each
    sliver has a line to read by */
@@ -1117,7 +1138,8 @@
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--fill-on, #17181a) 6%, transparent);
 }
 
-[data-stroke="on"] .tst-toast { box-shadow: 0 0 0 1px var(--pane-edge); }
+[data-stroke="on"] .tst-toast,
+[data-stroke="on"] .tst-toast-item { box-shadow: 0 0 0 1px var(--pane-edge); }
 
 /* only the front one is read while stacked; the rest are slivers */
 .tst-toast > * { transition: opacity 220ms ease; }
