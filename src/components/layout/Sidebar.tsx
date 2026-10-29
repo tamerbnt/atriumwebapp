@@ -40,6 +40,7 @@ import {
   Key,
   FileCheck,
   Briefcase,
+  CheckCircle2,
 } from 'lucide-react';
 import { useAtriumStore, ActiveScreen } from '../../services/store';
 import { FiveCubesLogo } from '../auth/AtriumMonolith';
@@ -65,6 +66,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     activePmRole,
     setActivePmRole,
     setActivePmSubScreen,
+    activeGarageRole,
     language,
   } = useAtriumStore();
   const [isExpanded, setIsExpanded] = useState(false);
@@ -614,45 +616,162 @@ export const Sidebar: React.FC<SidebarProps> = ({
       },
     ];
   } else if (category === 'auto_garage') {
-    // Dedicated Category 10: Auto Garage & Fleet Maintenance
-    dockNavItems = [
-      {
-        id: 'dashboard',
-        icon: <Home size={19} />,
-        title: language === 'ar' ? 'لوحة الورشة' : language === 'fr' ? 'Tableau Atelier' : 'Workshop Pulse',
-        label: t('nav_home', language),
-      },
-      {
-        id: 'scheduler',
-        icon: <Wrench size={19} />,
-        title: language === 'ar' ? 'أوامر التصليح (OR)' : language === 'fr' ? 'Ordres de Réparation (OR)' : 'Work Orders (OR)',
-        label: language === 'ar' ? 'التصليح' : language === 'fr' ? 'Ordres (OR)' : 'Orders',
-      },
-      {
-        id: 'members',
-        icon: <Car size={19} />,
-        title: language === 'ar' ? 'المركبات واللوحات' : language === 'fr' ? 'Véhicules & Matricules' : 'Vehicles & Plates',
-        label: language === 'ar' ? 'المركبات' : language === 'fr' ? 'Véhicules' : 'Vehicles',
-      },
-      {
-        id: 'shop',
-        icon: <Boxes size={19} />,
-        title: language === 'ar' ? 'قطع الغيار والمخزون' : language === 'fr' ? 'Pièces & Stock Atelier' : 'Parts & Inventory',
-        label: language === 'ar' ? 'قطع الغيار' : language === 'fr' ? 'Pièces' : 'Parts',
-      },
-      {
-        id: 'finance',
-        icon: <Wallet size={19} />,
-        title: language === 'ar' ? 'الفواتير ورخص الخروج' : language === 'fr' ? 'Facturation & Bons de Sortie' : 'Billing & Gate Pass',
-        label: t('nav_finance', language),
-      },
-      {
-        id: 'settings',
-        icon: <Settings size={19} />,
-        title: t('nav_settings', language),
-        label: t('nav_settings', language),
-      },
-    ];
+    // Dedicated Category 10: Auto Garage & Fleet Maintenance — Role-Adapted Navigation
+    if (activeGarageRole === 'reception') {
+      dockNavItems = [
+        {
+          id: 'scheduler',
+          icon: <Wrench size={19} />,
+          title: language === 'ar' ? 'استقبال المركبات وأمر التصليح' : language === 'fr' ? 'Entrées Atelier & OR (360°)' : 'Intake & Damage OR',
+          label: language === 'ar' ? 'الاستقبال' : language === 'fr' ? 'Entrées OR' : 'Intake OR',
+        },
+        {
+          id: 'members',
+          icon: <Car size={19} />,
+          title: language === 'ar' ? 'الزبائن والمركبات' : language === 'fr' ? 'Véhicules & Fiches Clients' : 'Vehicles & CRM',
+          label: language === 'ar' ? 'المركبات' : language === 'fr' ? 'Véhicules' : 'Vehicles',
+        },
+        {
+          id: 'finance',
+          icon: <FileText size={19} />,
+          title: language === 'ar' ? 'عروض الأسعار وموافقة واتساب' : language === 'fr' ? 'Devis & Approbations WhatsApp' : 'Quotes & WhatsApp',
+          label: language === 'ar' ? 'التقديرات' : language === 'fr' ? 'Devis' : 'Quotes',
+        },
+        {
+          id: 'dashboard',
+          icon: <Home size={19} />,
+          title: language === 'ar' ? 'قائمة انتظار الورشة' : language === 'fr' ? 'File d\'Attente Atelier' : 'Workshop Queue',
+          label: t('nav_home', language),
+        },
+        {
+          id: 'shop',
+          icon: <Key size={19} />,
+          title: language === 'ar' ? 'تسليم المفاتيح ورخصة الخروج' : language === 'fr' ? 'Véhicules Prêts & Bons de Sortie' : 'Handover & Exit Pass',
+          label: language === 'ar' ? 'التسليم' : language === 'fr' ? 'Sorties' : 'Exits',
+        },
+      ];
+    } else if (activeGarageRole === 'mecanicien') {
+      dockNavItems = [
+        {
+          id: 'scheduler',
+          icon: <Wrench size={19} />,
+          title: language === 'ar' ? 'لوحة الجسور والرافعات' : language === 'fr' ? 'Tableau des Ponts & Baies (Kanban)' : 'Bay Kanban & Lifts',
+          label: language === 'ar' ? 'الجسور' : language === 'fr' ? 'Ponts' : 'Bays',
+        },
+        {
+          id: 'dashboard',
+          icon: <Clock size={19} />,
+          title: language === 'ar' ? 'مهام التصليح اليومية' : language === 'fr' ? 'Mes Réparations du Jour' : 'My Repair Tasks',
+          label: t('nav_home', language),
+        },
+        {
+          id: 'members',
+          icon: <Car size={19} />,
+          title: language === 'ar' ? 'فحص الأعطال OBD والتشخيص' : language === 'fr' ? 'Codes DTC & Valise OBD-II' : 'OBD-II Diagnostic DTC',
+          label: language === 'ar' ? 'التشخيص' : language === 'fr' ? 'OBD DTC' : 'Diagnostics',
+        },
+        {
+          id: 'shop',
+          icon: <Boxes size={19} />,
+          title: language === 'ar' ? 'طلب قطع الغيار من المخزن' : language === 'fr' ? 'Demandes de Pièces Magasin' : 'Parts Requisitions',
+          label: language === 'ar' ? 'طلب قطع' : language === 'fr' ? 'Demandes' : 'Requisitions',
+        },
+      ];
+    } else if (activeGarageRole === 'magasinier') {
+      dockNavItems = [
+        {
+          id: 'shop',
+          icon: <Boxes size={19} />,
+          title: language === 'ar' ? 'المخزن والرفوف وقطع الغيار' : language === 'fr' ? 'Stock, Bacs & Références' : 'Parts Depot & Bins',
+          label: language === 'ar' ? 'قطع الغيار' : language === 'fr' ? 'Pièces' : 'Parts',
+        },
+        {
+          id: 'dashboard',
+          icon: <ClipboardList size={19} />,
+          title: language === 'ar' ? 'طلبات الصرف من الورشة' : language === 'fr' ? 'File des Demandes Atelier' : 'Requisition Queue',
+          label: t('nav_home', language),
+        },
+        {
+          id: 'scheduler',
+          icon: <Truck size={19} />,
+          title: language === 'ar' ? 'طلبات التموين والموزعين' : language === 'fr' ? 'Commandes Fournisseurs (Bab Ezzouar)' : 'Supplier Orders (PO)',
+          label: language === 'ar' ? 'الممونين' : language === 'fr' ? 'Commandes' : 'Purchases',
+        },
+        {
+          id: 'finance',
+          icon: <FileCheck size={19} />,
+          title: language === 'ar' ? 'وصولات الاستلام ومطابقة البضاعة' : language === 'fr' ? 'Réception Marchandises & BL' : 'Deliveries & BL Check',
+          label: language === 'ar' ? 'الاستلام' : language === 'fr' ? 'Réceptions' : 'Goods In',
+        },
+      ];
+    } else if (activeGarageRole === 'caisse') {
+      dockNavItems = [
+        {
+          id: 'finance',
+          icon: <Wallet size={19} />,
+          title: language === 'ar' ? 'الصندوق والفواتير الجبائية' : language === 'fr' ? 'Factures DGI (19%+Timbre) & Caisse' : 'DGI Billing & Cash',
+          label: t('nav_finance', language),
+        },
+        {
+          id: 'dashboard',
+          icon: <Receipt size={19} />,
+          title: language === 'ar' ? 'نقطة التحصيل والوصولات' : language === 'fr' ? 'Point d\'Encaissement & Bons' : 'Cashier Counter',
+          label: t('nav_home', language),
+        },
+        {
+          id: 'members',
+          icon: <Building2 size={19} />,
+          title: language === 'ar' ? 'حسابات أساطيل الشركات B2B' : language === 'fr' ? 'Comptes Flottes B2B & Relevés' : 'Fleet Accounts & AR',
+          label: language === 'ar' ? 'الأساطيل' : language === 'fr' ? 'Flottes' : 'Fleets',
+        },
+        {
+          id: 'scheduler',
+          icon: <CheckCircle2 size={19} />,
+          title: language === 'ar' ? 'مركبات منتهية بانتظار الدفع' : language === 'fr' ? 'Véhicules Réparés à Régler' : 'Pending Payment Queue',
+          label: language === 'ar' ? 'الدفع' : language === 'fr' ? 'À Régler' : 'To Settle',
+        },
+      ];
+    } else {
+      // Default Gérant / Direction
+      dockNavItems = [
+        {
+          id: 'dashboard',
+          icon: <Home size={19} />,
+          title: language === 'ar' ? 'لوحة أداء الورشة والهوامش' : language === 'fr' ? 'Tableau Atelier & Rentabilité' : 'Workshop Pulse & Margins',
+          label: t('nav_home', language),
+        },
+        {
+          id: 'scheduler',
+          icon: <Wrench size={19} />,
+          title: language === 'ar' ? 'أوامر التصليح وسير العمل' : language === 'fr' ? 'Registre des Réparations (OR)' : 'Work Orders (OR)',
+          label: language === 'ar' ? 'التصليح' : language === 'fr' ? 'Ordres (OR)' : 'Orders',
+        },
+        {
+          id: 'members',
+          icon: <Car size={19} />,
+          title: language === 'ar' ? 'المركبات وأساطيل B2B' : language === 'fr' ? 'Véhicules & Flottes d\'Entreprise' : 'Vehicles & Fleets',
+          label: language === 'ar' ? 'المركبات' : language === 'fr' ? 'Véhicules' : 'Vehicles',
+        },
+        {
+          id: 'shop',
+          icon: <Boxes size={19} />,
+          title: language === 'ar' ? 'قطع الغيار وتقييم المخزون' : language === 'fr' ? 'Pièces & Valorisation Stock' : 'Parts & Stock Value',
+          label: language === 'ar' ? 'قطع الغيار' : language === 'fr' ? 'Pièces' : 'Parts',
+        },
+        {
+          id: 'finance',
+          icon: <Wallet size={19} />,
+          title: language === 'ar' ? 'الفواتير والتحصيل والخزينة' : language === 'fr' ? 'Facturation DGI & Trésorerie' : 'Billing & Cash Flow',
+          label: t('nav_finance', language),
+        },
+        {
+          id: 'settings',
+          icon: <Settings size={19} />,
+          title: t('nav_settings', language),
+          label: t('nav_settings', language),
+        },
+      ];
+    }
   } else if (category === 'real_estate') {
     // Dedicated Category 11: Real Estate & Property Lease Management
     dockNavItems = [

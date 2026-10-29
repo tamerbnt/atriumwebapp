@@ -1124,6 +1124,18 @@ export type PMRole =
   | 'rh'           // HR & Talent Pool Management
   | 'compta';      // Accounting, Payroll & Stock
 
+// ============================================================================
+// Automotive Garage & Fleet Maintenance — Dedicated Role Types
+// ============================================================================
+
+export type GarageRole =
+  | 'gerant'      // General Manager & Workshop Owner (Executive KPIs, Margins, Overrides)
+  | 'reception'   // Service Advisor (Intake Walkaround, 360 Damage, WhatsApp Quotes, Gate Pass)
+  | 'mecanicien'  // Workshop Technicians (Bay Kanban, Lift Timers, OBD DTC Codes, Requisitions)
+  | 'magasinier'  // Spare Parts Depot (Parts Queue, Bin Locations, Low-Stock POs, Delivery BL)
+  | 'caisse';     // Cashier & Fleet Billing (DGI Invoices 19%+Stamp, Bons, Fleet Statements, Z)
+
+
 export interface PMClient {
   id: string;
   accountId?: string;

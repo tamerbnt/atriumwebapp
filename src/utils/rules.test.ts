@@ -444,3 +444,62 @@ test('Category 9 Medical: CNAS 30-day regulatory warning rule for sick leaves (A
   assert.equal(aptitudeCert.requiresCnasControl, false);
 });
 
+test('Category 10 Auto Garage: Algerian fiscal timbre duty (Art. 317) applies strictly to cash payments, not bank transfers or CIB', async () => {
+  const { computeAlgerianTimbreFiscal } = await import('../components/screens/garage/garageData.ts');
+
+  // Case 1: Cash payment of 10,000 DZD -> 1% stamp = 100 DZD
+  assert.equal(computeAlgerianTimbreFiscal(10000, 'especes'), 100);
+
+  // Case 2: Cash payment of 24,383.1 DZD -> 1% rounded up = 244 DZD
+  assert.equal(computeAlgerianTimbreFiscal(24383.1, 'especes'), 244);
+
+  // Case 3: Bank transfer (Virement) -> 0 DZD (Exempt from timbre)
+  assert.equal(computeAlgerianTimbreFiscal(24383.1, 'virement'), 0);
+
+  // Case 4: CIB / Dahabia card -> 0 DZD (Exempt from timbre)
+  assert.equal(computeAlgerianTimbreFiscal(15000, 'cib_dahabia'), 0);
+
+  // Case 5: Bank check -> 0 DZD (Exempt from timbre)
+  assert.equal(computeAlgerianTimbreFiscal(15000, 'cheque'), 0);
+
+  // Case 6: Ceiling check (max 10,000 DZD)
+  assert.equal(computeAlgerianTimbreFiscal(2000000, 'especes'), 10000);
+});
+
+test('Category 10 Auto Garage: Predictive mileage estimation with daily rhythm and service thresholds', async () => {
+  const { calculateEstimatedMileage } = await import('../components/screens/garage/garageData.ts');
+
+  // Without date, returns base mileage
+  assert.equal(calculateEstimatedMileage(50000), 50000);
+
+  // Today returns base mileage
+  const todayStr = new Date().toISOString();
+  assert.equal(calculateEstimatedMileage(50000, todayStr, 50), 50000);
+
+  // 10 days ago at 50 km/day -> +500 km
+  const tenDaysAgo = new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString();
+  const estKm = calculateEstimatedMileage(50000, tenDaysAgo, 50);
+  assert.equal(estKm, 50500);
+});
+
+test('Category 10 Auto Garage: Quadruple Traceability and Bay Models', async () => {
+  const { INITIAL_ORDERS, INITIAL_BAYS, INITIAL_FLEETS } = await import('../components/screens/garage/garageData.ts');
+
+  assert.ok(INITIAL_BAYS.length >= 6, 'Must seed at least 6 specialized bays');
+  assert.ok(INITIAL_FLEETS.length >= 3, 'Must seed B2B corporate fleet accounts');
+
+  for (const order of INITIAL_ORDERS) {
+    assert.ok(order.accountId, 'Order must carry accountId');
+    assert.ok(order.businessId, 'Order must carry businessId');
+    assert.ok(order.branchId, 'Order must carry branchId');
+    assert.ok(order.staffId, 'Order must carry staffId');
+    assert.ok(order.orderNumber.startsWith('OR-'), 'Order number prefix must be OR-');
+    assert.ok(order.vehiclePlate, 'Order must have vehicle plate');
+  }
+
+  for (const fleet of INITIAL_FLEETS) {
+    assert.ok(fleet.nif.length >= 15, 'Fleet NIF must be 15 digits');
+    assert.ok(fleet.creditLimitDzd > 0, 'Fleet must have a credit ceiling');
+  }
+});
+

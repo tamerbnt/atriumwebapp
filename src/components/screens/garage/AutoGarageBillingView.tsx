@@ -15,24 +15,57 @@ import {
   X,
   Share2,
   Clock,
+  Building2,
+  FileText,
+  AlertTriangle,
+  Wallet,
+  ArrowRight,
+  TrendingUp,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
 import { formatMoney } from '../../../utils/rules';
-import { useGarageData, RepairOrder } from './garageData';
+import {
+  useGarageData,
+  RepairOrder,
+  GarageInvoice,
+  CorporateFleetAccount,
+  computeAlgerianTimbreFiscal,
+} from './garageData';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { Seek } from '../../ui/Seek';
 import { UniversalDataCollection } from '../../ui/collection/UniversalDataCollection';
 import { ActionButtonDef } from '../../ui/collection/CollectionListRow';
 
 export const AutoGarageBillingView: React.FC = () => {
-  const { language } = useAtriumStore();
+  const { language, activeGarageRole } = useAtriumStore();
   const isAr = language === 'ar';
-  const { orders, updateOrder } = useGarageData();
+  const {
+    orders,
+    fleets,
+    invoices,
+    updateOrder,
+    createInvoice,
+    markInvoicePaid,
+  } = useGarageData();
 
+  const [activeScreenTab, setActiveScreenTab] = useState<'orders' | 'fleets' | 'invoices'>('orders');
   const [selectedOrder, setSelectedOrder] = useState<RepairOrder | null>(null);
-  const [inspectorTab, setInspectorTab] = useState<'decompte' | 'pieces' | 'sortie'>('decompte');
   const [billingFilter, setBillingFilter] = useState<'all' | 'settled' | 'pending'>('all');
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Payment Settlement Modal State
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [orderToSettle, setOrderToSettle] = useState<RepairOrder | null>(null);
+  const [billingType, setBillingType] = useState<'facture_dgi' | 'bon_caisse'>('facture_dgi');
+  const [paymentMethod, setPaymentMethod] = useState<'especes' | 'cib_dahabia' | 'cheque' | 'virement'>('especes');
+  const [discountAmount, setDiscountAmount] = useState('0');
+
+  // Printable Invoice Preview Modal
+  const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
+  const [activePrintInvoice, setActivePrintInvoice] = useState<GarageInvoice | null>(null);
+
+  // Daily Till / Z de Caisse Drawer State
+  const [isTillModalOpen, setIsTillModalOpen] = useState(false);
 
   const filteredBillingOrders = useMemo(() => {
     return orders.filter((o) => {
@@ -51,35 +84,92 @@ export const AutoGarageBillingView: React.FC = () => {
     });
   }, [orders, billingFilter, searchQuery]);
 
-  const totalBilled = orders.reduce((acc, o) => acc + (o.finalCostDzd || o.estimatedCostDzd), 0);
+  // Financial Metrics
+  const totalOrdersAmount = orders.reduce((acc, o) => acc + (o.finalCostDzd || o.estimatedCostDzd), 0);
   const deliveredOrders = orders.filter((o) => o.status === 'Delivered');
-  const paidVolume = deliveredOrders.reduce((acc, o) => acc + (o.finalCostDzd || o.estimatedCostDzd), 0);
-  const pendingVolume = totalBilled - paidVolume;
+  const settledAmount = deliveredOrders.reduce((acc, o) => acc + (o.finalCostDzd || o.estimatedCostDzd), 0);
+  const pendingCollectionAmount = totalOrdersAmount - settledAmount;
+  const corporateFleetArTotal = fleets.reduce((acc, f) => acc + f.currentOutstandingDzd, 0);
 
-  const handleSettleAndDeliver = (order: RepairOrder) => {
-    const updated: RepairOrder = {
-      ...order,
-      status: 'Delivered',
-      finalCostDzd: order.finalCostDzd || order.estimatedCostDzd,
-    };
-    updateOrder(updated);
-    if (selectedOrder?.id === order.id) {
-      setSelectedOrder(updated);
-    }
-    showToast(
-      isAr
-        ? `تم استلام مستحقات الإصلاح (${formatMoney(updated.finalCostDzd, language)}) وتسليم رخصة الخروج`
-        : `Règlement encaissé (${formatMoney(updated.finalCostDzd, language)}) & Bon de sortie délivré`,
-      'success'
-    );
+  // Open Payment Settlement Modal
+  const openSettlement = (order: RepairOrder) => {
+    setOrderToSettle(order);
+    setBillingType(order.clientType === 'corporate_fleet' ? 'facture_dgi' : 'bon_caisse');
+    setPaymentMethod('especes');
+    setDiscountAmount('0');
+    setIsPaymentModalOpen(true);
   };
 
-  const handlePrintExitPass = (orderNumber: string) => {
+  // Perform Settlement & Generate Invoice
+  const handleExecutePayment = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!orderToSettle) return;
+
+    const laborHt = orderToSettle.laborCostDzd || (orderToSettle.finalCostDzd ? orderToSettle.finalCostDzd * 0.25 : 3750);
+    const partsHt = orderToSettle.partsCostDzd || (orderToSettle.finalCostDzd ? orderToSettle.finalCostDzd * 0.75 : 15500);
+    const disc = parseFloat(discountAmount) || 0;
+    const subtotalHt = Math.max(0, laborHt + partsHt - disc);
+    const tva = billingType === 'facture_dgi' ? Math.round(subtotalHt * 0.19) : 0;
+    const ttc = subtotalHt + tva;
+    const timbre = computeAlgerianTimbreFiscal(ttc, paymentMethod);
+    const net = ttc + timbre;
+
+    const newInvoice: GarageInvoice = {
+      id: `inv_${Date.now()}`,
+      accountId: 'acc_01',
+      businessId: 'biz_garage',
+      branchId: 'branch_garage_main',
+      staffId: 'stf_01',
+      invoiceNumber: billingType === 'facture_dgi'
+        ? `FAC-2026-${Math.floor(1000 + Math.random() * 9000)}`
+        : `BC-2026-${Math.floor(1000 + Math.random() * 9000)}`,
+      orderId: orderToSettle.id,
+      orderNumber: orderToSettle.orderNumber,
+      vehiclePlate: orderToSettle.vehiclePlate,
+      vehicleModel: orderToSettle.vehicleModel,
+      clientId: orderToSettle.fleetId || 'client_01',
+      clientName: orderToSettle.clientName,
+      clientPhone: orderToSettle.clientPhone,
+      clientType: orderToSettle.clientType || 'individual',
+      clientNif: orderToSettle.clientType === 'corporate_fleet' ? '001916012345678' : undefined,
+      clientNis: orderToSettle.clientType === 'corporate_fleet' ? '00191601234' : undefined,
+      billingType,
+      paymentMethod,
+      laborTotalHt: laborHt,
+      partsTotalHt: partsHt,
+      discountHt: disc,
+      subtotalHt,
+      tvaRate: billingType === 'facture_dgi' ? 19.0 : 0,
+      tvaAmount: tva,
+      totalTtc: ttc,
+      timbreFiscal: timbre,
+      netToPayDzd: net,
+      issuedAt: new Date().toISOString(),
+      isPaid: true,
+    };
+
+    createInvoice(newInvoice);
+
+    // Update order to Delivered and Paid
+    const updatedOrder: RepairOrder = {
+      ...orderToSettle,
+      status: 'Delivered',
+      finalCostDzd: net,
+      isPaid: true,
+      billingType,
+      invoiceId: newInvoice.id,
+    };
+    updateOrder(updatedOrder);
+
+    setIsPaymentModalOpen(false);
+    setActivePrintInvoice(newInvoice);
+    setIsPrintModalOpen(true);
+
     showToast(
       isAr
-        ? `جاري طباعة رخصة الخروج والفاتورة ${orderNumber}...`
-        : `Impression du bon de sortie et facture ${orderNumber}...`,
-      'info'
+        ? `تم تسجيل التحصيل المالي (${formatMoney(net, language)}) وطباعة الفاتورة`
+        : `Règlement enregistré (${formatMoney(net, language)}) & Facture émise avec succès`,
+      'success'
     );
   };
 
@@ -87,7 +177,7 @@ export const AutoGarageBillingView: React.FC = () => {
     const isDelivered = order.status === 'Delivered';
     return [
       {
-        label: isAr ? 'معاينة الفاتورة' : 'Consulter Facture',
+        label: isAr ? 'معاينة الفاتورة' : 'Consulter Décompte',
         icon: <Eye size={14} />,
         onClick: () => setSelectedOrder(order),
       },
@@ -96,528 +186,680 @@ export const AutoGarageBillingView: React.FC = () => {
             {
               label: isAr ? 'تحصيل وتسليم' : 'Encaisser & Clôturer',
               icon: <Check size={14} />,
-              onClick: () => handleSettleAndDeliver(order),
+              onClick: () => openSettlement(order),
             },
           ]
-        : []),
-      {
-        label: isAr ? 'رخصة الخروج' : 'Bon de Sortie',
-        icon: <Printer size={14} />,
-        onClick: () => handlePrintExitPass(order.orderNumber),
-      },
-      {
-        label: isAr ? 'مشاركة الفاتورة' : 'Partager Facture',
-        icon: <Share2 size={14} />,
-        onClick: () => {
-          showToast(
-            isAr
-              ? `تم نسخ رابط الفاتورة ${order.orderNumber}`
-              : `Lien de télé-facturation ${order.orderNumber} copié`,
-            'success'
-          );
-        },
-      },
+        : [
+            {
+              label: isAr ? 'طباعة الفاتورة' : 'Réimprimer',
+              icon: <Printer size={14} />,
+              onClick: () => {
+                const inv = invoices.find((i) => i.orderId === order.id);
+                if (inv) {
+                  setActivePrintInvoice(inv);
+                  setIsPrintModalOpen(true);
+                } else {
+                  showToast('Facture non archivée', 'error');
+                }
+              },
+            },
+          ]),
     ];
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-200">
-      {/* Top Header Strip with Action Toolbar */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold shadow-xs">
-            <CreditCard size={22} />
-          </div>
+    <div className="flex-1 flex overflow-hidden bg-neutral-100 dark:bg-neutral-950">
+      {/* Main Container */}
+      <div className="flex-1 flex flex-col min-w-0 overflow-y-auto p-4 sm:p-6 space-y-5">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-xl font-bold text-neutral-900 dark:text-white">
-                {isAr ? 'الفواتير ورخص الخروج (Bons de Sortie)' : 'Facturation Atelier & Bons de Sortie'}
-              </h1>
-              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
-                Gate Pass Authorized
+            <h1 className="text-xl sm:text-2xl font-black text-neutral-900 dark:text-white tracking-tight flex items-center gap-2.5">
+              <CreditCard className="text-[#C4785A]" size={24} />
+              <span>
+                {isAr
+                  ? 'الصندوق والفوترة الجبائية (Facturation DGI)'
+                  : 'Facturation DGI, Caisse & Règlements Flottes'}
               </span>
-            </div>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">
+            </h1>
+            <p className="text-xs text-neutral-500 mt-1">
               {isAr
-                ? 'تسوية حسابات التصليح، إصدار فواتير الصيانة وسندات استلام المركبات'
-                : 'Clôture comptable, décompte pièces/main d\'œuvre & bons de sortie atelier'}
+                ? 'فواتير رسمية مطابقة لمصالح الضرائب (TVA 19% + طابع جبائي)، وصولات ورخص الخروج'
+                : 'Factures conformes DGI (TVA 19% + Droit de Timbre), bons de caisse et relevés B2B'}
             </p>
           </div>
-        </div>
 
-        <div className="flex items-center gap-2">
-          <AtriumButton
-            variant="outline"
-            onClick={() => window.print()}
-            icon={<Printer size={14} />}
-          >
-            {isAr ? 'طباعة كشف الحساب' : 'Bordereau Caisse'}
-          </AtriumButton>
-        </div>
-      </div>
-
-      {/* Canonical 3-Card Top Metrics Pod Tray */}
-      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
-        <div>
-          <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
-            {isAr ? 'مؤشرات التحصيل والفوترة المالية' : 'Recouvrement & Encaissements Atelier'}
-          </h2>
-          <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-            {isAr
-              ? 'توزيع المداخيل بين المبالغ المسددة والمستحقات قيد التسوية عند التسليم'
-              : 'Ventilation des règlements clients et encaissements à la restitution'}
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {/* Card 1: Facturé Total */}
-          <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
-            <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
-              {isAr ? 'إجمالي فواتير الصيانة' : 'Facturation Globale OR'}
-            </span>
-            <div>
-              <div className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white font-mono tabular-nums">
-                {formatMoney(totalBilled, language)}
-              </div>
-              <p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5 font-medium">
-                {orders.length} {isAr ? 'أمر صيانة' : 'dossiers facturés'}
-              </p>
-            </div>
-          </div>
-
-          {/* Card 2: En cours de règlement */}
-          <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
-            <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
-              {isAr ? 'مستحقات قيد التسليم' : 'En Attente de Règlement'}
-            </span>
-            <div>
-              <div className="text-2xl font-bold tracking-tight text-amber-600 dark:text-amber-400 font-mono tabular-nums">
-                {formatMoney(pendingVolume, language)}
-              </div>
-              <p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5 font-medium">
-                {orders.length - deliveredOrders.length} {isAr ? 'مركبة قيد الإنجاز' : 'véhicules non livrés'}
-              </p>
-            </div>
-          </div>
-
-          {/* Card 3: Dark Espresso Anchor Card */}
-          <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-medium text-neutral-300">
-                {isAr ? 'خزينة الورشة المحصلة' : 'Encaissements Encaissés'}
-              </span>
-              <span className="bg-[#3D2817] text-[#FB923C] rounded-full px-2 py-0.5 text-[10px] font-bold">
-                {isAr ? 'المحصل نقداً' : 'Caisse Réglée'}
-              </span>
-            </div>
-            <div>
-              <div className="text-2xl font-black text-white font-mono tabular-nums">
-                {formatMoney(paidVolume, language)}
-              </div>
-              <p className="text-[11px] text-emerald-400 mt-0.5 flex items-center gap-1 font-medium">
-                <CheckCircle2 size={11} />
-                {deliveredOrders.length} {isAr ? 'أمر تم استيفاؤه' : 'bons de sortie délivrés'}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Bottom Workstation Pod Tray */}
-      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
-        {/* Table Control Header */}
-        <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <Receipt size={16} className="text-neutral-500" />
-            <span className="text-sm font-bold text-neutral-900 dark:text-white">
-              {isAr ? 'سجل فواتير ورخص خروج الورشة' : 'Registre des Règlements & Sorties Atelier'}
+            <AtriumButton
+              variant="secondary"
+              icon={<Wallet size={15} />}
+              onClick={() => setIsTillModalOpen(true)}
+            >
+              {isAr ? 'حالة الصندوق (Z Caisse)' : 'Point de Caisse (Z)'}
+            </AtriumButton>
+          </div>
+        </div>
+
+        {/* Sub-Navigation Tabs */}
+        <div className="flex items-center gap-1.5 p-1 bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-2xs w-fit">
+          <button
+            type="button"
+            onClick={() => setActiveScreenTab('orders')}
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              activeScreenTab === 'orders'
+                ? 'bg-[#C4785A] text-white shadow-xs'
+                : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'
+            }`}
+          >
+            {isAr ? 'أوامر التصليح للتسوية' : 'Ordres à Encaisser'}
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveScreenTab('fleets')}
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              activeScreenTab === 'fleets'
+                ? 'bg-[#C4785A] text-white shadow-xs'
+                : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'
+            }`}
+          >
+            {isAr ? 'حسابات أساطيل B2B' : 'Comptes Flottes B2B & Relevés'}
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveScreenTab('invoices')}
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              activeScreenTab === 'invoices'
+                ? 'bg-[#C4785A] text-white shadow-xs'
+                : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'
+            }`}
+          >
+            {isAr ? 'سجل الفواتير الصادرة' : `Factures Émises (${invoices.length})`}
+          </button>
+        </div>
+
+        {/* Financial KPI Banner */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="p-3.5 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 shadow-2xs">
+            <span className="text-[11px] font-semibold text-neutral-400 block">
+              {isAr ? 'المداخيل المحصلة' : 'Chiffre Encaissé (Comptant)'}
             </span>
-            <span className="text-xs text-neutral-400 font-semibold tabular-nums ml-1">
-              {filteredBillingOrders.length}
+            <span className="text-xl font-black text-emerald-600 font-mono mt-0.5 block">
+              {formatMoney(settledAmount, language)}
             </span>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2.5 ml-auto">
-            <Seek
-              value={searchQuery}
-              onChange={setSearchQuery}
-              placeholder={isAr ? 'بحث باللوحة، الزبون، N° OR...' : 'Rechercher N° OR, plaque, client...'}
-              shutSize={36}
-              openWidth={220}
-            />
+          <div className="p-3.5 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 shadow-2xs">
+            <span className="text-[11px] font-semibold text-neutral-400 block">
+              {isAr ? 'مستحقات قيد التحصيل' : 'En Attente Règlement'}
+            </span>
+            <span className="text-xl font-black text-amber-600 font-mono mt-0.5 block">
+              {formatMoney(pendingCollectionAmount, language)}
+            </span>
+          </div>
 
-            {/* Billing Domain Filter Capsules */}
-            <div className="flex items-center p-0.5 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 gap-0.5 text-xs font-semibold shadow-2xs">
-              {(
-                [
-                  { id: 'all', label: isAr ? 'الكل' : 'Tous' },
-                  { id: 'settled', label: isAr ? 'تم الاستيفاء' : 'Réglés & Livrés' },
-                  { id: 'pending', label: isAr ? 'قيد التحصيل' : 'En attente' },
-                ] as const
-              ).map((filter) => {
-                const isActive = billingFilter === filter.id;
+          <div className="p-3.5 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 shadow-2xs">
+            <span className="text-[11px] font-semibold text-neutral-400 block">
+              {isAr ? 'ديون أساطيل B2B المؤجلة' : 'Créances Flottes (Encours)'}
+            </span>
+            <span className="text-xl font-black text-[#C4785A] font-mono mt-0.5 block">
+              {formatMoney(corporateFleetArTotal, language)}
+            </span>
+          </div>
+
+          <div className="p-3.5 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 shadow-2xs">
+            <span className="text-[11px] font-semibold text-neutral-400 block">
+              {isAr ? 'طابع جبائي مجمع (DGI)' : 'Droits de Timbre Fiscal'}
+            </span>
+            <span className="text-xl font-black text-neutral-900 dark:text-white font-mono mt-0.5 block">
+              {formatMoney(invoices.reduce((acc, i) => acc + (i.timbreFiscal || 0), 0), language)}
+            </span>
+          </div>
+        </div>
+
+        {/* TAB 1: ORDERS AWAITING SETTLEMENT */}
+        {activeScreenTab === 'orders' && (
+          <div className="bg-white dark:bg-neutral-900 rounded-3xl p-4 border border-neutral-200/80 dark:border-neutral-800 shadow-2xs">
+            <UniversalDataCollection<RepairOrder>
+              data={filteredBillingOrders}
+              keyExtractor={(o) => o.id}
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              searchPlaceholder={isAr ? 'البحث عن مركبة أو أمر للتسوية...' : 'Recherche véhicule ou ordre à encaisser...'}
+              onItemClick={(order: RepairOrder) => setSelectedOrder(order)}
+              columns={[
+                {
+                  id: 'orderNumber',
+                  header: 'N° OR',
+                  width: '130px',
+                  cell: (o: RepairOrder) => <span className="font-mono font-bold text-[#C4785A]">{o.orderNumber}</span>,
+                },
+                {
+                  id: 'vehicle',
+                  header: 'Véhicule & Immatriculation',
+                  cell: (o: RepairOrder) => (
+                    <div>
+                      <span className="font-semibold text-neutral-900 dark:text-white block font-mono">{o.vehiclePlate}</span>
+                      <span className="text-xs text-neutral-400 block">{o.vehicleModel}</span>
+                    </div>
+                  ),
+                },
+                {
+                  id: 'client',
+                  header: 'Client & Compte',
+                  cell: (o: RepairOrder) => (
+                    <div>
+                      <span className="font-medium text-neutral-800 dark:text-neutral-200 block">{o.clientName}</span>
+                      <span className="text-xs text-[#C4785A]">
+                        {o.clientType === 'corporate_fleet' ? `Flotte: ${o.fleetName}` : 'Particulier'}
+                      </span>
+                    </div>
+                  ),
+                },
+                {
+                  id: 'status',
+                  header: 'Statut Atelier',
+                  cell: (o: RepairOrder) => (
+                    <span className={`text-xs px-2.5 py-0.5 rounded-full font-semibold ${
+                      o.status === 'Delivered'
+                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                        : 'bg-amber-50 text-amber-700 border border-amber-200'
+                    }`}>
+                      {o.status === 'Delivered' ? 'Réglé & Livré' : 'À Encaisser'}
+                    </span>
+                  ),
+                },
+                {
+                  id: 'amount',
+                  header: 'Montant TTC',
+                  cell: (o: RepairOrder) => (
+                    <div className="text-right font-mono font-black text-neutral-900 dark:text-white">
+                      {formatMoney(o.finalCostDzd || o.estimatedCostDzd, language)}
+                    </div>
+                  ),
+                },
+              ]}
+            />
+          </div>
+        )}
+
+        {/* TAB 2: CORPORATE FLEET ACCOUNTS & MONTHLY STATEMENTS */}
+        {activeScreenTab === 'fleets' && (
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {fleets.map((fleet) => {
+                const percentUsed = Math.min(100, Math.round((fleet.currentOutstandingDzd / fleet.creditLimitDzd) * 100));
+                const isOverLimit = fleet.currentOutstandingDzd > fleet.creditLimitDzd;
                 return (
-                  <button
-                    key={filter.id}
-                    type="button"
-                    onClick={() => setBillingFilter(filter.id)}
-                    style={{
-                      backgroundColor: isActive ? '#FCEEE8' : 'transparent',
-                      color: isActive ? 'var(--color-accent)' : '#71717A',
-                    }}
-                    className={`px-3 py-1 rounded-full cursor-pointer transition-all ${
-                      isActive ? 'font-bold' : 'hover:text-neutral-900 dark:hover:text-white'
-                    }`}
+                  <div
+                    key={fleet.id}
+                    className="p-5 rounded-3xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 shadow-2xs space-y-4"
                   >
-                    {filter.label}
-                  </button>
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <span className="text-xs font-bold text-[#C4785A] uppercase tracking-wider block">
+                          Contrat B2B Flotte
+                        </span>
+                        <h3 className="font-bold text-sm text-neutral-900 dark:text-white mt-0.5">
+                          {fleet.companyName}
+                        </h3>
+                        <span className="text-xs text-neutral-400">{fleet.tradeName}</span>
+                      </div>
+                      <span className="p-2 rounded-2xl bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300">
+                        <Building2 size={18} />
+                      </span>
+                    </div>
+
+                    <div className="space-y-1.5 text-xs font-mono">
+                      <div className="flex justify-between text-neutral-500">
+                        <span>NIF / NIS :</span>
+                        <span className="font-semibold text-neutral-800 dark:text-neutral-200">{fleet.nif}</span>
+                      </div>
+                      <div className="flex justify-between text-neutral-500">
+                        <span>Véhicules sous contrat :</span>
+                        <span className="font-semibold text-neutral-800 dark:text-neutral-200">{fleet.activeVehicleCount} utilitaires</span>
+                      </div>
+                      <div className="flex justify-between text-neutral-500">
+                        <span>Délai de paiement :</span>
+                        <span className="font-semibold text-neutral-800 dark:text-neutral-200">{fleet.paymentTermsDays} jours fin de mois</span>
+                      </div>
+                    </div>
+
+                    {/* Credit Limit Progress */}
+                    <div className="space-y-1.5 pt-2 border-t border-neutral-100 dark:border-neutral-800">
+                      <div className="flex justify-between text-xs font-mono">
+                        <span className="text-neutral-500">Encours Actuel :</span>
+                        <span className={`font-black ${isOverLimit ? 'text-rose-600' : 'text-neutral-900 dark:text-white'}`}>
+                          {formatMoney(fleet.currentOutstandingDzd, language)}
+                        </span>
+                      </div>
+                      <div className="w-full h-2 rounded-full bg-neutral-100 dark:bg-neutral-800 overflow-hidden">
+                        <div
+                          style={{ width: `${percentUsed}%` }}
+                          className={`h-full rounded-full transition-all ${
+                            isOverLimit
+                              ? 'bg-rose-500'
+                              : percentUsed > 75
+                              ? 'bg-amber-500'
+                              : 'bg-[#C4785A]'
+                          }`}
+                        />
+                      </div>
+                      <div className="flex justify-between text-[10px] text-neutral-400 font-mono">
+                        <span>Plafond: {formatMoney(fleet.creditLimitDzd, language)}</span>
+                        <span>{percentUsed}% utilisé</span>
+                      </div>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="pt-2 flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          showToast(`Génération du relevé mensuel pour ${fleet.companyName}...`, 'info');
+                        }}
+                        className="flex-1 py-2 rounded-xl bg-neutral-100 dark:bg-neutral-800 hover:bg-[#C4785A] hover:text-white text-neutral-700 dark:text-neutral-300 font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                      >
+                        <FileText size={13} />
+                        <span>Relevé Mensuel</span>
+                      </button>
+                    </div>
+                  </div>
                 );
               })}
             </div>
           </div>
-        </div>
+        )}
 
-        {/* Main Collection Area + 390px Inspector Drawer */}
-        <div className="flex flex-col lg:flex-row gap-6 items-start">
-          <div className="flex-1 min-w-0 w-full">
-            <UniversalDataCollection<RepairOrder>
-              items={filteredBillingOrders}
-            keyExtractor={(o) => o.id}
-            searchPlaceholder={isAr ? 'بحث باللوحة، الزبون، N° OR...' : 'Rechercher matricule, client, modèle, N° OR...'}
-            searchFilter={(o, query) =>
-              o.vehiclePlate.toLowerCase().includes(query.toLowerCase()) ||
-              o.clientName.toLowerCase().includes(query.toLowerCase()) ||
-              o.orderNumber.toLowerCase().includes(query.toLowerCase()) ||
-              o.vehicleModel.toLowerCase().includes(query.toLowerCase())
-            }
-            onSelectRow={(o) => setSelectedOrder(o)}
-            customActions={(o) => getBillingActions(o)}
-            columns={[
-              {
-                id: 'orderNumber',
-                header: isAr ? 'رقم OR' : 'N° OR',
-                width: '130px',
-                sortable: true,
-                renderCell: (o) => (
-                  <span className="font-mono font-bold text-xs bg-[#C4785A]/10 text-[#C4785A] px-2 py-0.5 rounded border border-[#C4785A]/20">
-                    {o.orderNumber}
-                  </span>
-                ),
-              },
-              {
-                id: 'vehicle',
-                header: isAr ? 'المركبة' : 'Véhicule & Immatriculation',
-                renderCell: (o) => (
-                  <div>
-                    <span className="font-bold text-xs text-neutral-900 dark:text-neutral-100 block">
-                      {o.vehiclePlate}
-                    </span>
-                    <span className="text-[11px] text-neutral-500">
-                      {o.vehicleModel}
-                    </span>
-                  </div>
-                ),
-              },
-              {
-                id: 'client',
-                header: isAr ? 'الزبون' : 'Client Propriétaire',
-                width: '180px',
-                renderCell: (o) => (
-                  <div className="text-xs">
-                    <span className="font-semibold text-neutral-800 dark:text-neutral-200 block truncate">
-                      {o.clientName}
-                    </span>
-                    <span className="text-[10px] text-neutral-400 font-mono">
-                      {o.clientPhone}
-                    </span>
-                  </div>
-                ),
-              },
-              {
-                id: 'parts',
-                header: isAr ? 'قطع الغيار' : 'Pièces Utilisées',
-                width: '140px',
-                renderCell: (o) => (
-                  <span className="text-xs text-neutral-600 dark:text-neutral-400 flex items-center gap-1">
-                    <Package size={12} className="text-[#C4785A]" />
-                    <span>{o.partsUsed.length} article(s)</span>
-                  </span>
-                ),
-              },
-              {
-                id: 'total',
-                header: isAr ? 'المبلغ الإجمالي' : 'Montant Facturé',
-                width: '150px',
-                sortable: true,
-                renderCell: (o) => (
-                  <span className="font-mono text-xs font-bold text-neutral-900 dark:text-white">
-                    {formatMoney(o.finalCostDzd || o.estimatedCostDzd, language)}
-                  </span>
-                ),
-              },
-              {
-                id: 'status',
-                header: isAr ? 'الحالة' : 'Statut Caisse',
-                width: '130px',
-                renderCell: (o) => {
-                  const isDelivered = o.status === 'Delivered';
-                  return (
-                    <span
-                      className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold inline-flex items-center gap-1 ${
-                        isDelivered
-                          ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
-                          : 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
-                      }`}
-                    >
-                      {isDelivered ? <CheckCircle2 size={11} /> : <Clock size={11} />}
-                      {isDelivered ? (isAr ? 'مسدد وخارج' : 'Réglé & Sorti') : (isAr ? 'قيد التحصيل' : 'En Atelier')}
-                    </span>
-                  );
-                },
-              },
-            ]}
-            renderCard={(o) => {
-              const isDelivered = o.status === 'Delivered';
-              return (
-                <div className="p-4 flex flex-col justify-between h-full space-y-3">
-                  <div className="flex items-start justify-between gap-2">
-                    <span className="font-mono font-bold text-xs bg-[#C4785A]/10 text-[#C4785A] px-2 py-0.5 rounded">
-                      {o.orderNumber}
-                    </span>
-                    <span
-                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                        isDelivered
-                          ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
-                          : 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
-                      }`}
-                    >
-                      {isDelivered ? 'Réglé' : 'En Atelier'}
-                    </span>
-                  </div>
-
-                  <div>
-                    <h4 className="font-bold text-xs text-neutral-900 dark:text-white">
-                      {o.vehiclePlate} · {o.vehicleModel}
-                    </h4>
-                    <p className="text-[11px] text-neutral-500 mt-0.5">
-                      {o.clientName} ({o.clientPhone})
-                    </p>
-                  </div>
-
-                  <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-xs">
-                    <span className="text-[11px] text-neutral-400">
-                      {o.partsUsed.length} pièce(s)
-                    </span>
-                    <span className="font-mono font-bold text-[#C4785A] text-sm">
-                      {formatMoney(o.finalCostDzd || o.estimatedCostDzd, language)}
-                    </span>
-                  </div>
-                </div>
-              );
-            }}
-          />
-        </div>
-
-        {/* 390px Side Inspector Drawer */}
-        {selectedOrder && (
-          <div className="w-full lg:w-[390px] shrink-0 bg-white dark:bg-neutral-850 rounded-2xl border border-[#EDF1F3] dark:border-neutral-800 shadow-lg flex flex-col h-[740px] overflow-hidden animate-in slide-in-from-right-4 duration-200">
-            {/* Inspector Top Header */}
-            <div className="p-4 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between bg-neutral-50 dark:bg-neutral-900/50">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold">
-                  <Car size={16} />
-                </div>
-                <div>
-                  <h3 className="font-bold text-xs text-neutral-900 dark:text-white flex items-center gap-1.5 font-mono">
-                    {selectedOrder.orderNumber}
-                  </h3>
-                  <p className="text-[10px] text-neutral-500 truncate max-w-[210px]">
-                    {selectedOrder.vehiclePlate} · {selectedOrder.clientName}
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={() => setSelectedOrder(null)}
-                className="w-7 h-7 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-800 flex items-center justify-center text-neutral-500 transition-colors"
-              >
-                <X size={15} />
-              </button>
-            </div>
-
-            {/* Tab Navigation */}
-            <div className="flex border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 px-3 pt-2 gap-2">
-              <button
-                onClick={() => setInspectorTab('decompte')}
-                className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${
-                  inspectorTab === 'decompte'
-                    ? 'border-[#C4785A] text-[#C4785A]'
-                    : 'border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
-                }`}
-              >
-                {isAr ? 'الفاتورة والتحصيل' : 'Décompte'}
-              </button>
-              <button
-                onClick={() => setInspectorTab('pieces')}
-                className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${
-                  inspectorTab === 'pieces'
-                    ? 'border-[#C4785A] text-[#C4785A]'
-                    : 'border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
-                }`}
-              >
-                {isAr ? 'القطع واليد العاملة' : 'Pièces & MO'}
-              </button>
-              <button
-                onClick={() => setInspectorTab('sortie')}
-                className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${
-                  inspectorTab === 'sortie'
-                    ? 'border-[#C4785A] text-[#C4785A]'
-                    : 'border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
-                }`}
-              >
-                {isAr ? 'رخصة الخروج' : 'Bon de Sortie'}
-              </button>
-            </div>
-
-            {/* Inspector Body */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs">
-              {inspectorTab === 'decompte' && (
-                <div className="space-y-4">
-                  <div className="p-4 bg-[#1F1D1B] rounded-xl text-white space-y-2 shadow-sm">
-                    <div className="flex items-center justify-between text-neutral-300 text-[11px]">
-                      <span>Total Facture Atelier TTC</span>
-                      <span className="bg-[#3D2817] text-[#FB923C] text-[10px] font-bold px-2 py-0.5 rounded-full">
-                        {selectedOrder.status === 'Delivered' ? 'Réglé' : 'À Encaisser'}
-                      </span>
+        {/* TAB 3: ISSUED INVOICES ARCHIVE */}
+        {activeScreenTab === 'invoices' && (
+          <div className="bg-white dark:bg-neutral-900 rounded-3xl p-4 border border-neutral-200/80 dark:border-neutral-800 shadow-2xs">
+            <div className="space-y-3">
+              {invoices.map((inv) => (
+                <div
+                  key={inv.id}
+                  className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-800/40 border border-neutral-200/60 dark:border-neutral-700/60 gap-3 text-xs"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 flex items-center justify-center font-bold">
+                      <Receipt size={20} />
                     </div>
-                    <div className="text-2xl font-black font-mono tracking-tight text-white">
-                      {formatMoney(selectedOrder.finalCostDzd || selectedOrder.estimatedCostDzd, language)}
-                    </div>
-                    <p className="text-[10px] text-neutral-400">
-                      Montant net à régler avant remise des clés et signature du bon de sortie.
-                    </p>
-                  </div>
-
-                  <div className="p-3 bg-neutral-50 dark:bg-neutral-900/60 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
-                    <span className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold block">
-                      Informations Véhicule & Client
-                    </span>
-                    <div className="flex items-center justify-between">
-                      <span className="text-neutral-500">Immatriculation:</span>
-                      <span className="font-mono font-bold text-neutral-900 dark:text-white">{selectedOrder.vehiclePlate}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-neutral-500">Modèle:</span>
-                      <span className="font-medium text-neutral-900 dark:text-white">{selectedOrder.vehicleModel}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-neutral-500">Client:</span>
-                      <span className="font-medium text-neutral-900 dark:text-white">{selectedOrder.clientName}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-neutral-500">Téléphone:</span>
-                      <span className="font-mono text-neutral-900 dark:text-white">{selectedOrder.clientPhone}</span>
-                    </div>
-                  </div>
-
-                  <div className="p-3 rounded-xl border border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
                     <div>
-                      <span className="font-semibold block text-neutral-900 dark:text-white">Clôture & Règlement</span>
-                      <span className="text-[10px] text-neutral-500">
-                        {selectedOrder.status === 'Delivered' ? 'Véhicule restitué au client' : 'En attente de paiement'}
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono font-bold text-neutral-900 dark:text-white text-sm">
+                          {inv.invoiceNumber}
+                        </span>
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                          inv.billingType === 'facture_dgi'
+                            ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                            : 'bg-neutral-100 text-neutral-600'
+                        }`}>
+                          {inv.billingType === 'facture_dgi' ? 'Facture Fiscale DGI' : 'Bon de Caisse'}
+                        </span>
+                      </div>
+                      <span className="text-neutral-500 block mt-0.5">
+                        {inv.clientName} · {inv.vehiclePlate} ({inv.vehicleModel})
                       </span>
                     </div>
-                    <button
-                      onClick={() => handleSettleAndDeliver(selectedOrder)}
-                      disabled={selectedOrder.status === 'Delivered'}
-                      className="px-3 py-1.5 rounded-lg text-xs font-bold bg-[#C4785A] hover:bg-[#b06a4e] text-white disabled:opacity-50 transition-colors"
+                  </div>
+
+                  <div className="flex items-center justify-between sm:justify-end gap-5">
+                    <div className="text-right font-mono">
+                      <span className="text-neutral-400 block text-[10px]">
+                        TVA 19%: {formatMoney(inv.tvaAmount, language)} · Timbre: {formatMoney(inv.timbreFiscal, language)}
+                      </span>
+                      <span className="text-sm font-black text-[#C4785A] block">
+                        {formatMoney(inv.netToPayDzd, language)}
+                      </span>
+                    </div>
+
+                    <AtriumButton
+                      variant="secondary"
+                      icon={<Printer size={13} />}
+                      onClick={() => {
+                        setActivePrintInvoice(inv);
+                        setIsPrintModalOpen(true);
+                      }}
                     >
-                      {selectedOrder.status === 'Delivered' ? 'Encaissé ✓' : 'Encaisser & Clôturer'}
-                    </button>
+                      Imprimer
+                    </AtriumButton>
                   </div>
                 </div>
-              )}
-
-              {inspectorTab === 'pieces' && (
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <span className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold block">
-                      Pièces Remplacées ({selectedOrder.partsUsed.length})
-                    </span>
-                    {selectedOrder.partsUsed.length === 0 ? (
-                      <div className="p-3 bg-neutral-50 dark:bg-neutral-900/40 rounded-xl text-center text-neutral-400">
-                        Aucune pièce détachée facturée sur cet ordre.
-                      </div>
-                    ) : (
-                      <div className="space-y-1.5">
-                        {selectedOrder.partsUsed.map((p, i) => (
-                          <div
-                            key={i}
-                            className="p-2.5 bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 flex items-center justify-between"
-                          >
-                            <div>
-                              <span className="font-bold text-neutral-900 dark:text-white block">{p.name}</span>
-                              <span className="text-[10px] text-neutral-400 font-mono">Quantité: {p.quantity} x {p.unitPriceDzd} DZD</span>
-                            </div>
-                            <span className="font-mono font-bold text-neutral-900 dark:text-white">
-                              {formatMoney(p.quantity * p.unitPriceDzd, language)}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="p-3 bg-neutral-50 dark:bg-neutral-900/60 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
-                    <span className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold block">
-                      Main d'Œuvre Atelier
-                    </span>
-                    <div className="flex items-center justify-between">
-                      <span className="text-neutral-500">Technicien assigné:</span>
-                      <span className="font-medium text-neutral-900 dark:text-white">{selectedOrder.technicianName}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-neutral-500">Diagnostic & intervention:</span>
-                      <span className="text-emerald-600 font-semibold">Réalisé</span>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {inspectorTab === 'sortie' && (
-                <div className="space-y-4">
-                  <div className="p-3 bg-neutral-50 dark:bg-neutral-900/60 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
-                    <span className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold block">
-                      Bon de Sortie Atelier (Gate Pass)
-                    </span>
-                    <div className="p-2.5 bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300">
-                      Ce document autorise la sortie définitive du véhicule après contrôle de fin de travaux et vérification de la quittance comptable.
-                    </div>
-                  </div>
-
-                  <div className="p-3 bg-neutral-100 dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 text-center space-y-1">
-                    <span className="text-[10px] text-neutral-400 font-mono block">QR Code Sécurité Sortie</span>
-                    <p className="font-bold text-xs text-neutral-900 dark:text-white">GATEPASS-{selectedOrder.orderNumber}</p>
-                    <span className="text-[9px] text-neutral-500 font-mono">Valable 24h après émission</span>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Inspector Footer Actions */}
-            <div className="p-4 border-t border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/50 space-y-2">
-              <AtriumButton
-                variant="primary"
-                className="w-full justify-center"
-                icon={<Printer size={14} />}
-                onClick={() => handlePrintExitPass(selectedOrder.orderNumber)}
-              >
-                {isAr ? 'طباعة رخصة الخروج والفاتورة' : 'Imprimer Bon de Sortie & Facture'}
-              </AtriumButton>
+              ))}
             </div>
           </div>
         )}
       </div>
+
+      {/* PAYMENT SETTLEMENT MODAL */}
+      {isPaymentModalOpen && orderToSettle && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in">
+          <div className="bg-white dark:bg-neutral-900 rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-neutral-200 dark:border-neutral-800 space-y-5">
+            <div className="flex items-center justify-between border-b pb-3 border-neutral-100 dark:border-neutral-800">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center">
+                  <CreditCard size={18} />
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm text-neutral-900 dark:text-white">
+                    {isAr ? 'تسوية المستحقات وإصدار الفاتورة' : 'Règlement Financier & Facturation'}
+                  </h3>
+                  <span className="text-xs text-neutral-400 font-mono">
+                    {orderToSettle.orderNumber} · {orderToSettle.vehiclePlate}
+                  </span>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsPaymentModalOpen(false)}
+                className="text-neutral-400 hover:text-neutral-600"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <form onSubmit={handleExecutePayment} className="space-y-4">
+              {/* Type Switcher */}
+              <div className="grid grid-cols-2 gap-2 p-1 bg-neutral-100 dark:bg-neutral-800 rounded-2xl">
+                <button
+                  type="button"
+                  onClick={() => setBillingType('facture_dgi')}
+                  className={`py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                    billingType === 'facture_dgi'
+                      ? 'bg-[#C4785A] text-white shadow-xs'
+                      : 'text-neutral-500'
+                  }`}
+                >
+                  Facture DGI (19% TVA)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setBillingType('bon_caisse')}
+                  className={`py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                    billingType === 'bon_caisse'
+                      ? 'bg-[#C4785A] text-white shadow-xs'
+                      : 'text-neutral-500'
+                  }`}
+                >
+                  Bon de Caisse (Atelier)
+                </button>
+              </div>
+
+              {/* Payment Method */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300 block">
+                  Mode de Paiement
+                </label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                  {[
+                    { id: 'especes', label: 'Espèces (Cash)' },
+                    { id: 'cib_dahabia', label: 'Carte CIB/Dahabia' },
+                    { id: 'cheque', label: 'Chèque' },
+                    { id: 'virement', label: 'Virement' },
+                  ].map((pm) => (
+                    <button
+                      key={pm.id}
+                      type="button"
+                      onClick={() => setPaymentMethod(pm.id as any)}
+                      className={`p-2.5 rounded-xl border font-semibold text-center transition-all cursor-pointer ${
+                        paymentMethod === pm.id
+                          ? 'border-[#C4785A] bg-[#C4785A]/10 text-[#C4785A]'
+                          : 'border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400'
+                      }`}
+                    >
+                      {pm.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Breakdown Preview */}
+              <div className="p-4 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700 space-y-2 text-xs font-mono">
+                <div className="flex justify-between text-neutral-500">
+                  <span>Main d'œuvre :</span>
+                  <span>{formatMoney(orderToSettle.laborCostDzd || 3750, language)}</span>
+                </div>
+                <div className="flex justify-between text-neutral-500">
+                  <span>Pièces utilisées :</span>
+                  <span>{formatMoney(orderToSettle.partsCostDzd || 15500, language)}</span>
+                </div>
+                {billingType === 'facture_dgi' && (
+                  <div className="flex justify-between text-neutral-500">
+                    <span>TVA Réglementaire (19%) :</span>
+                    <span className="text-[#C4785A] font-bold">
+                      {formatMoney(((orderToSettle.finalCostDzd || 19250) * 0.19), language)}
+                    </span>
+                  </div>
+                )}
+                {paymentMethod === 'especes' && (
+                  <div className="flex justify-between text-amber-700 dark:text-amber-400">
+                    <span>Droit de Timbre Fiscal (Espèces) :</span>
+                    <span className="font-bold">
+                      {formatMoney(computeAlgerianTimbreFiscal((orderToSettle.finalCostDzd || 19250) * (billingType === 'facture_dgi' ? 1.19 : 1.0), 'especes'), language)}
+                    </span>
+                  </div>
+                )}
+                <div className="flex justify-between pt-2 border-t border-neutral-200 dark:border-neutral-700 text-sm font-black text-neutral-900 dark:text-white">
+                  <span>Net à Payer Client :</span>
+                  <span className="text-[#C4785A]">
+                    {formatMoney(
+                      (orderToSettle.finalCostDzd || 19250) * (billingType === 'facture_dgi' ? 1.19 : 1.0) +
+                        (paymentMethod === 'especes' ? computeAlgerianTimbreFiscal((orderToSettle.finalCostDzd || 19250) * (billingType === 'facture_dgi' ? 1.19 : 1.0), 'especes') : 0),
+                      language
+                    )}
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-neutral-100 dark:border-neutral-800">
+                <AtriumButton variant="secondary" onClick={() => setIsPaymentModalOpen(false)}>
+                  Annuler
+                </AtriumButton>
+                <AtriumButton type="submit" variant="primary" icon={<CheckCircle2 size={15} />}>
+                  Valider l'Encaissement & Imprimer
+                </AtriumButton>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* OFFICIAL PRINTABLE INVOICE / RECEIPT MODAL */}
+      {isPrintModalOpen && activePrintInvoice && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-in fade-in">
+          <div className="bg-white rounded-3xl max-w-2xl w-full p-8 shadow-2xl border border-neutral-200 text-neutral-900 space-y-6 max-h-[90vh] overflow-y-auto">
+            {/* Header / Brand */}
+            <div className="flex items-start justify-between border-b pb-4 border-neutral-200">
+              <div>
+                <h2 className="text-xl font-black tracking-tight text-neutral-900">
+                  ATRIUM AUTO GARAGE & FLEET DZ
+                </h2>
+                <p className="text-xs text-neutral-500 mt-0.5">
+                  Réparation Mécanique, Électricité & Maintenance Flottes B2B
+                </p>
+                <div className="text-[10px] text-neutral-500 font-mono mt-1 space-x-2">
+                  <span>RC: 16/00-0987654B20</span>
+                  <span>·</span>
+                  <span>NIF: 002016012345678</span>
+                  <span>·</span>
+                  <span>NIS: 00201601234</span>
+                  <span>·</span>
+                  <span>AI: 16012345678</span>
+                </div>
+              </div>
+              <div className="text-right">
+                <span className="font-mono text-base font-black text-[#C4785A] block">
+                  {activePrintInvoice.invoiceNumber}
+                </span>
+                <span className="text-xs text-neutral-400 block font-mono">
+                  {new Date(activePrintInvoice.issuedAt).toLocaleDateString()}
+                </span>
+              </div>
+            </div>
+
+            {/* Client and Vehicle Info */}
+            <div className="grid grid-cols-2 gap-4 p-4 rounded-2xl bg-neutral-50 text-xs font-mono">
+              <div>
+                <span className="text-neutral-400 block">Client / Bénéficiaire :</span>
+                <span className="font-bold text-neutral-900 block text-sm">{activePrintInvoice.clientName}</span>
+                <span className="text-neutral-500">{activePrintInvoice.clientPhone}</span>
+                {activePrintInvoice.clientNif && (
+                  <span className="text-neutral-500 block">NIF Client: {activePrintInvoice.clientNif}</span>
+                )}
+              </div>
+              <div>
+                <span className="text-neutral-400 block">Véhicule Pris en Charge :</span>
+                <span className="font-bold text-neutral-900 block text-sm">{activePrintInvoice.vehiclePlate}</span>
+                <span className="text-neutral-500">{activePrintInvoice.vehicleModel}</span>
+                <span className="text-neutral-500 block">Réf OR: {activePrintInvoice.orderNumber}</span>
+              </div>
+            </div>
+
+            {/* Items Table */}
+            <table className="w-full text-xs font-mono">
+              <thead>
+                <tr className="border-b border-neutral-300 text-neutral-500 text-left">
+                  <th className="py-2">Désignation des Prestations & Pièces</th>
+                  <th className="py-2 text-right">Montant HT</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-neutral-100">
+                <tr>
+                  <td className="py-2.5">Main d'œuvre mécanique spécialisée & diagnostic</td>
+                  <td className="py-2.5 text-right font-bold">{activePrintInvoice.laborTotalHt.toLocaleString()} DA</td>
+                </tr>
+                <tr>
+                  <td className="py-2.5">Pièces de rechange et lubrifiants certifiés conformes</td>
+                  <td className="py-2.5 text-right font-bold">{activePrintInvoice.partsTotalHt.toLocaleString()} DA</td>
+                </tr>
+                {activePrintInvoice.discountHt > 0 && (
+                  <tr className="text-emerald-700">
+                    <td className="py-2.5">Remise commerciale accordée</td>
+                    <td className="py-2.5 text-right font-bold">-{activePrintInvoice.discountHt.toLocaleString()} DA</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+
+            {/* Financial Summary */}
+            <div className="border-t border-neutral-200 pt-3 flex justify-end">
+              <div className="w-64 space-y-1.5 text-xs font-mono">
+                <div className="flex justify-between text-neutral-500">
+                  <span>Total HT :</span>
+                  <span>{activePrintInvoice.subtotalHt.toLocaleString()} DA</span>
+                </div>
+                {activePrintInvoice.tvaAmount > 0 && (
+                  <div className="flex justify-between text-neutral-500">
+                    <span>TVA (19%) :</span>
+                    <span>{activePrintInvoice.tvaAmount.toLocaleString()} DA</span>
+                  </div>
+                )}
+                {activePrintInvoice.timbreFiscal > 0 && (
+                  <div className="flex justify-between text-amber-700 font-semibold">
+                    <span>Timbre Fiscal (Espèces) :</span>
+                    <span>{activePrintInvoice.timbreFiscal.toLocaleString()} DA</span>
+                  </div>
+                )}
+                <div className="flex justify-between pt-2 border-t border-neutral-300 text-sm font-black text-neutral-900">
+                  <span>Net à Payer :</span>
+                  <span className="text-[#C4785A]">{activePrintInvoice.netToPayDzd.toLocaleString()} DA</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Legal Words and Footer Stamp Box */}
+            <div className="p-3 bg-neutral-50 rounded-xl text-[11px] text-neutral-600 font-serif italic border border-neutral-200">
+              Arrêté la présente facture à la somme de : {activePrintInvoice.netToPayDzd.toLocaleString()} Dinars Algériens.
+            </div>
+
+            <div className="flex items-center justify-between pt-4 border-t border-neutral-200">
+              <div className="text-center w-40 border border-neutral-300 rounded-xl p-2 h-20 text-[10px] text-neutral-400">
+                Cachet de l'Atelier
+              </div>
+              <div className="flex items-center gap-2">
+                <AtriumButton variant="secondary" onClick={() => setIsPrintModalOpen(false)}>
+                  Fermer
+                </AtriumButton>
+                <AtriumButton
+                  variant="primary"
+                  icon={<Printer size={15} />}
+                  onClick={() => {
+                    window.print();
+                  }}
+                >
+                  Imprimer Document
+                </AtriumButton>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* DAILY TILL SESSION (Z DE CAISSE) MODAL */}
+      {isTillModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in">
+          <div className="bg-white dark:bg-neutral-900 rounded-3xl max-w-md w-full p-6 shadow-2xl border border-neutral-200 dark:border-neutral-800 space-y-4">
+            <div className="flex items-center justify-between border-b pb-3 border-neutral-100 dark:border-neutral-800">
+              <h3 className="font-bold text-sm text-neutral-900 dark:text-white flex items-center gap-2">
+                <Wallet size={16} className="text-[#C4785A]" />
+                <span>Point de Caisse Journalier (Z de Caisse)</span>
+              </h3>
+              <button onClick={() => setIsTillModalOpen(false)} className="text-neutral-400">
+                <X size={16} />
+              </button>
+            </div>
+
+            <div className="space-y-3 text-xs font-mono">
+              <div className="p-3 bg-neutral-50 dark:bg-neutral-800 rounded-xl flex justify-between">
+                <span>Total Espèces en Caisse :</span>
+                <span className="font-bold text-emerald-600">
+                  {formatMoney(
+                    invoices
+                      .filter((i) => i.paymentMethod === 'especes')
+                      .reduce((acc, i) => acc + i.netToPayDzd, 0),
+                    language
+                  )}
+                </span>
+              </div>
+              <div className="p-3 bg-neutral-50 dark:bg-neutral-800 rounded-xl flex justify-between">
+                <span>Total Cartes CIB / Dahabia :</span>
+                <span className="font-bold text-blue-600">
+                  {formatMoney(
+                    invoices
+                      .filter((i) => i.paymentMethod === 'cib_dahabia')
+                      .reduce((acc, i) => acc + i.netToPayDzd, 0),
+                    language
+                  )}
+                </span>
+              </div>
+              <div className="p-3 bg-neutral-50 dark:bg-neutral-800 rounded-xl flex justify-between">
+                <span>Total Chèques & Virements :</span>
+                <span className="font-bold text-neutral-800 dark:text-neutral-200">
+                  {formatMoney(
+                    invoices
+                      .filter((i) => i.paymentMethod === 'cheque' || i.paymentMethod === 'virement')
+                      .reduce((acc, i) => acc + i.netToPayDzd, 0),
+                    language
+                  )}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-neutral-100 dark:border-neutral-800">
+              <AtriumButton variant="secondary" onClick={() => setIsTillModalOpen(false)}>
+                Fermer
+              </AtriumButton>
+              <AtriumButton
+                variant="primary"
+                onClick={() => {
+                  showToast('Session de caisse clôturée et rapport Z imprimé', 'success');
+                  setIsTillModalOpen(false);
+                }}
+              >
+                Clôturer la Caisse (Z)
+              </AtriumButton>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
-  </div>
   );
 };

@@ -86,6 +86,8 @@ export const TopBar: React.FC<TopBarProps> = ({
     openDesktopUpgradeModal,
     activePmRole,
     setActivePmRole,
+    activeGarageRole,
+    setActiveGarageRole,
     unreadNotificationCount,
   } = useAtriumStore();
 
@@ -666,6 +668,37 @@ export const TopBar: React.FC<TopBarProps> = ({
               <span>{t('topbar_btn_start_timer', language)}</span>
             </button>
           )}
+        </div>
+      )}
+
+      {/* Automotive Garage Role Switcher */}
+      {currentBusiness?.category === 'auto_garage' && (
+        <div className="hidden lg:flex items-center gap-1 p-1 bg-neutral-100/90 dark:bg-neutral-800/90 rounded-full border border-neutral-200/80 dark:border-neutral-700/80 shadow-2xs">
+          {[
+            { id: 'gerant', label: language === 'ar' ? 'المدير' : 'Gérant', icon: '👔', desc: 'Direction & Marges' },
+            { id: 'reception', label: language === 'ar' ? 'الاستقبال' : 'Réception', icon: '📋', desc: 'Entrées & Devis' },
+            { id: 'mecanicien', label: language === 'ar' ? 'الميكانيك' : 'Atelier', icon: '🔧', desc: 'Ponts & Diagnostics' },
+            { id: 'magasinier', label: language === 'ar' ? 'المخزن' : 'Magasin', icon: '📦', desc: 'Pièces & Bacs' },
+            { id: 'caisse', label: language === 'ar' ? 'الصندوق' : 'Caisse', icon: '💳', desc: 'Factures DGI & Règlements' },
+          ].map((r) => {
+            const isActive = activeGarageRole === r.id;
+            return (
+              <button
+                key={r.id}
+                type="button"
+                onClick={() => setActiveGarageRole(r.id as any)}
+                title={r.desc}
+                className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+                  isActive
+                    ? 'bg-[#C4785A] text-white shadow-xs'
+                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-200/50 dark:hover:bg-neutral-700/50'
+                }`}
+              >
+                <span>{r.icon}</span>
+                <span>{r.label}</span>
+              </button>
+            );
+          })}
         </div>
       )}
 

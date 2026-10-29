@@ -19,10 +19,18 @@ import {
   Check,
   AlertTriangle,
   Gauge,
+  Building2,
+  Fuel,
+  TrendingUp,
 } from 'lucide-react';
 import { useAtriumStore } from '../../../services/store';
 import { formatMoney } from '../../../utils/rules';
-import { useGarageData, VehicleAsset, RepairOrder } from './garageData';
+import {
+  useGarageData,
+  VehicleAsset,
+  RepairOrder,
+  calculateEstimatedMileage,
+} from './garageData';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { Seek } from '../../ui/Seek';
 import { AutoVehicleModal } from './AutoVehicleModal';
@@ -31,10 +39,19 @@ import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 
 export const AutoGarageVehiclesView: React.FC = () => {
   const { language, showToast } = useAtriumStore();
-  const { vehicles, orders, addVehicle, updateVehicle, deleteVehicle, addOrder } = useGarageData();
+  const isAr = language === 'ar';
+  const {
+    vehicles,
+    orders,
+    fleets,
+    addVehicle,
+    updateVehicle,
+    deleteVehicle,
+    addOrder,
+  } = useGarageData();
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterBrand, setFilterBrand] = useState<'All' | 'Renault' | 'Peugeot' | 'Toyota' | 'Other'>('All');
+  const [filterSegment, setFilterSegment] = useState<'All' | 'Fleet' | 'Individual' | 'Renault' | 'Peugeot' | 'Toyota'>('All');
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [pinnedIds, setPinnedIds] = useState<Set<string>>(new Set(['veh_01']));
@@ -48,8 +65,8 @@ export const AutoGarageVehiclesView: React.FC = () => {
   const [orderVehicle, setOrderVehicle] = useState<VehicleAsset | null>(null);
 
   // 390px Inline Side Inspector
-  const [selectedVehicle, setSelectedVehicle] = useState<VehicleAsset | null>(null);
-  const [activeTab, setActiveTab] = useState<'fiche' | 'owner' | 'orders' | 'notes'>('fiche');
+  const [selectedVehicle, setSelectedVehicle] = useState<VehicleAsset | null>(() => vehicles[0] || null);
+  const [activeTab, setActiveTab] = useState<'fiche' | 'owner' | 'orders' | 'maintenance'>('fiche');
   const [inspectorNotes, setInspectorNotes] = useState<string>('');
   const [noteSaved, setNoteSaved] = useState(false);
 
@@ -66,13 +83,11 @@ export const AutoGarageVehiclesView: React.FC = () => {
 
   const filteredVehicles = useMemo(() => {
     return vehicles.filter((v) => {
-      if (filterBrand !== 'All') {
-        if (filterBrand === 'Other') {
-          if (['Renault', 'Peugeot', 'Toyota'].includes(v.brand)) return false;
-        } else if (v.brand.toLowerCase() !== filterBrand.toLowerCase()) {
-          return false;
-        }
-      }
+      if (filterSegment === 'Fleet' && !v.isFleet) return false;
+      if (filterSegment === 'Individual' && v.isFleet) return false;
+      if (filterSegment === 'Renault' && v.brand.toLowerCase() !== 'renault') return false;
+      if (filterSegment === 'Peugeot' && v.brand.toLowerCase() !== 'peugeot') return false;
+      if (filterSegment === 'Toyota' && v.brand.toLowerCase() !== 'toyota') return false;
 
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
@@ -81,11 +96,14 @@ export const AutoGarageVehiclesView: React.FC = () => {
         const matchesBrand = v.brand.toLowerCase().includes(q);
         const matchesModel = v.model.toLowerCase().includes(q);
         const matchesVin = v.vin.toLowerCase().includes(q);
-        if (!matchesPlate && !matchesOwner && !matchesBrand && !matchesModel && !matchesVin) return false;
+        const matchesFleet = v.fleetName?.toLowerCase().includes(q);
+        if (!matchesPlate && !matchesOwner && !matchesBrand && !matchesModel && !matchesVin && !matchesFleet) {
+          return false;
+        }
       }
       return true;
     });
-  }, [vehicles, filterBrand, searchQuery]);
+  }, [vehicles, filterSegment, searchQuery]);
 
   const sortedVehicles = useMemo(() => {
     const list = [...filteredVehicles];
@@ -118,6 +136,10 @@ export const AutoGarageVehiclesView: React.FC = () => {
     ).size;
   }, [orders]);
 
+  const fleetVehiclesCount = useMemo(() => {
+    return vehicles.filter((v) => v.isFleet).length;
+  }, [vehicles]);
+
   const handleOpenAdd = () => {
     setVehicleToEdit(null);
     setIsVehicleModalOpen(true);
@@ -131,7 +153,7 @@ export const AutoGarageVehiclesView: React.FC = () => {
   const handleDelete = (v: VehicleAsset) => {
     deleteVehicle(v.id);
     if (selectedVehicle?.id === v.id) setSelectedVehicle(null);
-    showToast(language === 'ar' ? 'تم حذف المركبة من الحظيرة' : 'Véhicule retiré du parc', 'success');
+    showToast(isAr ? 'تم حذف المركبة من الحظيرة' : 'Véhicule retiré du parc', 'success');
   };
 
   const handleTogglePin = (id: string) => {
@@ -145,7 +167,7 @@ export const AutoGarageVehiclesView: React.FC = () => {
 
   const handleSelectVehicle = (v: VehicleAsset) => {
     setSelectedVehicle(v);
-    setInspectorNotes(`Véhicule suivi à l'atelier. Dernière vidange/révision: ${v.lastServiceDate || '2026-05-01'}.`);
+    setInspectorNotes(v.notes || `Véhicule suivi à l'atelier. Prochaine révision à prévoir.`);
     setNoteSaved(false);
   };
 
@@ -155,34 +177,56 @@ export const AutoGarageVehiclesView: React.FC = () => {
   };
 
   const handleSaveNotes = () => {
+    if (!selectedVehicle) return;
+    const updated = { ...selectedVehicle, notes: inspectorNotes };
+    updateVehicle(updated);
+    setSelectedVehicle(updated);
     setNoteSaved(true);
     setTimeout(() => setNoteSaved(false), 2000);
-    showToast(language === 'ar' ? 'تم حفظ ملاحظات الورشة' : 'Observations atelier sauvegardées', 'success');
+    showToast(isAr ? 'تم حفظ ملاحظات الورشة' : 'Observations atelier sauvegardées', 'success');
   };
 
   const handleExportCSV = () => {
-    const headers = ['ID', 'Plate', 'Brand', 'Model', 'Year', 'VIN', 'Owner', 'Phone', 'Mileage (km)', 'Last Service'];
-    const rows = sortedVehicles.map((v) => [
-      v.id,
-      `"${v.plateNumber}"`,
-      `"${v.brand}"`,
-      `"${v.model}"`,
-      v.year,
-      `"${v.vin}"`,
-      `"${v.ownerName}"`,
-      `"${v.ownerPhone}"`,
-      v.mileageKm,
-      `"${v.lastServiceDate || ''}"`,
-    ]);
+    const headers = [
+      'ID',
+      'Matricule',
+      'Marque',
+      'Modèle',
+      'Année',
+      'Type',
+      'Flotte B2B',
+      'Propriétaire',
+      'Téléphone',
+      'Compteur Lu (km)',
+      'Compteur Estimé (km)',
+      'Dernière Révision',
+    ];
+    const rows = sortedVehicles.map((v) => {
+      const estKm = calculateEstimatedMileage(v.mileageKm, v.lastServiceDate, v.dailyAvgKm || 50);
+      return [
+        v.id,
+        `"${v.plateNumber}"`,
+        `"${v.brand}"`,
+        `"${v.model}"`,
+        v.year,
+        v.isFleet ? 'Flotte B2B' : 'Particulier',
+        `"${v.fleetName || ''}"`,
+        `"${v.ownerName}"`,
+        `"${v.ownerPhone}"`,
+        v.mileageKm,
+        estKm,
+        `"${v.lastServiceDate || ''}"`,
+      ];
+    });
     const csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `garage_vehicles_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.download = `parc_vehicules_${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
     URL.revokeObjectURL(url);
-    showToast(language === 'ar' ? 'تم تصدير حظيرة المركبات' : 'Export du parc automobile terminé', 'info');
+    showToast(isAr ? 'تم تصدير حظيرة المركبات' : 'Export du parc automobile terminé', 'info');
   };
 
   // Column definitions for List view
@@ -190,7 +234,7 @@ export const AutoGarageVehiclesView: React.FC = () => {
     () => [
       {
         key: 'plate',
-        header: language === 'ar' ? 'الترقيم / الموديل' : 'Véhicule & Immatriculation',
+        header: isAr ? 'الترقيم / الموديل' : 'Véhicule & Immatriculation',
         width: '3.4*',
         sortable: true,
         renderCell: (v) => {
@@ -207,9 +251,14 @@ export const AutoGarageVehiclesView: React.FC = () => {
                     {v.brand} {v.model}
                   </span>
                   {isPinned && <span className="text-[10px] text-amber-500 font-bold">📌 VIP</span>}
+                  {v.isFleet && (
+                    <span className="text-[9px] px-1.5 py-0.2 rounded bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 font-bold border border-blue-200/50">
+                      Flotte B2B
+                    </span>
+                  )}
                   {inShop && (
                     <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 font-bold flex items-center gap-1">
-                      <Wrench size={10} /> {language === 'ar' ? 'في الورشة' : 'En Atelier'}
+                      <Wrench size={10} /> {isAr ? 'في الورشة' : 'En Atelier'}
                     </span>
                   )}
                 </div>
@@ -219,6 +268,12 @@ export const AutoGarageVehiclesView: React.FC = () => {
                   </span>
                   <span>·</span>
                   <span>{v.year}</span>
+                  {v.fuelType && (
+                    <>
+                      <span>·</span>
+                      <span className="text-neutral-500">{v.fuelType}</span>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
@@ -227,12 +282,13 @@ export const AutoGarageVehiclesView: React.FC = () => {
       },
       {
         key: 'owner',
-        header: language === 'ar' ? 'المالك / الاتصال' : 'Propriétaire & Contact',
+        header: isAr ? 'المالك / الحظيرة' : 'Propriétaire & Flotte',
         width: '2.5*',
         renderCell: (v) => (
           <div>
-            <div className="text-xs font-semibold text-neutral-800 dark:text-neutral-200 truncate">
-              {v.ownerName}
+            <div className="text-xs font-semibold text-neutral-800 dark:text-neutral-200 truncate flex items-center gap-1.5">
+              {v.isFleet ? <Building2 size={12} className="text-[#C4785A] shrink-0" /> : null}
+              <span>{v.ownerName}</span>
             </div>
             <div className="text-[11px] font-mono text-neutral-400 mt-0.5">
               {v.ownerPhone}
@@ -242,40 +298,54 @@ export const AutoGarageVehiclesView: React.FC = () => {
       },
       {
         key: 'mileage',
-        header: language === 'ar' ? 'العداد والصيانة' : 'Kilométrage & Entretien',
-        width: '2.3*',
+        header: isAr ? 'العداد والصيانة التنبؤية' : 'Kilométrage & Maintenance',
+        width: '2.5*',
         sortable: true,
-        renderCell: (v) => (
-          <div className="space-y-0.5">
-            <div className="text-xs font-mono font-bold text-neutral-800 dark:text-neutral-200 flex items-center gap-1">
-              <Gauge size={12} className="text-[#C4785A]" />
-              <span>{v.mileageKm.toLocaleString()} km</span>
+        renderCell: (v) => {
+          const estKm = calculateEstimatedMileage(v.mileageKm, v.lastServiceDate, v.dailyAvgKm || 50);
+          const kmSinceService = estKm - (v.lastServiceKm || v.mileageKm - 5000);
+          const needsOilChange = kmSinceService >= 9500;
+
+          return (
+            <div className="space-y-0.5">
+              <div className="text-xs font-mono font-bold text-neutral-800 dark:text-neutral-200 flex items-center gap-1.5">
+                <Gauge size={13} className="text-[#C4785A]" />
+                <span>{estKm.toLocaleString()} km</span>
+                <span className="text-[9px] text-neutral-400 font-normal">(est.)</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                {needsOilChange ? (
+                  <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 flex items-center gap-0.5">
+                    <AlertTriangle size={9} /> Vidange requise
+                  </span>
+                ) : (
+                  <span className="text-[9px] font-medium text-neutral-500">
+                    Dernière: {v.lastServiceKm ? `${v.lastServiceKm.toLocaleString()} km` : v.lastServiceDate || '—'}
+                  </span>
+                )}
+              </div>
             </div>
-            <div className="text-[10px] text-neutral-400">
-              {language === 'ar' ? 'آخر صيانة: ' : 'Révision: '}
-              <span className="font-mono">{v.lastServiceDate || '—'}</span>
-            </div>
-          </div>
-        ),
+          );
+        },
       },
       {
         key: 'status',
-        header: language === 'ar' ? 'الطلبات النشطة' : 'Ordres Réparation',
-        width: '1.8*',
+        header: isAr ? 'أوامر الورشة' : 'Historique OR',
+        width: '1.6*',
         renderCell: (v) => {
           const vehOrders = vehicleOrdersMap.get(v.plateNumber) || [];
           return (
             <div className="text-center">
               <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200/60">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-[live-heartbeat_1.2s_infinite]" />
-                {vehOrders.length} {language === 'ar' ? 'طلبات' : 'ORs'}
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                {vehOrders.length} {isAr ? 'أوامر' : 'ORs'}
               </span>
             </div>
           );
         },
       },
     ],
-    [pinnedIds, orders, vehicleOrdersMap, language]
+    [pinnedIds, orders, vehicleOrdersMap, isAr]
   );
 
   return (
@@ -410,23 +480,46 @@ export const AutoGarageVehiclesView: React.FC = () => {
               openWidth={220}
             />
 
-            <div className="flex items-center bg-white dark:bg-neutral-800 border border-neutral-200/80 dark:border-neutral-700 p-0.5 rounded-xl shadow-2xs">
+            <div className="flex items-center bg-white dark:bg-neutral-800 border border-neutral-200/80 dark:border-neutral-700 p-0.5 rounded-xl shadow-2xs overflow-x-auto">
               <button
                 type="button"
-                onClick={() => setFilterBrand('All')}
-                className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                  filterBrand === 'All'
+                onClick={() => setFilterSegment('All')}
+                className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
+                  filterSegment === 'All'
                     ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold shadow-2xs'
                     : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
                 }`}
               >
-                {language === 'ar' ? 'الكل' : 'Tous'} ({vehicles.length})
+                {isAr ? 'الكل' : 'Tous'} ({vehicles.length})
               </button>
               <button
                 type="button"
-                onClick={() => setFilterBrand('Renault')}
-                className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                  filterBrand === 'Renault'
+                onClick={() => setFilterSegment('Fleet')}
+                className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1 ${
+                  filterSegment === 'Fleet'
+                    ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold shadow-2xs'
+                    : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
+                }`}
+              >
+                <Building2 size={12} />
+                <span>{isAr ? 'أساطيل B2B' : 'Flottes B2B'}</span> ({fleetVehiclesCount})
+              </button>
+              <button
+                type="button"
+                onClick={() => setFilterSegment('Individual')}
+                className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
+                  filterSegment === 'Individual'
+                    ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold shadow-2xs'
+                    : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
+                }`}
+              >
+                {isAr ? 'أفراد' : 'Particuliers'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setFilterSegment('Renault')}
+                className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
+                  filterSegment === 'Renault'
                     ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold shadow-2xs'
                     : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
                 }`}
@@ -435,9 +528,9 @@ export const AutoGarageVehiclesView: React.FC = () => {
               </button>
               <button
                 type="button"
-                onClick={() => setFilterBrand('Peugeot')}
-                className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                  filterBrand === 'Peugeot'
+                onClick={() => setFilterSegment('Peugeot')}
+                className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
+                  filterSegment === 'Peugeot'
                     ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold shadow-2xs'
                     : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
                 }`}
@@ -446,9 +539,9 @@ export const AutoGarageVehiclesView: React.FC = () => {
               </button>
               <button
                 type="button"
-                onClick={() => setFilterBrand('Toyota')}
-                className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                  filterBrand === 'Toyota'
+                onClick={() => setFilterSegment('Toyota')}
+                className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
+                  filterSegment === 'Toyota'
                     ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold shadow-2xs'
                     : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
                 }`}
@@ -465,7 +558,7 @@ export const AutoGarageVehiclesView: React.FC = () => {
             <div className="flex items-center gap-3">
               <span className="w-2.5 h-2.5 rounded-full bg-[#C4785A] animate-pulse" />
               <span className="text-xs font-bold text-neutral-900 dark:text-white">
-                {selectedIds.size} {language === 'ar' ? 'مركبات محددة' : 'véhicules sélectionnés'}
+                {selectedIds.size} {isAr ? 'مركبات محددة' : 'véhicules sélectionnés'}
               </span>
             </div>
             <div className="flex items-center gap-2">
@@ -474,19 +567,19 @@ export const AutoGarageVehiclesView: React.FC = () => {
                 onClick={() => setSelectedIds(new Set())}
                 className="px-3 py-1 text-xs text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 font-medium cursor-pointer"
               >
-                {language === 'ar' ? 'إلغاء التحديد' : 'Désélectionner'}
+                {isAr ? 'إلغاء التحديد' : 'Désélectionner'}
               </button>
               <button
                 type="button"
                 onClick={() => {
                   selectedIds.forEach((id) => deleteVehicle(id));
                   setSelectedIds(new Set());
-                  showToast(language === 'ar' ? 'تم حذف المركبات المحددة' : 'Véhicules sélectionnés supprimés', 'success');
+                  showToast(isAr ? 'تم حذف المركبات المحددة' : 'Véhicules sélectionnés supprimés', 'success');
                 }}
                 className="px-3.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
               >
                 <Trash2 size={13} />
-                <span>{language === 'ar' ? 'حذف المحدد' : 'Supprimer'}</span>
+                <span>{isAr ? 'حذف المحدد' : 'Supprimer'}</span>
               </button>
             </div>
           </div>
@@ -520,8 +613,8 @@ export const AutoGarageVehiclesView: React.FC = () => {
               customActions={(v) => [
                 {
                   id: 'order',
-                  label: language === 'ar' ? 'فتح أمر إصلاح' : 'Nouvel OR',
-                  tooltip: language === 'ar' ? 'فتح أمر إصلاح' : 'Créer Ordre de Réparation',
+                  label: isAr ? 'فتح أمر إصلاح' : 'Nouvel OR',
+                  tooltip: isAr ? 'فتح أمر إصلاح' : 'Créer Ordre de Réparation',
                   icon: <Wrench size={13} />,
                   variant: 'primary',
                   onClick: () => handleOpenNewOrder(v),
@@ -530,6 +623,9 @@ export const AutoGarageVehiclesView: React.FC = () => {
               renderCard={(v) => {
                 const isPinned = pinnedIds.has(v.id);
                 const inShop = orders.some((o) => o.vehiclePlate === v.plateNumber && o.status !== 'Delivered');
+                const estKm = calculateEstimatedMileage(v.mileageKm, v.lastServiceDate, v.dailyAvgKm || 50);
+                const isDue = (estKm - (v.lastServiceKm || v.mileageKm - 5000)) >= 9500;
+
                 return (
                   <div className="flex flex-col items-center justify-center w-full">
                     <div className="w-20 h-20 rounded-full bg-[#FCEEE8] dark:bg-neutral-800 text-[#C4785A] flex items-center justify-center text-2xl font-bold shadow-xs mb-3 select-none border border-[#F5E2D8] dark:border-neutral-700">
@@ -541,23 +637,36 @@ export const AutoGarageVehiclesView: React.FC = () => {
                       </h3>
                       {isPinned && <span className="text-xs text-amber-500">📌</span>}
                     </div>
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-mono font-bold bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 mb-3 border border-neutral-200 dark:border-neutral-700">
-                      {v.plateNumber}
-                    </span>
+                    <div className="flex items-center gap-1.5 mb-3">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-mono font-bold bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700">
+                        {v.plateNumber}
+                      </span>
+                      {v.isFleet && (
+                        <span className="text-[9px] px-1.5 py-0.2 rounded bg-blue-50 text-blue-700 font-bold border border-blue-200">
+                          B2B
+                        </span>
+                      )}
+                    </div>
 
                     <div className="w-full pt-3 border-t border-neutral-100 dark:border-neutral-800 text-xs space-y-1 text-center">
-                      <div className="text-neutral-800 dark:text-neutral-200 font-semibold text-[11px]">
+                      <div className="text-neutral-800 dark:text-neutral-200 font-semibold text-[11px] truncate">
                         {v.ownerName} · <span className="font-mono text-neutral-500">{v.ownerPhone}</span>
                       </div>
                       <div className="flex items-center justify-between pt-1 border-t border-neutral-100 dark:border-neutral-800 text-[10px] text-neutral-400">
-                        <span className="font-mono">{v.mileageKm.toLocaleString()} km</span>
+                        <span className="font-mono font-bold text-neutral-700 dark:text-neutral-300">
+                          {estKm.toLocaleString()} km
+                        </span>
                         {inShop ? (
                           <span className="text-amber-600 font-bold flex items-center gap-1">
-                            <Wrench size={10} /> {language === 'ar' ? 'في الورشة' : 'En Atelier'}
+                            <Wrench size={10} /> {isAr ? 'في الورشة' : 'En Atelier'}
+                          </span>
+                        ) : isDue ? (
+                          <span className="text-amber-600 font-bold flex items-center gap-1">
+                            <AlertTriangle size={10} /> Vidange Due
                           </span>
                         ) : (
                           <span className="text-emerald-600 font-bold flex items-center gap-1">
-                            <CheckCircle2 size={10} /> {language === 'ar' ? 'جاهز' : 'Disponible'}
+                            <CheckCircle2 size={10} /> {isAr ? 'جاهز' : 'Disponible'}
                           </span>
                         )}
                       </div>
@@ -565,15 +674,15 @@ export const AutoGarageVehiclesView: React.FC = () => {
                   </div>
                 );
               }}
-              emptyTitle={language === 'ar' ? 'لا توجد مركبات مطابقة' : 'Aucun véhicule trouvé'}
-              emptyDescription={language === 'ar' ? 'أضف أول مركبة للحظيرة أو أعد ضبط معايير البحث' : 'Ajoutez un premier véhicule ou modifiez vos filtres de recherche'}
-              primaryActionLabel={language === 'ar' ? 'تسجيل مركبة' : 'Nouveau Véhicule'}
+              emptyTitle={isAr ? 'لا توجد مركبات مطابقة' : 'Aucun véhicule trouvé'}
+              emptyDescription={isAr ? 'أضف أول مركبة للحظيرة أو أعد ضبط معايير البحث' : 'Ajoutez un premier véhicule ou modifiez vos filtres de recherche'}
+              primaryActionLabel={isAr ? 'تسجيل مركبة' : 'Nouveau Véhicule'}
               onAddFirstItem={handleOpenAdd}
               onResetFilters={() => {
                 setSearchQuery('');
-                setFilterBrand('All');
+                setFilterSegment('All');
               }}
-              hasActiveFilters={searchQuery.length > 0 || filterBrand !== 'All'}
+              hasActiveFilters={searchQuery.length > 0 || filterSegment !== 'All'}
             />
           </div>
 
@@ -615,7 +724,7 @@ export const AutoGarageVehiclesView: React.FC = () => {
                   className="flex-1 py-1.5 px-2 rounded-lg bg-[#C4785A] hover:bg-[#b3684a] text-white text-xs font-semibold flex items-center justify-center gap-1.5 shadow-2xs transition-colors"
                 >
                   <Wrench size={13} />
-                  <span>{language === 'ar' ? 'فتح أمر إصلاح' : 'Nouvel OR'}</span>
+                  <span>{isAr ? 'فتح أمر إصلاح' : 'Nouvel OR'}</span>
                 </button>
                 <button
                   type="button"
@@ -642,46 +751,46 @@ export const AutoGarageVehiclesView: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setActiveTab('fiche')}
-                  className={`py-2 px-3 border-b-2 transition-colors ${
+                  className={`py-2 px-2.5 border-b-2 transition-colors ${
                     activeTab === 'fiche'
                       ? 'border-[#C4785A] text-[#C4785A] font-bold'
                       : 'border-transparent text-neutral-500 hover:text-neutral-900'
                   }`}
                 >
-                  {language === 'ar' ? 'البطاقة التقنية' : 'Fiche'}
+                  {isAr ? 'البطاقة' : 'Fiche'}
                 </button>
                 <button
                   type="button"
                   onClick={() => setActiveTab('owner')}
-                  className={`py-2 px-3 border-b-2 transition-colors ${
+                  className={`py-2 px-2.5 border-b-2 transition-colors ${
                     activeTab === 'owner'
                       ? 'border-[#C4785A] text-[#C4785A] font-bold'
                       : 'border-transparent text-neutral-500 hover:text-neutral-900'
                   }`}
                 >
-                  {language === 'ar' ? 'المالك' : 'Propriétaire'}
+                  {selectedVehicle.isFleet ? (isAr ? 'الأسطول' : 'Flotte B2B') : (isAr ? 'المالك' : 'Client')}
                 </button>
                 <button
                   type="button"
                   onClick={() => setActiveTab('orders')}
-                  className={`py-2 px-3 border-b-2 transition-colors ${
+                  className={`py-2 px-2.5 border-b-2 transition-colors ${
                     activeTab === 'orders'
                       ? 'border-[#C4785A] text-[#C4785A] font-bold'
                       : 'border-transparent text-neutral-500 hover:text-neutral-900'
                   }`}
                 >
-                  {language === 'ar' ? 'أوامر الإصلاح' : 'Ordres'}
+                  {isAr ? 'أوامر OR' : 'Historique OR'}
                 </button>
                 <button
                   type="button"
-                  onClick={() => setActiveTab('notes')}
-                  className={`py-2 px-3 border-b-2 transition-colors ${
-                    activeTab === 'notes'
+                  onClick={() => setActiveTab('maintenance')}
+                  className={`py-2 px-2.5 border-b-2 transition-colors ${
+                    activeTab === 'maintenance'
                       ? 'border-[#C4785A] text-[#C4785A] font-bold'
                       : 'border-transparent text-neutral-500 hover:text-neutral-900'
                   }`}
                 >
-                  {language === 'ar' ? 'الملاحظات' : 'Atelier'}
+                  {isAr ? 'الصيانة' : 'Entretien'}
                 </button>
               </div>
 
@@ -691,27 +800,33 @@ export const AutoGarageVehiclesView: React.FC = () => {
                   <div className="space-y-3 text-xs">
                     <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
                       <div className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider">
-                        {language === 'ar' ? 'المواصفات الفنية' : 'Données Constructeur'}
+                        {isAr ? 'المواصفات الفنية' : 'Données Constructeur'}
                       </div>
                       <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
-                        <span className="text-neutral-500">{language === 'ar' ? 'رقم الشاسيه (VIN)' : 'N° Châssis (VIN)'}</span>
+                        <span className="text-neutral-500">{isAr ? 'رقم الشاسيه (VIN)' : 'N° Châssis (VIN)'}</span>
                         <span className="font-semibold text-neutral-800 dark:text-neutral-200 font-mono">{selectedVehicle.vin}</span>
                       </div>
                       <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
-                        <span className="text-neutral-500">{language === 'ar' ? 'الترقيم' : 'Immatriculation'}</span>
+                        <span className="text-neutral-500">{isAr ? 'الترقيم' : 'Immatriculation'}</span>
                         <span className="font-bold text-[#C4785A] font-mono">{selectedVehicle.plateNumber}</span>
                       </div>
                       <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
-                        <span className="text-neutral-500">{language === 'ar' ? 'سنة الصنع' : 'Année modèle'}</span>
+                        <span className="text-neutral-500">{isAr ? 'نوع الوقود' : 'Motorisation / Carburant'}</span>
+                        <span className="font-semibold text-neutral-800 dark:text-neutral-200">{selectedVehicle.fuelType || 'Diesel'}</span>
+                      </div>
+                      <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
+                        <span className="text-neutral-500">{isAr ? 'سنة الصنع' : 'Année modèle'}</span>
                         <span className="font-semibold text-neutral-800 dark:text-neutral-200 font-mono">{selectedVehicle.year}</span>
                       </div>
                       <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
-                        <span className="text-neutral-500">{language === 'ar' ? 'العداد الحالي' : 'Kilométrage'}</span>
+                        <span className="text-neutral-500">{isAr ? 'العداد الكيلومتري' : 'Compteur Enregistré'}</span>
                         <span className="font-bold text-neutral-900 dark:text-white font-mono">{selectedVehicle.mileageKm.toLocaleString()} km</span>
                       </div>
                       <div className="flex justify-between py-1">
-                        <span className="text-neutral-500">{language === 'ar' ? 'آخر صيانة' : 'Dernière révision'}</span>
-                        <span className="font-semibold text-neutral-800 dark:text-neutral-200 font-mono">{selectedVehicle.lastServiceDate || '—'}</span>
+                        <span className="text-neutral-500">{isAr ? 'العداد التقديري الحالي' : 'Compteur Estimé (IA)'}</span>
+                        <span className="font-bold text-emerald-600 dark:text-emerald-400 font-mono">
+                          {calculateEstimatedMileage(selectedVehicle.mileageKm, selectedVehicle.lastServiceDate, selectedVehicle.dailyAvgKm || 50).toLocaleString()} km
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -719,19 +834,45 @@ export const AutoGarageVehiclesView: React.FC = () => {
 
                 {activeTab === 'owner' && (
                   <div className="space-y-3 text-xs">
-                    <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
-                      <div className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider">
-                        {language === 'ar' ? 'بيانات المالك' : 'Coordonnées Client'}
+                    {selectedVehicle.isFleet ? (
+                      <div className="p-3.5 rounded-xl bg-orange-50/60 dark:bg-orange-950/30 border border-orange-200/70 space-y-2">
+                        <div className="flex items-center gap-2 font-bold text-[#C4785A]">
+                          <Building2 size={16} />
+                          <span>{selectedVehicle.fleetName || 'Compte Entreprise B2B'}</span>
+                        </div>
+                        <div className="text-[11px] text-neutral-600 dark:text-neutral-300">
+                          {isAr ? 'مركبة مرتبطة بأسطول اتفاقية صيانة معتمدة' : 'Véhicule rattaché à une flotte conventionnée avec facturation mensuelle DGI groupée.'}
+                        </div>
+                        <div className="pt-2 border-t border-orange-200/50 space-y-1">
+                          <div className="flex justify-between">
+                            <span className="text-neutral-500">Contact Flotte:</span>
+                            <span className="font-bold text-neutral-900 dark:text-white">{selectedVehicle.ownerName}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-neutral-500">Téléphone:</span>
+                            <span className="font-mono text-neutral-800 dark:text-neutral-200">{selectedVehicle.ownerPhone}</span>
+                          </div>
+                        </div>
                       </div>
-                      <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
-                        <span className="text-neutral-500">{language === 'ar' ? 'الاسم الكامل' : 'Nom & Prénom'}</span>
-                        <span className="font-bold text-neutral-900 dark:text-white">{selectedVehicle.ownerName}</span>
+                    ) : (
+                      <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
+                        <div className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider">
+                          {isAr ? 'بيانات المالك' : 'Coordonnées Client'}
+                        </div>
+                        <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
+                          <span className="text-neutral-500">{isAr ? 'الاسم الكامل' : 'Nom & Prénom'}</span>
+                          <span className="font-bold text-neutral-900 dark:text-white">{selectedVehicle.ownerName}</span>
+                        </div>
+                        <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700/60">
+                          <span className="text-neutral-500">{isAr ? 'الهاتف' : 'Téléphone'}</span>
+                          <span className="font-semibold text-neutral-800 dark:text-neutral-200 font-mono">{selectedVehicle.ownerPhone}</span>
+                        </div>
+                        <div className="flex justify-between py-1">
+                          <span className="text-neutral-500">Carte Grise</span>
+                          <span className="font-mono text-neutral-600">{selectedVehicle.carteGriseNumber || 'Non renseignée'}</span>
+                        </div>
                       </div>
-                      <div className="flex justify-between py-1">
-                        <span className="text-neutral-500">{language === 'ar' ? 'الهاتف' : 'Téléphone'}</span>
-                        <span className="font-semibold text-neutral-800 dark:text-neutral-200 font-mono">{selectedVehicle.ownerPhone}</span>
-                      </div>
-                    </div>
+                    )}
                   </div>
                 )}
 
@@ -767,42 +908,64 @@ export const AutoGarageVehiclesView: React.FC = () => {
                     ) : (
                       <div className="text-center py-8 text-neutral-400">
                         <Wrench size={28} className="mx-auto mb-2 opacity-40" />
-                        <p>{language === 'ar' ? 'لا توجد أوامر إصلاح سابقة لهذه المركبة' : 'Aucun ordre de réparation enregistré.'}</p>
+                        <p>{isAr ? 'لا توجد أوامر إصلاح سابقة لهذه المركبة' : 'Aucun ordre de réparation enregistré.'}</p>
                       </div>
                     )}
                   </div>
                 )}
 
-                {activeTab === 'notes' && (
-                  <div className="space-y-3 text-xs">
-                    <label className="block text-[11px] font-bold text-neutral-500 uppercase">
-                      {language === 'ar' ? 'ملاحظات الورشة والفحص' : 'Observations & Consignes d\'Atelier'}
-                    </label>
-                    <textarea
-                      value={inspectorNotes}
-                      onChange={(e) => setInspectorNotes(e.target.value)}
-                      rows={8}
-                      placeholder={language === 'ar' ? 'أدخل ملاحظات الورشة...' : 'Historique d\'usure, pièces à surveiller...'}
-                      className="w-full p-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-white text-xs focus:ring-2 focus:ring-[#C4785A] outline-none"
-                    />
-                    <div className="flex items-center justify-between pt-1">
-                      <span className="text-[11px] text-neutral-400">
-                        {noteSaved && (
-                          <span className="text-emerald-600 font-bold flex items-center gap-1">
-                            <Check size={12} /> {language === 'ar' ? 'تم الحفظ' : 'Enregistré'}
-                          </span>
-                        )}
-                      </span>
-                      <AtriumButton
-                        type="button"
-                        variant="primary"
-                        size="sm"
-                        icon={<Save size={13} />}
-                        onClick={handleSaveNotes}
-                      >
-                        <span>{language === 'ar' ? 'حفظ الملاحظات' : 'Enregistrer'}</span>
-                      </AtriumButton>
-                    </div>
+                {activeTab === 'maintenance' && (
+                  <div className="space-y-3.5 text-xs">
+                    {(() => {
+                      const estKm = calculateEstimatedMileage(selectedVehicle.mileageKm, selectedVehicle.lastServiceDate, selectedVehicle.dailyAvgKm || 50);
+                      const lastKm = selectedVehicle.lastServiceKm || selectedVehicle.mileageKm - 5000;
+                      const kmSince = estKm - lastKm;
+                      const nextVidange = lastKm + 10000;
+                      const isOverdue = estKm >= nextVidange;
+
+                      return (
+                        <div className="space-y-3">
+                          <div className="p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200/80 space-y-2">
+                            <div className="flex items-center justify-between font-bold">
+                              <span>Vidange Huile Moteur (10,000 km)</span>
+                              <span className={isOverdue ? 'text-amber-600' : 'text-emerald-600'}>
+                                {isOverdue ? 'À effectuer d’urgence' : 'Statut Conforme'}
+                              </span>
+                            </div>
+                            <div className="w-full bg-neutral-200 dark:bg-neutral-700 rounded-full h-2 overflow-hidden">
+                              <div
+                                className={`h-full ${isOverdue ? 'bg-amber-500' : 'bg-emerald-500'}`}
+                                style={{ width: `${Math.min(100, Math.round((kmSince / 10000) * 100))}%` }}
+                              />
+                            </div>
+                            <div className="flex justify-between text-[11px] text-neutral-500 font-mono">
+                              <span>Effectuée: {lastKm.toLocaleString()} km</span>
+                              <span>Échéance: {nextVidange.toLocaleString()} km</span>
+                            </div>
+                          </div>
+
+                          <div className="p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200/80 space-y-1.5">
+                            <div className="flex justify-between font-bold">
+                              <span>Courroie de Distribution (60,000 km)</span>
+                              <span className="text-neutral-500">Contrôle annuel</span>
+                            </div>
+                            <div className="text-[11px] text-neutral-500">
+                              Prochaine vérification tension & craquelures préconisée au prochain OR.
+                            </div>
+                          </div>
+
+                          <AtriumButton
+                            variant="primary"
+                            size="sm"
+                            className="w-full"
+                            icon={<Wrench size={13} />}
+                            onClick={() => handleOpenNewOrder(selectedVehicle)}
+                          >
+                            {isAr ? 'جدولة صيانة وقائية' : 'Planifier Révision Atelier'}
+                          </AtriumButton>
+                        </div>
+                      );
+                    })()}
                   </div>
                 )}
               </div>

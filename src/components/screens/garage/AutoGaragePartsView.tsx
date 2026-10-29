@@ -133,9 +133,18 @@ export const AutoGaragePartsView: React.FC = () => {
     setIsModalOpen(false);
   };
 
+  // Supplier Order Modal State
+  const [isPoModalOpen, setIsPoModalOpen] = useState(false);
+  const [poSupplier, setPoSupplier] = useState('Comptoir Pièces Bab Ezzouar (Alger)');
+  const [poPartId, setPoPartId] = useState<string>('p_01');
+  const [poQuantity, setPoQuantity] = useState('10');
+  const [poUnitCost, setPoUnitCost] = useState('4000');
+
   const filteredParts = useMemo(() => {
     return parts.filter((p) => {
-      if (categoryFilter !== 'All' && p.category !== categoryFilter) {
+      if (categoryFilter === 'LowStock') {
+        if (p.stockQuantity > p.minThreshold) return false;
+      } else if (categoryFilter !== 'All' && p.category !== categoryFilter) {
         return false;
       }
       if (searchQuery.trim()) {
@@ -357,6 +366,20 @@ export const AutoGaragePartsView: React.FC = () => {
             {isAr ? 'تصدير CSV' : 'Export CSV'}
           </AtriumButton>
           <AtriumButton
+            variant="secondary"
+            size="sm"
+            onClick={() => {
+              if (selectedPart) {
+                setPoPartId(selectedPart.id);
+                setPoUnitCost(String(selectedPart.buyingPriceDzd));
+              }
+              setIsPoModalOpen(true);
+            }}
+            icon={<Package size={14} />}
+          >
+            {isAr ? 'طلبية مورد' : 'Commande Fournisseur'}
+          </AtriumButton>
+          <AtriumButton
             variant="primary"
             onClick={openCreateModal}
             icon={<Plus size={14} />}
@@ -396,10 +419,24 @@ export const AutoGaragePartsView: React.FC = () => {
           </div>
 
           {/* Card 2: Low Stock Alerts */}
-          <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
-            <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
-              {isAr ? 'قطع تحت حد الأمان' : 'Alertes Réapprovisionnement'}
-            </span>
+          <div
+            onClick={() => setCategoryFilter(categoryFilter === 'LowStock' ? 'All' : 'LowStock')}
+            className={`p-5 rounded-[20px] bg-white dark:bg-neutral-800 border transition-all cursor-pointer flex flex-col justify-between h-[124px] shadow-2xs ${
+              categoryFilter === 'LowStock'
+                ? 'border-amber-400 ring-2 ring-amber-400/20'
+                : 'border-[#E9EEF0] dark:border-neutral-700/60 hover:border-amber-300'
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
+                {isAr ? 'قطع تحت حد الأمان' : 'Alertes Réapprovisionnement'}
+              </span>
+              {lowStockCount > 0 && (
+                <span className="text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300">
+                  Filtrer
+                </span>
+              )}
+            </div>
             <div>
               <div className="text-2xl font-bold tracking-tight text-amber-600 dark:text-amber-400 font-mono tabular-nums">
                 {lowStockCount}
@@ -461,6 +498,7 @@ export const AutoGaragePartsView: React.FC = () => {
               {(
                 [
                   { id: 'All', label: isAr ? 'الكل' : 'Toutes' },
+                  { id: 'LowStock', label: isAr ? `⚠️ تنبيهات (${lowStockCount})` : `⚠️ Alertes (${lowStockCount})` },
                   { id: 'Freinage', label: 'Freinage' },
                   { id: 'Filtration', label: 'Filtration' },
                   { id: 'Suspension', label: 'Suspension' },
@@ -954,6 +992,122 @@ export const AutoGaragePartsView: React.FC = () => {
                   {partToEdit
                     ? (isAr ? 'حفظ التعديلات' : 'Enregistrer')
                     : (isAr ? 'تسجيل القطعة' : 'Ajouter au Stock')}
+                </AtriumButton>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Wholesale Supplier Purchase Order Modal (Bon de Commande Fournisseur) */}
+      {isPoModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-neutral-900 rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-neutral-200 dark:border-neutral-800 space-y-5">
+            <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 flex items-center justify-center font-bold">
+                  <Package size={20} />
+                </div>
+                <div>
+                  <h2 className="text-base font-bold text-neutral-900 dark:text-white">
+                    {isAr ? 'طلبية تموين من المورد (Bon de Commande)' : 'Bon de Commande Fournisseur Gros'}
+                  </h2>
+                  <p className="text-xs text-neutral-500">
+                    {isAr ? 'تموين المخزن من كبار موزعي قطع الغيار بالجزائر' : 'Approvisionnement comptoir de gros & entrée en stock'}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsPoModalOpen(false)}
+                className="p-1 rounded-lg text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                const target = parts.find((p) => p.id === poPartId);
+                const qty = parseInt(poQuantity, 10) || 5;
+                const cost = parseFloat(poUnitCost) || (target?.buyingPriceDzd || 0);
+
+                if (target) {
+                  const updated: SparePart = {
+                    ...target,
+                    stockQuantity: target.stockQuantity + qty,
+                    buyingPriceDzd: cost,
+                  };
+                  updatePart(updated);
+                  if (selectedPart?.id === target.id) setSelectedPart(updated);
+                }
+
+                showToast(
+                  isAr
+                    ? `تم تسجيل استلام الطلبية (+${qty}) بنجاح من ${poSupplier}`
+                    : `Bon d'entrée stock validé (+${qty} unités) depuis ${poSupplier}`,
+                  'success'
+                );
+                setIsPoModalOpen(false);
+              }}
+              className="space-y-4"
+            >
+              <LabelSelect
+                label={isAr ? 'المورد المعتمد' : 'Fournisseur Référent'}
+                value={poSupplier}
+                onChange={(e) => setPoSupplier(e.target.value)}
+                options={[
+                  { value: 'Comptoir Pièces Bab Ezzouar (Alger)', label: 'Comptoir Pièces Bab Ezzouar (Alger)' },
+                  { value: 'Sarl Maghreb Pièces Baraki (Alger)', label: 'Sarl Maghreb Pièces Baraki (Alger)' },
+                  { value: 'Établissement Benali Distribution (El Eulma)', label: 'Éts Benali Distribution (El Eulma)' },
+                  { value: 'Accumulateurs Algérie SPA (Oued Smar)', label: 'Accumulateurs Algérie SPA (Oued Smar)' },
+                ]}
+              />
+
+              <LabelSelect
+                label={isAr ? 'القطعة المراد تموينها' : 'Référence Pièce à Réapprovisionner'}
+                value={poPartId}
+                onChange={(e) => {
+                  setPoPartId(e.target.value);
+                  const p = parts.find((item) => item.id === e.target.value);
+                  if (p) setPoUnitCost(String(p.buyingPriceDzd));
+                }}
+                options={parts.map((p) => ({
+                  value: p.id,
+                  label: `${p.sku} — ${p.name} (Stock: ${p.stockQuantity} u.)`,
+                }))}
+              />
+
+              <div className="grid grid-cols-2 gap-3">
+                <LabelInput
+                  label={isAr ? 'الكمية المطلوبة *' : 'Quantité Commandée *'}
+                  type="number"
+                  value={poQuantity}
+                  onChange={(e) => setPoQuantity(e.target.value)}
+                  required
+                />
+                <LabelInput
+                  label={isAr ? 'سعر الشراء الفردي (دج)' : 'Prix Achat Unitaire (DZD)'}
+                  type="number"
+                  value={poUnitCost}
+                  onChange={(e) => setPoUnitCost(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="p-3.5 rounded-2xl bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700 flex items-center justify-between text-xs">
+                <span className="text-neutral-500">{isAr ? 'إجمالي قيمة الطلبية HT:' : 'Montant Total Commande HT:'}</span>
+                <span className="font-mono font-bold text-base text-neutral-900 dark:text-white">
+                  {formatMoney((parseInt(poQuantity, 10) || 0) * (parseFloat(poUnitCost) || 0))}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-neutral-100 dark:border-neutral-800">
+                <AtriumButton variant="ghost" size="sm" onClick={() => setIsPoModalOpen(false)}>
+                  {isAr ? 'إلغاء' : 'Annuler'}
+                </AtriumButton>
+                <AtriumButton variant="primary" size="sm" type="submit" icon={<Check size={14} />}>
+                  {isAr ? 'تأكيد استلام السلعة بالمستودع' : 'Confirmer Réception en Stock'}
                 </AtriumButton>
               </div>
             </form>

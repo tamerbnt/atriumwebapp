@@ -65,6 +65,7 @@ import {
   AttendanceStatus,
   EnrollmentPaymentStatus,
   PMRole,
+  GarageRole,
   PMClient,
   PMProject,
   PMMilestone,
@@ -316,6 +317,8 @@ interface AppState {
   // Salon, Spa & Beauty Care
   salonWorkstations: SalonWorkstation[];
   stylistPayouts: StylistPayout[];
+  // Automotive Garage & Fleet Maintenance (Category 10: auto_garage)
+  activeGarageRole: GarageRole;
   // B2B Commercial Trading & Wholesale (Category 8: trading_commercial)
   b2bClients: B2bClient[];
   b2bSuppliers: B2bSupplier[];
@@ -467,6 +470,7 @@ const DEFAULT_STATE: AppState = {
   pmEquipmentStock: INITIAL_PM_EQUIPMENT_STOCK,
   salonWorkstations: INITIAL_SALON_WORKSTATIONS,
   stylistPayouts: INITIAL_STYLIST_PAYOUTS,
+  activeGarageRole: 'gerant',
   // B2B Commercial Trading & Wholesale
   b2bClients: INITIAL_B2B_CLIENTS,
   b2bSuppliers: INITIAL_B2B_SUPPLIERS,
@@ -5726,6 +5730,28 @@ export function useAtriumStore() {
     notify();
   };
 
+  const setActiveGarageRole = (role: GarageRole) => {
+    let defaultScreen: ActiveScreen = 'dashboard';
+    if (role === 'gerant') {
+      defaultScreen = 'dashboard';
+    } else if (role === 'reception') {
+      defaultScreen = 'scheduler';
+    } else if (role === 'mecanicien') {
+      defaultScreen = 'scheduler';
+    } else if (role === 'magasinier') {
+      defaultScreen = 'shop';
+    } else if (role === 'caisse') {
+      defaultScreen = 'finance';
+    }
+
+    globalState = {
+      ...globalState,
+      activeGarageRole: role,
+      activeScreen: defaultScreen,
+    };
+    notify();
+  };
+
   const setActivePmSubScreen = (subScreen: string) => {
     let nextScreen = globalState.activeScreen;
     const role = globalState.activePmRole;
@@ -7610,6 +7636,9 @@ export function useAtriumStore() {
     deleteB2bSupplier,
     createWarehouseDepot,
     resetTradingMockData,
+    // Automotive Garage Role State & Actions
+    activeGarageRole: state.activeGarageRole || 'gerant',
+    setActiveGarageRole,
     // Toast Notifications & Notification Center
     toasts: state.toasts || [],
     notifications: state.notifications || [],
