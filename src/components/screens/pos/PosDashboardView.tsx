@@ -457,8 +457,7 @@ export const PosDashboardView: React.FC<PosDashboardViewProps> = () => {
         }
       `}</style>
 
-      {/* Outer Workspace Panel */}
-      <div className="bg-white dark:bg-[#18181B] rounded-[28px] border border-[#E9EEF0] dark:border-neutral-800 p-6 lg:p-8 space-y-6 shadow-xs">
+            <div className="space-y-6">
         
         {/* Header Row */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">

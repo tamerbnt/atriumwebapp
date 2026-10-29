@@ -168,7 +168,7 @@ export const CollectionGridCard: React.FC<CollectionGridCardProps> = ({
 
             return (
               <button
-                key={btn.id}
+                key={btn.id ? `${btn.id}-${idx}` : `btn-${idx}`}
                 type="button"
                 onClick={btn.onClick}
                 title={btn.tooltip}

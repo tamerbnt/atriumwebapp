@@ -453,7 +453,7 @@ export const FreelanceClientsView: React.FC = () => {
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
       {/* Outer Rounded Workspace Panel (WPF Spec: CornerRadius 28px, 1px CardBorderBrush) */}
-      <div className="bg-white dark:bg-[#18181B] rounded-[28px] border border-[#E9EEF0] dark:border-neutral-800 p-6 lg:p-8 space-y-6 shadow-xs">
+      <div className="space-y-6">
         
         {/* Row 0 — Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">

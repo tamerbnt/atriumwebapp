@@ -277,7 +277,7 @@ export const MembershipHistoryView: React.FC = () => {
   ], [language]);
 
   return (
-    <div className="bg-white dark:bg-[#18181B] rounded-[28px] border border-[#E9EEF0] dark:border-neutral-800 p-6 lg:p-8 space-y-6 shadow-xs animate-in fade-in duration-200 relative">
+    <div className="space-y-6 animate-in fade-in duration-200 relative">
       {/* Toast Alert */}
       {refundSuccessToast && (
         <div className="p-3.5 bg-rose-50 dark:bg-rose-950/80 border border-rose-300 dark:border-rose-700 rounded-2xl text-rose-800 dark:text-rose-200 text-xs font-semibold flex items-center justify-between shadow-md animate-in slide-in-from-top-2">

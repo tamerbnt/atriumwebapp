@@ -1072,8 +1072,7 @@ export const PosRegisterView: React.FC<PosRegisterViewProps> = ({ initialTab = '
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200" dir={isRtl ? 'rtl' : 'ltr'}>
-      {/* Outer Workspace Panel */}
-      <div className="bg-white dark:bg-[#18181B] rounded-[28px] border border-[#E9EEF0] dark:border-neutral-800 p-6 lg:p-8 space-y-6 shadow-xs">
+            <div className="space-y-6">
         {/* Print stylesheet for thermal receipt */}
         <style>{`
           @media print {

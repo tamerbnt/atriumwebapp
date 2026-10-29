@@ -34,7 +34,7 @@ export const RealEstateDashboardView: React.FC = () => {
     .reduce((acc, l) => acc + l.monthlyRentDzd, 0);
 
   return (
-    <div className="bg-white dark:bg-[#18181B] rounded-[28px] border border-[#E9EEF0] dark:border-neutral-800 p-6 lg:p-8 space-y-6 shadow-xs animate-in fade-in duration-200">
+    <div className="space-y-6 animate-in fade-in duration-200">
       {/* Top Header Strip with Action Toolbar */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
         <div className="flex items-center gap-3">

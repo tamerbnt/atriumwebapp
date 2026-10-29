@@ -305,7 +305,7 @@ export const CollectionListRow: React.FC<CollectionListRowProps> = ({
 
             return (
               <button
-                key={action.id}
+                key={action.id ? `${action.id}-${idx}` : `action-${idx}`}
                 type="button"
                 onClick={action.onClick}
                 title={action.tooltip || action.label || ''}

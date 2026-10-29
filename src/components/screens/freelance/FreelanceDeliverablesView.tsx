@@ -504,7 +504,7 @@ export const FreelanceDeliverablesView: React.FC = () => {
   const reviewDeliverablesCount = flattenedDeliverables.filter((item) => item.deliverable.stage === 'ClientReview').length;
 
   return (
-    <div className="bg-white dark:bg-[#18181B] rounded-[28px] border border-[#E9EEF0] dark:border-neutral-800 p-6 lg:p-8 space-y-6 shadow-xs animate-in fade-in duration-200">
+    <div className="space-y-6 animate-in fade-in duration-200">
       {/* Row 0: Workspace Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">

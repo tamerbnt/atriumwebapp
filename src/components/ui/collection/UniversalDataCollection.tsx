@@ -410,8 +410,8 @@ export function UniversalDataCollection<T>({
 
           {/* Scrollable list of row cards */}
           <div className="flex flex-col">
-            {actualItems.map((item) => {
-              const id = keyExtractor(item);
+            {actualItems.map((item, idx) => {
+              const id = keyExtractor(item) || (item as any)?.id || `item_${idx}`;
               const isSelected = selectedIds.has(id);
               const pinned = checkPinned(item);
               const active = isActive(item);
@@ -482,8 +482,8 @@ export function UniversalDataCollection<T>({
       {/* ================= GRID / CARD VIEW ================= */}
       {viewMode === 'grid' && (
         <div className="w-full flex flex-wrap items-start">
-          {actualItems.map((item) => {
-            const id = keyExtractor(item);
+          {actualItems.map((item, idx) => {
+            const id = keyExtractor(item) || (item as any)?.id || `grid_item_${idx}`;
             const isSelected = selectedIds.has(id);
             const pinned = checkPinned(item);
             const active = isActive(item);

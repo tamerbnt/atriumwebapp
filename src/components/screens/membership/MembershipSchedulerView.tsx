@@ -309,7 +309,7 @@ export const MembershipSchedulerView: React.FC = () => {
   ], [language, days]);
 
   return (
-    <div className="bg-white dark:bg-[#18181B] rounded-[28px] border border-[#E9EEF0] dark:border-neutral-800 p-6 lg:p-8 space-y-6 shadow-xs animate-in fade-in duration-200 relative">
+    <div className="space-y-6 animate-in fade-in duration-200 relative">
       {/* Row 0: Top Header matching Desktop App */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">

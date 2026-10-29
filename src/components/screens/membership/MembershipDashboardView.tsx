@@ -182,10 +182,8 @@ export const MembershipDashboardView: React.FC<MembershipDashboardViewProps> = (
   }, [activityList, activityTab]);
 
   return (
-    <div className="space-y-6">
-      {/* Outer Workspace Panel matching Desktop Spec (rounded-28, white background, subtle border) */}
-      <div className="bg-white dark:bg-[#18181B] rounded-[28px] border border-[#E9EEF0] dark:border-neutral-800 p-6 lg:p-8 space-y-6 shadow-xs">
-        {/* Row 0: Top Header with Left Greeting and Right Facility Switcher & Actions */}
+    <div className="space-y-6 animate-in fade-in duration-200">
+      {/* Row 0: Top Header with Left Greeting and Right Facility Switcher & Actions */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl lg:text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white">
@@ -726,6 +724,5 @@ export const MembershipDashboardView: React.FC<MembershipDashboardViewProps> = (
           </div>
         </div>
       </div>
-    </div>
   );
 };
