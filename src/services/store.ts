@@ -66,6 +66,8 @@ import {
   EnrollmentPaymentStatus,
   PMRole,
   GarageRole,
+  RealEstateRole,
+  ManufacturingRole,
   PMClient,
   PMProject,
   PMMilestone,
@@ -321,6 +323,10 @@ interface AppState {
   stylistPayouts: StylistPayout[];
   // Automotive Garage & Fleet Maintenance (Category 10: auto_garage)
   activeGarageRole: GarageRole;
+  // Real Estate & Property Brokerage (Category 11: real_estate)
+  activeRealEstateRole: RealEstateRole;
+  // Light Manufacturing & Workshop Production (Category 12: manufacturing_production)
+  activeManufacturingRole: ManufacturingRole;
   // B2B Commercial Trading & Wholesale (Category 8: trading_commercial)
   b2bClients: B2bClient[];
   b2bSuppliers: B2bSupplier[];
@@ -473,6 +479,8 @@ const DEFAULT_STATE: AppState = {
   salonWorkstations: INITIAL_SALON_WORKSTATIONS,
   stylistPayouts: INITIAL_STYLIST_PAYOUTS,
   activeGarageRole: 'gerant',
+  activeRealEstateRole: 'direction',
+  activeManufacturingRole: 'gerant',
   // B2B Commercial Trading & Wholesale
   b2bClients: INITIAL_B2B_CLIENTS,
   b2bSuppliers: INITIAL_B2B_SUPPLIERS,
@@ -5754,6 +5762,48 @@ export function useAtriumStore() {
     notify();
   };
 
+  const setActiveRealEstateRole = (role: RealEstateRole) => {
+    let defaultScreen: ActiveScreen = 'dashboard';
+    if (role === 'direction') {
+      defaultScreen = 'dashboard';
+    } else if (role === 'negociateur') {
+      defaultScreen = 'dashboard';
+    } else if (role === 'gestionnaire_locatif') {
+      defaultScreen = 'scheduler';
+    } else if (role === 'notaire_compta') {
+      defaultScreen = 'finance';
+    }
+
+    globalState = {
+      ...globalState,
+      activeRealEstateRole: role,
+      activeScreen: defaultScreen,
+    };
+    notify();
+  };
+
+  const setActiveManufacturingRole = (role: ManufacturingRole) => {
+    let defaultScreen: ActiveScreen = 'dashboard';
+    if (role === 'gerant') {
+      defaultScreen = 'dashboard';
+    } else if (role === 'chef_atelier') {
+      defaultScreen = 'scheduler';
+    } else if (role === 'operateur') {
+      defaultScreen = 'dashboard';
+    } else if (role === 'magasinier') {
+      defaultScreen = 'members';
+    } else if (role === 'qualite') {
+      defaultScreen = 'finance';
+    }
+
+    globalState = {
+      ...globalState,
+      activeManufacturingRole: role,
+      activeScreen: defaultScreen,
+    };
+    notify();
+  };
+
   const setActivePmSubScreen = (subScreen: string) => {
     let nextScreen = globalState.activeScreen;
     const role = globalState.activePmRole;
@@ -7641,6 +7691,12 @@ export function useAtriumStore() {
     // Automotive Garage Role State & Actions
     activeGarageRole: state.activeGarageRole || 'gerant',
     setActiveGarageRole,
+    // Real Estate Operational Role State & Actions
+    activeRealEstateRole: state.activeRealEstateRole || 'direction',
+    setActiveRealEstateRole,
+    // Light Manufacturing Operational Role State & Actions
+    activeManufacturingRole: state.activeManufacturingRole || 'gerant',
+    setActiveManufacturingRole,
     // Toast Notifications & Notification Center
     toasts: state.toasts || [],
     notifications: state.notifications || [],

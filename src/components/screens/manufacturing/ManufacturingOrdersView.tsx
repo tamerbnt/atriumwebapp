@@ -18,6 +18,8 @@ import {
   Wrench,
   Boxes,
   Percent,
+  Printer,
+  QrCode,
 } from 'lucide-react';
 import { useAtriumStore } from '../../../services/store';
 import { formatMoney } from '../../../utils/rules';
@@ -43,6 +45,7 @@ export const ManufacturingOrdersView: React.FC = () => {
   // Modals & 390px Inspector Drawer State
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
   const [orderToEdit, setOrderToEdit] = useState<ManufacturingOrder | null>(null);
+  const [orderForFiche, setOrderForFiche] = useState<ManufacturingOrder | null>(null);
 
   // 390px Inline Side Inspector
   const [selectedOrder, setSelectedOrder] = useState<ManufacturingOrder | null>(null);
@@ -528,6 +531,14 @@ export const ManufacturingOrdersView: React.FC = () => {
               onDelete={handleDelete}
               customActions={(o) => [
                 {
+                  id: 'print',
+                  label: language === 'ar' ? 'بطاقة التتبع' : 'Fiche Suiveuse',
+                  tooltip: language === 'ar' ? 'طباعة بطاقة تتبع الورشة' : 'Imprimer la Fiche Suiveuse Atelier',
+                  icon: <Printer size={13} />,
+                  variant: 'outline',
+                  onClick: () => setOrderForFiche(o),
+                },
+                {
                   id: 'advance',
                   label: language === 'ar' ? 'تقديم الحالة' : 'Avancer Étape',
                   tooltip: language === 'ar' ? 'تقديم حالة التصنيع' : 'Passer à l\'étape suivante',
@@ -621,6 +632,14 @@ export const ManufacturingOrdersView: React.FC = () => {
                 >
                   <Play size={13} />
                   <span>{language === 'ar' ? 'تقديم الخطوة' : 'Avancer Étape'}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setOrderForFiche(selectedOrder)}
+                  className="p-1.5 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 text-xs font-semibold transition-colors"
+                  title={language === 'ar' ? 'طباعة بطاقة التتبع' : 'Imprimer Fiche Suiveuse'}
+                >
+                  <Printer size={14} />
                 </button>
                 <button
                   type="button"
@@ -836,6 +855,165 @@ export const ManufacturingOrdersView: React.FC = () => {
             setOrderToEdit(null);
           }}
         />
+      )}
+      {/* Printable Fiche Suiveuse OF Modal */}
+      {orderForFiche && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-neutral-900 rounded-[28px] max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-neutral-200 dark:border-neutral-800 space-y-6 max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-150">
+            {/* Header / Actions */}
+            <div className="flex items-center justify-between pb-4 border-b border-neutral-200 dark:border-neutral-800">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold">
+                  <Printer size={20} />
+                </div>
+                <div>
+                  <h3 className="font-bold text-base text-neutral-900 dark:text-white">
+                    {language === 'ar' ? 'بطاقة التتبع المرافقة للورشة (Fiche Suiveuse)' : 'Fiche Suiveuse d\'Atelier & Ordre de Travail'}
+                  </h3>
+                  <p className="text-xs text-neutral-400">
+                    Document officiel d'atelier • Traçabilité Décret 05-468 & ISO 9001
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  className="px-4 py-2 rounded-xl bg-[#C4785A] hover:bg-[#b3684a] text-white text-xs font-bold flex items-center gap-1.5 shadow-xs cursor-pointer transition-colors"
+                >
+                  <Printer size={14} />
+                  <span>{language === 'ar' ? 'طباعة' : 'Imprimer'}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setOrderForFiche(null)}
+                  className="w-8 h-8 rounded-lg flex items-center justify-center text-neutral-400 hover:text-neutral-700 cursor-pointer"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+            </div>
+
+            {/* Printable Document Sheet Preview */}
+            <div className="p-6 rounded-2xl bg-white border-2 border-dashed border-neutral-300 text-neutral-900 space-y-5 shadow-xs font-sans">
+              {/* Document Header */}
+              <div className="flex justify-between items-start border-b pb-4">
+                <div>
+                  <div className="font-black text-lg tracking-tight text-[#1F1D1B]">
+                    ATRIUM MANUFACTURE & ATELIER PME
+                  </div>
+                  <div className="text-[11px] text-neutral-500 font-medium">
+                    Zone Industrielle Oued Smar, Alger • NIF: 001916010044589 • RC: 16/00-0988421
+                  </div>
+                  <div className="text-xs font-bold text-[#C4785A] mt-1">
+                    FICHE SUIVEUSE DE PRODUCTION • ORDRE DE FABRICATION
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="font-mono font-black text-xl text-[#C4785A]">
+                    {orderForFiche.orderNumber}
+                  </div>
+                  <div className="font-mono text-xs font-bold text-neutral-700 mt-0.5">
+                    {orderForFiche.batchLotNumber || 'LOT-202610-0089'}
+                  </div>
+                  <div className="font-mono text-[10px] text-neutral-400 mt-1 tracking-widest">
+                    |||||||||||||||||||||||||||||||
+                  </div>
+                </div>
+              </div>
+
+              {/* OF Specifications Grid */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-neutral-50 p-3.5 rounded-xl text-xs border border-neutral-200">
+                <div>
+                  <span className="text-neutral-400 block text-[10px] uppercase font-bold">Produit Fini</span>
+                  <span className="font-bold text-neutral-900">{orderForFiche.productName}</span>
+                </div>
+                <div>
+                  <span className="text-neutral-400 block text-[10px] uppercase font-bold">Quantité Cible</span>
+                  <span className="font-mono font-bold text-neutral-900">{orderForFiche.targetQuantity} unités</span>
+                </div>
+                <div>
+                  <span className="text-neutral-400 block text-[10px] uppercase font-bold">Poste / Ligne</span>
+                  <span className="font-semibold text-neutral-900">{orderForFiche.assignedStation || 'Poste 03 CNC'}</span>
+                </div>
+                <div>
+                  <span className="text-neutral-400 block text-[10px] uppercase font-bold">Échéance</span>
+                  <span className="font-mono font-semibold text-neutral-900">{orderForFiche.dueDate?.split('T')[0] || '2026-06-15'}</span>
+                </div>
+              </div>
+
+              {/* Routing Steps Checklist */}
+              <div className="space-y-2">
+                <div className="text-xs font-bold text-neutral-800 uppercase tracking-wider">
+                  Gamme Opératoire & Visas de Validation Postes
+                </div>
+                <table className="w-full text-xs border border-neutral-200 rounded-lg overflow-hidden">
+                  <thead className="bg-neutral-100 text-neutral-600 font-semibold border-b border-neutral-200">
+                    <tr>
+                      <th className="p-2 text-left w-12">Op.</th>
+                      <th className="p-2 text-left">Poste de Travail / Opération</th>
+                      <th className="p-2 text-center w-24">Cadence</th>
+                      <th className="p-2 text-center w-28">Visa Opérateur</th>
+                      <th className="p-2 text-center w-28">Visa Contrôle CQ</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-neutral-200">
+                    <tr>
+                      <td className="p-2 font-mono font-bold text-center">010</td>
+                      <td className="p-2">Découpe, Dégauchissage & Calibrage brut</td>
+                      <td className="p-2 font-mono text-center">45 min</td>
+                      <td className="p-2 border-l border-neutral-200 text-center text-neutral-400 text-[10px]">[ ______ ]</td>
+                      <td className="p-2 border-l border-neutral-200 text-center text-neutral-400 text-[10px]">[ ______ ]</td>
+                    </tr>
+                    <tr>
+                      <td className="p-2 font-mono font-bold text-center">020</td>
+                      <td className="p-2">Usinage commande numérique & Perçage CNC</td>
+                      <td className="p-2 font-mono text-center">60 min</td>
+                      <td className="p-2 border-l border-neutral-200 text-center text-neutral-400 text-[10px]">[ ______ ]</td>
+                      <td className="p-2 border-l border-neutral-200 text-center text-neutral-400 text-[10px]">[ ______ ]</td>
+                    </tr>
+                    <tr>
+                      <td className="p-2 font-mono font-bold text-center">030</td>
+                      <td className="p-2">Assemblage mécanique & Pose quincaillerie</td>
+                      <td className="p-2 font-mono text-center">40 min</td>
+                      <td className="p-2 border-l border-neutral-200 text-center text-neutral-400 text-[10px]">[ ______ ]</td>
+                      <td className="p-2 border-l border-neutral-200 text-center text-neutral-400 text-[10px]">[ ______ ]</td>
+                    </tr>
+                    <tr>
+                      <td className="p-2 font-mono font-bold text-center">040</td>
+                      <td className="p-2">Finition de surface & Contrôle dimensionnel final</td>
+                      <td className="p-2 font-mono text-center">30 min</td>
+                      <td className="p-2 border-l border-neutral-200 text-center text-neutral-400 text-[10px]">[ ______ ]</td>
+                      <td className="p-2 border-l border-neutral-200 text-center text-neutral-400 text-[10px]">[ ______ ]</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Loi 88-07 Safety & Scrap Notice */}
+              <div className="p-3 bg-neutral-100 rounded-xl text-[11px] text-neutral-600 flex items-center justify-between">
+                <span>⚠️ <strong>Sécurité Loi 88-07 :</strong> Port des EPI (lunettes, gants, chaussures) obligatoire sur toute la phase.</span>
+                <span className="font-mono font-bold text-neutral-800">Tolérance Rebut : &lt; 3%</span>
+              </div>
+
+              {/* Signatures Footer */}
+              <div className="grid grid-cols-3 gap-4 pt-4 border-t text-center text-xs">
+                <div>
+                  <span className="text-neutral-400 text-[10px] block">Chef d'Atelier (Lancement)</span>
+                  <div className="h-10 flex items-center justify-center font-serif text-neutral-700 italic">M. Brahim M.</div>
+                </div>
+                <div>
+                  <span className="text-neutral-400 text-[10px] block">Magasinier (Sortie BSM)</span>
+                  <div className="h-10 flex items-center justify-center font-serif text-neutral-700 italic">M. Amine T.</div>
+                </div>
+                <div>
+                  <span className="text-neutral-400 text-[10px] block">Responsable Qualité (Quitus)</span>
+                  <div className="h-10 flex items-center justify-center font-serif text-neutral-700 italic">Ing. S. Mokrani</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

@@ -34,7 +34,7 @@ import {
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../services/store';
 import { formatDuration } from '../../utils/rules';
-import { PMRole, SupportedLanguage } from '../../types/index';
+import { ManufacturingRole, PMRole, RealEstateRole, SupportedLanguage } from '../../types/index';
 import { Seek } from '../ui/Seek';
 import { useTranslation } from '../../utils/useTranslation';
 import { BackendDiagnosticPanel } from '../BackendDiagnosticPanel';
@@ -88,6 +88,10 @@ export const TopBar: React.FC<TopBarProps> = ({
     setActivePmRole,
     activeGarageRole,
     setActiveGarageRole,
+    activeRealEstateRole,
+    setActiveRealEstateRole,
+    activeManufacturingRole,
+    setActiveManufacturingRole,
     unreadNotificationCount,
   } = useAtriumStore();
 
@@ -687,6 +691,112 @@ export const TopBar: React.FC<TopBarProps> = ({
                 key={r.id}
                 type="button"
                 onClick={() => setActiveGarageRole(r.id as any)}
+                title={r.desc}
+                className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+                  isActive
+                    ? 'bg-[#C4785A] text-white shadow-xs'
+                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-200/50 dark:hover:bg-neutral-700/50'
+                }`}
+              >
+                <span>{r.icon}</span>
+                <span>{r.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Real Estate Operational Role Switcher (Development Phase) */}
+      {currentBusiness?.category === 'real_estate' && (
+        <div className="hidden lg:flex items-center gap-1 p-1 bg-neutral-100/90 dark:bg-neutral-800/90 rounded-full border border-neutral-200/80 dark:border-neutral-700/80 shadow-2xs">
+          {[
+            {
+              id: 'direction' as RealEstateRole,
+              label: language === 'ar' ? 'الإدارة' : 'Direction',
+              icon: '👔',
+              desc: language === 'ar' ? 'إدارة الوكالة، جميع الشاشات والإعدادات' : 'Direction, Toutes les vues & Paramètres',
+            },
+            {
+              id: 'negociateur' as RealEstateRole,
+              label: language === 'ar' ? 'مستشار عقاري' : 'Négociateur',
+              icon: '🤝',
+              desc: language === 'ar' ? 'سجل الوكالات، العقارات ووصولات المعاينة' : 'Mandats 09-18, Biens & Bons de Visite GPS',
+            },
+            {
+              id: 'gestionnaire_locatif' as RealEstateRole,
+              label: language === 'ar' ? 'إدارة الإيجار' : 'Gestion Locative',
+              icon: '🔑',
+              desc: language === 'ar' ? 'عقود الإيجار، وصولات الدفع وحالة الأماكن' : 'Baux, Quittances Art. 317 & États des Lieux',
+            },
+            {
+              id: 'notaire_compta' as RealEstateRole,
+              label: language === 'ar' ? 'الموثق والمحاسبة' : 'Notaire & Compta',
+              icon: '⚖️',
+              desc: language === 'ar' ? 'حسابات الموثق، الضرائب ومستحقات الملاك' : 'Frais Notaire 08-243, DGI & Trésorerie',
+            },
+          ].map((r) => {
+            const isActive = activeRealEstateRole === r.id;
+            return (
+              <button
+                key={r.id}
+                type="button"
+                onClick={() => setActiveRealEstateRole(r.id)}
+                title={r.desc}
+                className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+                  isActive
+                    ? 'bg-[#C4785A] text-white shadow-xs'
+                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-200/50 dark:hover:bg-neutral-700/50'
+                }`}
+              >
+                <span>{r.icon}</span>
+                <span>{r.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Light Manufacturing Operational Role Switcher (Development Phase) */}
+      {currentBusiness?.category === 'manufacturing_production' && (
+        <div className="hidden lg:flex items-center gap-1 p-1 bg-neutral-100/90 dark:bg-neutral-800/90 rounded-full border border-neutral-200/80 dark:border-neutral-700/80 shadow-2xs">
+          {[
+            {
+              id: 'gerant' as ManufacturingRole,
+              label: language === 'ar' ? 'الإدارة' : 'Direction',
+              icon: '👔',
+              desc: language === 'ar' ? 'إدارة المصنع، هوامش الربح والفوترة' : 'Direction Usine, Marges & DGI',
+            },
+            {
+              id: 'chef_atelier' as ManufacturingRole,
+              label: language === 'ar' ? 'رئيس الورشة' : 'Chef Atelier',
+              icon: '🏭',
+              desc: language === 'ar' ? 'أوامر التصنيع، بطاقات المكونات والإنتاج' : 'Méthodes, OFs, BOM & Lancement',
+            },
+            {
+              id: 'operateur' as ManufacturingRole,
+              label: language === 'ar' ? 'مشغل الآلة' : 'Opérateur',
+              icon: '⏱️',
+              desc: language === 'ar' ? 'شاشة اللمس اللوحية، توقيت المهام وتصريح القطع' : 'Terminal Tablette Kiosk & Chrono',
+            },
+            {
+              id: 'magasinier' as ManufacturingRole,
+              label: language === 'ar' ? 'أمين المخزن' : 'Magasinier',
+              icon: '📦',
+              desc: language === 'ar' ? 'المواد الأولية، وصولات الاستلام والخروج' : 'Matières, BSM Décret 05 & Stocks',
+            },
+            {
+              id: 'qualite' as ManufacturingRole,
+              label: language === 'ar' ? 'مراقب الجودة' : 'Qualité',
+              icon: '🛡️',
+              desc: language === 'ar' ? 'سجل مراقبة الجودة، الحجر الصحي وإجراءات IANOR' : 'Contrôle Qualité, Tests & Quarantaine',
+            },
+          ].map((r) => {
+            const isActive = activeManufacturingRole === r.id;
+            return (
+              <button
+                key={r.id}
+                type="button"
+                onClick={() => setActiveManufacturingRole(r.id)}
                 title={r.desc}
                 className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${
                   isActive

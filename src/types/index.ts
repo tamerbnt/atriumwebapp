@@ -1135,6 +1135,29 @@ export type GarageRole =
   | 'magasinier'  // Spare Parts Depot (Parts Queue, Bin Locations, Low-Stock POs, Delivery BL)
   | 'caisse';     // Cashier & Fleet Billing (DGI Invoices 19%+Stamp, Bons, Fleet Statements, Z)
 
+// ============================================================================
+// Real Estate & Property Brokerage — Dedicated Operational Roles
+// ============================================================================
+
+export type RealEstateRole =
+  | 'direction'            // Direction & Gérant (All agency screens, KPIs, Settings)
+  | 'negociateur'          // Négociateur Commercial (Mandats 09-18, Biens & Titres, Bons de Visite GPS)
+  | 'gestionnaire_locatif' // Gestionnaire Locatif (Tableau Baux, Biens Locatifs, Quittances Art. 317, États des Lieux)
+  | 'notaire_compta';      // Notaire & Comptabilité Caisse (Notaire Décret 08-243, Quittances & Règlements Propriétaires)
+
+// ============================================================================
+// Light Manufacturing & Workshop Production — Dedicated Operational Roles
+// ============================================================================
+
+export type ManufacturingRole =
+  | 'gerant'        // Direction & Gérant (Tableau de Bord Usine, Marges, Facturation DGI, Settings)
+  | 'chef_atelier'  // Chef d'Atelier & Méthodes (Ordres de Fabrication OF, Nomenclatures BOM, Bons de Sortie)
+  | 'operateur'     // Opérateur Machine Kiosk Tablette (Mes Tâches, Chrono Poste, Déclaration Pièces & Rebuts)
+  | 'magasinier'    // Magasinier & Gestion des Stocks (Matières Premières, Bons de Réception BR, Bons de Sortie BSM Décret 05-468)
+  | 'qualite';      // Contrôle Qualité & Métrologie (Fiches Contrôle Qualité, Lots Quarantaine, Rebuts, ONML)
+
+
+
 
 export interface PMClient {
   id: string;
@@ -2320,8 +2343,37 @@ export interface BuyerDemandProfile {
 }
 
 // ==========================================
-// CATEGORY 12: MANUFACTURING & WORKSHOP BOM
+// CATEGORY 12: MANUFACTURING & WORKSHOP PRODUCTION
 // ==========================================
+
+export interface ManufacturingBomComponent {
+  id?: string;
+  rawProductId: string;
+  rawProductName: string;
+  rawProductSku?: string;
+  quantity: number;
+  unit: string;
+  scrapAllowancePercent?: number; // e.g. 5 for 5%
+  unitCostDzd: number;
+  subTotalCostDzd?: number;
+  isSubAssembly?: boolean;
+  subBomId?: string;
+}
+
+export interface ManufacturingRoutingStep {
+  id: string;
+  stepNumber: number;
+  workCenterId: string;
+  workCenterName: string;
+  operationName: string;
+  setupTimeMinutes: number;
+  runTimePerUnitMinutes: number;
+  operatorRateDzdPerHour: number;
+  machineRateDzdPerHour: number;
+  requiredSkillLevel?: string;
+  safetyPpeNotes?: string;
+}
+
 export interface ManufacturingBom {
   id: string;
   accountId: string;
@@ -2330,20 +2382,26 @@ export interface ManufacturingBom {
   staffId: string;
   finishedProductId: string;
   finishedProductName: string;
+  finishedProductSku?: string;
   bomCode: string;
+  version?: number;
+  archetype?: 'Discrete' | 'CustomJob' | 'BatchProcess' | 'TextileApparel';
   batchYield: number;
   unit: string;
   standardLaborHours: number;
-  components: Array<{
-    rawProductId: string;
-    rawProductName: string;
-    quantity: number;
-    unit: string;
-    unitCostDzd: number;
-  }>;
+  components: ManufacturingBomComponent[];
+  routingSteps?: ManufacturingRoutingStep[];
+  totalMaterialCostDzd?: number;
+  totalLaborCostDzd?: number;
+  totalLaborMachineCostDzd?: number;
   estimatedCostDzd: number;
+  suggestedSalePriceDzd?: number;
+  targetMarginPercent?: number;
   isActive: boolean;
+  status?: 'Draft' | 'UnderReview' | 'Active' | 'Archived';
+  notes?: string;
   createdAt: string;
+  updatedAt?: string;
 }
 
 export interface ManufacturingOrder {
@@ -2354,23 +2412,131 @@ export interface ManufacturingOrder {
   staffId: string;
   orderNumber: string;
   bomId: string;
+  bomCode?: string;
   productName: string;
   targetQuantity: number;
   quantityOrdered?: number;
   actualQuantityProduced?: number;
   quantityProduced?: number;
   quantityScrapped?: number;
+  scrapQuantity?: number;
+  scrapReasonCode?: string;
   assignedStation?: string;
+  assignedWorkCenterIds?: string[];
   targetDueDate?: string;
   batchLotNumber: string;
   startDate: string;
   dueDate: string;
-  status: 'Draft' | 'Planned' | 'Scheduled' | 'MaterialsIssued' | 'InProduction' | 'QC' | 'Completed' | 'Cancelled';
+  completedDate?: string;
+  status: 'Draft' | 'Planned' | 'Scheduled' | 'MaterialsIssued' | 'InProduction' | 'QC' | 'QC_Pending' | 'Completed' | 'Cancelled';
   totalMaterialCostDzd: number;
   totalLaborCostDzd: number;
   totalCostDzd: number;
+  clientOrderId?: string;
+  clientName?: string;
   notes?: string;
   createdAt: string;
+  updatedAt?: string;
+}
+
+export interface WorkstationSessionLog {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  staffId: string;
+  operatorName: string;
+  workCenterId: string;
+  workCenterName: string;
+  orderId: string;
+  orderNumber: string;
+  stepNumber: number;
+  operationName: string;
+  startTime: string;
+  endTime?: string;
+  durationSeconds: number;
+  pauseDurationSeconds: number;
+  pauseReason?: 'ToolingChange' | 'Breakdown' | 'ShiftChange' | 'MaterialWait';
+  goodQuantity: number;
+  scrapQuantity: number;
+  scrapReason?: 'SetupPiece' | 'DimensionError' | 'BurntMaterial' | 'Cracked';
+  status: 'Active' | 'Paused' | 'Submitted';
+  createdAt: string;
+}
+
+export interface RawMaterialStockItem {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  staffId: string;
+  sku: string;
+  name: string;
+  category: 'Metals' | 'Plastics' | 'Chemicals' | 'Wood' | 'Textiles' | 'Hardware' | 'Packaging';
+  currentStock: number;
+  allocatedStock: number;
+  availableStock: number;
+  reorderThreshold: number;
+  unit: string;
+  unitCostPmpDzd: number;
+  totalValuationDzd: number;
+  warehouseLocation: string;
+  supplierLotNumber?: string;
+  onmlCertificateRef?: string;
+  createdAt: string;
+}
+
+export interface MaterialTransferVoucher {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  staffId: string;
+  voucherNumber: string; // e.g. "BSM-2026-00421"
+  voucherType: 'BonDeSortie' | 'BonDeReception' | 'BonDeTransfert';
+  orderId?: string;
+  orderNumber?: string;
+  recipientStaffName: string;
+  transferDate: string;
+  items: Array<{
+    materialId: string;
+    materialName: string;
+    quantity: number;
+    unit: string;
+    unitCostDzd: number;
+    lotNumber?: string;
+  }>;
+  totalValueDzd: number;
+  notes?: string;
+}
+
+export interface QualityInspectionRecord {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  staffId: string;
+  inspectionNumber: string; // e.g. "QC-2026-00084"
+  orderId: string;
+  orderNumber: string;
+  batchLotNumber: string;
+  productName: string;
+  sampleSize: number;
+  inspectedQuantity: number;
+  acceptedQuantity: number;
+  rejectedQuantity: number;
+  verdict: 'Accepted' | 'AcceptedWithDerogation' | 'Quarantined' | 'Scrapped';
+  checkpoints: Array<{
+    parameter: string;
+    nominalValue: string;
+    tolerance: string;
+    measuredValue: string;
+    passed: boolean;
+  }>;
+  inspectorName: string;
+  inspectionDate: string;
+  certificateOfConformityGenerated: boolean;
+  notes?: string;
 }
 
 // ==========================================

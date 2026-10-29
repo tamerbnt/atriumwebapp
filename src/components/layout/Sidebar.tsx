@@ -67,6 +67,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
     setActivePmRole,
     setActivePmSubScreen,
     activeGarageRole,
+    activeRealEstateRole,
+    activeManufacturingRole,
     language,
   } = useAtriumStore();
   const [isExpanded, setIsExpanded] = useState(false);
@@ -773,91 +775,280 @@ export const Sidebar: React.FC<SidebarProps> = ({
       ];
     }
   } else if (category === 'real_estate') {
-    // Dedicated Category 11: Real Estate & Property Lease Management
-    dockNavItems = [
-      {
-        id: 'dashboard',
-        icon: <Home size={19} />,
-        title: language === 'ar' ? 'لوحة الوكالة العقارية' : language === 'fr' ? 'Tableau Agence' : 'Agency Pulse',
-        label: t('nav_home', language),
-      },
-      {
-        id: 'realestate_mandates',
-        icon: <FileText size={19} />,
-        title: language === 'ar' ? 'سجل الوكالات والوساطة (09-18)' : language === 'fr' ? 'Registre des Mandats (09-18)' : 'Mandates Register (09-18)',
-        label: language === 'ar' ? 'الوكالات' : language === 'fr' ? 'Mandats' : 'Mandates',
-      },
-      {
-        id: 'members',
-        icon: <Building2 size={19} />,
-        title: language === 'ar' ? 'محفظة العقارات والسندات' : language === 'fr' ? 'Biens Immobiliers & Titres' : 'Properties & Titles',
-        label: language === 'ar' ? 'العقارات' : language === 'fr' ? 'Biens' : 'Properties',
-      },
-      {
-        id: 'scheduler',
-        icon: <Key size={19} />,
-        title: language === 'ar' ? 'عقود الكراء' : language === 'fr' ? 'Baux & Contrats de Location' : 'Lease Contracts',
-        label: language === 'ar' ? 'العقود' : language === 'fr' ? 'Contrats' : 'Leases',
-      },
-      {
-        id: 'registrations',
-        icon: <FileCheck size={19} />,
-        title: language === 'ar' ? 'معاينة الأماكن ووصولات الزيارة GPS' : language === 'fr' ? 'États des Lieux & Bons de Visite' : 'Inspections & Visits',
-        label: language === 'ar' ? 'الزيارات والمعاينة' : language === 'fr' ? 'Visites & EDLs' : 'Visits & EDLs',
-      },
-      {
-        id: 'finance',
-        icon: <Receipt size={19} />,
-        title: language === 'ar' ? 'الوصولات ومستحقات الملاك' : language === 'fr' ? 'Quittances & Règlements Propriétaires' : 'Rent Receipts & Payouts',
-        label: language === 'ar' ? 'الوصولات' : language === 'fr' ? 'Quittances' : 'Receipts',
-      },
-      {
-        id: 'settings',
-        icon: <Settings size={19} />,
-        title: t('nav_settings', language),
-        label: t('nav_settings', language),
-      },
-    ];
+    // Dedicated Category 11: Real Estate & Property Lease Management — Role-Adapted Navigation
+    if (activeRealEstateRole === 'negociateur') {
+      dockNavItems = [
+        {
+          id: 'dashboard',
+          icon: <Home size={19} />,
+          title: language === 'ar' ? 'لوحة نشاط المستشار العقاري' : language === 'fr' ? 'Mes Mandats & Activités' : 'Agent Pulse & Mandates',
+          label: t('nav_home', language),
+        },
+        {
+          id: 'realestate_mandates',
+          icon: <FileText size={19} />,
+          title: language === 'ar' ? 'سجل الوكالات والوساطة (09-18)' : language === 'fr' ? 'Registre des Mandats (09-18)' : 'Mandates Register (09-18)',
+          label: language === 'ar' ? 'الوكالات' : language === 'fr' ? 'Mandats' : 'Mandates',
+        },
+        {
+          id: 'members',
+          icon: <Building2 size={19} />,
+          title: language === 'ar' ? 'محفظة العقارات والسندات' : language === 'fr' ? 'Biens Immobiliers & Titres' : 'Properties & Titles',
+          label: language === 'ar' ? 'العقارات' : language === 'fr' ? 'Biens' : 'Properties',
+        },
+        {
+          id: 'registrations',
+          icon: <FileCheck size={19} />,
+          title: language === 'ar' ? 'وصولات الزيارة GPS وتوقيع الزبائن' : language === 'fr' ? 'Bons de Visite GPS & Signatures' : 'Visits GPS & Signatures',
+          label: language === 'ar' ? 'الزيارات GPS' : language === 'fr' ? 'Visites GPS' : 'GPS Visits',
+        },
+      ];
+    } else if (activeRealEstateRole === 'gestionnaire_locatif') {
+      dockNavItems = [
+        {
+          id: 'dashboard',
+          icon: <Home size={19} />,
+          title: language === 'ar' ? 'لوحة تسيير الإيجارات والتحصيل' : language === 'fr' ? 'Tableau Gestion Locative & Impayés' : 'Rentals & Arrears Pulse',
+          label: t('nav_home', language),
+        },
+        {
+          id: 'members',
+          icon: <Building2 size={19} />,
+          title: language === 'ar' ? 'العقارات المخصصة للإيجار' : language === 'fr' ? 'Parc Locatif & Fiches Locataires' : 'Rental Units & Tenants',
+          label: language === 'ar' ? 'العقارات' : language === 'fr' ? 'Biens' : 'Properties',
+        },
+        {
+          id: 'scheduler',
+          icon: <Key size={19} />,
+          title: language === 'ar' ? 'عقود الكراء السكنية والتجارية' : language === 'fr' ? 'Baux & Contrats de Location' : 'Lease Contracts',
+          label: language === 'ar' ? 'العقود' : language === 'fr' ? 'Contrats' : 'Leases',
+        },
+        {
+          id: 'finance',
+          icon: <Receipt size={19} />,
+          title: language === 'ar' ? 'وصولات الإيجار والطابع الجبائي 317' : language === 'fr' ? 'Quittances & Timbre Fiscal (Art. 317)' : 'Rent Receipts & Tax Stamp',
+          label: language === 'ar' ? 'الوصولات' : language === 'fr' ? 'Quittances' : 'Receipts',
+        },
+        {
+          id: 'registrations',
+          icon: <FileCheck size={19} />,
+          title: language === 'ar' ? 'محاضر معاينة الأماكن وقراءة العدادات' : language === 'fr' ? 'États des Lieux & Compteurs' : 'Check-In/Out & Meters',
+          label: language === 'ar' ? 'المعاينة' : language === 'fr' ? 'États des Lieux' : 'Inspections',
+        },
+      ];
+    } else if (activeRealEstateRole === 'notaire_compta') {
+      dockNavItems = [
+        {
+          id: 'dashboard',
+          icon: <Home size={19} />,
+          title: language === 'ar' ? 'خزينة الوكالة والمستحقات الضريبية' : language === 'fr' ? 'Trésorerie Agence & Fiscalité' : 'Treasury & Tax Pulse',
+          label: t('nav_home', language),
+        },
+        {
+          id: 'finance',
+          icon: <Scale size={19} />,
+          title: language === 'ar' ? 'حسابات الموثق (08-243) ومستحقات الملاك' : language === 'fr' ? 'Frais Notaire (08-243) & Règlements' : 'Notary Closing (08-243) & Payouts',
+          label: language === 'ar' ? 'الموثق والمالية' : language === 'fr' ? 'Notaire & Compta' : 'Notary & Finance',
+        },
+        {
+          id: 'scheduler',
+          icon: <Key size={19} />,
+          title: language === 'ar' ? 'متابعة تدفقات الإيجار والأداء الجبائي' : language === 'fr' ? 'Flux Locatifs & Contrôle Timbre' : 'Rent Roll & Stamp Audit',
+          label: language === 'ar' ? 'العقود' : language === 'fr' ? 'Contrats' : 'Leases',
+        },
+        {
+          id: 'realestate_mandates',
+          icon: <FileText size={19} />,
+          title: language === 'ar' ? 'عمولات الوساطة ومطابقة المرسوم 09-18' : language === 'fr' ? 'Honoraires Mandats (Décret 09-18)' : 'Mandate Fees (09-18)',
+          label: language === 'ar' ? 'العمولات' : language === 'fr' ? 'Honoraires' : 'Fees',
+        },
+      ];
+    } else {
+      // Direction / Gérant (Default: Complete Operational Access)
+      dockNavItems = [
+        {
+          id: 'dashboard',
+          icon: <Home size={19} />,
+          title: language === 'ar' ? 'لوحة الوكالة العقارية' : language === 'fr' ? 'Tableau Agence' : 'Agency Pulse',
+          label: t('nav_home', language),
+        },
+        {
+          id: 'realestate_mandates',
+          icon: <FileText size={19} />,
+          title: language === 'ar' ? 'سجل الوكالات والوساطة (09-18)' : language === 'fr' ? 'Registre des Mandats (09-18)' : 'Mandates Register (09-18)',
+          label: language === 'ar' ? 'الوكالات' : language === 'fr' ? 'Mandats' : 'Mandates',
+        },
+        {
+          id: 'members',
+          icon: <Building2 size={19} />,
+          title: language === 'ar' ? 'محفظة العقارات والسندات' : language === 'fr' ? 'Biens Immobiliers & Titres' : 'Properties & Titles',
+          label: language === 'ar' ? 'العقارات' : language === 'fr' ? 'Biens' : 'Properties',
+        },
+        {
+          id: 'scheduler',
+          icon: <Key size={19} />,
+          title: language === 'ar' ? 'عقود الكراء' : language === 'fr' ? 'Baux & Contrats de Location' : 'Lease Contracts',
+          label: language === 'ar' ? 'العقود' : language === 'fr' ? 'Contrats' : 'Leases',
+        },
+        {
+          id: 'registrations',
+          icon: <FileCheck size={19} />,
+          title: language === 'ar' ? 'معاينة الأماكن ووصولات الزيارة GPS' : language === 'fr' ? 'États des Lieux & Bons de Visite' : 'Inspections & Visits',
+          label: language === 'ar' ? 'الزيارات والمعاينة' : language === 'fr' ? 'Visites & EDLs' : 'Visits & EDLs',
+        },
+        {
+          id: 'finance',
+          icon: <Receipt size={19} />,
+          title: language === 'ar' ? 'الوصولات ومستحقات الملاك' : language === 'fr' ? 'Quittances & Règlements Propriétaires' : 'Rent Receipts & Payouts',
+          label: language === 'ar' ? 'الوصولات' : language === 'fr' ? 'Quittances' : 'Receipts',
+        },
+        {
+          id: 'settings',
+          icon: <Settings size={19} />,
+          title: t('nav_settings', language),
+          label: t('nav_settings', language),
+        },
+      ];
+    }
   } else if (category === 'manufacturing_production') {
-    // Dedicated Category 12: Light Manufacturing & Workshop Production
-    dockNavItems = [
-      {
-        id: 'dashboard',
-        icon: <Home size={19} />,
-        title: language === 'ar' ? 'لوحة ورشة التصنيع' : language === 'fr' ? 'Tableau Usine' : 'Plant Pulse',
-        label: t('nav_home', language),
-      },
-      {
-        id: 'scheduler',
-        icon: <Factory size={19} />,
-        title: language === 'ar' ? 'أوامر التصنيع (OF)' : language === 'fr' ? 'Ordres de Fabrication (OF)' : 'Work Orders (OF)',
-        label: language === 'ar' ? 'أوامر التصنيع' : language === 'fr' ? 'Ordres (OF)' : 'Orders',
-      },
-      {
-        id: 'shop',
-        icon: <Layers size={19} />,
-        title: language === 'ar' ? 'قوائم المكونات (BOM)' : language === 'fr' ? 'Nomenclatures (BOM)' : 'Bill of Materials',
-        label: language === 'ar' ? 'المكونات' : language === 'fr' ? 'Nomenclatures' : 'BOM',
-      },
-      {
-        id: 'members',
-        icon: <Boxes size={19} />,
-        title: language === 'ar' ? 'المواد الأولية والمخرجات' : language === 'fr' ? 'Matières Premières & Sorties' : 'Raw Materials',
-        label: language === 'ar' ? 'المواد' : language === 'fr' ? 'Matières' : 'Materials',
-      },
-      {
-        id: 'finance',
-        icon: <ShieldCheck size={19} />,
-        title: language === 'ar' ? 'مراقبة الجودة والتكاليف' : language === 'fr' ? 'Contrôle Qualité & Coûts' : 'QC & Costing',
-        label: language === 'ar' ? 'الجودة والتكلفة' : language === 'fr' ? 'Qualité & Coûts' : 'QC & Costs',
-      },
-      {
-        id: 'settings',
-        icon: <Settings size={19} />,
-        title: t('nav_settings', language),
-        label: t('nav_settings', language),
-      },
-    ];
+    // Dedicated Category 12: Light Manufacturing & Workshop Production — Role-Adapted Navigation
+    if (activeManufacturingRole === 'chef_atelier') {
+      dockNavItems = [
+        {
+          id: 'dashboard',
+          icon: <Home size={19} />,
+          title: language === 'ar' ? 'لوحة قيادة الورشة والأداء' : language === 'fr' ? 'Tableau Atelier & Goulots' : 'Workshop Pulse & Bottlenecks',
+          label: t('nav_home', language),
+        },
+        {
+          id: 'scheduler',
+          icon: <Factory size={19} />,
+          title: language === 'ar' ? 'أوامر التصنيع ومتابعة المراحل (OF)' : language === 'fr' ? 'Ordres de Fabrication (OF Kanban)' : 'Work Orders (OF Kanban)',
+          label: language === 'ar' ? 'أوامر التصنيع' : language === 'fr' ? 'Ordres (OF)' : 'Orders',
+        },
+        {
+          id: 'shop',
+          icon: <Layers size={19} />,
+          title: language === 'ar' ? 'قوائم المكونات والوصفات (BOM)' : language === 'fr' ? 'Nomenclatures & Recettes (BOM)' : 'Bill of Materials',
+          label: language === 'ar' ? 'المكونات' : language === 'fr' ? 'Nomenclatures' : 'BOM',
+        },
+        {
+          id: 'members',
+          icon: <Boxes size={19} />,
+          title: language === 'ar' ? 'طلبات صرف المواد الأولية' : language === 'fr' ? 'Bons de Sortie Matières Atelier' : 'Material Requisitions',
+          label: language === 'ar' ? 'صرف المواد' : language === 'fr' ? 'Sorties' : 'Issues',
+        },
+        {
+          id: 'finance',
+          icon: <ShieldCheck size={19} />,
+          title: language === 'ar' ? 'متابعة الجودة ومحاضر عدم المطابقة' : language === 'fr' ? 'Fiches Qualité & Non-Conformités' : 'QC Sheets & Defects',
+          label: language === 'ar' ? 'الجودة' : language === 'fr' ? 'Qualité' : 'Quality',
+        },
+      ];
+    } else if (activeManufacturingRole === 'operateur') {
+      dockNavItems = [
+        {
+          id: 'dashboard',
+          icon: <Home size={19} />,
+          title: language === 'ar' ? 'شاشة اللمس لمحطة العمل والميقاتية' : language === 'fr' ? 'Terminal Poste de Travail (Touch)' : 'Workstation Touch Kiosk',
+          label: language === 'ar' ? 'المحطة' : language === 'fr' ? 'Mon Poste' : 'Station',
+        },
+        {
+          id: 'scheduler',
+          icon: <Factory size={19} />,
+          title: language === 'ar' ? 'أوامر العمل والمهام المسندة لي اليوم' : language === 'fr' ? 'Mes Bons de Travail du Jour' : 'My Work Tasks',
+          label: language === 'ar' ? 'مهامي' : language === 'fr' ? 'Mes Tâches' : 'My Tasks',
+        },
+      ];
+    } else if (activeManufacturingRole === 'magasinier') {
+      dockNavItems = [
+        {
+          id: 'members',
+          icon: <Boxes size={19} />,
+          title: language === 'ar' ? 'مخزن المواد الأولية والمواقع' : language === 'fr' ? 'Magasin Matières & Emplacements' : 'Raw Materials Depot',
+          label: language === 'ar' ? 'المخزن' : language === 'fr' ? 'Magasin' : 'Depot',
+        },
+        {
+          id: 'shop',
+          icon: <Layers size={19} />,
+          title: language === 'ar' ? 'وصولات الخروج الرسمية (مرسوم 05-468)' : language === 'fr' ? 'Bons de Sortie Magasin (Décret 05)' : 'Issue Vouchers (BSM)',
+          label: language === 'ar' ? 'وصولات الخروج' : language === 'fr' ? 'Bons de Sortie' : 'Exit Slips',
+        },
+        {
+          id: 'finance',
+          icon: <Receipt size={19} />,
+          title: language === 'ar' ? 'وصولات الاستلام والتسليم للزبائن' : language === 'fr' ? 'Réceptions (BR) & Livraisons (BL)' : 'Goods In & Out (BL)',
+          label: language === 'ar' ? 'الاستلام والتسليم' : language === 'fr' ? 'BR & BL' : 'Transfers',
+        },
+        {
+          id: 'dashboard',
+          icon: <Home size={19} />,
+          title: language === 'ar' ? 'حركة المخزون وإعادة الطلب' : language === 'fr' ? 'Tableau Mouvements de Stock' : 'Stock Movements',
+          label: t('nav_home', language),
+        },
+      ];
+    } else if (activeManufacturingRole === 'qualite') {
+      dockNavItems = [
+        {
+          id: 'finance',
+          icon: <ShieldCheck size={19} />,
+          title: language === 'ar' ? 'سجل مراقبة الجودة وشهادات IANOR' : language === 'fr' ? 'Contrôle Qualité & Certificats IANOR' : 'QC Register & Tests',
+          label: language === 'ar' ? 'مراقبة الجودة' : language === 'fr' ? 'Contrôle' : 'QC Tests',
+        },
+        {
+          id: 'dashboard',
+          icon: <Home size={19} />,
+          title: language === 'ar' ? 'الدفعات في الحجر الصحي والتصنيف' : language === 'fr' ? 'Lots en Quarantaine & Rebuts' : 'Quarantine & Scrap',
+          label: language === 'ar' ? 'الحجر الصحي' : language === 'fr' ? 'Quarantaine' : 'Quarantine',
+        },
+        {
+          id: 'scheduler',
+          icon: <Scale size={19} />,
+          title: language === 'ar' ? 'متابعة معايرة الموازين والأجهزة (ONML)' : language === 'fr' ? 'Étalonnage Instruments (ONML)' : 'Metrology Calibration',
+          label: language === 'ar' ? 'المعايرة' : language === 'fr' ? 'Métrologie' : 'Calibration',
+        },
+      ];
+    } else {
+      // Direction / Gérant (Default: Full Factory Oversight)
+      dockNavItems = [
+        {
+          id: 'dashboard',
+          icon: <Home size={19} />,
+          title: language === 'ar' ? 'لوحة ورشة التصنيع والهوامش' : language === 'fr' ? 'Tableau Usine & Marges' : 'Plant Pulse & Margins',
+          label: t('nav_home', language),
+        },
+        {
+          id: 'scheduler',
+          icon: <Factory size={19} />,
+          title: language === 'ar' ? 'أوامر التصنيع وسير العمل (OF)' : language === 'fr' ? 'Ordres de Fabrication (OF)' : 'Work Orders (OF)',
+          label: language === 'ar' ? 'أوامر التصنيع' : language === 'fr' ? 'Ordres (OF)' : 'Orders',
+        },
+        {
+          id: 'shop',
+          icon: <Layers size={19} />,
+          title: language === 'ar' ? 'قوائم المكونات والتسعير (BOM)' : language === 'fr' ? 'Nomenclatures & Coûts (BOM)' : 'Bill of Materials',
+          label: language === 'ar' ? 'المكونات' : language === 'fr' ? 'Nomenclatures' : 'BOM',
+        },
+        {
+          id: 'members',
+          icon: <Boxes size={19} />,
+          title: language === 'ar' ? 'المواد الأولية وتقييم المخزون' : language === 'fr' ? 'Matières Premières & Stocks' : 'Raw Materials',
+          label: language === 'ar' ? 'المواد' : language === 'fr' ? 'Matières' : 'Materials',
+        },
+        {
+          id: 'finance',
+          icon: <ShieldCheck size={19} />,
+          title: language === 'ar' ? 'مراقبة الجودة والتكاليف' : language === 'fr' ? 'Contrôle Qualité & Coûts' : 'QC & Costing',
+          label: language === 'ar' ? 'الجودة' : language === 'fr' ? 'Qualité & Coûts' : 'QC & Costs',
+        },
+        {
+          id: 'settings',
+          icon: <Settings size={19} />,
+          title: t('nav_settings', language),
+          label: t('nav_settings', language),
+        },
+      ];
+    }
   } else if (category === 'legal_accounting') {
     // Dedicated Category 13: Legal Cabinets & Accounting Firms
     dockNavItems = [

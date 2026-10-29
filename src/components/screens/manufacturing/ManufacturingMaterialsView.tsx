@@ -5,7 +5,6 @@ import {
   AlertCircle,
   CheckCircle2,
   ShieldCheck,
-  DollarSign,
   Download,
   Trash2,
   Edit,
@@ -13,140 +12,71 @@ import {
   X,
   Save,
   Check,
-  Send,
-  AlertTriangle,
+  Printer,
   ArrowRight,
   TrendingUp,
+  FileText,
+  Warehouse,
+  PackagePlus,
+  Receipt,
+  ScanLine,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
 import { formatMoney } from '../../../utils/rules';
+import { calculateCmupWeightedAverage } from '../../../utils/manufacturingRules';
+import { RawMaterialStockItem, MaterialTransferVoucher } from '../../../types';
+import { useManufacturingData } from './manufacturingData';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { Seek } from '../../ui/Seek';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 
-interface RawMaterial {
-  id: string;
-  sku: string;
-  name: string;
-  category: string;
-  stock: number;
-  unit: string;
-  minThreshold: number;
-  unitCostDzd: number;
-}
-
-const INITIAL_MATERIALS: RawMaterial[] = [
-  { id: 'm_01', sku: 'RAW-WD-01', name: 'Bois Chêne Brut Séché 50mm', category: 'Bois & Dérivés', stock: 12.5, unit: 'm³', minThreshold: 3, unitCostDzd: 180000 },
-  { id: 'm_02', sku: 'RAW-STL-02', name: 'Piètement Acier Poudré Noir', category: 'Métallurgie', stock: 14, unit: 'Pièce', minThreshold: 6, unitCostDzd: 15000 },
-  { id: 'm_03', sku: 'RAW-CHM-03', name: 'Vernis Polyuréthane Mat 5L', category: 'Chimie & Peinture', stock: 8, unit: 'Bidon', minThreshold: 5, unitCostDzd: 12000 },
-  { id: 'm_04', sku: 'RAW-PLS-04', name: 'Granulés Polypropylène Vierge', category: 'Polymères', stock: 450, unit: 'kg', minThreshold: 200, unitCostDzd: 420 },
-];
-
 export const ManufacturingMaterialsView: React.FC = () => {
-  const { language } = useAtriumStore();
+  const { language, currentUser } = useAtriumStore();
   const isAr = language === 'ar';
-  const [materials, setMaterials] = useState<RawMaterial[]>(() => {
-    try {
-      const saved = localStorage.getItem('atrium_mfg_raw_materials');
-      if (saved) return JSON.parse(saved);
-    } catch {}
-    return INITIAL_MATERIALS;
-  });
+  const { materials, vouchers, addMaterial, updateMaterial, addVoucher } = useManufacturingData();
 
+  // Active Main Sub-tab: 'inventory' | 'vouchers'
+  const [activeSubTab, setActiveSubTab] = useState<'inventory' | 'vouchers'>('inventory');
+
+  // Inventory Table States
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('All');
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [pinnedIds, setPinnedIds] = useState<Set<string>>(new Set(['m_01']));
+  const [pinnedIds, setPinnedIds] = useState<Set<string>>(new Set(['raw_01']));
   const [sortBy, setSortBy] = useState<string>('name');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
 
-  // Modals & 390px Inspector Drawer State
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [materialToEdit, setMaterialToEdit] = useState<RawMaterial | null>(null);
+  // Modals
+  const [isMaterialModalOpen, setIsMaterialModalOpen] = useState(false);
+  const [materialToEdit, setMaterialToEdit] = useState<RawMaterialStockItem | null>(null);
 
-  // Form states inside Modal
+  // Material Form States
   const [sku, setSku] = useState('');
   const [name, setName] = useState('');
-  const [category, setCategory] = useState('Bois & Dérivés');
+  const [category, setCategory] = useState<'Metals' | 'Plastics' | 'Chemicals' | 'Wood' | 'Textiles' | 'Hardware' | 'Packaging'>('Wood');
   const [stock, setStock] = useState('10');
   const [unit, setUnit] = useState('m³');
   const [minThreshold, setMinThreshold] = useState('3');
-  const [unitCostDzd, setUnitCostDzd] = useState('15000');
+  const [unitCostDzd, setUnitCostDzd] = useState('180000');
+  const [warehouseLocation, setWarehouseLocation] = useState('Dépôt Bois - Rack A-01');
 
   // 390px Inline Side Inspector
-  const [selectedMaterial, setSelectedMaterial] = useState<RawMaterial | null>(() => {
-    return materials[0] || null;
-  });
-  const [activeTab, setActiveTab] = useState<'fiche' | 'stock' | 'fournisseur' | 'notes'>('fiche');
-  const [inspectorNotes, setInspectorNotes] = useState<string>('');
-  const [noteSaved, setNoteSaved] = useState(false);
+  const [selectedMaterial, setSelectedMaterial] = useState<RawMaterialStockItem | null>(() => materials[0] || null);
+  const [activeDrawerTab, setActiveDrawerTab] = useState<'fiche' | 'pmp' | 'vouchers'>('fiche');
 
-  // Persist materials
-  const saveMaterials = (newMaterials: RawMaterial[]) => {
-    setMaterials(newMaterials);
-    try {
-      localStorage.setItem('atrium_mfg_raw_materials', JSON.stringify(newMaterials));
-    } catch {}
-  };
+  // Voucher Creation & Printable Voucher Modal States
+  const [isVoucherModalOpen, setIsVoucherModalOpen] = useState(false);
+  const [voucherType, setVoucherType] = useState<'BonDeSortie' | 'BonDeReception' | 'BonDeTransfert'>('BonDeSortie');
+  const [voucherMaterialId, setVoucherMaterialId] = useState(materials[0]?.id || '');
+  const [voucherQty, setVoucherQty] = useState('1');
+  const [voucherRecipient, setVoucherRecipient] = useState('M. Karim Bouzid (Opérateur)');
+  const [voucherNotes, setVoucherNotes] = useState('Sortie pour Ordre de Fabrication OF-2026-0089');
 
-  const openCreateModal = () => {
-    setMaterialToEdit(null);
-    setSku(`RAW-${Math.floor(100 + Math.random() * 900)}`);
-    setName('');
-    setCategory('Bois & Dérivés');
-    setStock('10');
-    setUnit('Pièce');
-    setMinThreshold('3');
-    setUnitCostDzd('15000');
-    setIsModalOpen(true);
-  };
-
-  const openEditModal = (m: RawMaterial) => {
-    setMaterialToEdit(m);
-    setSku(m.sku);
-    setName(m.name);
-    setCategory(m.category);
-    setStock(String(m.stock));
-    setUnit(m.unit);
-    setMinThreshold(String(m.minThreshold));
-    setUnitCostDzd(String(m.unitCostDzd));
-    setIsModalOpen(true);
-  };
-
-  const handleSaveModal = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!sku.trim() || !name.trim()) {
-      showToast(isAr ? 'يرجى إدخال رمز المادة واسمها' : 'Veuillez saisir le SKU et nom de la matière', 'error');
-      return;
-    }
-
-    const payload: RawMaterial = {
-      id: materialToEdit?.id || `m_${Date.now()}`,
-      sku: sku.trim(),
-      name: name.trim(),
-      category: category.trim(),
-      stock: parseFloat(stock) || 0,
-      unit: unit.trim(),
-      minThreshold: parseFloat(minThreshold) || 1,
-      unitCostDzd: parseFloat(unitCostDzd) || 0,
-    };
-
-    if (materialToEdit) {
-      const updated = materials.map((m) => (m.id === payload.id ? payload : m));
-      saveMaterials(updated);
-      if (selectedMaterial?.id === payload.id) setSelectedMaterial(payload);
-      showToast(isAr ? 'تم تحديث بيانات المادة الأولية' : 'Matière première mise à jour', 'success');
-    } else {
-      const updated = [payload, ...materials];
-      saveMaterials(updated);
-      setSelectedMaterial(payload);
-      showToast(isAr ? 'تمت إضافة مادة أولية جديدة' : 'Nouvelle matière première enregistrée', 'success');
-    }
-    setIsModalOpen(false);
-  };
+  // Printable Voucher Preview Modal State
+  const [printableVoucher, setPrintableVoucher] = useState<MaterialTransferVoucher | null>(null);
 
   const filteredMaterials = useMemo(() => {
     return materials.filter((m) => {
@@ -155,726 +85,947 @@ export const ManufacturingMaterialsView: React.FC = () => {
       }
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
-        const matchesName = m.name.toLowerCase().includes(q);
         const matchesSku = m.sku.toLowerCase().includes(q);
-        const matchesCat = m.category.toLowerCase().includes(q);
-        if (!matchesName && !matchesSku && !matchesCat) return false;
+        const matchesName = m.name.toLowerCase().includes(q);
+        const matchesLoc = m.warehouseLocation?.toLowerCase().includes(q) || false;
+        if (!matchesSku && !matchesName && !matchesLoc) return false;
       }
       return true;
     });
   }, [materials, categoryFilter, searchQuery]);
 
-  // KPIs
-  const lowStockCount = materials.filter((m) => m.stock <= m.minThreshold).length;
-  const totalStockValuation = materials.reduce((acc, m) => acc + m.stock * m.unitCostDzd, 0);
+  const sortedMaterials = useMemo(() => {
+    const list = [...filteredMaterials];
+    list.sort((a, b) => {
+      const aPinned = pinnedIds.has(a.id);
+      const bPinned = pinnedIds.has(b.id);
+      if (aPinned && !bPinned) return -1;
+      if (!aPinned && bPinned) return 1;
 
-  // Actions
-  const handlePin = (m: RawMaterial) => {
-    setPinnedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(m.id)) next.delete(m.id);
-      else next.add(m.id);
-      return next;
-    });
-    showToast(
-      pinnedIds.has(m.id)
-        ? (isAr ? 'تم إلغاء التثبيت' : 'Matière désépinglée')
-        : (isAr ? 'تم تثبيت المادة' : 'Matière épinglée'),
-      'info'
-    );
-  };
-
-  const handleDelete = (m: RawMaterial) => {
-    const updated = materials.filter((item) => item.id !== m.id);
-    saveMaterials(updated);
-    if (selectedMaterial?.id === m.id) {
-      setSelectedMaterial(null);
-    }
-    showToast(isAr ? 'تم حذف المادة الأولية' : 'Matière retirée des stocks', 'success');
-  };
-
-  const handleQuickAddStock = (m: RawMaterial) => {
-    const updated = materials.map((item) => {
-      if (item.id === m.id) {
-        return { ...item, stock: item.stock + 10 };
+      if (sortBy === 'name') {
+        const cmp = a.name.localeCompare(b.name);
+        return sortDir === 'asc' ? cmp : -cmp;
       }
-      return item;
+      if (sortBy === 'stock') {
+        const cmp = a.currentStock - b.currentStock;
+        return sortDir === 'asc' ? cmp : -cmp;
+      }
+      if (sortBy === 'valuation') {
+        const valA = a.currentStock * a.unitCostPmpDzd;
+        const valB = b.currentStock * b.unitCostPmpDzd;
+        return sortDir === 'asc' ? valA - valB : valB - valA;
+      }
+      return 0;
     });
-    saveMaterials(updated);
-    const target = updated.find((item) => item.id === m.id);
-    if (target && selectedMaterial?.id === m.id) setSelectedMaterial(target);
+    return list;
+  }, [filteredMaterials, pinnedIds, sortBy, sortDir]);
+
+  // Aggregate Metrics
+  const totalValuation = useMemo(() => {
+    return materials.reduce((acc, m) => acc + m.currentStock * m.unitCostPmpDzd, 0);
+  }, [materials]);
+
+  const lowStockCount = useMemo(() => {
+    return materials.filter((m) => m.currentStock <= m.reorderThreshold).length;
+  }, [materials]);
+
+  const handleOpenAdd = () => {
+    setMaterialToEdit(null);
+    setSku(`RAW-ALG-${Math.floor(100 + Math.random() * 900)}`);
+    setName('');
+    setCategory('Wood');
+    setStock('10');
+    setUnit('m³');
+    setMinThreshold('3');
+    setUnitCostDzd('15000');
+    setWarehouseLocation('Dépôt Central A-01');
+    setIsMaterialModalOpen(true);
+  };
+
+  const handleOpenEdit = (m: RawMaterialStockItem) => {
+    setMaterialToEdit(m);
+    setSku(m.sku);
+    setName(m.name);
+    setCategory(m.category);
+    setStock(String(m.currentStock));
+    setUnit(m.unit);
+    setMinThreshold(String(m.reorderThreshold));
+    setUnitCostDzd(String(m.unitCostPmpDzd));
+    setWarehouseLocation(m.warehouseLocation || 'Dépôt Central A-01');
+    setIsMaterialModalOpen(true);
+  };
+
+  const handleSaveMaterial = (e: React.FormEvent) => {
+    e.preventDefault();
+    const stockNum = parseFloat(stock) || 0;
+    const threshNum = parseFloat(minThreshold) || 1;
+    const costNum = parseFloat(unitCostDzd) || 0;
+
+    if (materialToEdit) {
+      const updated: RawMaterialStockItem = {
+        ...materialToEdit,
+        sku,
+        name,
+        category,
+        currentStock: stockNum,
+        availableStock: Math.max(0, stockNum - materialToEdit.allocatedStock),
+        reorderThreshold: threshNum,
+        unit,
+        unitCostPmpDzd: costNum,
+        totalValuationDzd: stockNum * costNum,
+        warehouseLocation,
+      };
+      updateMaterial(updated);
+      if (selectedMaterial?.id === updated.id) setSelectedMaterial(updated);
+      showToast(isAr ? 'تم تحديث بطاقة المادة الأولية' : 'Fiche matière première mise à jour', 'success');
+    } else {
+      const newItem: RawMaterialStockItem = {
+        id: `raw_${Date.now()}`,
+        accountId: 'acc_01',
+        businessId: 'biz_manufacturing',
+        branchId: 'branch_manufacturing_main',
+        staffId: currentUser?.id || 'staff_01',
+        sku,
+        name,
+        category,
+        currentStock: stockNum,
+        allocatedStock: 0,
+        availableStock: stockNum,
+        reorderThreshold: threshNum,
+        unit,
+        unitCostPmpDzd: costNum,
+        totalValuationDzd: stockNum * costNum,
+        warehouseLocation,
+        createdAt: new Date().toISOString(),
+      };
+      addMaterial(newItem);
+      setSelectedMaterial(newItem);
+      showToast(isAr ? 'تمت إضافة المادة الأولية بنجاح' : 'Nouvelle matière première enregistrée', 'success');
+    }
+    setIsMaterialModalOpen(false);
+  };
+
+  // Submit Décret 05-468 Voucher
+  const handleCreateVoucher = (e: React.FormEvent) => {
+    e.preventDefault();
+    const mat = materials.find((m) => m.id === voucherMaterialId) || materials[0];
+    if (!mat) return;
+
+    const qty = parseFloat(voucherQty) || 1;
+    const unitCost = mat.unitCostPmpDzd;
+    const totalVal = qty * unitCost;
+
+    const prefix = voucherType === 'BonDeSortie' ? 'BSM' : voucherType === 'BonDeReception' ? 'BR' : 'BT';
+    const newVoucher: MaterialTransferVoucher = {
+      id: `v_${Date.now()}`,
+      accountId: 'acc_01',
+      businessId: 'biz_manufacturing',
+      branchId: 'branch_manufacturing_main',
+      staffId: currentUser?.id || 'staff_01',
+      voucherNumber: `${prefix}-2026-${Math.floor(1000 + Math.random() * 9000)}`,
+      voucherType,
+      recipientStaffName: voucherRecipient,
+      transferDate: new Date().toISOString(),
+      items: [
+        {
+          materialId: mat.id,
+          materialName: mat.name,
+          quantity: qty,
+          unit: mat.unit,
+          unitCostDzd: unitCost,
+          lotNumber: mat.supplierLotNumber || 'LOT-2026',
+        },
+      ],
+      totalValueDzd: totalVal,
+      notes: voucherNotes,
+    };
+
+    // Update stock inventory
+    if (voucherType === 'BonDeSortie') {
+      const updatedStock = Math.max(0, mat.currentStock - qty);
+      updateMaterial({
+        ...mat,
+        currentStock: updatedStock,
+        availableStock: Math.max(0, updatedStock - mat.allocatedStock),
+        totalValuationDzd: updatedStock * mat.unitCostPmpDzd,
+      });
+    } else if (voucherType === 'BonDeReception') {
+      const newCmup = calculateCmupWeightedAverage(mat.currentStock, mat.unitCostPmpDzd, qty, unitCost);
+      const newQty = mat.currentStock + qty;
+      updateMaterial({
+        ...mat,
+        currentStock: newQty,
+        availableStock: newQty - mat.allocatedStock,
+        unitCostPmpDzd: newCmup,
+        totalValuationDzd: newQty * newCmup,
+      });
+    }
+
+    addVoucher(newVoucher);
+    setIsVoucherModalOpen(false);
+    setPrintableVoucher(newVoucher);
     showToast(
-      isAr ? 'تمت إضافة كمية (+10) للمخزون' : 'Réapprovisionnement (+10) enregistré',
+      isAr
+        ? `تم إصدار السند ${newVoucher.voucherNumber} وفق المرسوم 05-468`
+        : `Bon ${newVoucher.voucherNumber} enregistré selon le Décret 05-468`,
       'success'
     );
   };
 
-  const handleExportCsv = () => {
-    const headers = ['SKU', 'Désignation Matière', 'Catégorie', 'Stock', 'Unité', 'Seuil Alerte', 'Coût Unitaire DZD', 'Valeur Totale DZD'];
-    const rows = filteredMaterials.map((m) => [
-      m.sku,
-      `"${m.name.replace(/"/g, '""')}"`,
-      m.category,
-      m.stock,
-      m.unit,
-      m.minThreshold,
-      m.unitCostDzd,
-      m.stock * m.unitCostDzd,
-    ]);
-    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map((e) => e.join(','))].join('\n');
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `matieres_premieres_${new Date().toISOString().slice(0, 10)}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    showToast(isAr ? 'تم تصدير ملف المواد الأولية CSV' : 'Export CSV des matières généré', 'info');
-  };
-
-  const handleSaveNotes = () => {
-    if (!selectedMaterial) return;
-    setNoteSaved(true);
-    setTimeout(() => setNoteSaved(false), 2000);
-    showToast(isAr ? 'تم حفظ التوجيهات' : 'Consignes enregistrées', 'success');
-  };
-
-  // Column definitions for UniversalDataCollection
-  const columns: ColumnDefinition<RawMaterial>[] = [
-    {
-      id: 'sku',
-      header: isAr ? 'رمز المادة' : 'SKU Matière',
-      accessorKey: 'sku',
-      sortable: true,
-      minWidth: '130px',
-      cell: (m) => (
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-orange-50 dark:bg-orange-950/40 text-[#C4785A] flex items-center justify-center font-mono font-bold text-xs shrink-0">
-            <Boxes size={16} />
-          </div>
-          <div>
-            <div className="font-mono font-bold text-xs text-neutral-900 dark:text-neutral-100 flex items-center gap-1.5">
-              {m.sku}
-              {pinnedIds.has(m.id) && (
-                <Pin size={10} className="fill-[#C4785A] text-[#C4785A]" />
-              )}
+  const columns: ColumnDefinition<RawMaterialStockItem>[] = useMemo(
+    () => [
+      {
+        key: 'name',
+        header: isAr ? 'المادة الأولية / الرمز' : 'Matière Première & SKU',
+        width: '3.6*',
+        sortable: true,
+        renderCell: (m) => (
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 text-[#C4785A] flex items-center justify-center font-bold text-xs shrink-0 border border-[#F5E2D8]">
+              <Boxes size={18} />
             </div>
-            <div className="text-[10px] text-neutral-400">
-              {m.category}
+            <div className="min-w-0">
+              <div className="font-bold text-xs text-neutral-900 dark:text-white truncate">
+                {m.name}
+              </div>
+              <div className="flex items-center gap-2 text-[11px] text-neutral-400 font-mono mt-0.5">
+                <span className="font-bold text-[#C4785A]">{m.sku}</span>
+                <span>•</span>
+                <span>{m.warehouseLocation || 'Allée A-01'}</span>
+              </div>
             </div>
           </div>
-        </div>
-      ),
-    },
-    {
-      id: 'name',
-      header: isAr ? 'اسم المادة الخام' : 'Désignation Matière',
-      accessorKey: 'name',
-      sortable: true,
-      minWidth: '220px',
-      cell: (m) => (
-        <div>
-          <div className="font-semibold text-xs text-neutral-900 dark:text-neutral-100 line-clamp-1">
-            {m.name}
-          </div>
-          <div className="text-[11px] text-neutral-500">
-            {m.category}
-          </div>
-        </div>
-      ),
-    },
-    {
-      id: 'stock',
-      header: isAr ? 'الكمية في المخزن' : 'Stock Disponible',
-      accessorKey: 'stock',
-      sortable: true,
-      minWidth: '130px',
-      cell: (m) => {
-        const isLow = m.stock <= m.minThreshold;
-        return (
-          <div className="flex items-center gap-1.5">
-            <span
-              className={`font-mono font-bold text-xs px-2 py-0.5 rounded-full ${
-                isLow
-                  ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
-                  : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
-              }`}
-            >
-              {m.stock} {m.unit}
-            </span>
-            {isLow && <AlertTriangle size={13} className="text-amber-500 shrink-0" />}
-          </div>
-        );
+        ),
       },
-    },
-    {
-      id: 'unitCost',
-      header: isAr ? 'تكلفة الوحدة' : 'Coût Unitaire',
-      accessorKey: 'unitCostDzd',
-      sortable: true,
-      minWidth: '130px',
-      cell: (m) => (
-        <div>
-          <div className="font-mono font-bold text-xs text-neutral-900 dark:text-white">
-            {formatMoney(m.unitCostDzd)}
+      {
+        key: 'stock',
+        header: isAr ? 'المخزون المتاح / الإجمالي' : 'Stock (Dispo / Total)',
+        width: '2.5*',
+        sortable: true,
+        renderCell: (m) => {
+          const isLow = m.currentStock <= m.reorderThreshold;
+          return (
+            <div>
+              <div className="flex items-center gap-1.5 font-mono text-xs font-bold text-neutral-900 dark:text-white">
+                <span>{m.availableStock ?? m.currentStock}</span>
+                <span className="text-neutral-400 font-sans font-normal">/ {m.currentStock} {m.unit}</span>
+              </div>
+              <div className="text-[10px] mt-0.5">
+                {isLow ? (
+                  <span className="text-red-500 font-bold flex items-center gap-1">
+                    <AlertCircle size={10} /> {isAr ? 'تحت العتبة الحرجة' : 'Seuil Réappro atteint'}
+                  </span>
+                ) : (
+                  <span className="text-emerald-600 font-medium">Stock normal</span>
+                )}
+              </div>
+            </div>
+          );
+        },
+      },
+      {
+        key: 'valuation',
+        header: isAr ? 'سعر الوحدة PMP / القيمة' : 'Coût PMP / Valeur Dépôt',
+        width: '2.5*',
+        sortable: true,
+        renderCell: (m) => (
+          <div>
+            <div className="font-mono text-xs font-bold text-neutral-900 dark:text-white">
+              {formatMoney(m.currentStock * m.unitCostPmpDzd)}
+            </div>
+            <div className="text-[10px] text-neutral-400 font-mono mt-0.5">
+              PMP: {formatMoney(m.unitCostPmpDzd)} / {m.unit}
+            </div>
           </div>
-          <div className="text-[10px] text-neutral-400">
-            par {m.unit}
-          </div>
-        </div>
-      ),
-    },
-    {
-      id: 'totalValuation',
-      header: isAr ? 'التقييم الإجمالي' : 'Valeur Totale',
-      accessorKey: 'unitCostDzd',
-      sortable: false,
-      minWidth: '130px',
-      cell: (m) => (
-        <div className="font-mono font-bold text-xs text-neutral-900 dark:text-white">
-          {formatMoney(m.stock * m.unitCostDzd)}
-        </div>
-      ),
-    },
-  ];
+        ),
+      },
+      {
+        key: 'category',
+        header: isAr ? 'الصنف' : 'Catégorie',
+        width: '2.0*',
+        renderCell: (m) => (
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700">
+            {m.category}
+          </span>
+        ),
+      },
+    ],
+    [isAr]
+  );
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
-      {/* Top Header Strip with Action Toolbar */}
+      {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold shadow-xs">
-            <Boxes size={22} />
+            <Warehouse size={22} />
           </div>
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-xl font-bold text-neutral-900 dark:text-white">
-                {isAr ? 'المواد الأولية والمخرجات' : 'Matières Premières & Stocks Usine'}
+                {isAr ? 'مستودع المواد الأولية وسندات الصرف' : 'Dépôt Matières & Mouvements Décret 05-468'}
               </h1>
               <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#C4785A]/15 text-[#C4785A]">
-                {materials.length} références
+                {materials.length} {isAr ? 'صنف' : 'références'}
               </span>
             </div>
             <p className="text-xs text-neutral-500 dark:text-neutral-400">
               {isAr
-                ? 'إدارة مخزون المواد الخام لخطوط الإنتاج والتنبيه عند انخفاض الكميات'
-                : 'Stocks d’approvisionnement, alertes seuil critique & valorisation matière'}
+                ? 'تقييم المخزون بطريقة PMP وإصدار أذونات الخروج والاستلام الرسمية'
+                : 'Valorisation FIFO/PMP, gestion des casiers et traçabilité BSM / BR Décret 05-468'}
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-2.5">
           <AtriumButton
-            variant="ghost"
+            type="button"
+            variant="outline"
             size="sm"
-            onClick={handleExportCsv}
-            icon={<Download size={14} />}
+            icon={<FileText size={14} />}
+            onClick={() => setIsVoucherModalOpen(true)}
           >
-            {isAr ? 'تصدير CSV' : 'Export CSV'}
+            <span>{isAr ? 'سند صرف / استلام BSM' : 'Nouveau Bon BSM / BR'}</span>
           </AtriumButton>
           <AtriumButton
+            type="button"
             variant="primary"
-            onClick={openCreateModal}
-            icon={<Plus size={14} />}
+            onClick={handleOpenAdd}
+            icon={<Plus size={15} strokeWidth={2.5} />}
           >
-            {isAr ? 'مادة جديدة' : 'Nouvelle Matière'}
+            <span>{isAr ? 'مادة أولية جديدة' : 'Nouvelle Matière'}</span>
           </AtriumButton>
         </div>
       </div>
 
-      {/* Canonical 3-Card Top Metrics Pod Tray */}
-      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
-        <div>
-          <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
-            {isAr ? 'مستويات مخزون المواد الأولية' : 'Niveaux de Stocks Matières & Disponibilité'}
-          </h2>
-          <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-            {isAr ? 'متابعة المواد المتاحة لخطوط التجميع، التنبيهات والتقييم الإجمالي' : 'Matières pour ordres de fabrication, alertes seuil critique et immobilisation'}
-          </p>
-        </div>
+      {/* Sub-tab Switcher: Inventory vs. Vouchers */}
+      <div className="flex items-center gap-2 p-1 bg-neutral-100 dark:bg-neutral-800/80 rounded-2xl w-fit">
+        <button
+          type="button"
+          onClick={() => setActiveSubTab('inventory')}
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            activeSubTab === 'inventory'
+              ? 'bg-white dark:bg-neutral-900 text-[#C4785A] shadow-xs'
+              : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900'
+          }`}
+        >
+          {isAr ? 'مخزون المواد الأولية PMP' : 'Stock & Valorisation PMP'} ({materials.length})
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveSubTab('vouchers')}
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            activeSubTab === 'vouchers'
+              ? 'bg-white dark:bg-neutral-900 text-[#C4785A] shadow-xs'
+              : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900'
+          }`}
+        >
+          {isAr ? 'سجل السندات (BSM / BR)' : 'Registre Bons Décret 05-468'} ({vouchers.length})
+        </button>
+      </div>
 
+      {/* KPI Pod Tray */}
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {/* Card 1: Références Totales */}
-          <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
-            <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
-              {isAr ? 'أصناف المواد الأولية' : 'Références Enregistrées'}
+          <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
+            <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
+              {isAr ? 'إجمالي قيمة المخزون PMP' : 'Valeur Totale du Dépôt'}
             </span>
             <div>
-              <div className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white font-mono tabular-nums">
-                {materials.length}
+              <div className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white font-mono">
+                {formatMoney(totalValuation)}
               </div>
-              <p className="text-[11px] text-emerald-600 dark:text-emerald-400 mt-0.5 font-medium">
-                {isAr ? 'موردون معتمدون' : 'Fournisseurs qualifiés'}
+              <p className="text-[11px] text-neutral-400 mt-0.5">
+                {isAr ? 'طريقة المتوسط المرجح PMP' : 'Calculé au Coût Moyen Unitaire Pondéré'}
               </p>
             </div>
           </div>
 
-          {/* Card 2: Ruptures / Alertes */}
-          <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
-            <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
-              {isAr ? 'تنبيهات انخفاض المخزون' : 'Alertes Approvisionnement'}
+          <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
+            <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
+              {isAr ? 'المواد تحت العتبة الحرجة' : 'Alertes Réapprovisionnement'}
             </span>
             <div>
-              <div className="text-2xl font-bold tracking-tight text-amber-600 dark:text-amber-400 font-mono tabular-nums">
+              <div className="text-2xl font-bold tracking-tight text-amber-600 dark:text-amber-400 font-mono">
                 {lowStockCount}
               </div>
-              <p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5 font-medium">
-                {lowStockCount > 0 ? (isAr ? 'تحت حد الأمان' : 'Sous le seuil d’alerte') : 'Tous stocks conformes'}
+              <p className="text-[11px] text-neutral-400 mt-0.5">
+                {isAr ? 'تتطلب طلبيات شراء فورية' : 'Références sous le stock de sécurité'}
               </p>
             </div>
           </div>
 
-          {/* Card 3: Dark Espresso Anchor Card */}
           <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-medium text-neutral-300">
-                {isAr ? 'القيمة الإجمالية للمخزون' : 'Valorisation Globale'}
+              <span className="text-xs font-semibold text-neutral-300">
+                {isAr ? 'الامتثال للمرسوم 05-468' : 'Traçabilité Décret 05-468'}
               </span>
-              <span className="bg-[#3D2817] text-[#FB923C] rounded-full px-2 py-0.5 text-[10px] font-bold">
-                Matières
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#3D2817] text-[#FB923C]">
+                Conforme
               </span>
             </div>
             <div>
-              <div className="text-2xl font-black text-white font-mono tabular-nums">
-                {formatMoney(totalStockValuation)}
+              <div className="text-2xl font-black text-[#FB923C] font-mono">
+                {vouchers.length} Bons
               </div>
-              <p className="text-[11px] text-emerald-400 mt-0.5 flex items-center gap-1 font-medium">
-                <CheckCircle2 size={11} />
-                {isAr ? 'مستودع مواد خام مؤمّن' : 'Immobilisation matière active'}
+              <p className="text-[11px] text-neutral-400 mt-0.5">
+                Bons de Sortie (BSM) & Réception (BR) signés
               </p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Bottom Elevated Pod Tray Enclosing Collection & Inspector Drawer */}
-      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
-        {/* Domain Filter Header Strip */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div>
-            <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
-              {isAr ? 'مستودع وتخزين المواد الأولية' : 'Nomenclature des Matières Premières & Approvisionnement'}
-            </h2>
-            <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-              {isAr ? 'تتبع الكميات المتاحة، أسعار التكلفة، وحدود الأمان لإعادة الطلب' : 'Gestion des stocks d’alimentation usine, seuils critiques et valorisation matière'}
-            </p>
+      {/* Main Content Area */}
+      {activeSubTab === 'inventory' ? (
+        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-bold text-neutral-900 dark:text-white">
+                {isAr ? 'دليل المواد الأولية' : 'Catalogue Matières Premières'}
+              </span>
+              <span className="text-xs text-neutral-400 font-semibold font-mono">
+                ({sortedMaterials.length})
+              </span>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2.5 ml-auto">
+              <Seek
+                value={searchQuery}
+                onChange={setSearchQuery}
+                placeholder={isAr ? 'بحث بالاسم، الرمز، أو الرف...' : 'Recherche SKU, matière, casier...'}
+                shutSize={36}
+                openWidth={220}
+              />
+
+              <select
+                value={categoryFilter}
+                onChange={(e) => setCategoryFilter(e.target.value)}
+                className="px-3 py-1.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-xs font-semibold text-neutral-700 dark:text-neutral-300 outline-none"
+              >
+                <option value="All">{isAr ? 'جميع الأصناف' : 'Toutes Catégories'}</option>
+                <option value="Wood">Bois</option>
+                <option value="Metals">Métaux</option>
+                <option value="Plastics">Plastiques</option>
+                <option value="Chemicals">Chimie</option>
+                <option value="Textiles">Textiles</option>
+                <option value="Hardware">Quincaillerie</option>
+              </select>
+            </div>
           </div>
 
-          {/* Authentic Manufacturing Materials Filter Capsules */}
-          <div className="flex items-center gap-1.5 p-1 bg-white dark:bg-neutral-800 rounded-full border border-neutral-200/80 dark:border-neutral-700/60 shadow-2xs overflow-x-auto">
-            {[
-              { id: 'All', label: isAr ? 'جميع المواد' : 'Toutes matières' },
-              { id: 'Bois & Dérivés', label: 'Bois' },
-              { id: 'Métallurgie', label: 'Métallurgie' },
-              { id: 'Chimie & Peinture', label: 'Chimie' },
-            ].map((f) => (
-              <button
-                key={f.id}
-                onClick={() => setCategoryFilter(f.id)}
-                className="px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer"
-                style={{
-                  backgroundColor: categoryFilter === f.id ? '#FCEEE8' : 'transparent',
-                  color: categoryFilter === f.id ? 'var(--color-accent)' : '#71717A',
+          <div className="flex items-start gap-4">
+            <div className="flex-1 min-w-0">
+              <UniversalDataCollection<RawMaterialStockItem>
+                items={sortedMaterials}
+                keyExtractor={(m) => m.id}
+                defaultViewMode={viewMode}
+                columns={columns}
+                sortBy={sortBy}
+                sortDirection={sortDir}
+                onSortChange={(key) => {
+                  if (sortBy === key) setSortDir((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+                  else {
+                    setSortBy(key);
+                    setSortDir('asc');
+                  }
                 }}
+                selectedIds={selectedIds}
+                onSelectionChange={setSelectedIds}
+                isPinned={(m) => pinnedIds.has(m.id)}
+                onTogglePin={(m) => {
+                  setPinnedIds((prev) => {
+                    const next = new Set(prev);
+                    if (next.has(m.id)) next.delete(m.id);
+                    else next.add(m.id);
+                    return next;
+                  });
+                }}
+                onItemClick={(m) => setSelectedMaterial(m)}
+                onEdit={handleOpenEdit}
+                renderCard={(m) => (
+                  <div className="flex flex-col items-center justify-center w-full">
+                    <div className="w-16 h-16 rounded-2xl bg-[#FCEEE8] dark:bg-neutral-800 text-[#C4785A] flex items-center justify-center text-xl font-bold mb-3 border border-[#F5E2D8]">
+                      <Boxes size={28} />
+                    </div>
+                    <h3 className="text-sm font-bold text-neutral-900 dark:text-white text-center truncate max-w-[200px]">
+                      {m.name}
+                    </h3>
+                    <span className="text-[11px] font-mono text-[#C4785A] font-bold mt-0.5">
+                      {m.sku}
+                    </span>
+                    <div className="w-full pt-3 mt-3 border-t border-neutral-100 dark:border-neutral-800 text-xs flex justify-between">
+                      <span className="text-neutral-400">Stock :</span>
+                      <span className="font-mono font-bold text-neutral-900 dark:text-white">
+                        {m.currentStock} {m.unit}
+                      </span>
+                    </div>
+                  </div>
+                )}
+                emptyTitle={isAr ? 'لا توجد مواد مطابقة' : 'Aucune matière trouvée'}
+                emptyDescription={isAr ? 'أضف أول مادة أولية للمخزن' : 'Enregistrez votre première matière première'}
+                primaryActionLabel={isAr ? 'مادة جديدة' : 'Nouvelle Matière'}
+                onAddFirstItem={handleOpenAdd}
+              />
+            </div>
+
+            {/* 390px Inline Side Inspector */}
+            {selectedMaterial && (
+              <div className="w-[390px] shrink-0 bg-white dark:bg-neutral-850 rounded-2xl border border-[#EDF1F3] dark:border-neutral-800 shadow-lg flex flex-col h-[650px] overflow-hidden animate-in slide-in-from-right-4 duration-200">
+                <div className="p-4 border-b border-neutral-100 dark:border-neutral-800 bg-[#F8F9FA] dark:bg-neutral-800/60 flex items-center justify-between">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-10 h-10 rounded-xl bg-[#FCEEE8] text-[#C4785A] font-bold text-sm flex items-center justify-center shrink-0 border border-[#F5E2D8]">
+                      <Boxes size={20} />
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="font-bold text-sm text-neutral-900 dark:text-white truncate">
+                        {selectedMaterial.name}
+                      </h3>
+                      <div className="text-xs text-neutral-400 font-mono truncate">
+                        {selectedMaterial.sku} • {selectedMaterial.category}
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedMaterial(null)}
+                    className="w-8 h-8 rounded-lg flex items-center justify-center text-neutral-400 hover:text-neutral-700 cursor-pointer"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+
+                <div className="p-4 flex-1 overflow-y-auto space-y-4 text-xs">
+                  <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3.5 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
+                    <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block">
+                      Données d'Emplacement & Seuil
+                    </span>
+                    <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700">
+                      <span className="text-neutral-500">Emplacement Rack :</span>
+                      <span className="font-semibold text-neutral-900 dark:text-white">{selectedMaterial.warehouseLocation || 'Allée A-01'}</span>
+                    </div>
+                    <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700">
+                      <span className="text-neutral-500">Stock Physique Total :</span>
+                      <span className="font-mono font-bold text-neutral-900 dark:text-white">{selectedMaterial.currentStock} {selectedMaterial.unit}</span>
+                    </div>
+                    <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700">
+                      <span className="text-neutral-500">Stock Réservé (OFs) :</span>
+                      <span className="font-mono text-amber-600 font-bold">{selectedMaterial.allocatedStock} {selectedMaterial.unit}</span>
+                    </div>
+                    <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700">
+                      <span className="text-neutral-500">Stock Net Disponible :</span>
+                      <span className="font-mono text-emerald-600 font-bold">{selectedMaterial.availableStock} {selectedMaterial.unit}</span>
+                    </div>
+                    <div className="flex justify-between py-1">
+                      <span className="text-neutral-500">Seuil Réappro :</span>
+                      <span className="font-mono font-semibold text-neutral-700 dark:text-neutral-300">{selectedMaterial.reorderThreshold} {selectedMaterial.unit}</span>
+                    </div>
+                  </div>
+
+                  <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3.5 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
+                    <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block">
+                      Valorisation Comptable PMP
+                    </span>
+                    <div className="flex justify-between py-1 border-b border-neutral-200/60 dark:border-neutral-700">
+                      <span className="text-neutral-500">Coût Unitaire PMP :</span>
+                      <span className="font-mono font-bold text-[#C4785A]">{formatMoney(selectedMaterial.unitCostPmpDzd)} / {selectedMaterial.unit}</span>
+                    </div>
+                    <div className="flex justify-between py-1 font-bold text-sm">
+                      <span className="text-neutral-900 dark:text-white">Valeur Totale :</span>
+                      <span className="font-mono text-neutral-900 dark:text-white">{formatMoney(selectedMaterial.currentStock * selectedMaterial.unitCostPmpDzd)}</span>
+                    </div>
+                  </div>
+
+                  <div className="pt-2 flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleOpenEdit(selectedMaterial)}
+                      className="flex-1 py-2 rounded-xl bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-800 dark:text-white text-xs font-bold transition-colors cursor-pointer"
+                    >
+                      Modifier Fiche
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setVoucherMaterialId(selectedMaterial.id);
+                        setIsVoucherModalOpen(true);
+                      }}
+                      className="flex-1 py-2 rounded-xl bg-[#C4785A] hover:bg-[#b3684a] text-white text-xs font-bold shadow-xs transition-colors cursor-pointer"
+                    >
+                      Émettre Bon BSM
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      ) : (
+        /* Vouchers Register View */
+        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+          <div className="flex items-center justify-between p-4 bg-white dark:bg-neutral-800 rounded-2xl border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
+            <div>
+              <h2 className="text-sm font-bold text-neutral-900 dark:text-white">
+                {isAr ? 'سجل السندات الرسمية (المرسوم التنفيذي 05-468)' : 'Registre Officiel des Bons de Mouvement (Décret 05-468)'}
+              </h2>
+              <p className="text-xs text-neutral-400 mt-0.5">
+                Bons de Sortie Magasin (BSM), Bons de Réception (BR) et Transferts Inter-Ateliers
+              </p>
+            </div>
+            <AtriumButton
+              variant="primary"
+              size="sm"
+              icon={<Plus size={14} />}
+              onClick={() => setIsVoucherModalOpen(true)}
+            >
+              {isAr ? 'إصدار سند جديد' : 'Nouveau Bon'}
+            </AtriumButton>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+            {vouchers.map((v) => (
+              <div
+                key={v.id}
+                className="p-4 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs space-y-3"
               >
-                {f.label}
-              </button>
+                <div className="flex items-center justify-between">
+                  <span className="font-mono text-xs font-bold text-[#C4785A]">
+                    {v.voucherNumber}
+                  </span>
+                  <span
+                    className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                      v.voucherType === 'BonDeSortie'
+                        ? 'bg-amber-100 text-amber-800'
+                        : v.voucherType === 'BonDeReception'
+                        ? 'bg-emerald-100 text-emerald-800'
+                        : 'bg-blue-100 text-blue-800'
+                    }`}
+                  >
+                    {v.voucherType === 'BonDeSortie' ? 'BSM (Sortie)' : v.voucherType === 'BonDeReception' ? 'BR (Réception)' : 'BT (Transfert)'}
+                  </span>
+                </div>
+
+                <div className="space-y-1">
+                  <div className="text-xs font-bold text-neutral-900 dark:text-white">
+                    {v.items[0]?.materialName}
+                  </div>
+                  <div className="text-[11px] text-neutral-500 font-mono">
+                    Quantité : {v.items[0]?.quantity} {v.items[0]?.unit} • {formatMoney(v.totalValueDzd)}
+                  </div>
+                  <div className="text-[11px] text-neutral-400">
+                    Bénéficiaire : {v.recipientStaffName}
+                  </div>
+                </div>
+
+                <div className="pt-2 border-t border-[#EDF1F3] dark:border-neutral-700 flex items-center justify-between text-xs">
+                  <span className="text-[10px] text-neutral-400 font-mono">
+                    {v.transferDate?.split('T')[0]}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setPrintableVoucher(v)}
+                    className="text-[#C4785A] hover:underline font-bold text-xs flex items-center gap-1 cursor-pointer"
+                  >
+                    <Printer size={12} />
+                    <span>{isAr ? 'معاينة وطباعة' : 'Imprimer'}</span>
+                  </button>
+                </div>
+              </div>
             ))}
           </div>
         </div>
+      )}
 
-        {/* Main Workspace: Left Collection + Right 390px Inspector Drawer */}
-        <div className="flex items-start gap-4">
-          {/* Main Collection Container */}
-          <div className="flex-1 min-w-0">
-            <UniversalDataCollection<RawMaterial>
-            data={filteredMaterials}
-            columns={columns}
-            keyExtractor={(m) => m.id}
-            searchQuery={searchQuery}
-            onSearchChange={setSearchQuery}
-            searchPlaceholder={isAr ? 'بحث بالرمز، الاسم، الفئة...' : 'Rechercher par référence, désignation, catégorie...'}
-            filterValue={categoryFilter}
-            onFilterChange={setCategoryFilter}
-            filterOptions={[
-              { value: 'All', label: isAr ? 'جميع الفئات' : 'Toutes les catégories' },
-              { value: 'Bois & Dérivés', label: 'Bois & Dérivés' },
-              { value: 'Métallurgie', label: 'Métallurgie' },
-              { value: 'Chimie & Peinture', label: 'Chimie & Peinture' },
-              { value: 'Polymères', label: 'Polymères' },
-            ]}
-            viewMode={viewMode}
-            onViewModeChange={setViewMode}
-            selectedIds={selectedIds}
-            onSelectionChange={setSelectedIds}
-            pinnedIds={pinnedIds}
-            onPinToggle={handlePin}
-            sortBy={sortBy}
-            sortDir={sortDir}
-            onSortChange={(field, dir) => {
-              setSortBy(field);
-              setSortDir(dir);
-            }}
-            onItemClick={(m) => {
-              setSelectedMaterial(m);
-            }}
-            onEdit={openEditModal}
-            onDelete={handleDelete}
-            emptyIcon={<Boxes size={32} className="text-neutral-400" />}
-            emptyTitle={isAr ? 'لا توجد مواد أولية' : 'Aucune matière trouvée'}
-            emptyDescription={
-              searchQuery
-                ? (isAr ? 'لا توجد نتائج مطابقة لبحثك' : 'Aucun résultat ne correspond à votre recherche')
-                : (isAr ? 'قم بإضافة أول مادة خام للمصنع' : 'Enregistrez votre première matière première')
-            }
-            customActions={[
-              {
-                id: 'addStock',
-                label: isAr ? 'إضافة كمية (+10)' : 'Réappro (+10)',
-                icon: <Plus size={14} />,
-                onClick: handleQuickAddStock,
-              },
-            ]}
-            renderGridCard={(m) => {
-              const isLow = m.stock <= m.minThreshold;
-              return (
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="font-mono font-bold text-xs bg-[#C4785A]/10 text-[#C4785A] px-2.5 py-1 rounded-lg border border-[#C4785A]/20">
-                      {m.sku}
-                    </span>
-                    <span
-                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                        isLow
-                          ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
-                          : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
-                      }`}
-                    >
-                      {m.stock} {m.unit}
-                    </span>
-                  </div>
-
-                  <div>
-                    <h3 className="text-sm font-bold text-neutral-900 dark:text-white line-clamp-1">
-                      {m.name}
-                    </h3>
-                    <div className="text-xs text-neutral-500 font-medium mt-0.5">
-                      {m.category}
-                    </div>
-                  </div>
-
-                  <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-xs">
-                    <div>
-                      <div className="text-[10px] text-neutral-400 uppercase tracking-wider">Coût Unitaire</div>
-                      <div className="font-mono font-bold text-neutral-900 dark:text-white mt-0.5">
-                        {formatMoney(m.unitCostDzd)}
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-[10px] text-neutral-400 uppercase tracking-wider">Valeur Stock</div>
-                      <div className="font-mono font-bold text-[#C4785A] mt-0.5">
-                        {formatMoney(m.stock * m.unitCostDzd)}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              );
-            }}
-          />
-        </div>
-
-        {/* 390px Inline Side Inspector Drawer */}
-        {selectedMaterial && (
-          <div className="w-[390px] shrink-0 bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 p-5 space-y-4 shadow-lg animate-in slide-in-from-right-4 duration-200">
-            {/* Drawer Header */}
-            <div className="flex items-start justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-orange-50 dark:bg-orange-950/40 text-[#C4785A] flex items-center justify-center font-bold">
-                  <Boxes size={18} />
-                </div>
-                <div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="font-mono font-bold text-xs text-neutral-900 dark:text-white">
-                      {selectedMaterial.sku}
-                    </span>
-                    {selectedMaterial.stock <= selectedMaterial.minThreshold && (
-                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300">
-                        Seuil Bas
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-xs font-semibold text-neutral-700 dark:text-neutral-300 line-clamp-1">
-                    {selectedMaterial.name}
-                  </p>
-                </div>
-              </div>
+      {/* Material Create / Edit Modal */}
+      {isMaterialModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-neutral-900 rounded-[28px] max-w-lg w-full p-6 sm:p-7 shadow-2xl border border-neutral-200 dark:border-neutral-800 space-y-5 animate-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
+              <h3 className="font-bold text-base text-neutral-900 dark:text-white">
+                {materialToEdit
+                  ? (isAr ? 'تعديل المادة الأولية' : 'Modifier la Matière Première')
+                  : (isAr ? 'إضافة مادة أولية جديدة' : 'Nouvelle Référence Matière')}
+              </h3>
               <button
-                onClick={() => setSelectedMaterial(null)}
-                className="p-1 rounded-lg text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                onClick={() => setIsMaterialModalOpen(false)}
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-neutral-400 hover:text-neutral-700 cursor-pointer"
               >
-                <X size={16} />
+                ✕
               </button>
             </div>
 
-            {/* Quick Action Pills */}
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <button
-                onClick={() => handleQuickAddStock(selectedMaterial)}
-                className="flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-300 transition-colors"
-              >
-                <Plus size={12} />
-                {isAr ? '+10 مخزون' : '+10 Stock'}
-              </button>
-              <button
-                onClick={() => openEditModal(selectedMaterial)}
-                className="flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg bg-neutral-100 text-neutral-700 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-300 transition-colors"
-              >
-                <Edit size={12} />
-                {isAr ? 'تعديل' : 'Modifier'}
-              </button>
-              <button
-                onClick={() => handleDelete(selectedMaterial)}
-                className="flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-950/40 dark:text-red-300 transition-colors ml-auto"
-              >
-                <Trash2 size={12} />
-              </button>
-            </div>
-
-            {/* Drawer Tabs Navigation */}
-            <div className="flex border-b border-neutral-100 dark:border-neutral-800 gap-1 text-xs">
-              <button
-                onClick={() => setActiveTab('fiche')}
-                className={`pb-2 px-2 font-medium border-b-2 transition-colors ${
-                  activeTab === 'fiche'
-                    ? 'border-[#C4785A] text-[#C4785A] font-bold'
-                    : 'border-transparent text-neutral-500 hover:text-neutral-700'
-                }`}
-              >
-                {isAr ? 'المواصفات' : 'Fiche Matière'}
-              </button>
-              <button
-                onClick={() => setActiveTab('stock')}
-                className={`pb-2 px-2 font-medium border-b-2 transition-colors ${
-                  activeTab === 'stock'
-                    ? 'border-[#C4785A] text-[#C4785A] font-bold'
-                    : 'border-transparent text-neutral-500 hover:text-neutral-700'
-                }`}
-              >
-                {isAr ? 'الكميات والقيمة' : 'Stock & Seuils'}
-              </button>
-              <button
-                onClick={() => setActiveTab('notes')}
-                className={`pb-2 px-2 font-medium border-b-2 transition-colors ${
-                  activeTab === 'notes'
-                    ? 'border-[#C4785A] text-[#C4785A] font-bold'
-                    : 'border-transparent text-neutral-500 hover:text-neutral-700'
-                }`}
-              >
-                {isAr ? 'الملاحظات' : 'Consignes'}
-              </button>
-            </div>
-
-            {/* Tab 1: Fiche */}
-            {activeTab === 'fiche' && (
-              <div className="space-y-3.5 text-xs animate-in fade-in duration-150">
-                <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3 rounded-xl space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-neutral-500">Code Référence SKU:</span>
-                    <span className="font-mono font-bold text-neutral-900 dark:text-white">
-                      {selectedMaterial.sku}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-neutral-500">Famille Matière:</span>
-                    <span className="font-semibold text-neutral-800 dark:text-neutral-200">
-                      {selectedMaterial.category}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-neutral-500">Unité de mesure:</span>
-                    <span className="font-semibold text-[#C4785A]">
-                      {selectedMaterial.unit}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3 rounded-xl space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-neutral-500">Coût d’achat unitaire:</span>
-                    <span className="font-mono font-bold text-neutral-900 dark:text-white">
-                      {formatMoney(selectedMaterial.unitCostDzd)} / {selectedMaterial.unit}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Tab 2: Stock & Seuils */}
-            {activeTab === 'stock' && (
-              <div className="space-y-3.5 text-xs animate-in fade-in duration-150">
-                <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3 rounded-xl space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-neutral-500">Quantité en magasin:</span>
-                    <span className="font-mono font-bold text-neutral-900 dark:text-white">
-                      {selectedMaterial.stock} {selectedMaterial.unit}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-neutral-500">Seuil de réapprovisionnement:</span>
-                    <span className="font-mono text-amber-600 dark:text-amber-400 font-semibold">
-                      {selectedMaterial.minThreshold} {selectedMaterial.unit}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="p-3 rounded-xl bg-orange-50/50 dark:bg-orange-950/20 border border-orange-100 dark:border-orange-900/30">
-                  <div className="flex justify-between items-center">
-                    <span className="text-neutral-600 dark:text-neutral-400">Valeur totale immobilisée:</span>
-                    <span className="font-mono font-bold text-neutral-900 dark:text-white">
-                      {formatMoney(selectedMaterial.stock * selectedMaterial.unitCostDzd)}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Tab 3: Consignes */}
-            {activeTab === 'notes' && (
-              <div className="space-y-3 text-xs animate-in fade-in duration-150">
-                <p className="text-neutral-500 text-[11px]">
-                  Conditions de conservation (température, hygrométrie, empilage) :
-                </p>
-                <textarea
-                  rows={6}
-                  value={inspectorNotes}
-                  onChange={(e) => setInspectorNotes(e.target.value)}
-                  placeholder="Noter les tolérances d'humidité, délais de livraison fournisseur..."
-                  className="w-full p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-xs focus:ring-1 focus:ring-[#C4785A] outline-hidden resize-none"
-                />
-                <button
-                  onClick={handleSaveNotes}
-                  className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl bg-[#C4785A] text-white hover:bg-[#a86246] transition-colors font-medium text-xs shadow-xs"
-                >
-                  {noteSaved ? (
-                    <>
-                      <Check size={14} />
-                      {isAr ? 'تم الحفظ' : 'Consignes enregistrées'}
-                    </>
-                  ) : (
-                    <>
-                      <Save size={14} />
-                      {isAr ? 'حفظ' : 'Enregistrer'}
-                    </>
-                  )}
-                </button>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-      </div>
-
-      {/* New / Edit Material Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-neutral-900 rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-neutral-200 dark:border-neutral-800 space-y-5 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-orange-50 dark:bg-orange-950/40 text-[#C4785A] flex items-center justify-center font-bold">
-                  <Boxes size={20} />
-                </div>
-                <div>
-                  <h2 className="text-base font-bold text-neutral-900 dark:text-white">
-                    {materialToEdit
-                      ? (isAr ? 'تعديل المادة الأولية' : 'Modifier la Matière Première')
-                      : (isAr ? 'إضافة مادة أولية جديدة' : 'Nouvelle Matière Première')}
-                  </h2>
-                  <p className="text-xs text-neutral-500">
-                    {isAr ? 'إدارة مواصفات المواد الخام وأسعار الشراء' : 'Gestion des références matière et seuils d’approvisionnement'}
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={() => setIsModalOpen(false)}
-                className="p-1 rounded-lg text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-              >
-                <X size={18} />
-              </button>
-            </div>
-
-            <form onSubmit={handleSaveModal} className="space-y-4">
+            <form onSubmit={handleSaveMaterial} className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <LabelInput
-                  label={isAr ? 'رمز SKU *' : 'Code SKU *'}
-                  placeholder="RAW-WD-01"
+                  label="Code SKU"
                   value={sku}
                   onChange={(e) => setSku(e.target.value)}
                   required
                 />
                 <LabelSelect
-                  label={isAr ? 'الفئة' : 'Catégorie'}
+                  label={isAr ? 'الصنف الصناعي' : 'Catégorie'}
                   value={category}
-                  onChange={(e) => setCategory(e.target.value)}
+                  onChange={(v) => setCategory(v as any)}
                   options={[
-                    { value: 'Bois & Dérivés', label: 'Bois & Dérivés' },
-                    { value: 'Métallurgie', label: 'Métallurgie' },
-                    { value: 'Chimie & Peinture', label: 'Chimie & Peinture' },
-                    { value: 'Polymères', label: 'Polymères' },
+                    { value: 'Wood', label: 'Bois & Dérivés' },
+                    { value: 'Metals', label: 'Métallurgie & Aciers' },
+                    { value: 'Plastics', label: 'Polymères & Plastiques' },
+                    { value: 'Chemicals', label: 'Chimie, Peintures & Résines' },
+                    { value: 'Textiles', label: 'Textiles & Confection' },
+                    { value: 'Hardware', label: 'Quincaillerie & Visserie' },
                   ]}
                 />
               </div>
 
               <LabelInput
-                label={isAr ? 'اسم وتعيين المادة الأولية *' : 'Désignation Matière *'}
-                placeholder="Ex: Bois Chêne Brut Séché 50mm"
+                label={isAr ? 'اسم المادة والمواصفات' : 'Désignation de la matière'}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
+                placeholder="Ex: Bois Chêne Brut Séché 50mm..."
                 required
               />
 
               <div className="grid grid-cols-3 gap-3">
                 <LabelInput
-                  label={isAr ? 'الكمية المخزنة' : 'Quantité Stock'}
+                  label={isAr ? 'الكمية' : 'Stock Initial'}
                   type="number"
+                  step="any"
                   value={stock}
                   onChange={(e) => setStock(e.target.value)}
                   required
                 />
                 <LabelInput
                   label={isAr ? 'الوحدة' : 'Unité'}
-                  placeholder="m³, kg, Pièce..."
                   value={unit}
                   onChange={(e) => setUnit(e.target.value)}
+                  placeholder="kg, m³, Pièce..."
                   required
                 />
                 <LabelInput
-                  label={isAr ? 'حد الأمان' : 'Seuil Min'}
+                  label={isAr ? 'عتبة التنبيه' : 'Seuil Mini'}
                   type="number"
+                  step="any"
                   value={minThreshold}
                   onChange={(e) => setMinThreshold(e.target.value)}
                   required
                 />
               </div>
 
-              <LabelInput
-                label={isAr ? 'تكلفة الشراء للوحدة (دج)' : 'Coût Unitaire (DZD)'}
-                type="number"
-                value={unitCostDzd}
-                onChange={(e) => setUnitCostDzd(e.target.value)}
-                required
-              />
+              <div className="grid grid-cols-2 gap-3">
+                <LabelInput
+                  label={isAr ? 'سعر الوحدة PMP (دج)' : 'Coût Unitaire PMP (DZD)'}
+                  type="number"
+                  value={unitCostDzd}
+                  onChange={(e) => setUnitCostDzd(e.target.value)}
+                  required
+                />
+                <LabelInput
+                  label={isAr ? 'موقع التخزين (الرف/الممر)' : 'Emplacement Casier'}
+                  value={warehouseLocation}
+                  onChange={(e) => setWarehouseLocation(e.target.value)}
+                  placeholder="Ex: Rack A-02..."
+                  required
+                />
+              </div>
 
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
-                <AtriumButton variant="ghost" size="sm" onClick={() => setIsModalOpen(false)}>
+              <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-neutral-100 dark:border-neutral-800">
+                <AtriumButton variant="secondary" onClick={() => setIsMaterialModalOpen(false)}>
                   {isAr ? 'إلغاء' : 'Annuler'}
                 </AtriumButton>
-                <AtriumButton variant="primary" size="sm" type="submit">
-                  {materialToEdit
-                    ? (isAr ? 'حفظ التعديلات' : 'Enregistrer')
-                    : (isAr ? 'إضافة المادة' : 'Ajouter la Matière')}
+                <AtriumButton type="submit" variant="primary">
+                  {isAr ? 'حفظ المادة' : 'Enregistrer'}
                 </AtriumButton>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* New Voucher (BSM / BR) Modal */}
+      {isVoucherModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-neutral-900 rounded-[28px] max-w-lg w-full p-6 sm:p-7 shadow-2xl border border-neutral-200 dark:border-neutral-800 space-y-5 animate-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
+              <h3 className="font-bold text-base text-neutral-900 dark:text-white">
+                {isAr ? 'إصدار سند حركة مخزون (مرسوم 05-468)' : 'Émission d\'un Bon de Mouvement (Décret 05-468)'}
+              </h3>
+              <button
+                onClick={() => setIsVoucherModalOpen(false)}
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-neutral-400 hover:text-neutral-700 cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateVoucher} className="space-y-4">
+              <LabelSelect
+                label={isAr ? 'نوع السند' : 'Type de Bon'}
+                value={voucherType}
+                onChange={(v) => setVoucherType(v as any)}
+                options={[
+                  { value: 'BonDeSortie', label: 'Bon de Sortie Magasin (BSM) vers Atelier' },
+                  { value: 'BonDeReception', label: 'Bon de Réception Fournisseur (BR) avec calcul PMP' },
+                  { value: 'BonDeTransfert', label: 'Bon de Transfert Inter-Dépôts (BT)' },
+                ]}
+              />
+
+              <LabelSelect
+                label={isAr ? 'المادة الأولية المعنية' : 'Matière Première'}
+                value={voucherMaterialId}
+                onChange={setVoucherMaterialId}
+                options={materials.map((m) => ({
+                  value: m.id,
+                  label: `${m.name} (${m.sku} - Stock: ${m.currentStock} ${m.unit})`,
+                }))}
+              />
+
+              <div className="grid grid-cols-2 gap-3">
+                <LabelInput
+                  label={isAr ? 'الكمية المنقولة' : 'Quantité du Bon'}
+                  type="number"
+                  step="any"
+                  value={voucherQty}
+                  onChange={(e) => setVoucherQty(e.target.value)}
+                  required
+                />
+                <LabelInput
+                  label={isAr ? 'المستلم / المشغل' : 'Bénéficiaire / Demandeur'}
+                  value={voucherRecipient}
+                  onChange={(e) => setVoucherRecipient(e.target.value)}
+                  required
+                />
+              </div>
+
+              <LabelInput
+                label={isAr ? 'سبب التحويل / رقم أمر التصنيع' : 'Motif / N° Ordre de Fabrication lié'}
+                value={voucherNotes}
+                onChange={(e) => setVoucherNotes(e.target.value)}
+                placeholder="Ex: Sortie pour OF-2026-0089..."
+              />
+
+              <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-neutral-100 dark:border-neutral-800">
+                <AtriumButton variant="secondary" onClick={() => setIsVoucherModalOpen(false)}>
+                  {isAr ? 'إلغاء' : 'Annuler'}
+                </AtriumButton>
+                <AtriumButton type="submit" variant="primary">
+                  {isAr ? 'إصدار وطباعة السند' : 'Valider & Imprimer le Bon'}
+                </AtriumButton>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Printable Décret 05-468 Voucher Modal */}
+      {printableVoucher && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-neutral-900 rounded-[28px] max-w-xl w-full p-6 sm:p-8 shadow-2xl border border-neutral-200 dark:border-neutral-800 space-y-6 animate-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between pb-4 border-b border-neutral-200 dark:border-neutral-800">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold">
+                  <Printer size={20} />
+                </div>
+                <div>
+                  <h3 className="font-bold text-base text-neutral-900 dark:text-white">
+                    {printableVoucher.voucherNumber}
+                  </h3>
+                  <p className="text-xs text-neutral-400">
+                    Document officiel d'inventaire • Décret exécutif N° 05-468
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  className="px-4 py-2 rounded-xl bg-[#C4785A] hover:bg-[#b3684a] text-white text-xs font-bold flex items-center gap-1.5 shadow-xs cursor-pointer transition-colors"
+                >
+                  <Printer size={14} />
+                  <span>{isAr ? 'طباعة' : 'Imprimer'}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPrintableVoucher(null)}
+                  className="w-8 h-8 rounded-lg flex items-center justify-center text-neutral-400 hover:text-neutral-700 cursor-pointer"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+            </div>
+
+            {/* Document Body */}
+            <div className="p-6 rounded-2xl bg-white border-2 border-dashed border-neutral-300 text-neutral-900 space-y-5 font-sans">
+              <div className="flex justify-between items-start border-b pb-4">
+                <div>
+                  <div className="font-black text-sm tracking-tight text-[#1F1D1B]">
+                    ATRIUM MANUFACTURE & ATELIER PME
+                  </div>
+                  <div className="text-[10px] text-neutral-500 font-medium">
+                    RC: 16/00-0988421 • NIF: 001916010044589 • Alger
+                  </div>
+                  <div className="text-xs font-bold text-[#C4785A] mt-1 uppercase">
+                    {printableVoucher.voucherType === 'BonDeSortie' ? 'Bon de Sortie Magasin (BSM)' : printableVoucher.voucherType === 'BonDeReception' ? 'Bon de Réception Magasin (BR)' : 'Bon de Transfert Interne (BT)'}
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="font-mono font-bold text-sm text-[#C4785A]">
+                    {printableVoucher.voucherNumber}
+                  </div>
+                  <div className="text-[11px] text-neutral-500 mt-0.5">
+                    Date : {printableVoucher.transferDate?.split('T')[0]}
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-neutral-50 p-3 rounded-xl border border-neutral-200 text-xs space-y-1">
+                <div className="flex justify-between">
+                  <span className="text-neutral-500">Demandeur / Bénéficiaire :</span>
+                  <span className="font-bold text-neutral-900">{printableVoucher.recipientStaffName}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-neutral-500">Motif de transfert :</span>
+                  <span className="font-semibold text-neutral-800">{printableVoucher.notes || 'Ordre de fabrication'}</span>
+                </div>
+              </div>
+
+              <table className="w-full text-xs border border-neutral-200 rounded-lg overflow-hidden">
+                <thead className="bg-neutral-100 text-neutral-600 font-semibold border-b border-neutral-200">
+                  <tr>
+                    <th className="p-2 text-left">Désignation Matière</th>
+                    <th className="p-2 text-center w-24">Quantité</th>
+                    <th className="p-2 text-right w-28">Prix PMP</th>
+                    <th className="p-2 text-right w-28">Total DZD</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-neutral-200">
+                  {printableVoucher.items.map((item, idx) => (
+                    <tr key={idx}>
+                      <td className="p-2 font-medium">{item.materialName}</td>
+                      <td className="p-2 text-center font-mono font-bold">{item.quantity} {item.unit}</td>
+                      <td className="p-2 text-right font-mono">{formatMoney(item.unitCostDzd)}</td>
+                      <td className="p-2 text-right font-mono font-bold">{formatMoney(item.quantity * item.unitCostDzd)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              <div className="flex justify-end pt-2 text-xs font-bold text-neutral-900">
+                <span>Total Mouvement :&nbsp;</span>
+                <span className="font-mono text-[#C4785A]">{formatMoney(printableVoucher.totalValueDzd)}</span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 pt-6 border-t text-center text-xs">
+                <div>
+                  <span className="text-neutral-400 text-[10px] block">Visa Magasinier (Émetteur)</span>
+                  <div className="h-10 flex items-center justify-center font-serif text-neutral-700 italic">M. Amine T.</div>
+                </div>
+                <div>
+                  <span className="text-neutral-400 text-[10px] block">Visa Réceptionnaire (Atelier)</span>
+                  <div className="h-10 flex items-center justify-center font-serif text-neutral-700 italic">M. Karim B.</div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}

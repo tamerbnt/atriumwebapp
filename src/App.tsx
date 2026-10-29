@@ -89,6 +89,7 @@ import { ManufacturingOrdersView } from './components/screens/manufacturing/Manu
 import { ManufacturingBomView } from './components/screens/manufacturing/ManufacturingBomView';
 import { ManufacturingMaterialsView } from './components/screens/manufacturing/ManufacturingMaterialsView';
 import { ManufacturingQcView } from './components/screens/manufacturing/ManufacturingQcView';
+import { ManufacturingWorkstationView } from './components/screens/manufacturing/ManufacturingWorkstationView';
 
 import { LegalDashboardView } from './components/screens/legal/LegalDashboardView';
 import { LegalMattersView } from './components/screens/legal/LegalMattersView';
@@ -135,6 +136,8 @@ export default function App() {
     closeOnboarding,
     closeFastSwitch,
     closeDesktopUpgradeModal,
+    activeRealEstateRole,
+    activeManufacturingRole,
   } = useAtriumStore();
 
   // Onboarding wizard plays on initial boot or when explicitly requested
@@ -458,8 +461,27 @@ export default function App() {
 
     if (currentBusiness?.category === 'real_estate') {
       if (activeScreen === 'settings') {
+        if (activeRealEstateRole !== 'direction') {
+          return <RealEstateDashboardView />;
+        }
         return <SettingsScreen onOpenVoucherModal={() => setIsVoucherModalOpen(true)} />;
       }
+
+      // Role-specific screen permission guards
+      if (activeRealEstateRole === 'negociateur') {
+        if (activeScreen === 'scheduler' || activeScreen === 'finance') {
+          return <RealEstateDashboardView />;
+        }
+      } else if (activeRealEstateRole === 'gestionnaire_locatif') {
+        if (activeScreen === 'realestate_mandates' || activeScreen === 'shop') {
+          return <RealEstateDashboardView />;
+        }
+      } else if (activeRealEstateRole === 'notaire_compta') {
+        if (activeScreen === 'registrations' || activeScreen === 'members') {
+          return <RealEstateDashboardView />;
+        }
+      }
+
       switch (activeScreen) {
         case 'dashboard':
           return <RealEstateDashboardView />;
@@ -481,8 +503,71 @@ export default function App() {
 
     if (currentBusiness?.category === 'manufacturing_production') {
       if (activeScreen === 'settings') {
+        if (activeManufacturingRole !== 'gerant') {
+          return <ManufacturingDashboardView />;
+        }
         return <SettingsScreen onOpenVoucherModal={() => setIsVoucherModalOpen(true)} />;
       }
+
+      // Role-specific screen permission guards & specialized routing
+      if (activeManufacturingRole === 'operateur') {
+        switch (activeScreen) {
+          case 'dashboard':
+            return <ManufacturingWorkstationView />;
+          case 'scheduler':
+          case 'registrations':
+            return <ManufacturingOrdersView />;
+          default:
+            return <ManufacturingWorkstationView />;
+        }
+      }
+
+      if (activeManufacturingRole === 'magasinier') {
+        switch (activeScreen) {
+          case 'dashboard':
+            return <ManufacturingDashboardView />;
+          case 'shop':
+          case 'members':
+          case 'finance':
+            return <ManufacturingMaterialsView />;
+          default:
+            return <ManufacturingDashboardView />;
+        }
+      }
+
+      if (activeManufacturingRole === 'qualite') {
+        switch (activeScreen) {
+          case 'dashboard':
+            return <ManufacturingDashboardView />;
+          case 'scheduler':
+          case 'registrations':
+            return <ManufacturingOrdersView />;
+          case 'finance':
+            return <ManufacturingQcView />;
+          default:
+            return <ManufacturingDashboardView />;
+        }
+      }
+
+      if (activeManufacturingRole === 'chef_atelier') {
+        switch (activeScreen) {
+          case 'dashboard':
+            return <ManufacturingDashboardView />;
+          case 'scheduler':
+          case 'registrations':
+            return <ManufacturingOrdersView />;
+          case 'shop':
+            return <ManufacturingBomView />;
+          case 'members':
+            return <ManufacturingMaterialsView />;
+          case 'finance':
+            return <ManufacturingQcView />;
+          default:
+            return <ManufacturingDashboardView />;
+        }
+      }
+
+      // Default: Gérant (Full access)
       switch (activeScreen) {
         case 'dashboard':
           return <ManufacturingDashboardView />;

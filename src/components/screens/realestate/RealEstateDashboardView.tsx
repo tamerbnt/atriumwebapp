@@ -19,7 +19,7 @@ import { RealEstatePropertyModal } from './RealEstatePropertyModal';
 import { RealEstateLeaseModal } from './RealEstateLeaseModal';
 
 export const RealEstateDashboardView: React.FC = () => {
-  const { language, setScreen } = useAtriumStore();
+  const { language, setScreen, activeRealEstateRole } = useAtriumStore();
   const { properties, leases, addProperty, addLease } = useRealEstateData();
 
   const [isPropModalOpen, setIsPropModalOpen] = useState(false);
@@ -49,6 +49,12 @@ export const RealEstateDashboardView: React.FC = () => {
               <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#C4785A]/15 text-[#C4785A]">
                 Facility: 20
               </span>
+              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-neutral-200 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300">
+                {activeRealEstateRole === 'direction' && (language === 'ar' ? '👔 مدير الوكالة' : '👔 Direction')}
+                {activeRealEstateRole === 'negociateur' && (language === 'ar' ? '🤝 مستشار عقاري' : '🤝 Négociateur')}
+                {activeRealEstateRole === 'gestionnaire_locatif' && (language === 'ar' ? '🔑 إدارة الإيجار' : '🔑 Gestion Locative')}
+                {activeRealEstateRole === 'notaire_compta' && (language === 'ar' ? '⚖️ الموثق والمحاسبة' : '⚖️ Notaire & Compta')}
+              </span>
             </div>
             <p className="text-xs text-neutral-500 dark:text-neutral-400">
               {language === 'ar'
@@ -59,20 +65,66 @@ export const RealEstateDashboardView: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2">
-          <AtriumButton
-            variant="secondary"
-            onClick={() => setIsPropModalOpen(true)}
-            icon={<Building2 size={14} />}
-          >
-            {language === 'ar' ? 'عقار جديد' : 'Nouveau Bien'}
-          </AtriumButton>
-          <AtriumButton
-            variant="primary"
-            onClick={() => setIsLeaseModalOpen(true)}
-            icon={<Key size={14} />}
-          >
-            {language === 'ar' ? 'تحرير عقد كراء' : 'Nouveau Bail'}
-          </AtriumButton>
+          {activeRealEstateRole === 'negociateur' ? (
+            <>
+              <AtriumButton
+                variant="secondary"
+                onClick={() => setIsPropModalOpen(true)}
+                icon={<Building2 size={14} />}
+              >
+                {language === 'ar' ? 'عقار جديد' : 'Nouveau Bien'}
+              </AtriumButton>
+              <AtriumButton
+                variant="primary"
+                onClick={() => setScreen('realestate_mandates')}
+                icon={<FileCheck size={14} />}
+              >
+                {language === 'ar' ? 'سجل الوكالات (09-18)' : 'Registre Mandats'}
+              </AtriumButton>
+            </>
+          ) : activeRealEstateRole === 'gestionnaire_locatif' ? (
+            <>
+              <AtriumButton
+                variant="secondary"
+                onClick={() => setScreen('scheduler')}
+                icon={<Key size={14} />}
+              >
+                {language === 'ar' ? 'دفتر العقود' : 'Registre des Baux'}
+              </AtriumButton>
+              <AtriumButton
+                variant="primary"
+                onClick={() => setIsLeaseModalOpen(true)}
+                icon={<Plus size={14} />}
+              >
+                {language === 'ar' ? 'تحرير عقد كراء' : 'Nouveau Bail'}
+              </AtriumButton>
+            </>
+          ) : activeRealEstateRole === 'notaire_compta' ? (
+            <AtriumButton
+              variant="primary"
+              onClick={() => setScreen('finance')}
+              icon={<Receipt size={14} />}
+            >
+              {language === 'ar' ? 'حسابات الموثق والتصفية' : 'Simulateur Notaire & DGI'}
+            </AtriumButton>
+          ) : (
+            <>
+              <AtriumButton
+                variant="secondary"
+                onClick={() => setIsPropModalOpen(true)}
+                icon={<Building2 size={14} />}
+              >
+                {language === 'ar' ? 'عقار جديد' : 'Nouveau Bien'}
+              </AtriumButton>
+              <AtriumButton
+                variant="primary"
+                onClick={() => setIsLeaseModalOpen(true)}
+                icon={<Key size={14} />}
+              >
+                {language === 'ar' ? 'تحرير عقد كراء' : 'Nouveau Bail'}
+              </AtriumButton>
+            </>
+          )}
         </div>
       </div>
 
