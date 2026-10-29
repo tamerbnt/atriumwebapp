@@ -270,41 +270,14 @@ export const AtriumMonolith: React.FC<AtriumMonolithProps> = ({
   replayKey = 0,
 }) => {
   const lockupRef = useRef<HTMLDivElement>(null);
-  // Master Unified 6-Stage Sequential Intro Architecture:
+  // Master Unified 5-Stage Sequential Intro Architecture:
   // (1) 0.0s – 1.2s: 'quincunx' -> Fast 1.2s 'Quincunx Convergence' geometric prelude on pure white background.
   // (2) 1.2s – 1.85s: 'portal' -> Dedicated cinematic portal wipe flooding screen into terracotta (#D3542E).
-  // (3) 1.85s – 3.85s: 'wave' -> 'Atrium' kinetic loop (sweeps across with light, expands to un-shrunk normal size).
-  // (4) 3.85s – 4.75s: 'revelation' -> 5-cubes logo docks beside normal-size ATRIUM at screen center.
-  // (5) 4.75s – 5.65s: 'glide' -> Continuity glide! Logo + ATRIUM glides to the right, loading onboarding card on the left.
-  // (6) >= 5.65s: 'settled' -> Intro complete, background becomes transparent, brand lockup settled in place on the right.
-  const [phase, setPhase] = useState<'quincunx' | 'portal' | 'wave' | 'revelation' | 'glide' | 'settled'>('quincunx');
+  // (3) 1.85s – 3.85s: 'wave' -> 'Atrium' kinetic sweep (2D scaleX + scaleY expansion from letter center).
+  // (4) 3.85s – 4.75s: 'revelation' -> 5-cubes logo docks beside normal-size ATRIUM firmly at screen center.
+  // (5) >= 4.75s: 'settled' -> Intro complete, triggers smooth dissolve into dark Atrium OS workstation.
+  const [phase, setPhase] = useState<'quincunx' | 'portal' | 'wave' | 'revelation' | 'settled'>('quincunx');
   const letterRefs = useRef<(HTMLSpanElement | null)[]>([]);
-  const [glideTransform, setGlideTransform] = useState<string | null>(null);
-
-  // When glide starts, measure current centered rect and compute exact pixel translation and dynamic scale
-  useEffect(() => {
-    if (phase === 'glide' && lockupRef.current) {
-      const currentTarget =
-        targetRect || (anchorCoords ? { left: anchorCoords.left, top: anchorCoords.top, width: 340, height: 72 } : null);
-
-      if (typeof window !== 'undefined' && window.innerWidth >= 1024 && currentTarget) {
-        const sourceRect = lockupRef.current.getBoundingClientRect();
-        if (sourceRect.height > 0 && currentTarget.height > 0) {
-          // Dynamic scale calculated directly from target height vs source height
-          const exactScale = currentTarget.height / sourceRect.height;
-          const deltaX = currentTarget.left - sourceRect.left;
-          const deltaY = currentTarget.top - sourceRect.top;
-          setGlideTransform(`translate3d(${deltaX.toFixed(2)}px, ${deltaY.toFixed(2)}px, 0) scale(${exactScale.toFixed(4)})`);
-        } else {
-          setGlideTransform('translate3d(0, -36vh, 0) scale(0.5)');
-        }
-      } else {
-        setGlideTransform('translate3d(0, -36vh, 0) scale(0.5)');
-      }
-    } else if (phase === 'quincunx' || phase === 'portal' || phase === 'wave' || phase === 'revelation') {
-      setGlideTransform(null);
-    }
-  }, [phase, targetRect, anchorCoords]);
 
   const callbacksRef = useRef({ onCardArrivalStart, onIntroComplete, onSkip });
   useEffect(() => {
@@ -362,27 +335,21 @@ export const AtriumMonolith: React.FC<AtriumMonolithProps> = ({
       setPhase('wave');
     }, 1850);
 
-    // (4) 3.85s: 5-cubes logo docks beside ATRIUM at center
+    // (4) 3.85s: 5-cubes logo docks beside ATRIUM firmly at center (zero travel / glide)
     const tRevelation = setTimeout(() => {
       setPhase('revelation');
     }, 3850);
 
-    // (5) 4.75s: Continuity glide! Logo + ATRIUM glides to the right across clean terracotta
-    const tGlide = setTimeout(() => {
-      setPhase('glide');
-    }, 4750);
-
-    // (6) 5.65s: Transition completely settles
+    // (5) 4.75s: Complete intro -> initiates smooth 600ms dissolve into the Atrium OS workstation
     const tComplete = setTimeout(() => {
       setPhase('settled');
       callbacksRef.current.onIntroComplete?.();
-    }, 5650);
+    }, 4750);
 
     return () => {
       clearTimeout(tPortal);
       clearTimeout(tWave);
       clearTimeout(tRevelation);
-      clearTimeout(tGlide);
       clearTimeout(tComplete);
     };
   }, [isIntroActive, replayKey]);
@@ -444,16 +411,18 @@ export const AtriumMonolith: React.FC<AtriumMonolithProps> = ({
           ? 2 * normProgress * normProgress
           : 1 - Math.pow(-2 * normProgress + 2, 2) / 2;
 
-      // Base scale: smoothly transitions from shrunk (0.32) to full normal size (1.0)!
-      const currentBaseScale = 0.32 + easeNorm * (1.0 - 0.32);
+      // Base scale in 2D: smoothly transitions from compact (0.38x, 0.88y) to full normal size (1.0x, 1.0y)!
+      const currentBaseScaleX = 0.38 + easeNorm * (1.0 - 0.38);
+      const currentBaseScaleY = 0.88 + easeNorm * (1.0 - 0.88);
 
       // Minimum gap smoothly opens up to normal tracking (0.5px -> 3.5px)
       const currentMinGap = 0.5 + easeNorm * 3.0;
       const extraGap = 10.0 * (1 - easeNorm);
 
-      // 1. Calculate intensity and scaleX for all 6 letters
+      // 1. Calculate intensity, scaleX, and scaleY for all 6 letters (expanding in 2D from letter center)
       const intensities: number[] = new Array(6);
       const scaleXs: number[] = new Array(6);
+      const scaleYs: number[] = new Array(6);
       const visualWidths: number[] = new Array(6);
 
       for (let i = 0; i < 6; i++) {
@@ -462,9 +431,11 @@ export const AtriumMonolith: React.FC<AtriumMonolithProps> = ({
         const intensity = rawIntensity * rawIntensity * (3 - 2 * rawIntensity);
         intensities[i] = intensity;
 
-        // Letters touched by beam grow up to 2.25; outside letters follow currentBaseScale (0.32 -> 1.0)
-        const scaleX = currentBaseScale + intensity * (2.25 - currentBaseScale);
+        // Letters touched by beam grow up to 1.95 on X and 1.22 on Y from optical center
+        const scaleX = currentBaseScaleX + intensity * (1.95 - currentBaseScaleX);
+        const scaleY = currentBaseScaleY + intensity * (1.22 - currentBaseScaleY);
         scaleXs[i] = scaleX;
+        scaleYs[i] = scaleY;
         visualWidths[i] = baseWidths[i] * scaleX;
       }
 
@@ -493,7 +464,7 @@ export const AtriumMonolith: React.FC<AtriumMonolithProps> = ({
       const totalBaseWidth = baseCenters[5] + baseWidths[5] / 2;
       const baseCenterOffset = totalBaseWidth / 2;
 
-      // 5. Apply translate3d + scaleX to position each letter perfectly
+      // 5. Apply translate3d + 2D scale (scaleX and scaleY from center) to position each letter perfectly
       letterRefs.current.forEach((el, i) => {
         if (!el) return;
         const targetX = targetCenters[i] - visualCenterOffset;
@@ -501,7 +472,7 @@ export const AtriumMonolith: React.FC<AtriumMonolithProps> = ({
         const translateX = targetX - baseX;
         const intensity = intensities[i];
 
-        el.style.transform = `translate3d(${translateX.toFixed(2)}px, 0, 0) scaleX(${scaleXs[i].toFixed(3)}) scaleY(1)`;
+        el.style.transform = `translate3d(${translateX.toFixed(2)}px, 0, 0) scaleX(${scaleXs[i].toFixed(3)}) scaleY(${scaleYs[i].toFixed(3)})`;
         el.style.opacity = '1';
 
         if (intensity > 0.12) {
@@ -539,9 +510,9 @@ export const AtriumMonolith: React.FC<AtriumMonolithProps> = ({
       className={`fixed inset-0 z-30 pointer-events-none select-none flex items-center justify-center transition-colors duration-300 ${
         phase === 'quincunx'
           ? 'bg-white'
-          : phase === 'portal' || phase === 'wave' || phase === 'revelation'
+          : phase === 'portal' || phase === 'wave' || phase === 'revelation' || phase === 'settled'
           ? 'bg-[#D3542E]'
-          : 'bg-transparent'
+          : 'bg-[#D3542E]'
       }`}
     >
       {/* STAGE (1) & (2): 1.2s 'QUINCUNX CONVERGENCE' ON WHITE CANVAS + EXPANDING PORTAL WIPE TO TERRACOTTA */}
@@ -551,35 +522,31 @@ export const AtriumMonolith: React.FC<AtriumMonolithProps> = ({
         </div>
       )}
 
-      {/* STAGES (2, 3, 4, 5): 'ATRIUM' KINETIC SWEEP, LOGO DOCKING, AND SEAMLESS CONTINUITY GLIDE */}
-      {(phase === 'wave' || phase === 'revelation' || phase === 'glide' || phase === 'settled') && (
+      {/* STAGES (2, 3, 4): 'ATRIUM' KINETIC SWEEP AND LOGO REVELATION (FIRM AT SCREEN CENTER) */}
+      {(phase === 'wave' || phase === 'revelation' || phase === 'settled') && (
         <div
           ref={lockupRef}
-          className={`flex items-center justify-start gap-10 select-none transition-opacity duration-300 ${
-            phase === 'settled' ? 'opacity-0 pointer-events-none' : 'opacity-100'
-          }`}
+          className="flex items-center justify-center gap-6 sm:gap-10 select-none"
           style={{
-            transform: glideTransform ?? 'translate3d(0, 0, 0) scale(1)',
-            transformOrigin: 'left top',
-            transition: 'transform 0.9s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease',
+            transform: 'translate3d(0, 0, 0)',
           }}
         >
-          {/* Authentic 5-Cubes Logo in Solid Black: Enters beside text and glides with it to the right */}
+          {/* Authentic 5-Cubes Logo in Solid Black: Enters beside text at center */}
           <div
             className={`shrink-0 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
-              phase === 'revelation' || phase === 'glide' || phase === 'settled'
+              phase === 'revelation' || phase === 'settled'
                 ? 'opacity-100 translate-x-0 scale-100 max-w-[180px] pointer-events-auto'
-                : 'opacity-0 -translate-x-12 scale-75 max-w-0 pointer-events-none overflow-hidden -mr-10'
+                : 'opacity-0 -translate-x-12 scale-75 max-w-0 pointer-events-none overflow-hidden -mr-6 sm:-mr-10'
             }`}
           >
             <FiveCubesLogo
               cubeColor="#000000"
-              size={144}
+              size={132}
               className="shrink-0"
             />
           </div>
 
-          {/* ATRIUM Text: Stays continuously mounted with zero disconnect! */}
+          {/* ATRIUM Text: Scaled 2D from center during wave, settles in crisp solid black */}
           <div className="flex items-center justify-center gap-0 select-none overflow-visible leading-none">
             {letters.map((char, index) => (
               <span
@@ -590,8 +557,8 @@ export const AtriumMonolith: React.FC<AtriumMonolithProps> = ({
                 className="text-6xl sm:text-8xl md:text-9xl font-black tracking-tight text-black inline-flex items-center justify-center select-none transform-gpu origin-center will-change-transform leading-none"
                 style={{
                   fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
-                  // Initial state: letters start shrunk (scaleX: 0.32), expand to un-shrunk normal size (1.0) at loop end
-                  transform: phase === 'wave' ? 'scaleX(0.32) scaleY(1)' : 'scaleX(1) scaleY(1)',
+                  // Initial state: letters start compact in 2D (0.38x, 0.88y), expand to un-shrunk normal size (1.0x, 1.0y)
+                  transform: phase === 'wave' ? 'scaleX(0.38) scaleY(0.88)' : 'scaleX(1) scaleY(1)',
                   opacity: 1,
                   color: '#000000',
                   lineHeight: 1,
@@ -607,7 +574,7 @@ export const AtriumMonolith: React.FC<AtriumMonolithProps> = ({
       )}
 
       {/* Skip Intro Button */}
-      {onSkip && phase !== 'glide' && phase !== 'settled' && (
+      {onSkip && phase !== 'settled' && (
         <div className="absolute bottom-6 right-6 pointer-events-auto z-40 animate-in fade-in duration-200">
           <button
             type="button"

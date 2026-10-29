@@ -107,8 +107,18 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
 }) => {
   const { completeOnboarding, language, setLanguage } = useAtriumStore();
 
-  // Stage 1: Cinematic Intro Animation
+  // Stage 1: Cinematic Intro Animation & Seamless Dissolve
   const [showIntroAnimation, setShowIntroAnimation] = useState(true);
+  const [isIntroDissolving, setIsIntroDissolving] = useState(false);
+  const [introReplayKey, setIntroReplayKey] = useState(0);
+
+  const handleIntroCompleteOrSkip = () => {
+    setIsIntroDissolving(true);
+    setTimeout(() => {
+      setShowIntroAnimation(false);
+      setIsIntroDissolving(false);
+    }, 600);
+  };
 
   // Stage 2: 9 Conversational Question Cards (Indices 0 to 8)
   const [currentStep, setCurrentStep] = useState<number>(0);
@@ -296,28 +306,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
   const isAr = language === 'ar';
   const isFr = language === 'fr';
 
-  // 1. Initial Cinematic Intro Monolith Animation
-  if (showIntroAnimation) {
-    return (
-      <div className="relative w-screen h-screen overflow-hidden bg-white">
-        <div className="absolute top-6 right-6 z-50 flex items-center gap-2">
-          <button
-            onClick={() => setShowIntroAnimation(false)}
-            className="flex items-center gap-2 px-4 py-2 rounded-full bg-neutral-900/10 hover:bg-neutral-900/20 text-neutral-800 text-xs font-semibold backdrop-blur-md transition-all cursor-pointer shadow-xs active:scale-95"
-          >
-            <span>{isAr ? 'تخطي المقدمة' : isFr ? "Passer l'introduction" : 'Skip Intro'}</span>
-            <ChevronRight className="w-3.5 h-3.5" />
-          </button>
-        </div>
 
-        <AtriumMonolith
-          isIntroActive={true}
-          onIntroComplete={() => setShowIntroAnimation(false)}
-          onSkip={() => setShowIntroAnimation(false)}
-        />
-      </div>
-    );
-  }
 
   // Question metadata
   const questionsMeta = [
@@ -397,9 +386,25 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
 
   return (
     <div
-      className="h-screen max-h-screen w-screen overflow-hidden bg-[#0C0C0E] text-white flex flex-col justify-between selection:bg-[#C4785A] selection:text-white"
+      className="h-screen max-h-screen w-screen overflow-hidden bg-[#0C0C0E] text-white flex flex-col justify-between selection:bg-[#C4785A] selection:text-white relative"
       dir={isAr ? 'rtl' : 'ltr'}
     >
+      {/* Seamless Dissolving Cinematic Intro Monolith Overlay */}
+      {showIntroAnimation && (
+        <div
+          className={`fixed inset-0 z-50 transition-opacity duration-600 ease-out ${
+            isIntroDissolving ? 'opacity-0 pointer-events-none' : 'opacity-100 pointer-events-auto'
+          }`}
+        >
+          <AtriumMonolith
+            isIntroActive={true}
+            replayKey={introReplayKey}
+            onIntroComplete={handleIntroCompleteOrSkip}
+            onSkip={handleIntroCompleteOrSkip}
+          />
+        </div>
+      )}
+
       {/* Top Bar: Replay Intro Button & Minimal Language Switcher */}
       <header className="w-full max-w-7xl mx-auto px-6 py-2.5 sm:py-3 flex items-center justify-between z-30 shrink-0 border-b border-white/5">
         <div className="flex items-center gap-3">
@@ -411,7 +416,11 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
 
         <div className="flex items-center gap-3">
           <button
-            onClick={() => setShowIntroAnimation(true)}
+            onClick={() => {
+              setIsIntroDissolving(false);
+              setIntroReplayKey((k) => k + 1);
+              setShowIntroAnimation(true);
+            }}
             title={isAr ? 'إعادة مشاهدة العرض الحركي' : isFr ? "Revoir l'animation" : 'Replay Animation'}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 text-neutral-300 text-xs font-medium border border-white/10 transition-all cursor-pointer active:scale-95"
           >
