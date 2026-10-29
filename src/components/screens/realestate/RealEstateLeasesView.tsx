@@ -28,12 +28,13 @@ import { useRealEstateData } from './realEstateData';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { Seek } from '../../ui/Seek';
 import { RealEstateLeaseModal } from './RealEstateLeaseModal';
+import { QuittanceModal } from './QuittanceModal';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 
 export const RealEstateLeasesView: React.FC = () => {
   const { language } = useAtriumStore();
   const isAr = language === 'ar';
-  const { leases, properties, addLease, updateLease, deleteLease } = useRealEstateData();
+  const { leases, properties, quittances, addLease, updateLease, deleteLease, addQuittance } = useRealEstateData();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('All');
@@ -45,6 +46,8 @@ export const RealEstateLeasesView: React.FC = () => {
 
   // Modals & 390px Inspector Drawer State
   const [isLeaseModalOpen, setIsLeaseModalOpen] = useState(false);
+  const [isQuittanceModalOpen, setIsQuittanceModalOpen] = useState(false);
+  const [leaseForQuittance, setLeaseForQuittance] = useState<RealEstateLease | null>(null);
 
   // 390px Inline Side Inspector
   const [selectedLease, setSelectedLease] = useState<RealEstateLease | null>(() => {
@@ -108,13 +111,8 @@ export const RealEstateLeasesView: React.FC = () => {
   };
 
   const handleEmitReceipt = (l: RealEstateLease) => {
-    showToast(
-      isAr
-        ? `تم إصدار مخالصة الإيجار الشهرية للمستأجر ${l.tenantName}`
-        : `Quittance de loyer émise pour ${l.tenantName} (${formatMoney(l.monthlyRentDzd)})`,
-      'success'
-    );
-    if (selectedLease?.id === l.id) setActiveTab('quittances');
+    setLeaseForQuittance(l);
+    setIsQuittanceModalOpen(true);
   };
 
   const handleRenewLease = (l: RealEstateLease) => {
@@ -672,18 +670,41 @@ export const RealEstateLeasesView: React.FC = () => {
             {/* Tab 3: Quittances */}
             {activeTab === 'quittances' && (
               <div className="space-y-3 text-xs animate-in fade-in duration-150">
-                <div className="p-2.5 rounded-xl border border-neutral-100 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/40 space-y-1">
-                  <div className="flex items-center justify-between font-semibold text-[11px]">
-                    <span className="text-neutral-900 dark:text-white">Mois en cours (Payé)</span>
-                    <span className="text-emerald-600 font-mono text-[10px]">Règlement validé</span>
+                {quittances
+                  .filter((q) => q.leaseId === selectedLease.id)
+                  .map((q) => (
+                    <div
+                      key={q.id}
+                      className="p-3 rounded-xl border border-neutral-100 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/40 space-y-1.5"
+                    >
+                      <div className="flex items-center justify-between font-semibold text-[11px]">
+                        <span className="font-mono text-[#C4785A] font-bold">{q.quittanceNumber}</span>
+                        <span className="text-emerald-600 font-mono text-[10px]">Paiement {q.paymentMethod}</span>
+                      </div>
+                      <div className="flex justify-between items-center text-neutral-600 dark:text-neutral-300">
+                        <span>Période: Mois {q.periodMonth}/{q.periodYear}</span>
+                        <span className="font-mono font-bold text-neutral-900 dark:text-white">
+                          {formatMoney(q.totalCollectedDzd)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-[10px] text-neutral-400">
+                        <span>Timbre fiscal: {formatMoney(q.timbreFiscalDzd)}</span>
+                        <span>Date: {q.paymentDate}</span>
+                      </div>
+                    </div>
+                  ))}
+
+                {quittances.filter((q) => q.leaseId === selectedLease.id).length === 0 && (
+                  <div className="text-center py-4 text-neutral-400 text-xs">
+                    Aucune quittance émise pour ce bail.
                   </div>
-                  <p className="text-[10px] text-neutral-500">Quittance N° REC-{selectedLease.id.slice(-4)}-01 émise.</p>
-                </div>
+                )}
+
                 <button
                   onClick={() => handleEmitReceipt(selectedLease)}
-                  className="w-full py-2 rounded-xl bg-orange-50 text-[#C4785A] hover:bg-orange-100 font-semibold text-xs"
+                  className="w-full py-2.5 rounded-xl bg-[#C4785A] text-white hover:bg-[#a86246] font-semibold text-xs shadow-xs transition-colors"
                 >
-                  + Émettre nouvelle quittance mensuelle
+                  + Encaisser Loyer & Émettre Quittance
                 </button>
               </div>
             )}
@@ -735,6 +756,25 @@ export const RealEstateLeasesView: React.FC = () => {
           setIsLeaseModalOpen(false);
         }}
       />
+
+      {/* Quittance Modal with Timbre Fiscal */}
+      {isQuittanceModalOpen && (
+        <QuittanceModal
+          isOpen={isQuittanceModalOpen}
+          onClose={() => {
+            setIsQuittanceModalOpen(false);
+            setLeaseForQuittance(null);
+          }}
+          leases={leases}
+          selectedLease={leaseForQuittance || selectedLease}
+          onSave={(newQ) => {
+            addQuittance(newQ);
+            showToast(isAr ? 'تم إدراج مخالصة الإيجار بنجاح' : 'Quittance de loyer avec timbre fiscal enregistrée', 'success');
+            setIsQuittanceModalOpen(false);
+            setLeaseForQuittance(null);
+          }}
+        />
+      )}
     </div>
   );
 };

@@ -20,16 +20,20 @@ import {
 import { useAtriumStore, showToast } from '../../../services/store';
 import { useRealEstateData } from './realEstateData';
 import { AtriumButton } from '../../ui/AtriumButton';
-import { RealEstateInspection } from '../../../types';
+import { RealEstateInspection, BonDeVisiteRecord } from '../../../types';
 import { UniversalDataCollection } from '../../ui/collection/UniversalDataCollection';
 import { ActionButtonDef } from '../../ui/collection/CollectionListRow';
+import { BonDeVisiteModal } from './BonDeVisiteModal';
 
 export const RealEstateInspectionsView: React.FC = () => {
   const { language } = useAtriumStore();
   const isAr = language === 'ar';
-  const { inspections } = useRealEstateData();
+  const { inspections, visits, properties, addVisit } = useRealEstateData();
 
+  const [mainTab, setMainTab] = useState<'inspections' | 'visits'>('inspections');
+  const [isBonDeVisiteModalOpen, setIsBonDeVisiteModalOpen] = useState(false);
   const [selectedInspection, setSelectedInspection] = useState<RealEstateInspection | null>(null);
+  const [selectedVisit, setSelectedVisit] = useState<BonDeVisiteRecord | null>(null);
   const [inspectorTab, setInspectorTab] = useState<'constat' | 'compteurs' | 'pieces'>('constat');
   const [filterType, setFilterType] = useState<'all' | 'entry' | 'exit' | 'damages'>('all');
 
@@ -116,15 +120,47 @@ export const RealEstateInspectionsView: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5">
           <AtriumButton
-            variant="outline"
+            variant="secondary"
             onClick={() => handlePrintInspection('Ensemble')}
             icon={<Printer size={14} />}
           >
             {isAr ? 'طباعة محضر معاينة' : 'Imprimer Constat'}
           </AtriumButton>
+
+          <AtriumButton
+            variant="primary"
+            onClick={() => setIsBonDeVisiteModalOpen(true)}
+            icon={<Plus size={14} />}
+          >
+            {isAr ? 'وصل معاينة جديد' : 'Nouveau Bon de Visite'}
+          </AtriumButton>
         </div>
+      </div>
+
+      {/* Main Tab Toggle between États des Lieux and Bons de Visite */}
+      <div className="flex items-center gap-2 border-b border-zinc-200 dark:border-zinc-800 pb-1">
+        <button
+          onClick={() => setMainTab('inspections')}
+          className={`px-4 py-2 text-xs font-semibold rounded-xl transition-colors ${
+            mainTab === 'inspections'
+              ? 'bg-[#C4785A] text-white shadow-xs'
+              : 'text-[#64748B] hover:text-[#18181B] dark:hover:text-white'
+          }`}
+        >
+          {isAr ? 'محاضر تسليم الأماكن (États des Lieux)' : 'États des Lieux d\'Entrée & Sortie'} ({inspections.length})
+        </button>
+        <button
+          onClick={() => setMainTab('visits')}
+          className={`px-4 py-2 text-xs font-semibold rounded-xl transition-colors ${
+            mainTab === 'visits'
+              ? 'bg-[#C4785A] text-white shadow-xs'
+              : 'text-[#64748B] hover:text-[#18181B] dark:hover:text-white'
+          }`}
+        >
+          {isAr ? 'وصولات المعاينة الرقمية (Bons de Visite)' : 'Bons de Visite Numériques & GPS'} ({visits.length})
+        </button>
       </div>
 
       {/* Canonical 3-Card Top Metrics Pod Tray */}
@@ -548,6 +584,20 @@ export const RealEstateInspectionsView: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Bon de Visite Modal */}
+      {isBonDeVisiteModalOpen && (
+        <BonDeVisiteModal
+          isOpen={isBonDeVisiteModalOpen}
+          onClose={() => setIsBonDeVisiteModalOpen(false)}
+          properties={properties}
+          onSave={(visit) => {
+            addVisit(visit);
+            showToast(isAr ? 'تم توثيق وصل المعاينة بنجاح' : 'Bon de visite certifié avec géolocalisation', 'success');
+            setIsBonDeVisiteModalOpen(false);
+          }}
+        />
+      )}
     </div>
   </div>
 );

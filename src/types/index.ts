@@ -2064,6 +2064,12 @@ export interface AutoPart {
 // ==========================================
 // CATEGORY 11: REAL ESTATE & PROPERTY LEASES
 // ==========================================
+export type PropertyLegalTitleType =
+  | 'Acte_Individuel_Livret'
+  | 'Bien_Dans_Indivision'
+  | 'Cession_OPGI_EPLF'
+  | 'Papier_Timbre_Coutume';
+
 export interface RealEstateProperty {
   id: string;
   accountId: string;
@@ -2080,9 +2086,84 @@ export interface RealEstateProperty {
   priceDzd: number;
   ownerName: string;
   ownerPhone: string;
+  ownerNationalId?: string;
   status: 'Available' | 'Rented' | 'Sold' | 'UnderMaintenance';
   amenities?: string[];
+  
+  // Cadastral Title Passport (Algerian Legal Standard)
+  legalTitleType?: PropertyLegalTitleType;
+  hasLivretFoncier?: boolean;
+  livretFoncierNumber?: string;
+  volumeNumber?: string;
+  caseNumber?: string;
+  cadastralSection?: string;
+  cadastralIlot?: string;
+  cadastralLot?: string;
+  hasNegativeCertificate?: boolean;
+  hasCertificatConformite?: boolean;
+  isEligibleBankMortgage?: boolean;
+  isIndivision?: boolean;
+  fridhaNumber?: string;
+  
+  // Mandate Binding
+  mandateId?: string;
+  mandateNumber?: string;
+  
+  photoUrls?: string[];
+  featuredPhotoUrl?: string;
   createdAt: string;
+}
+
+export type MandateType =
+  | 'Vente_Exclusif'
+  | 'Vente_Simple'
+  | 'Location_Habitation'
+  | 'Location_Commercial'
+  | 'Gestion_Locative';
+
+export type MandateStatus = 'Draft' | 'Active' | 'Expiring' | 'Expired' | 'Renewed' | 'Executed' | 'Revoked';
+
+export interface RealEstateMandate {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  staffId: string;
+  negotiatorName?: string;
+  
+  mandateNumber: string; // e.g. "MND-2026-HYD-000142" (Sequential Décret 09-18)
+  mandateType: MandateType;
+  status: MandateStatus;
+  
+  propertyId: string;
+  propertyTitle: string;
+  propertyAddress: string;
+  propertyType: string;
+  listingType: 'Sale' | 'Rental';
+  
+  ownerFullName: string;
+  ownerPhone: string;
+  ownerNationalId: string;
+  ownerIdIssueDate?: string;
+  ownerIdIssueDaira?: string;
+  
+  askingPriceDzd: number;
+  minimumAcceptablePriceDzd: number;
+  commissionCalculationMode: 'DecreeTranches' | 'FlatPercent' | 'FixedAmount';
+  commissionRatePercent?: number;
+  commissionFixedAmountDzd?: number;
+  commissionEstimatedHtDzd: number;
+  commissionEstimatedTtcDzd: number;
+  commissionPayer: 'Seller' | 'Buyer' | 'Split50_50';
+  
+  startDate: string;
+  endDate: string;
+  renewalCount: number;
+  isExclusive: boolean;
+  scannedDocumentUrl?: string;
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface RealEstateLease {
@@ -2096,16 +2177,90 @@ export interface RealEstateLease {
   propertyTitle: string;
   tenantName: string;
   tenantPhone: string;
+  tenantNationalId?: string;
+  ownerName?: string;
+  ownerPhone?: string;
   startDate: string;
   endDate: string;
   monthlyRentDzd: number;
   securityDepositDzd: number;
   agencyFeeDzd?: number;
   agencyCommissionDzd?: number;
+  agencyManagementRatePercent?: number; // e.g. 7% for rental management
   paymentCycle?: 'Monthly' | 'Quarterly' | 'Yearly';
   paymentFrequency?: 'Monthly' | 'Quarterly' | 'Biannual' | 'Yearly' | 'Annual' | string;
+  lastPaymentDate?: string;
+  arrearsDzd?: number;
   status: 'Active' | 'Expired' | 'Terminated';
   createdAt?: string;
+}
+
+export interface RentalQuittanceRecord {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  staffId: string;
+  
+  quittanceNumber: string; // e.g. "QTC-2026-00389"
+  leaseId: string;
+  propertyId?: string;
+  propertyTitle: string;
+  tenantName: string;
+  ownerName: string;
+  
+  periodMonth: number;
+  periodYear: number;
+  
+  rentAmountDzd: number;
+  chargesDzd: number;
+  paymentMethod: 'Cash' | 'Cheque' | 'Virement' | 'BaridiMob';
+  
+  timbreFiscalDzd: number; // Article 317 Code du Timbre
+  totalCollectedDzd: number;
+  
+  agencyCommissionFeeDzd: number;
+  agencyCommissionTvaDzd: number;
+  netDisbursedToOwnerDzd: number;
+  isDisbursedToOwner: boolean;
+  disbursementDate?: string;
+  
+  paymentDate: string;
+  cashierStaffName: string;
+  notes?: string;
+  createdAt: string;
+}
+
+export interface BonDeVisiteRecord {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  staffId: string;
+  negotiatorName: string;
+  
+  propertyId: string;
+  propertyTitle: string;
+  propertyAddress: string;
+  
+  clientFullName: string;
+  clientPhone: string;
+  clientNationalId: string;
+  
+  visitTimestamp: string;
+  gpsLatitude?: number;
+  gpsLongitude?: number;
+  gpsAccuracyMeters?: number;
+  
+  signatureSvgData: string;
+  signedOffline: boolean;
+  
+  clientImpression?: 'Interested' | 'NeedsNegotiation' | 'PriceTooHigh' | 'Unfavorable' | 'OfferSubmitted';
+  clientFeedbackNotes?: string;
+  counterOfferDzd?: number;
+  
+  whatsappConfirmationSent: boolean;
+  createdAt: string;
 }
 
 export interface RealEstateInspection {
@@ -2138,7 +2293,30 @@ export interface RealEstateInspection {
   observations?: string;
   notes?: string;
   isSigned?: boolean;
+  signatureSvgData?: string;
   createdAt?: string;
+}
+
+export interface BuyerDemandProfile {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  staffId: string;
+  clientFullName: string;
+  clientPhone: string;
+  clientEmail?: string;
+  targetWilaya: string;
+  targetCommune?: string;
+  propertyType: 'Apartment' | 'Villa' | 'Commercial' | 'Office' | 'Land';
+  maxBudgetDzd: number;
+  minRooms?: number;
+  minSurfaceM2?: number;
+  financingType: 'Cash' | 'BankMortgage' | 'Mixed';
+  searchUrgency: 'Immediate' | 'Within3Months' | 'Flexible';
+  activeStatus: 'Active' | 'UnderOffer' | 'Archived';
+  notes?: string;
+  createdAt: string;
 }
 
 // ==========================================

@@ -231,7 +231,9 @@ export type ActiveScreen =
   | 'trading_inventory'
   | 'trading_directory'
   | 'trading_catalog'
-  | 'trading_finance';
+  | 'trading_finance'
+  // Category 11: Real Estate & Property Management (Algeria)
+  | 'realestate_mandates';
 
 export type SupabaseStatus = 'connected' | 'connecting' | 'offline' | 'unconfigured';
 

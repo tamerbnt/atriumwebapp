@@ -78,6 +78,7 @@ import { AutoGaragePartsView } from './components/screens/garage/AutoGarageParts
 import { AutoGarageBillingView } from './components/screens/garage/AutoGarageBillingView';
 
 import { RealEstateDashboardView } from './components/screens/realestate/RealEstateDashboardView';
+import { RealEstateMandatesView } from './components/screens/realestate/RealEstateMandatesView';
 import { RealEstatePropertiesView } from './components/screens/realestate/RealEstatePropertiesView';
 import { RealEstateLeasesView } from './components/screens/realestate/RealEstateLeasesView';
 import { RealEstateInspectionsView } from './components/screens/realestate/RealEstateInspectionsView';
@@ -462,6 +463,9 @@ export default function App() {
       switch (activeScreen) {
         case 'dashboard':
           return <RealEstateDashboardView />;
+        case 'realestate_mandates':
+        case 'shop':
+          return <RealEstateMandatesView />;
         case 'members':
           return <RealEstatePropertiesView />;
         case 'scheduler':

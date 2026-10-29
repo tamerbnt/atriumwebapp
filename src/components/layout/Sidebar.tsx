@@ -782,9 +782,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
         label: t('nav_home', language),
       },
       {
+        id: 'realestate_mandates',
+        icon: <FileText size={19} />,
+        title: language === 'ar' ? 'سجل الوكالات والوساطة (09-18)' : language === 'fr' ? 'Registre des Mandats (09-18)' : 'Mandates Register (09-18)',
+        label: language === 'ar' ? 'الوكالات' : language === 'fr' ? 'Mandats' : 'Mandates',
+      },
+      {
         id: 'members',
         icon: <Building2 size={19} />,
-        title: language === 'ar' ? 'محفظة العقارات' : language === 'fr' ? 'Biens Immobiliers' : 'Properties',
+        title: language === 'ar' ? 'محفظة العقارات والسندات' : language === 'fr' ? 'Biens Immobiliers & Titres' : 'Properties & Titles',
         label: language === 'ar' ? 'العقارات' : language === 'fr' ? 'Biens' : 'Properties',
       },
       {
@@ -796,8 +802,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {
         id: 'registrations',
         icon: <FileCheck size={19} />,
-        title: language === 'ar' ? 'معاينة الأماكن (État des Lieux)' : language === 'fr' ? 'États des Lieux' : 'Inspections',
-        label: language === 'ar' ? 'المعاينة' : language === 'fr' ? 'États des Lieux' : 'Inspections',
+        title: language === 'ar' ? 'معاينة الأماكن ووصولات الزيارة GPS' : language === 'fr' ? 'États des Lieux & Bons de Visite' : 'Inspections & Visits',
+        label: language === 'ar' ? 'الزيارات والمعاينة' : language === 'fr' ? 'Visites & EDLs' : 'Visits & EDLs',
       },
       {
         id: 'finance',

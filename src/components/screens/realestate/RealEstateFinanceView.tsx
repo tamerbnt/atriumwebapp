@@ -15,6 +15,7 @@ import {
   X,
   Share2,
   Clock,
+  Calculator,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
 import { formatMoney } from '../../../utils/rules';
@@ -23,12 +24,14 @@ import { AtriumButton } from '../../ui/AtriumButton';
 import { RealEstateLease } from '../../../types';
 import { UniversalDataCollection } from '../../ui/collection/UniversalDataCollection';
 import { ActionButtonDef } from '../../ui/collection/CollectionListRow';
+import { NotarySimulatorModal } from './NotarySimulatorModal';
 
 export const RealEstateFinanceView: React.FC = () => {
   const { language } = useAtriumStore();
   const isAr = language === 'ar';
   const { leases } = useRealEstateData();
 
+  const [isNotaryModalOpen, setIsNotaryModalOpen] = useState(false);
   const [selectedLease, setSelectedLease] = useState<RealEstateLease | null>(null);
   const [inspectorTab, setInspectorTab] = useState<'quittance' | 'caution' | 'reversement'>('quittance');
   const [settledBailleurIds, setSettledBailleurIds] = useState<string[]>(['lease_01']);
@@ -133,6 +136,13 @@ export const RealEstateFinanceView: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2">
+          <AtriumButton
+            variant="outline"
+            onClick={() => setIsNotaryModalOpen(true)}
+            icon={<Calculator size={14} />}
+          >
+            {isAr ? 'حاسبة الموثق (08-243)' : 'Simulateur Notaire (08-243)'}
+          </AtriumButton>
           <AtriumButton
             variant="outline"
             onClick={() => window.print()}
@@ -578,8 +588,13 @@ export const RealEstateFinanceView: React.FC = () => {
             </div>
           </div>
         )}
+        </div>
       </div>
+
+      <NotarySimulatorModal
+        isOpen={isNotaryModalOpen}
+        onClose={() => setIsNotaryModalOpen(false)}
+      />
     </div>
-  </div>
-);
+  );
 };
