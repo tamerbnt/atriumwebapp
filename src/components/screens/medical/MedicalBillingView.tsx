@@ -42,10 +42,13 @@ export const MedicalBillingView: React.FC = () => {
     addChifaClaim,
     dailyClosures,
     addDailyClosure,
+    consumables,
+    restockConsumable,
+    depleteConsumable,
   } = useMedicalData();
 
   // Primary Operational Tab Switcher
-  const [billingMainTab, setBillingMainTab] = useState<'invoices' | 'bordereau' | 'honoraires' | 'caisse'>('invoices');
+  const [billingMainTab, setBillingMainTab] = useState<'invoices' | 'bordereau' | 'honoraires' | 'caisse' | 'consumables'>('invoices');
 
   // Factures Tab State
   const [searchQuery, setSearchQuery] = useState('');
@@ -315,6 +318,17 @@ export const MedicalBillingView: React.FC = () => {
             }`}
           >
             {isAr ? 'إغلاق الصندوق' : 'Clôture de Caisse'}
+          </button>
+          <button
+            type="button"
+            onClick={() => setBillingMainTab('consumables')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition-all ${
+              billingMainTab === 'consumables'
+                ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-2xs font-bold'
+                : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900'
+            }`}
+          >
+            {isAr ? 'المستهلكات والمخزون' : 'Consommables & Stock'}
           </button>
         </div>
       </div>
@@ -1038,6 +1052,129 @@ export const MedicalBillingView: React.FC = () => {
                 ))}
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Tab 5: Consommables & Stock Médical */}
+      {billingMainTab === 'consumables' && (
+        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs animate-in fade-in duration-150">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+              <h3 className="font-bold text-sm text-neutral-900 dark:text-white flex items-center gap-2">
+                <Building2 size={16} className="text-[#C4785A]" />
+                <span>{isAr ? 'المخزون والمستهلكات السريرية' : 'Pharmacie Interne & Consommables de Soins'}</span>
+              </h3>
+              <p className="text-xs text-neutral-500">
+                {isAr
+                  ? 'متابعة حية لاستهلاك القفازات، الحقن، المحاليل والمستلزمات الطبية مع الإنذار المبكر'
+                  : 'Niveaux de stock temps réel, auto-décrémentation par consultation/acte et alertes de réapprovisionnement'}
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-semibold px-2.5 py-1 rounded-lg bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300">
+                {consumables.length} {isAr ? 'عنصر مراقب' : 'fournitures tracées'}
+              </span>
+            </div>
+          </div>
+
+          {/* Consumables Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {consumables.map((item) => {
+              const currentStock = item.currentStockUnits ?? item.currentStock ?? 0;
+              const threshold = item.reorderThresholdUnits ?? item.minStockAlert ?? 10;
+              const isCritical = currentStock <= threshold;
+              const code = item.itemCode ?? item.id;
+              return (
+                <div
+                  key={item.id}
+                  className={`p-4 rounded-2xl bg-white dark:bg-neutral-800 border flex flex-col justify-between shadow-2xs space-y-3 transition-all ${
+                    isCritical
+                      ? 'border-rose-300 dark:border-rose-900/60 ring-1 ring-rose-500/20'
+                      : 'border-neutral-200 dark:border-neutral-700'
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <span className="text-[10px] font-mono text-neutral-400 block uppercase font-bold">
+                        {code} · {item.category}
+                      </span>
+                      <h4 className="font-bold text-sm text-neutral-900 dark:text-white mt-0.5">
+                        {item.name}
+                      </h4>
+                    </div>
+                    {isCritical ? (
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800 animate-pulse">
+                        Seuil Critique
+                      </span>
+                    ) : (
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                        Stock Optimal
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Stock Metrics */}
+                  <div className="grid grid-cols-2 gap-2 p-2.5 rounded-xl bg-neutral-50 dark:bg-neutral-900/50 border border-neutral-100 dark:border-neutral-800 text-xs">
+                    <div>
+                      <span className="text-[10px] text-neutral-400 uppercase font-semibold block">Stock Actuel</span>
+                      <div className="flex items-baseline gap-1 mt-0.5">
+                        <span className={`text-xl font-bold font-mono ${isCritical ? 'text-rose-600' : 'text-neutral-900 dark:text-white'}`}>
+                          {currentStock}
+                        </span>
+                        <span className="text-[10px] text-neutral-400">{item.unit}</span>
+                      </div>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-neutral-400 uppercase font-semibold block">Seuil d'Alerte</span>
+                      <div className="flex items-baseline gap-1 mt-0.5">
+                        <span className="text-xl font-bold font-mono text-neutral-500">
+                          {threshold}
+                        </span>
+                        <span className="text-[10px] text-neutral-400">{item.unit}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Stock Bar */}
+                  <div className="w-full bg-neutral-100 dark:bg-neutral-700 h-1.5 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full transition-all ${isCritical ? 'bg-rose-500' : 'bg-emerald-500'}`}
+                      style={{
+                        width: `${Math.min(100, Math.max(8, (currentStock / (threshold * 2.5)) * 100))}%`,
+                      }}
+                    />
+                  </div>
+
+                  {/* Quick Action Buttons */}
+                  <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        depleteConsumable(code, 1);
+                        showToast(`-1 ${item.unit} déduit pour ${item.name}`, 'info');
+                      }}
+                      className="px-2 py-1 text-[11px] rounded-lg border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
+                      title="Déduire manuellement pour un acte"
+                    >
+                      -1 Unité
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        restockConsumable(code, 50);
+                        showToast(`+50 ${item.unit} réapprovisionnés pour ${item.name}`, 'success');
+                      }}
+                      className="px-2.5 py-1 text-[11px] font-semibold rounded-lg bg-[#C4785A] hover:bg-[#b3684a] text-white shadow-2xs transition-colors"
+                    >
+                      +50 Réapprovisionner
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}

@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { MedicalConsultation, MedicalPractitioner } from '../../../types';
 import { AtriumButton } from '../../ui/AtriumButton';
+import { useMedicalData } from './medicalData';
 
 interface MedicalWaitingRoomTvModalProps {
   isOpen: boolean;
@@ -28,6 +29,7 @@ export const MedicalWaitingRoomTvModal: React.FC<MedicalWaitingRoomTvModalProps>
   consultations,
   practitioners,
 }) => {
+  const { isEmergencyAlarmActive, toggleEmergencyAlarm } = useMedicalData();
   const [audioEnabled, setAudioEnabled] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -185,6 +187,19 @@ export const MedicalWaitingRoomTvModal: React.FC<MedicalWaitingRoomTvModalProps>
           )}
 
           <button
+            onClick={() => toggleEmergencyAlarm()}
+            className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer ${
+              isEmergencyAlarmActive
+                ? 'bg-rose-600 text-white border border-rose-400 shadow-lg shadow-rose-600/50 animate-pulse'
+                : 'bg-white/5 border border-white/10 text-white/70 hover:bg-white/10'
+            }`}
+            title="Déclencher / Arrêter l'alerte d'urgence médicale"
+          >
+            <AlertCircle size={16} className={isEmergencyAlarmActive ? 'animate-spin' : ''} />
+            <span>{isEmergencyAlarmActive ? 'URGENCE EN COURS' : 'Alerte Urgence'}</span>
+          </button>
+
+          <button
             onClick={toggleFullscreen}
             className="p-2.5 rounded-xl bg-white/5 border border-white/10 text-white/70 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
             title="Plein Écran"
@@ -201,6 +216,17 @@ export const MedicalWaitingRoomTvModal: React.FC<MedicalWaitingRoomTvModalProps>
           </button>
         </div>
       </div>
+
+      {/* Emergency Flash Banner */}
+      {isEmergencyAlarmActive && (
+        <div className="bg-rose-600 text-white px-8 py-3.5 text-center font-bold text-sm sm:text-base flex items-center justify-center gap-3 animate-pulse border-b-2 border-white/40 shrink-0 select-none shadow-xl">
+          <AlertCircle size={22} className="animate-spin shrink-0" />
+          <span className="tracking-wide">
+            🚨 URGENCE MÉDICALE EN COURS — ACCÈS SALLE DE DÉCHOCAGE ET SOINS PRIORITAIRES
+          </span>
+          <AlertCircle size={22} className="animate-spin shrink-0" />
+        </div>
+      )}
 
       {/* Main Dual Stage TV Layout */}
       <div className="flex-1 grid grid-cols-12 gap-8 p-8 overflow-hidden">

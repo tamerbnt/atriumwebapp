@@ -186,6 +186,7 @@ export type ActiveScreen =
   | 'registrations'
   | 'shop'
   | 'scheduler'
+  | 'agenda'
   | 'finance'
   | 'history'
   | 'settings'

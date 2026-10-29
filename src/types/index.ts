@@ -1839,6 +1839,8 @@ export interface MedicalAppointmentSlot {
   reason: string;
   status: 'Booked' | 'Arrived' | 'InRoom' | 'Completed' | 'Cancelled' | 'NoShow';
   urgency?: 'Normal' | 'Prioritaire';
+  isEmergencyBypass?: boolean;
+  emergencyBypassReason?: string;
   notes?: string;
 }
 
@@ -1952,10 +1954,13 @@ export interface ChifaClaimRecord {
 
 export interface ClinicConsumableItem {
   id: string;
+  itemCode?: string;
   name: string;
   category: 'Injection' | 'Pansement & Suture' | 'Hygiène & Protection' | 'Diagnostics Rapides';
   currentStock: number;
+  currentStockUnits?: number;
   minStockAlert: number;
+  reorderThresholdUnits?: number;
   unit: string;
   unitCostDzd: number;
 }

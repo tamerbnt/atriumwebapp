@@ -1022,10 +1022,22 @@ export const MedicalPatientsView: React.FC = () => {
                                 <button
                                   type="button"
                                   onClick={() => {
+                                    const sysVal = parseInt(newSys) || 120;
+                                    const diaVal = parseInt(newDia) || 80;
+                                    if (sysVal <= diaVal) {
+                                      showToast(
+                                        language === 'ar'
+                                          ? 'خطأ سريري: يجب أن يكون الضغط الانقباضي أعلى من الانبساطي'
+                                          : `Erreur clinique : La tension systolique (${sysVal}) doit être strictement supérieure à la diastolique (${diaVal}) mmHg`,
+                                        'error'
+                                      );
+                                      return;
+                                    }
+
                                     const newPoint: any = {
                                       date: new Date().toISOString().slice(0, 10),
-                                      systolic: parseInt(newSys) || 120,
-                                      diastolic: parseInt(newDia) || 80,
+                                      systolic: sysVal,
+                                      diastolic: diaVal,
                                       pulseBpm: parseInt(newHr) || 72,
                                       tempCelsius: 37,
                                       weightKg: parseFloat(newWeight) || 70,

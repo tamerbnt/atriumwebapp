@@ -20,6 +20,7 @@ interface MedicalAppointmentModalProps {
   practitioners: MedicalPractitioner[];
   patients: MedicalPatient[];
   onSaveAppointment: (slot: MedicalAppointmentSlot) => void;
+  existingAppointments?: MedicalAppointmentSlot[];
   initialDoctorId?: string;
   initialDate?: string;
   initialTime?: string;
@@ -31,6 +32,7 @@ export const MedicalAppointmentModal: React.FC<MedicalAppointmentModalProps> = (
   practitioners,
   patients,
   onSaveAppointment,
+  existingAppointments = [],
   initialDoctorId,
   initialDate,
   initialTime,
@@ -45,6 +47,7 @@ export const MedicalAppointmentModal: React.FC<MedicalAppointmentModalProps> = (
   const [reason, setReason] = useState('Consultation de suivi');
   const [urgency, setUrgency] = useState<'Normal' | 'Prioritaire'>('Normal');
   const [isEmergencyBypass, setIsEmergencyBypass] = useState(false);
+  const [emergencyBypassReason, setEmergencyBypassReason] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
 
   if (!isOpen) return null;
@@ -60,6 +63,11 @@ export const MedicalAppointmentModal: React.FC<MedicalAppointmentModalProps> = (
     }
   };
 
+  const toMinutes = (timeStr: string) => {
+    const [h, m] = timeStr.split(':').map(Number);
+    return (h || 0) * 60 + (m || 0);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!patientName.trim()) {
@@ -68,6 +76,30 @@ export const MedicalAppointmentModal: React.FC<MedicalAppointmentModalProps> = (
     }
 
     const doctor = practitioners.find((p) => p.id === doctorId);
+
+    // Conflict detection engine
+    const newStart = toMinutes(startTime);
+    const newEnd = newStart + durationMinutes;
+
+    const conflictingSlot = existingAppointments.find((apt) => {
+      if (apt.date !== date || apt.doctorId !== doctorId) return false;
+      if (apt.status === 'Cancelled' || apt.status === 'NoShow') return false;
+      const aptStart = toMinutes(apt.startTime);
+      const aptEnd = aptStart + (apt.durationMinutes || 30);
+      return Math.max(newStart, aptStart) < Math.min(newEnd, aptEnd);
+    });
+
+    if (conflictingSlot && !isEmergencyBypass) {
+      setErrorMsg(
+        `Conflit d'horaire détecté : ${doctor?.fullName || 'Le médecin'} a déjà un rendez-vous avec ${conflictingSlot.patientName} de ${conflictingSlot.startTime} à ${Math.floor((toMinutes(conflictingSlot.startTime) + (conflictingSlot.durationMinutes || 30)) / 60).toString().padStart(2, '0')}:${((toMinutes(conflictingSlot.startTime) + (conflictingSlot.durationMinutes || 30)) % 60).toString().padStart(2, '0')}. Cochez "Sur-réservation d'urgence" ci-dessous pour forcer l'ajout.`
+      );
+      return;
+    }
+
+    if (conflictingSlot && isEmergencyBypass && !emergencyBypassReason.trim()) {
+      setErrorMsg('Veuillez renseigner un motif clinique justifiant la sur-réservation d\'urgence.');
+      return;
+    }
 
     const newSlot: MedicalAppointmentSlot = {
       id: `apt_${Date.now()}`,
@@ -82,6 +114,8 @@ export const MedicalAppointmentModal: React.FC<MedicalAppointmentModalProps> = (
       reason: reason.trim(),
       status: 'Booked',
       urgency,
+      isEmergencyBypass,
+      emergencyBypassReason: isEmergencyBypass ? emergencyBypassReason.trim() : undefined,
     };
 
     onSaveAppointment(newSlot);
@@ -231,6 +265,31 @@ export const MedicalAppointmentModal: React.FC<MedicalAppointmentModalProps> = (
                 Prioritaire
               </button>
             </div>
+          </div>
+
+          <div className="p-3 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-700 space-y-2">
+            <label className="flex items-center gap-2.5 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={isEmergencyBypass}
+                onChange={(e) => setIsEmergencyBypass(e.target.checked)}
+                className="w-4 h-4 rounded text-[#C4785A] accent-[#C4785A] cursor-pointer"
+              />
+              <span className="text-xs font-bold text-amber-700 dark:text-amber-400">
+                Sur-réservation d'urgence (Bypass de conflit)
+              </span>
+            </label>
+            {isEmergencyBypass && (
+              <div className="pt-1 animate-in fade-in duration-150">
+                <LabelInput
+                  label="Justification Clinique Obligatoire"
+                  value={emergencyBypassReason}
+                  onChange={(e) => setEmergencyBypassReason(e.target.value)}
+                  placeholder="ex: Détresse respiratoire aiguë, douleur thoracique suspecte..."
+                  required
+                />
+              </div>
+            )}
           </div>
 
           {/* Footer Submit */}

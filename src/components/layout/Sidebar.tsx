@@ -577,6 +577,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
         label: language === 'ar' ? 'الانتظار' : language === 'fr' ? 'Triage' : 'Queue',
       },
       {
+        id: 'agenda',
+        icon: <Calendar size={19} />,
+        title: language === 'ar' ? 'أجندة مواعيد الأطباء' : language === 'fr' ? 'Agenda Médecins' : 'Doctor Agenda',
+        label: language === 'ar' ? 'الأجندة' : language === 'fr' ? 'Agenda' : 'Agenda',
+      },
+      {
         id: 'members',
         icon: <Users size={19} />,
         title: language === 'ar' ? 'ملفات المرضى' : language === 'fr' ? 'Dossiers Patients (EHR)' : 'Patients (EHR)',

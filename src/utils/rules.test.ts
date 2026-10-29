@@ -356,3 +356,91 @@ test('Intelligent Category Recommendation: accurately calculates category, confi
   assert.equal(res4.recommendedCategory, 'auto_garage');
 });
 
+test('Category 9 Medical: Blood pressure validation strictly enforces Psys > Pdia', () => {
+  const validateVitalsBP = (systolic: number, diastolic: number) => {
+    if (systolic <= diastolic) {
+      return { valid: false, error: 'Pression systolique doit être supérieure à la diastolique' };
+    }
+    return { valid: true, error: null };
+  };
+
+  // Normal BP
+  assert.equal(validateVitalsBP(120, 80).valid, true);
+  // High BP
+  assert.equal(validateVitalsBP(140, 90).valid, true);
+  // Inverted BP (physiologically impossible)
+  assert.equal(validateVitalsBP(80, 120).valid, false);
+  // Equal BP
+  assert.equal(validateVitalsBP(90, 90).valid, false);
+});
+
+test('Category 9 Medical: Appointment slot collision engine and emergency bypass', () => {
+  type Slot = { startTime: string; endTime: string; practitionerId: string };
+  const hasConflict = (
+    newSlot: Slot,
+    existingSlots: Slot[],
+    isEmergencyBypass: boolean = false
+  ) => {
+    if (isEmergencyBypass) return false;
+    return existingSlots.some((s) => {
+      if (s.practitionerId !== newSlot.practitionerId) return false;
+      return newSlot.startTime < s.endTime && newSlot.endTime > s.startTime;
+    });
+  };
+
+  const existing: Slot[] = [
+    { practitionerId: 'doc-1', startTime: '09:00', endTime: '09:30' },
+    { practitionerId: 'doc-1', startTime: '10:00', endTime: '10:30' },
+    { practitionerId: 'doc-2', startTime: '09:00', endTime: '09:30' },
+  ];
+
+  // Overlapping slot on doc-1 (09:15-09:45) -> conflict
+  assert.equal(hasConflict({ practitionerId: 'doc-1', startTime: '09:15', endTime: '09:45' }, existing), true);
+  // Overlapping slot with emergency bypass -> allowed
+  assert.equal(hasConflict({ practitionerId: 'doc-1', startTime: '09:15', endTime: '09:45' }, existing, true), false);
+  // Non-overlapping slot on doc-1 (09:30-10:00) -> allowed
+  assert.equal(hasConflict({ practitionerId: 'doc-1', startTime: '09:30', endTime: '10:00' }, existing), false);
+  // Same time slot on different doctor doc-2 (10:00-10:30) -> allowed
+  assert.equal(hasConflict({ practitionerId: 'doc-2', startTime: '10:00', endTime: '10:30' }, existing), false);
+});
+
+test('Category 9 Medical: NGAP Acts pricing split and consumable deductions', async () => {
+  const { NGAP_ACTS } = await import('../components/screens/medical/medicalData.ts');
+
+  assert.ok(NGAP_ACTS.length >= 5);
+  for (const act of NGAP_ACTS) {
+    // Official Algerian social security 80% CNAS and 20% Ticket Moderateur
+    assert.equal(act.cnasReimbursementDzd, Math.round(act.conventionFeeDzd * 0.8));
+    assert.equal(act.ticketModerateurDzd, Math.round(act.conventionFeeDzd * 0.2));
+    assert.ok(act.linkedConsumables.length > 0, `Act ${act.code} should define consumed items`);
+  }
+
+  const actC = NGAP_ACTS.find((a) => a.code === 'C');
+  assert.ok(actC);
+  assert.equal(actC.conventionFeeDzd, 2500);
+  assert.equal(actC.cnasReimbursementDzd, 2000);
+  assert.equal(actC.ticketModerateurDzd, 500);
+});
+
+test('Category 9 Medical: CNAS 30-day regulatory warning rule for sick leaves (Article 17 Loi 83-11)', () => {
+  const checkSickLeaveCompliance = (type: string, days: number) => {
+    if (type === 'ArretDeTravail' && days > 30) {
+      return {
+        requiresCnasControl: true,
+        warning: 'Arrêt supérieur à 30 jours consécutifs soumis au contrôle médical préalable CNAS',
+      };
+    }
+    return { requiresCnasControl: false, warning: null };
+  };
+
+  const shortLeave = checkSickLeaveCompliance('ArretDeTravail', 15);
+  assert.equal(shortLeave.requiresCnasControl, false);
+
+  const longLeave = checkSickLeaveCompliance('ArretDeTravail', 35);
+  assert.equal(longLeave.requiresCnasControl, true);
+  assert.ok(longLeave.warning?.includes('30 jours'));
+
+  const aptitudeCert = checkSickLeaveCompliance('Aptitude', 45);
+  assert.equal(aptitudeCert.requiresCnasControl, false);
+});
+

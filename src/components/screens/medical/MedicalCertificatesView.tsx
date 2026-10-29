@@ -13,6 +13,7 @@ import {
   Filter,
   X,
   FileBadge,
+  AlertTriangle,
 } from 'lucide-react';
 import { useAtriumStore } from '../../../services/store';
 import { useMedicalData } from './medicalData';
@@ -381,6 +382,28 @@ export const MedicalCertificatesView: React.FC = () => {
                       required
                     />
                   </div>
+
+                  {(() => {
+                    const diffDays = Math.ceil(Math.abs(new Date(endDate).getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24)) + 1;
+                    if (diffDays > 30) {
+                      return (
+                        <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-800 dark:text-amber-300 text-xs space-y-1 animate-in fade-in">
+                          <div className="flex items-center gap-1.5 font-bold">
+                            <AlertTriangle size={14} className="shrink-0 text-amber-600 dark:text-amber-400" />
+                            <span>Avertissement Réglementaire CNAS ({diffDays} jours)</span>
+                          </div>
+                          <p className="text-[11px] leading-relaxed">
+                            Les arrêts de travail de plus de 30 jours consécutifs requièrent une convocation et validation préalable de la commission médicale du contrôle de la sécurité sociale (Art. 17 Loi 83-11).
+                          </p>
+                        </div>
+                      );
+                    }
+                    return (
+                      <div className="text-[11px] text-neutral-500 font-mono">
+                        Durée calculée de l'arrêt : <strong>{diffDays} jour(s)</strong>
+                      </div>
+                    );
+                  })()}
                 </>
               )}
 

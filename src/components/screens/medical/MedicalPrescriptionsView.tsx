@@ -22,7 +22,7 @@ import {
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
 import { MedicalPrescription, MedicalPrescriptionItem, DoctorOrdonnanceConfig } from '../../../types';
-import { useMedicalData } from './medicalData';
+import { useMedicalData, NGAP_ACTS } from './medicalData';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { Seek } from '../../ui/Seek';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
@@ -38,8 +38,10 @@ export const MedicalPrescriptionsView: React.FC = () => {
     doctorConfigs,
     updateDoctorConfig,
     addPrescription,
+    depleteForAct,
   } = useMedicalData();
 
+  const [activeMainTab, setActiveMainTab] = useState<'prescriptions' | 'ngap'>('prescriptions');
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<'all' | 'recent' | 'multi'>('all');
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
@@ -310,7 +312,33 @@ export const MedicalPrescriptionsView: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          {/* SubTab switcher */}
+          <div className="flex bg-neutral-200/80 dark:bg-neutral-800 p-1 rounded-xl text-xs font-semibold">
+            <button
+              type="button"
+              onClick={() => setActiveMainTab('prescriptions')}
+              className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                activeMainTab === 'prescriptions'
+                  ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white shadow-2xs font-bold'
+                  : 'text-neutral-600 dark:text-neutral-400'
+              }`}
+            >
+              {isAr ? 'الوصفات الطبية' : 'Ordonnances'}
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveMainTab('ngap')}
+              className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                activeMainTab === 'ngap'
+                  ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-2xs font-bold'
+                  : 'text-neutral-600 dark:text-neutral-400'
+              }`}
+            >
+              {isAr ? 'دليل الفحوصات NGAP' : 'Nomenclature NGAP'}
+            </button>
+          </div>
+
           <button
             type="button"
             onClick={() => setIsPersonalizerOpen(true)}
@@ -332,16 +360,97 @@ export const MedicalPrescriptionsView: React.FC = () => {
         </div>
       </div>
 
-      {/* KPI Pod Tray */}
-      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
-        <div>
-          <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
-            {isAr ? 'مؤشرات الوصفات الطبية والسلامة الدوائية' : 'Indicateurs de Prescription & Sécurisation Pharmacologique'}
-          </h2>
-          <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-            {isAr ? 'المطابقة الدوائية مع الصندوق الوطني للتأمينات، والتحقق الفوري بالباركود' : 'Conformité Chifa, détection des interactions et traçabilité par QR Code certifié'}
-          </p>
+      {activeMainTab === 'ngap' ? (
+        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs animate-in fade-in duration-150">
+          <div>
+            <h3 className="font-bold text-sm text-neutral-900 dark:text-white flex items-center gap-2">
+              <Stethoscope size={16} className="text-[#C4785A]" />
+              <span>{isAr ? 'دليل الفحوصات والأعمال الطبية (NGAP)' : 'Nomenclature Générale des Actes Professionnels (NGAP)'}</span>
+            </h3>
+            <p className="text-xs text-neutral-500">
+              {isAr
+                ? 'التعريفات الرسمية للضمان الاجتماعي، حصص الصندوق والتغذية التلقائية للمستهلكات'
+                : 'Codification officielle CNAS/CASNOS, tarifs conventionnés, ticket modérateur et dépréciation du stock'}
+            </p>
+          </div>
+
+          <div className="overflow-x-auto rounded-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 shadow-2xs">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-[#F8F9FA] dark:bg-neutral-850 border-b border-neutral-200 dark:border-neutral-700 text-neutral-500">
+                <tr>
+                  <th className="p-3.5 font-bold uppercase tracking-wider text-[11px]">Code NGAP</th>
+                  <th className="p-3.5 font-bold uppercase tracking-wider text-[11px]">Libellé de l'Acte Médical</th>
+                  <th className="p-3.5 font-bold uppercase tracking-wider text-[11px]">Catégorie</th>
+                  <th className="p-3.5 font-bold uppercase tracking-wider text-[11px]">Tarif Conv.</th>
+                  <th className="p-3.5 font-bold uppercase tracking-wider text-[11px]">Part CNAS (80%)</th>
+                  <th className="p-3.5 font-bold uppercase tracking-wider text-[11px]">Ticket Mod.</th>
+                  <th className="p-3.5 font-bold uppercase tracking-wider text-[11px]">Consommables Déduits</th>
+                  <th className="p-3.5 font-bold uppercase tracking-wider text-[11px] text-right">Action Test</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-neutral-100 dark:divide-neutral-700">
+                {NGAP_ACTS.map((act) => (
+                  <tr key={act.code} className="hover:bg-neutral-50/60 dark:hover:bg-neutral-700/20 transition-colors">
+                    <td className="p-3.5 font-mono font-bold text-[#C4785A]">
+                      <span className="px-2 py-0.5 rounded-md bg-[#C4785A]/10 border border-[#C4785A]/20">
+                        {act.code}
+                      </span>
+                    </td>
+                    <td className="p-3.5 font-semibold text-neutral-900 dark:text-white">
+                      {act.label}
+                    </td>
+                    <td className="p-3.5 text-neutral-500">
+                      {act.category}
+                    </td>
+                    <td className="p-3.5 font-mono font-bold text-neutral-900 dark:text-white">
+                      {act.conventionFeeDzd.toLocaleString()} DA
+                    </td>
+                    <td className="p-3.5 font-mono text-emerald-600 font-semibold">
+                      {act.cnasReimbursementDzd.toLocaleString()} DA
+                    </td>
+                    <td className="p-3.5 font-mono text-neutral-600 dark:text-neutral-300">
+                      {act.ticketModerateurDzd.toLocaleString()} DA
+                    </td>
+                    <td className="p-3.5">
+                      <div className="flex flex-wrap gap-1">
+                        {act.linkedConsumables.map((c, idx) => (
+                          <span key={idx} className="text-[10px] px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300 font-mono">
+                            {c}
+                          </span>
+                        ))}
+                      </div>
+                    </td>
+                    <td className="p-3.5 text-right">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          depleteForAct(act.code);
+                          showToast(`Consommables déduits avec succès pour acte [${act.code}]`, 'success');
+                        }}
+                        className="px-2.5 py-1 text-[11px] font-semibold rounded-lg bg-neutral-100 dark:bg-neutral-700 hover:bg-[#C4785A] hover:text-white transition-colors cursor-pointer"
+                        title="Simuler la dépréciation des consommables pour cet acte"
+                      >
+                        Consommer
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
+      ) : (
+        <>
+          {/* KPI Pod Tray */}
+          <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+            <div>
+              <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
+                {isAr ? 'مؤشرات الوصفات الطبية والسلامة الدوائية' : 'Indicateurs de Prescription & Sécurisation Pharmacologique'}
+              </h2>
+              <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+                {isAr ? 'المطابقة الدوائية مع الصندوق الوطني للتأمينات، والتحقق الفوري بالباركود' : 'Conformité Chifa, détection des interactions et traçabilité par QR Code certifié'}
+              </p>
+            </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
@@ -803,6 +912,8 @@ export const MedicalPrescriptionsView: React.FC = () => {
           )}
         </div>
       </div>
+      </>
+      )}
 
       {/* Doctor Ordonnance Personalizer Modal */}
       {isPersonalizerOpen && (

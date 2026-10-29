@@ -24,6 +24,7 @@ export const MedicalAgendaView: React.FC = () => {
     practitioners,
     appointments,
     patients,
+    consultations,
     addAppointment,
     updateAppointmentStatus,
   } = useMedicalData();
@@ -210,24 +211,35 @@ export const MedicalAgendaView: React.FC = () => {
 
           {/* Practitioner Columns */}
           <div className="col-span-11 grid" style={{ gridTemplateColumns: `repeat(${activePractitioners.length}, minmax(0, 1fr))` }}>
-            {activePractitioners.map((doc) => (
-              <div
-                key={doc.id}
-                className="p-3.5 border-r last:border-r-0 border-neutral-200 dark:border-neutral-800 flex items-center justify-between"
-              >
-                <div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: doc.color }} />
-                    <span className="text-xs font-bold text-neutral-900 dark:text-white truncate">
-                      {doc.fullName}
+            {activePractitioners.map((doc) => {
+              const waitingCount = consultations.filter((c) => c.status === 'InWaitingQueue' && c.staffId === doc.id).length;
+              return (
+                <div
+                  key={doc.id}
+                  className="p-3.5 border-r last:border-r-0 border-neutral-200 dark:border-neutral-800 flex items-center justify-between"
+                >
+                  <div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: doc.color }} />
+                      <span className="text-xs font-bold text-neutral-900 dark:text-white truncate">
+                        {doc.fullName}
+                      </span>
+                    </div>
+                    <span className="text-[10px] text-neutral-500 dark:text-neutral-400 block truncate">
+                      {doc.specialty} · <strong className="text-neutral-700 dark:text-neutral-300">{doc.roomNumber}</strong>
                     </span>
                   </div>
-                  <span className="text-[10px] text-neutral-500 dark:text-neutral-400 block truncate">
-                    {doc.specialty} · <strong className="text-neutral-700 dark:text-neutral-300">{doc.roomNumber}</strong>
-                  </span>
+                  {waitingCount > 0 && (
+                    <span
+                      title={`File d'attente active : ${waitingCount} patient(s)`}
+                      className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30 shrink-0"
+                    >
+                      +{waitingCount * 15}m
+                    </span>
+                  )}
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
@@ -336,6 +348,7 @@ export const MedicalAgendaView: React.FC = () => {
         onClose={() => setIsBookingModalOpen(false)}
         practitioners={practitioners}
         patients={patients}
+        existingAppointments={appointments}
         onSaveAppointment={addAppointment}
         initialDoctorId={activeSlotData.doctorId}
         initialDate={selectedDate}

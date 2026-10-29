@@ -746,12 +746,12 @@ export const INITIAL_CHIFA_CLAIMS: ChifaClaimRecord[] = [
 ];
 
 export const INITIAL_CONSUMABLES: ClinicConsumableItem[] = [
-  { id: 'c_01', name: 'Seringues stériles 5ml à usage unique', category: 'Injection', currentStock: 240, minStockAlert: 50, unit: 'Unités', unitCostDzd: 25 },
-  { id: 'c_02', name: 'Gants d\'examen stériles (Boîte de 100)', category: 'Hygiène & Protection', currentStock: 18, minStockAlert: 5, unit: 'Boîtes', unitCostDzd: 1200 },
-  { id: 'c_03', name: 'Sérum physiologique 0.9% 500ml', category: 'Injection', currentStock: 45, minStockAlert: 15, unit: 'Flacons', unitCostDzd: 150 },
-  { id: 'c_04', name: 'Kit de suture stérile jetable', category: 'Pansement & Suture', currentStock: 32, minStockAlert: 10, unit: 'Kits', unitCostDzd: 650 },
-  { id: 'c_05', name: 'Électrodes adhésives ECG (Paquet 50)', category: 'Diagnostics Rapides', currentStock: 14, minStockAlert: 4, unit: 'Paquets', unitCostDzd: 850 },
-  { id: 'c_06', name: 'Gel échographique hypoallergénique 5L', category: 'Diagnostics Rapides', currentStock: 6, minStockAlert: 2, unit: 'Bidons', unitCostDzd: 2200 },
+  { id: 'c_01', itemCode: 'CON_02', name: 'Seringues stériles 5ml à usage unique', category: 'Injection', currentStock: 240, currentStockUnits: 240, minStockAlert: 50, reorderThresholdUnits: 50, unit: 'Unités', unitCostDzd: 25 },
+  { id: 'c_02', itemCode: 'CON_01', name: 'Gants d\'examen stériles (Boîte de 100)', category: 'Hygiène & Protection', currentStock: 18, currentStockUnits: 18, minStockAlert: 5, reorderThresholdUnits: 5, unit: 'Boîtes', unitCostDzd: 1200 },
+  { id: 'c_03', itemCode: 'CON_03', name: 'Sérum physiologique 0.9% 500ml', category: 'Injection', currentStock: 45, currentStockUnits: 45, minStockAlert: 15, reorderThresholdUnits: 15, unit: 'Flacons', unitCostDzd: 150 },
+  { id: 'c_04', itemCode: 'CON_06', name: 'Kit de suture stérile jetable', category: 'Pansement & Suture', currentStock: 32, currentStockUnits: 32, minStockAlert: 10, reorderThresholdUnits: 10, unit: 'Kits', unitCostDzd: 650 },
+  { id: 'c_05', itemCode: 'CON_04', name: 'Électrodes adhésives ECG (Paquet 50)', category: 'Diagnostics Rapides', currentStock: 14, currentStockUnits: 14, minStockAlert: 4, reorderThresholdUnits: 4, unit: 'Paquets', unitCostDzd: 850 },
+  { id: 'c_06', itemCode: 'CON_05', name: 'Gel échographique hypoallergénique 5L', category: 'Diagnostics Rapides', currentStock: 6, currentStockUnits: 6, minStockAlert: 2, reorderThresholdUnits: 2, unit: 'Bidons', unitCostDzd: 2200 },
 ];
 
 export const INITIAL_CASH_CLOSURES: DailyCashClosure[] = [
@@ -1005,6 +1005,83 @@ export const useMedicalData = () => {
     setCashClosures((prev) => [closure, ...prev]);
   };
 
+  const [isEmergencyAlarmActive, setIsEmergencyAlarmActive] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('atrium_medical_emergency_v2') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('atrium_medical_emergency_v2', String(isEmergencyAlarmActive));
+    } catch {}
+  }, [isEmergencyAlarmActive]);
+
+  const toggleEmergencyAlarm = (overrideState?: boolean) => {
+    setIsEmergencyAlarmActive((prev) => (typeof overrideState === 'boolean' ? overrideState : !prev));
+  };
+
+  const depleteConsumable = (itemCode: string, quantity: number) => {
+    setConsumables((prev) =>
+      prev.map((item) => {
+        if (item.itemCode === itemCode || item.id === itemCode) {
+          const prevQty = item.currentStockUnits ?? item.currentStock ?? 0;
+          const newQty = Math.max(0, prevQty - quantity);
+          return { ...item, currentStock: newQty, currentStockUnits: newQty };
+        }
+        return item;
+      })
+    );
+  };
+
+  const restockConsumable = (itemCode: string, quantity: number) => {
+    setConsumables((prev) =>
+      prev.map((item) => {
+        if (item.itemCode === itemCode || item.id === itemCode) {
+          const prevQty = item.currentStockUnits ?? item.currentStock ?? 0;
+          const newQty = prevQty + quantity;
+          return { ...item, currentStock: newQty, currentStockUnits: newQty };
+        }
+        return item;
+      })
+    );
+  };
+
+  const depleteForAct = (actCode: string) => {
+    if (actCode === 'C' || actCode === 'CS') {
+      depleteConsumable('CON_01', 1);
+    } else if (actCode === 'K') {
+      depleteConsumable('CON_01', 1);
+      depleteConsumable('CON_02', 1);
+      depleteConsumable('CON_03', 1);
+    } else if (actCode === 'KE') {
+      depleteConsumable('CON_05', 1);
+    } else if (actCode === 'ECG') {
+      depleteConsumable('CON_04', 6);
+    }
+  };
+
+  const getNextAvailableGeneralist = (): MedicalPractitioner | null => {
+    const generalists = practitioners.filter(
+      (p) =>
+        p.specialty.toLowerCase().includes('générale') ||
+        p.department.toLowerCase().includes('générale')
+    );
+    if (generalists.length === 0) return practitioners[0] || null;
+
+    const counts = generalists.map((doc) => {
+      const count = consultations.filter(
+        (c) => c.status === 'InWaitingQueue' && c.staffId === doc.id
+      ).length;
+      return { doc, count };
+    });
+
+    counts.sort((a, b) => a.count - b.count);
+    return counts[0].doc;
+  };
+
   const resetToDemoData = () => {
     setPractitioners(INITIAL_PRACTITIONERS);
     setDoctorConfigs(DEFAULT_ORDONNANCE_CONFIGS);
@@ -1017,6 +1094,7 @@ export const useMedicalData = () => {
     setChifaClaims(INITIAL_CHIFA_CLAIMS);
     setConsumables(INITIAL_CONSUMABLES);
     setCashClosures(INITIAL_CASH_CLOSURES);
+    setIsEmergencyAlarmActive(false);
   };
 
   return {
@@ -1045,11 +1123,79 @@ export const useMedicalData = () => {
     chifaClaims,
     addChifaClaim,
     consumables,
+    depleteConsumable,
+    restockConsumable,
+    depleteForAct,
     cashClosures,
     dailyClosures: cashClosures,
     addCashClosure,
     addDailyClosure: addCashClosure,
     updateDoctorConfig: saveDoctorConfig,
+    isEmergencyAlarmActive,
+    toggleEmergencyAlarm,
+    getNextAvailableGeneralist,
     resetToDemoData,
   };
 };
+
+export interface NgapMedicalAct {
+  code: 'C' | 'CS' | 'K' | 'KE' | 'ECG';
+  label: string;
+  category: string;
+  conventionFeeDzd: number;
+  cnasReimbursementDzd: number;
+  ticketModerateurDzd: number;
+  linkedConsumables: string[];
+}
+
+export const NGAP_ACTS: NgapMedicalAct[] = [
+  {
+    code: 'C',
+    label: 'Consultation Omnipraticien (Médecine Générale)',
+    category: 'Consultation',
+    conventionFeeDzd: 2500,
+    cnasReimbursementDzd: 2000,
+    ticketModerateurDzd: 500,
+    linkedConsumables: ['CON_01 (Gants d\'examen stériles)'],
+  },
+  {
+    code: 'CS',
+    label: 'Consultation Médecin Spécialiste',
+    category: 'Consultation Spécialisée',
+    conventionFeeDzd: 3500,
+    cnasReimbursementDzd: 2800,
+    ticketModerateurDzd: 700,
+    linkedConsumables: ['CON_01 (Gants d\'examen stériles)'],
+  },
+  {
+    code: 'K',
+    label: 'Acte Technique Ambulatoire / Petite Chirurgie',
+    category: 'Chirurgie Mineure',
+    conventionFeeDzd: 6000,
+    cnasReimbursementDzd: 4800,
+    ticketModerateurDzd: 1200,
+    linkedConsumables: [
+      'CON_01 (Gants stériles)',
+      'CON_02 (Seringues 5ml)',
+      'CON_03 (Bétadine dermique)',
+    ],
+  },
+  {
+    code: 'KE',
+    label: 'Échographie & Diagnostic Ultrasonore',
+    category: 'Imagerie',
+    conventionFeeDzd: 5000,
+    cnasReimbursementDzd: 4000,
+    ticketModerateurDzd: 1000,
+    linkedConsumables: ['CON_05 (Gel échographique haute viscosité)'],
+  },
+  {
+    code: 'ECG',
+    label: 'Électrocardiogramme Numérique 12 Dérivations',
+    category: 'Exploration Fonctionnelle',
+    conventionFeeDzd: 3000,
+    cnasReimbursementDzd: 2400,
+    ticketModerateurDzd: 600,
+    linkedConsumables: ['CON_04 (Électrodes ECG adhésives x6)'],
+  },
+];

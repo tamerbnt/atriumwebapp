@@ -65,6 +65,7 @@ import { TradingCatalogView } from './components/screens/trading/TradingCatalogV
 import { TradingFinanceView } from './components/screens/trading/TradingFinanceView';
 import { MedicalDashboardView } from './components/screens/medical/MedicalDashboardView';
 import { MedicalQueueView } from './components/screens/medical/MedicalQueueView';
+import { MedicalAgendaView } from './components/screens/medical/MedicalAgendaView';
 import { MedicalPatientsView } from './components/screens/medical/MedicalPatientsView';
 import { MedicalPrescriptionsView } from './components/screens/medical/MedicalPrescriptionsView';
 import { MedicalBillingView } from './components/screens/medical/MedicalBillingView';
@@ -418,6 +419,8 @@ export default function App() {
           return <MedicalDashboardView />;
         case 'scheduler':
           return <MedicalQueueView />;
+        case 'agenda':
+          return <MedicalAgendaView />;
         case 'members':
           return <MedicalPatientsView />;
         case 'shop':
