@@ -1,0 +1,6 @@
+{
+  "summary":  "Comprehensive production specification for Dual-Role (Owner/Staff) RBAC and High-Speed Operational Workspaces across 4 Categories: Membership & Fitness, Appointment & Salon, POS & Retail, and Education Academy. Covers full business logic, state machines, DZD/Algerian tax compliance, data models with quadruple traceability, component architecture, UX flows, failure modes, unit test suites, self-review audit, and vertical build slices.",
+  "updatedAt":  "2026-10-30T15:13:30.780363789Z",
+  "requestFeedback":  true,
+  "userFacing":  true
+}

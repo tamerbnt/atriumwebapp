@@ -34,11 +34,12 @@ import {
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../services/store';
 import { formatDuration } from '../../utils/rules';
-import { ContractorRole, LegalRole, LogisticsRole, ManufacturingRole, PMRole, RealEstateRole, SupportedLanguage, AgriRole } from '../../types/index';
+import { ContractorRole, LegalRole, LogisticsRole, ManufacturingRole, PMRole, RealEstateRole, SupportedLanguage, AgriRole, StandardRole } from '../../types/index';
 import { Seek } from '../ui/Seek';
 import { useTranslation } from '../../utils/useTranslation';
 import { BackendDiagnosticPanel } from '../BackendDiagnosticPanel';
 import { NotificationDropdown } from './NotificationDropdown';
+import { PinVerificationModal } from '../modals/PinVerificationModal';
 
 interface TopBarProps {
   onOpenVoucherModal: () => void;
@@ -100,6 +101,14 @@ export const TopBar: React.FC<TopBarProps> = ({
     setActiveContractorRole,
     activeAgriRole,
     setActiveAgriRole,
+    activeMembershipRole,
+    setActiveMembershipRole,
+    activeAppointmentRole,
+    setActiveAppointmentRole,
+    activePosRole,
+    setActivePosRole,
+    activeEducationRole,
+    setActiveEducationRole,
     unreadNotificationCount,
   } = useAtriumStore();
 
@@ -110,6 +119,10 @@ export const TopBar: React.FC<TopBarProps> = ({
   const [agriPinTargetRole, setAgriPinTargetRole] = useState<AgriRole | null>(null);
   const [agriPinInput, setAgriPinInput] = useState('');
   const [agriPinError, setAgriPinError] = useState(false);
+  const [pendingPinAction, setPendingPinAction] = useState<{
+    categoryName: string;
+    onSuccess: () => void;
+  } | null>(null);
 
   const isFreelance = currentBusiness?.category === 'freelance_solo';
   const isRental = currentBusiness?.category === 'rental_booking';
@@ -1073,6 +1086,246 @@ export const TopBar: React.FC<TopBarProps> = ({
         </div>
       )}
 
+      {/* Category: Gym & Fitness (membership_session) — Dual Role Switcher */}
+      {currentBusiness?.category === 'membership_session' && (
+        <div className="hidden lg:flex items-center gap-1 bg-[#F8F9FA] dark:bg-neutral-800/80 p-1 rounded-full border border-neutral-200/80 dark:border-neutral-700/80 shadow-2xs">
+          {[
+            {
+              id: 'owner' as StandardRole,
+              label: language === 'ar' ? 'المدير العام' : language === 'fr' ? 'Gérant Salle' : 'Owner',
+              icon: '👔',
+              desc: language === 'ar' ? 'الاشتراكات، الأرباح، والمالية' : 'Gestion complète, abonnements & P&L',
+            },
+            {
+              id: 'staff' as StandardRole,
+              label: language === 'ar' ? 'الاستقبال والمسح' : language === 'fr' ? 'Accueil & Scan' : 'Staff Desk',
+              icon: '⚡',
+              desc: language === 'ar' ? 'مكتب التحقق من الدخول، مسح الباركود، والتذاكر اليومية' : 'Pointage rapide, scan code-barres & pass séance',
+            },
+          ].map((r) => {
+            const isActive = activeMembershipRole === r.id;
+            return (
+              <button
+                key={r.id}
+                type="button"
+                onClick={() => {
+                  if (isActive) return;
+                  if (r.id === 'owner') {
+                    setPendingPinAction({
+                      categoryName: language === 'ar' ? 'قاعة اللياقة البدنية' : 'Salle de Sport',
+                      onSuccess: () => {
+                        setActiveMembershipRole('owner');
+                        showToast({
+                          type: 'success',
+                          title: language === 'ar' ? 'تم تفعيل صلاحيات المدير' : 'Mode Gérant Activé',
+                          message: language === 'ar' ? 'تم فتح جميع الشاشات والتقارير المالية' : 'Accès déverrouillé aux finances et paramètres.',
+                        });
+                      },
+                    });
+                  } else {
+                    setActiveMembershipRole('staff');
+                    showToast({
+                      type: 'info',
+                      title: language === 'ar' ? 'تم تفعيل وضع الاستقبال السريع' : 'Kiosk Accueil Activé',
+                      message: language === 'ar' ? 'واجهة مخصصة للمسح السريع وتسجيل الدخول' : 'Espace optimisé pour la vérification des accès.',
+                    });
+                  }
+                }}
+                title={r.desc}
+                className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+                  isActive
+                    ? 'bg-[#C4785A] text-white shadow-xs'
+                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-200/50 dark:hover:bg-neutral-700/50'
+                }`}
+              >
+                <span>{r.icon}</span>
+                <span>{r.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Category: Salon & Beauty (appointment_service) — Dual Role Switcher */}
+      {currentBusiness?.category === 'appointment_service' && (
+        <div className="hidden lg:flex items-center gap-1 bg-[#F8F9FA] dark:bg-neutral-800/80 p-1 rounded-full border border-neutral-200/80 dark:border-neutral-700/80 shadow-2xs">
+          {[
+            {
+              id: 'owner' as StandardRole,
+              label: language === 'ar' ? 'المدير العام' : language === 'fr' ? 'Gérant Salon' : 'Owner',
+              icon: '👔',
+              desc: language === 'ar' ? 'المالية، عمولات الحلاقين، والإعدادات' : 'Finances, commissions & catalogue prestations',
+            },
+            {
+              id: 'staff' as StandardRole,
+              label: language === 'ar' ? 'كشك الصالون' : language === 'fr' ? 'Fauteuils Express' : 'Staff Chair',
+              icon: '✂️',
+              desc: language === 'ar' ? 'محطات العمل، ترتيب الزبائن، والتحصيل السريع' : 'File du jour, suivi des postes & encaissement rapide',
+            },
+          ].map((r) => {
+            const isActive = activeAppointmentRole === r.id;
+            return (
+              <button
+                key={r.id}
+                type="button"
+                onClick={() => {
+                  if (isActive) return;
+                  if (r.id === 'owner') {
+                    setPendingPinAction({
+                      categoryName: language === 'ar' ? 'صالون التجميل' : 'Salon & Beauté',
+                      onSuccess: () => {
+                        setActiveAppointmentRole('owner');
+                        showToast({
+                          type: 'success',
+                          title: language === 'ar' ? 'تم تفعيل صلاحيات المدير' : 'Mode Gérant Activé',
+                          message: language === 'ar' ? 'تم فتح المالية وعمولات الفريق' : 'Accès aux commissions et bilan salon.',
+                        });
+                      },
+                    });
+                  } else {
+                    setActiveAppointmentRole('staff');
+                    showToast({
+                      type: 'info',
+                      title: language === 'ar' ? 'تم تفعيل كشك العمليات' : 'Kiosk Fauteuils Activé',
+                      message: language === 'ar' ? 'واجهة سريعة لمتابعة الزبائن ومحطات العمل' : 'Espace optimisé pour le déroulement des prestations.',
+                    });
+                  }
+                }}
+                title={r.desc}
+                className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+                  isActive
+                    ? 'bg-[#C4785A] text-white shadow-xs'
+                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-200/50 dark:hover:bg-neutral-700/50'
+                }`}
+              >
+                <span>{r.icon}</span>
+                <span>{r.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Category: Restaurant & Retail POS (pos_inventory) — Dual Role Switcher */}
+      {currentBusiness?.category === 'pos_inventory' && (
+        <div className="hidden lg:flex items-center gap-1 bg-[#F8F9FA] dark:bg-neutral-800/80 p-1 rounded-full border border-neutral-200/80 dark:border-neutral-700/80 shadow-2xs">
+          {[
+            {
+              id: 'owner' as StandardRole,
+              label: language === 'ar' ? 'المدير العام' : language === 'fr' ? 'Gérant Caisse' : 'Owner',
+              icon: '👔',
+              desc: language === 'ar' ? 'هوامش الربح، أسعار التكلفة، وإدارة المخزون' : 'Haut niveau, marges & PMP masqués pour l\'équipe',
+            },
+            {
+              id: 'staff' as StandardRole,
+              label: language === 'ar' ? 'كاشير نقطة البيع' : language === 'fr' ? 'Caisse Express' : 'Cashier',
+              icon: '🛒',
+              desc: language === 'ar' ? 'واجهة بيع سريعة مع إخفاء هوامش وتكلفة المنتجات' : 'Caisse tactile haute vitesse avec masquage des marges',
+            },
+          ].map((r) => {
+            const isActive = activePosRole === r.id;
+            return (
+              <button
+                key={r.id}
+                type="button"
+                onClick={() => {
+                  if (isActive) return;
+                  if (r.id === 'owner') {
+                    setPendingPinAction({
+                      categoryName: language === 'ar' ? 'نقطة البيع والتجزئة' : 'Caisse & Commerce',
+                      onSuccess: () => {
+                        setActivePosRole('owner');
+                        showToast({
+                          type: 'success',
+                          title: language === 'ar' ? 'تم تفعيل صلاحيات المدير' : 'Mode Gérant Activé',
+                          message: language === 'ar' ? 'إظهار هوامش الربح وأسعار التكلفة' : 'Marges et PMP déverrouillés.',
+                        });
+                      },
+                    });
+                  } else {
+                    setActivePosRole('staff');
+                    showToast({
+                      type: 'info',
+                      title: language === 'ar' ? 'تم تفعيل وضع الكاشير' : 'Mode Caisse Rapide Activé',
+                      message: language === 'ar' ? 'واجهة بيع سريعة بدون معلومات التكلفة' : 'Informations de rentabilité masquées pour l\'équipe.',
+                    });
+                  }
+                }}
+                title={r.desc}
+                className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+                  isActive
+                    ? 'bg-[#C4785A] text-white shadow-xs'
+                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-200/50 dark:hover:bg-neutral-700/50'
+                }`}
+              >
+                <span>{r.icon}</span>
+                <span>{r.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Category: Education & Academy (education_cohort) — Dual Role Switcher */}
+      {currentBusiness?.category === 'education_cohort' && (
+        <div className="hidden lg:flex items-center gap-1 bg-[#F8F9FA] dark:bg-neutral-800/80 p-1 rounded-full border border-neutral-200/80 dark:border-neutral-700/80 shadow-2xs">
+          {[
+            {
+              id: 'owner' as StandardRole,
+              label: language === 'ar' ? 'إدارة الأكاديمية' : language === 'fr' ? 'Direction' : 'Owner',
+              icon: '👔',
+              desc: language === 'ar' ? 'ديون الدراسة، تحصيل الرسوم، والتقارير' : 'Comptabilité scolarité, impayés & pilotage académique',
+            },
+            {
+              id: 'staff' as StandardRole,
+              label: language === 'ar' ? 'أستاذ / منسق' : language === 'fr' ? 'Appel Express' : 'Instructor',
+              icon: '📝',
+              desc: language === 'ar' ? 'تسجيل الحضور السريع بلمسة واحدة بدون كشف الديون' : 'Kiosk de pointage rapide en 1 clic sans données financières',
+            },
+          ].map((r) => {
+            const isActive = activeEducationRole === r.id;
+            return (
+              <button
+                key={r.id}
+                type="button"
+                onClick={() => {
+                  if (isActive) return;
+                  if (r.id === 'owner') {
+                    setPendingPinAction({
+                      categoryName: language === 'ar' ? 'الأكاديمية والتعليم' : 'Académie & Formation',
+                      onSuccess: () => {
+                        setActiveEducationRole('owner');
+                        showToast({
+                          type: 'success',
+                          title: language === 'ar' ? 'تم تفعيل صلاحيات الإدارة' : 'Mode Direction Activé',
+                          message: language === 'ar' ? 'تم فتح كشوف المستحقات والتقارير' : 'Accès aux créances et bilan financier scolarité.',
+                        });
+                      },
+                    });
+                  } else {
+                    setActiveEducationRole('staff');
+                    showToast({
+                      type: 'info',
+                      title: language === 'ar' ? 'تم تفعيل وضع الأستاذ والمنسق' : 'Kiosk Appel Activé',
+                      message: language === 'ar' ? 'تسجيل الحضور الفوري للدروس' : 'Pointage rapide des présences sans données financières.',
+                    });
+                  }
+                }}
+                title={r.desc}
+                className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+                  isActive
+                    ? 'bg-[#C4785A] text-white shadow-xs'
+                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-200/50 dark:hover:bg-neutral-700/50'
+                }`}
+              >
+                <span>{r.icon}</span>
+                <span>{r.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+
       {/* Right Controls */}
       <div className="flex items-center gap-2.5 shrink-0">
         {/* Expanding Search Lens / Command Palette Trigger */}
@@ -1401,6 +1654,25 @@ export const TopBar: React.FC<TopBarProps> = ({
       <BackendDiagnosticPanel
         isOpen={isDiagnosticPanelOpen}
         onClose={() => setIsDiagnosticPanelOpen(false)}
+      />
+
+      {/* Generic Dual-Role PIN Verification Modal */}
+      <PinVerificationModal
+        isOpen={!!pendingPinAction}
+        onClose={() => setPendingPinAction(null)}
+        onSuccess={() => {
+          if (pendingPinAction) {
+            pendingPinAction.onSuccess();
+            setPendingPinAction(null);
+          }
+        }}
+        title={
+          language === 'ar'
+            ? `رمز الأمان: ${pendingPinAction?.categoryName || 'المدير العام'}`
+            : language === 'fr'
+            ? `Code PIN Gérant — ${pendingPinAction?.categoryName || 'Direction'}`
+            : `Owner PIN — ${pendingPinAction?.categoryName || 'Management'}`
+        }
       />
     </header>
   );

@@ -77,6 +77,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
     activeLogisticsRole,
     activeContractorRole,
     activeAgriRole,
+    activeMembershipRole,
+    activeAppointmentRole,
+    activePosRole,
+    activeEducationRole,
     language,
   } = useAtriumStore();
   const [isExpanded, setIsExpanded] = useState(false);
@@ -327,102 +331,148 @@ export const Sidebar: React.FC<SidebarProps> = ({
     ];
   } else if (category === 'pos_inventory') {
     // Dedicated POS & Inventory Architecture: Register is primary workstation
-    dockNavItems = [
-      {
-        id: 'shop',
-        icon: <ShoppingBag size={19} />,
-        title: t('nav_pos_register', language) || 'Caisse Enregistreuse',
-        label: language === 'ar' ? 'نقطة البيع' : language === 'fr' ? 'Caisse' : 'Register',
-      },
-      {
-        id: 'scheduler',
-        icon: <Boxes size={19} />,
-        title: language === 'ar' ? 'المخزون والمنتجات' : language === 'fr' ? 'Stock & Inventaire' : 'Inventory & Stock',
-        label: language === 'ar' ? 'المخزون' : language === 'fr' ? 'Stock' : 'Inventory',
-      },
-      {
-        id: 'registrations',
-        icon: <ClipboardList size={19} />,
-        title: language === 'ar' ? 'الطلبات والتذاكر المعلقة' : language === 'fr' ? 'Commandes & Tickets' : 'Orders & Parked',
-        label: language === 'ar' ? 'الطلبات' : language === 'fr' ? 'Commandes' : 'Orders',
-      },
-      {
-        id: 'dashboard',
-        icon: <Home size={19} />,
-        title: t('nav_pos_sales_pulse', language),
-        label: t('nav_home', language),
-      },
-      {
-        id: 'history',
-        icon: <History size={19} />,
-        title: t('nav_pos_ledger', language),
-        label: t('nav_pos_ledger', language),
-      },
-      {
-        id: 'finance',
-        icon: <Wallet size={19} />,
-        title: t('nav_pos_finance', language),
-        label: t('nav_finance', language),
-      },
-      {
-        id: 'settings',
-        icon: <Settings size={19} />,
-        title: t('nav_settings', language),
-        label: t('nav_settings', language),
-      },
-    ];
+    if (activePosRole === 'staff') {
+      dockNavItems = [
+        {
+          id: 'shop',
+          icon: <ShoppingBag size={19} />,
+          title: t('nav_pos_register', language) || 'Caisse Enregistreuse',
+          label: language === 'ar' ? 'نقطة البيع' : language === 'fr' ? 'Caisse' : 'Register',
+        },
+        {
+          id: 'registrations',
+          icon: <ClipboardList size={19} />,
+          title: language === 'ar' ? 'الطلبات والتذاكر المعلقة' : language === 'fr' ? 'Commandes & Tickets' : 'Orders & Parked',
+          label: language === 'ar' ? 'الطلبات' : language === 'fr' ? 'Commandes' : 'Orders',
+        },
+        {
+          id: 'scheduler',
+          icon: <Boxes size={19} />,
+          title: language === 'ar' ? 'المخزون والمنتجات' : language === 'fr' ? 'Stock & Inventaire' : 'Inventory & Stock',
+          label: language === 'ar' ? 'المخزون' : language === 'fr' ? 'Stock' : 'Inventory',
+        },
+      ];
+    } else {
+      dockNavItems = [
+        {
+          id: 'shop',
+          icon: <ShoppingBag size={19} />,
+          title: t('nav_pos_register', language) || 'Caisse Enregistreuse',
+          label: language === 'ar' ? 'نقطة البيع' : language === 'fr' ? 'Caisse' : 'Register',
+        },
+        {
+          id: 'scheduler',
+          icon: <Boxes size={19} />,
+          title: language === 'ar' ? 'المخزون والمنتجات' : language === 'fr' ? 'Stock & Inventaire' : 'Inventory & Stock',
+          label: language === 'ar' ? 'المخزون' : language === 'fr' ? 'Stock' : 'Inventory',
+        },
+        {
+          id: 'registrations',
+          icon: <ClipboardList size={19} />,
+          title: language === 'ar' ? 'الطلبات والتذاكر المعلقة' : language === 'fr' ? 'Commandes & Tickets' : 'Orders & Parked',
+          label: language === 'ar' ? 'الطلبات' : language === 'fr' ? 'Commandes' : 'Orders',
+        },
+        {
+          id: 'dashboard',
+          icon: <Home size={19} />,
+          title: t('nav_pos_sales_pulse', language),
+          label: t('nav_home', language),
+        },
+        {
+          id: 'history',
+          icon: <History size={19} />,
+          title: t('nav_pos_ledger', language),
+          label: t('nav_pos_ledger', language),
+        },
+        {
+          id: 'finance',
+          icon: <Wallet size={19} />,
+          title: t('nav_pos_finance', language),
+          label: t('nav_finance', language),
+        },
+        {
+          id: 'settings',
+          icon: <Settings size={19} />,
+          title: t('nav_settings', language),
+          label: t('nav_settings', language),
+        },
+      ];
+    }
   } else if (category === 'appointment_service') {
     // Dedicated Salon & Spa Architecture: Bookings & Clients are primary
-    dockNavItems = [
-      {
-        id: 'dashboard',
-        icon: <Home size={19} />,
-        title: t('nav_dashboard', language),
-        label: t('nav_home', language),
-      },
-      {
-        id: 'scheduler',
-        icon: <Calendar size={19} />,
-        title: t('nav_scheduler', language),
-        label: terminology.scheduler,
-      },
-      {
-        id: 'members',
-        icon: <Users size={19} />,
-        title: t('nav_members', language),
-        label: terminology.members,
-      },
-      {
-        id: 'shop',
-        icon: <ShoppingBag size={19} />,
-        title: t('nav_shop', language),
-        label: terminology.shop,
-      },
-      {
-        id: 'history',
-        icon: <History size={19} />,
-        title: t('nav_history', language),
-        label: t('nav_history', language),
-      },
-      {
-        id: 'analytics',
-        icon: <BarChart2 size={19} />,
-        title: t('nav_analytics', language),
-        label: t('nav_analytics', language),
-      },
-      {
-        id: 'finance',
-        icon: <Wallet size={19} />,
-        title: t('nav_finance', language),
-        label: t('nav_finance', language),
-      },
-      {
-        id: 'settings',
-        icon: <Settings size={19} />,
-        title: t('nav_settings', language),
-        label: t('nav_settings', language),
-      },
-    ];
+    if (activeAppointmentRole === 'staff') {
+      dockNavItems = [
+        {
+          id: 'dashboard',
+          icon: <Home size={19} />,
+          title: language === 'ar' ? 'كشك محطات العمل والزبائن' : 'Fauteuils & Planning Express',
+          label: language === 'ar' ? 'الصالون' : 'Fauteuils',
+        },
+        {
+          id: 'scheduler',
+          icon: <Calendar size={19} />,
+          title: t('nav_scheduler', language),
+          label: terminology.scheduler,
+        },
+        {
+          id: 'members',
+          icon: <Users size={19} />,
+          title: t('nav_members', language),
+          label: terminology.members,
+        },
+      ];
+    } else {
+      dockNavItems = [
+        {
+          id: 'dashboard',
+          icon: <Home size={19} />,
+          title: t('nav_dashboard', language),
+          label: t('nav_home', language),
+        },
+        {
+          id: 'scheduler',
+          icon: <Calendar size={19} />,
+          title: t('nav_scheduler', language),
+          label: terminology.scheduler,
+        },
+        {
+          id: 'members',
+          icon: <Users size={19} />,
+          title: t('nav_members', language),
+          label: terminology.members,
+        },
+        {
+          id: 'shop',
+          icon: <ShoppingBag size={19} />,
+          title: t('nav_shop', language),
+          label: terminology.shop,
+        },
+        {
+          id: 'history',
+          icon: <History size={19} />,
+          title: t('nav_history', language),
+          label: t('nav_history', language),
+        },
+        {
+          id: 'analytics',
+          icon: <BarChart2 size={19} />,
+          title: t('nav_analytics', language),
+          label: t('nav_analytics', language),
+        },
+        {
+          id: 'finance',
+          icon: <Wallet size={19} />,
+          title: t('nav_finance', language),
+          label: t('nav_finance', language),
+        },
+        {
+          id: 'settings',
+          icon: <Settings size={19} />,
+          title: t('nav_settings', language),
+          label: t('nav_settings', language),
+        },
+      ];
+    }
   } else if (category === 'rental_booking') {
     // Dedicated Rentals, Venues & Space Bookings Architecture
     dockNavItems = [
@@ -471,56 +521,85 @@ export const Sidebar: React.FC<SidebarProps> = ({
     ];
   } else if (category === 'education_cohort') {
     // Dedicated Education, Academy & Tutoring Architecture
-    dockNavItems = [
-      {
-        id: 'dashboard',
-        icon: <Home size={19} />,
-        title: t('nav_edu_dashboard', language),
-        label: t('nav_home', language),
-      },
-      {
-        id: 'scheduler',
-        icon: <Calendar size={19} />,
-        title: t('nav_edu_timetable', language),
-        label: terminology.scheduler,
-      },
-      {
-        id: 'members',
-        icon: <Users size={19} />,
-        title: t('nav_edu_students', language),
-        label: terminology.members,
-      },
-      {
-        id: 'shop',
-        icon: <GraduationCap size={19} />,
-        title: t('nav_edu_cohorts', language),
-        label: terminology.plan,
-      },
-      {
-        id: 'registrations',
-        icon: <ClipboardList size={19} />,
-        title: t('nav_edu_admissions', language),
-        label: terminology.registration,
-      },
-      {
-        id: 'analytics',
-        icon: <Award size={19} />,
-        title: t('nav_edu_attendance', language),
-        label: t('nav_edu_attendance', language),
-      },
-      {
-        id: 'finance',
-        icon: <Wallet size={19} />,
-        title: t('nav_edu_finance', language),
-        label: t('nav_finance', language),
-      },
-      {
-        id: 'settings',
-        icon: <Settings size={19} />,
-        title: t('nav_settings', language),
-        label: t('nav_settings', language),
-      },
-    ];
+    if (activeEducationRole === 'staff') {
+      dockNavItems = [
+        {
+          id: 'analytics',
+          icon: <Award size={19} />,
+          title: language === 'ar' ? 'كشك تسجيل الحضور السريع' : 'Appel & Présences Express',
+          label: language === 'ar' ? 'الحضور' : 'Appel',
+        },
+        {
+          id: 'scheduler',
+          icon: <Calendar size={19} />,
+          title: t('nav_edu_timetable', language),
+          label: terminology.scheduler,
+        },
+        {
+          id: 'members',
+          icon: <Users size={19} />,
+          title: t('nav_edu_students', language),
+          label: terminology.members,
+        },
+        {
+          id: 'shop',
+          icon: <GraduationCap size={19} />,
+          title: t('nav_edu_cohorts', language),
+          label: terminology.plan,
+        },
+      ];
+    } else {
+      dockNavItems = [
+        {
+          id: 'dashboard',
+          icon: <Home size={19} />,
+          title: t('nav_edu_dashboard', language),
+          label: t('nav_home', language),
+        },
+        {
+          id: 'scheduler',
+          icon: <Calendar size={19} />,
+          title: t('nav_edu_timetable', language),
+          label: terminology.scheduler,
+        },
+        {
+          id: 'members',
+          icon: <Users size={19} />,
+          title: t('nav_edu_students', language),
+          label: terminology.members,
+        },
+        {
+          id: 'shop',
+          icon: <GraduationCap size={19} />,
+          title: t('nav_edu_cohorts', language),
+          label: terminology.plan,
+        },
+        {
+          id: 'registrations',
+          icon: <ClipboardList size={19} />,
+          title: t('nav_edu_admissions', language),
+          label: terminology.registration,
+        },
+        {
+          id: 'analytics',
+          icon: <Award size={19} />,
+          title: t('nav_edu_attendance', language),
+          label: t('nav_edu_attendance', language),
+        },
+        {
+          id: 'finance',
+          icon: <Wallet size={19} />,
+          title: t('nav_edu_finance', language),
+          label: t('nav_finance', language),
+        },
+        {
+          id: 'settings',
+          icon: <Settings size={19} />,
+          title: t('nav_settings', language),
+          label: t('nav_settings', language),
+        },
+      ];
+    }
   } else if (category === 'trading_commercial') {
     // Dedicated Category 8: B2B Commercial Trading & Wholesale Architecture
     dockNavItems = [
@@ -1612,62 +1691,85 @@ export const Sidebar: React.FC<SidebarProps> = ({
     }
   } else {
     // Membership / Gym & Fitness Architecture
-    dockNavItems = [
-      {
-        id: 'dashboard',
-        icon: <Home size={19} />,
-        title: t('nav_dashboard', language),
-        label: t('nav_home', language),
-      },
-      {
-        id: 'analytics',
-        icon: <BarChart2 size={19} />,
-        title: t('nav_analytics', language),
-        label: t('nav_analytics', language),
-      },
-      {
-        id: 'members',
-        icon: <Users size={19} />,
-        title: terminology.members,
-        label: terminology.members,
-      },
-      {
-        id: 'registrations',
-        icon: <ClipboardList size={19} />,
-        title: terminology.registration,
-        label: terminology.registration,
-      },
-      {
-        id: 'history',
-        icon: <History size={19} />,
-        title: t('nav_history', language),
-        label: t('nav_history', language),
-      },
-      {
-        id: 'shop',
-        icon: <ShoppingBag size={19} />,
-        title: terminology.shop,
-        label: terminology.shop,
-      },
-      {
-        id: 'scheduler',
-        icon: <Calendar size={19} />,
-        title: terminology.scheduler,
-        label: terminology.scheduler,
-      },
-      {
-        id: 'finance',
-        icon: <Wallet size={19} />,
-        title: t('nav_finance', language),
-        label: t('nav_finance', language),
-      },
-      {
-        id: 'settings',
-        icon: <Settings size={19} />,
-        title: t('nav_settings', language),
-        label: t('nav_settings', language),
-      },
-    ];
+    if (activeMembershipRole === 'staff') {
+      dockNavItems = [
+        {
+          id: 'dashboard',
+          icon: <Home size={19} />,
+          title: language === 'ar' ? 'كشك الاستقبال ومسح الدخول' : 'Accueil & Kiosk Scan',
+          label: language === 'ar' ? 'الاستقبال' : 'Accueil',
+        },
+        {
+          id: 'members',
+          icon: <Users size={19} />,
+          title: terminology.members,
+          label: terminology.members,
+        },
+        {
+          id: 'registrations',
+          icon: <ClipboardList size={19} />,
+          title: language === 'ar' ? 'بيع تذاكر الحصص والتسجيل' : 'Vente Pass & Inscriptions',
+          label: language === 'ar' ? 'التذاكر' : 'Pass & Inscriptions',
+        },
+      ];
+    } else {
+      dockNavItems = [
+        {
+          id: 'dashboard',
+          icon: <Home size={19} />,
+          title: t('nav_dashboard', language),
+          label: t('nav_home', language),
+        },
+        {
+          id: 'analytics',
+          icon: <BarChart2 size={19} />,
+          title: t('nav_analytics', language),
+          label: t('nav_analytics', language),
+        },
+        {
+          id: 'members',
+          icon: <Users size={19} />,
+          title: terminology.members,
+          label: terminology.members,
+        },
+        {
+          id: 'registrations',
+          icon: <ClipboardList size={19} />,
+          title: terminology.registration,
+          label: terminology.registration,
+        },
+        {
+          id: 'history',
+          icon: <History size={19} />,
+          title: t('nav_history', language),
+          label: t('nav_history', language),
+        },
+        {
+          id: 'shop',
+          icon: <ShoppingBag size={19} />,
+          title: terminology.shop,
+          label: terminology.shop,
+        },
+        {
+          id: 'scheduler',
+          icon: <Calendar size={19} />,
+          title: terminology.scheduler,
+          label: terminology.scheduler,
+        },
+        {
+          id: 'finance',
+          icon: <Wallet size={19} />,
+          title: t('nav_finance', language),
+          label: t('nav_finance', language),
+        },
+        {
+          id: 'settings',
+          icon: <Settings size={19} />,
+          title: t('nav_settings', language),
+          label: t('nav_settings', language),
+        },
+      ];
+    }
   }
 
   return (

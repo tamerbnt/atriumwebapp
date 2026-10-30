@@ -96,6 +96,11 @@ import {
   CommercialDocType,
   PurchaseDocType,
   StockVoucherType,
+  StandardRole,
+  MemberCheckInLog,
+  WalkInTicket,
+  SalonChairStation,
+  EduQuickAttendanceRecord,
 } from '../types/index';
 import {
   INITIAL_ACCOUNT,
@@ -339,6 +344,15 @@ interface AppState {
   activeContractorRole: ContractorRole;
   // Agriculture & Livestock Farming (Category 17: agriculture_farming)
   activeAgriRole: AgriRole;
+  // Dual-Role (Owner / Staff) State for Gym, Salon, POS, Education
+  activeMembershipRole: StandardRole;
+  activeAppointmentRole: StandardRole;
+  activePosRole: StandardRole;
+  activeEducationRole: StandardRole;
+  memberCheckIns: MemberCheckInLog[];
+  walkInTickets: WalkInTicket[];
+  salonChairStations: SalonChairStation[];
+  eduQuickAttendance: EduQuickAttendanceRecord[];
   // B2B Commercial Trading & Wholesale (Category 8: trading_commercial)
   b2bClients: B2bClient[];
   b2bSuppliers: B2bSupplier[];
@@ -497,6 +511,15 @@ const DEFAULT_STATE: AppState = {
   activeLogisticsRole: 'gerant',
   activeContractorRole: 'gerant',
   activeAgriRole: 'gerant',
+  // Dual-role defaults
+  activeMembershipRole: 'owner',
+  activeAppointmentRole: 'owner',
+  activePosRole: 'owner',
+  activeEducationRole: 'owner',
+  memberCheckIns: [],
+  walkInTickets: [],
+  salonChairStations: [],
+  eduQuickAttendance: [],
   // B2B Commercial Trading & Wholesale
   b2bClients: INITIAL_B2B_CLIENTS,
   b2bSuppliers: INITIAL_B2B_SUPPLIERS,
@@ -736,6 +759,15 @@ let globalState: AppState = backfillTraceability((() => {
           purchaseDocs: Array.isArray(parsed.purchaseDocs) ? parsed.purchaseDocs : INITIAL_PURCHASE_DOCS,
           stockVouchers: Array.isArray(parsed.stockVouchers) ? parsed.stockVouchers : INITIAL_STOCK_VOUCHERS,
           currentUser: parsed.currentUser || DEFAULT_USER,
+          // Dual-Role Hydration
+          activeMembershipRole: parsed.activeMembershipRole || 'owner',
+          activeAppointmentRole: parsed.activeAppointmentRole || 'owner',
+          activePosRole: parsed.activePosRole || 'owner',
+          activeEducationRole: parsed.activeEducationRole || 'owner',
+          memberCheckIns: Array.isArray(parsed.memberCheckIns) ? parsed.memberCheckIns : [],
+          walkInTickets: Array.isArray(parsed.walkInTickets) ? parsed.walkInTickets : [],
+          salonChairStations: Array.isArray(parsed.salonChairStations) ? parsed.salonChairStations : [],
+          eduQuickAttendance: Array.isArray(parsed.eduQuickAttendance) ? parsed.eduQuickAttendance : [],
           isAuthenticated: parsed.isAuthenticated !== undefined ? parsed.isAuthenticated : true,
           isOnboardingOpen: false,
           isFastSwitchOpen: false,
@@ -7798,6 +7830,93 @@ export function useAtriumStore() {
         ...globalState,
         activeAgriRole: role,
         activeScreen: defaultScreen,
+      };
+      notify();
+    },
+    // Dual-Role (Owner / Staff) State & Actions for Gym, Salon, POS, Education
+    activeMembershipRole: state.activeMembershipRole || 'owner',
+    setActiveMembershipRole: (role: StandardRole) => {
+      globalState = {
+        ...globalState,
+        activeMembershipRole: role,
+        activeScreen: 'dashboard',
+      };
+      notify();
+    },
+    activeAppointmentRole: state.activeAppointmentRole || 'owner',
+    setActiveAppointmentRole: (role: StandardRole) => {
+      globalState = {
+        ...globalState,
+        activeAppointmentRole: role,
+        activeScreen: 'dashboard',
+      };
+      notify();
+    },
+    activePosRole: state.activePosRole || 'owner',
+    setActivePosRole: (role: StandardRole) => {
+      globalState = {
+        ...globalState,
+        activePosRole: role,
+        activeScreen: role === 'staff' ? 'shop' : 'dashboard',
+      };
+      notify();
+    },
+    activeEducationRole: state.activeEducationRole || 'owner',
+    setActiveEducationRole: (role: StandardRole) => {
+      globalState = {
+        ...globalState,
+        activeEducationRole: role,
+        activeScreen: role === 'staff' ? 'analytics' : 'dashboard',
+      };
+      notify();
+    },
+    memberCheckIns: state.memberCheckIns || [],
+    addMemberCheckIn: (checkIn: MemberCheckInLog) => {
+      globalState = {
+        ...globalState,
+        memberCheckIns: [checkIn, ...(globalState.memberCheckIns || [])],
+      };
+      notify();
+    },
+    walkInTickets: state.walkInTickets || [],
+    addWalkInTicket: (ticket: WalkInTicket) => {
+      globalState = {
+        ...globalState,
+        walkInTickets: [ticket, ...(globalState.walkInTickets || [])],
+      };
+      notify();
+    },
+    salonChairStations: state.salonChairStations || [],
+    updateSalonChairStation: (station: SalonChairStation) => {
+      const existing = (globalState.salonChairStations || []).findIndex(
+        (s) => s.workstationId === station.workstationId
+      );
+      let nextStations = [...(globalState.salonChairStations || [])];
+      if (existing >= 0) {
+        nextStations[existing] = station;
+      } else {
+        nextStations.push(station);
+      }
+      globalState = {
+        ...globalState,
+        salonChairStations: nextStations,
+      };
+      notify();
+    },
+    eduQuickAttendance: state.eduQuickAttendance || [],
+    recordQuickAttendance: (record: EduQuickAttendanceRecord) => {
+      const existing = (globalState.eduQuickAttendance || []).findIndex(
+        (r) => r.sessionId === record.sessionId && r.studentId === record.studentId
+      );
+      let nextRecords = [...(globalState.eduQuickAttendance || [])];
+      if (existing >= 0) {
+        nextRecords[existing] = record;
+      } else {
+        nextRecords.push(record);
+      }
+      globalState = {
+        ...globalState,
+        eduQuickAttendance: nextRecords,
       };
       notify();
     },

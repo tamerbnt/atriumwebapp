@@ -3384,9 +3384,69 @@ export interface AgriWeighbridgeTicket {
 export type AgriHarvestTicket = AgriWeighbridgeTicket;
 export type AgriLivestock = AgriDairyCow;
 
+// ==========================================
+// DUAL-ROLE (OWNER / STAFF) RBAC & WORKSPACE TYPES
+// Categories: membership_session, appointment_service, pos_inventory, education_cohort
+// ==========================================
 
+export type StandardRole = 'owner' | 'staff';
 
+export interface MemberCheckInLog {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  staffId: string;
+  memberId: string;
+  memberName: string;
+  planId: string;
+  planName: string;
+  timestamp: string;
+  accessStatus: 'Granted' | 'Warning_Expiring' | 'Denied_Expired' | 'Denied_Frozen';
+  remainingSessionsBefore?: number;
+  remainingSessionsAfter?: number;
+  checkInMethod: 'barcode_scanner' | 'manual_click' | 'nfc_card';
+}
 
+export interface WalkInTicket {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  staffId: string;
+  ticketNumber: string; // e.g. "WI-2026-0041"
+  clientName: string;
+  phone?: string;
+  amountDzd: number;
+  paymentMethod: 'cash' | 'baridimob' | 'cib';
+  timbreFiscalDzd: number;
+  issuedAt: string;
+}
 
+export type SalonChairStage = 'waiting' | 'in_progress' | 'completed' | 'paid';
 
+export interface SalonChairStation {
+  workstationId: string;
+  workstationName: string;
+  currentStylistId?: string;
+  currentStylistName?: string;
+  currentAppointmentId?: string;
+  clientName?: string;
+  serviceName?: string;
+  servicePriceDzd?: number;
+  stage: SalonChairStage;
+  startTime?: string;
+  elapsedMinutes?: number;
+}
+
+export interface EduQuickAttendanceRecord {
+  sessionId: string;
+  cohortId: string;
+  studentId: string;
+  studentName: string;
+  status: 'present' | 'absent' | 'late' | 'excused';
+  markedAt: string;
+  markedByStaffId: string;
+  isLocked: boolean;
+}
 
