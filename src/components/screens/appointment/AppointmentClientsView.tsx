@@ -62,6 +62,11 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = ({
     deleteMember,
     resetSalonMockData,
     showToast,
+    isSyncing,
+    networkMode,
+    retryCloudSync,
+    lastSyncedAt,
+    isSyncTimeout,
   } = useAtriumStore();
 
   const [isFacilityDropdownOpen, setIsFacilityDropdownOpen] = useState(false);
@@ -753,6 +758,11 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = ({
               keyExtractor={(c) => c.id}
               defaultViewMode="list"
               columns={columns}
+              isLoading={isSyncing || networkMode === 'force_skeleton'}
+              isOffline={networkMode === 'offline'}
+              isTimedOut={isSyncTimeout}
+              lastSyncedAt={lastSyncedAt}
+              onRetrySync={retryCloudSync}
               onItemClick={(c) => setInspectingClient(c)}
               onViewDetails={(c) => setInspectingClient(c)}
               onEdit={(c) => (onEditMember ? onEditMember(c) : setInspectingClient(c))}

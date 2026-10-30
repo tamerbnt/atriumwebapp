@@ -46,6 +46,11 @@ export const AppointmentServicesView: React.FC = () => {
     batchDeleteServiceItems,
     resetSalonMockData,
     showToast,
+    isSyncing,
+    networkMode,
+    retryCloudSync,
+    lastSyncedAt,
+    isSyncTimeout,
   } = useAtriumStore();
 
   const [activeCategory, setActiveCategory] = useState<string>('All');
@@ -622,6 +627,11 @@ export const AppointmentServicesView: React.FC = () => {
             keyExtractor={(s) => s.id}
             defaultViewMode="list"
             columns={columns}
+            isLoading={isSyncing || networkMode === 'force_skeleton'}
+            isOffline={networkMode === 'offline'}
+            isTimedOut={isSyncTimeout}
+            lastSyncedAt={lastSyncedAt}
+            onRetrySync={retryCloudSync}
             sortBy={sortBy}
             sortDirection={sortDir}
             onSortChange={(key) => {

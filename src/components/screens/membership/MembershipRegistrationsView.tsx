@@ -57,6 +57,11 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
     currentBusiness,
     language,
     showToast,
+    isSyncing,
+    networkMode,
+    retryCloudSync,
+    lastSyncedAt,
+    isSyncTimeout,
   } = useAtriumStore();
 
   const [statusFilter, setStatusFilter] = useState<'All' | 'Pending' | 'Approved' | 'Declined'>('All');
@@ -736,6 +741,11 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
           keyExtractor={(lead) => lead.id}
           defaultViewMode={viewMode}
           columns={leadColumns}
+          isLoading={isSyncing || networkMode === 'force_skeleton'}
+          isOffline={networkMode === 'offline'}
+          isTimedOut={isSyncTimeout}
+          lastSyncedAt={lastSyncedAt}
+          onRetrySync={retryCloudSync}
           selectedIds={selectedLeadIds}
           onSelectionChange={setSelectedLeadIds}
           isPinned={(lead) => pinnedLeadIds.has(lead.id)}

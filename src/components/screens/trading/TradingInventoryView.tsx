@@ -39,6 +39,11 @@ export const TradingInventoryView: React.FC = () => {
     branches,
     switchBranch,
     resetTradingMockData,
+    isSyncing,
+    networkMode,
+    retryCloudSync,
+    lastSyncedAt,
+    isSyncTimeout,
   } = useAtriumStore();
 
   const [selectedDepotId, setSelectedDepotId] = useState<string>('all');
@@ -623,6 +628,11 @@ export const TradingInventoryView: React.FC = () => {
                 items={filteredProducts}
                 keyExtractor={(p) => p.id}
                 columns={stockColumns}
+                isLoading={isSyncing || networkMode === 'force_skeleton'}
+                isOffline={networkMode === 'offline'}
+                isTimedOut={isSyncTimeout}
+                lastSyncedAt={lastSyncedAt}
+                onRetrySync={retryCloudSync}
                 renderCard={(p) => (
                   <div className="p-4 border rounded-xl space-y-1">
                     <span className="font-mono text-xs">{p.sku}</span>
@@ -645,6 +655,11 @@ export const TradingInventoryView: React.FC = () => {
                 items={filteredVouchers}
                 keyExtractor={(v) => v.id}
                 columns={voucherColumns}
+                isLoading={isSyncing || networkMode === 'force_skeleton'}
+                isOffline={networkMode === 'offline'}
+                isTimedOut={isSyncTimeout}
+                lastSyncedAt={lastSyncedAt}
+                onRetrySync={retryCloudSync}
                 renderCard={(v) => (
                   <div className="p-4 border rounded-xl space-y-1">
                     <span className="font-mono text-xs">{v.voucherNumber}</span>

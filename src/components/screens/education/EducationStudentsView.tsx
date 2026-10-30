@@ -63,6 +63,11 @@ export const EducationStudentsView: React.FC = () => {
     setScreen,
     showToast,
     activeEducationRole,
+    isSyncing,
+    networkMode,
+    retryCloudSync,
+    lastSyncedAt,
+    isSyncTimeout,
   } = useAtriumStore();
 
   const isStaff = activeEducationRole === 'staff';
@@ -819,6 +824,11 @@ export const EducationStudentsView: React.FC = () => {
         keyExtractor={(s) => s.id}
         defaultViewMode="list"
         columns={studentColumns}
+        isLoading={isSyncing || networkMode === 'force_skeleton'}
+        isOffline={networkMode === 'offline'}
+        isTimedOut={isSyncTimeout}
+        lastSyncedAt={lastSyncedAt}
+        onRetrySync={retryCloudSync}
         sortBy={studentSortBy}
         sortDirection={studentSortDir}
         onSortChange={(key) => {

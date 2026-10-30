@@ -74,6 +74,11 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
     checkInMember,
     setScreen,
     showToast,
+    isSyncing,
+    networkMode,
+    retryCloudSync,
+    lastSyncedAt,
+    isSyncTimeout,
   } = useAtriumStore();
 
   const [statusFilter, setStatusFilter] = useState<'All' | 'Active' | 'Expiring' | 'Expired' | 'Archived'>('All');
@@ -659,6 +664,11 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
               keyExtractor={(m) => m.id}
               defaultViewMode={viewMode}
               columns={memberColumns}
+              isLoading={isSyncing || networkMode === 'force_skeleton'}
+              isOffline={networkMode === 'offline'}
+              isTimedOut={isSyncTimeout}
+              lastSyncedAt={lastSyncedAt}
+              onRetrySync={retryCloudSync}
               renderCard={(member) => {
                 const avatarColor = getMemberInitialsColor(member.fullName);
                 const matchedPlan = plans.find((p) => p.id === member.membershipPlanId);

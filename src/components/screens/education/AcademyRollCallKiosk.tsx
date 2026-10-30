@@ -29,6 +29,9 @@ import { useAtriumStore, showToast } from '../../../services/store';
 import { EduSession, EduStudent, EduCohort, EduQuickAttendanceRecord } from '../../../types/index';
 import { PinVerificationModal } from '../../modals/PinVerificationModal';
 import { useTranslation } from '../../../utils/useTranslation';
+import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
+import { SkeletonKioskGrid } from '../../ui/skeleton/StructuralSkeletons';
+import { OfflineRetryBanner } from '../../common/OfflineRetryBanner';
 
 export const AcademyRollCallKiosk: React.FC = () => {
   const { t, language, isRtl } = useTranslation();
@@ -42,7 +45,17 @@ export const AcademyRollCallKiosk: React.FC = () => {
     recordQuickAttendance,
     currentUser,
     currentBranch,
+    isSyncing,
+    networkMode,
+    retryCloudSync,
+    lastSyncedAt,
+    isSyncTimeout,
   } = useAtriumStore();
+
+  const { showSkeleton, isTimedOut, isOffline } = useSkeletonLoading({
+    isLoading: isSyncing || networkMode === 'force_skeleton',
+    hasCachedData: eduStudents.length > 0 || eduSessions.length > 0,
+  });
 
   // Pick first available or today's session
   const [selectedSessionId, setSelectedSessionId] = useState<string>(() => {
@@ -236,8 +249,30 @@ export const AcademyRollCallKiosk: React.FC = () => {
     setNotifyingStudent(null);
   };
 
+  if (showSkeleton && (eduSessions.length === 0 || networkMode === 'force_skeleton')) {
+    return (
+      <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6" dir={isRtl ? 'rtl' : 'ltr'}>
+        <OfflineRetryBanner
+          isOffline={isOffline}
+          isTimedOut={isTimedOut}
+          lastSyncedAt={lastSyncedAt}
+          onRetry={retryCloudSync}
+        />
+        <div className="p-5 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl">
+          <SkeletonKioskGrid count={6} />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6" dir={isRtl ? 'rtl' : 'ltr'}>
+      <OfflineRetryBanner
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        lastSyncedAt={lastSyncedAt}
+        onRetry={retryCloudSync}
+      />
       {/* Top Banner & Session Picker Pod Tray */}
       <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl p-5 shadow-xs">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">

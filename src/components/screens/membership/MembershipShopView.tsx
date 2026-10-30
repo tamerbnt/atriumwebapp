@@ -31,6 +31,9 @@ import { AtriumButton } from '../../ui/AtriumButton';
 import { useTranslation } from '../../../utils/useTranslation';
 import { UniversalDataCollection } from '../../ui/collection/UniversalDataCollection';
 import { ActionButtonDef } from '../../ui/collection/CollectionListRow';
+import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
+import { SkeletonKpiGrid } from '../../ui/skeleton/StructuralSkeletons';
+import { OfflineRetryBanner } from '../../common/OfflineRetryBanner';
 
 interface CartItem {
   product: Product;
@@ -53,7 +56,17 @@ export const MembershipShopView: React.FC = () => {
     processSale,
     seedDemoInventory,
     showToast,
+    isSyncing,
+    networkMode,
+    retryCloudSync,
+    lastSyncedAt,
+    isSyncTimeout,
   } = useAtriumStore();
+
+  const { showSkeleton, isTimedOut, isOffline } = useSkeletonLoading({
+    isLoading: isSyncing || networkMode === 'force_skeleton',
+    hasCachedData: products.length > 0,
+  });
 
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -195,6 +208,12 @@ export const MembershipShopView: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      <OfflineRetryBanner
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        lastSyncedAt={lastSyncedAt}
+        onRetry={retryCloudSync}
+      />
       <div className="space-y-6 animate-in fade-in duration-200">
         {/* Top Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
@@ -356,6 +375,11 @@ export const MembershipShopView: React.FC = () => {
               subtitle={isAr ? 'التغذية، المكملات والإكسسوارات الرياضية' : 'Gestion des références, prix de vente et rotation'}
               items={filteredProducts}
               keyExtractor={(p) => p.id}
+              isLoading={isSyncing || networkMode === 'force_skeleton'}
+              isOffline={networkMode === 'offline'}
+              isTimedOut={isSyncTimeout}
+              lastSyncedAt={lastSyncedAt}
+              onRetrySync={retryCloudSync}
               searchPlaceholder={isAr ? 'بحث بالاسم، الكود، الفئة...' : 'Rechercher article, SKU, marque, catégorie...'}
               searchFilter={(p, query) =>
                 p.name.toLowerCase().includes(query.toLowerCase()) ||

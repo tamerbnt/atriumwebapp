@@ -51,6 +51,11 @@ export const EducationAdmissionsView: React.FC = () => {
     deleteEduAdmissionLead,
     convertAdmissionToStudent,
     showToast,
+    isSyncing,
+    networkMode,
+    retryCloudSync,
+    lastSyncedAt,
+    isSyncTimeout,
   } = useAtriumStore();
 
   // Auto-heal empty admissions directory safely once on mount
@@ -632,6 +637,11 @@ export const EducationAdmissionsView: React.FC = () => {
               keyExtractor={(l) => l.id}
               defaultViewMode="list"
               columns={leadColumns}
+              isLoading={isSyncing || networkMode === 'force_skeleton'}
+              isOffline={networkMode === 'offline'}
+              isTimedOut={isSyncTimeout}
+              lastSyncedAt={lastSyncedAt}
+              onRetrySync={retryCloudSync}
               sortBy={leadSortBy}
               sortDirection={leadSortDir}
               onSortChange={(key) => {

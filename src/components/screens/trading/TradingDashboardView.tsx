@@ -34,6 +34,9 @@ import { StockMovementModal } from './StockMovementModal';
 import { CommercialDocPrintModal } from './CommercialDocPrintModal';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { useTranslation } from '../../../utils/useTranslation';
+import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
+import { SkeletonKpiGrid, SkeletonChart } from '../../ui/skeleton/StructuralSkeletons';
+import { OfflineRetryBanner } from '../../common/OfflineRetryBanner';
 
 interface TradingDashboardViewProps {
   onNavigateTab?: (tabKey: string) => void;
@@ -55,7 +58,17 @@ export const TradingDashboardView: React.FC<TradingDashboardViewProps> = () => {
     setScreen,
     convertCommercialDoc,
     resetTradingMockData,
+    isSyncing,
+    networkMode,
+    retryCloudSync,
+    lastSyncedAt,
+    isSyncTimeout,
   } = useAtriumStore();
+
+  const { showSkeleton, isTimedOut, isOffline } = useSkeletonLoading({
+    isLoading: isSyncing || networkMode === 'force_skeleton',
+    hasCachedData: products.length > 0 || commercialDocs.length > 0,
+  });
 
   const [composerOpen, setComposerOpen] = useState(false);
   const [composerType, setComposerType] = useState<CommercialDocType>('devis');
@@ -186,9 +199,37 @@ export const TradingDashboardView: React.FC<TradingDashboardViewProps> = () => {
     });
   }, [commercialDocs, activityFilter]);
 
+  if (showSkeleton && (products.length === 0 || networkMode === 'force_skeleton')) {
+    return (
+      <div className="space-y-6 animate-in fade-in duration-200">
+        <OfflineRetryBanner
+          isOffline={isOffline}
+          isTimedOut={isTimedOut}
+          lastSyncedAt={lastSyncedAt}
+          onRetry={retryCloudSync}
+        />
+        <SkeletonKpiGrid count={4} />
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+          <div className="lg:col-span-5 space-y-4">
+            <div className="p-5 rounded-[24px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 h-64 animate-pulse" />
+          </div>
+          <div className="lg:col-span-7 space-y-4">
+            <SkeletonChart height={280} />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
-            <div className="space-y-6">
+      <OfflineRetryBanner
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        lastSyncedAt={lastSyncedAt}
+        onRetry={retryCloudSync}
+      />
+      <div className="space-y-6">
         
         {/* Row 0 — Top Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">

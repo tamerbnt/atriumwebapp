@@ -25,6 +25,9 @@ import { useAtriumStore } from '../../../services/store';
 import { formatMoney, calculateDaysRemaining } from '../../../utils/rules';
 import { useTranslation } from '../../../utils/useTranslation';
 import { AtriumButton } from '../../ui/AtriumButton';
+import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
+import { SkeletonKpiGrid, SkeletonChart } from '../../ui/skeleton/StructuralSkeletons';
+import { OfflineRetryBanner } from '../../common/OfflineRetryBanner';
 
 export interface MembershipDashboardViewProps {
   onAddMember: () => void;
@@ -50,7 +53,17 @@ export const MembershipDashboardView: React.FC<MembershipDashboardViewProps> = (
     setScreen,
     resetToDefaultDemoData,
     showToast,
+    isSyncing,
+    networkMode,
+    retryCloudSync,
+    lastSyncedAt,
+    isSyncTimeout,
   } = useAtriumStore();
+
+  const { showSkeleton, isTimedOut, isOffline } = useSkeletonLoading({
+    isLoading: isSyncing || networkMode === 'force_skeleton',
+    hasCachedData: members.length > 0 || sales.length > 0,
+  });
 
   const [activityTab, setActivityTab] = useState<'Tous' | 'Passages' | 'Ventes'>('Tous');
   const [isFacilityDropdownOpen, setIsFacilityDropdownOpen] = useState(false);
@@ -181,8 +194,36 @@ export const MembershipDashboardView: React.FC<MembershipDashboardViewProps> = (
     return activityList;
   }, [activityList, activityTab]);
 
+  if (showSkeleton && (members.length === 0 || networkMode === 'force_skeleton')) {
+    return (
+      <div className="space-y-6 animate-in fade-in duration-200">
+        <OfflineRetryBanner
+          isOffline={isOffline}
+          isTimedOut={isTimedOut}
+          lastSyncedAt={lastSyncedAt}
+          onRetry={retryCloudSync}
+        />
+        <SkeletonKpiGrid count={4} />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 space-y-6">
+            <SkeletonChart height={280} />
+          </div>
+          <div className="space-y-4">
+            <div className="p-5 rounded-[22px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 h-64 animate-pulse" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
+      <OfflineRetryBanner
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        lastSyncedAt={lastSyncedAt}
+        onRetry={retryCloudSync}
+      />
       {/* Row 0: Top Header with Left Greeting and Right Facility Switcher & Actions */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>

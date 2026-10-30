@@ -251,8 +251,30 @@ export const GymFrontDeskKiosk: React.FC = () => {
     });
   };
 
+  if (showSkeleton && (members.length === 0 || networkMode === 'force_skeleton')) {
+    return (
+      <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6" dir={isRtl ? 'rtl' : 'ltr'}>
+        <OfflineRetryBanner
+          isOffline={isOffline}
+          isTimedOut={isTimedOut}
+          lastSyncedAt={lastSyncedAt}
+          onRetry={retryCloudSync}
+        />
+        <div className="p-5 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl">
+          <SkeletonKioskGrid count={8} />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6" dir={isRtl ? 'rtl' : 'ltr'}>
+      <OfflineRetryBanner
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        lastSyncedAt={lastSyncedAt}
+        onRetry={retryCloudSync}
+      />
       {/* Top Header Banner */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl p-5 shadow-xs">
         <div className="flex items-center gap-3.5">

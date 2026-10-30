@@ -49,6 +49,11 @@ export const PosOrdersView: React.FC = () => {
     receiptConfig,
     currentUser,
     resetPosMockData,
+    isSyncing,
+    networkMode,
+    retryCloudSync,
+    lastSyncedAt,
+    isSyncTimeout,
   } = useAtriumStore();
 
   const [activeSubTab, setActiveSubTab] = useState<'sales' | 'parked'>('sales');
@@ -751,6 +756,11 @@ export const PosOrdersView: React.FC = () => {
                 keyExtractor={(s) => s.id}
                 defaultViewMode="list"
                 columns={salesColumns}
+                isLoading={isSyncing || networkMode === 'force_skeleton'}
+                isOffline={networkMode === 'offline'}
+                isTimedOut={isSyncTimeout}
+                lastSyncedAt={lastSyncedAt}
+                onRetrySync={retryCloudSync}
                 onItemClick={(s) => setSelectedSaleForReceipt(s)}
                 renderCard={(s) => {
                   const isRefunded = s.status === 'Refunded';
@@ -828,6 +838,11 @@ export const PosOrdersView: React.FC = () => {
                 keyExtractor={(po) => po.id}
                 defaultViewMode="list"
                 columns={parkedColumns}
+                isLoading={isSyncing || networkMode === 'force_skeleton'}
+                isOffline={networkMode === 'offline'}
+                isTimedOut={isSyncTimeout}
+                lastSyncedAt={lastSyncedAt}
+                onRetrySync={retryCloudSync}
                 renderCard={(po) => (
                   <div className="p-4 rounded-xl border border-neutral-200 dark:border-neutral-700 space-y-2">
                     <div className="flex items-center justify-between">

@@ -56,6 +56,11 @@ export const PosInventoryView: React.FC = () => {
     currentBusiness,
     currentBranchId,
     activePosRole,
+    isSyncing,
+    networkMode,
+    retryCloudSync,
+    lastSyncedAt,
+    isSyncTimeout,
   } = useAtriumStore();
 
   const isStaff = activePosRole === 'staff';
@@ -1122,12 +1127,17 @@ export const PosInventoryView: React.FC = () => {
         <div className="bg-white dark:bg-neutral-800 rounded-[18px] border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs overflow-hidden">
           {/* UniversalDataCollection: Products */}
           <UniversalDataCollection<Product>
-        items={sortedInventory}
-        keyExtractor={(p) => p.id}
-        defaultViewMode="list"
-        columns={productColumns}
-        sortBy={invSortBy}
-        sortDirection={invSortDir}
+            items={sortedInventory}
+            keyExtractor={(p) => p.id}
+            defaultViewMode="list"
+            columns={productColumns}
+            isLoading={isSyncing || networkMode === 'force_skeleton'}
+            isOffline={networkMode === 'offline'}
+            isTimedOut={isSyncTimeout}
+            lastSyncedAt={lastSyncedAt}
+            onRetrySync={retryCloudSync}
+            sortBy={invSortBy}
+            sortDirection={invSortDir}
         onSortChange={(key) => {
           if (invSortBy === key) {
             setInvSortDir((prev) => (prev === 'asc' ? 'desc' : 'asc'));
@@ -1359,7 +1369,12 @@ export const PosInventoryView: React.FC = () => {
           <UniversalDataCollection
             items={purchaseDocs || []}
             columns={purchaseColumns}
-          keyExtractor={(p) => p.id}
+            keyExtractor={(p) => p.id}
+            isLoading={isSyncing || networkMode === 'force_skeleton'}
+            isOffline={networkMode === 'offline'}
+            isTimedOut={isSyncTimeout}
+            lastSyncedAt={lastSyncedAt}
+            onRetrySync={retryCloudSync}
           renderCard={(doc) => (
             <div className="p-4 rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-2xs space-y-3">
               <div className="flex items-center justify-between">

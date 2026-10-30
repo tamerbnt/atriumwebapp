@@ -44,6 +44,11 @@ export const TradingSalesView: React.FC = () => {
     branches,
     switchBranch,
     resetTradingMockData,
+    isSyncing,
+    networkMode,
+    retryCloudSync,
+    lastSyncedAt,
+    isSyncTimeout,
   } = useAtriumStore();
 
   const [activeTab, setActiveTab] = useState<TabKey>('all');
@@ -577,6 +582,11 @@ export const TradingSalesView: React.FC = () => {
               items={filteredDocs}
               keyExtractor={(d) => d.id}
               columns={columns}
+              isLoading={isSyncing || networkMode === 'force_skeleton'}
+              isOffline={networkMode === 'offline'}
+              isTimedOut={isSyncTimeout}
+              lastSyncedAt={lastSyncedAt}
+              onRetrySync={retryCloudSync}
               renderCard={(doc) => (
                 <div className="p-4 border border-neutral-200 dark:border-neutral-700 rounded-xl space-y-2">
                   <div className="flex items-center justify-between">

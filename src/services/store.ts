@@ -7481,7 +7481,7 @@ export function useAtriumStore() {
       isTimedOut = false;
     } else if (mode === 'offline') {
       syncState = false;
-      status = 'disconnected';
+      status = 'offline';
       errorMsg = 'Network connection offline (simulation mode)';
       isTimedOut = true;
     } else if (mode === 'online') {

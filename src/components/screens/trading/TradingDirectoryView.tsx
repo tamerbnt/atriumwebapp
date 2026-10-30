@@ -46,6 +46,11 @@ export const TradingDirectoryView: React.FC = () => {
     branches,
     switchBranch,
     resetTradingMockData,
+    isSyncing,
+    networkMode,
+    retryCloudSync,
+    lastSyncedAt,
+    isSyncTimeout,
   } = useAtriumStore();
 
   const [mode, setMode] = useState<DirectoryMode>('clients');
@@ -568,6 +573,11 @@ export const TradingDirectoryView: React.FC = () => {
                   items={filteredClients}
                   keyExtractor={(c) => c.id}
                   columns={clientColumns}
+                  isLoading={isSyncing || networkMode === 'force_skeleton'}
+                  isOffline={networkMode === 'offline'}
+                  isTimedOut={isSyncTimeout}
+                  lastSyncedAt={lastSyncedAt}
+                  onRetrySync={retryCloudSync}
                   onItemClick={(c) => setSelectedEntity(c)}
                   onViewDetails={(c) => setSelectedEntity(c)}
                   onEdit={(c) => {

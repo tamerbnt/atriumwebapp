@@ -56,6 +56,11 @@ export const EducationCohortsView: React.FC = () => {
     updateEduCohort,
     deleteEduCohort,
     showToast,
+    isSyncing,
+    networkMode,
+    retryCloudSync,
+    lastSyncedAt,
+    isSyncTimeout,
   } = useAtriumStore();
 
   // Auto-heal empty cohorts directory safely once on mount
@@ -695,6 +700,11 @@ export const EducationCohortsView: React.FC = () => {
         keyExtractor={(c) => c.id}
         defaultViewMode="grid"
         columns={cohortColumns}
+        isLoading={isSyncing || networkMode === 'force_skeleton'}
+        isOffline={networkMode === 'offline'}
+        isTimedOut={isSyncTimeout}
+        lastSyncedAt={lastSyncedAt}
+        onRetrySync={retryCloudSync}
         sortBy={cohortSortBy}
         sortDirection={cohortSortDir}
         onSortChange={(key) => {
