@@ -26,9 +26,21 @@ import { LegalMatterModal } from './LegalMatterModal';
 import { CpcaDeadlineModal } from '../../modals/CpcaDeadlineModal';
 import { NotaryDeedModal } from '../../modals/NotaryDeedModal';
 import { CashClosureModal } from '../../modals/CashClosureModal';
+import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
+import { OfflineRetryBanner } from '../../common/OfflineRetryBanner';
+import { SkeletonKpiGrid } from '../../ui/skeleton/StructuralSkeletons';
 
 export const LegalDashboardView: React.FC = () => {
-  const { language, setScreen, activeLegalRole } = useAtriumStore();
+  const {
+    language,
+    setScreen,
+    activeLegalRole,
+    isSyncing,
+    networkMode,
+    isSyncTimeout,
+    lastSyncedAt,
+    retryCloudSync,
+  } = useAtriumStore();
   const isAr = language === 'ar';
   const {
     matters,
@@ -44,6 +56,11 @@ export const LegalDashboardView: React.FC = () => {
     addNotaryDeed,
     updateDailyClosure,
   } = useLegalData();
+
+  const { showSkeleton, isTimedOut, isOffline } = useSkeletonLoading({
+    isLoading: isSyncing || networkMode === 'force_skeleton',
+    hasCachedData: matters.length > 0 || notaryDeeds.length > 0,
+  });
 
   const [isMatterModalOpen, setIsMatterModalOpen] = useState(false);
   const [isCpcaModalOpen, setIsCpcaModalOpen] = useState(false);
@@ -94,8 +111,33 @@ export const LegalDashboardView: React.FC = () => {
 
   const currentRoleHeader = roleHeaders[activeLegalRole] || roleHeaders.avocat_associe;
 
+  if (showSkeleton && (matters.length === 0 || networkMode === 'force_skeleton')) {
+    return (
+      <div className="space-y-6 animate-in fade-in duration-200">
+        <OfflineRetryBanner
+          isOffline={isOffline}
+          isTimedOut={isTimedOut}
+          lastSyncedAt={lastSyncedAt}
+          onRetry={retryCloudSync}
+        />
+        <SkeletonKpiGrid count={4} />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="p-5 rounded-2xl bg-white dark:bg-[#18181B] border border-zinc-200 dark:border-zinc-800 h-64 animate-pulse" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
+      <OfflineRetryBanner
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        lastSyncedAt={lastSyncedAt}
+        onRetry={retryCloudSync}
+      />
       {/* Top Header Strip with Action Toolbar */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
         <div className="flex items-center gap-3">

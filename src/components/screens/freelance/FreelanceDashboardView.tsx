@@ -30,6 +30,9 @@ import { formatDuration, formatCurrencyAmount } from '../../../utils/rules';
 import { useTranslation } from '../../../utils/useTranslation';
 import { InvoicePreviewModal } from './InvoicePreviewModal';
 import { FreelanceInvoice } from '../../../types/index';
+import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
+import { OfflineRetryBanner } from '../../common/OfflineRetryBanner';
+import { SkeletonKpiGrid } from '../../ui/skeleton/StructuralSkeletons';
 
 export const FreelanceDashboardView: React.FC = () => {
   const { t, language, isRtl } = useTranslation();
@@ -53,7 +56,17 @@ export const FreelanceDashboardView: React.FC = () => {
     setScreen,
     updateInvoiceStatus,
     resetFreelanceMockData,
+    isSyncing,
+    networkMode,
+    isSyncTimeout,
+    lastSyncedAt,
+    retryCloudSync,
   } = useAtriumStore();
+
+  const { showSkeleton, isTimedOut, isOffline } = useSkeletonLoading({
+    isLoading: isSyncing || networkMode === 'force_skeleton',
+    hasCachedData: freelanceProjects.length > 0 || freelanceClients.length > 0,
+  });
 
   const [previewInvoice, setPreviewInvoice] = useState<FreelanceInvoice | null>(null);
   const [isFacilityDropdownOpen, setIsFacilityDropdownOpen] = useState(false);
@@ -255,8 +268,33 @@ export const FreelanceDashboardView: React.FC = () => {
     return unifiedActivities.filter((a) => a.type === activityFilter);
   }, [unifiedActivities, activityFilter]);
 
+  if (showSkeleton && (freelanceProjects.length === 0 || networkMode === 'force_skeleton')) {
+    return (
+      <div className="space-y-6 animate-in fade-in duration-200">
+        <OfflineRetryBanner
+          isOffline={isOffline}
+          isTimedOut={isTimedOut}
+          lastSyncedAt={lastSyncedAt}
+          onRetry={retryCloudSync}
+        />
+        <SkeletonKpiGrid count={4} />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="p-5 rounded-2xl bg-white dark:bg-[#18181B] border border-zinc-200 dark:border-zinc-800 h-64 animate-pulse" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
+      <OfflineRetryBanner
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        lastSyncedAt={lastSyncedAt}
+        onRetry={retryCloudSync}
+      />
       {/* Outer Rounded Workspace Panel (WPF Spec: CornerRadius 28px, 1px CardBorderBrush) */}
       <div className="space-y-6">
         

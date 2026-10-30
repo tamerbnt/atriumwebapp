@@ -13,7 +13,7 @@ interface VoucherModalProps {
 }
 
 export const VoucherModal: React.FC<VoucherModalProps> = ({ isOpen, onClose }) => {
-  const { subscription, redeemVoucher, showToast, language } = useAtriumStore();
+  const { subscription, redeemVoucher, showToast, language, networkMode } = useAtriumStore();
   const [code, setCode] = useState('');
   const [resultMessage, setResultMessage] = useState<{
     success: boolean;
@@ -62,6 +62,7 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({ isOpen, onClose }) =
     <Modal
       isOpen={isOpen}
       onClose={onClose}
+      isLoading={networkMode === 'force_skeleton'}
       title={t('voucher_title', language)}
       subtitle={t('voucher_subtitle', language)}
       maxWidth="md"

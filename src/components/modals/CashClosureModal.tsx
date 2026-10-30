@@ -31,7 +31,7 @@ export const CashClosureModal: React.FC<CashClosureModalProps> = ({
   cashReceipts,
   onSaveClosure,
 }) => {
-  const { language } = useAtriumStore();
+  const { language, networkMode } = useAtriumStore();
   const isAr = language === 'ar';
 
   const theoretical = closure.theoreticalCashDzd || 0;
@@ -89,6 +89,7 @@ export const CashClosureModal: React.FC<CashClosureModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
+      isLoading={networkMode === 'force_skeleton'}
       title={isAr ? 'محضر الإغلاق اليومي للصندوق وطابع المادة 317' : 'Arrêté Journalier de Caisse & Rapprochement Timbre Art. 317'}
       maxWidth="lg"
     >

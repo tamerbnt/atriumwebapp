@@ -13,6 +13,7 @@ import { CollectionEmptyState } from './CollectionEmptyState';
 import { KebabMenuItem } from './CollectionKebabMenu';
 import { SkeletonTable, SkeletonCardGrid } from '../skeleton/StructuralSkeletons';
 import { OfflineRetryBanner } from '../../common/OfflineRetryBanner';
+import { useAtriumStore } from '../../../services/store';
 
 export interface ColumnDefinition<T> {
   key?: string;
@@ -230,15 +231,24 @@ export function UniversalDataCollection<T>({
     onSelectionChange(next);
   };
 
-  // Render Loading Skeleton State (Cold Start / No Cached Data)
-  if (isLoading && actualItems.length === 0) {
+  const store = useAtriumStore();
+  const effectiveIsLoading = isLoading !== undefined ? isLoading : (store.isSyncing || store.networkMode === 'force_skeleton');
+  const effectiveIsOffline = isOffline !== undefined ? isOffline : (store.networkMode === 'offline');
+  const effectiveIsTimedOut = isTimedOut !== undefined ? isTimedOut : store.isSyncTimeout;
+  const effectiveLastSyncedAt = lastSyncedAt !== undefined ? lastSyncedAt : store.lastSyncedAt;
+  const effectiveOnRetrySync = onRetrySync !== undefined ? onRetrySync : store.retryCloudSync;
+
+  const shouldRenderSkeleton = (effectiveIsLoading && actualItems.length === 0) || store.networkMode === 'force_skeleton';
+
+  // Render Loading Skeleton State (Cold Start / No Cached Data OR Force Skeleton)
+  if (shouldRenderSkeleton) {
     return (
       <div className="w-full flex flex-col">
         <OfflineRetryBanner
-          isOffline={isOffline}
-          isTimedOut={isTimedOut}
-          lastSyncedAt={lastSyncedAt}
-          onRetry={onRetrySync}
+          isOffline={effectiveIsOffline}
+          isTimedOut={effectiveIsTimedOut}
+          lastSyncedAt={effectiveLastSyncedAt}
+          onRetry={effectiveOnRetrySync}
         />
 
         {viewMode === 'list' ? (
@@ -263,10 +273,10 @@ export function UniversalDataCollection<T>({
     return (
       <div className="w-full flex flex-col">
         <OfflineRetryBanner
-          isOffline={isOffline}
-          isTimedOut={isTimedOut}
-          lastSyncedAt={lastSyncedAt}
-          onRetry={onRetrySync}
+          isOffline={effectiveIsOffline}
+          isTimedOut={effectiveIsTimedOut}
+          lastSyncedAt={effectiveLastSyncedAt}
+          onRetry={effectiveOnRetrySync}
         />
 
         {/* Optional View Switcher Bar Even When Empty */}
@@ -319,10 +329,10 @@ export function UniversalDataCollection<T>({
     <div className="w-full flex flex-col">
       {/* Offline / Delayed Retry Banner */}
       <OfflineRetryBanner
-        isOffline={isOffline}
-        isTimedOut={isTimedOut}
-        lastSyncedAt={lastSyncedAt}
-        onRetry={onRetrySync}
+        isOffline={effectiveIsOffline}
+        isTimedOut={effectiveIsTimedOut}
+        lastSyncedAt={effectiveLastSyncedAt}
+        onRetry={effectiveOnRetrySync}
       />
 
       {/* ================= TOP VIEW SWITCHER / HEADER CONTROLS ================= */}
@@ -334,7 +344,7 @@ export function UniversalDataCollection<T>({
               <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 font-mono">
                 {actualItems.length}
               </span>
-              {isLoading && (
+              {effectiveIsLoading && (
                 <span className="text-[11px] text-[#C4785A] dark:text-[#E09070] font-medium animate-pulse">
                   Syncing...
                 </span>
@@ -347,7 +357,7 @@ export function UniversalDataCollection<T>({
         ) : (
           <div className="flex items-center gap-2">
             {headerActions}
-            {isLoading && (
+            {effectiveIsLoading && (
               <span className="text-[11px] text-[#C4785A] dark:text-[#E09070] font-medium animate-pulse ml-2">
                 Syncing...
               </span>

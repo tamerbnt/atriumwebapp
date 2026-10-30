@@ -30,7 +30,7 @@ export const NotaryDeedModal: React.FC<NotaryDeedModalProps> = ({
   nextIndex,
   onSaveDeed,
 }) => {
-  const { language } = useAtriumStore();
+  const { language, networkMode } = useAtriumStore();
   const isAr = language === 'ar';
 
   const [actType, setActType] = useState<NotaryDeed['actType']>('vente_immobiliere');
@@ -114,6 +114,7 @@ export const NotaryDeedModal: React.FC<NotaryDeedModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
+      isLoading={networkMode === 'force_skeleton'}
       title={isAr ? `إعداد وتسجيل عقد رسمي في الفهرس (${repertoireNumber})` : `Rédaction d'Acte Authentique au Répertoire (${repertoireNumber})`}
       maxWidth="xl"
     >

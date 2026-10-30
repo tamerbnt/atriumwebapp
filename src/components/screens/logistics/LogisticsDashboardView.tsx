@@ -21,11 +21,29 @@ import { useLogisticsData } from './logisticsData';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { LogisticsShipmentModal } from './LogisticsShipmentModal';
 import { WilayaTariffModal } from './WilayaTariffModal';
+import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
+import { OfflineRetryBanner } from '../../common/OfflineRetryBanner';
+import { SkeletonKpiGrid } from '../../ui/skeleton/StructuralSkeletons';
 
 export const LogisticsDashboardView: React.FC = () => {
-  const { language, setScreen, activeLogisticsRole, setActiveLogisticsRole } = useAtriumStore();
+  const {
+    language,
+    setScreen,
+    activeLogisticsRole,
+    setActiveLogisticsRole,
+    isSyncing,
+    networkMode,
+    isSyncTimeout,
+    lastSyncedAt,
+    retryCloudSync,
+  } = useAtriumStore();
   const isAr = language === 'ar';
   const { shipments, manifests, bags, discharges, addShipment, resetLogisticsDemoData } = useLogisticsData();
+
+  const { showSkeleton, isTimedOut, isOffline } = useSkeletonLoading({
+    isLoading: isSyncing || networkMode === 'force_skeleton',
+    hasCachedData: shipments.length > 0,
+  });
 
   const [isShipModalOpen, setIsShipModalOpen] = useState(false);
   const [isTariffModalOpen, setIsTariffModalOpen] = useState(false);
@@ -54,8 +72,33 @@ export const LogisticsDashboardView: React.FC = () => {
     { name: isAr ? 'المنطقة 6 — أقصى الجنوب' : 'Zone 6 (Grand Sud)', count: shipments.filter((s) => s.destinationWilaya.includes('11')).length, color: 'bg-[#C4785A]' },
   ];
 
+  if (showSkeleton && (shipments.length === 0 || networkMode === 'force_skeleton')) {
+    return (
+      <div className="space-y-6 animate-in fade-in duration-200">
+        <OfflineRetryBanner
+          isOffline={isOffline}
+          isTimedOut={isTimedOut}
+          lastSyncedAt={lastSyncedAt}
+          onRetry={retryCloudSync}
+        />
+        <SkeletonKpiGrid count={4} />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="p-5 rounded-2xl bg-white dark:bg-[#18181B] border border-zinc-200 dark:border-zinc-800 h-64 animate-pulse" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
+      <OfflineRetryBanner
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        lastSyncedAt={lastSyncedAt}
+        onRetry={retryCloudSync}
+      />
       {/* Top Header Strip with Action Toolbar */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
         <div className="flex items-center gap-3">

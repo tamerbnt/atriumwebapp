@@ -40,6 +40,9 @@ import { formatMoney } from '../../../utils/rules';
 import { useTranslation } from '../../../utils/useTranslation';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { AtriumButton } from '../../ui/AtriumButton';
+import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
+import { OfflineRetryBanner } from '../../common/OfflineRetryBanner';
+import { SkeletonKpiGrid } from '../../ui/skeleton/StructuralSkeletons';
 
 interface ProjectDirectionViewProps {
   initialTab?: 'dashboard' | 'projects' | 'new_project' | 'approvals' | 'reports';
@@ -73,7 +76,17 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
     activePmSubScreen,
     setActivePmSubScreen,
     showToast,
+    isSyncing,
+    networkMode,
+    isSyncTimeout,
+    lastSyncedAt,
+    retryCloudSync,
   } = useAtriumStore();
+
+  const { showSkeleton, isTimedOut, isOffline } = useSkeletonLoading({
+    isLoading: isSyncing || networkMode === 'force_skeleton',
+    hasCachedData: pmProjects.length > 0,
+  });
 
   // Auto-heal empty mock state on mount
   useEffect(() => {
@@ -432,8 +445,33 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
     URL.revokeObjectURL(url);
   };
 
+  if (showSkeleton && (pmProjects.length === 0 || networkMode === 'force_skeleton')) {
+    return (
+      <div className="space-y-6 animate-in fade-in duration-200">
+        <OfflineRetryBanner
+          isOffline={isOffline}
+          isTimedOut={isTimedOut}
+          lastSyncedAt={lastSyncedAt}
+          onRetry={retryCloudSync}
+        />
+        <SkeletonKpiGrid count={4} />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="p-5 rounded-2xl bg-white dark:bg-[#18181B] border border-zinc-200 dark:border-zinc-800 h-64 animate-pulse" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
+      <OfflineRetryBanner
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        lastSyncedAt={lastSyncedAt}
+        onRetry={retryCloudSync}
+      />
       {/* Top Header with Facility Switcher & Demo Data Button */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
         <div>

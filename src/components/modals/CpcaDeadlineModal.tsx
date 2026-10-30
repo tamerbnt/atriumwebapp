@@ -34,7 +34,7 @@ export const CpcaDeadlineModal: React.FC<CpcaDeadlineModalProps> = ({
   matters,
   onSaveDeadline,
 }) => {
-  const { language } = useAtriumStore();
+  const { language, networkMode } = useAtriumStore();
   const isAr = language === 'ar';
 
   const [selectedMatterId, setSelectedMatterId] = useState(matters[0]?.id || '');
@@ -101,6 +101,7 @@ export const CpcaDeadlineModal: React.FC<CpcaDeadlineModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
+      isLoading={networkMode === 'force_skeleton'}
       title={isAr ? 'تسليح أجل قانوني جديد (قانون الإجراءات المدنية والإدارية)' : 'Armer un Délai de Recours Légal (CPCA)'}
       maxWidth="lg"
     >

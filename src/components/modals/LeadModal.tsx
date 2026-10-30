@@ -12,7 +12,7 @@ interface LeadModalProps {
 }
 
 export const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose }) => {
-  const { plans, currentBranch, terminology, addLead, language } = useAtriumStore();
+  const { plans, currentBranch, terminology, addLead, language, networkMode } = useAtriumStore();
 
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
@@ -48,6 +48,7 @@ export const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose }) => {
     <Modal
       isOpen={isOpen}
       onClose={onClose}
+      isLoading={networkMode === 'force_skeleton'}
       title={t('reg_add_lead', language)}
       subtitle={language === 'ar' ? `تسجيل طلب استفسار جديد لـ ${currentBranch.name}` : language === 'fr' ? `Enregistrer un prospect pour ${currentBranch.name}` : `Log applicant lead for ${currentBranch.name}`}
       maxWidth="md"

@@ -33,7 +33,7 @@ export const DesktopUpgradeModal: React.FC<DesktopUpgradeModalProps> = ({
   onOpenVoucherModal,
   reason = 'general',
 }) => {
-  const { currentBusiness, currentBranch, currentUser, members, products, freelanceClients, freelanceInvoices, sales, language } = useAtriumStore();
+  const { currentBusiness, currentBranch, currentUser, members, products, freelanceClients, freelanceInvoices, sales, language, networkMode } = useAtriumStore();
   const [downloadingPlatform, setDownloadingPlatform] = useState<string | null>(null);
   const [exportedStatus, setExportedStatus] = useState<string | null>(null);
 
@@ -118,6 +118,7 @@ export const DesktopUpgradeModal: React.FC<DesktopUpgradeModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
+      isLoading={networkMode === 'force_skeleton'}
       title={language === 'ar' ? 'نسخة أتريوم المكتبية للكمبيوتر' : language === 'fr' ? 'Atrium Édition Bureau' : 'Atrium Desktop Edition'}
       subtitle={language === 'ar' ? 'تجاوز حدود الفرع الواحد مع تطبيق سطح المكتب فائق الأداء' : language === 'fr' ? 'Dépassez la limite d\'une seule agence avec l\'application de bureau haute performance' : 'Expand beyond 1 branch with the high-performance desktop application'}
       maxWidth="lg"

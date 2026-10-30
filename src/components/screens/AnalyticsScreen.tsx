@@ -22,6 +22,9 @@ import { useAtriumStore } from '../../services/store';
 import { formatMoney } from '../../utils/rules';
 import { t } from '../../utils/i18n';
 import { AtriumButton } from '../ui/AtriumButton';
+import { useSkeletonLoading } from '../../hooks/useSkeletonLoading';
+import { OfflineRetryBanner } from '../common/OfflineRetryBanner';
+import { SkeletonKpiGrid, SkeletonChart } from '../ui/skeleton/StructuralSkeletons';
 
 export const AnalyticsScreen: React.FC = () => {
   const {
@@ -36,7 +39,17 @@ export const AnalyticsScreen: React.FC = () => {
     sales,
     products,
     language,
+    isSyncing,
+    networkMode,
+    isSyncTimeout,
+    lastSyncedAt,
+    retryCloudSync,
   } = useAtriumStore();
+
+  const { showSkeleton, isTimedOut, isOffline } = useSkeletonLoading({
+    isLoading: isSyncing || networkMode === 'force_skeleton',
+    hasCachedData: sales.length > 0 || members.length > 0,
+  });
 
   const isPOS = currentBusiness.category === 'pos_inventory';
   const isSalon = currentBusiness.category === 'appointment_service';
@@ -384,8 +397,36 @@ export const AnalyticsScreen: React.FC = () => {
     document.body.removeChild(link);
   };
 
+  if (showSkeleton && (sales.length === 0 || networkMode === 'force_skeleton')) {
+    return (
+      <div className="space-y-6 animate-in fade-in duration-200">
+        <OfflineRetryBanner
+          isOffline={isOffline}
+          isTimedOut={isTimedOut}
+          lastSyncedAt={lastSyncedAt}
+          onRetry={retryCloudSync}
+        />
+        <SkeletonKpiGrid count={4} />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 space-y-6">
+            <SkeletonChart height={320} />
+          </div>
+          <div className="space-y-4">
+            <div className="p-5 rounded-[22px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 h-80 animate-pulse" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
+      <OfflineRetryBanner
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        lastSyncedAt={lastSyncedAt}
+        onRetry={retryCloudSync}
+      />
       {/* Header Row */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>

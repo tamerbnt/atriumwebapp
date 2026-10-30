@@ -18,7 +18,7 @@ export const MemberModal: React.FC<MemberModalProps> = ({
   onClose,
   memberToEdit,
 }) => {
-  const { plans, currentBranch, terminology, addMember, updateMember, language } = useAtriumStore();
+  const { plans, currentBranch, terminology, addMember, updateMember, language, networkMode } = useAtriumStore();
 
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
@@ -118,6 +118,7 @@ export const MemberModal: React.FC<MemberModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
+      isLoading={networkMode === 'force_skeleton'}
       title={
         memberToEdit
           ? language === 'ar'

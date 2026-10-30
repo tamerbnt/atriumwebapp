@@ -54,6 +54,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
     deleteAppointment,
     checkoutAppointment,
     addMember,
+    networkMode,
   } = useAtriumStore();
 
   const isEditing = !!appointment;
@@ -243,6 +244,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
+      isLoading={networkMode === 'force_skeleton'}
       title={isEditing ? t('apt_modal_title_edit', language) : t('apt_modal_title_new', language)}
       subtitle={
         isEditing && appointment

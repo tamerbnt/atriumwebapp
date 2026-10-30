@@ -17,10 +17,27 @@ import { useRealEstateData } from './realEstateData';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { RealEstatePropertyModal } from './RealEstatePropertyModal';
 import { RealEstateLeaseModal } from './RealEstateLeaseModal';
+import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
+import { OfflineRetryBanner } from '../../common/OfflineRetryBanner';
+import { SkeletonKpiGrid } from '../../ui/skeleton/StructuralSkeletons';
 
 export const RealEstateDashboardView: React.FC = () => {
-  const { language, setScreen, activeRealEstateRole } = useAtriumStore();
+  const {
+    language,
+    setScreen,
+    activeRealEstateRole,
+    isSyncing,
+    networkMode,
+    isSyncTimeout,
+    lastSyncedAt,
+    retryCloudSync,
+  } = useAtriumStore();
   const { properties, leases, addProperty, addLease } = useRealEstateData();
+
+  const { showSkeleton, isTimedOut, isOffline } = useSkeletonLoading({
+    isLoading: isSyncing || networkMode === 'force_skeleton',
+    hasCachedData: properties.length > 0,
+  });
 
   const [isPropModalOpen, setIsPropModalOpen] = useState(false);
   const [isLeaseModalOpen, setIsLeaseModalOpen] = useState(false);
@@ -33,8 +50,33 @@ export const RealEstateDashboardView: React.FC = () => {
     .filter((l) => l.status === 'Active')
     .reduce((acc, l) => acc + l.monthlyRentDzd, 0);
 
+  if (showSkeleton && (properties.length === 0 || networkMode === 'force_skeleton')) {
+    return (
+      <div className="space-y-6 animate-in fade-in duration-200">
+        <OfflineRetryBanner
+          isOffline={isOffline}
+          isTimedOut={isTimedOut}
+          lastSyncedAt={lastSyncedAt}
+          onRetry={retryCloudSync}
+        />
+        <SkeletonKpiGrid count={4} />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="p-4 rounded-xl bg-white dark:bg-[#18181B] border border-zinc-200 dark:border-zinc-800 h-32 animate-pulse" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
+      <OfflineRetryBanner
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        lastSyncedAt={lastSyncedAt}
+        onRetry={retryCloudSync}
+      />
       {/* Top Header Strip with Action Toolbar */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
         <div className="flex items-center gap-3">
