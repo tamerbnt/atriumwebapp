@@ -16,22 +16,28 @@ import {
   Share2,
   Clock,
   Receipt,
+  FileText,
+  AlertTriangle,
+  UserCheck,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
-import { LogisticsShipment } from '../../../types';
+import { LogisticsShipment, CourierCashDischarge, MerchantRemittanceBatch } from '../../../types';
 import { useLogisticsData } from './logisticsData';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { UniversalDataCollection } from '../../ui/collection/UniversalDataCollection';
 import { ActionButtonDef } from '../../ui/collection/CollectionListRow';
+import { AlgeriePosteSfp01Modal } from './AlgeriePosteSfp01Modal';
+import { calculateDriverPayout } from '../../../utils/logisticsRules';
 
 export const LogisticsCodView: React.FC = () => {
   const { language } = useAtriumStore();
   const isAr = language === 'ar';
-  const { shipments } = useLogisticsData();
+  const { shipments, discharges, remittances, executeRemittance } = useLogisticsData();
 
   const [settledIds, setSettledIds] = useState<string[]>(['shp_01']);
   const [selectedShipment, setSelectedShipment] = useState<LogisticsShipment | null>(null);
-  const [inspectorTab, setInspectorTab] = useState<'rapprochement' | 'colis' | 'virement'>('rapprochement');
+  const [isSfp01ModalOpen, setIsSfp01ModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<'shipments' | 'discharges' | 'remittances' | 'driver_payroll'>('shipments');
 
   const formatMoney = (amount: number) => {
     return `${amount.toLocaleString()} DZD`;
@@ -54,6 +60,25 @@ export const LogisticsCodView: React.FC = () => {
       );
     }
   };
+
+  // Driver Payroll Simulation (Feature 8)
+  const salariedDriverPay = calculateDriverPayout({
+    employmentType: 'salaried',
+    completedDeliveries: 18,
+    returnedDeliveries: 2,
+    baseSalaryMonthlyDzd: 48000,
+    fuelAllowanceDzd: 1500,
+  });
+
+  const freelanceDriverPay = calculateDriverPayout({
+    employmentType: 'freelance_commission',
+    completedDeliveries: 26,
+    returnedDeliveries: 3,
+    commissionPerDeliveredDzd: 220,
+    commissionPerReturnDzd: 50,
+    fuelAllowanceDzd: 1000,
+    withholdingTaxRatePercent: 5.0,
+  });
 
   const getCodActions = (s: LogisticsShipment): ActionButtonDef[] => {
     const net = s.codAmountDzd - s.shippingFeeDzd;
@@ -111,7 +136,7 @@ export const LogisticsCodView: React.FC = () => {
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-xl font-bold text-neutral-900 dark:text-white">
-                {isAr ? 'تحصيل COD ومستحقات التجار' : 'Caisse COD & Règlements E-Commerçants'}
+                {isAr ? 'تحصيل COD ومستحقات التجار وبريد الجزائر' : 'Caisse COD & Règlements E-Commerçants'}
               </h1>
               <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
                 Paiement à la Livraison
@@ -119,15 +144,25 @@ export const LogisticsCodView: React.FC = () => {
             </div>
             <p className="text-xs text-neutral-500 dark:text-neutral-400">
               {isAr
-                ? 'مطابقة مبالغ الدفع عند الاستلام، اقتطاع رسوم التوصيل، وتحويل صافي المستحقات'
-                : 'Rapprochement des encaissements à la livraison et génération des virements marchands'}
+                ? 'مطابقة مبالغ الدفع عند الاستلام، تبرئة ذمة السائقين، وتصدير دفعات بريد الجزائر CCP SFP 01'
+                : 'Rapprochement des encaissements à la livraison, décharge coffre livreurs & télétransmission CCP'}
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <AtriumButton
             variant="outline"
+            size="sm"
+            onClick={() => setIsSfp01ModalOpen(true)}
+            icon={<Building2 size={14} />}
+          >
+            {isAr ? 'بريد الجزائر SFP 01 / B1' : 'Export CCP SFP 01'}
+          </AtriumButton>
+
+          <AtriumButton
+            variant="primary"
+            size="sm"
             onClick={() => {
               showToast(isAr ? 'تم تصدير كشف تسوية COD للمتاجر' : 'Bordereau de reversement exporté', 'info');
               window.print();
@@ -160,23 +195,23 @@ export const LogisticsCodView: React.FC = () => {
               <div className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white font-mono tabular-nums">
                 {formatMoney(totalCodCollected)}
               </div>
-              <p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5 font-medium">
-                {deliveredShipments.length} {isAr ? 'طرد مسلم بنجاح' : 'colis réglés à la porte'}
+              <p className="text-[11px] text-emerald-600 dark:text-emerald-400 mt-0.5 font-medium">
+                {deliveredShipments.length} {isAr ? 'طرد تم تسليمه بنجاح' : 'expéditions encaissées'}
               </p>
             </div>
           </div>
 
-          {/* Card 2: Frais de livraison */}
+          {/* Card 2: Commissions Transport */}
           <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
             <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
-              {isAr ? 'رسوم التوصيل المقتطعة للشركة' : 'Frais de Livraison Prélevés'}
+              {isAr ? 'رسوم التوصيل المستحقة للشركة' : 'Commissions & Frais Livraison'}
             </span>
             <div>
-              <div className="text-2xl font-bold tracking-tight text-blue-600 dark:text-blue-400 font-mono tabular-nums">
+              <div className="text-2xl font-bold tracking-tight text-[#C4785A] font-mono tabular-nums">
                 {formatMoney(totalShippingFees)}
               </div>
               <p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5 font-medium">
-                {isAr ? 'إيرادات الخدمة الصافية' : 'Chiffre d\'affaires transport'}
+                Chiffre d'affaires prestations
               </p>
             </div>
           </div>
@@ -185,10 +220,10 @@ export const LogisticsCodView: React.FC = () => {
           <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-medium text-neutral-300">
-                {isAr ? 'صافي مستحقات المتاجر' : 'Net à Reverser Marchands'}
+                {isAr ? 'صافي مستحقات المتاجر للتحويل' : 'Solde Net à Reverser'}
               </span>
               <span className="bg-[#3D2817] text-[#FB923C] rounded-full px-2 py-0.5 text-[10px] font-bold">
-                Solde Marchands
+                Marchands
               </span>
             </div>
             <div>
@@ -197,121 +232,122 @@ export const LogisticsCodView: React.FC = () => {
               </div>
               <p className="text-[11px] text-emerald-400 mt-0.5 flex items-center gap-1 font-medium">
                 <CheckCircle2 size={11} />
-                {deliveredShipments.length} {isAr ? 'عملية تسوية متاحة' : 'colis réconciliés'}
+                Prêt pour virement CCP / BaridiMob
               </p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Bottom Elevated Pod Tray Enclosing Collection & Inspector Drawer */}
-      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
-        {/* Domain Filter Header Strip */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div>
-            <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
-              {isAr ? 'كشوفات تصفية الأموال والتحويلات للتجار' : 'Bordereaux de Rapprochement & Virements Commerçants'}
-            </h2>
-            <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-              {isAr ? 'مطابقة السيولة النقدية، اقتطاع عمولات التوصيل، وإصدار أوامر التحويل' : 'Rapprochement des caisses livreurs, déduction des commissions et virements CCP/RIB'}
-            </p>
+      {/* Tabs Strip: Shipments Settled vs Driver Discharges vs CCP Batches vs Payroll */}
+      <div className="flex rounded-xl bg-neutral-100 dark:bg-neutral-800 p-1 border border-neutral-200 dark:border-neutral-700 w-fit">
+        <button
+          onClick={() => setActiveTab('shipments')}
+          className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+            activeTab === 'shipments'
+              ? 'bg-white dark:bg-neutral-900 text-[#C4785A] shadow-xs'
+              : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
+          }`}
+        >
+          {isAr ? 'تسويات الطرود' : 'Rapprochement Colis'}
+        </button>
+        <button
+          onClick={() => setActiveTab('discharges')}
+          className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+            activeTab === 'discharges'
+              ? 'bg-white dark:bg-neutral-900 text-[#C4785A] shadow-xs'
+              : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
+          }`}
+        >
+          {isAr ? 'محاضر تبرئة ذمة السائقين' : 'Bons de Décharge Chauffeurs'}
+        </button>
+        <button
+          onClick={() => setActiveTab('remittances')}
+          className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+            activeTab === 'remittances'
+              ? 'bg-white dark:bg-neutral-900 text-[#C4785A] shadow-xs'
+              : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
+          }`}
+        >
+          {isAr ? 'دفعات بريد الجزائر CCP' : 'Lots CCP SFP 01'}
+        </button>
+        <button
+          onClick={() => setActiveTab('driver_payroll')}
+          className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+            activeTab === 'driver_payroll'
+              ? 'bg-white dark:bg-neutral-900 text-[#C4785A] shadow-xs'
+              : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
+          }`}
+        >
+          {isAr ? 'أجور وعمولات السائقين' : 'Paie & Commissions Livreurs'}
+        </button>
+      </div>
+
+      {/* Tab 1: Shipments Collection */}
+      {activeTab === 'shipments' && (
+        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-sm font-bold text-neutral-900 dark:text-white">
+                {isAr ? 'طرود جاهزة لتسوية المستحقات' : 'Colis Livrés & Encaissements'}
+              </h2>
+              <p className="text-xs text-neutral-500">
+                {isAr ? 'الطرود المسلمة والمقبوضة نقدياً بانتظار التحويل للمتاجر' : 'Règlements des e-commerçants après retenue de la commission'}
+              </p>
+            </div>
+            <div className="text-xs font-mono font-bold text-[#C4785A]">
+              {deliveredShipments.length} {isAr ? 'طرد' : 'colis'}
+            </div>
           </div>
 
-          {/* Authentic Logistics COD Filter Capsules */}
-          <div className="flex items-center gap-1.5 p-1 bg-white dark:bg-neutral-800 rounded-full border border-neutral-200/80 dark:border-neutral-700/60 shadow-2xs overflow-x-auto">
-            {[
-              { id: 'all', label: isAr ? 'جميع التسويات' : 'Toutes liquidations' },
-              { id: 'settled', label: isAr ? 'محولة للتجار' : 'Virements effectués' },
-              { id: 'pending', label: isAr ? 'قيد التحويل' : 'En attente virement' },
-            ].map((tab, idx) => (
-              <button
-                key={tab.id}
-                className="px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer"
-                style={{
-                  backgroundColor: idx === 0 ? '#FCEEE8' : 'transparent',
-                  color: idx === 0 ? 'var(--color-accent)' : '#71717A',
-                }}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Main Collection Area + 390px Inspector Drawer */}
-        <div className="flex flex-col lg:flex-row gap-6 items-start">
-          <div className="flex-1 min-w-0 w-full">
-            <UniversalDataCollection<LogisticsShipment>
-            title={isAr ? 'جدول تسويات الدفع عند الاستلام' : 'Tableau de Rapprochement & Virements COD'}
-            subtitle={isAr ? 'مطابقة السيولة وتصفية الحسابات' : 'Colis livrés, commissions prélevées et reversements marchands'}
+          <UniversalDataCollection<LogisticsShipment>
             items={deliveredShipments}
             keyExtractor={(s) => s.id}
-            searchPlaceholder={isAr ? 'بحث بالتاجر، الكود، الزبون...' : 'Rechercher marchand, AWB, destinataire, wilaya...'}
-            searchFilter={(s, query) =>
-              s.merchantName.toLowerCase().includes(query.toLowerCase()) ||
-              s.trackingCode.toLowerCase().includes(query.toLowerCase()) ||
-              s.recipientName.toLowerCase().includes(query.toLowerCase()) ||
-              s.destinationWilaya.toLowerCase().includes(query.toLowerCase())
-            }
-            onSelectRow={(s) => setSelectedShipment(s)}
-            customActions={(s) => getCodActions(s)}
+            defaultViewMode="list"
+            selectedIds={new Set(settledIds)}
+            onSelectionChange={(newSet) => setSettledIds(Array.from(newSet))}
+            onItemClick={setSelectedShipment}
+            customActions={getCodActions}
             columns={[
               {
-                id: 'trackingCode',
-                header: isAr ? 'رقم الشحنة' : 'N° AWB',
+                id: 'code',
+                header: 'AWB',
                 width: '130px',
-                sortable: true,
-                renderCell: (s) => (
-                  <span className="font-mono font-bold text-xs bg-[#C4785A]/10 text-[#C4785A] px-2 py-0.5 rounded border border-[#C4785A]/20">
+                renderCell: (s: LogisticsShipment) => (
+                  <span className="font-mono font-bold text-xs text-[#C4785A]">
                     {s.trackingCode}
                   </span>
                 ),
               },
               {
                 id: 'merchant',
-                header: isAr ? 'التاجر (المتجر)' : 'Commerçant & Boutique',
-                renderCell: (s) => (
+                header: isAr ? 'المتجر والتاريخ' : 'Marchand / E-Boutique',
+                renderCell: (s: LogisticsShipment) => (
                   <div>
-                    <span className="font-bold text-xs text-neutral-900 dark:text-neutral-100 block">
+                    <div className="font-semibold text-xs text-neutral-900 dark:text-white">
                       {s.merchantName}
-                    </span>
-                    <span className="text-[11px] text-neutral-500">
-                      Destination: {s.destinationWilaya}
-                    </span>
-                  </div>
-                ),
-              },
-              {
-                id: 'recipient',
-                header: isAr ? 'المستلم' : 'Destinataire Final',
-                width: '170px',
-                renderCell: (s) => (
-                  <div className="text-xs">
-                    <span className="font-semibold text-neutral-800 dark:text-neutral-200 block truncate">
-                      {s.recipientName}
-                    </span>
-                    <span className="text-[10px] text-neutral-400 font-mono">
-                      {s.recipientPhone}
-                    </span>
+                    </div>
+                    <div className="text-[11px] text-neutral-500">
+                      {s.createdAt.split('T')[0]} • Dest: {s.recipientName}
+                    </div>
                   </div>
                 ),
               },
               {
                 id: 'cod',
-                header: isAr ? 'المبلغ المقبوض' : 'COD Encaissé',
-                width: '130px',
-                sortable: true,
-                renderCell: (s) => (
-                  <span className="font-mono text-xs font-bold text-neutral-900 dark:text-white">
+                header: 'Brut Encaissé',
+                width: '120px',
+                renderCell: (s: LogisticsShipment) => (
+                  <span className="font-mono font-bold text-xs text-neutral-900 dark:text-white">
                     {formatMoney(s.codAmountDzd)}
                   </span>
                 ),
               },
               {
                 id: 'fee',
-                header: isAr ? 'رسوم التوصيل' : 'Frais Livraison',
-                width: '130px',
-                renderCell: (s) => (
+                header: 'Commission',
+                width: '110px',
+                renderCell: (s: LogisticsShipment) => (
                   <span className="font-mono text-xs text-neutral-500">
                     -{formatMoney(s.shippingFeeDzd)}
                   </span>
@@ -319,45 +355,21 @@ export const LogisticsCodView: React.FC = () => {
               },
               {
                 id: 'net',
-                header: isAr ? 'الصافي للتاجر' : 'Net Vendeur',
-                width: '140px',
-                sortable: true,
-                renderCell: (s) => (
-                  <span className="font-mono text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                header: 'Net Marchand',
+                width: '120px',
+                renderCell: (s: LogisticsShipment) => (
+                  <span className="font-mono font-bold text-xs text-emerald-600 dark:text-emerald-400">
                     {formatMoney(s.codAmountDzd - s.shippingFeeDzd)}
                   </span>
                 ),
               },
               {
-                id: 'status',
-                header: isAr ? 'الحالة' : 'Statut Virement',
-                width: '130px',
-                renderCell: (s) => {
+                id: 'settled',
+                header: 'Statut',
+                width: '110px',
+                renderCell: (s: LogisticsShipment) => {
                   const isSettled = settledIds.includes(s.id);
                   return (
-                    <span
-                      className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold inline-flex items-center gap-1 ${
-                        isSettled
-                          ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
-                          : 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
-                      }`}
-                    >
-                      {isSettled ? <CheckCircle2 size={11} /> : <Clock size={11} />}
-                      {isSettled ? (isAr ? 'تم التحويل' : 'Viré') : (isAr ? 'قيد التحويل' : 'À reverser')}
-                    </span>
-                  );
-                },
-              },
-            ]}
-            renderCard={(s) => {
-              const net = s.codAmountDzd - s.shippingFeeDzd;
-              const isSettled = settledIds.includes(s.id);
-              return (
-                <div className="p-4 flex flex-col justify-between h-full space-y-3">
-                  <div className="flex items-start justify-between gap-2">
-                    <span className="font-mono font-bold text-xs bg-[#C4785A]/10 text-[#C4785A] px-2 py-0.5 rounded">
-                      {s.trackingCode}
-                    </span>
                     <span
                       className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                         isSettled
@@ -365,253 +377,277 @@ export const LogisticsCodView: React.FC = () => {
                           : 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
                       }`}
                     >
-                      {isSettled ? 'Viré' : 'À reverser'}
+                      {isSettled ? 'Viré' : 'À Régler'}
                     </span>
-                  </div>
-
-                  <div>
-                    <h4 className="font-bold text-xs text-neutral-900 dark:text-white">
-                      {s.merchantName}
-                    </h4>
-                    <p className="text-[11px] text-neutral-500 mt-0.5">
-                      Destinataire: {s.recipientName} ({s.destinationWilaya})
-                    </p>
-                  </div>
-
-                  <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-xs">
-                    <div>
-                      <span className="text-[10px] text-neutral-400 block">COD Encaissé</span>
-                      <span className="font-mono text-neutral-700 dark:text-neutral-300 font-semibold">
-                        {formatMoney(s.codAmountDzd)}
-                      </span>
-                    </div>
-                    <div className="text-right">
-                      <span className="text-[10px] text-neutral-400 block">Net Vendeur</span>
-                      <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400 text-sm">
-                        {formatMoney(net)}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              );
-            }}
+                  );
+                },
+              },
+            ]}
           />
         </div>
+      )}
 
-        {/* 390px Side Inspector Drawer */}
-        {selectedShipment && (
-          <div className="w-full lg:w-[390px] shrink-0 bg-white dark:bg-neutral-850 rounded-2xl border border-[#EDF1F3] dark:border-neutral-800 shadow-lg flex flex-col h-[740px] overflow-hidden animate-in slide-in-from-right-4 duration-200">
-            {/* Inspector Top Header */}
-            <div className="p-4 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between bg-neutral-50 dark:bg-neutral-900/50">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold">
-                  <CreditCard size={16} />
-                </div>
-                <div>
-                  <h3 className="font-bold text-xs text-neutral-900 dark:text-white flex items-center gap-1.5 font-mono">
-                    {selectedShipment.trackingCode}
-                  </h3>
-                  <p className="text-[10px] text-neutral-500 truncate max-w-[210px]">
-                    {selectedShipment.merchantName}
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={() => setSelectedShipment(null)}
-                className="w-7 h-7 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-800 flex items-center justify-center text-neutral-500 transition-colors"
-              >
-                <X size={15} />
-              </button>
+      {/* Tab 2: Discharges Table */}
+      {activeTab === 'discharges' && (
+        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
+                {isAr ? 'محاضر تبرئة ذمة السائقين (Double-Lock Vault)' : 'Registre des Billets de Décharge Chauffeurs'}
+              </h3>
+              <p className="text-xs text-neutral-500">
+                Comptage physique des billets de banque et décharge conjointe caisse / chauffeur
+              </p>
             </div>
+            <span className="text-xs font-mono font-bold text-neutral-600 dark:text-neutral-300">
+              {discharges.length} procès-verbaux
+            </span>
+          </div>
 
-            {/* Tab Navigation */}
-            <div className="flex border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 px-3 pt-2 gap-2">
-              <button
-                onClick={() => setInspectorTab('rapprochement')}
-                className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${
-                  inspectorTab === 'rapprochement'
-                    ? 'border-[#C4785A] text-[#C4785A]'
-                    : 'border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
-                }`}
-              >
-                {isAr ? 'المطابقة المالية' : 'Décompte COD'}
-              </button>
-              <button
-                onClick={() => setInspectorTab('colis')}
-                className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${
-                  inspectorTab === 'colis'
-                    ? 'border-[#C4785A] text-[#C4785A]'
-                    : 'border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
-                }`}
-              >
-                {isAr ? 'الطرد والتسليم' : 'Colis & Livreur'}
-              </button>
-              <button
-                onClick={() => setInspectorTab('virement')}
-                className={`pb-2 text-xs font-semibold border-b-2 transition-colors px-2 ${
-                  inspectorTab === 'virement'
-                    ? 'border-[#C4785A] text-[#C4785A]'
-                    : 'border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
-                }`}
-              >
-                {isAr ? 'التحويل البنكي' : 'Virement CCP'}
-              </button>
-            </div>
-
-            {/* Inspector Body */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs">
-              {inspectorTab === 'rapprochement' && (
-                <div className="space-y-4">
-                  <div className="p-4 bg-[#1F1D1B] rounded-xl text-white space-y-2 shadow-sm">
-                    <div className="flex items-center justify-between text-neutral-300 text-[11px]">
-                      <span>Net à Reverser au Marchand</span>
-                      <span className="bg-[#3D2817] text-[#FB923C] text-[10px] font-bold px-2 py-0.5 rounded-full">
-                        {settledIds.includes(selectedShipment.id) ? 'Transféré' : 'En Attente'}
-                      </span>
-                    </div>
-                    <div className="text-2xl font-black font-mono tracking-tight text-white">
-                      {formatMoney(selectedShipment.codAmountDzd - selectedShipment.shippingFeeDzd)}
-                    </div>
-                    <p className="text-[10px] text-neutral-400">
-                      Montant net disponible pour virement bancaire ou paiement en espèces au guichet hub.
-                    </p>
-                  </div>
-
-                  <div className="p-3 bg-neutral-50 dark:bg-neutral-900/60 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
-                    <span className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold block">
-                      Détails de l'Encaissement
-                    </span>
-                    <div className="flex items-center justify-between">
-                      <span className="text-neutral-500">Montant COD Perçu (Livreur):</span>
-                      <span className="font-mono font-bold text-neutral-900 dark:text-white">
-                        {formatMoney(selectedShipment.codAmountDzd)}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between text-blue-600 dark:text-blue-400">
-                      <span>Frais de Transport Hub:</span>
-                      <span className="font-mono font-semibold">
-                        -{formatMoney(selectedShipment.shippingFeeDzd)}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between pt-1 border-t border-neutral-200 dark:border-neutral-800">
-                      <span className="font-bold text-neutral-900 dark:text-white">Solde Net Marchand:</span>
-                      <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
-                        {formatMoney(selectedShipment.codAmountDzd - selectedShipment.shippingFeeDzd)}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="p-3 rounded-xl border border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
-                    <div>
-                      <span className="font-semibold block text-neutral-900 dark:text-white">Reversement</span>
-                      <span className="text-[10px] text-neutral-500">
-                        {settledIds.includes(selectedShipment.id) ? 'Virement déjà exécuté' : 'Valider le paiement du marchand'}
-                      </span>
-                    </div>
-                    <button
-                      onClick={() => handleSettle(selectedShipment.id, selectedShipment.merchantName, selectedShipment.codAmountDzd - selectedShipment.shippingFeeDzd)}
-                      disabled={settledIds.includes(selectedShipment.id)}
-                      className="px-3 py-1.5 rounded-lg text-xs font-bold bg-[#C4785A] hover:bg-[#b06a4e] text-white disabled:opacity-50 transition-colors"
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead>
+                <tr className="border-b border-neutral-200 dark:border-neutral-700 text-neutral-500 font-medium">
+                  <th className="py-2 px-3">N° Décharge</th>
+                  <th className="py-2 px-3">Chauffeur</th>
+                  <th className="py-2 px-3">Date & Heure</th>
+                  <th className="py-2 px-3 text-right">Attendu</th>
+                  <th className="py-2 px-3 text-right">Compté</th>
+                  <th className="py-2 px-3 text-right">Écart</th>
+                  <th className="py-2 px-3">Statut</th>
+                  <th className="py-2 px-3 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800 font-mono">
+                {discharges.map((d) => (
+                  <tr key={d.id} className="hover:bg-neutral-50 dark:hover:bg-neutral-800/40">
+                    <td className="py-2.5 px-3 font-bold text-[#C4785A]">{d.dischargeNumber}</td>
+                    <td className="py-2.5 px-3 font-sans font-semibold text-neutral-900 dark:text-white">
+                      {d.courierStaffId}
+                    </td>
+                    <td className="py-2.5 px-3 text-neutral-500">{d.timestamp.replace('T', ' ').slice(0, 16)}</td>
+                    <td className="py-2.5 px-3 text-right">{formatMoney(d.expectedCodDzd)}</td>
+                    <td className="py-2.5 px-3 text-right font-bold text-neutral-900 dark:text-white">
+                      {formatMoney(d.actualCashTurnedInDzd)}
+                    </td>
+                    <td
+                      className={`py-2.5 px-3 text-right font-bold ${
+                        d.discrepancyDzd === 0
+                          ? 'text-emerald-600'
+                          : d.discrepancyDzd < 0
+                          ? 'text-red-600'
+                          : 'text-blue-600'
+                      }`}
                     >
-                      {settledIds.includes(selectedShipment.id) ? 'Soldé ✓' : 'Virer Net'}
-                    </button>
-                  </div>
-                </div>
-              )}
+                      {d.discrepancyDzd === 0 ? '0 DZD' : `${d.discrepancyDzd} DZD`}
+                    </td>
+                    <td className="py-2.5 px-3 font-sans">
+                      <span
+                        className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${
+                          d.status === 'Clean'
+                            ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                            : 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300'
+                        }`}
+                      >
+                        {d.status === 'Clean' ? 'Décharge Conforme' : 'Manquant (Shortage)'}
+                      </span>
+                    </td>
+                    <td className="py-2.5 px-3 text-right font-sans">
+                      <AtriumButton
+                        variant="ghost"
+                        size="xs"
+                        onClick={() => {
+                          showToast(isAr ? 'طباعة محضر التبرئة' : 'Impression décharge', 'info');
+                          window.print();
+                        }}
+                        icon={<Printer size={12} />}
+                      >
+                        Reçu
+                      </AtriumButton>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
-              {inspectorTab === 'colis' && (
-                <div className="space-y-4">
-                  <div className="p-3 bg-neutral-50 dark:bg-neutral-900/60 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
-                    <span className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold block">
-                      Livraison & Remise
-                    </span>
-                    <div className="space-y-1.5">
-                      <div className="flex justify-between">
-                        <span className="text-neutral-500">Code AWB:</span>
-                        <span className="font-mono font-bold text-neutral-900 dark:text-white">{selectedShipment.trackingCode}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-neutral-500">Client:</span>
-                        <span className="font-medium text-neutral-900 dark:text-white">{selectedShipment.recipientName}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-neutral-500">Téléphone:</span>
-                        <span className="font-mono text-neutral-900 dark:text-white">{selectedShipment.recipientPhone}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-neutral-500">Wilaya:</span>
-                        <span className="font-bold text-[#C4785A]">{selectedShipment.destinationWilaya}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-neutral-500">Livreur assigné:</span>
-                        <span className="font-medium text-neutral-900 dark:text-white">{selectedShipment.assignedDriverName || 'Livreur Express'}</span>
-                      </div>
-                    </div>
-                  </div>
+      {/* Tab 3: Remittances Table */}
+      {activeTab === 'remittances' && (
+        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
+                {isAr ? 'دفعات التحويل البريدي للتجار (Algérie Poste & BaridiMob)' : 'Lots de Règlements E-Commerçants'}
+              </h3>
+              <p className="text-xs text-neutral-500">
+                Télétransmission des bordereaux SFP 01 / B1 et virements BaridiMob avec Clé 97
+              </p>
+            </div>
+            <AtriumButton
+              variant="primary"
+              size="sm"
+              onClick={() => setIsSfp01ModalOpen(true)}
+              icon={<Building2 size={14} />}
+            >
+              {isAr ? 'تصدير SFP 01' : 'Générer Fichier ASCII'}
+            </AtriumButton>
+          </div>
 
-                  <div className="p-3 bg-emerald-50/60 dark:bg-emerald-950/20 rounded-xl border border-emerald-200/50 dark:border-emerald-800/40 space-y-1">
-                    <div className="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-300 font-bold text-xs">
-                      <CheckCircle2 size={13} />
-                      <span>Espèces Remises au Hub Central</span>
-                    </div>
-                    <p className="text-[10px] text-emerald-600 dark:text-emerald-400">
-                      Montant collecté par le livreur encaissé et vérifié par la caisse du centre de tri.
-                    </p>
-                  </div>
-                </div>
-              )}
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead>
+                <tr className="border-b border-neutral-200 dark:border-neutral-700 text-neutral-500 font-medium">
+                  <th className="py-2 px-3">Lot N°</th>
+                  <th className="py-2 px-3">Commerçant</th>
+                  <th className="py-2 px-3">Compte CCP / Clé</th>
+                  <th className="py-2 px-3">Canal</th>
+                  <th className="py-2 px-3 text-right">Net à Verser</th>
+                  <th className="py-2 px-3">Statut</th>
+                  <th className="py-2 px-3 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800 font-mono">
+                {remittances.map((r) => (
+                  <tr key={r.id} className="hover:bg-neutral-50 dark:hover:bg-neutral-800/40">
+                    <td className="py-2.5 px-3 font-bold text-[#C4785A]">{r.batchNumber}</td>
+                    <td className="py-2.5 px-3 font-sans font-semibold text-neutral-900 dark:text-white">
+                      {r.merchantName}
+                    </td>
+                    <td className="py-2.5 px-3 text-neutral-600 dark:text-neutral-400">
+                      {r.ccpAccount} <span className="text-[#C4785A] font-bold">Clé {r.ccpKey}</span>
+                    </td>
+                    <td className="py-2.5 px-3 font-sans">
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300">
+                        {r.paymentChannel}
+                      </span>
+                    </td>
+                    <td className="py-2.5 px-3 text-right font-bold text-emerald-600 dark:text-emerald-400">
+                      {formatMoney(r.netPayoutDzd)}
+                    </td>
+                    <td className="py-2.5 px-3 font-sans">
+                      <span
+                        className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${
+                          r.status === 'Executed'
+                            ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                            : 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
+                        }`}
+                      >
+                        {r.status === 'Executed' ? 'Exécuté' : 'En Attente'}
+                      </span>
+                    </td>
+                    <td className="py-2.5 px-3 text-right font-sans">
+                      {r.status !== 'Executed' ? (
+                        <AtriumButton
+                          variant="primary"
+                          size="xs"
+                          onClick={() => {
+                            executeRemittance(r.id);
+                            showToast(
+                              isAr ? `تم تنفيذ التحويل للدفعة ${r.batchNumber}` : `Virement ${r.batchNumber} exécuté`,
+                              'success'
+                            );
+                          }}
+                          icon={<Send size={12} />}
+                        >
+                          Exécuter
+                        </AtriumButton>
+                      ) : (
+                        <span className="text-[10px] text-neutral-400 font-mono">Archivé</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
-              {inspectorTab === 'virement' && (
-                <div className="space-y-4">
-                  <div className="p-3 bg-neutral-50 dark:bg-neutral-900/60 rounded-xl border border-neutral-100 dark:border-neutral-800 space-y-2">
-                    <span className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold block">
-                      Coordonnées Bancaires / CCP Marchand
-                    </span>
-                    <div className="space-y-1.5">
-                      <div className="flex justify-between">
-                        <span className="text-neutral-500">Bénéficiaire:</span>
-                        <span className="font-bold text-neutral-900 dark:text-white">{selectedShipment.merchantName}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-neutral-500">Compte CCP / RIP:</span>
-                        <span className="font-mono font-bold text-neutral-900 dark:text-white">007 99999 0012345678 44</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-neutral-500">Mode de paiement:</span>
-                        <span className="font-semibold text-neutral-800 dark:text-neutral-200">Virement Automatique</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="p-3 bg-neutral-100 dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 text-center space-y-1">
-                    <span className="text-[10px] text-neutral-400 font-mono block">Référence Bancaire Télé-compensée</span>
-                    <p className="font-bold text-xs text-neutral-900 dark:text-white">VIR-COD-{selectedShipment.trackingCode}</p>
-                    <span className="text-[9px] text-neutral-500 font-mono">Bordereau cryptographique horodaté</span>
-                  </div>
-                </div>
-              )}
+      {/* Tab 4: Driver Payroll Simulation (Feature 8) */}
+      {activeTab === 'driver_payroll' && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Salaried Internal Driver Card */}
+          <div className="p-5 rounded-[24px] bg-[#F8F9FA] dark:bg-neutral-800/40 border border-[#EDF1F3] dark:border-neutral-800/60 space-y-4">
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-xl bg-blue-500/15 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold">
+                <Truck size={18} />
+              </div>
+              <div>
+                <h3 className="font-bold text-sm text-neutral-900 dark:text-white">
+                  {isAr ? 'سائق أجير دائم (Salarié CDI)' : 'Chauffeur Salarié Flotte Interne'}
+                </h3>
+                <span className="text-[11px] text-neutral-500">
+                  Salaire fixe mensuel + prime de livraison (50 DZD/colis) + carburant
+                </span>
+              </div>
             </div>
 
-            {/* Inspector Footer Actions */}
-            <div className="p-4 border-t border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/50 space-y-2">
-              <AtriumButton
-                variant="primary"
-                className="w-full justify-center"
-                icon={<Printer size={14} />}
-                onClick={() => {
-                  showToast(
-                    isAr ? 'جاري طباعة كشف تسوية التاجر' : 'Impression du bordereau de reversement',
-                    'success'
-                  );
-                }}
-              >
-                {isAr ? 'طباعة كشف تحويل المستحقات' : 'Imprimer Bordereau Reversement'}
-              </AtriumButton>
+            <div className="p-4 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 space-y-2 text-xs">
+              <div className="flex justify-between">
+                <span className="text-neutral-500">Base Journalière (48 000 DZD / 26j):</span>
+                <span className="font-mono font-bold">1 846 DZD</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-neutral-500">Prime de Rendement (18 colis × 50 DZD):</span>
+                <span className="font-mono font-bold text-emerald-600">+900 DZD</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-neutral-500">Indemnité Carburant / Péage:</span>
+                <span className="font-mono font-bold">+1 500 DZD</span>
+              </div>
+              <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex justify-between font-bold text-sm">
+                <span>Net Journalier à Payer:</span>
+                <span className="font-mono text-[#C4785A]">{formatMoney(salariedDriverPay.netPayoutDzd)}</span>
+              </div>
             </div>
           </div>
-        )}
-      </div>
-      </div>
+
+          {/* Auto-Entrepreneur Subcontractor Card */}
+          <div className="p-5 rounded-[24px] bg-[#F8F9FA] dark:bg-neutral-800/40 border border-[#EDF1F3] dark:border-neutral-800/60 space-y-4">
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
+                <UserCheck size={18} />
+              </div>
+              <div>
+                <h3 className="font-bold text-sm text-neutral-900 dark:text-white">
+                  {isAr ? 'سائق مقاول ذاتي (Auto-Entrepreneur)' : 'Livreur Sous-Traitant Auto-Entrepreneur'}
+                </h3>
+                <span className="text-[11px] text-neutral-500">
+                  Rémunération à l'acte (Loi 22-23) • Retenue à la source IFU 5%
+                </span>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 space-y-2 text-xs">
+              <div className="flex justify-between">
+                <span className="text-neutral-500">Colis Livrés (26 × 220 DZD):</span>
+                <span className="font-mono font-bold">5 720 DZD</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-neutral-500">Retours Traités (3 × 50 DZD):</span>
+                <span className="font-mono font-bold">+150 DZD</span>
+              </div>
+              <div className="flex justify-between text-red-600">
+                <span>Retenue Impôt Libératoire IFU 5%:</span>
+                <span className="font-mono font-bold">-{formatMoney(freelanceDriverPay.taxWithheldDzd)}</span>
+              </div>
+              <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex justify-between font-bold text-sm">
+                <span>Net Viré au Chauffeur:</span>
+                <span className="font-mono text-emerald-600 dark:text-emerald-400">{formatMoney(freelanceDriverPay.netPayoutDzd)}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Algérie Poste SFP 01 Modal */}
+      <AlgeriePosteSfp01Modal
+        isOpen={isSfp01ModalOpen}
+        onClose={() => setIsSfp01ModalOpen(false)}
+        batches={remittances}
+      />
     </div>
   );
 };

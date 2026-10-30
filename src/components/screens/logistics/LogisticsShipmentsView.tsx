@@ -28,6 +28,7 @@ import { AtriumButton } from '../../ui/AtriumButton';
 import { Seek } from '../../ui/Seek';
 import { LogisticsShipmentModal } from './LogisticsShipmentModal';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { StopDeskHandoverModal } from './StopDeskHandoverModal';
 
 export const LogisticsShipmentsView: React.FC = () => {
   const { language, showToast } = useAtriumStore();
@@ -44,6 +45,8 @@ export const LogisticsShipmentsView: React.FC = () => {
   // Modals & 390px Inspector Drawer State
   const [isShipmentModalOpen, setIsShipmentModalOpen] = useState(false);
   const [shipmentToEdit, setShipmentToEdit] = useState<LogisticsShipment | null>(null);
+  const [isHandoverModalOpen, setIsHandoverModalOpen] = useState(false);
+  const [shipmentForHandover, setShipmentForHandover] = useState<LogisticsShipment | null>(null);
 
   // 390px Inline Side Inspector
   const [selectedShipment, setSelectedShipment] = useState<LogisticsShipment | null>(null);
@@ -511,12 +514,27 @@ export const LogisticsShipmentsView: React.FC = () => {
               onEdit={handleOpenEdit}
               onDelete={handleDelete}
               customActions={(s) => [
+                ...(s.deliveryMode === 'StopDesk' && s.status !== 'Delivered'
+                  ? [
+                      {
+                        id: 'stopDeskOtp',
+                        label: language === 'ar' ? 'تسليم OTP' : 'Retrait Stop-Desk',
+                        tooltip: 'Remise au guichet avec code OTP et CNI',
+                        icon: <CheckCircle2 size={13} />,
+                        variant: 'primary' as const,
+                        onClick: () => {
+                          setShipmentForHandover(s);
+                          setIsHandoverModalOpen(true);
+                        },
+                      },
+                    ]
+                  : []),
                 {
                   id: 'deliver',
                   label: language === 'ar' ? 'توصيل / تحصيل' : 'Livrer / Encaissement',
                   tooltip: language === 'ar' ? 'تحديث حالة التسليم' : 'Valider la livraison',
                   icon: <Send size={13} />,
-                  variant: 'primary',
+                  variant: 'primary' as const,
                   onClick: () => handleToggleDeliveryStatus(s),
                 },
               ]}
@@ -804,6 +822,28 @@ export const LogisticsShipmentsView: React.FC = () => {
             }
             setIsShipmentModalOpen(false);
             setShipmentToEdit(null);
+          }}
+        />
+      )}
+
+      {/* Stop Desk Handover Modal */}
+      {isHandoverModalOpen && shipmentForHandover && (
+        <StopDeskHandoverModal
+          isOpen={isHandoverModalOpen}
+          onClose={() => {
+            setIsHandoverModalOpen(false);
+            setShipmentForHandover(null);
+          }}
+          shipment={shipmentForHandover}
+          onConfirmDelivery={(id, idNumber) => {
+            updateShipmentStatus(id, 'Delivered');
+            if (selectedShipment?.id === id) {
+              setSelectedShipment({
+                ...selectedShipment,
+                status: 'Delivered',
+                recipientIdNumber: idNumber,
+              });
+            }
           }}
         />
       )}

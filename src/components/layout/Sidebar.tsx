@@ -72,6 +72,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     activeRealEstateRole,
     activeManufacturingRole,
     activeLegalRole,
+    activeLogisticsRole,
     language,
   } = useAtriumStore();
   const [isExpanded, setIsExpanded] = useState(false);
@@ -1213,45 +1214,135 @@ export const Sidebar: React.FC<SidebarProps> = ({
       ];
     }
   } else if (category === 'logistics_delivery') {
-    // Dedicated Category 14: Logistics, Couriers & Parcel Dispatch
-    dockNavItems = [
-      {
-        id: 'dashboard',
-        icon: <Home size={19} />,
-        title: language === 'ar' ? 'مركز الفرز والتوزيع' : language === 'fr' ? 'Hub Logistique' : 'Hub Pulse',
-        label: t('nav_home', language),
-      },
-      {
-        id: 'members',
-        icon: <Package size={19} />,
-        title: language === 'ar' ? 'الطرود والشحنات (AWB)' : language === 'fr' ? 'Colis & Expéditions (AWB)' : 'Shipments (AWB)',
-        label: language === 'ar' ? 'الطرود' : language === 'fr' ? 'Colis' : 'Parcels',
-      },
-      {
-        id: 'scheduler',
-        icon: <Truck size={19} />,
-        title: language === 'ar' ? 'مسارات التوصيل للسائقين' : language === 'fr' ? 'Feuilles de Route Chauffeurs' : 'Driver Manifests',
-        label: language === 'ar' ? 'مسارات التوزيع' : language === 'fr' ? 'Tournées' : 'Runs',
-      },
-      {
-        id: 'registrations',
-        icon: <Boxes size={19} />,
-        title: language === 'ar' ? 'ماسح الفرز والاستلام' : language === 'fr' ? 'Scanner & Réceptions Hub' : 'Hub Scanner',
-        label: language === 'ar' ? 'الماسح' : language === 'fr' ? 'Scanner' : 'Scanner',
-      },
-      {
-        id: 'finance',
-        icon: <CreditCard size={19} />,
-        title: language === 'ar' ? 'تحصيل COD ومستحقات التجار' : language === 'fr' ? 'Caisse COD & Règlements Marchands' : 'COD Cash & Settlements',
-        label: language === 'ar' ? 'COD والتجار' : language === 'fr' ? 'COD & Marchands' : 'COD & Payouts',
-      },
-      {
-        id: 'settings',
-        icon: <Settings size={19} />,
-        title: t('nav_settings', language),
-        label: t('nav_settings', language),
-      },
-    ];
+    // Dedicated Category 14: Logistics, Couriers & Parcel Dispatch — Role-Adaptive Sidebars
+    if (activeLogisticsRole === 'dispatcher') {
+      dockNavItems = [
+        {
+          id: 'scheduler',
+          icon: <Truck size={19} />,
+          title: language === 'ar' ? 'مسارات التوصيل للسائقين' : language === 'fr' ? 'Tournées & Manifestes Chauffeurs' : 'Driver Runs',
+          label: language === 'ar' ? 'المسارات' : language === 'fr' ? 'Tournées' : 'Runs',
+        },
+        {
+          id: 'members',
+          icon: <Package size={19} />,
+          title: language === 'ar' ? 'الطرود قيد التوزيع وإدارة الإخفاقات' : language === 'fr' ? 'Colis en Transit & Échecs' : 'Shipments & Holds',
+          label: language === 'ar' ? 'الطرود' : language === 'fr' ? 'Colis' : 'Shipments',
+        },
+        {
+          id: 'registrations',
+          icon: <Boxes size={19} />,
+          title: language === 'ar' ? 'ماسح الأرصفة والأكياس' : language === 'fr' ? 'Scanner Quai & Sacs' : 'Dock Scanner',
+          label: language === 'ar' ? 'الماسح' : language === 'fr' ? 'Scanner' : 'Scanner',
+        },
+        {
+          id: 'dashboard',
+          icon: <Home size={19} />,
+          title: language === 'ar' ? 'رادار الرحلات والفرز' : language === 'fr' ? 'Tournées & Alertes Délais' : 'Fleet Radar',
+          label: t('nav_home', language),
+        },
+        {
+          id: 'settings',
+          icon: <Settings size={19} />,
+          title: t('nav_settings', language),
+          label: t('nav_settings', language),
+        },
+      ];
+    } else if (activeLogisticsRole === 'hub_sorter') {
+      dockNavItems = [
+        {
+          id: 'registrations',
+          icon: <Boxes size={19} />,
+          title: language === 'ar' ? 'ماسح الفرز السريع والأكياس' : language === 'fr' ? 'Scanner Express Quai & Sacs' : 'Hub Scanner',
+          label: language === 'ar' ? 'الماسح' : language === 'fr' ? 'Scanner' : 'Scanner',
+        },
+        {
+          id: 'members',
+          icon: <Package size={19} />,
+          title: language === 'ar' ? 'سجل الطرود والأكياس' : language === 'fr' ? 'Colis & Sacs-Navette' : 'Parcels & Bags',
+          label: language === 'ar' ? 'الطرود' : language === 'fr' ? 'Colis' : 'Parcels',
+        },
+        {
+          id: 'scheduler',
+          icon: <Truck size={19} />,
+          title: language === 'ar' ? 'تحميل الشاحنات والختم الأمني' : language === 'fr' ? 'Chargement Camions & Scellés' : 'Truck Loading',
+          label: language === 'ar' ? 'الشحن' : language === 'fr' ? 'Chargement' : 'Loading',
+        },
+        {
+          id: 'dashboard',
+          icon: <Home size={19} />,
+          title: language === 'ar' ? 'معدل المسح اليومي' : language === 'fr' ? 'Cadence Quai & Débit' : 'Throughput',
+          label: t('nav_home', language),
+        },
+      ];
+    } else if (activeLogisticsRole === 'stop_desk_agent') {
+      dockNavItems = [
+        {
+          id: 'members',
+          icon: <Package size={19} />,
+          title: language === 'ar' ? 'تسليم الطرود بمكتب Stop-Desk (رمز OTP)' : language === 'fr' ? 'Retrait Guichet Stop-Desk (OTP/CNI)' : 'Counter Pickup',
+          label: language === 'ar' ? 'الاستلام' : language === 'fr' ? 'Guichet' : 'Counter',
+        },
+        {
+          id: 'finance',
+          icon: <CreditCard size={19} />,
+          title: language === 'ar' ? 'صندوق الدفع نقداً وطابع المادة 317' : language === 'fr' ? 'Caisse Guichet & Timbre 317' : 'Cash Drawer',
+          label: language === 'ar' ? 'الصندوق' : language === 'fr' ? 'Caisse' : 'Cashier',
+        },
+        {
+          id: 'registrations',
+          icon: <Boxes size={19} />,
+          title: language === 'ar' ? 'استلام الطرود على الرفوف' : language === 'fr' ? 'Réception & Rayonnage' : 'Shelving Scan',
+          label: language === 'ar' ? 'الرفوف' : language === 'fr' ? 'Rayonnage' : 'Shelving',
+        },
+        {
+          id: 'dashboard',
+          icon: <Home size={19} />,
+          title: language === 'ar' ? 'لوحة المكتب والطرود المنتهية' : language === 'fr' ? 'Arrivages & Délais 7 Jours' : 'Desk Pulse',
+          label: t('nav_home', language),
+        },
+      ];
+    } else {
+      // Default: gerant
+      dockNavItems = [
+        {
+          id: 'dashboard',
+          icon: <Home size={19} />,
+          title: language === 'ar' ? 'مركز الفرز والتوزيع (58 ولاية)' : language === 'fr' ? 'Hub Logistique & Pulse 58' : 'Hub Pulse 58',
+          label: t('nav_home', language),
+        },
+        {
+          id: 'members',
+          icon: <Package size={19} />,
+          title: language === 'ar' ? 'الطرود والشحنات (AWB)' : language === 'fr' ? 'Colis & Expéditions (AWB)' : 'Shipments (AWB)',
+          label: language === 'ar' ? 'الطرود' : language === 'fr' ? 'Colis' : 'Parcels',
+        },
+        {
+          id: 'scheduler',
+          icon: <Truck size={19} />,
+          title: language === 'ar' ? 'مسارات التوصيل للسائقين' : language === 'fr' ? 'Feuilles de Route Chauffeurs' : 'Driver Manifests',
+          label: language === 'ar' ? 'مسارات التوزيع' : language === 'fr' ? 'Tournées' : 'Runs',
+        },
+        {
+          id: 'registrations',
+          icon: <Boxes size={19} />,
+          title: language === 'ar' ? 'ماسح الفرز والاستلام' : language === 'fr' ? 'Scanner & Réceptions Hub' : 'Hub Scanner',
+          label: language === 'ar' ? 'الماسح' : language === 'fr' ? 'Scanner' : 'Scanner',
+        },
+        {
+          id: 'finance',
+          icon: <CreditCard size={19} />,
+          title: language === 'ar' ? 'تحصيل COD ومستحقات التجار' : language === 'fr' ? 'Caisse COD & Règlements Marchands' : 'COD Cash & Settlements',
+          label: language === 'ar' ? 'COD والتجار' : language === 'fr' ? 'COD & Marchands' : 'COD & Payouts',
+        },
+        {
+          id: 'settings',
+          icon: <Settings size={19} />,
+          title: t('nav_settings', language),
+          label: t('nav_settings', language),
+        },
+      ];
+    }
   } else if (category === 'construction_contractor') {
     // Dedicated Category 15: Construction, Field Contracting & BTP
     dockNavItems = [

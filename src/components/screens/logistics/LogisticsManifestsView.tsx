@@ -31,11 +31,13 @@ import { Seek } from '../../ui/Seek';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { TransportManifestPrintModal } from './TransportManifestPrintModal';
+import { CourierDischargeModal } from './CourierDischargeModal';
 
 export const LogisticsManifestsView: React.FC = () => {
   const { language, currentBusiness, currentBranch, currentUser } = useAtriumStore();
   const isAr = language === 'ar';
-  const { manifests, shipments, addManifest, updateManifest, deleteManifest } = useLogisticsData();
+  const { manifests, shipments, addManifest, updateManifest, deleteManifest, addDischarge } = useLogisticsData();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('All');
@@ -48,6 +50,10 @@ export const LogisticsManifestsView: React.FC = () => {
   // Modals & 390px Inspector Drawer State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [manifestToEdit, setManifestToEdit] = useState<LogisticsManifest | null>(null);
+  const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
+  const [manifestToPrint, setManifestToPrint] = useState<LogisticsManifest | null>(null);
+  const [isDischargeModalOpen, setIsDischargeModalOpen] = useState(false);
+  const [manifestToDischarge, setManifestToDischarge] = useState<LogisticsManifest | null>(null);
 
   // Form states inside Modal
   const [driverName, setDriverName] = useState('');
@@ -513,6 +519,24 @@ export const LogisticsManifestsView: React.FC = () => {
             }
             customActions={[
               {
+                id: 'print05468',
+                label: isAr ? 'طباعة بيان الشحن (05-468)' : 'Imprimer Lettre 05-468',
+                icon: <Printer size={14} />,
+                onClick: (m) => {
+                  setManifestToPrint(m);
+                  setIsPrintModalOpen(true);
+                },
+              },
+              {
+                id: 'dischargeCash',
+                label: isAr ? 'تصفية الصندوق وتبرئة الذمة' : 'Décharge Caisse',
+                icon: <ShieldCheck size={14} />,
+                onClick: (m) => {
+                  setManifestToDischarge(m);
+                  setIsDischargeModalOpen(true);
+                },
+              },
+              {
                 id: 'closeTournee',
                 label: isAr ? 'تأكيد إتمام المسار' : 'Clôturer Tournée',
                 icon: <CheckCircle2 size={14} />,
@@ -610,6 +634,26 @@ export const LogisticsManifestsView: React.FC = () => {
               >
                 <CheckCircle2 size={12} />
                 {selectedManifest.status === 'Completed' ? 'Réouvrir' : 'Clôturer'}
+              </button>
+              <button
+                onClick={() => {
+                  setManifestToPrint(selectedManifest);
+                  setIsPrintModalOpen(true);
+                }}
+                className="flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg bg-orange-50 text-[#C4785A] hover:bg-orange-100 dark:bg-orange-950/40 dark:text-[#C4785A] transition-colors"
+              >
+                <Printer size={12} />
+                {isAr ? '05-468' : 'Lettre 05-468'}
+              </button>
+              <button
+                onClick={() => {
+                  setManifestToDischarge(selectedManifest);
+                  setIsDischargeModalOpen(true);
+                }}
+                className="flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 dark:bg-blue-950/40 dark:text-blue-300 transition-colors"
+              >
+                <ShieldCheck size={12} />
+                {isAr ? 'تصفية الصندوق' : 'Décharge Caisse'}
               </button>
               <button
                 onClick={() => openEditModal(selectedManifest)}
@@ -874,6 +918,30 @@ export const LogisticsManifestsView: React.FC = () => {
             </form>
           </div>
         </div>
+      )}
+
+      {isPrintModalOpen && manifestToPrint && (
+        <TransportManifestPrintModal
+          isOpen={isPrintModalOpen}
+          onClose={() => setIsPrintModalOpen(false)}
+          manifest={manifestToPrint}
+        />
+      )}
+
+      {isDischargeModalOpen && manifestToDischarge && (
+        <CourierDischargeModal
+          isOpen={isDischargeModalOpen}
+          onClose={() => setIsDischargeModalOpen(false)}
+          manifest={manifestToDischarge}
+          onSaveDischarge={(d) => {
+            addDischarge(d);
+            updateManifest({
+              ...manifestToDischarge,
+              status: 'Completed',
+              totalCodCollectedDzd: d.actualCashTurnedInDzd,
+            });
+          }}
+        />
       )}
     </div>
   );

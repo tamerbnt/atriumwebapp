@@ -69,6 +69,8 @@ import {
   RealEstateRole,
   ManufacturingRole,
   LegalRole,
+  LogisticsRole,
+  ContractorRole,
   PMClient,
   PMProject,
   PMMilestone,
@@ -330,6 +332,10 @@ interface AppState {
   activeManufacturingRole: ManufacturingRole;
   // Legal Cabinet, Notary Study & Accounting Firm (Category 13: legal_accounting)
   activeLegalRole: LegalRole;
+  // Logistics, Couriers & Parcel Dispatch (Category 14: logistics_delivery)
+  activeLogisticsRole: LogisticsRole;
+  // Construction & BTP Contracting (Category 15: construction_contractor)
+  activeContractorRole: ContractorRole;
   // B2B Commercial Trading & Wholesale (Category 8: trading_commercial)
   b2bClients: B2bClient[];
   b2bSuppliers: B2bSupplier[];
@@ -485,6 +491,8 @@ const DEFAULT_STATE: AppState = {
   activeRealEstateRole: 'direction',
   activeManufacturingRole: 'gerant',
   activeLegalRole: 'avocat_associe',
+  activeLogisticsRole: 'gerant',
+  activeContractorRole: 'gerant',
   // B2B Commercial Trading & Wholesale
   b2bClients: INITIAL_B2B_CLIENTS,
   b2bSuppliers: INITIAL_B2B_SUPPLIERS,
@@ -5828,6 +5836,26 @@ export function useAtriumStore() {
     notify();
   };
 
+  const setActiveLogisticsRole = (role: LogisticsRole) => {
+    let defaultScreen: ActiveScreen = 'dashboard';
+    if (role === 'gerant') {
+      defaultScreen = 'dashboard';
+    } else if (role === 'dispatcher') {
+      defaultScreen = 'scheduler';
+    } else if (role === 'hub_sorter') {
+      defaultScreen = 'registrations';
+    } else if (role === 'stop_desk_agent') {
+      defaultScreen = 'members';
+    }
+
+    globalState = {
+      ...globalState,
+      activeLogisticsRole: role,
+      activeScreen: defaultScreen,
+    };
+    notify();
+  };
+
   const setActivePmSubScreen = (subScreen: string) => {
     let nextScreen = globalState.activeScreen;
     const role = globalState.activePmRole;
@@ -7724,6 +7752,18 @@ export function useAtriumStore() {
     // Legal Cabinet & Accounting Operational Role State & Actions
     activeLegalRole: state.activeLegalRole || 'avocat_associe',
     setActiveLegalRole,
+    // Logistics, Couriers & Parcel Dispatch Operational Role State & Actions
+    activeLogisticsRole: state.activeLogisticsRole || 'gerant',
+    setActiveLogisticsRole,
+    // Construction & BTP Contracting Operational Role State & Actions
+    activeContractorRole: state.activeContractorRole || 'gerant',
+    setActiveContractorRole: (role: ContractorRole) => {
+      globalState = {
+        ...globalState,
+        activeContractorRole: role,
+      };
+      notify();
+    },
     // Toast Notifications & Notification Center
     toasts: state.toasts || [],
     notifications: state.notifications || [],

@@ -1,0 +1,6 @@
+{
+  "summary":  "Complete Master Production Implementation Specification for Category 15: Construction & BTP Contracting (Algeria), detailing 5 core Must-features plus key Should-features with full business logic, Décret 15-247 Décomptes Provisoires formulas, 5% Retenue de Garantie, Journal de Chantier with ONM/CACOBATPH intempéries, Ordres de Service (OS), concrete quality/CTC crushing tests, data models with Quadruple Traceability, trilingual FR/AR/EN UX flows, RBAC UI separation across 4 personas, edge cases, unit tests, self-review, and 4 phased build slices.",
+  "updatedAt":  "2026-10-30T01:39:22.268965565Z",
+  "requestFeedback":  true,
+  "userFacing":  true
+}

@@ -34,7 +34,7 @@ import {
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../services/store';
 import { formatDuration } from '../../utils/rules';
-import { LegalRole, ManufacturingRole, PMRole, RealEstateRole, SupportedLanguage } from '../../types/index';
+import { LegalRole, LogisticsRole, ManufacturingRole, PMRole, RealEstateRole, SupportedLanguage } from '../../types/index';
 import { Seek } from '../ui/Seek';
 import { useTranslation } from '../../utils/useTranslation';
 import { BackendDiagnosticPanel } from '../BackendDiagnosticPanel';
@@ -94,6 +94,8 @@ export const TopBar: React.FC<TopBarProps> = ({
     setActiveManufacturingRole,
     activeLegalRole,
     setActiveLegalRole,
+    activeLogisticsRole,
+    setActiveLogisticsRole,
     unreadNotificationCount,
   } = useAtriumStore();
 
@@ -849,6 +851,56 @@ export const TopBar: React.FC<TopBarProps> = ({
                 key={r.id}
                 type="button"
                 onClick={() => setActiveLegalRole(r.id)}
+                title={r.desc}
+                className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+                  isActive
+                    ? 'bg-[#C4785A] text-white shadow-xs'
+                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-200/50 dark:hover:bg-neutral-700/50'
+                }`}
+              >
+                <span>{r.icon}</span>
+                <span>{r.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Category 14: Logistics, Couriers & Parcel Dispatch — Dedicated Operational Role Switcher */}
+      {currentBusiness?.category === 'logistics_delivery' && (
+        <div className="hidden lg:flex items-center gap-1 bg-[#F8F9FA] dark:bg-neutral-800/80 p-1 rounded-full border border-neutral-200/80 dark:border-neutral-700/80 shadow-2xs">
+          {[
+            {
+              id: 'gerant' as LogisticsRole,
+              label: language === 'ar' ? 'المدير العام' : 'Gérant',
+              icon: '👔',
+              desc: language === 'ar' ? 'مؤشرات 58 ولاية، شبكة الأسعار ومستحقات التجار وCCP' : 'Direction, Tarifs 58 Wilayas, Bilan COD & Règlements CCP',
+            },
+            {
+              id: 'dispatcher' as LogisticsRole,
+              label: language === 'ar' ? 'الموزع / Régulateur' : 'Régulateur',
+              icon: '📡',
+              desc: language === 'ar' ? 'إسناد الرحلات للسائقين، بيانات الشحن LVR وإدارة الإخفاقات' : 'Tournées Livreurs, Manifestes LVR Décret 05-468 & Échecs',
+            },
+            {
+              id: 'hub_sorter' as LogisticsRole,
+              label: language === 'ar' ? 'عامل الفرز' : 'Agent de Tri',
+              icon: '📦',
+              desc: language === 'ar' ? 'المسح السريع، أكياس الشحن Sacs-Navette والختم الأمني' : 'Scanner Haute Cadence, Sacs-Navette & Scellés de Sécurité',
+            },
+            {
+              id: 'stop_desk_agent' as LogisticsRole,
+              label: language === 'ar' ? 'مكتب الاستلام' : 'Stop-Desk',
+              icon: '🏢',
+              desc: language === 'ar' ? 'تسليم الطرود برمز OTP، بطاقة الهوية CNI وصندوق اليومية' : 'Rayonnage, Retrait OTP, Vérification CNI & Caisse',
+            },
+          ].map((r) => {
+            const isActive = activeLogisticsRole === r.id;
+            return (
+              <button
+                key={r.id}
+                type="button"
+                onClick={() => setActiveLogisticsRole(r.id)}
                 title={r.desc}
                 className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${
                   isActive

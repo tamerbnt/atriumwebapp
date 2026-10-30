@@ -1166,6 +1166,16 @@ export type LegalRole =
   | 'expert_comptable'   // Expert-Comptable & Commissaire aux Comptes (Grand Livre SCF, Bilan/TCR, G50 DGI, Audit)
   | 'secretaire_caisse'; // Secrétaire Générale & Caisse (Accueil, Formalités, Caisse Art. 317, PV de clôture)
 
+// ============================================================================
+// Logistics, Couriers & Parcel Dispatch — Dedicated Operational Roles
+// ============================================================================
+
+export type LogisticsRole =
+  | 'gerant'          // Gérant / Direction (Tarifs, KPIs 58 Wilayas, Bilan COD, Règlements CCP)
+  | 'dispatcher'      // Régulateur / Dispatcher (Tournées Chauffeurs, Manifestes LVR, Arbitrage Échecs)
+  | 'hub_sorter'      // Agent de Tri Hub (Scanner Haute Cadence, Sacs-Navette & Scellés de Sécurité)
+  | 'stop_desk_agent';// Agent Guichetier Stop-Desk (Rayonnage, Retrait OTP, CNI & Caisse Journalière)
+
 
 
 
@@ -2810,9 +2820,36 @@ export interface LogisticsShipment {
   shippingFeeDzd: number;
   weightKg: number;
   status: 'Created' | 'HubIntake' | 'ReceivedAtHub' | 'Sorted' | 'OutForDelivery' | 'Delivered' | 'Postponed' | 'Returned' | 'Cancelled';
+  deliveryMode?: 'HomeDelivery' | 'StopDesk';
+  dimensionsCm?: { length: number; width: number; height: number };
+  bagId?: string;
+  stopDeskShelfCode?: string;
+  pickupOtpCode?: string;
+  recipientIdNumber?: string;
+  returnReasonCode?: string;
+  attemptCount?: number;
+  stampDutyDzd?: number;
   assignedDriverName?: string;
   podSignatureUrl?: string;
   createdAt: string;
+}
+
+export interface TransportBag {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  staffId: string;
+  bagCode: string; // e.g. "BAG-16-ORN-0042"
+  originHubWilaya: number;
+  destinationHubWilaya: number;
+  securitySealNumber: string; // e.g. "SL-994821"
+  shipmentIds: string[];
+  totalItemCount: number;
+  totalWeightKg: number;
+  status: 'Open' | 'Sealed' | 'InTransit' | 'Received' | 'Discrepancy';
+  sealedAt?: string;
+  receivedAt?: string;
 }
 
 export interface LogisticsManifest {
@@ -2824,20 +2861,89 @@ export interface LogisticsManifest {
   manifestNumber: string;
   driverName: string;
   driverPhone: string;
+  driverNin?: string; // Numéro d'Identification Nationale (NIN)
   vehiclePlate: string;
+  transportCardNumber?: string;
   dispatchDate: string;
   zoneWilaya: string;
+  originHub?: string;
+  destinationHub?: string;
+  bagIds?: string[];
+  sealNumbers?: string[];
   shipmentIds: string[];
   totalShipmentsCount: number;
   totalCodExpectedDzd: number;
   totalCodCollectedDzd: number;
+  totalGrossWeightKg?: number;
   status: 'Draft' | 'Dispatched' | 'Completed' | 'Reconciled';
   createdAt: string;
+}
+
+export interface CourierCashDischarge {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  cashierStaffId: string;
+  courierStaffId: string;
+  manifestId: string;
+  dischargeNumber: string; // "DECH-2026-0891"
+  deliveredCount: number;
+  returnedCount: number;
+  expectedCodDzd: number;
+  actualCashTurnedInDzd: number;
+  discrepancyDzd: number;
+  banknotesCount: {
+    note2000: number;
+    note1000: number;
+    note500: number;
+    note200: number;
+    coins: number;
+  };
+  courierSignatureConfirmed: boolean;
+  status: 'Clean' | 'Shortage' | 'Surplus';
+  timestamp: string;
+}
+
+export interface StopDeskInventoryItem {
+  id: string;
+  shipmentId: string;
+  trackingCode: string;
+  recipientName: string;
+  recipientPhone: string;
+  shelfCode: string; // e.g. "RACK-B-04"
+  arrivedAt: string;
+  otpCode: string;
+  status: 'InRack' | 'Delivered' | 'ReturnScheduled';
+  recipientIdType?: 'CNI_Biometrique' | 'Permis' | 'Passeport';
+  recipientIdNumber?: string;
+  deliveredTimestamp?: string;
+}
+
+export interface MerchantRemittanceBatch {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  staffId: string;
+  batchNumber: string;
+  merchantName: string;
+  ccpAccount: string;
+  ccpKey: number;
+  grossCodDzd: number;
+  shippingFeesDzd: number;
+  returnFeesDzd: number;
+  netPayoutDzd: number;
+  paymentChannel: 'AlgeriePoste_SFP01' | 'BaridiMob' | 'Virement_Bancaire' | 'Especes';
+  status: 'Draft' | 'Approved' | 'Executed';
+  executedAt?: string;
 }
 
 // ==========================================
 // CATEGORY 15: CONSTRUCTION & BTP CONTRACTING
 // ==========================================
+export type ContractorRole = 'gerant' | 'conducteur_travaux' | 'chef_chantier' | 'daf_metreur';
+
 export interface ContractorProject {
   id: string;
   accountId: string;
@@ -2848,11 +2954,15 @@ export interface ContractorProject {
   projectName: string;
   clientName: string;
   siteLocation: string;
+  wilayaNumber?: number;
   contractAmountDzd: number;
   retentionGuaranteePercent: number;
   retentionAmountDzd: number;
+  hasBankCautionReplacement?: boolean;
+  bankCautionReference?: string;
   startDate: string;
   targetEndDate: string;
+  revisedEndDate?: string;
   supervisorName: string;
   progressPercent: number;
   status: 'Tendering' | 'SitePreparation' | 'InProgress' | 'ProvisionalHandover' | 'DefinitiveHandover' | 'Archived';
@@ -2866,6 +2976,8 @@ export interface ContractorBoqItem {
   branchId: string;
   staffId: string;
   projectId: string;
+  lotCode?: string; // e.g. "LOT_01_GROS_OEUVRE"
+  lotTitle?: string; // e.g. "Gros Œuvre & Fondations"
   itemCode: string;
   designation: string;
   unit: 'm2' | 'm3' | 'ml' | 'kg' | 'ton' | 'forfait' | 'unit';
@@ -2874,6 +2986,8 @@ export interface ContractorBoqItem {
   unitPriceDzd: number;
   totalPlannedDzd: number;
   totalExecutedDzd: number;
+  isAdditionalWork?: boolean;
+  avenantReference?: string;
   createdAt: string;
 }
 
@@ -2888,13 +3002,28 @@ export interface ContractorDailyLog {
   logDate?: string;
   weather: 'Ensoleillé' | 'Pluvieux' | 'Venteux / Sirocco' | 'Canicule' | string;
   weatherCondition?: string;
+  temperatureMinC?: number;
+  temperatureMaxC?: number;
+  hasWorkStoppage?: boolean;
+  stoppageReason?: 'IntemperiesRain' | 'IntemperiesHeat' | 'Administrative' | 'LackOfMaterial' | string;
+  stoppageHours?: number;
+  cacobatphNoticeFiled?: boolean;
+  onmBulletinReference?: string;
   headcountWorkers: number;
   workforceCount?: number;
+  workersPresent?: {
+    engineers: number;
+    specializedCrafts: number;
+    laborers: number;
+  };
   equipmentOnSite: string[];
   tasksAccomplished: string;
   worksSummary?: string;
   incidentsSafety: string;
   incidentsOrDelays?: string;
+  ctcVisit?: boolean;
+  ctcObservationNotes?: string;
+  isSignedByBet?: boolean;
   supervisorSignature: string;
   createdAt: string;
 }
@@ -2913,12 +3042,76 @@ export interface ContractorDgp {
   periodGrossDzd: number;
   retentionGuaranteePercent: number; // usually 5%
   retentionGuaranteeDzd: number;
+  hasBankCautionReplacement?: boolean;
   advanceAmortizationDzd: number;
+  penaltiesDeductedDzd?: number;
   tvaPercent: number; // 9% or 19%
   tvaAmountDzd: number;
   netPayableDzd: number;
   status: 'Draft' | 'SubmittedClient' | 'ApprovedBE' | 'Paid';
+  tresorMandatReference?: string;
   issuedDate: string;
+  createdAt: string;
+}
+
+export interface ContractorServiceOrder {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  staffId: string;
+  projectId: string;
+  osNumber: string; // e.g. "OS N° 03/2026"
+  osType: 'Commencement' | 'Suspension' | 'Resumption' | 'Modification';
+  effectiveDate: string;
+  notificationDate: string;
+  reason: 'GeneralStart' | 'IntemperiesWeather' | 'ObstacleSonelgaz' | 'PaymentDelay' | 'DesignRevision';
+  durationDaysGranted: number;
+  issuerName: string;
+  hasReservationLetter?: boolean;
+  status: 'Notified' | 'AcceptedWithReservations' | 'Executed';
+  createdAt: string;
+}
+
+export interface ConcretePourRecord {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  staffId: string;
+  projectId: string;
+  pourDate: string;
+  elementPoured: string; // e.g. "Poteaux & Poutres R+2"
+  supplierName: string;
+  deliverySlipNumber: string;
+  volumePouredM3: number;
+  concreteGrade: 'B15' | 'B20' | 'B25' | 'B30' | 'B35';
+  slumpCm: number;
+  testCylindersTaken: number;
+  strength7DaysMpa?: number;
+  strength28DaysMpa?: number;
+  ctcClearanceObtained: boolean;
+  status: 'CastPending7D' | 'Passed7D' | 'Passed28D' | 'NonConforming';
+  createdAt: string;
+}
+
+export interface SubcontractorAgreement {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  staffId: string;
+  projectId: string;
+  subcontractorName: string;
+  tradeType: string; // e.g. "Étanchéité", "Ferraillage", "Plomberie"
+  contactPhone: string;
+  contractAmountDzd: number;
+  retentionPercent: number; // 5% to 10%
+  paidAmountDzd: number;
+  retentionHeldDzd: number;
+  progressPercent: number;
+  quitusSigned: boolean;
+  status: 'Active' | 'Completed' | 'Terminated';
   createdAt: string;
 }
 
