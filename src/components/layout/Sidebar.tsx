@@ -41,6 +41,8 @@ import {
   FileCheck,
   Briefcase,
   CheckCircle2,
+  Lock,
+  Landmark,
 } from 'lucide-react';
 import { useAtriumStore, ActiveScreen } from '../../services/store';
 import { FiveCubesLogo } from '../auth/AtriumMonolith';
@@ -69,6 +71,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     activeGarageRole,
     activeRealEstateRole,
     activeManufacturingRole,
+    activeLegalRole,
     language,
   } = useAtriumStore();
   const [isExpanded, setIsExpanded] = useState(false);
@@ -1050,45 +1053,165 @@ export const Sidebar: React.FC<SidebarProps> = ({
       ];
     }
   } else if (category === 'legal_accounting') {
-    // Dedicated Category 13: Legal Cabinets & Accounting Firms
-    dockNavItems = [
-      {
-        id: 'dashboard',
-        icon: <Home size={19} />,
-        title: language === 'ar' ? 'لوحة مكتب المحاماة' : language === 'fr' ? 'Tableau Cabinet' : 'Cabinet Pulse',
-        label: t('nav_home', language),
-      },
-      {
-        id: 'members',
-        icon: <Briefcase size={19} />,
-        title: language === 'ar' ? 'ملفات القضايا والموكلين' : language === 'fr' ? 'Dossiers & Affaires' : 'Case Matters',
-        label: language === 'ar' ? 'القضايا' : language === 'fr' ? 'Dossiers' : 'Matters',
-      },
-      {
-        id: 'scheduler',
-        icon: <Calendar size={19} />,
-        title: language === 'ar' ? 'الجلسات والمواعيد القانونية' : language === 'fr' ? 'Audiences & Délais Légaux' : 'Court Hearings',
-        label: language === 'ar' ? 'الجلسات' : language === 'fr' ? 'Audiences' : 'Hearings',
-      },
-      {
-        id: 'registrations',
-        icon: <FileText size={19} />,
-        title: language === 'ar' ? 'الخزينة والمستندات' : language === 'fr' ? 'Coffre-fort & Pièces' : 'Document Vault',
-        label: language === 'ar' ? 'المستندات' : language === 'fr' ? 'Pièces' : 'Vault',
-      },
-      {
-        id: 'finance',
-        icon: <Scale size={19} />,
-        title: language === 'ar' ? 'حساب الحراسة والأتعاب' : language === 'fr' ? 'Compte Séquestre & Honoraires' : 'Trust Escrow & Fees',
-        label: language === 'ar' ? 'الأتعاب والودائع' : language === 'fr' ? 'Honoraires' : 'Fees & Trust',
-      },
-      {
-        id: 'settings',
-        icon: <Settings size={19} />,
-        title: t('nav_settings', language),
-        label: t('nav_settings', language),
-      },
-    ];
+    // Dedicated Category 13: Legal Cabinets & Accounting Firms — Strict Role Partition
+    if (activeLegalRole === 'notaire_titulaire') {
+      dockNavItems = [
+        {
+          id: 'dashboard',
+          icon: <Home size={19} />,
+          title: language === 'ar' ? 'لوحة تسيير مكتب التوثيق' : language === 'fr' ? 'Tableau Étude Notariale' : 'Notary Study Pulse',
+          label: t('nav_home', language),
+        },
+        {
+          id: 'members',
+          icon: <BookOpen size={19} />,
+          title: language === 'ar' ? 'سجل العقود الرسمية (المرسوم 08-243)' : language === 'fr' ? 'Répertoire des Actes (Décret 08-243)' : 'Official Deed Register',
+          label: language === 'ar' ? 'سجل العقود' : language === 'fr' ? 'Répertoire' : 'Deeds',
+        },
+        {
+          id: 'scheduler',
+          icon: <Landmark size={19} />,
+          title: language === 'ar' ? 'متابعة الشهر العقاري والمحافظة العقارية' : language === 'fr' ? 'Conservation Foncière & Cadastre' : 'Cadastre & Registry',
+          label: language === 'ar' ? 'المحافظة العقارية' : language === 'fr' ? 'Conservation' : 'Cadastre',
+        },
+        {
+          id: 'registrations',
+          icon: <ShieldCheck size={19} />,
+          title: language === 'ar' ? 'حفظ الأصول والمستخرجات الرسمية' : language === 'fr' ? 'Conservation des Minutes' : 'Minute Archives',
+          label: language === 'ar' ? 'الأصول' : language === 'fr' ? 'Minutes' : 'Minutes',
+        },
+        {
+          id: 'finance',
+          icon: <Lock size={19} />,
+          title: language === 'ar' ? 'حساب الحراسة والودائع العقارية' : language === 'fr' ? 'Compte Séquestre Immobilier' : 'Escrow Vault',
+          label: language === 'ar' ? 'الودائع' : language === 'fr' ? 'Séquestre' : 'Escrow',
+        },
+        {
+          id: 'settings',
+          icon: <Settings size={19} />,
+          title: t('nav_settings', language),
+          label: t('nav_settings', language),
+        },
+      ];
+    } else if (activeLegalRole === 'expert_comptable') {
+      dockNavItems = [
+        {
+          id: 'dashboard',
+          icon: <Home size={19} />,
+          title: language === 'ar' ? 'لوحة مكتب الخبير المحاسب ومحافظ الحسابات' : language === 'fr' ? 'Tableau Cabinet d\'Expertise & Audit' : 'Audit Firm Pulse',
+          label: t('nav_home', language),
+        },
+        {
+          id: 'members',
+          icon: <Briefcase size={19} />,
+          title: language === 'ar' ? 'ملفات الزبائن والشركات الخاضعة للتدقيق' : language === 'fr' ? 'Dossiers Mandats & Entreprises' : 'Audit Mandates',
+          label: language === 'ar' ? 'الشركات' : language === 'fr' ? 'Mandats' : 'Mandates',
+        },
+        {
+          id: 'scheduler',
+          icon: <Calendar size={19} />,
+          title: language === 'ar' ? 'رزنامة التصريحات الجبائية G50 وCNAS' : language === 'fr' ? 'Échéancier Fiscal G50 & CNAS' : 'Fiscal Calendar G50',
+          label: language === 'ar' ? 'الرزنامة الجبائية' : language === 'fr' ? 'Échéancier G50' : 'Fiscal Dates',
+        },
+        {
+          id: 'registrations',
+          icon: <FileText size={19} />,
+          title: language === 'ar' ? 'أوراق العمل وتقارير محافظ الحسابات' : language === 'fr' ? 'Dossiers de Travail & Rapports CAC' : 'Audit Working Papers',
+          label: language === 'ar' ? 'أوراق العمل' : language === 'fr' ? 'Audit CAC' : 'Audit Papers',
+        },
+        {
+          id: 'finance',
+          icon: <Scale size={19} />,
+          title: language === 'ar' ? 'دفتر الأستاذ وميزان المراجعة SCF' : language === 'fr' ? 'Grand Livre & Balance SCF' : 'SCF General Ledger',
+          label: language === 'ar' ? 'المحاسبة SCF' : language === 'fr' ? 'Comptabilité' : 'SCF Ledger',
+        },
+        {
+          id: 'settings',
+          icon: <Settings size={19} />,
+          title: t('nav_settings', language),
+          label: t('nav_settings', language),
+        },
+      ];
+    } else if (activeLegalRole === 'secretaire_caisse') {
+      dockNavItems = [
+        {
+          id: 'dashboard',
+          icon: <Home size={19} />,
+          title: language === 'ar' ? 'أمانة الضبط والاستقبال والبريد' : language === 'fr' ? 'Accueil & Formalités du Jour' : 'Front-Desk Hub',
+          label: t('nav_home', language),
+        },
+        {
+          id: 'members',
+          icon: <Users size={19} />,
+          title: language === 'ar' ? 'دليل الموكلين والأطراف والمعرف الوطني NIN' : language === 'fr' ? 'Répertoire Clients & NIN/NIF' : 'Client Directory',
+          label: language === 'ar' ? 'الموكلين' : language === 'fr' ? 'Clients' : 'Clients',
+        },
+        {
+          id: 'scheduler',
+          icon: <Calendar size={19} />,
+          title: language === 'ar' ? 'محاضر التبليغ القضائي والمحضرون القضائيون' : language === 'fr' ? 'Courrier & Huissiers du Jour' : 'Bailiff Log',
+          label: language === 'ar' ? 'المحضرون' : language === 'fr' ? 'Huissiers' : 'Bailiffs',
+        },
+        {
+          id: 'registrations',
+          icon: <FileText size={19} />,
+          title: language === 'ar' ? 'إيداع المستندات ووصولات الاستلام' : language === 'fr' ? 'Dépôt & Classement Pièces' : 'Incoming Docs',
+          label: language === 'ar' ? 'الإيداع' : language === 'fr' ? 'Classement' : 'Filing',
+        },
+        {
+          id: 'finance',
+          icon: <CreditCard size={19} />,
+          title: language === 'ar' ? 'الصندوق وطابع المادة 317 ومحضر الإغلاق' : language === 'fr' ? 'Caisse & Timbre Art. 317 (Arrêté)' : 'Cashier & Stamp 317',
+          label: language === 'ar' ? 'الصندوق' : language === 'fr' ? 'Caisse' : 'Cashier',
+        },
+        {
+          id: 'settings',
+          icon: <Settings size={19} />,
+          title: t('nav_settings', language),
+          label: t('nav_settings', language),
+        },
+      ];
+    } else {
+      // Default: avocat_associe
+      dockNavItems = [
+        {
+          id: 'dashboard',
+          icon: <Home size={19} />,
+          title: language === 'ar' ? 'لوحة قضايا المحاماة ورادار المواعيد' : language === 'fr' ? 'Tableau Contentieux & Délais' : 'Litigation Pulse',
+          label: t('nav_home', language),
+        },
+        {
+          id: 'members',
+          icon: <Briefcase size={19} />,
+          title: language === 'ar' ? 'ملفات القضايا والموكلين' : language === 'fr' ? 'Affaires & Dossiers Contentieux' : 'Case Matters',
+          label: language === 'ar' ? 'القضايا' : language === 'fr' ? 'Dossiers' : 'Matters',
+        },
+        {
+          id: 'scheduler',
+          icon: <Calendar size={19} />,
+          title: language === 'ar' ? 'جدول الجلسات ومواعيد الاستئناف CPCA' : language === 'fr' ? 'Audiences & Délais CPCA' : 'Court Hearings',
+          label: language === 'ar' ? 'الجلسات' : language === 'fr' ? 'Audiences' : 'Hearings',
+        },
+        {
+          id: 'registrations',
+          icon: <FileText size={19} />,
+          title: language === 'ar' ? 'خزينة المستندات والعرائض القضائية' : language === 'fr' ? 'Coffre-fort & Requêtes' : 'Legal Vault',
+          label: language === 'ar' ? 'العرائض' : language === 'fr' ? 'Requêtes' : 'Vault',
+        },
+        {
+          id: 'finance',
+          icon: <Scale size={19} />,
+          title: language === 'ar' ? 'حساب الحراسة CARPA وأتعاب المحاماة' : language === 'fr' ? 'Honoraires & Compte CARPA' : 'CARPA & Fees',
+          label: language === 'ar' ? 'الأتعاب' : language === 'fr' ? 'Honoraires' : 'Fees & Trust',
+        },
+        {
+          id: 'settings',
+          icon: <Settings size={19} />,
+          title: t('nav_settings', language),
+          label: t('nav_settings', language),
+        },
+      ];
+    }
   } else if (category === 'logistics_delivery') {
     // Dedicated Category 14: Logistics, Couriers & Parcel Dispatch
     dockNavItems = [

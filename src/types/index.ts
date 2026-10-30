@@ -1156,6 +1156,17 @@ export type ManufacturingRole =
   | 'magasinier'    // Magasinier & Gestion des Stocks (Matières Premières, Bons de Réception BR, Bons de Sortie BSM Décret 05-468)
   | 'qualite';      // Contrôle Qualité & Métrologie (Fiches Contrôle Qualité, Lots Quarantaine, Rebuts, ONML)
 
+// ============================================================================
+// Legal Cabinet, Notary Study & Accounting Firm — Dedicated Operational Roles
+// ============================================================================
+
+export type LegalRole =
+  | 'avocat_associe'     // Avocat Associé / Plaideur (Contentieux, Audiences, Délais CPCA, Conventions Honoraires)
+  | 'notaire_titulaire'  // Notaire Titulaire de l'Étude (Répertoire des Actes, Séquestre, Cadastre, Décret 08-243)
+  | 'expert_comptable'   // Expert-Comptable & Commissaire aux Comptes (Grand Livre SCF, Bilan/TCR, G50 DGI, Audit)
+  | 'secretaire_caisse'; // Secrétaire Générale & Caisse (Accueil, Formalités, Caisse Art. 317, PV de clôture)
+
+
 
 
 
@@ -2002,18 +2013,30 @@ export interface ClinicConsumableItem {
 
 export interface DailyCashClosure {
   id: string;
-  date: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  staffId?: string;
+  date?: string;
+  closureDate?: string;
   closedByStaffName?: string;
   closedBySecretary?: string;
   totalConsultationsCount?: number;
   openingCashFloatDzd?: number;
+  openingFloatDzd?: number;
   expectedCashDzd?: number;
   countedCashDzd?: number;
   totalCashCollectedDzd?: number;
+  totalCashReceivedDzd?: number;
+  totalCashDisbursedDzd?: number;
+  theoreticalCashDzd?: number;
+  actualPhysicalCashCountedDzd?: number;
+  actualCashInDrawerDzd?: number;
   totalBaridiMobDzd?: number;
   totalChifaVouchersDzd?: number;
-  actualCashInDrawerDzd?: number;
+  totalTimbreAccruedDzd?: number;
   discrepancyDzd: number;
+  status?: 'balanced' | 'variance_flagged' | string;
   notes?: string;
   isClosed?: boolean;
   verifiedAt?: string;
@@ -2550,16 +2573,23 @@ export interface LegalMatter {
   staffId: string;
   matterNumber: string;
   title: string;
+  titleAr?: string;
   category: 'Commercial' | 'Civil' | 'Penal' | 'Labor' | 'TaxAdvisory' | 'NotaryAct' | 'Administrative' | 'RealEstate';
   clientName: string;
+  clientNameAr?: string;
   clientPhone: string;
+  clientNinOrNif?: string;
   adversePartyName?: string;
+  adversePartyNameAr?: string;
   courtJurisdiction?: string;
+  chamber?: string;
   assignedLawyer: string;
   retainerAmountDzd: number;
   trustEscrowBalanceDzd: number;
   status: 'Active' | 'PendingHearing' | 'UnderDeliberation' | 'Closed' | 'Archived';
   nextHearingDate?: string;
+  cpcaDeadlineId?: string;
+  notes?: string;
   createdAt: string;
 }
 
@@ -2572,21 +2602,194 @@ export interface LegalHearing {
   matterId: string;
   matterNumber?: string;
   matterTitle?: string;
+  matterTitleAr?: string;
   hearingDate: string;
   hearingTime?: string;
   courtName?: string;
   courtRoom?: string;
+  chamber?: string;
   benchJudge?: string;
   presidingJudge?: string;
   purpose?: string;
+  purposeAr?: string;
   objective?: string;
   resultSummary?: string;
   outcomeNotes?: string;
+  postponementCode?: string; // e.g. "RPP" (Pièces), "RPO" (Observations), "Delibere"
   isCompleted?: boolean;
   nextDate?: string;
   status?: 'Scheduled' | 'Attended' | 'Postponed' | 'Ruled' | string;
   createdAt?: string;
 }
+
+export interface CPCADeadline {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  staffId: string;
+  matterId: string;
+  caseNumber: string;
+  courtJurisdiction: string;
+  chamber: string;
+  recourseType: 'appel_civil' | 'appel_commercial' | 'appel_social' | 'opposition' | 'pourvoi_cassation' | 'appel_refere';
+  notificationDate: string;
+  bailiffName: string;
+  domicileCategory: 'local' | 'grand_sud' | 'abroad';
+  statutoryBaseDays: number;
+  distanceExtensionDays: number;
+  terminalExpiryDate: string;
+  isRolledOver: boolean;
+  rolloverReason?: string;
+  status: 'running' | 'approaching' | 'critical' | 'filed' | 'forfeited';
+  appealFilingReceipt?: {
+    filingDate: string;
+    greffeRegistrationNumber: string;
+    greffierName: string;
+  };
+  notes?: string;
+  createdAt: string;
+}
+
+export interface NotaryDeed {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  staffId: string;
+  repertoireNumber: string;
+  repertoireIndex: number;
+  actType: 'vente_immobiliere' | 'donation' | 'bail_commercial' | 'fredha' | 'statuts_societe' | 'procuration';
+  title: string;
+  titleAr: string;
+  transactionValueDzd: number;
+  parties: {
+    vendorName: string;
+    vendorNin: string;
+    purchaserName: string;
+    purchaserNin: string;
+  };
+  cadastralReference?: {
+    wilaya: string;
+    commune: string;
+    section: string;
+    ilot: string;
+    lotNumber: string;
+    livretFoncierNumber?: string;
+  };
+  financials: {
+    honorairesHtDzd: number;
+    tvaAmountDzd: number;
+    droitsEnregistrementDzd: number;
+    droitsPubliciteDzd: number;
+    totalProvisionClientDzd: number;
+  };
+  status: 'draft' | 'minute_signed' | 'enregistre_impots' | 'publie_conservation' | 'annule_au_repertoire';
+  signedAt?: string;
+  conservationVolume?: string;
+  conservationNumber?: string;
+  createdAt: string;
+}
+
+export interface EscrowAccount {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  staffId: string;
+  matterId: string;
+  matterReference: string;
+  clientName: string;
+  beneficiaryName: string;
+  totalDepositedDzd: number;
+  totalDisbursedDzd: number;
+  currentBalanceDzd: number;
+  isLocked: boolean;
+  cadastralClearanceProof?: {
+    volume: string;
+    number: string;
+    recordedAt: string;
+  };
+  transactions: EscrowTransaction[];
+}
+
+export interface EscrowTransaction {
+  id: string;
+  escrowAccountId: string;
+  date: string;
+  type: 'deposit_received' | 'tax_disbursement' | 'seller_final_payout' | 'reimbursement';
+  amountDzd: number;
+  paymentMode: 'virement_bancaire' | 'cheque_de_banque' | 'tresor_public';
+  bankReference: string;
+  authorizedByStaff: string;
+  notes?: string;
+}
+
+export interface SCFJournalEntry {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  staffId: string;
+  entryNumber: string;
+  journalCode: 'VE' | 'AC' | 'BQ' | 'CA' | 'OD';
+  date: string;
+  pieceJustificativeRef: string;
+  libelle: string;
+  lines: Array<{
+    id: string;
+    accountNumber: string;
+    accountLabel: string;
+    debitDzd: number;
+    creditDzd: number;
+  }>;
+  totalDebitDzd: number;
+  totalCreditDzd: number;
+  isBalanced: boolean;
+  status: 'validated' | 'draft' | 'closed_period';
+}
+
+export interface CashReceipt {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  staffId: string;
+  receiptNumber: string;
+  clientName: string;
+  matterTitle: string;
+  totalHtDzd: number;
+  tvaDzd: number;
+  paymentMethod: 'especes' | 'cheque' | 'virement' | 'baridimob';
+  timbreFiscalDzd: number;
+  netCollectedDzd: number;
+  cashierName: string;
+  createdAt: string;
+}
+
+
+export interface LegalClientEntity {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  staffId: string;
+  clientType: 'personne_physique' | 'personne_morale';
+  nameFr: string;
+  nameAr: string;
+  ninOrNif: string;
+  commercialRegistryNumber?: string;
+  phone: string;
+  email?: string;
+  addressFr: string;
+  addressAr: string;
+  wilaya: string;
+  courtJurisdiction: string;
+  activeMattersCount: number;
+  outstandingBalanceDzd: number;
+  createdAt: string;
+}
+
 
 // ==========================================
 // CATEGORY 14: LOGISTICS & COURIER DISPATCH

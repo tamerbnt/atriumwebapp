@@ -34,7 +34,7 @@ import {
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../services/store';
 import { formatDuration } from '../../utils/rules';
-import { ManufacturingRole, PMRole, RealEstateRole, SupportedLanguage } from '../../types/index';
+import { LegalRole, ManufacturingRole, PMRole, RealEstateRole, SupportedLanguage } from '../../types/index';
 import { Seek } from '../ui/Seek';
 import { useTranslation } from '../../utils/useTranslation';
 import { BackendDiagnosticPanel } from '../BackendDiagnosticPanel';
@@ -92,6 +92,8 @@ export const TopBar: React.FC<TopBarProps> = ({
     setActiveRealEstateRole,
     activeManufacturingRole,
     setActiveManufacturingRole,
+    activeLegalRole,
+    setActiveLegalRole,
     unreadNotificationCount,
   } = useAtriumStore();
 
@@ -797,6 +799,56 @@ export const TopBar: React.FC<TopBarProps> = ({
                 key={r.id}
                 type="button"
                 onClick={() => setActiveManufacturingRole(r.id)}
+                title={r.desc}
+                className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+                  isActive
+                    ? 'bg-[#C4785A] text-white shadow-xs'
+                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-200/50 dark:hover:bg-neutral-700/50'
+                }`}
+              >
+                <span>{r.icon}</span>
+                <span>{r.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Category 13: Legal Cabinet, Notary Study & Accounting Firm — Dedicated Operational Role Switcher */}
+      {currentBusiness?.category === 'legal_accounting' && (
+        <div className="hidden lg:flex items-center gap-1 bg-[#F8F9FA] dark:bg-neutral-800/80 p-1 rounded-full border border-neutral-200/80 dark:border-neutral-700/80 shadow-2xs">
+          {[
+            {
+              id: 'avocat_associe' as LegalRole,
+              label: language === 'ar' ? 'المحامي الشريك' : 'Avocat Associé',
+              icon: '⚖️',
+              desc: language === 'ar' ? 'إدارة القضايا، الجلسات، مواعيد الاستئناف والعرائض' : 'Contentieux, Audiences, Délais CPCA & Requêtes',
+            },
+            {
+              id: 'notaire_titulaire' as LegalRole,
+              label: language === 'ar' ? 'الموثق المسؤول' : 'Notaire Titulaire',
+              icon: '📜',
+              desc: language === 'ar' ? 'سجل العقود الرسمية، تعريفة 08-243 والودائع' : 'Répertoire des Actes, Décret 08-243 & Séquestre',
+            },
+            {
+              id: 'expert_comptable' as LegalRole,
+              label: language === 'ar' ? 'خبير المحاسبة' : 'Expert-Comptable',
+              icon: '📊',
+              desc: language === 'ar' ? 'دفتر الأستاذ SCF، ميزان المراجعة والتصريح الجبائي G50' : 'Grand Livre SCF, Bilan/TCR, G50 & Audit',
+            },
+            {
+              id: 'secretaire_caisse' as LegalRole,
+              label: language === 'ar' ? 'أمانة الصندوق والضبط' : 'Secrétaire & Caisse',
+              icon: '💼',
+              desc: language === 'ar' ? 'استقبال الموكلين، الصندوق، طابع المادة 317 ومحضر الإغلاق' : 'Accueil, Caisse Art. 317, Reçus & Clôture',
+            },
+          ].map((r) => {
+            const isActive = activeLegalRole === r.id;
+            return (
+              <button
+                key={r.id}
+                type="button"
+                onClick={() => setActiveLegalRole(r.id)}
                 title={r.desc}
                 className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${
                   isActive

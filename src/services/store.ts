@@ -68,6 +68,7 @@ import {
   GarageRole,
   RealEstateRole,
   ManufacturingRole,
+  LegalRole,
   PMClient,
   PMProject,
   PMMilestone,
@@ -327,6 +328,8 @@ interface AppState {
   activeRealEstateRole: RealEstateRole;
   // Light Manufacturing & Workshop Production (Category 12: manufacturing_production)
   activeManufacturingRole: ManufacturingRole;
+  // Legal Cabinet, Notary Study & Accounting Firm (Category 13: legal_accounting)
+  activeLegalRole: LegalRole;
   // B2B Commercial Trading & Wholesale (Category 8: trading_commercial)
   b2bClients: B2bClient[];
   b2bSuppliers: B2bSupplier[];
@@ -481,6 +484,7 @@ const DEFAULT_STATE: AppState = {
   activeGarageRole: 'gerant',
   activeRealEstateRole: 'direction',
   activeManufacturingRole: 'gerant',
+  activeLegalRole: 'avocat_associe',
   // B2B Commercial Trading & Wholesale
   b2bClients: INITIAL_B2B_CLIENTS,
   b2bSuppliers: INITIAL_B2B_SUPPLIERS,
@@ -5804,6 +5808,26 @@ export function useAtriumStore() {
     notify();
   };
 
+  const setActiveLegalRole = (role: LegalRole) => {
+    let defaultScreen: ActiveScreen = 'dashboard';
+    if (role === 'avocat_associe') {
+      defaultScreen = 'dashboard';
+    } else if (role === 'notaire_titulaire') {
+      defaultScreen = 'members';
+    } else if (role === 'expert_comptable') {
+      defaultScreen = 'finance';
+    } else if (role === 'secretaire_caisse') {
+      defaultScreen = 'dashboard';
+    }
+
+    globalState = {
+      ...globalState,
+      activeLegalRole: role,
+      activeScreen: defaultScreen,
+    };
+    notify();
+  };
+
   const setActivePmSubScreen = (subScreen: string) => {
     let nextScreen = globalState.activeScreen;
     const role = globalState.activePmRole;
@@ -7697,6 +7721,9 @@ export function useAtriumStore() {
     // Light Manufacturing Operational Role State & Actions
     activeManufacturingRole: state.activeManufacturingRole || 'gerant',
     setActiveManufacturingRole,
+    // Legal Cabinet & Accounting Operational Role State & Actions
+    activeLegalRole: state.activeLegalRole || 'avocat_associe',
+    setActiveLegalRole,
     // Toast Notifications & Notification Center
     toasts: state.toasts || [],
     notifications: state.notifications || [],
