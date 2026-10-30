@@ -34,10 +34,31 @@ import { Seek } from '../../ui/Seek';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { AgriWeighbridgePrintModal } from './AgriWeighbridgePrintModal';
 
 export const AgricultureHarvestView: React.FC = () => {
   const { language, currentBusiness, currentBranch, currentUser } = useAtriumStore();
   const isAr = language === 'ar';
+
+  const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
+  const [ticketForPrint, setTicketForPrint] = useState<AgriHarvestTicket | null>(null);
+
+  const playTallyBeep = () => {
+    try {
+      const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      const ctx = new AudioCtx();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(880, ctx.currentTime);
+      gain.gain.setValueAtTime(0.08, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.1);
+    } catch {}
+  };
   const {
     harvestTickets,
     parcels,
@@ -107,13 +128,13 @@ export const AgricultureHarvestView: React.FC = () => {
 
   const openEditModal = (t: AgriHarvestTicket) => {
     setTicketToEdit(t);
-    setParcelId(t.parcelId);
+    setParcelId(t.parcelId || '');
     setCrop(t.cropDesignation);
-    setVehiclePlate(t.vehiclePlate);
-    setDriverName(t.driverName);
+    setVehiclePlate(t.vehiclePlate || t.truckPlate || '');
+    setDriverName(t.driverName || t.buyerName || '');
     setGrossWeight(String(t.grossWeightKg));
-    setTareWeight(String(t.tareWeightKg));
-    setCratesCount(String(t.cratesCount));
+    setTareWeight(String(t.tareWeightKg ?? t.truckTareKg ?? 0));
+    setCratesCount(String(t.cratesCount ?? t.crateCount ?? 0));
     setUnitPrice(String(t.unitPriceDzdPerKg));
     setMarket(t.destinationWholesaleMarket);
     setIsModalOpen(true);
@@ -137,20 +158,33 @@ export const AgricultureHarvestView: React.FC = () => {
       branchId: currentBranch?.id || 'branch_agri_main',
       staffId: currentUser?.id || 'staff_01',
       ticketNumber: ticketToEdit?.ticketNumber || `PES-2026-${String(harvestTickets.length + 20).padStart(3, '0')}`,
-      parcelId,
-      date: ticketToEdit?.date || new Date().toISOString().split('T')[0],
+      buyerName: ticketToEdit?.buyerName || driverName.trim() || 'Mandataire de Gros',
+      truckPlate: vehiclePlate.trim(),
       vehiclePlate: vehiclePlate.trim(),
       driverName: driverName.trim(),
+      parcelId,
       cropDesignation: crop.trim(),
       grossWeightKg: gross,
+      truckTareKg: tare,
       tareWeightKg: tare,
-      netWeightKg: net,
+      crateCount: parseInt(cratesCount, 10) || 0,
       cratesCount: parseInt(cratesCount, 10) || 0,
+      crateUnitTareKg: 0,
+      totalCrateTareKg: 0,
+      netWeightKg: net,
+      netWeightQuintaux: Math.round((net / 100) * 10) / 10,
       unitPriceDzdPerKg: pricePerKg,
+      subtotalProduceDzd: totalGross,
       totalGrossDzd: totalGross,
       mandataireFeePercent: feePct,
       netFarmPayoutDzd: netPayout,
+      paymentMethod: ticketToEdit?.paymentMethod || 'cash',
+      timbreFiscalDzd: ticketToEdit?.timbreFiscalDzd || 0,
+      totalAmountDzd: totalGross,
+      paidAmountDzd: netPayout,
+      remainingDueDzd: 0,
       destinationWholesaleMarket: market.trim(),
+      date: ticketToEdit?.date || new Date().toISOString().split('T')[0],
       createdAt: ticketToEdit?.createdAt || new Date().toISOString(),
     };
 
@@ -176,7 +210,7 @@ export const AgricultureHarvestView: React.FC = () => {
         const matchesNum = t.ticketNumber.toLowerCase().includes(q);
         const matchesCrop = t.cropDesignation.toLowerCase().includes(q);
         const matchesMarket = t.destinationWholesaleMarket.toLowerCase().includes(q);
-        const matchesDriver = t.driverName.toLowerCase().includes(q);
+        const matchesDriver = (t.driverName || t.buyerName || '').toLowerCase().includes(q);
         if (!matchesNum && !matchesCrop && !matchesMarket && !matchesDriver) return false;
       }
       return true;
@@ -186,7 +220,7 @@ export const AgricultureHarvestView: React.FC = () => {
   // KPIs
   const totalGrossKg = filteredTickets.reduce((acc, t) => acc + t.grossWeightKg, 0);
   const totalNetKg = filteredTickets.reduce((acc, t) => acc + t.netWeightKg, 0);
-  const totalNetPayout = filteredTickets.reduce((acc, t) => acc + t.netFarmPayoutDzd, 0);
+  const totalNetPayout = filteredTickets.reduce((acc, t) => acc + (t.netFarmPayoutDzd ?? t.paidAmountDzd ?? 0), 0);
 
   // Actions
   const handlePin = (t: AgriHarvestTicket) => {
@@ -211,12 +245,8 @@ export const AgricultureHarvestView: React.FC = () => {
   };
 
   const handlePrintTicket = (t: AgriHarvestTicket) => {
-    showToast(
-      isAr
-        ? `جارٍ طباعة وصل وزن القبان ${t.ticketNumber} (${t.netWeightKg} كغ)`
-        : `Impression du bon de pesée ${t.ticketNumber} (${t.netWeightKg} Kg net)`,
-      'success'
-    );
+    setTicketForPrint(t);
+    setIsPrintModalOpen(true);
   };
 
   const handleExportCsv = () => {
@@ -226,13 +256,13 @@ export const AgricultureHarvestView: React.FC = () => {
       `"${t.cropDesignation.replace(/"/g, '""')}"`,
       t.date,
       t.grossWeightKg,
-      t.tareWeightKg,
+      t.tareWeightKg ?? t.truckTareKg ?? 0,
       t.netWeightKg,
-      t.cratesCount,
+      t.cratesCount ?? t.crateCount ?? 0,
       t.unitPriceDzdPerKg,
-      t.totalGrossDzd,
-      t.netFarmPayoutDzd,
-      `"${t.driverName.replace(/"/g, '""')}"`,
+      t.totalGrossDzd ?? t.subtotalProduceDzd ?? 0,
+      t.netFarmPayoutDzd ?? t.paidAmountDzd ?? 0,
+      `"${(t.driverName || t.buyerName || '').replace(/"/g, '""')}"`,
       `"${t.destinationWholesaleMarket.replace(/"/g, '""')}"`,
     ]);
     const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map((e) => e.join(','))].join('\n');
@@ -255,6 +285,7 @@ export const AgricultureHarvestView: React.FC = () => {
 
   // Pointage & Muster Handlers
   const handleIncrementCrates = (p: AgriDailyPointage, delta: number) => {
+    playTallyBeep();
     const newCrates = Math.max(0, p.cratesCollected + delta);
     const worker = workers.find((w) => w.id === p.workerId);
     const pieceRate = worker?.defaultPieceRateDzd || 40;
@@ -338,6 +369,7 @@ export const AgricultureHarvestView: React.FC = () => {
     };
 
     addPointage(newPnt);
+    playTallyBeep();
     setIsPointageModalOpen(false);
     showToast(
       isAr
@@ -355,7 +387,7 @@ export const AgricultureHarvestView: React.FC = () => {
         const q = pointageSearch.toLowerCase();
         return (
           p.workerName.toLowerCase().includes(q) ||
-          p.parcelName.toLowerCase().includes(q)
+          (p.parcelName || '').toLowerCase().includes(q)
         );
       }
       return true;
@@ -432,7 +464,7 @@ export const AgricultureHarvestView: React.FC = () => {
       cell: (t) => (
         <div>
           <div className="font-mono font-bold text-xs text-neutral-900 dark:text-white">
-            {formatMoney(t.netFarmPayoutDzd)}
+            {formatMoney(t.netFarmPayoutDzd ?? t.paidAmountDzd ?? 0)}
           </div>
           <div className="text-[10px] text-neutral-400">
             PU: {t.unitPriceDzdPerKg} DZD/Kg
@@ -720,7 +752,7 @@ export const AgricultureHarvestView: React.FC = () => {
                   <div>
                     <div className="text-[10px] text-neutral-400 uppercase tracking-wider">Net Domaine</div>
                     <div className="font-mono font-bold text-neutral-900 dark:text-white mt-0.5">
-                      {formatMoney(t.netFarmPayoutDzd)}
+                      {formatMoney(t.netFarmPayoutDzd ?? t.paidAmountDzd ?? 0)}
                     </div>
                   </div>
                   <div className="text-right">
@@ -888,7 +920,7 @@ export const AgricultureHarvestView: React.FC = () => {
                   <div className="flex justify-between items-center">
                     <span className="text-neutral-500">Tare Camion à vide:</span>
                     <span className="font-mono font-semibold text-neutral-800 dark:text-neutral-200">
-                      {selectedTicket.tareWeightKg.toLocaleString()} Kg
+                      {(selectedTicket.tareWeightKg ?? selectedTicket.truckTareKg ?? 0).toLocaleString()} Kg
                     </span>
                   </div>
                   <div className="flex justify-between items-center pt-1 border-t border-neutral-200 dark:border-neutral-700">
@@ -914,19 +946,19 @@ export const AgricultureHarvestView: React.FC = () => {
                   <div className="flex justify-between items-center">
                     <span className="text-neutral-500">Total Brut Gros:</span>
                     <span className="font-mono text-neutral-800 dark:text-neutral-200 font-semibold">
-                      {formatMoney(selectedTicket.totalGrossDzd)}
+                      {formatMoney(selectedTicket.totalGrossDzd ?? selectedTicket.subtotalProduceDzd ?? 0)}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-neutral-500">Commission Mandataire ({selectedTicket.mandataireFeePercent}%):</span>
+                    <span className="text-neutral-500">Commission Mandataire ({selectedTicket.mandataireFeePercent || 0}%):</span>
                     <span className="font-mono text-amber-600 dark:text-amber-400 font-semibold">
-                      - {formatMoney((selectedTicket.totalGrossDzd * selectedTicket.mandataireFeePercent) / 100)}
+                      - {formatMoney(((selectedTicket.totalGrossDzd ?? selectedTicket.subtotalProduceDzd ?? 0) * (selectedTicket.mandataireFeePercent || 0)) / 100)}
                     </span>
                   </div>
                   <div className="flex justify-between items-center pt-1 border-t border-neutral-200 dark:border-neutral-700">
                     <span className="text-neutral-700 font-bold">Net à Payer Domaine:</span>
                     <span className="font-mono font-bold text-[#C4785A] text-sm">
-                      {formatMoney(selectedTicket.netFarmPayoutDzd)}
+                      {formatMoney(selectedTicket.netFarmPayoutDzd ?? selectedTicket.paidAmountDzd ?? 0)}
                     </span>
                   </div>
                 </div>
@@ -1386,6 +1418,13 @@ export const AgricultureHarvestView: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Official A5 Bilingual Delivery Slip & Scale Ticket Modal */}
+      <AgriWeighbridgePrintModal
+        isOpen={isPrintModalOpen}
+        onClose={() => setIsPrintModalOpen(false)}
+        ticket={ticketForPrint}
+      />
     </div>
   );
 };

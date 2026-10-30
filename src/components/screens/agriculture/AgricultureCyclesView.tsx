@@ -19,226 +19,362 @@ import {
   Activity,
   Layers,
   MapPin,
+  DollarSign,
+  TrendingUp,
+  FileText,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
-import { AgriTreatmentLog } from '../../../types';
+import { AgriTreatmentLog, AgriCropCycle, AgriCyclePhase } from '../../../types';
 import { useAgricultureData } from './agricultureData';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { Seek } from '../../ui/Seek';
-import { LabelInput } from '../../ui/LabelInput';
-import { LabelSelect } from '../../ui/LabelSelect';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { ActionButtonDef } from '../../ui/collection/CollectionListRow';
+import { AgriCropCycleModal } from './AgriCropCycleModal';
+import { AgriTreatmentModal } from './AgriTreatmentModal';
+import { formatMoney } from '../../../utils/rules';
+import { evaluateDarSafety } from '../../../utils/agriRules';
 
 export const AgricultureCyclesView: React.FC = () => {
-  const { language, currentBusiness, currentBranch, currentUser } = useAtriumStore();
+  const { language } = useAtriumStore();
   const isAr = language === 'ar';
-  const { treatmentLogs, parcels, addTreatmentLog, updateTreatmentLog, deleteTreatmentLog } = useAgricultureData();
+  const {
+    cropCycles,
+    treatmentLogs,
+    parcels,
+    addCropCycle,
+    updateCropCycle,
+    deleteCropCycle,
+    addTreatmentLog,
+    updateTreatmentLog,
+    deleteTreatmentLog,
+  } = useAgricultureData();
 
+  // Active Main Hub Tab
+  const [activeTabMode, setActiveTabMode] = useState<'cycles' | 'treatments'>('cycles');
+
+  // Search & Filter
   const [searchQuery, setSearchQuery] = useState('');
   const [filterParcel, setFilterParcel] = useState<string>('all');
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [pinnedIds, setPinnedIds] = useState<Set<string>>(new Set(['treat_01']));
-  const [sortBy, setSortBy] = useState<string>('treatmentDate');
+  const [pinnedIds, setPinnedIds] = useState<Set<string>>(new Set(['cycle_01', 'treat_01']));
+  const [sortBy, setSortBy] = useState<string>('sowingDate');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
 
-  // Modals & 390px Inspector Drawer State
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [logToEdit, setLogToEdit] = useState<AgriTreatmentLog | null>(null);
+  // Modals
+  const [isCycleModalOpen, setIsCycleModalOpen] = useState(false);
+  const [cycleToEdit, setCycleToEdit] = useState<AgriCropCycle | null>(null);
 
-  // Form states inside Modal
-  const [parcelId, setParcelId] = useState(parcels[0]?.id || 'parc_01');
-  const [productName, setProductName] = useState('');
-  const [activeIngredient, setActiveIngredient] = useState('');
-  const [pest, setPest] = useState('');
-  const [dosage, setDosage] = useState('2.5 kg/ha');
-  const [darDays, setDarDays] = useState('7');
-  const [operator, setOperator] = useState('Abdelkader (Chef Culture)');
-  const [notes, setNotes] = useState('');
+  const [isTreatmentModalOpen, setIsTreatmentModalOpen] = useState(false);
+  const [treatmentToEdit, setTreatmentToEdit] = useState<AgriTreatmentLog | null>(null);
 
-  // 390px Inline Side Inspector
-  const [selectedLog, setSelectedLog] = useState<AgriTreatmentLog | null>(() => {
-    return treatmentLogs[0] || null;
-  });
-  const [activeTab, setActiveTab] = useState<'traitement' | 'dar' | 'cible' | 'notes'>('traitement');
-  const [inspectorNotes, setInspectorNotes] = useState<string>('');
-  const [noteSaved, setNoteSaved] = useState(false);
+  // 390px Side Inspector
+  const [selectedCycle, setSelectedCycle] = useState<AgriCropCycle | null>(() => cropCycles[0] || null);
+  const [selectedTreatment, setSelectedTreatment] = useState<AgriTreatmentLog | null>(() => treatmentLogs[0] || null);
+  const [inspectorTab, setInspectorTab] = useState<'details' | 'rendement' | 'couts' | 'dar'>('details');
 
-  const openCreateModal = () => {
-    setLogToEdit(null);
-    setParcelId(parcels[0]?.id || 'parc_01');
-    setProductName('');
-    setActiveIngredient('');
-    setPest('');
-    setDosage('2.5 kg/ha');
-    setDarDays('7');
-    setOperator('Abdelkader (Chef Culture)');
-    setNotes('');
-    setIsModalOpen(true);
-  };
+  // Helper parcel name map
+  const parcelNameMap = useMemo(() => {
+    const map = new Map<string, string>();
+    parcels.forEach((p) => map.set(p.id, `${p.code} - ${p.name}`));
+    return map;
+  }, [parcels]);
 
-  const openEditModal = (t: AgriTreatmentLog) => {
-    setLogToEdit(t);
-    setParcelId(t.parcelId);
-    setProductName(t.commercialProductName);
-    setActiveIngredient(t.activeIngredient);
-    setPest(t.targetPestDisease);
-    setDosage(t.dosagePerHa);
-    setDarDays(String(t.darDays));
-    setOperator(t.operatorName);
-    setNotes(t.notes || '');
-    setIsModalOpen(true);
-  };
-
-  const handleSaveModal = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!productName.trim() || !pest.trim()) {
-      showToast(isAr ? 'يرجى إدخال اسم المادة والآفة المستهدفة' : 'Veuillez saisir le produit et le parasite', 'error');
-      return;
+  // Phase labels and styles
+  const getPhaseConfig = (phase: AgriCyclePhase) => {
+    switch (phase) {
+      case 'planned':
+        return {
+          label: isAr ? 'مخطط (Budget)' : 'Planifié',
+          bg: 'bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300',
+        };
+      case 'sowing':
+        return {
+          label: isAr ? 'بذر / شتل' : 'Semis en cours',
+          bg: 'bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300',
+        };
+      case 'vegetative':
+        return {
+          label: isAr ? 'نمو وعناية' : 'En Végétation',
+          bg: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300',
+        };
+      case 'treatment_locked':
+        return {
+          label: isAr ? 'حظر DAR كيميائي' : 'DAR Actif (Verrouillé)',
+          bg: 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300',
+        };
+      case 'ready_harvest':
+        return {
+          label: isAr ? 'جاهز للحصاد' : 'Prêt Récolte',
+          bg: 'bg-[#C4785A]/15 text-[#C4785A]',
+        };
+      case 'closed':
+        return {
+          label: isAr ? 'مكتمل ومغلق' : 'Clôturé',
+          bg: 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400',
+        };
+      default:
+        return {
+          label: phase,
+          bg: 'bg-neutral-100 text-neutral-600',
+        };
     }
-
-    const dar = parseInt(darDays, 10) || 7;
-    const today = new Date();
-    const harvestAllowed = new Date(today.getTime() + dar * 24 * 60 * 60 * 1000)
-      .toISOString()
-      .split('T')[0];
-
-    const payload: AgriTreatmentLog = {
-      id: logToEdit?.id || `treat_${Date.now()}`,
-      accountId: logToEdit?.accountId || 'acc_01',
-      businessId: currentBusiness?.id || 'biz_agri',
-      branchId: currentBranch?.id || 'branch_agri_main',
-      staffId: currentUser?.id || 'staff_01',
-      parcelId,
-      treatmentDate: logToEdit?.treatmentDate || today.toISOString().split('T')[0],
-      commercialProductName: productName.trim(),
-      activeIngredient: activeIngredient.trim() || 'Substance active homologuée',
-      targetPestDisease: pest.trim(),
-      dosagePerHa: dosage.trim(),
-      darDays: dar,
-      harvestAllowedDate: harvestAllowed,
-      operatorName: operator.trim(),
-      notes: notes.trim(),
-      createdAt: logToEdit?.createdAt || new Date().toISOString(),
-    };
-
-    if (logToEdit) {
-      updateTreatmentLog(payload);
-      if (selectedLog?.id === payload.id) setSelectedLog(payload);
-      showToast(isAr ? 'تم تحديث سجل المعالجة' : 'Traitement mis à jour', 'success');
-    } else {
-      addTreatmentLog(payload);
-      setSelectedLog(payload);
-      showToast(isAr ? 'تم قيد المعالجة الفلاحية في السجل' : 'Traitement phytosanitaire consigné', 'success');
-    }
-    setIsModalOpen(false);
   };
 
-  const filteredLogs = useMemo(() => {
-    return treatmentLogs.filter((t) => {
-      if (filterParcel !== 'all' && t.parcelId !== filterParcel) {
-        return false;
+  // Filtered Cycles
+  const filteredCycles = useMemo(() => {
+    return cropCycles.filter((c) => {
+      if (filterParcel !== 'all' && c.parcelId !== filterParcel) return false;
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        const matchesCrop = c.cropName.toLowerCase().includes(q);
+        const matchesVar = c.variety.toLowerCase().includes(q);
+        const matchesParcel = (parcelNameMap.get(c.parcelId) || '').toLowerCase().includes(q);
+        if (!matchesCrop && !matchesVar && !matchesParcel) return false;
       }
+      return true;
+    });
+  }, [cropCycles, filterParcel, searchQuery, parcelNameMap]);
+
+  // Filtered Treatments
+  const filteredTreatments = useMemo(() => {
+    return treatmentLogs.filter((t) => {
+      if (filterParcel !== 'all' && t.parcelId !== filterParcel) return false;
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         const matchesName = t.commercialProductName.toLowerCase().includes(q);
-        const matchesIng = t.activeIngredient.toLowerCase().includes(q);
+        const matchesActive = t.activeIngredient.toLowerCase().includes(q);
         const matchesPest = t.targetPestDisease.toLowerCase().includes(q);
         const matchesOp = t.operatorName.toLowerCase().includes(q);
-        if (!matchesName && !matchesIng && !matchesPest && !matchesOp) return false;
+        if (!matchesName && !matchesActive && !matchesPest && !matchesOp) return false;
       }
       return true;
     });
   }, [treatmentLogs, filterParcel, searchQuery]);
 
-  // KPIs
-  const avgDar = filteredLogs.length > 0
-    ? Math.round(filteredLogs.reduce((acc, t) => acc + t.darDays, 0) / filteredLogs.length)
-    : 7;
-
-  // Actions
-  const handlePin = (t: AgriTreatmentLog) => {
-    setPinnedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(t.id)) next.delete(t.id);
-      else next.add(t.id);
-      return next;
-    });
-    showToast(
-      pinnedIds.has(t.id)
-        ? (isAr ? 'تم إلغاء التثبيت' : 'Traitement désépinglé')
-        : (isAr ? 'تم تثبيت المعالجة' : 'Traitement épinglé'),
-      'info'
-    );
+  // Handlers for Cycles
+  const handleOpenCreateCycle = () => {
+    setCycleToEdit(null);
+    setIsCycleModalOpen(true);
   };
 
-  const handleDelete = (t: AgriTreatmentLog) => {
+  const handleOpenEditCycle = (cycle: AgriCropCycle) => {
+    setCycleToEdit(cycle);
+    setIsCycleModalOpen(true);
+  };
+
+  const handleSaveCycle = (cycle: AgriCropCycle) => {
+    if (cycleToEdit) {
+      updateCropCycle(cycle);
+      if (selectedCycle?.id === cycle.id) setSelectedCycle(cycle);
+      showToast(isAr ? 'تم تحديث دورة المحصول' : 'Cycle de culture mis à jour', 'success');
+    } else {
+      addCropCycle(cycle);
+      setSelectedCycle(cycle);
+      showToast(isAr ? 'تم فتح موسم المحصول الفلاحي' : 'Nouveau cycle de culture enregistré', 'success');
+    }
+    setIsCycleModalOpen(false);
+  };
+
+  const handleDeleteCycle = (cycle: AgriCropCycle) => {
+    deleteCropCycle(cycle.id);
+    if (selectedCycle?.id === cycle.id) setSelectedCycle(null);
+    showToast(isAr ? 'تم حذف دورة المحصول' : 'Cycle de culture supprimé', 'info');
+  };
+
+  // Handlers for Treatments
+  const handleOpenCreateTreatment = () => {
+    setTreatmentToEdit(null);
+    setIsTreatmentModalOpen(true);
+  };
+
+  const handleOpenEditTreatment = (t: AgriTreatmentLog) => {
+    setTreatmentToEdit(t);
+    setIsTreatmentModalOpen(true);
+  };
+
+  const handleSaveTreatment = (treatment: AgriTreatmentLog) => {
+    if (treatmentToEdit) {
+      updateTreatmentLog(treatment);
+      if (selectedTreatment?.id === treatment.id) setSelectedTreatment(treatment);
+      showToast(isAr ? 'تم تحديث المعالجة في السجل' : 'Traitement sanitaire mis à jour', 'success');
+    } else {
+      addTreatmentLog(treatment);
+      setSelectedTreatment(treatment);
+      showToast(isAr ? 'تم قيد المعالجة وتفعيل فترة الأمان DAR' : 'Traitement consigné et délai DAR activé', 'success');
+    }
+    setIsTreatmentModalOpen(false);
+  };
+
+  const handleDeleteTreatment = (t: AgriTreatmentLog) => {
     deleteTreatmentLog(t.id);
-    if (selectedLog?.id === t.id) setSelectedLog(null);
-    showToast(isAr ? 'تم حذف المعالجة من السجل' : 'Traitement retiré du carnet', 'success');
+    if (selectedTreatment?.id === t.id) setSelectedTreatment(null);
+    showToast(isAr ? 'تم حذف المعالجة' : 'Traitement retiré', 'info');
   };
 
-  const handleVerifyDar = (t: AgriTreatmentLog) => {
-    showToast(
-      isAr
-        ? `فترة الأمان DAR: ${t.darDays} أيام. الحصاد مسموح ابتداءً من ${t.harvestAllowedDate}`
-        : `DAR : ${t.darDays} jours respecté. Récolte autorisée dès le ${t.harvestAllowedDate}`,
-      'success'
-    );
-    if (selectedLog?.id === t.id) setActiveTab('dar');
-  };
-
+  // Export CSV
   const handleExportCsv = () => {
-    const headers = ['Produit Commercial', 'Substance Active', 'Cible / Maladie', 'Dose/ha', 'Date Traitement', 'DAR (Jours)', 'Date Récolte Autorisée', 'Applicateur'];
-    const rows = filteredLogs.map((t) => [
-      `"${t.commercialProductName.replace(/"/g, '""')}"`,
-      `"${t.activeIngredient.replace(/"/g, '""')}"`,
-      `"${t.targetPestDisease.replace(/"/g, '""')}"`,
-      t.dosagePerHa,
-      t.treatmentDate,
-      t.darDays,
-      t.harvestAllowedDate,
-      `"${t.operatorName.replace(/"/g, '""')}"`,
-    ]);
-    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map((e) => e.join(','))].join('\n');
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `traitements_phyto_${new Date().toISOString().slice(0, 10)}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    showToast(isAr ? 'تم تصدير سجل المعالجات CSV' : 'Export CSV du carnet phyto généré', 'info');
+    if (activeTabMode === 'cycles') {
+      const headers = ['Culture', 'Variété', 'Parcelle', 'Campagne', 'Surface Ha', 'Semis', 'Récolte Prévue', 'Rendement Prévu Qtx', 'Rendement Réalisé Qtx', 'Phase'];
+      const rows = filteredCycles.map((c) => [
+        `"${c.cropName.replace(/"/g, '""')}"`,
+        `"${c.variety.replace(/"/g, '""')}"`,
+        `"${(parcelNameMap.get(c.parcelId) || c.parcelId).replace(/"/g, '""')}"`,
+        c.campaignYear,
+        c.surfaceAllocatedHa,
+        c.sowingDate,
+        c.projectedHarvestDate,
+        c.projectedYieldQtx,
+        c.actualYieldQtx || 0,
+        c.currentPhase,
+      ]);
+      const csv = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+      const link = document.createElement('a');
+      link.href = encodeURI(csv);
+      link.download = `cycles_cultures_${new Date().toISOString().slice(0, 10)}.csv`;
+      link.click();
+    } else {
+      const headers = ['Produit', 'Substance Active', 'Cible', 'Dose/ha', 'Date Traitement', 'DAR Jours', 'Récolte Autorisée', 'Applicateur'];
+      const rows = filteredTreatments.map((t) => [
+        `"${t.commercialProductName.replace(/"/g, '""')}"`,
+        `"${t.activeIngredient.replace(/"/g, '""')}"`,
+        `"${t.targetPestDisease.replace(/"/g, '""')}"`,
+        t.dosagePerHa,
+        t.treatmentDate,
+        t.darDays,
+        t.harvestAllowedDate,
+        `"${t.operatorName.replace(/"/g, '""')}"`,
+      ]);
+      const csv = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+      const link = document.createElement('a');
+      link.href = encodeURI(csv);
+      link.download = `traitements_phyto_${new Date().toISOString().slice(0, 10)}.csv`;
+      link.click();
+    }
+    showToast(isAr ? 'تم تصدير ملف CSV' : 'Export CSV généré', 'info');
   };
 
-  const handleSaveNotes = () => {
-    if (!selectedLog) return;
-    setNoteSaved(true);
-    setTimeout(() => setNoteSaved(false), 2000);
-    showToast(isAr ? 'تم حفظ ملاحظات المعالجة' : 'Consignes enregistrées', 'success');
-  };
+  // KPIs
+  const totalAllocatedHa = cropCycles.reduce((acc, c) => acc + c.surfaceAllocatedHa, 0);
+  const activeDarCyclesCount = cropCycles.filter((c) => c.currentPhase === 'treatment_locked').length;
+  const readyHarvestCount = cropCycles.filter((c) => c.currentPhase === 'ready_harvest').length;
+  const totalTreatmentsLogged = treatmentLogs.length;
 
-  // Column definitions for UniversalDataCollection
-  const columns: ColumnDefinition<AgriTreatmentLog>[] = [
+  // Cycle columns for UniversalDataCollection
+  const cycleColumns: ColumnDefinition<AgriCropCycle>[] = [
     {
-      id: 'productName',
-      header: isAr ? 'المادة التجارية' : 'Produit Commercial',
+      id: 'crop',
+      header: isAr ? 'المحصول والصنف' : 'Culture & Variété',
+      accessorKey: 'cropName',
+      sortable: true,
+      minWidth: '200px',
+      cell: (c) => (
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold shrink-0">
+            <Sprout size={16} />
+          </div>
+          <div>
+            <div className="font-bold text-xs text-neutral-900 dark:text-white">
+              {c.cropName}
+            </div>
+            <div className="text-[10px] text-neutral-400">
+              {c.variety} • Campagne {c.campaignYear}
+            </div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: 'parcel',
+      header: isAr ? 'القطعة الفلاحية' : 'Parcelle',
+      accessorKey: 'parcelId',
+      sortable: true,
+      minWidth: '160px',
+      cell: (c) => (
+        <div className="text-xs text-neutral-700 dark:text-neutral-300">
+          <div className="font-medium truncate max-w-[150px]">
+            {parcelNameMap.get(c.parcelId) || c.parcelId}
+          </div>
+          <div className="text-[10px] text-neutral-400 font-mono">
+            {c.surfaceAllocatedHa} ha alloués
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: 'dates',
+      header: isAr ? 'رزنامة الحملة' : 'Calendrier',
+      accessorKey: 'sowingDate',
+      sortable: true,
+      minWidth: '150px',
+      cell: (c) => (
+        <div className="text-xs text-neutral-600 dark:text-neutral-400">
+          <div>Semis: <span className="font-mono text-neutral-900 dark:text-white">{c.sowingDate}</span></div>
+          <div className="text-[10px] text-neutral-400">Récolte: <span className="font-mono">{c.projectedHarvestDate}</span></div>
+        </div>
+      ),
+    },
+    {
+      id: 'yield',
+      header: isAr ? 'المحصول (قنطار)' : 'Rendement (Qtx)',
+      accessorKey: 'projectedYieldQtx',
+      sortable: true,
+      minWidth: '140px',
+      cell: (c) => (
+        <div className="text-xs">
+          <div className="font-mono font-bold text-neutral-900 dark:text-white">
+            {c.actualYieldQtx ? `${c.actualYieldQtx} / ` : ''}{c.projectedYieldQtx} Qtx
+          </div>
+          <div className="text-[10px] text-neutral-400">
+            {Math.round(c.projectedYieldQtx / (c.surfaceAllocatedHa || 1))} Qtx/ha
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: 'phase',
+      header: isAr ? 'حالة الدورة' : 'Phase Actuelle',
+      accessorKey: 'currentPhase',
+      sortable: true,
+      minWidth: '150px',
+      cell: (c) => {
+        const conf = getPhaseConfig(c.currentPhase);
+        return (
+          <div className="flex flex-col gap-1 items-start">
+            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${conf.bg}`}>
+              {conf.label}
+            </span>
+            {c.activeDarLockoutUntil && (
+              <span className="text-[9.5px] text-amber-600 dark:text-amber-400 font-medium flex items-center gap-1">
+                <AlertTriangle size={11} />
+                DAR jusqu'au {c.activeDarLockoutUntil}
+              </span>
+            )}
+          </div>
+        );
+      },
+    },
+  ];
+
+  // Treatment columns for UniversalDataCollection
+  const treatmentColumns: ColumnDefinition<AgriTreatmentLog>[] = [
+    {
+      id: 'product',
+      header: isAr ? 'المادة والمبيد' : 'Produit Commercial',
       accessorKey: 'commercialProductName',
       sortable: true,
-      minWidth: '220px',
+      minWidth: '180px',
       cell: (t) => (
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-orange-50 dark:bg-orange-950/40 text-[#C4785A] flex items-center justify-center font-bold text-xs shrink-0">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-amber-500/15 text-amber-600 flex items-center justify-center font-bold shrink-0">
             <ShieldCheck size={16} />
           </div>
           <div>
-            <div className="font-semibold text-xs text-neutral-900 dark:text-neutral-100 flex items-center gap-1.5">
+            <div className="font-bold text-xs text-neutral-900 dark:text-white">
               {t.commercialProductName}
-              {pinnedIds.has(t.id) && (
-                <Pin size={10} className="fill-[#C4785A] text-[#C4785A]" />
-              )}
             </div>
-            <div className="text-[11px] text-neutral-500">
+            <div className="text-[10px] text-neutral-400">
               {t.activeIngredient}
             </div>
           </div>
@@ -246,68 +382,104 @@ export const AgricultureCyclesView: React.FC = () => {
       ),
     },
     {
-      id: 'targetPest',
-      header: isAr ? 'الآفة المستهدفة' : 'Cible / Ravageur',
+      id: 'target',
+      header: isAr ? 'الآفة المستهدفة' : 'Cible / Maladie',
       accessorKey: 'targetPestDisease',
       sortable: true,
-      minWidth: '180px',
+      minWidth: '160px',
       cell: (t) => (
-        <div>
-          <div className="text-xs text-neutral-800 dark:text-neutral-200 font-medium">
-            {t.targetPestDisease}
-          </div>
-          <div className="text-[10px] text-neutral-400">
-            Dose: {t.dosagePerHa}
-          </div>
+        <div className="text-xs text-neutral-700 dark:text-neutral-300">
+          <div className="font-medium">{t.targetPestDisease}</div>
+          <div className="text-[10px] text-neutral-400 font-mono">Dose: {t.dosagePerHa}</div>
         </div>
       ),
     },
     {
-      id: 'darDays',
-      header: isAr ? 'فترة الأمان DAR' : 'Délai Attente (DAR)',
-      accessorKey: 'darDays',
+      id: 'parcel',
+      header: isAr ? 'القطعة المعالجة' : 'Parcelle',
+      accessorKey: 'parcelId',
       sortable: true,
       minWidth: '140px',
       cell: (t) => (
-        <div className="flex items-center gap-1.5">
-          <span className="font-mono font-bold text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-300">
-            {t.darDays} jours
-          </span>
-          <span className="text-[10px] text-neutral-400">
-            Dès: {t.harvestAllowedDate}
-          </span>
+        <div className="text-xs text-neutral-600 dark:text-neutral-400">
+          {parcelNameMap.get(t.parcelId) || t.parcelId}
         </div>
       ),
     },
     {
-      id: 'treatmentDate',
-      header: isAr ? 'تاريخ الرش' : 'Date d’Application',
-      accessorKey: 'treatmentDate',
+      id: 'dar',
+      header: isAr ? 'فترة الأمان DAR' : 'Délai DAR & Récolte',
+      accessorKey: 'darDays',
       sortable: true,
-      minWidth: '130px',
-      cell: (t) => (
-        <div className="font-mono text-xs text-neutral-700 dark:text-neutral-300">
-          {t.treatmentDate}
-        </div>
-      ),
+      minWidth: '170px',
+      cell: (t) => {
+        const safety = evaluateDarSafety(t.treatmentDate, t.darDays);
+        return (
+          <div className="text-xs">
+            <div className="flex items-center gap-1.5">
+              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                safety.isLocked
+                  ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
+                  : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
+              }`}>
+                {t.darDays} jours DAR
+              </span>
+              {safety.isLocked && (
+                <span className="text-[10px] text-amber-600 font-mono font-bold">
+                  ({safety.daysRemaining}j restants)
+                </span>
+              )}
+            </div>
+            <div className="text-[10px] text-neutral-400 mt-0.5">
+              Autorisé: <span className="font-mono text-neutral-700 dark:text-neutral-300">{t.harvestAllowedDate}</span>
+            </div>
+          </div>
+        );
+      },
     },
     {
       id: 'operator',
-      header: isAr ? 'المطبق' : 'Opérateur',
+      header: isAr ? 'المطبق المسؤول' : 'Applicateur',
       accessorKey: 'operatorName',
       sortable: true,
-      minWidth: '150px',
+      minWidth: '140px',
       cell: (t) => (
-        <div className="text-xs text-neutral-600 dark:text-neutral-400 truncate">
-          {t.operatorName}
+        <div className="text-xs text-neutral-600 dark:text-neutral-400">
+          <div>{t.operatorName}</div>
+          <div className="text-[10px] text-neutral-400 font-mono">{t.treatmentDate}</div>
         </div>
       ),
     },
   ];
 
-  const parcelFilterOptions = [
-    { value: 'all', label: isAr ? 'جميع القطع' : 'Toutes les parcelles' },
-    ...parcels.map((p) => ({ value: p.id, label: p.name })),
+  // Actions for Cycles
+  const getCycleActions = (c: AgriCropCycle): ActionButtonDef[] => [
+    {
+      label: isAr ? 'تعديل الدورة' : 'Modifier',
+      icon: <Edit size={14} />,
+      onClick: () => handleOpenEditCycle(c),
+    },
+    {
+      label: isAr ? 'حذف' : 'Supprimer',
+      icon: <Trash2 size={14} />,
+      variant: 'danger',
+      onClick: () => handleDeleteCycle(c),
+    },
+  ];
+
+  // Actions for Treatments
+  const getTreatmentActions = (t: AgriTreatmentLog): ActionButtonDef[] => [
+    {
+      label: isAr ? 'تعديل' : 'Modifier',
+      icon: <Edit size={14} />,
+      onClick: () => handleOpenEditTreatment(t),
+    },
+    {
+      label: isAr ? 'حذف' : 'Supprimer',
+      icon: <Trash2 size={14} />,
+      variant: 'danger',
+      onClick: () => handleDeleteTreatment(t),
+    },
   ];
 
   return (
@@ -316,21 +488,21 @@ export const AgricultureCyclesView: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold shadow-xs">
-            <Calendar size={22} />
+            <Sprout size={22} />
           </div>
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-xl font-bold text-neutral-900 dark:text-white">
-                {isAr ? 'المعالجات الفلاحية وفترات الأمان (DAR)' : 'Traitements Phyto & Suivi DAR'}
+                {isAr ? 'دورات المحاصيل والسجل الصحي النباتي' : 'Cycles de Culture & Carnet Phyto'}
               </h1>
               <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#C4785A]/15 text-[#C4785A]">
-                {filteredLogs.length} traitements
+                {cropCycles.length} {isAr ? 'دورات' : 'cycles'}
               </span>
             </div>
             <p className="text-xs text-neutral-500 dark:text-neutral-400">
               {isAr
-                ? 'السجل النباتي الإلزامي، حساب فترات الأمان قبل الجني، وجرعات المبيدات والأسمدة'
-                : 'Carnet phytosanitaire réglementaire, respect des DAR et traçabilité des bouillies'}
+                ? 'متابعة الحملات الزراعية، المردود بالقنطار، وقفل الأمان الكيميائي DAR'
+                : 'Planification des assolements, rendements et verrouillage de récolte sanitaire'}
             </p>
           </div>
         </div>
@@ -344,502 +516,540 @@ export const AgricultureCyclesView: React.FC = () => {
           >
             {isAr ? 'تصدير CSV' : 'Export CSV'}
           </AtriumButton>
-          <AtriumButton
-            variant="primary"
-            onClick={openCreateModal}
-            icon={<Plus size={14} />}
-          >
-            {isAr ? 'معالجة جديدة' : 'Nouveau Traitement'}
-          </AtriumButton>
+
+          {activeTabMode === 'cycles' ? (
+            <AtriumButton
+              variant="primary"
+              onClick={handleOpenCreateCycle}
+              icon={<Plus size={14} />}
+            >
+              {isAr ? 'دورة محصول جديدة' : 'Nouveau Cycle de Culture'}
+            </AtriumButton>
+          ) : (
+            <AtriumButton
+              variant="primary"
+              onClick={handleOpenCreateTreatment}
+              icon={<ShieldCheck size={14} />}
+            >
+              {isAr ? 'قيد معالجة جديدة (DAR)' : 'Consigner Traitement Phyto'}
+            </AtriumButton>
+          )}
         </div>
       </div>
 
-      {/* Canonical 3-Card Top Metrics Pod Tray */}
-      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
-        <div>
-          <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
-            {isAr ? 'مؤشرات الأمان الحيوي والامتثال الزراعي' : 'Conformité Sanitaire & Délais de Sécurité'}
-          </h2>
-          <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-            {isAr ? 'مراقبة فترات الأمان DAR لمنع تسويق المحاصيل المعالجة حديثاً' : 'Contrôle des délais avant récolte pour garantir zéro résidu non conforme'}
-          </p>
-        </div>
+      {/* Main Switcher: Cycles vs Phytosanitary Ledger */}
+      <div className="flex items-center gap-2 border-b border-neutral-200 dark:border-neutral-800 pb-2">
+        <button
+          type="button"
+          onClick={() => setActiveTabMode('cycles')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition ${
+            activeTabMode === 'cycles'
+              ? 'bg-[#C4785A] text-white shadow-xs'
+              : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+          }`}
+        >
+          <Sprout size={15} />
+          {isAr ? 'دورات المحاصيل والمواسم الفلاحية' : 'Cycles de Culture & Assolement'}
+          <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-white/20 ml-1">
+            {cropCycles.length}
+          </span>
+        </button>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {/* Card 1: Traitements */}
-          <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
-            <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
-              {isAr ? 'إجمالي المعالجات المنفذة' : 'Applications Réalisées'}
-            </span>
-            <div>
-              <div className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white font-mono tabular-nums">
-                {filteredLogs.length}
-              </div>
-              <p className="text-[11px] text-emerald-600 dark:text-emerald-400 mt-0.5 font-medium">
-                {isAr ? 'مسجلة بالسجل الرسمي' : 'Inscrites au registre phyto'}
-              </p>
-            </div>
-          </div>
-
-          {/* Card 2: DAR Moyen */}
-          <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
-            <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
-              {isAr ? 'متوسط فترة الأمان DAR' : 'DAR Moyen Exploitation'}
-            </span>
-            <div>
-              <div className="text-2xl font-bold tracking-tight text-amber-600 dark:text-amber-400 font-mono tabular-nums">
-                {avgDar} jours
-              </div>
-              <p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5 font-medium">
-                {isAr ? 'فترة انتظار إلزامية' : 'Délai d’attente avant cueillette'}
-              </p>
-            </div>
-          </div>
-
-          {/* Card 3: Dark Espresso Anchor Card */}
-          <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-medium text-neutral-300">
-                {isAr ? 'حالة الأمان للمحاصيل' : 'Statut Récoltabilité'}
-              </span>
-              <span className="bg-[#3D2817] text-[#FB923C] rounded-full px-2 py-0.5 text-[10px] font-bold">
-                Contrôle Phyto
-              </span>
-            </div>
-            <div>
-              <div className="text-2xl font-black text-white font-mono tabular-nums">
-                100% Conforme
-              </div>
-              <p className="text-[11px] text-emerald-400 mt-0.5 flex items-center gap-1 font-medium">
-                <CheckCircle2 size={11} />
-                {isAr ? 'القطع النشطة استوفت شروط DAR' : 'DAR respectés sur le domaine'}
-              </p>
-            </div>
-          </div>
-        </div>
+        <button
+          type="button"
+          onClick={() => setActiveTabMode('treatments')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition ${
+            activeTabMode === 'treatments'
+              ? 'bg-[#C4785A] text-white shadow-xs'
+              : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+          }`}
+        >
+          <ShieldCheck size={15} />
+          {isAr ? 'السجل الصحي وفترة الأمان DAR' : 'Carnet Phyto & Délais DAR'}
+          <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-white/20 ml-1">
+            {treatmentLogs.length}
+          </span>
+        </button>
       </div>
 
-      {/* Bottom Elevated Pod Tray Enclosing Collection & Inspector Drawer */}
-      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
-        {/* Domain Filter Header Strip */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div>
-            <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
-              {isAr ? 'سجل التدخلات والمعالجات الفلاحية' : 'Carnet Phytosanitaire & Registre des Traitements'}
-            </h2>
-            <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-              {isAr ? 'تتبع فترات الأمان DAR، المواد الفعالة والجرعات المعتمدة' : 'Traçabilité des bouillies, homologations et délais de sécurité avant récolte'}
+      {/* Active DAR Alert Banner */}
+      {activeDarCyclesCount > 0 && (
+        <div className="p-3.5 bg-amber-500/10 border border-amber-500/25 rounded-2xl flex items-center gap-3 text-amber-800 dark:text-amber-300 text-xs">
+          <AlertTriangle size={20} className="shrink-0 text-amber-600" />
+          <div className="flex-1">
+            <span className="font-bold">
+              {isAr
+                ? `تنبيه أمان صحي: توجد ${activeDarCyclesCount} قطع فلاحية خاضعة لفترة الأمان الكيميائي (DAR)`
+                : `Alerte Sanitaire : ${activeDarCyclesCount} cycle(s) sous verrouillage phytosanitaire DAR`}
+            </span>
+            <p className="text-[11px] opacity-85 mt-0.5">
+              {isAr
+                ? 'الجني محظور ومقفل نظامياً حتى انقضاء مدة الأمان المقررة في المعهد الوطني لحماية النباتات (INPV).'
+                : 'L’émission de bons de récolte et de pesée reste bloquée jusqu’à expiration des délais de rémanence homologués.'}
             </p>
-          </div>
-
-          {/* Authentic Agriculture Phyto Filter Capsules */}
-          <div className="flex items-center gap-1.5 p-1 bg-white dark:bg-neutral-800 rounded-full border border-neutral-200/80 dark:border-neutral-700/60 shadow-2xs overflow-x-auto">
-            {[
-              { id: 'all', label: isAr ? 'جميع المعالجات' : 'Tous traitements' },
-              { id: 'fongi', label: 'Fongicides' },
-              { id: 'insecti', label: 'Insecticides' },
-              { id: 'fertili', label: 'Fertilisation NPK' },
-            ].map((tab, idx) => (
-              <button
-                key={tab.id}
-                onClick={() => setFilterParcel('all')}
-                className="px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer"
-                style={{
-                  backgroundColor: idx === 0 && filterParcel === 'all' ? '#FCEEE8' : 'transparent',
-                  color: idx === 0 && filterParcel === 'all' ? 'var(--color-accent)' : '#71717A',
-                }}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Main Workspace: Left Collection + Right 390px Inspector Drawer */}
-        <div className="flex items-start gap-4">
-          {/* Main Collection Container */}
-          <div className="flex-1 min-w-0">
-            <UniversalDataCollection<AgriTreatmentLog>
-            data={filteredLogs}
-            columns={columns}
-            keyExtractor={(t) => t.id}
-            searchQuery={searchQuery}
-            onSearchChange={setSearchQuery}
-            searchPlaceholder={isAr ? 'بحث بالمادة، الآفة، المطبق...' : 'Rechercher par produit, ravageur, applicateur...'}
-            filterValue={filterParcel}
-            onFilterChange={setFilterParcel}
-            filterOptions={parcelFilterOptions}
-            viewMode={viewMode}
-            onViewModeChange={setViewMode}
-            selectedIds={selectedIds}
-            onSelectionChange={setSelectedIds}
-            pinnedIds={pinnedIds}
-            onPinToggle={handlePin}
-            sortBy={sortBy}
-            sortDir={sortDir}
-            onSortChange={(field, dir) => {
-              setSortBy(field);
-              setSortDir(dir);
-            }}
-            onItemClick={(t) => {
-              setSelectedLog(t);
-            }}
-            onEdit={openEditModal}
-            onDelete={handleDelete}
-            emptyIcon={<ShieldCheck size={32} className="text-neutral-400" />}
-            emptyTitle={isAr ? 'لا توجد معالجات' : 'Aucun traitement trouvé'}
-            emptyDescription={
-              searchQuery
-                ? (isAr ? 'لا توجد نتائج مطابقة لبحثك' : 'Aucun traitement ne correspond à votre recherche')
-                : (isAr ? 'قم بقيد أول معالجة نباتية' : 'Consignez votre première application phyto')
-            }
-            customActions={[
-              {
-                id: 'verifyDar',
-                label: isAr ? 'فحص فترة DAR' : 'Vérifier DAR',
-                icon: <Clock size={14} />,
-                onClick: handleVerifyDar,
-              },
-            ]}
-            renderGridCard={(t) => (
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="font-mono font-bold text-xs bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-300 px-2 py-0.5 rounded-full">
-                    DAR {t.darDays}j
-                  </span>
-                  <span className="font-mono text-xs text-neutral-500">
-                    {t.treatmentDate}
-                  </span>
-                </div>
-
-                <div>
-                  <h3 className="text-sm font-bold text-neutral-900 dark:text-white line-clamp-1">
-                    {t.commercialProductName}
-                  </h3>
-                  <div className="text-xs text-neutral-500 font-medium mt-0.5">
-                    {t.activeIngredient} • {t.dosagePerHa}
-                  </div>
-                </div>
-
-                <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-xs text-neutral-500">
-                  <span className="text-amber-600 dark:text-amber-400 font-medium">{t.targetPestDisease}</span>
-                  <span className="text-emerald-600 font-medium font-mono">Dès {t.harvestAllowedDate}</span>
-                </div>
-              </div>
-            )}
-          />
-        </div>
-
-        {/* 390px Inline Side Inspector Drawer */}
-        {selectedLog && (
-          <div className="w-[390px] shrink-0 bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 p-5 space-y-4 shadow-lg animate-in slide-in-from-right-4 duration-200">
-            {/* Drawer Header */}
-            <div className="flex items-start justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-orange-50 dark:bg-orange-950/40 text-[#C4785A] flex items-center justify-center font-bold">
-                  <ShieldCheck size={18} />
-                </div>
-                <div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="font-bold text-xs text-neutral-900 dark:text-white">
-                      {selectedLog.commercialProductName}
-                    </span>
-                    <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-300">
-                      DAR {selectedLog.darDays}j
-                    </span>
-                  </div>
-                  <p className="text-xs text-neutral-500">
-                    {selectedLog.activeIngredient}
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={() => setSelectedLog(null)}
-                className="p-1 rounded-lg text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800"
-              >
-                <X size={16} />
-              </button>
-            </div>
-
-            {/* Quick Action Pills */}
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <button
-                onClick={() => handleVerifyDar(selectedLog)}
-                className="flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg bg-orange-50 text-[#C4785A] hover:bg-orange-100 dark:bg-orange-950/40 dark:hover:bg-orange-900/60 transition-colors"
-              >
-                <Clock size={12} />
-                {isAr ? 'فحص DAR' : 'Vérifier DAR'}
-              </button>
-              <button
-                onClick={() => openEditModal(selectedLog)}
-                className="flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg bg-neutral-100 text-neutral-700 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-300 transition-colors"
-              >
-                <Edit size={12} />
-                {isAr ? 'تعديل' : 'Modifier'}
-              </button>
-              <button
-                onClick={() => handleDelete(selectedLog)}
-                className="flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-950/40 dark:text-red-300 transition-colors ml-auto"
-              >
-                <Trash2 size={12} />
-              </button>
-            </div>
-
-            {/* Drawer Tabs Navigation */}
-            <div className="flex border-b border-neutral-100 dark:border-neutral-800 gap-1 text-xs">
-              <button
-                onClick={() => setActiveTab('traitement')}
-                className={`pb-2 px-2 font-medium border-b-2 transition-colors ${
-                  activeTab === 'traitement'
-                    ? 'border-[#C4785A] text-[#C4785A] font-bold'
-                    : 'border-transparent text-neutral-500 hover:text-neutral-700'
-                }`}
-              >
-                {isAr ? 'البيانات' : 'Traitement'}
-              </button>
-              <button
-                onClick={() => setActiveTab('dar')}
-                className={`pb-2 px-2 font-medium border-b-2 transition-colors ${
-                  activeTab === 'dar'
-                    ? 'border-[#C4785A] text-[#C4785A] font-bold'
-                    : 'border-transparent text-neutral-500 hover:text-neutral-700'
-                }`}
-              >
-                {isAr ? 'فترة الأمان' : 'DAR & Récolte'}
-              </button>
-              <button
-                onClick={() => setActiveTab('cible')}
-                className={`pb-2 px-2 font-medium border-b-2 transition-colors ${
-                  activeTab === 'cible'
-                    ? 'border-[#C4785A] text-[#C4785A] font-bold'
-                    : 'border-transparent text-neutral-500 hover:text-neutral-700'
-                }`}
-              >
-                {isAr ? 'الآفة والجرعة' : 'Dosage'}
-              </button>
-              <button
-                onClick={() => setActiveTab('notes')}
-                className={`pb-2 px-2 font-medium border-b-2 transition-colors ${
-                  activeTab === 'notes'
-                    ? 'border-[#C4785A] text-[#C4785A] font-bold'
-                    : 'border-transparent text-neutral-500 hover:text-neutral-700'
-                }`}
-              >
-                {isAr ? 'الملاحظات' : 'Consignes'}
-              </button>
-            </div>
-
-            {/* Tab 1: Traitement */}
-            {activeTab === 'traitement' && (
-              <div className="space-y-3.5 text-xs animate-in fade-in duration-150">
-                <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3 rounded-xl space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-neutral-500">Matière active:</span>
-                    <span className="font-semibold text-neutral-900 dark:text-white">
-                      {selectedLog.activeIngredient}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-neutral-500">Date d'application:</span>
-                    <span className="font-mono text-neutral-800 dark:text-neutral-200">
-                      {selectedLog.treatmentDate}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-neutral-500">Applicateur responsable:</span>
-                    <span className="font-semibold text-neutral-900 dark:text-white">
-                      {selectedLog.operatorName}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Tab 2: DAR & Récolte */}
-            {activeTab === 'dar' && (
-              <div className="space-y-3.5 text-xs animate-in fade-in duration-150">
-                <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3 rounded-xl space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-neutral-500">Délai d'attente (DAR):</span>
-                    <span className="font-mono font-bold text-red-600 dark:text-red-400">
-                      {selectedLog.darDays} jours obligatoires
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-neutral-500">Récolte autorisée dès le:</span>
-                    <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400 text-sm">
-                      {selectedLog.harvestAllowedDate}
-                    </span>
-                  </div>
-                  <p className="text-[10px] text-neutral-500 pt-1 border-t border-neutral-200 dark:border-neutral-700">
-                    Interdiction formelle de cueillette avant cette date pour conformité phytosanitaire.
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {/* Tab 3: Dosage */}
-            {activeTab === 'cible' && (
-              <div className="space-y-3.5 text-xs animate-in fade-in duration-150">
-                <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3 rounded-xl space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-neutral-500">Parasite ou Maladie:</span>
-                    <span className="font-semibold text-neutral-900 dark:text-white">
-                      {selectedLog.targetPestDisease}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-neutral-500">Dose appliquée à l'hectare:</span>
-                    <span className="font-mono font-bold text-[#C4785A]">
-                      {selectedLog.dosagePerHa}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Tab 4: Consignes */}
-            {activeTab === 'notes' && (
-              <div className="space-y-3 text-xs animate-in fade-in duration-150">
-                <p className="text-neutral-500 text-[11px]">
-                  Conditions météo (vent &lt; 15 km/h, hygrométrie) et équipements de protection individuelle (EPI) :
-                </p>
-                <textarea
-                  rows={6}
-                  value={inspectorNotes || selectedLog.notes || ''}
-                  onChange={(e) => setInspectorNotes(e.target.value)}
-                  placeholder="Noter le port du masque FFP3, température matinale, absence de vent..."
-                  className="w-full p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-xs focus:ring-1 focus:ring-[#C4785A] outline-hidden resize-none"
-                />
-                <button
-                  onClick={handleSaveNotes}
-                  className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl bg-[#C4785A] text-white hover:bg-[#a86246] transition-colors font-medium text-xs shadow-xs"
-                >
-                  {noteSaved ? (
-                    <>
-                      <Check size={14} />
-                      {isAr ? 'تم الحفظ' : 'Consignes enregistrées'}
-                    </>
-                  ) : (
-                    <>
-                      <Save size={14} />
-                      {isAr ? 'حفظ' : 'Enregistrer'}
-                    </>
-                  )}
-                </button>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-      </div>
-
-      {/* New / Edit Treatment Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-neutral-900 rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-neutral-200 dark:border-neutral-800 space-y-5 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-orange-50 dark:bg-orange-950/40 text-[#C4785A] flex items-center justify-center font-bold">
-                  <ShieldCheck size={20} />
-                </div>
-                <div>
-                  <h2 className="text-base font-bold text-neutral-900 dark:text-white">
-                    {logToEdit
-                      ? (isAr ? 'تعديل المعالجة النباتية' : 'Modifier le Traitement')
-                      : (isAr ? 'تسجيل معالجة نباتية جديدة' : 'Nouveau Traitement Phytosanitaire')}
-                  </h2>
-                  <p className="text-xs text-neutral-500">
-                    {isAr ? 'تدوين المواد وحساب فترة الأمان DAR' : 'Enregistrement au registre obligatoire et calcul DAR'}
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={() => setIsModalOpen(false)}
-                className="p-1 rounded-lg text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-              >
-                <X size={18} />
-              </button>
-            </div>
-
-            <form onSubmit={handleSaveModal} className="space-y-4">
-              <LabelSelect
-                label={isAr ? 'القطعة الفلاحية المستهدفة' : 'Parcelle Cible'}
-                value={parcelId}
-                onChange={(e) => setParcelId(e.target.value)}
-                options={parcelFilterOptions.filter((p) => p.value !== 'all')}
-              />
-
-              <div className="grid grid-cols-2 gap-3">
-                <LabelInput
-                  label={isAr ? 'اسم المنتج التجاري *' : 'Nom Commercial *'}
-                  placeholder="Ex: Cuprocol 50 WG"
-                  value={productName}
-                  onChange={(e) => setProductName(e.target.value)}
-                  required
-                />
-                <LabelInput
-                  label={isAr ? 'المادة الفعالة' : 'Substance Active'}
-                  placeholder="Ex: Oxychlorure de cuivre"
-                  value={activeIngredient}
-                  onChange={(e) => setActiveIngredient(e.target.value)}
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <LabelInput
-                  label={isAr ? 'الآفة أو المرض *' : 'Cible / Maladie *'}
-                  placeholder="Ex: Mildiou, Oïdium, Pucerons"
-                  value={pest}
-                  onChange={(e) => setPest(e.target.value)}
-                  required
-                />
-                <LabelInput
-                  label={isAr ? 'الجرعة بالهكتار' : 'Dose / ha'}
-                  placeholder="Ex: 2.5 kg/ha"
-                  value={dosage}
-                  onChange={(e) => setDosage(e.target.value)}
-                  required
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <LabelInput
-                  label={isAr ? 'فترة الأمان DAR (أيام)' : 'Délai d’Attente DAR (Jours)'}
-                  type="number"
-                  value={darDays}
-                  onChange={(e) => setDarDays(e.target.value)}
-                  required
-                />
-                <LabelInput
-                  label={isAr ? 'اسم المطبق المسؤول' : 'Applicateur Responsable'}
-                  value={operator}
-                  onChange={(e) => setOperator(e.target.value)}
-                  required
-                />
-              </div>
-
-              <LabelInput
-                label={isAr ? 'ملاحظات وظروف الطقس' : 'Observations & Météo'}
-                placeholder="Ex: Pulvérisation sans vent, température 19°C..."
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-              />
-
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
-                <AtriumButton variant="ghost" size="sm" onClick={() => setIsModalOpen(false)}>
-                  {isAr ? 'إلغاء' : 'Annuler'}
-                </AtriumButton>
-                <AtriumButton variant="primary" size="sm" type="submit">
-                  {logToEdit
-                    ? (isAr ? 'حفظ التعديلات' : 'Enregistrer')
-                    : (isAr ? 'تأكيد وقيد المعالجة' : 'Consigner le Traitement')}
-                </AtriumButton>
-              </div>
-            </form>
           </div>
         </div>
       )}
+
+      {/* Top 3-Card Metrics Tray */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
+          <span className="text-[11px] font-medium text-neutral-500">
+            {isAr ? 'المساحة الإجمالية للدورات' : 'Superficie Assolement Actif'}
+          </span>
+          <div className="text-2xl font-bold font-mono text-neutral-900 dark:text-white mt-1">
+            {totalAllocatedHa.toFixed(1)} <span className="text-xs font-normal text-neutral-500">ha</span>
+          </div>
+          <p className="text-[10.5px] text-[#C4785A] mt-0.5">
+            {cropCycles.length} {isAr ? 'دورات موسمية' : 'cycles en exploitation'}
+          </p>
+        </div>
+
+        <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
+          <span className="text-[11px] font-medium text-neutral-500">
+            {isAr ? 'جاهز للحصاد والجني' : 'Cultures Prêtes pour Récolte'}
+          </span>
+          <div className="text-2xl font-bold font-mono text-emerald-600 dark:text-emerald-400 mt-1">
+            {readyHarvestCount} <span className="text-xs font-normal text-neutral-500">{isAr ? 'محاصيل' : 'parcelles'}</span>
+          </div>
+          <p className="text-[10.5px] text-neutral-400 mt-0.5">
+            {isAr ? 'تم استيفاء شروط النضج والأمان' : 'Conformes pour pesée pont-bascule'}
+          </p>
+        </div>
+
+        <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
+          <span className="text-[11px] font-medium text-neutral-500">
+            {isAr ? 'معالجات المقيدة بالسجل' : 'Traitements Phyto Enregistrés'}
+          </span>
+          <div className="text-2xl font-bold font-mono text-amber-600 dark:text-amber-400 mt-1">
+            {totalTreatmentsLogged}
+          </div>
+          <p className="text-[10.5px] text-neutral-400 mt-0.5">
+            {activeDarCyclesCount} {isAr ? 'فترات أمان نشطة حالياً' : 'DAR actifs en cours'}
+          </p>
+        </div>
+      </div>
+
+      {/* Main Collection & Side Drawer Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* Left Side: UniversalDataCollection Table/Grid */}
+        <div className="lg:col-span-8">
+          {activeTabMode === 'cycles' ? (
+            <UniversalDataCollection<AgriCropCycle>
+              data={filteredCycles}
+              columns={cycleColumns}
+              keyExtractor={(c) => c.id}
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              viewMode={viewMode}
+              onViewModeChange={setViewMode}
+              selectedIds={selectedIds}
+              onSelectionChange={setSelectedIds}
+              pinnedIds={pinnedIds}
+              onPinToggle={(c) => {
+                const id = typeof c === 'string' ? c : c.id;
+                const next = new Set(pinnedIds);
+                if (next.has(id)) next.delete(id);
+                else next.add(id);
+                setPinnedIds(next);
+              }}
+              sortBy={sortBy}
+              sortDir={sortDir}
+              onSortChange={(field: string, dir: 'asc' | 'desc') => {
+                setSortBy(field);
+                setSortDir(dir);
+              }}
+              onItemClick={(c: AgriCropCycle) => setSelectedCycle(c)}
+              customActions={(c: AgriCropCycle) => getCycleActions(c)}
+              emptyTitle={isAr ? 'لا توجد دورات محاصيل مسجلة' : 'Aucun cycle de culture enregistré'}
+              renderGridCard={(c: AgriCropCycle) => (
+                <div
+                  key={c.id}
+                  onClick={() => setSelectedCycle(c)}
+                  className={`p-4 rounded-2xl border transition cursor-pointer relative space-y-3 ${
+                    selectedCycle?.id === c.id
+                      ? 'border-[#C4785A] bg-[#C4785A]/5'
+                      : 'border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 hover:border-neutral-300'
+                  }`}
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-lg bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold">
+                        <Sprout size={16} />
+                      </div>
+                      <div>
+                        <h3 className="text-xs font-bold text-neutral-900 dark:text-white">
+                          {c.cropName}
+                        </h3>
+                        <p className="text-[10px] text-neutral-400">
+                          {c.variety} • Campagne {c.campaignYear}
+                        </p>
+                      </div>
+                    </div>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${getPhaseConfig(c.currentPhase).bg}`}>
+                      {getPhaseConfig(c.currentPhase).label}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 text-[11px] pt-2 border-t border-neutral-100 dark:border-neutral-800">
+                    <div>
+                      <span className="text-neutral-400">Surface: </span>
+                      <span className="font-mono font-bold text-neutral-700 dark:text-neutral-300">
+                        {c.surfaceAllocatedHa} ha
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-neutral-400">Prévu: </span>
+                      <span className="font-mono font-bold text-neutral-700 dark:text-neutral-300">
+                        {c.projectedYieldQtx} Qtx
+                      </span>
+                    </div>
+                  </div>
+
+                  {c.activeDarLockoutUntil && (
+                    <div className="text-[10px] text-amber-600 bg-amber-500/10 px-2 py-1 rounded-lg flex items-center gap-1 font-medium">
+                      <AlertTriangle size={12} />
+                      DAR actif jusqu’au {c.activeDarLockoutUntil}
+                    </div>
+                  )}
+                </div>
+              )}
+            />
+          ) : (
+            <UniversalDataCollection<AgriTreatmentLog>
+              data={filteredTreatments}
+              columns={treatmentColumns}
+              keyExtractor={(t) => t.id}
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              viewMode={viewMode}
+              onViewModeChange={setViewMode}
+              selectedIds={selectedIds}
+              onSelectionChange={setSelectedIds}
+              pinnedIds={pinnedIds}
+              onPinToggle={(t) => {
+                const id = typeof t === 'string' ? t : t.id;
+                const next = new Set(pinnedIds);
+                if (next.has(id)) next.delete(id);
+                else next.add(id);
+                setPinnedIds(next);
+              }}
+              sortBy={sortBy}
+              sortDir={sortDir}
+              onSortChange={(field: string, dir: 'asc' | 'desc') => {
+                setSortBy(field);
+                setSortDir(dir);
+              }}
+              onItemClick={(t: AgriTreatmentLog) => setSelectedTreatment(t)}
+              customActions={(t: AgriTreatmentLog) => getTreatmentActions(t)}
+              emptyTitle={isAr ? 'لا توجد معالجات مسجلة' : 'Aucun traitement phytosanitaire consigné'}
+            />
+          )}
+        </div>
+
+        {/* Right Side: 390px Inline Side Inspector Drawer */}
+        <div className="lg:col-span-4 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-5 shadow-xs space-y-4">
+          {activeTabMode === 'cycles' ? (
+            selectedCycle ? (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-lg bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold">
+                      <Sprout size={16} />
+                    </div>
+                    <div>
+                      <h2 className="text-xs font-bold text-neutral-900 dark:text-white">
+                        {selectedCycle.cropName}
+                      </h2>
+                      <p className="text-[10px] text-neutral-400">
+                        {selectedCycle.variety} • Campagne {selectedCycle.campaignYear}
+                      </p>
+                    </div>
+                  </div>
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${getPhaseConfig(selectedCycle.currentPhase).bg}`}>
+                    {getPhaseConfig(selectedCycle.currentPhase).label}
+                  </span>
+                </div>
+
+                <div className="flex border-b border-neutral-200 dark:border-neutral-800 text-xs">
+                  <button
+                    type="button"
+                    onClick={() => setInspectorTab('details')}
+                    className={`pb-2 px-2 font-bold border-b-2 transition ${
+                      inspectorTab === 'details'
+                        ? 'border-[#C4785A] text-[#C4785A]'
+                        : 'border-transparent text-neutral-500'
+                    }`}
+                  >
+                    {isAr ? 'البيانات' : 'Détails'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setInspectorTab('rendement')}
+                    className={`pb-2 px-2 font-bold border-b-2 transition ${
+                      inspectorTab === 'rendement'
+                        ? 'border-[#C4785A] text-[#C4785A]'
+                        : 'border-transparent text-neutral-500'
+                    }`}
+                  >
+                    {isAr ? 'المردود' : 'Rendement'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setInspectorTab('couts')}
+                    className={`pb-2 px-2 font-bold border-b-2 transition ${
+                      inspectorTab === 'couts'
+                        ? 'border-[#C4785A] text-[#C4785A]'
+                        : 'border-transparent text-neutral-500'
+                    }`}
+                  >
+                    {isAr ? 'التكاليف' : 'Coûts'}
+                  </button>
+                </div>
+
+                {inspectorTab === 'details' && (
+                  <div className="space-y-3 text-xs">
+                    <div className="p-3 bg-neutral-50 dark:bg-neutral-800/40 rounded-xl space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-neutral-400">Parcelle:</span>
+                        <span className="font-semibold text-neutral-800 dark:text-neutral-200">
+                          {parcelNameMap.get(selectedCycle.parcelId) || selectedCycle.parcelId}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-neutral-400">Surface Allouée:</span>
+                        <span className="font-mono font-bold text-neutral-900 dark:text-white">
+                          {selectedCycle.surfaceAllocatedHa} ha
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-neutral-400">Lot Semence:</span>
+                        <span className="font-mono text-neutral-700 dark:text-neutral-300">
+                          {selectedCycle.seedLotNumber || 'CCLS-Standard'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-neutral-400">Date Semis:</span>
+                        <span className="font-mono text-neutral-700 dark:text-neutral-300">
+                          {selectedCycle.sowingDate}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-neutral-400">Récolte Prévue:</span>
+                        <span className="font-mono text-neutral-700 dark:text-neutral-300">
+                          {selectedCycle.projectedHarvestDate}
+                        </span>
+                      </div>
+                    </div>
+
+                    {selectedCycle.activeDarLockoutUntil && (
+                      <div className="p-3 bg-amber-500/10 border border-amber-500/25 rounded-xl text-amber-800 dark:text-amber-300 text-xs flex items-start gap-2">
+                        <AlertTriangle size={15} className="text-amber-600 shrink-0 mt-0.5" />
+                        <div>
+                          <div className="font-bold">Interdiction de récolte active</div>
+                          <div className="text-[11px] opacity-80 mt-0.5">
+                            {selectedCycle.activePestWarning || `DAR jusqu'au ${selectedCycle.activeDarLockoutUntil}`}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {inspectorTab === 'rendement' && (
+                  <div className="space-y-3 text-xs">
+                    <div className="p-3 bg-neutral-50 dark:bg-neutral-800/40 rounded-xl space-y-2.5">
+                      <div className="flex justify-between">
+                        <span className="text-neutral-400">Objectif Prévu:</span>
+                        <span className="font-mono font-bold text-neutral-900 dark:text-white">
+                          {selectedCycle.projectedYieldQtx} Qtx
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-neutral-400">Réalisé:</span>
+                        <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                          {selectedCycle.actualYieldQtx || 0} Qtx
+                        </span>
+                      </div>
+                      <div className="w-full bg-neutral-200 dark:bg-neutral-700 h-2 rounded-full overflow-hidden">
+                        <div
+                          className="bg-[#C4785A] h-full"
+                          style={{
+                            width: `${Math.min(
+                              100,
+                              Math.round(
+                                ((selectedCycle.actualYieldQtx || 0) /
+                                  (selectedCycle.projectedYieldQtx || 1)) *
+                                  100
+                              )
+                            )}%`,
+                          }}
+                        />
+                      </div>
+                      <div className="text-[10.5px] text-neutral-400 text-right">
+                        Taux de réalisation :{' '}
+                        {Math.round(
+                          ((selectedCycle.actualYieldQtx || 0) /
+                            (selectedCycle.projectedYieldQtx || 1)) *
+                            100
+                        )}
+                        %
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {inspectorTab === 'couts' && (
+                  <div className="space-y-3 text-xs">
+                    <div className="p-3 bg-neutral-50 dark:bg-neutral-800/40 rounded-xl space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-neutral-400">Intrants & Semences:</span>
+                        <span className="font-mono text-neutral-800 dark:text-neutral-200">
+                          {formatMoney(selectedCycle.totalInputCostDzd || 0)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-neutral-400">Main d'œuvre Tâcherons:</span>
+                        <span className="font-mono text-neutral-800 dark:text-neutral-200">
+                          {formatMoney(selectedCycle.totalLaborCostDzd || 0)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-neutral-400">Matériel & Carburant:</span>
+                        <span className="font-mono text-neutral-800 dark:text-neutral-200">
+                          {formatMoney(selectedCycle.totalMachineryCostDzd || 0)}
+                        </span>
+                      </div>
+                      <div className="pt-2 border-t border-neutral-200 dark:border-neutral-700 flex justify-between font-bold">
+                        <span>Total Coûts Engagés:</span>
+                        <span className="font-mono text-[#C4785A]">
+                          {formatMoney(
+                            (selectedCycle.totalInputCostDzd || 0) +
+                              (selectedCycle.totalLaborCostDzd || 0) +
+                              (selectedCycle.totalMachineryCostDzd || 0)
+                          )}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex gap-2">
+                  <AtriumButton
+                    variant="outline"
+                    size="sm"
+                    className="w-full"
+                    onClick={() => handleOpenEditCycle(selectedCycle)}
+                    icon={<Edit size={13} />}
+                  >
+                    {isAr ? 'تعديل الدورة' : 'Modifier le Cycle'}
+                  </AtriumButton>
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-10 text-neutral-400 text-xs">
+                {isAr ? 'حدد دورة محصول لمعاينة التفاصيل' : 'Sélectionnez un cycle pour afficher l’inspecteur'}
+              </div>
+            )
+          ) : selectedTreatment ? (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-amber-500/15 text-amber-600 flex items-center justify-center font-bold">
+                    <ShieldCheck size={16} />
+                  </div>
+                  <div>
+                    <h2 className="text-xs font-bold text-neutral-900 dark:text-white">
+                      {selectedTreatment.commercialProductName}
+                    </h2>
+                    <p className="text-[10px] text-neutral-400">
+                      {selectedTreatment.activeIngredient}
+                    </p>
+                  </div>
+                </div>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300">
+                  {selectedTreatment.darDays}j DAR
+                </span>
+              </div>
+
+              <div className="p-3 bg-neutral-50 dark:bg-neutral-800/40 rounded-xl space-y-2 text-xs">
+                <div className="flex justify-between">
+                  <span className="text-neutral-400">Cible / Maladie:</span>
+                  <span className="font-semibold text-neutral-800 dark:text-neutral-200">
+                    {selectedTreatment.targetPestDisease}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-neutral-400">Parcelle:</span>
+                  <span className="text-neutral-800 dark:text-neutral-200">
+                    {parcelNameMap.get(selectedTreatment.parcelId) || selectedTreatment.parcelId}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-neutral-400">Dose appliquée:</span>
+                  <span className="font-mono font-semibold">{selectedTreatment.dosagePerHa}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-neutral-400">Date Application:</span>
+                  <span className="font-mono">{selectedTreatment.treatmentDate}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-neutral-400">Récolte Autorisée:</span>
+                  <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                    {selectedTreatment.harvestAllowedDate}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-neutral-400">Applicateur:</span>
+                  <span>{selectedTreatment.operatorName}</span>
+                </div>
+              </div>
+
+              <div className="p-3 bg-neutral-50 dark:bg-neutral-800/40 rounded-xl text-xs space-y-1">
+                <span className="text-neutral-400 font-medium">Consignes & Météo:</span>
+                <p className="text-neutral-700 dark:text-neutral-300 italic text-[11px]">
+                  "{selectedTreatment.notes || 'Aucune observation particulière.'}"
+                </p>
+              </div>
+
+              <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex gap-2">
+                <AtriumButton
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                  onClick={() => handleOpenEditTreatment(selectedTreatment)}
+                  icon={<Edit size={13} />}
+                >
+                  {isAr ? 'تعديل المعالجة' : 'Modifier le Traitement'}
+                </AtriumButton>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-10 text-neutral-400 text-xs">
+              {isAr ? 'حدد معالجة لمعاينة التفاصيل' : 'Sélectionnez un traitement pour afficher l’inspecteur'}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Crop Cycle Modal */}
+      <AgriCropCycleModal
+        isOpen={isCycleModalOpen}
+        onClose={() => setIsCycleModalOpen(false)}
+        onSave={handleSaveCycle}
+        cycleToEdit={cycleToEdit}
+        parcels={parcels}
+      />
+
+      {/* Phytosanitary Treatment Modal */}
+      <AgriTreatmentModal
+        isOpen={isTreatmentModalOpen}
+        onClose={() => setIsTreatmentModalOpen(false)}
+        onSave={handleSaveTreatment}
+        logToEdit={treatmentToEdit}
+        parcels={parcels}
+        cropCycles={cropCycles}
+      />
     </div>
   );
 };

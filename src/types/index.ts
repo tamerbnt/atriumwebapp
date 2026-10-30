@@ -3329,6 +3329,7 @@ export interface AgriMilkingRecord {
   destinationDairy: string;
   dairyDeliverySlipNo?: string;
   fatContentMg?: number;
+  density?: number;
   onilSubsidyRateDzd: number; // 12 DZD/L
   onilTotalSubsidyDzd: number;
   operatorStaffId: string;

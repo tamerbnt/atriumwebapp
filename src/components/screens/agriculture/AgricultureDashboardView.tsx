@@ -20,6 +20,10 @@ export const AgricultureDashboardView: React.FC = () => {
     .filter((a) => a.dailyProductionLiters)
     .reduce((acc, a) => acc + (a.dailyProductionLiters || 0), 0);
 
+  const totalAnrhQuotaM3 = parcels.reduce((acc, p) => acc + (p.anrhAnnualQuotaM3 || 0), 0);
+  const totalAnrhConsumedM3 = parcels.reduce((acc, p) => acc + (p.anrhConsumedM3 || 0), 0);
+  const waterUsagePct = totalAnrhQuotaM3 > 0 ? Math.round((totalAnrhConsumedM3 / totalAnrhQuotaM3) * 100) : 0;
+
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
       {/* Top Header Strip with Action Toolbar */}
@@ -121,6 +125,37 @@ export const AgricultureDashboardView: React.FC = () => {
             </div>
           </div>
         </div>
+
+        {/* ANRH Borehole Irrigation Water Dial & Budget */}
+        {totalAnrhQuotaM3 > 0 && (
+          <div className="pt-3 border-t border-neutral-200 dark:border-neutral-700/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+            <div className="flex items-center gap-2">
+              <Droplets size={16} className="text-blue-500 shrink-0" />
+              <div>
+                <span className="font-bold text-neutral-800 dark:text-neutral-200">
+                  {isAr ? 'حصة مياه السقي بالآبار الارتوازية (وكالة ANRH) :' : 'Ressources Hydriques & Forages ANRH :'}
+                </span>{' '}
+                <span className="text-neutral-500">
+                  {totalAnrhConsumedM3.toLocaleString()} m³ / {totalAnrhQuotaM3.toLocaleString()} m³ {isAr ? 'مستهلكة' : 'alloués'}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <div className="w-32 bg-neutral-200 dark:bg-neutral-700 h-2 rounded-full overflow-hidden">
+                <div
+                  className={`h-full ${
+                    waterUsagePct >= 85 ? 'bg-amber-500' : 'bg-blue-500'
+                  }`}
+                  style={{ width: `${Math.min(100, waterUsagePct)}%` }}
+                />
+              </div>
+              <span className={`font-mono font-bold ${waterUsagePct >= 85 ? 'text-amber-600' : 'text-neutral-700 dark:text-neutral-300'}`}>
+                {waterUsagePct}%
+              </span>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Parcels Grid Pod Tray */}

@@ -19,6 +19,8 @@ import {
   Send,
   Droplet,
   Tag,
+  Thermometer,
+  FileText,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
 import { useAgricultureData } from './agricultureData';
@@ -26,16 +28,36 @@ import { AtriumButton } from '../../ui/AtriumButton';
 import { Seek } from '../../ui/Seek';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
-import { AgriLivestock } from '../../../types';
+import { AgriLivestock, AgriMilkingRecord, BovineBreed, CowReproStatus } from '../../../types';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { ActionButtonDef } from '../../ui/collection/CollectionListRow';
 import { OnilBordereauPrintModal } from './OnilBordereauPrintModal';
+import { AgriMilkingModal } from './AgriMilkingModal';
+import { formatMoney } from '../../../utils/rules';
 
 export const AgricultureLivestockView: React.FC = () => {
   const { language, currentBusiness, currentBranch, currentUser } = useAtriumStore();
   const isAr = language === 'ar';
-  const { livestock, milkingRecords, addLivestock, updateLivestock, deleteLivestock } = useAgricultureData();
-  const [isOnilModalOpen, setIsOnilModalOpen] = useState(false);
+  const {
+    livestock,
+    milkingRecords,
+    addLivestock,
+    updateLivestock,
+    deleteLivestock,
+    addMilkingRecord,
+    deleteMilkingRecord,
+  } = useAgricultureData();
 
+  // Mode switcher: Cheptel vs Sessions de Traite
+  const [activeTabMode, setActiveTabMode] = useState<'cheptel' | 'milking'>('cheptel');
+
+  // Modals
+  const [isOnilModalOpen, setIsOnilModalOpen] = useState(false);
+  const [isMilkingModalOpen, setIsMilkingModalOpen] = useState(false);
+  const [isAnimalModalOpen, setIsAnimalModalOpen] = useState(false);
+  const [animalToEdit, setAnimalToEdit] = useState<AgriLivestock | null>(null);
+
+  // Search & Filter
   const [searchQuery, setSearchQuery] = useState('');
   const [speciesFilter, setSpeciesFilter] = useState<string>('All');
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
@@ -44,52 +66,55 @@ export const AgricultureLivestockView: React.FC = () => {
   const [sortBy, setSortBy] = useState<string>('earTagNumber');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
 
-  // Modals & 390px Inspector Drawer State
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [animalToEdit, setAnimalToEdit] = useState<AgriLivestock | null>(null);
-
-  // Form states inside Modal
+  // Form states inside Animal Modal
   const [earTag, setEarTag] = useState('DZ-16-');
+  const [nameOrNumber, setNameOrNumber] = useState('La Noire');
   const [species, setSpecies] = useState<AgriLivestock['species']>('Bovine');
-  const [breed, setBreed] = useState('Holstein Frisonne Prime');
+  const [breed, setBreed] = useState<BovineBreed | string>('Holstein');
   const [gender, setGender] = useState<AgriLivestock['gender']>('Female');
+  const [reproStatus, setReproStatus] = useState<CowReproStatus>('Lactation');
+  const [lactationNumber, setLactationNumber] = useState('2');
   const [birthDate, setBirthDate] = useState('2023-05-10');
   const [milkProduction, setMilkProduction] = useState('25.0');
   const [healthStatus, setHealthStatus] = useState<AgriLivestock['healthStatus']>('Healthy');
   const [notes, setNotes] = useState('Vaccination à jour. Bon état corporel.');
 
   // 390px Inline Side Inspector
-  const [selectedAnimal, setSelectedAnimal] = useState<AgriLivestock | null>(() => {
-    return livestock[0] || null;
-  });
-  const [activeTab, setActiveTab] = useState<'fiche' | 'milk' | 'vet' | 'notes'>('fiche');
-  const [inspectorNotes, setInspectorNotes] = useState<string>('');
-  const [noteSaved, setNoteSaved] = useState(false);
+  const [selectedAnimal, setSelectedAnimal] = useState<AgriLivestock | null>(() => livestock[0] || null);
+  const [selectedMilking, setSelectedMilking] = useState<AgriMilkingRecord | null>(() => milkingRecords[0] || null);
+  const [inspectorTab, setInspectorTab] = useState<'fiche' | 'milk' | 'vet' | 'notes'>('fiche');
 
+  // Handlers for Animal Modal
   const openCreateModal = () => {
     setAnimalToEdit(null);
-    setEarTag(`DZ-16-${Math.floor(1000 + Math.random() * 9000)}`);
+    setEarTag(`DZ-16-${Math.floor(10000 + Math.random() * 90000)}`);
+    setNameOrNumber('Vache Laitière');
     setSpecies('Bovine');
-    setBreed('Holstein Frisonne Prime');
+    setBreed('Holstein');
     setGender('Female');
+    setReproStatus('Lactation');
+    setLactationNumber('2');
     setBirthDate('2023-05-10');
     setMilkProduction('25.0');
     setHealthStatus('Healthy');
     setNotes('Vaccination à jour. Bon état corporel.');
-    setIsModalOpen(true);
+    setIsAnimalModalOpen(true);
   };
 
   const openEditModal = (a: AgriLivestock) => {
     setAnimalToEdit(a);
     setEarTag(a.earTagNumber);
-    setSpecies(a.species);
+    setNameOrNumber(a.nameOrNumber || a.earTagNumber);
+    setSpecies(a.species || 'Bovine');
     setBreed(a.breed);
-    setGender(a.gender);
+    setGender(a.gender || 'Female');
+    setReproStatus(a.reproStatus || 'Lactation');
+    setLactationNumber(String(a.lactationNumber || 1));
     setBirthDate(a.birthDate || '2023-05-10');
-    setMilkProduction(String(a.dailyProductionLiters || '0'));
-    setHealthStatus(a.healthStatus);
+    setMilkProduction(String(a.dailyProductionLiters || a.dailyAvgLiters || '20.0'));
+    setHealthStatus(a.healthStatus || 'Healthy');
     setNotes(a.notes || '');
-    setIsModalOpen(true);
+    setIsAnimalModalOpen(true);
   };
 
   const handleSaveModal = (e: React.FormEvent) => {
@@ -106,10 +131,15 @@ export const AgricultureLivestockView: React.FC = () => {
       branchId: currentBranch?.id || 'branch_agri_main',
       staffId: currentUser?.id || 'staff_01',
       earTagNumber: earTag.trim(),
+      nameOrNumber: nameOrNumber.trim() || earTag.trim(),
       species,
       breed: breed.trim(),
       gender,
       birthDate,
+      reproStatus,
+      lactationNumber: parseInt(lactationNumber, 10) || 1,
+      dailyAvgLiters: parseFloat(milkProduction) || 0,
+      isInWithholdingLockout: healthStatus === 'InTreatment' || healthStatus === 'Quarantine',
       healthStatus,
       dailyProductionLiters: species === 'Bovine' && gender === 'Female' ? parseFloat(milkProduction) || 0 : undefined,
       notes: notes.trim(),
@@ -125,24 +155,37 @@ export const AgricultureLivestockView: React.FC = () => {
       setSelectedAnimal(payload);
       showToast(isAr ? 'تم تسجيل رأس الماشية في السجل البيطري' : 'Animal enregistré au carnet sanitaire', 'success');
     }
-    setIsModalOpen(false);
+    setIsAnimalModalOpen(false);
   };
 
+  // Filtered Animals
   const filteredAnimals = useMemo(() => {
     return livestock.filter((a) => {
-      if (speciesFilter !== 'All' && a.species !== speciesFilter) {
-        return false;
-      }
+      if (speciesFilter !== 'All' && a.species !== speciesFilter) return false;
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         const matchesTag = a.earTagNumber.toLowerCase().includes(q);
+        const matchesName = (a.nameOrNumber || '').toLowerCase().includes(q);
         const matchesBreed = (a.breed || '').toLowerCase().includes(q);
-        const matchesSpec = a.species ? a.species.toLowerCase().includes(q) : false;
-        if (!matchesTag && !matchesBreed && !matchesSpec) return false;
+        if (!matchesTag && !matchesName && !matchesBreed) return false;
       }
       return true;
     });
   }, [livestock, speciesFilter, searchQuery]);
+
+  // Filtered Milking Records
+  const filteredMilking = useMemo(() => {
+    return milkingRecords.filter((m) => {
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        const matchesDairy = m.destinationDairy.toLowerCase().includes(q);
+        const matchesSlip = (m.dairyDeliverySlipNo || '').toLowerCase().includes(q);
+        const matchesDate = m.sessionDate.toLowerCase().includes(q);
+        if (!matchesDairy && !matchesSlip && !matchesDate) return false;
+      }
+      return true;
+    });
+  }, [milkingRecords, searchQuery]);
 
   // KPIs
   const totalMilkProduction = livestock
@@ -152,6 +195,9 @@ export const AgricultureLivestockView: React.FC = () => {
   const bovineCount = livestock.filter((a) => a.species === 'Bovine').length;
   const treatmentCount = livestock.filter((a) => a.healthStatus === 'InTreatment' || a.healthStatus === 'Quarantine').length;
 
+  const totalMonthlyDeliveredLiters = milkingRecords.reduce((acc, m) => acc + m.conformingLiters, 0);
+  const totalMonthlyOnilSubsidyDzd = milkingRecords.reduce((acc, m) => acc + m.onilTotalSubsidyDzd, 0);
+
   // Actions
   const handlePin = (a: AgriLivestock) => {
     setPinnedIds((prev) => {
@@ -160,35 +206,12 @@ export const AgricultureLivestockView: React.FC = () => {
       else next.add(a.id);
       return next;
     });
-    showToast(
-      pinnedIds.has(a.id)
-        ? (isAr ? 'تم إلغاء التثبيت' : 'Animal désépinglé')
-        : (isAr ? 'تم تثبيت الحيوان' : 'Animal épinglé'),
-      'info'
-    );
   };
 
   const handleDelete = (a: AgriLivestock) => {
     deleteLivestock(a.id);
-    if (selectedAnimal?.id === a.id) {
-      setSelectedAnimal(null);
-    }
-    showToast(isAr ? 'تم حذف الحيوان من السجل' : 'Animal retiré du registre', 'success');
-  };
-
-  const handleQuickMilkYield = (a: AgriLivestock) => {
-    const currentYield = a.dailyProductionLiters || 0;
-    const newYield = Number((currentYield + 1.0).toFixed(1));
-    const updated: AgriLivestock = {
-      ...a,
-      dailyProductionLiters: newYield,
-    };
-    updateLivestock(updated);
-    if (selectedAnimal?.id === a.id) setSelectedAnimal(updated);
-    showToast(
-      isAr ? `تم تحديث إنتاج الحليب: ${newYield} L/j` : `Production laitière actualisée : ${newYield} L/jour`,
-      'success'
-    );
+    if (selectedAnimal?.id === a.id) setSelectedAnimal(null);
+    showToast(isAr ? 'تم حذف الحيوان من السجل' : 'Animal retiré du registre', 'info');
   };
 
   const handleToggleHealth = (a: AgriLivestock) => {
@@ -197,6 +220,7 @@ export const AgricultureLivestockView: React.FC = () => {
     const updated: AgriLivestock = {
       ...a,
       healthStatus: nextHealth,
+      isInWithholdingLockout: nextHealth === 'InTreatment',
     };
     updateLivestock(updated);
     if (selectedAnimal?.id === a.id) setSelectedAnimal(updated);
@@ -207,130 +231,244 @@ export const AgricultureLivestockView: React.FC = () => {
   };
 
   const handleExportCsv = () => {
-    const headers = ['N° Boucle', 'Espèce', 'Race', 'Sexe', 'Naissance', 'Statut Sanitaire', 'Production L/j', 'Notes'];
-    const rows = filteredAnimals.map((a) => [
-      a.earTagNumber,
-      a.species,
-      `"${a.breed.replace(/"/g, '""')}"`,
-      a.gender,
-      a.birthDate || '',
-      a.healthStatus,
-      a.dailyProductionLiters || 0,
-      `"${(a.notes || '').replace(/"/g, '""')}"`,
-    ]);
-    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map((e) => e.join(','))].join('\n');
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `cheptel_animaux_${new Date().toISOString().slice(0, 10)}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    showToast(isAr ? 'تم تصدير سجل الماشية CSV' : 'Export CSV du cheptel généré', 'info');
+    if (activeTabMode === 'cheptel') {
+      const headers = ['N° Boucle', 'Nom/Numéro', 'Espèce', 'Race', 'Sexe', 'Statut Repro', 'Statut Sanitaire', 'Production L/j'];
+      const rows = filteredAnimals.map((a) => [
+        a.earTagNumber,
+        `"${(a.nameOrNumber || '').replace(/"/g, '""')}"`,
+        a.species,
+        `"${a.breed.replace(/"/g, '""')}"`,
+        a.gender,
+        a.reproStatus,
+        a.healthStatus,
+        a.dailyProductionLiters || a.dailyAvgLiters || 0,
+      ]);
+      const csv = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+      const link = document.createElement('a');
+      link.href = encodeURI(csv);
+      link.download = `cheptel_bovin_${new Date().toISOString().slice(0, 10)}.csv`;
+      link.click();
+    } else {
+      const headers = ['Date', 'Session', 'Volume Total Litres', 'Volume Écarté', 'Volume Conforme', 'Température °C', 'Laiterie', 'BL N°', 'Prime ONIL (12 DA/L)'];
+      const rows = filteredMilking.map((m) => [
+        m.sessionDate,
+        m.sessionPeriod,
+        m.totalTankLiters,
+        m.rejectedWithholdingLiters,
+        m.conformingLiters,
+        m.tankTemperatureCelsius,
+        `"${m.destinationDairy.replace(/"/g, '""')}"`,
+        m.dairyDeliverySlipNo || '',
+        m.onilTotalSubsidyDzd,
+      ]);
+      const csv = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+      const link = document.createElement('a');
+      link.href = encodeURI(csv);
+      link.download = `sessions_traite_lait_${new Date().toISOString().slice(0, 10)}.csv`;
+      link.click();
+    }
+    showToast(isAr ? 'تم تصدير ملف CSV' : 'Export CSV généré', 'info');
   };
 
-  const handleSaveNotes = () => {
-    if (!selectedAnimal) return;
-    setNoteSaved(true);
-    setTimeout(() => setNoteSaved(false), 2000);
-    showToast(isAr ? 'تم حفظ ملاحظات الحيوان' : 'Carnet de l’animal mis à jour', 'success');
-  };
-
-  // Column definitions for UniversalDataCollection
-  const columns: ColumnDefinition<AgriLivestock>[] = [
+  // Columns for Cheptel
+  const animalColumns: ColumnDefinition<AgriLivestock>[] = [
     {
-      id: 'earTagNumber',
-      header: isAr ? 'رقم الحلقة' : 'N° Boucle / Tag',
+      id: 'tag',
+      header: isAr ? 'رقم الحلقة والاسم' : 'N° Boucle & Nom',
       accessorKey: 'earTagNumber',
       sortable: true,
-      minWidth: '150px',
+      minWidth: '180px',
       cell: (a) => (
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-orange-50 dark:bg-orange-950/40 text-[#C4785A] flex items-center justify-center font-mono font-bold text-xs shrink-0">
-            <Tag size={16} />
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-mono font-bold text-xs shrink-0">
+            <Tag size={15} />
           </div>
           <div>
-            <div className="font-mono font-bold text-xs text-neutral-900 dark:text-neutral-100 flex items-center gap-1.5">
+            <div className="font-mono font-bold text-xs text-neutral-900 dark:text-white">
               {a.earTagNumber}
-              {pinnedIds.has(a.id) && (
-                <Pin size={10} className="fill-[#C4785A] text-[#C4785A]" />
-              )}
             </div>
-            <div className="text-[10px] text-neutral-400 capitalize">
-              {a.species} • {a.gender === 'Female' ? 'Femelle' : 'Mâle'}
+            <div className="text-[10px] text-neutral-400">
+              {a.nameOrNumber || a.species} • {a.breed}
             </div>
           </div>
         </div>
       ),
     },
     {
-      id: 'breed',
-      header: isAr ? 'السلالة / الفصيلة' : 'Race & Génétique',
-      accessorKey: 'breed',
+      id: 'repro',
+      header: isAr ? 'الحالة التناسلية' : 'Statut Repro',
+      accessorKey: 'reproStatus',
       sortable: true,
-      minWidth: '200px',
+      minWidth: '140px',
       cell: (a) => (
-        <div>
-          <div className="font-semibold text-xs text-neutral-900 dark:text-neutral-100 line-clamp-1">
-            {a.breed}
-          </div>
-          <div className="text-[11px] text-neutral-500">
-            Né(e) le: {a.birthDate || '—'}
+        <div className="text-xs">
+          <span className="font-medium text-neutral-700 dark:text-neutral-300">
+            {a.reproStatus || 'Lactation'}
+          </span>
+          <div className="text-[10px] text-neutral-400">
+            Lactation N° {a.lactationNumber || 1}
           </div>
         </div>
       ),
     },
     {
-      id: 'healthStatus',
+      id: 'health',
       header: isAr ? 'الحالة الصحية' : 'Statut Sanitaire',
       accessorKey: 'healthStatus',
       sortable: true,
-      minWidth: '140px',
+      minWidth: '150px',
       cell: (a) => {
-        let badgeColor = 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300';
+        let badgeColor = 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300';
         let label = 'Sain / Conforme';
         if (a.healthStatus === 'InTreatment') {
-          badgeColor = 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300';
-          label = 'En Soins';
-        } else if (a.healthStatus === 'Quarantined') {
-          badgeColor = 'bg-red-50 text-red-700 border-red-200 dark:bg-red-950/40 dark:text-red-300';
+          badgeColor = 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300';
+          label = 'Traitement (Retrait)';
+        } else if (a.healthStatus === 'Quarantine') {
+          badgeColor = 'bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-300';
           label = 'Quarantaine';
         }
         return (
-          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${badgeColor}`}>
+          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${badgeColor}`}>
             {label}
           </span>
         );
       },
     },
     {
-      id: 'dailyProduction',
-      header: isAr ? 'الإنتاج اليومي' : 'Production L/j',
+      id: 'milk',
+      header: isAr ? 'الإنتاج اليومي' : 'Moyenne L/jour',
       accessorKey: 'dailyProductionLiters',
       sortable: true,
-      minWidth: '130px',
+      minWidth: '140px',
       cell: (a) => (
-        a.dailyProductionLiters ? (
-          <div className="flex items-center gap-1 font-mono font-bold text-xs text-blue-600 dark:text-blue-400">
-            <Milk size={13} />
-            <span>{a.dailyProductionLiters} L/jour</span>
+        <div className="text-xs">
+          <div className="font-mono font-bold text-neutral-900 dark:text-white">
+            {a.dailyProductionLiters || a.dailyAvgLiters || 0} L/j
           </div>
-        ) : (
-          <span className="text-neutral-400 text-xs">—</span>
-        )
+          <div className="text-[10px] text-neutral-400">
+            {a.gender === 'Female' ? 'Traite active' : 'Mâle'}
+          </div>
+        </div>
+      ),
+    },
+  ];
+
+  // Columns for Milking Sessions
+  const milkingColumns: ColumnDefinition<AgriMilkingRecord>[] = [
+    {
+      id: 'session',
+      header: isAr ? 'الجلسة والتاريخ' : 'Date & Période',
+      accessorKey: 'sessionDate',
+      sortable: true,
+      minWidth: '170px',
+      cell: (m) => (
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-blue-500/15 text-blue-600 flex items-center justify-center font-bold shrink-0">
+            <Milk size={16} />
+          </div>
+          <div>
+            <div className="font-mono font-bold text-xs text-neutral-900 dark:text-white">
+              {m.sessionDate}
+            </div>
+            <div className="text-[10px] text-neutral-400">
+              {m.sessionPeriod === 'morning' ? 'Traite du Matin' : 'Traite du Soir'}
+            </div>
+          </div>
+        </div>
       ),
     },
     {
-      id: 'notes',
-      header: isAr ? 'ملاحظات السجل' : 'Observations',
-      accessorKey: 'notes',
-      sortable: false,
-      minWidth: '180px',
-      cell: (a) => (
-        <div className="text-xs text-neutral-600 dark:text-neutral-400 truncate max-w-[200px]">
-          {a.notes || 'R.A.S'}
+      id: 'liters',
+      header: isAr ? 'اللترات المطابقة' : 'Volume Conforme',
+      accessorKey: 'conformingLiters',
+      sortable: true,
+      minWidth: '160px',
+      cell: (m) => (
+        <div className="text-xs">
+          <div className="font-mono font-bold text-neutral-900 dark:text-white">
+            {m.conformingLiters.toLocaleString()} L
+          </div>
+          {m.rejectedWithholdingLiters > 0 && (
+            <div className="text-[10px] text-amber-600 font-medium">
+              (-{m.rejectedWithholdingLiters} L écartés retrait)
+            </div>
+          )}
         </div>
       ),
+    },
+    {
+      id: 'temp',
+      header: isAr ? 'حرارة الخزان' : 'Température Tank',
+      accessorKey: 'tankTemperatureCelsius',
+      sortable: true,
+      minWidth: '140px',
+      cell: (m) => (
+        <div className="flex items-center gap-1.5 text-xs font-mono font-bold">
+          <Thermometer size={14} className={m.tankTemperatureCelsius <= 4.0 ? 'text-emerald-500' : 'text-amber-500'} />
+          <span className={m.tankTemperatureCelsius <= 4.0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600'}>
+            +{m.tankTemperatureCelsius}°C
+          </span>
+        </div>
+      ),
+    },
+    {
+      id: 'subsidy',
+      header: isAr ? 'دعم أونيل (12 دج/ل)' : 'Prime ONIL (12 DA/L)',
+      accessorKey: 'onilTotalSubsidyDzd',
+      sortable: true,
+      minWidth: '160px',
+      cell: (m) => (
+        <div className="text-xs font-mono font-bold text-[#C4785A]">
+          +{formatMoney(m.onilTotalSubsidyDzd)}
+        </div>
+      ),
+    },
+    {
+      id: 'dairy',
+      header: isAr ? 'الملبنة المستلمة' : 'Laiterie',
+      accessorKey: 'destinationDairy',
+      sortable: true,
+      minWidth: '180px',
+      cell: (m) => (
+        <div className="text-xs text-neutral-600 dark:text-neutral-400 truncate max-w-[170px]">
+          <div>{m.destinationDairy}</div>
+          <div className="text-[10px] text-neutral-400 font-mono">{m.dairyDeliverySlipNo || 'BL-Attente'}</div>
+        </div>
+      ),
+    },
+  ];
+
+  // Actions for Animal
+  const getAnimalActions = (a: AgriLivestock): ActionButtonDef[] => [
+    {
+      label: isAr ? 'تعديل' : 'Modifier',
+      icon: <Edit size={14} />,
+      onClick: () => openEditModal(a),
+    },
+    {
+      label: a.healthStatus === 'Healthy' ? (isAr ? 'حجز دوائي' : 'Retrait Vétérinaire') : (isAr ? 'إنهاء الحجز' : 'Rétablir'),
+      icon: <AlertTriangle size={14} />,
+      onClick: () => handleToggleHealth(a),
+    },
+    {
+      label: isAr ? 'حذف' : 'Supprimer',
+      icon: <Trash2 size={14} />,
+      variant: 'danger',
+      onClick: () => handleDelete(a),
+    },
+  ];
+
+  // Actions for Milking Session
+  const getMilkingActions = (m: AgriMilkingRecord): ActionButtonDef[] => [
+    {
+      label: isAr ? 'حذف الجلسة' : 'Supprimer',
+      icon: <Trash2 size={14} />,
+      variant: 'danger',
+      onClick: () => {
+        deleteMilkingRecord(m.id);
+        if (selectedMilking?.id === m.id) setSelectedMilking(null);
+        showToast(isAr ? 'تم حذف جلسة الحلب' : 'Session de traite retirée', 'info');
+      },
     },
   ];
 
@@ -345,7 +483,7 @@ export const AgricultureLivestockView: React.FC = () => {
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-xl font-bold text-neutral-900 dark:text-white">
-                {isAr ? 'إدارة الثروة الحيوانية والإنتاج اللبني' : 'Gestion du Cheptel & Production Laitière'}
+                {isAr ? 'إدارة الثروة الحيوانية والإنتاج اللبني' : 'Cheptel Bovin Laitier & Traite'}
               </h1>
               <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#C4785A]/15 text-[#C4785A]">
                 {livestock.length} {isAr ? 'رأس' : 'têtes'}
@@ -353,8 +491,8 @@ export const AgricultureLivestockView: React.FC = () => {
             </div>
             <p className="text-xs text-neutral-500 dark:text-neutral-400">
               {isAr
-                ? 'متابعة ترقيم المواشي، مراقبة الحلب، السجلات البيطرية والتناسل'
-                : 'Identification individuelle, traçabilité des boucles, contrôle laitier et prophylaxie'}
+                ? 'متابعة ترقيم الأبقار DZ-16، جلسات الحلب، تبريد الخزان ودعم أونيل'
+                : 'Identification individuelle, traçabilité des boucles, tank à lait et prime ONIL'}
             </p>
           </div>
         </div>
@@ -376,14 +514,60 @@ export const AgricultureLivestockView: React.FC = () => {
           >
             {isAr ? 'تصدير CSV' : 'Export CSV'}
           </AtriumButton>
-          <AtriumButton
-            variant="primary"
-            onClick={openCreateModal}
-            icon={<Plus size={14} />}
-          >
-            {isAr ? 'تسجيل حيوان' : 'Ajouter Animal'}
-          </AtriumButton>
+
+          {activeTabMode === 'cheptel' ? (
+            <AtriumButton
+              variant="primary"
+              onClick={openCreateModal}
+              icon={<Plus size={14} />}
+            >
+              {isAr ? 'تسجيل رأس بقر' : 'Ajouter Animal'}
+            </AtriumButton>
+          ) : (
+            <AtriumButton
+              variant="primary"
+              onClick={() => setIsMilkingModalOpen(true)}
+              icon={<Plus size={14} />}
+            >
+              {isAr ? 'تسجيل جلسة حلب' : 'Enregistrer Session de Traite'}
+            </AtriumButton>
+          )}
         </div>
+      </div>
+
+      {/* Main Switcher: Cheptel vs Milking Sessions */}
+      <div className="flex items-center gap-2 border-b border-neutral-200 dark:border-neutral-800 pb-2">
+        <button
+          type="button"
+          onClick={() => setActiveTabMode('cheptel')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition ${
+            activeTabMode === 'cheptel'
+              ? 'bg-[#C4785A] text-white shadow-xs'
+              : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+          }`}
+        >
+          <Layers size={15} />
+          {isAr ? 'سجل القطيع والترقيم (DZ-16)' : 'Cheptel & Identification (DZ-16)'}
+          <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-white/20 ml-1">
+            {livestock.length}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTabMode('milking')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition ${
+            activeTabMode === 'milking'
+              ? 'bg-[#C4785A] text-white shadow-xs'
+              : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+          }`}
+        >
+          <Milk size={15} />
+          {isAr ? 'جلسات الحلب وخزان التبريد' : 'Sessions de Traite & Tank à Lait'}
+          <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-white/20 ml-1">
+            {milkingRecords.length}
+          </span>
+        </button>
       </div>
 
       {/* Antibiotic Milk Withholding / Sécurité Sanitaire Alert Banner */}
@@ -395,593 +579,362 @@ export const AgricultureLivestockView: React.FC = () => {
               {isAr ? 'تنبيه فترة السحب الدوائي (Délai d’attente antibiotique) :' : 'Alerte Retrait Antibiotique (Délai d’Attente) :'}
             </span>{' '}
             {isAr
-              ? `${treatmentCount} رأس في مرحلة علاج بيطري. يتم حظر وصب حليبها خارج صهريج التجميع لتجنب تلويث الشحنة وإلغاء دعم ONIL.`
-              : `${treatmentCount} tête(s) en soins vétérinaires. Le lait est formellement exclu de la citerne collective de livraison ONIL pour préserver la prime de 12 DA/L.`}
+              ? `يوجد ${treatmentCount} أبقار خاضعة للعلاج البيطري. حليبها مستبعد تلقائياً من خزان التبريد لضمان مطابقة الدعم.`
+              : `${treatmentCount} vache(s) sous antibiothérapie. Lait consigné comme non-conforme et exclu du volume subventionné ONIL.`}
           </div>
-          <AtriumButton
-            variant="ghost"
-            size="sm"
-            onClick={() => setSpeciesFilter('Bovine')}
-            className="text-xs h-7 text-amber-900 dark:text-amber-200"
-          >
-            {isAr ? 'عرض الحالات' : 'Voir le lot'}
-          </AtriumButton>
         </div>
       )}
 
-      {/* Canonical 3-Card Top Metrics Pod Tray */}
-      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
-        <div>
-          <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
-            {isAr ? 'مؤشرات الأداء البيطري والإنتاجي' : 'Indicateurs Zootechniques & Sanitaires'}
-          </h2>
-          <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-            {isAr
-              ? 'تتبع الحالة الصحية للقطيع، إنتاج الحليب اليومي وتوزيع السلالات'
-              : 'Santé globale du troupeau, pic de lactation et contrôles vétérinaires périodiques'}
+      {/* Top 3-Card Metrics Tray */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
+          <span className="text-[11px] font-medium text-neutral-500">
+            {isAr ? 'الإنتاج اللبني اليومي التقديري' : 'Production Laitière Estimée'}
+          </span>
+          <div className="text-2xl font-bold font-mono text-neutral-900 dark:text-white mt-1">
+            {totalMilkProduction.toFixed(1)} <span className="text-xs font-normal text-neutral-500">L / jour</span>
+          </div>
+          <p className="text-[10.5px] text-[#C4785A] mt-0.5">
+            {bovineCount} {isAr ? 'أبقار حلوب بالضيعة' : 'vaches laitières actives'}
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {/* Card 1: Santé */}
-          <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
-            <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
-              {isAr ? 'رؤوس الماشية السليمة' : 'Cheptel Sain & Conforme'}
-            </span>
-            <div>
-              <div className="text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 font-mono tabular-nums">
-                {healthyCount} / {livestock.length}
-              </div>
-              <p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5 font-medium">
-                {Math.round((healthyCount / (livestock.length || 1)) * 100)}% {isAr ? 'مطابقة للمعاير البيطرية' : 'taux de conformité sanitaire'}
-              </p>
-            </div>
+        <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
+          <span className="text-[11px] font-medium text-neutral-500">
+            {isAr ? 'الحليب المورد للملبنات (المطابق)' : 'Lait Conforme Livré ce Mois'}
+          </span>
+          <div className="text-2xl font-bold font-mono text-emerald-600 dark:text-emerald-400 mt-1">
+            {totalMonthlyDeliveredLiters.toLocaleString()} <span className="text-xs font-normal text-neutral-500">Litres</span>
           </div>
+          <p className="text-[10.5px] text-neutral-400 mt-0.5">
+            {isAr ? 'تم استبعاد الحليب المعالج' : 'Sans résidus antibiotiques'}
+          </p>
+        </div>
 
-          {/* Card 2: Production Laitière */}
-          <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
-            <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
-              {isAr ? 'إنتاج الحليب الإجمالي اليومي' : 'Production Laitière Jour'}
-            </span>
-            <div>
-              <div className="text-2xl font-bold tracking-tight text-blue-600 dark:text-blue-400 font-mono tabular-nums">
-                {totalMilkProduction.toFixed(1)} L
-              </div>
-              <p className="text-[11px] text-blue-500 dark:text-blue-400 mt-0.5 font-medium">
-                {isAr ? 'متوسط الحلبة الصباحية والمسائية' : 'Traite matinale & vespérale'}
-              </p>
-            </div>
+        <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
+          <span className="text-[11px] font-medium text-neutral-500">
+            {isAr ? 'إجمالي مستحقات دعم ONIL' : 'Total Prime État ONIL (12 DA/L)'}
+          </span>
+          <div className="text-2xl font-bold font-mono text-[#C4785A] mt-1">
+            {formatMoney(totalMonthlyOnilSubsidyDzd)}
           </div>
-
-          {/* Card 3: Dark Espresso Anchor Card */}
-          <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-medium text-neutral-300">
-                {isAr ? 'إجمالي الأبقار الحلوب' : 'Vaches Laitières'}
-              </span>
-              <span className="bg-[#3D2817] text-[#FB923C] rounded-full px-2 py-0.5 text-[10px] font-bold">
-                Élevage Bovin
-              </span>
-            </div>
-            <div>
-              <div className="text-2xl font-black text-white font-mono tabular-nums">
-                {bovineCount} têtes
-              </div>
-              <p className="text-[11px] text-emerald-400 mt-0.5 flex items-center gap-1 font-medium">
-                <CheckCircle2 size={11} />
-                {isAr ? 'تتبع وراثي مسجل' : 'Inscrites au Herd-Book'}
-              </p>
-            </div>
-          </div>
+          <p className="text-[10.5px] text-neutral-400 mt-0.5">
+            {milkingRecords.length} {isAr ? 'وصولات تسليم مسجلة' : 'bons de livraison enregistrés'}
+          </p>
         </div>
       </div>
 
-      {/* Bottom Elevated Pod Tray Enclosing Collection & Inspector Drawer */}
-      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
-        {/* Domain Filter Header Strip */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div>
-            <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
-              {isAr ? 'سجل القطيع والمتابعة البيطرية' : 'Registre Zootechnique & Fiches Sanitaires'}
-            </h2>
-            <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-              {isAr ? 'ترقيم الأذن، إنتاج الحليب، والفحوصات الوقائية' : 'Identification individuelle par boucle, lactation et contrôles vétérinaires'}
-            </p>
-          </div>
-
-          {/* Authentic Agriculture Livestock Filter Capsules */}
-          <div className="flex items-center gap-1.5 p-1 bg-white dark:bg-neutral-800 rounded-full border border-neutral-200/80 dark:border-neutral-700/60 shadow-2xs overflow-x-auto">
-            {[
-              { id: 'All', label: isAr ? 'جميع القطيع' : 'Tout le cheptel' },
-              { id: 'Bovine', label: isAr ? 'أبقار' : 'Bovins' },
-              { id: 'Ovine', label: isAr ? 'أغنام' : 'Ovins' },
-              { id: 'Caprine', label: isAr ? 'ماعز' : 'Caprins' },
-            ].map((f) => (
-              <button
-                key={f.id}
-                onClick={() => setSpeciesFilter(f.id)}
-                className="px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer"
-                style={{
-                  backgroundColor: speciesFilter === f.id ? '#FCEEE8' : 'transparent',
-                  color: speciesFilter === f.id ? 'var(--color-accent)' : '#71717A',
-                }}
-              >
-                {f.label}
-              </button>
-            ))}
-          </div>
+      {/* Main Collection & Side Drawer Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* Left Side */}
+        <div className="lg:col-span-8">
+          {activeTabMode === 'cheptel' ? (
+            <UniversalDataCollection<AgriLivestock>
+              data={filteredAnimals}
+              columns={animalColumns}
+              keyExtractor={(a) => a.id}
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              viewMode={viewMode}
+              onViewModeChange={setViewMode}
+              selectedIds={selectedIds}
+              onSelectionChange={setSelectedIds}
+              pinnedIds={pinnedIds}
+              onPinToggle={handlePin}
+              sortBy={sortBy}
+              sortDir={sortDir}
+              onSortChange={(field: string, dir: 'asc' | 'desc') => {
+                setSortBy(field);
+                setSortDir(dir);
+              }}
+              onItemClick={(a: AgriLivestock) => setSelectedAnimal(a)}
+              customActions={(a: AgriLivestock) => getAnimalActions(a)}
+              emptyTitle={isAr ? 'لا توجد مواشي مسجلة' : 'Aucun animal enregistré'}
+            />
+          ) : (
+            <UniversalDataCollection<AgriMilkingRecord>
+              data={filteredMilking}
+              columns={milkingColumns}
+              keyExtractor={(m) => m.id}
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              viewMode={viewMode}
+              onViewModeChange={setViewMode}
+              selectedIds={selectedIds}
+              onSelectionChange={setSelectedIds}
+              pinnedIds={pinnedIds}
+              onPinToggle={(m) => {
+                const id = typeof m === 'string' ? m : m.id;
+                const next = new Set(pinnedIds);
+                if (next.has(id)) next.delete(id);
+                else next.add(id);
+                setPinnedIds(next);
+              }}
+              sortBy={sortBy}
+              sortDir={sortDir}
+              onSortChange={(field: string, dir: 'asc' | 'desc') => {
+                setSortBy(field);
+                setSortDir(dir);
+              }}
+              onItemClick={(m: AgriMilkingRecord) => setSelectedMilking(m)}
+              customActions={(m: AgriMilkingRecord) => getMilkingActions(m)}
+              emptyTitle={isAr ? 'لا توجد جلسات حلب مسجلة' : 'Aucune session de traite enregistrée'}
+            />
+          )}
         </div>
 
-        {/* Main Workspace: Left Collection + Right 390px Inspector Drawer */}
-        <div className="flex items-start gap-4">
-          {/* Main Collection Container */}
-          <div className="flex-1 min-w-0">
-            <UniversalDataCollection<AgriLivestock>
-            data={filteredAnimals}
-            columns={columns}
-            keyExtractor={(a) => a.id}
-            searchQuery={searchQuery}
-            onSearchChange={setSearchQuery}
-            searchPlaceholder={isAr ? 'بحث برقم الحلقة، الفصيلة، السلالة...' : 'Rechercher par boucle, race, espèce...'}
-            filterValue={speciesFilter}
-            onFilterChange={setSpeciesFilter}
-            filterOptions={[
-              { value: 'All', label: isAr ? 'جميع الفصائل' : 'Toutes les espèces' },
-              { value: 'Bovine', label: 'Bovins (Vaches/Génisses)' },
-              { value: 'Ovine', label: 'Ovins (Brebis/Béliers)' },
-              { value: 'Caprine', label: 'Caprins (Chèvres)' },
-              { value: 'Camelid', label: 'Camelins (Chameaux)' },
-            ]}
-            viewMode={viewMode}
-            onViewModeChange={setViewMode}
-            selectedIds={selectedIds}
-            onSelectionChange={setSelectedIds}
-            pinnedIds={pinnedIds}
-            onPinToggle={handlePin}
-            sortBy={sortBy}
-            sortDir={sortDir}
-            onSortChange={(field, dir) => {
-              setSortBy(field);
-              setSortDir(dir);
-            }}
-            onItemClick={(a) => {
-              setSelectedAnimal(a);
-            }}
-            onEdit={openEditModal}
-            onDelete={handleDelete}
-            emptyIcon={<Layers size={32} className="text-neutral-400" />}
-            emptyTitle={isAr ? 'لا توجد مواشي' : 'Aucun animal trouvé'}
-            emptyDescription={
-              searchQuery
-                ? (isAr ? 'لا توجد نتائج مطابقة لبحثك' : 'Aucun animal ne correspond à votre recherche')
-                : (isAr ? 'قم بإضافة أول رأس ماشية للسجل' : 'Enregistrez votre première bête au registre')
-            }
-            customActions={[
-              {
-                id: 'milkYield',
-                label: isAr ? 'مراقبة الحليب (+1L)' : 'Traite (+1L)',
-                icon: <Milk size={14} />,
-                onClick: handleQuickMilkYield,
-              },
-              {
-                id: 'toggleHealth',
-                label: isAr ? 'تبديل الحالة الصحية' : 'Statut Sanitaire',
-                icon: <ShieldCheck size={14} />,
-                onClick: handleToggleHealth,
-              },
-            ]}
-            renderGridCard={(a) => (
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="font-mono font-bold text-xs bg-orange-500/10 text-[#C4785A] px-2.5 py-1 rounded-lg border border-orange-500/20">
-                    {a.earTagNumber}
-                  </span>
-                  <span
-                    className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                      a.healthStatus === 'Healthy'
-                        ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
-                        : 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
-                    }`}
-                  >
-                    {a.healthStatus === 'Healthy' ? 'Sain' : a.healthStatus}
-                  </span>
-                </div>
-
-                <div>
-                  <h3 className="text-sm font-bold text-neutral-900 dark:text-white line-clamp-1">
-                    {a.breed}
-                  </h3>
-                  <div className="text-xs text-neutral-500 font-medium mt-0.5">
-                    {a.species} • {a.gender === 'Female' ? 'Femelle' : 'Mâle'}
-                  </div>
-                </div>
-
-                {a.dailyProductionLiters ? (
-                  <div className="text-xs text-blue-600 dark:text-blue-400 flex items-center justify-between bg-blue-50 dark:bg-blue-950/40 p-2 rounded-xl font-medium">
-                    <div className="flex items-center gap-1.5">
-                      <Milk size={13} />
-                      <span>Production</span>
+        {/* Right Side 390px Inspector Drawer */}
+        <div className="lg:col-span-4 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-5 shadow-xs space-y-4">
+          {activeTabMode === 'cheptel' ? (
+            selectedAnimal ? (
+              <div className="space-y-4 text-xs">
+                <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-lg bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold">
+                      <Tag size={16} />
                     </div>
-                    <span className="font-mono font-bold">{a.dailyProductionLiters} L/jour</span>
+                    <div>
+                      <h2 className="text-xs font-bold text-neutral-900 dark:text-white">
+                        {selectedAnimal.earTagNumber}
+                      </h2>
+                      <p className="text-[10px] text-neutral-400">
+                        {selectedAnimal.nameOrNumber} • {selectedAnimal.breed}
+                      </p>
+                    </div>
                   </div>
-                ) : (
-                  <div className="text-xs text-neutral-400 bg-neutral-50 dark:bg-neutral-800/40 p-2 rounded-xl">
-                    Élevage allaitant / engraissement
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                    selectedAnimal.healthStatus === 'Healthy'
+                      ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
+                      : 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
+                  }`}>
+                    {selectedAnimal.healthStatus}
+                  </span>
+                </div>
+
+                <div className="p-3 bg-neutral-50 dark:bg-neutral-800/40 rounded-xl space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-neutral-400">Espèce & Sexe:</span>
+                    <span className="font-semibold">{selectedAnimal.species} ({selectedAnimal.gender})</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-neutral-400">Race:</span>
+                    <span className="font-semibold">{selectedAnimal.breed}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-neutral-400">Date de Naissance:</span>
+                    <span className="font-mono">{selectedAnimal.birthDate}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-neutral-400">Statut Reproduction:</span>
+                    <span className="font-semibold text-neutral-800 dark:text-neutral-200">{selectedAnimal.reproStatus || 'Lactation'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-neutral-400">N° de Lactation:</span>
+                    <span className="font-mono font-bold">Lactation {selectedAnimal.lactationNumber || 1}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-neutral-400">Production L/jour:</span>
+                    <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                      {selectedAnimal.dailyProductionLiters || selectedAnimal.dailyAvgLiters || 0} L/j
+                    </span>
+                  </div>
+                </div>
+
+                {selectedAnimal.isInWithholdingLockout && (
+                  <div className="p-3 bg-amber-500/10 border border-amber-500/25 rounded-xl text-amber-800 dark:text-amber-300 flex items-start gap-2">
+                    <AlertTriangle size={15} className="text-amber-600 shrink-0 mt-0.5" />
+                    <div>
+                      <div className="font-bold">Retrait laitier actif</div>
+                      <div className="text-[11px] opacity-80 mt-0.5">
+                        Interdiction d'incorporation dans le tank collectif Giplait/Soummam.
+                      </div>
+                    </div>
                   </div>
                 )}
 
-                <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-xs text-neutral-500">
-                  <span>Naissance: <span className="font-mono text-neutral-700 dark:text-neutral-300">{a.birthDate || '—'}</span></span>
-                  <span className="truncate max-w-[110px]">{a.notes || 'R.A.S'}</span>
+                <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex gap-2">
+                  <AtriumButton
+                    variant="outline"
+                    size="sm"
+                    className="w-full"
+                    onClick={() => openEditModal(selectedAnimal)}
+                    icon={<Edit size={13} />}
+                  >
+                    {isAr ? 'تعديل البيانات' : 'Modifier Fiche'}
+                  </AtriumButton>
+                  <AtriumButton
+                    variant="ghost"
+                    size="sm"
+                    className="w-full"
+                    onClick={() => handleToggleHealth(selectedAnimal)}
+                  >
+                    {selectedAnimal.healthStatus === 'Healthy' ? 'Mettre en Soins' : 'Rétablir Sain'}
+                  </AtriumButton>
                 </div>
               </div>
-            )}
-          />
+            ) : (
+              <div className="text-center py-10 text-neutral-400 text-xs">
+                {isAr ? 'حدد رأس بقر لمعاينة التفاصيل' : 'Sélectionnez un animal pour afficher sa fiche'}
+              </div>
+            )
+          ) : selectedMilking ? (
+            <div className="space-y-4 text-xs">
+              <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-blue-500/15 text-blue-600 flex items-center justify-center font-bold">
+                    <Milk size={16} />
+                  </div>
+                  <div>
+                    <h2 className="text-xs font-bold text-neutral-900 dark:text-white">
+                      {selectedMilking.sessionDate}
+                    </h2>
+                    <p className="text-[10px] text-neutral-400">
+                      {selectedMilking.sessionPeriod === 'morning' ? 'Traite du Matin' : 'Traite du Soir'}
+                    </p>
+                  </div>
+                </div>
+                <span className="font-mono font-bold text-[#C4785A]">
+                  +{formatMoney(selectedMilking.onilTotalSubsidyDzd)}
+                </span>
+              </div>
+
+              <div className="p-3 bg-neutral-50 dark:bg-neutral-800/40 rounded-xl space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-neutral-400">Volume Total Trait:</span>
+                  <span className="font-mono font-semibold">{selectedMilking.totalTankLiters} L</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-neutral-400">Volume Écarté (Retrait):</span>
+                  <span className="font-mono text-amber-600">-{selectedMilking.rejectedWithholdingLiters} L</span>
+                </div>
+                <div className="flex justify-between pt-1 border-t border-neutral-200 dark:border-neutral-700 font-bold">
+                  <span>Volume Conforme Livré:</span>
+                  <span className="font-mono text-emerald-600">{selectedMilking.conformingLiters} L</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-neutral-400">Température Tank:</span>
+                  <span className="font-mono font-bold">+{selectedMilking.tankTemperatureCelsius}°C</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-neutral-400">Laiterie Destinataire:</span>
+                  <span className="font-medium text-neutral-800 dark:text-neutral-200">{selectedMilking.destinationDairy}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-neutral-400">N° Bon Livraison (BL):</span>
+                  <span className="font-mono">{selectedMilking.dairyDeliverySlipNo || 'N/A'}</span>
+                </div>
+              </div>
+
+              <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800">
+                <AtriumButton
+                  variant="primary"
+                  size="sm"
+                  className="w-full"
+                  onClick={() => setIsOnilModalOpen(true)}
+                  icon={<FileText size={13} />}
+                >
+                  {isAr ? 'طباعة كشف دعم ONIL' : 'Imprimer Bordereau ONIL'}
+                </AtriumButton>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-10 text-neutral-400 text-xs">
+              {isAr ? 'حدد جلسة حلب لمعاينة التفاصيل' : 'Sélectionnez une session pour afficher les détails'}
+            </div>
+          )}
         </div>
-
-        {/* 390px Inline Side Inspector Drawer */}
-        {selectedAnimal && (
-          <div className="w-[390px] shrink-0 bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 p-5 space-y-4 shadow-lg animate-in slide-in-from-right-4 duration-200">
-            {/* Drawer Header */}
-            <div className="flex items-start justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-orange-50 dark:bg-orange-950/40 text-[#C4785A] flex items-center justify-center font-bold">
-                  <Tag size={18} />
-                </div>
-                <div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="font-mono font-bold text-xs text-neutral-900 dark:text-white">
-                      {selectedAnimal.earTagNumber}
-                    </span>
-                    <span
-                      className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${
-                        selectedAnimal.healthStatus === 'Healthy'
-                          ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
-                          : 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
-                      }`}
-                    >
-                      {selectedAnimal.healthStatus}
-                    </span>
-                  </div>
-                  <p className="text-xs text-neutral-500">
-                    {selectedAnimal.breed} ({selectedAnimal.species})
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={() => setSelectedAnimal(null)}
-                className="p-1 rounded-lg text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800"
-              >
-                <X size={16} />
-              </button>
-            </div>
-
-            {/* Quick Action Pills */}
-            <div className="flex items-center gap-1.5 flex-wrap">
-              {selectedAnimal.dailyProductionLiters !== undefined && (
-                <button
-                  onClick={() => handleQuickMilkYield(selectedAnimal)}
-                  className="flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 dark:bg-blue-950/40 dark:text-blue-300 transition-colors"
-                >
-                  <Milk size={12} />
-                  {isAr ? '+1 لتر حليب' : '+1L Traite'}
-                </button>
-              )}
-              <button
-                onClick={() => handleToggleHealth(selectedAnimal)}
-                className="flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-300 transition-colors"
-              >
-                <ShieldCheck size={12} />
-                {isAr ? 'الحالة الصحية' : 'Soins/Sain'}
-              </button>
-              <button
-                onClick={() => openEditModal(selectedAnimal)}
-                className="flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg bg-neutral-100 text-neutral-700 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-300 transition-colors"
-              >
-                <Edit size={12} />
-                {isAr ? 'تعديل' : 'Modifier'}
-              </button>
-              <button
-                onClick={() => handleDelete(selectedAnimal)}
-                className="flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-950/40 dark:text-red-300 transition-colors ml-auto"
-              >
-                <Trash2 size={12} />
-              </button>
-            </div>
-
-            {/* Drawer Tabs Navigation */}
-            <div className="flex border-b border-neutral-100 dark:border-neutral-800 gap-1 text-xs">
-              <button
-                onClick={() => setActiveTab('fiche')}
-                className={`pb-2 px-2 font-medium border-b-2 transition-colors ${
-                  activeTab === 'fiche'
-                    ? 'border-[#C4785A] text-[#C4785A] font-bold'
-                    : 'border-transparent text-neutral-500 hover:text-neutral-700'
-                }`}
-              >
-                {isAr ? 'البطاقة' : 'Fiche Animal'}
-              </button>
-              <button
-                onClick={() => setActiveTab('milk')}
-                className={`pb-2 px-2 font-medium border-b-2 transition-colors ${
-                  activeTab === 'milk'
-                    ? 'border-[#C4785A] text-[#C4785A] font-bold'
-                    : 'border-transparent text-neutral-500 hover:text-neutral-700'
-                }`}
-              >
-                {isAr ? 'الحليب' : 'Lait & Traite'}
-              </button>
-              <button
-                onClick={() => setActiveTab('vet')}
-                className={`pb-2 px-2 font-medium border-b-2 transition-colors ${
-                  activeTab === 'vet'
-                    ? 'border-[#C4785A] text-[#C4785A] font-bold'
-                    : 'border-transparent text-neutral-500 hover:text-neutral-700'
-                }`}
-              >
-                {isAr ? 'البيطرة' : 'Vétérinaire'}
-              </button>
-              <button
-                onClick={() => setActiveTab('notes')}
-                className={`pb-2 px-2 font-medium border-b-2 transition-colors ${
-                  activeTab === 'notes'
-                    ? 'border-[#C4785A] text-[#C4785A] font-bold'
-                    : 'border-transparent text-neutral-500 hover:text-neutral-700'
-                }`}
-              >
-                {isAr ? 'الملاحظات' : 'Carnet'}
-              </button>
-            </div>
-
-            {/* Tab 1: Fiche */}
-            {activeTab === 'fiche' && (
-              <div className="space-y-3.5 text-xs animate-in fade-in duration-150">
-                <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3 rounded-xl space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-neutral-500">{isAr ? 'رقم الحلقة الرسمية:' : 'Boucle Auriculaire:'}</span>
-                    <span className="font-mono font-bold text-neutral-900 dark:text-white">
-                      {selectedAnimal.earTagNumber}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-neutral-500">{isAr ? 'الفصيلة:' : 'Espèce Zoologique:'}</span>
-                    <span className="font-semibold text-neutral-800 dark:text-neutral-200">
-                      {selectedAnimal.species}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-neutral-500">{isAr ? 'السلالة:' : 'Race Génétique:'}</span>
-                    <span className="font-semibold text-[#C4785A]">
-                      {selectedAnimal.breed}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-neutral-500">{isAr ? 'الجنس:' : 'Sexe:'}</span>
-                    <span className="text-neutral-800 dark:text-neutral-200">
-                      {selectedAnimal.gender === 'Female' ? 'Femelle' : 'Mâle'}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3 rounded-xl space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-neutral-500">{isAr ? 'تاريخ الميلاد:' : 'Date de Naissance:'}</span>
-                    <span className="text-neutral-800 dark:text-neutral-200 font-mono">
-                      {selectedAnimal.birthDate || '—'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-neutral-500">{isAr ? 'الحالة الصحية الحالية:' : 'Statut Sanitaire:'}</span>
-                    <span className="font-semibold text-emerald-600 dark:text-emerald-400">
-                      {selectedAnimal.healthStatus}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Tab 2: Lait & Traite */}
-            {activeTab === 'milk' && (
-              <div className="space-y-3.5 text-xs animate-in fade-in duration-150">
-                <div className="p-3.5 rounded-xl bg-blue-50/60 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/40 space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs font-semibold text-neutral-800 dark:text-neutral-200">
-                      {isAr ? 'الإنتاج اليومي المقاس' : 'Traite Journalière Relevée'}
-                    </span>
-                    <span className="font-mono font-bold text-blue-600 dark:text-blue-400 text-sm">
-                      {selectedAnimal.dailyProductionLiters ? `${selectedAnimal.dailyProductionLiters} L/jour` : 'Non laitière'}
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-neutral-500">
-                    Contrôle de lactation régulier. Teneur en matière grasse estimée à 38 g/L.
-                  </p>
-                </div>
-
-                <div className="bg-neutral-50 dark:bg-neutral-800/40 p-3 rounded-xl space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-neutral-500">Traite Matinale:</span>
-                    <span className="font-mono text-neutral-800 dark:text-neutral-200">
-                      {selectedAnimal.dailyProductionLiters ? `${(selectedAnimal.dailyProductionLiters * 0.55).toFixed(1)} L` : '—'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-neutral-500">Traite Soir:</span>
-                    <span className="font-mono text-neutral-800 dark:text-neutral-200">
-                      {selectedAnimal.dailyProductionLiters ? `${(selectedAnimal.dailyProductionLiters * 0.45).toFixed(1)} L` : '—'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-neutral-500">Mois en cours estimé:</span>
-                    <span className="font-mono font-bold text-neutral-900 dark:text-white">
-                      {selectedAnimal.dailyProductionLiters ? `${Math.round(selectedAnimal.dailyProductionLiters * 30.5)} Litres` : '—'}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Tab 3: Vétérinaire */}
-            {activeTab === 'vet' && (
-              <div className="space-y-3 text-xs animate-in fade-in duration-150">
-                <div className="p-2.5 rounded-xl border border-neutral-100 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/40 space-y-1">
-                  <div className="flex items-center justify-between font-semibold text-[11px]">
-                    <span className="text-neutral-900 dark:text-white">Vaccin Fièvre Aphteuse</span>
-                    <span className="text-emerald-600 font-mono text-[10px]">Conforme</span>
-                  </div>
-                  <p className="text-[10px] text-neutral-500">Rappel semestriel effectué par Dr. Vétérinaire Brahimi.</p>
-                </div>
-
-                <div className="p-2.5 rounded-xl border border-neutral-100 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/40 space-y-1">
-                  <div className="flex items-center justify-between font-semibold text-[11px]">
-                    <span className="text-neutral-900 dark:text-white">Dépistage Brucellose & Tuberculose</span>
-                    <span className="text-emerald-600 font-mono text-[10px]">Négatif (Indemne)</span>
-                  </div>
-                  <p className="text-[10px] text-neutral-500">Prélèvement sérologique conforme aux normes nationales.</p>
-                </div>
-
-                <div className="p-2.5 rounded-xl border border-neutral-100 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/40 space-y-1">
-                  <div className="flex items-center justify-between font-semibold text-[11px]">
-                    <span className="text-neutral-900 dark:text-white">Vermifugation & Antiparasitaire</span>
-                    <span className="text-blue-600 font-mono text-[10px]">À jour</span>
-                  </div>
-                  <p className="text-[10px] text-neutral-500">Bolus d’Ivermectine administré en début de saison.</p>
-                </div>
-              </div>
-            )}
-
-            {/* Tab 4: Carnet / Notes */}
-            {activeTab === 'notes' && (
-              <div className="space-y-3 text-xs animate-in fade-in duration-150">
-                <p className="text-neutral-500 text-[11px]">
-                  {isAr
-                    ? 'سجل التغذية الفردية والملاحظات السلوكية والتناسل:'
-                    : 'Carnet individuel d’élevage, rationnement alimentaire et insémination :'}
-                </p>
-                <textarea
-                  rows={6}
-                  value={inspectorNotes || selectedAnimal.notes || ''}
-                  onChange={(e) => setInspectorNotes(e.target.value)}
-                  placeholder={
-                    isAr
-                      ? 'سجل ملاحظات الحيوان، العلف المركز، التلقيح الاصطناعي...'
-                      : 'Noter les rations d’ensilage, date de saillie/IA, comportement au cornadis...'
-                  }
-                  className="w-full p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-xs focus:ring-1 focus:ring-[#C4785A] outline-hidden resize-none"
-                />
-                <button
-                  onClick={handleSaveNotes}
-                  className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl bg-[#C4785A] text-white hover:bg-[#a86246] transition-colors font-medium text-xs shadow-xs"
-                >
-                  {noteSaved ? (
-                    <>
-                      <Check size={14} />
-                      {isAr ? 'تم الحفظ بنجاح' : 'Carnet de l’animal mis à jour'}
-                    </>
-                  ) : (
-                    <>
-                      <Save size={14} />
-                      {isAr ? 'حفظ الملاحظات' : 'Enregistrer dans le carnet'}
-                    </>
-                  )}
-                </button>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
       </div>
 
-      {/* New / Edit Animal Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-neutral-900 rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-neutral-200 dark:border-neutral-800 space-y-5 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-orange-50 dark:bg-orange-950/40 text-[#C4785A] flex items-center justify-center font-bold">
-                  <Tag size={20} />
-                </div>
-                <div>
-                  <h2 className="text-base font-bold text-neutral-900 dark:text-white">
-                    {animalToEdit
-                      ? (isAr ? 'تعديل بيانات رأس الماشية' : 'Modifier la Fiche Animale')
-                      : (isAr ? 'تسجيل رأس ماشية جديد' : 'Enregistrer un Nouvel Animal')}
-                  </h2>
-                  <p className="text-xs text-neutral-500">
-                    {isAr ? 'ترقيم الأذن، السلالة، والتفاصيل الإنتاجية' : 'Identification par boucle, espèce, race et suivi zootechnique'}
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={() => setIsModalOpen(false)}
-                className="p-1 rounded-lg text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-              >
-                <X size={18} />
+      {/* Animal Modal */}
+      {isAnimalModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl w-full max-w-lg p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
+              <h2 className="text-base font-bold text-neutral-900 dark:text-white">
+                {animalToEdit
+                  ? (isAr ? 'تعديل بيانات رأس الماشية' : 'Modifier Fiche Bovine')
+                  : (isAr ? 'تسجيل رأس ماشية في السجل' : 'Ajouter un Animal au Cheptel')}
+              </h2>
+              <button onClick={() => setIsAnimalModalOpen(false)}>
+                <X size={18} className="text-neutral-400" />
               </button>
             </div>
 
             <form onSubmit={handleSaveModal} className="space-y-4">
-              <LabelInput
-                label={isAr ? 'رقم الحلقة / البوكل *' : 'Numéro de Boucle (Tag) *'}
-                placeholder="Ex: DZ-16-0921"
-                value={earTag}
-                onChange={(e) => setEarTag(e.target.value)}
-                required
-              />
-
               <div className="grid grid-cols-2 gap-3">
-                <LabelSelect
-                  label={isAr ? 'الفصيلة' : 'Espèce'}
-                  value={species}
-                  onChange={(e) => setSpecies(e.target.value as AgriLivestock['species'])}
-                  options={[
-                    { value: 'Bovine', label: 'Bovins (Vaches/Génisses)' },
-                    { value: 'Ovine', label: 'Ovins (Brebis/Béliers)' },
-                    { value: 'Caprine', label: 'Caprins (Chèvres)' },
-                    { value: 'Camelid', label: 'Camelins (Chameaux)' },
-                  ]}
+                <LabelInput
+                  label={isAr ? 'رقم الحلقة الرسمي (DZ-16) *' : 'N° Boucle Officiel (DZ-16) *'}
+                  placeholder="Ex: DZ-16-10482"
+                  value={earTag}
+                  onChange={(e) => setEarTag(e.target.value)}
+                  required
                 />
-                <LabelSelect
-                  label={isAr ? 'الجنس' : 'Sexe'}
-                  value={gender}
-                  onChange={(e) => setGender(e.target.value as AgriLivestock['gender'])}
-                  options={[
-                    { value: 'Female', label: 'Femelle' },
-                    { value: 'Male', label: 'Mâle' },
-                  ]}
+                <LabelInput
+                  label={isAr ? 'اسم أو رقم التعريف' : 'Nom / Numéro Vache'}
+                  placeholder="Ex: La Blanche"
+                  value={nameOrNumber}
+                  onChange={(e) => setNameOrNumber(e.target.value)}
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
+                <LabelSelect
+                  label={isAr ? 'النوع *' : 'Espèce *'}
+                  value={species || 'Bovine'}
+                  onChange={(val) => setSpecies(val as AgriLivestock['species'])}
+                  options={[
+                    { value: 'Bovine', label: 'Bovine (Bétail Laitier)' },
+                    { value: 'Ovine', label: 'Ovine (Moutons)' },
+                    { value: 'Caprine', label: 'Caprine (Chèvres)' },
+                  ]}
+                />
                 <LabelInput
-                  label={isAr ? 'السلالة' : 'Race'}
-                  placeholder="Ex: Holstein Frisonne, Montbéliarde..."
+                  label={isAr ? 'السلالة *' : 'Race *'}
+                  placeholder="Ex: Holstein, Montbéliarde"
                   value={breed}
                   onChange={(e) => setBreed(e.target.value)}
                   required
                 />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <LabelSelect
+                  label={isAr ? 'الحالة التناسلية *' : 'Statut Reproduction *'}
+                  value={reproStatus}
+                  onChange={(val) => setReproStatus(val as CowReproStatus)}
+                  options={[
+                    { value: 'Lactation', label: 'Lactation (En Traite)' },
+                    { value: 'Génisse', label: 'Génisse (Jeune Femelle)' },
+                    { value: 'Tarissement', label: 'Tarissement (Repos)' },
+                    { value: 'Gestante', label: 'Gestante (Pleine)' },
+                    { value: 'Quarantaine', label: 'Quarantaine / Soins' },
+                    { value: 'Réformée', label: 'Réformée' },
+                  ]}
+                />
+                <LabelInput
+                  label={isAr ? 'الإنتاج اليومي (لتر) *' : 'Production Moyenne (L/j) *'}
+                  type="number"
+                  step="0.5"
+                  value={milkProduction}
+                  onChange={(e) => setMilkProduction(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
                 <LabelInput
                   label={isAr ? 'تاريخ الميلاد' : 'Date de Naissance'}
                   type="date"
                   value={birthDate}
                   onChange={(e) => setBirthDate(e.target.value)}
                 />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <LabelInput
-                  label={isAr ? 'الإنتاج اليومي (لتر/يوم)' : 'Production Lait (L/j)'}
-                  type="number"
-                  step="0.1"
-                  value={milkProduction}
-                  onChange={(e) => setMilkProduction(e.target.value)}
-                />
                 <LabelSelect
-                  label={isAr ? 'الحالة الصحية' : 'Statut Sanitaire'}
-                  value={healthStatus}
-                  onChange={(e) => setHealthStatus(e.target.value as AgriLivestock['healthStatus'])}
+                  label={isAr ? 'الحالة الصحية *' : 'Statut Sanitaire *'}
+                  value={healthStatus || 'Healthy'}
+                  onChange={(val) => setHealthStatus(val as AgriLivestock['healthStatus'])}
                   options={[
-                    { value: 'Healthy', label: 'Sain (Healthy)' },
-                    { value: 'InTreatment', label: 'En Traitement / Soins' },
+                    { value: 'Healthy', label: 'Sain / Conforme' },
+                    { value: 'InTreatment', label: 'En Soins (Retrait Lait)' },
                     { value: 'Quarantine', label: 'Quarantaine' },
                     { value: 'Sick', label: 'Malade' },
                   ]}
@@ -989,20 +942,17 @@ export const AgricultureLivestockView: React.FC = () => {
               </div>
 
               <LabelInput
-                label={isAr ? 'ملاحظات وتوجيهات' : 'Observations & Prophylaxie'}
-                placeholder="Ex: Vaccination aphteuse à jour, alimentation foin de luzerne..."
+                label={isAr ? 'ملاحظات بيطرية وتطعيمات' : 'Observations & Prophylaxie'}
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
               />
 
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
-                <AtriumButton variant="ghost" size="sm" onClick={() => setIsModalOpen(false)}>
+              <div className="flex justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
+                <AtriumButton variant="ghost" size="sm" onClick={() => setIsAnimalModalOpen(false)}>
                   {isAr ? 'إلغاء' : 'Annuler'}
                 </AtriumButton>
                 <AtriumButton variant="primary" size="sm" type="submit">
-                  {animalToEdit
-                    ? (isAr ? 'حفظ التعديلات' : 'Enregistrer')
-                    : (isAr ? 'تسجيل الحيوان' : 'Enregistrer l’Animal')}
+                  {animalToEdit ? 'Enregistrer' : 'Ajouter Animal'}
                 </AtriumButton>
               </div>
             </form>
@@ -1010,12 +960,25 @@ export const AgricultureLivestockView: React.FC = () => {
         </div>
       )}
 
-      {/* Official A4 ONIL Raw Milk Subsidy Bordereau Print Modal */}
+      {/* Milking Modal */}
+      <AgriMilkingModal
+        isOpen={isMilkingModalOpen}
+        onClose={() => setIsMilkingModalOpen(false)}
+        onSave={(rec) => {
+          addMilkingRecord(rec);
+          setSelectedMilking(rec);
+          setIsMilkingModalOpen(false);
+          showToast(isAr ? 'تم قيد جلسة الحلب بنجاح' : 'Session de traite enregistrée', 'success');
+        }}
+        dairyCows={livestock}
+      />
+
+      {/* Official ONIL Subsidy Print Modal */}
       <OnilBordereauPrintModal
         isOpen={isOnilModalOpen}
         onClose={() => setIsOnilModalOpen(false)}
         milkingRecords={milkingRecords}
-        dairyCows={livestock as any}
+        dairyCows={livestock}
       />
     </div>
   );

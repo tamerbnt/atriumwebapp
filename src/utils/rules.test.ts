@@ -503,3 +503,108 @@ test('Category 10 Auto Garage: Quadruple Traceability and Bay Models', async () 
   }
 });
 
+test('Category 17 Agriculture: Irrigation Runtime & ANRH Borehole Water Budget', async () => {
+  const { calculateIrrigationRunTime, checkAnrhQuotaStatus } = await import('./agriRules.ts');
+
+  // 15 ha, 4.0 mm/day ETC, pump flow 60 m3/h -> 15 * 40 = 600 m3 / 60 = 10 hours
+  const hours = calculateIrrigationRunTime(15, 4.0, 60);
+  assert.equal(hours, 10);
+
+  // ANRH Quota warning at 85%
+  const normal = checkAnrhQuotaStatus(40000, 100000);
+  assert.equal(normal.percentageUsed, 40);
+  assert.equal(normal.isWarning, false);
+  assert.equal(normal.isExceeded, false);
+
+  const warn = checkAnrhQuotaStatus(87000, 100000);
+  assert.equal(warn.percentageUsed, 87);
+  assert.equal(warn.isWarning, true);
+
+  const exceeded = checkAnrhQuotaStatus(102000, 100000);
+  assert.equal(exceeded.isExceeded, true);
+  assert.equal(exceeded.remainingM3, 0);
+});
+
+test('Category 17 Agriculture: INPV DAR Safety Remanence & Harvest Lockout', async () => {
+  const { evaluateDarSafety } = await import('./agriRules.ts');
+
+  const treatmentDate = '2026-05-01';
+  const darDays = 14;
+
+  // Day 5 -> Locked with 9 days left
+  const earlyCheck = evaluateDarSafety(treatmentDate, darDays, '2026-05-06');
+  assert.equal(earlyCheck.isLocked, true);
+  assert.equal(earlyCheck.daysRemaining, 9);
+  assert.equal(earlyCheck.harvestAllowedDateStr, '2026-05-15');
+
+  // Day 15 -> Unlocked
+  const clearCheck = evaluateDarSafety(treatmentDate, darDays, '2026-05-15');
+  assert.equal(clearCheck.isLocked, false);
+  assert.equal(clearCheck.daysRemaining, 0);
+});
+
+test('Category 17 Agriculture: Harvester Piecework Wage & Cash Advances', async () => {
+  const { calculatePieceworkWage } = await import('./agriRules.ts');
+
+  // 75 crates at 40 DZD/crate with 800 DZD advance
+  const wage = calculatePieceworkWage(75, 40, 800);
+  assert.equal(wage.grossWageDzd, 3000);
+  assert.equal(wage.advanceDzd, 800);
+  assert.equal(wage.netDueDzd, 2200);
+});
+
+test('Category 17 Agriculture: ONIL 12 DZD/L Milk Subsidy & Antibiotic Withholding', async () => {
+  const { computeOnilMilkSubsidy } = await import('./agriRules.ts');
+
+  // 1,200 L collected, 150 L from cows under antibiotic treatment
+  // Conforming: 1,050 L * 12 DZD/L = 12,600 DZD
+  const subsidy = computeOnilMilkSubsidy(1200, 150, 12);
+  assert.equal(subsidy.conformingLiters, 1050);
+  assert.equal(subsidy.rejectedLiters, 150);
+  assert.equal(subsidy.subsidyAmountDzd, 12600);
+});
+
+test('Category 17 Agriculture: Weighbridge Double-Pesée & Article 317 Timbre Gradué', async () => {
+  const { calculateWeighbridgeNetWeight, calculateArt317Timbre } = await import('./agriRules.ts');
+
+  // Truck gross 16,800 kg, truck tare 4,500 kg, 400 crates at 1.8 kg (720 kg)
+  // Net = 16,800 - 4,500 - 720 = 11,580 kg (115.80 Qx)
+  const weigh = calculateWeighbridgeNetWeight(16800, 4500, 400, 1.8);
+  assert.equal(weigh.totalCrateTareKg, 720);
+  assert.equal(weigh.netWeightKg, 11580);
+  assert.equal(weigh.netWeightQuintaux, 115.8);
+  assert.equal(weigh.isValid, true);
+
+  // Cash 950,000 DZD -> 1% is 9,500 DZD -> capped at 2,500 DZD statutory ceiling
+  const cashStamp = calculateArt317Timbre(950000, 'cash');
+  assert.equal(cashStamp, 2500);
+
+  // BaridiMob / Virement -> 0 DZD (exempt)
+  const bankStamp = calculateArt317Timbre(950000, 'baridimob');
+  assert.equal(bankStamp, 0);
+});
+
+test('Category 17 Agriculture: Quadruple Traceability on Parcels, Cycles, Milking and Tickets', async () => {
+  const { INITIAL_PARCELS, INITIAL_DAIRY_COWS, INITIAL_MILKING_RECORDS, INITIAL_WEIGHBRIDGE_TICKETS } = await import(
+    '../components/screens/agriculture/agricultureData.ts'
+  );
+
+  assert.ok(INITIAL_PARCELS.length >= 2, 'Must seed parcels');
+  assert.ok(INITIAL_DAIRY_COWS.length >= 4, 'Must seed dairy cattle');
+  assert.ok(INITIAL_MILKING_RECORDS.length >= 2, 'Must seed milking records');
+  assert.ok(INITIAL_WEIGHBRIDGE_TICKETS.length >= 2, 'Must seed weighbridge tickets');
+
+  for (const parcel of INITIAL_PARCELS) {
+    assert.ok(parcel.accountId, 'Parcel must have accountId');
+    assert.ok(parcel.businessId, 'Parcel must have businessId');
+    assert.ok(parcel.branchId, 'Parcel must have branchId');
+    assert.ok(parcel.staffId, 'Parcel must have staffId');
+    assert.ok(parcel.cadastralSection, 'Parcel must have cadastral section');
+  }
+
+  for (const cow of INITIAL_DAIRY_COWS) {
+    assert.ok(cow.earTagNumber.startsWith('DZ-'), 'Ear tag must be DZ-16 compliant');
+  }
+});
+
+
