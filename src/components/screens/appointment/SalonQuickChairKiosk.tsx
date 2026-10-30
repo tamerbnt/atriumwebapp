@@ -173,7 +173,7 @@ export const SalonQuickChairKiosk: React.FC = () => {
       [targetStationId]: {
         clientName: newClientName.trim() || (isRtl ? 'زبون صالون' : 'Client Salon'),
         serviceName: service?.name || 'Prestation Salon',
-        servicePriceDzd: service?.price?.amount || 1500,
+        servicePriceDzd: service?.price || 1500,
         stylistName: stylist?.fullName || 'Styliste',
         stylistId: stylist?.id || 'stf_01',
         stage: 'waiting',
@@ -534,7 +534,7 @@ export const SalonQuickChairKiosk: React.FC = () => {
                 >
                   {servicesCatalog.map((s) => (
                     <option key={s.id} value={s.id}>
-                      {s.name} — {formatMoney(s.price.amount, 'DZD')}
+                      {s.name} — {formatMoney(s.price, 'DZD')}
                     </option>
                   ))}
                 </select>

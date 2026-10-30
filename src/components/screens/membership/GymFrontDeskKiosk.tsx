@@ -22,7 +22,6 @@ import { calculateArt317Timbre, formatMoney } from '../../../utils/rules';
 export const GymFrontDeskKiosk: React.FC = () => {
   const {
     members,
-    plansByBranch,
     currentBranchId,
     currentBusinessId,
     account,
@@ -102,7 +101,7 @@ export const GymFrontDeskKiosk: React.FC = () => {
     return members.filter(
       (m) =>
         m.fullName.toLowerCase().includes(q) ||
-        (m.phone && m.phone.includes(q)) ||
+        (m.phoneNumber && m.phoneNumber.includes(q)) ||
         (m.cardId && m.cardId.toLowerCase().includes(q)) ||
         m.id.toLowerCase().includes(q)
     ).slice(0, 5);
@@ -111,7 +110,7 @@ export const GymFrontDeskKiosk: React.FC = () => {
   // Execute Check-In verification
   const handleValidateCheckIn = (member: Member) => {
     const now = new Date();
-    const expiry = member.endDate ? new Date(member.endDate) : null;
+    const expiry = member.expirationDate ? new Date(member.expirationDate) : null;
     const daysUntilExpiry = expiry ? Math.ceil((expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)) : 999;
 
     let status: 'Granted' | 'Warning_Expiring' | 'Denied_Expired' | 'Denied_Frozen' = 'Granted';
@@ -160,8 +159,8 @@ export const GymFrontDeskKiosk: React.FC = () => {
       staffId: currentUser?.id || 'staff_01',
       memberId: member.id,
       memberName: member.fullName,
-      planId: member.planId || 'standard_plan',
-      planName: member.planName || 'Pass Standard',
+      planId: member.membershipPlanId || 'standard_plan',
+      planName: member.membershipPlanName || 'Pass Standard',
       timestamp: new Date().toISOString(),
       accessStatus: status,
       remainingSessionsBefore: remainingBefore,
@@ -185,7 +184,7 @@ export const GymFrontDeskKiosk: React.FC = () => {
       (m) =>
         m.cardId?.toLowerCase() === scanInput.trim().toLowerCase() ||
         m.id.toLowerCase() === scanInput.trim().toLowerCase() ||
-        (m.phone && m.phone.trim() === scanInput.trim())
+        (m.phoneNumber && m.phoneNumber.trim() === scanInput.trim())
     );
 
     if (exactMatch) {
@@ -324,7 +323,7 @@ export const GymFrontDeskKiosk: React.FC = () => {
                         </div>
                         <div>
                           <p className="text-xs font-bold text-neutral-900 dark:text-white">{m.fullName}</p>
-                          <p className="text-2xs text-neutral-500">{m.phone || m.id} • {m.planName}</p>
+                          <p className="text-2xs text-neutral-500">{m.phoneNumber || m.id} • {m.membershipPlanName || 'Pass'}</p>
                         </div>
                       </div>
                       <span
@@ -402,13 +401,13 @@ export const GymFrontDeskKiosk: React.FC = () => {
                       <div>
                         <span className="text-neutral-400 block text-2xs">{isRtl ? 'الاشتراك' : 'Formule'}</span>
                         <span className="font-semibold text-neutral-800 dark:text-neutral-200">
-                          {lastCheckInResult.member.planName || 'Standard'}
+                          {lastCheckInResult.member.membershipPlanName || 'Standard'}
                         </span>
                       </div>
                       <div>
                         <span className="text-neutral-400 block text-2xs">{isRtl ? 'تاريخ الانتهاء' : 'Validité jusqu\'au'}</span>
                         <span className="font-semibold text-neutral-800 dark:text-neutral-200">
-                          {lastCheckInResult.member.endDate || '—'}
+                          {lastCheckInResult.member.expirationDate || '—'}
                         </span>
                       </div>
                       <div>

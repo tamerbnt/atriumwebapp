@@ -62,7 +62,10 @@ export const EducationStudentsView: React.FC = () => {
     addEduEnrollment,
     setScreen,
     showToast,
+    activeEducationRole,
   } = useAtriumStore();
+
+  const isStaff = activeEducationRole === 'staff';
 
   // Auto-heal empty students directory safely once on mount
   const hasAutoHealed = useRef(false);
@@ -314,7 +317,8 @@ export const EducationStudentsView: React.FC = () => {
     });
   }, [filteredStudents, pinnedStudentIds, studentSortBy, studentSortDir]);
 
-  const studentColumns: ColumnDefinition<EduStudent>[] = useMemo(() => [
+  const studentColumns: ColumnDefinition<EduStudent>[] = useMemo(() => {
+    const cols: ColumnDefinition<EduStudent>[] = [
     {
       key: 'student',
       header: t('edu_col_student'),
@@ -426,7 +430,9 @@ export const EducationStudentsView: React.FC = () => {
           <span className="text-neutral-400">Adult / Self</span>
         ),
     },
-  ], [eduEnrollments, t]);
+    ];
+    return cols.filter((c) => !isStaff || c.key !== 'tuition');
+  }, [eduEnrollments, t, isStaff]);
 
   const handleExportCSV = () => {
     const headers = [
@@ -709,23 +715,31 @@ export const EducationStudentsView: React.FC = () => {
               </div>
             </div>
 
-            {/* Inset Card 3: DARK ESPRESSO CARD (#1F1D1B) — Total Collected Tuition */}
+            {/* Inset Card 3: DARK ESPRESSO CARD (#1F1D1B) — Total Collected Tuition / Cohortes (Masked for Staff) */}
             <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-medium text-neutral-400">
-                  {language === 'ar' ? 'إجمالي التحصيل الدراسي' : language === 'fr' ? 'Frais Scolaires Encaissés' : 'Collected Tuition'}
+                  {isStaff
+                    ? (language === 'ar' ? 'الأفواج والبرامج' : language === 'fr' ? 'Promotions & Cohortes' : 'Cohorts & Programs')
+                    : (language === 'ar' ? 'إجمالي التحصيل الدراسي' : language === 'fr' ? 'Frais Scolaires Encaissés' : 'Collected Tuition')}
                 </span>
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30 inline-block">
-                  {language === 'ar' ? 'التحصيل الأكاديمي' : language === 'fr' ? 'Trimestre Actuel' : 'Active Term Inflow'}
+                  {isStaff
+                    ? (language === 'ar' ? 'النشطة' : 'Actives')
+                    : (language === 'ar' ? 'التحصيل الأكاديمي' : language === 'fr' ? 'Trimestre Actuel' : 'Active Term Inflow')}
                 </span>
               </div>
               <div>
                 <span className="text-2xl font-bold text-[#FB923C] tabular-nums tracking-tight font-mono">
-                  {formatMoney(totalBilledEquiv)}
+                  {isStaff ? `${eduCohorts.length} ${language === 'ar' ? 'فوج' : 'cohortes'}` : formatMoney(totalBilledEquiv)}
                 </span>
                 <p className="text-[11px] text-neutral-400 mt-0.5 flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-[#FB923C] animate-pulse" />
-                  <span>{language === 'ar' ? 'المستحقات الأكاديمية المسواة' : 'Recouvrement scolarité actif'}</span>
+                  <span>
+                    {isStaff
+                      ? (language === 'ar' ? 'أفواج دراسية تحت الإشراف' : 'Programmes d\'enseignement en cours')
+                      : (language === 'ar' ? 'المستحقات الأكاديمية المسواة' : 'Recouvrement scolarité actif')}
+                  </span>
                 </p>
               </div>
             </div>
@@ -765,7 +779,7 @@ export const EducationStudentsView: React.FC = () => {
                   { id: 'all', label: t('edu_filter_all'), count: eduStudents.length },
                   { id: 'active', label: t('edu_status_active'), count: eduStudents.filter((s) => s.status === 'Active').length },
                   { id: 'minors', label: t('edu_filter_minors') },
-                  { id: 'overdue', label: t('edu_tuition_overdue') },
+                  ...(!isStaff ? [{ id: 'overdue', label: t('edu_tuition_overdue') }] : []),
                   { id: 'graduated', label: t('edu_status_graduated') },
                 ].map((tab) => (
                   <button
@@ -952,7 +966,7 @@ export const EducationStudentsView: React.FC = () => {
               <div className="flex items-center gap-1 p-1 bg-neutral-100 dark:bg-neutral-800/80 rounded-xl overflow-x-auto">
                 {[
                   { id: 'academic', label: t('edu_drawer_academic') },
-                  { id: 'financial', label: t('edu_drawer_financial') },
+                  ...(!isStaff ? [{ id: 'financial', label: t('edu_drawer_financial') }] : []),
                   { id: 'guardian', label: t('edu_drawer_guardian') },
                   { id: 'certificates', label: t('edu_drawer_certificates') },
                 ].map((tb) => (
@@ -973,7 +987,7 @@ export const EducationStudentsView: React.FC = () => {
 
             {/* Drawer Body */}
             <div className="flex-1 overflow-y-auto p-5 space-y-5 text-xs">
-              {activeDrawerTab === 'academic' && (
+              {(activeDrawerTab === 'academic' || (isStaff && activeDrawerTab === 'financial')) && (
                 <div className="space-y-4">
                   {/* Current Active Cohorts */}
                   <div>
@@ -997,10 +1011,12 @@ export const EducationStudentsView: React.FC = () => {
                                 {enr.status}
                               </span>
                             </div>
-                            <div className="text-[11px] text-neutral-500">
-                              Agreed Tuition: {formatMoney(enr.agreedTuition)} · Paid:{' '}
-                              {formatMoney(enr.paidAmount)}
-                            </div>
+                            {!isStaff && (
+                              <div className="text-[11px] text-neutral-500">
+                                Agreed Tuition: {formatMoney(enr.agreedTuition)} · Paid:{' '}
+                                {formatMoney(enr.paidAmount)}
+                              </div>
+                            )}
                           </div>
                         ))}
                       </div>
@@ -1076,7 +1092,7 @@ export const EducationStudentsView: React.FC = () => {
                 </div>
               )}
 
-              {activeDrawerTab === 'financial' && (
+              {!isStaff && activeDrawerTab === 'financial' && (
                 <div className="space-y-4">
                   {studentEnrollments.map((enr) => (
                     <div

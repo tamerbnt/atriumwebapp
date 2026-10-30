@@ -50,6 +50,9 @@ import { AppointmentScheduleView } from './components/screens/appointment/Appoin
 import { AppointmentServicesView } from './components/screens/appointment/AppointmentServicesView';
 import { AppointmentFinanceView } from './components/screens/appointment/AppointmentFinanceView';
 import { AppointmentHistoryView } from './components/screens/appointment/AppointmentHistoryView';
+import { GymFrontDeskKiosk } from './components/screens/membership/GymFrontDeskKiosk';
+import { SalonQuickChairKiosk } from './components/screens/appointment/SalonQuickChairKiosk';
+import { AcademyRollCallKiosk } from './components/screens/education/AcademyRollCallKiosk';
 import { PosDashboardView } from './components/screens/pos/PosDashboardView';
 import { PosRegisterView } from './components/screens/pos/PosRegisterView';
 import { PosInventoryView } from './components/screens/pos/PosInventoryView';
@@ -139,6 +142,10 @@ export default function App() {
     activeRealEstateRole,
     activeManufacturingRole,
     activeAgriRole,
+    activeMembershipRole,
+    activeAppointmentRole,
+    activePosRole,
+    activeEducationRole,
   } = useAtriumStore();
 
   // Onboarding wizard plays on initial boot or when explicitly requested
@@ -359,6 +366,26 @@ export default function App() {
 
     const isEducation = currentBusiness?.category === 'education_cohort';
     if (isEducation) {
+      if (activeEducationRole === 'staff') {
+        switch (activeScreen) {
+          case 'dashboard':
+          case 'analytics':
+            return <AcademyRollCallKiosk />;
+          case 'scheduler':
+            return <EducationTimetableView />;
+          case 'members':
+            return <EducationStudentsView />;
+          case 'shop':
+            return <EducationCohortsView />;
+          case 'registrations':
+            return <EducationAdmissionsView />;
+          case 'finance':
+          case 'settings':
+          default:
+            return <AcademyRollCallKiosk />;
+        }
+      }
+
       switch (activeScreen) {
         case 'dashboard':
           return <EducationDashboardView />;
@@ -710,6 +737,27 @@ export default function App() {
 
     const isMembership = currentBusiness?.category === 'membership_session';
     if (isMembership) {
+      if (activeMembershipRole === 'staff') {
+        switch (activeScreen) {
+          case 'dashboard':
+            return <GymFrontDeskKiosk />;
+          case 'members':
+            return (
+              <MembershipMembersView
+                onAddMember={handleOpenAddMember}
+                onEditMember={handleOpenEditMember}
+              />
+            );
+          case 'registrations':
+            return <MembershipRegistrationsView onAddLead={() => setIsLeadModalOpen(true)} />;
+          case 'finance':
+          case 'analytics':
+          case 'settings':
+          default:
+            return <GymFrontDeskKiosk />;
+        }
+      }
+
       switch (activeScreen) {
         case 'dashboard':
           return (
@@ -751,6 +799,27 @@ export default function App() {
 
     const isAppointment = currentBusiness?.category === 'appointment_service';
     if (isAppointment) {
+      if (activeAppointmentRole === 'staff') {
+        switch (activeScreen) {
+          case 'dashboard':
+            return <SalonQuickChairKiosk />;
+          case 'scheduler':
+            return <AppointmentScheduleView />;
+          case 'members':
+            return (
+              <AppointmentClientsView
+                onAddMember={handleOpenAddMember}
+                onEditMember={handleOpenEditMember}
+              />
+            );
+          case 'finance':
+          case 'analytics':
+          case 'settings':
+          default:
+            return <SalonQuickChairKiosk />;
+        }
+      }
+
       switch (activeScreen) {
         case 'dashboard':
           return (
@@ -792,6 +861,25 @@ export default function App() {
 
     const isPOS = currentBusiness?.category === 'pos_inventory';
     if (isPOS) {
+      if (activePosRole === 'staff') {
+        switch (activeScreen) {
+          case 'dashboard':
+          case 'shop':
+            return <PosRegisterView initialTab="register" />;
+          case 'scheduler':
+            return <PosInventoryView />;
+          case 'registrations':
+          case 'members':
+            return <PosOrdersView />;
+          case 'finance':
+          case 'history':
+          case 'analytics':
+          case 'settings':
+          default:
+            return <PosRegisterView initialTab="register" />;
+        }
+      }
+
       switch (activeScreen) {
         case 'dashboard':
           return (

@@ -55,7 +55,10 @@ export const PosInventoryView: React.FC = () => {
     createB2bSupplier,
     currentBusiness,
     currentBranchId,
+    activePosRole,
   } = useAtriumStore();
+
+  const isStaff = activePosRole === 'staff';
 
   // Filters
   const [categoryFilter, setCategoryFilter] = useState<string>('All');
@@ -340,7 +343,8 @@ export const PosInventoryView: React.FC = () => {
   }, [products]);
 
   // Columns for Inventory UniversalDataCollection
-  const productColumns: ColumnDefinition<Product>[] = useMemo(() => [
+  const productColumns: ColumnDefinition<Product>[] = useMemo(() => {
+    const cols: ColumnDefinition<Product>[] = [
     {
       key: 'name',
       header: language === 'ar' ? 'المنتج / الصنف' : t('shop_col_item'),
@@ -494,7 +498,10 @@ export const PosInventoryView: React.FC = () => {
         </div>
       ),
     },
-  ], [language, t, deleteProduct]);
+  ];
+
+  return cols.filter((c) => !isStaff || c.key !== 'cost');
+}, [language, t, deleteProduct, isStaff]);
 
   // Columns for Purchases UniversalDataCollection
   const purchaseColumns: ColumnDefinition<PurchaseDocument>[] = useMemo(() => [
@@ -897,41 +904,43 @@ export const PosInventoryView: React.FC = () => {
         </div>
 
         {/* Sub-tab Navigation: Catalog Stock vs Achats & Fournisseurs */}
-        <div className="flex items-center gap-1.5 p-1 bg-neutral-100 dark:bg-neutral-850 rounded-xl w-fit border border-neutral-200 dark:border-neutral-800">
-          <button
-            type="button"
-            onClick={() => setActiveSubTab('inventory')}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
-              activeSubTab === 'inventory'
-                ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-2xs'
-                : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
-            }`}
-          >
-            <Boxes size={14} className={activeSubTab === 'inventory' ? 'text-[#C4785A]' : ''} />
-            <span>{t('nav_pos_inventory_tab_stock') || (language === 'ar' ? 'المخزون والمنتجات' : 'État des Stocks & Catalogue')}</span>
-            <span className="text-[10px] font-mono text-neutral-400">({inventoryStats.totalSKUs})</span>
-          </button>
+        {!isStaff && (
+          <div className="flex items-center gap-1.5 p-1 bg-neutral-100 dark:bg-neutral-850 rounded-xl w-fit border border-neutral-200 dark:border-neutral-800">
+            <button
+              type="button"
+              onClick={() => setActiveSubTab('inventory')}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+                activeSubTab === 'inventory'
+                  ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-2xs'
+                  : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
+              }`}
+            >
+              <Boxes size={14} className={activeSubTab === 'inventory' ? 'text-[#C4785A]' : ''} />
+              <span>{t('nav_pos_inventory_tab_stock') || (language === 'ar' ? 'المخزون والمنتجات' : 'État des Stocks & Catalogue')}</span>
+              <span className="text-[10px] font-mono text-neutral-400">({inventoryStats.totalSKUs})</span>
+            </button>
 
-          <button
-            type="button"
-            onClick={() => setActiveSubTab('purchases')}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
-              activeSubTab === 'purchases'
-                ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-2xs'
-                : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
-            }`}
-          >
-            <Truck size={14} className={activeSubTab === 'purchases' ? 'text-[#C4785A]' : ''} />
-            <span>{t('nav_pos_inventory_tab_purchases') || (language === 'ar' ? 'المشتريات وإعادة التموين' : 'Achats & Fournisseurs')}</span>
-            {purchaseStats.pendingCount > 0 && (
-              <span className="px-1.5 py-0.2 rounded-full text-[10px] font-mono bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-300">
-                {purchaseStats.pendingCount}
-              </span>
-            )}
-          </button>
-        </div>
+            <button
+              type="button"
+              onClick={() => setActiveSubTab('purchases')}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+                activeSubTab === 'purchases'
+                  ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-2xs'
+                  : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
+              }`}
+            >
+              <Truck size={14} className={activeSubTab === 'purchases' ? 'text-[#C4785A]' : ''} />
+              <span>{t('nav_pos_inventory_tab_purchases') || (language === 'ar' ? 'المشتريات وإعادة التموين' : 'Achats & Fournisseurs')}</span>
+              {purchaseStats.pendingCount > 0 && (
+                <span className="px-1.5 py-0.2 rounded-full text-[10px] font-mono bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-300">
+                  {purchaseStats.pendingCount}
+                </span>
+              )}
+            </button>
+          </div>
+        )}
 
-        {activeSubTab === 'inventory' ? (
+        {(isStaff || activeSubTab === 'inventory') ? (
           <>
             {/* Top Metrics Pod Tray (SurfaceBgElevated: #F8F9FA, CornerRadius 24px) */}
             <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
@@ -956,22 +965,30 @@ export const PosInventoryView: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Card 2: Valorisation Vente & Marge */}
+                {/* Card 2: Valorisation Vente & Marge (Masked for Staff) */}
                 <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
-                      {t('shop_kpi_retail_val')}
+                      {isStaff ? (language === 'ar' ? 'الكتالوج المعروض' : 'Articles au Catalogue') : t('shop_kpi_retail_val')}
                     </span>
-                    <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400">
-                      +{formatMoney(inventoryStats.potentialProfit)} marge
-                    </span>
+                    {!isStaff ? (
+                      <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400">
+                        +{formatMoney(inventoryStats.potentialProfit)} marge
+                      </span>
+                    ) : (
+                      <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#C4785A]/10 text-[#C4785A]">
+                        {inventoryStats.totalUnits.toLocaleString()} {language === 'ar' ? 'وحدة' : 'unités'}
+                      </span>
+                    )}
                   </div>
                   <div>
                     <div className="text-2xl lg:text-3xl font-extrabold font-mono text-[#C4785A] tabular-nums">
                       {formatMoney(inventoryStats.retailValuation)}
                     </div>
                     <div className="text-[11px] text-neutral-400 mt-0.5">
-                      {t('shop_kpi_retail_val_sub', { cost: formatMoney(inventoryStats.costValuation) })}
+                      {!isStaff
+                        ? t('shop_kpi_retail_val_sub', { cost: formatMoney(inventoryStats.costValuation) })
+                        : (language === 'ar' ? 'القيمة الإجمالية لسعر البيع بالدينار' : 'Valeur de vente TTC totale')}
                     </div>
                   </div>
                 </div>
@@ -1517,7 +1534,7 @@ export const PosInventoryView: React.FC = () => {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className={`grid ${isStaff ? 'grid-cols-1' : 'grid-cols-2'} gap-3`}>
             <LabelInput
               field="ProdRetail"
               label={language === 'ar' ? 'سعر البيع للعموم (د.ج)' : 'Prix de Vente TTC (DA)'}
@@ -1530,17 +1547,19 @@ export const PosInventoryView: React.FC = () => {
               corner={12}
             />
 
-            <LabelInput
-              field="ProdCost"
-              label={language === 'ar' ? 'سعر التكلفة / الشراء (د.ج)' : 'Coût d’Achat HT (DA)'}
-              type="number"
-              required
-              value={formCost ? String(formCost) : ''}
-              onChange={(v) => setFormCost(parseFloat(v) || 0)}
-              width="100%"
-              height={44}
-              corner={12}
-            />
+            {!isStaff && (
+              <LabelInput
+                field="ProdCost"
+                label={language === 'ar' ? 'سعر التكلفة / الشراء (د.ج)' : 'Coût d’Achat HT (DA)'}
+                type="number"
+                required
+                value={formCost ? String(formCost) : ''}
+                onChange={(v) => setFormCost(parseFloat(v) || 0)}
+                width="100%"
+                height={44}
+                corner={12}
+              />
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-3">

@@ -458,3 +458,17 @@ export function calculateCommercialTotals(input: CommercialCalculationInput): Co
   };
 }
 
+/**
+ * Article 317 du Code du Timbre Algérien
+ * Computes progressive fiscal stamp duty strictly on cash receipts.
+ */
+export function calculateArt317Timbre(amountDzd: number): number {
+  const amt = Math.max(0, amountDzd);
+  if (amt <= 500) return 0;
+  if (amt <= 3000) return 20;
+  if (amt <= 10000) return 50;
+  if (amt <= 50000) return 100;
+  if (amt <= 100000) return 200;
+  return Math.min(2500, Math.round(amt * 0.01));
+}
+
