@@ -32,6 +32,8 @@ import { AtriumButton } from '../../ui/AtriumButton';
 import { useTranslation } from '../../../utils/useTranslation';
 import { UniversalDataCollection } from '../../ui/collection/UniversalDataCollection';
 import { ActionButtonDef } from '../../ui/collection/CollectionListRow';
+import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
+import { SkeletonCalendarTimeline } from '../../ui/skeleton/StructuralSkeletons';
 
 export const EducationTimetableView: React.FC = () => {
   const { t, language } = useTranslation();
@@ -49,6 +51,10 @@ export const EducationTimetableView: React.FC = () => {
     switchBranch,
     addEduSession,
     deleteEduSession,
+    isSyncing,
+    networkMode,
+    isSyncTimeout,
+    retryCloudSync,
   } = useAtriumStore();
 
   const [isFacilityDropdownOpen, setIsFacilityDropdownOpen] = useState(false);
@@ -162,6 +168,21 @@ export const EducationTimetableView: React.FC = () => {
       },
     },
   ];
+
+  const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
+    isLoading: isSyncing || networkMode === 'force_skeleton',
+    hasCachedData: eduSessions.length > 0,
+  });
+
+  if (showSkeleton && (eduSessions.length === 0 || networkMode === 'force_skeleton')) {
+    return (
+      <SkeletonCalendarTimeline
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        onRetry={retryCloudSync || retry}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">

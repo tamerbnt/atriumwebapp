@@ -30,6 +30,8 @@ import { LabelInput } from '../../ui/LabelInput';
 import { FilterSelect } from '../../ui/FilterSelect';
 import { t } from '../../../utils/i18n';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
+import { SkeletonSchedulerView } from '../../ui/skeleton/StructuralSkeletons';
 
 export const MembershipSchedulerView: React.FC = () => {
   const {
@@ -45,7 +47,17 @@ export const MembershipSchedulerView: React.FC = () => {
     staff,
     language,
     showToast,
+    isSyncing,
+    networkMode,
+    isSyncTimeout,
+    lastSyncedAt,
+    retryCloudSync,
   } = useAtriumStore();
+
+  const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
+    isLoading: isSyncing || networkMode === 'force_skeleton',
+    hasCachedData: schedule.length > 0,
+  });
 
   // High-level View Switcher: Timeline Matrix vs Universal Collection
   const [mainViewMode, setMainViewMode] = useState<'timeline' | 'collection'>('collection');
@@ -307,6 +319,17 @@ export const MembershipSchedulerView: React.FC = () => {
       ),
     },
   ], [language, days]);
+
+  if (showSkeleton && (schedule.length === 0 || networkMode === 'force_skeleton')) {
+    return (
+      <SkeletonSchedulerView
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        lastSyncedAt={lastSyncedAt}
+        onRetry={retryCloudSync || retry}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200 relative">

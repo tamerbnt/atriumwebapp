@@ -33,6 +33,8 @@ import { Seek } from '../../ui/Seek';
 import { Modal } from '../../ui/Modal';
 import { FilterSelect } from '../../ui/FilterSelect';
 import { LabelInput } from '../../ui/LabelInput';
+import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
+import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 
 export const PosOrdersView: React.FC = () => {
   const { t, language, isRtl } = useTranslation();
@@ -441,6 +443,30 @@ export const PosOrdersView: React.FC = () => {
     });
     setSelectedSaleForRefund(null);
   };
+
+  const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
+    isLoading: isSyncing || networkMode === 'force_skeleton',
+    hasCachedData: sales.length > 0,
+  });
+
+  if (showSkeleton && (sales.length === 0 || networkMode === 'force_skeleton')) {
+    return (
+      <SkeletonCollectionScreen
+        kpiCount={3}
+        columns={[
+          { width: '2.5*', minWidth: '180px' },
+          { width: '1.5*', minWidth: '120px' },
+          { width: '1.5*', minWidth: '120px' },
+          { width: '1.2*', minWidth: '100px' },
+          { width: '100px', minWidth: '80px' },
+        ]}
+        viewMode="list"
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        onRetry={retryCloudSync || retry}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">

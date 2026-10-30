@@ -43,6 +43,8 @@ import { LabelSelect } from '../../ui/LabelSelect';
 import { FilterSelect } from '../../ui/FilterSelect';
 import { useTranslation } from '../../../utils/useTranslation';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
+import { SkeletonPosRegister } from '../../ui/skeleton/StructuralSkeletons';
 
 interface CartItem {
   product: Product;
@@ -98,6 +100,10 @@ export const PosRegisterView: React.FC<PosRegisterViewProps> = ({ initialTab = '
     receiptConfig,
     updateReceiptConfig,
     seedDemoInventory,
+    isSyncing,
+    networkMode,
+    isSyncTimeout,
+    retryCloudSync,
   } = useAtriumStore();
 
   // Active top-level subtab
@@ -1069,6 +1075,21 @@ export const PosRegisterView: React.FC<PosRegisterViewProps> = ({ initialTab = '
     link.click();
     document.body.removeChild(link);
   };
+
+  const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
+    isLoading: isSyncing || networkMode === 'force_skeleton',
+    hasCachedData: products.length > 0,
+  });
+
+  if (showSkeleton && (products.length === 0 || networkMode === 'force_skeleton')) {
+    return (
+      <SkeletonPosRegister
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        onRetry={retryCloudSync || retry}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200" dir={isRtl ? 'rtl' : 'ltr'}>

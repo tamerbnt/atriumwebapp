@@ -29,6 +29,8 @@ import { BookingModal } from './BookingModal';
 import { VenueCloudSyncModal } from './VenueCloudSyncModal';
 import { VenueBookingsView } from './VenueBookingsView';
 import { AtriumButton } from '../../ui/AtriumButton';
+import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
+import { SkeletonCalendarTimeline } from '../../ui/skeleton/StructuralSkeletons';
 
 export const VenueTimelineView: React.FC = () => {
   const { t, language } = useTranslation();
@@ -45,6 +47,10 @@ export const VenueTimelineView: React.FC = () => {
     switchBusiness,
     switchBranch,
     resetVenueMockData,
+    isSyncing,
+    networkMode,
+    isSyncTimeout,
+    retryCloudSync,
   } = useAtriumStore();
 
   // Auto-heal empty venue datasets safely once on mount if empty
@@ -132,6 +138,21 @@ export const VenueTimelineView: React.FC = () => {
       document.exitFullscreen().catch(() => {});
     }
   };
+
+  const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
+    isLoading: isSyncing || networkMode === 'force_skeleton',
+    hasCachedData: rentalBookings.length > 0,
+  });
+
+  if (showSkeleton && (rentalBookings.length === 0 || networkMode === 'force_skeleton')) {
+    return (
+      <SkeletonCalendarTimeline
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        onRetry={retryCloudSync || retry}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6">

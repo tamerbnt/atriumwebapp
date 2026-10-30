@@ -12,6 +12,7 @@ import { CollectionGridCard } from './CollectionGridCard';
 import { CollectionEmptyState } from './CollectionEmptyState';
 import { KebabMenuItem } from './CollectionKebabMenu';
 import { SkeletonTable, SkeletonCardGrid } from '../skeleton/StructuralSkeletons';
+import { SkeletonText, SkeletonBox } from '../skeleton/SkeletonPrimitives';
 import { OfflineRetryBanner } from '../../common/OfflineRetryBanner';
 import { useAtriumStore } from '../../../services/store';
 
@@ -250,6 +251,18 @@ export function UniversalDataCollection<T>({
           lastSyncedAt={effectiveLastSyncedAt}
           onRetry={effectiveOnRetrySync}
         />
+
+        {title && (
+          <div className="flex items-center justify-between pb-3">
+            <div className="space-y-1">
+              <SkeletonText size="sm" width="160px" />
+              {subtitle && <SkeletonText size="xs" width="220px" />}
+            </div>
+            {showViewToggle && (
+              <SkeletonBox width={72} height={32} rounded="rounded-xl" />
+            )}
+          </div>
+        )}
 
         {viewMode === 'list' ? (
           <SkeletonTable

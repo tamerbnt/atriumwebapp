@@ -26,6 +26,8 @@ import { AtriumButton } from '../../ui/AtriumButton';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { t } from '../../../utils/i18n';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
+import { SkeletonFinanceAudit } from '../../ui/skeleton/StructuralSkeletons';
 
 export const MembershipHistoryView: React.FC = () => {
   const {
@@ -39,6 +41,10 @@ export const MembershipHistoryView: React.FC = () => {
     setScreen,
     refundSale,
     language,
+    isSyncing,
+    networkMode,
+    isSyncTimeout,
+    retryCloudSync,
   } = useAtriumStore();
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -275,6 +281,21 @@ export const MembershipHistoryView: React.FC = () => {
       ),
     },
   ], [language]);
+
+  const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
+    isLoading: isSyncing || networkMode === 'force_skeleton',
+    hasCachedData: sales.length > 0,
+  });
+
+  if (showSkeleton && (sales.length === 0 || networkMode === 'force_skeleton')) {
+    return (
+      <SkeletonFinanceAudit
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        onRetry={retryCloudSync || retry}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200 relative">

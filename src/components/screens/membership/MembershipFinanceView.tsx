@@ -34,6 +34,8 @@ import { LabelSelect } from '../../ui/LabelSelect';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { formatMoney } from '../../../utils/rules';
 import { t } from '../../../utils/i18n';
+import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
+import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 
 export const MembershipFinanceView: React.FC = () => {
   const {
@@ -48,6 +50,10 @@ export const MembershipFinanceView: React.FC = () => {
     addStaff,
     language,
     showToast,
+    isSyncing,
+    networkMode,
+    isSyncTimeout,
+    retryCloudSync,
   } = useAtriumStore();
 
   const [selectedStaffIds, setSelectedStaffIds] = useState<Set<string>>(new Set());
@@ -358,6 +364,30 @@ export const MembershipFinanceView: React.FC = () => {
       document.exitFullscreen().catch(() => {});
     }
   };
+
+  const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
+    isLoading: isSyncing || networkMode === 'force_skeleton',
+    hasCachedData: staff.length > 0,
+  });
+
+  if (showSkeleton && (staff.length === 0 || networkMode === 'force_skeleton')) {
+    return (
+      <SkeletonCollectionScreen
+        kpiCount={3}
+        columns={[
+          { width: '2.5*', minWidth: '180px' },
+          { width: '1.5*', minWidth: '120px' },
+          { width: '1.5*', minWidth: '120px' },
+          { width: '1.2*', minWidth: '100px' },
+          { width: '100px', minWidth: '80px' },
+        ]}
+        viewMode="list"
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        onRetry={retryCloudSync || retry}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200 relative">

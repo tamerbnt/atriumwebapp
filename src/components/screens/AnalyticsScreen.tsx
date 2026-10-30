@@ -24,7 +24,7 @@ import { t } from '../../utils/i18n';
 import { AtriumButton } from '../ui/AtriumButton';
 import { useSkeletonLoading } from '../../hooks/useSkeletonLoading';
 import { OfflineRetryBanner } from '../common/OfflineRetryBanner';
-import { SkeletonKpiGrid, SkeletonChart } from '../ui/skeleton/StructuralSkeletons';
+import { SkeletonKpiGrid, SkeletonChart, SkeletonPageHeader } from '../ui/skeleton/StructuralSkeletons';
 
 export const AnalyticsScreen: React.FC = () => {
   const {
@@ -406,6 +406,7 @@ export const AnalyticsScreen: React.FC = () => {
           lastSyncedAt={lastSyncedAt}
           onRetry={retryCloudSync}
         />
+        <SkeletonPageHeader hasViewToggle hasFacility={false} hasActionBtn actionBtnWidth={130} />
         <SkeletonKpiGrid count={4} />
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">

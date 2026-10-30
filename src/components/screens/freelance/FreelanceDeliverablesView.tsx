@@ -43,6 +43,8 @@ import { AtriumButton } from '../../ui/AtriumButton';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { useTranslation } from '../../../utils/useTranslation';
 import { TranslationKey } from '../../../utils/i18n';
+import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
+import { SkeletonKanbanPipeline } from '../../ui/skeleton/StructuralSkeletons';
 
 const STAGE_KEYS: Record<DeliverableStage, TranslationKey> = {
   Briefing: 'free_deliv_stage_briefing',
@@ -100,6 +102,10 @@ export const FreelanceDeliverablesView: React.FC = () => {
     switchBranch,
     setScreen,
     showToast,
+    isSyncing,
+    networkMode,
+    isSyncTimeout,
+    retryCloudSync,
   } = useAtriumStore();
 
   const currentBranch = branches.find((b) => b.id === currentBranchId);
@@ -502,6 +508,22 @@ export const FreelanceDeliverablesView: React.FC = () => {
   const totalEstimatedHours = flattenedDeliverables.reduce((acc, item) => acc + (item.deliverable.estimatedHours || 0), 0);
   const inProgressDeliverablesCount = flattenedDeliverables.filter((item) => item.deliverable.stage === 'InProgress').length;
   const reviewDeliverablesCount = flattenedDeliverables.filter((item) => item.deliverable.stage === 'ClientReview').length;
+
+  const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
+    isLoading: isSyncing || networkMode === 'force_skeleton',
+    hasCachedData: freelanceProjects.length > 0,
+  });
+
+  if (showSkeleton && (freelanceProjects.length === 0 || networkMode === 'force_skeleton')) {
+    return (
+      <SkeletonKanbanPipeline
+        columnsCount={4}
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        onRetry={retryCloudSync || retry}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">

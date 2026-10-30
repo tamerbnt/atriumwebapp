@@ -33,6 +33,8 @@ import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { FilterSelect } from '../../ui/FilterSelect';
 import { B2bEntityModal } from '../trading/B2bEntityModal';
+import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
+import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 
 export const PosInventoryView: React.FC = () => {
   const { t, language, isRtl } = useTranslation();
@@ -814,6 +816,31 @@ export const PosInventoryView: React.FC = () => {
     link.click();
     document.body.removeChild(link);
   };
+
+  const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
+    isLoading: isSyncing || networkMode === 'force_skeleton',
+    hasCachedData: products.length > 0,
+  });
+
+  if (showSkeleton && (products.length === 0 || networkMode === 'force_skeleton')) {
+    return (
+      <SkeletonCollectionScreen
+        kpiCount={4}
+        columns={[
+          { width: '2.5*', minWidth: '180px' },
+          { width: '1.2*', minWidth: '100px' },
+          { width: '1.2*', minWidth: '100px' },
+          { width: '1.2*', minWidth: '100px' },
+          { width: '1.2*', minWidth: '100px' },
+          { width: '100px', minWidth: '80px' },
+        ]}
+        viewMode="list"
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        onRetry={retryCloudSync || retry}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200" dir={isRtl ? 'rtl' : 'ltr'}>

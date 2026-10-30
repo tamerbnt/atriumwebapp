@@ -35,6 +35,8 @@ import { LabelSelect } from '../../ui/LabelSelect';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { localizeStatus } from '../../../utils/rules';
 import { t } from '../../../utils/i18n';
+import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
+import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 
 export interface MembershipRegistrationsViewProps {
   onAddLead: () => void;
@@ -396,6 +398,30 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
       ),
     },
   ], [language, pinnedLeadIds, terminology.plan, plans, updateLeadStatus]);
+
+  const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
+    isLoading: isSyncing || networkMode === 'force_skeleton',
+    hasCachedData: leads.length > 0,
+  });
+
+  if (showSkeleton && (leads.length === 0 || networkMode === 'force_skeleton')) {
+    return (
+      <SkeletonCollectionScreen
+        kpiCount={3}
+        columns={[
+          { width: '2.5*', minWidth: '180px' },
+          { width: '1.5*', minWidth: '120px' },
+          { width: '1.5*', minWidth: '120px' },
+          { width: '1.2*', minWidth: '100px' },
+          { width: '100px', minWidth: '80px' },
+        ]}
+        viewMode={viewMode}
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        onRetry={retryCloudSync || retry}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200 relative">

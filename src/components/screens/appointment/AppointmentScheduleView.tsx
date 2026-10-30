@@ -36,6 +36,8 @@ import { Seek } from '../../ui/Seek';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
+import { SkeletonCalendarTimeline } from '../../ui/skeleton/StructuralSkeletons';
 
 const TIME_SLOTS = [
   '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
@@ -62,6 +64,10 @@ export const AppointmentScheduleView: React.FC = () => {
     resetSalonMockData,
     language,
     showToast,
+    isSyncing,
+    networkMode,
+    isSyncTimeout,
+    retryCloudSync,
   } = useAtriumStore();
 
   useEffect(() => {
@@ -361,6 +367,21 @@ export const AppointmentScheduleView: React.FC = () => {
     link.click();
     document.body.removeChild(link);
   };
+
+  const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
+    isLoading: isSyncing || networkMode === 'force_skeleton',
+    hasCachedData: appointments.length > 0,
+  });
+
+  if (showSkeleton && (appointments.length === 0 || networkMode === 'force_skeleton')) {
+    return (
+      <SkeletonCalendarTimeline
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        onRetry={retryCloudSync || retry}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6">
