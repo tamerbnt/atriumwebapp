@@ -28,11 +28,13 @@ import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { AgriLivestock } from '../../../types';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { OnilBordereauPrintModal } from './OnilBordereauPrintModal';
 
 export const AgricultureLivestockView: React.FC = () => {
   const { language, currentBusiness, currentBranch, currentUser } = useAtriumStore();
   const isAr = language === 'ar';
-  const { livestock, addLivestock, updateLivestock, deleteLivestock } = useAgricultureData();
+  const { livestock, milkingRecords, addLivestock, updateLivestock, deleteLivestock } = useAgricultureData();
+  const [isOnilModalOpen, setIsOnilModalOpen] = useState(false);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [speciesFilter, setSpeciesFilter] = useState<string>('All');
@@ -134,8 +136,8 @@ export const AgricultureLivestockView: React.FC = () => {
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         const matchesTag = a.earTagNumber.toLowerCase().includes(q);
-        const matchesBreed = a.breed.toLowerCase().includes(q);
-        const matchesSpec = a.species.toLowerCase().includes(q);
+        const matchesBreed = (a.breed || '').toLowerCase().includes(q);
+        const matchesSpec = a.species ? a.species.toLowerCase().includes(q) : false;
         if (!matchesTag && !matchesBreed && !matchesSpec) return false;
       }
       return true;
@@ -148,6 +150,7 @@ export const AgricultureLivestockView: React.FC = () => {
     .reduce((acc, a) => acc + (a.dailyProductionLiters || 0), 0);
   const healthyCount = livestock.filter((a) => a.healthStatus === 'Healthy').length;
   const bovineCount = livestock.filter((a) => a.species === 'Bovine').length;
+  const treatmentCount = livestock.filter((a) => a.healthStatus === 'InTreatment' || a.healthStatus === 'Quarantine').length;
 
   // Actions
   const handlePin = (a: AgriLivestock) => {
@@ -360,6 +363,14 @@ export const AgricultureLivestockView: React.FC = () => {
           <AtriumButton
             variant="ghost"
             size="sm"
+            onClick={() => setIsOnilModalOpen(true)}
+            icon={<Milk size={14} className="text-[#C4785A]" />}
+          >
+            {isAr ? 'جدول دعم الحليب ONIL (12 دج/ل)' : 'Bordereau ONIL (12 DA/L)'}
+          </AtriumButton>
+          <AtriumButton
+            variant="ghost"
+            size="sm"
             onClick={handleExportCsv}
             icon={<Download size={14} />}
           >
@@ -374,6 +385,29 @@ export const AgricultureLivestockView: React.FC = () => {
           </AtriumButton>
         </div>
       </div>
+
+      {/* Antibiotic Milk Withholding / Sécurité Sanitaire Alert Banner */}
+      {treatmentCount > 0 && (
+        <div className="flex items-center gap-3 px-4 py-3 bg-amber-500/10 border border-amber-500/25 rounded-2xl text-amber-800 dark:text-amber-300 text-xs">
+          <AlertTriangle size={18} className="shrink-0 text-amber-600 dark:text-amber-400" />
+          <div className="flex-1">
+            <span className="font-semibold">
+              {isAr ? 'تنبيه فترة السحب الدوائي (Délai d’attente antibiotique) :' : 'Alerte Retrait Antibiotique (Délai d’Attente) :'}
+            </span>{' '}
+            {isAr
+              ? `${treatmentCount} رأس في مرحلة علاج بيطري. يتم حظر وصب حليبها خارج صهريج التجميع لتجنب تلويث الشحنة وإلغاء دعم ONIL.`
+              : `${treatmentCount} tête(s) en soins vétérinaires. Le lait est formellement exclu de la citerne collective de livraison ONIL pour préserver la prime de 12 DA/L.`}
+          </div>
+          <AtriumButton
+            variant="ghost"
+            size="sm"
+            onClick={() => setSpeciesFilter('Bovine')}
+            className="text-xs h-7 text-amber-900 dark:text-amber-200"
+          >
+            {isAr ? 'عرض الحالات' : 'Voir le lot'}
+          </AtriumButton>
+        </div>
+      )}
 
       {/* Canonical 3-Card Top Metrics Pod Tray */}
       <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
@@ -975,6 +1009,14 @@ export const AgricultureLivestockView: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Official A4 ONIL Raw Milk Subsidy Bordereau Print Modal */}
+      <OnilBordereauPrintModal
+        isOpen={isOnilModalOpen}
+        onClose={() => setIsOnilModalOpen(false)}
+        milkingRecords={milkingRecords}
+        dairyCows={livestock as any}
+      />
     </div>
   );
 };

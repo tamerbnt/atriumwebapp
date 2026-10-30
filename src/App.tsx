@@ -138,6 +138,7 @@ export default function App() {
     closeDesktopUpgradeModal,
     activeRealEstateRole,
     activeManufacturingRole,
+    activeAgriRole,
   } = useAtriumStore();
 
   // Onboarding wizard plays on initial boot or when explicitly requested
@@ -648,8 +649,47 @@ export default function App() {
 
     if (currentBusiness?.category === 'agriculture_farming') {
       if (activeScreen === 'settings') {
+        if (activeAgriRole !== 'gerant') {
+          return <AgricultureParcelsView />;
+        }
         return <SettingsScreen onOpenVoucherModal={() => setIsVoucherModalOpen(true)} />;
       }
+
+      // Role-specific screen permission guards & specialized routing
+      if (activeAgriRole === 'chef_culture') {
+        switch (activeScreen) {
+          case 'members':
+            return <AgricultureParcelsView />;
+          case 'scheduler':
+            return <AgricultureCyclesView />;
+          case 'shop':
+            return <AgricultureHarvestView />;
+          default:
+            return <AgricultureParcelsView />;
+        }
+      }
+
+      if (activeAgriRole === 'zootechnicien') {
+        switch (activeScreen) {
+          case 'registrations':
+            return <AgricultureLivestockView />;
+          default:
+            return <AgricultureLivestockView />;
+        }
+      }
+
+      if (activeAgriRole === 'magasinier') {
+        switch (activeScreen) {
+          case 'finance':
+            return <AgricultureWholesaleView />;
+          case 'shop':
+            return <AgricultureHarvestView />;
+          default:
+            return <AgricultureWholesaleView />;
+        }
+      }
+
+      // Default: Gérant / Exploitant Agricole (Full macro access)
       switch (activeScreen) {
         case 'dashboard':
           return <AgricultureDashboardView />;

@@ -15,7 +15,7 @@ export const AgricultureDashboardView: React.FC = () => {
 
   const totalHectares = parcels.reduce((acc, p) => acc + p.surfaceHectares, 0);
   const totalHarvestNetKg = harvestTickets.reduce((acc, t) => acc + t.netWeightKg, 0);
-  const totalWholesalePayoutDzd = harvestTickets.reduce((acc, t) => acc + t.netFarmPayoutDzd, 0);
+  const totalWholesalePayoutDzd = harvestTickets.reduce((acc, t) => acc + (t.netFarmPayoutDzd || t.totalAmountDzd || 0), 0);
   const totalDailyMilkLiters = livestock
     .filter((a) => a.dailyProductionLiters)
     .reduce((acc, a) => acc + (a.dailyProductionLiters || 0), 0);
@@ -213,10 +213,10 @@ export const AgricultureDashboardView: React.FC = () => {
                   <span className="font-semibold text-neutral-800 dark:text-neutral-200">
                     {t.cropDesignation}
                   </span>
-                  <span className="text-neutral-400">· {t.vehiclePlate}</span>
+                  <span className="text-neutral-400">· {t.truckPlate || t.vehiclePlate}</span>
                 </div>
                 <p className="text-neutral-500">
-                  Destination: {t.destinationWholesaleMarket} · Chauffeur: {t.driverName}
+                  Destination: {t.destinationWholesaleMarket} · Chauffeur: {t.driverName || 'Non assigné'}
                 </p>
               </div>
 
@@ -230,7 +230,7 @@ export const AgricultureDashboardView: React.FC = () => {
                 <div className="text-right">
                   <span className="text-[10px] text-neutral-400 block uppercase tracking-wider">Net Mandataire</span>
                   <span className="font-bold font-mono text-emerald-600 dark:text-emerald-400 text-sm">
-                    {formatMoney(t.netFarmPayoutDzd)}
+                    {formatMoney(t.netFarmPayoutDzd || t.totalAmountDzd || 0)}
                   </span>
                 </div>
               </div>

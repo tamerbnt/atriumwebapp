@@ -76,6 +76,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     activeLegalRole,
     activeLogisticsRole,
     activeContractorRole,
+    activeAgriRole,
     language,
   } = useAtriumStore();
   const [isExpanded, setIsExpanded] = useState(false);
@@ -1516,51 +1517,99 @@ export const Sidebar: React.FC<SidebarProps> = ({
       ];
     }
   } else if (category === 'agriculture_farming') {
-    // Dedicated Category 16: Agriculture, Farm & Livestock Management
-    dockNavItems = [
-      {
-        id: 'dashboard',
-        icon: <Home size={19} />,
-        title: language === 'ar' ? 'لوحة المستثمرة الفلاحية' : language === 'fr' ? 'Tableau du Domaine' : 'Farm Pulse',
-        label: t('nav_home', language),
-      },
-      {
-        id: 'members',
-        icon: <Sprout size={19} />,
-        title: language === 'ar' ? 'القطع والبيوت البلاستيكية' : language === 'fr' ? 'Parcelles & Serres' : 'Parcels & Greenhouses',
-        label: language === 'ar' ? 'القطع الفلاحية' : language === 'fr' ? 'Parcelles' : 'Parcels',
-      },
-      {
-        id: 'scheduler',
-        icon: <Calendar size={19} />,
-        title: language === 'ar' ? 'سجل العمليات الفلاحية (DAR)' : language === 'fr' ? 'Journal Cultural & Délais DAR' : 'Crop Cycle & DAR',
-        label: language === 'ar' ? 'العمليات' : language === 'fr' ? 'Opérations' : 'Cycles',
-      },
-      {
-        id: 'shop',
-        icon: <Scale size={19} />,
-        title: language === 'ar' ? 'المحاصيل والوزن العمومي' : language === 'fr' ? 'Récoltes & Pesage Public' : 'Harvest & Scale',
-        label: language === 'ar' ? 'المحاصيل' : language === 'fr' ? 'Récoltes' : 'Harvest',
-      },
-      {
-        id: 'registrations',
-        icon: <Layers size={19} />,
-        title: language === 'ar' ? 'تربية المواشي والإنتاج' : language === 'fr' ? 'Cheptel & Registre d\'Élevage' : 'Livestock Herd',
-        label: language === 'ar' ? 'المواشي' : language === 'fr' ? 'Cheptel' : 'Livestock',
-      },
-      {
-        id: 'finance',
-        icon: <Wallet size={19} />,
-        title: language === 'ar' ? 'مبيعات سوق الجملة والسيولة' : language === 'fr' ? 'Ventes Mandataires de Gros' : 'Wholesale Sales',
-        label: language === 'ar' ? 'المبيعات' : language === 'fr' ? 'Ventes' : 'Sales',
-      },
-      {
-        id: 'settings',
-        icon: <Settings size={19} />,
-        title: t('nav_settings', language),
-        label: t('nav_settings', language),
-      },
-    ];
+    // Dedicated Category 17: Agriculture & Livestock Farming (Role-Based RBAC Isolation)
+    if (activeAgriRole === 'chef_culture') {
+      dockNavItems = [
+        {
+          id: 'members',
+          icon: <Sprout size={19} />,
+          title: language === 'ar' ? 'القطع والامتيازات الفلاحية' : language === 'fr' ? 'Parcelles & Concessions' : 'Parcels & Concessions',
+          label: language === 'ar' ? 'القطع الفلاحية' : language === 'fr' ? 'Parcelles' : 'Parcels',
+        },
+        {
+          id: 'scheduler',
+          icon: <Calendar size={19} />,
+          title: language === 'ar' ? 'سجل العمليات الفلاحية والأمان DAR' : language === 'fr' ? 'Journal Cultural & Sécurité DAR' : 'Crop Cycles & DAR',
+          label: language === 'ar' ? 'العمليات' : language === 'fr' ? 'Opérations' : 'Cycles',
+        },
+        {
+          id: 'shop',
+          icon: <Scale size={19} />,
+          title: language === 'ar' ? 'تسجيل حضور العمال وجني الصناديق' : language === 'fr' ? 'Pointage Harvesters & Caisses' : 'Field Muster & Crates',
+          label: language === 'ar' ? 'حضور العمال' : language === 'fr' ? 'Pointage' : 'Muster',
+        },
+      ];
+    } else if (activeAgriRole === 'zootechnicien') {
+      dockNavItems = [
+        {
+          id: 'registrations',
+          icon: <Layers size={19} />,
+          title: language === 'ar' ? 'قطيع الأبقار الحلوب ودعم أونيل' : language === 'fr' ? 'Cheptel Laitier & Subvention ONIL' : 'Dairy Herd & ONIL',
+          label: language === 'ar' ? 'الأبقار والحليب' : language === 'fr' ? 'Cheptel Laitier' : 'Dairy Herd',
+        },
+      ];
+    } else if (activeAgriRole === 'magasinier') {
+      dockNavItems = [
+        {
+          id: 'finance',
+          icon: <Wallet size={19} />,
+          title: language === 'ar' ? 'جسر الوزن وصندوق طابع المادة 317' : language === 'fr' ? 'Pont-Bascule & Caisse Art. 317' : 'Weighbridge & Cash',
+          label: language === 'ar' ? 'جسر الوزن' : language === 'fr' ? 'Pont-Bascule' : 'Weighbridge',
+        },
+        {
+          id: 'shop',
+          icon: <Scale size={19} />,
+          title: language === 'ar' ? 'استلام المحاصيل وسجل الشاحنات' : language === 'fr' ? 'Réception Récoltes & Camions' : 'Harvest Reception',
+          label: language === 'ar' ? 'المحاصيل' : language === 'fr' ? 'Récoltes' : 'Harvest',
+        },
+      ];
+    } else {
+      // Default Gérant (Exploitant Agricole): Complete overview
+      dockNavItems = [
+        {
+          id: 'dashboard',
+          icon: <Home size={19} />,
+          title: language === 'ar' ? 'لوحة المستثمرة الفلاحية' : language === 'fr' ? 'Tableau du Domaine' : 'Farm Pulse',
+          label: t('nav_home', language),
+        },
+        {
+          id: 'members',
+          icon: <Sprout size={19} />,
+          title: language === 'ar' ? 'القطع والامتيازات الفلاحية' : language === 'fr' ? 'Parcelles & Concessions' : 'Parcels & Concessions',
+          label: language === 'ar' ? 'القطع الفلاحية' : language === 'fr' ? 'Parcelles' : 'Parcels',
+        },
+        {
+          id: 'scheduler',
+          icon: <Calendar size={19} />,
+          title: language === 'ar' ? 'سجل العمليات الفلاحية والأمان DAR' : language === 'fr' ? 'Journal Cultural & Sécurité DAR' : 'Crop Cycles & DAR',
+          label: language === 'ar' ? 'العمليات' : language === 'fr' ? 'Opérations' : 'Cycles',
+        },
+        {
+          id: 'shop',
+          icon: <Scale size={19} />,
+          title: language === 'ar' ? 'تسجيل حضور العمال وجني الصناديق' : language === 'fr' ? 'Pointage Harvesters & Caisses' : 'Field Muster & Crates',
+          label: language === 'ar' ? 'حضور العمال' : language === 'fr' ? 'Pointage' : 'Muster',
+        },
+        {
+          id: 'registrations',
+          icon: <Layers size={19} />,
+          title: language === 'ar' ? 'قطيع الأبقار الحلوب ودعم أونيل' : language === 'fr' ? 'Cheptel Laitier & Subvention ONIL' : 'Dairy Herd & ONIL',
+          label: language === 'ar' ? 'الأبقار والحليب' : language === 'fr' ? 'Cheptel Laitier' : 'Dairy Herd',
+        },
+        {
+          id: 'finance',
+          icon: <Wallet size={19} />,
+          title: language === 'ar' ? 'جسر الوزن وصندوق طابع المادة 317' : language === 'fr' ? 'Pont-Bascule & Caisse Art. 317' : 'Weighbridge & Cash',
+          label: language === 'ar' ? 'جسر الوزن' : language === 'fr' ? 'Pont-Bascule' : 'Weighbridge',
+        },
+        {
+          id: 'settings',
+          icon: <Settings size={19} />,
+          title: language === 'ar' ? 'الإعدادات وقروض بدر الرفيق' : language === 'fr' ? 'Paramètres & Dossiers BADR' : 'Settings & BADR',
+          label: t('nav_settings', language),
+        },
+      ];
+    }
   } else {
     // Membership / Gym & Fitness Architecture
     dockNavItems = [

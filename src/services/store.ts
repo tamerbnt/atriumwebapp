@@ -71,6 +71,7 @@ import {
   LegalRole,
   LogisticsRole,
   ContractorRole,
+  AgriRole,
   PMClient,
   PMProject,
   PMMilestone,
@@ -336,6 +337,8 @@ interface AppState {
   activeLogisticsRole: LogisticsRole;
   // Construction & BTP Contracting (Category 15: construction_contractor)
   activeContractorRole: ContractorRole;
+  // Agriculture & Livestock Farming (Category 17: agriculture_farming)
+  activeAgriRole: AgriRole;
   // B2B Commercial Trading & Wholesale (Category 8: trading_commercial)
   b2bClients: B2bClient[];
   b2bSuppliers: B2bSupplier[];
@@ -493,6 +496,7 @@ const DEFAULT_STATE: AppState = {
   activeLegalRole: 'avocat_associe',
   activeLogisticsRole: 'gerant',
   activeContractorRole: 'gerant',
+  activeAgriRole: 'gerant',
   // B2B Commercial Trading & Wholesale
   b2bClients: INITIAL_B2B_CLIENTS,
   b2bSuppliers: INITIAL_B2B_SUPPLIERS,
@@ -7773,6 +7777,26 @@ export function useAtriumStore() {
       globalState = {
         ...globalState,
         activeContractorRole: role,
+        activeScreen: defaultScreen,
+      };
+      notify();
+    },
+    // Agriculture & Livestock Operational Role State & Actions
+    activeAgriRole: state.activeAgriRole || 'gerant',
+    setActiveAgriRole: (role: AgriRole) => {
+      let defaultScreen: ActiveScreen = 'dashboard';
+      if (role === 'gerant') {
+        defaultScreen = 'dashboard';
+      } else if (role === 'chef_culture') {
+        defaultScreen = 'members'; // Parcelles
+      } else if (role === 'zootechnicien') {
+        defaultScreen = 'registrations'; // Cheptel & Traite
+      } else if (role === 'magasinier') {
+        defaultScreen = 'finance'; // Pont-bascule & Caisse
+      }
+      globalState = {
+        ...globalState,
+        activeAgriRole: role,
         activeScreen: defaultScreen,
       };
       notify();

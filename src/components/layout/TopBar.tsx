@@ -34,7 +34,7 @@ import {
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../services/store';
 import { formatDuration } from '../../utils/rules';
-import { ContractorRole, LegalRole, LogisticsRole, ManufacturingRole, PMRole, RealEstateRole, SupportedLanguage } from '../../types/index';
+import { ContractorRole, LegalRole, LogisticsRole, ManufacturingRole, PMRole, RealEstateRole, SupportedLanguage, AgriRole } from '../../types/index';
 import { Seek } from '../ui/Seek';
 import { useTranslation } from '../../utils/useTranslation';
 import { BackendDiagnosticPanel } from '../BackendDiagnosticPanel';
@@ -98,6 +98,8 @@ export const TopBar: React.FC<TopBarProps> = ({
     setActiveLogisticsRole,
     activeContractorRole,
     setActiveContractorRole,
+    activeAgriRole,
+    setActiveAgriRole,
     unreadNotificationCount,
   } = useAtriumStore();
 
@@ -105,6 +107,9 @@ export const TopBar: React.FC<TopBarProps> = ({
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [topBarSearch, setTopBarSearch] = useState('');
   const [isDiagnosticPanelOpen, setIsDiagnosticPanelOpen] = useState(false);
+  const [agriPinTargetRole, setAgriPinTargetRole] = useState<AgriRole | null>(null);
+  const [agriPinInput, setAgriPinInput] = useState('');
+  const [agriPinError, setAgriPinError] = useState(false);
 
   const isFreelance = currentBusiness?.category === 'freelance_solo';
   const isRental = currentBusiness?.category === 'rental_booking';
@@ -992,6 +997,82 @@ export const TopBar: React.FC<TopBarProps> = ({
         </div>
       )}
 
+      {/* Category 17: Agriculture & Livestock Farming — Dedicated Operational Role Switcher with PIN */}
+      {currentBusiness?.category === 'agriculture_farming' && (
+        <div className="hidden lg:flex items-center gap-1 bg-[#F8F9FA] dark:bg-neutral-800/80 p-1 rounded-full border border-neutral-200/80 dark:border-neutral-700/80 shadow-2xs">
+          {[
+            {
+              id: 'gerant' as AgriRole,
+              label: language === 'ar' ? 'المدير / الفلاح' : language === 'fr' ? 'Gérant' : 'Farm Director',
+              icon: '👔',
+              desc:
+                language === 'ar'
+                  ? 'الإدارة العامة، قروض بدر BADR الرفيق، المالية والامتيازات الفلاحية'
+                  : 'Direction Générale, Crédit BADR R\'FIG, Finances & Concessions',
+            },
+            {
+              id: 'chef_culture' as AgriRole,
+              label: language === 'ar' ? 'مسؤول الزراعة' : language === 'fr' ? 'Chef Culture' : 'Crop Lead',
+              icon: '🌱',
+              desc:
+                language === 'ar'
+                  ? 'القطع الفلاحية، السجل الزراعي، الأمان الكيميائي DAR وحضور العمال'
+                  : 'Parcelles, Cycles Culturaux, Sécurité DAR & Pointage Harvesters',
+            },
+            {
+              id: 'zootechnicien' as AgriRole,
+              label: language === 'ar' ? 'مسؤول الأبقار والحليب' : language === 'fr' ? 'Zootechnicien' : 'Dairy Lead',
+              icon: '🐄',
+              desc:
+                language === 'ar'
+                  ? 'قطيع الأبقار الحلوب، الحلب اليومي، خزان التبريد ودعم أونيل 12 دج/لتر'
+                  : 'Cheptel Laitier, Traite Matin/Soir, Tank & Dossier ONIL 12 DA/L',
+            },
+            {
+              id: 'magasinier' as AgriRole,
+              label: language === 'ar' ? 'أمين المخزن والميزان' : language === 'fr' ? 'Magasinier Caisse' : 'Weigh Desk',
+              icon: '⚖️',
+              desc:
+                language === 'ar'
+                  ? 'جسر الوزن، أسواق الجملة، وصولات الشحن وصندوق طابع المادة 317'
+                  : 'Pont-Bascule, Expéditions Gros, Bons de Pesée & Caisse Art. 317',
+            },
+          ].map((r) => {
+            const isActive = activeAgriRole === r.id;
+            return (
+              <button
+                key={r.id}
+                type="button"
+                onClick={() => {
+                  if (isActive) return;
+                  if (r.id === 'gerant') {
+                    setAgriPinTargetRole(r.id);
+                    setAgriPinInput('');
+                    setAgriPinError(false);
+                  } else {
+                    setActiveAgriRole(r.id);
+                    showToast({
+                      type: 'success',
+                      title: language === 'ar' ? `تم تفعيل دور: ${r.label}` : `Espace activé : ${r.label}`,
+                      message: r.desc,
+                    });
+                  }
+                }}
+                title={r.desc}
+                className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+                  isActive
+                    ? 'bg-[#C4785A] text-white shadow-xs'
+                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-200/50 dark:hover:bg-neutral-700/50'
+                }`}
+              >
+                <span>{r.icon}</span>
+                <span>{r.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+
       {/* Right Controls */}
       <div className="flex items-center gap-2.5 shrink-0">
         {/* Expanding Search Lens / Command Palette Trigger */}
@@ -1242,6 +1323,80 @@ export const TopBar: React.FC<TopBarProps> = ({
           )}
         </div>
       </div>
+
+      {/* Agriculture PIN Verification Modal */}
+      {agriPinTargetRole && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+          <div className="bg-white dark:bg-neutral-900 rounded-2xl shadow-xl border border-neutral-200 dark:border-neutral-800 max-w-sm w-full p-6 text-center animate-in fade-in zoom-in-95 duration-150">
+            <div className="w-12 h-12 rounded-full bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center mx-auto mb-3 text-xl">
+              <Lock size={22} />
+            </div>
+            <h3 className="text-base font-bold text-neutral-900 dark:text-white mb-1">
+              {language === 'ar' ? 'رمز الأمان لمكتب المدير الفلاحي' : 'Code PIN Direction Agricole'}
+            </h3>
+            <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-4">
+              {language === 'ar'
+                ? 'أدخل رمز PIN لتفعيل صلاحيات المدير المالي والبنكي (الافتراضي: 0000)'
+                : 'Veuillez saisir votre code PIN pour accéder aux dossiers financiers & BADR (Défaut: 0000)'}
+            </p>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (agriPinInput === '0000' || agriPinInput === '1234') {
+                  setActiveAgriRole(agriPinTargetRole);
+                  setAgriPinTargetRole(null);
+                  showToast({
+                    type: 'success',
+                    title: language === 'ar' ? 'تم تأكيد الرمز بنجاح' : 'Code PIN Validé',
+                    message: language === 'ar' ? 'مرحباً بك في لوحة تحكم المدير الفلاحي' : 'Accès Direction Agricole déverrouillé.',
+                  });
+                } else {
+                  setAgriPinError(true);
+                }
+              }}
+              className="space-y-4"
+            >
+              <input
+                type="password"
+                maxLength={4}
+                autoFocus
+                value={agriPinInput}
+                onChange={(e) => {
+                  setAgriPinInput(e.target.value);
+                  setAgriPinError(false);
+                }}
+                placeholder="••••"
+                className={`w-36 mx-auto text-center tracking-widest text-2xl font-mono py-2 px-3 border rounded-xl bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-[#C4785A] ${
+                  agriPinError ? 'border-rose-500 ring-2 ring-rose-500/20' : 'border-neutral-300 dark:border-neutral-700'
+                }`}
+              />
+
+              {agriPinError && (
+                <p className="text-xs text-rose-500 font-medium">
+                  {language === 'ar' ? 'الرمز غير صحيح (الرمز الافتراضي: 0000)' : 'Code PIN incorrect (par défaut: 0000)'}
+                </p>
+              )}
+
+              <div className="flex gap-2 justify-center pt-2">
+                <button
+                  type="button"
+                  onClick={() => setAgriPinTargetRole(null)}
+                  className="px-4 py-2 text-xs font-semibold rounded-xl bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 cursor-pointer"
+                >
+                  {language === 'ar' ? 'إلغاء' : 'Annuler'}
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 text-xs font-semibold rounded-xl bg-[#C4785A] hover:bg-[#b3684a] text-white shadow-xs cursor-pointer"
+                >
+                  {language === 'ar' ? 'تأكيد ودخول' : 'Valider'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       <BackendDiagnosticPanel
         isOpen={isDiagnosticPanelOpen}

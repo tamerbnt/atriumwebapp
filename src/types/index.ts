@@ -3160,8 +3160,14 @@ export interface CaisseExpenseRecord {
 }
 
 // ==========================================
-// CATEGORY 16: AGRI-BUSINESS & LIVESTOCK FARMING
+// CATEGORY 16/17: AGRI-BUSINESS & DAIRY LIVESTOCK FARMING (ALGERIA)
 // ==========================================
+export type AgriRole = 'gerant' | 'chef_culture' | 'zootechnicien' | 'magasinier';
+
+export type AgriTenureType = 'concession_loi_10_03' | 'propriete_melk' | 'fermage_location';
+export type AgriIrrigationType = 'Drip' | 'Pivot' | 'Sprinkler' | 'Gravity' | 'Rainfed';
+export type AgriParcelStatus = 'Fallow' | 'Planted' | 'Growing' | 'Harvesting' | 'Damaged';
+
 export interface AgriParcel {
   id: string;
   accountId: string;
@@ -3169,31 +3175,53 @@ export interface AgriParcel {
   branchId: string;
   staffId: string;
   name: string;
+  code?: string;
+  tenureType?: AgriTenureType;
+  cadastralSection?: string;
+  cadastralDeedRef?: string;
   surfaceHectares: number;
-  irrigationType: 'Drip' | 'Pivot' | 'Sprinkler' | 'Gravity' | 'Rainfed';
+  irrigationType: AgriIrrigationType;
   soilType: string;
+  soilPh?: number;
+  waterSourceId?: string;
+  waterMeterReadingM3?: number;
+  anrhAnnualQuotaM3?: number;
+  anrhConsumedM3?: number;
   currentCrop?: string;
   plantingDate?: string;
   expectedHarvestDate?: string;
-  status: 'Fallow' | 'Planted' | 'Growing' | 'Harvesting';
+  status: AgriParcelStatus;
+  notes?: string;
   createdAt: string;
 }
 
-export interface AgriLivestock {
+export type AgriCyclePhase = 'planned' | 'sowing' | 'vegetative' | 'treatment_locked' | 'ready_harvest' | 'closed';
+
+export interface AgriCropCycle {
   id: string;
   accountId: string;
   businessId: string;
   branchId: string;
   staffId: string;
-  earTagNumber: string;
-  species: 'Bovine' | 'Ovine' | 'Caprine' | 'Poultry' | 'Equine';
-  breed: string;
-  gender: Gender;
-  birthDate: string;
-  healthStatus: 'Healthy' | 'InTreatment' | 'Quarantined' | 'Sold' | 'Deceased';
-  dailyProductionLiters?: number;
-  notes?: string;
+  parcelId: string;
+  cropName: string;
+  variety: string;
+  campaignYear: number;
+  surfaceAllocatedHa: number;
+  seedLotNumber?: string;
+  seedQuantityKg?: number;
+  sowingDate: string;
+  projectedHarvestDate: string;
+  projectedYieldQtx: number;
+  actualYieldQtx?: number;
+  currentPhase: AgriCyclePhase;
+  activeDarLockoutUntil?: string;
+  activePestWarning?: string;
+  totalInputCostDzd: number;
+  totalLaborCostDzd: number;
+  totalMachineryCostDzd: number;
   createdAt: string;
+  updatedAt?: string;
 }
 
 export interface AgriTreatmentLog {
@@ -3203,46 +3231,158 @@ export interface AgriTreatmentLog {
   branchId: string;
   staffId: string;
   parcelId: string;
+  cropCycleId?: string;
   treatmentDate: string;
   commercialProductName: string;
   activeIngredient: string;
   targetPestDisease: string;
   dosagePerHa: string;
+  totalQuantityUsed?: number;
   darDays: number; // Délai Avant Récolte (Pre-harvest interval)
   harvestAllowedDate: string;
   operatorName: string;
+  safetyGearConfirmed?: boolean;
   notes?: string;
   createdAt: string;
 }
 
-export interface AgriHarvestTicket {
+export type AgriWorkerType = 'seasonal_piecework' | 'seasonal_daily' | 'permanent_salary';
+
+export interface AgriWorker {
   id: string;
   accountId: string;
   businessId: string;
   branchId: string;
   staffId: string;
-  ticketNumber: string; // e.g. PES-2026-041
-  ticketCode?: string;
+  fullName: string;
+  ninOrIdCard?: string;
+  phone?: string;
+  workerType: AgriWorkerType;
+  defaultDailyRateDzd: number;
+  defaultPieceRateDzd: number;
+  active: boolean;
+  createdAt: string;
+}
+
+export interface AgriDailyPointage {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  staffId: string;
+  workerId: string;
+  workerName: string;
   parcelId: string;
+  parcelName?: string;
+  date: string;
+  cratesCollected: number;
+  calculatedWageDzd: number;
+  cashAdvancePaidDzd: number;
+  netDueDzd: number;
+  isPaid: boolean;
+  paidAt?: string;
+  supervisorStaffId: string;
+  createdAt: string;
+}
+
+export type BovineBreed = 'Holstein' | 'Montbéliarde' | 'Fleckvieh' | 'Brune de l Atlas' | 'Croisée Locale';
+export type CowReproStatus = 'Génisse' | 'Lactation' | 'Tarissement' | 'Gestante' | 'Quarantaine' | 'Réformée';
+
+export interface AgriDairyCow {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  staffId: string;
+  earTagNumber: string; // e.g. DZ-16-10482
+  nameOrNumber: string;
+  breed: BovineBreed | string;
+  birthDate: string;
+  reproStatus: CowReproStatus;
+  lactationNumber: number;
+  dailyAvgLiters: number;
+  isInWithholdingLockout: boolean;
+  withholdingLockoutUntil?: string;
+  withholdingReason?: string;
+  motherTag?: string;
+  sireCode?: string;
+  notes?: string;
+  species?: 'Bovine' | 'Ovine' | 'Caprine' | 'Other';
+  gender?: 'Female' | 'Male';
+  healthStatus?: 'Healthy' | 'InTreatment' | 'Quarantine' | 'Sick';
+  dailyProductionLiters?: number;
+  createdAt: string;
+}
+
+export interface AgriMilkingRecord {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  staffId: string;
+  sessionDate: string;
+  sessionPeriod: 'morning' | 'evening';
+  totalTankLiters: number;
+  rejectedWithholdingLiters: number;
+  conformingLiters: number;
+  tankTemperatureCelsius: number;
+  destinationDairy: string;
+  dairyDeliverySlipNo?: string;
+  fatContentMg?: number;
+  onilSubsidyRateDzd: number; // 12 DZD/L
+  onilTotalSubsidyDzd: number;
+  operatorStaffId: string;
+  createdAt: string;
+}
+
+export type AgriSalePaymentMethod = 'cash' | 'baridimob' | 'bank_transfer' | 'check' | 'credit_mandataire';
+
+export interface AgriWeighbridgeTicket {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  staffId: string;
+  ticketNumber: string; // e.g. PB-2026-0042
+  ticketCode?: string;
+  buyerName: string;
+  truckPlate: string;
+  vehiclePlate?: string;
+  driverName?: string;
+  parcelId?: string;
   cropDesignation: string;
+  grossWeightKg: number;
+  truckTareKg: number;
+  tareWeightKg?: number;
+  crateCount: number;
+  cratesCount?: number;
+  crateUnitTareKg: number;
+  totalCrateTareKg: number;
+  netWeightKg: number;
+  netWeightQuintaux: number;
+  unitPriceDzdPerKg: number;
+  subtotalProduceDzd: number;
+  totalGrossDzd?: number;
+  mandataireFeePercent?: number;
+  netFarmPayoutDzd?: number;
   cropVariety?: string;
   qualityGrade?: string;
-  vehiclePlate: string;
-  driverName: string;
-  grossWeightKg: number;
-  tareWeightKg: number;
-  netWeightKg: number;
-  cratesCount?: number;
-  unitPriceDzdPerKg: number;
-  totalGrossDzd: number;
-  mandataireFeePercent: number; // e.g. 5%
-  netFarmPayoutDzd: number;
-  destinationWholesaleMarket: string; // e.g. Marché de Gros des Eucalyptus
+  paymentMethod: AgriSalePaymentMethod;
+  timbreFiscalDzd: number;
+  totalAmountDzd: number;
+  paidAmountDzd: number;
+  remainingDueDzd: number;
+  destinationWholesaleMarket: string;
   destinationStorage?: string;
   date: string;
   harvestDate?: string;
   createdAt: string;
 }
+
+// Backwards-compatibility alias
+export type AgriHarvestTicket = AgriWeighbridgeTicket;
+export type AgriLivestock = AgriDairyCow;
+
 
 
 
