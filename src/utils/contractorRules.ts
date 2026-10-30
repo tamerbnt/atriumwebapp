@@ -254,3 +254,69 @@ export function calculatePriceRevisionCoeff(
     priceAdjustmentRatio: Number(adjustmentRatio.toFixed(4)),
   };
 }
+
+/**
+ * Equipment fuel consumption anomaly check.
+ * Standard Algerian construction benchmarks:
+ * - Grue à tour: ~10 L/h
+ * - Pelle hydraulique 20T: ~16 L/h
+ * - Camion benne 8x4: ~18 L/h
+ * - Bulldozer D8: ~30 L/h
+ * - Rétrochargeuse: ~9 L/h
+ *
+ * If actual burn rate exceeds standard benchmark by >25% (ratio > 1.25),
+ * flag an anomaly for fuel siphoning / maintenance fault.
+ */
+export function calculateFuelConsumptionAnomaly(
+  hoursWorked: number,
+  fuelLitersConsumed: number,
+  standardRateLitersPerHour: number
+): {
+  actualRateLph: number;
+  expectedLiters: number;
+  varianceLiters: number;
+  variancePercent: number;
+  isAnomaly: boolean;
+  status: 'NORMAL' | 'WARNING' | 'THEFT_SUSPECTED';
+  message: string;
+} {
+  if (hoursWorked <= 0 || fuelLitersConsumed <= 0 || standardRateLitersPerHour <= 0) {
+    return {
+      actualRateLph: 0,
+      expectedLiters: 0,
+      varianceLiters: 0,
+      variancePercent: 0,
+      isAnomaly: false,
+      status: 'NORMAL',
+      message: 'Données insuffisantes pour le calcul du ratio gasoil.',
+    };
+  }
+
+  const actualRate = fuelLitersConsumed / hoursWorked;
+  const expectedLiters = hoursWorked * standardRateLitersPerHour;
+  const varianceLiters = fuelLitersConsumed - expectedLiters;
+  const variancePercent = Math.round(((actualRate - standardRateLitersPerHour) / standardRateLitersPerHour) * 100);
+
+  const ratio = actualRate / standardRateLitersPerHour;
+  let status: 'NORMAL' | 'WARNING' | 'THEFT_SUSPECTED' = 'NORMAL';
+  let message = 'Consommation gasoil conforme aux normes constructeur.';
+
+  if (ratio > 1.25) {
+    status = 'THEFT_SUSPECTED';
+    message = `Surconsommation critique (+${variancePercent}%) : alerte suspicion de fuite ou coulage de carburant.`;
+  } else if (ratio > 1.1) {
+    status = 'WARNING';
+    message = `Consommation légèrement élevée (+${variancePercent}%) : vérification des injecteurs et filtres requise.`;
+  }
+
+  return {
+    actualRateLph: Number(actualRate.toFixed(2)),
+    expectedLiters: Number(expectedLiters.toFixed(1)),
+    varianceLiters: Number(varianceLiters.toFixed(1)),
+    variancePercent,
+    isAnomaly: ratio > 1.25,
+    status,
+    message,
+  };
+}
+

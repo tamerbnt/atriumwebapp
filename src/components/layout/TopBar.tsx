@@ -34,7 +34,7 @@ import {
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../services/store';
 import { formatDuration } from '../../utils/rules';
-import { LegalRole, LogisticsRole, ManufacturingRole, PMRole, RealEstateRole, SupportedLanguage } from '../../types/index';
+import { ContractorRole, LegalRole, LogisticsRole, ManufacturingRole, PMRole, RealEstateRole, SupportedLanguage } from '../../types/index';
 import { Seek } from '../ui/Seek';
 import { useTranslation } from '../../utils/useTranslation';
 import { BackendDiagnosticPanel } from '../BackendDiagnosticPanel';
@@ -96,6 +96,8 @@ export const TopBar: React.FC<TopBarProps> = ({
     setActiveLegalRole,
     activeLogisticsRole,
     setActiveLogisticsRole,
+    activeContractorRole,
+    setActiveContractorRole,
     unreadNotificationCount,
   } = useAtriumStore();
 
@@ -901,6 +903,80 @@ export const TopBar: React.FC<TopBarProps> = ({
                 key={r.id}
                 type="button"
                 onClick={() => setActiveLogisticsRole(r.id)}
+                title={r.desc}
+                className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+                  isActive
+                    ? 'bg-[#C4785A] text-white shadow-xs'
+                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-200/50 dark:hover:bg-neutral-700/50'
+                }`}
+              >
+                <span>{r.icon}</span>
+                <span>{r.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Category 15: Construction, General Contracting & BTP — Dedicated Operational Role Switcher */}
+      {currentBusiness?.category === 'construction_contractor' && (
+        <div className="hidden lg:flex items-center gap-1 bg-[#F8F9FA] dark:bg-neutral-800/80 p-1 rounded-full border border-neutral-200/80 dark:border-neutral-700/80 shadow-2xs">
+          {[
+            {
+              id: 'gerant' as ContractorRole,
+              label: language === 'ar' ? 'المدير العام' : language === 'fr' ? 'Gérant' : 'Director',
+              icon: '👔',
+              desc:
+                language === 'ar'
+                  ? 'الصفقات العمومية، الكفالات المصرفية وأوامر الخدمة OS'
+                  : 'Marchés Publics, Cautions Bancaires & Ordres de Service (OS)',
+            },
+            {
+              id: 'conducteur' as ContractorRole,
+              label: language === 'ar' ? 'مدير الأشغال' : language === 'fr' ? 'Conducteur' : 'Site Ops',
+              icon: '📐',
+              desc:
+                language === 'ar'
+                  ? 'متابعة الورشات، مخطط جانت، اختبارات CTC والتعاقد من الباطن'
+                  : 'Multi-Chantiers, Planning Gantt, Laboratoire CTC & Sous-Traitance',
+            },
+            {
+              id: 'chef_chantier' as ContractorRole,
+              label: language === 'ar' ? 'رئيس الورشة' : language === 'fr' ? 'Chef Chantier' : 'Foreman',
+              icon: '🦺',
+              desc:
+                language === 'ar'
+                  ? 'تسجيل الحضور اليومي، دفتر الورشة، وصولات الخرسانة BPE والوقود'
+                  : 'Pointage Journalier, Journal de Chantier, Bons BPE & Gasoil',
+            },
+            {
+              id: 'metreur' as ContractorRole,
+              label: language === 'ar' ? 'مهندس القياس' : language === 'fr' ? 'Métreur' : 'Estimator',
+              icon: '📊',
+              desc:
+                language === 'ar'
+                  ? 'الكشف الكمي والتقديري DQE/BPU، الكشوف التناقضية ومراجعة الأسعار'
+                  : 'DQE, Bordereau BPU, Attachements Contradictoires & Révision des Prix',
+            },
+            {
+              id: 'comptable' as ContractorRole,
+              label: language === 'ar' ? 'المحاسب المالي' : language === 'fr' ? 'Comptable BTP' : 'Accountant',
+              icon: '📑',
+              desc:
+                language === 'ar'
+                  ? 'الكشوف المؤقتة المرسوم 15-247، ملف تعويض CACOBATPH 48h وصندوق الورشة'
+                  : 'Décomptes Provisoires Décret 15-247, Dossier CACOBATPH 48h & Caisse Art. 317',
+            },
+          ].map((r) => {
+            const isActive =
+              activeContractorRole === r.id ||
+              (r.id === 'conducteur' && activeContractorRole === 'conducteur_travaux') ||
+              (r.id === 'metreur' && activeContractorRole === 'daf_metreur');
+            return (
+              <button
+                key={r.id}
+                type="button"
+                onClick={() => setActiveContractorRole(r.id)}
                 title={r.desc}
                 className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${
                   isActive

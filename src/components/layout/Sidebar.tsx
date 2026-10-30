@@ -43,6 +43,8 @@ import {
   CheckCircle2,
   Lock,
   Landmark,
+  Cloud,
+  Building,
 } from 'lucide-react';
 import { useAtriumStore, ActiveScreen } from '../../services/store';
 import { FiveCubesLogo } from '../auth/AtriumMonolith';
@@ -73,6 +75,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     activeManufacturingRole,
     activeLegalRole,
     activeLogisticsRole,
+    activeContractorRole,
     language,
   } = useAtriumStore();
   const [isExpanded, setIsExpanded] = useState(false);
@@ -1344,45 +1347,174 @@ export const Sidebar: React.FC<SidebarProps> = ({
       ];
     }
   } else if (category === 'construction_contractor') {
-    // Dedicated Category 15: Construction, Field Contracting & BTP
-    dockNavItems = [
-      {
-        id: 'dashboard',
-        icon: <Home size={19} />,
-        title: language === 'ar' ? 'لوحة متابعة الورشات' : language === 'fr' ? 'Supervision Chantiers' : 'Sites Pulse',
-        label: t('nav_home', language),
-      },
-      {
-        id: 'members',
-        icon: <HardHat size={19} />,
-        title: language === 'ar' ? 'المشاريع والورشات' : language === 'fr' ? 'Projets & Chantiers' : 'Projects & Sites',
-        label: language === 'ar' ? 'الورشات' : language === 'fr' ? 'Chantiers' : 'Sites',
-      },
-      {
-        id: 'shop',
-        icon: <ClipboardList size={19} />,
-        title: language === 'ar' ? 'الكشف الكمي والتقديري (BOQ)' : language === 'fr' ? 'Devis Quantitatif (BOQ)' : 'Bill of Quantities',
-        label: language === 'ar' ? 'الكشف الكمي' : language === 'fr' ? 'Devis BOQ' : 'BOQ',
-      },
-      {
-        id: 'scheduler',
-        icon: <FileCheck size={19} />,
-        title: language === 'ar' ? 'محاضر تقدم الأشغال' : language === 'fr' ? 'Attachements de Travaux' : 'Works Progress',
-        label: language === 'ar' ? 'تقدم الأشغال' : language === 'fr' ? 'Attachements' : 'Progress',
-      },
-      {
-        id: 'finance',
-        icon: <Wallet size={19} />,
-        title: language === 'ar' ? 'الكشوف المالية والضمان (DGP)' : language === 'fr' ? 'Décomptes (DGP) & Retenue' : 'Progress Billing (DGP)',
-        label: language === 'ar' ? 'الكشوف (DGP)' : language === 'fr' ? 'Décomptes' : 'Billing',
-      },
-      {
-        id: 'settings',
-        icon: <Settings size={19} />,
-        title: t('nav_settings', language),
-        label: t('nav_settings', language),
-      },
-    ];
+    // Dedicated Category 15: Construction, General Contracting & BTP (Role-Based Isolation)
+    if (activeContractorRole === 'gerant') {
+      dockNavItems = [
+        {
+          id: 'dashboard',
+          icon: <Home size={19} />,
+          title: language === 'ar' ? 'لوحة القيادة والمؤشرات' : language === 'fr' ? 'Supervision Direction' : 'Executive Pulse',
+          label: t('nav_home', language),
+        },
+        {
+          id: 'members',
+          icon: <Building size={19} />,
+          title: language === 'ar' ? 'محفظة الصفقات والمشاريع' : language === 'fr' ? 'Portefeuille Marchés' : 'Tenders & Sites',
+          label: language === 'ar' ? 'الصفقات' : language === 'fr' ? 'Marchés' : 'Tenders',
+        },
+        {
+          id: 'scheduler',
+          icon: <Clock size={19} />,
+          title: language === 'ar' ? 'أوامر الخدمة والآجال القانونية (OS)' : language === 'fr' ? 'Ordres de Service (OS) & Délais' : 'OS & Legal Clocks',
+          label: language === 'ar' ? 'أوامر OS' : language === 'fr' ? 'Ordres OS' : 'OS Clock',
+        },
+        {
+          id: 'finance',
+          icon: <Landmark size={19} />,
+          title: language === 'ar' ? 'الخزينة والكفالات المصرفية' : language === 'fr' ? 'Trésorerie & Cautions Bancaires' : 'Treasury & Cautions',
+          label: language === 'ar' ? 'الخزينة' : language === 'fr' ? 'Trésorerie' : 'Treasury',
+        },
+        {
+          id: 'settings',
+          icon: <Settings size={19} />,
+          title: t('nav_settings', language),
+          label: t('nav_settings', language),
+        },
+      ];
+    } else if (activeContractorRole === 'conducteur' || activeContractorRole === 'conducteur_travaux') {
+      dockNavItems = [
+        {
+          id: 'dashboard',
+          icon: <TrendingUp size={19} />,
+          title: language === 'ar' ? 'لوحة العمليات والتقدم الميداني' : language === 'fr' ? 'Supervision Opérations Chantiers' : 'Field Operations',
+          label: t('nav_home', language),
+        },
+        {
+          id: 'members',
+          icon: <HardHat size={19} />,
+          title: language === 'ar' ? 'متابعة الورشات ومخطط الإنجاز' : language === 'fr' ? 'Suivi Chantiers & Planning' : 'Sites & Planning',
+          label: language === 'ar' ? 'الورشات' : language === 'fr' ? 'Chantiers' : 'Sites',
+        },
+        {
+          id: 'shop',
+          icon: <ClipboardList size={19} />,
+          title: language === 'ar' ? 'متابعة الحصص والكشف DQE' : language === 'fr' ? 'Avancement Lots & DQE' : 'DQE Progress',
+          label: language === 'ar' ? 'الكشف DQE' : language === 'fr' ? 'DQE' : 'DQE',
+        },
+        {
+          id: 'scheduler',
+          icon: <CheckCircle2 size={19} />,
+          title: language === 'ar' ? 'مراقبة الخرسانة ومطابقة CTC' : language === 'fr' ? 'Laboratoire Béton & Visa CTC' : 'Concrete Lab & CTC',
+          label: language === 'ar' ? 'مراقبة CTC' : language === 'fr' ? 'Laboratoire' : 'Lab & CTC',
+        },
+        {
+          id: 'finance',
+          icon: <Users size={19} />,
+          title: language === 'ar' ? 'محاضر المقاولين من الباطن' : language === 'fr' ? 'Attachements Sous-Traitants' : 'Subcontractors',
+          label: language === 'ar' ? 'المناولة' : language === 'fr' ? 'Sous-traitance' : 'Subcontract',
+        },
+      ];
+    } else if (activeContractorRole === 'chef_chantier') {
+      dockNavItems = [
+        {
+          id: 'dashboard',
+          icon: <Home size={19} />,
+          title: language === 'ar' ? 'مركز قيادة رئيس الورشة' : language === 'fr' ? 'Poste de Commandement Terrain' : 'Site Field Post',
+          label: t('nav_home', language),
+        },
+        {
+          id: 'scheduler',
+          icon: <Users size={19} />,
+          title: language === 'ar' ? 'تسجيل الحضور اليومي للعمال' : language === 'fr' ? 'Pointage Journalier des Équipes' : 'Daily Worker Muster',
+          label: language === 'ar' ? 'الحضور' : language === 'fr' ? 'Pointage' : 'Roll-Call',
+        },
+        {
+          id: 'members',
+          icon: <FileText size={19} />,
+          title: language === 'ar' ? 'دفتر الورشة اليومي وسجل الطقس' : language === 'fr' ? 'Journal de Chantier & Météo' : 'Site Diary & Weather',
+          label: language === 'ar' ? 'دفتر الورشة' : language === 'fr' ? 'Journal' : 'Site Diary',
+        },
+        {
+          id: 'shop',
+          icon: <Truck size={19} />,
+          title: language === 'ar' ? 'وصولات صب الخرسانة الجاهزة BPE' : language === 'fr' ? 'Bons de Coulage Béton BPE' : 'Ready-Mix Pour Slips',
+          label: language === 'ar' ? 'الخرسانة' : language === 'fr' ? 'Coulage BPE' : 'Pours',
+        },
+        {
+          id: 'finance',
+          icon: <Scale size={19} />,
+          title: language === 'ar' ? 'ساعات العتاد ومتابعة الوقود' : language === 'fr' ? 'Heures Engins & Suivi Gasoil' : 'Equipment & Fuel',
+          label: language === 'ar' ? 'العتاد والوقود' : language === 'fr' ? 'Engins & Fuel' : 'Machinery',
+        },
+      ];
+    } else if (activeContractorRole === 'metreur' || activeContractorRole === 'daf_metreur') {
+      dockNavItems = [
+        {
+          id: 'dashboard',
+          icon: <TrendingUp size={19} />,
+          title: language === 'ar' ? 'مكتب الدراسات وتقدير التكاليف' : language === 'fr' ? 'Cockpit Études & Chiffrage' : 'Estimating Studio',
+          label: t('nav_home', language),
+        },
+        {
+          id: 'shop',
+          icon: <ClipboardList size={19} />,
+          title: language === 'ar' ? 'جدول الأسعار الأحادية BPU و DQE' : language === 'fr' ? 'Studio DQE & Bordereau BPU' : 'DQE & BPU Studio',
+          label: language === 'ar' ? 'BPU / DQE' : language === 'fr' ? 'DQE / BPU' : 'BPU / DQE',
+        },
+        {
+          id: 'scheduler',
+          icon: <FileCheck size={19} />,
+          title: language === 'ar' ? 'الكشوف التناقضية الشهرية' : language === 'fr' ? 'Attachements Contradictoires' : 'Monthly Attachments',
+          label: language === 'ar' ? 'الكشوف' : language === 'fr' ? 'Attachements' : 'Attachments',
+        },
+        {
+          id: 'finance',
+          icon: <Layers size={19} />,
+          title: language === 'ar' ? 'مراجعة الأسعار بالمعادلة الرسمية' : language === 'fr' ? 'Révision des Prix Paramétrique' : 'Price Revisions',
+          label: language === 'ar' ? 'المراجعة' : language === 'fr' ? 'Révision Prix' : 'Revisions',
+        },
+        {
+          id: 'settings',
+          icon: <Settings size={19} />,
+          title: t('nav_settings', language),
+          label: t('nav_settings', language),
+        },
+      ];
+    } else {
+      // Comptable Chantier & RAF
+      dockNavItems = [
+        {
+          id: 'dashboard',
+          icon: <Wallet size={19} />,
+          title: language === 'ar' ? 'لوحة المحاسبة والفوترة BTP' : language === 'fr' ? 'Tableau Facturation & Trésor' : 'Billing & Treasury',
+          label: t('nav_home', language),
+        },
+        {
+          id: 'finance',
+          icon: <FileText size={19} />,
+          title: language === 'ar' ? 'الكشوف المؤقتة المرسوم 15-247' : language === 'fr' ? 'Décomptes Provisoires Décret 15-247' : 'Progress Billings',
+          label: language === 'ar' ? 'الكشوف' : language === 'fr' ? 'Décomptes' : 'Billings',
+        },
+        {
+          id: 'scheduler',
+          icon: <Cloud size={19} />,
+          title: language === 'ar' ? 'ملف تعويض سوء الأحوال CACOBATPH' : language === 'fr' ? 'Dossier Intempéries CACOBATPH 48h' : 'CACOBATPH 48h',
+          label: language === 'ar' ? 'CACOBATPH' : language === 'fr' ? 'CACOBATPH' : 'Weather Claim',
+        },
+        {
+          id: 'shop',
+          icon: <CreditCard size={19} />,
+          title: language === 'ar' ? 'فواتير الموردين والشركاء' : language === 'fr' ? 'Achats & Factures Fournisseurs' : 'Supplier Invoices',
+          label: language === 'ar' ? 'الموردين' : language === 'fr' ? 'Fournisseurs' : 'Suppliers',
+        },
+        {
+          id: 'members',
+          icon: <Receipt size={19} />,
+          title: language === 'ar' ? 'صندوق الورشة وطابع المادة 317' : language === 'fr' ? 'Caisse de Chantier & Timbre Art. 317' : 'Site Petty Cash',
+          label: language === 'ar' ? 'الصندوق' : language === 'fr' ? 'Caisse' : 'Petty Cash',
+        },
+      ];
+    }
   } else if (category === 'agriculture_farming') {
     // Dedicated Category 16: Agriculture, Farm & Livestock Management
     dockNavItems = [

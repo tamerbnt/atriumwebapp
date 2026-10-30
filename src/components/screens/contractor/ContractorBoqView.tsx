@@ -17,6 +17,7 @@ import {
   AlertTriangle,
   TrendingUp,
   Percent,
+  Calculator,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
 import { formatMoney } from '../../../utils/rules';
@@ -28,6 +29,7 @@ import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { ContractorBoqItem } from '../../../types';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { PriceRevisionModal } from './PriceRevisionModal';
 
 export const ContractorBoqView: React.FC = () => {
   const { language, currentBusiness, currentBranch, currentUser } = useAtriumStore();
@@ -44,6 +46,7 @@ export const ContractorBoqView: React.FC = () => {
 
   // Modals & 390px Inspector Drawer State
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isPriceRevisionModalOpen, setIsPriceRevisionModalOpen] = useState(false);
   const [itemToEdit, setItemToEdit] = useState<ContractorBoqItem | null>(null);
 
   // Form states inside Modal
@@ -258,23 +261,32 @@ export const ContractorBoqView: React.FC = () => {
       header: isAr ? 'الكمية المنفذة' : 'Avancement Quantitatif',
       accessorKey: 'executedQty',
       sortable: true,
-      minWidth: '140px',
+      minWidth: '150px',
       cell: (item) => {
         const pct = item.plannedQty > 0 ? Math.round((item.executedQty / item.plannedQty) * 100) : 0;
+        const isOverrun = item.executedQty > item.plannedQty;
         return (
-          <div className="space-y-1 w-full max-w-[130px]">
+          <div className="space-y-1 w-full max-w-[140px]">
             <div className="flex items-center justify-between text-[11px]">
               <span className="font-mono font-bold text-neutral-900 dark:text-white">
                 {item.executedQty} / {item.plannedQty} {item.unit}
               </span>
-              <span className="font-mono text-[10px] text-[#C4785A] font-bold">{pct}%</span>
+              <span className={`font-mono text-[10px] font-bold ${isOverrun ? 'text-rose-600 dark:text-rose-400' : 'text-[#C4785A]'}`}>
+                {pct}%
+              </span>
             </div>
             <div className="w-full h-1.5 rounded-full bg-neutral-100 dark:bg-neutral-800 overflow-hidden">
               <div
-                className="h-full bg-[#C4785A] rounded-full transition-all duration-300"
+                className={`h-full rounded-full transition-all duration-300 ${isOverrun ? 'bg-rose-500' : 'bg-[#C4785A]'}`}
                 style={{ width: `${Math.min(100, pct)}%` }}
               />
             </div>
+            {isOverrun && (
+              <div className="flex items-center gap-1 text-[9px] font-bold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 px-1 py-0.5 rounded w-fit">
+                <AlertTriangle size={10} className="shrink-0" />
+                <span>+{pct - 100}% Dépassement</span>
+              </div>
+            )}
           </div>
         );
       },
@@ -303,6 +315,8 @@ export const ContractorBoqView: React.FC = () => {
     ...projects.map((p) => ({ value: p.id, label: p.projectCode })),
   ];
 
+  const selectedProject = projects.find((p) => p.id === (filterProject !== 'all' ? filterProject : selectedProjectId)) || projects[0];
+
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
       {/* Top Header Strip with Action Toolbar */}
@@ -329,6 +343,14 @@ export const ContractorBoqView: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
+          <AtriumButton
+            variant="secondary"
+            size="sm"
+            onClick={() => setIsPriceRevisionModalOpen(true)}
+            icon={<Calculator size={14} />}
+          >
+            {isAr ? 'مراجعة الأسعار (CCAG)' : 'Révision Prix CCAG'}
+          </AtriumButton>
           <AtriumButton
             variant="ghost"
             size="sm"
@@ -496,13 +518,14 @@ export const ContractorBoqView: React.FC = () => {
             ]}
             renderGridCard={(item) => {
               const pct = item.plannedQty > 0 ? Math.round((item.executedQty / item.plannedQty) * 100) : 0;
+              const isOverrun = item.executedQty > item.plannedQty;
               return (
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="font-mono font-bold text-xs bg-[#C4785A]/10 text-[#C4785A] px-2.5 py-1 rounded-lg border border-[#C4785A]/20">
                       {item.itemCode}
                     </span>
-                    <span className="font-mono text-xs font-bold text-[#C4785A]">
+                    <span className={`font-mono text-xs font-bold ${isOverrun ? 'text-rose-600 dark:text-rose-400' : 'text-[#C4785A]'}`}>
                       {pct}% réalisé
                     </span>
                   </div>
@@ -514,6 +537,12 @@ export const ContractorBoqView: React.FC = () => {
                     <div className="text-xs text-neutral-500 font-medium mt-0.5">
                       {item.executedQty} / {item.plannedQty} {item.unit}
                     </div>
+                    {isOverrun && (
+                      <div className="mt-1 flex items-center gap-1 text-[9px] font-bold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 px-1.5 py-0.5 rounded w-fit">
+                        <AlertTriangle size={10} className="shrink-0" />
+                        <span>Dépassement (+{pct - 100}%) · Avenant obligatoire</span>
+                      </div>
+                    )}
                   </div>
 
                   <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-xs">
@@ -684,6 +713,18 @@ export const ContractorBoqView: React.FC = () => {
                     </span>
                   </div>
                 </div>
+
+                {selectedItem.executedQty > selectedItem.plannedQty && (
+                  <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-200 space-y-1">
+                    <div className="flex items-center gap-1.5 font-bold text-xs">
+                      <AlertTriangle size={13} className="text-rose-600 shrink-0" />
+                      <span>Dépassement de Quantité (+{Math.round(((selectedItem.executedQty - selectedItem.plannedQty) / selectedItem.plannedQty) * 100)}%)</span>
+                    </div>
+                    <p className="text-[10px] leading-tight text-rose-700 dark:text-rose-300">
+                      Conformément au Décret 15-247 (Art. 136), tout volume supérieur à la prévision contractuelle requiert un Avenant validé en Commission des Marchés avant mandatement.
+                    </p>
+                  </div>
+                )}
               </div>
             )}
 
@@ -813,6 +854,15 @@ export const ContractorBoqView: React.FC = () => {
             </form>
           </div>
         </div>
+      )}
+
+      {/* Official CCAG Price Revision Modal */}
+      {selectedProject && (
+        <PriceRevisionModal
+          isOpen={isPriceRevisionModalOpen}
+          onClose={() => setIsPriceRevisionModalOpen(false)}
+          project={selectedProject}
+        />
       )}
     </div>
   );

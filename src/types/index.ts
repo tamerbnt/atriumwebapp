@@ -2941,8 +2941,14 @@ export interface MerchantRemittanceBatch {
 
 // ==========================================
 // CATEGORY 15: CONSTRUCTION & BTP CONTRACTING
-// ==========================================
-export type ContractorRole = 'gerant' | 'conducteur_travaux' | 'chef_chantier' | 'daf_metreur';
+export type ContractorRole =
+  | 'gerant'
+  | 'conducteur'
+  | 'chef_chantier'
+  | 'metreur'
+  | 'comptable'
+  | 'conducteur_travaux'
+  | 'daf_metreur';
 
 export interface ContractorProject {
   id: string;
@@ -3112,6 +3118,44 @@ export interface SubcontractorAgreement {
   progressPercent: number;
   quitusSigned: boolean;
   status: 'Active' | 'Completed' | 'Terminated';
+  createdAt: string;
+}
+
+export interface EquipmentLogRecord {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  staffId: string;
+  projectId: string;
+  equipmentName: string;
+  equipmentCategory: 'Excavator' | 'TowerCrane' | 'BackhoeLoader' | 'DumpTruck' | 'Generator';
+  matriculeNumber: string;
+  operatingHours: number;
+  fuelAddedLiters: number;
+  theoreticalHourlyBurnRate: number;
+  actualHourlyBurnRate: number;
+  hasOverconsumptionAlert: boolean;
+  date: string;
+  operatorName: string;
+  createdAt: string;
+}
+
+export interface CaisseExpenseRecord {
+  id: string;
+  accountId: string;
+  businessId: string;
+  branchId: string;
+  staffId: string;
+  projectId: string;
+  expenseDate: string;
+  beneficiaryName: string;
+  expenseCategory: 'EmergencyHardware' | 'SiteSecurity' | 'SandQuarry' | 'CateringMuster' | 'FuelTransport';
+  amountDzd: number;
+  timbreFiscalDzd: number;
+  netCashDisbursedDzd: number;
+  voucherNumber: string;
+  approvedBy: string;
   createdAt: string;
 }
 

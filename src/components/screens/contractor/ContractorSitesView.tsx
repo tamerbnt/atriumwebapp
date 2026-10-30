@@ -798,23 +798,48 @@ export const ContractorSitesView: React.FC = () => {
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-neutral-500">{isAr ? 'نسبة الضمان (Retenue):' : 'Retenue de Garantie:'}</span>
-                    <span className="font-mono font-semibold text-amber-600 dark:text-amber-400">
-                      {selectedProject.retentionGuaranteePercent}% ({formatMoney(selectedProject.retentionAmountDzd)})
+                    <span className="text-neutral-500">{isAr ? 'الضمان المالي:' : 'Garantie Financière:'}</span>
+                    {selectedProject.hasBankCautionReplacement ? (
+                      <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full flex items-center gap-1">
+                        <CheckCircle2 size={11} />
+                        Caution Bancaire ({selectedProject.bankCautionReference || 'Active'})
+                      </span>
+                    ) : (
+                      <span className="font-mono font-semibold text-amber-600 dark:text-amber-400">
+                        Retenue 5% ({formatMoney(selectedProject.retentionAmountDzd)})
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-neutral-500">Organisme CTC & BET:</span>
+                    <span className="text-[11px] font-medium text-neutral-800 dark:text-neutral-200">
+                      CTC Centre · BET Arch-Design
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-neutral-500">Wilaya d’exécution:</span>
+                    <span className="text-[11px] font-mono font-bold text-neutral-900 dark:text-white">
+                      Wilaya {selectedProject.wilayaNumber || 16} (Algérie)
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-neutral-500">{isAr ? 'تاريخ انطلاق الأشغال:' : 'Ordre de Service (ODS):'}</span>
-                    <span className="text-neutral-800 dark:text-neutral-200">
+                    <span className="text-neutral-800 dark:text-neutral-200 font-mono">
                       {selectedProject.startDate || '—'}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-neutral-500">{isAr ? 'تاريخ التسليم التعاقدي:' : 'Échéance Contractuelle:'}</span>
-                    <span className="text-neutral-800 dark:text-neutral-200">
+                    <span className="text-neutral-800 dark:text-neutral-200 font-mono">
                       {selectedProject.targetEndDate || '—'}
                     </span>
                   </div>
+                  {selectedProject.revisedEndDate && (
+                    <div className="flex justify-between items-center text-amber-600 dark:text-amber-400">
+                      <span>Échéance Révisée (Avenant):</span>
+                      <span className="font-mono font-bold">{selectedProject.revisedEndDate}</span>
+                    </div>
+                  )}
                 </div>
 
                 {/* Progress bar card */}

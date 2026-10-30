@@ -7,7 +7,7 @@ import { AtriumButton } from '../../ui/AtriumButton';
 import { ContractorProjectModal } from './ContractorProjectModal';
 
 export const ContractorDashboardView: React.FC = () => {
-  const { language, setScreen } = useAtriumStore();
+  const { language, setScreen, activeContractorRole } = useAtriumStore();
   const isAr = language === 'ar';
   const { projects, dailyLogs, dgps, addProject, setSelectedProjectId } = useContractorData();
 
@@ -17,6 +17,67 @@ export const ContractorDashboardView: React.FC = () => {
   const totalRetentionHeld = projects.reduce((acc, p) => acc + p.retentionAmountDzd, 0);
   const totalBilledDzd = dgps.reduce((acc, d) => acc + d.periodGrossDzd, 0);
   const activeProjects = projects.filter((p) => p.status === 'InProgress');
+  const cautionProjects = projects.filter((p) => p.hasBankCautionReplacement);
+  const totalCautionCoveredDzd = cautionProjects.reduce((acc, p) => acc + p.retentionAmountDzd, 0);
+  const latestLog = dailyLogs[0];
+
+  // Role metadata mapping
+  const roleMeta = {
+    gerant: {
+      tag: isAr ? 'المدير العام' : 'Gérant / Direction',
+      title: isAr ? 'لوحة القيادة والمؤشرات الاستراتيجية' : 'Supervision Direction & Marchés Publics',
+      subtitle: isAr
+        ? 'متابعة الصفقات المبرمة، الكفالات المصرفية وأوامر الخدمة (OS)'
+        : 'Gouvernance globale des marchés Décret 15-247, cautions BNA/CPA et trésorerie',
+      actionLabel: isAr ? 'صفقة / ورشة جديدة' : 'Nouveau Chantier',
+      actionClick: () => setIsModalOpen(true),
+    },
+    conducteur: {
+      tag: isAr ? 'مدير الأشغال' : 'Conducteur de Travaux',
+      title: isAr ? 'لوحة العمليات والتقدم الميداني' : 'Supervision Opérations Chantiers',
+      subtitle: isAr
+        ? 'متابعة مخططات جانت، زيارات CTC واختبارات كسر الخرسانة والتعاقد من الباطن'
+        : 'Avancement physique des lots, contrôles CTC Béton et attachements sous-traitants',
+      actionLabel: isAr ? 'جدول الإنجاز DQE' : 'Avancement DQE',
+      actionClick: () => setScreen('shop'),
+    },
+    chef_chantier: {
+      tag: isAr ? 'رئيس الورشة' : 'Chef de Chantier',
+      title: isAr ? 'مركز قيادة رئيس الورشة (الميدان)' : 'Poste de Commandement Terrain',
+      subtitle: isAr
+        ? 'تسجيل الحضور اليومي للعمال، دفتر الورشة، وصولات BPE والعتاد'
+        : 'Pointage journalier des équipes, météo CACOBATPH, bons de coulage et gasoil',
+      actionLabel: isAr ? 'حضور اليوم' : 'Pointage Équipes',
+      actionClick: () => setScreen('scheduler'),
+    },
+    metreur: {
+      tag: isAr ? 'مهندس القياس' : 'Métreur & Études',
+      title: isAr ? 'مكتب الدراسات وتقدير التكاليف' : 'Cockpit Études de Prix & DQE',
+      subtitle: isAr
+        ? 'الكشف الكمي والتقديري BPU/DQE، الكشوف التناقضية ومراجعة الأسعار'
+        : 'Avant-métrés, bordereaux BPU, attachements contradictoires et révisions des prix',
+      actionLabel: isAr ? 'الكشف DQE' : 'Studio DQE',
+      actionClick: () => setScreen('shop'),
+    },
+    comptable: {
+      tag: isAr ? 'المحاسب المالي' : 'Comptable Chantier & RAF',
+      title: isAr ? 'لوحة الفوترة والكشوف المؤقتة' : 'Facturation BTP & Décomptes 15-247',
+      subtitle: isAr
+        ? 'إصدار الكشوف المؤقتة، اقتطاع الضمان 5%، ملف CACOBATPH 48h وصندوق الورشة'
+        : 'Décomptes Provisoires CCAG, mandats Trésor, dossier intempéries et caisse',
+      actionLabel: isAr ? 'كشف جديد (DGP)' : 'Nouveau Décompte',
+      actionClick: () => setScreen('finance'),
+    },
+  };
+
+  const currentRoleKey =
+    activeContractorRole === 'conducteur_travaux'
+      ? 'conducteur'
+      : activeContractorRole === 'daf_metreur'
+      ? 'metreur'
+      : activeContractorRole || 'gerant';
+
+  const roleInfo = roleMeta[currentRoleKey] || roleMeta.gerant;
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
@@ -29,16 +90,14 @@ export const ContractorDashboardView: React.FC = () => {
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-xl font-bold text-neutral-900 dark:text-white">
-                {isAr ? 'لوحة متابعة الورشات والمشاريع (BTP)' : 'Supervision des Chantiers & Projets BTP'}
+                {roleInfo.title}
               </h1>
               <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#C4785A]/15 text-[#C4785A]">
-                Facility: 24
+                {roleInfo.tag}
               </span>
             </div>
             <p className="text-xs text-neutral-500 dark:text-neutral-400">
-              {isAr
-                ? 'متابعة الصفقات الجارية، نسب الإنجاز، الكشوفات والضمانات البنكية'
-                : 'Avancement physique, situations de travaux (DGP) et retenues de garantie'}
+              {roleInfo.subtitle}
             </p>
           </div>
         </div>
@@ -46,10 +105,10 @@ export const ContractorDashboardView: React.FC = () => {
         <div className="flex items-center gap-2">
           <AtriumButton
             variant="primary"
-            onClick={() => setIsModalOpen(true)}
+            onClick={roleInfo.actionClick}
             icon={<Plus size={14} />}
           >
-            {isAr ? 'ورشة جديدة' : 'Nouveau Chantier'}
+            {roleInfo.actionLabel}
           </AtriumButton>
         </div>
       </div>
@@ -58,42 +117,60 @@ export const ContractorDashboardView: React.FC = () => {
       <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
         <div>
           <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
-            {isAr ? 'مؤشرات أداء محفظة الصفقات' : 'Indicateurs Portefeuille & Engagement BTP'}
+            {isAr ? 'مؤشرات أداء الورشات والصفقات' : 'Indicateurs de Pilotage & Conformité BTP'}
           </h2>
           <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
             {isAr
-              ? 'متابعة التزامات المقاولة، الورشات قيد الإنجاز وحجم الفوترة التراكمية'
-              : 'Suivi global des contrats signés, chantiers actifs et facturations approuvées'}
+              ? 'متابعة الالتزامات التعاقدية، الخرسانة، العمالة المسجلة والكشوف المالية'
+              : 'Suivi en temps réel des engagements, ressources chantier et jalons réglementaires'}
           </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {/* Card 1: Portefeuille Marchés */}
+          {/* Card 1: Portefeuille ou Effectif */}
           <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
             <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
-              {isAr ? 'إجمالي قيمة الصفقات المتعاقد عليها' : 'Portefeuille Marchés BTP'}
+              {currentRoleKey === 'chef_chantier'
+                ? isAr ? 'العمال الحاضرون اليوم بالورشات' : 'Effectif Présent Aujourd\'hui'
+                : isAr ? 'إجمالي قيمة الصفقات المتعاقد عليها' : 'Portefeuille Marchés BTP'}
             </span>
             <div>
               <div className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white font-mono tabular-nums">
-                {formatMoney(totalContractValue)}
+                {currentRoleKey === 'chef_chantier'
+                  ? `${latestLog?.headcountWorkers || 24} ouvriers`
+                  : formatMoney(totalContractValue)}
               </div>
               <p className="text-[11px] text-[#C4785A] mt-0.5 font-medium">
-                {projects.length} {isAr ? 'مشاريع وصفقات مسجلة' : 'projets au total'}
+                {currentRoleKey === 'chef_chantier'
+                  ? (isAr ? 'بناءون، نجارون، حدادون وعمال' : 'Maçons, coffreurs, ferrailleurs, manœuvres')
+                  : `${projects.length} ${isAr ? 'مشاريع وصفقات مسجلة' : 'projets au total'}`}
               </p>
             </div>
           </div>
 
-          {/* Card 2: Chantiers en cours */}
+          {/* Card 2: Chantiers en cours ou Météo / Cautions */}
           <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
             <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
-              {isAr ? 'الورشات النشطة قيد الإنجاز' : 'Chantiers en Cours'}
+              {currentRoleKey === 'chef_chantier'
+                ? isAr ? 'سجل الطقس وتعويض CACOBATPH' : 'Météo & Alerte CACOBATPH'
+                : currentRoleKey === 'gerant'
+                ? isAr ? 'الكفالات البنكية المحررة للضمان' : 'Cautions Bancaires Actives'
+                : isAr ? 'الورشات النشطة قيد الإنجاز' : 'Chantiers en Cours'}
             </span>
             <div>
               <div className="text-2xl font-bold tracking-tight text-blue-600 dark:text-blue-400 font-mono tabular-nums">
-                {activeProjects.length}
+                {currentRoleKey === 'chef_chantier'
+                  ? latestLog?.weather || 'Ensoleillé'
+                  : currentRoleKey === 'gerant'
+                  ? formatMoney(totalCautionCoveredDzd)
+                  : `${activeProjects.length} sites`}
               </div>
               <p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5 font-medium">
-                {isAr ? 'متابعة العمليات والمحاضر اليومية' : 'Suivi journalier d\'avancement actif'}
+                {currentRoleKey === 'chef_chantier'
+                  ? (isAr ? 'تأهيل تعويض العطل والبطالة الناجمة عن الطقس' : 'Délai légal de déclaration 48 heures')
+                  : currentRoleKey === 'gerant'
+                  ? (isAr ? 'كفالات معتمدة BNA / CPA بديلا عن حجز 5%' : 'Garanties BNA/CPA substituant la retenue 5%')
+                  : (isAr ? 'متابعة العمليات والمحاضر اليومية' : 'Suivi journalier d\'avancement actif')}
               </p>
             </div>
           </div>
@@ -102,10 +179,10 @@ export const ContractorDashboardView: React.FC = () => {
           <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-medium text-neutral-300">
-                {isAr ? 'الكشوفات المفوترة (DGP)' : 'Situations Facturées'}
+                {isAr ? 'الكشوفات المفوترة (DGP)' : 'Situations Facturées (DGP)'}
               </span>
               <span className="bg-[#3D2817] text-[#FB923C] rounded-full px-2 py-0.5 text-[10px] font-bold">
-                Garantie 5%
+                Décret 15-247
               </span>
             </div>
             <div>

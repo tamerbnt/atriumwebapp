@@ -7,6 +7,7 @@ import {
   validateConcreteStrength,
   validateCacobatphWeatherStoppage,
   calculatePriceRevisionCoeff,
+  calculateFuelConsumptionAnomaly,
 } from './contractorRules';
 
 describe('Algerian Construction & BTP Rules (contractorRules)', () => {
@@ -124,4 +125,20 @@ describe('Algerian Construction & BTP Rules (contractorRules)', () => {
     assert.equal(revision.revisionCoefficient, 1.135);
     assert.equal(revision.priceAdjustmentRatio, 0.135); // +13.5% price revision
   });
+
+  it('detects machinery fuel overconsumption anomalies and potential fuel theft (>1.25x ratio)', () => {
+    // Normal consumption: 8 hours, 80 liters consumed, standard rate = 10 L/h -> 10 L/h (ratio 1.0)
+    const normal = calculateFuelConsumptionAnomaly(8, 80, 10);
+    assert.equal(normal.isAnomaly, false);
+    assert.equal(normal.status, 'NORMAL');
+    assert.equal(normal.actualRateLph, 10.0);
+
+    // Overconsumption anomaly: 7 hours, 154 liters consumed, standard rate = 16 L/h -> 22 L/h (ratio 1.375, +38%)
+    const anomaly = calculateFuelConsumptionAnomaly(7, 154, 16);
+    assert.equal(anomaly.isAnomaly, true);
+    assert.equal(anomaly.status, 'THEFT_SUSPECTED');
+    assert.equal(anomaly.actualRateLph, 22.0);
+    assert.equal(anomaly.variancePercent, 38);
+  });
 });
+

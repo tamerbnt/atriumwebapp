@@ -7,6 +7,7 @@ import {
   ContractorServiceOrder,
   ConcretePourRecord,
   SubcontractorAgreement,
+  EquipmentLogRecord,
 } from '../../../types/index';
 
 export const INITIAL_CONTRACTOR_PROJECTS: ContractorProject[] = [
@@ -578,6 +579,66 @@ export const INITIAL_SUBCONTRACTORS: SubcontractorAgreement[] = [
   },
 ];
 
+export const INITIAL_EQUIPMENT_LOGS: EquipmentLogRecord[] = [
+  {
+    id: 'eq_log_01',
+    accountId: 'acc_01',
+    businessId: 'biz_contractor',
+    branchId: 'branch_contractor_main',
+    staffId: 'staff_01',
+    projectId: 'proj_btp_01',
+    equipmentName: 'Grue à Tour Potain MDT 178',
+    equipmentCategory: 'TowerCrane',
+    matriculeNumber: 'GR-16-092',
+    operatingHours: 8,
+    fuelAddedLiters: 82,
+    theoreticalHourlyBurnRate: 10,
+    actualHourlyBurnRate: 10.25,
+    hasOverconsumptionAlert: false,
+    date: '2026-05-18',
+    operatorName: 'Hakim Belkacem',
+    createdAt: '2026-05-18T18:00:00Z',
+  },
+  {
+    id: 'eq_log_02',
+    accountId: 'acc_01',
+    businessId: 'biz_contractor',
+    branchId: 'branch_contractor_main',
+    staffId: 'staff_01',
+    projectId: 'proj_btp_01',
+    equipmentName: 'Pelle Hydraulique Caterpillar 320D',
+    equipmentCategory: 'Excavator',
+    matriculeNumber: 'PEL-09-441',
+    operatingHours: 7,
+    fuelAddedLiters: 154,
+    theoreticalHourlyBurnRate: 16,
+    actualHourlyBurnRate: 22.0,
+    hasOverconsumptionAlert: true,
+    date: '2026-05-18',
+    operatorName: 'Kamel Zerrouk',
+    createdAt: '2026-05-18T18:00:00Z',
+  },
+  {
+    id: 'eq_log_03',
+    accountId: 'acc_01',
+    businessId: 'biz_contractor',
+    branchId: 'branch_contractor_main',
+    staffId: 'staff_01',
+    projectId: 'proj_btp_01',
+    equipmentName: 'Camion Benne 8x4 Sonacome HD120',
+    equipmentCategory: 'DumpTruck',
+    matriculeNumber: '00124-116-16',
+    operatingHours: 9,
+    fuelAddedLiters: 165,
+    theoreticalHourlyBurnRate: 18,
+    actualHourlyBurnRate: 18.33,
+    hasOverconsumptionAlert: false,
+    date: '2026-05-17',
+    operatorName: 'Rachid Mebarki',
+    createdAt: '2026-05-17T18:00:00Z',
+  },
+];
+
 export const useContractorData = () => {
   const [projects, setProjects] = useState<ContractorProject[]>(() => {
     try {
@@ -639,6 +700,15 @@ export const useContractorData = () => {
       return saved ? JSON.parse(saved) : INITIAL_SUBCONTRACTORS;
     } catch {
       return INITIAL_SUBCONTRACTORS;
+    }
+  });
+
+  const [equipmentLogs, setEquipmentLogs] = useState<EquipmentLogRecord[]>(() => {
+    try {
+      const saved = localStorage.getItem('atrium_contractor_equipment');
+      return saved ? JSON.parse(saved) : INITIAL_EQUIPMENT_LOGS;
+    } catch {
+      return INITIAL_EQUIPMENT_LOGS;
     }
   });
 
@@ -734,6 +804,16 @@ export const useContractorData = () => {
     setSubcontractors((prev) => [sub, ...prev]);
   };
 
+  const addEquipmentLog = (log: EquipmentLogRecord) => {
+    setEquipmentLogs((prev) => [log, ...prev]);
+  };
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('atrium_contractor_equipment', JSON.stringify(equipmentLogs));
+    } catch {}
+  }, [equipmentLogs]);
+
   const resetContractorDemoData = () => {
     setProjects(INITIAL_CONTRACTOR_PROJECTS);
     setBoqItems(INITIAL_CONTRACTOR_BOQ_ITEMS);
@@ -742,6 +822,7 @@ export const useContractorData = () => {
     setServiceOrders(INITIAL_SERVICE_ORDERS);
     setConcretePours(INITIAL_CONCRETE_POURS);
     setSubcontractors(INITIAL_SUBCONTRACTORS);
+    setEquipmentLogs(INITIAL_EQUIPMENT_LOGS);
     try {
       localStorage.setItem('atrium_contractor_projects', JSON.stringify(INITIAL_CONTRACTOR_PROJECTS));
       localStorage.setItem('atrium_contractor_boq', JSON.stringify(INITIAL_CONTRACTOR_BOQ_ITEMS));
@@ -750,6 +831,7 @@ export const useContractorData = () => {
       localStorage.setItem('atrium_contractor_os', JSON.stringify(INITIAL_SERVICE_ORDERS));
       localStorage.setItem('atrium_contractor_concrete', JSON.stringify(INITIAL_CONCRETE_POURS));
       localStorage.setItem('atrium_contractor_subcontractors', JSON.stringify(INITIAL_SUBCONTRACTORS));
+      localStorage.setItem('atrium_contractor_equipment', JSON.stringify(INITIAL_EQUIPMENT_LOGS));
     } catch {}
   };
 
@@ -761,6 +843,7 @@ export const useContractorData = () => {
     serviceOrders,
     concretePours,
     subcontractors,
+    equipmentLogs,
     selectedProjectId,
     setSelectedProjectId,
     addProject,
@@ -775,6 +858,7 @@ export const useContractorData = () => {
     addServiceOrder,
     addConcretePour,
     addSubcontractor,
+    addEquipmentLog,
     resetContractorDemoData,
   };
 };

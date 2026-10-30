@@ -7758,9 +7758,22 @@ export function useAtriumStore() {
     // Construction & BTP Contracting Operational Role State & Actions
     activeContractorRole: state.activeContractorRole || 'gerant',
     setActiveContractorRole: (role: ContractorRole) => {
+      let defaultScreen: ActiveScreen = 'dashboard';
+      if (role === 'gerant') {
+        defaultScreen = 'dashboard';
+      } else if (role === 'conducteur' || role === 'conducteur_travaux') {
+        defaultScreen = 'members';
+      } else if (role === 'chef_chantier') {
+        defaultScreen = 'scheduler';
+      } else if (role === 'metreur' || role === 'daf_metreur') {
+        defaultScreen = 'shop';
+      } else if (role === 'comptable') {
+        defaultScreen = 'finance';
+      }
       globalState = {
         ...globalState,
         activeContractorRole: role,
+        activeScreen: defaultScreen,
       };
       notify();
     },

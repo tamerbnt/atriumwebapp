@@ -25,6 +25,10 @@ import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { ContractorDgp } from '../../../types';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { Cloud } from 'lucide-react';
+import { calculateDecompteProvisoire } from '../../../utils/contractorRules';
+import { ContractorDecomptePrintModal } from './ContractorDecomptePrintModal';
+import { CacobatphDossierModal } from './CacobatphDossierModal';
 
 export const ContractorBillingView: React.FC = () => {
   const { language, currentBusiness, currentBranch, currentUser } = useAtriumStore();
@@ -40,12 +44,17 @@ export const ContractorBillingView: React.FC = () => {
   const [selectedDgp, setSelectedDgp] = useState<ContractorDgp | null>(() => dgps[0] || null);
   const [activeInspectorTab, setActiveInspectorTab] = useState<'decompte' | 'certificat' | 'actions'>('decompte');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
+  const [isCacobatphModalOpen, setIsCacobatphModalOpen] = useState(false);
 
   // Form states
   const [periodLabel, setPeriodLabel] = useState('Situation Travaux - Mois Courant');
   const [periodGross, setPeriodGross] = useState('15000000');
   const [retentionPct, setRetentionPct] = useState('5');
   const [advanceAmort, setAdvanceAmort] = useState('1500000');
+  const [hasBankCaution, setHasBankCaution] = useState(false);
+  const [penaltiesDzd, setPenaltiesDzd] = useState('0');
+  const [vatRate, setVatRate] = useState('19');
 
   const selectedProject = projects.find((p) => p.id === selectedProjectId) || projects[0];
   const projectDgps = dgps.filter((d) => d.projectId === (selectedProject?.id || selectedProjectId));
@@ -102,18 +111,27 @@ export const ContractorBillingView: React.FC = () => {
   };
 
   const handlePrintDgp = (d: ContractorDgp) => {
-    showToast(isAr ? 'جاري طباعة الكشف المالي (DGP)...' : 'Génération du certificat de décompte...', 'info');
+    setSelectedDgp(d);
+    setIsPrintModalOpen(true);
   };
 
   const handleCreateDgp = (e: React.FormEvent) => {
     e.preventDefault();
     const gross = parseFloat(periodGross) || 0;
     const retPercent = parseFloat(retentionPct) || 5;
-    const retAmount = (gross * retPercent) / 100;
     const advance = parseFloat(advanceAmort) || 0;
-    const taxable = gross - retAmount - advance;
-    const tva = taxable * 0.19;
-    const net = taxable + tva;
+    const penDzd = parseFloat(penaltiesDzd) || 0;
+    const vatPercent = parseFloat(vatRate) || 19;
+
+    const calc = calculateDecompteProvisoire({
+      grossAmountCurrentHtDzd: gross,
+      cumulativePreviousGrossHtDzd: totalBilledGross,
+      retentionPercent: retPercent,
+      hasBankCautionReplacement: hasBankCaution,
+      advanceReimbursementRate: gross > 0 ? advance / gross : 0,
+      penaltiesDeductedDzd: penDzd,
+      vatRatePercent: vatPercent,
+    });
 
     const newDgp: ContractorDgp = {
       id: `dgp_${Date.now()}`,
@@ -124,15 +142,17 @@ export const ContractorBillingView: React.FC = () => {
       projectId: selectedProject?.id || selectedProjectId,
       dgpNumber: `DGP-${String(projectDgps.length + 1).padStart(2, '0')}-${selectedProject?.projectCode || 'CHANT'}`,
       periodLabel: periodLabel.trim(),
-      grossCompletedDzd: gross,
+      grossCompletedDzd: calc.cumulativeGrossHtDzd,
       previousCumulDzd: totalBilledGross,
       periodGrossDzd: gross,
       retentionGuaranteePercent: retPercent,
-      retentionGuaranteeDzd: retAmount,
-      advanceAmortizationDzd: advance,
-      tvaPercent: 19,
-      tvaAmountDzd: tva,
-      netPayableDzd: net,
+      retentionGuaranteeDzd: calc.retentionGuaranteeDzd,
+      hasBankCautionReplacement: hasBankCaution,
+      advanceAmortizationDzd: calc.advanceReimbursementDzd,
+      penaltiesDeductedDzd: calc.penaltiesDeductedDzd,
+      tvaPercent: calc.vatRatePercent,
+      tvaAmountDzd: calc.vatAmountDzd,
+      netPayableDzd: calc.netPayableDzd,
       status: 'ApprovedBE',
       issuedDate: new Date().toISOString().split('T')[0],
       createdAt: new Date().toISOString(),
@@ -250,6 +270,13 @@ export const ContractorBillingView: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2">
+          <AtriumButton
+            variant="outline"
+            onClick={() => setIsCacobatphModalOpen(true)}
+            icon={<Cloud size={14} />}
+          >
+            {isAr ? 'ملف CACOBATPH' : 'Dossier CACOBATPH 48h'}
+          </AtriumButton>
           <AtriumButton
             variant="primary"
             onClick={() => setIsModalOpen(true)}
@@ -690,6 +717,41 @@ export const ContractorBillingView: React.FC = () => {
                 onChange={(e) => setAdvanceAmort(e.target.value)}
               />
 
+              <div className="p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700 flex items-center justify-between">
+                <div>
+                  <div className="text-xs font-semibold text-neutral-800 dark:text-neutral-200">
+                    {isAr ? 'تعويض اقتطاع الضمان بكفالة بنكية' : 'Caution bancaire de substitution'}
+                  </div>
+                  <div className="text-[11px] text-neutral-500">
+                    {isAr ? 'إلغاء الاقتطاع المالي 5% بموجب كفالة معتمدة' : 'Dispense de retenue 5% (Art. 99 Décret 15-247)'}
+                  </div>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={hasBankCaution}
+                  onChange={(e) => setHasBankCaution(e.target.checked)}
+                  className="w-4 h-4 rounded text-[#C4785A] accent-[#C4785A] cursor-pointer"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <LabelInput
+                  label="Pénalités éventuelles déduites (DZD)"
+                  type="number"
+                  value={penaltiesDzd}
+                  onChange={(e) => setPenaltiesDzd(e.target.value)}
+                />
+                <LabelSelect
+                  label="Taux TVA Applicable"
+                  value={vatRate}
+                  onChange={(val) => setVatRate(val)}
+                  options={[
+                    { value: '19', label: '19% - Travaux BTP Standard' },
+                    { value: '9', label: '9% - Logement Social (AADL/LPP)' },
+                  ]}
+                />
+              </div>
+
               <div className="flex justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
                 <AtriumButton variant="outline" onClick={() => setIsModalOpen(false)}>
                   Annuler
@@ -702,6 +764,21 @@ export const ContractorBillingView: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Official Legal Décompte Provisoire Print Modal */}
+      <ContractorDecomptePrintModal
+        isOpen={isPrintModalOpen}
+        onClose={() => setIsPrintModalOpen(false)}
+        dgp={selectedDgp}
+        project={selectedProject}
+      />
+
+      {/* CACOBATPH 48h Weather Dossier Modal */}
+      <CacobatphDossierModal
+        isOpen={isCacobatphModalOpen}
+        onClose={() => setIsCacobatphModalOpen(false)}
+        project={selectedProject}
+      />
     </div>
   );
 };

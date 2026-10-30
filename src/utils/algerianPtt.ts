@@ -258,3 +258,5 @@ export function numberToWordsArabic(amount: number): string {
 
   return res;
 }
+
+export const numberToAlgerianWords = numberToWordsFrench;
