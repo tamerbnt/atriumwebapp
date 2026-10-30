@@ -283,6 +283,8 @@ interface AppState {
   isSyncing: boolean;
   lastSyncedAt: string | null;
   syncErrorMessage: string | null;
+  networkMode: 'online' | 'slow_3g' | 'offline' | 'force_skeleton';
+  isSyncTimeout: boolean;
   // Freelancer & Solo Practitioner (Category 16)
   freelanceClients: FreelanceClient[];
   freelanceProjects: FreelanceProject[];
@@ -459,6 +461,8 @@ const DEFAULT_STATE: AppState = {
   isSyncing: false,
   lastSyncedAt: null,
   syncErrorMessage: null,
+  networkMode: 'online',
+  isSyncTimeout: false,
   // Freelancer & Solo Practitioner
   freelanceClients: INITIAL_FREELANCE_CLIENTS,
   freelanceProjects: INITIAL_FREELANCE_PROJECTS,
@@ -7466,6 +7470,83 @@ export function useAtriumStore() {
     }
   };
 
+  const setNetworkMode = (mode: 'online' | 'slow_3g' | 'offline' | 'force_skeleton') => {
+    let syncState = globalState.isSyncing;
+    let errorMsg = globalState.syncErrorMessage;
+    let status = globalState.supabaseStatus;
+    let isTimedOut = false;
+
+    if (mode === 'force_skeleton') {
+      syncState = true;
+      isTimedOut = false;
+    } else if (mode === 'offline') {
+      syncState = false;
+      status = 'disconnected';
+      errorMsg = 'Network connection offline (simulation mode)';
+      isTimedOut = true;
+    } else if (mode === 'online') {
+      syncState = false;
+      errorMsg = null;
+      status = isSupabaseConfigured() ? 'connected' : 'unconfigured';
+      isTimedOut = false;
+    } else if (mode === 'slow_3g') {
+      syncState = true;
+      isTimedOut = false;
+      setTimeout(() => {
+        globalState = {
+          ...globalState,
+          isSyncing: false,
+          isSyncTimeout: true,
+          lastSyncedAt: new Date().toISOString(),
+        };
+        notify();
+      }, 3000);
+    }
+
+    globalState = {
+      ...globalState,
+      networkMode: mode,
+      isSyncing: syncState,
+      supabaseStatus: status,
+      syncErrorMessage: errorMsg,
+      isSyncTimeout: isTimedOut,
+    };
+    notify();
+  };
+
+  const retryCloudSync = async () => {
+    globalState = {
+      ...globalState,
+      isSyncing: true,
+      syncErrorMessage: null,
+      isSyncTimeout: false,
+    };
+    notify();
+
+    try {
+      if (globalState.networkMode === 'offline') {
+        await new Promise((r) => setTimeout(r, 1200));
+        globalState = {
+          ...globalState,
+          isSyncing: false,
+          isSyncTimeout: true,
+          syncErrorMessage: 'Simulated connection failed: device is offline.',
+        };
+        notify();
+        return;
+      }
+      await syncWithSupabase();
+    } finally {
+      globalState = {
+        ...globalState,
+        isSyncing: false,
+        isSyncTimeout: false,
+        lastSyncedAt: new Date().toISOString(),
+      };
+      notify();
+    }
+  };
+
   return {
     account: state.account,
     subscription: state.subscription,
@@ -7491,6 +7572,10 @@ export function useAtriumStore() {
     isSyncing: state.isSyncing,
     lastSyncedAt: state.lastSyncedAt,
     syncErrorMessage: state.syncErrorMessage,
+    networkMode: state.networkMode || 'online',
+    isSyncTimeout: state.isSyncTimeout || false,
+    setNetworkMode,
+    retryCloudSync,
     isSupabaseConfigured: isSupabaseConfigured(),
     syncWithSupabase,
     // Freelancer Collections (Strictly Scoped by Active Branch)

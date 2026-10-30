@@ -18,6 +18,9 @@ import {
 import { useAtriumStore, showToast } from '../../../services/store';
 import { Member, MemberCheckInLog, WalkInTicket } from '../../../types/index';
 import { calculateArt317Timbre, formatMoney } from '../../../utils/rules';
+import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
+import { SkeletonKioskGrid } from '../../ui/skeleton/StructuralSkeletons';
+import { OfflineRetryBanner } from '../../common/OfflineRetryBanner';
 
 export const GymFrontDeskKiosk: React.FC = () => {
   const {
@@ -32,7 +35,17 @@ export const GymFrontDeskKiosk: React.FC = () => {
     addWalkInTicket,
     language,
     updateMember,
+    isSyncing,
+    networkMode,
+    retryCloudSync,
+    lastSyncedAt,
+    isSyncTimeout,
   } = useAtriumStore();
+
+  const { showSkeleton, isTimedOut, isOffline } = useSkeletonLoading({
+    isLoading: isSyncing || networkMode === 'force_skeleton',
+    hasCachedData: members.length > 0,
+  });
 
   const isRtl = language === 'ar';
   const [scanInput, setScanInput] = useState('');

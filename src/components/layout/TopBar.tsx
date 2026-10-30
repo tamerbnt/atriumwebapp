@@ -110,10 +110,13 @@ export const TopBar: React.FC<TopBarProps> = ({
     activeEducationRole,
     setActiveEducationRole,
     unreadNotificationCount,
+    networkMode,
+    setNetworkMode,
   } = useAtriumStore();
 
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [networkMenuOpen, setNetworkMenuOpen] = useState(false);
   const [topBarSearch, setTopBarSearch] = useState('');
   const [isDiagnosticPanelOpen, setIsDiagnosticPanelOpen] = useState(false);
   const [agriPinTargetRole, setAgriPinTargetRole] = useState<AgriRole | null>(null);
@@ -1409,6 +1412,70 @@ export const TopBar: React.FC<TopBarProps> = ({
             </>
           )}
         </button>
+
+        {/* Network & Skeleton Loading Simulation Control */}
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => setNetworkMenuOpen(!networkMenuOpen)}
+            title="Simulate Network Condition & Skeleton Loading"
+            className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700/60 transition-colors cursor-pointer"
+          >
+            <span
+              className={`w-1.5 h-1.5 rounded-full ${
+                networkMode === 'online'
+                  ? 'bg-emerald-500'
+                  : networkMode === 'slow_3g'
+                  ? 'bg-amber-500 animate-pulse'
+                  : networkMode === 'offline'
+                  ? 'bg-rose-500'
+                  : 'bg-purple-500 animate-pulse'
+              }`}
+            />
+            <span className="capitalize font-mono text-[10px]">
+              {networkMode === 'online'
+                ? 'Online'
+                : networkMode === 'slow_3g'
+                ? 'Slow 3G'
+                : networkMode === 'offline'
+                ? 'Offline'
+                : 'Freeze Skel'}
+            </span>
+            <ChevronDown size={10} className="text-neutral-400" />
+          </button>
+
+          {networkMenuOpen && (
+            <div className="absolute right-0 mt-1.5 w-52 rounded-2xl bg-white dark:bg-[#18181B] border border-neutral-200 dark:border-neutral-800 shadow-xl py-1.5 z-50 text-xs animate-in fade-in zoom-in-95 duration-150">
+              <div className="px-3 py-1.5 border-b border-neutral-100 dark:border-neutral-800/80 font-semibold text-neutral-500 dark:text-neutral-400 text-[10px] uppercase tracking-wider">
+                Network & Loading Test
+              </div>
+              {[
+                { id: 'online', label: 'Online (Live Data)', desc: 'Normal network conditions' },
+                { id: 'slow_3g', label: 'Slow 3G (3s Delay)', desc: 'Tests skeleton & timeout fallback' },
+                { id: 'offline', label: 'Offline Mode', desc: 'Tests cached fallback & retry banner' },
+                { id: 'force_skeleton', label: 'Freeze Skeleton', desc: 'Inspect skeleton wireframes' },
+              ].map((opt) => (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => {
+                    setNetworkMode(opt.id as any);
+                    setNetworkMenuOpen(false);
+                  }}
+                  className={`w-full text-left px-3 py-2 flex flex-col hover:bg-neutral-50 dark:hover:bg-neutral-800/60 cursor-pointer ${
+                    networkMode === opt.id ? 'bg-[#C4785A]/10 text-[#C4785A] font-semibold' : 'text-neutral-700 dark:text-neutral-200'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span>{opt.label}</span>
+                    {networkMode === opt.id && <Check size={13} className="text-[#C4785A]" />}
+                  </div>
+                  <span className="text-[10px] text-neutral-400 font-normal">{opt.desc}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
 
         {/* Sync / Refresh Button */}
         <button

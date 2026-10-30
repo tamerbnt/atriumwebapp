@@ -11,6 +11,8 @@ import { CollectionListRow, ActionButtonDef } from './CollectionListRow';
 import { CollectionGridCard } from './CollectionGridCard';
 import { CollectionEmptyState } from './CollectionEmptyState';
 import { KebabMenuItem } from './CollectionKebabMenu';
+import { SkeletonTable, SkeletonCardGrid } from '../skeleton/StructuralSkeletons';
+import { OfflineRetryBanner } from '../../common/OfflineRetryBanner';
 
 export interface ColumnDefinition<T> {
   key?: string;
@@ -83,6 +85,14 @@ export interface UniversalDataCollectionProps<T> {
   onResetFilters?: () => void;
   hasActiveFilters?: boolean;
 
+  // Loading & Network Resilience
+  isLoading?: boolean;
+  isOffline?: boolean;
+  isTimedOut?: boolean;
+  lastSyncedAt?: string | null;
+  onRetrySync?: () => Promise<void> | void;
+  skeletonRowCount?: number;
+
   // Header & Search
   title?: string;
   subtitle?: string;
@@ -128,6 +138,12 @@ export function UniversalDataCollection<T>({
   onAddFirstItem,
   onResetFilters,
   hasActiveFilters = false,
+  isLoading = false,
+  isOffline = false,
+  isTimedOut = false,
+  lastSyncedAt,
+  onRetrySync,
+  skeletonRowCount = 6,
   title,
   subtitle,
   searchFilter,
@@ -214,10 +230,45 @@ export function UniversalDataCollection<T>({
     onSelectionChange(next);
   };
 
+  // Render Loading Skeleton State (Cold Start / No Cached Data)
+  if (isLoading && actualItems.length === 0) {
+    return (
+      <div className="w-full flex flex-col">
+        <OfflineRetryBanner
+          isOffline={isOffline}
+          isTimedOut={isTimedOut}
+          lastSyncedAt={lastSyncedAt}
+          onRetry={onRetrySync}
+        />
+
+        {viewMode === 'list' ? (
+          <SkeletonTable
+            columns={columns.map((c) => ({
+              width: c.width,
+              minWidth: c.minWidth,
+              header: c.header,
+            }))}
+            rowCount={skeletonRowCount}
+            showHeaderControls={true}
+          />
+        ) : (
+          <SkeletonCardGrid count={skeletonRowCount} />
+        )}
+      </div>
+    );
+  }
+
   // Render Empty State
   if (actualItems.length === 0) {
     return (
       <div className="w-full flex flex-col">
+        <OfflineRetryBanner
+          isOffline={isOffline}
+          isTimedOut={isTimedOut}
+          lastSyncedAt={lastSyncedAt}
+          onRetry={onRetrySync}
+        />
+
         {/* Optional View Switcher Bar Even When Empty */}
         <div className="flex items-center justify-between pb-3">
           <div className="flex items-center gap-2">{headerActions}</div>
@@ -266,6 +317,14 @@ export function UniversalDataCollection<T>({
 
   return (
     <div className="w-full flex flex-col">
+      {/* Offline / Delayed Retry Banner */}
+      <OfflineRetryBanner
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        lastSyncedAt={lastSyncedAt}
+        onRetry={onRetrySync}
+      />
+
       {/* ================= TOP VIEW SWITCHER / HEADER CONTROLS ================= */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3">
         {title ? (
@@ -275,13 +334,25 @@ export function UniversalDataCollection<T>({
               <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 font-mono">
                 {actualItems.length}
               </span>
+              {isLoading && (
+                <span className="text-[11px] text-[#C4785A] dark:text-[#E09070] font-medium animate-pulse">
+                  Syncing...
+                </span>
+              )}
             </div>
             {subtitle && (
               <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">{subtitle}</p>
             )}
           </div>
         ) : (
-          <div className="flex items-center gap-2">{headerActions}</div>
+          <div className="flex items-center gap-2">
+            {headerActions}
+            {isLoading && (
+              <span className="text-[11px] text-[#C4785A] dark:text-[#E09070] font-medium animate-pulse ml-2">
+                Syncing...
+              </span>
+            )}
+          </div>
         )}
 
         <div className="flex items-center gap-2.5 ml-auto">

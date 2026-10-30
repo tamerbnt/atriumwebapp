@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { X } from 'lucide-react';
+import { SkeletonModalForm } from './skeleton/StructuralSkeletons';
 
 interface ModalProps {
   isOpen: boolean;
@@ -8,6 +9,8 @@ interface ModalProps {
   subtitle?: string;
   children: React.ReactNode;
   maxWidth?: 'sm' | 'md' | 'lg' | 'xl';
+  isLoading?: boolean;
+  skeletonFieldsCount?: number;
 }
 
 export const Modal: React.FC<ModalProps> = ({
@@ -17,6 +20,8 @@ export const Modal: React.FC<ModalProps> = ({
   subtitle,
   children,
   maxWidth = 'md',
+  isLoading = false,
+  skeletonFieldsCount = 4,
 }) => {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -79,7 +84,11 @@ export const Modal: React.FC<ModalProps> = ({
 
         {/* Content Body */}
         <div className="px-6 py-5 overflow-y-auto max-h-[calc(90vh-140px)]">
-          {children}
+          {isLoading ? (
+            <SkeletonModalForm fieldsCount={skeletonFieldsCount} />
+          ) : (
+            children
+          )}
         </div>
       </div>
     </div>
