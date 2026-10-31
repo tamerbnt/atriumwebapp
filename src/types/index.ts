@@ -416,6 +416,8 @@ export interface OnboardingParams {
   branchAddress?: string;
   branchPhone?: string;
   voucherCode?: string;
+  planTier?: 'free' | 'starter' | 'pro' | 'enterprise';
+  isTrial?: boolean;
 }
 
 export type AppointmentStatus = 'Confirmed' | 'InChair' | 'Completed' | 'Cancelled' | 'NoShow' | 'Booked';

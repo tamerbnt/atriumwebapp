@@ -731,7 +731,34 @@
   font-size: 13px;
   letter-spacing: -0.01em;
   color: var(--fill-on, var(--ink));
+  caret-color: var(--color-accent, #C4785A);
   outline: none;
+}
+
+[data-theme="dark"] .lbi-field,
+.dark .lbi-field {
+  color: #FFFFFF !important;
+}
+
+[data-theme="dark"] .lbi-label,
+.dark .lbi-label {
+  color: #A1A1AA;
+}
+
+[data-theme="dark"] .lbi[data-focus="true"] .lbi-label,
+.dark .lbi[data-focus="true"] .lbi-label {
+  color: var(--color-accent, #C4785A) !important;
+}
+
+[data-theme="dark"] .lbi-ring path,
+.dark .lbi-ring path {
+  stroke: rgba(255, 255, 255, 0.22);
+}
+
+[data-theme="dark"] .lbi[data-focus="true"] .lbi-ring path,
+.dark .lbi[data-focus="true"] .lbi-ring path {
+  stroke: var(--color-accent, #C4785A) !important;
+  stroke-width: 1.5;
 }
 
 .lbi-field[type="date"],
@@ -1219,4 +1246,331 @@
     animation: none !important;
   }
 }
+
+/* ============================================================
+   Terracotta Organic Shader Mesh Gradient & Film Grain Dither
+   ============================================================ */
+@keyframes atrium-shader-drift-1 {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
+  }
+  33% {
+    transform: translate3d(70px, -45px, 0) scale(1.18) rotate(6deg);
+  }
+  66% {
+    transform: translate3d(-50px, 40px, 0) scale(0.92) rotate(-4deg);
+  }
+}
+
+@keyframes atrium-shader-drift-2 {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) scale(1.08) rotate(0deg);
+  }
+  40% {
+    transform: translate3d(-80px, 50px, 0) scale(0.88) rotate(-8deg);
+  }
+  75% {
+    transform: translate3d(60px, -30px, 0) scale(1.15) rotate(5deg);
+  }
+}
+
+@keyframes atrium-shader-drift-3 {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) scale(0.95);
+    opacity: 0.28;
+  }
+  50% {
+    transform: translate3d(40px, 60px, 0) scale(1.14);
+    opacity: 0.42;
+  }
+}
+
+@keyframes atrium-shader-pulse {
+  0%, 100% {
+    opacity: 0.72;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.95;
+    transform: scale(1.06);
+  }
+}
+
+.atrium-shader-node-1 {
+  animation: atrium-shader-drift-1 22s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  will-change: transform;
+}
+
+.atrium-shader-node-2 {
+  animation: atrium-shader-drift-2 26s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  will-change: transform;
+}
+
+.atrium-shader-node-3 {
+  animation: atrium-shader-drift-3 18s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  will-change: transform, opacity;
+}
+
+.atrium-shader-core-pulse {
+  animation: atrium-shader-pulse 14s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .atrium-shader-node-1,
+  .atrium-shader-node-2,
+  .atrium-shader-node-3,
+  .atrium-shader-core-pulse {
+    animation: none !important;
+  }
+}
+
+/* ========================================================================= */
+/* ATRIUM ONBOARDING BACKDROP SYSTEM (SCOPED EXCLUSIVELY TO ONBOARDING VIEWS)*/
+/* ========================================================================= */
+.onboarding-backdrop {
+  --ob-base: #1F1D1B;
+  --ob-brand: #C4785A;
+  --ob-light: #D48D72;
+  --ob-highlight: #E8A891;
+  --ob-deep: #944B30;
+  --ob-rib: 11px;
+  --ob-rib-opacity: 0.10;
+  --ob-blur: 4px;
+  --ob-line-light: rgba(255, 255, 255, var(--ob-rib-opacity));
+  --ob-line-dark: rgba(0, 0, 0, var(--ob-rib-opacity));
+  --ob-scrim: rgba(18, 16, 15, 0.45);
+  --ob-card-glass: rgba(255, 255, 255, 0.14);
+  --ob-card-border: rgba(255, 255, 255, 0.22);
+  --ob-text-primary: #FFFFFF;
+  --ob-text-secondary: rgba(255, 255, 255, 0.78);
+
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  max-height: 100vh;
+  overflow: hidden;
+  background-color: var(--ob-base);
+  color: var(--ob-text-primary);
+}
+
+.onboarding-backdrop--light {
+  --ob-base: #F8F9FA;
+  --ob-brand: #C4785A;
+  --ob-light: #D48D72;
+  --ob-highlight: #FDF4F0;
+  --ob-deep: #B85D3B;
+  --ob-rib-opacity: 0.08;
+  --ob-blur: 3px;
+  --ob-line-light: rgba(255, 255, 255, 0.65);
+  --ob-line-dark: rgba(196, 120, 90, 0.12);
+  --ob-scrim: rgba(255, 255, 255, 0.65);
+  --ob-card-glass: rgba(255, 255, 255, 0.82);
+  --ob-card-border: rgba(232, 236, 239, 0.95);
+  --ob-text-primary: #1F1D1B;
+  --ob-text-secondary: #475569;
+}
+
+/* Layer 1: Solid Base Anchor */
+.onboarding-layer-base {
+  position: absolute;
+  inset: 0;
+  background-color: var(--ob-base);
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Layer 2: Asymmetric Mesh Gradient Blobs */
+.onboarding-layer-mesh {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.onboarding-blob {
+  position: absolute;
+  border-radius: 9999px;
+  mix-blend-mode: screen;
+  will-change: transform;
+  pointer-events: none;
+}
+
+.onboarding-backdrop--light .onboarding-blob {
+  mix-blend-mode: multiply;
+  opacity: 0.65;
+}
+
+/* Blob 1: Bright Upper-Left Highlight Tint */
+.blob-upper-left {
+  top: -15%;
+  left: -10%;
+  width: 65vw;
+  height: 65vw;
+  max-width: 900px;
+  max-height: 900px;
+  background: radial-gradient(circle at center, var(--ob-highlight) 0%, rgba(232, 168, 145, 0.5) 40%, transparent 70%);
+  filter: blur(90px);
+  animation: ob-drift-a 50s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+/* Blob 2: Center-Right Luminous Brand Streak */
+.blob-center-right {
+  top: 25%;
+  right: -8%;
+  width: 55vw;
+  height: 55vw;
+  max-width: 800px;
+  max-height: 800px;
+  background: radial-gradient(circle at center, var(--ob-brand) 0%, rgba(196, 120, 90, 0.45) 42%, transparent 72%);
+  filter: blur(100px);
+  animation: ob-drift-b 56s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+/* Blob 3: Deep Lower Grounding Shade */
+.blob-bottom-deep {
+  bottom: -20%;
+  left: 15%;
+  width: 70vw;
+  height: 70vw;
+  max-width: 960px;
+  max-height: 960px;
+  background: radial-gradient(circle at center, var(--ob-deep) 0%, rgba(148, 75, 48, 0.55) 45%, transparent 75%);
+  filter: blur(110px);
+  animation: ob-drift-c 62s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+/* Blob 4: Mid-Left Subtle Light Streak */
+.blob-mid-streak {
+  top: 45%;
+  left: 25%;
+  width: 45vw;
+  height: 45vw;
+  max-width: 620px;
+  max-height: 620px;
+  background: radial-gradient(circle at center, var(--ob-light) 0%, rgba(212, 141, 114, 0.4) 40%, transparent 70%);
+  filter: blur(85px);
+  animation: ob-drift-d 48s ease-in-out infinite;
+}
+
+/* Layer 3: Fluted Reeded Glass Repeating Lines (Edge-to-Edge with Optical Blur) */
+.onboarding-layer-ribs {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(
+    90deg,
+    var(--ob-line-light) 0px,
+    var(--ob-line-light) 1px,
+    transparent 1px,
+    transparent calc(var(--ob-rib) - 1px),
+    var(--ob-line-dark) calc(var(--ob-rib) - 1px),
+    var(--ob-line-dark) var(--ob-rib)
+  );
+  backdrop-filter: blur(var(--ob-blur));
+  -webkit-backdrop-filter: blur(var(--ob-blur));
+}
+
+/* Graceful fallback for non-backdrop-filter browsers */
+@supports not (backdrop-filter: blur(1px)) {
+  .onboarding-layer-ribs {
+    opacity: 0.85;
+    background-color: rgba(31, 29, 27, 0.2);
+  }
+}
+
+/* Layer 4: Fine Tactile SVG Grain Dither Overlay */
+.onboarding-layer-grain {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 3;
+  pointer-events: none;
+  opacity: 0.042;
+  mix-blend-mode: overlay;
+}
+
+/* Foreground Content Canvas */
+.onboarding-backdrop-content {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Translucent Glass Card System */
+.onboarding-glass-card {
+  background: var(--ob-card-glass);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  border: 1px solid var(--ob-card-border);
+  border-radius: 24px;
+  box-shadow: 0 24px 50px rgba(0, 0, 0, 0.45);
+}
+
+/* Slow Transform Drift (Hardware-accelerated, zero reflow) */
+@keyframes ob-drift-a {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(40px, -30px, 0) scale(1.08);
+  }
+}
+
+@keyframes ob-drift-b {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) scale(1.05);
+  }
+  50% {
+    transform: translate3d(-50px, 40px, 0) scale(0.94);
+  }
+}
+
+@keyframes ob-drift-c {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) scale(0.96);
+  }
+  50% {
+    transform: translate3d(60px, -20px, 0) scale(1.1);
+  }
+}
+
+@keyframes ob-drift-d {
+  0%, 100% {
+    transform: translate3d(0, 0, 0);
+    opacity: 0.7;
+  }
+  50% {
+    transform: translate3d(-35px, -25px, 0);
+    opacity: 0.95;
+  }
+}
+
+/* Accessibility: Disable motion when user requests reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .onboarding-blob {
+    animation: none !important;
+  }
+}
+
+/* Print/PDF Disablement: Strip decorative shaders for clean printer output */
+@media print {
+  .onboarding-layer-mesh,
+  .onboarding-layer-ribs,
+  .onboarding-layer-grain {
+    display: none !important;
+  }
+  .onboarding-backdrop {
+    background: #FFFFFF !important;
+    color: #000000 !important;
+  }
+}
+
 

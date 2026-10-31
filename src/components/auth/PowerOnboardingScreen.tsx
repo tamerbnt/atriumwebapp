@@ -42,6 +42,7 @@ import {
   Lock,
   User,
   AlertCircle,
+  TrendingUp,
 } from 'lucide-react';
 import { useAtriumStore } from '../../services/store';
 import { BusinessCategory, OnboardingParams } from '../../types/index';
@@ -59,6 +60,7 @@ import {
 } from '../modals/FeatureBlueprintModal';
 import { AtriumMonolith, FiveCubesLogo } from './AtriumMonolith';
 import { LabelInput } from '../ui/LabelInput';
+import { OnboardingBackdrop } from './OnboardingBackdrop';
 
 interface PowerOnboardingScreenProps {
   onComplete: () => void;
@@ -102,9 +104,9 @@ export const SUBSCRIPTION_PLANS: PlanMeta[] = [
     tier: 'starter',
     tierRank: 1,
     name: 'Starter',
-    badgeFr: 'TPE & Artisans',
-    badgeAr: 'للمهنيين المستقلين',
-    badgeEn: 'Small Businesses',
+    badgeFr: 'Essai 14j • Starter',
+    badgeAr: 'تجربة 14 يوم • بداية',
+    badgeEn: '14d Trial • Starter',
     priceFr: '19 000 DZD',
     priceAr: '19,000 د.ج',
     priceEn: '19,000 DZD',
@@ -117,9 +119,9 @@ export const SUBSCRIPTION_PLANS: PlanMeta[] = [
     tierRank: 2,
     name: 'Pro',
     isRecommended: true,
-    badgeFr: 'Recommandé',
-    badgeAr: 'الأكثر طلباً',
-    badgeEn: 'Most Popular',
+    badgeFr: 'Recommandé • Essai 14j',
+    badgeAr: 'الأكثر طلباً • تجربة 14 يوم',
+    badgeEn: 'Popular • 14d Trial',
     priceFr: '49 000 DZD',
     priceAr: '49,000 د.ج',
     priceEn: '49,000 DZD',
@@ -131,9 +133,9 @@ export const SUBSCRIPTION_PLANS: PlanMeta[] = [
     tier: 'enterprise',
     tierRank: 3,
     name: 'Enterprise',
-    badgeFr: 'Grand Réseau',
-    badgeAr: 'للشركات الكبرى',
-    badgeEn: 'Multi-Sites',
+    badgeFr: 'Essai 14j • Grand Réseau',
+    badgeAr: 'تجربة 14 يوم • كبرى',
+    badgeEn: '14d Trial • Multi-Sites',
     priceFr: '99 000 DZD',
     priceAr: '99,000 د.ج',
     priceEn: '99,000 DZD',
@@ -212,7 +214,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
   >('billing_creep');
 
   // Step 2 State: Strategic Goal & Feature Blueprint Modal
-  const [selectedGoalId, setSelectedGoalId] = useState<UniversalStrategicGoalId>('goal_billing_dzd');
+  const [selectedGoalId, setSelectedGoalId] = useState<UniversalStrategicGoalId>('goal_structure_processes');
   const [activeGoalModalId, setActiveGoalModalId] = useState<UniversalStrategicGoalId | null>(null);
 
   // Step 3 State: Daily Customer & Operational Interaction
@@ -354,21 +356,12 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
 
   // Final submission handler
   const handleLaunchWorkspace = () => {
-    // If a paid tier is chosen without a valid voucher, prompt user
-    if (selectedPlanTier !== 'free' && (!voucherValidation || !voucherValidation.isValid)) {
-      setPaidVoucherError(
-        isAr
-          ? 'يرجى إدخال رمز قسيمة ترخيص صالح للخطة المختارة، أو تفعيل الخطة المجانية Free Web للمتابعة الفورية.'
-          : isFr
-          ? 'Veuillez saisir un code voucher valide pour la formule choisie, ou activer l’édition Free Web.'
-          : 'Please enter a valid license voucher for the selected paid plan, or switch to Free Web.'
-      );
-      return;
-    }
-
     setPaidVoucherError(null);
     const finalBusinessName = workspaceName.trim() || 'Mon Entreprise Atrium';
     const finalBranchName = 'Siège Principal';
+
+    const isVoucherValid = voucherValidation && voucherValidation.isValid;
+    const isTrial = selectedPlanTier !== 'free' && !isVoucherValid;
 
     const params: OnboardingParams = {
       fullName: fullName.trim() || 'Admin Atrium',
@@ -379,7 +372,9 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
       category: activeCategory,
       branchName: finalBranchName,
       branchAddress: branchAddress.trim(),
-      voucherCode: voucherValidation?.isValid ? voucherCode.trim() : undefined,
+      voucherCode: isVoucherValid ? voucherCode.trim() : undefined,
+      planTier: selectedPlanTier,
+      isTrial,
     };
 
     completeOnboarding(params);
@@ -475,10 +470,15 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
   ];
 
   return (
-    <div
-      className="h-screen max-h-screen w-screen overflow-hidden bg-[#0C0C0E] text-white flex flex-col justify-between selection:bg-[#C4785A] selection:text-white relative"
+    <OnboardingBackdrop
+      variant="dark"
+      ribPitch={11}
+      ribOpacity={0.10}
+      blur={4}
       dir={isAr ? 'rtl' : 'ltr'}
+      className="dark selection:bg-[#C4785A] selection:text-white"
     >
+
       {/* Seamless Dissolving Cinematic Intro Monolith Overlay */}
       {showIntroAnimation && (
         <div
@@ -495,75 +495,66 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
         </div>
       )}
 
-      {/* Top Bar: Replay Intro Button & Minimal Language Switcher */}
-      <header className="w-full max-w-7xl mx-auto px-6 py-2.5 sm:py-3 flex items-center justify-between z-30 shrink-0 border-b border-white/5">
-        <div className="flex items-center gap-3">
-          <FiveCubesLogo size={28} cubeColor="#C4785A" />
-          <span className="font-bold tracking-tight text-sm text-neutral-200 uppercase font-sans">
-            Atrium <span className="text-[#C4785A] font-medium text-xs">OS</span>
+      {/* Discreet Floating Utility Controls (Language & Intro Replay) - No Top Bar or Logo */}
+      <aside aria-label="Language and Display Controls" className="absolute top-4 right-4 sm:top-6 sm:right-6 z-30 flex items-center gap-2">
+        <button
+          onClick={() => {
+            setIsIntroDissolving(false);
+            setIntroReplayKey((k) => k + 1);
+            setShowIntroAnimation(true);
+          }}
+          title={isAr ? 'إعادة مشاهدة العرض الحركي' : isFr ? "Revoir l'animation" : 'Replay Animation'}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/30 hover:bg-black/50 text-neutral-300 text-xs font-medium border border-white/10 backdrop-blur-md transition-all cursor-pointer active:scale-95"
+        >
+          <RotateCcw className="w-3 h-3 text-[#C4785A]" />
+          <span className="hidden sm:inline">
+            {isAr ? 'إعادة العرض' : isFr ? 'Rejouer intro' : 'Replay Intro'}
           </span>
-        </div>
+        </button>
 
-        <div className="flex items-center gap-3">
+        {/* Tri-Lingual Language Switcher */}
+        <div className="flex items-center bg-black/30 backdrop-blur-md border border-white/10 rounded-full p-1 text-xs">
           <button
-            onClick={() => {
-              setIsIntroDissolving(false);
-              setIntroReplayKey((k) => k + 1);
-              setShowIntroAnimation(true);
-            }}
-            title={isAr ? 'إعادة مشاهدة العرض الحركي' : isFr ? "Revoir l'animation" : 'Replay Animation'}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 text-neutral-300 text-xs font-medium border border-white/10 transition-all cursor-pointer active:scale-95"
+            onClick={() => setLanguage('fr')}
+            className={`px-2.5 py-1 rounded-full font-medium transition-all ${
+              language === 'fr'
+                ? 'bg-[#C4785A] text-white shadow-xs'
+                : 'text-neutral-400 hover:text-white'
+            }`}
           >
-            <RotateCcw className="w-3 h-3 text-[#C4785A]" />
-            <span className="hidden sm:inline">
-              {isAr ? 'إعادة العرض' : isFr ? 'Rejouer intro' : 'Replay Intro'}
-            </span>
+            FR
           </button>
-
-          {/* Tri-Lingual Language Switcher */}
-          <div className="flex items-center bg-white/5 border border-white/10 rounded-full p-1 text-xs">
-            <button
-              onClick={() => setLanguage('fr')}
-              className={`px-2.5 py-1 rounded-full font-medium transition-all ${
-                language === 'fr'
-                  ? 'bg-[#C4785A] text-white shadow-xs'
-                  : 'text-neutral-400 hover:text-white'
-              }`}
-            >
-              FR
-            </button>
-            <button
-              onClick={() => setLanguage('ar')}
-              className={`px-2.5 py-1 rounded-full font-medium transition-all ${
-                language === 'ar'
-                  ? 'bg-[#C4785A] text-white shadow-xs'
-                  : 'text-neutral-400 hover:text-white'
-              }`}
-            >
-              العربية
-            </button>
-            <button
-              onClick={() => setLanguage('en')}
-              className={`px-2.5 py-1 rounded-full font-medium transition-all ${
-                language === 'en'
-                  ? 'bg-[#C4785A] text-white shadow-xs'
-                  : 'text-neutral-400 hover:text-white'
-              }`}
-            >
-              EN
-            </button>
-          </div>
+          <button
+            onClick={() => setLanguage('ar')}
+            className={`px-2.5 py-1 rounded-full font-medium transition-all ${
+              language === 'ar'
+                ? 'bg-[#C4785A] text-white shadow-xs'
+                : 'text-neutral-400 hover:text-white'
+            }`}
+          >
+            العربية
+          </button>
+          <button
+            onClick={() => setLanguage('en')}
+            className={`px-2.5 py-1 rounded-full font-medium transition-all ${
+              language === 'en'
+                ? 'bg-[#C4785A] text-white shadow-xs'
+                : 'text-neutral-400 hover:text-white'
+            }`}
+          >
+            EN
+          </button>
         </div>
-      </header>
+      </aside>
 
       {/* Main Two-Column Workstation Canvas (Fit to Viewport, Zero Document Scroll) */}
-      <main className="w-full max-w-7xl mx-auto px-4 sm:px-6 py-2 flex-1 min-h-0 flex items-center justify-center">
+      <main className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 py-2 flex-1 min-h-0 flex items-center justify-center">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center w-full max-h-full">
           
           {/* ========================================================================= */}
           {/* LEFT COLUMN: THE FOCUSED SINGLE QUESTION CARD (HIGGSFIELD SPECIFICATION)  */}
           {/* ========================================================================= */}
-          <div className="lg:col-span-7 flex flex-col justify-center max-w-xl mx-auto w-full py-1">
+          <div className="lg:col-span-7 flex flex-col justify-center max-w-xl mx-auto w-full p-4 sm:p-5 rounded-2xl onboarding-glass-card">
             
             {/* Top Micro-Dash Indicators (9 clickable dashes for 0 to 8) */}
             <div className="flex items-center gap-1.5 mb-3 sm:mb-4">
@@ -580,8 +571,8 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                       isActive
                         ? 'w-7 sm:w-8 bg-[#C4785A] shadow-[0_0_10px_rgba(196,120,90,0.6)]'
                         : isCompleted
-                        ? 'w-3.5 sm:w-4 bg-neutral-500 hover:bg-neutral-400'
-                        : 'w-3.5 sm:w-4 bg-white/15 hover:bg-white/30'
+                        ? 'w-3.5 sm:w-4 bg-neutral-400 hover:bg-neutral-300'
+                        : 'w-3.5 sm:w-4 bg-white/20 hover:bg-white/40'
                     }`}
                   />
                 );
@@ -593,7 +584,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
               <h1 className="text-xl sm:text-2xl font-black tracking-tight text-white mb-1 leading-snug">
                 {questionsMeta[currentStep]?.title}
               </h1>
-              <p className="text-xs sm:text-sm text-neutral-400 leading-relaxed line-clamp-1 sm:line-clamp-none">
+              <p className="text-xs sm:text-sm text-neutral-200 leading-relaxed line-clamp-1 sm:line-clamp-none">
                 {questionsMeta[currentStep]?.subtext}
               </p>
             </div>
@@ -795,46 +786,48 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5">
                     {[
                       {
-                        id: 'goal_billing_dzd' as const,
+                        id: 'goal_structure_processes' as const,
+                        icon: Building2,
+                        badge: isAr ? 'تنظيم وهيكلة' : isFr ? 'Organisation & Clarté' : 'Structure & Workflows',
+                        title: isAr ? 'هيكلة النشاط والعمليات اليومية' : isFr ? 'Structurer mon activité & mes flux' : 'Structuring Your Business & Workflows',
+                        summary: isAr
+                          ? 'توحيد ملفات الزبائن 360°، مساحات عمل مركزية ومتابعة دقيقة دون تشتت إداري.'
+                          : isFr
+                          ? 'Standardisation des flux, fiches clients 360° et pilotage centralisé sans dispersion.'
+                          : 'Standardize workflows, 360° customer records & centralized control without clutter.',
+                      },
+                      {
+                        id: 'goal_connect_team' as const,
+                        icon: Users,
+                        badge: isAr ? 'تنسيق الفريق والصلاحيات' : isFr ? 'Équipe & Multi-rôles' : 'Team & Roles',
+                        title: isAr ? 'ربط وتنسيق فريق العمل' : isFr ? 'Connecter & coordonner mon équipe' : 'Connecting & Coordinating My Team',
+                        summary: isAr
+                          ? 'مساحات مخصصة لكل دور (المسؤول، الصندوق، الميدان، المحاسبة)، كود PIN وسجل العمليات.'
+                          : isFr
+                          ? 'Espaces dédiés par rôle (Gérant, Caisse, Terrain, Compta), bascule rapide par code PIN et journal d’audit.'
+                          : 'Role-based workspaces (Manager, Cashier, Field, Accounting), fast PIN codes & operator audit logs.',
+                      },
+                      {
+                        id: 'goal_secure_cashflow' as const,
                         icon: Receipt,
-                        badge: 'Fiscalité Algérienne',
-                        title: isAr ? 'فوترة قانونية مطابقة 100%' : isFr ? 'Facturation Légale DZ & DZD' : 'Compliant Algerian Invoicing',
-                        summary: isAr ? 'حساب TVA التلقائي، صكوك SFP 01 والرسم الجبائي' : isFr ? 'Calcul automatique TVA, Timbre fiscal & Mandats CCP' : 'Automated TVA calculation, tax stamps & CCP slips',
+                        badge: isAr ? 'المالية والمطابقة' : isFr ? 'Finances & Rapprochement' : 'Cashflow & Treasury',
+                        title: isAr ? 'تأمين المقابيض والسيولة المالية' : isFr ? 'Sécuriser mes encaissements & trésorerie' : 'Securing Cashflow & Daily Revenue',
+                        summary: isAr
+                          ? 'إغلاق الصندوق اليومي Z، قبول الدفع المتعدد (نقداً، بريدي موب، CIB) والرسم الجبائي.'
+                          : isFr
+                          ? 'Clôture journalière de caisse (Z), encaissements multi-canaux (Espèces, BaridiMob, CIB) et timbre fiscal.'
+                          : 'Daily cash drawer Z-reports, multi-tender payments (Cash, BaridiMob, CIB) and fiscal compliance.',
                       },
                       {
-                        id: 'goal_zero_scheduling_delays' as const,
-                        icon: Calendar,
-                        badge: 'Fluidité & Ponctualité',
-                        title: isAr ? 'صفر تأخير ومواعيد منضبطة' : isFr ? 'Zéro Retard & Plannings Intelligents' : 'Zero Scheduling Delays',
-                        summary: isAr ? 'تزامن الأجندة، كراسي التجميل، ورسائل تذكير تلقائية' : isFr ? 'Rappels SMS/WhatsApp, attribution fauteuils & anti-doublon' : 'Multi-staff agendas, slot collision lock & alerts',
-                      },
-                      {
-                        id: 'goal_total_inventory_traceability' as const,
-                        icon: Boxes,
-                        badge: 'Stock & Entrepôt',
-                        title: isAr ? 'تتبع المخزون بالباركود' : isFr ? 'Traçabilité Totale des Stocks' : 'End-to-End Stock Traceability',
-                        summary: isAr ? 'جرد فوري بالباركود، خصم FIFO وتنبيهات النفاذ' : isFr ? 'Scanners codes-barres, déduction FIFO & alertes rupture' : 'Barcode POS, FIFO batch deduction & low-stock triggers',
-                      },
-                      {
-                        id: 'goal_secure_milestones_ccp' as const,
-                        icon: Target,
-                        badge: 'Projets & Encaissement',
-                        title: isAr ? 'تسليم المراحل وإثبات الإنجاز' : isFr ? 'Jalons Sécurisés & Règlements CCP' : 'Deliverable Milestones & CCP',
-                        summary: isAr ? 'موافقة الزبون BAT، تحويل المبالغ كتابة بالحروف' : isFr ? 'Validation BAT, chiffres en lettres arabes & acomptes' : 'Client proof approvals, legal text math & milestones',
-                      },
-                      {
-                        id: 'goal_digitize_medical_records' as const,
-                        icon: Stethoscope,
-                        badge: 'Clinique & Santé',
-                        title: isAr ? 'رقمنة الملفات والوصفات' : isFr ? 'Dossiers Médicaux & File de Soin' : 'Digital EMR & Clinical Triage',
-                        summary: isAr ? 'سجلات المريض، فرز الاستشارات والوصفات الرقمية' : isFr ? 'Dossier patient 360°, ordonnances DCI & triage actif' : 'Patient history, DCI prescriptions & priority queue',
-                      },
-                      {
-                        id: 'goal_multisite_roles_governance' as const,
-                        icon: ShieldCheck,
-                        badge: 'Gouvernance & Multi-sites',
-                        title: isAr ? 'صلاحيات دقيقة وتدقيق مالي' : isFr ? 'Gouvernance & Sécurité Multi-rôles' : 'Multi-Role Governance & Audit',
-                        summary: isAr ? 'عزل صلاحيات الصندوق والمحاسبة وسجل التدقيق' : isFr ? 'Cloisonnement caissier/comptable & piste d’audit 100%' : 'Role-based access, cash limits & immutable audit log',
+                        id: 'goal_client_retention' as const,
+                        icon: TrendingUp,
+                        badge: isAr ? 'الولاء ومؤشرات الأداء' : isFr ? 'Fidélisation & Croissance' : 'Retention & Growth',
+                        title: isAr ? 'تعزيز ولاء الزبائن والنمو' : isFr ? 'Fidéliser mes clients & croissance' : 'Customer Retention & Growth Radar',
+                        summary: isAr
+                          ? 'سجل كامل للتعاملات، تنبيهات استباقية للعملاء ورادار مباشر لمتابعة الأداء.'
+                          : isFr
+                          ? 'Historique complet des interactions, alertes proactives et radar de performance en direct.'
+                          : 'Complete interaction history, smart inactivity reminders, and real-time business health radar.',
                       },
                     ].map((goal) => {
                       const isSelected = selectedGoalId === goal.id;
@@ -842,17 +835,18 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                       return (
                         <div
                           key={goal.id}
-                          className={`p-2.5 sm:p-3 rounded-xl border transition-all flex flex-col justify-between ${
+                          onClick={() => handleConfirmGoalAndContinue(goal.id)}
+                          className={`p-2.5 sm:p-3 rounded-xl border transition-all flex flex-col justify-between cursor-pointer group ${
                             isSelected
                               ? 'bg-[#1F1D1B] border-[#C4785A] shadow-[0_0_12px_rgba(196,120,90,0.25)]'
-                              : 'bg-[#18181B] border-white/10 hover:border-white/20'
+                              : 'bg-[#18181B] border-white/10 hover:border-white/20 hover:bg-[#1C1C1F]'
                           }`}
                         >
                           <div>
                             <div className="flex items-center justify-between mb-1.5">
                               <div
                                 className={`w-7 h-7 rounded-lg flex items-center justify-center ${
-                                  isSelected ? 'bg-[#C4785A] text-white' : 'bg-white/5 text-neutral-400'
+                                  isSelected ? 'bg-[#C4785A] text-white' : 'bg-white/5 text-neutral-400 group-hover:text-white'
                                 }`}
                               >
                                 <Icon className="w-3.5 h-3.5" />
@@ -865,25 +859,37 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                             <p className="text-[11px] text-neutral-400 leading-snug line-clamp-2 mb-2">{goal.summary}</p>
                           </div>
 
-                          <button
-                            type="button"
-                            onClick={() => handleOpenGoalModal(goal.id)}
-                            className="w-full flex items-center justify-center gap-1.5 py-1.5 px-2.5 rounded-lg bg-white/5 hover:bg-[#C4785A] hover:text-white text-neutral-300 text-xs font-semibold border border-white/10 hover:border-transparent transition-all cursor-pointer group"
-                          >
-                            <Eye className="w-3.5 h-3.5 text-[#C4785A] group-hover:text-white" />
-                            <span>{isAr ? 'عرض المخطط التنفيذي' : isFr ? 'Voir le schéma directeur' : 'Inspect Blueprint'}</span>
-                            <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
-                          </button>
+                          <div className="flex items-center gap-1.5 pt-1">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleOpenGoalModal(goal.id);
+                              }}
+                              className="flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg bg-white/5 hover:bg-[#C4785A] hover:text-white text-neutral-300 text-xs font-semibold border border-white/10 hover:border-transparent transition-all cursor-pointer group/btn"
+                            >
+                              <Eye className="w-3.5 h-3.5 text-[#C4785A] group-hover/btn:text-white" />
+                              <span>{isAr ? 'عرض المخطط التنفيذي' : isFr ? 'Voir le schéma directeur' : 'Inspect Blueprint'}</span>
+                            </button>
+                            <div
+                              className={`w-7 h-7 rounded-lg border flex items-center justify-center shrink-0 transition-colors ${
+                                isSelected ? 'border-[#C4785A] bg-[#C4785A] text-white' : 'border-white/15 bg-white/5 text-neutral-400'
+                              }`}
+                              title={isAr ? 'اختيار ومتابعة' : isFr ? 'Sélectionner & continuer' : 'Select & continue'}
+                            >
+                              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                            </div>
+                          </div>
                         </div>
                       );
                     })}
                   </div>
                   <p className="text-center text-[10px] text-neutral-400 pt-0.5">
                     {isAr
-                      ? '💡 انقر على "عرض المخطط التنفيذي" لتأكيد هذا الهدف والانتقال للخطوة التالية'
+                      ? '💡 انقر على البطاقة للمتابعة الفورية، أو اضغط "عرض المخطط التنفيذي" لمعاينة الآليات والأدوات المدمجة'
                       : isFr
-                      ? '💡 Cliquez sur "Voir le schéma directeur" pour inspecter et continuer'
-                      : '💡 Click "Inspect Blueprint" to view real screens and proceed to the next step'}
+                      ? '💡 Cliquez sur une carte pour continuer, ou sur "Voir le schéma directeur" pour inspecter les outils réels'
+                      : '💡 Click any card to proceed, or click "Inspect Blueprint" to examine real platform tools and mechanisms'}
                   </p>
                 </div>
               )}
@@ -1393,16 +1399,30 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                       </div>
                     ) : (
                       <div className="p-2.5 rounded-xl bg-white/5 border border-white/10 space-y-2">
+                        {/* 14-Day Free Trial Notice Banner */}
+                        <div className="p-2 rounded-lg bg-[#C4785A]/15 border border-[#C4785A]/30 flex items-center justify-between text-xs">
+                          <div className="flex items-center gap-2 text-[#F5C2B0]">
+                            <Sparkles className="w-4 h-4 text-[#C4785A] shrink-0" />
+                            <span className="text-[11px]">
+                              {isAr
+                                ? `✨ نمط تجريبي مجاني 14 يوماً مفعل تلقائياً لخطة ${selectedPlanTier.toUpperCase()} • دخول مباشر بدون بطاقة بنكية.`
+                                : isFr
+                                ? `✨ Mode Essai Gratuit 14 Jours inclus (${selectedPlanTier.toUpperCase()}) • Accès direct illimité sans carte bancaire.`
+                                : `✨ 14-Day Free Trial included (${selectedPlanTier.toUpperCase()}) • Direct full access with zero credit card required.`}
+                            </span>
+                          </div>
+                        </div>
+
                         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                           <div className="flex-1">
                             <LabelInput
                               field="voucherCode"
                               label={
                                 isAr
-                                  ? `رمز قسيمة ترخيص (${selectedPlanTier.toUpperCase()})`
+                                  ? `رمز قسيمة ترخيص دائم (${selectedPlanTier.toUpperCase()}) - اختياري`
                                   : isFr
-                                  ? `Code voucher licence (${selectedPlanTier.toUpperCase()})`
-                                  : `License voucher code (${selectedPlanTier.toUpperCase()})`
+                                  ? `Code voucher licence à vie (${selectedPlanTier.toUpperCase()}) - optionnel`
+                                  : `Lifetime license voucher (${selectedPlanTier.toUpperCase()}) - optional`
                               }
                               value={voucherCode}
                               onChange={(val) => {
@@ -1422,7 +1442,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                           >
                             <Sparkles className="w-3.5 h-3.5 text-[#C4785A]" />
                             <span>
-                              {isAr ? 'طلب ترخيص رسمي' : isFr ? 'Demander une licence' : 'Request License'}
+                              {isAr ? 'طلب ترخيص دائم' : isFr ? 'Demander une licence' : 'Request License'}
                             </span>
                           </button>
                         </div>
@@ -1436,26 +1456,6 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                               <span className="font-mono uppercase">{voucherValidation.tierName}</span>
                             </span>
                             <span className="text-[10px] text-emerald-300">100% Validé</span>
-                          </div>
-                        )}
-
-                        {/* Error notice if user tried to launch without entering voucher */}
-                        {paidVoucherError && (
-                          <div className="p-2 rounded-lg bg-red-500/15 border border-red-500/30 text-red-200 text-xs flex items-center justify-between gap-2">
-                            <div className="flex items-center gap-1.5">
-                              <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
-                              <span className="text-[11px]">{paidVoucherError}</span>
-                            </div>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setSelectedPlanTier('free');
-                                setPaidVoucherError(null);
-                              }}
-                              className="text-[10px] font-bold text-white underline hover:text-neutral-200 cursor-pointer shrink-0"
-                            >
-                              {isAr ? 'تفعيل الخطة المجانية' : isFr ? 'Activer Free Web' : 'Use Free Web'}
-                            </button>
                           </div>
                         )}
                       </div>
@@ -1485,6 +1485,18 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                 <button
                   type="button"
                   onClick={() => setCurrentStep(1)}
+                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-bold text-white bg-[#C4785A] hover:bg-[#b3684a] shadow-[0_4px_16px_rgba(196,120,90,0.35)] transition-all cursor-pointer active:scale-95 ml-auto"
+                >
+                  <span>{isAr ? 'متابعة' : isFr ? 'Continuer' : 'Continue'}</span>
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              )}
+
+              {/* Step 2: Continue button with selected goal */}
+              {currentStep === 2 && (
+                <button
+                  type="button"
+                  onClick={() => setCurrentStep(3)}
                   className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-bold text-white bg-[#C4785A] hover:bg-[#b3684a] shadow-[0_4px_16px_rgba(196,120,90,0.35)] transition-all cursor-pointer active:scale-95 ml-auto"
                 >
                   <span>{isAr ? 'متابعة' : isFr ? 'Continuer' : 'Continue'}</span>
@@ -1524,7 +1536,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
           {/* RIGHT COLUMN: ATRIUM BRAND IDENTITY & LIVE ADAPTING WORKSPACE PREVIEW      */}
           {/* ========================================================================= */}
           <div className="lg:col-span-5 hidden lg:flex flex-col items-center justify-center">
-            <div className="relative w-full max-w-sm lg:max-w-md p-4 sm:p-5 rounded-2xl bg-[#141416] border border-white/10 shadow-[0_16px_36px_rgba(0,0,0,0.6)] overflow-hidden">
+            <div className="relative w-full max-w-sm lg:max-w-md p-4 sm:p-5 rounded-2xl onboarding-glass-card overflow-hidden">
               
               {/* Ambient Warm Terracotta Glow */}
               <div
@@ -1968,11 +1980,6 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
         </div>
       )}
 
-      {/* Footer Branding Bar (Compact, Single-Line, Viewport Budget) */}
-      <footer className="w-full max-w-7xl mx-auto px-6 py-2 flex items-center justify-between text-[11px] text-neutral-400 border-t border-white/5 shrink-0">
-        <span>© 2026 Atrium ERP & CRM. All rights reserved.</span>
-        <span>Version 4.3 • Algeria & MENA</span>
-      </footer>
-    </div>
+    </OnboardingBackdrop>
   );
 };

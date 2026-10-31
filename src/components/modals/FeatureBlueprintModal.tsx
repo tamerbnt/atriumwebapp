@@ -15,6 +15,10 @@ import { SupportedLanguage } from '../../types/index';
 import { AtriumButton } from '../ui/AtriumButton';
 
 export type UniversalStrategicGoalId =
+  | 'goal_structure_processes'
+  | 'goal_connect_team'
+  | 'goal_secure_cashflow'
+  | 'goal_client_retention'
   | 'goal_billing_dzd'
   | 'goal_zero_scheduling_delays'
   | 'goal_total_inventory_traceability'
@@ -45,6 +49,261 @@ interface BlueprintData {
 }
 
 const BLUEPRINTS: Record<string, BlueprintData> = {
+  goal_structure_processes: {
+    title: {
+      fr: 'Structuration Opérationnelle & Processus d’Entreprise',
+      ar: 'هيكلة وتنظيم النشاط والعمليات اليومية',
+      en: 'Operational Structuring & Core Workflows',
+    },
+    subtitle: {
+      fr: 'Centralisation des dossiers, standardisation des flux et zéro dispersion administrative',
+      ar: 'توحيد الملفات والمعاملات في نظام مركزي متكامل دون تشتت',
+      en: 'Unified customer records, streamlined operational pipelines, zero clutter',
+    },
+    screenBadge: {
+      fr: 'Écrans : Tableaux de Bord & Collections 360°',
+      ar: 'الشاشات: لوحة القيادة الموحدة وملفات 360°',
+      en: 'Modules: Unified Dashboards & 360° Hubs',
+    },
+    mechanisms: [
+      {
+        title: {
+          fr: 'Dossiers Clients & Passports Métiers 360°',
+          ar: 'ملف شامل 360° لكل زبون ومؤسسة',
+          en: '360° Unified Customer Passports',
+        },
+        desc: {
+          fr: 'Consolidation immédiate des coordonnées, historique complet des transactions, soldes en cours et documents rattachés en un seul écran.',
+          ar: 'تجميع فوري للبيانات، المعاملات السابقة، المستحقات المالية والوثائق في ملف واحد دون تكرار.',
+          en: 'Consolidates contact details, purchase history, outstanding balances, and attachments in one clean drawer.',
+        },
+      },
+      {
+        title: {
+          fr: 'Canvas Opérationnel à Élévation Unique',
+          ar: 'واجهة تشغيل موحدة ذات عمق بصري واحد',
+          en: 'Single-Elevation Operational Canvas',
+        },
+        desc: {
+          fr: 'Élimination des cartes imbriquées et de la surcharge visuelle : bascule rapide entre vue Liste dense et vue Grille avec tiroir inspecteur latéral.',
+          ar: 'تصميم نظيف بدون تداخل بطاقات مربكة، مع إمكانية التبديل الفوري بين عرض القائمة وعرض البطاقات.',
+          en: 'Clean layout without nested card clutter, featuring fast toggle between dense list view and inspection drawers.',
+        },
+      },
+      {
+        title: {
+          fr: 'Moteur de Recherche Seek & Command Palette',
+          ar: 'محرك بحث فوري Seek مع اختصارات سريعة',
+          en: 'Instant Seek Search & Global Command Palette',
+        },
+        desc: {
+          fr: 'Accès en moins de 100 ms à n’importe quel client, facture ou écran via le raccourci global Ctrl+K ou la loupe cinétique Seek.',
+          ar: 'وصول في أقل من 100 ملي ثانية لأي عميل، سجل أو فاتورة عبر الاختصار الشامل Ctrl+K أو محرك Seek التفاعلي.',
+          en: 'Sub-100ms instant lookup across clients, documents, and tools via global Ctrl+K or expanding Seek search.',
+        },
+      },
+    ],
+    result: {
+      stat: '100%',
+      label: {
+        fr: 'Visibilité totale sur votre activité et zéro document égaré',
+        ar: 'رؤية شاملة ومباشرة على كافة مفاصل نشاطك التجاري',
+        en: 'Total operational clarity with zero lost paperwork or mislaid records',
+      },
+    },
+  },
+
+  goal_connect_team: {
+    title: {
+      fr: 'Coordination d’Équipe & Espaces Métiers Dédiés',
+      ar: 'تنسيق فريق العمل ومساحات الأدوار المتخصصة',
+      en: 'Team Coordination & Role-Tailored Workspaces',
+    },
+    subtitle: {
+      fr: 'Espaces par rôle (Gérant, Caisse, Terrain, Compta), codes PIN rapides et journal d’audit',
+      ar: 'مساحات مخصصة لكل دور، كود PIN السريع وتتبع كامل لعمليات الموظفين',
+      en: 'Role-adaptive workspaces, fast operator PIN switching, and complete audit trails',
+    },
+    screenBadge: {
+      fr: 'Écrans : Multi-rôles, Switcher PIN & Journal d’Audit',
+      ar: 'الشاشات: مصفوفة الصلاحيات، تسجيل الدخول بـ PIN وسجل العمليات',
+      en: 'Modules: Multi-Role Hubs, PIN Fast-Switch & Audit Log',
+    },
+    mechanisms: [
+      {
+        title: {
+          fr: 'Espaces Métiers Dédiés par Profil Opérationnel',
+          ar: 'مساحات عمل مفصلة حسب وظيفة كل موظف',
+          en: 'Role-Adaptive Dedicated Workspaces',
+        },
+        desc: {
+          fr: 'Chaque collaborateur (Gérant, Réceptionniste, Caissier, Opérateur de terrain, Comptable) dispose d’une barre latérale adaptée à ses tâches exactes.',
+          ar: 'كل موظف (المسؤول، الموظف الميداني، أمين الصندوق، المحاسب) يرى فقط الأدوات اللازمة لمهامه دون تشويش.',
+          en: 'Each staff member (Owner, Cashier, Field Supervisor, Accountant) receives a focused sidebar tailored to their job.',
+        },
+      },
+      {
+        title: {
+          fr: 'Bascule Ultra-Rapide par Code PIN Opérateur',
+          ar: 'تبديل فوري بين الموظفين عبر كود PIN السريع',
+          en: 'Sub-Second Staff Switching via 4-Digit PIN',
+        },
+        desc: {
+          fr: 'Sur le terminal de caisse ou la tablette d’atelier, changez d’opérateur en 1 seconde par code PIN à 4 chiffres sans déconnecter la session générale.',
+          ar: 'على أجهزة الصندوق أو الأجهزة اللوحية، يمكن التبديل بين الموظفين في ثانية واحدة عبر كود PIN دون تسجيل خروج.',
+          en: 'Switch between team operators in 1 second at the POS or tablet via 4-digit PIN without breaking the session.',
+        },
+      },
+      {
+        title: {
+          fr: 'Traçabilité Quadruple & Journal d’Audit Infalsifiable',
+          ar: 'توثيق رقابي رباعي وسجل عمليات غير قابل للتعديل',
+          en: 'Quadruple Traceability & Immutable Audit Trail',
+        },
+        desc: {
+          fr: 'Chaque création de facture, remise accordée, ou modification de statut est scellée avec l’identifiant précis du collaborateur émetteur (staff_id).',
+          ar: 'كل عملية تحصيل، تخفيض، أو تعديل تسجل فوراً بهوية الموظف المنفذ لمنع التلاعب وتحديد المسؤوليات.',
+          en: 'Every single invoice, discount, or record change is permanently stamped with the author’s staff_id.',
+        },
+      },
+    ],
+    result: {
+      stat: '0 conflit',
+      label: {
+        fr: 'Zéro chevauchement de responsabilités et traçabilité interne totale',
+        ar: 'انعدام تداخل الصلاحيات وتوثيق دقيق لكل عملية يقوم بها الفريق',
+        en: 'Zero role ambiguity and airtight accountability across your entire team',
+      },
+    },
+  },
+
+  goal_secure_cashflow: {
+    title: {
+      fr: 'Sécurisation de la Trésorerie & Encaissements',
+      ar: 'تأمين المقابيض والسيولة المالية وإغلاق الصناديق',
+      en: 'Securing Cashflow, Daily Revenue & Fiscal Compliance',
+    },
+    subtitle: {
+      fr: 'Clôtures de caisse journalières (Z), multi-devises locales et conformité légale DZD',
+      ar: 'إغلاق الصندوق اليومي Z، قبول الدفع المتعدد واحترام القوانين الجبائية',
+      en: 'Daily cash drawer Z-reports, multi-tender tenders, and DZD tax stamp automation',
+    },
+    screenBadge: {
+      fr: 'Écrans : Caisse Tactile, Clôtures Z & Mandats CCP',
+      ar: 'الشاشات: الصندوق السريع، تقارير الإغلاق والجبايات',
+      en: 'Modules: POS Checkout, Z-Reports & CCP Vouchers',
+    },
+    mechanisms: [
+      {
+        title: {
+          fr: 'Rapprochement & Clôture de Caisse Z Journalière',
+          ar: 'مطابقة دقيقة وإغلاق الصندوق اليومي Z',
+          en: 'Daily Cash Drawer Balance & Z-Close Reports',
+        },
+        desc: {
+          fr: 'Contrôle systématique des écarts de caisse, comptage des billets physiques et verrouillage infalsifiable en fin de journée.',
+          ar: 'مطابقة دقيقة بين السيولة الفعلية وسجلات النظام، وتوليد تقرير إغلاق Z نهائي يومياً.',
+          en: 'Enforces cash drawer counting, calculates balance differences, and prints tamper-proof daily Z-reports.',
+        },
+      },
+      {
+        title: {
+          fr: 'Encaissements Multi-Canaux & BaridiMob QR',
+          ar: 'تحصيل سريع نقداً، بريدي موب وبطاقات CIB',
+          en: 'Multi-Tender Cash, BaridiMob QR & CIB Cards',
+        },
+        desc: {
+          fr: 'Ventilation fluide entre Espèces, BaridiMob, Carte CIB et chèque bancaire avec ouverture automatique du tiroir et reçu instantané.',
+          ar: 'توزيع فوري للمقبوضات بين الدفع نقداً، بريدي موب، البطاقات البنكية والصكوك مع طباعة الوصل فوراً.',
+          en: 'Seamlessly accepts Cash, BaridiMob QR, CIB bank cards, and checks with automated drawer pop and receipt print.',
+        },
+      },
+      {
+        title: {
+          fr: 'Timbre Fiscal Art. 317 & Mentions Réglementaires',
+          ar: 'حساب تلقائي للرسم الجبائي والبيانات الإلزامية',
+          en: 'Algerian Art. 317 Stamp Duty & Fiscal Rules',
+        },
+        desc: {
+          fr: 'Application automatique du droit de timbre fiscal gradué sur les paiements en espèces avec mention du NIF, NIS, RC et Article d’Imposition.',
+          ar: 'حساب آلي للرسم الجبائي على المبالغ النقدية وتضمين المعرف الجبائي والسجل التجاري على كافة الفواتير.',
+          en: 'Automatically applies graduated fiscal stamp duty to cash tenders with legal NIF, NIS, and RC fields.',
+        },
+      },
+    ],
+    result: {
+      stat: '0 DZD',
+      label: {
+        fr: 'Zéro fuite de recettes et rapprochement bancaire sans surprise',
+        ar: 'انعدام أي فارق غير مبرر في الصندوق ومطابقة مالية يومية مؤكدة',
+        en: 'Zero unexplained cash discrepancies and exact financial control',
+      },
+    },
+  },
+
+  goal_client_retention: {
+    title: {
+      fr: 'Fidélisation Clients & Radar de Performance',
+      ar: 'تعزيز ولاء الزبائن ومؤشرات الأداء في الوقت الحقيقي',
+      en: 'Customer Retention & Real-Time Business Radar',
+    },
+    subtitle: {
+      fr: 'Historique d’interactions, relances proactives et pilotage de la rentabilité',
+      ar: 'سجل كامل للتعاملات، تنبيهات استباقية ومتابعة دقيقة لمؤشرات النمو',
+      en: 'Interaction history, proactive follow-ups, and live profitability metrics',
+    },
+    screenBadge: {
+      fr: 'Écrans : Répertoire Clients 360°, Alertes & KPI Radar',
+      ar: 'الشاشات: سجل الزبائن، التنبيهات ورادار الأداء',
+      en: 'Modules: 360° Client CRM, Proactive Alerts & Radar',
+    },
+    mechanisms: [
+      {
+        title: {
+          fr: 'Passeport Client & Historique des Visites',
+          ar: 'سجل الزبون التراكمي وتاريخ الزيارات والمعاملات',
+          en: 'Customer Passports & Longitudinal History',
+        },
+        desc: {
+          fr: 'Consultez en un clin d’œil l’ensemble des prestations passées, fréquentation, préférences et dates clés pour personnaliser chaque accueil.',
+          ar: 'معرفة فورية لكافة المشتريات والزيارات والملاحظات الخاصة بكل عميل لتخصيص الخدمة بدقة.',
+          en: 'Instant lookup of client preferences, past visits, purchases, and key anniversary dates.',
+        },
+      },
+      {
+        title: {
+          fr: 'Alertes Automatiques & Détection d’Inactivité',
+          ar: 'تنبيهات تلقائية لاستعادة الزبائن الغائبين',
+          en: 'Smart Inactivity Triggers & Proactive Reminders',
+        },
+        desc: {
+          fr: 'Repérez immédiatement les clients fidèles qui n’ont pas réservé ou commandé depuis plus de 30 jours pour déclencher une relance ciblée.',
+          ar: 'كشف تلقائي للزبائن المنتظمين الذين انقطعوا لأكثر من 30 يوماً لإعادة تفعيل التواصل معهم.',
+          en: 'Instantly identifies churn risks and past-due accounts for timely WhatsApp, SMS, or phone follow-up.',
+        },
+      },
+      {
+        title: {
+          fr: 'Radar de Performance Opérationnel Sans Latence',
+          ar: 'رادار حي لمتابعة وتيرة العمل والإيرادات',
+          en: 'Real-Time Operational Pulse & Business Radar',
+        },
+        desc: {
+          fr: 'Suivi en direct du panier moyen, de la rentabilité par jour et du taux de fréquentation sans calculs manuels sur tableur.',
+          ar: 'متابعة مباشرة لمتوسط الفاتورة، الإيراد اليومي ونسب الإقبال دون الحاجة لأي جداول خارجية.',
+          en: 'Real-time calculation of average ticket, daily volume, and peak hours without spreadsheet export.',
+        },
+      },
+    ],
+    result: {
+      stat: '+35%',
+      label: {
+        fr: 'Augmentation mesurée du taux de récurrence et de fidélité',
+        ar: 'زيادة ملموسة في تكرار الزيارات واستعادة الزبائن غير النشطين',
+        en: 'Proven lift in repeat transactions and customer lifetime engagement',
+      },
+    },
+  },
   goal_billing_dzd: {
     title: {
       fr: 'Automatisation de la Facturation & Encaissements en Dinar',

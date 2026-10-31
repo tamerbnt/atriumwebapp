@@ -3231,6 +3231,7 @@ export function useAtriumStore() {
     let chosenPlan = INITIAL_PLANS[0]; // Free Web default
     let isLifetime = true;
     let activatedVoucher: string | undefined = 'WEB-FREE-EDITION';
+    let expiresAt: string | undefined = undefined;
 
     if (params.voucherCode) {
       const vRes = validateVoucherCode(params.voucherCode);
@@ -3242,16 +3243,29 @@ export function useAtriumStore() {
           activatedVoucher = params.voucherCode.trim().toUpperCase();
         }
       }
+    } else if (params.planTier && params.planTier !== 'free') {
+      const tierMap: Record<string, number> = { starter: 1, pro: 2, enterprise: 3 };
+      const rank = tierMap[params.planTier] || 1;
+      const matching = INITIAL_PLANS.find((p) => p.tierRank === rank);
+      if (matching) {
+        chosenPlan = matching;
+        isLifetime = false;
+        activatedVoucher = `TRIAL-${params.planTier.toUpperCase()}-14D`;
+        const trialExpiry = new Date();
+        trialExpiry.setDate(trialExpiry.getDate() + 14);
+        expiresAt = trialExpiry.toISOString();
+      }
     }
 
     const newSubscription: AccountSubscription = {
       id: `sub_${Date.now()}`,
       accountId,
       planId: chosenPlan.id,
-      status: 'active',
+      status: params.isTrial ? 'trial' : 'active',
       isLifetime,
       activatedByVoucher: activatedVoucher,
       plan: chosenPlan,
+      trialEndsAt: expiresAt,
     };
 
     const newOwnerStaff: StaffMember = {
