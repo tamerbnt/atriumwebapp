@@ -38,9 +38,11 @@ import {
   validateConcreteStrength,
   calculateFuelConsumptionAnomaly,
 } from '../../../utils/contractorRules';
+import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
+import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 
 export const ContractorDailyLogsView: React.FC = () => {
-  const { language, currentBusiness, currentBranch, currentUser, activeContractorRole } = useAtriumStore();
+  const { language, currentBusiness, currentBranch, currentUser, activeContractorRole, isSyncing, networkMode, retryCloudSync } = useAtriumStore();
   const isAr = language === 'ar';
   const {
     dailyLogs,
@@ -284,6 +286,30 @@ export const ContractorDailyLogsView: React.FC = () => {
       },
     },
   ];
+
+  const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
+    isLoading: isSyncing || networkMode === 'force_skeleton',
+    hasCachedData: dailyLogs.length > 0,
+  });
+
+  if (showSkeleton && (dailyLogs.length === 0 || networkMode === 'force_skeleton')) {
+    return (
+      <SkeletonCollectionScreen
+        kpiCount={3}
+        columns={[
+          { width: '2.5*', minWidth: '180px' },
+          { width: '1.5*', minWidth: '120px' },
+          { width: '1.5*', minWidth: '120px' },
+          { width: '1.2*', minWidth: '100px' },
+          { width: '100px', minWidth: '80px' },
+        ]}
+        viewMode="list"
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        onRetry={retryCloudSync || retry}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">

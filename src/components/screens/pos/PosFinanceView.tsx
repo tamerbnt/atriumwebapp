@@ -28,6 +28,8 @@ import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { FilterSelect } from '../../ui/FilterSelect';
 import { AtriumButton } from '../../ui/AtriumButton';
+import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
+import { SkeletonFinanceAudit } from '../../ui/skeleton/StructuralSkeletons';
 
 interface PosExpense {
   id: string;
@@ -84,6 +86,9 @@ export const PosFinanceView: React.FC = () => {
     currentBranch,
     currentUser,
     resetPosMockData,
+    isSyncing,
+    networkMode,
+    retryCloudSync,
   } = useAtriumStore();
 
   const [expenses, setExpenses] = useState<PosExpense[]>(INITIAL_POS_EXPENSES);
@@ -337,6 +342,21 @@ export const PosFinanceView: React.FC = () => {
       ),
     },
   ], [language]);
+
+  const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
+    isLoading: isSyncing || networkMode === 'force_skeleton',
+    hasCachedData: sales.length > 0,
+  });
+
+  if (showSkeleton && (sales.length === 0 || networkMode === 'force_skeleton')) {
+    return (
+      <SkeletonFinanceAudit
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        onRetry={retryCloudSync || retry}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200" dir={isRtl ? 'rtl' : 'ltr'}>

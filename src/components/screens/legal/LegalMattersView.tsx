@@ -34,9 +34,11 @@ import { LegalMatterModal } from './LegalMatterModal';
 import { NotaryDeedModal } from '../../modals/NotaryDeedModal';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { ActionButtonDef } from '../../ui/collection/CollectionListRow';
+import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
+import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 
 export const LegalMattersView: React.FC = () => {
-  const { language, showToast, activeLegalRole } = useAtriumStore();
+  const { language, showToast, activeLegalRole, isSyncing, networkMode, retryCloudSync } = useAtriumStore();
   const isAr = language === 'ar';
   const {
     matters,
@@ -263,7 +265,29 @@ export const LegalMattersView: React.FC = () => {
       },
     ],
     [language, isAr, pinnedIds]
-  );
+  const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
+    isLoading: isSyncing || networkMode === 'force_skeleton',
+    hasCachedData: matters.length > 0 || notaryDeeds.length > 0,
+  });
+
+  if (showSkeleton && ((matters.length === 0 && notaryDeeds.length === 0) || networkMode === 'force_skeleton')) {
+    return (
+      <SkeletonCollectionScreen
+        kpiCount={3}
+        columns={[
+          { width: '2.5*', minWidth: '180px' },
+          { width: '1.5*', minWidth: '120px' },
+          { width: '1.5*', minWidth: '120px' },
+          { width: '1.2*', minWidth: '100px' },
+          { width: '100px', minWidth: '80px' },
+        ]}
+        viewMode={viewMode}
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        onRetry={retryCloudSync || retry}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">

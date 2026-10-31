@@ -31,6 +31,8 @@ import { LabelSelect } from '../../ui/LabelSelect';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { useTranslation } from '../../../utils/useTranslation';
+import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
+import { SkeletonKanbanPipeline, SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 
 export const EducationAdmissionsView: React.FC = () => {
   const { t, isRtl, language } = useTranslation();
@@ -336,6 +338,40 @@ export const EducationAdmissionsView: React.FC = () => {
   const admittedCount = eduAdmissions.filter((l) => l.stage === 'Admitted' || l.stage === 'Enrolled').length;
   const conversionRate = totalLeads > 0 ? Math.round((admittedCount / totalLeads) * 100) : 0;
   const projectedPipeline = totalLeads * 38000;
+
+  const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
+    isLoading: isSyncing || networkMode === 'force_skeleton',
+    hasCachedData: eduAdmissions.length > 0,
+  });
+
+  if (showSkeleton && (eduAdmissions.length === 0 || networkMode === 'force_skeleton')) {
+    if (viewMode === 'kanban') {
+      return (
+        <SkeletonKanbanPipeline
+          columnsCount={5}
+          isOffline={isOffline}
+          isTimedOut={isTimedOut}
+          onRetry={retryCloudSync || retry}
+        />
+      );
+    }
+    return (
+      <SkeletonCollectionScreen
+        kpiCount={3}
+        columns={[
+          { width: '2.5*', minWidth: '180px' },
+          { width: '1.5*', minWidth: '120px' },
+          { width: '1.5*', minWidth: '120px' },
+          { width: '1.2*', minWidth: '100px' },
+          { width: '100px', minWidth: '80px' },
+        ]}
+        viewMode="list"
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        onRetry={retryCloudSync || retry}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">

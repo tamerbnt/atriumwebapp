@@ -34,6 +34,8 @@ import { Seek } from '../../ui/Seek';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { useTranslation } from '../../../utils/useTranslation';
+import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
+import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 
 export const FreelanceTimeTrackerView: React.FC = () => {
   const { t, language, isRtl } = useTranslation();
@@ -60,6 +62,9 @@ export const FreelanceTimeTrackerView: React.FC = () => {
     switchBusiness,
     switchBranch,
     resetFreelanceMockData,
+    isSyncing,
+    networkMode,
+    retryCloudSync,
   } = useAtriumStore();
 
   const [isFacilityDropdownOpen, setIsFacilityDropdownOpen] = useState(false);
@@ -548,6 +553,30 @@ export const FreelanceTimeTrackerView: React.FC = () => {
       ),
     },
   ], [language, pinnedLogIds, t]);
+
+  const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
+    isLoading: isSyncing || networkMode === 'force_skeleton',
+    hasCachedData: timeLogs.length > 0,
+  });
+
+  if (showSkeleton && (timeLogs.length === 0 || networkMode === 'force_skeleton')) {
+    return (
+      <SkeletonCollectionScreen
+        kpiCount={3}
+        columns={[
+          { width: '2.5*', minWidth: '180px' },
+          { width: '1.5*', minWidth: '120px' },
+          { width: '1.5*', minWidth: '120px' },
+          { width: '1.2*', minWidth: '100px' },
+          { width: '100px', minWidth: '80px' },
+        ]}
+        viewMode="list"
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        onRetry={retryCloudSync || retry}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">

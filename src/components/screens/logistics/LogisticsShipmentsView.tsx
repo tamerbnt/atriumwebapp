@@ -29,9 +29,11 @@ import { Seek } from '../../ui/Seek';
 import { LogisticsShipmentModal } from './LogisticsShipmentModal';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { StopDeskHandoverModal } from './StopDeskHandoverModal';
+import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
+import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 
 export const LogisticsShipmentsView: React.FC = () => {
-  const { language, showToast } = useAtriumStore();
+  const { language, showToast, isSyncing, networkMode, retryCloudSync } = useAtriumStore();
   const { shipments, manifests, addShipment, updateShipment, deleteShipment, updateShipmentStatus } = useLogisticsData();
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -284,6 +286,30 @@ export const LogisticsShipmentsView: React.FC = () => {
     ],
     [pinnedIds, language]
   );
+
+  const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
+    isLoading: isSyncing || networkMode === 'force_skeleton',
+    hasCachedData: shipments.length > 0,
+  });
+
+  if (showSkeleton && (shipments.length === 0 || networkMode === 'force_skeleton')) {
+    return (
+      <SkeletonCollectionScreen
+        kpiCount={3}
+        columns={[
+          { width: '2.5*', minWidth: '180px' },
+          { width: '1.5*', minWidth: '120px' },
+          { width: '1.5*', minWidth: '120px' },
+          { width: '1.2*', minWidth: '100px' },
+          { width: '100px', minWidth: '80px' },
+        ]}
+        viewMode={viewMode}
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        onRetry={retryCloudSync || retry}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">

@@ -364,6 +364,10 @@ export interface SkeletonSchedulerViewProps {
   isTimedOut?: boolean;
   lastSyncedAt?: string | null;
   onRetry?: () => Promise<void> | void;
+  columnsCount?: number;
+  hasFacility?: boolean;
+  hasActionBtn?: boolean;
+  actionBtnWidth?: number;
 }
 
 export const SkeletonSchedulerView: React.FC<SkeletonSchedulerViewProps> = ({
@@ -371,6 +375,9 @@ export const SkeletonSchedulerView: React.FC<SkeletonSchedulerViewProps> = ({
   isTimedOut,
   lastSyncedAt,
   onRetry,
+  hasFacility = true,
+  hasActionBtn = true,
+  actionBtnWidth = 175,
 }) => {
   return (
     <div className="space-y-6 animate-in fade-in duration-200" role="status" aria-label="Loading schedule roster">
@@ -382,7 +389,7 @@ export const SkeletonSchedulerView: React.FC<SkeletonSchedulerViewProps> = ({
       />
 
       {/* Header */}
-      <SkeletonPageHeader hasViewToggle hasFacility hasActionBtn actionBtnWidth={175} />
+      <SkeletonPageHeader hasViewToggle hasFacility={hasFacility} hasActionBtn={hasActionBtn} actionBtnWidth={actionBtnWidth} />
 
       {/* KPI Pod Tray matching Screenshot_69 (Weekly Session Matrix & Attendance Roster) */}
       <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">

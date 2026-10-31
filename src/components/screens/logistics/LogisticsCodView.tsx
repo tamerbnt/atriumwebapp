@@ -28,9 +28,11 @@ import { UniversalDataCollection } from '../../ui/collection/UniversalDataCollec
 import { ActionButtonDef } from '../../ui/collection/CollectionListRow';
 import { AlgeriePosteSfp01Modal } from './AlgeriePosteSfp01Modal';
 import { calculateDriverPayout } from '../../../utils/logisticsRules';
+import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
+import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 
 export const LogisticsCodView: React.FC = () => {
-  const { language } = useAtriumStore();
+  const { language, isSyncing, networkMode, retryCloudSync } = useAtriumStore();
   const isAr = language === 'ar';
   const { shipments, discharges, remittances, executeRemittance } = useLogisticsData();
 
@@ -124,6 +126,30 @@ export const LogisticsCodView: React.FC = () => {
       },
     ];
   };
+
+  const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
+    isLoading: isSyncing || networkMode === 'force_skeleton',
+    hasCachedData: deliveredShipments.length > 0,
+  });
+
+  if (showSkeleton && (deliveredShipments.length === 0 || networkMode === 'force_skeleton')) {
+    return (
+      <SkeletonCollectionScreen
+        kpiCount={3}
+        columns={[
+          { width: '2.5*', minWidth: '180px' },
+          { width: '1.5*', minWidth: '120px' },
+          { width: '1.5*', minWidth: '120px' },
+          { width: '1.2*', minWidth: '100px' },
+          { width: '100px', minWidth: '80px' },
+        ]}
+        viewMode="list"
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        onRetry={retryCloudSync || retry}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">

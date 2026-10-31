@@ -45,9 +45,11 @@ import {
   calculateArticle317Stamp,
 } from '../../../utils/legalRules';
 import { CashClosureModal } from '../../modals/CashClosureModal';
+import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
+import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 
 export const LegalTrustView: React.FC = () => {
-  const { language, activeLegalRole } = useAtriumStore();
+  const { language, activeLegalRole, isSyncing, networkMode, retryCloudSync } = useAtriumStore();
   const isAr = language === 'ar';
   const {
     matters,
@@ -346,6 +348,30 @@ export const LegalTrustView: React.FC = () => {
       },
     },
   ];
+
+  const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
+    isLoading: isSyncing || networkMode === 'force_skeleton',
+    hasCachedData: escrowAccounts.length > 0 || matters.length > 0,
+  });
+
+  if (showSkeleton && ((escrowAccounts.length === 0 && matters.length === 0) || networkMode === 'force_skeleton')) {
+    return (
+      <SkeletonCollectionScreen
+        kpiCount={3}
+        columns={[
+          { width: '2.5*', minWidth: '180px' },
+          { width: '1.5*', minWidth: '120px' },
+          { width: '1.5*', minWidth: '120px' },
+          { width: '1.2*', minWidth: '100px' },
+          { width: '100px', minWidth: '80px' },
+        ]}
+        viewMode="list"
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        onRetry={retryCloudSync || retry}
+      />
+    );
+  }
 
   // =========================================================================
   // RENDER WORKSPACE BASED ON OPERATIONAL ROLE

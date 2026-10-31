@@ -32,7 +32,7 @@ import { useTranslation } from '../../../utils/useTranslation';
 import { UniversalDataCollection } from '../../ui/collection/UniversalDataCollection';
 import { ActionButtonDef } from '../../ui/collection/CollectionListRow';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
-import { SkeletonKpiGrid } from '../../ui/skeleton/StructuralSkeletons';
+import { SkeletonPosRegister } from '../../ui/skeleton/StructuralSkeletons';
 import { OfflineRetryBanner } from '../../common/OfflineRetryBanner';
 
 interface CartItem {
@@ -205,6 +205,16 @@ export const MembershipShopView: React.FC = () => {
       },
     },
   ];
+
+  if (showSkeleton && (products.length === 0 || networkMode === 'force_skeleton')) {
+    return (
+      <SkeletonPosRegister
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        onRetry={retryCloudSync}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6">

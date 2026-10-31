@@ -30,9 +30,11 @@ import { LabelSelect } from '../../ui/LabelSelect';
 import { ContractorBoqItem } from '../../../types';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { PriceRevisionModal } from './PriceRevisionModal';
+import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
+import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 
 export const ContractorBoqView: React.FC = () => {
-  const { language, currentBusiness, currentBranch, currentUser } = useAtriumStore();
+  const { language, currentBusiness, currentBranch, currentUser, isSyncing, networkMode, retryCloudSync } = useAtriumStore();
   const isAr = language === 'ar';
   const { boqItems, projects, selectedProjectId, setSelectedProjectId, addBoqItem, updateBoqItem, deleteBoqItem } = useContractorData();
 
@@ -316,6 +318,30 @@ export const ContractorBoqView: React.FC = () => {
   ];
 
   const selectedProject = projects.find((p) => p.id === (filterProject !== 'all' ? filterProject : selectedProjectId)) || projects[0];
+
+  const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
+    isLoading: isSyncing || networkMode === 'force_skeleton',
+    hasCachedData: boqItems.length > 0,
+  });
+
+  if (showSkeleton && (boqItems.length === 0 || networkMode === 'force_skeleton')) {
+    return (
+      <SkeletonCollectionScreen
+        kpiCount={3}
+        columns={[
+          { width: '2.5*', minWidth: '180px' },
+          { width: '1.5*', minWidth: '120px' },
+          { width: '1.5*', minWidth: '120px' },
+          { width: '1.2*', minWidth: '100px' },
+          { width: '100px', minWidth: '80px' },
+        ]}
+        viewMode={viewMode}
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        onRetry={retryCloudSync || retry}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">

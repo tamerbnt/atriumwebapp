@@ -30,12 +30,14 @@ import { AtriumButton } from '../../ui/AtriumButton';
 import { Seek } from '../../ui/Seek';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
-import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { UniversalDataCollection } from '../../ui/collection/UniversalDataCollection';
 import { TransportManifestPrintModal } from './TransportManifestPrintModal';
 import { CourierDischargeModal } from './CourierDischargeModal';
+import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
+import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 
 export const LogisticsManifestsView: React.FC = () => {
-  const { language, currentBusiness, currentBranch, currentUser } = useAtriumStore();
+  const { language, currentBusiness, currentBranch, currentUser, isSyncing, networkMode, retryCloudSync } = useAtriumStore();
   const isAr = language === 'ar';
   const { manifests, shipments, addManifest, updateManifest, deleteManifest, addDischarge } = useLogisticsData();
 
@@ -328,7 +330,29 @@ export const LogisticsManifestsView: React.FC = () => {
         </span>
       ),
     },
-  ];
+  const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
+    isLoading: isSyncing || networkMode === 'force_skeleton',
+    hasCachedData: manifests.length > 0,
+  });
+
+  if (showSkeleton && (manifests.length === 0 || networkMode === 'force_skeleton')) {
+    return (
+      <SkeletonCollectionScreen
+        kpiCount={3}
+        columns={[
+          { width: '2.5*', minWidth: '180px' },
+          { width: '1.5*', minWidth: '120px' },
+          { width: '1.5*', minWidth: '120px' },
+          { width: '1.2*', minWidth: '100px' },
+          { width: '100px', minWidth: '80px' },
+        ]}
+        viewMode={viewMode}
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        onRetry={retryCloudSync || retry}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
