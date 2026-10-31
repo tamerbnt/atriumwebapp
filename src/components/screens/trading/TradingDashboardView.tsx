@@ -35,7 +35,7 @@ import { CommercialDocPrintModal } from './CommercialDocPrintModal';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { useTranslation } from '../../../utils/useTranslation';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
-import { SkeletonKpiGrid, SkeletonChart } from '../../ui/skeleton/StructuralSkeletons';
+import { SkeletonDashboardTrading } from '../../ui/skeleton/StructuralSkeletons';
 import { OfflineRetryBanner } from '../../common/OfflineRetryBanner';
 
 interface TradingDashboardViewProps {
@@ -208,15 +208,7 @@ export const TradingDashboardView: React.FC<TradingDashboardViewProps> = () => {
           lastSyncedAt={lastSyncedAt}
           onRetry={retryCloudSync}
         />
-        <SkeletonKpiGrid count={4} />
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-          <div className="lg:col-span-5 space-y-4">
-            <div className="p-5 rounded-[24px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 h-64 animate-pulse" />
-          </div>
-          <div className="lg:col-span-7 space-y-4">
-            <SkeletonChart height={280} />
-          </div>
-        </div>
+        <SkeletonDashboardTrading />
       </div>
     );
   }

@@ -25,7 +25,7 @@ import { MedicalConsultationModal } from './MedicalConsultationModal';
 import { MedicalWaitingRoomTvModal } from './MedicalWaitingRoomTvModal';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { OfflineRetryBanner } from '../../common/OfflineRetryBanner';
-import { SkeletonKpiGrid } from '../../ui/skeleton/StructuralSkeletons';
+import { SkeletonDashboardMedical } from '../../ui/skeleton/StructuralSkeletons';
 
 export const MedicalDashboardView: React.FC = () => {
   const {
@@ -65,20 +65,12 @@ export const MedicalDashboardView: React.FC = () => {
 
   if (showSkeleton && (patients.length === 0 || networkMode === 'force_skeleton')) {
     return (
-      <div className="space-y-6 animate-in fade-in duration-200">
-        <OfflineRetryBanner
-          isOffline={isOffline}
-          isTimedOut={isTimedOut}
-          lastSyncedAt={lastSyncedAt}
-          onRetry={retryCloudSync}
-        />
-        <SkeletonKpiGrid count={4} />
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="p-5 rounded-2xl bg-white dark:bg-[#18181B] border border-zinc-200 dark:border-zinc-800 h-64 animate-pulse" />
-          ))}
-        </div>
-      </div>
+      <SkeletonDashboardMedical
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        lastSyncedAt={lastSyncedAt}
+        onRetry={retryCloudSync}
+      />
     );
   }
 

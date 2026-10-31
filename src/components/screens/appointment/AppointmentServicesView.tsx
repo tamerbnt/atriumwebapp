@@ -33,6 +33,8 @@ import { LabelSelect } from '../../ui/LabelSelect';
 import { formatMoney } from '../../../utils/rules';
 import { AppointmentModal } from '../../modals/AppointmentModal';
 import { ConfirmDialog } from '../../ui/ConfirmDialog';
+import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
+import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 
 export const AppointmentServicesView: React.FC = () => {
   const {
@@ -395,6 +397,34 @@ export const AppointmentServicesView: React.FC = () => {
       ),
     },
   ];
+
+  const { showSkeleton, isTimedOut, isOffline } = useSkeletonLoading({
+    isLoading: isSyncing || networkMode === 'force_skeleton',
+    hasCachedData: servicesCatalog.length > 0,
+  });
+
+  if (showSkeleton && (servicesCatalog.length === 0 || networkMode === 'force_skeleton')) {
+    return (
+      <SkeletonCollectionScreen
+        kpiCount={3}
+        columns={[
+          { width: '2.5*', minWidth: '220px' },
+          { width: '1.4*', minWidth: '120px' },
+          { width: '1.4*', minWidth: '120px' },
+          { width: '1.4*', minWidth: '130px' },
+          { width: '1.4*', minWidth: '110px' },
+          { width: '1*', minWidth: '70px' },
+        ]}
+        hasIcon
+        hasFacility
+        hasActionBtn
+        actionBtnWidth={140}
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        onRetry={retryCloudSync}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6">

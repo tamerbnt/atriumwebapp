@@ -19,7 +19,7 @@ import { RealEstatePropertyModal } from './RealEstatePropertyModal';
 import { RealEstateLeaseModal } from './RealEstateLeaseModal';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { OfflineRetryBanner } from '../../common/OfflineRetryBanner';
-import { SkeletonKpiGrid } from '../../ui/skeleton/StructuralSkeletons';
+import { SkeletonDashboardRealEstate } from '../../ui/skeleton/StructuralSkeletons';
 
 export const RealEstateDashboardView: React.FC = () => {
   const {
@@ -52,20 +52,12 @@ export const RealEstateDashboardView: React.FC = () => {
 
   if (showSkeleton && (properties.length === 0 || networkMode === 'force_skeleton')) {
     return (
-      <div className="space-y-6 animate-in fade-in duration-200">
-        <OfflineRetryBanner
-          isOffline={isOffline}
-          isTimedOut={isTimedOut}
-          lastSyncedAt={lastSyncedAt}
-          onRetry={retryCloudSync}
-        />
-        <SkeletonKpiGrid count={4} />
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="p-4 rounded-xl bg-white dark:bg-[#18181B] border border-zinc-200 dark:border-zinc-800 h-32 animate-pulse" />
-          ))}
-        </div>
-      </div>
+      <SkeletonDashboardRealEstate
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        lastSyncedAt={lastSyncedAt}
+        onRetry={retryCloudSync}
+      />
     );
   }
 

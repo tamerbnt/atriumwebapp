@@ -35,6 +35,8 @@ import { LabelSelect } from '../../ui/LabelSelect';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { useTranslation } from '../../../utils/useTranslation';
+import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
+import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 
 export const FreelanceClientsView: React.FC = () => {
   const { t, language, isRtl } = useTranslation();
@@ -57,6 +59,11 @@ export const FreelanceClientsView: React.FC = () => {
     switchBranch,
     setScreen,
     showToast,
+    isSyncing,
+    networkMode,
+    retryCloudSync,
+    lastSyncedAt,
+    isSyncTimeout,
   } = useAtriumStore();
 
   const currentBranch = branches.find((b) => b.id === currentBranchId);
@@ -449,6 +456,34 @@ export const FreelanceClientsView: React.FC = () => {
       });
     }
   };
+
+  const { showSkeleton, isTimedOut, isOffline } = useSkeletonLoading({
+    isLoading: isSyncing || networkMode === 'force_skeleton',
+    hasCachedData: (freelanceClients || []).length > 0,
+  });
+
+  if (showSkeleton && ((freelanceClients || []).length === 0 || networkMode === 'force_skeleton')) {
+    return (
+      <SkeletonCollectionScreen
+        kpiCount={3}
+        columns={[
+          { width: '2.5*', minWidth: '220px' },
+          { width: '1.5*', minWidth: '130px' },
+          { width: '1.2*', minWidth: '100px' },
+          { width: '1.4*', minWidth: '120px' },
+          { width: '1.4*', minWidth: '120px' },
+          { width: '1.2*', minWidth: '100px' },
+        ]}
+        hasIcon
+        hasFacility
+        hasActionBtn
+        actionBtnWidth={130}
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        onRetry={retryCloudSync}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">

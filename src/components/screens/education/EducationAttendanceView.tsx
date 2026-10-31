@@ -29,6 +29,8 @@ import { FilterSelect } from '../../ui/FilterSelect';
 import { useTranslation } from '../../../utils/useTranslation';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { EduStudent, AttendanceStatus } from '../../../types';
+import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
+import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 
 type ModeKey = 'attendance' | 'gradebook';
 
@@ -53,6 +55,11 @@ export const EducationAttendanceView: React.FC = () => {
     batchRecordAttendance,
     resetEduMockData,
     showToast,
+    isSyncing,
+    networkMode,
+    retryCloudSync,
+    lastSyncedAt,
+    isSyncTimeout,
   } = useAtriumStore();
 
   // Auto-healing
@@ -476,6 +483,33 @@ export const EducationAttendanceView: React.FC = () => {
       </div>
     );
   };
+
+  const { showSkeleton, isTimedOut, isOffline } = useSkeletonLoading({
+    isLoading: isSyncing || networkMode === 'force_skeleton',
+    hasCachedData: (cohortStudents || []).length > 0 || (eduCohorts || []).length > 0,
+  });
+
+  if (showSkeleton && ((cohortStudents || []).length === 0 || networkMode === 'force_skeleton')) {
+    return (
+      <SkeletonCollectionScreen
+        kpiCount={3}
+        columns={[
+          { width: '2.5*', minWidth: '200px' },
+          { width: '1.5*', minWidth: '130px' },
+          { width: '1.2*', minWidth: '100px' },
+          { width: '2*', minWidth: '160px' },
+          { width: '1.2*', minWidth: '100px' },
+        ]}
+        hasIcon
+        hasFacility
+        hasActionBtn
+        actionBtnWidth={130}
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        onRetry={retryCloudSync}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">

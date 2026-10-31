@@ -7,7 +7,7 @@ import { AtriumButton } from '../../ui/AtriumButton';
 import { AgricultureParcelModal } from './AgricultureParcelModal';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { OfflineRetryBanner } from '../../common/OfflineRetryBanner';
-import { SkeletonKpiGrid } from '../../ui/skeleton/StructuralSkeletons';
+import { SkeletonDashboardAgriculture } from '../../ui/skeleton/StructuralSkeletons';
 
 export const AgricultureDashboardView: React.FC = () => {
   const {
@@ -48,12 +48,7 @@ export const AgricultureDashboardView: React.FC = () => {
           lastSyncedAt={lastSyncedAt}
           onRetry={retryCloudSync}
         />
-        <SkeletonKpiGrid count={4} />
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="p-5 rounded-2xl bg-white dark:bg-[#18181B] border border-zinc-200 dark:border-zinc-800 h-64 animate-pulse" />
-          ))}
-        </div>
+        <SkeletonDashboardAgriculture />
       </div>
     );
   }

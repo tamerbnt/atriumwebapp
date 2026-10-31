@@ -900,53 +900,91 @@ export const SkeletonFinanceAudit: React.FC<SkeletonFinanceAuditProps> = ({
 };
 
 // ==========================================
-// 14. Universal Full-Screen Collection Skeleton
+// 14. Universal Full-Screen Collection Skeleton (Header + 3-Card Pod Tray + Table/Grid)
 // ==========================================
 export interface SkeletonCollectionScreenProps {
   kpiCount?: number;
+  kpiLayout?: string;
   columns?: SkeletonColumnDef[];
   viewMode?: 'list' | 'grid';
+  hasIcon?: boolean;
+  hasViewToggle?: boolean;
+  hasFacility?: boolean;
+  hasActionBtn?: boolean;
+  actionBtnWidth?: number;
   isOffline?: boolean;
   isTimedOut?: boolean;
+  lastSyncedAt?: string | null;
   onRetry?: () => Promise<void> | void;
 }
 
 export const SkeletonCollectionScreen: React.FC<SkeletonCollectionScreenProps> = ({
   kpiCount = 3,
-  columns,
+  kpiLayout,
+  columns = [
+    { width: '2.5*', minWidth: '180px' },
+    { width: '1.8*', minWidth: '140px' },
+    { width: '1.5*', minWidth: '120px' },
+    { width: '1.2*', minWidth: '100px' },
+    { width: '100px' },
+  ],
   viewMode = 'list',
+  hasIcon = true,
+  hasViewToggle = true,
+  hasFacility = true,
+  hasActionBtn = true,
+  actionBtnWidth = 150,
   isOffline,
   isTimedOut,
+  lastSyncedAt,
   onRetry,
 }) => {
+  const gridColsClass = kpiLayout || (kpiCount === 4 ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4' : 'grid-cols-1 md:grid-cols-3');
+
   return (
     <div className="space-y-6 animate-in fade-in duration-200" role="status" aria-label="Loading collection view">
-      <OfflineRetryBanner isOffline={isOffline} isTimedOut={isTimedOut} onRetry={onRetry} />
-      <SkeletonPageHeader hasViewToggle hasFacility hasActionBtn />
+      <OfflineRetryBanner isOffline={isOffline} isTimedOut={isTimedOut} lastSyncedAt={lastSyncedAt} onRetry={onRetry} />
+      
+      {/* 1. Full Page Header Skeleton */}
+      <SkeletonPageHeader
+        hasIcon={hasIcon}
+        hasViewToggle={hasViewToggle}
+        hasFacility={hasFacility}
+        hasActionBtn={hasActionBtn}
+        actionBtnWidth={actionBtnWidth}
+      />
 
+      {/* 2. Top Metric Pod Tray (#F8F9FA, CornerRadius 24px) with 3 Cards */}
       {kpiCount > 0 && (
         <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
           <div className="space-y-1">
-            <SkeletonText size="sm" width="200px" />
-            <SkeletonText size="xs" width="280px" />
+            <SkeletonText size="sm" width="220px" />
+            <SkeletonText size="xs" width="320px" />
           </div>
-          <div className={`grid grid-cols-1 sm:grid-cols-${kpiCount} gap-4`}>
+          <div className={`grid ${gridColsClass} gap-4`}>
             {Array.from({ length: kpiCount }).map((_, i) => (
               <div
                 key={`coll_kpi_${i}`}
-                className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[115px]"
+                className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]"
               >
                 <div className="flex items-center justify-between">
-                  <SkeletonText size="xs" width="100px" />
-                  <SkeletonCircle size={22} />
+                  <SkeletonText size="xs" width="120px" />
+                  <SkeletonBox width={65} height={18} rounded="rounded-md" />
                 </div>
-                <SkeletonText size="2xl" width="60px" />
+                <div>
+                  <SkeletonText size="2xl" width="80px" />
+                  <div className="flex items-center gap-1.5 mt-1">
+                    <SkeletonCircle size={14} />
+                    <SkeletonText size="xs" width="130px" />
+                  </div>
+                </div>
               </div>
             ))}
           </div>
         </div>
       )}
 
+      {/* 3. Collection Body: List Table or Card Grid */}
       {viewMode === 'list' ? (
         <SkeletonTable columns={columns} rowCount={6} showHeaderControls={true} />
       ) : (
@@ -955,4 +993,1053 @@ export const SkeletonCollectionScreen: React.FC<SkeletonCollectionScreenProps> =
     </div>
   );
 };
+
+// ==========================================
+// 15. Dedicated Salon & Beauty Dashboard Skeleton (AppointmentDashboardView)
+// ==========================================
+export const SkeletonDashboardSalon: React.FC<{
+  isOffline?: boolean;
+  isTimedOut?: boolean;
+  lastSyncedAt?: string | null;
+  onRetry?: () => Promise<void> | void;
+}> = ({ isOffline, isTimedOut, lastSyncedAt, onRetry }) => {
+  return (
+    <div className="space-y-6 animate-in fade-in duration-200" role="status" aria-label="Loading salon dashboard">
+      <OfflineRetryBanner isOffline={isOffline} isTimedOut={isTimedOut} lastSyncedAt={lastSyncedAt} onRetry={onRetry} />
+      <SkeletonPageHeader hasFacility hasActionBtn actionBtnWidth={140} />
+
+      {/* 6-Chair Workstations Grid */}
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="space-y-1">
+            <SkeletonText size="sm" width="220px" />
+            <SkeletonText size="xs" width="320px" />
+          </div>
+          <SkeletonBox width={100} height={32} rounded="rounded-xl" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div
+              key={`chair_skel_${i}`}
+              className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[155px]"
+            >
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-2.5">
+                  <SkeletonCircle size={36} />
+                  <div className="space-y-1">
+                    <SkeletonText size="sm" width="130px" />
+                    <SkeletonText size="xs" width="90px" />
+                  </div>
+                </div>
+                <SkeletonBox width={60} height={20} rounded="rounded-full" />
+              </div>
+              <div className="p-2.5 rounded-xl bg-[#F8F9FA] dark:bg-neutral-700/40 flex items-center justify-between">
+                <SkeletonText size="xs" width="110px" />
+                <SkeletonBox width={70} height={26} rounded="rounded-lg" className="!bg-[#C4785A]/25" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 3 KPI Pods + Tips Carousel */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div
+              key={`salon_kpi_${i}`}
+              className="p-5 rounded-[22px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 shadow-2xs flex flex-col justify-between h-[124px]"
+            >
+              <div className="flex items-center justify-between">
+                <SkeletonText size="xs" width="60%" />
+                <SkeletonCircle size={24} />
+              </div>
+              <div className="space-y-1">
+                <SkeletonText size="xl" width="55%" />
+                <SkeletonText size="xs" width="70%" />
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="p-6 rounded-[24px] bg-[#F8F9FA] dark:bg-neutral-800/40 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs flex flex-col justify-between min-h-[124px]">
+          <div className="space-y-1.5">
+            <SkeletonText size="sm" width="140px" />
+            <SkeletonText size="xs" width="220px" />
+          </div>
+          <div className="flex items-center justify-between pt-2 border-t border-[#EDF1F3] dark:border-neutral-700/60">
+            <SkeletonBox width={100} height={28} rounded="rounded-xl" />
+            <div className="flex gap-1.5">
+              <SkeletonCircle size={24} />
+              <SkeletonCircle size={24} />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Live Activity Feed */}
+      <div className="p-6 rounded-[26px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 shadow-xs space-y-4">
+        <div className="flex items-center justify-between">
+          <SkeletonText size="base" width="180px" />
+          <div className="flex gap-2">
+            <SkeletonBox width={70} height={32} rounded="rounded-xl" />
+            <SkeletonBox width={70} height={32} rounded="rounded-xl" />
+            <SkeletonBox width={70} height={32} rounded="rounded-xl" />
+          </div>
+        </div>
+        <div className="divide-y divide-[#EDF1F3] dark:divide-neutral-800/80">
+          {Array.from({ length: 4 }).map((_, idx) => (
+            <div key={`salon_feed_${idx}`} className="py-3.5 flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <SkeletonCircle size={36} />
+                <div className="space-y-1">
+                  <SkeletonText size="sm" width="140px" />
+                  <SkeletonText size="xs" width="180px" />
+                </div>
+              </div>
+              <SkeletonBox width={80} height={24} rounded="rounded-full" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ==========================================
+// 16. Dedicated POS & Retail Dashboard Skeleton (PosDashboardView)
+// ==========================================
+export const SkeletonDashboardPos: React.FC<{
+  isOffline?: boolean;
+  isTimedOut?: boolean;
+  lastSyncedAt?: string | null;
+  onRetry?: () => Promise<void> | void;
+}> = ({ isOffline, isTimedOut, lastSyncedAt, onRetry }) => {
+  return (
+    <div className="space-y-6 animate-in fade-in duration-200" role="status" aria-label="Loading POS dashboard">
+      <OfflineRetryBanner isOffline={isOffline} isTimedOut={isTimedOut} lastSyncedAt={lastSyncedAt} onRetry={onRetry} />
+      
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="space-y-1">
+          <SkeletonText size="xl" width="220px" />
+          <SkeletonText size="xs" width="300px" />
+        </div>
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <SkeletonBox width={140} height={40} rounded="rounded-xl" />
+          <SkeletonBox width={130} height={40} rounded="rounded-xl" />
+          <SkeletonBox width={140} height={40} rounded="rounded-xl" className="!bg-[#C4785A]/25" />
+        </div>
+      </div>
+
+      {/* Top Split: Dark Espresso Hero Pod (Left) + 3 KPI Cards & Carousel (Right) */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left Dark Espresso Pod */}
+        <div className="lg:col-span-1 p-6 rounded-[28px] bg-[#18181B] dark:bg-[#121214] border border-neutral-800 shadow-lg flex flex-col justify-between min-h-[320px]">
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <SkeletonText size="xs" width="130px" />
+              <SkeletonBox width={70} height={22} rounded="rounded-full" />
+            </div>
+            <div className="py-4 space-y-2">
+              <SkeletonText size="3xl" width="180px" />
+              <SkeletonText size="xs" width="140px" />
+            </div>
+          </div>
+          <div className="pt-4 border-t border-neutral-800 grid grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <SkeletonText size="xs" width="70px" />
+              <SkeletonText size="lg" width="60px" />
+            </div>
+            <div className="space-y-1">
+              <SkeletonText size="xs" width="80px" />
+              <SkeletonText size="lg" width="70px" />
+            </div>
+          </div>
+        </div>
+
+        {/* Right 3 KPI Pods + Tips */}
+        <div className="lg:col-span-2 flex flex-col justify-between space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div
+                key={`pos_top_kpi_${i}`}
+                className="p-5 rounded-[22px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 shadow-2xs flex flex-col justify-between h-[120px]"
+              >
+                <div className="flex items-center justify-between">
+                  <SkeletonText size="xs" width="60%" />
+                  <SkeletonCircle size={24} />
+                </div>
+                <div className="space-y-1">
+                  <SkeletonText size="xl" width="50%" />
+                  <SkeletonText size="xs" width="70%" />
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="p-6 rounded-[24px] bg-[#F8F9FA] dark:bg-neutral-800/40 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs flex flex-col justify-between min-h-[160px]">
+            <div className="space-y-1.5">
+              <SkeletonText size="sm" width="150px" />
+              <SkeletonText size="xs" width="340px" />
+            </div>
+            <div className="flex items-center justify-between pt-3 border-t border-[#EDF1F3] dark:border-neutral-700/60">
+              <SkeletonBox width={120} height={32} rounded="rounded-xl" />
+              <div className="flex gap-1.5">
+                <SkeletonCircle size={28} />
+                <SkeletonCircle size={28} />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Middle Row: Hourly Sales Velocity Chart + Top Selling Products Pod */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="lg:col-span-7">
+          <SkeletonChart height={280} />
+        </div>
+        <div className="lg:col-span-5 p-6 rounded-[24px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 shadow-xs space-y-3">
+          <SkeletonText size="base" width="160px" />
+          <div className="space-y-3 pt-2">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={`top_prod_${i}`} className="flex items-center justify-between py-2 border-b border-[#EDF1F3] dark:border-neutral-800">
+                <div className="space-y-1">
+                  <SkeletonText size="sm" width="120px" />
+                  <SkeletonText size="xs" width="80px" />
+                </div>
+                <SkeletonText size="sm" width="60px" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom Row: Recent Sales Transactions Ledger */}
+      <div className="p-6 rounded-[26px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 shadow-xs space-y-4">
+        <div className="flex items-center justify-between">
+          <SkeletonText size="base" width="180px" />
+          <div className="flex gap-2">
+            <SkeletonBox width={80} height={32} rounded="rounded-xl" />
+            <SkeletonBox width={80} height={32} rounded="rounded-xl" />
+          </div>
+        </div>
+        <SkeletonTable
+          columns={[
+            { width: '1.5*', minWidth: '100px' },
+            { width: '2*', minWidth: '140px' },
+            { width: '2*', minWidth: '140px' },
+            { width: '1.2*', minWidth: '90px' },
+            { width: '1.2*', minWidth: '90px' },
+          ]}
+          rowCount={4}
+          showHeaderControls={false}
+        />
+      </div>
+    </div>
+  );
+};
+
+// ==========================================
+// 17. Dedicated Education & Academy Dashboard Skeleton (EducationDashboardView)
+// ==========================================
+export const SkeletonDashboardEducation: React.FC<{
+  isOffline?: boolean;
+  isTimedOut?: boolean;
+  lastSyncedAt?: string | null;
+  onRetry?: () => Promise<void> | void;
+}> = ({ isOffline, isTimedOut, lastSyncedAt, onRetry }) => {
+  return (
+    <div className="space-y-6 animate-in fade-in duration-200" role="status" aria-label="Loading education dashboard">
+      <OfflineRetryBanner isOffline={isOffline} isTimedOut={isTimedOut} lastSyncedAt={lastSyncedAt} onRetry={onRetry} />
+      <SkeletonPageHeader hasFacility hasActionBtn actionBtnWidth={160} />
+
+      {/* Top Split: Attendance Hero Pod (Left) + 3 KPI Pods & Carousel (Right) */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-1 p-6 rounded-[28px] bg-[#18181B] dark:bg-[#121214] border border-neutral-800 shadow-lg flex flex-col justify-between min-h-[320px]">
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <SkeletonText size="xs" width="120px" />
+              <SkeletonBox width={65} height={20} rounded="rounded-full" />
+            </div>
+            <div className="flex flex-col items-center justify-center py-4">
+              <SkeletonCircle size={90} />
+              <div className="mt-2 text-center space-y-1">
+                <SkeletonText size="2xl" width="60px" />
+                <SkeletonText size="xs" width="80px" />
+              </div>
+            </div>
+          </div>
+          <div className="pt-3 border-t border-neutral-800 flex items-center justify-between">
+            <SkeletonText size="xs" width="90px" />
+            <SkeletonBox width={100} height={32} rounded="rounded-xl" className="!bg-[#C4785A]/30" />
+          </div>
+        </div>
+
+        <div className="lg:col-span-2 flex flex-col justify-between space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div
+                key={`edu_kpi_${i}`}
+                className="p-5 rounded-[22px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 shadow-2xs flex flex-col justify-between h-[120px]"
+              >
+                <div className="flex items-center justify-between">
+                  <SkeletonText size="xs" width="60%" />
+                  <SkeletonCircle size={24} />
+                </div>
+                <div className="space-y-1">
+                  <SkeletonText size="xl" width="50%" />
+                  <SkeletonText size="xs" width="70%" />
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="p-6 rounded-[24px] bg-[#F8F9FA] dark:bg-neutral-800/40 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs flex flex-col justify-between min-h-[160px]">
+            <div className="space-y-1.5">
+              <SkeletonText size="sm" width="140px" />
+              <SkeletonText size="xs" width="320px" />
+            </div>
+            <div className="flex items-center justify-between pt-3 border-t border-[#EDF1F3] dark:border-neutral-700/60">
+              <SkeletonBox width={110} height={32} rounded="rounded-xl" />
+              <div className="flex gap-1.5">
+                <SkeletonCircle size={28} />
+                <SkeletonCircle size={28} />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Middle Row: Class Hourly Attendance Histogram */}
+      <SkeletonChart height={280} />
+
+      {/* Bottom Feed: Admissions & Roll-Call Logs */}
+      <div className="p-6 rounded-[26px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 shadow-xs space-y-4">
+        <SkeletonText size="base" width="180px" />
+        <div className="divide-y divide-[#EDF1F3] dark:divide-neutral-800/80">
+          {Array.from({ length: 4 }).map((_, idx) => (
+            <div key={`edu_feed_${idx}`} className="py-3 flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <SkeletonCircle size={32} />
+                <div className="space-y-1">
+                  <SkeletonText size="sm" width="130px" />
+                  <SkeletonText size="xs" width="190px" />
+                </div>
+              </div>
+              <SkeletonBox width={70} height={22} rounded="rounded-full" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ==========================================
+// 18. Dedicated Medical & Clinic Dashboard Skeleton (MedicalDashboardView)
+// ==========================================
+export const SkeletonDashboardMedical: React.FC<{
+  isOffline?: boolean;
+  isTimedOut?: boolean;
+  lastSyncedAt?: string | null;
+  onRetry?: () => Promise<void> | void;
+}> = ({ isOffline, isTimedOut, lastSyncedAt, onRetry }) => {
+  return (
+    <div className="space-y-6 animate-in fade-in duration-200" role="status" aria-label="Loading medical dashboard">
+      <OfflineRetryBanner isOffline={isOffline} isTimedOut={isTimedOut} lastSyncedAt={lastSyncedAt} onRetry={onRetry} />
+      <SkeletonPageHeader hasFacility hasActionBtn actionBtnWidth={150} />
+
+      {/* 3 Clinical KPI Pods */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div
+            key={`med_kpi_${i}`}
+            className="p-5 rounded-[22px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 shadow-2xs flex flex-col justify-between h-[120px]"
+          >
+            <div className="flex items-center justify-between">
+              <SkeletonText size="xs" width="55%" />
+              <SkeletonCircle size={24} />
+            </div>
+            <div className="space-y-1">
+              <SkeletonText size="2xl" width="50%" />
+              <SkeletonText size="xs" width="70%" />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Doctor Agenda Slot Matrix & Queue Triage Radar */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="lg:col-span-8 p-6 rounded-[26px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 shadow-xs space-y-4">
+          <div className="flex items-center justify-between">
+            <SkeletonText size="base" width="160px" />
+            <SkeletonBox width={90} height={28} rounded="rounded-lg" />
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={`slot_${i}`} className="p-3.5 rounded-xl bg-[#F8F9FA] dark:bg-neutral-800/60 border border-[#EDF1F3] dark:border-neutral-700/60 space-y-2">
+                <SkeletonText size="xs" width="50px" />
+                <SkeletonText size="sm" width="90%" />
+                <SkeletonBox width={60} height={18} rounded="rounded-full" />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="lg:col-span-4 p-6 rounded-[26px] bg-[#F8F9FA] dark:bg-neutral-800/40 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-xs space-y-4">
+          <SkeletonText size="base" width="140px" />
+          <div className="space-y-3">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={`queue_${i}`} className="p-3 rounded-xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex items-center justify-between">
+                <div className="space-y-1">
+                  <SkeletonText size="sm" width="100px" />
+                  <SkeletonText size="xs" width="70px" />
+                </div>
+                <SkeletonCircle size={28} />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ==========================================
+// 19. Dedicated Auto Garage Dashboard Skeleton (AutoGarageDashboardView)
+// ==========================================
+export const SkeletonDashboardGarage: React.FC<{
+  isOffline?: boolean;
+  isTimedOut?: boolean;
+  lastSyncedAt?: string | null;
+  onRetry?: () => Promise<void> | void;
+}> = ({ isOffline, isTimedOut, lastSyncedAt, onRetry }) => {
+  return (
+    <div className="space-y-6 animate-in fade-in duration-200" role="status" aria-label="Loading garage dashboard">
+      <OfflineRetryBanner isOffline={isOffline} isTimedOut={isTimedOut} lastSyncedAt={lastSyncedAt} onRetry={onRetry} />
+      <SkeletonPageHeader hasFacility hasActionBtn actionBtnWidth={150} />
+
+      {/* 3 Garage KPI Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div
+            key={`gar_kpi_${i}`}
+            className="p-5 rounded-[22px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 shadow-2xs flex flex-col justify-between h-[120px]"
+          >
+            <div className="flex items-center justify-between">
+              <SkeletonText size="xs" width="60%" />
+              <SkeletonCircle size={24} />
+            </div>
+            <div className="space-y-1">
+              <SkeletonText size="2xl" width="50%" />
+              <SkeletonText size="xs" width="65%" />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Workshop Bays in Repair Matrix */}
+      <div className="p-6 rounded-[26px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 shadow-xs space-y-4">
+        <div className="flex items-center justify-between">
+          <SkeletonText size="base" width="180px" />
+          <SkeletonBox width={90} height={28} rounded="rounded-lg" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={`bay_${i}`} className="p-4 rounded-xl bg-[#F8F9FA] dark:bg-neutral-800/60 border border-[#EDF1F3] dark:border-neutral-700/60 space-y-3">
+              <div className="flex justify-between items-center">
+                <SkeletonText size="xs" width="60px" />
+                <SkeletonBox width={50} height={18} rounded="rounded-full" />
+              </div>
+              <SkeletonText size="sm" width="90%" />
+              <SkeletonText size="xs" width="70%" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ==========================================
+// 20. Dedicated Real Estate Dashboard Skeleton (RealEstateDashboardView)
+// ==========================================
+export const SkeletonDashboardRealEstate: React.FC<{
+  isOffline?: boolean;
+  isTimedOut?: boolean;
+  lastSyncedAt?: string | null;
+  onRetry?: () => Promise<void> | void;
+}> = ({ isOffline, isTimedOut, lastSyncedAt, onRetry }) => {
+  return (
+    <div className="space-y-6 animate-in fade-in duration-200" role="status" aria-label="Loading real estate dashboard">
+      <OfflineRetryBanner isOffline={isOffline} isTimedOut={isTimedOut} lastSyncedAt={lastSyncedAt} onRetry={onRetry} />
+      <SkeletonPageHeader hasFacility hasActionBtn actionBtnWidth={150} />
+
+      {/* 3 Real Estate KPI Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div
+            key={`re_kpi_${i}`}
+            className="p-5 rounded-[22px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 shadow-2xs flex flex-col justify-between h-[120px]"
+          >
+            <div className="flex items-center justify-between">
+              <SkeletonText size="xs" width="60%" />
+              <SkeletonCircle size={24} />
+            </div>
+            <div className="space-y-1">
+              <SkeletonText size="2xl" width="55%" />
+              <SkeletonText size="xs" width="70%" />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Mandate & Leases Split */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="lg:col-span-7">
+          <SkeletonChart height={280} />
+        </div>
+        <div className="lg:col-span-5 p-6 rounded-[24px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 shadow-xs space-y-4">
+          <SkeletonText size="base" width="160px" />
+          <div className="space-y-3">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={`re_card_${i}`} className="p-3.5 rounded-xl bg-[#F8F9FA] dark:bg-neutral-800/60 border border-[#EDF1F3] dark:border-neutral-700/60 space-y-2">
+                <SkeletonText size="sm" width="85%" />
+                <div className="flex justify-between items-center">
+                  <SkeletonText size="xs" width="60px" />
+                  <SkeletonText size="xs" width="80px" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ==========================================
+// 21. Dedicated Manufacturing Dashboard Skeleton (ManufacturingDashboardView)
+// ==========================================
+export const SkeletonDashboardManufacturing: React.FC<{
+  isOffline?: boolean;
+  isTimedOut?: boolean;
+  lastSyncedAt?: string | null;
+  onRetry?: () => Promise<void> | void;
+}> = ({ isOffline, isTimedOut, lastSyncedAt, onRetry }) => {
+  return (
+    <div className="space-y-6 animate-in fade-in duration-200" role="status" aria-label="Loading manufacturing dashboard">
+      <OfflineRetryBanner isOffline={isOffline} isTimedOut={isTimedOut} lastSyncedAt={lastSyncedAt} onRetry={onRetry} />
+      <SkeletonPageHeader hasFacility hasActionBtn actionBtnWidth={150} />
+
+      {/* 3 Manufacturing KPI Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div
+            key={`mfg_kpi_${i}`}
+            className="p-5 rounded-[22px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 shadow-2xs flex flex-col justify-between h-[120px]"
+          >
+            <div className="flex items-center justify-between">
+              <SkeletonText size="xs" width="60%" />
+              <SkeletonCircle size={24} />
+            </div>
+            <div className="space-y-1">
+              <SkeletonText size="2xl" width="50%" />
+              <SkeletonText size="xs" width="70%" />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Machine Workstations Touch Grid */}
+      <div className="p-6 rounded-[26px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 shadow-xs space-y-4">
+        <SkeletonText size="base" width="180px" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={`mach_${i}`} className="p-4 rounded-xl bg-[#F8F9FA] dark:bg-neutral-800/60 border border-[#EDF1F3] dark:border-neutral-700/60 space-y-2">
+              <div className="flex justify-between items-center">
+                <SkeletonText size="xs" width="50px" />
+                <SkeletonBox width={50} height={18} rounded="rounded-full" />
+              </div>
+              <SkeletonText size="sm" width="80%" />
+              <SkeletonBox height={8} className="w-full mt-2" rounded="rounded-full" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ==========================================
+// 22. Dedicated Legal & Notary Dashboard Skeleton (LegalDashboardView)
+// ==========================================
+export const SkeletonDashboardLegal: React.FC<{
+  isOffline?: boolean;
+  isTimedOut?: boolean;
+  lastSyncedAt?: string | null;
+  onRetry?: () => Promise<void> | void;
+}> = ({ isOffline, isTimedOut, lastSyncedAt, onRetry }) => {
+  return (
+    <div className="space-y-6 animate-in fade-in duration-200" role="status" aria-label="Loading legal dashboard">
+      <OfflineRetryBanner isOffline={isOffline} isTimedOut={isTimedOut} lastSyncedAt={lastSyncedAt} onRetry={onRetry} />
+      <SkeletonPageHeader hasFacility hasActionBtn actionBtnWidth={150} />
+
+      {/* 3 Legal KPI Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div
+            key={`leg_kpi_${i}`}
+            className="p-5 rounded-[22px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 shadow-2xs flex flex-col justify-between h-[120px]"
+          >
+            <div className="flex items-center justify-between">
+              <SkeletonText size="xs" width="60%" />
+              <SkeletonCircle size={24} />
+            </div>
+            <div className="space-y-1">
+              <SkeletonText size="2xl" width="50%" />
+              <SkeletonText size="xs" width="70%" />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Urgent CPCA Deadlines & Hearing Docket */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="lg:col-span-5 p-6 rounded-[26px] bg-[#F8F9FA] dark:bg-neutral-800/40 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-xs space-y-4">
+          <SkeletonText size="base" width="160px" />
+          <div className="space-y-3">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={`cpc_${i}`} className="p-3.5 rounded-xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 space-y-1.5">
+                <SkeletonText size="sm" width="90%" />
+                <SkeletonText size="xs" width="60%" />
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="lg:col-span-7">
+          <SkeletonTable
+            columns={[
+              { width: '2*', minWidth: '120px' },
+              { width: '1.5*', minWidth: '100px' },
+              { width: '1.2*', minWidth: '80px' },
+            ]}
+            rowCount={4}
+            showHeaderControls={false}
+          />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ==========================================
+// 23. Dedicated Logistics & Delivery Dashboard Skeleton (LogisticsDashboardView)
+// ==========================================
+export const SkeletonDashboardLogistics: React.FC<{
+  isOffline?: boolean;
+  isTimedOut?: boolean;
+  lastSyncedAt?: string | null;
+  onRetry?: () => Promise<void> | void;
+}> = ({ isOffline, isTimedOut, lastSyncedAt, onRetry }) => {
+  return (
+    <div className="space-y-6 animate-in fade-in duration-200" role="status" aria-label="Loading logistics dashboard">
+      <OfflineRetryBanner isOffline={isOffline} isTimedOut={isTimedOut} lastSyncedAt={lastSyncedAt} onRetry={onRetry} />
+      <SkeletonPageHeader hasFacility hasActionBtn actionBtnWidth={150} />
+
+      {/* 3 Logistics KPI Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div
+            key={`log_kpi_${i}`}
+            className="p-5 rounded-[22px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 shadow-2xs flex flex-col justify-between h-[120px]"
+          >
+            <div className="flex items-center justify-between">
+              <SkeletonText size="xs" width="60%" />
+              <SkeletonCircle size={24} />
+            </div>
+            <div className="space-y-1">
+              <SkeletonText size="2xl" width="50%" />
+              <SkeletonText size="xs" width="70%" />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Parcel Transit Radar & Manifest Feed */}
+      <div className="p-6 rounded-[26px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 shadow-xs space-y-4">
+        <SkeletonText size="base" width="180px" />
+        <SkeletonTable
+          columns={[
+            { width: '2*', minWidth: '130px' },
+            { width: '1.8*', minWidth: '120px' },
+            { width: '1.2*', minWidth: '90px' },
+            { width: '1.2*', minWidth: '90px' },
+          ]}
+          rowCount={4}
+          showHeaderControls={false}
+        />
+      </div>
+    </div>
+  );
+};
+
+// ==========================================
+// 24. Dedicated Contractor / BTP Dashboard Skeleton (ContractorDashboardView)
+// ==========================================
+export const SkeletonDashboardContractor: React.FC<{
+  isOffline?: boolean;
+  isTimedOut?: boolean;
+  lastSyncedAt?: string | null;
+  onRetry?: () => Promise<void> | void;
+}> = ({ isOffline, isTimedOut, lastSyncedAt, onRetry }) => {
+  return (
+    <div className="space-y-6 animate-in fade-in duration-200" role="status" aria-label="Loading contractor dashboard">
+      <OfflineRetryBanner isOffline={isOffline} isTimedOut={isTimedOut} lastSyncedAt={lastSyncedAt} onRetry={onRetry} />
+      <SkeletonPageHeader hasFacility hasActionBtn actionBtnWidth={150} />
+
+      {/* 3 BTP KPI Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div
+            key={`btp_kpi_${i}`}
+            className="p-5 rounded-[22px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 shadow-2xs flex flex-col justify-between h-[120px]"
+          >
+            <div className="flex items-center justify-between">
+              <SkeletonText size="xs" width="60%" />
+              <SkeletonCircle size={24} />
+            </div>
+            <div className="space-y-1">
+              <SkeletonText size="2xl" width="50%" />
+              <SkeletonText size="xs" width="70%" />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Chantier Physical Progress & Journal de Chantier */}
+      <div className="p-6 rounded-[26px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 shadow-xs space-y-4">
+        <SkeletonText size="base" width="180px" />
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={`site_skel_${i}`} className="p-4 rounded-xl bg-[#F8F9FA] dark:bg-neutral-800/60 border border-[#EDF1F3] dark:border-neutral-700/60 space-y-3">
+              <SkeletonText size="sm" width="85%" />
+              <SkeletonBox height={8} className="w-full" rounded="rounded-full" />
+              <div className="flex justify-between items-center text-xs">
+                <SkeletonText size="xs" width="60px" />
+                <SkeletonText size="xs" width="40px" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ==========================================
+// 25. Dedicated Agriculture Dashboard Skeleton (AgricultureDashboardView)
+// ==========================================
+export const SkeletonDashboardAgriculture: React.FC<{
+  isOffline?: boolean;
+  isTimedOut?: boolean;
+  lastSyncedAt?: string | null;
+  onRetry?: () => Promise<void> | void;
+}> = ({ isOffline, isTimedOut, lastSyncedAt, onRetry }) => {
+  return (
+    <div className="space-y-6 animate-in fade-in duration-200" role="status" aria-label="Loading agriculture dashboard">
+      <OfflineRetryBanner isOffline={isOffline} isTimedOut={isTimedOut} lastSyncedAt={lastSyncedAt} onRetry={onRetry} />
+      <SkeletonPageHeader hasFacility hasActionBtn actionBtnWidth={150} />
+
+      {/* 3 Farm KPI Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div
+            key={`agri_kpi_${i}`}
+            className="p-5 rounded-[22px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 shadow-2xs flex flex-col justify-between h-[120px]"
+          >
+            <div className="flex items-center justify-between">
+              <SkeletonText size="xs" width="60%" />
+              <SkeletonCircle size={24} />
+            </div>
+            <div className="space-y-1">
+              <SkeletonText size="2xl" width="50%" />
+              <SkeletonText size="xs" width="70%" />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Parcel Irrigation & Milk Yield Split */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="lg:col-span-7">
+          <SkeletonChart height={280} />
+        </div>
+        <div className="lg:col-span-5 p-6 rounded-[24px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 shadow-xs space-y-4">
+          <SkeletonText size="base" width="160px" />
+          <div className="space-y-3">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={`parcel_skel_${i}`} className="p-3.5 rounded-xl bg-[#F8F9FA] dark:bg-neutral-800/60 border border-[#EDF1F3] dark:border-neutral-700/60 space-y-2">
+                <SkeletonText size="sm" width="85%" />
+                <div className="flex justify-between items-center">
+                  <SkeletonText size="xs" width="70px" />
+                  <SkeletonBox width={50} height={18} rounded="rounded-full" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ==========================================
+// 26. Dedicated Freelance Dashboard Skeleton (FreelanceDashboardView)
+// ==========================================
+export const SkeletonDashboardFreelance: React.FC<{
+  isOffline?: boolean;
+  isTimedOut?: boolean;
+  lastSyncedAt?: string | null;
+  onRetry?: () => Promise<void> | void;
+}> = ({ isOffline, isTimedOut, lastSyncedAt, onRetry }) => {
+  return (
+    <div className="space-y-6 animate-in fade-in duration-200" role="status" aria-label="Loading freelance dashboard">
+      <OfflineRetryBanner isOffline={isOffline} isTimedOut={isTimedOut} lastSyncedAt={lastSyncedAt} onRetry={onRetry} />
+      <SkeletonPageHeader hasFacility hasActionBtn actionBtnWidth={140} />
+
+      {/* Top Split: Pomodoro Timer Pod + 3 KPI Pods */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-1 p-6 rounded-[28px] bg-[#18181B] dark:bg-[#121214] border border-neutral-800 shadow-lg flex flex-col justify-between min-h-[300px]">
+          <div className="space-y-3">
+            <SkeletonText size="xs" width="120px" />
+            <div className="text-center py-6 space-y-2">
+              <SkeletonText size="3xl" width="140px" />
+              <SkeletonText size="xs" width="90px" />
+            </div>
+          </div>
+          <SkeletonBox height={40} className="w-full !bg-[#C4785A]/30" rounded="rounded-xl" />
+        </div>
+
+        <div className="lg:col-span-2 space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div
+                key={`freelance_kpi_${i}`}
+                className="p-5 rounded-[22px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 shadow-2xs flex flex-col justify-between h-[120px]"
+              >
+                <div className="flex items-center justify-between">
+                  <SkeletonText size="xs" width="60%" />
+                  <SkeletonCircle size={24} />
+                </div>
+                <div className="space-y-1">
+                  <SkeletonText size="xl" width="50%" />
+                  <SkeletonText size="xs" width="70%" />
+                </div>
+              </div>
+            ))}
+          </div>
+          <SkeletonChart height={170} />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ==========================================
+// 27. Dedicated Venue Dashboard Skeleton (VenueDashboardView)
+// ==========================================
+export const SkeletonDashboardVenue: React.FC<{
+  isOffline?: boolean;
+  isTimedOut?: boolean;
+  lastSyncedAt?: string | null;
+  onRetry?: () => Promise<void> | void;
+}> = ({ isOffline, isTimedOut, lastSyncedAt, onRetry }) => {
+  return (
+    <div className="space-y-6 animate-in fade-in duration-200" role="status" aria-label="Loading venue dashboard">
+      <OfflineRetryBanner isOffline={isOffline} isTimedOut={isTimedOut} lastSyncedAt={lastSyncedAt} onRetry={onRetry} />
+      <SkeletonPageHeader hasFacility hasActionBtn actionBtnWidth={150} />
+
+      {/* 3 Rental KPI Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div
+            key={`venue_kpi_${i}`}
+            className="p-5 rounded-[22px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 shadow-2xs flex flex-col justify-between h-[120px]"
+          >
+            <div className="flex items-center justify-between">
+              <SkeletonText size="xs" width="60%" />
+              <SkeletonCircle size={24} />
+            </div>
+            <div className="space-y-1">
+              <SkeletonText size="2xl" width="50%" />
+              <SkeletonText size="xs" width="70%" />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Space Occupancy Gantt / Timeline Preview */}
+      <div className="p-6 rounded-[26px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 shadow-xs space-y-4">
+        <SkeletonText size="base" width="180px" />
+        <div className="space-y-3">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={`space_${i}`} className="flex items-center gap-3">
+              <SkeletonText size="xs" width="90px" />
+              <SkeletonBox height={28} className="flex-1" rounded="rounded-lg" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ==========================================
+// 28. Dedicated B2B Trading Dashboard Skeleton (TradingDashboardView)
+// ==========================================
+export const SkeletonDashboardTrading: React.FC<{
+  isOffline?: boolean;
+  isTimedOut?: boolean;
+  lastSyncedAt?: string | null;
+  onRetry?: () => Promise<void> | void;
+}> = ({ isOffline, isTimedOut, lastSyncedAt, onRetry }) => {
+  return (
+    <div className="space-y-6 animate-in fade-in duration-200" role="status" aria-label="Loading trading dashboard">
+      <OfflineRetryBanner isOffline={isOffline} isTimedOut={isTimedOut} lastSyncedAt={lastSyncedAt} onRetry={onRetry} />
+      <SkeletonPageHeader hasFacility hasActionBtn actionBtnWidth={150} />
+
+      {/* 4 Commercial Hub Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div
+            key={`trade_hub_${i}`}
+            className="p-5 rounded-[22px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 shadow-2xs space-y-3"
+          >
+            <div className="flex justify-between items-center">
+              <SkeletonCircle size={32} />
+              <SkeletonBox width={50} height={18} rounded="rounded-full" />
+            </div>
+            <SkeletonText size="base" width="80%" />
+            <SkeletonText size="xs" width="60%" />
+          </div>
+        ))}
+      </div>
+
+      {/* Recent Transactions & Stock Alerts */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="lg:col-span-7">
+          <SkeletonTable
+            columns={[
+              { width: '2*', minWidth: '130px' },
+              { width: '1.5*', minWidth: '100px' },
+              { width: '1.2*', minWidth: '80px' },
+            ]}
+            rowCount={4}
+            showHeaderControls={false}
+          />
+        </div>
+        <div className="lg:col-span-5 p-6 rounded-[24px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 shadow-xs space-y-3">
+          <SkeletonText size="base" width="160px" />
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={`alert_${i}`} className="p-3 rounded-xl bg-[#F8F9FA] dark:bg-neutral-800/60 border border-[#EDF1F3] dark:border-neutral-700/60 space-y-1">
+              <SkeletonText size="sm" width="80%" />
+              <SkeletonText size="xs" width="50%" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ==========================================
+// 29. Dedicated Project Direction Dashboard Skeleton (ProjectDirectionView)
+// ==========================================
+export const SkeletonDashboardProject: React.FC<{
+  isOffline?: boolean;
+  isTimedOut?: boolean;
+  lastSyncedAt?: string | null;
+  onRetry?: () => Promise<void> | void;
+}> = ({ isOffline, isTimedOut, lastSyncedAt, onRetry }) => {
+  return (
+    <div className="space-y-6 animate-in fade-in duration-200" role="status" aria-label="Loading project direction">
+      <OfflineRetryBanner isOffline={isOffline} isTimedOut={isTimedOut} lastSyncedAt={lastSyncedAt} onRetry={onRetry} />
+      <SkeletonPageHeader hasFacility hasActionBtn actionBtnWidth={150} />
+
+      {/* 3 Project KPI Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div
+            key={`proj_kpi_${i}`}
+            className="p-5 rounded-[22px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 shadow-2xs flex flex-col justify-between h-[120px]"
+          >
+            <div className="flex items-center justify-between">
+              <SkeletonText size="xs" width="60%" />
+              <SkeletonCircle size={24} />
+            </div>
+            <div className="space-y-1">
+              <SkeletonText size="2xl" width="50%" />
+              <SkeletonText size="xs" width="70%" />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* 6-Role Agency Workflow Radar */}
+      <div className="p-6 rounded-[26px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 shadow-xs space-y-4">
+        <SkeletonText size="base" width="180px" />
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={`role_${i}`} className="p-3.5 rounded-xl bg-[#F8F9FA] dark:bg-neutral-800/60 border border-[#EDF1F3] dark:border-neutral-700/60 text-center space-y-2">
+              <SkeletonCircle size={32} className="mx-auto" />
+              <SkeletonText size="xs" width="70%" className="mx-auto" />
+              <SkeletonBox width={40} height={16} rounded="rounded-full" className="mx-auto" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ==========================================
+// 30. Dedicated Cross-Vertical Analytics Skeleton (AnalyticsScreen)
+// ==========================================
+export const SkeletonAnalytics: React.FC<{
+  isOffline?: boolean;
+  isTimedOut?: boolean;
+  lastSyncedAt?: string | null;
+  onRetry?: () => Promise<void> | void;
+}> = ({ isOffline, isTimedOut, lastSyncedAt, onRetry }) => {
+  return (
+    <div className="space-y-6 animate-in fade-in duration-200" role="status" aria-label="Loading analytics">
+      <OfflineRetryBanner isOffline={isOffline} isTimedOut={isTimedOut} lastSyncedAt={lastSyncedAt} onRetry={onRetry} />
+      <SkeletonPageHeader hasFacility hasActionBtn actionBtnWidth={140} />
+
+      {/* 4 BI Metric Pods */}
+      <SkeletonKpiGrid count={4} columns="grid-cols-1 sm:grid-cols-2 lg:grid-cols-4" />
+
+      {/* Multi-series Margin & Revenue Visual Analytics */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="lg:col-span-8">
+          <SkeletonChart height={340} />
+        </div>
+        <div className="lg:col-span-4 p-6 rounded-[24px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 shadow-xs space-y-4">
+          <SkeletonText size="base" width="160px" />
+          <div className="space-y-3">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={`cat_${i}`} className="space-y-1">
+                <div className="flex justify-between text-xs">
+                  <SkeletonText size="xs" width="80px" />
+                  <SkeletonText size="xs" width="50px" />
+                </div>
+                <SkeletonBox height={8} className="w-full" rounded="rounded-full" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 

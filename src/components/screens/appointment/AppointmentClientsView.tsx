@@ -38,6 +38,8 @@ import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { formatMoney } from '../../../utils/rules';
 import { AppointmentModal } from '../../modals/AppointmentModal';
+import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
+import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 
 interface AppointmentClientsViewProps {
   onAddMember?: () => void;
@@ -426,6 +428,34 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = ({
       ),
     },
   ];
+
+  const { showSkeleton, isTimedOut, isOffline } = useSkeletonLoading({
+    isLoading: isSyncing || networkMode === 'force_skeleton',
+    hasCachedData: salonClients.length > 0,
+  });
+
+  if (showSkeleton && (salonClients.length === 0 || networkMode === 'force_skeleton')) {
+    return (
+      <SkeletonCollectionScreen
+        kpiCount={3}
+        columns={[
+          { width: '2.5*', minWidth: '200px' },
+          { width: '1.5*', minWidth: '160px' },
+          { width: '1.5*', minWidth: '160px' },
+          { width: '1.2*', minWidth: '130px' },
+          { width: '1.2*', minWidth: '130px' },
+          { width: '100px', minWidth: '90px' },
+        ]}
+        hasIcon
+        hasFacility
+        hasActionBtn
+        actionBtnWidth={130}
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        onRetry={retryCloudSync}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">

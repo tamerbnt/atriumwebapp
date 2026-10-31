@@ -29,10 +29,9 @@ import { useAtriumStore } from '../../../services/store';
 import { formatMoney } from '../../../utils/rules';
 import { useTranslation } from '../../../utils/useTranslation';
 import { RollCallModal } from './RollCallModal';
-import { EduSession } from '../../../types';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
-import { SkeletonKpiGrid, SkeletonChart } from '../../ui/skeleton/StructuralSkeletons';
+import { SkeletonDashboardEducation } from '../../ui/skeleton/StructuralSkeletons';
 import { OfflineRetryBanner } from '../../common/OfflineRetryBanner';
 
 export const EducationDashboardView: React.FC = () => {
@@ -239,23 +238,12 @@ export const EducationDashboardView: React.FC = () => {
 
   if (showSkeleton && (eduStudents.length === 0 || networkMode === 'force_skeleton')) {
     return (
-      <div className="space-y-6 animate-in fade-in duration-200">
-        <OfflineRetryBanner
-          isOffline={isOffline}
-          isTimedOut={isTimedOut}
-          lastSyncedAt={lastSyncedAt}
-          onRetry={retryCloudSync}
-        />
-        <SkeletonKpiGrid count={4} />
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-          <div className="lg:col-span-5 space-y-4">
-            <div className="p-5 rounded-[24px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 h-64 animate-pulse" />
-          </div>
-          <div className="lg:col-span-7 space-y-4">
-            <SkeletonChart height={280} />
-          </div>
-        </div>
-      </div>
+      <SkeletonDashboardEducation
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        lastSyncedAt={lastSyncedAt}
+        onRetry={retryCloudSync}
+      />
     );
   }
 

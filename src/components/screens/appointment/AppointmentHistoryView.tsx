@@ -29,6 +29,8 @@ import { Seek } from '../../ui/Seek';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { FilterSelect } from '../../ui/FilterSelect';
 import { formatMoney } from '../../../utils/rules';
+import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
+import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 
 export const AppointmentHistoryView: React.FC = () => {
   const {
@@ -40,6 +42,11 @@ export const AppointmentHistoryView: React.FC = () => {
     batchDeleteAppointments,
     resetSalonMockData,
     showToast,
+    isSyncing,
+    networkMode,
+    retryCloudSync,
+    lastSyncedAt,
+    isSyncTimeout,
   } = useAtriumStore();
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -285,6 +292,34 @@ export const AppointmentHistoryView: React.FC = () => {
       ),
     },
   ];
+
+  const { showSkeleton, isTimedOut, isOffline } = useSkeletonLoading({
+    isLoading: isSyncing || networkMode === 'force_skeleton',
+    hasCachedData: appointments.length > 0,
+  });
+
+  if (showSkeleton && (appointments.length === 0 || networkMode === 'force_skeleton')) {
+    return (
+      <SkeletonCollectionScreen
+        kpiCount={3}
+        columns={[
+          { width: '1.8*', minWidth: '150px' },
+          { width: '2*', minWidth: '160px' },
+          { width: '1.6*', minWidth: '130px' },
+          { width: '1.4*', minWidth: '120px' },
+          { width: '1.4*', minWidth: '110px' },
+          { width: '1*', minWidth: '80px' },
+        ]}
+        hasIcon
+        hasFacility={false}
+        hasActionBtn
+        actionBtnWidth={130}
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        onRetry={retryCloudSync}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6">

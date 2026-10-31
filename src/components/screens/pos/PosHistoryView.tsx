@@ -23,6 +23,8 @@ import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { Seek } from '../../ui/Seek';
 import { FilterSelect } from '../../ui/FilterSelect';
 import { Modal } from '../../ui/Modal';
+import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
+import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 
 export const PosHistoryView: React.FC = () => {
   const { t, language, isRtl } = useTranslation();
@@ -32,6 +34,11 @@ export const PosHistoryView: React.FC = () => {
     currentBranch,
     currentUser,
     resetPosMockData,
+    isSyncing,
+    networkMode,
+    retryCloudSync,
+    lastSyncedAt,
+    isSyncTimeout,
   } = useAtriumStore();
 
   // Search & Filters
@@ -239,6 +246,34 @@ export const PosHistoryView: React.FC = () => {
     link.click();
     document.body.removeChild(link);
   };
+
+  const { showSkeleton, isTimedOut, isOffline } = useSkeletonLoading({
+    isLoading: isSyncing || networkMode === 'force_skeleton',
+    hasCachedData: (stockMovements || []).length > 0,
+  });
+
+  if (showSkeleton && ((stockMovements || []).length === 0 || networkMode === 'force_skeleton')) {
+    return (
+      <SkeletonCollectionScreen
+        kpiCount={3}
+        columns={[
+          { width: '2.5*', minWidth: '180px' },
+          { width: '1.2*', minWidth: '110px' },
+          { width: '1.2*', minWidth: '110px' },
+          { width: '1.5*', minWidth: '130px' },
+          { width: '1.2*', minWidth: '100px' },
+          { width: '1.5*', minWidth: '140px' },
+        ]}
+        hasIcon
+        hasFacility={false}
+        hasActionBtn
+        actionBtnWidth={130}
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        onRetry={retryCloudSync}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200" dir={isRtl ? 'rtl' : 'ltr'}>
