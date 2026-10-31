@@ -93,7 +93,7 @@ export const QuincunxConvergencePrelude: React.FC<{ isPortalActive?: boolean; cl
           {/* Minimal Swiss Modernist Coordinate Grid & Diagonal Trajectory Axes */}
           <g
             style={{
-              animation: 'modern-swiss-grid-fade 1.2s cubic-bezier(0.16, 1, 0.3, 1) both',
+              animation: 'modern-swiss-grid-fade 0.65s cubic-bezier(0.16, 1, 0.3, 1) both',
             }}
           >
             {/* Center Hairline Axes */}
@@ -126,7 +126,7 @@ export const QuincunxConvergencePrelude: React.FC<{ isPortalActive?: boolean; cl
             strokeWidth="2"
             style={{
               transformOrigin: '50px 50px',
-              animation: 'quincunx-pulse-ring 1.2s cubic-bezier(0.16, 1, 0.3, 1) both',
+              animation: 'quincunx-pulse-ring 0.65s cubic-bezier(0.16, 1, 0.3, 1) both',
             }}
           />
 
@@ -135,7 +135,7 @@ export const QuincunxConvergencePrelude: React.FC<{ isPortalActive?: boolean; cl
           <g
             style={{
               transformOrigin: '15px 15px',
-              animation: 'quincunx-cube-tl 1.2s cubic-bezier(0.16, 1, 0.3, 1) both',
+              animation: 'quincunx-cube-tl 0.65s cubic-bezier(0.16, 1, 0.3, 1) both',
             }}
           >
             <rect
@@ -155,7 +155,7 @@ export const QuincunxConvergencePrelude: React.FC<{ isPortalActive?: boolean; cl
           <g
             style={{
               transformOrigin: '85px 15px',
-              animation: 'quincunx-cube-tr 1.2s cubic-bezier(0.16, 1, 0.3, 1) both',
+              animation: 'quincunx-cube-tr 0.65s cubic-bezier(0.16, 1, 0.3, 1) both',
             }}
           >
             <rect
@@ -175,7 +175,7 @@ export const QuincunxConvergencePrelude: React.FC<{ isPortalActive?: boolean; cl
           <g
             style={{
               transformOrigin: '15px 85px',
-              animation: 'quincunx-cube-bl 1.2s cubic-bezier(0.16, 1, 0.3, 1) both',
+              animation: 'quincunx-cube-bl 0.65s cubic-bezier(0.16, 1, 0.3, 1) both',
             }}
           >
             <rect
@@ -195,7 +195,7 @@ export const QuincunxConvergencePrelude: React.FC<{ isPortalActive?: boolean; cl
           <g
             style={{
               transformOrigin: '85px 85px',
-              animation: 'quincunx-cube-br 1.2s cubic-bezier(0.16, 1, 0.3, 1) both',
+              animation: 'quincunx-cube-br 0.65s cubic-bezier(0.16, 1, 0.3, 1) both',
             }}
           >
             <rect
@@ -215,7 +215,7 @@ export const QuincunxConvergencePrelude: React.FC<{ isPortalActive?: boolean; cl
           <g
             style={{
               transformOrigin: '50px 50px',
-              animation: 'quincunx-center-hollow 1.2s cubic-bezier(0.16, 1, 0.3, 1) both',
+              animation: 'quincunx-center-hollow 0.65s cubic-bezier(0.16, 1, 0.3, 1) both',
             }}
           >
             <rect
@@ -236,14 +236,13 @@ export const QuincunxConvergencePrelude: React.FC<{ isPortalActive?: boolean; cl
       </div>
 
       {/* STAGE 2: DEDICATED CINEMATIC PORTAL WIPE OVERLAY (White -> Terracotta) */}
-      {/* Originates from converged central cube at 1.2s to flood viewport into signature terracotta */}
       {isPortalActive && (
         <div className="absolute inset-0 pointer-events-none flex items-center justify-center overflow-hidden z-20">
           {/* Secondary Concentric Shockwave Ring */}
           <div
             className="absolute w-44 h-44 rounded-[44px] border-2 border-[#D3542E]"
             style={{
-              animation: 'cool-portal-ring 0.65s cubic-bezier(0.16, 1, 0.3, 1) both',
+              animation: 'cool-portal-ring 0.35s cubic-bezier(0.16, 1, 0.3, 1) both',
             }}
           />
 
@@ -251,7 +250,7 @@ export const QuincunxConvergencePrelude: React.FC<{ isPortalActive?: boolean; cl
           <div
             className="w-32 h-32 bg-[#D3542E] shadow-2xl"
             style={{
-              animation: 'cool-terracotta-portal-wipe 0.65s cubic-bezier(0.22, 1, 0.36, 1) both',
+              animation: 'cool-terracotta-portal-wipe 0.35s cubic-bezier(0.22, 1, 0.36, 1) both',
             }}
           />
         </div>
@@ -325,26 +324,26 @@ export const AtriumMonolith: React.FC<AtriumMonolithProps> = ({
     // (1) Start immediately with Quincunx Convergence on white
     setPhase('quincunx');
 
-    // (2) 1.2s: Dedicated cinematic portal wipe into terracotta background
+    // (2) 0.65s: Dedicated cinematic portal wipe into terracotta background
     const tPortal = setTimeout(() => {
       setPhase('portal');
-    }, 1200);
+    }, 650);
 
-    // (3) 1.85s: 'Atrium' kinetic sweep begins on terracotta
+    // (3) 1.0s: 'Atrium' kinetic sweep begins on terracotta
     const tWave = setTimeout(() => {
       setPhase('wave');
-    }, 1850);
+    }, 1000);
 
-    // (4) 3.85s: 5-cubes logo docks beside ATRIUM firmly at center (zero travel / glide)
+    // (4) 1.95s: 5-cubes logo docks beside ATRIUM firmly at center
     const tRevelation = setTimeout(() => {
       setPhase('revelation');
-    }, 3850);
+    }, 1950);
 
-    // (5) 4.75s: Complete intro -> initiates smooth 600ms dissolve into the Atrium OS workstation
+    // (5) 2.45s: Complete intro -> initiates smooth dissolve into the Atrium OS workstation
     const tComplete = setTimeout(() => {
       setPhase('settled');
       callbacksRef.current.onIntroComplete?.();
-    }, 4750);
+    }, 2450);
 
     return () => {
       clearTimeout(tPortal);
@@ -355,12 +354,7 @@ export const AtriumMonolith: React.FC<AtriumMonolithProps> = ({
   }, [isIntroActive, replayKey]);
 
   // Real-time animation loop for Stage 2 (Kinetic Typography Wave):
-  // - HAPPENS ONCE ONLY: Enters from the left, sweeps slowly and gracefully across A-T-R-I-U-M, and exits to the right.
-  // - Background is Terracotta (#D3542E).
-  // - Letters outside the beam are shrunk (scaleX: 0.32) during the sweep.
-  // - Letters touched by the beam illuminate in glowing radiant white (#FFFFFF) & stretch horizontally (scaleX up to 2.25).
-  // - AT THE END OF THE LOOP EFFECT: Letters smoothly expand back to NORMAL SIZE (scaleX: 1.0) and normal spacing,
-  //   so the text appears in its normal size right when the loop finishes, perfectly ready for the logo to enter next to it!
+  // - High-performance single pass: 0.95s fluid sweep with ZERO layout-thrashing DOM reads
   const baseWidthsRef = useRef<number[] | null>(null);
 
   useEffect(() => {
@@ -368,31 +362,26 @@ export const AtriumMonolith: React.FC<AtriumMonolithProps> = ({
 
     let animId: number;
     const startTime = performance.now();
-    const sweepDuration = 2000; // 2.0s smooth single pass across ATRIUM
+    const sweepDuration = 950; // Snappy 950ms cinematic sweep
 
-    const measureBaseWidths = () => {
-      const measured = letterRefs.current.map((el) => (el ? el.offsetWidth : 0));
-      if (measured.length === 6 && measured.every((w) => w > 10)) {
-        return measured;
-      }
-      // Accurate proportional widths for ATRIUM (Inter Black font)
-      const h = letterRefs.current[0]?.offsetHeight || 120;
-      return [0.82 * h, 0.72 * h, 0.78 * h, 0.32 * h, 0.78 * h, 0.98 * h];
-    };
+    // Pre-calculate base widths once to avoid layout thrashing during animation frames
+    const h = letterRefs.current[0]?.offsetHeight || 110;
+    const baseWidths = letterRefs.current.map((el, i) => {
+      const fallback = [0.82 * h, 0.72 * h, 0.78 * h, 0.32 * h, 0.78 * h, 0.98 * h][i];
+      return el && el.offsetWidth > 10 ? el.offsetWidth : fallback;
+    });
 
-    const handleResize = () => {
-      baseWidthsRef.current = null;
-    };
-    window.addEventListener('resize', handleResize);
+    // Pre-calculate unscaled base centers in container (gap-0)
+    const baseCenters: number[] = new Array(6);
+    baseCenters[0] = baseWidths[0] / 2;
+    for (let i = 1; i < 6; i++) {
+      baseCenters[i] = baseCenters[i - 1] + baseWidths[i - 1] / 2 + baseWidths[i] / 2;
+    }
+    const totalBaseWidth = baseCenters[5] + baseWidths[5] / 2;
+    const baseCenterOffset = totalBaseWidth / 2;
 
     const frame = (now: number) => {
-      if (!baseWidthsRef.current || baseWidthsRef.current.some((w) => w === 0)) {
-        baseWidthsRef.current = measureBaseWidths();
-      }
-      const baseWidths = baseWidthsRef.current;
-
       const elapsed = now - startTime;
-      // Single pass progress: 0.0 to 1.0 (NO modulo % looping - happens once only)
       const rawProgress = Math.min(1, Math.max(0, elapsed / sweepDuration));
 
       // Cinematic easeInOut curve for single sweep
@@ -404,22 +393,19 @@ export const AtriumMonolith: React.FC<AtriumMonolithProps> = ({
       // Beam center sweeps from off-left (-1.4) to off-right (7.2)
       const beamCenter = -1.4 + easeProgress * 8.6;
 
-      // As the loop effect finishes (rawProgress 0.68 -> 0.95), letters smoothly expand from shrunk back to NORMAL SIZE!
+      // As the loop effect finishes (rawProgress 0.68 -> 0.95), letters smoothly expand back to NORMAL SIZE
       const normProgress = Math.max(0, Math.min(1, (rawProgress - 0.68) / 0.27));
       const easeNorm =
         normProgress < 0.5
           ? 2 * normProgress * normProgress
           : 1 - Math.pow(-2 * normProgress + 2, 2) / 2;
 
-      // Base scale in 2D: smoothly transitions from compact (0.38x, 0.88y) to full normal size (1.0x, 1.0y)!
       const currentBaseScaleX = 0.38 + easeNorm * (1.0 - 0.38);
       const currentBaseScaleY = 0.88 + easeNorm * (1.0 - 0.88);
-
-      // Minimum gap smoothly opens up to normal tracking (0.5px -> 3.5px)
       const currentMinGap = 0.5 + easeNorm * 3.0;
       const extraGap = 10.0 * (1 - easeNorm);
 
-      // 1. Calculate intensity, scaleX, and scaleY for all 6 letters (expanding in 2D from letter center)
+      // 1. Calculate intensity, scaleX, and scaleY for all 6 letters
       const intensities: number[] = new Array(6);
       const scaleXs: number[] = new Array(6);
       const scaleYs: number[] = new Array(6);
@@ -431,7 +417,6 @@ export const AtriumMonolith: React.FC<AtriumMonolithProps> = ({
         const intensity = rawIntensity * rawIntensity * (3 - 2 * rawIntensity);
         intensities[i] = intensity;
 
-        // Letters touched by beam grow up to 1.95 on X and 1.22 on Y from optical center
         const scaleX = currentBaseScaleX + intensity * (1.95 - currentBaseScaleX);
         const scaleY = currentBaseScaleY + intensity * (1.22 - currentBaseScaleY);
         scaleXs[i] = scaleX;
@@ -455,16 +440,7 @@ export const AtriumMonolith: React.FC<AtriumMonolithProps> = ({
       const totalVisualWidth = targetCenters[5] + visualWidths[5] / 2;
       const visualCenterOffset = totalVisualWidth / 2;
 
-      // 4. Compute unscaled base centers in container (gap-0)
-      const baseCenters: number[] = new Array(6);
-      baseCenters[0] = baseWidths[0] / 2;
-      for (let i = 1; i < 6; i++) {
-        baseCenters[i] = baseCenters[i - 1] + baseWidths[i - 1] / 2 + baseWidths[i] / 2;
-      }
-      const totalBaseWidth = baseCenters[5] + baseWidths[5] / 2;
-      const baseCenterOffset = totalBaseWidth / 2;
-
-      // 5. Apply translate3d + 2D scale (scaleX and scaleY from center) to position each letter perfectly
+      // 4. Apply translate3d + 2D scale to position each letter perfectly
       letterRefs.current.forEach((el, i) => {
         if (!el) return;
         const targetX = targetCenters[i] - visualCenterOffset;
@@ -476,15 +452,11 @@ export const AtriumMonolith: React.FC<AtriumMonolithProps> = ({
         el.style.opacity = '1';
 
         if (intensity > 0.12) {
-          // Touched: Illuminated with radiant glowing white light & soft bloom
           el.style.color = intensity > 0.4 ? '#FFFFFF' : '#FFF0EA';
-          el.style.textShadow = `0 0 ${(intensity * 32).toFixed(1)}px rgba(255, 255, 255, 0.98), 0 0 ${(intensity * 56).toFixed(1)}px rgba(255, 225, 195, 0.85)`;
-          el.style.filter = `drop-shadow(0 0 ${(intensity * 20).toFixed(1)}px rgba(255, 255, 255, 0.95))`;
+          el.style.textShadow = `0 0 ${(intensity * 28).toFixed(1)}px rgba(255, 255, 255, 0.95)`;
         } else {
-          // Untouched / outside loop: SOLID DEEP BLACK, NO GRAY, SHRUNK & STICKING TO NEIGHBORS
           el.style.color = '#000000';
           el.style.textShadow = 'none';
-          el.style.filter = 'none';
         }
       });
 
@@ -498,7 +470,6 @@ export const AtriumMonolith: React.FC<AtriumMonolithProps> = ({
 
     return () => {
       cancelAnimationFrame(animId);
-      window.removeEventListener('resize', handleResize);
     };
   }, [isIntroActive, phase, replayKey]);
 
@@ -507,7 +478,8 @@ export const AtriumMonolith: React.FC<AtriumMonolithProps> = ({
   return (
     <div
       key={replayKey}
-      className={`fixed inset-0 z-30 pointer-events-none select-none flex items-center justify-center transition-colors duration-300 ${
+      onClick={handleSkip}
+      className={`fixed inset-0 z-30 pointer-events-auto select-none flex items-center justify-center cursor-pointer transition-colors duration-300 ${
         phase === 'quincunx'
           ? 'bg-white'
           : phase === 'portal' || phase === 'wave' || phase === 'revelation' || phase === 'settled'
@@ -515,7 +487,7 @@ export const AtriumMonolith: React.FC<AtriumMonolithProps> = ({
           : 'bg-[#D3542E]'
       }`}
     >
-      {/* STAGE (1) & (2): 1.2s 'QUINCUNX CONVERGENCE' ON WHITE CANVAS + EXPANDING PORTAL WIPE TO TERRACOTTA */}
+      {/* STAGE (1) & (2): Fast Quincunx Convergence on white + expanding portal wipe */}
       {(phase === 'quincunx' || phase === 'portal') && (
         <div className="w-full h-full flex flex-col items-center justify-center text-center">
           <QuincunxConvergencePrelude isPortalActive={phase === 'portal'} />

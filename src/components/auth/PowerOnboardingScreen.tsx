@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   Building2,
   Check,
@@ -84,6 +84,9 @@ export interface PlanMeta {
   descFr: string;
   descAr: string;
   descEn: string;
+  featuresFr: string[];
+  featuresAr: string[];
+  featuresEn: string[];
   isRecommended?: boolean;
 }
 
@@ -101,6 +104,9 @@ export const SUBSCRIPTION_PLANS: PlanMeta[] = [
     descFr: '1 Établissement • 1 Caisse • 5 Staff',
     descAr: '1 مؤسسة • 1 نقطة بيع • 5 موظفين',
     descEn: '1 Entity • 1 Terminal • 5 Staff',
+    featuresFr: ['1 Établissement & 1 Caisse', '5 Collaborateurs inclus', 'Moteur de vente & Encaissements', 'Bordereaux postaux CCP SFP 01'],
+    featuresAr: ['1 مؤسسة و1 نقطة بيع', '5 مستخدمين مشمولين', 'محطة مبيعات وتحصيل سريع', 'حوالات بريدية CCP SFP 01'],
+    featuresEn: ['1 Entity & 1 Terminal', '5 Team members included', 'Sales engine & settlements', 'CCP SFP 01 postal slips'],
   },
   {
     tier: 'starter',
@@ -115,6 +121,9 @@ export const SUBSCRIPTION_PLANS: PlanMeta[] = [
     descFr: '1 Entreprise • 2 Branches • 10 Staff',
     descAr: '1 مؤسسة • 2 فروع • 10 موظفين',
     descEn: '1 Business • 2 Branches • 10 Staff',
+    featuresFr: ['1 Entreprise • 2 Branches', '10 Collaborateurs inclus', 'Facturation B2B & Timbre Fiscal', 'Inventaire & alertes de seuil'],
+    featuresAr: ['1 شركة • 2 فروع تشغيلية', '10 موظفين مشمولين', 'الفواتير والدمغة الجبائية', 'تتبع المخزون وتنبيهات النفاذ'],
+    featuresEn: ['1 Business • 2 Branches', '10 Team members included', 'B2B invoicing & Stamp duty', 'Stock alerts & inventory log'],
   },
   {
     tier: 'pro',
@@ -130,6 +139,9 @@ export const SUBSCRIPTION_PLANS: PlanMeta[] = [
     descFr: '3 Sociétés • 5 Branches • Staff illimité',
     descAr: '3 مؤسسات • 5 فروع • موظفين غير محدود',
     descEn: '3 Businesses • 5 Branches • Unlimited Staff',
+    featuresFr: ['3 Sociétés • 5 Branches', 'Collaborateurs illimités', 'Multi-dépôts & transferts inter-sites', 'Radar télémétrique temps réel'],
+    featuresAr: ['3 مؤسسات • 5 فروع', 'موظفون غير محدودين', 'مستودعات وتحويلات بين الفروع', 'لوحة قيادة وتحليل فوري'],
+    featuresEn: ['3 Businesses • 5 Branches', 'Unlimited team members', 'Multi-depots & inter-branch sync', 'Real-time telemetry radar'],
   },
   {
     tier: 'enterprise',
@@ -144,6 +156,9 @@ export const SUBSCRIPTION_PLANS: PlanMeta[] = [
     descFr: 'Sociétés illimitées • Multi-dépôts • VIP',
     descAr: 'مؤسسات غير محدودة • مستودعات متعددة',
     descEn: 'Unlimited Businesses • Multi-depots • VIP',
+    featuresFr: ['Sociétés & Branches illimitées', 'Audit & Traçabilité quadruple', 'Export fiscal CNAS & TVA', 'Support prioritaire VIP & SLA'],
+    featuresAr: ['مؤسسات وفروع غير محدودة', 'تتبع ومطابقة رباعية معتمدة', 'تصدير جبائي وقانوني كامل', 'دعم فني VIP مخصص وسريع'],
+    featuresEn: ['Unlimited Businesses & Branches', 'Quadruple audit traceability', 'Full CNAS & TVA fiscal exports', 'Dedicated VIP SLA support'],
   },
 ];
 
@@ -176,7 +191,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
     setTimeout(() => {
       setShowIntroAnimation(false);
       setIsIntroDissolving(false);
-    }, 700);
+    }, 260);
   };
 
   const handleReplayIntro = () => {
@@ -250,8 +265,19 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
     }
   };
 
-  // Stage 2: 9 Conversational Question Cards (Indices 0 to 8)
+  // Stage 2: 10 Conversational Question Cards (Indices 0 to 9)
   const [currentStep, setCurrentStep] = useState<number>(0);
+  const [step9WideView, setStep9WideView] = useState<boolean>(false);
+
+  // Synchronize suggested preview slide when step advances (if user hasn't uploaded custom image)
+  useEffect(() => {
+    if (!customUploadedImage) {
+      if (currentStep === 0) setActiveSlideIndex(0);
+      else if (currentStep === 1 || currentStep === 2) setActiveSlideIndex(1);
+      else if (currentStep >= 3 && currentStep <= 5) setActiveSlideIndex(3);
+      else if (currentStep >= 6) setActiveSlideIndex(2);
+    }
+  }, [currentStep, customUploadedImage]);
 
   // Step 0 State: Admin Account & Authentication
   const [fullName, setFullName] = useState('Mehdi Samih');
@@ -320,7 +346,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
     setPrimaryFrustration(id);
     setTimeout(() => {
       setCurrentStep(2);
-    }, 220);
+    }, 60);
   };
 
   const handleOpenGoalModal = (goalId: UniversalStrategicGoalId) => {
@@ -333,42 +359,42 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
     setActiveGoalModalId(null);
     setTimeout(() => {
       setCurrentStep(3);
-    }, 150);
+    }, 60);
   };
 
   const handleSelectWorkflow = (id: typeof dailyWorkflow) => {
     setDailyWorkflow(id);
     setTimeout(() => {
       setCurrentStep(4);
-    }, 220);
+    }, 60);
   };
 
   const handleSelectTeamScale = (id: typeof teamScale) => {
     setTeamScale(id);
     setTimeout(() => {
       setCurrentStep(5);
-    }, 220);
+    }, 60);
   };
 
   const handleSelectSettlement = (id: typeof settlementStyle) => {
     setSettlementStyle(id);
     setTimeout(() => {
       setCurrentStep(6);
-    }, 220);
+    }, 60);
   };
 
   const handleSelectTrade = (trade: CatalogBusinessTrade) => {
     setSelectedTradeId(trade.id);
     setTimeout(() => {
       setCurrentStep(7);
-    }, 220);
+    }, 60);
   };
 
   const handleSelectReferral = (sourceId: string) => {
     setReferralSource(sourceId);
     setTimeout(() => {
       setCurrentStep(8);
-    }, 220);
+    }, 60);
   };
 
   // Find currently selected trade in catalog
@@ -530,17 +556,403 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
     },
     {
       title: isAr
-        ? 'تخصيص المساحة واختيار الخطة'
+        ? 'تخصيص مساحة العمل وهوية المؤسسة'
         : isFr
-        ? 'Finalisez votre espace & choisissez votre forfait'
-        : 'Finalize your workspace & select your plan',
+        ? 'Finalisez votre espace de travail'
+        : 'Finalize your workspace identity',
       subtext: isAr
-        ? 'حدد اسم مؤسستك، رقم هاتفك وخطة التشغيل المناسبة لبدء العمل فوراً'
+        ? 'حدد اسم مؤسستك ورقم هاتفك لتكوين السجلات والفرع الرئيسي'
         : isFr
-        ? 'Nommez votre établissement, renseignez votre contact et choisissez votre formule'
-        : 'Name your workspace, provide your contact number, and select your Atrium tier',
+        ? 'Nommez votre entreprise et confirmez votre secteur d’activité'
+        : 'Name your business and confirm your primary operating vertical',
+    },
+    {
+      title: isAr
+        ? 'اختر خطة التشغيل المناسبة لمؤسستك'
+        : isFr
+        ? 'Choisissez votre forfait Atrium OS'
+        : 'Select your Atrium OS Plan',
+      subtext: isAr
+        ? 'ترخيص دائم لمدى الحياة • إمكانية التقييم والتجربة المجانية 14 يوماً'
+        : isFr
+        ? 'Licence perpétuelle sans abonnement mensuel • Essai 14 jours inclus'
+        : 'Perpetual lifetime license • 14-day full evaluation trial included',
     },
   ];
+
+  // Helper Renderer: Left Card that holds the showcase images & custom upload
+  const renderLeftImageCard = () => (
+    <div className="bg-[#181512]/80 backdrop-blur-md rounded-2xl border border-white/10 shadow-2xl p-3 sm:p-3.5 flex flex-col justify-between h-full min-h-0 overflow-hidden relative group/card">
+      {/* Card Header */}
+      <div className="flex items-center justify-between pb-2 border-b border-white/5 shrink-0">
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] font-mono font-bold text-[#FF8A4C] bg-white/[0.06] px-2 py-0.5 rounded border border-white/10">
+            VUE {PREVIEW_SLIDES[activeSlideIndex]?.tag || '01'}
+          </span>
+          <span className="text-xs font-semibold text-[#FFF5EE] truncate max-w-[170px] sm:max-w-[210px]">
+            {isAr
+              ? PREVIEW_SLIDES[activeSlideIndex]?.labelAr
+              : isFr
+              ? PREVIEW_SLIDES[activeSlideIndex]?.labelFr
+              : PREVIEW_SLIDES[activeSlideIndex]?.labelEn}
+          </span>
+        </div>
+
+        {/* Custom image upload button / clear */}
+        <div className="flex items-center gap-1.5 shrink-0">
+          {customUploadedImage && activeSlideIndex === 4 && (
+            <button
+              type="button"
+              onClick={() => {
+                setCustomUploadedImage(null);
+                setActiveSlideIndex(0);
+              }}
+              className="text-[10px] text-neutral-400 hover:text-rose-400 flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-white/5 hover:bg-white/10 transition-colors cursor-pointer"
+              title={isFr ? 'Supprimer image personnalisée' : 'Remove custom image'}
+            >
+              <X className="w-2.5 h-2.5" />
+              <span>{isFr ? 'Effacer' : 'Clear'}</span>
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            title={isFr ? 'Importer un visuel' : isAr ? 'رفع صورة مخصصة' : 'Upload custom visual'}
+            className="text-[10.5px] font-medium text-[#D9BEB0] hover:text-white bg-white/5 hover:bg-white/10 px-2 py-0.5 rounded-lg border border-white/5 flex items-center gap-1 transition-colors cursor-pointer"
+          >
+            <Upload className="w-3 h-3 text-[#FF8A4C]" />
+            <span className="text-[10px]">{isFr ? 'Importer' : isAr ? 'رفع' : 'Upload'}</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Image Viewport */}
+      <div className="relative flex-1 min-h-0 w-full rounded-xl overflow-hidden bg-black/60 border border-white/5 my-2 flex items-center justify-center select-none group">
+        {activeSlideIndex === 4 && !customUploadedImage ? (
+          <div
+            onClick={() => fileInputRef.current?.click()}
+            className="w-full h-full border-2 border-dashed border-[#C4785A]/40 hover:border-[#FF8A4C] rounded-xl flex flex-col items-center justify-center p-4 text-center cursor-pointer transition-colors bg-white/[0.02] hover:bg-white/[0.04]"
+          >
+            <div className="w-10 h-10 rounded-full bg-[#C4785A]/20 flex items-center justify-center mb-2 shadow-inner">
+              <Upload className="w-5 h-5 text-[#FF8A4C]" />
+            </div>
+            <p className="text-xs font-bold text-white mb-0.5">
+              {isAr ? 'اضغط لرفع صورة شركتك أو مجالك' : isFr ? 'Cliquez pour importer votre visuel' : 'Click to upload your image'}
+            </p>
+            <p className="text-[10px] text-white/50">PNG, JPG, WebP jusqu\'à 10 Mo</p>
+          </div>
+        ) : (
+          <>
+            <img
+              src={
+                activeSlideIndex === 4 && customUploadedImage
+                  ? customUploadedImage
+                  : PREVIEW_SLIDES[activeSlideIndex]?.src || '/assets/aistudio/Screenshot_73_2f9a596b.png'
+              }
+              alt={PREVIEW_SLIDES[activeSlideIndex]?.labelFr || 'Aperçu Atrium OS'}
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            />
+            {/* Caption Overlay */}
+            <div className="absolute inset-x-0 bottom-0 p-2.5 bg-gradient-to-t from-black/90 via-black/40 to-transparent pointer-events-none flex items-end justify-between">
+              <span className="text-[11px] font-medium text-white/95 drop-shadow-sm truncate max-w-[220px]">
+                {isAr
+                  ? PREVIEW_SLIDES[activeSlideIndex]?.labelAr
+                  : isFr
+                  ? PREVIEW_SLIDES[activeSlideIndex]?.labelFr
+                  : PREVIEW_SLIDES[activeSlideIndex]?.labelEn}
+              </span>
+              <span className="text-[9px] font-mono text-[#FF8A4C] bg-black/60 px-1.5 py-0.5 rounded border border-white/10 shrink-0">
+                Atrium OS 2026
+              </span>
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* Bottom Thumbnail Selector & Hidden File Input */}
+      <div className="flex items-center justify-between gap-1.5 pt-1 border-t border-white/5 shrink-0">
+        {PREVIEW_SLIDES.map((slide, idx) => {
+          const isCurrent = activeSlideIndex === idx;
+          return (
+            <button
+              key={slide.id}
+              type="button"
+              onClick={() => setActiveSlideIndex(idx)}
+              className={`flex-1 py-1 px-1.5 rounded-lg text-[10px] font-mono font-bold transition-all flex items-center justify-center gap-1 cursor-pointer ${
+                isCurrent
+                  ? 'bg-gradient-to-r from-[#C4552A] to-[#E64A19] text-white shadow-md'
+                  : 'bg-white/5 hover:bg-white/10 text-white/60 hover:text-white border border-white/5'
+              }`}
+              title={isAr ? slide.labelAr : isFr ? slide.labelFr : slide.labelEn}
+            >
+              {idx === 4 ? (
+                <Upload className="w-2.5 h-2.5 shrink-0" />
+              ) : (
+                <ImageIcon className="w-2.5 h-2.5 shrink-0" />
+              )}
+              <span>{slide.tag}</span>
+            </button>
+          );
+        })}
+
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={handleCustomImageUpload}
+        />
+      </div>
+    </div>
+  );
+
+  // Helper Renderer: Standalone SaaS Plan Tier Cards
+  const renderPlanCards = (isWide: boolean) => (
+    <div className={`grid ${isWide ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3' : 'grid-cols-2 gap-2 sm:gap-2.5'} w-full`}>
+      {SUBSCRIPTION_PLANS.map((plan) => {
+        const isSelected = selectedPlanTier === plan.tier;
+        const badge = isAr ? plan.badgeAr : isFr ? plan.badgeFr : plan.badgeEn;
+        const price = isAr ? plan.priceAr : isFr ? plan.priceFr : plan.priceEn;
+        const features = isAr ? plan.featuresAr : isFr ? plan.featuresFr : plan.featuresEn;
+
+        return (
+          <div
+            key={plan.tier}
+            onClick={() => {
+              setSelectedPlanTier(plan.tier);
+              setPaidVoucherError(null);
+            }}
+            className={`flex flex-col justify-between ${isWide ? 'p-3 sm:p-3.5 rounded-2xl' : 'p-2 sm:p-2.5 rounded-xl'} border transition-all duration-200 cursor-pointer relative group text-left ${
+              isSelected
+                ? 'bg-[rgba(232,98,44,0.12)] border-[#F4511E] shadow-[0_0_20px_rgba(244,81,30,0.25)] ring-1 ring-[#F4511E]'
+                : 'bg-white/[0.035] border-white/10 hover:border-white/20 hover:bg-white/[0.06]'
+            }`}
+          >
+            {/* Recommended Ribbon */}
+            {plan.isRecommended && (
+              <div className="absolute -top-2 inset-x-0 flex justify-center pointer-events-none">
+                <span className="text-[8px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-gradient-to-r from-[#C4552A] to-[#E8622C] text-white shadow-md tracking-wider">
+                  {badge}
+                </span>
+              </div>
+            )}
+
+            <div>
+              {/* Header row */}
+              <div className="flex items-center justify-between mb-1">
+                <span className={`text-[9px] font-bold uppercase tracking-wider ${
+                  isSelected ? 'text-[#FF8A4C]' : 'text-[#D9BEB0]'
+                }`}>
+                  {plan.isRecommended ? (isAr ? 'الأكثر اختياراً' : isFr ? 'Plus Populaire' : 'Most Popular') : badge}
+                </span>
+                <div
+                  className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center transition-colors shrink-0 ${
+                    isSelected ? 'border-[#E8622C] bg-[#E8622C]' : 'border-white/25'
+                  }`}
+                >
+                  {isSelected && <Check className="w-2 h-2 text-white" />}
+                </div>
+              </div>
+
+              {/* Plan Name & Pricing */}
+              <h3 className={`font-extrabold ${isWide ? 'text-sm sm:text-base' : 'text-xs sm:text-sm'} text-[#FFF5EE] tracking-tight`}>
+                {plan.name}
+              </h3>
+              <div className="flex items-baseline gap-1 mt-0.5 mb-0.5">
+                <span className={`font-mono ${isWide ? 'text-base sm:text-lg' : 'text-sm sm:text-base'} font-black text-[#FF8A4C] tracking-tight tabular-nums`}>
+                  {price}
+                </span>
+                <span className="text-[9px] text-[#D9BEB0]/70 font-medium">
+                  {isAr ? '• مدى الحياة' : isFr ? '• à vie' : '• lifetime'}
+                </span>
+              </div>
+              <p className="text-[9.5px] text-[#D9BEB0]/80 font-medium mb-1.5 line-clamp-1">
+                {isAr ? plan.descAr : isFr ? plan.descFr : plan.descEn}
+              </p>
+
+              {/* Feature Checklist */}
+              <div className="space-y-0.5 pt-1 border-t border-white/10">
+                {features.slice(0, isWide ? 4 : 3).map((feat, fIdx) => (
+                  <div key={fIdx} className="flex items-start gap-1 text-[9.5px] text-[#F0DACF]">
+                    <CheckCircle2 className={`w-2.5 h-2.5 shrink-0 mt-0.5 ${
+                      isSelected ? 'text-[#FF8A4C]' : 'text-emerald-400'
+                    }`} />
+                    <span className="leading-tight truncate">{feat}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Plan Activation Status */}
+            <div className="mt-1.5 pt-1">
+              <span className={`w-full py-0.5 rounded-lg text-[10px] font-bold flex items-center justify-center transition-colors ${
+                isSelected
+                  ? 'bg-gradient-to-r from-[#C4552A] to-[#E64A19] text-white shadow-xs'
+                  : 'bg-white/5 group-hover:bg-white/10 text-[#F0DACF]'
+              }`}>
+                {isSelected
+                  ? (isAr ? 'الخطة المحددة' : isFr ? 'Formule sélectionnée' : 'Selected Plan')
+                  : (isAr ? 'اختيار' : isFr ? 'Choisir ce plan' : 'Select tier')}
+              </span>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+
+  // Helper Renderer: Voucher & Free Trial Bar
+  const renderVoucherBar = () => (
+    <div className="w-full mt-2">
+      {selectedPlanTier === 'free' ? (
+        <div className="p-1.5 px-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-between text-xs">
+          <div className="flex items-center gap-1.5 text-emerald-300">
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+            <span className="text-[10.5px]">
+              {isAr
+                ? 'خطة Free Web مفعّلة فورياً • لا تتطلب أي رمز قسيمة أو دفع مالي لبدء التشغيل.'
+                : isFr
+                ? 'Édition Free Web incluse • Lancement immédiat sans code voucher ni règlement.'
+                : 'Free Web edition included • Instant launch with zero payment or voucher required.'}
+            </span>
+          </div>
+        </div>
+      ) : (
+        <div className="p-1.5 px-2.5 rounded-xl bg-white/[0.04] border border-white/10 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-1.5">
+          <div className="flex items-center gap-1.5 text-[#FFF5EE] text-xs">
+            <Sparkles className="w-3 h-3 text-[#FF8A4C] shrink-0" />
+            <span className="text-[10.5px]">
+              {isAr
+                ? `نمط تجريبي مجاني 14 يوماً مفعل تلقائياً (${selectedPlanTier.toUpperCase()}) • دخول مباشر دون دفع.`
+                : isFr
+                ? `Mode Essai Gratuit 14 Jours inclus (${selectedPlanTier.toUpperCase()}) • Accès direct illimité.`
+                : `14-Day Free Trial included (${selectedPlanTier.toUpperCase()}) • Direct full access.`}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-1.5 shrink-0">
+            <div className="w-40 sm:w-48">
+              <LabelInput
+                field="voucherCode"
+                label={
+                  isAr
+                    ? `قسيمة (${selectedPlanTier.toUpperCase()})`
+                    : isFr
+                    ? `Voucher (${selectedPlanTier.toUpperCase()})`
+                    : `Voucher (${selectedPlanTier.toUpperCase()})`
+                }
+                value={voucherCode}
+                onChange={(val) => {
+                  setVoucherCode(String(val).toUpperCase());
+                  setPaidVoucherError(null);
+                }}
+                prefix={<KeyRound className="w-3 h-3 text-[#FF8A4C]" />}
+                height={28}
+                corner={6}
+              />
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setShowLicenseModal(true)}
+              className="px-2 py-0.5 rounded-lg bg-white/10 hover:bg-white/15 text-[#F0DACF] hover:text-white text-[10px] font-semibold border border-white/10 flex items-center justify-center gap-1 transition-all cursor-pointer whitespace-nowrap active:scale-95"
+            >
+              <Sparkles className="w-2.5 h-2.5 text-[#FF8A4C]" />
+              <span>
+                {isAr ? 'طلب ترخيص' : isFr ? 'Demander licence' : 'Request License'}
+              </span>
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
+  // Helper Renderer: Bottom Navigation & Subtext Bar
+  const renderBottomNavigation = () => (
+    <div className="mt-2 pt-2 border-t border-white/10 flex flex-col items-center shrink-0 w-full">
+      <p className="text-[10.5px] text-[#D9BEB0]/75 text-center mb-1.5 leading-relaxed max-w-lg">
+        {questionsMeta[currentStep]?.subtext}
+      </p>
+
+      <div className="flex items-center justify-between w-full">
+        {currentStep > 0 ? (
+          <button
+            type="button"
+            onClick={() => setCurrentStep((prev) => Math.max(0, prev - 1))}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-[#D9BEB0] hover:text-[#FFF5EE] hover:bg-white/5 transition-all cursor-pointer active:scale-95"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            <span>{isAr ? 'السابق' : isFr ? 'Précédent' : 'Back'}</span>
+          </button>
+        ) : (
+          <div />
+        )}
+
+        {/* Step 0: Continue button */}
+        {currentStep === 0 && (
+          <button
+            type="button"
+            onClick={() => setCurrentStep(1)}
+            className="flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-[#C4552A] to-[#E64A19] hover:from-[#d84315] hover:to-[#f4511e] shadow-[0_4px_20px_rgba(230,74,25,0.45)] transition-all cursor-pointer active:scale-95 ml-auto"
+          >
+            <span>{isAr ? 'متابعة' : isFr ? 'Continuer' : 'Continue'}</span>
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        )}
+
+        {/* Step 2: Continue button */}
+        {currentStep === 2 && (
+          <button
+            type="button"
+            onClick={() => setCurrentStep(3)}
+            className="flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-[#C4552A] to-[#E64A19] hover:from-[#d84315] hover:to-[#f4511e] shadow-[0_4px_20px_rgba(230,74,25,0.45)] transition-all cursor-pointer active:scale-95 ml-auto"
+          >
+            <span>{isAr ? 'متابعة' : isFr ? 'Continuer' : 'Continue'}</span>
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        )}
+
+        {/* Step 6: Continue button */}
+        {currentStep === 6 && (
+          <button
+            type="button"
+            onClick={() => setCurrentStep(7)}
+            className="flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-[#C4552A] to-[#E64A19] hover:from-[#d84315] hover:to-[#f4511e] shadow-[0_4px_20px_rgba(230,74,25,0.45)] transition-all cursor-pointer active:scale-95 ml-auto"
+          >
+            <span>{isAr ? 'متابعة' : isFr ? 'Continuer' : 'Continue'}</span>
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        )}
+
+        {/* Step 8: Workspace Identity Configured -> Advance to Dedicated Step 9 (Subscription Plans) */}
+        {currentStep === 8 && (
+          <button
+            type="button"
+            onClick={() => setCurrentStep(9)}
+            className="flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-[#C4552A] to-[#E64A19] hover:from-[#d84315] hover:to-[#f4511e] shadow-[0_4px_20px_rgba(230,74,25,0.45)] transition-all cursor-pointer active:scale-95 ml-auto"
+          >
+            <span>{isAr ? 'متابعة لاختيار الخطة' : isFr ? 'Continuer vers les forfaits' : 'Continue to Plans'}</span>
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        )}
+
+        {/* Step 9: Final Launch Workspace Button */}
+        {currentStep === 9 && (
+          <button
+            type="button"
+            onClick={handleLaunchWorkspace}
+            className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-[#C4552A] to-[#E64A19] hover:from-[#d84315] hover:to-[#f4511e] shadow-[0_6px_24px_rgba(230,74,25,0.5)] transition-all cursor-pointer active:scale-95 ml-auto"
+          >
+            <Rocket className="w-4 h-4" />
+            <span>
+              {isAr ? 'إطلاق مساحة العمل الآن' : isFr ? 'Lancer mon espace Atrium' : 'Launch My Workspace'}
+            </span>
+          </button>
+        )}
+      </div>
+    </div>
+  );
 
   return (
     <OnboardingBackdrop
@@ -554,7 +966,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
       {/* Cinematic Atrium Monolith Intro Animation (Plays automatically on startup) */}
       {showIntroAnimation && (
         <div
-          className={`fixed inset-0 z-50 transition-opacity duration-700 ease-out ${
+          className={`fixed inset-0 z-50 transition-opacity duration-300 ease-out ${
             isIntroDissolving ? 'opacity-0 pointer-events-none' : 'opacity-100 pointer-events-auto'
           }`}
         >
@@ -567,195 +979,110 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
         </div>
       )}
 
-      {/* Main Two-Column Workstation Canvas — Spread Out to the Sides */}
-      <main className="relative z-10 w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:px-14 xl:px-20 py-4 flex-1 min-h-0 flex items-center justify-between">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 xl:gap-20 items-center w-full max-h-full">
-          
-          {/* ========================================================================= */}
-          {/* LEFT COLUMN: HIGGSFIELD TALL PORTRAIT IMAGE CARD                          */}
-          {/* ========================================================================= */}
-          <div className="lg:col-span-5 xl:col-span-5 hidden lg:flex flex-col items-center justify-center h-full">
-            <div className="relative w-full max-w-sm sm:max-w-md lg:max-w-[430px] xl:max-w-[470px] h-[84vh] max-h-[820px] min-h-[580px] rounded-3xl onboarding-glass-card overflow-hidden shadow-[0_25px_60px_rgba(0,0,0,0.85)] border border-white/[0.08] flex flex-col justify-between group">
-              
-              {/* Ambient Radiant Glow behind the card */}
-              <div
-                className="absolute -top-20 -left-20 w-64 h-64 rounded-full blur-3xl opacity-35 pointer-events-none"
-                style={{ background: 'radial-gradient(circle, #F4511E 0%, #E64A19 32%, #782307 65%, transparent 80%)' }}
+      {/* Main Responsive Workstation Canvas */}
+      <main className="relative z-10 w-full max-w-6xl xl:max-w-7xl mx-auto px-3 sm:px-5 lg:px-6 py-2 sm:py-2.5 flex-1 min-h-0 flex flex-col justify-between items-center h-[min(86vh,730px)] min-h-[530px] max-h-[730px] overflow-hidden">
+        
+        {/* Top Micro-Dash Indicators (10 Steps: 0 to 9) */}
+        <div className="w-full flex items-center justify-center gap-1.5 mb-2 shrink-0">
+          {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((idx) => {
+            const isActive = currentStep === idx;
+            const isCompleted = currentStep > idx;
+            return (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => setCurrentStep(idx)}
+                title={`Étape ${idx + 1}`}
+                className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
+                  isActive
+                    ? 'w-8 sm:w-10 bg-gradient-to-r from-[#F4511E] to-[#E64A19] shadow-[0_0_12px_rgba(230,74,25,0.7)]'
+                    : isCompleted
+                    ? 'w-3.5 sm:w-4 bg-[#F0DACF]/50 hover:bg-[#F0DACF]/80'
+                    : 'w-3.5 sm:w-4 bg-white/20 hover:bg-white/40'
+                }`}
               />
+            );
+          })}
+        </div>
 
-              {(() => {
-                const activeSlide = PREVIEW_SLIDES[activeSlideIndex];
-                const hasCustom = activeSlideIndex === 4 && customUploadedImage;
-                const displaySrc = hasCustom ? customUploadedImage! : activeSlide.src;
-
-                return (
-                  <div className="relative w-full h-full flex flex-col justify-between">
-                    {displaySrc ? (
-                      <div className="relative w-full h-full overflow-hidden bg-black/60">
-                        <img
-                          src={displaySrc}
-                          alt={activeSlide.labelFr}
-                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                        />
-                        {/* Cinematic Vignette Overlays matching Higgsfield style */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-black/50 pointer-events-none" />
-
-                        {/* Top Floating Glass Brand Badge */}
-                        <div className="absolute top-4 left-4 z-10 flex items-center gap-2 px-3 py-1.5 rounded-full bg-[rgba(12,10,9,0.7)] backdrop-blur-md border border-white/10">
-                          <FiveCubesLogo size={18} cubeColor="#F4511E" />
-                          <span className="text-[11px] font-extrabold tracking-wider uppercase text-[#FFF5EE]">
-                            Atrium <span className="text-[#F4511E]">OS</span>
-                          </span>
-                        </div>
-
-                        {/* Slide Indicator Badge */}
-                        <div className="absolute top-4 right-4 z-10 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[rgba(12,10,9,0.7)] backdrop-blur-md border border-white/10 text-[#F4511E] text-[10px] font-mono font-bold">
-                          {activeSlideIndex + 1} / {PREVIEW_SLIDES.length}
-                        </div>
-
-                        {/* Carousel Prev/Next Arrows on Hover */}
-                        <button
-                          type="button"
-                          onClick={() => setActiveSlideIndex((prev) => (prev > 0 ? prev - 1 : PREVIEW_SLIDES.length - 1))}
-                          title={isAr ? 'الصورة السابقة' : isFr ? 'Image précédente' : 'Previous visual'}
-                          className="absolute left-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/60 hover:bg-black/90 text-[#F0DACF] hover:text-white border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-md cursor-pointer z-10 active:scale-95"
-                        >
-                          <ChevronLeft className="w-5 h-5" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setActiveSlideIndex((prev) => (prev < PREVIEW_SLIDES.length - 1 ? prev + 1 : 0))}
-                          title={isAr ? 'الصورة التالية' : isFr ? 'Image suivante' : 'Next visual'}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/60 hover:bg-black/90 text-[#F0DACF] hover:text-white border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-md cursor-pointer z-10 active:scale-95"
-                        >
-                          <ChevronRight className="w-5 h-5" />
-                        </button>
-
-                        {/* Bottom Overlay Info & Slide Selectors */}
-                        <div className="absolute bottom-4 inset-x-4 z-10 flex flex-col gap-2.5">
-                          <div className="flex items-center justify-between text-xs text-[#FFF5EE]">
-                            <span className="font-semibold truncate max-w-[240px]">
-                              {isAr ? activeSlide.labelAr : isFr ? activeSlide.labelFr : activeSlide.labelEn}
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => fileInputRef.current?.click()}
-                              className="text-[10px] text-[#F4511E] hover:underline flex items-center gap-1 cursor-pointer shrink-0 font-medium"
-                            >
-                              <Upload className="w-3.5 h-3.5" />
-                              <span>{isAr ? 'تغيير' : isFr ? 'Changer' : 'Upload'}</span>
-                            </button>
-                          </div>
-
-                          {/* Mini Slide Dots */}
-                          <div className="flex items-center gap-1.5">
-                            {PREVIEW_SLIDES.map((_, idx) => (
-                              <button
-                                key={idx}
-                                type="button"
-                                onClick={() => setActiveSlideIndex(idx)}
-                                className={`h-1.5 rounded-full transition-all cursor-pointer ${
-                                  activeSlideIndex === idx
-                                    ? 'w-8 bg-[#F4511E]'
-                                    : 'w-2 bg-white/30 hover:bg-white/60'
-                                }`}
-                              />
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    ) : (
-                      /* Architectural Empty Placeholder Frame */
-                      <div
-                        onClick={() => fileInputRef.current?.click()}
-                        className="w-full h-full rounded-2xl border-2 border-dashed border-white/20 bg-white/[0.02] hover:bg-white/[0.05] transition-all flex flex-col items-center justify-center p-6 text-center cursor-pointer group/placeholder m-2"
-                      >
-                        <div className="w-16 h-16 rounded-2xl bg-white/[0.04] border border-white/10 flex items-center justify-center mb-4 group-hover/placeholder:scale-110 transition-transform">
-                          <ImageIcon className="w-8 h-8 text-[#F4511E]" />
-                        </div>
-                        <div className="text-sm font-bold text-[#FFF5EE] mb-1.5">
-                          {isAr ? 'مساحة مخصصة للصور والمعاينات' : isFr ? "Emplacement d'Image & Maquette" : 'Image & Mockup Placeholder'}
-                        </div>
-                        <p className="text-xs text-[#D9BEB0] max-w-xs mb-4 leading-relaxed">
-                          {isAr
-                            ? 'انقر لتحميل لقطة شاشة، نموذج واجهة أو صورة مخصصة بالحجم الكامل'
-                            : isFr
-                            ? 'Cliquez pour insérer une capture d’écran, maquette ou visuel produit haute résolution'
-                            : 'Click to upload a high-resolution screenshot, UI mockup or product visual'}
-                        </p>
-                        <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-white/[0.08] border border-white/15 text-[#F4511E] text-xs font-semibold group-hover/placeholder:bg-white/[0.12] transition-colors">
-                          <Upload className="w-3.5 h-3.5" />
-                          <span>{isAr ? 'رفع صورة' : isFr ? 'Téléverser une image' : 'Upload Image'}</span>
-                        </div>
-                        <div className="mt-4 text-[10px] text-[#BFA395]/70 font-mono">
-                          Portrait / 16:10 • PNG, JPG, WebP
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                );
-              })()}
-
-              {/* Hidden File Input for Custom Upload */}
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleCustomImageUpload}
-                className="hidden"
-              />
+        {/* Workstation Body */}
+        {currentStep === 9 && step9WideView ? (
+          /* Step 9 Wide View: Full-Width 4-Column Layout */
+          <div className="w-full flex-1 min-h-0 flex flex-col justify-between overflow-hidden max-w-6xl mx-auto">
+            <div className="flex items-center justify-between mb-2 shrink-0">
+              <div>
+                <span className="text-[10px] font-mono uppercase tracking-wider text-[#FF8A4C] font-bold">
+                  {isAr ? 'المرحلة 10 من 10' : isFr ? 'Étape 10 sur 10' : 'Step 10 of 10'}
+                </span>
+                <h1 className="text-xl sm:text-2xl font-black tracking-tight text-[#FFF5EE]">
+                  {questionsMeta[9]?.title}
+                </h1>
+              </div>
+              <button
+                type="button"
+                onClick={() => setStep9WideView(false)}
+                className="text-[10.5px] font-mono text-[#D9BEB0] hover:text-white bg-white/5 hover:bg-white/10 px-2.5 py-1 rounded-lg border border-white/10 flex items-center gap-1.5 transition-all cursor-pointer"
+              >
+                <ImageIcon className="w-3 h-3 text-[#FF8A4C]" />
+                <span>{isFr ? 'Vue avec carte visuelle' : isAr ? 'عرض مع البطاقة المرئية' : 'View with visual card'}</span>
+              </button>
             </div>
+
+            <div className="w-full flex-1 min-h-0 overflow-hidden flex flex-col justify-center py-1">
+              {renderPlanCards(true)}
+              {renderVoucherBar()}
+            </div>
+
+            {renderBottomNavigation()}
           </div>
-
-          {/* ========================================================================= */}
-          {/* RIGHT COLUMN: HIGGSFIELD CENTERED QUESTIONNAIRE                           */}
-          {/* ========================================================================= */}
-          <div className="lg:col-span-7 xl:col-span-7 flex flex-col justify-between items-center w-full max-w-2xl mx-auto h-[84vh] max-h-[820px] p-5 sm:p-7 rounded-3xl onboarding-glass-card shadow-[0_20px_50px_rgba(0,0,0,0.7)] border border-white/[0.08]">
+        ) : (
+          /* Standard 2-Column Workstation: Left Image Card + Right Borderless Questionnaire */
+          <div className="w-full flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6 items-stretch overflow-hidden">
             
-            {/* Top Micro-Dash Indicators (Higgsfield Centered Specification) */}
-            <div className="w-full flex items-center justify-center gap-1.5 mb-4 sm:mb-6">
-              {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((idx) => {
-                const isActive = currentStep === idx;
-                const isCompleted = currentStep > idx;
-                return (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={() => setCurrentStep(idx)}
-                    title={`Étape ${idx + 1}`}
-                    className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
-                      isActive
-                        ? 'w-8 sm:w-10 bg-gradient-to-r from-[#F4511E] to-[#E64A19] shadow-[0_0_12px_rgba(230,74,25,0.7)]'
-                        : isCompleted
-                        ? 'w-3.5 sm:w-4 bg-[#F0DACF]/50 hover:bg-[#F0DACF]/80'
-                        : 'w-3.5 sm:w-4 bg-white/20 hover:bg-white/40'
-                    }`}
-                  />
-                );
-              })}
+            {/* Left Column: Left Card Holding the Images */}
+            <div className="hidden lg:flex lg:col-span-5 h-full min-h-0 flex-col">
+              {renderLeftImageCard()}
             </div>
 
-            {/* Question Card Header (Higgsfield Large Centered Title) */}
-            <div className="mb-4 sm:mb-6 text-center w-full shrink-0">
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-[#FFF5EE] leading-snug">
-                {questionsMeta[currentStep]?.title}
-              </h1>
-            </div>
+            {/* Right Column: Borderless Open Questionnaire */}
+            <div className="lg:col-span-7 h-full min-h-0 flex flex-col justify-between overflow-hidden">
+              
+              {/* Right Column Header: Title and Step Badge */}
+              <div className="mb-2 shrink-0">
+                <div className="flex items-center justify-between mb-0.5">
+                  <span className="text-[10px] font-mono uppercase tracking-wider text-[#FF8A4C] font-bold">
+                    {isAr ? `المرحلة ${currentStep + 1} من 10` : isFr ? `Étape ${currentStep + 1} sur 10` : `Step ${currentStep + 1} of 10`}
+                  </span>
+                  {currentStep === 9 && (
+                    <button
+                      type="button"
+                      onClick={() => setStep9WideView(true)}
+                      className="text-[10px] font-mono text-[#D9BEB0] hover:text-white bg-white/5 hover:bg-white/10 px-2 py-0.5 rounded border border-white/10 flex items-center gap-1 transition-all cursor-pointer"
+                    >
+                      <Maximize2 className="w-2.5 h-2.5 text-[#FF8A4C]" />
+                      <span>{isFr ? 'Plein écran (4 colonnes)' : isAr ? 'شاشة كاملة (4 أعمدة)' : 'Full screen (4 columns)'}</span>
+                    </button>
+                  )}
+                </div>
+                <h1 className="text-base sm:text-lg lg:text-xl font-black tracking-tight text-[#FFF5EE] leading-tight">
+                  {questionsMeta[currentStep]?.title}
+                </h1>
+              </div>
 
-            {/* Active Question Content (Compact & Sized to Fit Screen with Smooth Internal Scroll) */}
-            <div className="w-full min-h-0 flex-1 overflow-y-auto pr-1 sm:pr-2 scrollbar-thin flex flex-col my-auto py-1">
+              {/* Right Column Active Question Content Canvas (Borderless, Scaled to Fit) */}
+              <div className="w-full min-h-0 flex-1 overflow-hidden flex flex-col justify-center py-0.5">
               
               {/* ------------------------------------------------------------- */}
               {/* STEP 0: GOOGLE SSO OR WORK EMAIL VIA PROPRIETARY LABELINPUT   */}
               {/* ------------------------------------------------------------- */}
               {currentStep === 0 && (
-                <div className="space-y-3 w-full my-auto">
+                <div className="space-y-2.5 w-full my-auto">
                   {/* Primary Google SSO One-Click Experience */}
                   <button
                     type="button"
                     onClick={handleGoogleLogin}
                     disabled={isGoogleLoading}
-                    className="w-full h-11 rounded-xl bg-white hover:bg-neutral-100 text-neutral-800 text-xs font-bold transition-all flex items-center justify-center gap-2.5 shadow-md cursor-pointer disabled:opacity-75 active:scale-[0.99]"
+                    className="w-full h-10 rounded-xl bg-white hover:bg-neutral-100 text-neutral-800 text-xs font-bold transition-all flex items-center justify-center gap-2.5 shadow-md cursor-pointer disabled:opacity-75 active:scale-[0.99]"
                   >
                     {isGoogleLoading ? (
                       <div className="w-4 h-4 border-2 border-neutral-700 border-t-transparent rounded-full animate-spin" />
@@ -787,25 +1114,25 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                   </button>
 
                   {/* Elegant Glass-Matching Divider */}
-                  <div className="relative flex items-center justify-center my-1">
+                  <div className="relative flex items-center justify-center my-0.5">
                     <div className="absolute inset-0 flex items-center">
                       <div className="w-full border-t border-white/10" />
                     </div>
-                    <span className="relative px-3.5 py-0.5 text-[10px] uppercase font-bold tracking-wider text-[#F0DACF] bg-[rgba(20,17,15,0.7)] border border-white/10 rounded-full backdrop-blur-md shadow-xs">
+                    <span className="relative px-3 py-0.5 text-[9.5px] uppercase font-bold tracking-wider text-[#F0DACF] bg-[rgba(20,17,15,0.7)] border border-white/10 rounded-full backdrop-blur-md shadow-xs">
                       {isAr ? 'أو باستخدام بريدك المهني' : isFr ? 'OU AVEC UN E-MAIL PROFESSIONNEL' : 'OR WITH WORK EMAIL'}
                     </span>
                   </div>
 
                   {/* Proprietary LabelInput Text Boxes */}
-                  <div className="space-y-3 pt-1">
+                  <div className="space-y-2.5 pt-0.5">
                     <LabelInput
                       field="fullName"
                       label={isAr ? 'الاسم واللقب للمسؤول' : isFr ? 'Nom & prénom du responsable' : 'Full Name'}
                       value={fullName}
                       onChange={(val) => setFullName(String(val))}
                       prefix={<User className="w-3.5 h-3.5 text-[#FF8A4C]" />}
-                      height={42}
-                      corner={12}
+                      height={38}
+                      corner={10}
                     />
 
                     <LabelInput
@@ -815,8 +1142,8 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                       value={email}
                       onChange={(val) => setEmail(String(val))}
                       prefix={<Mail className="w-3.5 h-3.5 text-[#FF8A4C]" />}
-                      height={42}
-                      corner={12}
+                      height={38}
+                      corner={10}
                     />
 
                     <LabelInput
@@ -826,13 +1153,13 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                       value={password}
                       onChange={(val) => setPassword(String(val))}
                       prefix={<Lock className="w-3.5 h-3.5 text-[#FF8A4C]" />}
-                      height={42}
-                      corner={12}
+                      height={38}
+                      corner={10}
                     />
                   </div>
 
                   {/* Terms Checkbox with High-Contrast Warm Text */}
-                  <div className="pt-1 flex items-center gap-2">
+                  <div className="pt-0.5 flex items-center gap-2">
                     <input
                       type="checkbox"
                       id="terms"
@@ -840,7 +1167,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                       onChange={(e) => setTermsAccepted(e.target.checked)}
                       className="rounded border-white/20 bg-[rgba(20,17,15,0.6)] text-[#E8622C] focus:ring-[#E8622C] cursor-pointer"
                     />
-                    <label htmlFor="terms" className="text-xs text-[#D9BEB0] cursor-pointer select-none">
+                    <label htmlFor="terms" className="text-[11px] text-[#D9BEB0] cursor-pointer select-none">
                       {isAr
                         ? 'أوافق على شروط الاستخدام وسياسة الخصوصية لمنصة أتريوم'
                         : isFr
@@ -901,34 +1228,34 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                         key={item.id}
                         type="button"
                         onClick={() => handleSelectFrustration(item.id)}
-                        className={`flex flex-col text-left p-3 sm:p-3.5 rounded-xl border transition-all duration-200 ease-out cursor-pointer relative group hover:scale-[1.018] active:scale-[0.99] ${
+                        className={`flex flex-col text-left p-2.5 sm:p-3 rounded-xl border transition-all duration-200 ease-out cursor-pointer relative group hover:scale-[1.015] active:scale-[0.99] ${
                           isSelected
                             ? 'bg-[rgba(232,98,44,0.08)] border-white/[0.16] shadow-[0_4px_20px_rgba(0,0,0,0.4)]'
                             : 'bg-white/[0.04] border-white/[0.07] hover:border-white/20 hover:bg-white/[0.07]'
                         }`}
                       >
-                        <div className="flex items-center justify-between w-full mb-2">
+                        <div className="flex items-center justify-between w-full mb-1.5">
                           <div
-                            className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors ${
+                            className={`w-6 h-6 rounded-lg flex items-center justify-center transition-colors ${
                               isSelected ? 'bg-[rgba(232,98,44,0.18)] text-[#E8622C]' : 'bg-white/5 text-[#F0DACF] group-hover:text-white'
                             }`}
                           >
                             <Icon className="w-3.5 h-3.5" />
                           </div>
                           <div
-                            className={`w-4 h-4 rounded-full border flex items-center justify-center transition-colors ${
+                            className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center transition-colors ${
                               isSelected ? 'border-[#E8622C] bg-[#E8622C]' : 'border-white/20 group-hover:border-white/40'
                             }`}
                           >
                             {isSelected && <Check className="w-2.5 h-2.5 text-white" />}
                           </div>
                         </div>
-                        <span className={`font-semibold text-xs sm:text-sm mb-0.5 transition-colors ${
+                        <span className={`font-semibold text-xs sm:text-[13px] mb-0.5 transition-colors ${
                           isSelected ? 'text-[#E8622C]' : 'text-[#FFF5EE]'
                         }`}>
                           {item.title}
                         </span>
-                        <span className="text-[11px] text-[#D9BEB0] leading-snug">{item.desc}</span>
+                        <span className="text-[10.5px] text-[#D9BEB0] leading-tight line-clamp-2">{item.desc}</span>
                       </button>
                     );
                   })}
@@ -939,7 +1266,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
               {/* STEP 2: WHAT DO YOU WANT TO ACHIEVE (FEATURE BLUEPRINT MODAL) */}
               {/* ------------------------------------------------------------- */}
               {currentStep === 2 && (
-                <div className="space-y-2.5 w-full my-auto">
+                <div className="space-y-2 w-full my-auto">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5">
                     {[
                       {
@@ -993,59 +1320,59 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                         <div
                           key={goal.id}
                           onClick={() => handleConfirmGoalAndContinue(goal.id)}
-                          className={`p-2.5 sm:p-3 rounded-xl border transition-all duration-200 ease-out flex flex-col justify-between cursor-pointer group hover:scale-[1.018] active:scale-[0.99] ${
+                          className={`p-2 sm:p-2.5 rounded-xl border transition-all duration-200 ease-out flex flex-col justify-between cursor-pointer group hover:scale-[1.015] active:scale-[0.99] ${
                             isSelected
                               ? 'bg-[rgba(232,98,44,0.08)] border-white/[0.16] shadow-[0_4px_20px_rgba(0,0,0,0.4)]'
                               : 'bg-white/[0.04] border-white/[0.07] hover:border-white/20 hover:bg-white/[0.07]'
                           }`}
                         >
                           <div>
-                            <div className="flex items-center justify-between mb-1.5">
+                            <div className="flex items-center justify-between mb-1">
                               <div
-                                className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors ${
+                                className={`w-6 h-6 rounded-lg flex items-center justify-center transition-colors ${
                                   isSelected ? 'bg-[rgba(232,98,44,0.18)] text-[#E8622C]' : 'bg-white/5 text-[#F0DACF] group-hover:text-white'
                                 }`}
                               >
                                 <Icon className="w-3.5 h-3.5" />
                               </div>
-                              <span className="text-[10px] font-semibold text-[#D9BEB0] px-1.5 py-0.5 rounded-full bg-white/5 border border-white/10">
+                              <span className="text-[9.5px] font-semibold text-[#D9BEB0] px-1.5 py-0.5 rounded-full bg-white/5 border border-white/10">
                                 {goal.badge}
                               </span>
                             </div>
-                            <h3 className={`font-bold text-xs sm:text-sm mb-0.5 transition-colors ${
+                            <h3 className={`font-bold text-xs sm:text-[13px] mb-0.5 transition-colors ${
                               isSelected ? 'text-[#E8622C]' : 'text-[#FFF5EE]'
                             }`}>
                               {goal.title}
                             </h3>
-                            <p className="text-[11px] text-[#D9BEB0] leading-snug line-clamp-2 mb-2">{goal.summary}</p>
+                            <p className="text-[10.5px] text-[#D9BEB0] leading-tight line-clamp-2 mb-1.5">{goal.summary}</p>
                           </div>
 
-                          <div className="flex items-center gap-1.5 pt-1">
+                          <div className="flex items-center gap-1.5 pt-0.5">
                             <button
                               type="button"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleOpenGoalModal(goal.id);
                               }}
-                              className="flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg bg-white/5 hover:bg-white/10 text-[#F0DACF] hover:text-white text-xs font-semibold border border-white/10 hover:border-white/25 transition-all cursor-pointer group/btn"
+                              className="flex-1 flex items-center justify-center gap-1.5 py-1 px-2 rounded-lg bg-white/5 hover:bg-white/10 text-[#F0DACF] hover:text-white text-[11px] font-semibold border border-white/10 hover:border-white/25 transition-all cursor-pointer group/btn"
                             >
-                              <Eye className="w-3.5 h-3.5 text-[#FF8A4C] group-hover/btn:text-white" />
+                              <Eye className="w-3 h-3 text-[#FF8A4C] group-hover/btn:text-white" />
                               <span>{isAr ? 'عرض المخطط التنفيذي' : isFr ? 'Voir le schéma directeur' : 'Inspect Blueprint'}</span>
                             </button>
                             <div
-                              className={`w-7 h-7 rounded-lg border flex items-center justify-center shrink-0 transition-colors ${
+                              className={`w-6 h-6 rounded-lg border flex items-center justify-center shrink-0 transition-colors ${
                                 isSelected ? 'border-[#E8622C] bg-[#E8622C] text-white' : 'border-white/15 bg-white/5 text-[#D9BEB0] group-hover:border-white/30'
                               }`}
                               title={isAr ? 'اختيار ومتابعة' : isFr ? 'Sélectionner & continuer' : 'Select & continue'}
                             >
-                              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                              <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
                             </div>
                           </div>
                         </div>
                       );
                     })}
                   </div>
-                  <p className="text-center text-[10px] text-[#D9BEB0] pt-0.5">
+                  <p className="text-center text-[9.5px] text-[#D9BEB0] pt-0.5">
                     {isAr
                       ? '💡 انقر على البطاقة للمتابعة الفورية، أو اضغط "عرض المخطط التنفيذي" لمعاينة الآليات والأدوات المدمجة'
                       : isFr
@@ -1105,34 +1432,34 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                         key={item.id}
                         type="button"
                         onClick={() => handleSelectWorkflow(item.id)}
-                        className={`flex flex-col text-left p-3 sm:p-3.5 rounded-xl border transition-all duration-200 ease-out cursor-pointer relative group hover:scale-[1.018] active:scale-[0.99] ${
+                        className={`flex flex-col text-left p-2.5 sm:p-3 rounded-xl border transition-all duration-200 ease-out cursor-pointer relative group hover:scale-[1.015] active:scale-[0.99] ${
                           isSelected
                             ? 'bg-[rgba(232,98,44,0.08)] border-white/[0.16] shadow-[0_4px_20px_rgba(0,0,0,0.4)]'
                             : 'bg-white/[0.04] border-white/[0.07] hover:border-white/20 hover:bg-white/[0.07]'
                         }`}
                       >
-                        <div className="flex items-center justify-between w-full mb-2">
+                        <div className="flex items-center justify-between w-full mb-1.5">
                           <div
-                            className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors ${
+                            className={`w-6 h-6 rounded-lg flex items-center justify-center transition-colors ${
                               isSelected ? 'bg-[rgba(232,98,44,0.18)] text-[#E8622C]' : 'bg-white/5 text-[#F0DACF] group-hover:text-white'
                             }`}
                           >
                             <Icon className="w-3.5 h-3.5" />
                           </div>
                           <div
-                            className={`w-4 h-4 rounded-full border flex items-center justify-center transition-colors ${
+                            className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center transition-colors ${
                               isSelected ? 'border-[#E8622C] bg-[#E8622C]' : 'border-white/20 group-hover:border-white/40'
                             }`}
                           >
                             {isSelected && <Check className="w-2.5 h-2.5 text-white" />}
                           </div>
                         </div>
-                        <span className={`font-semibold text-xs sm:text-sm mb-0.5 transition-colors ${
+                        <span className={`font-semibold text-xs sm:text-[13px] mb-0.5 transition-colors ${
                           isSelected ? 'text-[#E8622C]' : 'text-[#FFF5EE]'
                         }`}>
                           {item.title}
                         </span>
-                        <span className="text-[11px] text-[#D9BEB0] leading-snug">{item.desc}</span>
+                        <span className="text-[10.5px] text-[#D9BEB0] leading-tight line-clamp-2">{item.desc}</span>
                       </button>
                     );
                   })}
@@ -1143,7 +1470,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
               {/* STEP 4: TEAM SCALE & WORKING HIERARCHY                        */}
               {/* ------------------------------------------------------------- */}
               {currentStep === 4 && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 w-full my-auto">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5 w-full my-auto">
                   {[
                     {
                       id: 'solo' as const,
@@ -1181,22 +1508,22 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                         key={item.id}
                         type="button"
                         onClick={() => handleSelectTeamScale(item.id)}
-                        className={`flex flex-col text-left p-3 sm:p-3.5 rounded-xl border transition-all duration-200 ease-out cursor-pointer relative group hover:scale-[1.018] active:scale-[0.99] ${
+                        className={`flex flex-col text-left p-2.5 sm:p-3 rounded-xl border transition-all duration-200 ease-out cursor-pointer relative group hover:scale-[1.015] active:scale-[0.99] ${
                           isSelected
                             ? 'bg-[rgba(232,98,44,0.08)] border-white/[0.16] shadow-[0_4px_20px_rgba(0,0,0,0.4)]'
                             : 'bg-white/[0.04] border-white/[0.07] hover:border-white/20 hover:bg-white/[0.07]'
                         }`}
                       >
-                        <div className="flex items-center justify-between w-full mb-2">
+                        <div className="flex items-center justify-between w-full mb-1.5">
                           <div
-                            className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors ${
+                            className={`w-6 h-6 rounded-lg flex items-center justify-center transition-colors ${
                               isSelected ? 'bg-[rgba(232,98,44,0.18)] text-[#E8622C]' : 'bg-white/5 text-[#F0DACF] group-hover:text-white'
                             }`}
                           >
                             <Icon className="w-3.5 h-3.5" />
                           </div>
                           <span
-                            className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border transition-colors ${
+                            className={`text-[9.5px] font-semibold px-2 py-0.5 rounded-full border transition-colors ${
                               isSelected
                                 ? 'bg-[rgba(232,98,44,0.18)] border-transparent text-[#E8622C]'
                                 : 'bg-white/5 border-white/10 text-[#D9BEB0]'
@@ -1205,12 +1532,12 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                             {item.badge}
                           </span>
                         </div>
-                        <span className={`font-semibold text-xs sm:text-sm mb-0.5 transition-colors ${
+                        <span className={`font-semibold text-xs sm:text-[13px] mb-0.5 transition-colors ${
                           isSelected ? 'text-[#E8622C]' : 'text-[#FFF5EE]'
                         }`}>
                           {item.title}
                         </span>
-                        <span className="text-[11px] text-[#D9BEB0] leading-snug">{item.desc}</span>
+                        <span className="text-[10.5px] text-[#D9BEB0] leading-tight line-clamp-2">{item.desc}</span>
                       </button>
                     );
                   })}
@@ -1221,7 +1548,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
               {/* STEP 5: PRIMARY PAYMENT & SETTLEMENT FLOW                     */}
               {/* ------------------------------------------------------------- */}
               {currentStep === 5 && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 w-full my-auto">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5 w-full my-auto">
                   {[
                     {
                       id: 'pos_cash' as const,
@@ -1255,34 +1582,34 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                         key={item.id}
                         type="button"
                         onClick={() => handleSelectSettlement(item.id)}
-                        className={`flex flex-col text-left p-3 sm:p-3.5 rounded-xl border transition-all duration-200 ease-out cursor-pointer relative group hover:scale-[1.018] active:scale-[0.99] ${
+                        className={`flex flex-col text-left p-2.5 sm:p-3 rounded-xl border transition-all duration-200 ease-out cursor-pointer relative group hover:scale-[1.015] active:scale-[0.99] ${
                           isSelected
                             ? 'bg-[rgba(232,98,44,0.08)] border-white/[0.16] shadow-[0_4px_20px_rgba(0,0,0,0.4)]'
                             : 'bg-white/[0.04] border-white/[0.07] hover:border-white/20 hover:bg-white/[0.07]'
                         }`}
                       >
-                        <div className="flex items-center justify-between w-full mb-2">
+                        <div className="flex items-center justify-between w-full mb-1.5">
                           <div
-                            className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors ${
+                            className={`w-6 h-6 rounded-lg flex items-center justify-center transition-colors ${
                               isSelected ? 'bg-[rgba(232,98,44,0.18)] text-[#E8622C]' : 'bg-white/5 text-[#F0DACF] group-hover:text-white'
                             }`}
                           >
                             <Icon className="w-3.5 h-3.5" />
                           </div>
                           <div
-                            className={`w-4 h-4 rounded-full border flex items-center justify-center transition-colors ${
+                            className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center transition-colors ${
                               isSelected ? 'border-[#E8622C] bg-[#E8622C]' : 'border-white/20 group-hover:border-white/40'
                             }`}
                           >
                             {isSelected && <Check className="w-2.5 h-2.5 text-white" />}
                           </div>
                         </div>
-                        <span className={`font-semibold text-xs sm:text-sm mb-0.5 transition-colors ${
+                        <span className={`font-semibold text-xs sm:text-[13px] mb-0.5 transition-colors ${
                           isSelected ? 'text-[#E8622C]' : 'text-[#FFF5EE]'
                         }`}>
                           {item.title}
                         </span>
-                        <span className="text-[11px] text-[#D9BEB0] leading-snug">{item.desc}</span>
+                        <span className="text-[10.5px] text-[#D9BEB0] leading-tight line-clamp-2">{item.desc}</span>
                       </button>
                     );
                   })}
@@ -1293,7 +1620,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
               {/* STEP 6: SPECIFIC BUSINESS DOMAIN & 160+ CATALOG SEARCH        */}
               {/* ------------------------------------------------------------- */}
               {currentStep === 6 && (
-                <div className="space-y-2.5 w-full my-auto">
+                <div className="space-y-2 w-full my-auto">
                   {/* Search Input Box */}
                   <div className="relative">
                     <Search className="w-4 h-4 absolute left-3 top-2.5 text-[#FF8A4C] pointer-events-none" />
@@ -1308,46 +1635,41 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                           ? 'Recherchez votre métier : cabinet dentaire, imprimerie, agence, salle de sport...'
                           : 'Search trade: dental clinic, bakery, gym, agency, farm, auto repair...'
                       }
-                      className="w-full bg-white/[0.05] border border-white/15 focus:border-[#E8622C] rounded-xl py-2 pl-9 pr-3 text-xs text-[#FFF5EE] placeholder-[#D9BEB0]/60 outline-none transition-colors"
+                      className="w-full bg-white/[0.05] border border-white/15 focus:border-[#E8622C] rounded-xl py-1.5 pl-9 pr-3 text-xs text-[#FFF5EE] placeholder-[#D9BEB0]/60 outline-none transition-colors"
                     />
                   </div>
 
-                  {/* Vertical Category Filter Pills */}
-                  <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-[10px] scrollbar-none">
-                    <button
-                      type="button"
-                      onClick={() => setSelectedCatalogCategoryFilter('all')}
-                      className={`px-2.5 py-1 rounded-full whitespace-nowrap transition-all cursor-pointer font-medium ${
-                        selectedCatalogCategoryFilter === 'all'
-                          ? 'bg-gradient-to-r from-[#C4785A] to-[#E8622C] text-white shadow-xs'
-                          : 'bg-white/5 text-[#D9BEB0] hover:text-white'
-                      }`}
-                    >
-                      {isAr ? 'الكل (160+ نشاط)' : isFr ? 'Tous (160+ métiers)' : 'All 160+ Trades'}
-                    </button>
-                    {(Object.keys(CATEGORY_METADATA) as BusinessCategory[]).map((catKey) => {
-                      const meta = CATEGORY_METADATA[catKey];
-                      const isFilterActive = selectedCatalogCategoryFilter === catKey;
+                  {/* Curated Sector Filter Chips (Zero Horizontal Scrolling) */}
+                  <div className="flex flex-wrap items-center gap-1.5 text-[10px]">
+                    {[
+                      { id: 'all' as const, labelFr: 'Tous (160+)', labelAr: 'الكل (160+)', labelEn: 'All (160+)' },
+                      { id: 'pos_retail' as const, labelFr: 'Commerce & POS', labelAr: 'تجارة ومطاعم', labelEn: 'Retail & POS' },
+                      { id: 'appointment_service' as const, labelFr: 'Beauté & Soins', labelAr: 'صالونات وتجميل', labelEn: 'Salon & Spa' },
+                      { id: 'health_clinic' as const, labelFr: 'Santé & Médical', labelAr: 'صحة وعيادات', labelEn: 'Medical Clinic' },
+                      { id: 'contractor_btp' as const, labelFr: 'BTP & Travaux', labelAr: 'مقاولات وبناء', labelEn: 'Construction' },
+                      { id: 'freelance_solo' as const, labelFr: 'Freelance & Studio', labelAr: 'مهن حرة واستشارات', labelEn: 'Freelance' },
+                    ].map((cat) => {
+                      const isFilterActive = selectedCatalogCategoryFilter === cat.id;
                       return (
                         <button
-                          key={catKey}
+                          key={cat.id}
                           type="button"
-                          onClick={() => setSelectedCatalogCategoryFilter(catKey)}
-                          className={`px-2.5 py-1 rounded-full whitespace-nowrap transition-all cursor-pointer font-medium ${
+                          onClick={() => setSelectedCatalogCategoryFilter(cat.id as any)}
+                          className={`px-2 py-0.5 rounded-full whitespace-nowrap transition-all cursor-pointer font-medium ${
                             isFilterActive
                               ? 'bg-gradient-to-r from-[#C4785A] to-[#E8622C] text-white shadow-xs'
                               : 'bg-white/5 text-[#D9BEB0] hover:text-white'
                           }`}
                         >
-                          {meta.title}
+                          {isAr ? cat.labelAr : isFr ? cat.labelFr : cat.labelEn}
                         </button>
                       );
                     })}
                   </div>
 
-                  {/* Trades Grid (Internal Scroll Only, Controlled Height) */}
-                  <div className="max-h-48 sm:max-h-56 overflow-y-auto pr-1 grid grid-cols-1 sm:grid-cols-2 gap-2 scrollbar-thin">
-                    {filteredCatalogTrades.map((trade) => {
+                  {/* Trades Grid (Top 6 Fitted Matches, Zero Overflow Scroll) */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1.5 sm:gap-2">
+                    {filteredCatalogTrades.slice(0, 6).map((trade) => {
                       const isSelected = selectedTradeId === trade.id;
                       const title = isAr ? trade.name.ar : isFr ? trade.name.fr : trade.name.en;
                       const badgeText = isAr ? trade.badge.ar : isFr ? trade.badge.fr : trade.badge.en;
@@ -1356,19 +1678,19 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                           key={trade.id}
                           type="button"
                           onClick={() => handleSelectTrade(trade)}
-                          className={`flex items-center justify-between p-2 sm:p-2.5 rounded-xl border text-left transition-all duration-200 ease-out cursor-pointer group hover:scale-[1.015] active:scale-[0.99] ${
+                          className={`flex items-center justify-between p-2 rounded-xl border text-left transition-all duration-200 ease-out cursor-pointer group hover:scale-[1.015] active:scale-[0.99] ${
                             isSelected
                               ? 'bg-[rgba(232,98,44,0.08)] border-white/[0.16] shadow-[0_4px_20px_rgba(0,0,0,0.4)]'
                               : 'bg-white/[0.04] border-white/[0.07] hover:border-white/20 hover:bg-white/[0.07]'
                           }`}
                         >
-                          <div className="flex flex-col min-w-0 pr-2">
+                          <div className="flex flex-col min-w-0 pr-1.5">
                             <span className={`text-xs font-semibold truncate transition-colors ${
                               isSelected ? 'text-[#E8622C]' : 'text-[#FFF5EE]'
                             }`}>
                               {title}
                             </span>
-                            <span className="text-[10px] text-[#D9BEB0] truncate">{badgeText}</span>
+                            <span className="text-[9.5px] text-[#D9BEB0] truncate">{badgeText}</span>
                           </div>
                           <div
                             className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center shrink-0 transition-colors ${
@@ -1385,11 +1707,11 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
               )}
 
               {/* ------------------------------------------------------------- */}
-              {/* STEP 7: HOW DID YOU HEAR ABOUT ATRIUM? (HIGGSFIELD PILLS)     */}
+              {/* STEP 7: HOW DID YOU HEAR ABOUT ATRIUM? (ZERO SCROLL 3x2 GRID) */}
               {/* ------------------------------------------------------------- */}
               {currentStep === 7 && (
-                <div className="space-y-3 w-full my-auto">
-                  <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
+                <div className="w-full my-auto">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-2.5">
                     {REFERRAL_SOURCES.map((src) => {
                       const isSelected = referralSource === src.id;
                       const label = isAr ? src.labelAr : isFr ? src.labelFr : src.labelEn;
@@ -1398,15 +1720,15 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                           key={src.id}
                           type="button"
                           onClick={() => handleSelectReferral(src.id)}
-                          className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl border text-xs font-medium transition-all duration-200 ease-out cursor-pointer hover:scale-[1.02] active:scale-[0.99] ${
+                          className={`flex items-center gap-2 p-2.5 sm:p-3 rounded-xl border text-xs font-medium transition-all duration-200 ease-out cursor-pointer hover:scale-[1.015] active:scale-[0.99] ${
                             isSelected
                               ? 'bg-[rgba(232,98,44,0.12)] border-white/[0.16] text-[#E8622C] shadow-[0_4px_16px_rgba(0,0,0,0.4)]'
                               : 'bg-white/[0.04] border-white/[0.07] text-[#F0DACF] hover:border-white/20 hover:text-white'
                           }`}
                         >
-                          <Compass className={`w-3.5 h-3.5 transition-colors ${isSelected ? 'text-[#E8622C]' : 'text-[#FF8A4C] opacity-80'}`} />
-                          <span>{label}</span>
-                          {isSelected && <Check className="w-3 h-3 ml-1" />}
+                          <Compass className={`w-3.5 h-3.5 shrink-0 transition-colors ${isSelected ? 'text-[#E8622C]' : 'text-[#FF8A4C] opacity-80'}`} />
+                          <span className="truncate">{label}</span>
+                          {isSelected && <Check className="w-3 h-3 ml-auto shrink-0" />}
                         </button>
                       );
                     })}
@@ -1418,15 +1740,15 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
               {/* STEP 8: WORKSPACE IDENTITY & SUBSCRIPTION PLAN SWITCHER       */}
               {/* ------------------------------------------------------------- */}
               {currentStep === 8 && (
-                <div className="space-y-2.5 sm:space-y-3 w-full my-auto">
+                <div className="space-y-2 w-full my-auto">
                   {/* Synthesis Vertical Match Pill */}
-                  <div className="p-3 rounded-xl bg-white/[0.04] border border-white/10 backdrop-blur-sm flex items-center justify-between">
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <div className="w-8 h-8 rounded-lg bg-[rgba(232,98,44,0.12)] border border-white/10 flex items-center justify-center shrink-0">
-                        <Sparkles className="w-4 h-4 text-[#FF8A4C]" />
+                  <div className="p-2 sm:p-2.5 rounded-xl bg-white/[0.04] border border-white/10 backdrop-blur-sm flex items-center justify-between">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div className="w-7 h-7 rounded-lg bg-[rgba(232,98,44,0.12)] border border-white/10 flex items-center justify-center shrink-0">
+                        <Sparkles className="w-3.5 h-3.5 text-[#FF8A4C]" />
                       </div>
                       <div className="min-w-0">
-                        <div className="text-[10px] font-bold uppercase tracking-wider text-[#FF8A4C] truncate">
+                        <div className="text-[9.5px] font-bold uppercase tracking-wider text-[#FF8A4C] truncate">
                           {isAr ? 'النظام المقترح وفق نشاطك' : isFr ? 'Système Métier Calibré' : 'Calibrated Vertical Engine'}
                         </div>
                         <div className="text-xs sm:text-sm font-extrabold text-[#FFF5EE] truncate">
@@ -1435,7 +1757,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                       </div>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
-                      <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400">
+                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400">
                         {matchConfidence}% Match
                       </span>
                       <button
@@ -1444,14 +1766,14 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                         className="p-1 text-[#D9BEB0] hover:text-white transition-colors cursor-pointer"
                         title={isAr ? 'تغيير يدوي' : isFr ? 'Changer' : 'Change'}
                       >
-                        {isOverrideSelectorOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                        {isOverrideSelectorOpen ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                       </button>
                     </div>
                   </div>
 
-                  {/* Manual Category Override Dropdown (If expanded) */}
+                  {/* Manual Category Override Dropdown (If expanded, Zero Scroll Grid) */}
                   {isOverrideSelectorOpen && (
-                    <div className="p-2 rounded-xl bg-black/40 border border-white/10 max-h-32 overflow-y-auto space-y-1 text-xs backdrop-blur-md">
+                    <div className="p-2 rounded-xl bg-black/80 border border-white/10 grid grid-cols-2 sm:grid-cols-4 gap-1 text-[10px] backdrop-blur-md">
                       {(Object.keys(CATEGORY_METADATA) as BusinessCategory[]).map((catKey) => {
                         const meta = CATEGORY_METADATA[catKey];
                         const isPicked = activeCategory === catKey;
@@ -1463,14 +1785,14 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                               setManualCategoryOverride(catKey);
                               setIsOverrideSelectorOpen(false);
                             }}
-                            className={`w-full flex items-center justify-between px-2.5 py-1 rounded-lg text-left transition-colors cursor-pointer ${
+                            className={`w-full flex items-center justify-between px-2 py-1 rounded-md text-left transition-colors cursor-pointer ${
                               isPicked
                                 ? 'bg-gradient-to-r from-[#C4785A] to-[#E8622C] text-white font-semibold'
-                                : 'hover:bg-white/5 text-[#F0DACF]'
+                                : 'hover:bg-white/10 text-[#F0DACF]'
                             }`}
                           >
-                            <span>{meta.title}</span>
-                            {isPicked && <Check className="w-3.5 h-3.5 text-white" />}
+                            <span className="truncate">{meta.title}</span>
+                            {isPicked && <Check className="w-3 h-3 text-white shrink-0 ml-1" />}
                           </button>
                         );
                       })}
@@ -1478,15 +1800,15 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                   )}
 
                   {/* Section 1: Final Workspace Identity Fields using LabelInput */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     <LabelInput
                       field="workspaceName"
                       label={isAr ? 'اسم المؤسسة / مساحة العمل' : isFr ? "Nom de l'entreprise ou marque" : 'Workspace / Business Name'}
                       value={workspaceName}
                       onChange={(val) => setWorkspaceName(String(val))}
                       prefix={<Building2 className="w-3.5 h-3.5 text-[#FF8A4C]" />}
-                      height={42}
-                      corner={12}
+                      height={38}
+                      corner={10}
                     />
 
                     <LabelInput
@@ -1496,235 +1818,48 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                       value={phone}
                       onChange={(val) => setPhone(String(val))}
                       prefix={<Phone className="w-3.5 h-3.5 text-[#FF8A4C]" />}
-                      height={42}
-                      corner={12}
+                      height={38}
+                      corner={10}
                     />
                   </div>
 
-                  {/* Section 2: Subscription Plan Switcher */}
-                  <div className="space-y-1.5 pt-0.5">
-                    <div className="flex items-center justify-between">
-                      <label className="text-[10px] font-bold uppercase tracking-wider text-[#D9BEB0]">
-                        {isAr ? 'اختر خطة التشغيل المناسبة :' : isFr ? 'Choisissez votre plan Atrium OS :' : 'Select your Atrium OS Plan:'}
-                      </label>
-                      <span className="text-[10px] text-[#D9BEB0]">
-                        {isAr ? 'ترخيص دائم مدى الحياة' : isFr ? 'Licence perpétuelle sans abonnement mensuel' : 'Perpetual lifetime license'}
+                  {/* Branch Address Summary */}
+                  <div className="p-2 rounded-xl bg-white/[0.03] border border-white/10 flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-2 text-[#D9BEB0]">
+                      <MapPin className="w-3.5 h-3.5 text-[#FF8A4C] shrink-0" />
+                      <span className="text-[11px] truncate">
+                        {isAr ? 'الفرع التشغيلي الرئيسي :' : isFr ? 'Siège & Établissement principal :' : 'Headquarters & Branch :'}{' '}
+                        <strong className="text-[#FFF5EE] font-medium">{branchAddress}</strong>
                       </span>
                     </div>
-
-                    {/* 4 Plan Tier Cards Grid */}
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                      {SUBSCRIPTION_PLANS.map((plan) => {
-                        const isSelected = selectedPlanTier === plan.tier;
-                        const badge = isAr ? plan.badgeAr : isFr ? plan.badgeFr : plan.badgeEn;
-                        const price = isAr ? plan.priceAr : isFr ? plan.priceFr : plan.priceEn;
-
-                        return (
-                          <button
-                            key={plan.tier}
-                            type="button"
-                            onClick={() => {
-                              setSelectedPlanTier(plan.tier);
-                              setPaidVoucherError(null);
-                            }}
-                            className={`flex flex-col text-left p-2 sm:p-2.5 rounded-xl border transition-all duration-200 ease-out cursor-pointer relative group hover:scale-[1.02] active:scale-[0.99] ${
-                              isSelected
-                                ? 'bg-[rgba(232,98,44,0.08)] border-white/[0.16] shadow-[0_4px_20px_rgba(0,0,0,0.4)]'
-                                : 'bg-white/[0.04] border-white/[0.07] hover:border-white/20 hover:bg-white/[0.07]'
-                            }`}
-                          >
-                            <div className="flex items-center justify-between w-full mb-1">
-                              <span
-                                className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded ${
-                                  plan.isRecommended
-                                    ? 'bg-gradient-to-r from-[#C4785A] to-[#E8622C] text-white shadow-xs'
-                                    : plan.tier === 'free'
-                                    ? 'bg-emerald-500/20 text-emerald-400'
-                                    : 'bg-white/10 text-[#F0DACF]'
-                                }`}
-                              >
-                                {badge}
-                              </span>
-                              <div
-                                className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center transition-colors shrink-0 ${
-                                  isSelected ? 'border-[#E8622C] bg-[#E8622C]' : 'border-white/20'
-                                }`}
-                              >
-                                {isSelected && <Check className="w-2.5 h-2.5 text-white" />}
-                              </div>
-                            </div>
-                            <span className={`font-extrabold text-xs sm:text-sm transition-colors ${
-                              isSelected ? 'text-[#E8622C]' : 'text-[#FFF5EE]'
-                            }`}>
-                              {plan.name}
-                            </span>
-                            <span className="font-mono text-xs font-bold text-[#FF8A4C] mt-0.5">{price}</span>
-                          </button>
-                        );
-                      })}
-                    </div>
-
-                    {/* Tier Context & Voucher Form */}
-                    {selectedPlanTier === 'free' ? (
-                      <div className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-between text-xs">
-                        <div className="flex items-center gap-2 text-emerald-300">
-                          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                          <span className="text-[11px]">
-                            {isAr
-                              ? 'خطة Free Web مفعّلة فورياً • لا تتطلب أي رمز قسيمة أو دفع مالي.'
-                              : isFr
-                              ? 'Édition Free Web incluse • Lancement immédiat sans code voucher ni paiement.'
-                              : 'Free Web edition included • Instant launch with zero payment or voucher required.'}
-                          </span>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="p-2.5 rounded-xl bg-white/[0.04] border border-white/10 space-y-2">
-                        {/* 14-Day Free Trial Notice Banner */}
-                        <div className="p-2 rounded-lg bg-[rgba(232,98,44,0.1)] border border-white/10 flex items-center justify-between text-xs">
-                          <div className="flex items-center gap-2 text-[#FFF5EE]">
-                            <Sparkles className="w-4 h-4 text-[#FF8A4C] shrink-0" />
-                            <span className="text-[11px]">
-                              {isAr
-                                ? `✨ نمط تجريبي مجاني 14 يوماً مفعل تلقائياً لخطة ${selectedPlanTier.toUpperCase()} • دخول مباشر بدون بطاقة بنكية.`
-                                : isFr
-                                ? `✨ Mode Essai Gratuit 14 Jours inclus (${selectedPlanTier.toUpperCase()}) • Accès direct illimité sans carte bancaire.`
-                                : `✨ 14-Day Free Trial included (${selectedPlanTier.toUpperCase()}) • Direct full access with zero credit card required.`}
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                          <div className="flex-1">
-                            <LabelInput
-                              field="voucherCode"
-                              label={
-                                isAr
-                                  ? `رمز قسيمة ترخيص دائم (${selectedPlanTier.toUpperCase()}) - اختياري`
-                                  : isFr
-                                  ? `Code voucher licence à vie (${selectedPlanTier.toUpperCase()}) - optionnel`
-                                  : `Lifetime license voucher (${selectedPlanTier.toUpperCase()}) - optional`
-                              }
-                              value={voucherCode}
-                              onChange={(val) => {
-                                setVoucherCode(String(val).toUpperCase());
-                                setPaidVoucherError(null);
-                              }}
-                              prefix={<KeyRound className="w-3.5 h-3.5 text-[#FF8A4C]" />}
-                              height={40}
-                              corner={10}
-                            />
-                          </div>
-
-                          <button
-                            type="button"
-                            onClick={() => setShowLicenseModal(true)}
-                            className="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-[#F0DACF] hover:text-white text-xs font-semibold border border-white/10 flex items-center justify-center gap-1.5 transition-all cursor-pointer whitespace-nowrap active:scale-95"
-                          >
-                            <Sparkles className="w-3.5 h-3.5 text-[#FF8A4C]" />
-                            <span>
-                              {isAr ? 'طلب ترخيص دائم' : isFr ? 'Demander une licence' : 'Request License'}
-                            </span>
-                          </button>
-                        </div>
-
-                        {/* Voucher Status Indicator */}
-                        {voucherValidation?.isValid && (
-                          <div className="flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-xs">
-                            <span className="flex items-center gap-1.5 text-emerald-400 font-semibold text-[11px]">
-                              <Check className="w-3.5 h-3.5" />
-                              {isAr ? 'قسيمة ترخيص صالحة مدى الحياة :' : isFr ? 'Voucher valide à vie :' : 'Valid Lifetime Voucher:'}{' '}
-                              <span className="font-mono uppercase">{voucherValidation.tierName}</span>
-                            </span>
-                            <span className="text-[10px] text-emerald-300">100% Validé</span>
-                          </div>
-                        )}
-                      </div>
-                    )}
+                    <span className="text-[10px] text-emerald-400 font-semibold px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 shrink-0">
+                      {isAr ? 'معتمد' : isFr ? 'Siège Actif' : 'Active Site'}
+                    </span>
                   </div>
+                </div>
+              )}
+
+              {/* ------------------------------------------------------------- */}
+              {/* STEP 9: STANDALONE SAAS SUBSCRIPTION PLANS MATRIX (2x2 GRID)   */}
+              {/* ------------------------------------------------------------- */}
+              {currentStep === 9 && (
+                <div className="space-y-1.5 w-full my-auto">
+                  {renderPlanCards(false)}
+                  {renderVoucherBar()}
                 </div>
               )}
             </div>
 
-            {/* Bottom Footer Actions (Higgsfield Style: Centered Helper Text + Navigation) */}
-            <div className="mt-4 pt-3 border-t border-white/10 flex flex-col items-center shrink-0 w-full">
-              <p className="text-xs sm:text-sm text-[#D9BEB0]/75 text-center mb-3 leading-relaxed max-w-lg">
-                {questionsMeta[currentStep]?.subtext}
-              </p>
-
-              <div className="flex items-center justify-between w-full">
-                {currentStep > 0 ? (
-                  <button
-                    type="button"
-                    onClick={() => setCurrentStep((prev) => Math.max(0, prev - 1))}
-                    className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold text-[#D9BEB0] hover:text-[#FFF5EE] hover:bg-white/5 transition-all cursor-pointer active:scale-95"
-                  >
-                    <ChevronLeft className="w-4 h-4" />
-                    <span>{isAr ? 'السابق' : isFr ? 'Précédent' : 'Back'}</span>
-                  </button>
-                ) : (
-                  <div />
-                )}
-
-                {/* Step 0: Needs Continue button for multi-field form */}
-                {currentStep === 0 && (
-                  <button
-                    type="button"
-                    onClick={() => setCurrentStep(1)}
-                    className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-[#C4552A] to-[#E64A19] hover:from-[#d84315] hover:to-[#f4511e] shadow-[0_4px_20px_rgba(230,74,25,0.45)] transition-all cursor-pointer active:scale-95 ml-auto"
-                  >
-                    <span>{isAr ? 'متابعة' : isFr ? 'Continuer' : 'Continue'}</span>
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
-                )}
-
-                {/* Step 2: Continue button with selected goal */}
-                {currentStep === 2 && (
-                  <button
-                    type="button"
-                    onClick={() => setCurrentStep(3)}
-                    className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-[#C4552A] to-[#E64A19] hover:from-[#d84315] hover:to-[#f4511e] shadow-[0_4px_20px_rgba(230,74,25,0.45)] transition-all cursor-pointer active:scale-95 ml-auto"
-                  >
-                    <span>{isAr ? 'متابعة' : isFr ? 'Continuer' : 'Continue'}</span>
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
-                )}
-
-                {/* Step 6: Shows Continue in case user uses search without clicking chip */}
-                {currentStep === 6 && (
-                  <button
-                    type="button"
-                    onClick={() => setCurrentStep(7)}
-                    className="flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-[#C4552A] to-[#E64A19] hover:from-[#d84315] hover:to-[#f4511e] shadow-[0_4px_20px_rgba(230,74,25,0.45)] transition-all cursor-pointer active:scale-95 ml-auto"
-                  >
-                    <span>{isAr ? 'متابعة' : isFr ? 'Continuer' : 'Continue'}</span>
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
-                )}
-
-                {/* Step 8: Final Launch Workspace Button */}
-                {currentStep === 8 && (
-                  <button
-                    type="button"
-                    onClick={handleLaunchWorkspace}
-                    className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-[#C4552A] to-[#E64A19] hover:from-[#d84315] hover:to-[#f4511e] shadow-[0_6px_24px_rgba(230,74,25,0.5)] transition-all cursor-pointer active:scale-95 ml-auto"
-                  >
-                    <Rocket className="w-4 h-4" />
-                    <span>
-                      {isAr ? 'إطلاق مساحة العمل الآن' : isFr ? 'Lancer mon espace Atrium' : 'Launch My Workspace'}
-                    </span>
-                  </button>
-                )}
-              </div>
-            </div>
+            {/* Right Column Bottom Footer Actions */}
+            {renderBottomNavigation()}
           </div>
-
         </div>
-      </main>
+      )}
+    </main>
 
       {/* Full-Bleed Plain Low-Opacity Text Footer with Replay Intro Trigger */}
-      <footer className="relative z-10 w-full text-center py-3 shrink-0 flex flex-col items-center justify-center gap-1.5">
-        <p className="text-[11px] text-[#BFA395]/60 font-medium tracking-wide pointer-events-none">
+      <footer className="relative z-10 w-full text-center py-1.5 shrink-0 flex items-center justify-center gap-4">
+        <p className="text-[10px] text-[#BFA395]/60 font-medium tracking-wide pointer-events-none">
           {isAr
             ? 'أتريوم لنظم التشغيل المؤسسية • منصة متكاملة ومرخصة لبيئة الأعمال الوطنية • إصدار الإنتاج 2026'
             : isFr
@@ -1734,9 +1869,9 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
         <button
           type="button"
           onClick={handleReplayIntro}
-          className="text-[10px] text-[#C4785A]/70 hover:text-[#FF8A4C] transition-colors cursor-pointer flex items-center gap-1 font-mono tracking-wider uppercase px-2.5 py-0.5 rounded border border-[#C4785A]/20 hover:border-[#C4785A]/50 bg-black/30 hover:bg-black/50"
+          className="text-[9.5px] text-[#C4785A]/70 hover:text-[#FF8A4C] transition-colors cursor-pointer flex items-center gap-1 font-mono tracking-wider uppercase px-2 py-0.5 rounded border border-[#C4785A]/20 hover:border-[#C4785A]/50 bg-black/30 hover:bg-black/50"
         >
-          <span>↺ Replay Intro Animation</span>
+          <span>↺ Replay</span>
         </button>
       </footer>
 

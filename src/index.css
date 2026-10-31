@@ -266,104 +266,6 @@
   background-color: #D3542E;
 }
 
-/* Kinetic Typographic Wave (Side-to-side loop passing through letters)
-   Touches two letters with light, X-axis only (no Y scaling, zero translateY) */
-@keyframes letter-loop-wave {
-  0%, 100% {
-    transform: scaleX(0.72) scaleY(1);
-    opacity: 0.38;
-    color: #18181B;
-    filter: none;
-    text-shadow: none;
-  }
-  50% {
-    transform: scaleX(2.15) scaleY(1);
-    opacity: 1;
-    color: #FFFFFF;
-    filter: drop-shadow(0 0 16px rgba(255, 255, 255, 0.85));
-    text-shadow: 0 0 20px rgba(255, 255, 255, 0.95), 0 0 38px rgba(255, 225, 195, 0.65);
-  }
-}
-
-/* 5 Cubes Logo Glides in to dock next to ATRIUM */
-@keyframes logo-dock-left {
-  0% {
-    opacity: 0;
-    transform: translateX(-60px) scale(0.85);
-  }
-  65% {
-    opacity: 1;
-    transform: translateX(4px) scale(1.04);
-  }
-  100% {
-    opacity: 1;
-    transform: translateX(0) scale(1);
-  }
-}
-
-/* ATRIUM Wordmark unlocks smoothly into final brand lockup */
-@keyframes lockup-text-expand {
-  0% {
-    opacity: 0.9;
-    transform: scaleX(0.45);
-    letter-spacing: -0.06em;
-  }
-  65% {
-    opacity: 1;
-    transform: scaleX(1.03);
-    letter-spacing: -0.015em;
-  }
-  100% {
-    opacity: 1;
-    transform: scaleX(1);
-    letter-spacing: -0.02em;
-  }
-}
-
-/* 5 Cubes Logo Glides in from the Right to its needed place */
-@keyframes logo-enter-from-right {
-  0% {
-    opacity: 0;
-    transform: translateX(280px) scale(0.9);
-  }
-  70% {
-    opacity: 1;
-    transform: translateX(-8px) scale(1.03);
-  }
-  100% {
-    opacity: 1;
-    transform: translateX(0) scale(1);
-  }
-}
-
-/* Staggered Letter-by-Letter Entrance for ATRIUM */
-@keyframes letter-stagger-pop {
-  0% {
-    opacity: 0;
-    transform: translateY(22px) scale(0.75);
-  }
-  65% {
-    opacity: 1;
-    transform: translateY(-4px) scale(1.08);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-/* Smooth Fadeout of Intro Stage — Nothing stays on background */
-@keyframes intro-stage-fadeout {
-  0% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  100% {
-    opacity: 0;
-    transform: scale(0.96) translateY(-14px);
-  }
-}
-
 /* ============================================================
    Stage 1: 'Quincunx Convergence' 5-Cube Architectural Assembly
    - Solid Terracotta Background (#D3542E)
@@ -1345,17 +1247,17 @@
   --ob-rib-dark: rgba(0, 0, 0, 0.70);
 
   /* Translucent Dark Glass Card Tokens */
-  --ob-card-bg: rgba(12, 10, 9, 0.60);
-  --ob-card-blur: 24px;
-  --ob-card-border: rgba(230, 74, 25, 0.28);
+  --ob-card-bg: rgba(12, 10, 9, 0.65);
+  --ob-card-blur: 14px;
+  --ob-card-border: rgba(255, 255, 255, 0.08);
   --ob-card-radius: 24px;
-  --ob-card-shadow: 0 24px 60px -12px rgba(0, 0, 0, 0.85), 0 0 35px -8px rgba(230, 74, 25, 0.18);
+  --ob-card-shadow: 0 24px 60px -12px rgba(0, 0, 0, 0.85);
 
   /* Inner Glass Boxes */
   --ob-inner-bg: rgba(255, 255, 255, 0.035);
-  --ob-inner-border: rgba(230, 74, 25, 0.20);
-  --ob-inner-selected-bg: rgba(230, 74, 25, 0.16);
-  --ob-inner-selected-border: #E64A19;
+  --ob-inner-border: rgba(255, 255, 255, 0.08);
+  --ob-inner-selected-bg: rgba(232, 98, 44, 0.08);
+  --ob-inner-selected-border: rgba(255, 255, 255, 0.14);
 
   /* High-Contrast Warm Text Hierarchy (All > 7.5:1 on dark glass, WCAG AAA compliant) */
   --ob-text-heading: #FFF5EE;  /* 17.5:1 Contrast - Headings & Titles */
@@ -1388,6 +1290,8 @@
   z-index: 1;
   pointer-events: none;
   overflow: hidden;
+  contain: strict;
+  transform: translateZ(0);
 }
 
 .onboarding-glow {
@@ -1396,6 +1300,8 @@
   mix-blend-mode: screen;
   will-change: transform;
   pointer-events: none;
+  contain: layout paint;
+  transform: translateZ(0);
 }
 
 /* Glow 1: Lower-Left Deep Fiery Orange Radiant Core */
@@ -1414,7 +1320,7 @@
     rgba(120, 35, 7, 0.35) 48%,
     transparent 62%
   );
-  filter: blur(65px);
+  filter: blur(50px);
   animation: ob-glow-drift-1 48s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
@@ -1435,7 +1341,7 @@
     rgba(120, 35, 7, 0.25) 60%,
     transparent 68%
   );
-  filter: blur(60px);
+  filter: blur(45px);
   animation: ob-glow-drift-2 54s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
@@ -1455,7 +1361,7 @@
     var(--ob-ember) 48%,
     transparent 64%
   );
-  filter: blur(55px);
+  filter: blur(40px);
   animation: ob-glow-drift-3 42s ease-in-out infinite;
 }
 
@@ -1487,7 +1393,7 @@
   -webkit-backdrop-filter: blur(var(--ob-blur));
 }
 
-/* Layer 4: Tactile SVG Noise Grain Overlay (4% Anti-Banding Dither) */
+/* Layer 4: High-Performance Static Noise Dither Texture */
 .onboarding-layer-grain {
   position: absolute;
   inset: 0;
@@ -1495,8 +1401,9 @@
   height: 100%;
   z-index: 3;
   pointer-events: none;
-  opacity: 0.04;
-  mix-blend-mode: overlay;
+  opacity: 0.025;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.5) 1px, transparent 1px);
+  background-size: 16px 16px;
 }
 
 /* Foreground Content Canvas */

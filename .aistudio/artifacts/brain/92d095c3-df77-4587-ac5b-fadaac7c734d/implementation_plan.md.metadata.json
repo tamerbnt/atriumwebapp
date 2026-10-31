@@ -1,0 +1,6 @@
+{
+  "summary":  "Restored the left card holding the showcase images and custom upload dropzone across onboarding steps.\nPreserved the borderless open flow on the right column without the bounding right card frame.\nProvided intelligent slide synchronization by step, plus full-screen 4-column toggle on the dedicated plan step.",
+  "updatedAt":  "2026-10-31T23:08:11.028514555Z",
+  "requestFeedback":  true,
+  "userFacing":  true
+}

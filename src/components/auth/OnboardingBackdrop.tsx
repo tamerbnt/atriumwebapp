@@ -94,23 +94,8 @@ export const OnboardingBackdrop: React.FC<OnboardingBackdropProps> = ({
       {/* LAYER 3 - FLUTED RIBS: Mask-Tied to Light Areas with 2-4px Optical Refraction */}
       <div className="onboarding-layer-ribs" aria-hidden="true" />
 
-      {/* LAYER 4 - GRAIN: 4% Tactile SVG Dither Overlay (Banding Protection) */}
-      <svg
-        className="onboarding-layer-grain"
-        aria-hidden="true"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <filter id="atrium-ob-grain-filter">
-          <feTurbulence
-            type="fractalNoise"
-            baseFrequency="0.75"
-            numOctaves="3"
-            stitchTiles="stitch"
-          />
-          <feColorMatrix type="saturate" values="0" />
-        </filter>
-        <rect width="100%" height="100%" filter="url(#atrium-ob-grain-filter)" />
-      </svg>
+      {/* LAYER 4 - HIGH-PERFORMANCE STATIC NOISE TEXTURE */}
+      <div className="onboarding-layer-grain pointer-events-none" aria-hidden="true" />
 
       {/* FOREGROUND CONTENT WORKSPACE */}
       <div className="onboarding-backdrop-content">
