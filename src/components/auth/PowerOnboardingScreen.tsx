@@ -21,7 +21,9 @@ import {
   FileText,
   CreditCard,
   Building,
-  RotateCcw,
+  Image as ImageIcon,
+  Upload,
+  Maximize2,
   Target,
   ArrowRight,
   Eye,
@@ -58,7 +60,7 @@ import {
   FeatureBlueprintModal,
   UniversalStrategicGoalId,
 } from '../modals/FeatureBlueprintModal';
-import { AtriumMonolith, FiveCubesLogo } from './AtriumMonolith';
+import { FiveCubesLogo } from './AtriumMonolith';
 import { LabelInput } from '../ui/LabelInput';
 import { OnboardingBackdrop } from './OnboardingBackdrop';
 
@@ -162,19 +164,63 @@ const REFERRAL_SOURCES = [
 export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
   onComplete,
 }) => {
-  const { completeOnboarding, language, setLanguage } = useAtriumStore();
+  const { completeOnboarding, language } = useAtriumStore();
 
-  // Stage 1: Cinematic Intro Animation & Seamless Dissolve
-  const [showIntroAnimation, setShowIntroAnimation] = useState(true);
-  const [isIntroDissolving, setIsIntroDissolving] = useState(false);
-  const [introReplayKey, setIntroReplayKey] = useState(0);
+  // Image Showcase / Placeholder State for Right Column
+  const PREVIEW_SLIDES = useMemo(
+    () => [
+      {
+        id: 'slide_1',
+        src: '/slides/slide_1.jpg',
+        labelFr: 'Équipe & Direction Opérationnelle',
+        labelAr: 'الفريق والإدارة التشغيلية',
+        labelEn: 'Team & Operations',
+        tag: '01',
+      },
+      {
+        id: 'slide_2',
+        src: '/slides/slide_2.jpg',
+        labelFr: 'Cockpit & Espaces de Travail',
+        labelAr: 'لوحة القيادة ومساحة العمل',
+        labelEn: 'Workspace & Cockpit',
+        tag: '02',
+      },
+      {
+        id: 'slide_3',
+        src: '/slides/slide_3.jpg',
+        labelFr: 'Point de Vente & Encaissements',
+        labelAr: 'نقطة البيع والتحصيل',
+        labelEn: 'Smart POS & Settlement',
+        tag: '03',
+      },
+      {
+        id: 'placeholder',
+        src: '',
+        labelFr: 'Emplacement Libre / Mockup Frame',
+        labelAr: 'إطار مخصص لإضافة صورة',
+        labelEn: 'Custom Image Placeholder',
+        tag: '04',
+      },
+    ],
+    []
+  );
 
-  const handleIntroCompleteOrSkip = () => {
-    setIsIntroDissolving(true);
-    setTimeout(() => {
-      setShowIntroAnimation(false);
-      setIsIntroDissolving(false);
-    }, 600);
+  const [activeSlideIndex, setActiveSlideIndex] = useState(0);
+  const [customUploadedImage, setCustomUploadedImage] = useState<string | null>(null);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const handleCustomImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        if (evt.target?.result) {
+          setCustomUploadedImage(evt.target.result as string);
+          setActiveSlideIndex(3);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   // Stage 2: 9 Conversational Question Cards (Indices 0 to 8)
@@ -472,89 +518,21 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
   return (
     <OnboardingBackdrop
       variant="dark"
-      ribPitch={11}
-      ribOpacity={0.10}
-      blur={4}
+      ribPitch={14}
+      ribOpacity={0.12}
+      blur={3}
       dir={isAr ? 'rtl' : 'ltr'}
-      className="dark selection:bg-[#C4785A] selection:text-white"
+      className="dark selection:bg-[#E64A19] selection:text-white"
     >
 
-      {/* Seamless Dissolving Cinematic Intro Monolith Overlay */}
-      {showIntroAnimation && (
-        <div
-          className={`fixed inset-0 z-50 transition-opacity duration-600 ease-out ${
-            isIntroDissolving ? 'opacity-0 pointer-events-none' : 'opacity-100 pointer-events-auto'
-          }`}
-        >
-          <AtriumMonolith
-            isIntroActive={true}
-            replayKey={introReplayKey}
-            onIntroComplete={handleIntroCompleteOrSkip}
-            onSkip={handleIntroCompleteOrSkip}
-          />
-        </div>
-      )}
-
-      {/* Discreet Floating Utility Controls (Language & Intro Replay) - No Top Bar or Logo */}
-      <aside aria-label="Language and Display Controls" className="absolute top-4 right-4 sm:top-6 sm:right-6 z-30 flex items-center gap-2">
-        <button
-          onClick={() => {
-            setIsIntroDissolving(false);
-            setIntroReplayKey((k) => k + 1);
-            setShowIntroAnimation(true);
-          }}
-          title={isAr ? 'إعادة مشاهدة العرض الحركي' : isFr ? "Revoir l'animation" : 'Replay Animation'}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/30 hover:bg-black/50 text-neutral-300 text-xs font-medium border border-white/10 backdrop-blur-md transition-all cursor-pointer active:scale-95"
-        >
-          <RotateCcw className="w-3 h-3 text-[#C4785A]" />
-          <span className="hidden sm:inline">
-            {isAr ? 'إعادة العرض' : isFr ? 'Rejouer intro' : 'Replay Intro'}
-          </span>
-        </button>
-
-        {/* Tri-Lingual Language Switcher */}
-        <div className="flex items-center bg-black/30 backdrop-blur-md border border-white/10 rounded-full p-1 text-xs">
-          <button
-            onClick={() => setLanguage('fr')}
-            className={`px-2.5 py-1 rounded-full font-medium transition-all ${
-              language === 'fr'
-                ? 'bg-[#C4785A] text-white shadow-xs'
-                : 'text-neutral-400 hover:text-white'
-            }`}
-          >
-            FR
-          </button>
-          <button
-            onClick={() => setLanguage('ar')}
-            className={`px-2.5 py-1 rounded-full font-medium transition-all ${
-              language === 'ar'
-                ? 'bg-[#C4785A] text-white shadow-xs'
-                : 'text-neutral-400 hover:text-white'
-            }`}
-          >
-            العربية
-          </button>
-          <button
-            onClick={() => setLanguage('en')}
-            className={`px-2.5 py-1 rounded-full font-medium transition-all ${
-              language === 'en'
-                ? 'bg-[#C4785A] text-white shadow-xs'
-                : 'text-neutral-400 hover:text-white'
-            }`}
-          >
-            EN
-          </button>
-        </div>
-      </aside>
-
-      {/* Main Two-Column Workstation Canvas (Fit to Viewport, Zero Document Scroll) */}
-      <main className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 py-2 flex-1 min-h-0 flex items-center justify-center">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center w-full max-h-full">
+      {/* Main Two-Column Workstation Canvas — Spread Out to the Sides */}
+      <main className="relative z-10 w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:px-14 xl:px-20 py-4 flex-1 min-h-0 flex items-center justify-between">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 xl:gap-20 items-center w-full max-h-full">
           
           {/* ========================================================================= */}
           {/* LEFT COLUMN: THE FOCUSED SINGLE QUESTION CARD (HIGGSFIELD SPECIFICATION)  */}
           {/* ========================================================================= */}
-          <div className="lg:col-span-7 flex flex-col justify-center max-w-xl mx-auto w-full p-4 sm:p-5 rounded-2xl onboarding-glass-card">
+          <div className="lg:col-span-7 xl:col-span-7 flex flex-col justify-center max-w-xl w-full lg:mr-auto justify-self-start p-4 sm:p-5 rounded-3xl onboarding-glass-card">
             
             {/* Top Micro-Dash Indicators (9 clickable dashes for 0 to 8) */}
             <div className="flex items-center gap-1.5 mb-3 sm:mb-4">
@@ -569,9 +547,9 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                     title={`Étape ${idx + 1}`}
                     className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
                       isActive
-                        ? 'w-7 sm:w-8 bg-[#C4785A] shadow-[0_0_10px_rgba(196,120,90,0.6)]'
+                        ? 'w-7 sm:w-8 bg-gradient-to-r from-[#F4511E] to-[#E64A19] shadow-[0_0_12px_rgba(230,74,25,0.7)]'
                         : isCompleted
-                        ? 'w-3.5 sm:w-4 bg-neutral-400 hover:bg-neutral-300'
+                        ? 'w-3.5 sm:w-4 bg-[#F0DACF]/50 hover:bg-[#F0DACF]/80'
                         : 'w-3.5 sm:w-4 bg-white/20 hover:bg-white/40'
                     }`}
                   />
@@ -581,10 +559,10 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
 
             {/* Question Card Header (Compact, Responsive, No Multiline Sprawl) */}
             <div className="mb-3 sm:mb-4">
-              <h1 className="text-xl sm:text-2xl font-black tracking-tight text-white mb-1 leading-snug">
+              <h1 className="text-xl sm:text-2xl font-black tracking-tight text-[#FFF5EE] mb-1 leading-snug">
                 {questionsMeta[currentStep]?.title}
               </h1>
-              <p className="text-xs sm:text-sm text-neutral-200 leading-relaxed line-clamp-1 sm:line-clamp-none">
+              <p className="text-xs sm:text-sm text-[#F0DACF] leading-relaxed line-clamp-1 sm:line-clamp-none">
                 {questionsMeta[currentStep]?.subtext}
               </p>
             </div>
@@ -633,12 +611,12 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                     </span>
                   </button>
 
-                  {/* Elegant Divider */}
+                  {/* Elegant Glass-Matching Divider */}
                   <div className="relative flex items-center justify-center my-1">
                     <div className="absolute inset-0 flex items-center">
-                      <div className="w-full border-t border-white/10" />
+                      <div className="w-full border-t border-[rgba(232,98,44,0.18)]" />
                     </div>
-                    <span className="relative px-3 text-[10px] uppercase font-bold tracking-wider text-neutral-400 bg-[#0C0C0E]">
+                    <span className="relative px-3.5 py-0.5 text-[10px] uppercase font-bold tracking-wider text-[#F0DACF] bg-[rgba(20,17,15,0.7)] border border-[rgba(232,98,44,0.25)] rounded-full backdrop-blur-md shadow-xs">
                       {isAr ? 'أو باستخدام بريدك المهني' : isFr ? 'OU AVEC UN E-MAIL PROFESSIONNEL' : 'OR WITH WORK EMAIL'}
                     </span>
                   </div>
@@ -650,7 +628,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                       label={isAr ? 'الاسم واللقب للمسؤول' : isFr ? 'Nom & prénom du responsable' : 'Full Name'}
                       value={fullName}
                       onChange={(val) => setFullName(String(val))}
-                      prefix={<User className="w-3.5 h-3.5" />}
+                      prefix={<User className="w-3.5 h-3.5 text-[#FF8A4C]" />}
                       height={42}
                       corner={12}
                     />
@@ -661,7 +639,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                       label={isAr ? 'البريد الإلكتروني المهني' : isFr ? 'E-mail professionnel' : 'Work Email'}
                       value={email}
                       onChange={(val) => setEmail(String(val))}
-                      prefix={<Mail className="w-3.5 h-3.5" />}
+                      prefix={<Mail className="w-3.5 h-3.5 text-[#FF8A4C]" />}
                       height={42}
                       corner={12}
                     />
@@ -672,22 +650,22 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                       label={isAr ? 'كلمة المرور' : isFr ? 'Mot de passe sécurisé' : 'Secure Password'}
                       value={password}
                       onChange={(val) => setPassword(String(val))}
-                      prefix={<Lock className="w-3.5 h-3.5" />}
+                      prefix={<Lock className="w-3.5 h-3.5 text-[#FF8A4C]" />}
                       height={42}
                       corner={12}
                     />
                   </div>
 
-                  {/* Terms Checkbox */}
+                  {/* Terms Checkbox with High-Contrast Warm Text */}
                   <div className="pt-1 flex items-center gap-2">
                     <input
                       type="checkbox"
                       id="terms"
                       checked={termsAccepted}
                       onChange={(e) => setTermsAccepted(e.target.checked)}
-                      className="rounded border-white/20 bg-neutral-900 text-[#C4785A] focus:ring-[#C4785A] cursor-pointer"
+                      className="rounded border-[rgba(232,98,44,0.3)] bg-[rgba(20,17,15,0.6)] text-[#E8622C] focus:ring-[#E8622C] cursor-pointer"
                     />
-                    <label htmlFor="terms" className="text-[11px] text-neutral-400 cursor-pointer">
+                    <label htmlFor="terms" className="text-xs text-[#D9BEB0] cursor-pointer select-none">
                       {isAr
                         ? 'أوافق على شروط الاستخدام وسياسة الخصوصية لمنصة أتريوم'
                         : isFr
@@ -750,28 +728,28 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                         onClick={() => handleSelectFrustration(item.id)}
                         className={`flex flex-col text-left p-3 sm:p-3.5 rounded-xl border transition-all cursor-pointer relative group ${
                           isSelected
-                            ? 'bg-[#1F1D1B] border-[#C4785A] shadow-[0_0_14px_rgba(196,120,90,0.25)]'
-                            : 'bg-[#18181B] border-white/10 hover:border-white/25 hover:bg-[#1C1C1F]'
+                            ? 'bg-[rgba(232,98,44,0.14)] border-[#E8622C] shadow-[0_0_16px_rgba(232,98,44,0.3)]'
+                            : 'bg-white/[0.04] border-[rgba(232,98,44,0.18)] hover:border-[rgba(232,98,44,0.35)] hover:bg-white/[0.07]'
                         }`}
                       >
                         <div className="flex items-center justify-between w-full mb-2">
                           <div
                             className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors ${
-                              isSelected ? 'bg-[#C4785A] text-white' : 'bg-white/5 text-neutral-400 group-hover:text-white'
+                              isSelected ? 'bg-gradient-to-r from-[#C4785A] to-[#E8622C] text-white' : 'bg-white/5 text-[#F0DACF] group-hover:text-white'
                             }`}
                           >
                             <Icon className="w-3.5 h-3.5" />
                           </div>
                           <div
                             className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center transition-colors ${
-                              isSelected ? 'border-[#C4785A] bg-[#C4785A]' : 'border-white/20'
+                              isSelected ? 'border-[#E8622C] bg-[#E8622C]' : 'border-[rgba(232,98,44,0.3)]'
                             }`}
                           >
                             {isSelected && <Check className="w-2.5 h-2.5 text-white" />}
                           </div>
                         </div>
-                        <span className="font-semibold text-xs sm:text-sm text-white mb-0.5">{item.title}</span>
-                        <span className="text-[11px] text-neutral-400 leading-snug">{item.desc}</span>
+                        <span className="font-semibold text-xs sm:text-sm text-[#FFF5EE] mb-0.5">{item.title}</span>
+                        <span className="text-[11px] text-[#D9BEB0] leading-snug">{item.desc}</span>
                       </button>
                     );
                   })}
@@ -838,25 +816,25 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                           onClick={() => handleConfirmGoalAndContinue(goal.id)}
                           className={`p-2.5 sm:p-3 rounded-xl border transition-all flex flex-col justify-between cursor-pointer group ${
                             isSelected
-                              ? 'bg-[#1F1D1B] border-[#C4785A] shadow-[0_0_12px_rgba(196,120,90,0.25)]'
-                              : 'bg-[#18181B] border-white/10 hover:border-white/20 hover:bg-[#1C1C1F]'
+                              ? 'bg-[rgba(232,98,44,0.14)] border-[#E8622C] shadow-[0_0_16px_rgba(232,98,44,0.3)]'
+                              : 'bg-white/[0.04] border-[rgba(232,98,44,0.18)] hover:border-[rgba(232,98,44,0.35)] hover:bg-white/[0.07]'
                           }`}
                         >
                           <div>
                             <div className="flex items-center justify-between mb-1.5">
                               <div
                                 className={`w-7 h-7 rounded-lg flex items-center justify-center ${
-                                  isSelected ? 'bg-[#C4785A] text-white' : 'bg-white/5 text-neutral-400 group-hover:text-white'
+                                  isSelected ? 'bg-gradient-to-r from-[#C4785A] to-[#E8622C] text-white' : 'bg-white/5 text-[#F0DACF] group-hover:text-white'
                                 }`}
                               >
                                 <Icon className="w-3.5 h-3.5" />
                               </div>
-                              <span className="text-[10px] font-semibold text-neutral-400 px-1.5 py-0.5 rounded-full bg-white/5 border border-white/5">
+                              <span className="text-[10px] font-semibold text-[#D9BEB0] px-1.5 py-0.5 rounded-full bg-white/5 border border-white/10">
                                 {goal.badge}
                               </span>
                             </div>
-                            <h3 className="font-bold text-xs sm:text-sm text-white mb-0.5">{goal.title}</h3>
-                            <p className="text-[11px] text-neutral-400 leading-snug line-clamp-2 mb-2">{goal.summary}</p>
+                            <h3 className="font-bold text-xs sm:text-sm text-[#FFF5EE] mb-0.5">{goal.title}</h3>
+                            <p className="text-[11px] text-[#D9BEB0] leading-snug line-clamp-2 mb-2">{goal.summary}</p>
                           </div>
 
                           <div className="flex items-center gap-1.5 pt-1">
@@ -866,14 +844,14 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                                 e.stopPropagation();
                                 handleOpenGoalModal(goal.id);
                               }}
-                              className="flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg bg-white/5 hover:bg-[#C4785A] hover:text-white text-neutral-300 text-xs font-semibold border border-white/10 hover:border-transparent transition-all cursor-pointer group/btn"
+                              className="flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg bg-white/5 hover:bg-gradient-to-r hover:from-[#C4785A] hover:to-[#E8622C] hover:text-white text-[#F0DACF] text-xs font-semibold border border-[rgba(232,98,44,0.2)] hover:border-transparent transition-all cursor-pointer group/btn"
                             >
-                              <Eye className="w-3.5 h-3.5 text-[#C4785A] group-hover/btn:text-white" />
+                              <Eye className="w-3.5 h-3.5 text-[#FF8A4C] group-hover/btn:text-white" />
                               <span>{isAr ? 'عرض المخطط التنفيذي' : isFr ? 'Voir le schéma directeur' : 'Inspect Blueprint'}</span>
                             </button>
                             <div
                               className={`w-7 h-7 rounded-lg border flex items-center justify-center shrink-0 transition-colors ${
-                                isSelected ? 'border-[#C4785A] bg-[#C4785A] text-white' : 'border-white/15 bg-white/5 text-neutral-400'
+                                isSelected ? 'border-[#E8622C] bg-[#E8622C] text-white' : 'border-[rgba(232,98,44,0.3)] bg-white/5 text-[#D9BEB0]'
                               }`}
                               title={isAr ? 'اختيار ومتابعة' : isFr ? 'Sélectionner & continuer' : 'Select & continue'}
                             >
@@ -884,7 +862,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                       );
                     })}
                   </div>
-                  <p className="text-center text-[10px] text-neutral-400 pt-0.5">
+                  <p className="text-center text-[10px] text-[#D9BEB0] pt-0.5">
                     {isAr
                       ? '💡 انقر على البطاقة للمتابعة الفورية، أو اضغط "عرض المخطط التنفيذي" لمعاينة الآليات والأدوات المدمجة'
                       : isFr
@@ -946,28 +924,28 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                         onClick={() => handleSelectWorkflow(item.id)}
                         className={`flex flex-col text-left p-3 sm:p-3.5 rounded-xl border transition-all cursor-pointer relative group ${
                           isSelected
-                            ? 'bg-[#1F1D1B] border-[#C4785A] shadow-[0_0_14px_rgba(196,120,90,0.25)]'
-                            : 'bg-[#18181B] border-white/10 hover:border-white/25 hover:bg-[#1C1C1F]'
+                            ? 'bg-[rgba(232,98,44,0.14)] border-[#E8622C] shadow-[0_0_16px_rgba(232,98,44,0.3)]'
+                            : 'bg-white/[0.04] border-[rgba(232,98,44,0.18)] hover:border-[rgba(232,98,44,0.35)] hover:bg-white/[0.07]'
                         }`}
                       >
                         <div className="flex items-center justify-between w-full mb-2">
                           <div
                             className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors ${
-                              isSelected ? 'bg-[#C4785A] text-white' : 'bg-white/5 text-neutral-400 group-hover:text-white'
+                              isSelected ? 'bg-gradient-to-r from-[#C4785A] to-[#E8622C] text-white' : 'bg-white/5 text-[#F0DACF] group-hover:text-white'
                             }`}
                           >
                             <Icon className="w-3.5 h-3.5" />
                           </div>
                           <div
                             className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center transition-colors ${
-                              isSelected ? 'border-[#C4785A] bg-[#C4785A]' : 'border-white/20'
+                              isSelected ? 'border-[#E8622C] bg-[#E8622C]' : 'border-[rgba(232,98,44,0.3)]'
                             }`}
                           >
                             {isSelected && <Check className="w-2.5 h-2.5 text-white" />}
                           </div>
                         </div>
-                        <span className="font-semibold text-xs sm:text-sm text-white mb-0.5">{item.title}</span>
-                        <span className="text-[11px] text-neutral-400 leading-snug">{item.desc}</span>
+                        <span className="font-semibold text-xs sm:text-sm text-[#FFF5EE] mb-0.5">{item.title}</span>
+                        <span className="text-[11px] text-[#D9BEB0] leading-snug">{item.desc}</span>
                       </button>
                     );
                   })}
@@ -1018,14 +996,14 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                         onClick={() => handleSelectTeamScale(item.id)}
                         className={`flex flex-col text-left p-3 sm:p-3.5 rounded-xl border transition-all cursor-pointer relative group ${
                           isSelected
-                            ? 'bg-[#1F1D1B] border-[#C4785A] shadow-[0_0_14px_rgba(196,120,90,0.25)]'
-                            : 'bg-[#18181B] border-white/10 hover:border-white/25 hover:bg-[#1C1C1F]'
+                            ? 'bg-[rgba(232,98,44,0.14)] border-[#E8622C] shadow-[0_0_16px_rgba(232,98,44,0.3)]'
+                            : 'bg-white/[0.04] border-[rgba(232,98,44,0.18)] hover:border-[rgba(232,98,44,0.35)] hover:bg-white/[0.07]'
                         }`}
                       >
                         <div className="flex items-center justify-between w-full mb-2">
                           <div
                             className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors ${
-                              isSelected ? 'bg-[#C4785A] text-white' : 'bg-white/5 text-neutral-400 group-hover:text-white'
+                              isSelected ? 'bg-gradient-to-r from-[#C4785A] to-[#E8622C] text-white' : 'bg-white/5 text-[#F0DACF] group-hover:text-white'
                             }`}
                           >
                             <Icon className="w-3.5 h-3.5" />
@@ -1033,15 +1011,15 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                           <span
                             className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${
                               isSelected
-                                ? 'bg-[#C4785A]/20 border-[#C4785A]/40 text-[#E09070]'
-                                : 'bg-white/5 border-white/10 text-neutral-400'
+                                ? 'bg-[rgba(232,98,44,0.2)] border-[rgba(232,98,44,0.4)] text-[#FF8A4C]'
+                                : 'bg-white/5 border-white/10 text-[#D9BEB0]'
                             }`}
                           >
                             {item.badge}
                           </span>
                         </div>
-                        <span className="font-semibold text-xs sm:text-sm text-white mb-0.5">{item.title}</span>
-                        <span className="text-[11px] text-neutral-400 leading-snug">{item.desc}</span>
+                        <span className="font-semibold text-xs sm:text-sm text-[#FFF5EE] mb-0.5">{item.title}</span>
+                        <span className="text-[11px] text-[#D9BEB0] leading-snug">{item.desc}</span>
                       </button>
                     );
                   })}
@@ -1088,28 +1066,28 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                         onClick={() => handleSelectSettlement(item.id)}
                         className={`flex flex-col text-left p-3 sm:p-3.5 rounded-xl border transition-all cursor-pointer relative group ${
                           isSelected
-                            ? 'bg-[#1F1D1B] border-[#C4785A] shadow-[0_0_14px_rgba(196,120,90,0.25)]'
-                            : 'bg-[#18181B] border-white/10 hover:border-white/25 hover:bg-[#1C1C1F]'
+                            ? 'bg-[rgba(232,98,44,0.14)] border-[#E8622C] shadow-[0_0_16px_rgba(232,98,44,0.3)]'
+                            : 'bg-white/[0.04] border-[rgba(232,98,44,0.18)] hover:border-[rgba(232,98,44,0.35)] hover:bg-white/[0.07]'
                         }`}
                       >
                         <div className="flex items-center justify-between w-full mb-2">
                           <div
                             className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors ${
-                              isSelected ? 'bg-[#C4785A] text-white' : 'bg-white/5 text-neutral-400 group-hover:text-white'
+                              isSelected ? 'bg-gradient-to-r from-[#C4785A] to-[#E8622C] text-white' : 'bg-white/5 text-[#F0DACF] group-hover:text-white'
                             }`}
                           >
                             <Icon className="w-3.5 h-3.5" />
                           </div>
                           <div
                             className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center transition-colors ${
-                              isSelected ? 'border-[#C4785A] bg-[#C4785A]' : 'border-white/20'
+                              isSelected ? 'border-[#E8622C] bg-[#E8622C]' : 'border-[rgba(232,98,44,0.3)]'
                             }`}
                           >
                             {isSelected && <Check className="w-2.5 h-2.5 text-white" />}
                           </div>
                         </div>
-                        <span className="font-semibold text-xs sm:text-sm text-white mb-0.5">{item.title}</span>
-                        <span className="text-[11px] text-neutral-400 leading-snug">{item.desc}</span>
+                        <span className="font-semibold text-xs sm:text-sm text-[#FFF5EE] mb-0.5">{item.title}</span>
+                        <span className="text-[11px] text-[#D9BEB0] leading-snug">{item.desc}</span>
                       </button>
                     );
                   })}
@@ -1123,7 +1101,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                 <div className="space-y-2.5">
                   {/* Search Input Box */}
                   <div className="relative">
-                    <Search className="w-4 h-4 absolute left-3 top-2.5 text-neutral-400 pointer-events-none" />
+                    <Search className="w-4 h-4 absolute left-3 top-2.5 text-[#FF8A4C] pointer-events-none" />
                     <input
                       type="text"
                       value={catalogSearchQuery}
@@ -1135,7 +1113,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                           ? 'Recherchez votre métier : cabinet dentaire, imprimerie, agence, salle de sport...'
                           : 'Search trade: dental clinic, bakery, gym, agency, farm, auto repair...'
                       }
-                      className="w-full bg-[#18181B] border border-white/15 focus:border-[#C4785A] rounded-xl py-2 pl-9 pr-3 text-xs text-white placeholder-neutral-500 outline-none"
+                      className="w-full bg-white/[0.05] border border-[rgba(232,98,44,0.22)] focus:border-[#E8622C] rounded-xl py-2 pl-9 pr-3 text-xs text-[#FFF5EE] placeholder-[#D9BEB0]/60 outline-none"
                     />
                   </div>
 
@@ -1146,8 +1124,8 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                       onClick={() => setSelectedCatalogCategoryFilter('all')}
                       className={`px-2.5 py-1 rounded-full whitespace-nowrap transition-all cursor-pointer font-medium ${
                         selectedCatalogCategoryFilter === 'all'
-                          ? 'bg-[#C4785A] text-white shadow-xs'
-                          : 'bg-white/5 text-neutral-400 hover:text-white'
+                          ? 'bg-gradient-to-r from-[#C4785A] to-[#E8622C] text-white shadow-xs'
+                          : 'bg-white/5 text-[#D9BEB0] hover:text-white'
                       }`}
                     >
                       {isAr ? 'الكل (160+ نشاط)' : isFr ? 'Tous (160+ métiers)' : 'All 160+ Trades'}
@@ -1162,8 +1140,8 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                           onClick={() => setSelectedCatalogCategoryFilter(catKey)}
                           className={`px-2.5 py-1 rounded-full whitespace-nowrap transition-all cursor-pointer font-medium ${
                             isFilterActive
-                              ? 'bg-[#C4785A] text-white shadow-xs'
-                              : 'bg-white/5 text-neutral-400 hover:text-white'
+                              ? 'bg-gradient-to-r from-[#C4785A] to-[#E8622C] text-white shadow-xs'
+                              : 'bg-white/5 text-[#D9BEB0] hover:text-white'
                           }`}
                         >
                           {meta.title}
@@ -1185,17 +1163,17 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                           onClick={() => handleSelectTrade(trade)}
                           className={`flex items-center justify-between p-2 sm:p-2.5 rounded-xl border text-left transition-all cursor-pointer group ${
                             isSelected
-                              ? 'bg-[#1F1D1B] border-[#C4785A] shadow-[0_0_12px_rgba(196,120,90,0.3)]'
-                              : 'bg-[#18181B] border-white/10 hover:border-white/20 hover:bg-[#1E1E22]'
+                              ? 'bg-[rgba(232,98,44,0.14)] border-[#E8622C] shadow-[0_0_16px_rgba(232,98,44,0.3)]'
+                              : 'bg-white/[0.04] border-[rgba(232,98,44,0.18)] hover:border-[rgba(232,98,44,0.35)] hover:bg-white/[0.07]'
                           }`}
                         >
                           <div className="flex flex-col min-w-0 pr-2">
-                            <span className="text-xs font-semibold text-white truncate">{title}</span>
-                            <span className="text-[10px] text-neutral-400 truncate">{badgeText}</span>
+                            <span className="text-xs font-semibold text-[#FFF5EE] truncate">{title}</span>
+                            <span className="text-[10px] text-[#D9BEB0] truncate">{badgeText}</span>
                           </div>
                           <div
                             className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center shrink-0 transition-colors ${
-                              isSelected ? 'border-[#C4785A] bg-[#C4785A]' : 'border-white/20 group-hover:border-white/40'
+                              isSelected ? 'border-[#E8622C] bg-[#E8622C]' : 'border-[rgba(232,98,44,0.3)] group-hover:border-[rgba(232,98,44,0.5)]'
                             }`}
                           >
                             {isSelected && <Check className="w-2.5 h-2.5 text-white" />}
@@ -1223,11 +1201,11 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                           onClick={() => handleSelectReferral(src.id)}
                           className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl border text-xs font-medium transition-all cursor-pointer ${
                             isSelected
-                              ? 'bg-[#C4785A] border-[#C4785A] text-white shadow-[0_0_12px_rgba(196,120,90,0.4)]'
-                              : 'bg-[#18181B] border-white/10 text-neutral-300 hover:border-white/25 hover:text-white'
+                              ? 'bg-gradient-to-r from-[#C4785A] to-[#E8622C] border-[#E8622C] text-white shadow-[0_0_14px_rgba(232,98,44,0.4)]'
+                              : 'bg-white/[0.04] border-[rgba(232,98,44,0.18)] text-[#F0DACF] hover:border-[rgba(232,98,44,0.35)] hover:text-white'
                           }`}
                         >
-                          <Compass className="w-3.5 h-3.5 opacity-70" />
+                          <Compass className="w-3.5 h-3.5 opacity-80 text-[#FF8A4C]" />
                           <span>{label}</span>
                           {isSelected && <Check className="w-3 h-3 ml-1" />}
                         </button>
@@ -1243,16 +1221,16 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
               {currentStep === 8 && (
                 <div className="space-y-2.5 sm:space-y-3">
                   {/* Synthesis Vertical Match Pill */}
-                  <div className="p-3 rounded-xl bg-gradient-to-r from-[#1F1D1B] to-[#141416] border border-[#C4785A]/35 flex items-center justify-between">
+                  <div className="p-3 rounded-xl bg-white/[0.04] border border-[rgba(232,98,44,0.25)] backdrop-blur-sm flex items-center justify-between">
                     <div className="flex items-center gap-2.5 min-w-0">
-                      <div className="w-8 h-8 rounded-lg bg-[#C4785A]/20 border border-[#C4785A]/30 flex items-center justify-center shrink-0">
-                        <Sparkles className="w-4 h-4 text-[#C4785A]" />
+                      <div className="w-8 h-8 rounded-lg bg-[rgba(232,98,44,0.18)] border border-[rgba(232,98,44,0.3)] flex items-center justify-center shrink-0">
+                        <Sparkles className="w-4 h-4 text-[#FF8A4C]" />
                       </div>
                       <div className="min-w-0">
-                        <div className="text-[10px] font-bold uppercase tracking-wider text-[#C4785A] truncate">
+                        <div className="text-[10px] font-bold uppercase tracking-wider text-[#FF8A4C] truncate">
                           {isAr ? 'النظام المقترح وفق نشاطك' : isFr ? 'Système Métier Calibré' : 'Calibrated Vertical Engine'}
                         </div>
-                        <div className="text-xs sm:text-sm font-extrabold text-white truncate">
+                        <div className="text-xs sm:text-sm font-extrabold text-[#FFF5EE] truncate">
                           {selectedTrade ? (isAr ? selectedTrade.name.ar : isFr ? selectedTrade.name.fr : selectedTrade.name.en) : activeCategoryMeta.title}
                         </div>
                       </div>
@@ -1264,7 +1242,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                       <button
                         type="button"
                         onClick={() => setIsOverrideSelectorOpen(!isOverrideSelectorOpen)}
-                        className="p-1 text-neutral-400 hover:text-white transition-colors cursor-pointer"
+                        className="p-1 text-[#D9BEB0] hover:text-white transition-colors cursor-pointer"
                         title={isAr ? 'تغيير يدوي' : isFr ? 'Changer' : 'Change'}
                       >
                         {isOverrideSelectorOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -1274,7 +1252,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
 
                   {/* Manual Category Override Dropdown (If expanded) */}
                   {isOverrideSelectorOpen && (
-                    <div className="p-2 rounded-xl bg-white/5 border border-white/10 max-h-32 overflow-y-auto space-y-1 text-xs">
+                    <div className="p-2 rounded-xl bg-black/40 border border-[rgba(232,98,44,0.2)] max-h-32 overflow-y-auto space-y-1 text-xs backdrop-blur-md">
                       {(Object.keys(CATEGORY_METADATA) as BusinessCategory[]).map((catKey) => {
                         const meta = CATEGORY_METADATA[catKey];
                         const isPicked = activeCategory === catKey;
@@ -1288,8 +1266,8 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                             }}
                             className={`w-full flex items-center justify-between px-2.5 py-1 rounded-lg text-left transition-colors cursor-pointer ${
                               isPicked
-                                ? 'bg-[#C4785A] text-white font-semibold'
-                                : 'hover:bg-white/5 text-neutral-300'
+                                ? 'bg-gradient-to-r from-[#C4785A] to-[#E8622C] text-white font-semibold'
+                                : 'hover:bg-white/5 text-[#F0DACF]'
                             }`}
                           >
                             <span>{meta.title}</span>
@@ -1307,7 +1285,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                       label={isAr ? 'اسم المؤسسة / مساحة العمل' : isFr ? "Nom de l'entreprise ou marque" : 'Workspace / Business Name'}
                       value={workspaceName}
                       onChange={(val) => setWorkspaceName(String(val))}
-                      prefix={<Building2 className="w-3.5 h-3.5" />}
+                      prefix={<Building2 className="w-3.5 h-3.5 text-[#FF8A4C]" />}
                       height={42}
                       corner={12}
                     />
@@ -1318,7 +1296,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                       label={isAr ? 'رقم هاتف الاتصال' : isFr ? 'Téléphone de contact' : 'Contact Phone'}
                       value={phone}
                       onChange={(val) => setPhone(String(val))}
-                      prefix={<Phone className="w-3.5 h-3.5" />}
+                      prefix={<Phone className="w-3.5 h-3.5 text-[#FF8A4C]" />}
                       height={42}
                       corner={12}
                     />
@@ -1327,10 +1305,10 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                   {/* Section 2: Subscription Plan Switcher */}
                   <div className="space-y-1.5 pt-0.5">
                     <div className="flex items-center justify-between">
-                      <label className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+                      <label className="text-[10px] font-bold uppercase tracking-wider text-[#D9BEB0]">
                         {isAr ? 'اختر خطة التشغيل المناسبة :' : isFr ? 'Choisissez votre plan Atrium OS :' : 'Select your Atrium OS Plan:'}
                       </label>
-                      <span className="text-[10px] text-neutral-400">
+                      <span className="text-[10px] text-[#D9BEB0]">
                         {isAr ? 'ترخيص دائم مدى الحياة' : isFr ? 'Licence perpétuelle sans abonnement mensuel' : 'Perpetual lifetime license'}
                       </span>
                     </div>
@@ -1352,32 +1330,32 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                             }}
                             className={`flex flex-col text-left p-2 sm:p-2.5 rounded-xl border transition-all cursor-pointer relative group ${
                               isSelected
-                                ? 'bg-[#221F1C] border-[#C4785A] shadow-[0_0_14px_rgba(196,120,90,0.35)]'
-                                : 'bg-[#18181B] border-white/10 hover:border-white/20 hover:bg-[#1C1C1F]'
+                                ? 'bg-[rgba(232,98,44,0.14)] border-[#E8622C] shadow-[0_0_16px_rgba(232,98,44,0.35)]'
+                                : 'bg-white/[0.04] border-[rgba(232,98,44,0.18)] hover:border-[rgba(232,98,44,0.35)] hover:bg-white/[0.07]'
                             }`}
                           >
                             <div className="flex items-center justify-between w-full mb-1">
                               <span
                                 className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded ${
                                   plan.isRecommended
-                                    ? 'bg-[#C4785A] text-white'
+                                    ? 'bg-gradient-to-r from-[#C4785A] to-[#E8622C] text-white shadow-xs'
                                     : plan.tier === 'free'
                                     ? 'bg-emerald-500/20 text-emerald-400'
-                                    : 'bg-white/10 text-neutral-300'
+                                    : 'bg-white/10 text-[#F0DACF]'
                                 }`}
                               >
                                 {badge}
                               </span>
                               <div
                                 className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center transition-colors shrink-0 ${
-                                  isSelected ? 'border-[#C4785A] bg-[#C4785A]' : 'border-white/20'
+                                  isSelected ? 'border-[#E8622C] bg-[#E8622C]' : 'border-[rgba(232,98,44,0.3)]'
                                 }`}
                               >
                                 {isSelected && <Check className="w-2.5 h-2.5 text-white" />}
                               </div>
                             </div>
-                            <span className="font-extrabold text-xs sm:text-sm text-white">{plan.name}</span>
-                            <span className="font-mono text-xs font-bold text-[#E09070] mt-0.5">{price}</span>
+                            <span className="font-extrabold text-xs sm:text-sm text-[#FFF5EE]">{plan.name}</span>
+                            <span className="font-mono text-xs font-bold text-[#FF8A4C] mt-0.5">{price}</span>
                           </button>
                         );
                       })}
@@ -1398,11 +1376,11 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                         </div>
                       </div>
                     ) : (
-                      <div className="p-2.5 rounded-xl bg-white/5 border border-white/10 space-y-2">
+                      <div className="p-2.5 rounded-xl bg-white/[0.04] border border-[rgba(232,98,44,0.2)] space-y-2">
                         {/* 14-Day Free Trial Notice Banner */}
-                        <div className="p-2 rounded-lg bg-[#C4785A]/15 border border-[#C4785A]/30 flex items-center justify-between text-xs">
-                          <div className="flex items-center gap-2 text-[#F5C2B0]">
-                            <Sparkles className="w-4 h-4 text-[#C4785A] shrink-0" />
+                        <div className="p-2 rounded-lg bg-[rgba(232,98,44,0.15)] border border-[rgba(232,98,44,0.3)] flex items-center justify-between text-xs">
+                          <div className="flex items-center gap-2 text-[#FFF5EE]">
+                            <Sparkles className="w-4 h-4 text-[#FF8A4C] shrink-0" />
                             <span className="text-[11px]">
                               {isAr
                                 ? `✨ نمط تجريبي مجاني 14 يوماً مفعل تلقائياً لخطة ${selectedPlanTier.toUpperCase()} • دخول مباشر بدون بطاقة بنكية.`
@@ -1429,7 +1407,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                                 setVoucherCode(String(val).toUpperCase());
                                 setPaidVoucherError(null);
                               }}
-                              prefix={<KeyRound className="w-3.5 h-3.5" />}
+                              prefix={<KeyRound className="w-3.5 h-3.5 text-[#FF8A4C]" />}
                               height={40}
                               corner={10}
                             />
@@ -1438,9 +1416,9 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                           <button
                             type="button"
                             onClick={() => setShowLicenseModal(true)}
-                            className="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-neutral-200 text-xs font-semibold border border-white/10 flex items-center justify-center gap-1.5 transition-all cursor-pointer whitespace-nowrap active:scale-95"
+                            className="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-[#F0DACF] hover:text-white text-xs font-semibold border border-white/10 flex items-center justify-center gap-1.5 transition-all cursor-pointer whitespace-nowrap active:scale-95"
                           >
-                            <Sparkles className="w-3.5 h-3.5 text-[#C4785A]" />
+                            <Sparkles className="w-3.5 h-3.5 text-[#FF8A4C]" />
                             <span>
                               {isAr ? 'طلب ترخيص دائم' : isFr ? 'Demander une licence' : 'Request License'}
                             </span>
@@ -1466,12 +1444,12 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
             </div>
 
             {/* Bottom Footer Actions (Unified Navigation Contract: Back on all, Continue only when needed) */}
-            <div className="mt-3 sm:mt-4 pt-3 border-t border-white/10 flex items-center justify-between shrink-0">
+            <div className="mt-3 sm:mt-4 pt-3 border-t border-[rgba(232,98,44,0.18)] flex items-center justify-between shrink-0">
               {currentStep > 0 ? (
                 <button
                   type="button"
                   onClick={() => setCurrentStep((prev) => Math.max(0, prev - 1))}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-neutral-400 hover:text-white hover:bg-white/5 transition-all cursor-pointer active:scale-95"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-[#D9BEB0] hover:text-[#FFF5EE] hover:bg-white/5 transition-all cursor-pointer active:scale-95"
                 >
                   <ChevronLeft className="w-4 h-4" />
                   <span>{isAr ? 'السابق' : isFr ? 'Précédent' : 'Back'}</span>
@@ -1485,7 +1463,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                 <button
                   type="button"
                   onClick={() => setCurrentStep(1)}
-                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-bold text-white bg-[#C4785A] hover:bg-[#b3684a] shadow-[0_4px_16px_rgba(196,120,90,0.35)] transition-all cursor-pointer active:scale-95 ml-auto"
+                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-[#C4552A] to-[#E64A19] hover:from-[#d84315] hover:to-[#f4511e] shadow-[0_4px_20px_rgba(230,74,25,0.45)] transition-all cursor-pointer active:scale-95 ml-auto"
                 >
                   <span>{isAr ? 'متابعة' : isFr ? 'Continuer' : 'Continue'}</span>
                   <ChevronRight className="w-4 h-4" />
@@ -1497,7 +1475,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                 <button
                   type="button"
                   onClick={() => setCurrentStep(3)}
-                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-bold text-white bg-[#C4785A] hover:bg-[#b3684a] shadow-[0_4px_16px_rgba(196,120,90,0.35)] transition-all cursor-pointer active:scale-95 ml-auto"
+                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-[#C4552A] to-[#E64A19] hover:from-[#d84315] hover:to-[#f4511e] shadow-[0_4px_20px_rgba(230,74,25,0.45)] transition-all cursor-pointer active:scale-95 ml-auto"
                 >
                   <span>{isAr ? 'متابعة' : isFr ? 'Continuer' : 'Continue'}</span>
                   <ChevronRight className="w-4 h-4" />
@@ -1509,7 +1487,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                 <button
                   type="button"
                   onClick={() => setCurrentStep(7)}
-                  className="flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-bold text-white bg-[#C4785A] hover:bg-[#b3684a] shadow-[0_4px_16px_rgba(196,120,90,0.35)] transition-all cursor-pointer active:scale-95 ml-auto"
+                  className="flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-[#C4552A] to-[#E64A19] hover:from-[#d84315] hover:to-[#f4511e] shadow-[0_4px_20px_rgba(230,74,25,0.45)] transition-all cursor-pointer active:scale-95 ml-auto"
                 >
                   <span>{isAr ? 'متابعة' : isFr ? 'Continuer' : 'Continue'}</span>
                   <ChevronRight className="w-4 h-4" />
@@ -1521,7 +1499,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                 <button
                   type="button"
                   onClick={handleLaunchWorkspace}
-                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-bold text-white bg-[#C4785A] hover:bg-[#b3684a] shadow-[0_6px_20px_rgba(196,120,90,0.4)] transition-all cursor-pointer active:scale-95 ml-auto"
+                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-[#C4552A] to-[#E64A19] hover:from-[#d84315] hover:to-[#f4511e] shadow-[0_6px_24px_rgba(230,74,25,0.5)] transition-all cursor-pointer active:scale-95 ml-auto"
                 >
                   <Rocket className="w-4 h-4" />
                   <span>
@@ -1533,281 +1511,190 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
           </div>
 
           {/* ========================================================================= */}
-          {/* RIGHT COLUMN: ATRIUM BRAND IDENTITY & LIVE ADAPTING WORKSPACE PREVIEW      */}
+          {/* RIGHT COLUMN: TALL IMAGE PLACEHOLDER PREVIEW (PRESERVED WIDTH, TALLER)    */}
           {/* ========================================================================= */}
-          <div className="lg:col-span-5 hidden lg:flex flex-col items-center justify-center">
-            <div className="relative w-full max-w-sm lg:max-w-md p-4 sm:p-5 rounded-2xl onboarding-glass-card overflow-hidden">
+          <div className="lg:col-span-5 xl:col-span-5 hidden lg:flex flex-col items-end justify-center w-full">
+            <div className="relative w-full max-w-sm lg:max-w-md lg:ml-auto justify-self-end p-5 rounded-3xl onboarding-glass-card overflow-hidden min-h-[660px] xl:min-h-[720px] flex flex-col justify-between shadow-[0_20px_50px_rgba(0,0,0,0.6)]">
               
-              {/* Ambient Warm Terracotta Glow */}
+              {/* Ambient Radiant Glow */}
               <div
-                className="absolute -top-16 -right-16 w-48 h-48 rounded-full blur-3xl opacity-20 pointer-events-none"
-                style={{ background: 'radial-gradient(circle, #C4785A 0%, transparent 70%)' }}
+                className="absolute -top-20 -right-20 w-64 h-64 rounded-full blur-3xl opacity-35 pointer-events-none"
+                style={{ background: 'radial-gradient(circle, #F4511E 0%, #E64A19 32%, #782307 65%, transparent 80%)' }}
               />
 
-              {/* Header: Brand Mark & Live Status */}
-              <div className="relative z-10 flex items-center justify-between pb-3 mb-3 border-b border-white/10">
+              {/* Header: Brand Mark & Status */}
+              <div className="relative z-10 flex items-center justify-between pb-3 mb-2 border-b border-[rgba(230,74,25,0.20)]">
                 <div className="flex items-center gap-2">
-                  <FiveCubesLogo size={22} cubeColor="#C4785A" />
-                  <span className="text-xs font-extrabold tracking-wider uppercase text-neutral-300">
-                    Atrium <span className="text-[#C4785A]">OS</span>
+                  <FiveCubesLogo size={22} cubeColor="#F4511E" />
+                  <span className="text-xs font-extrabold tracking-wider uppercase text-[#FFF5EE]">
+                    Atrium <span className="text-[#F4511E]">OS</span>
                   </span>
                 </div>
-                <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-semibold">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  <span>{isAr ? 'مباشر' : isFr ? 'En direct' : 'Live Preview'}</span>
+                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[rgba(230,74,25,0.14)] border border-[rgba(230,74,25,0.28)] text-[#F4511E] text-[10px] font-semibold">
+                  <ImageIcon className="w-3 h-3 text-[#F4511E]" />
+                  <span>{isAr ? 'معاينة الصور' : isFr ? "Aperçu d'images" : 'Image Showcase'}</span>
                 </div>
               </div>
 
-              {/* Dynamic Identity Card */}
-              <div className="relative z-10 mb-3 p-3 rounded-xl bg-neutral-900/80 border border-white/5 space-y-1">
-                <div className="flex items-center justify-between">
-                  <div className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
-                    {isAr ? 'مؤسستك المخصصة' : isFr ? 'Établissement' : 'Configured Entity'}
-                  </div>
-                  <span className="text-[10px] font-bold text-[#E09070] bg-[#C4785A]/15 px-2 py-0.5 rounded">
-                    {SUBSCRIPTION_PLANS.find((p) => p.tier === selectedPlanTier)?.name || 'Free Web'}
+              {/* Central Tall Image Frame & Interactive Placeholder */}
+              <div className="relative z-10 flex-1 my-2 flex flex-col justify-center">
+                {(() => {
+                  const activeSlide = PREVIEW_SLIDES[activeSlideIndex];
+                  const hasCustom = activeSlideIndex === 3 && customUploadedImage;
+                  const displaySrc = hasCustom ? customUploadedImage! : activeSlide.src;
+
+                  return (
+                    <div className="relative w-full h-[460px] xl:h-[500px] rounded-2xl overflow-hidden border border-[rgba(230,74,25,0.28)] bg-[rgba(12,10,9,0.75)] p-2.5 flex flex-col justify-between group">
+                      {displaySrc ? (
+                        <>
+                          <div className="relative w-full h-full rounded-xl overflow-hidden flex items-center justify-center bg-black/60">
+                            <img
+                              src={displaySrc}
+                              alt={activeSlide.labelFr}
+                              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+                            />
+                            {/* Subtle dark gradient overlay for legible text badges */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent pointer-events-none" />
+
+                            {/* Top Floating Badge */}
+                            <div className="absolute top-3 inset-x-3 flex items-center justify-between pointer-events-none">
+                              <span className="px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md border border-[rgba(230,74,25,0.3)] text-[10px] font-semibold text-[#FFF5EE]">
+                                {isAr ? activeSlide.labelAr : isFr ? activeSlide.labelFr : activeSlide.labelEn}
+                              </span>
+                              <span className="px-2 py-0.5 rounded-md bg-[rgba(230,74,25,0.25)] backdrop-blur-md text-[#F4511E] text-[10px] font-mono font-bold">
+                                {activeSlideIndex + 1} / {PREVIEW_SLIDES.length}
+                              </span>
+                            </div>
+
+                            {/* Interactive Prev/Next Navigation Arrows */}
+                            <div className="absolute inset-y-0 left-2 flex items-center">
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setActiveSlideIndex((prev) => (prev > 0 ? prev - 1 : PREVIEW_SLIDES.length - 1));
+                                }}
+                                title={isAr ? 'الصورة السابقة' : isFr ? 'Image précédente' : 'Previous image'}
+                                className="p-2 rounded-full bg-black/60 hover:bg-black/90 text-[#F0DACF] hover:text-white border border-white/10 transition-all cursor-pointer backdrop-blur-md active:scale-95"
+                              >
+                                <ChevronLeft className="w-4 h-4" />
+                              </button>
+                            </div>
+                            <div className="absolute inset-y-0 right-2 flex items-center">
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setActiveSlideIndex((prev) => (prev < PREVIEW_SLIDES.length - 1 ? prev + 1 : 0));
+                                }}
+                                title={isAr ? 'الصورة التالية' : isFr ? 'Image suivante' : 'Next image'}
+                                className="p-2 rounded-full bg-black/60 hover:bg-black/90 text-[#F0DACF] hover:text-white border border-white/10 transition-all cursor-pointer backdrop-blur-md active:scale-95"
+                              >
+                                <ChevronRight className="w-4 h-4" />
+                              </button>
+                            </div>
+
+                            {/* Bottom Label & Format Info */}
+                            <div className="absolute bottom-3 inset-x-3 flex items-center justify-between text-[10px] pointer-events-none">
+                              <span className="text-[#F0DACF] font-medium truncate max-w-[200px]">
+                                {isAr ? activeSlide.labelAr : isFr ? activeSlide.labelFr : activeSlide.labelEn}
+                              </span>
+                              <span className="text-[#F4511E] font-mono text-[9px] uppercase tracking-wider">
+                                1280×800 HD
+                              </span>
+                            </div>
+                          </div>
+                        </>
+                      ) : (
+                        /* Architectural Empty Placeholder Frame */
+                        <div
+                          onClick={() => fileInputRef.current?.click()}
+                          className="w-full h-full rounded-xl border-2 border-dashed border-[rgba(230,74,25,0.38)] bg-white/[0.02] hover:bg-white/[0.05] transition-all flex flex-col items-center justify-center p-6 text-center cursor-pointer group/placeholder"
+                        >
+                          <div className="w-16 h-16 rounded-2xl bg-[rgba(230,74,25,0.14)] border border-[rgba(230,74,25,0.32)] flex items-center justify-center mb-4 group-hover/placeholder:scale-110 transition-transform">
+                            <ImageIcon className="w-8 h-8 text-[#F4511E]" />
+                          </div>
+                          <div className="text-sm font-bold text-[#FFF5EE] mb-1.5">
+                            {isAr ? 'مساحة مخصصة للصور والمعاينات' : isFr ? "Emplacement d'Image & Maquette" : 'Image & Mockup Placeholder'}
+                          </div>
+                          <p className="text-xs text-[#D9BEB0] max-w-xs mb-4 leading-relaxed">
+                            {isAr
+                              ? 'انقر لتحميل لقطة شاشة، نموذج واجهة أو صورة مخصصة بالحجم الكامل'
+                              : isFr
+                              ? 'Cliquez pour insérer une capture d’écran, maquette ou visuel produit haute résolution'
+                              : 'Click to upload a high-resolution screenshot, UI mockup or product visual'}
+                          </p>
+                          <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[rgba(230,74,25,0.22)] border border-[rgba(230,74,25,0.38)] text-[#F4511E] text-xs font-semibold group-hover/placeholder:bg-[rgba(230,74,25,0.32)] transition-colors">
+                            <Upload className="w-3.5 h-3.5" />
+                            <span>{isAr ? 'رفع صورة' : isFr ? 'Téléverser une image' : 'Upload Image'}</span>
+                          </div>
+                          <div className="mt-4 text-[10px] text-[#BFA395]/70 font-mono">
+                            Ratio 16:10 / 4:5 • PNG, JPG, WebP
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
+
+                {/* Hidden File Input for Custom Upload */}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleCustomImageUpload}
+                  className="hidden"
+                />
+              </div>
+
+              {/* Bottom Thumbnail Strip & Controls */}
+              <div className="relative z-10 pt-3 border-t border-[rgba(230,74,25,0.18)] space-y-2">
+                <div className="flex items-center justify-between text-[11px] text-[#D9BEB0]">
+                  <span className="font-semibold text-[#F0DACF]">
+                    {isAr ? 'معارض الشاشات' : isFr ? "Galerie d'écrans" : 'Screen Gallery'}
                   </span>
-                </div>
-                <div className="text-sm font-extrabold text-white truncate">
-                  {workspaceName || 'Atlas Creative Studio'}
-                </div>
-                <div className="flex items-center gap-1.5 text-xs text-neutral-400">
-                  <MapPin className="w-3 h-3 text-[#C4785A] shrink-0" />
-                  <span className="truncate text-[11px]">{branchAddress}</span>
-                </div>
-              </div>
-
-              {/* Live Adaptive Vertical Badge & Match Score */}
-              <div className="relative z-10 mb-3 p-2.5 rounded-xl bg-[#1C1A18] border border-[#C4785A]/30 flex items-center justify-between">
-                <div>
-                  <div className="text-[9px] font-bold uppercase tracking-wider text-[#C4785A]">
-                    {isAr ? 'الفئة المختارة' : isFr ? 'Catégorie Métier' : 'Vertical Engine'}
-                  </div>
-                  <div className="text-xs font-bold text-white mt-0.5">
-                    {selectedTrade ? (isFr ? selectedTrade.name.fr : isAr ? selectedTrade.name.ar : selectedTrade.name.en) : activeCategoryMeta.title}
-                  </div>
-                </div>
-                <span className="text-[11px] font-bold text-[#C4785A] px-2 py-0.5 rounded-md bg-[#C4785A]/15">
-                  {matchConfidence}% Match
-                </span>
-              </div>
-
-              {/* Live Mini-Mockup Snapshot of the Vertical Screen */}
-              <div className="relative z-10 p-3 rounded-xl bg-neutral-900/90 border border-white/10 space-y-2">
-                <div className="flex items-center justify-between text-[10px] font-semibold text-neutral-400">
-                  <span>{isAr ? 'محاكاة واجهة الاستخدام' : isFr ? "Aperçu de l'interface" : 'Interface Snapshot'}</span>
-                  <span className="text-[9px] text-neutral-500 font-mono">v4.3 Production</span>
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="text-[10px] font-semibold text-[#F4511E] hover:underline flex items-center gap-1 cursor-pointer"
+                  >
+                    <Upload className="w-3 h-3" />
+                    <span>{isAr ? 'صورة مخصصة' : isFr ? 'Personnaliser' : 'Custom Image'}</span>
+                  </button>
                 </div>
 
-                {/* Vertical Specific Micro Mockup Tile */}
-                <div className="p-2.5 rounded-lg bg-neutral-950 border border-white/5 space-y-1.5 text-xs">
-                  {activeCategory === 'pos_inventory' && (
-                    <>
-                      <div className="flex items-center justify-between text-neutral-300">
-                        <span>Caisse Tactile #01</span>
-                        <span className="text-emerald-400 font-bold font-mono">14,250 DZD</span>
-                      </div>
-                      <div className="grid grid-cols-3 gap-1 text-[9px] text-center text-neutral-400">
-                        <div className="p-1 rounded bg-white/5">Espèces</div>
-                        <div className="p-1 rounded bg-[#C4785A]/20 text-[#E09070]">BaridiMob</div>
-                        <div className="p-1 rounded bg-white/5">Carte CIB</div>
-                      </div>
-                    </>
-                  )}
+                <div className="grid grid-cols-4 gap-2">
+                  {PREVIEW_SLIDES.map((slide, idx) => {
+                    const isActive = activeSlideIndex === idx;
+                    const hasCustom = idx === 3 && customUploadedImage;
+                    const src = hasCustom ? customUploadedImage! : slide.src;
 
-                  {activeCategory === 'appointment_service' && (
-                    <>
-                      <div className="flex items-center justify-between text-neutral-300">
-                        <span>Planning Fauteuils</span>
-                        <span className="text-[#C4785A] font-semibold text-[10px]">8 Réservations</span>
-                      </div>
-                      <div className="flex items-center gap-1.5 text-[10px] text-neutral-400">
-                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                        <span>Fauteuil VIP 1 : Soin & Brushing (14:30)</span>
-                      </div>
-                    </>
-                  )}
-
-                  {activeCategory === 'membership_session' && (
-                    <>
-                      <div className="flex items-center justify-between text-neutral-300">
-                        <span>Portique Tourniquet RFID</span>
-                        <span className="text-emerald-400 font-semibold text-[10px]">Accès Autorisé</span>
-                      </div>
-                      <div className="flex items-center gap-1.5 text-[10px] text-neutral-400">
-                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                        <span>Adhérent #4892 • Abonnement Actif</span>
-                      </div>
-                    </>
-                  )}
-
-                  {(activeCategory === 'project_milestone' || activeCategory === 'freelance_solo') && (
-                    <>
-                      <div className="flex items-center justify-between text-neutral-300">
-                        <span>Jalon & Validation Client</span>
-                        <span className="text-[#C4785A] font-semibold text-[10px]">BAT Validé</span>
-                      </div>
-                      <div className="flex items-center gap-1.5 text-[10px] text-neutral-400">
-                        <div className="w-1.5 h-1.5 rounded-full bg-[#C4785A]" />
-                        <span>Campagne 5G • Mandat CCP SFP 01</span>
-                      </div>
-                    </>
-                  )}
-
-                  {activeCategory === 'medical_clinic' && (
-                    <>
-                      <div className="flex items-center justify-between text-neutral-300">
-                        <span>File d'Attente Médicale</span>
-                        <span className="text-emerald-400 font-semibold text-[10px]">4 Patients</span>
-                      </div>
-                      <div className="flex items-center gap-1.5 text-[10px] text-neutral-400">
-                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                        <span>Dossier #104 • Consultation & Ordonnance</span>
-                      </div>
-                    </>
-                  )}
-
-                  {activeCategory === 'trading_commercial' && (
-                    <>
-                      <div className="flex items-center justify-between text-neutral-300">
-                        <span>Bordereau d'Expédition COD</span>
-                        <span className="text-emerald-400 font-semibold text-[10px]">185,000 DZD</span>
-                      </div>
-                      <div className="flex items-center gap-1.5 text-[10px] text-neutral-400">
-                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                        <span>BL #2026-08 • Timbre fiscal & RC</span>
-                      </div>
-                    </>
-                  )}
-
-                  {activeCategory === 'auto_garage' && (
-                    <>
-                      <div className="flex items-center justify-between text-neutral-300">
-                        <span>Ordre Réparation #412</span>
-                        <span className="text-amber-400 font-semibold text-[10px]">En Diagnostic</span>
-                      </div>
-                      <div className="flex items-center gap-1.5 text-[10px] text-neutral-400">
-                        <div className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-                        <span>Pièces : Courroie + Filtre</span>
-                      </div>
-                    </>
-                  )}
-
-                  {activeCategory === 'real_estate' && (
-                    <>
-                      <div className="flex items-center justify-between text-neutral-300">
-                        <span>Mandat Vente/Location #89</span>
-                        <span className="text-emerald-400 font-semibold text-[10px]">Dossier Notarié</span>
-                      </div>
-                      <div className="flex items-center gap-1.5 text-[10px] text-neutral-400">
-                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                        <span>Appartement F4 Hydra • Visites OK</span>
-                      </div>
-                    </>
-                  )}
-
-                  {activeCategory === 'construction_contractor' && (
-                    <>
-                      <div className="flex items-center justify-between text-neutral-300">
-                        <span>Chantier Résidence El Bahdja</span>
-                        <span className="text-sky-400 font-semibold text-[10px]">Attachement #03</span>
-                      </div>
-                      <div className="flex items-center gap-1.5 text-[10px] text-neutral-400">
-                        <div className="w-1.5 h-1.5 rounded-full bg-sky-400" />
-                        <span>Situation validée avec 5% retenue</span>
-                      </div>
-                    </>
-                  )}
-
-                  {activeCategory === 'agriculture_farming' && (
-                    <>
-                      <div className="flex items-center justify-between text-neutral-300">
-                        <span>Parcelle Olivier Nord #B2</span>
-                        <span className="text-emerald-400 font-semibold text-[10px]">Récolte Validée</span>
-                      </div>
-                      <div className="flex items-center gap-1.5 text-[10px] text-neutral-400">
-                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                        <span>Pesée : 4,200 Kg • Traçabilité lot DZ</span>
-                      </div>
-                    </>
-                  )}
-
-                  {activeCategory === 'education_cohort' && (
-                    <>
-                      <div className="flex items-center justify-between text-neutral-300">
-                        <span>Session Masterclass Design</span>
-                        <span className="text-indigo-400 font-semibold text-[10px]">16 Inscrits</span>
-                      </div>
-                      <div className="flex items-center gap-1.5 text-[10px] text-neutral-400">
-                        <div className="w-1.5 h-1.5 rounded-full bg-indigo-400" />
-                        <span>Attestations & émargement actifs</span>
-                      </div>
-                    </>
-                  )}
-
-                  {activeCategory === 'legal_accounting' && (
-                    <>
-                      <div className="flex items-center justify-between text-neutral-300">
-                        <span>Dossier Contentieux #882</span>
-                        <span className="text-[#C4785A] font-semibold text-[10px]">Tribunal</span>
-                      </div>
-                      <div className="flex items-center gap-1.5 text-[10px] text-neutral-400">
-                        <div className="w-1.5 h-1.5 rounded-full bg-[#C4785A]" />
-                        <span>Provision d'honoraires enregistrée</span>
-                      </div>
-                    </>
-                  )}
-
-                  {activeCategory === 'rental_booking' && (
-                    <>
-                      <div className="flex items-center justify-between text-neutral-300">
-                        <span>Location Matériel Audio/Vidéo</span>
-                        <span className="text-amber-400 font-semibold text-[10px]">Caution Reçue</span>
-                      </div>
-                      <div className="flex items-center gap-1.5 text-[10px] text-neutral-400">
-                        <div className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-                        <span>État des lieux validé avec signature</span>
-                      </div>
-                    </>
-                  )}
-
-                  {activeCategory === 'logistics_delivery' && (
-                    <>
-                      <div className="flex items-center justify-between text-neutral-300">
-                        <span>Messagerie & Colis COD</span>
-                        <span className="text-purple-400 font-semibold text-[10px]">58 Wilayas</span>
-                      </div>
-                      <div className="flex items-center gap-1.5 text-[10px] text-neutral-400">
-                        <div className="w-1.5 h-1.5 rounded-full bg-purple-400" />
-                        <span>Tournée #08 • 14 colis livrés</span>
-                      </div>
-                    </>
-                  )}
-
-                  {activeCategory === 'manufacturing_production' && (
-                    <>
-                      <div className="flex items-center justify-between text-neutral-300">
-                        <span>Ordre de Fabrication OF-99</span>
-                        <span className="text-cyan-400 font-semibold text-[10px]">Ligne #2 En Cours</span>
-                      </div>
-                      <div className="flex items-center gap-1.5 text-[10px] text-neutral-400">
-                        <div className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
-                        <span>BOM consommée • Contrôle qualité</span>
-                      </div>
-                    </>
-                  )}
+                    return (
+                      <button
+                        key={slide.id}
+                        type="button"
+                        onClick={() => setActiveSlideIndex(idx)}
+                        className={`relative rounded-xl overflow-hidden h-14 border transition-all cursor-pointer ${
+                          isActive
+                            ? 'border-[#F4511E] ring-2 ring-[rgba(230,74,25,0.45)] shadow-[0_0_12px_rgba(230,74,25,0.4)]'
+                            : 'border-white/10 hover:border-[rgba(230,74,25,0.3)] opacity-70 hover:opacity-100'
+                        }`}
+                      >
+                        {src ? (
+                          <img src={src} alt={slide.tag} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full bg-white/[0.04] flex flex-col items-center justify-center">
+                            <ImageIcon className="w-4 h-4 text-[#F4511E]/80" />
+                            <span className="text-[9px] text-[#D9BEB0] font-mono mt-0.5">Mockup</span>
+                          </div>
+                        )}
+                        <div className="absolute bottom-0 inset-x-0 bg-black/75 py-0.5 text-center text-[8px] font-semibold text-[#FFF5EE]">
+                          {slide.tag}
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
-              </div>
-
-              {/* Bottom Quote & Trust Seal */}
-              <div className="relative z-10 mt-3 text-center">
-                <p className="text-[10px] text-neutral-400 italic">
-                  {isAr
-                    ? '"نظام إدارة أعمال متكامل صُمم ليتماشى مع بيئة الأعمال الوطنية والتحصيل الفوري"'
-                    : isFr
-                    ? '"Le système de gestion unifié pensé pour la réalité du terrain et la conformité nationale."'
-                    : '"The unified operating system tailored for real-world operations & instant settlement."'}
-                </p>
               </div>
 
             </div>
@@ -1815,6 +1702,17 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
 
         </div>
       </main>
+
+      {/* Full-Bleed Plain Low-Opacity Text Footer */}
+      <footer className="relative z-10 w-full text-center py-3 shrink-0 pointer-events-none">
+        <p className="text-[11px] text-[#BFA395]/60 font-medium tracking-wide">
+          {isAr
+            ? 'أتريوم لنظم التشغيل المؤسسية • منصة متكاملة ومرخصة لبيئة الأعمال الوطنية • إصدار الإنتاج 2026'
+            : isFr
+            ? 'Atrium OS • Plateforme de Gestion Unifiée & Conformité Réglementaire • Version Production 2026'
+            : 'Atrium OS • Unified Operating System & Multi-Vertical Cockpit • Production Edition 2026'}
+        </p>
+      </footer>
 
       {/* Feature Blueprint Modal */}
       <FeatureBlueprintModal
