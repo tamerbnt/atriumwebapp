@@ -31,6 +31,8 @@ import { Seek } from '../../ui/Seek';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { useTranslation } from '../../../utils/useTranslation';
+import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
+import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 
 export const FreelanceFinanceView: React.FC = () => {
   const { t, language, isRtl } = useTranslation();
@@ -48,6 +50,10 @@ export const FreelanceFinanceView: React.FC = () => {
     switchBranch,
     resetFreelanceMockData,
     showToast,
+    isSyncing,
+    networkMode,
+    isSyncTimeout,
+    retryCloudSync,
   } = useAtriumStore();
 
   const [taxRate, setTaxRate] = useState<number>(20); // 20% estimated tax provision
@@ -311,6 +317,34 @@ export const FreelanceFinanceView: React.FC = () => {
       ),
     },
   ], [language, pinnedExpenseIds, t]);
+
+  const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
+    isLoading: isSyncing || networkMode === 'force_skeleton',
+    hasCachedData: freelanceExpenses.length > 0 || freelanceInvoices.length > 0,
+  });
+
+  if (showSkeleton && ((freelanceExpenses.length === 0 && freelanceInvoices.length === 0) || networkMode === 'force_skeleton')) {
+    return (
+      <SkeletonCollectionScreen
+        kpiCount={4}
+        kpiLayout="grid-cols-1 sm:grid-cols-2 lg:grid-cols-4"
+        columns={[
+          { width: '2.5*', minWidth: '180px' },
+          { width: '2*', minWidth: '150px' },
+          { width: '1.5*', minWidth: '130px' },
+          { width: '1.5*', minWidth: '130px' },
+          { width: '100px', minWidth: '80px' },
+        ]}
+        hasIcon
+        hasFacility
+        hasActionBtn
+        actionBtnWidth={140}
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        onRetry={retryCloudSync || retry}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">

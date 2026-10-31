@@ -34,6 +34,8 @@ import { LabelInput } from '../../ui/LabelInput';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { UniversalDataCollection } from '../../ui/collection/UniversalDataCollection';
 import { ActionButtonDef } from '../../ui/collection/CollectionListRow';
+import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
+import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 
 export const VenueFinanceView: React.FC = () => {
   const { t, language } = useTranslation();
@@ -51,6 +53,10 @@ export const VenueFinanceView: React.FC = () => {
     switchBranch,
     resetVenueMockData,
     showToast,
+    isSyncing,
+    networkMode,
+    isSyncTimeout,
+    retryCloudSync,
   } = useAtriumStore();
 
   const hasAutoHealed = useRef(false);
@@ -187,6 +193,32 @@ export const VenueFinanceView: React.FC = () => {
       },
     },
   ];
+
+  const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
+    isLoading: isSyncing || networkMode === 'force_skeleton',
+    hasCachedData: securityDeposits.length > 0,
+  });
+
+  if (showSkeleton && (securityDeposits.length === 0 || networkMode === 'force_skeleton')) {
+    return (
+      <SkeletonCollectionScreen
+        kpiCount={3}
+        columns={[
+          { width: '2.5*', minWidth: '180px' },
+          { width: '2*', minWidth: '150px' },
+          { width: '1.5*', minWidth: '130px' },
+          { width: '1.5*', minWidth: '130px' },
+          { width: '100px', minWidth: '80px' },
+        ]}
+        hasIcon
+        hasFacility
+        hasActionBtn={false}
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        onRetry={retryCloudSync || retry}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6">

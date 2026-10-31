@@ -32,6 +32,8 @@ import { Seek } from '../../ui/Seek';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { useTranslation } from '../../../utils/useTranslation';
+import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
+import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 
 export const FreelanceProposalsView: React.FC = () => {
   const { t, language, isRtl } = useTranslation();
@@ -50,6 +52,10 @@ export const FreelanceProposalsView: React.FC = () => {
     switchBranch,
     setScreen,
     showToast,
+    isSyncing,
+    networkMode,
+    isSyncTimeout,
+    retryCloudSync,
   } = useAtriumStore();
 
   const currentBranch = branches.find((b) => b.id === currentBranchId);
@@ -421,6 +427,33 @@ export const FreelanceProposalsView: React.FC = () => {
       });
     }
   };
+
+  const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
+    isLoading: isSyncing || networkMode === 'force_skeleton',
+    hasCachedData: freelanceProposals.length > 0,
+  });
+
+  if (showSkeleton && (freelanceProposals.length === 0 || networkMode === 'force_skeleton')) {
+    return (
+      <SkeletonCollectionScreen
+        kpiCount={3}
+        columns={[
+          { width: '2.5*', minWidth: '180px' },
+          { width: '2*', minWidth: '150px' },
+          { width: '1.5*', minWidth: '130px' },
+          { width: '1.5*', minWidth: '130px' },
+          { width: '100px', minWidth: '80px' },
+        ]}
+        hasIcon
+        hasFacility
+        hasActionBtn
+        actionBtnWidth={140}
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        onRetry={retryCloudSync || retry}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">

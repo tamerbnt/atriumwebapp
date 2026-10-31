@@ -30,6 +30,8 @@ import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
+import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 
 export const VenueInventoryView: React.FC = () => {
   const { t, language } = useTranslation();
@@ -47,6 +49,10 @@ export const VenueInventoryView: React.FC = () => {
     switchBranch,
     resetVenueMockData,
     showToast,
+    isSyncing,
+    networkMode,
+    isSyncTimeout,
+    retryCloudSync,
   } = useAtriumStore();
 
   // Auto-heal empty rentable units safely once on mount
@@ -439,6 +445,33 @@ export const VenueInventoryView: React.FC = () => {
       },
     },
   ], [language, t]);
+
+  const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
+    isLoading: isSyncing || networkMode === 'force_skeleton',
+    hasCachedData: rentableUnits.length > 0,
+  });
+
+  if (showSkeleton && (rentableUnits.length === 0 || networkMode === 'force_skeleton')) {
+    return (
+      <SkeletonCollectionScreen
+        kpiCount={3}
+        columns={[
+          { width: '2.5*', minWidth: '180px' },
+          { width: '1.5*', minWidth: '130px' },
+          { width: '1.5*', minWidth: '130px' },
+          { width: '1.5*', minWidth: '130px' },
+          { width: '100px', minWidth: '80px' },
+        ]}
+        hasIcon
+        hasFacility
+        hasActionBtn
+        actionBtnWidth={140}
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        onRetry={retryCloudSync || retry}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6">

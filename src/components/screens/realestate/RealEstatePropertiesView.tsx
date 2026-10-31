@@ -29,9 +29,18 @@ import { Seek } from '../../ui/Seek';
 import { RealEstatePropertyModal } from './RealEstatePropertyModal';
 import { RealEstateLeaseModal } from './RealEstateLeaseModal';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
+import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 
 export const RealEstatePropertiesView: React.FC = () => {
-  const { language, showToast } = useAtriumStore();
+  const {
+    language,
+    showToast,
+    isSyncing,
+    networkMode,
+    isSyncTimeout,
+    retryCloudSync,
+  } = useAtriumStore();
   const { properties, leases, addProperty, updateProperty, deleteProperty, addLease } = useRealEstateData();
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -272,6 +281,33 @@ export const RealEstatePropertiesView: React.FC = () => {
     ],
     [pinnedIds, language]
   );
+
+  const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
+    isLoading: isSyncing || networkMode === 'force_skeleton',
+    hasCachedData: properties.length > 0,
+  });
+
+  if (showSkeleton && (properties.length === 0 || networkMode === 'force_skeleton')) {
+    return (
+      <SkeletonCollectionScreen
+        kpiCount={3}
+        columns={[
+          { width: '2.5*', minWidth: '180px' },
+          { width: '1.5*', minWidth: '120px' },
+          { width: '1.5*', minWidth: '120px' },
+          { width: '1.5*', minWidth: '120px' },
+          { width: '100px', minWidth: '80px' },
+        ]}
+        hasIcon
+        hasFacility
+        hasActionBtn
+        actionBtnWidth={140}
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        onRetry={retryCloudSync || retry}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">

@@ -31,6 +31,8 @@ import { B2bEntityModal } from './B2bEntityModal';
 import { CommercialDocComposerModal } from './CommercialDocComposerModal';
 import { ConfirmDialog } from '../../ui/ConfirmDialog';
 import { useTranslation } from '../../../utils/useTranslation';
+import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
+import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 
 type DirectoryMode = 'clients' | 'suppliers';
 
@@ -301,6 +303,34 @@ export const TradingDirectoryView: React.FC = () => {
     if (!selectedEntity || mode !== 'clients') return [];
     return commercialDocs.filter((d) => d.clientId === selectedEntity.id);
   }, [selectedEntity, mode, commercialDocs]);
+
+  const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
+    isLoading: isSyncing || networkMode === 'force_skeleton',
+    hasCachedData: b2bClients.length > 0 || b2bSuppliers.length > 0,
+  });
+
+  if (showSkeleton && ((b2bClients.length === 0 && b2bSuppliers.length === 0) || networkMode === 'force_skeleton')) {
+    return (
+      <SkeletonCollectionScreen
+        kpiCount={3}
+        columns={[
+          { width: '2.5*', minWidth: '180px' },
+          { width: '2*', minWidth: '140px' },
+          { width: '1.5*', minWidth: '120px' },
+          { width: '1.5*', minWidth: '120px' },
+          { width: '1.5*', minWidth: '120px' },
+          { width: '100px', minWidth: '80px' },
+        ]}
+        hasIcon
+        hasFacility
+        hasActionBtn
+        actionBtnWidth={140}
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        onRetry={retryCloudSync || retry}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">

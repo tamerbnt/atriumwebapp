@@ -29,9 +29,18 @@ import { AtriumButton } from '../../ui/AtriumButton';
 import { Seek } from '../../ui/Seek';
 import { ManufacturingOrderModal } from './ManufacturingOrderModal';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
+import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 
 export const ManufacturingOrdersView: React.FC = () => {
-  const { language, showToast } = useAtriumStore();
+  const {
+    language,
+    showToast,
+    isSyncing,
+    networkMode,
+    isSyncTimeout,
+    retryCloudSync,
+  } = useAtriumStore();
   const { orders, boms, addOrder, updateOrder, deleteOrder, updateOrderStatus } = useManufacturingData();
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -300,6 +309,33 @@ export const ManufacturingOrdersView: React.FC = () => {
     ],
     [pinnedIds, language]
   );
+
+  const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
+    isLoading: isSyncing || networkMode === 'force_skeleton',
+    hasCachedData: orders.length > 0,
+  });
+
+  if (showSkeleton && (orders.length === 0 || networkMode === 'force_skeleton')) {
+    return (
+      <SkeletonCollectionScreen
+        kpiCount={3}
+        columns={[
+          { width: '2*', minWidth: '140px' },
+          { width: '2.5*', minWidth: '180px' },
+          { width: '1.5*', minWidth: '120px' },
+          { width: '1.5*', minWidth: '120px' },
+          { width: '100px', minWidth: '80px' },
+        ]}
+        hasIcon
+        hasFacility
+        hasActionBtn
+        actionBtnWidth={140}
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        onRetry={retryCloudSync || retry}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">

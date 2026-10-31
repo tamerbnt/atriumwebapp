@@ -33,6 +33,8 @@ import { Seek } from '../../ui/Seek';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { LabelInput } from '../../ui/LabelInput';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
+import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 
 export const VenueRentersView: React.FC = () => {
   const { t, language } = useTranslation();
@@ -50,6 +52,10 @@ export const VenueRentersView: React.FC = () => {
     switchBranch,
     resetVenueMockData,
     showToast,
+    isSyncing,
+    networkMode,
+    isSyncTimeout,
+    retryCloudSync,
   } = useAtriumStore();
 
   // Auto-heal empty renters directory safely once on mount
@@ -349,6 +355,33 @@ export const VenueRentersView: React.FC = () => {
       setSelectedIds(new Set());
     }
   };
+
+  const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
+    isLoading: isSyncing || networkMode === 'force_skeleton',
+    hasCachedData: rentalRenters.length > 0,
+  });
+
+  if (showSkeleton && (rentalRenters.length === 0 || networkMode === 'force_skeleton')) {
+    return (
+      <SkeletonCollectionScreen
+        kpiCount={3}
+        columns={[
+          { width: '2.5*', minWidth: '200px' },
+          { width: '2*', minWidth: '160px' },
+          { width: '1.5*', minWidth: '130px' },
+          { width: '1.5*', minWidth: '130px' },
+          { width: '100px', minWidth: '80px' },
+        ]}
+        hasIcon
+        hasFacility
+        hasActionBtn
+        actionBtnWidth={140}
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        onRetry={retryCloudSync || retry}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6">

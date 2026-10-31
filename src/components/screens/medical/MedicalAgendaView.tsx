@@ -17,9 +17,17 @@ import { useMedicalData } from './medicalData';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { MedicalAppointmentModal } from './MedicalAppointmentModal';
 import { MedicalAppointmentSlot } from '../../../types';
+import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
+import { SkeletonSchedulerView } from '../../ui/skeleton/StructuralSkeletons';
 
 export const MedicalAgendaView: React.FC = () => {
-  const { language } = useAtriumStore();
+  const {
+    language,
+    isSyncing,
+    networkMode,
+    isSyncTimeout,
+    retryCloudSync,
+  } = useAtriumStore();
   const {
     practitioners,
     appointments,
@@ -83,6 +91,25 @@ export const MedicalAgendaView: React.FC = () => {
         return 'bg-neutral-500/15 text-neutral-700 dark:text-neutral-300 border-neutral-500/30';
     }
   };
+
+  const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
+    isLoading: isSyncing || networkMode === 'force_skeleton',
+    hasCachedData: appointments.length > 0 || practitioners.length > 0,
+  });
+
+  if (showSkeleton && ((appointments.length === 0 && practitioners.length === 0) || networkMode === 'force_skeleton')) {
+    return (
+      <SkeletonSchedulerView
+        columnsCount={3}
+        hasFacility={false}
+        hasActionBtn
+        actionBtnWidth={140}
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        onRetry={retryCloudSync || retry}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">

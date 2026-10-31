@@ -26,9 +26,17 @@ import { useRealEstateData } from './realEstateData';
 import { RealEstateMandate } from '../../../types';
 import { formatMoney } from '../../../utils/rules';
 import { useAtriumStore, showToast } from '../../../services/store';
+import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
+import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 
 export const RealEstateMandatesView: React.FC = () => {
-  const { language } = useAtriumStore();
+  const {
+    language,
+    isSyncing,
+    networkMode,
+    isSyncTimeout,
+    retryCloudSync,
+  } = useAtriumStore();
   const isAr = language === 'ar';
   const { mandates, properties, addMandate, updateMandate } = useRealEstateData();
 
@@ -117,6 +125,33 @@ export const RealEstateMandatesView: React.FC = () => {
       },
     },
   ];
+
+  const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
+    isLoading: isSyncing || networkMode === 'force_skeleton',
+    hasCachedData: mandates.length > 0,
+  });
+
+  if (showSkeleton && (mandates.length === 0 || networkMode === 'force_skeleton')) {
+    return (
+      <SkeletonCollectionScreen
+        kpiCount={3}
+        columns={[
+          { width: '2*', minWidth: '140px' },
+          { width: '2.5*', minWidth: '180px' },
+          { width: '1.5*', minWidth: '120px' },
+          { width: '1.5*', minWidth: '120px' },
+          { width: '100px', minWidth: '80px' },
+        ]}
+        hasIcon
+        hasFacility
+        hasActionBtn
+        actionBtnWidth={140}
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        onRetry={retryCloudSync || retry}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">

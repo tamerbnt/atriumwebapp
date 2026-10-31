@@ -26,6 +26,8 @@ import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { CommercialDocPrintModal } from './CommercialDocPrintModal';
 import { useTranslation } from '../../../utils/useTranslation';
+import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
+import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 
 type PurchaseTab = 'all' | 'po' | 'br' | 'facture_fournisseur';
 
@@ -320,6 +322,34 @@ export const TradingPurchasesView: React.FC = () => {
       ),
     },
   ];
+
+  const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
+    isLoading: isSyncing || networkMode === 'force_skeleton',
+    hasCachedData: purchaseDocs.length > 0,
+  });
+
+  if (showSkeleton && (purchaseDocs.length === 0 || networkMode === 'force_skeleton')) {
+    return (
+      <SkeletonCollectionScreen
+        kpiCount={3}
+        columns={[
+          { width: '2*', minWidth: '150px' },
+          { width: '1.5*', minWidth: '120px' },
+          { width: '2.5*', minWidth: '180px' },
+          { width: '1.5*', minWidth: '130px' },
+          { width: '1.5*', minWidth: '130px' },
+          { width: '100px', minWidth: '80px' },
+        ]}
+        hasIcon
+        hasFacility
+        hasActionBtn
+        actionBtnWidth={140}
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        onRetry={retryCloudSync || retry}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">

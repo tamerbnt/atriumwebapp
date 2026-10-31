@@ -36,6 +36,8 @@ import { VenueCloudSyncModal } from './VenueCloudSyncModal';
 import { Seek } from '../../ui/Seek';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
+import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 
 export interface VenueBookingsViewProps {
   hideHeader?: boolean;
@@ -56,6 +58,10 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({ hideHeader
     switchBranch,
     resetVenueMockData,
     showToast,
+    isSyncing,
+    networkMode,
+    isSyncTimeout,
+    retryCloudSync,
   } = useAtriumStore();
 
   // Auto-heal empty bookings safely once on mount
@@ -332,6 +338,34 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({ hideHeader
       document.exitFullscreen().catch(() => {});
     }
   };
+
+  const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
+    isLoading: isSyncing || networkMode === 'force_skeleton',
+    hasCachedData: rentalBookings.length > 0,
+  });
+
+  if (showSkeleton && (rentalBookings.length === 0 || networkMode === 'force_skeleton')) {
+    return (
+      <SkeletonCollectionScreen
+        kpiCount={3}
+        columns={[
+          { width: '2.5*', minWidth: '180px' },
+          { width: '2*', minWidth: '150px' },
+          { width: '1.5*', minWidth: '130px' },
+          { width: '1.5*', minWidth: '130px' },
+          { width: '1.5*', minWidth: '120px' },
+          { width: '100px', minWidth: '80px' },
+        ]}
+        hasIcon
+        hasFacility
+        hasActionBtn
+        actionBtnWidth={140}
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        onRetry={retryCloudSync || retry}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6">

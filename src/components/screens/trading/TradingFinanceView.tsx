@@ -27,6 +27,8 @@ import { LabelSelect } from '../../ui/LabelSelect';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { Seek } from '../../ui/Seek';
 import { useTranslation } from '../../../utils/useTranslation';
+import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
+import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 
 type FinanceFilter = 'all' | 'unpaid' | 'paid';
 
@@ -42,6 +44,10 @@ export const TradingFinanceView: React.FC = () => {
     branches,
     switchBranch,
     resetTradingMockData,
+    isSyncing,
+    networkMode,
+    isSyncTimeout,
+    retryCloudSync,
   } = useAtriumStore();
 
   const [settlementDoc, setSettlementDoc] = useState<CommercialDocument | null>(null);
@@ -225,6 +231,33 @@ export const TradingFinanceView: React.FC = () => {
       ),
     },
   ];
+
+  const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
+    isLoading: isSyncing || networkMode === 'force_skeleton',
+    hasCachedData: commercialDocs.length > 0,
+  });
+
+  if (showSkeleton && (commercialDocs.length === 0 || networkMode === 'force_skeleton')) {
+    return (
+      <SkeletonCollectionScreen
+        kpiCount={3}
+        columns={[
+          { width: '2*', minWidth: '150px' },
+          { width: '2.5*', minWidth: '180px' },
+          { width: '1.5*', minWidth: '130px' },
+          { width: '1.5*', minWidth: '130px' },
+          { width: '1.5*', minWidth: '130px' },
+          { width: '100px', minWidth: '80px' },
+        ]}
+        hasIcon
+        hasFacility
+        hasActionBtn={false}
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        onRetry={retryCloudSync || retry}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">

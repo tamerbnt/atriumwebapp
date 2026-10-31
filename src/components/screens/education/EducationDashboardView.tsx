@@ -26,6 +26,7 @@ import {
   Wallet,
 } from 'lucide-react';
 import { useAtriumStore } from '../../../services/store';
+import { EduSession } from '../../../types';
 import { formatMoney } from '../../../utils/rules';
 import { useTranslation } from '../../../utils/useTranslation';
 import { RollCallModal } from './RollCallModal';

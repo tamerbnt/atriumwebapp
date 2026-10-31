@@ -24,6 +24,8 @@ import { computeScrapYield } from '../../../utils/manufacturingRules';
 import { useManufacturingData } from './manufacturingData';
 import { ManufacturingOrder } from '../../../types';
 import { AtriumButton } from '../../ui/AtriumButton';
+import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
+import { SkeletonKioskGrid } from '../../ui/skeleton/StructuralSkeletons';
 
 // Algerian failure reason codes for scrap declaration
 const SCRAP_REASON_CODES = [
@@ -35,7 +37,12 @@ const SCRAP_REASON_CODES = [
 ];
 
 export const ManufacturingWorkstationView: React.FC = () => {
-  const { language, currentUser } = useAtriumStore();
+  const {
+    language,
+    currentUser,
+    isSyncing,
+    networkMode,
+  } = useAtriumStore();
   const isAr = language === 'ar';
   const { orders, updateOrder } = useManufacturingData();
 
@@ -192,6 +199,15 @@ export const ManufacturingWorkstationView: React.FC = () => {
       'success'
     );
   };
+
+  const { showSkeleton } = useSkeletonLoading({
+    isLoading: isSyncing || networkMode === 'force_skeleton',
+    hasCachedData: orders.length > 0,
+  });
+
+  if (showSkeleton && (orders.length === 0 || networkMode === 'force_skeleton')) {
+    return <SkeletonKioskGrid count={6} />;
+  }
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">

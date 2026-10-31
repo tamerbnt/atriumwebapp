@@ -36,7 +36,7 @@ export const SkeletonBox: React.FC<SkeletonBoxProps> = ({
 interface SkeletonTextProps {
   className?: string;
   width?: string | number;
-  size?: 'xs' | 'sm' | 'base' | 'lg' | 'xl' | '2xl';
+  size?: 'xs' | 'sm' | 'base' | 'lg' | 'xl' | '2xl' | '3xl';
   shimmer?: boolean;
 }
 
@@ -53,6 +53,7 @@ export const SkeletonText: React.FC<SkeletonTextProps> = ({
     lg: 'h-5',
     xl: 'h-6',
     '2xl': 'h-8',
+    '3xl': 'h-10',
   };
 
   return (
