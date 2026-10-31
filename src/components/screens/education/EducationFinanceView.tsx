@@ -419,6 +419,8 @@ export const EducationFinanceView: React.FC = () => {
       },
     ],
     [language, t]
+  );
+
   const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
     isLoading: isSyncing || networkMode === 'force_skeleton',
     hasCachedData: eduEnrollments.length > 0,

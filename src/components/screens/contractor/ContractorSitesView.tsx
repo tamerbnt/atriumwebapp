@@ -357,6 +357,8 @@ export const ContractorSitesView: React.FC = () => {
         </div>
       ),
     },
+  ];
+
   const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
     isLoading: isSyncing || networkMode === 'force_skeleton',
     hasCachedData: projects.length > 0,

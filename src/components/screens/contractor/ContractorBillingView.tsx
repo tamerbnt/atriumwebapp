@@ -29,9 +29,11 @@ import { Cloud } from 'lucide-react';
 import { calculateDecompteProvisoire } from '../../../utils/contractorRules';
 import { ContractorDecomptePrintModal } from './ContractorDecomptePrintModal';
 import { CacobatphDossierModal } from './CacobatphDossierModal';
+import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
+import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 
 export const ContractorBillingView: React.FC = () => {
-  const { language, currentBusiness, currentBranch, currentUser } = useAtriumStore();
+  const { language, currentBusiness, currentBranch, currentUser, isSyncing, networkMode, retryCloudSync, lastSyncedAt } = useAtriumStore();
   const isAr = language === 'ar';
   const { dgps, projects, selectedProjectId, setSelectedProjectId, addDgp, updateDgpStatus } = useContractorData();
 
@@ -243,6 +245,31 @@ export const ContractorBillingView: React.FC = () => {
       ),
     },
   ];
+
+  const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
+    isLoading: isSyncing || networkMode === 'force_skeleton',
+    hasCachedData: dgps.length > 0,
+  });
+
+  if (showSkeleton && (dgps.length === 0 || networkMode === 'force_skeleton')) {
+    return (
+      <SkeletonCollectionScreen
+        kpiCount={3}
+        columns={[
+          { width: '2.5*', minWidth: '180px' },
+          { width: '1.4*', minWidth: '140px' },
+          { width: '1.2*', minWidth: '120px' },
+          { width: '1.4*', minWidth: '140px' },
+          { width: '1.5*', minWidth: '150px' },
+        ]}
+        viewMode={viewMode}
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        lastSyncedAt={lastSyncedAt}
+        onRetry={retryCloudSync || retry}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">

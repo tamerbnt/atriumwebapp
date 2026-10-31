@@ -33,6 +33,8 @@ import { FilterSelect } from '../../ui/FilterSelect';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { useTranslation } from '../../../utils/useTranslation';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
+import { SkeletonKanbanPipeline, SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 
 interface ProjectCreaViewProps {
   initialTab?: 'demandes' | 'kanban' | 'production' | 'upload' | 'briefs';
@@ -55,6 +57,10 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
     resetPmMockData,
     activePmSubScreen,
     setActivePmSubScreen,
+    isSyncing,
+    networkMode,
+    retryCloudSync,
+    lastSyncedAt,
   } = useAtriumStore();
 
   // Auto-heal empty mock state on mount
@@ -314,6 +320,41 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
   };
+
+  const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
+    isLoading: isSyncing || networkMode === 'force_skeleton',
+    hasCachedData: pmBatDeliverables.length > 0 || pmPrintOrders.length > 0,
+  });
+
+  if (showSkeleton && ((pmBatDeliverables.length === 0 && pmPrintOrders.length === 0) || networkMode === 'force_skeleton')) {
+    if (activeTab === 'kanban') {
+      return (
+        <SkeletonKanbanPipeline
+          columnsCount={4}
+          isOffline={isOffline}
+          isTimedOut={isTimedOut}
+          lastSyncedAt={lastSyncedAt}
+          onRetry={retryCloudSync || retry}
+        />
+      );
+    }
+    return (
+      <SkeletonCollectionScreen
+        kpiCount={3}
+        columns={[
+          { width: '2.5*', minWidth: '180px' },
+          { width: '1.5*', minWidth: '140px' },
+          { width: '1.2*', minWidth: '120px' },
+          { width: '1.5*', minWidth: '140px' },
+        ]}
+        viewMode="list"
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        lastSyncedAt={lastSyncedAt}
+        onRetry={retryCloudSync || retry}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">

@@ -265,6 +265,8 @@ export const LegalMattersView: React.FC = () => {
       },
     ],
     [language, isAr, pinnedIds]
+  );
+
   const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
     isLoading: isSyncing || networkMode === 'force_skeleton',
     hasCachedData: matters.length > 0 || notaryDeeds.length > 0,

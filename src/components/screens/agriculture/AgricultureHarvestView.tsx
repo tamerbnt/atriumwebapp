@@ -35,9 +35,11 @@ import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { AgriWeighbridgePrintModal } from './AgriWeighbridgePrintModal';
+import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
+import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 
 export const AgricultureHarvestView: React.FC = () => {
-  const { language, currentBusiness, currentBranch, currentUser } = useAtriumStore();
+  const { language, currentBusiness, currentBranch, currentUser, isSyncing, networkMode, retryCloudSync, lastSyncedAt } = useAtriumStore();
   const isAr = language === 'ar';
 
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
@@ -490,6 +492,31 @@ export const AgricultureHarvestView: React.FC = () => {
     { value: 'all', label: isAr ? 'جميع القطع' : 'Toutes les parcelles' },
     ...parcels.map((p) => ({ value: p.id, label: p.name })),
   ];
+
+  const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
+    isLoading: isSyncing || networkMode === 'force_skeleton',
+    hasCachedData: harvestTickets.length > 0 || pointages.length > 0,
+  });
+
+  if (showSkeleton && ((harvestTickets.length === 0 && pointages.length === 0) || networkMode === 'force_skeleton')) {
+    return (
+      <SkeletonCollectionScreen
+        kpiCount={3}
+        columns={[
+          { width: '2.5*', minWidth: '180px' },
+          { width: '1.4*', minWidth: '130px' },
+          { width: '1.2*', minWidth: '110px' },
+          { width: '1.4*', minWidth: '130px' },
+          { width: '1.5*', minWidth: '150px' },
+        ]}
+        viewMode="list"
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        lastSyncedAt={lastSyncedAt}
+        onRetry={retryCloudSync || retry}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">

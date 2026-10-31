@@ -35,8 +35,10 @@ import {
 import { Seek } from '../../ui/Seek';
 import { FilterSelect } from '../../ui/FilterSelect';
 import { formatMoney } from '../../../utils/rules';
-import { useTranslation } from '../../../utils/useTranslation';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { useTranslation } from '../../../utils/useTranslation';
+import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
+import { SkeletonFinanceAudit } from '../../ui/skeleton/StructuralSkeletons';
 
 interface ProjectComptaViewProps {
   initialTab?: 'payroll' | 'ccp' | 'expenses' | 'stock';
@@ -65,6 +67,10 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
     activePmSubScreen,
     setActivePmSubScreen,
     showToast,
+    isSyncing,
+    networkMode,
+    retryCloudSync,
+    lastSyncedAt,
   } = useAtriumStore();
 
   // Auto-heal empty mock state on mount
@@ -446,6 +452,22 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
       setActiveTab('ccp');
     }, 1500);
   };
+
+  const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
+    isLoading: isSyncing || networkMode === 'force_skeleton',
+    hasCachedData: pmPayrollBatches.length > 0 || pmCcpSlips.length > 0,
+  });
+
+  if (showSkeleton && ((pmPayrollBatches.length === 0 && pmCcpSlips.length === 0) || networkMode === 'force_skeleton')) {
+    return (
+      <SkeletonFinanceAudit
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        lastSyncedAt={lastSyncedAt}
+        onRetry={retryCloudSync || retry}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">

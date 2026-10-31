@@ -463,12 +463,14 @@ export const LegalVaultView: React.FC = () => {
         </span>
       ),
     },
+  ];
+
   const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
     isLoading: isSyncing || networkMode === 'force_skeleton',
-    hasCachedData: scopedVaultItems.length > 0,
+    hasCachedData: roleScopedItems.length > 0,
   });
 
-  if (showSkeleton && (scopedVaultItems.length === 0 || networkMode === 'force_skeleton')) {
+  if (showSkeleton && (roleScopedItems.length === 0 || networkMode === 'force_skeleton')) {
     return (
       <SkeletonCollectionScreen
         kpiCount={3}

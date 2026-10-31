@@ -187,6 +187,8 @@ export const LogisticsScannerView: React.FC = () => {
         );
       },
     },
+  ];
+
   const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
     isLoading: isSyncing || networkMode === 'force_skeleton',
     hasCachedData: shipments.length > 0,

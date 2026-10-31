@@ -34,6 +34,8 @@ import { formatMoney } from '../../../utils/rules';
 import { useTranslation } from '../../../utils/useTranslation';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { AtriumButton } from '../../ui/AtriumButton';
+import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
+import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 
 interface ProjectChefProjetViewProps {
   initialTab?: 'portfolio' | 'catalog' | 'orders' | 'bat' | 'expenses';
@@ -64,6 +66,10 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
     activePmSubScreen,
     setActivePmSubScreen,
     showToast,
+    isSyncing,
+    networkMode,
+    retryCloudSync,
+    lastSyncedAt,
   } = useAtriumStore();
 
   // Auto-heal empty mock state on mount
@@ -456,6 +462,30 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
   };
+
+  const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
+    isLoading: isSyncing || networkMode === 'force_skeleton',
+    hasCachedData: pmProjects.length > 0 || pmPrintOrders.length > 0,
+  });
+
+  if (showSkeleton && ((pmProjects.length === 0 && pmPrintOrders.length === 0) || networkMode === 'force_skeleton')) {
+    return (
+      <SkeletonCollectionScreen
+        kpiCount={3}
+        columns={[
+          { width: '2.5*', minWidth: '180px' },
+          { width: '2.5*', minWidth: '220px' },
+          { width: '1.5*', minWidth: '150px' },
+          { width: '1.5*', minWidth: '150px' },
+        ]}
+        viewMode="list"
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        lastSyncedAt={lastSyncedAt}
+        onRetry={retryCloudSync || retry}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">

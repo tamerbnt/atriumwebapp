@@ -34,9 +34,11 @@ import { AgriCropCycleModal } from './AgriCropCycleModal';
 import { AgriTreatmentModal } from './AgriTreatmentModal';
 import { formatMoney } from '../../../utils/rules';
 import { evaluateDarSafety } from '../../../utils/agriRules';
+import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
+import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 
 export const AgricultureCyclesView: React.FC = () => {
-  const { language } = useAtriumStore();
+  const { language, isSyncing, networkMode, retryCloudSync, lastSyncedAt } = useAtriumStore();
   const isAr = language === 'ar';
   const {
     cropCycles,
@@ -481,6 +483,31 @@ export const AgricultureCyclesView: React.FC = () => {
       onClick: () => handleDeleteTreatment(t),
     },
   ];
+
+  const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
+    isLoading: isSyncing || networkMode === 'force_skeleton',
+    hasCachedData: cropCycles.length > 0 || treatmentLogs.length > 0,
+  });
+
+  if (showSkeleton && ((cropCycles.length === 0 && treatmentLogs.length === 0) || networkMode === 'force_skeleton')) {
+    return (
+      <SkeletonCollectionScreen
+        kpiCount={3}
+        columns={[
+          { width: '2.5*', minWidth: '180px' },
+          { width: '1.5*', minWidth: '140px' },
+          { width: '1.2*', minWidth: '120px' },
+          { width: '1.4*', minWidth: '140px' },
+          { width: '1.5*', minWidth: '150px' },
+        ]}
+        viewMode={viewMode}
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        lastSyncedAt={lastSyncedAt}
+        onRetry={retryCloudSync || retry}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">

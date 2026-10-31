@@ -345,7 +345,7 @@ export const EducationAdmissionsView: React.FC = () => {
   });
 
   if (showSkeleton && (eduAdmissions.length === 0 || networkMode === 'force_skeleton')) {
-    if (viewMode === 'kanban') {
+    if (viewLayout === 'kanban') {
       return (
         <SkeletonKanbanPipeline
           columnsCount={5}

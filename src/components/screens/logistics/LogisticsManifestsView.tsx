@@ -30,7 +30,7 @@ import { AtriumButton } from '../../ui/AtriumButton';
 import { Seek } from '../../ui/Seek';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
-import { UniversalDataCollection } from '../../ui/collection/UniversalDataCollection';
+import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { TransportManifestPrintModal } from './TransportManifestPrintModal';
 import { CourierDischargeModal } from './CourierDischargeModal';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
@@ -330,6 +330,8 @@ export const LogisticsManifestsView: React.FC = () => {
         </span>
       ),
     },
+  ];
+
   const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
     isLoading: isSyncing || networkMode === 'force_skeleton',
     hasCachedData: manifests.length > 0,

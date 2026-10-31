@@ -34,6 +34,9 @@ import { LabelInput } from '../ui/LabelInput';
 import { AtriumButton } from '../ui/AtriumButton';
 import { t, getSystemDefaultLanguage, SUPPORTED_LANGUAGES } from '../../utils/i18n';
 import { BackendDiagnosticPanel } from '../BackendDiagnosticPanel';
+import { useSkeletonLoading } from '../../hooks/useSkeletonLoading';
+import { SkeletonPageHeader } from '../ui/skeleton/StructuralSkeletons';
+import { SkeletonBox, SkeletonText } from '../ui/skeleton/SkeletonPrimitives';
 
 interface SettingsScreenProps {
   onOpenVoucherModal: () => void;
@@ -72,6 +75,8 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
     exportDatabase,
     importDatabase,
     resetToDefaultDemoData,
+    networkMode,
+    retryCloudSync,
   } = useAtriumStore();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -223,6 +228,42 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
       setDeviceError(err.message || 'Failed to register terminal');
     }
   };
+
+  const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
+    isLoading: isSyncing || networkMode === 'force_skeleton',
+    hasCachedData: !!account,
+  });
+
+  if (showSkeleton && (!account || networkMode === 'force_skeleton')) {
+    return (
+      <div className="space-y-6 animate-in fade-in duration-200">
+        <SkeletonPageHeader hasIcon hasActionBtn={false} hasFacility={false} />
+        {/* Tab pills */}
+        <div className="flex gap-2 overflow-x-auto pb-1">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <SkeletonBox key={i} width={110} height={36} rounded="rounded-full" />
+          ))}
+        </div>
+        {/* Settings Card 1 */}
+        <div className="p-6 rounded-[24px] bg-[#F8F9FA] dark:bg-neutral-800/40 border border-[#EDF1F3] dark:border-neutral-800/60 space-y-4">
+          <SkeletonText size="sm" width="200px" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <SkeletonBox height={48} rounded="rounded-xl" />
+            <SkeletonBox height={48} rounded="rounded-xl" />
+          </div>
+        </div>
+        {/* Settings Card 2 */}
+        <div className="p-6 rounded-[24px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 space-y-4">
+          <SkeletonText size="sm" width="180px" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <SkeletonBox height={54} rounded="rounded-xl" />
+            <SkeletonBox height={54} rounded="rounded-xl" />
+            <SkeletonBox height={54} rounded="rounded-xl" />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8 animate-in fade-in duration-200">

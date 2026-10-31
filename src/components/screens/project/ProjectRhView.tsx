@@ -9,6 +9,7 @@ import { LabelSelect } from '../../ui/LabelSelect';
 import { FilterSelect } from '../../ui/FilterSelect';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { useTranslation } from '../../../utils/useTranslation';
 import {
   Users,
   Search,
@@ -40,7 +41,8 @@ import {
   Check,
   Trash2,
 } from 'lucide-react';
-import { useTranslation } from '../../../utils/useTranslation';
+import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
+import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 
 interface ProjectRhViewProps {
   initialTab?: 'talents' | 'dossier' | 'portal' | 'walkin';
@@ -61,6 +63,10 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
     activePmSubScreen,
     setActivePmSubScreen,
     showToast,
+    isSyncing,
+    networkMode,
+    retryCloudSync,
+    lastSyncedAt,
   } = useAtriumStore();
 
   // Auto-heal empty mock state on mount
@@ -297,6 +303,31 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
       ),
     },
   ], [t]);
+
+  const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
+    isLoading: isSyncing || networkMode === 'force_skeleton',
+    hasCachedData: pmTalents.length > 0,
+  });
+
+  if (showSkeleton && (pmTalents.length === 0 || networkMode === 'force_skeleton')) {
+    return (
+      <SkeletonCollectionScreen
+        kpiCount={3}
+        columns={[
+          { width: '2.5*', minWidth: '180px' },
+          { width: '1.5*', minWidth: '140px' },
+          { width: '1.4*', minWidth: '130px' },
+          { width: '1.2*', minWidth: '110px' },
+          { width: '1.2*', minWidth: '110px' },
+        ]}
+        viewMode="list"
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        lastSyncedAt={lastSyncedAt}
+        onRetry={retryCloudSync || retry}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">

@@ -29,9 +29,11 @@ import { AgricultureParcelModal } from './AgricultureParcelModal';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { Seek } from '../../ui/Seek';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
+import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 
 export const AgricultureParcelsView: React.FC = () => {
-  const { language, showToast } = useAtriumStore();
+  const { language, showToast, isSyncing, networkMode, retryCloudSync, lastSyncedAt } = useAtriumStore();
   const isAr = language === 'ar';
   const {
     parcels,
@@ -321,6 +323,32 @@ export const AgricultureParcelsView: React.FC = () => {
       ),
     },
   ];
+
+  const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
+    isLoading: isSyncing || networkMode === 'force_skeleton',
+    hasCachedData: parcels.length > 0,
+  });
+
+  if (showSkeleton && (parcels.length === 0 || networkMode === 'force_skeleton')) {
+    return (
+      <SkeletonCollectionScreen
+        kpiCount={3}
+        columns={[
+          { width: '2.5*', minWidth: '180px' },
+          { width: '1.2*', minWidth: '120px' },
+          { width: '1.4*', minWidth: '140px' },
+          { width: '1.5*', minWidth: '150px' },
+          { width: '1.2*', minWidth: '120px' },
+          { width: '1.3*', minWidth: '130px' },
+        ]}
+        viewMode={viewMode}
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        lastSyncedAt={lastSyncedAt}
+        onRetry={retryCloudSync || retry}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">

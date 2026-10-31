@@ -808,6 +808,7 @@ export interface SkeletonKanbanPipelineProps {
   columnsCount?: number;
   isOffline?: boolean;
   isTimedOut?: boolean;
+  lastSyncedAt?: string | null;
   onRetry?: () => Promise<void> | void;
 }
 
@@ -815,11 +816,12 @@ export const SkeletonKanbanPipeline: React.FC<SkeletonKanbanPipelineProps> = ({
   columnsCount = 4,
   isOffline,
   isTimedOut,
+  lastSyncedAt,
   onRetry,
 }) => {
   return (
     <div className="space-y-5 animate-in fade-in duration-200" role="status" aria-label="Loading kanban pipeline">
-      <OfflineRetryBanner isOffline={isOffline} isTimedOut={isTimedOut} onRetry={onRetry} />
+      <OfflineRetryBanner isOffline={isOffline} isTimedOut={isTimedOut} lastSyncedAt={lastSyncedAt} onRetry={onRetry} />
       <SkeletonPageHeader hasActionBtn />
 
       {/* Multi-column Kanban swimlanes */}
@@ -868,17 +870,19 @@ export const SkeletonKanbanPipeline: React.FC<SkeletonKanbanPipelineProps> = ({
 export interface SkeletonFinanceAuditProps {
   isOffline?: boolean;
   isTimedOut?: boolean;
+  lastSyncedAt?: string | null;
   onRetry?: () => Promise<void> | void;
 }
 
 export const SkeletonFinanceAudit: React.FC<SkeletonFinanceAuditProps> = ({
   isOffline,
   isTimedOut,
+  lastSyncedAt,
   onRetry,
 }) => {
   return (
     <div className="space-y-6 animate-in fade-in duration-200" role="status" aria-label="Loading finance overview">
-      <OfflineRetryBanner isOffline={isOffline} isTimedOut={isTimedOut} onRetry={onRetry} />
+      <OfflineRetryBanner isOffline={isOffline} isTimedOut={isTimedOut} lastSyncedAt={lastSyncedAt} onRetry={onRetry} />
       <SkeletonPageHeader hasFacility hasActionBtn actionBtnWidth={170} />
 
       {/* 4 Financial Stat Cards */}

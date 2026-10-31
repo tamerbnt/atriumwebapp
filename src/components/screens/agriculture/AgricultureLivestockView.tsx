@@ -34,9 +34,11 @@ import { ActionButtonDef } from '../../ui/collection/CollectionListRow';
 import { OnilBordereauPrintModal } from './OnilBordereauPrintModal';
 import { AgriMilkingModal } from './AgriMilkingModal';
 import { formatMoney } from '../../../utils/rules';
+import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
+import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 
 export const AgricultureLivestockView: React.FC = () => {
-  const { language, currentBusiness, currentBranch, currentUser } = useAtriumStore();
+  const { language, currentBusiness, currentBranch, currentUser, isSyncing, networkMode, retryCloudSync, lastSyncedAt } = useAtriumStore();
   const isAr = language === 'ar';
   const {
     livestock,
@@ -471,6 +473,31 @@ export const AgricultureLivestockView: React.FC = () => {
       },
     },
   ];
+
+  const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
+    isLoading: isSyncing || networkMode === 'force_skeleton',
+    hasCachedData: livestock.length > 0 || milkingRecords.length > 0,
+  });
+
+  if (showSkeleton && ((livestock.length === 0 && milkingRecords.length === 0) || networkMode === 'force_skeleton')) {
+    return (
+      <SkeletonCollectionScreen
+        kpiCount={3}
+        columns={[
+          { width: '2.5*', minWidth: '180px' },
+          { width: '1.4*', minWidth: '140px' },
+          { width: '1.2*', minWidth: '120px' },
+          { width: '1.4*', minWidth: '140px' },
+          { width: '1.5*', minWidth: '150px' },
+        ]}
+        viewMode={viewMode}
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        lastSyncedAt={lastSyncedAt}
+        onRetry={retryCloudSync || retry}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
