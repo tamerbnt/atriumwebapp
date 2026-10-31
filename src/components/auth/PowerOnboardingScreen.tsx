@@ -60,7 +60,7 @@ import {
   FeatureBlueprintModal,
   UniversalStrategicGoalId,
 } from '../modals/FeatureBlueprintModal';
-import { FiveCubesLogo } from './AtriumMonolith';
+import { AtriumMonolith, FiveCubesLogo } from './AtriumMonolith';
 import { LabelInput } from '../ui/LabelInput';
 import { OnboardingBackdrop } from './OnboardingBackdrop';
 
@@ -166,16 +166,43 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
 }) => {
   const { completeOnboarding, language } = useAtriumStore();
 
+  // Cinematic Atrium Monolith Intro Animation State (starts automatically on launch)
+  const [showIntroAnimation, setShowIntroAnimation] = useState(true);
+  const [isIntroDissolving, setIsIntroDissolving] = useState(false);
+  const [introReplayKey, setIntroReplayKey] = useState(0);
+
+  const handleIntroCompleteOrSkip = () => {
+    setIsIntroDissolving(true);
+    setTimeout(() => {
+      setShowIntroAnimation(false);
+      setIsIntroDissolving(false);
+    }, 700);
+  };
+
+  const handleReplayIntro = () => {
+    setIntroReplayKey((k) => k + 1);
+    setIsIntroDissolving(false);
+    setShowIntroAnimation(true);
+  };
+
   // Image Showcase / Placeholder State for Right Column
   const PREVIEW_SLIDES = useMemo(
     () => [
+      {
+        id: 'higgsfield_scene',
+        src: '/assets/aistudio/Screenshot_73_2f9a596b.png',
+        labelFr: 'Atmosphère & Production Réelle',
+        labelAr: 'بيئة العمل والإنتاج الميداني',
+        labelEn: 'Production Scene & Visual',
+        tag: '01',
+      },
       {
         id: 'slide_1',
         src: '/slides/slide_1.jpg',
         labelFr: 'Équipe & Direction Opérationnelle',
         labelAr: 'الفريق والإدارة التشغيلية',
         labelEn: 'Team & Operations',
-        tag: '01',
+        tag: '02',
       },
       {
         id: 'slide_2',
@@ -183,7 +210,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
         labelFr: 'Cockpit & Espaces de Travail',
         labelAr: 'لوحة القيادة ومساحة العمل',
         labelEn: 'Workspace & Cockpit',
-        tag: '02',
+        tag: '03',
       },
       {
         id: 'slide_3',
@@ -191,7 +218,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
         labelFr: 'Point de Vente & Encaissements',
         labelAr: 'نقطة البيع والتحصيل',
         labelEn: 'Smart POS & Settlement',
-        tag: '03',
+        tag: '04',
       },
       {
         id: 'placeholder',
@@ -199,7 +226,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
         labelFr: 'Emplacement Libre / Mockup Frame',
         labelAr: 'إطار مخصص لإضافة صورة',
         labelEn: 'Custom Image Placeholder',
-        tag: '04',
+        tag: '05',
       },
     ],
     []
@@ -216,7 +243,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
       reader.onload = (evt) => {
         if (evt.target?.result) {
           setCustomUploadedImage(evt.target.result as string);
-          setActiveSlideIndex(3);
+          setActiveSlideIndex(4);
         }
       };
       reader.readAsDataURL(file);
@@ -524,18 +551,169 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
       dir={isAr ? 'rtl' : 'ltr'}
       className="dark selection:bg-[#E64A19] selection:text-white"
     >
+      {/* Cinematic Atrium Monolith Intro Animation (Plays automatically on startup) */}
+      {showIntroAnimation && (
+        <div
+          className={`fixed inset-0 z-50 transition-opacity duration-700 ease-out ${
+            isIntroDissolving ? 'opacity-0 pointer-events-none' : 'opacity-100 pointer-events-auto'
+          }`}
+        >
+          <AtriumMonolith
+            isIntroActive={true}
+            replayKey={introReplayKey}
+            onIntroComplete={handleIntroCompleteOrSkip}
+            onSkip={handleIntroCompleteOrSkip}
+          />
+        </div>
+      )}
 
       {/* Main Two-Column Workstation Canvas — Spread Out to the Sides */}
       <main className="relative z-10 w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:px-14 xl:px-20 py-4 flex-1 min-h-0 flex items-center justify-between">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 xl:gap-20 items-center w-full max-h-full">
           
           {/* ========================================================================= */}
-          {/* LEFT COLUMN: THE FOCUSED SINGLE QUESTION CARD (HIGGSFIELD SPECIFICATION)  */}
+          {/* LEFT COLUMN: HIGGSFIELD TALL PORTRAIT IMAGE CARD                          */}
           {/* ========================================================================= */}
-          <div className="lg:col-span-7 xl:col-span-7 flex flex-col justify-center max-w-xl w-full lg:mr-auto justify-self-start p-4 sm:p-5 rounded-3xl onboarding-glass-card">
+          <div className="lg:col-span-5 xl:col-span-5 hidden lg:flex flex-col items-center justify-center h-full">
+            <div className="relative w-full max-w-sm sm:max-w-md lg:max-w-[430px] xl:max-w-[470px] h-[84vh] max-h-[820px] min-h-[580px] rounded-3xl onboarding-glass-card overflow-hidden shadow-[0_25px_60px_rgba(0,0,0,0.85)] border border-white/[0.08] flex flex-col justify-between group">
+              
+              {/* Ambient Radiant Glow behind the card */}
+              <div
+                className="absolute -top-20 -left-20 w-64 h-64 rounded-full blur-3xl opacity-35 pointer-events-none"
+                style={{ background: 'radial-gradient(circle, #F4511E 0%, #E64A19 32%, #782307 65%, transparent 80%)' }}
+              />
+
+              {(() => {
+                const activeSlide = PREVIEW_SLIDES[activeSlideIndex];
+                const hasCustom = activeSlideIndex === 4 && customUploadedImage;
+                const displaySrc = hasCustom ? customUploadedImage! : activeSlide.src;
+
+                return (
+                  <div className="relative w-full h-full flex flex-col justify-between">
+                    {displaySrc ? (
+                      <div className="relative w-full h-full overflow-hidden bg-black/60">
+                        <img
+                          src={displaySrc}
+                          alt={activeSlide.labelFr}
+                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                        />
+                        {/* Cinematic Vignette Overlays matching Higgsfield style */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-black/50 pointer-events-none" />
+
+                        {/* Top Floating Glass Brand Badge */}
+                        <div className="absolute top-4 left-4 z-10 flex items-center gap-2 px-3 py-1.5 rounded-full bg-[rgba(12,10,9,0.7)] backdrop-blur-md border border-white/10">
+                          <FiveCubesLogo size={18} cubeColor="#F4511E" />
+                          <span className="text-[11px] font-extrabold tracking-wider uppercase text-[#FFF5EE]">
+                            Atrium <span className="text-[#F4511E]">OS</span>
+                          </span>
+                        </div>
+
+                        {/* Slide Indicator Badge */}
+                        <div className="absolute top-4 right-4 z-10 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[rgba(12,10,9,0.7)] backdrop-blur-md border border-white/10 text-[#F4511E] text-[10px] font-mono font-bold">
+                          {activeSlideIndex + 1} / {PREVIEW_SLIDES.length}
+                        </div>
+
+                        {/* Carousel Prev/Next Arrows on Hover */}
+                        <button
+                          type="button"
+                          onClick={() => setActiveSlideIndex((prev) => (prev > 0 ? prev - 1 : PREVIEW_SLIDES.length - 1))}
+                          title={isAr ? 'الصورة السابقة' : isFr ? 'Image précédente' : 'Previous visual'}
+                          className="absolute left-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/60 hover:bg-black/90 text-[#F0DACF] hover:text-white border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-md cursor-pointer z-10 active:scale-95"
+                        >
+                          <ChevronLeft className="w-5 h-5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setActiveSlideIndex((prev) => (prev < PREVIEW_SLIDES.length - 1 ? prev + 1 : 0))}
+                          title={isAr ? 'الصورة التالية' : isFr ? 'Image suivante' : 'Next visual'}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/60 hover:bg-black/90 text-[#F0DACF] hover:text-white border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-md cursor-pointer z-10 active:scale-95"
+                        >
+                          <ChevronRight className="w-5 h-5" />
+                        </button>
+
+                        {/* Bottom Overlay Info & Slide Selectors */}
+                        <div className="absolute bottom-4 inset-x-4 z-10 flex flex-col gap-2.5">
+                          <div className="flex items-center justify-between text-xs text-[#FFF5EE]">
+                            <span className="font-semibold truncate max-w-[240px]">
+                              {isAr ? activeSlide.labelAr : isFr ? activeSlide.labelFr : activeSlide.labelEn}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => fileInputRef.current?.click()}
+                              className="text-[10px] text-[#F4511E] hover:underline flex items-center gap-1 cursor-pointer shrink-0 font-medium"
+                            >
+                              <Upload className="w-3.5 h-3.5" />
+                              <span>{isAr ? 'تغيير' : isFr ? 'Changer' : 'Upload'}</span>
+                            </button>
+                          </div>
+
+                          {/* Mini Slide Dots */}
+                          <div className="flex items-center gap-1.5">
+                            {PREVIEW_SLIDES.map((_, idx) => (
+                              <button
+                                key={idx}
+                                type="button"
+                                onClick={() => setActiveSlideIndex(idx)}
+                                className={`h-1.5 rounded-full transition-all cursor-pointer ${
+                                  activeSlideIndex === idx
+                                    ? 'w-8 bg-[#F4511E]'
+                                    : 'w-2 bg-white/30 hover:bg-white/60'
+                                }`}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      /* Architectural Empty Placeholder Frame */
+                      <div
+                        onClick={() => fileInputRef.current?.click()}
+                        className="w-full h-full rounded-2xl border-2 border-dashed border-white/20 bg-white/[0.02] hover:bg-white/[0.05] transition-all flex flex-col items-center justify-center p-6 text-center cursor-pointer group/placeholder m-2"
+                      >
+                        <div className="w-16 h-16 rounded-2xl bg-white/[0.04] border border-white/10 flex items-center justify-center mb-4 group-hover/placeholder:scale-110 transition-transform">
+                          <ImageIcon className="w-8 h-8 text-[#F4511E]" />
+                        </div>
+                        <div className="text-sm font-bold text-[#FFF5EE] mb-1.5">
+                          {isAr ? 'مساحة مخصصة للصور والمعاينات' : isFr ? "Emplacement d'Image & Maquette" : 'Image & Mockup Placeholder'}
+                        </div>
+                        <p className="text-xs text-[#D9BEB0] max-w-xs mb-4 leading-relaxed">
+                          {isAr
+                            ? 'انقر لتحميل لقطة شاشة، نموذج واجهة أو صورة مخصصة بالحجم الكامل'
+                            : isFr
+                            ? 'Cliquez pour insérer une capture d’écran, maquette ou visuel produit haute résolution'
+                            : 'Click to upload a high-resolution screenshot, UI mockup or product visual'}
+                        </p>
+                        <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-white/[0.08] border border-white/15 text-[#F4511E] text-xs font-semibold group-hover/placeholder:bg-white/[0.12] transition-colors">
+                          <Upload className="w-3.5 h-3.5" />
+                          <span>{isAr ? 'رفع صورة' : isFr ? 'Téléverser une image' : 'Upload Image'}</span>
+                        </div>
+                        <div className="mt-4 text-[10px] text-[#BFA395]/70 font-mono">
+                          Portrait / 16:10 • PNG, JPG, WebP
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
+
+              {/* Hidden File Input for Custom Upload */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleCustomImageUpload}
+                className="hidden"
+              />
+            </div>
+          </div>
+
+          {/* ========================================================================= */}
+          {/* RIGHT COLUMN: HIGGSFIELD CENTERED QUESTIONNAIRE                           */}
+          {/* ========================================================================= */}
+          <div className="lg:col-span-7 xl:col-span-7 flex flex-col justify-between items-center w-full max-w-2xl mx-auto h-[84vh] max-h-[820px] p-5 sm:p-7 rounded-3xl onboarding-glass-card shadow-[0_20px_50px_rgba(0,0,0,0.7)] border border-white/[0.08]">
             
-            {/* Top Micro-Dash Indicators (9 clickable dashes for 0 to 8) */}
-            <div className="flex items-center gap-1.5 mb-3 sm:mb-4">
+            {/* Top Micro-Dash Indicators (Higgsfield Centered Specification) */}
+            <div className="w-full flex items-center justify-center gap-1.5 mb-4 sm:mb-6">
               {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((idx) => {
                 const isActive = currentStep === idx;
                 const isCompleted = currentStep > idx;
@@ -547,7 +725,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                     title={`Étape ${idx + 1}`}
                     className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
                       isActive
-                        ? 'w-7 sm:w-8 bg-gradient-to-r from-[#F4511E] to-[#E64A19] shadow-[0_0_12px_rgba(230,74,25,0.7)]'
+                        ? 'w-8 sm:w-10 bg-gradient-to-r from-[#F4511E] to-[#E64A19] shadow-[0_0_12px_rgba(230,74,25,0.7)]'
                         : isCompleted
                         ? 'w-3.5 sm:w-4 bg-[#F0DACF]/50 hover:bg-[#F0DACF]/80'
                         : 'w-3.5 sm:w-4 bg-white/20 hover:bg-white/40'
@@ -557,24 +735,21 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
               })}
             </div>
 
-            {/* Question Card Header (Compact, Responsive, No Multiline Sprawl) */}
-            <div className="mb-3 sm:mb-4">
-              <h1 className="text-xl sm:text-2xl font-black tracking-tight text-[#FFF5EE] mb-1 leading-snug">
+            {/* Question Card Header (Higgsfield Large Centered Title) */}
+            <div className="mb-4 sm:mb-6 text-center w-full shrink-0">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-[#FFF5EE] leading-snug">
                 {questionsMeta[currentStep]?.title}
               </h1>
-              <p className="text-xs sm:text-sm text-[#F0DACF] leading-relaxed line-clamp-1 sm:line-clamp-none">
-                {questionsMeta[currentStep]?.subtext}
-              </p>
             </div>
 
-            {/* Active Question Content (Compact & Sized to Fit Screen) */}
-            <div className="min-h-0 flex-1 flex flex-col justify-center">
+            {/* Active Question Content (Compact & Sized to Fit Screen with Smooth Internal Scroll) */}
+            <div className="w-full min-h-0 flex-1 overflow-y-auto pr-1 sm:pr-2 scrollbar-thin flex flex-col my-auto py-1">
               
               {/* ------------------------------------------------------------- */}
               {/* STEP 0: GOOGLE SSO OR WORK EMAIL VIA PROPRIETARY LABELINPUT   */}
               {/* ------------------------------------------------------------- */}
               {currentStep === 0 && (
-                <div className="space-y-3">
+                <div className="space-y-3 w-full my-auto">
                   {/* Primary Google SSO One-Click Experience */}
                   <button
                     type="button"
@@ -614,9 +789,9 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                   {/* Elegant Glass-Matching Divider */}
                   <div className="relative flex items-center justify-center my-1">
                     <div className="absolute inset-0 flex items-center">
-                      <div className="w-full border-t border-[rgba(232,98,44,0.18)]" />
+                      <div className="w-full border-t border-white/10" />
                     </div>
-                    <span className="relative px-3.5 py-0.5 text-[10px] uppercase font-bold tracking-wider text-[#F0DACF] bg-[rgba(20,17,15,0.7)] border border-[rgba(232,98,44,0.25)] rounded-full backdrop-blur-md shadow-xs">
+                    <span className="relative px-3.5 py-0.5 text-[10px] uppercase font-bold tracking-wider text-[#F0DACF] bg-[rgba(20,17,15,0.7)] border border-white/10 rounded-full backdrop-blur-md shadow-xs">
                       {isAr ? 'أو باستخدام بريدك المهني' : isFr ? 'OU AVEC UN E-MAIL PROFESSIONNEL' : 'OR WITH WORK EMAIL'}
                     </span>
                   </div>
@@ -663,7 +838,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                       id="terms"
                       checked={termsAccepted}
                       onChange={(e) => setTermsAccepted(e.target.checked)}
-                      className="rounded border-[rgba(232,98,44,0.3)] bg-[rgba(20,17,15,0.6)] text-[#E8622C] focus:ring-[#E8622C] cursor-pointer"
+                      className="rounded border-white/20 bg-[rgba(20,17,15,0.6)] text-[#E8622C] focus:ring-[#E8622C] cursor-pointer"
                     />
                     <label htmlFor="terms" className="text-xs text-[#D9BEB0] cursor-pointer select-none">
                       {isAr
@@ -680,7 +855,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
               {/* STEP 1: OPERATIONAL FRUSTRATION / CHALLENGE                   */}
               {/* ------------------------------------------------------------- */}
               {currentStep === 1 && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5 w-full my-auto">
                   {[
                     {
                       id: 'scheduling' as const,
@@ -726,29 +901,33 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                         key={item.id}
                         type="button"
                         onClick={() => handleSelectFrustration(item.id)}
-                        className={`flex flex-col text-left p-3 sm:p-3.5 rounded-xl border transition-all cursor-pointer relative group ${
+                        className={`flex flex-col text-left p-3 sm:p-3.5 rounded-xl border transition-all duration-200 ease-out cursor-pointer relative group hover:scale-[1.018] active:scale-[0.99] ${
                           isSelected
-                            ? 'bg-[rgba(232,98,44,0.14)] border-[#E8622C] shadow-[0_0_16px_rgba(232,98,44,0.3)]'
-                            : 'bg-white/[0.04] border-[rgba(232,98,44,0.18)] hover:border-[rgba(232,98,44,0.35)] hover:bg-white/[0.07]'
+                            ? 'bg-[rgba(232,98,44,0.08)] border-white/[0.16] shadow-[0_4px_20px_rgba(0,0,0,0.4)]'
+                            : 'bg-white/[0.04] border-white/[0.07] hover:border-white/20 hover:bg-white/[0.07]'
                         }`}
                       >
                         <div className="flex items-center justify-between w-full mb-2">
                           <div
                             className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors ${
-                              isSelected ? 'bg-gradient-to-r from-[#C4785A] to-[#E8622C] text-white' : 'bg-white/5 text-[#F0DACF] group-hover:text-white'
+                              isSelected ? 'bg-[rgba(232,98,44,0.18)] text-[#E8622C]' : 'bg-white/5 text-[#F0DACF] group-hover:text-white'
                             }`}
                           >
                             <Icon className="w-3.5 h-3.5" />
                           </div>
                           <div
-                            className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center transition-colors ${
-                              isSelected ? 'border-[#E8622C] bg-[#E8622C]' : 'border-[rgba(232,98,44,0.3)]'
+                            className={`w-4 h-4 rounded-full border flex items-center justify-center transition-colors ${
+                              isSelected ? 'border-[#E8622C] bg-[#E8622C]' : 'border-white/20 group-hover:border-white/40'
                             }`}
                           >
                             {isSelected && <Check className="w-2.5 h-2.5 text-white" />}
                           </div>
                         </div>
-                        <span className="font-semibold text-xs sm:text-sm text-[#FFF5EE] mb-0.5">{item.title}</span>
+                        <span className={`font-semibold text-xs sm:text-sm mb-0.5 transition-colors ${
+                          isSelected ? 'text-[#E8622C]' : 'text-[#FFF5EE]'
+                        }`}>
+                          {item.title}
+                        </span>
                         <span className="text-[11px] text-[#D9BEB0] leading-snug">{item.desc}</span>
                       </button>
                     );
@@ -760,7 +939,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
               {/* STEP 2: WHAT DO YOU WANT TO ACHIEVE (FEATURE BLUEPRINT MODAL) */}
               {/* ------------------------------------------------------------- */}
               {currentStep === 2 && (
-                <div className="space-y-2.5">
+                <div className="space-y-2.5 w-full my-auto">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5">
                     {[
                       {
@@ -814,17 +993,17 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                         <div
                           key={goal.id}
                           onClick={() => handleConfirmGoalAndContinue(goal.id)}
-                          className={`p-2.5 sm:p-3 rounded-xl border transition-all flex flex-col justify-between cursor-pointer group ${
+                          className={`p-2.5 sm:p-3 rounded-xl border transition-all duration-200 ease-out flex flex-col justify-between cursor-pointer group hover:scale-[1.018] active:scale-[0.99] ${
                             isSelected
-                              ? 'bg-[rgba(232,98,44,0.14)] border-[#E8622C] shadow-[0_0_16px_rgba(232,98,44,0.3)]'
-                              : 'bg-white/[0.04] border-[rgba(232,98,44,0.18)] hover:border-[rgba(232,98,44,0.35)] hover:bg-white/[0.07]'
+                              ? 'bg-[rgba(232,98,44,0.08)] border-white/[0.16] shadow-[0_4px_20px_rgba(0,0,0,0.4)]'
+                              : 'bg-white/[0.04] border-white/[0.07] hover:border-white/20 hover:bg-white/[0.07]'
                           }`}
                         >
                           <div>
                             <div className="flex items-center justify-between mb-1.5">
                               <div
-                                className={`w-7 h-7 rounded-lg flex items-center justify-center ${
-                                  isSelected ? 'bg-gradient-to-r from-[#C4785A] to-[#E8622C] text-white' : 'bg-white/5 text-[#F0DACF] group-hover:text-white'
+                                className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors ${
+                                  isSelected ? 'bg-[rgba(232,98,44,0.18)] text-[#E8622C]' : 'bg-white/5 text-[#F0DACF] group-hover:text-white'
                                 }`}
                               >
                                 <Icon className="w-3.5 h-3.5" />
@@ -833,7 +1012,11 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                                 {goal.badge}
                               </span>
                             </div>
-                            <h3 className="font-bold text-xs sm:text-sm text-[#FFF5EE] mb-0.5">{goal.title}</h3>
+                            <h3 className={`font-bold text-xs sm:text-sm mb-0.5 transition-colors ${
+                              isSelected ? 'text-[#E8622C]' : 'text-[#FFF5EE]'
+                            }`}>
+                              {goal.title}
+                            </h3>
                             <p className="text-[11px] text-[#D9BEB0] leading-snug line-clamp-2 mb-2">{goal.summary}</p>
                           </div>
 
@@ -844,14 +1027,14 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                                 e.stopPropagation();
                                 handleOpenGoalModal(goal.id);
                               }}
-                              className="flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg bg-white/5 hover:bg-gradient-to-r hover:from-[#C4785A] hover:to-[#E8622C] hover:text-white text-[#F0DACF] text-xs font-semibold border border-[rgba(232,98,44,0.2)] hover:border-transparent transition-all cursor-pointer group/btn"
+                              className="flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg bg-white/5 hover:bg-white/10 text-[#F0DACF] hover:text-white text-xs font-semibold border border-white/10 hover:border-white/25 transition-all cursor-pointer group/btn"
                             >
                               <Eye className="w-3.5 h-3.5 text-[#FF8A4C] group-hover/btn:text-white" />
                               <span>{isAr ? 'عرض المخطط التنفيذي' : isFr ? 'Voir le schéma directeur' : 'Inspect Blueprint'}</span>
                             </button>
                             <div
                               className={`w-7 h-7 rounded-lg border flex items-center justify-center shrink-0 transition-colors ${
-                                isSelected ? 'border-[#E8622C] bg-[#E8622C] text-white' : 'border-[rgba(232,98,44,0.3)] bg-white/5 text-[#D9BEB0]'
+                                isSelected ? 'border-[#E8622C] bg-[#E8622C] text-white' : 'border-white/15 bg-white/5 text-[#D9BEB0] group-hover:border-white/30'
                               }`}
                               title={isAr ? 'اختيار ومتابعة' : isFr ? 'Sélectionner & continuer' : 'Select & continue'}
                             >
@@ -876,7 +1059,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
               {/* STEP 3: DAILY CUSTOMER & OPERATIONAL INTERACTION              */}
               {/* ------------------------------------------------------------- */}
               {currentStep === 3 && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5 w-full my-auto">
                   {[
                     {
                       id: 'walkin_pos' as const,
@@ -922,29 +1105,33 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                         key={item.id}
                         type="button"
                         onClick={() => handleSelectWorkflow(item.id)}
-                        className={`flex flex-col text-left p-3 sm:p-3.5 rounded-xl border transition-all cursor-pointer relative group ${
+                        className={`flex flex-col text-left p-3 sm:p-3.5 rounded-xl border transition-all duration-200 ease-out cursor-pointer relative group hover:scale-[1.018] active:scale-[0.99] ${
                           isSelected
-                            ? 'bg-[rgba(232,98,44,0.14)] border-[#E8622C] shadow-[0_0_16px_rgba(232,98,44,0.3)]'
-                            : 'bg-white/[0.04] border-[rgba(232,98,44,0.18)] hover:border-[rgba(232,98,44,0.35)] hover:bg-white/[0.07]'
+                            ? 'bg-[rgba(232,98,44,0.08)] border-white/[0.16] shadow-[0_4px_20px_rgba(0,0,0,0.4)]'
+                            : 'bg-white/[0.04] border-white/[0.07] hover:border-white/20 hover:bg-white/[0.07]'
                         }`}
                       >
                         <div className="flex items-center justify-between w-full mb-2">
                           <div
                             className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors ${
-                              isSelected ? 'bg-gradient-to-r from-[#C4785A] to-[#E8622C] text-white' : 'bg-white/5 text-[#F0DACF] group-hover:text-white'
+                              isSelected ? 'bg-[rgba(232,98,44,0.18)] text-[#E8622C]' : 'bg-white/5 text-[#F0DACF] group-hover:text-white'
                             }`}
                           >
                             <Icon className="w-3.5 h-3.5" />
                           </div>
                           <div
-                            className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center transition-colors ${
-                              isSelected ? 'border-[#E8622C] bg-[#E8622C]' : 'border-[rgba(232,98,44,0.3)]'
+                            className={`w-4 h-4 rounded-full border flex items-center justify-center transition-colors ${
+                              isSelected ? 'border-[#E8622C] bg-[#E8622C]' : 'border-white/20 group-hover:border-white/40'
                             }`}
                           >
                             {isSelected && <Check className="w-2.5 h-2.5 text-white" />}
                           </div>
                         </div>
-                        <span className="font-semibold text-xs sm:text-sm text-[#FFF5EE] mb-0.5">{item.title}</span>
+                        <span className={`font-semibold text-xs sm:text-sm mb-0.5 transition-colors ${
+                          isSelected ? 'text-[#E8622C]' : 'text-[#FFF5EE]'
+                        }`}>
+                          {item.title}
+                        </span>
                         <span className="text-[11px] text-[#D9BEB0] leading-snug">{item.desc}</span>
                       </button>
                     );
@@ -956,7 +1143,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
               {/* STEP 4: TEAM SCALE & WORKING HIERARCHY                        */}
               {/* ------------------------------------------------------------- */}
               {currentStep === 4 && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 w-full my-auto">
                   {[
                     {
                       id: 'solo' as const,
@@ -994,31 +1181,35 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                         key={item.id}
                         type="button"
                         onClick={() => handleSelectTeamScale(item.id)}
-                        className={`flex flex-col text-left p-3 sm:p-3.5 rounded-xl border transition-all cursor-pointer relative group ${
+                        className={`flex flex-col text-left p-3 sm:p-3.5 rounded-xl border transition-all duration-200 ease-out cursor-pointer relative group hover:scale-[1.018] active:scale-[0.99] ${
                           isSelected
-                            ? 'bg-[rgba(232,98,44,0.14)] border-[#E8622C] shadow-[0_0_16px_rgba(232,98,44,0.3)]'
-                            : 'bg-white/[0.04] border-[rgba(232,98,44,0.18)] hover:border-[rgba(232,98,44,0.35)] hover:bg-white/[0.07]'
+                            ? 'bg-[rgba(232,98,44,0.08)] border-white/[0.16] shadow-[0_4px_20px_rgba(0,0,0,0.4)]'
+                            : 'bg-white/[0.04] border-white/[0.07] hover:border-white/20 hover:bg-white/[0.07]'
                         }`}
                       >
                         <div className="flex items-center justify-between w-full mb-2">
                           <div
                             className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors ${
-                              isSelected ? 'bg-gradient-to-r from-[#C4785A] to-[#E8622C] text-white' : 'bg-white/5 text-[#F0DACF] group-hover:text-white'
+                              isSelected ? 'bg-[rgba(232,98,44,0.18)] text-[#E8622C]' : 'bg-white/5 text-[#F0DACF] group-hover:text-white'
                             }`}
                           >
                             <Icon className="w-3.5 h-3.5" />
                           </div>
                           <span
-                            className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${
+                            className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border transition-colors ${
                               isSelected
-                                ? 'bg-[rgba(232,98,44,0.2)] border-[rgba(232,98,44,0.4)] text-[#FF8A4C]'
+                                ? 'bg-[rgba(232,98,44,0.18)] border-transparent text-[#E8622C]'
                                 : 'bg-white/5 border-white/10 text-[#D9BEB0]'
                             }`}
                           >
                             {item.badge}
                           </span>
                         </div>
-                        <span className="font-semibold text-xs sm:text-sm text-[#FFF5EE] mb-0.5">{item.title}</span>
+                        <span className={`font-semibold text-xs sm:text-sm mb-0.5 transition-colors ${
+                          isSelected ? 'text-[#E8622C]' : 'text-[#FFF5EE]'
+                        }`}>
+                          {item.title}
+                        </span>
                         <span className="text-[11px] text-[#D9BEB0] leading-snug">{item.desc}</span>
                       </button>
                     );
@@ -1030,7 +1221,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
               {/* STEP 5: PRIMARY PAYMENT & SETTLEMENT FLOW                     */}
               {/* ------------------------------------------------------------- */}
               {currentStep === 5 && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 w-full my-auto">
                   {[
                     {
                       id: 'pos_cash' as const,
@@ -1064,29 +1255,33 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                         key={item.id}
                         type="button"
                         onClick={() => handleSelectSettlement(item.id)}
-                        className={`flex flex-col text-left p-3 sm:p-3.5 rounded-xl border transition-all cursor-pointer relative group ${
+                        className={`flex flex-col text-left p-3 sm:p-3.5 rounded-xl border transition-all duration-200 ease-out cursor-pointer relative group hover:scale-[1.018] active:scale-[0.99] ${
                           isSelected
-                            ? 'bg-[rgba(232,98,44,0.14)] border-[#E8622C] shadow-[0_0_16px_rgba(232,98,44,0.3)]'
-                            : 'bg-white/[0.04] border-[rgba(232,98,44,0.18)] hover:border-[rgba(232,98,44,0.35)] hover:bg-white/[0.07]'
+                            ? 'bg-[rgba(232,98,44,0.08)] border-white/[0.16] shadow-[0_4px_20px_rgba(0,0,0,0.4)]'
+                            : 'bg-white/[0.04] border-white/[0.07] hover:border-white/20 hover:bg-white/[0.07]'
                         }`}
                       >
                         <div className="flex items-center justify-between w-full mb-2">
                           <div
                             className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors ${
-                              isSelected ? 'bg-gradient-to-r from-[#C4785A] to-[#E8622C] text-white' : 'bg-white/5 text-[#F0DACF] group-hover:text-white'
+                              isSelected ? 'bg-[rgba(232,98,44,0.18)] text-[#E8622C]' : 'bg-white/5 text-[#F0DACF] group-hover:text-white'
                             }`}
                           >
                             <Icon className="w-3.5 h-3.5" />
                           </div>
                           <div
-                            className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center transition-colors ${
-                              isSelected ? 'border-[#E8622C] bg-[#E8622C]' : 'border-[rgba(232,98,44,0.3)]'
+                            className={`w-4 h-4 rounded-full border flex items-center justify-center transition-colors ${
+                              isSelected ? 'border-[#E8622C] bg-[#E8622C]' : 'border-white/20 group-hover:border-white/40'
                             }`}
                           >
                             {isSelected && <Check className="w-2.5 h-2.5 text-white" />}
                           </div>
                         </div>
-                        <span className="font-semibold text-xs sm:text-sm text-[#FFF5EE] mb-0.5">{item.title}</span>
+                        <span className={`font-semibold text-xs sm:text-sm mb-0.5 transition-colors ${
+                          isSelected ? 'text-[#E8622C]' : 'text-[#FFF5EE]'
+                        }`}>
+                          {item.title}
+                        </span>
                         <span className="text-[11px] text-[#D9BEB0] leading-snug">{item.desc}</span>
                       </button>
                     );
@@ -1098,7 +1293,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
               {/* STEP 6: SPECIFIC BUSINESS DOMAIN & 160+ CATALOG SEARCH        */}
               {/* ------------------------------------------------------------- */}
               {currentStep === 6 && (
-                <div className="space-y-2.5">
+                <div className="space-y-2.5 w-full my-auto">
                   {/* Search Input Box */}
                   <div className="relative">
                     <Search className="w-4 h-4 absolute left-3 top-2.5 text-[#FF8A4C] pointer-events-none" />
@@ -1113,7 +1308,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                           ? 'Recherchez votre métier : cabinet dentaire, imprimerie, agence, salle de sport...'
                           : 'Search trade: dental clinic, bakery, gym, agency, farm, auto repair...'
                       }
-                      className="w-full bg-white/[0.05] border border-[rgba(232,98,44,0.22)] focus:border-[#E8622C] rounded-xl py-2 pl-9 pr-3 text-xs text-[#FFF5EE] placeholder-[#D9BEB0]/60 outline-none"
+                      className="w-full bg-white/[0.05] border border-white/15 focus:border-[#E8622C] rounded-xl py-2 pl-9 pr-3 text-xs text-[#FFF5EE] placeholder-[#D9BEB0]/60 outline-none transition-colors"
                     />
                   </div>
 
@@ -1161,19 +1356,23 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                           key={trade.id}
                           type="button"
                           onClick={() => handleSelectTrade(trade)}
-                          className={`flex items-center justify-between p-2 sm:p-2.5 rounded-xl border text-left transition-all cursor-pointer group ${
+                          className={`flex items-center justify-between p-2 sm:p-2.5 rounded-xl border text-left transition-all duration-200 ease-out cursor-pointer group hover:scale-[1.015] active:scale-[0.99] ${
                             isSelected
-                              ? 'bg-[rgba(232,98,44,0.14)] border-[#E8622C] shadow-[0_0_16px_rgba(232,98,44,0.3)]'
-                              : 'bg-white/[0.04] border-[rgba(232,98,44,0.18)] hover:border-[rgba(232,98,44,0.35)] hover:bg-white/[0.07]'
+                              ? 'bg-[rgba(232,98,44,0.08)] border-white/[0.16] shadow-[0_4px_20px_rgba(0,0,0,0.4)]'
+                              : 'bg-white/[0.04] border-white/[0.07] hover:border-white/20 hover:bg-white/[0.07]'
                           }`}
                         >
                           <div className="flex flex-col min-w-0 pr-2">
-                            <span className="text-xs font-semibold text-[#FFF5EE] truncate">{title}</span>
+                            <span className={`text-xs font-semibold truncate transition-colors ${
+                              isSelected ? 'text-[#E8622C]' : 'text-[#FFF5EE]'
+                            }`}>
+                              {title}
+                            </span>
                             <span className="text-[10px] text-[#D9BEB0] truncate">{badgeText}</span>
                           </div>
                           <div
                             className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center shrink-0 transition-colors ${
-                              isSelected ? 'border-[#E8622C] bg-[#E8622C]' : 'border-[rgba(232,98,44,0.3)] group-hover:border-[rgba(232,98,44,0.5)]'
+                              isSelected ? 'border-[#E8622C] bg-[#E8622C]' : 'border-white/20 group-hover:border-white/40'
                             }`}
                           >
                             {isSelected && <Check className="w-2.5 h-2.5 text-white" />}
@@ -1189,7 +1388,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
               {/* STEP 7: HOW DID YOU HEAR ABOUT ATRIUM? (HIGGSFIELD PILLS)     */}
               {/* ------------------------------------------------------------- */}
               {currentStep === 7 && (
-                <div className="space-y-3">
+                <div className="space-y-3 w-full my-auto">
                   <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
                     {REFERRAL_SOURCES.map((src) => {
                       const isSelected = referralSource === src.id;
@@ -1199,13 +1398,13 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                           key={src.id}
                           type="button"
                           onClick={() => handleSelectReferral(src.id)}
-                          className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl border text-xs font-medium transition-all cursor-pointer ${
+                          className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl border text-xs font-medium transition-all duration-200 ease-out cursor-pointer hover:scale-[1.02] active:scale-[0.99] ${
                             isSelected
-                              ? 'bg-gradient-to-r from-[#C4785A] to-[#E8622C] border-[#E8622C] text-white shadow-[0_0_14px_rgba(232,98,44,0.4)]'
-                              : 'bg-white/[0.04] border-[rgba(232,98,44,0.18)] text-[#F0DACF] hover:border-[rgba(232,98,44,0.35)] hover:text-white'
+                              ? 'bg-[rgba(232,98,44,0.12)] border-white/[0.16] text-[#E8622C] shadow-[0_4px_16px_rgba(0,0,0,0.4)]'
+                              : 'bg-white/[0.04] border-white/[0.07] text-[#F0DACF] hover:border-white/20 hover:text-white'
                           }`}
                         >
-                          <Compass className="w-3.5 h-3.5 opacity-80 text-[#FF8A4C]" />
+                          <Compass className={`w-3.5 h-3.5 transition-colors ${isSelected ? 'text-[#E8622C]' : 'text-[#FF8A4C] opacity-80'}`} />
                           <span>{label}</span>
                           {isSelected && <Check className="w-3 h-3 ml-1" />}
                         </button>
@@ -1219,11 +1418,11 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
               {/* STEP 8: WORKSPACE IDENTITY & SUBSCRIPTION PLAN SWITCHER       */}
               {/* ------------------------------------------------------------- */}
               {currentStep === 8 && (
-                <div className="space-y-2.5 sm:space-y-3">
+                <div className="space-y-2.5 sm:space-y-3 w-full my-auto">
                   {/* Synthesis Vertical Match Pill */}
-                  <div className="p-3 rounded-xl bg-white/[0.04] border border-[rgba(232,98,44,0.25)] backdrop-blur-sm flex items-center justify-between">
+                  <div className="p-3 rounded-xl bg-white/[0.04] border border-white/10 backdrop-blur-sm flex items-center justify-between">
                     <div className="flex items-center gap-2.5 min-w-0">
-                      <div className="w-8 h-8 rounded-lg bg-[rgba(232,98,44,0.18)] border border-[rgba(232,98,44,0.3)] flex items-center justify-center shrink-0">
+                      <div className="w-8 h-8 rounded-lg bg-[rgba(232,98,44,0.12)] border border-white/10 flex items-center justify-center shrink-0">
                         <Sparkles className="w-4 h-4 text-[#FF8A4C]" />
                       </div>
                       <div className="min-w-0">
@@ -1252,7 +1451,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
 
                   {/* Manual Category Override Dropdown (If expanded) */}
                   {isOverrideSelectorOpen && (
-                    <div className="p-2 rounded-xl bg-black/40 border border-[rgba(232,98,44,0.2)] max-h-32 overflow-y-auto space-y-1 text-xs backdrop-blur-md">
+                    <div className="p-2 rounded-xl bg-black/40 border border-white/10 max-h-32 overflow-y-auto space-y-1 text-xs backdrop-blur-md">
                       {(Object.keys(CATEGORY_METADATA) as BusinessCategory[]).map((catKey) => {
                         const meta = CATEGORY_METADATA[catKey];
                         const isPicked = activeCategory === catKey;
@@ -1328,10 +1527,10 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                               setSelectedPlanTier(plan.tier);
                               setPaidVoucherError(null);
                             }}
-                            className={`flex flex-col text-left p-2 sm:p-2.5 rounded-xl border transition-all cursor-pointer relative group ${
+                            className={`flex flex-col text-left p-2 sm:p-2.5 rounded-xl border transition-all duration-200 ease-out cursor-pointer relative group hover:scale-[1.02] active:scale-[0.99] ${
                               isSelected
-                                ? 'bg-[rgba(232,98,44,0.14)] border-[#E8622C] shadow-[0_0_16px_rgba(232,98,44,0.35)]'
-                                : 'bg-white/[0.04] border-[rgba(232,98,44,0.18)] hover:border-[rgba(232,98,44,0.35)] hover:bg-white/[0.07]'
+                                ? 'bg-[rgba(232,98,44,0.08)] border-white/[0.16] shadow-[0_4px_20px_rgba(0,0,0,0.4)]'
+                                : 'bg-white/[0.04] border-white/[0.07] hover:border-white/20 hover:bg-white/[0.07]'
                             }`}
                           >
                             <div className="flex items-center justify-between w-full mb-1">
@@ -1348,13 +1547,17 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                               </span>
                               <div
                                 className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center transition-colors shrink-0 ${
-                                  isSelected ? 'border-[#E8622C] bg-[#E8622C]' : 'border-[rgba(232,98,44,0.3)]'
+                                  isSelected ? 'border-[#E8622C] bg-[#E8622C]' : 'border-white/20'
                                 }`}
                               >
                                 {isSelected && <Check className="w-2.5 h-2.5 text-white" />}
                               </div>
                             </div>
-                            <span className="font-extrabold text-xs sm:text-sm text-[#FFF5EE]">{plan.name}</span>
+                            <span className={`font-extrabold text-xs sm:text-sm transition-colors ${
+                              isSelected ? 'text-[#E8622C]' : 'text-[#FFF5EE]'
+                            }`}>
+                              {plan.name}
+                            </span>
                             <span className="font-mono text-xs font-bold text-[#FF8A4C] mt-0.5">{price}</span>
                           </button>
                         );
@@ -1376,9 +1579,9 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                         </div>
                       </div>
                     ) : (
-                      <div className="p-2.5 rounded-xl bg-white/[0.04] border border-[rgba(232,98,44,0.2)] space-y-2">
+                      <div className="p-2.5 rounded-xl bg-white/[0.04] border border-white/10 space-y-2">
                         {/* 14-Day Free Trial Notice Banner */}
-                        <div className="p-2 rounded-lg bg-[rgba(232,98,44,0.15)] border border-[rgba(232,98,44,0.3)] flex items-center justify-between text-xs">
+                        <div className="p-2 rounded-lg bg-[rgba(232,98,44,0.1)] border border-white/10 flex items-center justify-between text-xs">
                           <div className="flex items-center gap-2 text-[#FFF5EE]">
                             <Sparkles className="w-4 h-4 text-[#FF8A4C] shrink-0" />
                             <span className="text-[11px]">
@@ -1443,275 +1646,98 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
               )}
             </div>
 
-            {/* Bottom Footer Actions (Unified Navigation Contract: Back on all, Continue only when needed) */}
-            <div className="mt-3 sm:mt-4 pt-3 border-t border-[rgba(232,98,44,0.18)] flex items-center justify-between shrink-0">
-              {currentStep > 0 ? (
-                <button
-                  type="button"
-                  onClick={() => setCurrentStep((prev) => Math.max(0, prev - 1))}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-[#D9BEB0] hover:text-[#FFF5EE] hover:bg-white/5 transition-all cursor-pointer active:scale-95"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                  <span>{isAr ? 'السابق' : isFr ? 'Précédent' : 'Back'}</span>
-                </button>
-              ) : (
-                <div />
-              )}
+            {/* Bottom Footer Actions (Higgsfield Style: Centered Helper Text + Navigation) */}
+            <div className="mt-4 pt-3 border-t border-white/10 flex flex-col items-center shrink-0 w-full">
+              <p className="text-xs sm:text-sm text-[#D9BEB0]/75 text-center mb-3 leading-relaxed max-w-lg">
+                {questionsMeta[currentStep]?.subtext}
+              </p>
 
-              {/* Step 0: Needs Continue button for multi-field form */}
-              {currentStep === 0 && (
-                <button
-                  type="button"
-                  onClick={() => setCurrentStep(1)}
-                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-[#C4552A] to-[#E64A19] hover:from-[#d84315] hover:to-[#f4511e] shadow-[0_4px_20px_rgba(230,74,25,0.45)] transition-all cursor-pointer active:scale-95 ml-auto"
-                >
-                  <span>{isAr ? 'متابعة' : isFr ? 'Continuer' : 'Continue'}</span>
-                  <ChevronRight className="w-4 h-4" />
-                </button>
-              )}
-
-              {/* Step 2: Continue button with selected goal */}
-              {currentStep === 2 && (
-                <button
-                  type="button"
-                  onClick={() => setCurrentStep(3)}
-                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-[#C4552A] to-[#E64A19] hover:from-[#d84315] hover:to-[#f4511e] shadow-[0_4px_20px_rgba(230,74,25,0.45)] transition-all cursor-pointer active:scale-95 ml-auto"
-                >
-                  <span>{isAr ? 'متابعة' : isFr ? 'Continuer' : 'Continue'}</span>
-                  <ChevronRight className="w-4 h-4" />
-                </button>
-              )}
-
-              {/* Step 6: Shows Continue in case user uses search without clicking chip */}
-              {currentStep === 6 && (
-                <button
-                  type="button"
-                  onClick={() => setCurrentStep(7)}
-                  className="flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-[#C4552A] to-[#E64A19] hover:from-[#d84315] hover:to-[#f4511e] shadow-[0_4px_20px_rgba(230,74,25,0.45)] transition-all cursor-pointer active:scale-95 ml-auto"
-                >
-                  <span>{isAr ? 'متابعة' : isFr ? 'Continuer' : 'Continue'}</span>
-                  <ChevronRight className="w-4 h-4" />
-                </button>
-              )}
-
-              {/* Step 8: Final Launch Workspace Button */}
-              {currentStep === 8 && (
-                <button
-                  type="button"
-                  onClick={handleLaunchWorkspace}
-                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-[#C4552A] to-[#E64A19] hover:from-[#d84315] hover:to-[#f4511e] shadow-[0_6px_24px_rgba(230,74,25,0.5)] transition-all cursor-pointer active:scale-95 ml-auto"
-                >
-                  <Rocket className="w-4 h-4" />
-                  <span>
-                    {isAr ? 'إطلاق مساحة العمل الآن' : isFr ? 'Lancer mon espace Atrium' : 'Launch My Workspace'}
-                  </span>
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* ========================================================================= */}
-          {/* RIGHT COLUMN: TALL IMAGE PLACEHOLDER PREVIEW (PRESERVED WIDTH, TALLER)    */}
-          {/* ========================================================================= */}
-          <div className="lg:col-span-5 xl:col-span-5 hidden lg:flex flex-col items-end justify-center w-full">
-            <div className="relative w-full max-w-sm lg:max-w-md lg:ml-auto justify-self-end p-5 rounded-3xl onboarding-glass-card overflow-hidden min-h-[660px] xl:min-h-[720px] flex flex-col justify-between shadow-[0_20px_50px_rgba(0,0,0,0.6)]">
-              
-              {/* Ambient Radiant Glow */}
-              <div
-                className="absolute -top-20 -right-20 w-64 h-64 rounded-full blur-3xl opacity-35 pointer-events-none"
-                style={{ background: 'radial-gradient(circle, #F4511E 0%, #E64A19 32%, #782307 65%, transparent 80%)' }}
-              />
-
-              {/* Header: Brand Mark & Status */}
-              <div className="relative z-10 flex items-center justify-between pb-3 mb-2 border-b border-[rgba(230,74,25,0.20)]">
-                <div className="flex items-center gap-2">
-                  <FiveCubesLogo size={22} cubeColor="#F4511E" />
-                  <span className="text-xs font-extrabold tracking-wider uppercase text-[#FFF5EE]">
-                    Atrium <span className="text-[#F4511E]">OS</span>
-                  </span>
-                </div>
-                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[rgba(230,74,25,0.14)] border border-[rgba(230,74,25,0.28)] text-[#F4511E] text-[10px] font-semibold">
-                  <ImageIcon className="w-3 h-3 text-[#F4511E]" />
-                  <span>{isAr ? 'معاينة الصور' : isFr ? "Aperçu d'images" : 'Image Showcase'}</span>
-                </div>
-              </div>
-
-              {/* Central Tall Image Frame & Interactive Placeholder */}
-              <div className="relative z-10 flex-1 my-2 flex flex-col justify-center">
-                {(() => {
-                  const activeSlide = PREVIEW_SLIDES[activeSlideIndex];
-                  const hasCustom = activeSlideIndex === 3 && customUploadedImage;
-                  const displaySrc = hasCustom ? customUploadedImage! : activeSlide.src;
-
-                  return (
-                    <div className="relative w-full h-[460px] xl:h-[500px] rounded-2xl overflow-hidden border border-[rgba(230,74,25,0.28)] bg-[rgba(12,10,9,0.75)] p-2.5 flex flex-col justify-between group">
-                      {displaySrc ? (
-                        <>
-                          <div className="relative w-full h-full rounded-xl overflow-hidden flex items-center justify-center bg-black/60">
-                            <img
-                              src={displaySrc}
-                              alt={activeSlide.labelFr}
-                              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
-                            />
-                            {/* Subtle dark gradient overlay for legible text badges */}
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent pointer-events-none" />
-
-                            {/* Top Floating Badge */}
-                            <div className="absolute top-3 inset-x-3 flex items-center justify-between pointer-events-none">
-                              <span className="px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md border border-[rgba(230,74,25,0.3)] text-[10px] font-semibold text-[#FFF5EE]">
-                                {isAr ? activeSlide.labelAr : isFr ? activeSlide.labelFr : activeSlide.labelEn}
-                              </span>
-                              <span className="px-2 py-0.5 rounded-md bg-[rgba(230,74,25,0.25)] backdrop-blur-md text-[#F4511E] text-[10px] font-mono font-bold">
-                                {activeSlideIndex + 1} / {PREVIEW_SLIDES.length}
-                              </span>
-                            </div>
-
-                            {/* Interactive Prev/Next Navigation Arrows */}
-                            <div className="absolute inset-y-0 left-2 flex items-center">
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setActiveSlideIndex((prev) => (prev > 0 ? prev - 1 : PREVIEW_SLIDES.length - 1));
-                                }}
-                                title={isAr ? 'الصورة السابقة' : isFr ? 'Image précédente' : 'Previous image'}
-                                className="p-2 rounded-full bg-black/60 hover:bg-black/90 text-[#F0DACF] hover:text-white border border-white/10 transition-all cursor-pointer backdrop-blur-md active:scale-95"
-                              >
-                                <ChevronLeft className="w-4 h-4" />
-                              </button>
-                            </div>
-                            <div className="absolute inset-y-0 right-2 flex items-center">
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setActiveSlideIndex((prev) => (prev < PREVIEW_SLIDES.length - 1 ? prev + 1 : 0));
-                                }}
-                                title={isAr ? 'الصورة التالية' : isFr ? 'Image suivante' : 'Next image'}
-                                className="p-2 rounded-full bg-black/60 hover:bg-black/90 text-[#F0DACF] hover:text-white border border-white/10 transition-all cursor-pointer backdrop-blur-md active:scale-95"
-                              >
-                                <ChevronRight className="w-4 h-4" />
-                              </button>
-                            </div>
-
-                            {/* Bottom Label & Format Info */}
-                            <div className="absolute bottom-3 inset-x-3 flex items-center justify-between text-[10px] pointer-events-none">
-                              <span className="text-[#F0DACF] font-medium truncate max-w-[200px]">
-                                {isAr ? activeSlide.labelAr : isFr ? activeSlide.labelFr : activeSlide.labelEn}
-                              </span>
-                              <span className="text-[#F4511E] font-mono text-[9px] uppercase tracking-wider">
-                                1280×800 HD
-                              </span>
-                            </div>
-                          </div>
-                        </>
-                      ) : (
-                        /* Architectural Empty Placeholder Frame */
-                        <div
-                          onClick={() => fileInputRef.current?.click()}
-                          className="w-full h-full rounded-xl border-2 border-dashed border-[rgba(230,74,25,0.38)] bg-white/[0.02] hover:bg-white/[0.05] transition-all flex flex-col items-center justify-center p-6 text-center cursor-pointer group/placeholder"
-                        >
-                          <div className="w-16 h-16 rounded-2xl bg-[rgba(230,74,25,0.14)] border border-[rgba(230,74,25,0.32)] flex items-center justify-center mb-4 group-hover/placeholder:scale-110 transition-transform">
-                            <ImageIcon className="w-8 h-8 text-[#F4511E]" />
-                          </div>
-                          <div className="text-sm font-bold text-[#FFF5EE] mb-1.5">
-                            {isAr ? 'مساحة مخصصة للصور والمعاينات' : isFr ? "Emplacement d'Image & Maquette" : 'Image & Mockup Placeholder'}
-                          </div>
-                          <p className="text-xs text-[#D9BEB0] max-w-xs mb-4 leading-relaxed">
-                            {isAr
-                              ? 'انقر لتحميل لقطة شاشة، نموذج واجهة أو صورة مخصصة بالحجم الكامل'
-                              : isFr
-                              ? 'Cliquez pour insérer une capture d’écran, maquette ou visuel produit haute résolution'
-                              : 'Click to upload a high-resolution screenshot, UI mockup or product visual'}
-                          </p>
-                          <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[rgba(230,74,25,0.22)] border border-[rgba(230,74,25,0.38)] text-[#F4511E] text-xs font-semibold group-hover/placeholder:bg-[rgba(230,74,25,0.32)] transition-colors">
-                            <Upload className="w-3.5 h-3.5" />
-                            <span>{isAr ? 'رفع صورة' : isFr ? 'Téléverser une image' : 'Upload Image'}</span>
-                          </div>
-                          <div className="mt-4 text-[10px] text-[#BFA395]/70 font-mono">
-                            Ratio 16:10 / 4:5 • PNG, JPG, WebP
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })()}
-
-                {/* Hidden File Input for Custom Upload */}
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleCustomImageUpload}
-                  className="hidden"
-                />
-              </div>
-
-              {/* Bottom Thumbnail Strip & Controls */}
-              <div className="relative z-10 pt-3 border-t border-[rgba(230,74,25,0.18)] space-y-2">
-                <div className="flex items-center justify-between text-[11px] text-[#D9BEB0]">
-                  <span className="font-semibold text-[#F0DACF]">
-                    {isAr ? 'معارض الشاشات' : isFr ? "Galerie d'écrans" : 'Screen Gallery'}
-                  </span>
+              <div className="flex items-center justify-between w-full">
+                {currentStep > 0 ? (
                   <button
                     type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    className="text-[10px] font-semibold text-[#F4511E] hover:underline flex items-center gap-1 cursor-pointer"
+                    onClick={() => setCurrentStep((prev) => Math.max(0, prev - 1))}
+                    className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold text-[#D9BEB0] hover:text-[#FFF5EE] hover:bg-white/5 transition-all cursor-pointer active:scale-95"
                   >
-                    <Upload className="w-3 h-3" />
-                    <span>{isAr ? 'صورة مخصصة' : isFr ? 'Personnaliser' : 'Custom Image'}</span>
+                    <ChevronLeft className="w-4 h-4" />
+                    <span>{isAr ? 'السابق' : isFr ? 'Précédent' : 'Back'}</span>
                   </button>
-                </div>
+                ) : (
+                  <div />
+                )}
 
-                <div className="grid grid-cols-4 gap-2">
-                  {PREVIEW_SLIDES.map((slide, idx) => {
-                    const isActive = activeSlideIndex === idx;
-                    const hasCustom = idx === 3 && customUploadedImage;
-                    const src = hasCustom ? customUploadedImage! : slide.src;
+                {/* Step 0: Needs Continue button for multi-field form */}
+                {currentStep === 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setCurrentStep(1)}
+                    className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-[#C4552A] to-[#E64A19] hover:from-[#d84315] hover:to-[#f4511e] shadow-[0_4px_20px_rgba(230,74,25,0.45)] transition-all cursor-pointer active:scale-95 ml-auto"
+                  >
+                    <span>{isAr ? 'متابعة' : isFr ? 'Continuer' : 'Continue'}</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                )}
 
-                    return (
-                      <button
-                        key={slide.id}
-                        type="button"
-                        onClick={() => setActiveSlideIndex(idx)}
-                        className={`relative rounded-xl overflow-hidden h-14 border transition-all cursor-pointer ${
-                          isActive
-                            ? 'border-[#F4511E] ring-2 ring-[rgba(230,74,25,0.45)] shadow-[0_0_12px_rgba(230,74,25,0.4)]'
-                            : 'border-white/10 hover:border-[rgba(230,74,25,0.3)] opacity-70 hover:opacity-100'
-                        }`}
-                      >
-                        {src ? (
-                          <img src={src} alt={slide.tag} className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="w-full h-full bg-white/[0.04] flex flex-col items-center justify-center">
-                            <ImageIcon className="w-4 h-4 text-[#F4511E]/80" />
-                            <span className="text-[9px] text-[#D9BEB0] font-mono mt-0.5">Mockup</span>
-                          </div>
-                        )}
-                        <div className="absolute bottom-0 inset-x-0 bg-black/75 py-0.5 text-center text-[8px] font-semibold text-[#FFF5EE]">
-                          {slide.tag}
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
+                {/* Step 2: Continue button with selected goal */}
+                {currentStep === 2 && (
+                  <button
+                    type="button"
+                    onClick={() => setCurrentStep(3)}
+                    className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-[#C4552A] to-[#E64A19] hover:from-[#d84315] hover:to-[#f4511e] shadow-[0_4px_20px_rgba(230,74,25,0.45)] transition-all cursor-pointer active:scale-95 ml-auto"
+                  >
+                    <span>{isAr ? 'متابعة' : isFr ? 'Continuer' : 'Continue'}</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                )}
+
+                {/* Step 6: Shows Continue in case user uses search without clicking chip */}
+                {currentStep === 6 && (
+                  <button
+                    type="button"
+                    onClick={() => setCurrentStep(7)}
+                    className="flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-[#C4552A] to-[#E64A19] hover:from-[#d84315] hover:to-[#f4511e] shadow-[0_4px_20px_rgba(230,74,25,0.45)] transition-all cursor-pointer active:scale-95 ml-auto"
+                  >
+                    <span>{isAr ? 'متابعة' : isFr ? 'Continuer' : 'Continue'}</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                )}
+
+                {/* Step 8: Final Launch Workspace Button */}
+                {currentStep === 8 && (
+                  <button
+                    type="button"
+                    onClick={handleLaunchWorkspace}
+                    className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-[#C4552A] to-[#E64A19] hover:from-[#d84315] hover:to-[#f4511e] shadow-[0_6px_24px_rgba(230,74,25,0.5)] transition-all cursor-pointer active:scale-95 ml-auto"
+                  >
+                    <Rocket className="w-4 h-4" />
+                    <span>
+                      {isAr ? 'إطلاق مساحة العمل الآن' : isFr ? 'Lancer mon espace Atrium' : 'Launch My Workspace'}
+                    </span>
+                  </button>
+                )}
               </div>
-
             </div>
           </div>
 
         </div>
       </main>
 
-      {/* Full-Bleed Plain Low-Opacity Text Footer */}
-      <footer className="relative z-10 w-full text-center py-3 shrink-0 pointer-events-none">
-        <p className="text-[11px] text-[#BFA395]/60 font-medium tracking-wide">
+      {/* Full-Bleed Plain Low-Opacity Text Footer with Replay Intro Trigger */}
+      <footer className="relative z-10 w-full text-center py-3 shrink-0 flex flex-col items-center justify-center gap-1.5">
+        <p className="text-[11px] text-[#BFA395]/60 font-medium tracking-wide pointer-events-none">
           {isAr
             ? 'أتريوم لنظم التشغيل المؤسسية • منصة متكاملة ومرخصة لبيئة الأعمال الوطنية • إصدار الإنتاج 2026'
             : isFr
             ? 'Atrium OS • Plateforme de Gestion Unifiée & Conformité Réglementaire • Version Production 2026'
             : 'Atrium OS • Unified Operating System & Multi-Vertical Cockpit • Production Edition 2026'}
         </p>
+        <button
+          type="button"
+          onClick={handleReplayIntro}
+          className="text-[10px] text-[#C4785A]/70 hover:text-[#FF8A4C] transition-colors cursor-pointer flex items-center gap-1 font-mono tracking-wider uppercase px-2.5 py-0.5 rounded border border-[#C4785A]/20 hover:border-[#C4785A]/50 bg-black/30 hover:bg-black/50"
+        >
+          <span>↺ Replay Intro Animation</span>
+        </button>
       </footer>
 
       {/* Feature Blueprint Modal */}
