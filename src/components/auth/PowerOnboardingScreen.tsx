@@ -825,8 +825,8 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
   );
 
   // Helper Renderer: Bottom Navigation Bar
-  const renderBottomNavigation = () => (
-    <div className="mt-3 pt-2.5 border-t border-white/10 flex items-center justify-between shrink-0 w-full">
+  const renderBottomNavigation = (withMtAuto = false) => (
+    <div className={`${withMtAuto ? 'mt-auto' : 'mt-4 sm:mt-5'} pt-3 border-t border-white/10 flex items-center justify-between shrink-0 w-full`}>
         {currentStep > 0 ? (
           <button
             type="button"
@@ -973,7 +973,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
               {renderVoucherBar()}
             </div>
 
-            {renderBottomNavigation()}
+            {renderBottomNavigation(true)}
           </div>
         ) : (
           /* Standard 2-Column Workstation: Left Image Card + Right Questionnaire */
@@ -984,15 +984,15 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
               {renderLeftImageCard()}
             </div>
 
-            {/* Right Column: Questionnaire - Docked to the Opposite Side & Perfectly Aligned */}
+            {/* Right Column: Questionnaire - Vertically Centralized & Balanced */}
             <div
-              className="w-full lg:w-[540px] xl:w-[590px] 2xl:w-[640px] shrink-0 h-full min-h-0 flex flex-col justify-between overflow-hidden"
+              className="w-full lg:w-[540px] xl:w-[590px] 2xl:w-[640px] shrink-0 h-full min-h-0 flex flex-col justify-center overflow-hidden"
               onTouchStart={handleTouchStart}
               onTouchEnd={handleTouchEnd}
             >
-              <div className="flex flex-col min-h-0 flex-1 overflow-hidden">
+              <div className="w-full my-auto flex flex-col max-h-full overflow-hidden py-3 sm:py-5 pr-1">
                 {/* Step Tab / Swipe Indicators (10 Steps: 0 to 9) - Aligned with Right Area Text Boxes */}
-                <div className="flex items-center gap-1.5 mb-2.5 shrink-0">
+                <div className="flex items-center gap-1.5 mb-3 shrink-0">
                   {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((idx) => {
                     const isActive = currentStep === idx;
                     const isCompleted = currentStep > idx;
@@ -1015,7 +1015,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                 </div>
 
                 {/* Right Column Header: Title and Step Badge */}
-                <div className="mb-3 shrink-0">
+                <div className="mb-3.5 shrink-0">
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-xs font-semibold uppercase tracking-wider text-[#FF7A30]">
                       {isAr ? `المرحلة ${currentStep + 1} من 10` : isFr ? `Étape ${currentStep + 1} sur 10` : `Step ${currentStep + 1} of 10`}
@@ -1042,7 +1042,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                 </div>
 
                 {/* Right Column Active Question Content Canvas */}
-                <div className="w-full min-h-0 flex-1 overflow-y-auto overflow-x-hidden flex flex-col justify-start py-1">
+                <div className="w-full py-1">
               
               {/* ------------------------------------------------------------- */}
               {/* STEP 0: GOOGLE SSO OR WORK EMAIL VIA PROPRIETARY LABELINPUT   */}
@@ -1154,7 +1154,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
               {/* STEP 1: OPERATIONAL FRUSTRATION / CHALLENGE                   */}
               {/* ------------------------------------------------------------- */}
               {currentStep === 1 && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5 w-full mt-1 sm:mt-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3 w-full mt-1.5 sm:mt-2.5">
                   {[
                     {
                       id: 'scheduling' as const,
@@ -1200,7 +1200,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                         key={item.id}
                         type="button"
                         onClick={() => handleSelectFrustration(item.id)}
-                        className={`flex flex-col text-left p-2.5 sm:p-3 rounded-xl border transition-all duration-200 ease-out cursor-pointer relative group hover:scale-[1.015] active:scale-[0.99] ${
+                        className={`flex flex-col text-left p-3 sm:p-3.5 rounded-xl border transition-all duration-200 ease-out cursor-pointer relative group hover:scale-[1.015] active:scale-[0.99] min-h-[88px] sm:min-h-[94px] justify-between ${
                           isSelected
                             ? 'bg-[rgba(232,98,44,0.08)] border-white/[0.16] shadow-[0_4px_20px_rgba(0,0,0,0.4)]'
                             : 'bg-white/[0.04] border-white/[0.07] hover:border-white/20 hover:bg-white/[0.07]'
@@ -1647,7 +1647,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                   </div>
 
                   {/* Trades Grid Container (Scrollable Multi-column, Custom Scrollbar) */}
-                  <div className="overflow-y-auto pr-1 max-h-[380px] sm:max-h-[430px] rounded-xl space-y-1.5 focus:outline-none scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent hover:scrollbar-thumb-white/30">
+                  <div className="overflow-y-auto pr-1 h-[210px] max-h-[210px] rounded-xl space-y-1.5 focus:outline-none scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent hover:scrollbar-thumb-white/30">
                     {filteredCatalogTrades.length > 0 ? (
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1.5 sm:gap-2">
                         {filteredCatalogTrades.map((trade) => {
@@ -1659,7 +1659,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                               key={trade.id}
                               type="button"
                               onClick={() => handleSelectTrade(trade)}
-                              className={`flex items-center justify-between p-2.5 rounded-xl border text-left transition-all duration-200 ease-out cursor-pointer group hover:scale-[1.015] active:scale-[0.98] ${
+                              className={`flex items-center justify-between p-2 rounded-xl border text-left transition-all duration-200 ease-out cursor-pointer group hover:scale-[1.015] active:scale-[0.98] min-h-[46px] ${
                                 isSelected
                                   ? 'bg-[rgba(232,98,44,0.12)] border-[#E8622C] ring-1 ring-[#E8622C]/40 shadow-[0_4px_20px_rgba(232,98,44,0.3)]'
                                   : 'bg-white/[0.04] border-white/[0.07] hover:border-white/20 hover:bg-white/[0.07]'
@@ -1674,7 +1674,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                                 <span className="text-[9.5px] text-[#D9BEB0] truncate">{badgeText}</span>
                               </div>
                               <div
-                                className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 transition-colors ${
+                                className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center shrink-0 transition-colors ${
                                   isSelected ? 'border-[#E8622C] bg-[#E8622C]' : 'border-white/20 group-hover:border-white/40'
                                 }`}
                               >
@@ -1862,13 +1862,13 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                   {renderVoucherBar()}
                 </div>
               )}
+                </div>
+
+                {/* Right Column Bottom Footer Actions */}
+                {renderBottomNavigation(false)}
+              </div>
             </div>
           </div>
-
-          {/* Right Column Bottom Footer Actions */}
-          {renderBottomNavigation()}
-        </div>
-      </div>
     )}
     </main>
 

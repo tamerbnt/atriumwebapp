@@ -171,6 +171,14 @@ import {
 import { checkQuota, getCategoryTerminology, validateVoucherCode, calculateDaysRemaining, formatMoney } from '../utils/rules';
 import { numberToWordsFrench, numberToWordsArabic } from '../utils/algerianPtt';
 import { getInitialLanguageConfig, getSystemDefaultLanguage, t, getLocalizedServiceName } from '../utils/i18n';
+import {
+  isSoleActiveOwner,
+  validateStaffCredentials,
+  canAccessStaffScreen,
+  canViewSensitivePayroll,
+  normalizePhone,
+  getCategoryPerformanceMetricLabel,
+} from '../utils/staffRules';
 
 import {
   isSupabaseConfigured,
@@ -195,6 +203,7 @@ export type ActiveScreen =
   | 'dashboard'
   | 'analytics'
   | 'members'
+  | 'staff'
   | 'registrations'
   | 'shop'
   | 'scheduler'
@@ -2155,6 +2164,216 @@ export function useAtriumStore() {
     notify();
   };
 
+  const createStaffMember = (staffData: Omit<StaffMember, 'id' | 'tenantId' | 'facilityId'>) => {
+    const trace = getTraceContext();
+    const newStaff: StaffMember = {
+      ...trace,
+      ...staffData,
+      id: `stf_${Date.now()}`,
+      tenantId: state.account.id,
+      facilityId: state.currentBranchId,
+      branchId: state.currentBranchId,
+      isActive: staffData.status ? staffData.status === 'active' : true,
+      status: staffData.status || 'active',
+      hireDate: staffData.hireDate || new Date().toISOString().split('T')[0],
+      salary: staffData.salary || 0,
+      paymentDay: staffData.paymentDay || 28,
+      allowedModules: staffData.allowedModules || ['all'],
+      isClockedInToday: false,
+    };
+
+    globalState = {
+      ...globalState,
+      staff: [newStaff, ...globalState.staff],
+    };
+    notify();
+
+    showToast({
+      type: 'success',
+      title: 'Collaborateur créé',
+      message: `${newStaff.fullName} a été intégré(e) à l'équipe.`,
+      category: globalState.businesses.find((b) => b.id === globalState.currentBusinessId)?.category,
+    });
+
+    return newStaff;
+  };
+
+  const updateStaffMember = (id: string, updates: Partial<StaffMember>) => {
+    const target = globalState.staff.find((s) => s.id === id);
+    if (!target) return;
+
+    if (updates.status && updates.status !== 'active') {
+      if (isSoleActiveOwner(id, globalState.staff)) {
+        throw new Error('Impossible de modifier le statut : ce collaborateur est le seul propriétaire actif de l\'établissement.');
+      }
+    }
+
+    globalState = {
+      ...globalState,
+      staff: globalState.staff.map((s) =>
+        s.id === id
+          ? {
+              ...s,
+              ...updates,
+              isActive: updates.status ? updates.status === 'active' : (updates.isActive ?? s.isActive),
+            }
+          : s
+      ),
+    };
+    notify();
+
+    showToast({
+      type: 'info',
+      title: 'Fiche collaborateur mise à jour',
+      message: `Les informations de ${target.fullName} ont été actualisées.`,
+    });
+  };
+
+  const freezeStaffMember = (id: string) => {
+    if (isSoleActiveOwner(id, globalState.staff)) {
+      throw new Error('Action refusée : le seul propriétaire actif ne peut pas être gelé.');
+    }
+    const target = globalState.staff.find((s) => s.id === id);
+    globalState = {
+      ...globalState,
+      staff: globalState.staff.map((s) =>
+        s.id === id ? { ...s, status: 'frozen', isActive: false } : s
+      ),
+    };
+    notify();
+    showToast({
+      type: 'warning',
+      title: 'Compte gelé',
+      message: `L'accès de ${target?.fullName || 'ce membre'} a été temporairement suspendu.`,
+    });
+  };
+
+  const vacationStaffMember = (id: string, vacationUntil?: string) => {
+    const target = globalState.staff.find((s) => s.id === id);
+    globalState = {
+      ...globalState,
+      staff: globalState.staff.map((s) =>
+        s.id === id
+          ? {
+              ...s,
+              status: 'vacation',
+              isActive: false,
+              vacationUntil: vacationUntil || new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0],
+            }
+          : s
+      ),
+    };
+    notify();
+    showToast({
+      type: 'info',
+      title: 'Départ en congé',
+      message: `${target?.fullName || 'Le collaborateur'} est désormais marqué en congé.`,
+    });
+  };
+
+  const terminateStaffMember = (id: string, terminationDate?: string) => {
+    if (isSoleActiveOwner(id, globalState.staff)) {
+      throw new Error('Action refusée : le seul propriétaire actif ne peut pas être arrêté définitivement.');
+    }
+    const target = globalState.staff.find((s) => s.id === id);
+    globalState = {
+      ...globalState,
+      staff: globalState.staff.map((s) =>
+        s.id === id
+          ? {
+              ...s,
+              status: 'terminated',
+              isActive: false,
+              terminationDate: terminationDate || new Date().toISOString().split('T')[0],
+            }
+          : s
+      ),
+    };
+    notify();
+    showToast({
+      type: 'warning',
+      title: 'Contrat arrêté',
+      message: `Le contrat de ${target?.fullName || 'ce membre'} a été résilié définitivement.`,
+    });
+  };
+
+  const deleteStaffMember = (id: string) => {
+    if (isSoleActiveOwner(id, globalState.staff)) {
+      throw new Error('Action refusée : suppression interdite du seul propriétaire actif.');
+    }
+    const target = globalState.staff.find((s) => s.id === id);
+    globalState = {
+      ...globalState,
+      staff: globalState.staff.filter((s) => s.id !== id),
+    };
+    notify();
+    showToast({
+      type: 'warning',
+      title: 'Collaborateur supprimé',
+      message: `${target?.fullName || 'Le membre'} a été retiré de l'annuaire d'équipe.`,
+    });
+  };
+
+  const punchStaffAttendance = (idOrToken: string) => {
+    const clean = idOrToken.trim().toUpperCase();
+    const target = globalState.staff.find(
+      (s) =>
+        s.id === idOrToken ||
+        (s.cardId && s.cardId.toUpperCase() === clean) ||
+        (s.pinCode && s.pinCode === idOrToken) ||
+        normalizePhone(s.phoneNumber) === normalizePhone(idOrToken)
+    );
+
+    if (!target) {
+      showToast({
+        type: 'warning',
+        title: 'Badge ou identifiant non reconnu',
+        message: `Aucun membre ne correspond au badge ou code : ${idOrToken}`,
+      });
+      return { success: false, message: 'Badge non reconnu' };
+    }
+
+    if (target.status === 'terminated' || target.status === 'frozen') {
+      showToast({
+        type: 'warning',
+        title: 'Accès refusé',
+        message: `${target.fullName} est actuellement marqué comme ${target.status === 'frozen' ? 'gelé' : 'résilié'}. Pointage bloqué.`,
+      });
+      return { success: false, message: 'Membre inactif' };
+    }
+
+    const nowTime = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    const isClockingIn = !target.isClockedInToday;
+
+    globalState = {
+      ...globalState,
+      staff: globalState.staff.map((s) =>
+        s.id === target.id
+          ? {
+              ...s,
+              isClockedInToday: isClockingIn,
+              lastClockInTime: isClockingIn ? nowTime : s.lastClockInTime,
+              lastClockOutTime: !isClockingIn ? nowTime : s.lastClockOutTime,
+            }
+          : s
+      ),
+    };
+    notify();
+
+    showToast({
+      type: 'success',
+      title: isClockingIn ? 'Pointage : Arrivée enregistrée' : 'Pointage : Sortie enregistrée',
+      message: `${target.fullName} (${target.role}) : pointage validé à ${nowTime}.`,
+    });
+
+    return {
+      success: true,
+      staff: target,
+      action: isClockingIn ? 'clock_in' : 'clock_out',
+      time: nowTime,
+    };
+  };
+
   const parkOrder = (
     orderData: Omit<ParkedOrder, 'id' | 'createdAt' | 'tenantId' | 'facilityId'>
   ) => {
@@ -3048,10 +3267,19 @@ export function useAtriumStore() {
     return newProduct;
   };
 
-  const login = (email: string, _password?: string) => {
-    const cleanEmail = email.trim().toLowerCase();
-    const staffMatch = globalState.staff.find((s) => s.email.toLowerCase() === cleanEmail);
+  const login = (identifier: string, _password?: string) => {
+    const cleanInput = identifier.trim().toLowerCase();
+    const norm = normalizePhone(identifier);
+    const staffMatch = globalState.staff.find((s) => {
+      const matchEmail = (s.email || '').toLowerCase() === cleanInput;
+      const matchPhone = norm.length >= 8 && normalizePhone(s.phoneNumber) === norm;
+      return matchEmail || matchPhone;
+    });
+
     if (staffMatch) {
+      if (staffMatch.status === 'frozen' || staffMatch.status === 'terminated') {
+        return { success: false, message: 'Ce compte est actuellement suspendu ou désactivé.' };
+      }
       const user: CurrentUser = {
         id: staffMatch.id,
         fullName: staffMatch.fullName,
@@ -3072,9 +3300,9 @@ export function useAtriumStore() {
 
     // Check account owner
     if (
-      cleanEmail === globalState.account.email.toLowerCase() ||
-      cleanEmail === 'owner@atrium.dz' ||
-      cleanEmail === 'bentouatitamer@gmail.com'
+      cleanInput === globalState.account.email.toLowerCase() ||
+      cleanInput === 'owner@atrium.dz' ||
+      cleanInput === 'bentouatitamer@gmail.com'
     ) {
       const ownerUser: CurrentUser = {
         id: 'stf_01',
@@ -3094,12 +3322,12 @@ export function useAtriumStore() {
     }
 
     // Default friendly login for any valid email format
-    const namePart = cleanEmail.split('@')[0];
+    const namePart = cleanInput.includes('@') ? cleanInput.split('@')[0] : 'User';
     const friendlyName = namePart.charAt(0).toUpperCase() + namePart.slice(1);
     const fallbackUser: CurrentUser = {
       id: `usr_${Date.now()}`,
       fullName: friendlyName,
-      email: cleanEmail,
+      email: cleanInput.includes('@') ? cleanInput : `${cleanInput}@atrium.dz`,
       role: 'Owner',
       roleRank: 8,
       pinCode: '1234',
@@ -3117,6 +3345,9 @@ export function useAtriumStore() {
     const cleanPin = pin.trim();
     const staffMatch = globalState.staff.find((s) => s.pinCode === cleanPin);
     if (staffMatch) {
+      if (staffMatch.status === 'frozen' || staffMatch.status === 'terminated') {
+        return { success: false, message: 'Ce compte est actuellement suspendu ou désactivé.' };
+      }
       const user: CurrentUser = {
         id: staffMatch.id,
         fullName: staffMatch.fullName,
@@ -8085,5 +8316,17 @@ export function useAtriumStore() {
       };
       notify();
     },
+    // Universal Workforce & Staff Management
+    createStaffMember,
+    updateStaffMember,
+    freezeStaffMember,
+    vacationStaffMember,
+    terminateStaffMember,
+    deleteStaffMember,
+    punchStaffAttendance,
+    canAccessStaffScreen: (cat: BusinessCategory | string, role?: string) =>
+      canAccessStaffScreen(cat, role || state.currentUser?.role),
+    canViewSensitivePayroll: (role?: string) =>
+      canViewSensitivePayroll(role || state.currentUser?.role),
   };
 }

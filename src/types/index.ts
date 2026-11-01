@@ -195,6 +195,59 @@ export interface RegistrationLead {
   updatedAt: string;
 }
 
+export type StaffLifecycleStatus = 'active' | 'frozen' | 'vacation' | 'terminated';
+
+export type RecruitmentLegalType = 'cdi' | 'cdd' | 'stage' | 'vacataire' | 'prestataire';
+
+export type StaffPaymentMethod = 'cash' | 'ccp' | 'bank_transfer';
+
+export interface StaffPerformanceMetric {
+  kpiLabel: string;
+  kpiValue: string | number;
+  kpiUnit: string;
+  targetValue?: number;
+  scorePercentage: number;
+  history30Days?: number[];
+}
+
+export interface StaffCategoryProperties {
+  // Medical Polyclinic
+  orderRegistrationNumber?: string;
+  medicalSpecialty?: string;
+  canPrescribe?: boolean;
+  // BTP / Construction
+  cacobatphCardNumber?: string;
+  assignedChantierId?: string;
+  safetyCertifications?: string[];
+  // Logistics & Delivery
+  drivingLicenseCategory?: string;
+  assignedVehiclePlate?: string;
+  deliveryZoneWilayas?: number[];
+  // Light Manufacturing
+  assignedWorkstationId?: string;
+  machineSafetyClearance?: boolean;
+  qualityInspectorClearance?: boolean;
+  // Agriculture & Livestock
+  assignedParcelId?: string;
+  milkingParlorStation?: string;
+  phytosanitaryLicense?: boolean;
+  // Auto Garage
+  assignedBayId?: string;
+  technicalSpecialty?: string;
+  // Real Estate
+  carteProfessionnelleNumber?: string;
+  canSignMandates?: boolean;
+  // Legal & Notary
+  barAssociationNumber?: string;
+  swornClerkClearance?: boolean;
+  // POS & Retail / Wholesale Trading
+  assignedRegisterId?: string;
+  maxCashFloatLimit?: number;
+  // Salon & Gym / Fitness
+  assignedChairOrStudio?: string;
+  serviceCommissionRate?: number;
+}
+
 export type StaffRole =
   | 'Owner'
   | 'Manager'
@@ -205,27 +258,55 @@ export type StaffRole =
   | 'Staff'
   | 'AgencyDirector'
   | 'ProjectManager'
-  | 'Creative';
+  | 'Creative'
+  | string;
 
 export interface StaffMember {
   id: string;
   accountId?: string;
   businessId?: string;
   branchId?: string;
+  staffId?: string;
   tenantId: string;
   facilityId: string;
   fullName: string;
   email: string;
   phoneNumber: string;
+  age?: number;
+  address?: string;
+  gender?: 'male' | 'female';
+  avatarUrl?: string;
   role: StaffRole;
-  roleRank: number; // 8=Owner, 1=Manager, 2=Cashier, 3=Technician, 4=Waiter, 7=Staff, 20=AgencyDirector
+  roleRank: number; // 8=Owner, 4=Manager/Doctor/Director, 2=Supervisor/Cashier, 1=Staff/Operator
   isActive: boolean;
+  status?: StaffLifecycleStatus;
   hireDate: string;
+  terminationDate?: string;
+  vacationUntil?: string;
   salary: number;
   paymentDay: number; // 1-31
+  paymentMethod?: StaffPaymentMethod;
+  ccpNumber?: string;
+  ccpKey?: string;
+  bankRib?: string;
+  recruitmentType?: RecruitmentLegalType;
   pinCode?: string;
   cardId?: string;
+  canLoginEmail?: boolean;
+  canLoginPhone?: boolean;
+  canLoginPin?: boolean;
+  isClockedInToday?: boolean;
+  lastClockInTime?: string;
+  lastClockOutTime?: string;
   allowedModules: string[];
+  // Medical Emergency
+  emergencyContactName?: string;
+  emergencyContactPhone?: string;
+  bloodGroup?: 'A+' | 'A-' | 'B+' | 'B-' | 'AB+' | 'AB-' | 'O+' | 'O-';
+  medicalNotes?: string;
+  // Domain Specific & Performance
+  categoryProperties?: StaffCategoryProperties;
+  performance?: StaffPerformanceMetric;
 }
 
 export interface Product {

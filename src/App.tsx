@@ -118,6 +118,7 @@ import { AgricultureCyclesView } from './components/screens/agriculture/Agricult
 import { AgricultureHarvestView } from './components/screens/agriculture/AgricultureHarvestView';
 import { AgricultureLivestockView } from './components/screens/agriculture/AgricultureLivestockView';
 import { AgricultureWholesaleView } from './components/screens/agriculture/AgricultureWholesaleView';
+import { UniversalStaffView } from './components/common/UniversalStaffView';
 import { DesktopUpgradeModal } from './components/modals/DesktopUpgradeModal';
 import { CommandPaletteModal } from './components/modals/CommandPaletteModal';
 import { ToastStack } from './components/ui/ToastStack';
@@ -259,6 +260,10 @@ export default function App() {
   const isProjectMilestone = currentBusiness?.category === 'project_milestone';
 
   const renderActiveScreen = () => {
+    if (activeScreen === 'staff') {
+      return <UniversalStaffView currentCategory={currentBusiness?.category} />;
+    }
+
     if (isProjectMilestone) {
       switch (activeScreen) {
         // Role 1: Direction (4 screens)

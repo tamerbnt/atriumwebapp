@@ -49,6 +49,7 @@ import {
 import { useAtriumStore, ActiveScreen } from '../../services/store';
 import { FiveCubesLogo } from '../auth/AtriumMonolith';
 import { useTranslation } from '../../utils/useTranslation';
+import { canAccessStaffScreen } from '../../utils/staffRules';
 
 interface SidebarProps {
   onOpenVoucherModal: () => void;
@@ -81,6 +82,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     activeAppointmentRole,
     activePosRole,
     activeEducationRole,
+    currentUser,
     language,
   } = useAtriumStore();
   const [isExpanded, setIsExpanded] = useState(false);
@@ -1769,6 +1771,25 @@ export const Sidebar: React.FC<SidebarProps> = ({
           label: t('nav_settings', language),
         },
       ];
+    }
+  }
+
+  // Unified Staff / Workforce Screen Injection Across All Categories
+  if (canAccessStaffScreen(category, currentUser?.role)) {
+    const hasStaffItem = dockNavItems.some((item) => item.id === 'staff');
+    if (!hasStaffItem) {
+      const staffNavItem = {
+        id: 'staff' as ActiveScreen,
+        icon: <Users size={19} />,
+        title: language === 'ar' ? 'فريق العمل' : language === 'en' ? 'Staff' : 'Équipe',
+        label: language === 'ar' ? 'فريق العمل' : language === 'en' ? 'Staff' : 'Équipe',
+      };
+      const settingsIndex = dockNavItems.findIndex((item) => item.id === 'settings');
+      if (settingsIndex >= 0) {
+        dockNavItems.splice(settingsIndex, 0, staffNavItem);
+      } else {
+        dockNavItems.push(staffNavItem);
+      }
     }
   }
 

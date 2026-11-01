@@ -64,6 +64,7 @@ const TRANSLATIONS_EN = {
   nav_history: 'Activity & Audit',
   nav_settings: 'Settings',
   nav_home: 'Home',
+  nav_staff_team: 'Staff',
 
   // Universal Smart Scroll Jump
   scroll_jump_bottom: 'Jump to bottom',
@@ -2990,6 +2991,7 @@ const TRANSLATIONS_FR: typeof TRANSLATIONS_EN = {
   nav_history: 'Historique & Audit',
   nav_settings: 'Paramètres du système',
   nav_home: 'Accueil',
+  nav_staff_team: 'Équipe',
 
   // Universal Smart Scroll Jump
   scroll_jump_bottom: 'Défiler vers le bas',
@@ -5916,6 +5918,7 @@ const TRANSLATIONS_AR: typeof TRANSLATIONS_EN = {
   nav_history: 'سجل العمليات والتدقيق',
   nav_settings: 'إعدادات النظام',
   nav_home: 'الرئيسية',
+  nav_staff_team: 'فريق العمل',
 
   // Universal Smart Scroll Jump
   scroll_jump_bottom: 'الانتقال إلى الأسفل',
