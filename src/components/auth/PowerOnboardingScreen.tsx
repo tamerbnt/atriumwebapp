@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Building2,
   Check,
@@ -176,6 +177,26 @@ const REFERRAL_SOURCES = [
   { id: 'other', labelFr: 'Autre source', labelAr: 'مصدر آخر', labelEn: 'Other' },
 ];
 
+const CATALOG_SECTORS: { id: BusinessCategory | 'all'; labelFr: string; labelAr: string; labelEn: string }[] = [
+  { id: 'all', labelFr: 'Tous (160+)', labelAr: 'الكل (160+)', labelEn: 'All (160+)' },
+  { id: 'pos_inventory', labelFr: 'Commerce & POS', labelAr: 'تجارة ومطاعم', labelEn: 'Retail & POS' },
+  { id: 'appointment_service', labelFr: 'Beauté & Salons', labelAr: 'صالونات وتجميل', labelEn: 'Salon & Beauty' },
+  { id: 'medical_clinic', labelFr: 'Santé & Médical', labelAr: 'صحة وعيادات', labelEn: 'Medical Clinic' },
+  { id: 'construction_contractor', labelFr: 'BTP & Travaux', labelAr: 'مقاولات وبناء', labelEn: 'Construction' },
+  { id: 'freelance_solo', labelFr: 'Freelance & Studio', labelAr: 'مهن حرة واستشارات', labelEn: 'Freelance' },
+  { id: 'membership_session', labelFr: 'Sport & Fitness', labelAr: 'رياضة ولياقة', labelEn: 'Fitness & Gym' },
+  { id: 'auto_garage', labelFr: 'Garages Auto', labelAr: 'ميكانيك وسيارات', labelEn: 'Auto & Repair' },
+  { id: 'trading_commercial', labelFr: 'Négoce & Gros', labelAr: 'تجارة جملة وتوزيع', labelEn: 'Wholesale & Trade' },
+  { id: 'project_milestone', labelFr: 'Agences & Projets', labelAr: 'وكالات ومشاريع', labelEn: 'Agencies & Projects' },
+  { id: 'education_cohort', labelFr: 'Éducation & Cours', labelAr: 'تعليم وتدريب', labelEn: 'Education' },
+  { id: 'legal_accounting', labelFr: 'Droit & Comptabilité', labelAr: 'قانون ومحاسبة', labelEn: 'Legal & Accounting' },
+  { id: 'real_estate', labelFr: 'Immobilier', labelAr: 'عقارات', labelEn: 'Real Estate' },
+  { id: 'logistics_delivery', labelFr: 'Logistique & Colis', labelAr: 'لوجستيك وتوصيل', labelEn: 'Logistics' },
+  { id: 'manufacturing_production', labelFr: 'Ateliers & Industrie', labelAr: 'صناعة وورشات', labelEn: 'Manufacturing' },
+  { id: 'rental_booking', labelFr: 'Location & Salles', labelAr: 'تأجير وقاعات', labelEn: 'Rentals & Venues' },
+  { id: 'agriculture_farming', labelFr: 'Agriculture & Élevage', labelAr: 'فلاحة وتربية مواشي', labelEn: 'Agri & Farming' },
+];
+
 export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
   onComplete,
 }) => {
@@ -200,84 +221,54 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
     setShowIntroAnimation(true);
   };
 
-  // Image Showcase / Placeholder State for Right Column
+  // Curated Brand Marketing Showcase Imagery (High-Speed Optimized WebP)
   const PREVIEW_SLIDES = useMemo(
     () => [
       {
-        id: 'higgsfield_scene',
-        src: '/assets/aistudio/Screenshot_73_2f9a596b.png',
-        labelFr: 'Atmosphère & Production Réelle',
-        labelAr: 'بيئة العمل والإنتاج الميداني',
-        labelEn: 'Production Scene & Visual',
-        tag: '01',
+        id: 'chaos_archives',
+        src: '/assets/aistudio/chaos_archives.webp',
+        alt: 'Chaos des archives et paperasse manuelle',
       },
       {
-        id: 'slide_1',
-        src: '/slides/slide_1.jpg',
-        labelFr: 'Équipe & Direction Opérationnelle',
-        labelAr: 'الفريق والإدارة التشغيلية',
-        labelEn: 'Team & Operations',
-        tag: '02',
+        id: 'souvenirs_velours',
+        src: '/assets/aistudio/souvenirs_velours.webp',
+        alt: 'Surcharge et processus administratifs fragmentés',
       },
       {
-        id: 'slide_2',
-        src: '/slides/slide_2.jpg',
-        labelFr: 'Cockpit & Espaces de Travail',
-        labelAr: 'لوحة القيادة ومساحة العمل',
-        labelEn: 'Workspace & Cockpit',
-        tag: '03',
+        id: 'chaos_vers_serenite',
+        src: '/assets/aistudio/du_chaos_vers_serenite.webp',
+        alt: 'Du chaos vers la sérénité avec Atrium OS',
       },
       {
-        id: 'slide_3',
-        src: '/slides/slide_3.jpg',
-        labelFr: 'Point de Vente & Encaissements',
-        labelAr: 'نقطة البيع والتحصيل',
-        labelEn: 'Smart POS & Settlement',
-        tag: '04',
-      },
-      {
-        id: 'placeholder',
-        src: '',
-        labelFr: 'Emplacement Libre / Mockup Frame',
-        labelAr: 'إطار مخصص لإضافة صورة',
-        labelEn: 'Custom Image Placeholder',
-        tag: '05',
+        id: 'reseau_futuriste',
+        src: '/assets/aistudio/reseau_futuriste.webp',
+        alt: 'Réseau futuriste d’espaces de travail interconnectés',
       },
     ],
     []
   );
 
   const [activeSlideIndex, setActiveSlideIndex] = useState(0);
-  const [customUploadedImage, setCustomUploadedImage] = useState<string | null>(null);
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-  const handleCustomImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (evt) => {
-        if (evt.target?.result) {
-          setCustomUploadedImage(evt.target.result as string);
-          setActiveSlideIndex(4);
-        }
-      };
-      reader.readAsDataURL(file);
-    }
-  };
+  // Instant browser cache preloading to eliminate initial load latency
+  useEffect(() => {
+    PREVIEW_SLIDES.forEach((slide) => {
+      const img = new Image();
+      img.src = slide.src;
+    });
+  }, [PREVIEW_SLIDES]);
+
+  // Auto-swipe marketing showcase images smoothly every 4.5 seconds
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setActiveSlideIndex((prev) => (prev + 1) % PREVIEW_SLIDES.length);
+    }, 4500);
+    return () => clearInterval(timer);
+  }, [PREVIEW_SLIDES.length]);
 
   // Stage 2: 10 Conversational Question Cards (Indices 0 to 9)
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [step9WideView, setStep9WideView] = useState<boolean>(false);
-
-  // Synchronize suggested preview slide when step advances (if user hasn't uploaded custom image)
-  useEffect(() => {
-    if (!customUploadedImage) {
-      if (currentStep === 0) setActiveSlideIndex(0);
-      else if (currentStep === 1 || currentStep === 2) setActiveSlideIndex(1);
-      else if (currentStep >= 3 && currentStep <= 5) setActiveSlideIndex(3);
-      else if (currentStep >= 6) setActiveSlideIndex(2);
-    }
-  }, [currentStep, customUploadedImage]);
 
   // Step 0 State: Admin Account & Authentication
   const [fullName, setFullName] = useState('Mehdi Samih');
@@ -383,11 +374,17 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
     }, 60);
   };
 
+  const [customTradeObject, setCustomTradeObject] = useState<CatalogBusinessTrade | null>(null);
+
   const handleSelectTrade = (trade: CatalogBusinessTrade) => {
     setSelectedTradeId(trade.id);
+    if (trade.id.startsWith('custom_')) {
+      setCustomTradeObject(trade);
+    }
+    setManualCategoryOverride(trade.category);
     setTimeout(() => {
       setCurrentStep(7);
-    }, 60);
+    }, 120);
   };
 
   const handleSelectReferral = (sourceId: string) => {
@@ -399,8 +396,11 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
 
   // Find currently selected trade in catalog
   const selectedTrade = useMemo(() => {
+    if (customTradeObject && selectedTradeId === customTradeObject.id) {
+      return customTradeObject;
+    }
     return FULL_16_VERTICAL_CATALOG.find((t) => t.id === selectedTradeId) || null;
-  }, [selectedTradeId]);
+  }, [selectedTradeId, customTradeObject]);
 
   // Filter catalog items
   const filteredCatalogTrades = useMemo(() => {
@@ -580,131 +580,72 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
     },
   ];
 
-  // Helper Renderer: Left Card that holds the showcase images & custom upload
-  const renderLeftImageCard = () => (
-    <div className="bg-[#181512]/80 backdrop-blur-md rounded-2xl border border-white/10 shadow-2xl p-3 sm:p-3.5 flex flex-col justify-between h-full min-h-0 overflow-hidden relative group/card">
-      {/* Card Header */}
-      <div className="flex items-center justify-between pb-2 border-b border-white/5 shrink-0">
-        <div className="flex items-center gap-2">
-          <span className="text-[10px] font-mono font-bold text-[#FF8A4C] bg-white/[0.06] px-2 py-0.5 rounded border border-white/10">
-            VUE {PREVIEW_SLIDES[activeSlideIndex]?.tag || '01'}
-          </span>
-          <span className="text-xs font-semibold text-[#FFF5EE] truncate max-w-[170px] sm:max-w-[210px]">
-            {isAr
-              ? PREVIEW_SLIDES[activeSlideIndex]?.labelAr
-              : isFr
-              ? PREVIEW_SLIDES[activeSlideIndex]?.labelFr
-              : PREVIEW_SLIDES[activeSlideIndex]?.labelEn}
-          </span>
-        </div>
+  // Helper Renderer: Left Card that holds ONLY the marketing showcase images with smooth auto-swipe (no switcher, no upload button, zero text)
+  const renderLeftImageCard = () => {
+    const activeSlide = PREVIEW_SLIDES[activeSlideIndex] || PREVIEW_SLIDES[0];
 
-        {/* Custom image upload button / clear */}
-        <div className="flex items-center gap-1.5 shrink-0">
-          {customUploadedImage && activeSlideIndex === 4 && (
-            <button
-              type="button"
-              onClick={() => {
-                setCustomUploadedImage(null);
-                setActiveSlideIndex(0);
+    return (
+      <div className="bg-[#181512]/80 backdrop-blur-md rounded-2xl border border-white/10 shadow-2xl p-2 sm:p-2.5 flex flex-col justify-between h-full min-h-0 overflow-hidden relative group/card">
+        {/* Main Image Viewport with Spatial Momentum Transition */}
+        <div className="relative flex-1 min-h-0 w-full h-full rounded-xl overflow-hidden bg-[#100D0B] border border-white/10 select-none">
+          <AnimatePresence mode="popLayout" initial={false}>
+            <motion.div
+              key={activeSlide.id}
+              initial={{
+                opacity: 0,
+                x: isAr ? -50 : 50,
+                scale: 1.04,
+                filter: 'blur(6px)',
               }}
-              className="text-[10px] text-neutral-400 hover:text-rose-400 flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-white/5 hover:bg-white/10 transition-colors cursor-pointer"
-              title={isFr ? 'Supprimer image personnalisée' : 'Remove custom image'}
+              animate={{
+                opacity: 1,
+                x: 0,
+                scale: 1,
+                filter: 'blur(0px)',
+              }}
+              exit={{
+                opacity: 0,
+                x: isAr ? 40 : -40,
+                scale: 0.96,
+                filter: 'blur(6px)',
+              }}
+              transition={{
+                duration: 0.8,
+                ease: [0.16, 1, 0.3, 1], // Apple fluid deceleration curve
+              }}
+              className="absolute inset-0 w-full h-full"
             >
-              <X className="w-2.5 h-2.5" />
-              <span>{isFr ? 'Effacer' : 'Clear'}</span>
-            </button>
-          )}
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            title={isFr ? 'Importer un visuel' : isAr ? 'رفع صورة مخصصة' : 'Upload custom visual'}
-            className="text-[10.5px] font-medium text-[#D9BEB0] hover:text-white bg-white/5 hover:bg-white/10 px-2 py-0.5 rounded-lg border border-white/5 flex items-center gap-1 transition-colors cursor-pointer"
-          >
-            <Upload className="w-3 h-3 text-[#FF8A4C]" />
-            <span className="text-[10px]">{isFr ? 'Importer' : isAr ? 'رفع' : 'Upload'}</span>
-          </button>
+              <img
+                src={activeSlide.src}
+                alt={activeSlide.alt || 'Atrium OS Showcase'}
+                className="w-full h-full object-cover object-center"
+                loading="eager"
+                decoding="async"
+                fetchPriority="high"
+              />
+            </motion.div>
+          </AnimatePresence>
+
+          {/* Luxury Edge Lighting Vignette */}
+          <div className="absolute inset-0 pointer-events-none shadow-[inset_0_0_40px_rgba(0,0,0,0.55)] rounded-xl" />
+
+          {/* Sleek Minimal Progress Indicators (Floating Glass Dots, Zero Text) */}
+          <div className="absolute bottom-3 inset-x-0 flex items-center justify-center gap-1.5 z-20 pointer-events-none">
+            {PREVIEW_SLIDES.map((_, idx) => (
+              <div
+                key={idx}
+                className={`h-1 rounded-full transition-all duration-500 ${
+                  activeSlideIndex === idx
+                    ? 'w-6 bg-[#FF8A4C] shadow-[0_0_8px_rgba(255,138,76,0.8)]'
+                    : 'w-1.5 bg-white/30'
+                }`}
+              />
+            ))}
+          </div>
         </div>
       </div>
-
-      {/* Image Viewport */}
-      <div className="relative flex-1 min-h-0 w-full rounded-xl overflow-hidden bg-black/60 border border-white/5 my-2 flex items-center justify-center select-none group">
-        {activeSlideIndex === 4 && !customUploadedImage ? (
-          <div
-            onClick={() => fileInputRef.current?.click()}
-            className="w-full h-full border-2 border-dashed border-[#C4785A]/40 hover:border-[#FF8A4C] rounded-xl flex flex-col items-center justify-center p-4 text-center cursor-pointer transition-colors bg-white/[0.02] hover:bg-white/[0.04]"
-          >
-            <div className="w-10 h-10 rounded-full bg-[#C4785A]/20 flex items-center justify-center mb-2 shadow-inner">
-              <Upload className="w-5 h-5 text-[#FF8A4C]" />
-            </div>
-            <p className="text-xs font-bold text-white mb-0.5">
-              {isAr ? 'اضغط لرفع صورة شركتك أو مجالك' : isFr ? 'Cliquez pour importer votre visuel' : 'Click to upload your image'}
-            </p>
-            <p className="text-[10px] text-white/50">PNG, JPG, WebP jusqu\'à 10 Mo</p>
-          </div>
-        ) : (
-          <>
-            <img
-              src={
-                activeSlideIndex === 4 && customUploadedImage
-                  ? customUploadedImage
-                  : PREVIEW_SLIDES[activeSlideIndex]?.src || '/assets/aistudio/Screenshot_73_2f9a596b.png'
-              }
-              alt={PREVIEW_SLIDES[activeSlideIndex]?.labelFr || 'Aperçu Atrium OS'}
-              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-            />
-            {/* Caption Overlay */}
-            <div className="absolute inset-x-0 bottom-0 p-2.5 bg-gradient-to-t from-black/90 via-black/40 to-transparent pointer-events-none flex items-end justify-between">
-              <span className="text-[11px] font-medium text-white/95 drop-shadow-sm truncate max-w-[220px]">
-                {isAr
-                  ? PREVIEW_SLIDES[activeSlideIndex]?.labelAr
-                  : isFr
-                  ? PREVIEW_SLIDES[activeSlideIndex]?.labelFr
-                  : PREVIEW_SLIDES[activeSlideIndex]?.labelEn}
-              </span>
-              <span className="text-[9px] font-mono text-[#FF8A4C] bg-black/60 px-1.5 py-0.5 rounded border border-white/10 shrink-0">
-                Atrium OS 2026
-              </span>
-            </div>
-          </>
-        )}
-      </div>
-
-      {/* Bottom Thumbnail Selector & Hidden File Input */}
-      <div className="flex items-center justify-between gap-1.5 pt-1 border-t border-white/5 shrink-0">
-        {PREVIEW_SLIDES.map((slide, idx) => {
-          const isCurrent = activeSlideIndex === idx;
-          return (
-            <button
-              key={slide.id}
-              type="button"
-              onClick={() => setActiveSlideIndex(idx)}
-              className={`flex-1 py-1 px-1.5 rounded-lg text-[10px] font-mono font-bold transition-all flex items-center justify-center gap-1 cursor-pointer ${
-                isCurrent
-                  ? 'bg-gradient-to-r from-[#C4552A] to-[#E64A19] text-white shadow-md'
-                  : 'bg-white/5 hover:bg-white/10 text-white/60 hover:text-white border border-white/5'
-              }`}
-              title={isAr ? slide.labelAr : isFr ? slide.labelFr : slide.labelEn}
-            >
-              {idx === 4 ? (
-                <Upload className="w-2.5 h-2.5 shrink-0" />
-              ) : (
-                <ImageIcon className="w-2.5 h-2.5 shrink-0" />
-              )}
-              <span>{slide.tag}</span>
-            </button>
-          );
-        })}
-
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={handleCustomImageUpload}
-        />
-      </div>
-    </div>
-  );
+    );
+  };
 
   // Helper Renderer: Standalone SaaS Plan Tier Cards
   const renderPlanCards = (isWide: boolean) => (
@@ -980,7 +921,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
       )}
 
       {/* Main Responsive Workstation Canvas */}
-      <main className="relative z-10 w-full max-w-6xl xl:max-w-7xl mx-auto px-3 sm:px-5 lg:px-6 py-2 sm:py-2.5 flex-1 min-h-0 flex flex-col justify-between items-center h-[min(86vh,730px)] min-h-[530px] max-h-[730px] overflow-hidden">
+      <main className="relative z-10 w-full max-w-[1600px] 2xl:max-w-[1780px] mx-auto px-4 sm:px-8 lg:px-12 xl:px-16 2xl:px-24 py-2 sm:py-2.5 flex-1 min-h-0 flex flex-col justify-between items-center h-[min(94vh,880px)] min-h-[620px] max-h-[880px] overflow-hidden">
         
         {/* Top Micro-Dash Indicators (10 Steps: 0 to 9) */}
         <div className="w-full flex items-center justify-center gap-1.5 mb-2 shrink-0">
@@ -1008,7 +949,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
         {/* Workstation Body */}
         {currentStep === 9 && step9WideView ? (
           /* Step 9 Wide View: Full-Width 4-Column Layout */
-          <div className="w-full flex-1 min-h-0 flex flex-col justify-between overflow-hidden max-w-6xl mx-auto">
+          <div className="w-full flex-1 min-h-0 flex flex-col justify-between overflow-hidden max-w-6xl xl:max-w-7xl mx-auto">
             <div className="flex items-center justify-between mb-2 shrink-0">
               <div>
                 <span className="text-[10px] font-mono uppercase tracking-wider text-[#FF8A4C] font-bold">
@@ -1036,16 +977,16 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
             {renderBottomNavigation()}
           </div>
         ) : (
-          /* Standard 2-Column Workstation: Left Image Card + Right Borderless Questionnaire */
-          <div className="w-full flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6 items-stretch overflow-hidden">
+          /* Standard 2-Column Workstation: Left Image Card + Right Borderless Questionnaire separated by open center space */
+          <div className="w-full flex-1 min-h-0 flex flex-col lg:flex-row justify-between items-stretch gap-6 lg:gap-10 xl:gap-16 2xl:gap-24 overflow-hidden">
             
-            {/* Left Column: Left Card Holding the Images */}
-            <div className="hidden lg:flex lg:col-span-5 h-full min-h-0 flex-col">
+            {/* Left Column: Left Card Holding the Images - Docked to the Side */}
+            <div className="hidden lg:flex w-full lg:w-[430px] xl:w-[480px] 2xl:w-[520px] shrink-0 h-full min-h-0 flex-col">
               {renderLeftImageCard()}
             </div>
 
-            {/* Right Column: Borderless Open Questionnaire */}
-            <div className="lg:col-span-7 h-full min-h-0 flex flex-col justify-between overflow-hidden">
+            {/* Right Column: Borderless Open Questionnaire - Docked to the Opposite Side */}
+            <div className="w-full lg:w-[540px] xl:w-[590px] 2xl:w-[640px] shrink-0 h-full min-h-0 flex flex-col justify-between overflow-hidden">
               
               {/* Right Column Header: Title and Step Badge */}
               <div className="mb-2 shrink-0">
@@ -1620,8 +1561,8 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
               {/* STEP 6: SPECIFIC BUSINESS DOMAIN & 160+ CATALOG SEARCH        */}
               {/* ------------------------------------------------------------- */}
               {currentStep === 6 && (
-                <div className="space-y-2 w-full my-auto">
-                  {/* Search Input Box */}
+                <div className="space-y-2.5 w-full my-auto flex flex-col">
+                  {/* Search Input Box & Live Match Counter */}
                   <div className="relative">
                     <Search className="w-4 h-4 absolute left-3 top-2.5 text-[#FF8A4C] pointer-events-none" />
                     <input
@@ -1635,30 +1576,37 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                           ? 'Recherchez votre métier : cabinet dentaire, imprimerie, agence, salle de sport...'
                           : 'Search trade: dental clinic, bakery, gym, agency, farm, auto repair...'
                       }
-                      className="w-full bg-white/[0.05] border border-white/15 focus:border-[#E8622C] rounded-xl py-1.5 pl-9 pr-3 text-xs text-[#FFF5EE] placeholder-[#D9BEB0]/60 outline-none transition-colors"
+                      className="w-full bg-white/[0.05] border border-white/15 focus:border-[#E8622C] rounded-xl py-2 pl-9 pr-28 text-xs text-[#FFF5EE] placeholder-[#D9BEB0]/60 outline-none transition-colors"
                     />
+                    <div className="absolute right-2 top-1.5 flex items-center gap-1.5">
+                      {catalogSearchQuery && (
+                        <button
+                          type="button"
+                          onClick={() => setCatalogSearchQuery('')}
+                          className="text-[#D9BEB0] hover:text-white p-1 text-[10px] cursor-pointer"
+                        >
+                          ✕
+                        </button>
+                      )}
+                      <span className="text-[10px] font-semibold text-[#FF8A4C] px-2 py-0.5 rounded-md bg-white/[0.04] border border-white/10 pointer-events-none">
+                        {filteredCatalogTrades.length} {isAr ? 'نشاط' : isFr ? 'métiers' : 'trades'}
+                      </span>
+                    </div>
                   </div>
 
-                  {/* Curated Sector Filter Chips (Zero Horizontal Scrolling) */}
-                  <div className="flex flex-wrap items-center gap-1.5 text-[10px]">
-                    {[
-                      { id: 'all' as const, labelFr: 'Tous (160+)', labelAr: 'الكل (160+)', labelEn: 'All (160+)' },
-                      { id: 'pos_retail' as const, labelFr: 'Commerce & POS', labelAr: 'تجارة ومطاعم', labelEn: 'Retail & POS' },
-                      { id: 'appointment_service' as const, labelFr: 'Beauté & Soins', labelAr: 'صالونات وتجميل', labelEn: 'Salon & Spa' },
-                      { id: 'health_clinic' as const, labelFr: 'Santé & Médical', labelAr: 'صحة وعيادات', labelEn: 'Medical Clinic' },
-                      { id: 'contractor_btp' as const, labelFr: 'BTP & Travaux', labelAr: 'مقاولات وبناء', labelEn: 'Construction' },
-                      { id: 'freelance_solo' as const, labelFr: 'Freelance & Studio', labelAr: 'مهن حرة واستشارات', labelEn: 'Freelance' },
-                    ].map((cat) => {
+                  {/* Curated Sector Filter Chips (All 16 Verticals, Fluid Scrollable Bar) */}
+                  <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-[10px] scrollbar-none shrink-0">
+                    {CATALOG_SECTORS.map((cat) => {
                       const isFilterActive = selectedCatalogCategoryFilter === cat.id;
                       return (
                         <button
                           key={cat.id}
                           type="button"
-                          onClick={() => setSelectedCatalogCategoryFilter(cat.id as any)}
-                          className={`px-2 py-0.5 rounded-full whitespace-nowrap transition-all cursor-pointer font-medium ${
+                          onClick={() => setSelectedCatalogCategoryFilter(cat.id)}
+                          className={`px-2.5 py-1 rounded-full whitespace-nowrap transition-all duration-150 cursor-pointer font-medium shrink-0 ${
                             isFilterActive
-                              ? 'bg-gradient-to-r from-[#C4785A] to-[#E8622C] text-white shadow-xs'
-                              : 'bg-white/5 text-[#D9BEB0] hover:text-white'
+                              ? 'bg-gradient-to-r from-[#C4785A] to-[#E8622C] text-white shadow-xs scale-[1.02]'
+                              : 'bg-white/5 border border-white/5 text-[#D9BEB0] hover:text-white hover:border-white/20 hover:bg-white/10'
                           }`}
                         >
                           {isAr ? cat.labelAr : isFr ? cat.labelFr : cat.labelEn}
@@ -1667,41 +1615,76 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                     })}
                   </div>
 
-                  {/* Trades Grid (Top 6 Fitted Matches, Zero Overflow Scroll) */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1.5 sm:gap-2">
-                    {filteredCatalogTrades.slice(0, 6).map((trade) => {
-                      const isSelected = selectedTradeId === trade.id;
-                      const title = isAr ? trade.name.ar : isFr ? trade.name.fr : trade.name.en;
-                      const badgeText = isAr ? trade.badge.ar : isFr ? trade.badge.fr : trade.badge.en;
-                      return (
+                  {/* Trades Grid Container (Scrollable Multi-column, Custom Scrollbar) */}
+                  <div className="overflow-y-auto pr-1 max-h-[380px] sm:max-h-[430px] rounded-xl space-y-1.5 focus:outline-none scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent hover:scrollbar-thumb-white/30">
+                    {filteredCatalogTrades.length > 0 ? (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1.5 sm:gap-2">
+                        {filteredCatalogTrades.map((trade) => {
+                          const isSelected = selectedTradeId === trade.id;
+                          const title = isAr ? trade.name.ar : isFr ? trade.name.fr : trade.name.en;
+                          const badgeText = isAr ? trade.badge.ar : isFr ? trade.badge.fr : trade.badge.en;
+                          return (
+                            <button
+                              key={trade.id}
+                              type="button"
+                              onClick={() => handleSelectTrade(trade)}
+                              className={`flex items-center justify-between p-2.5 rounded-xl border text-left transition-all duration-200 ease-out cursor-pointer group hover:scale-[1.015] active:scale-[0.98] ${
+                                isSelected
+                                  ? 'bg-[rgba(232,98,44,0.12)] border-[#E8622C] ring-1 ring-[#E8622C]/40 shadow-[0_4px_20px_rgba(232,98,44,0.3)]'
+                                  : 'bg-white/[0.04] border-white/[0.07] hover:border-white/20 hover:bg-white/[0.07]'
+                              }`}
+                            >
+                              <div className="flex flex-col min-w-0 pr-1.5">
+                                <span className={`text-xs font-semibold truncate transition-colors ${
+                                  isSelected ? 'text-[#E8622C]' : 'text-[#FFF5EE]'
+                                }`}>
+                                  {title}
+                                </span>
+                                <span className="text-[9.5px] text-[#D9BEB0] truncate">{badgeText}</span>
+                              </div>
+                              <div
+                                className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 transition-colors ${
+                                  isSelected ? 'border-[#E8622C] bg-[#E8622C]' : 'border-white/20 group-hover:border-white/40'
+                                }`}
+                              >
+                                {isSelected && <Check className="w-2.5 h-2.5 text-white" />}
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      /* Empty state fallback with option to use custom trade */
+                      <div className="p-6 text-center rounded-xl bg-white/[0.02] border border-white/10 flex flex-col items-center justify-center gap-3">
+                        <p className="text-xs text-[#D9BEB0]">
+                          {isAr
+                            ? `لم يتم العثور على أي نشاط مطابق لـ "${catalogSearchQuery}"`
+                            : isFr
+                            ? `Aucun métier standard trouvé pour "${catalogSearchQuery}"`
+                            : `No standard trade found matching "${catalogSearchQuery}"`}
+                        </p>
                         <button
-                          key={trade.id}
                           type="button"
-                          onClick={() => handleSelectTrade(trade)}
-                          className={`flex items-center justify-between p-2 rounded-xl border text-left transition-all duration-200 ease-out cursor-pointer group hover:scale-[1.015] active:scale-[0.99] ${
-                            isSelected
-                              ? 'bg-[rgba(232,98,44,0.08)] border-white/[0.16] shadow-[0_4px_20px_rgba(0,0,0,0.4)]'
-                              : 'bg-white/[0.04] border-white/[0.07] hover:border-white/20 hover:bg-white/[0.07]'
-                          }`}
+                          onClick={() => {
+                            const customTrade: CatalogBusinessTrade = {
+                              id: `custom_${Date.now()}`,
+                              category: 'project_milestone',
+                              name: { fr: catalogSearchQuery, ar: catalogSearchQuery, en: catalogSearchQuery },
+                              badge: { fr: 'Sur mesure', ar: 'مخصص', en: 'Custom' },
+                              keywords: [catalogSearchQuery.toLowerCase()],
+                            };
+                            handleSelectTrade(customTrade);
+                          }}
+                          className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#C4785A] to-[#E8622C] text-white text-xs font-semibold hover:opacity-95 transition-opacity cursor-pointer shadow-md"
                         >
-                          <div className="flex flex-col min-w-0 pr-1.5">
-                            <span className={`text-xs font-semibold truncate transition-colors ${
-                              isSelected ? 'text-[#E8622C]' : 'text-[#FFF5EE]'
-                            }`}>
-                              {title}
-                            </span>
-                            <span className="text-[9.5px] text-[#D9BEB0] truncate">{badgeText}</span>
-                          </div>
-                          <div
-                            className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center shrink-0 transition-colors ${
-                              isSelected ? 'border-[#E8622C] bg-[#E8622C]' : 'border-white/20 group-hover:border-white/40'
-                            }`}
-                          >
-                            {isSelected && <Check className="w-2.5 h-2.5 text-white" />}
-                          </div>
+                          {isAr
+                            ? `متابعة باستخدام "${catalogSearchQuery}" كنشاط رئيسي`
+                            : isFr
+                            ? `Continuer avec "${catalogSearchQuery}" comme activité`
+                            : `Continue with "${catalogSearchQuery}" as custom trade`}
                         </button>
-                      );
-                    })}
+                      </div>
+                    )}
                   </div>
                 </div>
               )}

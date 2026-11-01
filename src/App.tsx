@@ -121,6 +121,7 @@ import { AgricultureWholesaleView } from './components/screens/agriculture/Agric
 import { DesktopUpgradeModal } from './components/modals/DesktopUpgradeModal';
 import { CommandPaletteModal } from './components/modals/CommandPaletteModal';
 import { ToastStack } from './components/ui/ToastStack';
+import { AppleOverscrollProvider } from './components/common/AppleOverscrollProvider';
 
 export default function App() {
   const {
@@ -964,24 +965,29 @@ export default function App() {
   // Launch onboarding screen on first boot or when explicitly requested
   if (showPowerOnboarding || isOnboardingOpen) {
     return (
-      <PowerOnboardingScreen
-        onComplete={handleCompleteOrSkipOnboarding}
-        onSkipToDashboard={handleCompleteOrSkipOnboarding}
-      />
+      <AppleOverscrollProvider>
+        <PowerOnboardingScreen
+          onComplete={handleCompleteOrSkipOnboarding}
+          onSkipToDashboard={handleCompleteOrSkipOnboarding}
+        />
+      </AppleOverscrollProvider>
     );
   }
 
   // If user is not authenticated, render LoginScreen with Onboarding access
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen w-screen bg-[#121110]">
-        <LoginScreen onStartOnboarding={openOnboarding} />
-      </div>
+      <AppleOverscrollProvider>
+        <div className="min-h-screen w-screen bg-[#121110]">
+          <LoginScreen onStartOnboarding={openOnboarding} />
+        </div>
+      </AppleOverscrollProvider>
     );
   }
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-[var(--color-window-bg)]">
+    <AppleOverscrollProvider>
+      <div className="flex h-screen w-screen overflow-hidden bg-[var(--color-window-bg)]">
       {/* 288px Obsidian Sidebar with Mobile Drawer */}
       <Sidebar
         onOpenVoucherModal={() => setIsVoucherModalOpen(true)}
@@ -1049,5 +1055,6 @@ export default function App() {
       {/* Kinetic Category-Dedicated ToastStack */}
       <ToastStack />
     </div>
-  );
+  </AppleOverscrollProvider>
+);
 }

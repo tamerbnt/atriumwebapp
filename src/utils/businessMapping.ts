@@ -2414,7 +2414,7 @@ export const FULL_16_VERTICAL_CATALOG: CatalogBusinessTrade[] = [
 
 export const searchBusinessCatalog = (query: string): CatalogBusinessTrade[] => {
   const normalized = query.trim().toLowerCase();
-  if (!normalized) return FULL_16_VERTICAL_CATALOG.slice(0, 36);
+  if (!normalized) return FULL_16_VERTICAL_CATALOG;
 
   return FULL_16_VERTICAL_CATALOG.filter((trade) => {
     if (trade.name.fr.toLowerCase().includes(normalized)) return true;
