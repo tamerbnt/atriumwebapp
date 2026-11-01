@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Sun,
   Moon,
@@ -129,6 +129,96 @@ export const TopBar: React.FC<TopBarProps> = ({
     categoryName: string;
     onSuccess: () => void;
   } | null>(null);
+
+  const userMenuRef = useRef<HTMLDivElement>(null);
+  const networkMenuRef = useRef<HTMLDivElement>(null);
+  const notificationMenuRef = useRef<HTMLDivElement>(null);
+
+  // Exclusive toggle handlers: opening one closes all other dropdowns
+  const toggleUserMenu = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    setUserMenuOpen((prev) => {
+      const next = !prev;
+      if (next) {
+        setNetworkMenuOpen(false);
+        setNotificationsOpen(false);
+      }
+      return next;
+    });
+  };
+
+  const toggleNetworkMenu = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    setNetworkMenuOpen((prev) => {
+      const next = !prev;
+      if (next) {
+        setUserMenuOpen(false);
+        setNotificationsOpen(false);
+      }
+      return next;
+    });
+  };
+
+  const toggleNotifications = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    setNotificationsOpen((prev) => {
+      const next = !prev;
+      if (next) {
+        setUserMenuOpen(false);
+        setNetworkMenuOpen(false);
+      }
+      return next;
+    });
+  };
+
+  // Auto-close any open dropdown when clicking or touching anywhere outside, or when pressing Escape
+  useEffect(() => {
+    const isAnyOpen = userMenuOpen || networkMenuOpen || notificationsOpen;
+    if (!isAnyOpen) return;
+
+    const handlePointerDown = (e: MouseEvent | TouchEvent) => {
+      const target = e.target as Node | null;
+      if (!target) return;
+
+      if (userMenuOpen && userMenuRef.current && !userMenuRef.current.contains(target)) {
+        setUserMenuOpen(false);
+      }
+
+      if (networkMenuOpen && networkMenuRef.current && !networkMenuRef.current.contains(target)) {
+        setNetworkMenuOpen(false);
+      }
+
+      if (notificationsOpen && notificationMenuRef.current && !notificationMenuRef.current.contains(target)) {
+        const notifPortal = document.querySelector('[role="dialog"][aria-label="Notifications"]');
+        if (!notifPortal || !notifPortal.contains(target)) {
+          setNotificationsOpen(false);
+        }
+      }
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setUserMenuOpen(false);
+        setNetworkMenuOpen(false);
+        setNotificationsOpen(false);
+      }
+    };
+
+    document.addEventListener('pointerdown', handlePointerDown);
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [userMenuOpen, networkMenuOpen, notificationsOpen]);
+
+  // Close dropdowns upon screen navigation
+  useEffect(() => {
+    setUserMenuOpen(false);
+    setNetworkMenuOpen(false);
+    setNotificationsOpen(false);
+  }, [activeScreen]);
 
   const isFreelance = currentBusiness?.category === 'freelance_solo';
   const isRental = currentBusiness?.category === 'rental_booking';
@@ -624,7 +714,7 @@ export const TopBar: React.FC<TopBarProps> = ({
 
   return (
     <header
-      className="h-[54px] w-full px-4 sm:px-5 rounded-[27px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 flex items-center justify-between gap-3 shrink-0 shadow-2xs z-20"
+      className="relative z-30 h-[54px] w-full px-4 sm:px-5 rounded-[27px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 flex items-center justify-between gap-3 shrink-0 shadow-2xs"
     >
       {/* Left: Mobile Toggle & Working Interactive Breadcrumbs & Facility Capsule */}
       <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
@@ -1428,10 +1518,10 @@ export const TopBar: React.FC<TopBarProps> = ({
         </button>
 
         {/* Network & Skeleton Loading Simulation Control */}
-        <div className="relative">
+        <div ref={networkMenuRef} className="relative">
           <button
             type="button"
-            onClick={() => setNetworkMenuOpen(!networkMenuOpen)}
+            onClick={toggleNetworkMenu}
             title="Simulate Network Condition & Skeleton Loading"
             className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700/60 transition-colors cursor-pointer"
           >
@@ -1459,7 +1549,7 @@ export const TopBar: React.FC<TopBarProps> = ({
           </button>
 
           {networkMenuOpen && (
-            <div className="absolute right-0 mt-1.5 w-52 rounded-2xl bg-white dark:bg-[#18181B] border border-neutral-200 dark:border-neutral-800 shadow-xl py-1.5 z-50 text-xs animate-in fade-in zoom-in-95 duration-150">
+            <div className="absolute right-0 rtl:right-auto rtl:left-0 mt-1.5 w-52 rounded-2xl bg-white dark:bg-[#18181B] border border-neutral-200 dark:border-neutral-800 shadow-2xl py-1.5 z-50 text-xs animate-in fade-in zoom-in-95 duration-150">
               <div className="px-3 py-1.5 border-b border-neutral-100 dark:border-neutral-800/80 font-semibold text-neutral-500 dark:text-neutral-400 text-[10px] uppercase tracking-wider">
                 Network & Loading Test
               </div>
@@ -1505,10 +1595,10 @@ export const TopBar: React.FC<TopBarProps> = ({
 
 
         {/* TopBar Notification Bell & Center Trigger */}
-        <div className="relative">
+        <div ref={notificationMenuRef} className="relative">
           <button
             type="button"
-            onClick={() => setNotificationsOpen((prev) => !prev)}
+            onClick={toggleNotifications}
             title={language === 'ar' ? 'مركز الإشعارات والتنبيهات' : language === 'fr' ? 'Centre de notifications' : 'Notifications & Alerts'}
             className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors cursor-pointer relative ${
               notificationsOpen
@@ -1536,9 +1626,9 @@ export const TopBar: React.FC<TopBarProps> = ({
         </div>
 
         {/* User Identity Menu Button */}
-        <div className="relative">
+        <div ref={userMenuRef} className="relative">
           <div
-            onClick={() => setUserMenuOpen(!userMenuOpen)}
+            onClick={toggleUserMenu}
             className="flex items-center gap-2.5 pl-2 cursor-pointer group"
             title={`Operator: ${currentUser.fullName} (${currentUser.role})`}
           >
@@ -1555,7 +1645,7 @@ export const TopBar: React.FC<TopBarProps> = ({
 
           {/* User Profile Dropdown Menu */}
           {userMenuOpen && (
-            <div className="absolute right-0 mt-2 w-64 rounded-2xl bg-white dark:bg-[#1E1B19] border border-neutral-200 dark:border-neutral-700 shadow-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
+            <div className="absolute right-0 rtl:right-auto rtl:left-0 mt-2 w-64 rounded-2xl bg-white dark:bg-[#1E1B19] border border-neutral-200 dark:border-neutral-700 shadow-2xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
               <div className="px-4 py-2 border-b border-neutral-100 dark:border-neutral-800">
                 <div className="flex items-center gap-1.5">
                   <span className="text-xs font-bold text-neutral-900 dark:text-white">
@@ -1604,7 +1694,10 @@ export const TopBar: React.FC<TopBarProps> = ({
                   type="button"
                   onClick={() => {
                     setUserMenuOpen(false);
-                    openOnboarding();
+                    try {
+                      sessionStorage.removeItem('atrium-intro-seen');
+                    } catch {}
+                    window.dispatchEvent(new CustomEvent('atrium:replayintro'));
                   }}
                   className="w-full px-4 py-2 text-left text-xs text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center gap-2.5 cursor-pointer"
                 >

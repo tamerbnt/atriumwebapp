@@ -154,39 +154,38 @@ export default function App() {
     isTopBarCollapsed,
     toggleTopBarCollapsed,
     setTopBarCollapsed,
+    loginWithPin,
   } = useAtriumStore();
 
   const { t } = useTranslation();
 
-  // Self-contained Atrium Confluence Intro Animation: shown once per session above all content
-  const [isIntroActive, setIsIntroActive] = useState<boolean>(() => {
-    if (typeof window === 'undefined') return false;
-    try {
-      const isOnceParam = /[?&]once=1/.test(window.location.search);
-      const isAlreadySeen = sessionStorage.getItem('atrium-intro-seen') === '1';
-      return !isAlreadySeen && !(isOnceParam && isAlreadySeen);
-    } catch {
-      return false;
-    }
-  });
+  // Strict 3-stage lifecycle enforced on every start of the app:
+  // Stage 1: Cinematic Atrium Intro Animation plays first
+  // Stage 2: Power Onboarding wizard displays after the animation completes
+  // Stage 3: Completing or skipping onboarding transitions into the main Dashboard
+  const [isIntroActive, setIsIntroActive] = useState<boolean>(true);
 
-  // When intro animation finishes, document.dispatchEvent('atrium:introcomplete') fires;
-  // starts normal loading or onboarding on that event.
+  // When intro animation finishes or replay is requested
   useEffect(() => {
     const handleIntroComplete = () => {
       setIsIntroActive(false);
     };
+    const handleReplayIntro = () => {
+      try {
+        sessionStorage.removeItem('atrium-intro-seen');
+      } catch {}
+      setIsIntroActive(true);
+    };
     document.addEventListener('atrium:introcomplete', handleIntroComplete);
-    return () => document.removeEventListener('atrium:introcomplete', handleIntroComplete);
+    window.addEventListener('atrium:replayintro', handleReplayIntro);
+    return () => {
+      document.removeEventListener('atrium:introcomplete', handleIntroComplete);
+      window.removeEventListener('atrium:replayintro', handleReplayIntro);
+    };
   }, []);
 
-  // Onboarding wizard plays on initial boot or when explicitly requested
-  const [showPowerOnboarding, setShowPowerOnboarding] = useState<boolean>(() => {
-    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
-      return localStorage.getItem('atrium_has_onboarded_v1') !== 'true';
-    }
-    return true;
-  });
+  // Stage 2: Onboarding wizard is active at every app start
+  const [showPowerOnboarding, setShowPowerOnboarding] = useState<boolean>(true);
 
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [isVoucherModalOpen, setIsVoucherModalOpen] = useState(false);
@@ -994,6 +993,9 @@ export default function App() {
     if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
       localStorage.setItem('atrium_has_onboarded_v1', 'true');
     }
+    if (!isAuthenticated) {
+      loginWithPin('1234');
+    }
     setShowPowerOnboarding(false);
     closeOnboarding();
   };
@@ -1002,7 +1004,7 @@ export default function App() {
     <AppleOverscrollProvider>
       {/* Self-contained 5-second Atrium Confluence Intro Overlay mounted once at app start above all other content */}
       {isIntroActive && (
-        <AtriumIntroOverlay onComplete={() => setIsIntroActive(false)} />
+        <AtriumIntroOverlay forcePlay={true} onComplete={() => setIsIntroActive(false)} />
       )}
 
       {showPowerOnboarding || isOnboardingOpen ? (
@@ -1027,7 +1029,7 @@ export default function App() {
       <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden p-4 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]">
         {/* Animated TopBar Header Wrapper */}
         <div
-          className={`w-full transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-visible shrink-0 ${
+          className={`w-full relative z-30 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-visible shrink-0 ${
             isTopBarCollapsed
               ? 'max-h-0 -translate-y-[120%] opacity-0 pointer-events-none mb-0'
               : 'max-h-[64px] translate-y-0 opacity-100 mb-4'
@@ -1041,7 +1043,7 @@ export default function App() {
         </div>
 
         {/* Dynamic Screen Viewport wrapped in pure white desktop container matching sidebar baseline */}
-        <main className="flex-1 min-h-0 min-w-0 flex flex-col w-full transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]">
+        <main className="flex-1 min-h-0 min-w-0 flex flex-col w-full relative z-10 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]">
           <div className="flex-1 min-h-0 bg-white dark:bg-[#18181B] rounded-[32px] border border-[#E9EEF0] dark:border-neutral-800 shadow-2xs overflow-hidden flex flex-col relative">
             {/* Top-Center Floating Restore Notch when TopBar is collapsed */}
             {isTopBarCollapsed && (

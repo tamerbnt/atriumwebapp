@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import {
   Scissors,
   Sparkles,
@@ -72,6 +72,29 @@ export const AppointmentDashboardView: React.FC<AppointmentDashboardViewProps> =
   const [isNewAptModalOpen, setIsNewAptModalOpen] = useState(false);
   const [currentTipIndex, setCurrentTipIndex] = useState(0);
   const [activityFilter, setActivityFilter] = useState<'Tous' | 'InChair' | 'Confirmed' | 'Completed'>('Tous');
+
+  const facilityDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Auto-close facility dropdown on outside click/touch or escape
+  useEffect(() => {
+    if (!isFacilityDropdownOpen) return;
+    const handlePointerDown = (e: MouseEvent | TouchEvent) => {
+      const target = e.target as Node | null;
+      if (!target) return;
+      if (facilityDropdownRef.current && !facilityDropdownRef.current.contains(target)) {
+        setIsFacilityDropdownOpen(false);
+      }
+    };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsFacilityDropdownOpen(false);
+    };
+    document.addEventListener('pointerdown', handlePointerDown);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isFacilityDropdownOpen]);
 
   // Auto-heal empty mock state on initial mount
   useEffect(() => {
@@ -265,7 +288,7 @@ export const AppointmentDashboardView: React.FC<AppointmentDashboardViewProps> =
 
           <div className="flex items-center gap-2.5 flex-wrap self-start sm:self-auto">
             {/* Facility Pill */}
-            <div className="relative">
+            <div ref={facilityDropdownRef} className="relative">
               <button
                 type="button"
                 onClick={() => setIsFacilityDropdownOpen(!isFacilityDropdownOpen)}

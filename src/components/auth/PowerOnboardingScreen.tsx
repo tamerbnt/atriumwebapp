@@ -202,27 +202,12 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
 }) => {
   const { completeOnboarding, language } = useAtriumStore();
 
-  // Cinematic Atrium Confluence Intro Animation State (replaces old monolith, handled at app start)
-  const [showIntroAnimation, setShowIntroAnimation] = useState(false);
-  const [isIntroDissolving, setIsIntroDissolving] = useState(false);
-  const [introReplayKey, setIntroReplayKey] = useState(0);
-
-  const handleIntroCompleteOrSkip = () => {
-    setIsIntroDissolving(true);
-    setTimeout(() => {
-      setShowIntroAnimation(false);
-      setIsIntroDissolving(false);
-    }, 260);
-  };
 
   const handleReplayIntro = () => {
-    if (typeof window !== 'undefined' && window.AtriumIntro?.play) {
-      window.AtriumIntro.play();
-    } else {
-      setIntroReplayKey((k) => k + 1);
-      setIsIntroDissolving(false);
-      setShowIntroAnimation(true);
-    }
+    try {
+      sessionStorage.removeItem('atrium-intro-seen');
+    } catch {}
+    window.dispatchEvent(new CustomEvent('atrium:replayintro'));
   };
 
   // Curated Brand Marketing Showcase Imagery (High-Speed Optimized WebP)
@@ -273,6 +258,32 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
   // Stage 2: 10 Conversational Question Cards (Indices 0 to 9)
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [step9WideView, setStep9WideView] = useState<boolean>(false);
+  const [touchStartX, setTouchStartX] = useState<number | null>(null);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStartX(e.touches[0].clientX);
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX === null) return;
+    const deltaX = e.changedTouches[0].clientX - touchStartX;
+    if (Math.abs(deltaX) > 50) {
+      if (deltaX < 0) {
+        if (isAr) {
+          setCurrentStep((prev) => Math.max(0, prev - 1));
+        } else {
+          setCurrentStep((prev) => Math.min(9, prev + 1));
+        }
+      } else {
+        if (isAr) {
+          setCurrentStep((prev) => Math.min(9, prev + 1));
+        } else {
+          setCurrentStep((prev) => Math.max(0, prev - 1));
+        }
+      }
+    }
+    setTouchStartX(null);
+  };
 
   // Step 0 State: Admin Account & Authentication
   const [fullName, setFullName] = useState('Mehdi Samih');
@@ -813,14 +824,9 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
     </div>
   );
 
-  // Helper Renderer: Bottom Navigation & Subtext Bar
+  // Helper Renderer: Bottom Navigation Bar
   const renderBottomNavigation = () => (
-    <div className="mt-2 pt-2 border-t border-white/10 flex flex-col items-center shrink-0 w-full">
-      <p className="text-[10.5px] text-[#D9BEB0]/75 text-center mb-1.5 leading-relaxed max-w-lg">
-        {questionsMeta[currentStep]?.subtext}
-      </p>
-
-      <div className="flex items-center justify-between w-full">
+    <div className="mt-3 pt-2.5 border-t border-white/10 flex items-center justify-between shrink-0 w-full">
         {currentStep > 0 ? (
           <button
             type="button"
@@ -895,7 +901,6 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
             </span>
           </button>
         )}
-      </div>
     </div>
   );
 
@@ -908,67 +913,57 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
       dir={isAr ? 'rtl' : 'ltr'}
       className="dark selection:bg-[#E64A19] selection:text-white"
     >
-      {/* Cinematic Atrium Monolith Intro Animation (Plays automatically on startup) */}
-      {showIntroAnimation && (
-        <div
-          className={`fixed inset-0 z-50 transition-opacity duration-300 ease-out ${
-            isIntroDissolving ? 'opacity-0 pointer-events-none' : 'opacity-100 pointer-events-auto'
-          }`}
-        >
-          <AtriumMonolith
-            isIntroActive={true}
-            replayKey={introReplayKey}
-            onIntroComplete={handleIntroCompleteOrSkip}
-            onSkip={handleIntroCompleteOrSkip}
-          />
-        </div>
-      )}
 
       {/* Main Responsive Workstation Canvas */}
       <main className="relative z-10 w-full max-w-[1600px] 2xl:max-w-[1780px] mx-auto px-4 sm:px-8 lg:px-12 xl:px-16 2xl:px-24 py-2 sm:py-2.5 flex-1 min-h-0 flex flex-col justify-between items-center h-[min(94vh,880px)] min-h-[620px] max-h-[880px] overflow-hidden">
         
-        {/* Top Micro-Dash Indicators (10 Steps: 0 to 9) */}
-        <div className="w-full flex items-center justify-center gap-1.5 mb-2 shrink-0">
-          {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((idx) => {
-            const isActive = currentStep === idx;
-            const isCompleted = currentStep > idx;
-            return (
-              <button
-                key={idx}
-                type="button"
-                onClick={() => setCurrentStep(idx)}
-                title={`Étape ${idx + 1}`}
-                className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
-                  isActive
-                    ? 'w-8 sm:w-10 bg-gradient-to-r from-[#F4511E] to-[#E64A19] shadow-[0_0_12px_rgba(230,74,25,0.7)]'
-                    : isCompleted
-                    ? 'w-3.5 sm:w-4 bg-[#F0DACF]/50 hover:bg-[#F0DACF]/80'
-                    : 'w-3.5 sm:w-4 bg-white/20 hover:bg-white/40'
-                }`}
-              />
-            );
-          })}
-        </div>
-
         {/* Workstation Body */}
         {currentStep === 9 && step9WideView ? (
           /* Step 9 Wide View: Full-Width 4-Column Layout */
           <div className="w-full flex-1 min-h-0 flex flex-col justify-between overflow-hidden max-w-6xl xl:max-w-7xl mx-auto">
-            <div className="flex items-center justify-between mb-2 shrink-0">
+            {/* Step Tab / Swipe Indicators (10 Steps: 0 to 9) */}
+            <div className="flex items-center gap-1.5 mb-2.5 shrink-0">
+              {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((idx) => {
+                const isActive = currentStep === idx;
+                const isCompleted = currentStep > idx;
+                return (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => setCurrentStep(idx)}
+                    title={`Étape ${idx + 1}`}
+                    className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
+                      isActive
+                        ? 'w-10 bg-gradient-to-r from-[#F4511E] to-[#E64A19] shadow-[0_0_12px_rgba(230,74,25,0.7)]'
+                        : isCompleted
+                        ? 'w-4 bg-[#F0DACF]/50 hover:bg-[#F0DACF]/80'
+                        : 'w-4 bg-white/20 hover:bg-white/40'
+                    }`}
+                  />
+                );
+              })}
+            </div>
+
+            <div className="flex items-center justify-between mb-3 shrink-0">
               <div>
-                <span className="text-[10px] font-mono uppercase tracking-wider text-[#FF8A4C] font-bold">
+                <span className="text-xs font-semibold uppercase tracking-wider text-[#FF7A30]">
                   {isAr ? 'المرحلة 10 من 10' : isFr ? 'Étape 10 sur 10' : 'Step 10 of 10'}
                 </span>
-                <h1 className="text-xl sm:text-2xl font-black tracking-tight text-[#FFF5EE]">
+                <h1 className="text-2xl sm:text-[26px] font-bold tracking-tight text-white leading-snug">
                   {questionsMeta[9]?.title}
                 </h1>
+                {questionsMeta[9]?.subtext && (
+                  <p className="mt-1 text-xs sm:text-[13px] text-[#D9BEB0]/80 font-normal leading-relaxed">
+                    {questionsMeta[9]?.subtext}
+                  </p>
+                )}
               </div>
               <button
                 type="button"
                 onClick={() => setStep9WideView(false)}
-                className="text-[10.5px] font-mono text-[#D9BEB0] hover:text-white bg-white/5 hover:bg-white/10 px-2.5 py-1 rounded-lg border border-white/10 flex items-center gap-1.5 transition-all cursor-pointer"
+                className="text-[11px] font-medium text-[#D9BEB0] hover:text-white bg-white/5 hover:bg-white/10 px-2.5 py-1 rounded-md border border-white/10 flex items-center gap-1.5 transition-all cursor-pointer"
               >
-                <ImageIcon className="w-3 h-3 text-[#FF8A4C]" />
+                <ImageIcon className="w-3.5 h-3.5 text-[#FF8A4C]" />
                 <span>{isFr ? 'Vue avec carte visuelle' : isAr ? 'عرض مع البطاقة المرئية' : 'View with visual card'}</span>
               </button>
             </div>
@@ -981,7 +976,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
             {renderBottomNavigation()}
           </div>
         ) : (
-          /* Standard 2-Column Workstation: Left Image Card + Right Borderless Questionnaire separated by open center space */
+          /* Standard 2-Column Workstation: Left Image Card + Right Questionnaire */
           <div className="w-full flex-1 min-h-0 flex flex-col lg:flex-row justify-between items-stretch gap-6 lg:gap-10 xl:gap-16 2xl:gap-24 overflow-hidden">
             
             {/* Left Column: Left Card Holding the Images - Docked to the Side */}
@@ -989,39 +984,71 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
               {renderLeftImageCard()}
             </div>
 
-            {/* Right Column: Borderless Open Questionnaire - Docked to the Opposite Side */}
-            <div className="w-full lg:w-[540px] xl:w-[590px] 2xl:w-[640px] shrink-0 h-full min-h-0 flex flex-col justify-between overflow-hidden">
-              
-              {/* Right Column Header: Title and Step Badge */}
-              <div className="mb-2 shrink-0">
-                <div className="flex items-center justify-between mb-0.5">
-                  <span className="text-[10px] font-mono uppercase tracking-wider text-[#FF8A4C] font-bold">
-                    {isAr ? `المرحلة ${currentStep + 1} من 10` : isFr ? `Étape ${currentStep + 1} sur 10` : `Step ${currentStep + 1} of 10`}
-                  </span>
-                  {currentStep === 9 && (
-                    <button
-                      type="button"
-                      onClick={() => setStep9WideView(true)}
-                      className="text-[10px] font-mono text-[#D9BEB0] hover:text-white bg-white/5 hover:bg-white/10 px-2 py-0.5 rounded border border-white/10 flex items-center gap-1 transition-all cursor-pointer"
-                    >
-                      <Maximize2 className="w-2.5 h-2.5 text-[#FF8A4C]" />
-                      <span>{isFr ? 'Plein écran (4 colonnes)' : isAr ? 'شاشة كاملة (4 أعمدة)' : 'Full screen (4 columns)'}</span>
-                    </button>
+            {/* Right Column: Questionnaire - Docked to the Opposite Side & Perfectly Aligned */}
+            <div
+              className="w-full lg:w-[540px] xl:w-[590px] 2xl:w-[640px] shrink-0 h-full min-h-0 flex flex-col justify-between overflow-hidden"
+              onTouchStart={handleTouchStart}
+              onTouchEnd={handleTouchEnd}
+            >
+              <div className="flex flex-col min-h-0 flex-1 overflow-hidden">
+                {/* Step Tab / Swipe Indicators (10 Steps: 0 to 9) - Aligned with Right Area Text Boxes */}
+                <div className="flex items-center gap-1.5 mb-2.5 shrink-0">
+                  {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((idx) => {
+                    const isActive = currentStep === idx;
+                    const isCompleted = currentStep > idx;
+                    return (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => setCurrentStep(idx)}
+                        title={`Étape ${idx + 1}`}
+                        className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
+                          isActive
+                            ? 'w-10 bg-gradient-to-r from-[#F4511E] to-[#E64A19] shadow-[0_0_12px_rgba(230,74,25,0.7)]'
+                            : isCompleted
+                            ? 'w-4 bg-[#F0DACF]/50 hover:bg-[#F0DACF]/80'
+                            : 'w-4 bg-white/20 hover:bg-white/40'
+                        }`}
+                      />
+                    );
+                  })}
+                </div>
+
+                {/* Right Column Header: Title and Step Badge */}
+                <div className="mb-3 shrink-0">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs font-semibold uppercase tracking-wider text-[#FF7A30]">
+                      {isAr ? `المرحلة ${currentStep + 1} من 10` : isFr ? `Étape ${currentStep + 1} sur 10` : `Step ${currentStep + 1} of 10`}
+                    </span>
+                    {currentStep === 9 && (
+                      <button
+                        type="button"
+                        onClick={() => setStep9WideView(true)}
+                        className="text-[11px] font-medium text-[#D9BEB0] hover:text-white bg-white/5 hover:bg-white/10 px-2 py-0.5 rounded border border-white/10 flex items-center gap-1 transition-all cursor-pointer"
+                      >
+                        <Maximize2 className="w-3 h-3 text-[#FF8A4C]" />
+                        <span>{isFr ? 'Plein écran (4 colonnes)' : isAr ? 'شاشة كاملة (4 أعمدة)' : 'Full screen (4 columns)'}</span>
+                      </button>
+                    )}
+                  </div>
+                  <h1 className="text-2xl sm:text-[26px] font-bold text-white tracking-tight leading-snug">
+                    {questionsMeta[currentStep]?.title}
+                  </h1>
+                  {questionsMeta[currentStep]?.subtext && (
+                    <p className="mt-1 text-xs sm:text-[13px] text-[#D9BEB0]/80 font-normal leading-relaxed">
+                      {questionsMeta[currentStep]?.subtext}
+                    </p>
                   )}
                 </div>
-                <h1 className="text-base sm:text-lg lg:text-xl font-black tracking-tight text-[#FFF5EE] leading-tight">
-                  {questionsMeta[currentStep]?.title}
-                </h1>
-              </div>
 
-              {/* Right Column Active Question Content Canvas (Borderless, Scaled to Fit) */}
-              <div className="w-full min-h-0 flex-1 overflow-hidden flex flex-col justify-center py-0.5">
+                {/* Right Column Active Question Content Canvas */}
+                <div className="w-full min-h-0 flex-1 overflow-y-auto overflow-x-hidden flex flex-col justify-start py-1">
               
               {/* ------------------------------------------------------------- */}
               {/* STEP 0: GOOGLE SSO OR WORK EMAIL VIA PROPRIETARY LABELINPUT   */}
               {/* ------------------------------------------------------------- */}
               {currentStep === 0 && (
-                <div className="space-y-2.5 w-full my-auto">
+                <div className="space-y-3 w-full mt-1 sm:mt-2">
                   {/* Primary Google SSO One-Click Experience */}
                   <button
                     type="button"
@@ -1127,7 +1154,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
               {/* STEP 1: OPERATIONAL FRUSTRATION / CHALLENGE                   */}
               {/* ------------------------------------------------------------- */}
               {currentStep === 1 && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5 w-full my-auto">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5 w-full mt-1 sm:mt-2">
                   {[
                     {
                       id: 'scheduling' as const,
@@ -1211,7 +1238,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
               {/* STEP 2: WHAT DO YOU WANT TO ACHIEVE (FEATURE BLUEPRINT MODAL) */}
               {/* ------------------------------------------------------------- */}
               {currentStep === 2 && (
-                <div className="space-y-2 w-full my-auto">
+                <div className="space-y-2 w-full mt-1 sm:mt-2">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5">
                     {[
                       {
@@ -1331,7 +1358,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
               {/* STEP 3: DAILY CUSTOMER & OPERATIONAL INTERACTION              */}
               {/* ------------------------------------------------------------- */}
               {currentStep === 3 && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5 w-full my-auto">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5 w-full mt-1 sm:mt-2">
                   {[
                     {
                       id: 'walkin_pos' as const,
@@ -1415,7 +1442,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
               {/* STEP 4: TEAM SCALE & WORKING HIERARCHY                        */}
               {/* ------------------------------------------------------------- */}
               {currentStep === 4 && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5 w-full my-auto">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5 w-full mt-1 sm:mt-2">
                   {[
                     {
                       id: 'solo' as const,
@@ -1493,7 +1520,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
               {/* STEP 5: PRIMARY PAYMENT & SETTLEMENT FLOW                     */}
               {/* ------------------------------------------------------------- */}
               {currentStep === 5 && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5 w-full my-auto">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5 w-full mt-1 sm:mt-2">
                   {[
                     {
                       id: 'pos_cash' as const,
@@ -1565,7 +1592,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
               {/* STEP 6: SPECIFIC BUSINESS DOMAIN & 160+ CATALOG SEARCH        */}
               {/* ------------------------------------------------------------- */}
               {currentStep === 6 && (
-                <div className="space-y-2.5 w-full my-auto flex flex-col">
+                <div className="space-y-2.5 w-full mt-1 sm:mt-2 flex flex-col">
                   {/* Search Input Box & Live Match Counter */}
                   <div className="relative">
                     <Search className="w-4 h-4 absolute left-3 top-2.5 text-[#FF8A4C] pointer-events-none" />
@@ -1697,7 +1724,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
               {/* STEP 7: HOW DID YOU HEAR ABOUT ATRIUM? (ZERO SCROLL 3x2 GRID) */}
               {/* ------------------------------------------------------------- */}
               {currentStep === 7 && (
-                <div className="w-full my-auto">
+                <div className="w-full mt-1 sm:mt-2">
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-2.5">
                     {REFERRAL_SOURCES.map((src) => {
                       const isSelected = referralSource === src.id;
@@ -1727,7 +1754,7 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
               {/* STEP 8: WORKSPACE IDENTITY & SUBSCRIPTION PLAN SWITCHER       */}
               {/* ------------------------------------------------------------- */}
               {currentStep === 8 && (
-                <div className="space-y-2 w-full my-auto">
+                <div className="space-y-2 w-full mt-1 sm:mt-2">
                   {/* Synthesis Vertical Match Pill */}
                   <div className="p-2 sm:p-2.5 rounded-xl bg-white/[0.04] border border-white/10 backdrop-blur-sm flex items-center justify-between">
                     <div className="flex items-center gap-2 min-w-0">
@@ -1830,18 +1857,19 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
               {/* STEP 9: STANDALONE SAAS SUBSCRIPTION PLANS MATRIX (2x2 GRID)   */}
               {/* ------------------------------------------------------------- */}
               {currentStep === 9 && (
-                <div className="space-y-1.5 w-full my-auto">
+                <div className="space-y-1.5 w-full mt-1 sm:mt-2">
                   {renderPlanCards(false)}
                   {renderVoucherBar()}
                 </div>
               )}
             </div>
-
-            {/* Right Column Bottom Footer Actions */}
-            {renderBottomNavigation()}
           </div>
+
+          {/* Right Column Bottom Footer Actions */}
+          {renderBottomNavigation()}
         </div>
-      )}
+      </div>
+    )}
     </main>
 
       {/* Full-Bleed Plain Low-Opacity Text Footer with Replay Intro Trigger */}

@@ -75,7 +75,7 @@ export const AtriumMonolith: React.FC<AtriumMonolithProps> = ({
   return (
     <AtriumIntroOverlay
       key={replayKey}
-      forcePlay={Boolean(replayKey && replayKey > 0)}
+      forcePlay={true}
       onComplete={() => {
         onIntroComplete?.();
         onSkip?.();

@@ -27,19 +27,10 @@ export const AtriumIntroOverlay: React.FC<AtriumIntroOverlayProps> = ({
   const sndRef = useRef<HTMLButtonElement>(null);
   const skipRef = useRef<HTMLButtonElement>(null);
 
-  const [isVisible, setIsVisible] = useState<boolean>(() => {
-    if (forcePlay) return true;
-    if (typeof window === 'undefined') return false;
-    try {
-      const isAlreadySeen = sessionStorage.getItem('atrium-intro-seen') === '1';
-      return !isAlreadySeen;
-    } catch {
-      return false;
-    }
-  });
+  const [isVisible, setIsVisible] = useState<boolean>(true);
 
   useEffect(() => {
-    // If not visible and not forced, dispatch complete immediately and exit
+    // If not forced and already seen, complete and exit
     if (!forcePlay) {
       let skipOnce = false;
       try {
@@ -54,15 +45,11 @@ export const AtriumIntroOverlay: React.FC<AtriumIntroOverlayProps> = ({
         setIsVisible(false);
         try {
           document.dispatchEvent(new CustomEvent('atrium:introcomplete'));
-        } catch {
-          // fallback for environments without CustomEvent
-        }
+        } catch {}
         onComplete?.();
         return;
       }
     }
-
-    setIsVisible(true);
 
     const cv = canvasRef.current;
     const intro = containerRef.current;
@@ -621,14 +608,22 @@ export const AtriumIntroOverlay: React.FC<AtriumIntroOverlayProps> = ({
 
     // ---------- drawing helpers ----------
     function rr(x: number, y: number, w: number, h: number, r: number) {
+      const rw = Math.max(0, w);
+      const rh = Math.max(0, h);
+      const radius = Math.max(0, Math.min(r, Math.min(rw, rh) / 2));
       ctx!.beginPath();
-      ctx!.roundRect(
-        x,
-        y,
-        Math.max(0, w),
-        Math.max(0, h),
-        Math.max(0, Math.min(r, Math.min(w, h) / 2))
-      );
+      if (typeof ctx!.roundRect === 'function') {
+        try {
+          ctx!.roundRect(x, y, rw, rh, radius);
+          return;
+        } catch {}
+      }
+      ctx!.moveTo(x + radius, y);
+      ctx!.arcTo(x + rw, y, x + rw, y + rh, radius);
+      ctx!.arcTo(x + rw, y + rh, x, y + rh, radius);
+      ctx!.arcTo(x, y + rh, x, y, radius);
+      ctx!.arcTo(x, y, x + rw, y, radius);
+      ctx!.closePath();
     }
     function noisePoly(
       x0: number,
@@ -1259,6 +1254,8 @@ export const AtriumIntroOverlay: React.FC<AtriumIntroOverlayProps> = ({
       skip?.removeEventListener('click', finish);
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('resize', handleResize);
+      delete window.AtriumIntro;
+      window.ready = false;
       if (ac && ac.state !== 'closed') {
         try {
           ac.close();
