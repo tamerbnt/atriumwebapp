@@ -202,8 +202,8 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
 }) => {
   const { completeOnboarding, language } = useAtriumStore();
 
-  // Cinematic Atrium Monolith Intro Animation State (starts automatically on launch)
-  const [showIntroAnimation, setShowIntroAnimation] = useState(true);
+  // Cinematic Atrium Confluence Intro Animation State (replaces old monolith, handled at app start)
+  const [showIntroAnimation, setShowIntroAnimation] = useState(false);
   const [isIntroDissolving, setIsIntroDissolving] = useState(false);
   const [introReplayKey, setIntroReplayKey] = useState(0);
 
@@ -216,9 +216,13 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
   };
 
   const handleReplayIntro = () => {
-    setIntroReplayKey((k) => k + 1);
-    setIsIntroDissolving(false);
-    setShowIntroAnimation(true);
+    if (typeof window !== 'undefined' && window.AtriumIntro?.play) {
+      window.AtriumIntro.play();
+    } else {
+      setIntroReplayKey((k) => k + 1);
+      setIsIntroDissolving(false);
+      setShowIntroAnimation(true);
+    }
   };
 
   // Curated Brand Marketing Showcase Imagery (High-Speed Optimized WebP)

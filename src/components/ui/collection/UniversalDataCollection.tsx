@@ -762,7 +762,7 @@ export function UniversalDataCollection<T>({
 
       {/* ================= FLOATING BULK SELECTION ACTION TOOLBAR ================= */}
       {effectiveSelectedIds.size > 0 && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-neutral-900/95 dark:bg-neutral-850/95 backdrop-blur-md text-white rounded-2xl px-5 py-3 shadow-2xl border border-neutral-700/60 flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-200">
+        <div data-atrium-bulk-toolbar="true" className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 bg-neutral-900/95 dark:bg-neutral-850/95 backdrop-blur-md text-white rounded-2xl px-5 py-3 shadow-2xl border border-neutral-700/60 flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-200">
           <div className="flex items-center gap-2 pr-3 border-r border-neutral-700/80">
             <span className="w-5 h-5 rounded-full bg-[#C4785A] text-white text-xs font-bold flex items-center justify-center font-mono">
               {effectiveSelectedIds.size}

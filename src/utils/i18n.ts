@@ -65,6 +65,14 @@ const TRANSLATIONS_EN = {
   nav_settings: 'Settings',
   nav_home: 'Home',
 
+  // Universal Smart Scroll Jump
+  scroll_jump_bottom: 'Jump to bottom',
+  scroll_jump_top: 'Back to top',
+
+  // TopBar Focus Mode (Zen Expansion)
+  topbar_focus_hide: 'Focus Mode / Hide Header (Cmd+\\)',
+  topbar_focus_restore: 'Show Header',
+
   // Category-Dedicated Navigation: Solo Freelance
   nav_solo_home: 'Solo Command',
   nav_solo_clients: 'Clients CRM',
@@ -2983,6 +2991,14 @@ const TRANSLATIONS_FR: typeof TRANSLATIONS_EN = {
   nav_settings: 'Paramètres du système',
   nav_home: 'Accueil',
 
+  // Universal Smart Scroll Jump
+  scroll_jump_bottom: 'Défiler vers le bas',
+  scroll_jump_top: 'Défiler vers le haut',
+
+  // TopBar Focus Mode (Zen Expansion)
+  topbar_focus_hide: "Mode Plein Écran / Masquer l'en-tête (Cmd+\\)",
+  topbar_focus_restore: "Afficher l'en-tête",
+
   // Category-Dedicated Navigation: Solo Freelance
   nav_solo_home: 'Commandement Solo',
   nav_solo_clients: 'Gestion Clients CRM',
@@ -5900,6 +5916,14 @@ const TRANSLATIONS_AR: typeof TRANSLATIONS_EN = {
   nav_history: 'سجل العمليات والتدقيق',
   nav_settings: 'إعدادات النظام',
   nav_home: 'الرئيسية',
+
+  // Universal Smart Scroll Jump
+  scroll_jump_bottom: 'الانتقال إلى الأسفل',
+  scroll_jump_top: 'الرجوع إلى الأعلى',
+
+  // TopBar Focus Mode (Zen Expansion)
+  topbar_focus_hide: 'وضع التركيز / إخفاء الشريط (Cmd+\\)',
+  topbar_focus_restore: 'إظهار الشريط',
 
   // Category-Dedicated Navigation: Solo Freelance
   nav_solo_home: 'لوحة العمل الفردي',

@@ -3,3 +3,4 @@ export * from './CollectionListRow';
 export * from './CollectionGridCard';
 export * from './CollectionKebabMenu';
 export * from './CollectionEmptyState';
+export * from '../ScrollJumpPill';

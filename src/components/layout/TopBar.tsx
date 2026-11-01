@@ -19,6 +19,7 @@ import {
   Clock,
   Building2,
   ChevronDown,
+  ChevronUp,
   Check,
   Laptop,
   Plus,
@@ -112,6 +113,8 @@ export const TopBar: React.FC<TopBarProps> = ({
     unreadNotificationCount,
     networkMode,
     setNetworkMode,
+    toggleTopBarCollapsed,
+    isTopBarCollapsed,
   } = useAtriumStore();
 
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -621,7 +624,7 @@ export const TopBar: React.FC<TopBarProps> = ({
 
   return (
     <header
-      className="h-[52px] my-3 mr-3 ml-2 px-4 sm:px-5 rounded-[26px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 flex items-center justify-between gap-3 shrink-0 shadow-2xs z-20"
+      className="h-[54px] w-full px-4 sm:px-5 rounded-[27px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 flex items-center justify-between gap-3 shrink-0 shadow-2xs z-20"
     >
       {/* Left: Mobile Toggle & Working Interactive Breadcrumbs & Facility Capsule */}
       <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
@@ -1360,6 +1363,17 @@ export const TopBar: React.FC<TopBarProps> = ({
             size={14}
             className={`${theme === 'dark' ? 'text-blue-400 font-bold' : 'text-neutral-400'}`}
           />
+        </button>
+
+        {/* Focus Mode / Collapse Header Button */}
+        <button
+          type="button"
+          onClick={toggleTopBarCollapsed}
+          className="hidden sm:flex w-8 h-8 rounded-full items-center justify-center text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+          title={t('topbar_focus_hide', "Mode Plein Écran / Masquer l'en-tête (Cmd+\\)")}
+          aria-label="Collapse header"
+        >
+          <ChevronUp size={16} />
         </button>
 
 

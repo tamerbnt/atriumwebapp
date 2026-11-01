@@ -1,0 +1,6 @@
+{
+  "summary":  "Architectural and design plan to lock the main white content container to the exact height and bottom baseline of the navigation sidebar dock. Ensures the white container's top and bottom rounded borders (#32px) are permanently visible on screen while content scrolls freely within an inner viewport (#main-content-scroll), with the smart scroll jump pill and bulk toolbars cleanly anchored inside the card above its lower border across all current and future screens.",
+  "updatedAt":  "2026-11-01T21:12:04.769979921Z",
+  "requestFeedback":  true,
+  "userFacing":  true
+}

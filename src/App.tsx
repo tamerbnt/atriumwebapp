@@ -121,7 +121,11 @@ import { AgricultureWholesaleView } from './components/screens/agriculture/Agric
 import { DesktopUpgradeModal } from './components/modals/DesktopUpgradeModal';
 import { CommandPaletteModal } from './components/modals/CommandPaletteModal';
 import { ToastStack } from './components/ui/ToastStack';
+import { ScrollJumpPill } from './components/ui/ScrollJumpPill';
+import { AtriumIntroOverlay } from './components/ui/AtriumIntroOverlay';
 import { AppleOverscrollProvider } from './components/common/AppleOverscrollProvider';
+import { ChevronDown } from 'lucide-react';
+import { useTranslation } from './utils/useTranslation';
 
 export default function App() {
   const {
@@ -147,7 +151,34 @@ export default function App() {
     activeAppointmentRole,
     activePosRole,
     activeEducationRole,
+    isTopBarCollapsed,
+    toggleTopBarCollapsed,
+    setTopBarCollapsed,
   } = useAtriumStore();
+
+  const { t } = useTranslation();
+
+  // Self-contained Atrium Confluence Intro Animation: shown once per session above all content
+  const [isIntroActive, setIsIntroActive] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    try {
+      const isOnceParam = /[?&]once=1/.test(window.location.search);
+      const isAlreadySeen = sessionStorage.getItem('atrium-intro-seen') === '1';
+      return !isAlreadySeen && !(isOnceParam && isAlreadySeen);
+    } catch {
+      return false;
+    }
+  });
+
+  // When intro animation finishes, document.dispatchEvent('atrium:introcomplete') fires;
+  // starts normal loading or onboarding on that event.
+  useEffect(() => {
+    const handleIntroComplete = () => {
+      setIsIntroActive(false);
+    };
+    document.addEventListener('atrium:introcomplete', handleIntroComplete);
+    return () => document.removeEventListener('atrium:introcomplete', handleIntroComplete);
+  }, []);
 
   // Onboarding wizard plays on initial boot or when explicitly requested
   const [showPowerOnboarding, setShowPowerOnboarding] = useState<boolean>(() => {
@@ -170,6 +201,11 @@ export default function App() {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
         setIsCommandPaletteOpen((prev) => !prev);
+      } else if ((e.metaKey || e.ctrlKey) && e.key === '\\') {
+        e.preventDefault();
+        toggleTopBarCollapsed();
+      } else if (e.key === 'Escape' && isTopBarCollapsed) {
+        setTopBarCollapsed(false);
       } else if (
         e.key === '/' &&
         !['INPUT', 'TEXTAREA', 'SELECT'].includes((e.target as HTMLElement)?.tagName)
@@ -180,7 +216,7 @@ export default function App() {
     };
     window.addEventListener('keydown', handleGlobalKeyDown);
     return () => window.removeEventListener('keydown', handleGlobalKeyDown);
-  }, []);
+  }, [isTopBarCollapsed, toggleTopBarCollapsed, setTopBarCollapsed]);
 
   // Sync theme & RTL on boot
   useEffect(() => {
@@ -962,32 +998,24 @@ export default function App() {
     closeOnboarding();
   };
 
-  // Launch onboarding screen on first boot or when explicitly requested
-  if (showPowerOnboarding || isOnboardingOpen) {
-    return (
-      <AppleOverscrollProvider>
+  return (
+    <AppleOverscrollProvider>
+      {/* Self-contained 5-second Atrium Confluence Intro Overlay mounted once at app start above all other content */}
+      {isIntroActive && (
+        <AtriumIntroOverlay onComplete={() => setIsIntroActive(false)} />
+      )}
+
+      {showPowerOnboarding || isOnboardingOpen ? (
         <PowerOnboardingScreen
           onComplete={handleCompleteOrSkipOnboarding}
           onSkipToDashboard={handleCompleteOrSkipOnboarding}
         />
-      </AppleOverscrollProvider>
-    );
-  }
-
-  // If user is not authenticated, render LoginScreen with Onboarding access
-  if (!isAuthenticated) {
-    return (
-      <AppleOverscrollProvider>
+      ) : !isAuthenticated ? (
         <div className="min-h-screen w-screen bg-[#121110]">
           <LoginScreen onStartOnboarding={openOnboarding} />
         </div>
-      </AppleOverscrollProvider>
-    );
-  }
-
-  return (
-    <AppleOverscrollProvider>
-      <div className="flex h-screen w-screen overflow-hidden bg-[var(--color-window-bg)]">
+      ) : (
+        <div className="flex h-screen w-screen overflow-hidden bg-[var(--color-window-bg)]">
       {/* 288px Obsidian Sidebar with Mobile Drawer */}
       <Sidebar
         onOpenVoucherModal={() => setIsVoucherModalOpen(true)}
@@ -996,18 +1024,55 @@ export default function App() {
       />
 
       {/* Main Content Viewport */}
-      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
-        {/* TopBar Header */}
-        <TopBar
-          onOpenVoucherModal={() => setIsVoucherModalOpen(true)}
-          onToggleMobileMenu={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
-          onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
-        />
+      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden p-4 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]">
+        {/* Animated TopBar Header Wrapper */}
+        <div
+          className={`w-full transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-visible shrink-0 ${
+            isTopBarCollapsed
+              ? 'max-h-0 -translate-y-[120%] opacity-0 pointer-events-none mb-0'
+              : 'max-h-[64px] translate-y-0 opacity-100 mb-4'
+          }`}
+        >
+          <TopBar
+            onOpenVoucherModal={() => setIsVoucherModalOpen(true)}
+            onToggleMobileMenu={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
+            onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
+          />
+        </div>
 
-        {/* Dynamic Screen Viewport wrapped in pure white desktop container */}
-        <main className="flex-1 overflow-y-auto pr-3 pl-2 pb-3 min-w-0">
-          <div className="bg-white dark:bg-[#18181B] rounded-[32px] p-6 sm:p-8 min-h-[calc(100vh-80px)] border border-[#E9EEF0] dark:border-neutral-800 shadow-2xs">
-            {renderActiveScreen()}
+        {/* Dynamic Screen Viewport wrapped in pure white desktop container matching sidebar baseline */}
+        <main className="flex-1 min-h-0 min-w-0 flex flex-col w-full transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]">
+          <div className="flex-1 min-h-0 bg-white dark:bg-[#18181B] rounded-[32px] border border-[#E9EEF0] dark:border-neutral-800 shadow-2xs overflow-hidden flex flex-col relative">
+            {/* Top-Center Floating Restore Notch when TopBar is collapsed */}
+            {isTopBarCollapsed && (
+              <div className="absolute top-2.5 left-1/2 -translate-x-1/2 z-30 animate-in fade-in slide-in-from-top-2 duration-200">
+                <button
+                  type="button"
+                  onClick={toggleTopBarCollapsed}
+                  title={t('topbar_focus_restore', "Afficher l'en-tête (Cmd+\\)")}
+                  className="group flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/95 dark:bg-neutral-900/95 text-neutral-600 dark:text-neutral-300 border border-neutral-200/90 dark:border-neutral-700/90 shadow-md backdrop-blur-md hover:border-[#C4785A]/80 hover:text-[#C4785A] dark:hover:text-[#E09070] hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#C4785A]"
+                >
+                  <ChevronDown className="w-3.5 h-3.5 text-[#C4785A] group-hover:translate-y-0.5 transition-transform" />
+                  <span className="text-[11px] font-semibold tracking-wide">
+                    {t('topbar_focus_restore', "Afficher l'en-tête")}
+                  </span>
+                </button>
+              </div>
+            )}
+
+            {/* Inner Scrollable Viewport */}
+            <div
+              id="main-content-scroll"
+              className="flex-1 min-h-0 overflow-y-auto p-7 sm:p-9 pb-16 sm:pb-20 overscroll-contain"
+            >
+              {renderActiveScreen()}
+            </div>
+
+            {/* Universal Smart Scroll Jump Pill (Anchored bottom center inside the card) */}
+            <ScrollJumpPill
+              targetContainerId="main-content-scroll"
+              className="!absolute"
+            />
           </div>
         </main>
       </div>
@@ -1055,6 +1120,7 @@ export default function App() {
       {/* Kinetic Category-Dedicated ToastStack */}
       <ToastStack />
     </div>
+      )}
   </AppleOverscrollProvider>
 );
 }

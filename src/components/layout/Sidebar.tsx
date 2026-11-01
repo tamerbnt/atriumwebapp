@@ -1788,7 +1788,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           backgroundColor: 'var(--color-dock-bg)',
           borderRadius: 'var(--radius-dock)',
         }}
-        className={`my-3 ml-3 flex flex-col items-center justify-between py-4 select-none shrink-0 z-40 fixed inset-y-0 left-0 transition-all duration-300 lg:static lg:translate-x-0 ${
+        className={`my-4 ms-4 flex flex-col items-center justify-between py-4 select-none shrink-0 z-40 fixed inset-y-0 left-0 transition-all duration-300 lg:static lg:translate-x-0 ${
           isExpanded ? 'w-[190px] px-3' : 'w-[60px]'
         } ${isOpenMobile ? 'translate-x-0 shadow-2xl' : '-translate-x-full lg:translate-x-0'}`}
       >
