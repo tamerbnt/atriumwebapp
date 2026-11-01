@@ -749,40 +749,10 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = ({
             </div>
           </div>
 
-          {/* Floating Batch Action Toolbar */}
-          {selectedClientIds.size > 0 && (
-            <div className="p-3 bg-neutral-900 dark:bg-neutral-800 text-white rounded-xl flex items-center justify-between gap-4 shadow-xl">
-              <div className="flex items-center gap-2">
-                <span className="w-6 h-6 rounded-full bg-[#C4785A] text-white text-xs font-bold flex items-center justify-center">
-                  {selectedClientIds.size}
-                </span>
-                <span className="text-xs font-medium">dossiers clientes sélectionnés</span>
-              </div>
 
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={handleBatchSetVIP}
-                  className="px-3 py-1.5 text-xs font-semibold bg-amber-500 hover:bg-amber-600 text-neutral-900 rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer"
-                >
-                  <Star className="w-3.5 h-3.5" />
-                  <span>Promouvoir VIP</span>
-                </button>
 
-                <button
-                  type="button"
-                  onClick={handleBatchDelete}
-                  className="px-3 py-1.5 text-xs font-semibold bg-rose-600 hover:bg-rose-700 text-white rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                  <span>Supprimer</span>
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Table Container Inside Pod Tray */}
-          <div className="bg-white dark:bg-neutral-800 rounded-[18px] border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs overflow-hidden">
+          {/* Collection Floating on Pod Tray */}
+          <div className="w-full">
             <UniversalDataCollection<Member>
               items={filteredClients}
               keyExtractor={(c) => c.id}
@@ -816,6 +786,13 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = ({
               ]}
               selectedIds={selectedClientIds}
               onSelectionChange={setSelectedClientIds}
+              bulkSecondaryAction={{
+                label: 'Promouvoir VIP',
+                icon: <Star size={13} />,
+                onClick: handleBatchSetVIP,
+                variant: 'warning',
+              }}
+              onBulkDelete={handleBatchDelete}
               isPinned={(c) => pinnedClientIds.has(c.id)}
               onTogglePin={(c) => handleTogglePin(c.id)}
               emptyTitle="Aucun dossier cliente trouvé"

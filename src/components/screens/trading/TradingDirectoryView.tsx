@@ -592,9 +592,9 @@ export const TradingDirectoryView: React.FC = () => {
           {/* Grid Layout: Collection Table + 360° Partner Inspector */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 items-start">
             
-            {/* Table Container */}
+            {/* Collection Floating on Pod Tray */}
             <div
-              className={`bg-white dark:bg-neutral-800 rounded-[18px] border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs overflow-hidden ${
+              className={`w-full ${
                 selectedEntity ? 'lg:col-span-2' : 'lg:col-span-3'
               }`}
             >

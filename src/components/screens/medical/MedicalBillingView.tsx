@@ -840,25 +840,24 @@ export const MedicalBillingView: React.FC = () => {
             </div>
           </div>
 
-          {/* Bordereau Claims Table */}
-          <div className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 overflow-hidden text-xs">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left">
-                <thead className="bg-neutral-50 dark:bg-neutral-850 border-b border-neutral-200 dark:border-neutral-700 text-neutral-500 font-semibold text-[11px]">
-                  <tr>
-                    <th className="p-3">N° Dossier</th>
-                    <th className="p-3">Assuré(e) / Patient</th>
-                    <th className="p-3">N° Carte Chifa</th>
-                    <th className="p-3">Cotation</th>
-                    <th className="p-3">Taux Prise en Charge</th>
-                    <th className="p-3 text-right">Part CNAS</th>
-                    <th className="p-3 text-right">Ticket Modérateur</th>
-                    <th className="p-3 text-center">Statut</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-neutral-100 dark:divide-neutral-700/60 font-mono">
-                  {chifaClaims.map((claim) => (
-                    <tr key={claim.id} className="hover:bg-neutral-50/50 dark:hover:bg-neutral-750/30">
+          {/* Bordereau Claims Table Floating on Pod Tray */}
+          <div className="w-full overflow-x-auto text-xs">
+            <table className="w-full text-left border-separate border-spacing-y-1.5">
+              <thead className="bg-transparent text-neutral-500 font-semibold text-[11px]">
+                <tr>
+                  <th className="p-2.5">N° Dossier</th>
+                  <th className="p-2.5">Assuré(e) / Patient</th>
+                  <th className="p-2.5">N° Carte Chifa</th>
+                  <th className="p-2.5">Cotation</th>
+                  <th className="p-2.5">Taux Prise en Charge</th>
+                  <th className="p-2.5 text-right">Part CNAS</th>
+                  <th className="p-2.5 text-right">Ticket Modérateur</th>
+                  <th className="p-2.5 text-center">Statut</th>
+                </tr>
+              </thead>
+              <tbody className="font-mono">
+                {chifaClaims.map((claim) => (
+                  <tr key={claim.id} className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200/80 dark:border-neutral-700/60 shadow-2xs hover:bg-neutral-50/90 dark:hover:bg-neutral-750">
                       <td className="p-3 font-semibold text-neutral-900 dark:text-white">{claim.id}</td>
                       <td className="p-3 font-sans font-medium text-neutral-800 dark:text-neutral-200">{claim.patientName}</td>
                       <td className="p-3 text-neutral-500">{claim.chifaNumber}</td>
@@ -898,8 +897,7 @@ export const MedicalBillingView: React.FC = () => {
               </table>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
       {/* TAB 3: Honoraires Médecins (Doctor Commission Breakdown) */}
       {billingMainTab === 'honoraires' && (

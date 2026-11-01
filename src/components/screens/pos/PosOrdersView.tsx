@@ -774,8 +774,8 @@ export const PosOrdersView: React.FC = () => {
             </div>
           </div>
 
-          {/* Table Container Inside Pod Tray */}
-          <div className="bg-white dark:bg-neutral-800 rounded-[18px] border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs overflow-hidden">
+          {/* Collection Floating on Pod Tray */}
+          <div className="w-full">
             {activeSubTab === 'sales' ? (
               <UniversalDataCollection<Sale>
                 items={filteredSales}
@@ -846,6 +846,26 @@ export const PosOrdersView: React.FC = () => {
                 }}
                 selectedIds={selectedSaleIds}
                 onSelectionChange={setSelectedSaleIds}
+                bulkSecondaryAction={{
+                  label: 'Imprimer reçus',
+                  icon: <Printer size={13} />,
+                  onClick: (ids) => {
+                    showToast({
+                      type: 'info',
+                      title: 'Impression en lot',
+                      message: `${ids.size} reçus envoyés à l'imprimante thermique.`,
+                    });
+                  },
+                  variant: 'primary',
+                }}
+                onBulkDelete={(ids) => {
+                  setSales((prev) => prev.filter((s) => !ids.has(s.id)));
+                  showToast({
+                    type: 'info',
+                    title: 'Tickets archivés',
+                    message: `${ids.size} tickets retirés.`,
+                  });
+                }}
                 isPinned={(s) => pinnedSaleIds.has(s.id)}
                 onTogglePin={(s) => {
                   setPinnedSaleIds((prev) => {

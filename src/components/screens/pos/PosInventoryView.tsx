@@ -1150,8 +1150,8 @@ export const PosInventoryView: React.FC = () => {
           </div>
         )}
 
-        {/* Inset White Table Container */}
-        <div className="bg-white dark:bg-neutral-800 rounded-[18px] border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs overflow-hidden">
+        {/* Collection Floating on Pod Tray */}
+        <div className="w-full">
           {/* UniversalDataCollection: Products */}
           <UniversalDataCollection<Product>
             items={sortedInventory}
@@ -1255,6 +1255,30 @@ export const PosInventoryView: React.FC = () => {
         }}
         selectedIds={selectedProductIds}
         onSelectionChange={setSelectedProductIds}
+        bulkSecondaryAction={{
+          label: 'Ajuster stock (+10)',
+          icon: <ArrowDownUp size={13} />,
+          onClick: (ids) => {
+            ids.forEach((id) => {
+              const prod = products.find((p) => p.id === id);
+              if (prod) updateProduct(id, { stockQuantity: prod.stockQuantity + 10 });
+            });
+            showToast({
+              type: 'success',
+              title: 'Stock ajusté',
+              message: `Stock augmenté de +10 unités pour ${ids.size} produits.`,
+            });
+          },
+          variant: 'primary',
+        }}
+        onBulkDelete={(ids) => {
+          ids.forEach((id) => deleteProduct(id));
+          showToast({
+            type: 'info',
+            title: 'Produits supprimés',
+            message: `${ids.size} articles ont été retirés.`,
+          });
+        }}
         isPinned={(p) => pinnedProductIds.has(p.id)}
         onTogglePin={(p) => {
           setPinnedProductIds((prev) => {
@@ -1391,8 +1415,8 @@ export const PosInventoryView: React.FC = () => {
           </div>
         </div>
 
-        {/* Inset White Container */}
-        <div className="bg-white dark:bg-neutral-800 rounded-[18px] border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs overflow-hidden">
+        {/* Collection Floating on Pod Tray */}
+        <div className="w-full">
           <UniversalDataCollection
             items={purchaseDocs || []}
             columns={purchaseColumns}

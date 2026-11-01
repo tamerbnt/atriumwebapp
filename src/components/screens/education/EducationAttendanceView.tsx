@@ -857,22 +857,22 @@ export const EducationAttendanceView: React.FC = () => {
               onAddFirstItem={() => setIsRollCallOpen(true)}
             />
           ) : (
-            /* Mode: Gradebook Matrix */
-            <div className="overflow-hidden rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/60 shadow-2xs">
-              <table className="w-full text-left rtl:text-right border-collapse text-xs">
+            /* Mode: Gradebook Matrix Floating on Pod Tray */
+            <div className="w-full overflow-x-auto">
+              <table className="w-full text-left rtl:text-right border-separate border-spacing-y-1.5 text-xs">
                 <thead>
-                  <tr className="border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/50 text-[11px] font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
-                    <th className="py-3.5 px-4">{t('edu_col_student')}</th>
+                  <tr className="bg-transparent text-[11px] font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
+                    <th className="py-2.5 px-4">{t('edu_col_student')}</th>
                     {assessmentTitles.map((title) => (
-                      <th key={title} className="py-3.5 px-4">
+                      <th key={title} className="py-2.5 px-4">
                         {title}
                       </th>
                     ))}
-                    <th className="py-3.5 px-4">{t('edu_avg_weighted')}</th>
-                    <th className="py-3.5 px-4 text-right rtl:text-left">{t('edu_col_actions')}</th>
+                    <th className="py-2.5 px-4">{t('edu_avg_weighted')}</th>
+                    <th className="py-2.5 px-4 text-right rtl:text-left">{t('edu_col_actions')}</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800/80">
+                <tbody>
                   {cohortStudents.map((st) => {
                     const studentGrades = cohortGrades.filter((g) => g.studentId === st.id);
                     const totalScore = studentGrades.reduce(
@@ -885,7 +885,7 @@ export const EducationAttendanceView: React.FC = () => {
                     return (
                       <tr
                         key={st.id}
-                        className="hover:bg-neutral-50 dark:hover:bg-neutral-800/40 transition-colors"
+                        className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200/80 dark:border-neutral-800 shadow-2xs hover:bg-neutral-50 dark:hover:bg-neutral-800/40 transition-colors"
                       >
                         <td className="py-3.5 px-4">
                           <div className="font-semibold text-neutral-900 dark:text-white">

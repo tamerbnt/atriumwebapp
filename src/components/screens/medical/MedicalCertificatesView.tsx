@@ -273,23 +273,23 @@ export const MedicalCertificatesView: React.FC = () => {
         ))}
       </div>
 
-      {/* Certificates Data Table */}
-      <div className="bg-white dark:bg-neutral-900 rounded-[28px] border border-neutral-200 dark:border-neutral-800 overflow-hidden shadow-2xs">
-        <table className="w-full text-left border-collapse text-xs">
+      {/* Certificates Data Table Floating on Pod Tray */}
+      <div className="w-full overflow-x-auto">
+        <table className="w-full text-left border-separate border-spacing-y-1.5 text-xs">
           <thead>
-            <tr className="bg-[#F8F9FA] dark:bg-neutral-800/60 border-b border-neutral-200 dark:border-neutral-800 text-neutral-500 font-mono uppercase tracking-wider text-[11px]">
-              <th className="py-3.5 px-4">Date Émission</th>
-              <th className="py-3.5 px-4">Type de Document</th>
-              <th className="py-3.5 px-4">Patient</th>
-              <th className="py-3.5 px-4">Médecin Signataire</th>
-              <th className="py-3.5 px-4">Détails / Période</th>
-              <th className="py-3.5 px-4">Code Sécurisé</th>
-              <th className="py-3.5 px-4 text-right">Actions</th>
+            <tr className="bg-transparent text-neutral-500 font-mono uppercase tracking-wider text-[11px]">
+              <th className="py-2.5 px-4">Date Émission</th>
+              <th className="py-2.5 px-4">Type de Document</th>
+              <th className="py-2.5 px-4">Patient</th>
+              <th className="py-2.5 px-4">Médecin Signataire</th>
+              <th className="py-2.5 px-4">Détails / Période</th>
+              <th className="py-2.5 px-4">Code Sécurisé</th>
+              <th className="py-2.5 px-4 text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-neutral-200 dark:divide-neutral-800">
+          <tbody>
             {filteredCertificates.map((cert) => (
-              <tr key={cert.id} className="hover:bg-neutral-50/70 dark:hover:bg-neutral-800/30 transition-colors">
+              <tr key={cert.id} className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200/80 dark:border-neutral-700/60 shadow-2xs hover:bg-neutral-50/90 dark:hover:bg-neutral-700/60 transition-colors">
                 <td className="py-3.5 px-4 font-mono font-medium text-neutral-700 dark:text-neutral-300">
                   {cert.issueDate}
                 </td>

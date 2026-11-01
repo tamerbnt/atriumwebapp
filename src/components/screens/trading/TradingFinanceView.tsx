@@ -555,8 +555,8 @@ export const TradingFinanceView: React.FC = () => {
             </div>
           </div>
 
-          {/* Table Container Inside Pod Tray */}
-          <div className="bg-white dark:bg-neutral-800 rounded-[18px] border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs overflow-hidden">
+          {/* Collection Floating on Pod Tray */}
+          <div className="w-full">
             <UniversalDataCollection
               items={filteredInvoices}
               keyExtractor={(inv) => inv.id}

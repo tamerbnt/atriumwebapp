@@ -354,33 +354,6 @@ export const MembershipSchedulerView: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-3 relative">
-          {/* Prominent High-Visibility Segmented Switcher: Timeline vs Universal Collection */}
-          <div className="flex items-center p-1 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-2xs">
-            <button
-              type="button"
-              onClick={() => setMainViewMode('collection')}
-              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold cursor-pointer transition-all ${
-                mainViewMode === 'collection'
-                  ? 'bg-[#C4785A] text-white shadow-xs'
-                  : 'text-neutral-600 dark:text-neutral-300 hover:text-neutral-900'
-              }`}
-            >
-              <LayoutGrid size={14} />
-              <span>{language === 'ar' ? 'بطاقات وقائمة عامة' : language === 'fr' ? 'Collection Cartes & Liste' : 'Universal Cards & List'}</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setMainViewMode('timeline')}
-              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold cursor-pointer transition-all ${
-                mainViewMode === 'timeline'
-                  ? 'bg-[#C4785A] text-white shadow-xs'
-                  : 'text-neutral-600 dark:text-neutral-300 hover:text-neutral-900'
-              }`}
-            >
-              <Calendar size={14} />
-              <span>{language === 'ar' ? 'مخطط الأيام الزمني' : language === 'fr' ? 'Planning Calendrier' : 'Timetable Timeline'}</span>
-            </button>
-          </div>
 
           {/* Facility Pill */}
           <div className="relative">
@@ -598,6 +571,30 @@ export const MembershipSchedulerView: React.FC = () => {
             items={sortedCollectionEvents}
             keyExtractor={(e) => e.id}
             defaultViewMode="list"
+            showCalendarToggle={true}
+            onViewModeChange={(mode) => {
+              if (mode === 'calendar') setMainViewMode('timeline');
+            }}
+            bulkSecondaryAction={{
+              label: 'Dupliquer semaine',
+              icon: <Plus size={13} />,
+              onClick: (ids) => {
+                showToast({
+                  type: 'success',
+                  title: 'Planification',
+                  message: `${ids.size} sessions dupliquées pour la semaine suivante.`,
+                });
+              },
+              variant: 'primary',
+            }}
+            onBulkDelete={(ids) => {
+              setEvents((prev) => prev.filter((e) => !ids.has(e.id)));
+              showToast({
+                type: 'info',
+                title: 'Sessions supprimées',
+                message: `${ids.size} sessions retirées du planning.`,
+              });
+            }}
             sortBy={eventSortBy}
             sortDirection={eventSortDir}
             onSortChange={(key) => {
@@ -788,6 +785,34 @@ export const MembershipSchedulerView: React.FC = () => {
               >
                 Export
               </AtriumButton>
+
+              {/* View Mode Switcher: List, Grid, Calendar */}
+              <div className="flex items-center bg-white dark:bg-neutral-800 p-0.5 rounded-xl border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
+                <button
+                  type="button"
+                  onClick={() => setMainViewMode('collection')}
+                  className="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 transition-all cursor-pointer"
+                  title="List View"
+                >
+                  <List size={14} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMainViewMode('collection')}
+                  className="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 transition-all cursor-pointer"
+                  title="Grid View"
+                >
+                  <LayoutGrid size={14} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMainViewMode('timeline')}
+                  className="p-1.5 rounded-lg bg-[#C4785A] text-white shadow-2xs transition-all cursor-pointer"
+                  title="Timetable Timeline View"
+                >
+                  <Calendar size={14} />
+                </button>
+              </div>
             </div>
           </div>
 

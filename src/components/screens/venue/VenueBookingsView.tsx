@@ -41,9 +41,10 @@ import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons'
 
 export interface VenueBookingsViewProps {
   hideHeader?: boolean;
+  onSwitchToTimeline?: () => void;
 }
 
-export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({ hideHeader = false }) => {
+export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({ hideHeader = false, onSwitchToTimeline }) => {
   const { t, language } = useTranslation();
   const {
     rentalBookings,
@@ -862,6 +863,32 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({ hideHeader
             isPinned={(b) => pinnedBookingIds.has(b.id)}
             selectedIds={selectedBookingIds}
             onSelectionChange={setSelectedBookingIds}
+            showCalendarToggle={!!onSwitchToTimeline}
+            onViewModeChange={(m) => {
+              if (m === 'calendar' && onSwitchToTimeline) {
+                onSwitchToTimeline();
+              }
+            }}
+            bulkSecondaryAction={{
+              label: 'Confirmer sélection',
+              icon: <CheckCircle2 size={13} />,
+              onClick: (ids) => {
+                showToast({
+                  type: 'success',
+                  title: 'Réservations validées',
+                  message: `${ids.size} réservations validées avec succès.`,
+                });
+              },
+              variant: 'primary',
+            }}
+            onBulkDelete={(ids) => {
+              ids.forEach((id) => deleteRentalBooking(id));
+              showToast({
+                type: 'info',
+                title: 'Supprimées',
+                message: `${ids.size} réservations supprimées.`,
+              });
+            }}
             emptyTitle={t('venue_no_bookings_match')}
             emptyDescription={t('venue_bookings_page_sub')}
             primaryActionLabel={t('venue_btn_new_res')}

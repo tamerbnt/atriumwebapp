@@ -14,6 +14,7 @@ import {
   Info,
   Cloud,
   LayoutGrid,
+  List,
   Sparkles,
   Maximize2,
   Home,
@@ -174,33 +175,6 @@ export const VenueTimelineView: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-3 relative flex-wrap">
-            {/* View Mode Segmented Switcher */}
-            <div className="flex items-center p-0.5 rounded-xl bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-2xs">
-              <button
-                type="button"
-                onClick={() => setMainViewMode('timeline')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold cursor-pointer transition-all ${
-                  mainViewMode === 'timeline'
-                    ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] shadow-2xs'
-                    : 'text-neutral-600 dark:text-neutral-300 hover:text-neutral-900'
-                }`}
-              >
-                <CalendarIcon size={13} />
-                <span>{language === 'ar' ? 'المخطط الزمني' : language === 'fr' ? 'Matrice Calendrier' : 'Timeline Matrix'}</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setMainViewMode('collection')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold cursor-pointer transition-all ${
-                  mainViewMode === 'collection'
-                    ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] shadow-2xs'
-                    : 'text-neutral-600 dark:text-neutral-300 hover:text-neutral-900'
-                }`}
-              >
-                <LayoutGrid size={13} />
-                <span>{language === 'ar' ? 'قائمة الحجوزات' : language === 'fr' ? 'Liste Universelle' : 'List Collection'}</span>
-              </button>
-            </div>
 
             {/* Facility Pill: Atrium 1 ▾ */}
             <div className="relative">
@@ -339,7 +313,7 @@ export const VenueTimelineView: React.FC = () => {
         </div>
 
         {mainViewMode === 'collection' ? (
-          <VenueBookingsView hideHeader />
+          <VenueBookingsView hideHeader onSwitchToTimeline={() => setMainViewMode('timeline')} />
         ) : (
           <div className="space-y-4">
             {/* Timeline Pod Tray */}
@@ -402,11 +376,39 @@ export const VenueTimelineView: React.FC = () => {
                   ))}
                 </div>
 
+                {/* View Mode Switcher: List, Grid, Calendar */}
+                <div className="flex items-center bg-white dark:bg-neutral-800 p-0.5 rounded-xl border border-neutral-200 dark:border-neutral-700 shadow-2xs">
+                  <button
+                    type="button"
+                    onClick={() => setMainViewMode('collection')}
+                    className="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 transition-all cursor-pointer"
+                    title="List View"
+                  >
+                    <List size={14} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setMainViewMode('collection')}
+                    className="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 transition-all cursor-pointer"
+                    title="Grid View"
+                  >
+                    <LayoutGrid size={14} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setMainViewMode('timeline')}
+                    className="p-1.5 rounded-lg bg-[#C4785A] text-white shadow-2xs transition-all cursor-pointer"
+                    title="Timeline Matrix View"
+                  >
+                    <CalendarIcon size={14} />
+                  </button>
+                </div>
+
                 {/* Fullscreen Expand Button */}
                 <button
                   type="button"
                   onClick={toggleFullscreen}
-                  className="h-9 w-9 rounded-xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700/50 flex items-center justify-center transition-colors cursor-pointer shadow-2xs ml-auto"
+                  className="h-9 w-9 rounded-xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700/50 flex items-center justify-center transition-colors cursor-pointer shadow-2xs"
                   title="Fullscreen"
                 >
                   <Maximize2 size={14} />

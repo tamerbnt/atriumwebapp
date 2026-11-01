@@ -1012,21 +1012,21 @@ export const ContractorDailyLogsView: React.FC = () => {
             </AtriumButton>
           </div>
 
-          <div className="overflow-x-auto bg-white dark:bg-neutral-850 rounded-[20px] border border-[#EDF1F3] dark:border-neutral-800 shadow-2xs">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-neutral-50 dark:bg-neutral-900/60 text-neutral-500 border-b border-neutral-100 dark:border-neutral-800 text-[11px]">
+          <div className="overflow-x-auto w-full">
+            <table className="w-full text-left text-xs border-separate border-spacing-y-1.5">
+              <thead className="bg-transparent text-neutral-500 text-[11px]">
                 <tr>
-                  <th className="py-3 px-4 font-semibold">Date</th>
-                  <th className="py-3 px-4 font-semibold">Engin & Matricule</th>
-                  <th className="py-3 px-4 font-semibold">Opérateur</th>
-                  <th className="py-3 px-4 font-semibold text-right">Heures Travail</th>
-                  <th className="py-3 px-4 font-semibold text-right">Gasoil Ajouté</th>
-                  <th className="py-3 px-4 font-semibold text-right">Ratio Réel</th>
-                  <th className="py-3 px-4 font-semibold text-right">Ratio Constructeur</th>
-                  <th className="py-3 px-4 font-semibold">Statut Contrôle</th>
+                  <th className="py-2.5 px-4 font-semibold">Date</th>
+                  <th className="py-2.5 px-4 font-semibold">Engin & Matricule</th>
+                  <th className="py-2.5 px-4 font-semibold">Opérateur</th>
+                  <th className="py-2.5 px-4 font-semibold text-right">Heures Travail</th>
+                  <th className="py-2.5 px-4 font-semibold text-right">Gasoil Ajouté</th>
+                  <th className="py-2.5 px-4 font-semibold text-right">Ratio Réel</th>
+                  <th className="py-2.5 px-4 font-semibold text-right">Ratio Constructeur</th>
+                  <th className="py-2.5 px-4 font-semibold">Statut Contrôle</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
+              <tbody>
                 {projectEquipmentLogs.map((log) => {
                   const anomaly = calculateFuelConsumptionAnomaly(
                     log.operatingHours,
@@ -1035,7 +1035,7 @@ export const ContractorDailyLogsView: React.FC = () => {
                   );
 
                   return (
-                    <tr key={log.id} className="hover:bg-neutral-50/60 dark:hover:bg-neutral-800/40 transition-colors">
+                    <tr key={log.id} className="bg-white dark:bg-neutral-850 rounded-xl border border-neutral-200/80 dark:border-neutral-800 shadow-2xs hover:bg-neutral-50/90 dark:hover:bg-neutral-800/80 transition-colors">
                       <td className="py-3 px-4 font-mono font-semibold text-neutral-900 dark:text-white">
                         {log.date}
                       </td>

@@ -83,7 +83,7 @@ export const AppointmentScheduleView: React.FC = () => {
   const [selectedStylistId, setSelectedStylistId] = useState<string>('All');
   const [statusFilter, setStatusFilter] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState('');
-  const [viewMode, setViewMode] = useState<'columns' | 'list'>('columns');
+  const [viewMode, setViewMode] = useState<'columns' | 'list' | 'grid'>('columns');
   const [isFacilityDropdownOpen, setIsFacilityDropdownOpen] = useState(false);
 
   // Modal control
@@ -462,33 +462,6 @@ export const AppointmentScheduleView: React.FC = () => {
             </p>
           </div>
 
-          {/* Prominent High-Visibility Segmented Switcher: Universal Collection vs Column Matrix vs Catalog */}
-          <div className="flex items-center p-1 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-2xs">
-            <button
-              type="button"
-              onClick={() => setViewMode('list')}
-              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold cursor-pointer transition-all ${
-                viewMode === 'list'
-                  ? 'bg-[#C4785A] text-white shadow-xs'
-                  : 'text-neutral-600 dark:text-neutral-300 hover:text-neutral-900'
-              }`}
-            >
-              <LayoutGrid size={14} />
-              <span>{language === 'ar' ? 'بطاقات وقائمة عامة' : language === 'fr' ? 'Cartes & Liste Universelles' : 'Universal Cards & List'}</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setViewMode('columns')}
-              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold cursor-pointer transition-all ${
-                viewMode === 'columns'
-                  ? 'bg-[#C4785A] text-white shadow-xs'
-                  : 'text-neutral-600 dark:text-neutral-300 hover:text-neutral-900'
-              }`}
-            >
-              <Calendar size={14} />
-              <span>{language === 'ar' ? 'مخطط كراسي المصففين' : language === 'fr' ? 'Matrice Stylistes' : 'Stylist Chair Matrix'}</span>
-            </button>
-          </div>
 
           {/* Action Buttons */}
           <div className="flex items-center gap-2.5">
@@ -705,6 +678,46 @@ export const AppointmentScheduleView: React.FC = () => {
                 shutSize={34}
                 openWidth={220}
               />
+
+              {/* Row View Toggle: List, Grid, Calendar */}
+              <div className="flex items-center bg-white dark:bg-neutral-800 p-0.5 rounded-xl border border-neutral-200 dark:border-neutral-700 shadow-2xs">
+                <button
+                  type="button"
+                  onClick={() => setViewMode('list')}
+                  className={`p-1.5 rounded-lg transition-all cursor-pointer ${
+                    viewMode === 'list'
+                      ? 'bg-[#C4785A] text-white shadow-2xs'
+                      : 'text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200'
+                  }`}
+                  title={language === 'ar' ? 'عرض القائمة' : 'Vue Liste'}
+                >
+                  <List size={14} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewMode('grid')}
+                  className={`p-1.5 rounded-lg transition-all cursor-pointer ${
+                    viewMode === 'grid'
+                      ? 'bg-[#C4785A] text-white shadow-2xs'
+                      : 'text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200'
+                  }`}
+                  title={language === 'ar' ? 'عرض الشبكة' : 'Vue Grille'}
+                >
+                  <LayoutGrid size={14} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewMode('columns')}
+                  className={`p-1.5 rounded-lg transition-all cursor-pointer ${
+                    viewMode === 'columns'
+                      ? 'bg-[#C4785A] text-white shadow-2xs'
+                      : 'text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200'
+                  }`}
+                  title={language === 'ar' ? 'عرض المخطط الزمني' : 'Vue Planning / Matrice'}
+                >
+                  <Calendar size={14} />
+                </button>
+              </div>
             </div>
           </div>
 
@@ -861,13 +874,16 @@ export const AppointmentScheduleView: React.FC = () => {
             </div>
           )}
 
-          {/* List View */}
-          {viewMode === 'list' && (
-            <div className="bg-white dark:bg-neutral-800 rounded-[20px] border border-[#E9EEF0] dark:border-neutral-700/80 shadow-2xs overflow-hidden p-3 lg:p-4">
+          {/* List / Grid Universal Collection View */}
+          {viewMode !== 'columns' && (
+            <div className="w-full">
               <UniversalDataCollection<Appointment>
                 items={sortedDayAppointments}
                 keyExtractor={(apt) => apt.id}
+                viewMode={viewMode}
                 defaultViewMode="list"
+                showCalendarToggle={true}
+                onViewModeChange={(m) => setViewMode(m === 'calendar' ? 'columns' : m)}
                 columns={appointmentColumns}
                 sortBy={aptSortBy}
                 sortDirection={aptSortDir}
@@ -1013,6 +1029,27 @@ export const AppointmentScheduleView: React.FC = () => {
                 isPinned={(apt) => pinnedAptIds.has(apt.id)}
                 selectedIds={selectedAptIds}
                 onSelectionChange={setSelectedAptIds}
+                bulkSecondaryAction={{
+                  label: 'Confirmer sélectionnés',
+                  icon: <CheckCircle2 size={13} />,
+                  onClick: (ids) => {
+                    batchUpdateAppointmentStatus(Array.from(ids), 'Confirmed');
+                    showToast({
+                      type: 'success',
+                      title: 'Confirmés',
+                      message: `${ids.size} rendez-vous confirmés.`,
+                    });
+                  },
+                  variant: 'primary',
+                }}
+                onBulkDelete={(ids) => {
+                  batchDeleteAppointments(Array.from(ids));
+                  showToast({
+                    type: 'info',
+                    title: 'Supprimés',
+                    message: `${ids.size} rendez-vous supprimés.`,
+                  });
+                }}
                 emptyTitle={t('salon_empty_appointments', language)}
                 emptyDescription={t('salon_empty_appointments_sub', language)}
                 primaryActionLabel={t('salon_new_booking', language)}

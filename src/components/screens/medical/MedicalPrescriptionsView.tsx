@@ -410,23 +410,23 @@ export const MedicalPrescriptionsView: React.FC = () => {
             </p>
           </div>
 
-          <div className="overflow-x-auto rounded-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 shadow-2xs">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-[#F8F9FA] dark:bg-neutral-850 border-b border-neutral-200 dark:border-neutral-700 text-neutral-500">
+          <div className="overflow-x-auto w-full">
+            <table className="w-full text-left text-xs border-separate border-spacing-y-1.5">
+              <thead className="bg-transparent text-neutral-500">
                 <tr>
-                  <th className="p-3.5 font-bold uppercase tracking-wider text-[11px]">Code NGAP</th>
-                  <th className="p-3.5 font-bold uppercase tracking-wider text-[11px]">Libellé de l'Acte Médical</th>
-                  <th className="p-3.5 font-bold uppercase tracking-wider text-[11px]">Catégorie</th>
-                  <th className="p-3.5 font-bold uppercase tracking-wider text-[11px]">Tarif Conv.</th>
-                  <th className="p-3.5 font-bold uppercase tracking-wider text-[11px]">Part CNAS (80%)</th>
-                  <th className="p-3.5 font-bold uppercase tracking-wider text-[11px]">Ticket Mod.</th>
-                  <th className="p-3.5 font-bold uppercase tracking-wider text-[11px]">Consommables Déduits</th>
-                  <th className="p-3.5 font-bold uppercase tracking-wider text-[11px] text-right">Action Test</th>
+                  <th className="p-3 font-bold uppercase tracking-wider text-[11px]">Code NGAP</th>
+                  <th className="p-3 font-bold uppercase tracking-wider text-[11px]">Libellé de l'Acte Médical</th>
+                  <th className="p-3 font-bold uppercase tracking-wider text-[11px]">Catégorie</th>
+                  <th className="p-3 font-bold uppercase tracking-wider text-[11px]">Tarif Conv.</th>
+                  <th className="p-3 font-bold uppercase tracking-wider text-[11px]">Part CNAS (80%)</th>
+                  <th className="p-3 font-bold uppercase tracking-wider text-[11px]">Ticket Mod.</th>
+                  <th className="p-3 font-bold uppercase tracking-wider text-[11px]">Consommables Déduits</th>
+                  <th className="p-3 font-bold uppercase tracking-wider text-[11px] text-right">Action Test</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-neutral-100 dark:divide-neutral-700">
+              <tbody>
                 {NGAP_ACTS.map((act) => (
-                  <tr key={act.code} className="hover:bg-neutral-50/60 dark:hover:bg-neutral-700/20 transition-colors">
+                  <tr key={act.code} className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200/80 dark:border-neutral-700/60 shadow-2xs hover:bg-neutral-50/90 dark:hover:bg-neutral-700/60 transition-colors">
                     <td className="p-3.5 font-mono font-bold text-[#C4785A]">
                       <span className="px-2 py-0.5 rounded-md bg-[#C4785A]/10 border border-[#C4785A]/20">
                         {act.code}

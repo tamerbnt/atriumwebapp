@@ -538,8 +538,8 @@ export const AutoGarageOrdersView: React.FC = () => {
             })}
           </div>
         ) : (
-          /* MAIN VIEW: COLLECTION TABLE */
-          <div className="bg-white dark:bg-neutral-900 rounded-3xl p-4 border border-neutral-200/80 dark:border-neutral-800 shadow-2xs">
+          /* MAIN VIEW: COLLECTION FLOATING ON POD TRAY */
+          <div className="w-full">
             <UniversalDataCollection<RepairOrder>
               data={filteredOrders}
               columns={columns}

@@ -353,7 +353,7 @@ export const AutoGarageBillingView: React.FC = () => {
 
         {/* TAB 1: ORDERS AWAITING SETTLEMENT */}
         {activeScreenTab === 'orders' && (
-          <div className="bg-white dark:bg-neutral-900 rounded-3xl p-4 border border-neutral-200/80 dark:border-neutral-800 shadow-2xs">
+          <div className="w-full">
             <UniversalDataCollection<RepairOrder>
               data={filteredBillingOrders}
               keyExtractor={(o) => o.id}
@@ -507,12 +507,12 @@ export const AutoGarageBillingView: React.FC = () => {
 
         {/* TAB 3: ISSUED INVOICES ARCHIVE */}
         {activeScreenTab === 'invoices' && (
-          <div className="bg-white dark:bg-neutral-900 rounded-3xl p-4 border border-neutral-200/80 dark:border-neutral-800 shadow-2xs">
+          <div className="w-full">
             <div className="space-y-3">
               {invoices.map((inv) => (
                 <div
                   key={inv.id}
-                  className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-800/40 border border-neutral-200/60 dark:border-neutral-700/60 gap-3 text-xs"
+                  className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200/80 dark:border-neutral-700/60 shadow-2xs gap-3 text-xs"
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 flex items-center justify-center font-bold">
