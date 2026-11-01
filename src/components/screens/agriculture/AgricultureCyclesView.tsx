@@ -38,7 +38,7 @@ import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 
 export const AgricultureCyclesView: React.FC = () => {
-  const { language, isSyncing, networkMode, retryCloudSync, lastSyncedAt } = useAtriumStore();
+  const { language, isSyncing, networkMode, retryCloudSync, lastSyncedAt, showToast } = useAtriumStore();
   const isAr = language === 'ar';
   const {
     cropCycles,
@@ -672,6 +672,19 @@ export const AgricultureCyclesView: React.FC = () => {
               onViewModeChange={setViewMode}
               selectedIds={selectedIds}
               onSelectionChange={setSelectedIds}
+              bulkSecondaryAction={{
+                label: isAr ? 'تصدير الدورات' : 'Exporter Cycles',
+                icon: <Download size={14} />,
+                onClick: (ids) => {
+                  showToast(isAr ? `تم تصدير ${ids.size} دورات زراعية` : `${ids.size} cycles culturaux exportés`);
+                },
+              }}
+              onBulkDelete={(ids) => {
+                ids.forEach((id) => deleteCropCycle(id));
+                setSelectedIds(new Set());
+                if (selectedCycle && ids.has(selectedCycle.id)) setSelectedCycle(null);
+                showToast(isAr ? 'تم حذف الدورات المحددة' : 'Cycles sélectionnés supprimés');
+              }}
               pinnedIds={pinnedIds}
               onPinToggle={(c) => {
                 const id = typeof c === 'string' ? c : c.id;
@@ -753,6 +766,19 @@ export const AgricultureCyclesView: React.FC = () => {
               onViewModeChange={setViewMode}
               selectedIds={selectedIds}
               onSelectionChange={setSelectedIds}
+              bulkSecondaryAction={{
+                label: isAr ? 'تصدير السجل الصحي' : 'Exporter Traitements',
+                icon: <Download size={14} />,
+                onClick: (ids) => {
+                  showToast(isAr ? `تم تصدير ${ids.size} معالجات صحية` : `${ids.size} traitements phytosanitaires exportés`);
+                },
+              }}
+              onBulkDelete={(ids) => {
+                ids.forEach((id) => deleteTreatmentLog(id));
+                setSelectedIds(new Set());
+                if (selectedTreatment && ids.has(selectedTreatment.id)) setSelectedTreatment(null);
+                showToast(isAr ? 'تم حذف المعالجات المحددة' : 'Traitements sélectionnés supprimés');
+              }}
               pinnedIds={pinnedIds}
               onPinToggle={(t) => {
                 const id = typeof t === 'string' ? t : t.id;

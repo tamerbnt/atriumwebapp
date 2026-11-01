@@ -481,39 +481,6 @@ export const LogisticsShipmentsView: React.FC = () => {
           </div>
         </div>
 
-        {/* Batch Selection Banner */}
-        {selectedIds.size > 0 && (
-          <div className="flex items-center justify-between p-3 px-4 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 animate-in fade-in">
-            <div className="flex items-center gap-3">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#C4785A] animate-pulse" />
-              <span className="text-xs font-bold text-neutral-900 dark:text-white">
-                {selectedIds.size} {language === 'ar' ? 'طرود محددة' : 'colis sélectionnés'}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setSelectedIds(new Set())}
-                className="px-3 py-1 text-xs text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 font-medium cursor-pointer"
-              >
-                {language === 'ar' ? 'إلغاء التحديد' : 'Désélectionner'}
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  selectedIds.forEach((id) => deleteShipment(id));
-                  setSelectedIds(new Set());
-                  showToast(language === 'ar' ? 'تم حذف الطرود المحددة' : 'Colis sélectionnés supprimés', 'success');
-                }}
-                className="px-3.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
-              >
-                <Trash2 size={13} />
-                <span>{language === 'ar' ? 'حذف المحدد' : 'Supprimer'}</span>
-              </button>
-            </div>
-          </div>
-        )}
-
         {/* Inset Area Hosting Universal Collection and 390px Side Inspector */}
         <div className="flex items-start gap-4">
           <div className="flex-1 min-w-0">
@@ -534,6 +501,21 @@ export const LogisticsShipmentsView: React.FC = () => {
               }}
               selectedIds={selectedIds}
               onSelectionChange={setSelectedIds}
+              bulkSecondaryAction={{
+                label: language === 'ar' ? 'تحديث مرحلة التوصيل' : 'Mise à jour statut',
+                icon: <Truck size={14} />,
+                onClick: (ids) => {
+                  showToast(language === 'ar' ? `تم تحديد ${ids.size} طرد للشحن` : `${ids.size} colis pris en charge pour expédition`);
+                },
+              }}
+              onBulkDelete={(ids) => {
+                ids.forEach((id) => deleteShipment(id));
+                setSelectedIds(new Set());
+                if (selectedShipment && ids.has(selectedShipment.id)) {
+                  setSelectedShipment(null);
+                }
+                showToast(language === 'ar' ? 'تم حذف الطرود المحددة' : 'Colis sélectionnés supprimés', 'success');
+              }}
               isPinned={(s) => pinnedIds.has(s.id)}
               onTogglePin={(s) => handleTogglePin(s.id)}
               onItemClick={handleSelectShipment}

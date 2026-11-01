@@ -575,6 +575,21 @@ export const ContractorSitesView: React.FC = () => {
             onViewModeChange={setViewMode}
             selectedIds={selectedIds}
             onSelectionChange={setSelectedIds}
+            bulkSecondaryAction={{
+              label: isAr ? 'تصدير المشاريع' : 'Exporter Chantiers',
+              icon: <Download size={14} />,
+              onClick: (ids) => {
+                showToast(isAr ? `تم تصدير بيانات ${ids.size} ورشات بنجاح` : `${ids.size} chantiers exportés en CSV`);
+              },
+            }}
+            onBulkDelete={(ids) => {
+              ids.forEach((id) => deleteProject(id));
+              setSelectedIds(new Set());
+              if (selectedProject && ids.has(selectedProject.id)) {
+                setSelectedProject(null);
+              }
+              showToast(isAr ? 'تم حذف المشاريع المحددة' : 'Chantiers sélectionnés supprimés');
+            }}
             pinnedIds={pinnedIds}
             onPinToggle={handlePin}
             sortBy={sortBy}

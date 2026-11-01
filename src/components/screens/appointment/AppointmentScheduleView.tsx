@@ -883,7 +883,7 @@ export const AppointmentScheduleView: React.FC = () => {
                 viewMode={viewMode}
                 defaultViewMode="list"
                 showCalendarToggle={true}
-                onViewModeChange={(m) => setViewMode(m === 'calendar' ? 'columns' : m)}
+                onViewModeChange={(m: 'list' | 'grid' | 'calendar') => setViewMode(m === 'calendar' ? 'columns' : m)}
                 columns={appointmentColumns}
                 sortBy={aptSortBy}
                 sortDirection={aptSortDir}
@@ -894,6 +894,38 @@ export const AppointmentScheduleView: React.FC = () => {
                     setAptSortBy(key);
                     setAptSortDir('asc');
                   }
+                }}
+                selectedIds={selectedAptIds}
+                onSelectionChange={setSelectedAptIds}
+                isPinned={(apt) => pinnedAptIds.has(apt.id)}
+                onTogglePin={(apt) => {
+                  setPinnedAptIds((prev) => {
+                    const next = new Set(prev);
+                    if (next.has(apt.id)) next.delete(apt.id);
+                    else next.add(apt.id);
+                    return next;
+                  });
+                }}
+                bulkSecondaryAction={{
+                  label: language === 'ar' ? 'تأكيد المواعيد' : 'Confirmer RDV',
+                  icon: <CheckCircle2 size={13} />,
+                  onClick: (ids) => {
+                    batchUpdateAppointmentStatus(Array.from(ids), 'Confirmed');
+                    showToast({
+                      type: 'success',
+                      title: 'Mises à jour',
+                      message: `${ids.size} rendez-vous confirmés.`,
+                    });
+                  },
+                  variant: 'primary',
+                }}
+                onBulkDelete={(ids) => {
+                  batchDeleteAppointments(Array.from(ids));
+                  showToast({
+                    type: 'info',
+                    title: 'Rendez-vous annulés',
+                    message: `${ids.size} rendez-vous retirés.`,
+                  });
                 }}
                 renderCard={(apt) => (
                   <div className="flex flex-col justify-between w-full h-full">

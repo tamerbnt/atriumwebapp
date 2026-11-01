@@ -514,6 +514,21 @@ export const ContractorBoqView: React.FC = () => {
             onViewModeChange={setViewMode}
             selectedIds={selectedIds}
             onSelectionChange={setSelectedIds}
+            bulkSecondaryAction={{
+              label: isAr ? 'تصدير جدول المقايسة' : 'Exporter Postes BOQ',
+              icon: <Download size={14} />,
+              onClick: (ids) => {
+                showToast(isAr ? `تم تصدير ${ids.size} بنود من جدول المقايسة` : `${ids.size} postes métrés exportés`);
+              },
+            }}
+            onBulkDelete={(ids) => {
+              ids.forEach((id) => deleteBoqItem(id));
+              setSelectedIds(new Set());
+              if (selectedItem && ids.has(selectedItem.id)) {
+                setSelectedItem(null);
+              }
+              showToast(isAr ? 'تم حذف البنود المحددة' : 'Postes BOQ supprimés');
+            }}
             pinnedIds={pinnedIds}
             onPinToggle={handlePin}
             sortBy={sortBy}

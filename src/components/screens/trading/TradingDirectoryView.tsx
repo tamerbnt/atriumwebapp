@@ -20,6 +20,7 @@ import {
   Sparkles,
   AlertCircle,
   TrendingUp,
+  Download,
 } from 'lucide-react';
 import { useAtriumStore } from '../../../services/store';
 import { B2bClient, B2bSupplier } from '../../../types';
@@ -53,9 +54,11 @@ export const TradingDirectoryView: React.FC = () => {
     retryCloudSync,
     lastSyncedAt,
     isSyncTimeout,
+    showToast,
   } = useAtriumStore();
 
   const [mode, setMode] = useState<DirectoryMode>('clients');
+  const [selectedEntityIds, setSelectedEntityIds] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedEntity, setSelectedEntity] = useState<B2bClient | B2bSupplier | null>(null);
   const [isFacilityDropdownOpen, setIsFacilityDropdownOpen] = useState(false);
@@ -540,6 +543,7 @@ export const TradingDirectoryView: React.FC = () => {
                   onClick={() => {
                     setMode('clients');
                     setSelectedEntity(null);
+                    setSelectedEntityIds(new Set());
                   }}
                   className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
                     mode === 'clients'
@@ -560,6 +564,7 @@ export const TradingDirectoryView: React.FC = () => {
                   onClick={() => {
                     setMode('suppliers');
                     setSelectedEntity(null);
+                    setSelectedEntityIds(new Set());
                   }}
                   className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
                     mode === 'suppliers'
@@ -608,6 +613,23 @@ export const TradingDirectoryView: React.FC = () => {
                   isTimedOut={isSyncTimeout}
                   lastSyncedAt={lastSyncedAt}
                   onRetrySync={retryCloudSync}
+                  selectedIds={selectedEntityIds}
+                  onSelectionChange={setSelectedEntityIds}
+                  bulkSecondaryAction={{
+                    label: language === 'ar' ? 'تصدير الشركاء' : 'Exporter Partenaires',
+                    icon: <Download size={14} />,
+                    onClick: (ids) => {
+                      showToast(language === 'ar' ? `تم تصدير ${ids.size} شركاء بنجاح` : `${ids.size} partenaires exportés en CSV`);
+                    },
+                  }}
+                  onBulkDelete={(ids) => {
+                    ids.forEach((id) => deleteB2bClient(id));
+                    setSelectedEntityIds(new Set());
+                    if (selectedEntity && ids.has(selectedEntity.id)) {
+                      setSelectedEntity(null);
+                    }
+                    showToast(language === 'ar' ? 'تم حذف الشركاء المحددين' : 'Partenaires sélectionnés supprimés');
+                  }}
                   onItemClick={(c) => setSelectedEntity(c)}
                   onViewDetails={(c) => setSelectedEntity(c)}
                   onEdit={(c) => {
@@ -698,6 +720,23 @@ export const TradingDirectoryView: React.FC = () => {
                   items={filteredSuppliers}
                   keyExtractor={(s) => s.id}
                   columns={supplierColumns}
+                  selectedIds={selectedEntityIds}
+                  onSelectionChange={setSelectedEntityIds}
+                  bulkSecondaryAction={{
+                    label: language === 'ar' ? 'تصدير الموردين' : 'Exporter Fournisseurs',
+                    icon: <Download size={14} />,
+                    onClick: (ids) => {
+                      showToast(language === 'ar' ? `تم تصدير ${ids.size} موردين بنجاح` : `${ids.size} fournisseurs exportés en CSV`);
+                    },
+                  }}
+                  onBulkDelete={(ids) => {
+                    ids.forEach((id) => deleteB2bSupplier(id));
+                    setSelectedEntityIds(new Set());
+                    if (selectedEntity && ids.has(selectedEntity.id)) {
+                      setSelectedEntity(null);
+                    }
+                    showToast(language === 'ar' ? 'تم حذف الموردين المحددين' : 'Fournisseurs sélectionnés supprimés');
+                  }}
                   onItemClick={(s) => setSelectedEntity(s)}
                   onViewDetails={(s) => setSelectedEntity(s)}
                   onEdit={(s) => {

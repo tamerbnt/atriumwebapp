@@ -951,6 +951,27 @@ export const EducationStudentsView: React.FC = () => {
         isPinned={(student) => pinnedStudentIds.has(student.id)}
         selectedIds={selectedStudentIds}
         onSelectionChange={setSelectedStudentIds}
+        bulkSecondaryAction={{
+          label: language === 'ar' ? 'تفعيل الطلبة' : language === 'fr' ? 'Activer sélection' : 'Activate Selected',
+          icon: <Check size={13} />,
+          onClick: (ids) => {
+            ids.forEach((id) => updateEduStudent(id, { status: 'Active' }));
+            showToast?.({
+              type: 'success',
+              title: language === 'ar' ? 'تم التحديث' : 'Mise à jour',
+              message: `${ids.size} ${language === 'ar' ? 'طلبة تم تفعيلهم' : 'étudiants activés'}.`,
+            });
+          },
+          variant: 'primary',
+        }}
+        onBulkDelete={(ids) => {
+          ids.forEach((id) => deleteEduStudent(id));
+          showToast?.({
+            type: 'info',
+            title: language === 'ar' ? 'حذف الطلبة' : 'Étudiants retirés',
+            message: `${ids.size} ${language === 'ar' ? 'طلبة تم حذفهم' : 'étudiants supprimés'}.`,
+          });
+        }}
         emptyTitle={t('edu_no_students_enrolled')}
         emptyDescription={t('edu_no_students_enrolled')}
         primaryActionLabel={t('edu_modal_add_student')}

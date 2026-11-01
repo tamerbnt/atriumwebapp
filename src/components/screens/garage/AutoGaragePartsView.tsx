@@ -600,6 +600,19 @@ export const AutoGaragePartsView: React.FC = () => {
             onViewModeChange={setViewMode}
             selectedIds={selectedIds}
             onSelectionChange={setSelectedIds}
+            bulkSecondaryAction={{
+              label: isAr ? 'إعادة طلب groupé' : 'Réassort groupé',
+              icon: <Plus size={14} />,
+              onClick: (ids) => {
+                showToast(isAr ? `تم تحضير أمر إعادة تموين لـ ${ids.size} قطع` : `Réassort préparé pour ${ids.size} références`);
+              },
+            }}
+            onBulkDelete={(ids) => {
+              ids.forEach((id) => deletePart(id));
+              setSelectedIds(new Set());
+              if (selectedPart && ids.has(selectedPart.id)) setSelectedPart(null);
+              showToast(isAr ? 'تم حذف القطع المحددة' : 'Pièces sélectionnées supprimées');
+            }}
             pinnedIds={pinnedIds}
             onPinToggle={handlePin}
             sortBy={sortBy}

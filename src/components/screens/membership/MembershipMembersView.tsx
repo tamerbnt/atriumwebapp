@@ -804,6 +804,27 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
               ]}
               selectedIds={selectedMemberIds}
               onSelectionChange={setSelectedMemberIds}
+              bulkSecondaryAction={{
+                label: language === 'ar' ? 'تفعيل المشتركين' : language === 'fr' ? 'Activer sélection' : 'Activate Selected',
+                icon: <Check size={13} />,
+                onClick: (ids) => {
+                  ids.forEach((id) => updateMember(id, { status: 'Active' }));
+                  showToast({
+                    type: 'success',
+                    title: language === 'ar' ? 'تم التحديث' : 'Mise à jour effectuée',
+                    message: `${ids.size} ${language === 'ar' ? 'مشتركين تم تفعيلهم' : 'adhérents activés'}.`,
+                  });
+                },
+                variant: 'primary',
+              }}
+              onBulkDelete={(ids) => {
+                ids.forEach((id) => deleteMember(id));
+                showToast({
+                  type: 'info',
+                  title: language === 'ar' ? 'حذف المشتركين' : 'Adhérents supprimés',
+                  message: `${ids.size} ${language === 'ar' ? 'مشتركين تم حذفهم' : 'adhérents retirés'}.`,
+                });
+              }}
               isPinned={(member) => pinnedMemberIds.has(member.id)}
               isActive={(member) => member.status === 'Active'}
               sortBy={memberSortBy}

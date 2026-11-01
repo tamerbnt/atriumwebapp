@@ -52,6 +52,7 @@ export const MembershipSchedulerView: React.FC = () => {
     isSyncTimeout,
     lastSyncedAt,
     retryCloudSync,
+    batchDeleteScheduleEvents,
   } = useAtriumStore();
 
   const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
@@ -572,7 +573,7 @@ export const MembershipSchedulerView: React.FC = () => {
             keyExtractor={(e) => e.id}
             defaultViewMode="list"
             showCalendarToggle={true}
-            onViewModeChange={(mode) => {
+            onViewModeChange={(mode: 'list' | 'grid' | 'calendar') => {
               if (mode === 'calendar') setMainViewMode('timeline');
             }}
             bulkSecondaryAction={{
@@ -588,7 +589,7 @@ export const MembershipSchedulerView: React.FC = () => {
               variant: 'primary',
             }}
             onBulkDelete={(ids) => {
-              setEvents((prev) => prev.filter((e) => !ids.has(e.id)));
+              batchDeleteScheduleEvents(Array.from(ids));
               showToast({
                 type: 'info',
                 title: 'Sessions supprimées',

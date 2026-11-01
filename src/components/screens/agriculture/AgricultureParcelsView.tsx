@@ -524,6 +524,21 @@ export const AgricultureParcelsView: React.FC = () => {
             onViewModeChange={setViewMode}
             selectedIds={selectedIds}
             onSelectionChange={setSelectedIds}
+            bulkSecondaryAction={{
+              label: isAr ? 'تصدير السجل العقاري' : 'Exporter Parcelles',
+              icon: <Download size={14} />,
+              onClick: (ids) => {
+                showToast(isAr ? `تم تصدير بيانات ${ids.size} قطع فلاحية` : `${ids.size} parcelles exportées en CSV`);
+              },
+            }}
+            onBulkDelete={(ids) => {
+              ids.forEach((id) => deleteParcel(id));
+              setSelectedIds(new Set());
+              if (selectedParcel && ids.has(selectedParcel.id)) {
+                setSelectedParcel(null);
+              }
+              showToast(isAr ? 'تم حذف القطع الفلاحية المحددة' : 'Parcelles sélectionnées supprimées');
+            }}
             pinnedIds={pinnedIds}
             onPinToggle={handlePin}
             sortBy={sortBy}

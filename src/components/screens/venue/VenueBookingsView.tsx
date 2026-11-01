@@ -864,7 +864,7 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({ hideHeader
             selectedIds={selectedBookingIds}
             onSelectionChange={setSelectedBookingIds}
             showCalendarToggle={!!onSwitchToTimeline}
-            onViewModeChange={(m) => {
+            onViewModeChange={(m: 'list' | 'grid' | 'calendar') => {
               if (m === 'calendar' && onSwitchToTimeline) {
                 onSwitchToTimeline();
               }

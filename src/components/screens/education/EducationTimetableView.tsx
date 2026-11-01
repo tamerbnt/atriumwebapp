@@ -62,6 +62,7 @@ export const EducationTimetableView: React.FC = () => {
   const [selectedClassroomId, setSelectedClassroomId] = useState<string>('all');
   const [isAddSessionModalOpen, setIsAddSessionModalOpen] = useState(false);
   const [selectedSession, setSelectedSession] = useState<EduSession | null>(null);
+  const [selectedSessionIds, setSelectedSessionIds] = useState<Set<string>>(new Set());
   const [inspectorTab, setInspectorTab] = useState<'seance' | 'salle' | 'emargement'>('seance');
   const [isRollCallOpen, setIsRollCallOpen] = useState(false);
   const [rollCallSession, setRollCallSession] = useState<EduSession | null>(null);
@@ -347,6 +348,23 @@ export const EducationTimetableView: React.FC = () => {
               subtitle={isAr ? 'توزيع القاعات، الأفواج والمدربين' : 'Suivi des cours, créneaux horaires et feuilles d’émargement'}
               items={filteredSessions}
               keyExtractor={(s) => s.id}
+              selectedIds={selectedSessionIds}
+              onSelectionChange={setSelectedSessionIds}
+              bulkSecondaryAction={{
+                label: isAr ? 'مناداة الحضور' : 'Feuille d’émargement',
+                icon: <ClipboardList size={14} />,
+                onClick: (ids) => {
+                  showToast(isAr ? `تم تجهيز أوراق الحضور لـ ${ids.size} حصص` : `Feuilles d'émargement prêtes pour ${ids.size} séances`);
+                },
+              }}
+              onBulkDelete={(ids) => {
+                ids.forEach((id) => deleteEduSession(id));
+                setSelectedSessionIds(new Set());
+                if (selectedSession && ids.has(selectedSession.id)) {
+                  setSelectedSession(null);
+                }
+                showToast(isAr ? 'تم حذف الحصص المحددة' : 'Séances supprimées du planning');
+              }}
               searchPlaceholder={isAr ? 'بحث بالفوج، القاعة، المدرب...' : 'Rechercher matière, cohorte, salle, formateur...'}
               searchFilter={(s, query) =>
                 (s.topic || '').toLowerCase().includes(query.toLowerCase()) ||

@@ -91,7 +91,10 @@ export interface UniversalDataCollectionProps<T> {
   onFilterChange?: (val: string) => void;
   filterOptions?: { value: string; label: string }[];
   viewMode?: 'list' | 'grid' | 'calendar';
-  onViewModeChange?: (mode: 'list' | 'grid' | 'calendar') => void;
+  onViewModeChange?:
+    | ((mode: 'list' | 'grid' | 'calendar') => void)
+    | React.Dispatch<React.SetStateAction<'list' | 'grid'>>
+    | React.Dispatch<React.SetStateAction<'list' | 'grid' | 'calendar'>>;
 
   // View Mode Switcher Header Control
   showViewToggle?: boolean;
@@ -193,7 +196,7 @@ export function UniversalDataCollection<T>({
   const viewMode = controlledViewMode !== undefined ? controlledViewMode : internalViewMode;
   const setViewMode = (mode: 'list' | 'grid' | 'calendar') => {
     setInternalViewMode(mode);
-    onViewModeChange?.(mode);
+    (onViewModeChange as any)?.(mode);
     if (mode === 'calendar' && onCalendarClick) {
       onCalendarClick();
     }

@@ -551,6 +551,24 @@ export const AutoGarageOrdersView: React.FC = () => {
               searchPlaceholder={isAr ? 'البحث عن رقم الأمر، الماتريكيل أو الزبون...' : 'Recherche par N° OR, matricule ou client...'}
               selectedIds={selectedIds}
               onSelectionChange={setSelectedIds}
+              bulkSecondaryAction={{
+                label: isAr ? 'تقديم المرحلة للمحدد' : 'Avancer étape atelier',
+                icon: <ArrowRight size={14} />,
+                onClick: (ids) => {
+                  ids.forEach((id) => {
+                    const ord = orders.find((o) => o.id === id);
+                    if (ord) handleNextStatus(ord);
+                  });
+                  setSelectedIds(new Set());
+                  showToast(isAr ? 'تم تحديث مرحلة الأوامر المحددة' : 'Statut mis à jour pour la sélection');
+                },
+              }}
+              onBulkDelete={(ids) => {
+                ids.forEach((id) => deleteOrder(id));
+                setSelectedIds(new Set());
+                if (selectedOrder && ids.has(selectedOrder.id)) setSelectedOrder(null);
+                showToast(isAr ? 'تم حذف الأوامر المحددة' : 'Ordres de réparation supprimés');
+              }}
               pinnedIds={pinnedIds}
               onPinToggle={handlePin}
               onItemClick={(order: RepairOrder) => setSelectedOrder(order)}

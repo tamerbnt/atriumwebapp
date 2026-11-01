@@ -19,6 +19,7 @@ import {
   TrendingUp,
   Receipt,
   Boxes,
+  Download,
 } from 'lucide-react';
 import { useAtriumStore } from '../../../services/store';
 import { CommercialDocument, CommercialDocType } from '../../../types';
@@ -51,7 +52,10 @@ export const TradingSalesView: React.FC = () => {
     retryCloudSync,
     lastSyncedAt,
     isSyncTimeout,
+    showToast,
   } = useAtriumStore();
+
+  const [selectedDocIds, setSelectedDocIds] = useState<Set<string>>(new Set());
 
   const [activeTab, setActiveTab] = useState<TabKey>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -617,6 +621,28 @@ export const TradingSalesView: React.FC = () => {
               isTimedOut={isSyncTimeout}
               lastSyncedAt={lastSyncedAt}
               onRetrySync={retryCloudSync}
+              selectedIds={selectedDocIds}
+              onSelectionChange={setSelectedDocIds}
+              bulkSecondaryAction={{
+                label: language === 'ar' ? 'تصدير المستندات' : 'Exporter Pièces',
+                icon: <Download size={13} />,
+                onClick: (ids) => {
+                  showToast?.({
+                    type: 'info',
+                    title: 'Export commercial',
+                    message: `${ids.size} pièces sélectionnées pour l'export.`,
+                  });
+                },
+                variant: 'primary',
+              }}
+              onBulkDelete={(ids) => {
+                ids.forEach((id) => deleteCommercialDoc(id));
+                showToast?.({
+                  type: 'info',
+                  title: 'Pièces commerciales supprimées',
+                  message: `${ids.size} documents retirés.`,
+                });
+              }}
               renderCard={(doc) => (
                 <div className="p-4 border border-neutral-200 dark:border-neutral-700 rounded-xl space-y-2">
                   <div className="flex items-center justify-between">

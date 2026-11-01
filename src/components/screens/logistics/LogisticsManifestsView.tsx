@@ -523,6 +523,26 @@ export const LogisticsManifestsView: React.FC = () => {
             onViewModeChange={setViewMode}
             selectedIds={selectedIds}
             onSelectionChange={setSelectedIds}
+            bulkSecondaryAction={{
+              label: isAr ? 'إغلاق المسارات' : 'Clôturer tournées',
+              icon: <CheckCircle2 size={14} />,
+              onClick: (ids) => {
+                ids.forEach((id) => {
+                  const m = manifests.find((item) => item.id === id);
+                  if (m) handleCloseTournee(m);
+                });
+                setSelectedIds(new Set());
+                showToast(isAr ? 'تم إغلاق المسارات المحددة' : 'Tournées clôturées avec succès');
+              },
+            }}
+            onBulkDelete={(ids) => {
+              ids.forEach((id) => deleteManifest(id));
+              setSelectedIds(new Set());
+              if (selectedManifest && ids.has(selectedManifest.id)) {
+                setSelectedManifest(null);
+              }
+              showToast(isAr ? 'تم حذف أوراق الطريق المحددة' : 'Manifestes sélectionnés supprimés');
+            }}
             pinnedIds={pinnedIds}
             onPinToggle={handlePin}
             sortBy={sortBy}

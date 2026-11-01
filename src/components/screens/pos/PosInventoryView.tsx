@@ -1125,31 +1125,6 @@ export const PosInventoryView: React.FC = () => {
                 </div>
               </div>
 
-        {/* Batch Actions Toolbar */}
-        {selectedProductIds.size > 0 && (
-          <div className="flex items-center gap-2 p-1 px-3 bg-neutral-900 text-white rounded-xl shadow-md text-xs">
-            <span className="font-bold">
-              {selectedProductIds.size} {language === 'ar' ? 'محدد' : 'sélectionnés'}
-            </span>
-            <button
-              type="button"
-              onClick={() => setIsBatchRestockModalOpen(true)}
-              className="px-2.5 py-1 rounded-lg bg-[#C4785A] hover:opacity-90 font-bold flex items-center gap-1 cursor-pointer"
-            >
-              <ArrowDownUp size={12} />
-              <span>{language === 'ar' ? 'تموين جماعي' : 'Réassort groupé'}</span>
-            </button>
-            <button
-              type="button"
-              onClick={handleBatchDelete}
-              className="px-2.5 py-1 rounded-lg bg-red-600 hover:bg-red-700 font-bold flex items-center gap-1 cursor-pointer"
-            >
-              <Trash2 size={12} />
-              <span>{language === 'ar' ? 'حذف' : 'Supprimer'}</span>
-            </button>
-          </div>
-        )}
-
         {/* Collection Floating on Pod Tray */}
         <div className="w-full">
           {/* UniversalDataCollection: Products */}
@@ -1163,6 +1138,15 @@ export const PosInventoryView: React.FC = () => {
             isTimedOut={isSyncTimeout}
             lastSyncedAt={lastSyncedAt}
             onRetrySync={retryCloudSync}
+            selectedIds={selectedProductIds}
+            onSelectionChange={setSelectedProductIds}
+            bulkSecondaryAction={{
+              label: language === 'ar' ? 'تموين جماعي' : 'Réassort groupé',
+              icon: <ArrowDownUp size={13} />,
+              onClick: () => setIsBatchRestockModalOpen(true),
+              variant: 'primary',
+            }}
+            onBulkDelete={handleBatchDelete}
             sortBy={invSortBy}
             sortDirection={invSortDir}
         onSortChange={(key) => {

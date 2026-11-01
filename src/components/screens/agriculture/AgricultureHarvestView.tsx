@@ -39,7 +39,7 @@ import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 
 export const AgricultureHarvestView: React.FC = () => {
-  const { language, currentBusiness, currentBranch, currentUser, isSyncing, networkMode, retryCloudSync, lastSyncedAt } = useAtriumStore();
+  const { language, currentBusiness, currentBranch, currentUser, isSyncing, networkMode, retryCloudSync, lastSyncedAt, showToast } = useAtriumStore();
   const isAr = language === 'ar';
 
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
@@ -727,6 +727,19 @@ export const AgricultureHarvestView: React.FC = () => {
             onViewModeChange={setViewMode}
             selectedIds={selectedIds}
             onSelectionChange={setSelectedIds}
+            bulkSecondaryAction={{
+              label: isAr ? 'تصدير وصولات الوزن' : 'Exporter Bons',
+              icon: <Download size={14} />,
+              onClick: (ids) => {
+                showToast(isAr ? `تم تصدير ${ids.size} وصولات وزن بنجاح` : `${ids.size} bons de pesée exportés`);
+              },
+            }}
+            onBulkDelete={(ids) => {
+              ids.forEach((id) => deleteHarvestTicket(id));
+              setSelectedIds(new Set());
+              if (selectedTicket && ids.has(selectedTicket.id)) setSelectedTicket(null);
+              showToast(isAr ? 'تم حذف وصولات الوزن المحددة' : 'Bons de pesée supprimés');
+            }}
             pinnedIds={pinnedIds}
             onPinToggle={handlePin}
             sortBy={sortBy}

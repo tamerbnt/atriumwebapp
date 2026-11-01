@@ -2119,6 +2119,40 @@ export function useAtriumStore() {
     });
   };
 
+  const deleteSale = (saleId: string) => {
+    globalState = {
+      ...globalState,
+      sales: globalState.sales.filter((s) => s.id !== saleId),
+    };
+    notify();
+  };
+
+  const batchDeleteSales = (saleIds: string[]) => {
+    const idSet = new Set(saleIds);
+    globalState = {
+      ...globalState,
+      sales: globalState.sales.filter((s) => !idSet.has(s.id)),
+    };
+    notify();
+  };
+
+  const deleteScheduleEvent = (eventId: string) => {
+    globalState = {
+      ...globalState,
+      schedule: (globalState.schedule || []).filter((sc) => sc.id !== eventId),
+    };
+    notify();
+  };
+
+  const batchDeleteScheduleEvents = (eventIds: string[]) => {
+    const idSet = new Set(eventIds);
+    globalState = {
+      ...globalState,
+      schedule: (globalState.schedule || []).filter((sc) => !idSet.has(sc.id)),
+    };
+    notify();
+  };
+
   const parkOrder = (
     orderData: Omit<ParkedOrder, 'id' | 'createdAt' | 'tenantId' | 'facilityId'>
   ) => {
@@ -7662,6 +7696,10 @@ export function useAtriumStore() {
     deleteProduct,
     processSale,
     refundSale,
+    deleteSale,
+    batchDeleteSales,
+    deleteScheduleEvent,
+    batchDeleteScheduleEvents,
     adjustStock,
     parkOrder,
     resumeParkedOrder,

@@ -48,6 +48,7 @@ export const PosOrdersView: React.FC = () => {
     resumeParkedOrder,
     deleteParkedOrder,
     refundSale,
+    batchDeleteSales,
     receiptConfig,
     currentUser,
     resetPosMockData,
@@ -859,7 +860,7 @@ export const PosOrdersView: React.FC = () => {
                   variant: 'primary',
                 }}
                 onBulkDelete={(ids) => {
-                  setSales((prev) => prev.filter((s) => !ids.has(s.id)));
+                  batchDeleteSales(Array.from(ids));
                   showToast({
                     type: 'info',
                     title: 'Tickets archivés',
