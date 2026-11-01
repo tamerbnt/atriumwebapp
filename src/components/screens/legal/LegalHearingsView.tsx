@@ -1,516 +1,1037 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Calendar,
-  Plus,
   Clock,
-  Landmark,
-  CheckCircle2,
-  ShieldCheck,
   Scale,
-  Printer,
-  Eye,
-  Check,
-  X,
+  Gavel,
+  AlertTriangle,
+  Building2,
   FileText,
+  UserCheck,
+  Plus,
+  ShieldCheck,
+  CheckCircle2,
+  Bookmark,
+  Pin,
+  Trash2,
+  Edit,
+  X,
+  Save,
+  Check,
+  Layers,
+  ArrowRight,
+  Send,
+  Download,
   AlertCircle,
+  FileCheck,
+  Landmark,
   Briefcase,
   Users,
-  LayoutGrid,
-  List,
-  AlertTriangle,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../../services/store';
+import { LegalHearing, CPCADeadline } from '../../../types';
 import { useLegalData } from './legalData';
 import { AtriumButton } from '../../ui/AtriumButton';
-import { LegalHearing, CPCADeadline } from '../../../types';
-import { UniversalDataCollection } from '../../ui/collection/UniversalDataCollection';
+import { Seek } from '../../ui/Seek';
+import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { ActionButtonDef } from '../../ui/collection/CollectionListRow';
-import { CpcaDeadlineModal } from '../../modals/CpcaDeadlineModal';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
+import { CpcaDeadlineModal } from '../../modals/CpcaDeadlineModal';
+import { LabelInput } from '../../ui/LabelInput';
+import { LabelSelect } from '../../ui/LabelSelect';
 
 export const LegalHearingsView: React.FC = () => {
   const { language, activeLegalRole, isSyncing, networkMode, retryCloudSync } = useAtriumStore();
   const isAr = language === 'ar';
   const {
     hearings,
-    deadlines,
     matters,
-    updateHearing,
+    deadlines,
     addHearing,
+    updateHearing,
+    deleteHearing,
     addCPCADeadline,
-    updateCPCADeadline,
   } = useLegalData();
 
-  const [activeWorkflowView, setActiveWorkflowView] = useState<'audiences' | 'cpca_radar'>('audiences');
-  const [selectedHearing, setSelectedHearing] = useState<LegalHearing | null>(null);
-  const [selectedDeadline, setSelectedDeadline] = useState<CPCADeadline | null>(null);
-  const [isCpcaModalOpen, setIsCpcaModalOpen] = useState(false);
-  const [inspectorTab, setInspectorTab] = useState<'fiche' | 'magistrats' | 'delibere'>('fiche');
-
-  const pendingHearings = hearings.filter((h) => !h.isCompleted).length;
-  const criticalDeadlines = deadlines.filter((d) => d.status === 'critical' || d.status === 'approaching').length;
-
-  const toggleHearingCompleted = (hearing: LegalHearing) => {
-    const updated: LegalHearing = {
-      ...hearing,
-      isCompleted: !hearing.isCompleted,
-      resultSummary: !hearing.isCompleted ? 'Audience tenue & plaidée au fond' : 'En attente d’audience',
-    };
-    updateHearing(updated);
-    if (selectedHearing?.id === hearing.id) {
-      setSelectedHearing(updated);
-    }
-    showToast(
-      isAr
-        ? updated.isCompleted ? 'تم تسجيل حضور ومرافعة الجلسة' : 'تمت إعادة تعيين الجلسة كقادمة'
-        : updated.isCompleted ? 'Audience marquée comme plaidée' : 'Audience replacée en attente',
-      'success'
-    );
-  };
-
-  const markDeadlineFiled = (deadline: CPCADeadline) => {
-    const receiptNum = prompt(
-      isAr ? 'أدخل رقم إيداع عريضة الطعن لدى كتابة الضبط:' : 'Numéro d\'enregistrement de la requête d\'appel au Greffe :'
-    );
-    if (!receiptNum) return;
-
-    const updated: CPCADeadline = {
-      ...deadline,
-      status: 'filed',
-      appealFilingReceipt: {
-        filingDate: new Date().toISOString().split('T')[0],
-        greffeRegistrationNumber: receiptNum,
-        greffierName: 'Greffier en chef',
-      },
-    };
-    updateCPCADeadline(updated);
-    showToast(
-      isAr
-        ? `تم تسجيل إيداع الطعن تحت رقم ${receiptNum} وتبرئة الأجل القانوني`
-        : `Recours d'appel déposé au Greffe sous le n° ${receiptNum}. Délai CPCA régularisé.`,
-      'success'
-    );
-  };
-
-  const getHearingActions = (hearing: LegalHearing): ActionButtonDef[] => [
-    {
-      label: isAr ? 'معاينة الجلسة' : 'Consulter Fiche',
-      icon: <Eye size={14} />,
-      onClick: () => setSelectedHearing(hearing),
-    },
-    {
-      label: hearing.isCompleted ? (isAr ? 'إعادة للجدول' : 'Replacer') : (isAr ? 'تمت المرافعة' : 'Plaider'),
-      icon: <Check size={14} />,
-      onClick: () => toggleHearingCompleted(hearing),
-    },
-    {
-      label: isAr ? 'ورقة الجلسة' : 'Fiche d’Audience',
-      icon: <Printer size={14} />,
-      onClick: () => {
-        showToast(
-          isAr
-            ? `طباعة بطاقة الجلسة لقضية ${(hearing.matterTitle || '').substring(0, 20)}...`
-            : `Génération de la fiche de plaidoirie (${hearing.courtName || ''})`,
-          'info'
-        );
-      },
-    },
-  ];
-
-  const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
+  const { showSkeleton, isTimedOut, retry } = useSkeletonLoading({
     isLoading: isSyncing || networkMode === 'force_skeleton',
     hasCachedData: hearings.length > 0,
   });
 
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterCategory, setFilterCategory] = useState<string>('All');
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
+  const [hybridView, setHybridView] = useState<'docket' | 'register'>('docket');
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [pinnedIds, setPinnedIds] = useState<Set<string>>(new Set(['hear_01']));
+  const [sortBy, setSortBy] = useState<string>('hearingDate');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
+
+  // Modals & Inspector
+  const [isCpcaModalOpen, setIsCpcaModalOpen] = useState(false);
+  const [isNewHearingModalOpen, setIsNewHearingModalOpen] = useState(false);
+  const [selectedHearing, setSelectedHearing] = useState<LegalHearing | null>(null);
+  const [activeInspectorTab, setActiveInspectorTab] = useState<'audience' | 'procedure' | 'delais' | 'notes'>('audience');
+
+  // New hearing form state
+  const [formMatterId, setFormMatterId] = useState(matters[0]?.id || '');
+  const [formHearingDate, setFormHearingDate] = useState(() => new Date().toISOString().split('T')[0]);
+  const [formHearingTime, setFormHearingTime] = useState('09:30');
+  const [formCourtName, setFormCourtName] = useState('Tribunal de Sidi M\'Hamed');
+  const [formCourtRoom, setFormCourtRoom] = useState('Salle 04');
+  const [formChamber, setFormChamber] = useState('Chambre Commerciale');
+  const [formBenchJudge, setFormBenchJudge] = useState('Président Benalia');
+  const [formPurpose, setFormPurpose] = useState('Plaidoirie sur le fond & communication de pièces');
+  const [formPostponementCode, setFormPostponementCode] = useState('RPP');
+
+  // Filtered hearings
+  const filteredHearings = useMemo(() => {
+    return hearings.filter((h) => {
+      if (filterCategory === 'Scheduled' && h.isCompleted) return false;
+      if (filterCategory === 'Completed' && !h.isCompleted) return false;
+      if (filterCategory === 'Postponed' && h.status !== 'Postponed') return false;
+
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        const mNum = (h.matterNumber || '').toLowerCase().includes(q);
+        const mTitle = (h.matterTitle || '').toLowerCase().includes(q);
+        const court = (h.courtName || '').toLowerCase().includes(q);
+        const judge = (h.benchJudge || '').toLowerCase().includes(q);
+        const purpose = (h.purpose || '').toLowerCase().includes(q);
+        if (!mNum && !mTitle && !court && !judge && !purpose) return false;
+      }
+      return true;
+    });
+  }, [hearings, filterCategory, searchQuery]);
+
+  // Statistics
+  const totalScheduled = useMemo(() => hearings.filter((h) => !h.isCompleted).length, [hearings]);
+  const totalCriticalDeadlines = useMemo(
+    () => deadlines.filter((d) => d.status === 'approaching' || d.status === 'critical').length,
+    [deadlines]
+  );
+  const totalCompleted = useMemo(() => hearings.filter((h) => h.isCompleted).length, [hearings]);
+
+  // Handle create hearing
+  const handleCreateHearing = (e: React.FormEvent) => {
+    e.preventDefault();
+    const matter = matters.find((m) => m.id === formMatterId);
+    const newH: LegalHearing = {
+      id: `hear_${Date.now()}`,
+      accountId: 'acc_01',
+      businessId: 'biz_legal',
+      branchId: 'branch_legal_main',
+      staffId: 'staff_01',
+      matterId: formMatterId,
+      matterNumber: matter?.matterNumber || 'DOS-2026-AUTO',
+      matterTitle: matter?.title || 'Dossier Contentieux',
+      matterTitleAr: matter?.titleAr,
+      hearingDate: formHearingDate,
+      hearingTime: formHearingTime,
+      courtName: formCourtName,
+      courtRoom: formCourtRoom,
+      chamber: formChamber,
+      benchJudge: formBenchJudge,
+      purpose: formPurpose,
+      purposeAr: isAr ? 'مرافعة وتبادل المذكرات' : undefined,
+      resultSummary: 'En cours d\'instruction',
+      postponementCode: formPostponementCode,
+      isCompleted: false,
+      status: 'Scheduled',
+    };
+
+    addHearing(newH);
+    showToast(isAr ? 'تمت إضافة الجلسة القضائية بنجاح' : 'Audience judiciaire programmée avec succès', 'success');
+    setIsNewHearingModalOpen(false);
+  };
+
+  // UDC Columns Definition
+  const hearingColumns: ColumnDefinition<LegalHearing>[] = useMemo(
+    () => [
+      {
+        key: 'hearingDate',
+        header: isAr ? 'تاريخ وساعة الجلسة' : 'Date, Heure & Salle',
+        width: '2.5*',
+        sortable: true,
+        renderCell: (h) => (
+          <div className="flex items-center gap-3 min-w-0 pr-2">
+            <div className="w-10 h-10 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 text-[#C4785A] font-bold text-xs flex items-center justify-center shrink-0 border border-[#F5E2D8] dark:border-neutral-700 shadow-2xs">
+              <Calendar size={18} />
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-neutral-900 dark:text-white truncate">
+                  {h.hearingDate} {h.hearingTime ? `à ${h.hearingTime}` : ''}
+                </span>
+                {pinnedIds.has(h.id) && <span className="text-[10px] text-amber-500 font-bold">📌 VIP</span>}
+              </div>
+              <div className="text-[11px] text-neutral-400 font-mono mt-0.5">
+                {h.courtRoom || 'Salle d\'Audience'} · {h.chamber || 'Chambre'}
+              </div>
+            </div>
+          </div>
+        ),
+      },
+      {
+        key: 'courtName',
+        header: isAr ? 'المحكمة وهيئة الحكم' : 'Juridiction & Siège',
+        width: '3*',
+        renderCell: (h) => (
+          <div className="text-xs">
+            <div className="font-semibold text-neutral-800 dark:text-neutral-200 truncate">
+              {h.courtName}
+            </div>
+            <div className="text-[10px] text-neutral-400 font-mono mt-0.5">
+              {h.benchJudge || 'Président de Chambre'}
+            </div>
+          </div>
+        ),
+      },
+      {
+        key: 'matter',
+        header: isAr ? 'رقم القضية والموضوع' : 'Dossier & Objet Litige',
+        width: '3*',
+        renderCell: (h) => (
+          <div className="text-xs">
+            <div className="font-bold font-mono text-[#C4785A] truncate">
+              {h.matterNumber}
+            </div>
+            <div className="text-neutral-700 dark:text-neutral-300 truncate text-[11px] mt-0.5">
+              {isAr && h.matterTitleAr ? h.matterTitleAr : h.matterTitle}
+            </div>
+          </div>
+        ),
+      },
+      {
+        key: 'purpose',
+        header: isAr ? 'الهدف / المرافعة' : 'Démarche & Décision',
+        width: '2.5*',
+        renderCell: (h) => (
+          <div className="text-xs">
+            <div className="font-medium text-neutral-900 dark:text-white truncate">
+              {h.purpose || 'Plaidoirie sur le fond'}
+            </div>
+            <div className="text-[10px] text-neutral-400 font-mono mt-0.5">
+              {h.resultSummary || 'En attente'}
+            </div>
+          </div>
+        ),
+      },
+      {
+        key: 'status',
+        header: isAr ? 'الوضعية والكود' : 'Statut & Renvoi',
+        width: '1.8*',
+        renderCell: (h) => {
+          const isDone = h.isCompleted;
+          return (
+            <div className="flex flex-col gap-0.5">
+              <span
+                className={`text-[10px] font-semibold px-2 py-0.5 rounded-full inline-block text-center ${
+                  isDone
+                    ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400'
+                    : 'bg-amber-500/15 text-amber-700 dark:text-amber-400'
+                }`}
+              >
+                {isDone ? (isAr ? 'تمت' : 'Plaidée') : (isAr ? 'مبرمجة' : 'Fixée')}
+              </span>
+              {h.postponementCode && (
+                <span className="text-[9px] font-mono font-bold text-neutral-500 text-center">
+                  Code: {h.postponementCode}
+                </span>
+              )}
+            </div>
+          );
+        },
+      },
+    ],
+    [isAr, pinnedIds]
+  );
+
+  // Custom action arc generator
+  const getCustomActions = (h: LegalHearing): ActionButtonDef[] => {
+    return [
+      {
+        id: 'inspect',
+        label: isAr ? 'تفاصيل الجلسة' : 'Fiche Audience',
+        icon: <FileText size={14} />,
+        onClick: () => setSelectedHearing(h),
+      },
+      {
+        id: 'renvoi',
+        label: isAr ? 'تأجيل الجلسة (RPP)' : 'Reporter (Renvoi)',
+        icon: <Clock size={14} />,
+        onClick: () => {
+          updateHearing({
+            ...h,
+            postponementCode: 'RPP',
+            status: 'Postponed',
+            resultSummary: 'Renvoi accordé pour production de pièces adverses',
+          });
+          showToast(isAr ? 'تم تسجيل تأجيل الجلسة (RPP)' : 'Renvoi pour pièces (RPP) enregistré', 'info');
+        },
+      },
+      {
+        id: 'plead',
+        label: isAr ? 'تمت المرافعة' : 'Déclarer Plaidée',
+        icon: <Gavel size={14} />,
+        onClick: () => {
+          updateHearing({
+            ...h,
+            isCompleted: true,
+            status: 'Attended',
+            resultSummary: 'Plaidée sur le fond. En attente de délibéré.',
+          });
+          showToast(isAr ? 'تم تسجيل مرافعة القضية' : 'Audience plaidée avec succès', 'success');
+        },
+      },
+      {
+        id: 'delibere',
+        label: isAr ? 'حجز للمداولة' : 'Mise en Délibéré',
+        icon: <CheckCircle2 size={14} />,
+        onClick: () => {
+          updateHearing({
+            ...h,
+            postponementCode: 'DELIB',
+            resultSummary: 'Affaire mise en délibéré pour prononcé de jugement',
+          });
+          showToast(isAr ? 'تم حجز القضية للمداولة' : 'Affaire mise en délibéré', 'success');
+        },
+      },
+      {
+        id: 'pin',
+        label: pinnedIds.has(h.id) ? (isAr ? 'إلغاء التثبيت' : 'Désépingler') : (isAr ? 'تثبيت VIP' : 'Épingler VIP'),
+        icon: <Pin size={14} />,
+        onClick: () => {
+          setPinnedIds((prev) => {
+            const next = new Set(prev);
+            if (next.has(h.id)) next.delete(h.id);
+            else next.add(h.id);
+            return next;
+          });
+        },
+      },
+      {
+        id: 'delete',
+        label: isAr ? 'حذف' : 'Supprimer',
+        icon: <Trash2 size={14} />,
+        variant: 'danger',
+        onClick: () => {
+          deleteHearing(h.id);
+          showToast(isAr ? 'تم حذف الجلسة' : 'Audience retirée du rôle', 'info');
+        },
+      },
+    ];
+  };
+
+  // Render Skeleton while loading
   if (showSkeleton && (hearings.length === 0 || networkMode === 'force_skeleton')) {
     return (
       <SkeletonCollectionScreen
-        kpiCount={4}
-        columns={[
-          { width: '2.5*', minWidth: '180px' },
-          { width: '1.5*', minWidth: '120px' },
-          { width: '1.5*', minWidth: '120px' },
-          { width: '1.2*', minWidth: '100px' },
-          { width: '100px', minWidth: '80px' },
-        ]}
-        viewMode="list"
-        isOffline={isOffline}
+        kpiCount={3}
         isTimedOut={isTimedOut}
-        onRetry={retryCloudSync || retry}
+        onRetry={retryCloudSync}
       />
     );
   }
 
+  // Grouped hearings by Date for the Docket View
+  const hearingsByDate = filteredHearings.reduce<Record<string, LegalHearing[]>>((acc, h) => {
+    const key = h.hearingDate || 'Non datée';
+    if (!acc[key]) acc[key] = [];
+    acc[key].push(h);
+    return acc;
+  }, {});
+
   return (
-    <div className="space-y-6 animate-in fade-in duration-200">
-      {/* Top Header Strip with Action Toolbar */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold shadow-xs">
-            <Calendar size={22} />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-xl font-bold text-neutral-900 dark:text-white">
-                {activeLegalRole === 'notaire_titulaire'
-                  ? (isAr ? 'متابعة الشهر العقاري ورادار المحافظة العقارية' : 'Conservation Foncière & Calendrier Cadastral')
-                  : activeLegalRole === 'expert_comptable'
-                  ? (isAr ? 'رزنامة التصريحات الجبائية G50 وCNAS' : 'Échéancier Fiscal G50, IBS & CNAS')
-                  : activeLegalRole === 'secretaire_caisse'
-                  ? (isAr ? 'محاضر التبليغ القضائي وسجل المحضرين' : 'Registre des Huissiers & Significations')
-                  : (isAr ? 'الجلسات القضائية ورادار مواعيد CPCA' : 'Rôle des Audiences & Délais Légaux (CPCA)')}
-              </h1>
-              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300">
-                {hearings.length} audiences · {deadlines.length} délais
-              </span>
-            </div>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">
+    <div className="space-y-6">
+      {/* 1. Header & Quick Actions */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-black text-neutral-900 dark:text-white tracking-tight flex items-center gap-2">
+            <Scale className="text-[#C4785A]" size={26} />
+            <span>
               {activeLegalRole === 'notaire_titulaire'
-                ? (isAr ? 'متابعة المهل القانونية للنشر بالمحافظة العقارية والرسوم الإشهارية' : 'Suivi des réquisitions cadastrales et des délais d\'enregistrement trentenaires')
+                ? isAr
+                  ? 'جدول مواعيد المحافظة العقارية والشهر'
+                  : 'Conservation Foncière & Cadastre'
                 : activeLegalRole === 'expert_comptable'
-                ? (isAr ? 'متابعة الأجل الأقصى ليوم 20 من كل شهر (G50 جباية تيك) والتأمينات الاجتماعية' : 'Échéance légale du 20 de chaque mois (G50 Jibayatic) et cotisations CNAS/CASNOS')
+                ? isAr
+                  ? 'رزنامة التصريحات الجبائية والمحاسبية'
+                  : 'Échéancier Fiscal G50 & CNAS'
                 : activeLegalRole === 'secretaire_caisse'
-                ? (isAr ? 'إرسال واستلام أصول التكليف بالحضور مع المحضرين القضائيين' : 'Gestion des significations à personne, exploits d\'huissiers et retours d\'audience')
-                : (isAr
-                    ? 'جدول الجلسات بالمحاكم والمجالس، آجال الاستئناف الحاسمة، وتمديد الجمعة والسبت (المادة 405)'
-                    : 'Calendrier des plaidoiries, composition des chambres et compte à rebours légal Art. 405')}
-            </p>
-          </div>
+                ? isAr
+                  ? 'سجل التبليغات القضائية والمحضرين'
+                  : 'Huissiers de Justice & Formalités'
+                : isAr
+                ? 'رول الجلسات ومواعيد الاستئناف CPCA'
+                : 'Rôle des Audiences & Délais CPCA'}
+            </span>
+          </h1>
+          <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-1">
+            {isAr
+              ? 'متابعة جدول الحضور القضائي، تتبع قرارات التأجيل (RPP/RPO) ورادار المواعيد الإجرائية الرسمية'
+              : 'Audiencier judiciaire, codes de renvoi (RPP / RPO) et radar des délais de recours péremptoires (Loi 08-09)'}
+          </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
-          {/* View Segmented Toggle */}
-          <div className="flex items-center bg-[#F8F9FA] dark:bg-neutral-800/80 p-1 rounded-full border border-neutral-200/80 dark:border-neutral-700/80 shadow-2xs">
-            <button
-              onClick={() => setActiveWorkflowView('audiences')}
-              className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${
-                activeWorkflowView === 'audiences'
-                  ? 'bg-[#C4785A] text-white shadow-xs'
-                  : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900'
-              }`}
-            >
-              <Calendar size={13} />
-              <span>{isAr ? 'جدول الجلسات' : 'Rôle Audiences'}</span>
-            </button>
-            <button
-              onClick={() => setActiveWorkflowView('cpca_radar')}
-              className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${
-                activeWorkflowView === 'cpca_radar'
-                  ? 'bg-[#C4785A] text-white shadow-xs'
-                  : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900'
-              }`}
-            >
-              <Clock size={13} />
-              <span>{isAr ? 'رادار مواعيد CPCA' : 'Radar CPCA'}</span>
-              {criticalDeadlines > 0 && (
-                <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse ml-0.5" />
-              )}
-            </button>
-          </div>
-
+        <div className="flex items-center gap-2 self-end sm:self-auto flex-wrap">
+          <AtriumButton
+            variant="outline"
+            onClick={() => setIsCpcaModalOpen(true)}
+            className="flex items-center gap-2 text-xs"
+          >
+            <Clock size={15} />
+            <span>{isAr ? 'حساب ميعاد CPCA' : 'Calculer Délai CPCA'}</span>
+          </AtriumButton>
           <AtriumButton
             variant="primary"
-            onClick={() => setIsCpcaModalOpen(true)}
-            icon={<Clock size={14} />}
+            onClick={() => setIsNewHearingModalOpen(true)}
+            className="flex items-center gap-2 text-xs"
           >
-            {isAr ? 'تسليح أجل CPCA' : 'Armer Délai CPCA'}
+            <Plus size={15} />
+            <span>{isAr ? 'برمجة جلسة جديدة' : 'Nouvelle Audience'}</span>
           </AtriumButton>
         </div>
       </div>
 
-      {/* Pod Tray KPI Strip */}
-      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-          <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[110px] shadow-2xs">
-            <span className="text-[11px] font-medium text-neutral-500">{isAr ? 'الجلسات القادمة' : 'Audiences en Attente'}</span>
-            <div>
-              <div className="text-2xl font-bold font-mono text-amber-600">{pendingHearings}</div>
-              <p className="text-[10px] text-neutral-400 mt-0.5">{isAr ? 'قضايا مبرمجة بالمحاكم' : 'affaires inscrites au rôle'}</p>
+      {/* 2. Elevated Pod Tray (3 KPIs) */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* KPI 1: Scheduled Hearings */}
+        <div className="bg-[#F8F9FA] dark:bg-neutral-900/60 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800 flex items-center justify-between">
+          <div>
+            <div className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider">
+              {isAr ? 'الجلسات المبرمجة' : 'Audiences Fixées'}
+            </div>
+            <div className="text-2xl font-black text-neutral-900 dark:text-white mt-1">
+              {totalScheduled}
+            </div>
+            <div className="text-[11px] text-[#C4785A] mt-1 font-medium">
+              {isAr ? 'مدرجة برول المحكمة' : 'Inscrites à l\'audiencier'}
             </div>
           </div>
+          <div className="w-12 h-12 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700 flex items-center justify-center text-[#C4785A] shadow-2xs">
+            <Gavel size={22} />
+          </div>
+        </div>
 
-          <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[110px] shadow-2xs">
-            <span className="text-[11px] font-medium text-neutral-500">{isAr ? 'مواعيد الاستئناف الحرجة' : 'Délais CPCA Critiques (<=48h)'}</span>
-            <div>
-              <div className="text-2xl font-bold font-mono text-rose-600">{criticalDeadlines}</div>
-              <p className="text-[10px] text-rose-600/80 mt-0.5">{isAr ? 'تتطلب إيداع عريضة فوري' : 'dépôt urgent au greffe requis'}</p>
+        {/* KPI 2: CPCA Critical Deadlines */}
+        <div className="bg-[#F8F9FA] dark:bg-neutral-900/60 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800 flex items-center justify-between">
+          <div>
+            <div className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider">
+              {isAr ? 'مواعيد استئناف عاجلة' : 'Délais CPCA Actifs'}
+            </div>
+            <div className="text-2xl font-black text-amber-600 dark:text-amber-400 mt-1">
+              {totalCriticalDeadlines}
+            </div>
+            <div className="text-[11px] text-amber-600 dark:text-amber-400 mt-1 font-medium">
+              {isAr ? 'خطر السقوط (Loi 08-09)' : 'Péremption surveillée (Art. 336)'}
             </div>
           </div>
+          <div className="w-12 h-12 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700 flex items-center justify-center text-amber-500 shadow-2xs">
+            <Clock size={22} />
+          </div>
+        </div>
 
-          <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[110px] shadow-2xs">
-            <span className="text-[11px] font-medium text-neutral-500">{isAr ? 'الطعون المودعة والمبرأة' : 'Recours Déposés au Greffe'}</span>
-            <div>
-              <div className="text-2xl font-bold font-mono text-emerald-600">
-                {deadlines.filter((d) => d.status === 'filed').length}
-              </div>
-              <p className="text-[10px] text-neutral-400 mt-0.5">{isAr ? 'مع رقم إيصال كتابة الضبط' : 'avec récépissé de dépôt'}</p>
+        {/* KPI 3: Attended & Deliberated */}
+        <div className="bg-[#F8F9FA] dark:bg-neutral-900/60 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800 flex items-center justify-between">
+          <div>
+            <div className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider">
+              {isAr ? 'قضايا نوقشت / قيد المداولة' : 'Affaires Plaidées & Délibérés'}
+            </div>
+            <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">
+              {totalCompleted}
+            </div>
+            <div className="text-[11px] text-emerald-600 dark:text-emerald-400 mt-1 font-medium">
+              {isAr ? 'في انتظار النطق بالحكم' : 'En délibéré / Rendu de jugement'}
             </div>
           </div>
-
-          <div className="p-4 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[110px] shadow-2xs">
-            <span className="text-[11px] font-medium text-neutral-500">{isAr ? 'الجلسات المفصولة' : 'Audiences Plaidées'}</span>
-            <div>
-              <div className="text-2xl font-bold font-mono text-neutral-900 dark:text-white">
-                {hearings.filter((h) => h.isCompleted).length}
-              </div>
-              <p className="text-[10px] text-emerald-600 mt-0.5 font-medium">{isAr ? 'تمت المرافعة وإيداع المستندات' : 'mises en délibéré'}</p>
-            </div>
+          <div className="w-12 h-12 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700 flex items-center justify-center text-emerald-500 shadow-2xs">
+            <CheckCircle2 size={22} />
           </div>
         </div>
       </div>
 
-      {/* Main Content Area */}
-      {activeWorkflowView === 'audiences' ? (
-        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[28px] p-6 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
-          <UniversalDataCollection<LegalHearing>
-            items={hearings}
-            keyExtractor={(h) => h.id}
-            columns={[
-              {
-                key: 'hearingDate',
-                header: isAr ? 'التاريخ والوقت' : 'Date & Heure',
-                width: '2*',
-                sortable: true,
-                renderCell: (h) => (
-                  <div className="text-xs">
-                    <span className="font-bold text-neutral-900 dark:text-white font-mono block">
-                      {h.hearingDate}
-                    </span>
-                    <span className="text-[10px] text-neutral-400 font-mono">
-                      {h.hearingTime || '09:30'}
-                    </span>
+      {/* 3. Search Bar, Filter Capsules & Hybrid Switcher */}
+      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+        <div className="flex items-center gap-3 flex-1">
+          <Seek
+            value={searchQuery}
+            onChange={setSearchQuery}
+            placeholder={isAr ? 'بحث برقم القضية، المحكمة، القاضي...' : 'Rechercher par dossier, juridiction, juge...'}
+            className="flex-1 max-w-md"
+          />
+
+          {/* Filter Capsules */}
+          <div className="hidden sm:flex items-center gap-1.5 bg-[#F8F9FA] dark:bg-neutral-900/60 p-1 rounded-full border border-[#EDF1F3] dark:border-neutral-800">
+            {[
+              { id: 'All', label: isAr ? 'الكل' : 'Tous' },
+              { id: 'Scheduled', label: isAr ? 'مبرمجة' : 'Fixées' },
+              { id: 'Postponed', label: isAr ? 'مؤجلة' : 'Renvois' },
+              { id: 'Completed', label: isAr ? 'منتهية' : 'Plaidées' },
+            ].map((f) => (
+              <button
+                key={f.id}
+                onClick={() => setFilterCategory(f.id)}
+                className={`px-3 py-1 rounded-full text-xs font-semibold transition-all ${
+                  filterCategory === f.id
+                    ? 'bg-[#C4785A] text-white shadow-xs'
+                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900'
+                }`}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Hybrid Switcher: Docket Roll vs UDC Collection */}
+        <div className="flex items-center gap-1 bg-[#F8F9FA] dark:bg-neutral-900/60 p-1 rounded-full border border-[#EDF1F3] dark:border-neutral-800 self-end md:self-auto">
+          <button
+            onClick={() => setHybridView('docket')}
+            className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all ${
+              hybridView === 'docket'
+                ? 'bg-white dark:bg-neutral-800 text-[#C4785A] shadow-xs'
+                : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
+            }`}
+          >
+            <Calendar size={13} />
+            <span>{isAr ? 'رول الجلسات' : 'Rôle d\'Audience'}</span>
+          </button>
+          <button
+            onClick={() => setHybridView('register')}
+            className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all ${
+              hybridView === 'register'
+                ? 'bg-white dark:bg-neutral-800 text-[#C4785A] shadow-xs'
+                : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
+            }`}
+          >
+            <Layers size={13} />
+            <span>{isAr ? 'الجدول الشامل' : 'Registre UDC'}</span>
+          </button>
+        </div>
+      </div>
+
+      {/* 4. Main Body: Hybrid Switcher or Register */}
+      <div className="flex gap-6">
+        <div className="flex-1 min-w-0">
+          {hybridView === 'docket' ? (
+            /* Chronological Docket View Grouped by Date */
+            <div className="space-y-6">
+              {Object.keys(hearingsByDate).length === 0 ? (
+                <div className="p-12 text-center bg-[#F8F9FA] dark:bg-neutral-900/40 rounded-[28px] border border-dashed border-[#E2E8EC] dark:border-neutral-800">
+                  <Gavel size={36} className="mx-auto text-neutral-400 mb-3" />
+                  <p className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">
+                    {isAr ? 'لا توجد جلسات قضائية مطابقة لمعايير البحث' : 'Aucune audience inscrite à l\'audiencier'}
+                  </p>
+                  <p className="text-xs text-neutral-400 mt-1">
+                    {isAr ? 'قم ببرمجة جلسة جديدة أو تعديل معايير التصفية' : 'Cliquez sur "Nouvelle Audience" pour inscrire une date.'}
+                  </p>
+                </div>
+              ) : (
+                Object.entries(hearingsByDate).map(([date, dateHearings]) => (
+                  <div
+                    key={date}
+                    className="bg-[#F8F9FA] dark:bg-neutral-900/50 rounded-[28px] p-5 border border-[#EDF1F3] dark:border-neutral-800 shadow-2xs space-y-4"
+                  >
+                    <div className="flex items-center justify-between pb-3 border-b border-[#EDF1F3] dark:border-neutral-800">
+                      <div className="flex items-center gap-2">
+                        <Calendar size={18} className="text-[#C4785A]" />
+                        <h2 className="text-sm font-black text-neutral-900 dark:text-white uppercase tracking-wider">
+                          {isAr ? `جلسة يوم ${date}` : `Audience du ${date}`}
+                        </h2>
+                        <span className="text-xs bg-[#C4785A]/15 text-[#C4785A] font-bold px-2 py-0.5 rounded-full">
+                          {dateHearings.length} {isAr ? 'قضايا' : 'dossiers'}
+                        </span>
+                      </div>
+                      <span className="text-[11px] text-neutral-400 font-mono">
+                        {dateHearings[0]?.courtName}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-3">
+                      {dateHearings.map((h) => (
+                        <div
+                          key={h.id}
+                          onClick={() => setSelectedHearing(h)}
+                          className={`p-4 rounded-2xl bg-white dark:bg-neutral-800 border transition-all cursor-pointer flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 ${
+                            selectedHearing?.id === h.id
+                              ? 'border-[#C4785A] ring-2 ring-[#C4785A]/20 shadow-sm'
+                              : 'border-[#E9EEF0] dark:border-neutral-700 hover:border-[#C4785A]/50'
+                          }`}
+                        >
+                          <div className="flex items-start gap-3 min-w-0">
+                            <div className="w-10 h-10 rounded-xl bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold flex items-center justify-center shrink-0 border border-[#F5E2D8] dark:border-neutral-600">
+                              <span className="text-xs font-mono font-black">{h.hearingTime || '09:00'}</span>
+                            </div>
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-2">
+                                <span className="font-bold text-xs text-[#C4785A] font-mono">
+                                  {h.matterNumber}
+                                </span>
+                                <span className="text-neutral-300 dark:text-neutral-600">·</span>
+                                <span className="text-xs font-bold text-neutral-900 dark:text-white truncate">
+                                  {isAr && h.matterTitleAr ? h.matterTitleAr : h.matterTitle}
+                                </span>
+                              </div>
+                              <div className="text-[11px] text-neutral-400 mt-0.5 flex items-center gap-2 flex-wrap">
+                                <span>{h.courtRoom}</span>
+                                <span>·</span>
+                                <span>{h.chamber}</span>
+                                <span>·</span>
+                                <span className="font-medium text-neutral-600 dark:text-neutral-300">{h.benchJudge}</span>
+                              </div>
+                              <div className="text-[11px] text-neutral-600 dark:text-neutral-300 mt-1 font-medium">
+                                {isAr ? 'الهدف: ' : 'Démarche : '} {h.purpose}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                            {h.postponementCode && (
+                              <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-neutral-100 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300">
+                                {h.postponementCode}
+                              </span>
+                            )}
+                            <span
+                              className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                                h.isCompleted
+                                  ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400'
+                                  : 'bg-amber-500/15 text-amber-700 dark:text-amber-400'
+                              }`}
+                            >
+                              {h.isCompleted ? (isAr ? 'تمت' : 'Plaidée') : (isAr ? 'مبرمجة' : 'Fixée')}
+                            </span>
+                            <AtriumButton
+                              variant="ghost"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedHearing(h);
+                              }}
+                              className="text-xs"
+                            >
+                              <ArrowRight size={14} />
+                            </AtriumButton>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                ),
-              },
-              {
-                key: 'matterTitle',
-                header: isAr ? 'القضية والموضوع' : 'Dossier & Objet',
-                width: '4*',
-                renderCell: (h) => (
-                  <div className="text-xs min-w-0 pr-2">
-                    <span className="font-bold text-neutral-900 dark:text-white truncate block">
-                      {h.matterTitle}
-                    </span>
-                    <span className="text-[10px] text-[#C4785A] font-mono mt-0.5 block">
-                      {h.purpose || 'Plaidoirie sur le fond'}
-                    </span>
-                  </div>
-                ),
-              },
-              {
-                key: 'court',
-                header: isAr ? 'المحكمة والغرفة' : 'Juridiction & Chambre',
-                width: '3*',
-                renderCell: (h) => (
-                  <div className="text-xs">
-                    <span className="font-semibold text-neutral-800 dark:text-neutral-200 block truncate">
-                      {h.courtName}
-                    </span>
-                    <span className="text-[10px] text-neutral-400 block mt-0.5">
-                      {h.courtRoom || 'Salle d\'audience'} · {h.benchJudge || 'Président'}
-                    </span>
-                  </div>
-                ),
-              },
-              {
-                key: 'status',
-                header: isAr ? 'الوضعية' : 'Statut & Code Renvoi',
-                width: '2*',
-                renderCell: (h) => (
-                  <div className="flex items-center gap-1.5">
+                ))
+              )}
+            </div>
+          ) : (
+            /* Universal Data Collection View */
+            <UniversalDataCollection<LegalHearing>
+              items={filteredHearings}
+              keyExtractor={(h) => h.id}
+              columns={hearingColumns}
+              defaultViewMode={viewMode}
+              selectedIds={selectedIds}
+              onSelectionChange={setSelectedIds}
+              isPinned={(h) => pinnedIds.has(h.id)}
+              onTogglePin={(h) => {
+                setPinnedIds((prev) => {
+                  const next = new Set(prev);
+                  if (next.has(h.id)) next.delete(h.id);
+                  else next.add(h.id);
+                  return next;
+                });
+              }}
+              sortBy={sortBy}
+              sortDirection={sortDir}
+              onSortChange={(key, dir) => {
+                setSortBy(key);
+                setSortDir(dir);
+              }}
+              onItemClick={(h) => setSelectedHearing(h)}
+              customActions={getCustomActions}
+              renderCard={(h, isSelected) => (
+                <div
+                  className={`p-4 rounded-2xl bg-white dark:bg-neutral-800 border transition-all ${
+                    isSelected
+                      ? 'border-[#C4785A] ring-2 ring-[#C4785A]/20'
+                      : 'border-[#E9EEF0] dark:border-neutral-700'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-bold text-[#C4785A] font-mono">{h.matterNumber}</span>
                     <span
-                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                      className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
                         h.isCompleted
                           ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400'
                           : 'bg-amber-500/15 text-amber-700 dark:text-amber-400'
                       }`}
                     >
-                      {h.isCompleted ? 'Plaidé' : (h.postponementCode || 'RPP')}
+                      {h.isCompleted ? (isAr ? 'تمت' : 'Plaidée') : (isAr ? 'مبرمجة' : 'Fixée')}
                     </span>
                   </div>
-                ),
-              },
-            ]}
-            searchPlaceholder={isAr ? 'بحث في الجلسات، المحكمة، أو الموضوع...' : 'Rechercher une audience, juridiction, juge...'}
-            onItemClick={(h: LegalHearing) => setSelectedHearing(h)}
-            customActions={(hearing: LegalHearing) => getHearingActions(hearing)}
-          />
-        </div>
-      ) : (
-        /* CPCA Procedural Deadline Radar Grid */
-        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[28px] p-6 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
-          <div className="flex items-center justify-between pb-2 border-b border-neutral-200 dark:border-neutral-700">
-            <div className="flex items-center gap-2">
-              <Clock size={18} className="text-[#C4785A]" />
-              <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
-                {isAr ? 'جدول المواعيد والطعون القانونية (CPCA)' : 'Registre des Délais de Recours (CPCA - Loi 08-09)'}
-              </h3>
-            </div>
-            <span className="text-xs text-neutral-500">
-              {isAr ? 'تحديث آلي حسب قانون الإجراءات المدنية والإدارية' : 'Calcul automatique et prorogation Art. 405'}
-            </span>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {deadlines.map((dl) => {
-              const expiry = new Date(dl.terminalExpiryDate);
-              const now = new Date();
-              const diffDays = Math.ceil((expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-              const isUrgent = diffDays <= 5 && dl.status !== 'filed';
-
-              return (
-                <div
-                  key={dl.id}
-                  className={`p-5 rounded-2xl bg-white dark:bg-neutral-800 border transition-all space-y-3 ${
-                    dl.status === 'filed'
-                      ? 'border-emerald-200 dark:border-emerald-900/50'
-                      : isUrgent
-                      ? 'border-rose-300 dark:border-rose-900 shadow-md'
-                      : 'border-neutral-200 dark:border-neutral-700'
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono font-bold text-xs text-neutral-900 dark:text-white">
-                        {dl.caseNumber}
-                      </span>
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#C4785A]/15 text-[#C4785A]">
-                        {dl.recourseType.replace('_', ' ').toUpperCase()}
-                      </span>
-                    </div>
-
-                    <span
-                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                        dl.status === 'filed'
-                          ? 'bg-emerald-500/15 text-emerald-700'
-                          : isUrgent
-                          ? 'bg-rose-500/15 text-rose-700 dark:text-rose-400'
-                          : 'bg-amber-500/15 text-amber-700'
-                      }`}
-                    >
-                      {dl.status === 'filed' ? '✓ Déposé au Greffe' : `${diffDays} jours restants`}
-                    </span>
+                  <h3 className="text-xs font-bold text-neutral-900 dark:text-white truncate">
+                    {isAr && h.matterTitleAr ? h.matterTitleAr : h.matterTitle}
+                  </h3>
+                  <div className="text-[11px] text-neutral-500 mt-2 flex items-center justify-between">
+                    <span>{h.hearingDate}</span>
+                    <span className="font-mono text-neutral-400">{h.courtRoom}</span>
                   </div>
-
-                  <div className="text-xs space-y-1">
-                    <p className="font-semibold text-neutral-800 dark:text-neutral-200">
-                      {dl.courtJurisdiction} — {dl.chamber}
-                    </p>
-                    <p className="text-[11px] text-neutral-400">
-                      {isAr ? 'تاريخ التبليغ:' : 'Signifié le :'} {dl.notificationDate} par {dl.bailiffName}
-                    </p>
-                  </div>
-
-                  {/* Terminal Expiration Box */}
-                  <div className="p-3 rounded-xl bg-neutral-50 dark:bg-neutral-900/50 border border-neutral-100 dark:border-neutral-700/60 flex items-center justify-between text-xs">
-                    <div>
-                      <span className="text-[10px] text-neutral-400 block">{isAr ? 'السقوط النهائي:' : 'Expiration Finale :'}</span>
-                      <span className="font-mono font-bold text-[#C4785A]">
-                        {expiry.toLocaleDateString('fr-DZ', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })} à 16:30
-                      </span>
-                    </div>
-                    {dl.isRolledOver && (
-                      <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-300">
-                        Prorogé Art. 405
-                      </span>
-                    )}
-                  </div>
-
-                  {dl.appealFilingReceipt ? (
-                    <div className="text-[11px] text-emerald-600 font-mono font-semibold flex items-center gap-1.5 pt-1">
-                      <CheckCircle2 size={14} />
-                      <span>Récépissé Greffe N° {dl.appealFilingReceipt.greffeRegistrationNumber} ({dl.appealFilingReceipt.filingDate})</span>
-                    </div>
-                  ) : (
-                    <div className="pt-2 flex justify-end gap-2">
-                      <AtriumButton
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => markDeadlineFiled(dl)}
-                        icon={<Check size={13} />}
-                      >
-                        {isAr ? 'تسجيل إيداع العريضة' : 'Enregistrer Dépôt Greffe'}
-                      </AtriumButton>
-                    </div>
-                  )}
                 </div>
-              );
-            })}
-          </div>
+              )}
+            />
+          )}
         </div>
-      )}
 
-      {/* Hearing Side Inspector Drawer */}
-      {selectedHearing && (
-        <div className="fixed inset-y-0 right-0 z-50 w-[390px] bg-white dark:bg-neutral-800 shadow-2xl border-l border-neutral-200 dark:border-neutral-700 p-5 flex flex-col justify-between animate-in slide-in-from-right duration-200">
-          <div className="space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-700">
+        {/* 5. 390px Inline Side Inspector Drawer */}
+        {selectedHearing && (
+          <aside className="w-[390px] shrink-0 bg-[#F8F9FA] dark:bg-neutral-900/70 rounded-[28px] border border-[#EDF1F3] dark:border-neutral-800 p-5 space-y-5 hidden lg:block sticky top-6 self-start shadow-sm">
+            <div className="flex items-center justify-between pb-3 border-b border-[#EDF1F3] dark:border-neutral-800">
               <div className="flex items-center gap-2">
-                <Calendar size={18} className="text-[#C4785A]" />
-                <span className="text-xs font-bold text-neutral-900 dark:text-white font-mono">
-                  {selectedHearing.hearingDate}
-                </span>
+                <Gavel size={18} className="text-[#C4785A]" />
+                <h3 className="text-sm font-black text-neutral-900 dark:text-white">
+                  {isAr ? 'معاينة الجلسة القضائية' : 'Fiche d\'Audience'}
+                </h3>
               </div>
               <button
                 onClick={() => setSelectedHearing(null)}
-                className="p-1 rounded-full text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 dark:hover:bg-neutral-700 cursor-pointer"
+                className="p-1 rounded-full hover:bg-neutral-200 dark:hover:bg-neutral-800 text-neutral-400"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Inspector Tab Switcher */}
+            <div className="grid grid-cols-4 gap-1 p-1 bg-neutral-200/50 dark:bg-neutral-800/50 rounded-xl text-[10px] font-bold text-center">
+              <button
+                onClick={() => setActiveInspectorTab('audience')}
+                className={`py-1 rounded-lg transition-all ${
+                  activeInspectorTab === 'audience'
+                    ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-xs'
+                    : 'text-neutral-500'
+                }`}
+              >
+                {isAr ? 'الجلسة' : 'Audience'}
+              </button>
+              <button
+                onClick={() => setActiveInspectorTab('procedure')}
+                className={`py-1 rounded-lg transition-all ${
+                  activeInspectorTab === 'procedure'
+                    ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-xs'
+                    : 'text-neutral-500'
+                }`}
+              >
+                {isAr ? 'الدعوى' : 'Dossier'}
+              </button>
+              <button
+                onClick={() => setActiveInspectorTab('delais')}
+                className={`py-1 rounded-lg transition-all ${
+                  activeInspectorTab === 'delais'
+                    ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-xs'
+                    : 'text-neutral-500'
+                }`}
+              >
+                {isAr ? 'المواعيد' : 'Délais'}
+              </button>
+              <button
+                onClick={() => setActiveInspectorTab('notes')}
+                className={`py-1 rounded-lg transition-all ${
+                  activeInspectorTab === 'notes'
+                    ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-xs'
+                    : 'text-neutral-500'
+                }`}
+              >
+                {isAr ? 'القرارات' : 'Renvoi'}
+              </button>
+            </div>
+
+            {/* Inspector Content */}
+            {activeInspectorTab === 'audience' && (
+              <div className="space-y-4 text-xs">
+                <div>
+                  <div className="text-[10px] font-bold text-neutral-400 uppercase">
+                    {isAr ? 'المحكمة والهيئة القضائية' : 'Juridiction & Siège'}
+                  </div>
+                  <div className="font-bold text-neutral-900 dark:text-white mt-1">
+                    {selectedHearing.courtName}
+                  </div>
+                  <div className="text-neutral-500 mt-0.5">
+                    {selectedHearing.chamber} · {selectedHearing.courtRoom}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 p-3 bg-white dark:bg-neutral-800 rounded-xl border border-[#EDF1F3] dark:border-neutral-700">
+                  <div>
+                    <div className="text-[10px] text-neutral-400">{isAr ? 'تاريخ الجلسة' : 'Date d\'Audience'}</div>
+                    <div className="font-bold font-mono text-neutral-900 dark:text-white mt-0.5">
+                      {selectedHearing.hearingDate}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-[10px] text-neutral-400">{isAr ? 'ساعة النداء' : 'Heure d\'Appel'}</div>
+                    <div className="font-bold font-mono text-[#C4785A] mt-0.5">
+                      {selectedHearing.hearingTime || '09:30'}
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <div className="text-[10px] font-bold text-neutral-400 uppercase">
+                    {isAr ? 'القاضي رئيس الجلسة' : 'Magistrat du Siège'}
+                  </div>
+                  <div className="font-semibold text-neutral-800 dark:text-neutral-200 mt-1">
+                    {selectedHearing.benchJudge || 'Président de Chambre'}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeInspectorTab === 'procedure' && (
+              <div className="space-y-4 text-xs">
+                <div>
+                  <div className="text-[10px] font-bold text-neutral-400 uppercase">
+                    {isAr ? 'رقم القضية والموضوع' : 'N° Dossier & Intitulé'}
+                  </div>
+                  <div className="font-mono font-bold text-[#C4785A] mt-1">
+                    {selectedHearing.matterNumber}
+                  </div>
+                  <div className="font-semibold text-neutral-900 dark:text-white mt-1">
+                    {isAr && selectedHearing.matterTitleAr ? selectedHearing.matterTitleAr : selectedHearing.matterTitle}
+                  </div>
+                </div>
+
+                <div>
+                  <div className="text-[10px] font-bold text-neutral-400 uppercase">
+                    {isAr ? 'الهدف من الجلسة' : 'Démarche Procédurale'}
+                  </div>
+                  <div className="p-3 bg-white dark:bg-neutral-800 rounded-xl border border-[#EDF1F3] dark:border-neutral-700 mt-1 text-neutral-700 dark:text-neutral-300">
+                    {selectedHearing.purpose || 'Plaidoirie sur le fond'}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeInspectorTab === 'delais' && (
+              <div className="space-y-4 text-xs">
+                <div className="p-3 bg-amber-500/10 rounded-xl border border-amber-500/20 text-amber-800 dark:text-amber-300">
+                  <div className="flex items-center gap-1.5 font-bold">
+                    <Clock size={14} />
+                    <span>{isAr ? 'رادار المواعيد القانونية CPCA' : 'Régime Péremptoire CPCA'}</span>
+                  </div>
+                  <p className="text-[11px] mt-1 leading-relaxed">
+                    {isAr
+                      ? 'طبقا للمادة 336 من قانون الإجراءات المدنية والإدارية، ميعاد الاستئناف محدد بـ 30 يوما مع مراعاة أيام العطل.'
+                      : 'Sous réserve de notification par huissier selon CPCA Art. 336 (30 jours) avec prorogation Art. 405.'}
+                  </p>
+                </div>
+
+                <AtriumButton
+                  variant="outline"
+                  onClick={() => setIsCpcaModalOpen(true)}
+                  className="w-full text-xs flex items-center justify-center gap-2"
+                >
+                  <Scale size={14} />
+                  <span>{isAr ? 'فتح حاسبة الآجال' : 'Calculer Délai d\'Appel'}</span>
+                </AtriumButton>
+              </div>
+            )}
+
+            {activeInspectorTab === 'notes' && (
+              <div className="space-y-4 text-xs">
+                <div>
+                  <div className="text-[10px] font-bold text-neutral-400 uppercase">
+                    {isAr ? 'قرار المحكمة ورمز التأجيل' : 'Décision / Code Renvoi'}
+                  </div>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="font-mono font-bold text-sm bg-neutral-200 dark:bg-neutral-800 px-2 py-0.5 rounded text-neutral-800 dark:text-neutral-200">
+                      {selectedHearing.postponementCode || 'RPP'}
+                    </span>
+                    <span className="text-neutral-500">
+                      {selectedHearing.postponementCode === 'RPP'
+                        ? (isAr ? 'تأجيل لتبادل الوثائق' : 'Renvoi pour pièces')
+                        : selectedHearing.postponementCode === 'RPO'
+                        ? (isAr ? 'تأجيل للإدلاء بالملاحظات' : 'Renvoi pour observations')
+                        : (isAr ? 'مداولة' : 'En délibéré')}
+                    </span>
+                  </div>
+                </div>
+
+                <div>
+                  <div className="text-[10px] font-bold text-neutral-400 uppercase">
+                    {isAr ? 'ملاحظات المحامي' : 'Consignes & Compte-rendu'}
+                  </div>
+                  <div className="p-3 bg-white dark:bg-neutral-800 rounded-xl border border-[#EDF1F3] dark:border-neutral-700 mt-1 text-neutral-700 dark:text-neutral-300">
+                    {selectedHearing.resultSummary || 'En attente d\'audience.'}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Quick Actions in Drawer */}
+            <div className="pt-3 border-t border-[#EDF1F3] dark:border-neutral-800 flex items-center gap-2">
+              <AtriumButton
+                variant="primary"
+                onClick={() => {
+                  updateHearing({
+                    ...selectedHearing,
+                    isCompleted: true,
+                    status: 'Attended',
+                    resultSummary: 'Audience plaidée. Cause entendue.',
+                  });
+                  showToast(isAr ? 'تم تسجيل مرافعة القضية' : 'Audience validée plaidée', 'success');
+                }}
+                className="flex-1 text-xs"
+              >
+                <Check size={14} className="mr-1 inline" />
+                {isAr ? 'تمت المرافعة' : 'Plaidée'}
+              </AtriumButton>
+
+              <AtriumButton
+                variant="outline"
+                onClick={() => {
+                  updateHearing({
+                    ...selectedHearing,
+                    postponementCode: 'RPP',
+                    status: 'Postponed',
+                    resultSummary: 'Renvoi sollicité pour communication de nouvelles pièces',
+                  });
+                  showToast(isAr ? 'تم تسجيل التأجيل (RPP)' : 'Renvoi RPP accordé', 'info');
+                }}
+                className="flex-1 text-xs"
+              >
+                <Clock size={14} className="mr-1 inline" />
+                {isAr ? 'تأجيل RPP' : 'Renvoi RPP'}
+              </AtriumButton>
+            </div>
+          </aside>
+        )}
+      </div>
+
+      {/* 6. CPCA Deadline Calculator Modal */}
+      <CpcaDeadlineModal
+        isOpen={isCpcaModalOpen}
+        onClose={() => setIsCpcaModalOpen(false)}
+        matters={matters}
+        onSaveDeadline={(dl) => {
+          addCPCADeadline(dl);
+          showToast(isAr ? 'تم حفظ وحساب الميعاد الإجرائي بنجاح' : 'Délai CPCA armé et synchronisé', 'success');
+        }}
+      />
+
+      {/* 7. New Hearing Scheduling Modal */}
+      {isNewHearingModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
+          <div className="bg-white dark:bg-neutral-900 rounded-[28px] max-w-lg w-full p-6 shadow-xl border border-[#EDF1F3] dark:border-neutral-800 space-y-5 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between pb-3 border-b border-[#EDF1F3] dark:border-neutral-800">
+              <div className="flex items-center gap-2">
+                <Gavel size={20} className="text-[#C4785A]" />
+                <h3 className="text-base font-bold text-neutral-900 dark:text-white">
+                  {isAr ? 'برمجة جلسة جديدة برول المحكمة' : 'Inscrire une Audience Judiciaire'}
+                </h3>
+              </div>
+              <button
+                onClick={() => setIsNewHearingModalOpen(false)}
+                className="p-1 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-400"
               >
                 <X size={18} />
               </button>
             </div>
 
-            <div>
-              <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
-                {selectedHearing.matterTitle}
-              </h3>
-              <p className="text-xs text-neutral-500 mt-0.5">{selectedHearing.courtName}</p>
-            </div>
+            <form onSubmit={handleCreateHearing} className="space-y-4">
+              <div>
+                <LabelSelect
+                  label={isAr ? 'ملف القضية المعنية' : 'Dossier Contentieux Associé'}
+                  value={formMatterId}
+                  onChange={(val) => setFormMatterId(val)}
+                  options={matters.map((m) => ({
+                    value: m.id,
+                    label: `${m.matterNumber} - ${m.title}`,
+                  }))}
+                />
+              </div>
 
-            <div className="p-3.5 rounded-2xl bg-[#F8F9FA] dark:bg-neutral-900/40 border border-[#EDF1F3] dark:border-neutral-700/60 space-y-2 text-xs">
-              <div className="flex justify-between">
-                <span className="text-neutral-500">{isAr ? 'القاضي الرئيس' : 'Président de Chambre'}</span>
-                <span className="font-bold text-neutral-900 dark:text-white">{selectedHearing.benchJudge || 'Magistrat'}</span>
+              <div className="grid grid-cols-2 gap-3">
+                <LabelInput
+                  label={isAr ? 'تاريخ الجلسة' : 'Date d\'Audience'}
+                  type="date"
+                  value={formHearingDate}
+                  onChange={(e) => setFormHearingDate(e.target.value)}
+                  required
+                />
+                <LabelInput
+                  label={isAr ? 'ساعة النداء' : 'Heure d\'Appel'}
+                  type="time"
+                  value={formHearingTime}
+                  onChange={(e) => setFormHearingTime(e.target.value)}
+                  required
+                />
               </div>
-              <div className="flex justify-between">
-                <span className="text-neutral-500">{isAr ? 'القاعة' : 'Salle d\'Audience'}</span>
-                <span className="font-semibold text-neutral-800 dark:text-neutral-200">{selectedHearing.courtRoom || 'Salle 04'}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-neutral-500">{isAr ? 'طبيعة الإجراء' : 'Objet Audience'}</span>
-                <span className="font-semibold text-[#C4785A]">{selectedHearing.purpose || 'Plaidoirie'}</span>
-              </div>
-            </div>
-          </div>
 
-          <div className="pt-4 border-t border-neutral-100 dark:border-neutral-700 flex gap-2">
-            <AtriumButton
-              variant={selectedHearing.isCompleted ? 'secondary' : 'primary'}
-              className="flex-1 justify-center"
-              onClick={() => toggleHearingCompleted(selectedHearing)}
-              icon={<Check size={14} />}
-            >
-              {selectedHearing.isCompleted ? (isAr ? 'إعادة للجدول' : 'Replacer') : (isAr ? 'تمت المرافعة' : 'Marquer Plaidé')}
-            </AtriumButton>
-            <AtriumButton
-              variant="secondary"
-              className="flex-1 justify-center"
-              onClick={() => setSelectedHearing(null)}
-            >
-              {isAr ? 'إغلاق' : 'Fermer'}
-            </AtriumButton>
+              <div className="grid grid-cols-2 gap-3">
+                <LabelInput
+                  label={isAr ? 'المحكمة / المجلس' : 'Juridiction / Tribunal'}
+                  value={formCourtName}
+                  onChange={(e) => setFormCourtName(e.target.value)}
+                  required
+                />
+                <LabelInput
+                  label={isAr ? 'قاعة الجلسة' : 'Salle d\'Audience'}
+                  value={formCourtRoom}
+                  onChange={(e) => setFormCourtRoom(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <LabelInput
+                  label={isAr ? 'الغرفة المختصة' : 'Chambre / Section'}
+                  value={formChamber}
+                  onChange={(e) => setFormChamber(e.target.value)}
+                  required
+                />
+                <LabelInput
+                  label={isAr ? 'القاضي رئيس الجلسة' : 'Président du Siège'}
+                  value={formBenchJudge}
+                  onChange={(e) => setFormBenchJudge(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div>
+                <LabelInput
+                  label={isAr ? 'الهدف الإجرائي من الجلسة' : 'Démarche & Objet (Plaidoirie, RPP, etc.)'}
+                  value={formPurpose}
+                  onChange={(e) => setFormPurpose(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div>
+                <LabelSelect
+                  label={isAr ? 'رمز التأجيل الافتراضي' : 'Code de Renvoi Initiale'}
+                  value={formPostponementCode}
+                  onChange={(val) => setFormPostponementCode(val)}
+                  options={[
+                    { value: 'RPP', label: 'RPP - Renvoi Pour Pièces' },
+                    { value: 'RPO', label: 'RPO - Renvoi Pour Observations' },
+                    { value: 'DELIB', label: 'DELIB - Mise en Délibéré' },
+                    { value: 'JUG', label: 'JUG - Rendu de Jugement' },
+                  ]}
+                />
+              </div>
+
+              <div className="pt-4 border-t border-[#EDF1F3] dark:border-neutral-800 flex items-center justify-end gap-3">
+                <AtriumButton
+                  variant="outline"
+                  type="button"
+                  onClick={() => setIsNewHearingModalOpen(false)}
+                >
+                  {isAr ? 'إلغاء' : 'Annuler'}
+                </AtriumButton>
+                <AtriumButton variant="primary" type="submit">
+                  {isAr ? 'تسجيل وحفظ برول المحكمة' : 'Inscrire au Rôle'}
+                </AtriumButton>
+              </div>
+            </form>
           </div>
         </div>
-      )}
-
-      {/* Cpca Deadline Modal */}
-      {isCpcaModalOpen && (
-        <CpcaDeadlineModal
-          isOpen={isCpcaModalOpen}
-          onClose={() => setIsCpcaModalOpen(false)}
-          matters={matters}
-          onSaveDeadline={addCPCADeadline}
-        />
       )}
     </div>
   );

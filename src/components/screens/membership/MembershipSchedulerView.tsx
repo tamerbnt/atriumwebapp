@@ -16,8 +16,6 @@ import {
   UserPlus,
   Award,
   Pin,
-  LayoutGrid,
-  List,
   Eye,
   Filter,
 } from 'lucide-react';
@@ -60,8 +58,8 @@ export const MembershipSchedulerView: React.FC = () => {
     hasCachedData: schedule.length > 0,
   });
 
-  // High-level View Switcher: Timeline Matrix vs Universal Collection
-  const [mainViewMode, setMainViewMode] = useState<'timeline' | 'collection'>('collection');
+  // Unified Tri-View State: Calendar (Timetable) vs List vs Grid
+  const [viewMode, setViewMode] = useState<'calendar' | 'list' | 'grid'>('calendar');
 
   const [selectedDay, setSelectedDay] = useState<number>(1); // Monday default
   const [dayFilter, setDayFilter] = useState<string>('All');
@@ -174,7 +172,7 @@ export const MembershipSchedulerView: React.FC = () => {
   const handleExportCSV = () => {
     const dayLabel = days.find((d) => d.id === selectedDay)?.label || 'All';
     const headers = ['Day', 'Title', 'Category', 'Start Time', 'End Time', 'Trainer', 'Room', 'Enrolled', 'Capacity'];
-    const rows = (mainViewMode === 'timeline' ? currentDayEvents : sortedCollectionEvents).map((e) => [
+    const rows = (viewMode === 'calendar' ? currentDayEvents : sortedCollectionEvents).map((e) => [
       `"${getDayName(e.dayOfWeek)}"`,
       `"${e.title}"`,
       `"${e.category}"`,
@@ -331,6 +329,105 @@ export const MembershipSchedulerView: React.FC = () => {
       />
     );
   }
+
+  const renderTimetableView = () => (
+    <div className="space-y-4">
+      {/* Day of Week Segmented Capsules */}
+      <div className="flex flex-wrap items-center justify-between gap-3 pb-2">
+        <div className="flex items-center p-0.5 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 gap-0.5 text-xs font-semibold shadow-2xs overflow-x-auto max-w-xs sm:max-w-none">
+          {days.map((d) => {
+            const isActive = selectedDay === d.id;
+            return (
+              <button
+                key={d.id}
+                type="button"
+                onClick={() => setSelectedDay(d.id)}
+                style={{
+                  backgroundColor: isActive ? '#FCEEE8' : 'transparent',
+                  color: isActive ? 'var(--color-accent)' : '#71717A',
+                }}
+                className={`px-3 py-1 rounded-full cursor-pointer transition-all ${
+                  isActive ? 'font-bold' : 'hover:text-neutral-900 dark:hover:text-white'
+                }`}
+              >
+                {d.short}
+              </button>
+            );
+          })}
+        </div>
+        <span className="text-xs text-neutral-400 font-semibold tabular-nums">
+          {days.find((d) => d.id === selectedDay)?.label} · {currentDayEvents.length} {language === 'ar' ? 'حصص' : 'sessions'}
+        </span>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {currentDayEvents.length === 0 ? (
+          <div className="col-span-full py-16 text-center text-xs text-neutral-400">
+            No sessions planned for {days.find((d) => d.id === selectedDay)?.label}. Click "New Session" to add one.
+          </div>
+        ) : (
+          currentDayEvents.map((event) => {
+            const isFull = event.enrolledCount >= event.capacity;
+            const fillRatio = Math.round((event.enrolledCount / event.capacity) * 100);
+
+            return (
+              <div
+                key={event.id}
+                onClick={() => setSelectedEvent(event)}
+                className="p-5 rounded-[22px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs hover:border-[#C4785A] hover:shadow-xs transition-all cursor-pointer flex flex-col justify-between group"
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-[10px] font-bold uppercase tracking-wide bg-neutral-100 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300 px-2.5 py-0.5 rounded-full">
+                      {event.category}
+                    </span>
+                    <span className="text-xs font-mono font-bold text-[#C4785A] flex items-center gap-1">
+                      <Clock size={12} />
+                      {event.startTime} - {event.endTime}
+                    </span>
+                  </div>
+
+                  <h3 className="font-bold text-sm text-neutral-900 dark:text-white group-hover:text-[#C4785A] transition-colors mb-1">
+                    {event.title}
+                  </h3>
+
+                  <div className="space-y-1 text-xs text-neutral-500 dark:text-neutral-400">
+                    <div className="flex items-center gap-1.5">
+                      <MapPin size={12} className="text-neutral-400" />
+                      <span>{event.roomOrArea}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <Users size={12} className="text-neutral-400" />
+                      <span>{event.trainerOrStaff}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-4 pt-3 border-t border-neutral-100 dark:border-neutral-700/60">
+                  <div className="flex items-center justify-between text-xs mb-1.5">
+                    <span className="text-neutral-400">
+                      {isFull ? (language === 'ar' ? 'مكتمل' : 'Full') : (language === 'ar' ? 'الأماكن' : 'Capacity')}
+                    </span>
+                    <span className="font-mono font-bold text-neutral-700 dark:text-neutral-300">
+                      {event.enrolledCount}/{event.capacity}
+                    </span>
+                  </div>
+                  <div className="w-full h-1.5 bg-neutral-100 dark:bg-neutral-700 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all ${
+                        isFull ? 'bg-rose-500' : fillRatio > 80 ? 'bg-amber-500' : 'bg-emerald-500'
+                      }`}
+                      style={{ width: `${Math.min(fillRatio, 100)}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+            );
+          })
+        )}
+      </div>
+    </div>
+  );
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200 relative">
@@ -496,11 +593,8 @@ export const MembershipSchedulerView: React.FC = () => {
             </div>
           </div>
         </div>
-      </div>
-
-      {/* Row 2: Universal Cards & List View OR Timetable Timeline */}
-      {mainViewMode === 'collection' ? (
-        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+      {/* Row 2: Universal Cards & List View with Integrated Tri-View */}
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
           {/* Collection Filter & Action Header */}
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2">
@@ -571,11 +665,11 @@ export const MembershipSchedulerView: React.FC = () => {
           <UniversalDataCollection<ScheduleEvent>
             items={sortedCollectionEvents}
             keyExtractor={(e) => e.id}
-            defaultViewMode="list"
+            viewMode={viewMode}
+            defaultViewMode="calendar"
             showCalendarToggle={true}
-            onViewModeChange={(mode: 'list' | 'grid' | 'calendar') => {
-              if (mode === 'calendar') setMainViewMode('timeline');
-            }}
+            onViewModeChange={(mode: 'list' | 'grid' | 'calendar') => setViewMode(mode)}
+            renderCalendarView={renderTimetableView}
             bulkSecondaryAction={{
               label: 'Dupliquer semaine',
               icon: <Plus size={13} />,
@@ -723,177 +817,6 @@ export const MembershipSchedulerView: React.FC = () => {
             emptyDescription={language === 'ar' ? 'جرب تغيير شروط البحث أو مسح المرشحات لتظهر جميع الحصص' : 'Try adjusting your search query or discipline filter.'}
           />
         </div>
-      ) : (
-        /* Timetable Timeline Mode */
-        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <Calendar size={16} className="text-neutral-500" />
-              <span className="text-sm font-bold text-neutral-900 dark:text-white">
-                {days.find((d) => d.id === selectedDay)?.label} · {t('nav_scheduler', language)}
-              </span>
-              <span className="text-xs text-neutral-400 font-semibold tabular-nums ml-1">
-                {currentDayEvents.length} {language === 'ar' ? 'حصص' : 'sessions'}
-              </span>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-2.5 ml-auto">
-              <Seek
-                value={searchQuery}
-                onChange={setSearchQuery}
-                placeholder={language === 'ar' ? 'ابحث عن اسم الحصة، المدرب، القاعة...' : 'Search session, trainer, room...'}
-                shutSize={36}
-                openWidth={220}
-              />
-
-              {/* Day of Week Segmented Capsules */}
-              <div className="flex items-center p-0.5 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 gap-0.5 text-xs font-semibold shadow-2xs overflow-x-auto max-w-xs sm:max-w-none">
-                {days.map((d) => {
-                  const isActive = selectedDay === d.id;
-                  return (
-                    <button
-                      key={d.id}
-                      type="button"
-                      onClick={() => setSelectedDay(d.id)}
-                      style={{
-                        backgroundColor: isActive ? '#FCEEE8' : 'transparent',
-                        color: isActive ? 'var(--color-accent)' : '#71717A',
-                      }}
-                      className={`px-3 py-1 rounded-full cursor-pointer transition-all ${
-                        isActive ? 'font-bold' : 'hover:text-neutral-900 dark:hover:text-white'
-                      }`}
-                    >
-                      {d.short}
-                    </button>
-                  );
-                })}
-              </div>
-
-              <FilterSelect
-                value={categoryFilter}
-                onChange={(val) => setCategoryFilter(typeof val === 'string' ? val : val.target?.value || val)}
-                options={categories.map((c) => ({
-                  value: c,
-                  label: c === 'All' ? 'All Disciplines' : c,
-                }))}
-              />
-
-              <AtriumButton
-                variant="secondary"
-                onClick={handleExportCSV}
-                icon={<Download size={13} />}
-                size="sm"
-              >
-                Export
-              </AtriumButton>
-
-              {/* View Mode Switcher: List, Grid, Calendar */}
-              <div className="flex items-center bg-white dark:bg-neutral-800 p-0.5 rounded-xl border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
-                <button
-                  type="button"
-                  onClick={() => setMainViewMode('collection')}
-                  className="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 transition-all cursor-pointer"
-                  title="List View"
-                >
-                  <List size={14} />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setMainViewMode('collection')}
-                  className="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 transition-all cursor-pointer"
-                  title="Grid View"
-                >
-                  <LayoutGrid size={14} />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setMainViewMode('timeline')}
-                  className="p-1.5 rounded-lg bg-[#C4785A] text-white shadow-2xs transition-all cursor-pointer"
-                  title="Timetable Timeline View"
-                >
-                  <Calendar size={14} />
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {currentDayEvents.length === 0 ? (
-              <div className="col-span-full py-16 text-center text-xs text-neutral-400">
-                No sessions planned for {days.find((d) => d.id === selectedDay)?.label}. Click "New Session" to add one.
-              </div>
-            ) : (
-              currentDayEvents.map((event) => {
-                const isFull = event.enrolledCount >= event.capacity;
-                const fillRatio = Math.round((event.enrolledCount / event.capacity) * 100);
-
-                return (
-                  <div
-                    key={event.id}
-                    onClick={() => setSelectedEvent(event)}
-                    className={`p-5 rounded-[20px] border transition-all cursor-pointer flex flex-col justify-between h-[210px] shadow-2xs ${
-                      selectedEvent?.id === event.id
-                        ? 'border-[#C4785A] bg-[#FCEEE8]/40 dark:bg-neutral-800/80 ring-1 ring-[#C4785A]/30'
-                        : 'border-[#E9EEF0] dark:border-neutral-700/60 bg-white dark:bg-neutral-800 hover:border-[#D5DFE3] dark:hover:border-neutral-600'
-                    }`}
-                  >
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-[11px] font-bold text-[#C4785A] flex items-center gap-1">
-                          <Clock size={13} />
-                          <span className="tabular-nums">
-                            {event.startTime} - {event.endTime}
-                          </span>
-                        </span>
-                        <span className="text-[10px] font-bold text-neutral-600 dark:text-neutral-300 uppercase tracking-wide bg-neutral-100 dark:bg-neutral-800 px-2.5 py-0.5 rounded-full">
-                          {event.category}
-                        </span>
-                      </div>
-
-                      <h3 className="text-base font-black text-neutral-900 dark:text-white leading-tight mb-1">
-                        {event.title}
-                      </h3>
-
-                      <div className="flex items-center gap-2 text-xs text-neutral-500">
-                        <span className="flex items-center gap-1">
-                          <MapPin size={12} />
-                          <span>{event.roomOrArea}</span>
-                        </span>
-                        <span>·</span>
-                        <span>{event.trainerOrStaff}</span>
-                      </div>
-                    </div>
-
-                    <div className="pt-3 border-t border-neutral-100 dark:border-neutral-700/60 space-y-1.5">
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="text-neutral-400 font-medium">
-                          {language === 'ar' ? 'المشاركون المقيدون' : 'Enrolled Athletes'}
-                        </span>
-                        <span
-                          className={`font-black tabular-nums ${
-                            isFull ? 'text-rose-500' : 'text-neutral-900 dark:text-white'
-                          }`}
-                        >
-                          {event.enrolledCount} / {event.capacity} ({fillRatio}%)
-                        </span>
-                      </div>
-
-                      <div className="w-full h-1.5 rounded-full bg-neutral-100 dark:bg-neutral-700 overflow-hidden">
-                        <div
-                          className={`h-full rounded-full transition-all ${
-                            isFull ? 'bg-rose-500' : fillRatio > 80 ? 'bg-amber-500' : 'bg-emerald-500'
-                          }`}
-                          style={{ width: `${Math.min(fillRatio, 100)}%` }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                );
-              })
-            )}
-          </div>
-        </div>
-      )}
 
       {/* Desktop Slide-out Inspector Drawer for Session */}
       {selectedEvent && (

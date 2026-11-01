@@ -83,7 +83,7 @@ export const AppointmentScheduleView: React.FC = () => {
   const [selectedStylistId, setSelectedStylistId] = useState<string>('All');
   const [statusFilter, setStatusFilter] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState('');
-  const [viewMode, setViewMode] = useState<'columns' | 'list' | 'grid'>('columns');
+  const [viewMode, setViewMode] = useState<'calendar' | 'list' | 'grid'>('calendar');
   const [isFacilityDropdownOpen, setIsFacilityDropdownOpen] = useState(false);
 
   // Modal control
@@ -588,7 +588,7 @@ export const AppointmentScheduleView: React.FC = () => {
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-sm font-bold text-neutral-900 dark:text-white">
-                  {viewMode === 'columns'
+                  {viewMode === 'calendar'
                     ? (language === 'ar' ? 'مخطط كراسي المصففين' : 'Planning des Postes de Coiffure')
                     : (language === 'ar' ? 'سجل المواعيد العام' : 'Registre des Rendez-Vous')}
                 </span>
@@ -678,53 +678,21 @@ export const AppointmentScheduleView: React.FC = () => {
                 shutSize={34}
                 openWidth={220}
               />
-
-              {/* Row View Toggle: List, Grid, Calendar */}
-              <div className="flex items-center bg-white dark:bg-neutral-800 p-0.5 rounded-xl border border-neutral-200 dark:border-neutral-700 shadow-2xs">
-                <button
-                  type="button"
-                  onClick={() => setViewMode('list')}
-                  className={`p-1.5 rounded-lg transition-all cursor-pointer ${
-                    viewMode === 'list'
-                      ? 'bg-[#C4785A] text-white shadow-2xs'
-                      : 'text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200'
-                  }`}
-                  title={language === 'ar' ? 'عرض القائمة' : 'Vue Liste'}
-                >
-                  <List size={14} />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setViewMode('grid')}
-                  className={`p-1.5 rounded-lg transition-all cursor-pointer ${
-                    viewMode === 'grid'
-                      ? 'bg-[#C4785A] text-white shadow-2xs'
-                      : 'text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200'
-                  }`}
-                  title={language === 'ar' ? 'عرض الشبكة' : 'Vue Grille'}
-                >
-                  <LayoutGrid size={14} />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setViewMode('columns')}
-                  className={`p-1.5 rounded-lg transition-all cursor-pointer ${
-                    viewMode === 'columns'
-                      ? 'bg-[#C4785A] text-white shadow-2xs'
-                      : 'text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200'
-                  }`}
-                  title={language === 'ar' ? 'عرض المخطط الزمني' : 'Vue Planning / Matrice'}
-                >
-                  <Calendar size={14} />
-                </button>
-              </div>
             </div>
           </div>
 
-          {/* Matrix Columns View */}
-          {viewMode === 'columns' && (
-            <div className="bg-white dark:bg-neutral-800 rounded-[20px] border border-[#E9EEF0] dark:border-neutral-700/80 shadow-2xs overflow-hidden">
-              <div className="overflow-x-auto">
+          {/* Universal Collection View with Tri-Mode Toggle */}
+          <div className="w-full">
+            <UniversalDataCollection<Appointment>
+              items={sortedDayAppointments}
+              keyExtractor={(apt) => apt.id}
+              viewMode={viewMode}
+              defaultViewMode="calendar"
+              showCalendarToggle={true}
+              onViewModeChange={(m: 'list' | 'grid' | 'calendar') => setViewMode(m)}
+              renderCalendarView={() => (
+                <div className="bg-white dark:bg-neutral-800 rounded-[20px] border border-[#E9EEF0] dark:border-neutral-700/80 shadow-2xs overflow-hidden">
+                  <div className="overflow-x-auto">
                 <div className="min-w-[760px]">
                   {/* Column Headers */}
                   <div className="grid grid-cols-[100px_repeat(auto-fit,minmax(200px,1fr))] border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-900/80">
@@ -872,19 +840,8 @@ export const AppointmentScheduleView: React.FC = () => {
                 </div>
               </div>
             </div>
-          )}
-
-          {/* List / Grid Universal Collection View */}
-          {viewMode !== 'columns' && (
-            <div className="w-full">
-              <UniversalDataCollection<Appointment>
-                items={sortedDayAppointments}
-                keyExtractor={(apt) => apt.id}
-                viewMode={viewMode}
-                defaultViewMode="list"
-                showCalendarToggle={true}
-                onViewModeChange={(m: 'list' | 'grid' | 'calendar') => setViewMode(m === 'calendar' ? 'columns' : m)}
-                columns={appointmentColumns}
+              )}
+              columns={appointmentColumns}
                 sortBy={aptSortBy}
                 sortDirection={aptSortDir}
                 onSortChange={(key) => {
@@ -1007,27 +964,6 @@ export const AppointmentScheduleView: React.FC = () => {
                 onItemClick={(apt) => handleOpenEditModal(apt)}
                 onViewDetails={(apt) => handleOpenEditModal(apt)}
                 onEdit={(apt) => handleOpenEditModal(apt)}
-                onTogglePin={(apt) => {
-                  setPinnedAptIds((prev) => {
-                    const next = new Set(prev);
-                    if (next.has(apt.id)) {
-                      next.delete(apt.id);
-                      showToast({
-                        type: 'info',
-                        title: 'Unpinned',
-                        message: `${apt.clientName} unpinned`,
-                      });
-                    } else {
-                      next.add(apt.id);
-                      showToast({
-                        type: 'info',
-                        title: 'Pinned',
-                        message: `${apt.clientName} pinned to top`,
-                      });
-                    }
-                    return next;
-                  });
-                }}
                 customActions={(apt) => [
                   ...(apt.status !== 'Completed' && apt.status !== 'Cancelled'
                     ? [
@@ -1058,38 +994,13 @@ export const AppointmentScheduleView: React.FC = () => {
                       ]
                     : []),
                 ]}
-                isPinned={(apt) => pinnedAptIds.has(apt.id)}
-                selectedIds={selectedAptIds}
-                onSelectionChange={setSelectedAptIds}
-                bulkSecondaryAction={{
-                  label: 'Confirmer sélectionnés',
-                  icon: <CheckCircle2 size={13} />,
-                  onClick: (ids) => {
-                    batchUpdateAppointmentStatus(Array.from(ids), 'Confirmed');
-                    showToast({
-                      type: 'success',
-                      title: 'Confirmés',
-                      message: `${ids.size} rendez-vous confirmés.`,
-                    });
-                  },
-                  variant: 'primary',
-                }}
-                onBulkDelete={(ids) => {
-                  batchDeleteAppointments(Array.from(ids));
-                  showToast({
-                    type: 'info',
-                    title: 'Supprimés',
-                    message: `${ids.size} rendez-vous supprimés.`,
-                  });
-                }}
                 emptyTitle={t('salon_empty_appointments', language)}
                 emptyDescription={t('salon_empty_appointments_sub', language)}
                 primaryActionLabel={t('salon_new_booking', language)}
                 onAddFirstItem={() => handleOpenAddModal('10:00')}
               />
             </div>
-          )}
-        </div>
+          </div>
 
         {/* Booking / Action Modal */}
         <AppointmentModal

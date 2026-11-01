@@ -6,8 +6,6 @@ import {
   ChevronDown,
   Search,
   Download,
-  LayoutGrid,
-  List,
   Maximize2,
   Check,
   Eye,
@@ -638,33 +636,7 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
               <span>{t('members_export_csv', language)}</span>
             </AtriumButton>
 
-            {/* View Mode Toggle: Grid & List */}
-            <div className="flex items-center gap-1 p-0.5 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
-              <button
-                type="button"
-                onClick={() => setViewMode('grid')}
-                className={`p-1.5 rounded-full cursor-pointer transition-colors ${
-                  viewMode === 'grid'
-                    ? 'text-[#C4785A] bg-[#C4785A]/10 font-bold'
-                    : 'text-neutral-400 hover:text-neutral-600'
-                }`}
-                title="Grid view"
-              >
-                <LayoutGrid size={14} />
-              </button>
-              <button
-                type="button"
-                onClick={() => setViewMode('list')}
-                className={`p-1.5 rounded-full cursor-pointer transition-colors ${
-                  viewMode === 'list'
-                    ? 'text-[#C4785A] bg-[#C4785A]/10 font-bold'
-                    : 'text-neutral-400 hover:text-neutral-600'
-                }`}
-                title="List view"
-              >
-                <List size={14} />
-              </button>
-            </div>
+
 
             {/* Fullscreen Expand Icon */}
             <button

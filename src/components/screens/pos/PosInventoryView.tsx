@@ -1237,32 +1237,6 @@ export const PosInventoryView: React.FC = () => {
             </div>
           );
         }}
-        selectedIds={selectedProductIds}
-        onSelectionChange={setSelectedProductIds}
-        bulkSecondaryAction={{
-          label: 'Ajuster stock (+10)',
-          icon: <ArrowDownUp size={13} />,
-          onClick: (ids) => {
-            ids.forEach((id) => {
-              const prod = products.find((p) => p.id === id);
-              if (prod) updateProduct(id, { stockQuantity: prod.stockQuantity + 10 });
-            });
-            showToast({
-              type: 'success',
-              title: 'Stock ajusté',
-              message: `Stock augmenté de +10 unités pour ${ids.size} produits.`,
-            });
-          },
-          variant: 'primary',
-        }}
-        onBulkDelete={(ids) => {
-          ids.forEach((id) => deleteProduct(id));
-          showToast({
-            type: 'info',
-            title: 'Produits supprimés',
-            message: `${ids.size} articles ont été retirés.`,
-          });
-        }}
         isPinned={(p) => pinnedProductIds.has(p.id)}
         onTogglePin={(p) => {
           setPinnedProductIds((prev) => {
