@@ -72,7 +72,7 @@ export const VenueTimelineView: React.FC = () => {
   const [modalInitialUnitId, setModalInitialUnitId] = useState<string | undefined>(undefined);
   const [modalInitialHour, setModalInitialHour] = useState<string | undefined>(undefined);
   const [inspectedBooking, setInspectedBooking] = useState<RentalBooking | null>(null);
-  const [mainViewMode, setMainViewMode] = useState<'timeline' | 'collection'>('timeline');
+  const [viewMode, setViewMode] = useState<'calendar' | 'list' | 'grid'>('calendar');
   const [isFacilityDropdownOpen, setIsFacilityDropdownOpen] = useState(false);
 
   // Time slots from 08:00 to 23:00 (16 hours)
@@ -312,8 +312,15 @@ export const VenueTimelineView: React.FC = () => {
           </div>
         </div>
 
-        {mainViewMode === 'collection' ? (
-          <VenueBookingsView hideHeader onSwitchToTimeline={() => setMainViewMode('timeline')} />
+        {viewMode !== 'calendar' ? (
+          <VenueBookingsView
+            hideHeader
+            hideKpis
+            viewMode={viewMode}
+            onViewModeChange={setViewMode}
+            showViewToggle={true}
+            onSwitchToTimeline={() => setViewMode('calendar')}
+          />
         ) : (
           <div className="space-y-4">
             {/* Timeline Pod Tray */}
@@ -380,7 +387,7 @@ export const VenueTimelineView: React.FC = () => {
                 <div className="flex items-center bg-white dark:bg-neutral-800 p-0.5 rounded-xl border border-neutral-200 dark:border-neutral-700 shadow-2xs">
                   <button
                     type="button"
-                    onClick={() => setMainViewMode('collection')}
+                    onClick={() => setViewMode('list')}
                     className="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 transition-all cursor-pointer"
                     title="List View"
                   >
@@ -388,7 +395,7 @@ export const VenueTimelineView: React.FC = () => {
                   </button>
                   <button
                     type="button"
-                    onClick={() => setMainViewMode('collection')}
+                    onClick={() => setViewMode('grid')}
                     className="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 transition-all cursor-pointer"
                     title="Grid View"
                   >
@@ -396,7 +403,7 @@ export const VenueTimelineView: React.FC = () => {
                   </button>
                   <button
                     type="button"
-                    onClick={() => setMainViewMode('timeline')}
+                    onClick={() => setViewMode('calendar')}
                     className="p-1.5 rounded-lg bg-[#C4785A] text-white shadow-2xs transition-all cursor-pointer"
                     title="Timeline Matrix View"
                   >

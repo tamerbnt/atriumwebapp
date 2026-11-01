@@ -903,6 +903,27 @@ export const PosOrdersView: React.FC = () => {
                 )}
                 selectedIds={selectedParkedIds}
                 onSelectionChange={setSelectedParkedIds}
+                bulkSecondaryAction={{
+                  label: language === 'ar' ? 'استئناف التذكرة' : 'Reprendre en caisse',
+                  icon: <PlayCircle size={13} />,
+                  onClick: (ids) => {
+                    const firstId = Array.from(ids)[0];
+                    if (firstId) {
+                      resumeParkedOrder(firstId);
+                      setScreen('shop');
+                    }
+                  },
+                  variant: 'primary',
+                }}
+                onBulkDelete={(ids) => {
+                  ids.forEach((id) => deleteParkedOrder(id));
+                  setSelectedParkedIds(new Set());
+                  showToast({
+                    type: 'info',
+                    title: 'Tickets supprimés',
+                    message: `${ids.size} tickets en pause supprimés.`,
+                  });
+                }}
                 isPinned={(po) => pinnedParkedIds.has(po.id)}
                 onTogglePin={(po) => {
                   setPinnedParkedIds((prev) => {

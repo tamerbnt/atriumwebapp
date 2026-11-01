@@ -672,34 +672,6 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
               <span>{language === 'ar' ? 'تصدير البيانات' : language === 'fr' ? 'Exporter les données' : 'Export Data'}</span>
             </AtriumButton>
 
-            {/* View Mode Toggle */}
-            <div className="flex items-center gap-1 p-0.5 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
-              <button
-                type="button"
-                onClick={() => setViewMode('grid')}
-                className={`p-1.5 rounded-full cursor-pointer transition-colors ${
-                  viewMode === 'grid'
-                    ? 'text-[#C4785A] bg-[#C4785A]/10 font-bold'
-                    : 'text-neutral-400 hover:text-neutral-600'
-                }`}
-                title="Grid view"
-              >
-                <LayoutGrid size={14} />
-              </button>
-              <button
-                type="button"
-                onClick={() => setViewMode('list')}
-                className={`p-1.5 rounded-full cursor-pointer transition-colors ${
-                  viewMode === 'list'
-                    ? 'text-[#C4785A] bg-[#C4785A]/10 font-bold'
-                    : 'text-neutral-400 hover:text-neutral-600'
-                }`}
-                title="List view"
-              >
-                <List size={14} />
-              </button>
-            </div>
-
             {/* Fullscreen Button */}
             <button
               type="button"
@@ -712,60 +684,12 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
           </div>
         </div>
 
-        {/* Floating Batch Action Toolbar */}
-        {selectedLeadIds.size > 0 && (
-          <div className="flex items-center justify-between p-3 px-4 rounded-2xl bg-neutral-900 text-white shadow-xl animate-in fade-in slide-in-from-bottom-2 duration-150">
-            <div className="flex items-center gap-3 text-xs font-semibold">
-              <span className="px-2 py-0.5 rounded-full bg-[#C4785A] text-white font-bold text-[11px]">
-                {selectedLeadIds.size}
-              </span>
-              <span>{language === 'ar' ? 'طلب محدد' : language === 'fr' ? 'dossiers sélectionnés' : 'leads selected'}</span>
-              <button
-                type="button"
-                onClick={() => setSelectedLeadIds(new Set())}
-                className="text-neutral-400 hover:text-white underline text-xs cursor-pointer ml-1"
-              >
-                {language === 'ar' ? 'إلغاء التحديد' : language === 'fr' ? 'Désélectionner' : 'Deselect all'}
-              </button>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <AtriumButton
-                type="button"
-                variant="primary"
-                size="xs"
-                onClick={handleBatchApprove}
-                icon={<UserCheck size={13} />}
-              >
-                <span>{language === 'ar' ? 'اعتماد وتحويل' : language === 'fr' ? 'Valider la sélection' : 'Batch Approve'}</span>
-              </AtriumButton>
-              <AtriumButton
-                type="button"
-                variant="secondary"
-                size="xs"
-                onClick={handleBatchDecline}
-                icon={<X size={13} />}
-              >
-                <span>{language === 'ar' ? 'رفض' : language === 'fr' ? 'Refuser' : 'Decline'}</span>
-              </AtriumButton>
-              <AtriumButton
-                type="button"
-                variant="danger"
-                size="xs"
-                onClick={handleBatchDelete}
-                icon={<Trash2 size={13} />}
-              >
-                <span>{language === 'ar' ? 'حذف' : language === 'fr' ? 'Supprimer' : 'Delete'}</span>
-              </AtriumButton>
-            </div>
-          </div>
-        )}
-
         {/* UniversalDataCollection Component */}
         <UniversalDataCollection<RegistrationLead>
           items={sortedLeads}
           keyExtractor={(lead) => lead.id}
-          defaultViewMode={viewMode}
+          viewMode={viewMode}
+          onViewModeChange={setViewMode}
           columns={leadColumns}
           isLoading={isSyncing || networkMode === 'force_skeleton'}
           isOffline={networkMode === 'offline'}
@@ -774,6 +698,13 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
           onRetrySync={retryCloudSync}
           selectedIds={selectedLeadIds}
           onSelectionChange={setSelectedLeadIds}
+          bulkSecondaryAction={{
+            label: language === 'ar' ? 'اعتماد وتحويل' : language === 'fr' ? 'Valider la sélection' : 'Batch Approve',
+            icon: <UserCheck size={13} />,
+            onClick: handleBatchApprove,
+            variant: 'primary',
+          }}
+          onBulkDelete={handleBatchDelete}
           isPinned={(lead) => pinnedLeadIds.has(lead.id)}
           onTogglePin={handleTogglePinLead}
           onItemClick={(lead) => setSelectedLead(lead)}
@@ -787,7 +718,7 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
               setLeadSortDir('asc');
             }
           }}
-          showViewToggle={false}
+          showViewToggle={true}
           emptyTitle={
             language === 'ar'
               ? 'لا توجد طلبات تسجيل'

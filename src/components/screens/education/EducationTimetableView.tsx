@@ -63,6 +63,7 @@ export const EducationTimetableView: React.FC = () => {
   const [isAddSessionModalOpen, setIsAddSessionModalOpen] = useState(false);
   const [selectedSession, setSelectedSession] = useState<EduSession | null>(null);
   const [selectedSessionIds, setSelectedSessionIds] = useState<Set<string>>(new Set());
+  const [viewMode, setViewMode] = useState<'list' | 'grid' | 'calendar'>('calendar');
   const [inspectorTab, setInspectorTab] = useState<'seance' | 'salle' | 'emargement'>('seance');
   const [isRollCallOpen, setIsRollCallOpen] = useState(false);
   const [rollCallSession, setRollCallSession] = useState<EduSession | null>(null);
@@ -169,6 +170,95 @@ export const EducationTimetableView: React.FC = () => {
       },
     },
   ];
+
+  const renderCalendarGrid = () => {
+    const dates = Array.from(new Set(filteredSessions.map((s) => s.date))).sort();
+    if (dates.length === 0) {
+      return (
+        <div className="py-16 text-center text-neutral-400">
+          <CalendarIcon size={32} className="mx-auto mb-2 opacity-40 text-[#C4785A]" />
+          <p className="text-xs font-semibold">{isAr ? 'لا توجد حصص مجدولة حالياً' : 'Aucune séance programmée dans le planning'}</p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 w-full">
+        {dates.map((dateStr) => {
+          const daySessions = filteredSessions
+            .filter((s) => s.date === dateStr)
+            .sort((a, b) => a.startTime.localeCompare(b.startTime));
+
+          return (
+            <div
+              key={dateStr}
+              className="bg-white dark:bg-neutral-850 rounded-2xl border border-neutral-200/80 dark:border-neutral-700/80 p-3.5 shadow-2xs space-y-3"
+            >
+              <div className="flex items-center justify-between pb-2 border-b border-neutral-100 dark:border-neutral-800">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-[#C4785A]" />
+                  <span className="font-mono text-xs font-bold text-neutral-800 dark:text-neutral-100">
+                    {dateStr}
+                  </span>
+                </div>
+                <span className="text-[10px] font-semibold text-neutral-400 px-2 py-0.5 bg-neutral-100 dark:bg-neutral-800 rounded-full">
+                  {daySessions.length} {isAr ? 'حصص' : 'séances'}
+                </span>
+              </div>
+
+              <div className="space-y-2.5">
+                {daySessions.map((s) => {
+                  const hasConflict = conflicts.has(s.id);
+                  const isSelected = selectedSession?.id === s.id;
+                  return (
+                    <div
+                      key={s.id}
+                      onClick={() => setSelectedSession(s)}
+                      className={`p-3 rounded-xl border transition-all cursor-pointer ${
+                        isSelected
+                          ? 'border-[#C4785A] bg-[#FCEEE8]/40 dark:bg-neutral-800 shadow-xs'
+                          : 'border-neutral-200/70 dark:border-neutral-700/60 hover:border-[#C4785A]/60 bg-neutral-50/50 dark:bg-neutral-800/40'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-1 mb-1.5">
+                        <span className="font-mono text-[11px] font-bold text-[#C4785A] flex items-center gap-1">
+                          <Clock size={11} />
+                          {s.startTime} - {s.endTime}
+                        </span>
+                        {hasConflict && (
+                          <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300">
+                            Conflit
+                          </span>
+                        )}
+                      </div>
+                      <div className="font-bold text-xs text-neutral-900 dark:text-neutral-100 truncate">
+                        {s.cohortName}
+                      </div>
+                      {s.topic && (
+                        <div className="text-[11px] text-neutral-500 line-clamp-1 mt-0.5">
+                          {s.topic}
+                        </div>
+                      )}
+                      <div className="mt-2 pt-2 border-t border-neutral-200/50 dark:border-neutral-700/50 flex items-center justify-between text-[10px] text-neutral-400">
+                        <span className="flex items-center gap-1 truncate max-w-[110px]">
+                          <MapPin size={10} className="text-[#C4785A]" />
+                          {s.classroomName || 'Salle'}
+                        </span>
+                        <span className="flex items-center gap-1 truncate max-w-[110px]">
+                          <User size={10} />
+                          {s.instructorName || 'Formateur'}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
 
   const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
     isLoading: isSyncing || networkMode === 'force_skeleton',
@@ -344,12 +434,15 @@ export const EducationTimetableView: React.FC = () => {
           <div className="flex flex-col lg:flex-row gap-6 items-start">
             <div className="flex-1 min-w-0 w-full">
               <UniversalDataCollection<EduSession>
-              title={isAr ? 'جدول الحصص والتوقيت' : 'Grille Générale des Séances & Horaires'}
-              subtitle={isAr ? 'توزيع القاعات، الأفواج والمدربين' : 'Suivi des cours, créneaux horaires et feuilles d’émargement'}
-              items={filteredSessions}
-              keyExtractor={(s) => s.id}
-              selectedIds={selectedSessionIds}
-              onSelectionChange={setSelectedSessionIds}
+                items={filteredSessions}
+                keyExtractor={(s) => s.id}
+                viewMode={viewMode}
+                defaultViewMode="calendar"
+                showCalendarToggle={true}
+                onViewModeChange={setViewMode}
+                renderCalendarView={renderCalendarGrid}
+                selectedIds={selectedSessionIds}
+                onSelectionChange={setSelectedSessionIds}
               bulkSecondaryAction={{
                 label: isAr ? 'مناداة الحضور' : 'Feuille d’émargement',
                 icon: <ClipboardList size={14} />,

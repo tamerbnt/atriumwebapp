@@ -41,10 +41,21 @@ import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons'
 
 export interface VenueBookingsViewProps {
   hideHeader?: boolean;
+  hideKpis?: boolean;
+  viewMode?: 'list' | 'grid' | 'calendar';
+  onViewModeChange?: (mode: 'list' | 'grid' | 'calendar') => void;
+  showViewToggle?: boolean;
   onSwitchToTimeline?: () => void;
 }
 
-export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({ hideHeader = false, onSwitchToTimeline }) => {
+export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
+  hideHeader = false,
+  hideKpis = false,
+  viewMode: controlledViewMode,
+  onViewModeChange,
+  showViewToggle,
+  onSwitchToTimeline,
+}) => {
   const { t, language } = useTranslation();
   const {
     rentalBookings,
@@ -480,7 +491,8 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({ hideHeader
         )}
 
         {/* Row 1: Top Metrics Pod Tray matching Staff Management Screenshot 30 */}
-        <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+        {!hideHeader && !hideKpis && (
+          <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
           <div>
             <h2 className="text-base font-bold text-neutral-900 dark:text-white">
               {language === 'ar' ? 'سجل الحجوزات & مؤشرات الاستغلال' : language === 'fr' ? 'Réservations & Indicateurs d\'Activité' : 'Bookings Pipeline & Utilization Indicators'}
@@ -547,6 +559,7 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({ hideHeader
             </div>
           </div>
         </div>
+      )}
 
         {/* Row 2: Bottom Collection Pod Tray matching Staff Management Screenshot 30 */}
         <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
@@ -620,42 +633,6 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({ hideHeader
             </div>
           </div>
 
-          {/* Batch Selection Banner */}
-          {selectedBookingIds.size > 0 && (
-            <div className="flex items-center justify-between p-3 px-4 rounded-xl bg-[#FCEEE8] dark:bg-neutral-800 border border-[#F5E2D8] dark:border-neutral-700 animate-in fade-in slide-in-from-top-2 flex-wrap gap-2">
-              <div className="flex items-center gap-3">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#C4785A] animate-pulse" />
-                <span className="text-xs font-bold text-neutral-900 dark:text-white">
-                  {selectedBookingIds.size} {language === 'ar' ? 'حجوزات محددة' : language === 'fr' ? 'réservations sélectionnées' : 'bookings selected'}
-                </span>
-              </div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <button
-                  type="button"
-                  onClick={handleBatchCheckIn}
-                  className="px-3 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
-                >
-                  <LogIn size={13} />
-                  <span>{language === 'ar' ? 'تسجيل دخول المحدد' : language === 'fr' ? 'Check-in Sélection' : 'Check In Selected'}</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setSelectedBookingIds(new Set())}
-                  className="px-3 py-1 text-xs text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white font-medium cursor-pointer"
-                >
-                  {language === 'ar' ? 'إلغاء التحديد' : language === 'fr' ? 'Désélectionner' : 'Deselect'}
-                </button>
-                <button
-                  type="button"
-                  onClick={handleBatchDelete}
-                  className="px-3.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
-                >
-                  <Trash2 size={13} />
-                  <span>{language === 'ar' ? 'إلغاء المحدد' : language === 'fr' ? 'Annuler' : 'Cancel Selected'}</span>
-                </button>
-              </div>
-            </div>
-          )}
 
           {/* Universal Bookings Collection */}
           <UniversalDataCollection<RentalBooking>
@@ -863,9 +840,13 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({ hideHeader
             isPinned={(b) => pinnedBookingIds.has(b.id)}
             selectedIds={selectedBookingIds}
             onSelectionChange={setSelectedBookingIds}
+            viewMode={controlledViewMode}
+            showViewToggle={showViewToggle !== undefined ? showViewToggle : true}
             showCalendarToggle={!!onSwitchToTimeline}
             onViewModeChange={(m: 'list' | 'grid' | 'calendar') => {
-              if (m === 'calendar' && onSwitchToTimeline) {
+              if (onViewModeChange) {
+                onViewModeChange(m);
+              } else if (m === 'calendar' && onSwitchToTimeline) {
                 onSwitchToTimeline();
               }
             }}

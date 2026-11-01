@@ -593,6 +593,8 @@ export const MembershipSchedulerView: React.FC = () => {
             </div>
           </div>
         </div>
+      </div>
+
       {/* Row 2: Universal Cards & List View with Integrated Tri-View */}
       <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
           {/* Collection Filter & Action Header */}
