@@ -118,7 +118,21 @@ import { AgricultureCyclesView } from './components/screens/agriculture/Agricult
 import { AgricultureHarvestView } from './components/screens/agriculture/AgricultureHarvestView';
 import { AgricultureLivestockView } from './components/screens/agriculture/AgricultureLivestockView';
 import { AgricultureWholesaleView } from './components/screens/agriculture/AgricultureWholesaleView';
-import { UniversalStaffView } from './components/common/UniversalStaffView';
+import { MembershipStaffView } from './components/screens/membership/MembershipStaffView';
+import { AppointmentStaffView } from './components/screens/appointment/AppointmentStaffView';
+import { PosStaffView } from './components/screens/pos/PosStaffView';
+import { EducationStaffView } from './components/screens/education/EducationStaffView';
+import { AutoGarageStaffView } from './components/screens/garage/AutoGarageStaffView';
+import { MedicalStaffView } from './components/screens/medical/MedicalStaffView';
+import { ContractorStaffView } from './components/screens/contractor/ContractorStaffView';
+import { LogisticsStaffView } from './components/screens/logistics/LogisticsStaffView';
+import { ManufacturingStaffView } from './components/screens/manufacturing/ManufacturingStaffView';
+import { AgricultureStaffView } from './components/screens/agriculture/AgricultureStaffView';
+import { LegalStaffView } from './components/screens/legal/LegalStaffView';
+import { RealEstateStaffView } from './components/screens/realestate/RealEstateStaffView';
+import { TradingStaffView } from './components/screens/trading/TradingStaffView';
+import { VenueStaffView } from './components/screens/venue/VenueStaffView';
+import { FreelanceStaffView } from './components/screens/freelance/FreelanceStaffView';
 import { DesktopUpgradeModal } from './components/modals/DesktopUpgradeModal';
 import { CommandPaletteModal } from './components/modals/CommandPaletteModal';
 import { ToastStack } from './components/ui/ToastStack';
@@ -261,7 +275,23 @@ export default function App() {
 
   const renderActiveScreen = () => {
     if (activeScreen === 'staff') {
-      return <UniversalStaffView currentCategory={currentBusiness?.category} />;
+      const cat = currentBusiness?.category;
+      if (cat === 'project_milestone') return <ProjectRhView initialTab="talents" />;
+      if (cat === 'freelance_solo') return <FreelanceStaffView />;
+      if (cat === 'rental_booking') return <VenueStaffView />;
+      if (cat === 'education_cohort') return <EducationStaffView />;
+      if (cat === 'appointment_service') return <AppointmentStaffView />;
+      if (cat === 'pos_inventory') return <PosStaffView />;
+      if (cat === 'trading_commercial') return <TradingStaffView />;
+      if (cat === 'medical_clinic') return <MedicalStaffView />;
+      if (cat === 'auto_garage') return <AutoGarageStaffView />;
+      if (cat === 'real_estate') return <RealEstateStaffView />;
+      if (cat === 'manufacturing_production') return <ManufacturingStaffView />;
+      if (cat === 'legal_accounting') return <LegalStaffView />;
+      if (cat === 'logistics_delivery') return <LogisticsStaffView />;
+      if (cat === 'construction_contractor') return <ContractorStaffView />;
+      if (cat === 'agriculture_farming') return <AgricultureStaffView />;
+      return <MembershipStaffView />;
     }
 
     if (isProjectMilestone) {

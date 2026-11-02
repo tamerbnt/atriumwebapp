@@ -195,7 +195,7 @@ export interface RegistrationLead {
   updatedAt: string;
 }
 
-export type StaffLifecycleStatus = 'active' | 'frozen' | 'vacation' | 'terminated';
+export type StaffLifecycleStatus = 'active' | 'frozen' | 'vacation' | 'on_leave' | 'terminated';
 
 export type RecruitmentLegalType = 'cdi' | 'cdd' | 'stage' | 'vacataire' | 'prestataire';
 
@@ -290,14 +290,17 @@ export interface StaffMember {
   ccpKey?: string;
   bankRib?: string;
   recruitmentType?: RecruitmentLegalType;
+  contractType?: string;
   pinCode?: string;
   cardId?: string;
+  badgeToken?: string;
   canLoginEmail?: boolean;
   canLoginPhone?: boolean;
   canLoginPin?: boolean;
   isClockedInToday?: boolean;
   lastClockInTime?: string;
   lastClockOutTime?: string;
+  attendanceLogs?: Array<{ id: string; timestamp: string; type: 'in' | 'out'; method: 'rfid' | 'pin' | 'manual' }>;
   allowedModules: string[];
   // Medical Emergency
   emergencyContactName?: string;
@@ -307,6 +310,39 @@ export interface StaffMember {
   // Domain Specific & Performance
   categoryProperties?: StaffCategoryProperties;
   performance?: StaffPerformanceMetric;
+  // Category-specific convenience top-level fields (synced with categoryProperties)
+  assignedParcelId?: string;
+  milkingParlorStation?: string;
+  phytosanitaryLicense?: boolean;
+  chairOrStudio?: string;
+  assignedChairOrStudio?: string;
+  serviceCommissionRate?: number;
+  assignedRegisterId?: string;
+  maxCashFloatLimit?: number;
+  assignedBayId?: string;
+  technicalSpecialty?: string;
+  orderRegistrationNumber?: string;
+  medicalSpecialty?: string;
+  canPrescribe?: boolean;
+  cacobatphCardNumber?: string;
+  assignedChantierId?: string;
+  safetyCertifications?: string[];
+  drivingLicenseCategory?: string;
+  assignedVehiclePlate?: string;
+  deliveryZoneWilayas?: number[];
+  assignedWorkstationId?: string;
+  machineSafetyClearance?: boolean;
+  qualityInspectorClearance?: boolean;
+  carteProfessionnelleNumber?: string;
+  canSignMandates?: boolean;
+  barAssociationNumber?: string;
+  swornClerkClearance?: boolean;
+  assignedCohortId?: string;
+  canSignAttendance?: boolean;
+  assignedStageOrHall?: string;
+  eventAccessBadge?: string;
+  dailyRate?: number;
+  portfolioUrl?: string;
 }
 
 export interface Product {

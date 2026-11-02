@@ -1791,7 +1791,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     activeEducationRole,
   });
 
-  if (canAccessStaffScreen(category, effectiveRole)) {
+  if (category !== 'project_milestone' && canAccessStaffScreen(category, effectiveRole)) {
     const hasStaffItem = dockNavItems.some((item) => item.id === 'staff');
     if (!hasStaffItem) {
       const staffNavItem = {
