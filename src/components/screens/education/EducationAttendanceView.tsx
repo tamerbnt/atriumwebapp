@@ -531,9 +531,6 @@ export const EducationAttendanceView: React.FC = () => {
                   {activeCohort?.name || t('edu_label_cohort')} · {t('edu_learners_count', { count: String(cohortStudents.length) })}
                 </span>
               </div>
-              <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
-                {t('edu_attendance_subtitle')}
-              </p>
             </div>
           </div>
 
@@ -636,9 +633,6 @@ export const EducationAttendanceView: React.FC = () => {
             <h3 className="text-xs font-bold text-neutral-900 dark:text-white tracking-tight">
               {language === 'ar' ? 'مؤشرات الحضور والانضباط الأكاديمي' : language === 'fr' ? 'Assiduité & Santé Pédagogique' : 'Attendance Telemetry & Academic Health'}
             </h3>
-            <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-              {language === 'ar' ? 'نسب الحضور الفعلي ومتوسط التحصيل العلمي للفوج' : language === 'fr' ? 'Taux de présence vérifiés et moyenne générale' : 'Verified attendance rate and weighted academic performance'}
-            </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

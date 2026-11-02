@@ -512,11 +512,6 @@ export const PosOrdersView: React.FC = () => {
                   {branchSales.length} {language === 'ar' ? 'عملية مسجلة' : 'ventes'}
                 </span>
               </div>
-              <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
-                {language === 'ar'
-                  ? 'متابعة سجل المبيعات المكتملة، التذاكر المعلقة، إصدار فواتير الإرجاع، والطباعة الحرارية 80 مم'
-                  : 'Audit des encaissements, tickets en attente, traitement des avoirs et réimpression des reçus thermiques.'}
-              </p>
             </div>
           </div>
 

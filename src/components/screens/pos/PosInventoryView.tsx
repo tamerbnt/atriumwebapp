@@ -859,11 +859,6 @@ export const PosInventoryView: React.FC = () => {
                 {inventoryStats.totalSKUs} {language === 'ar' ? 'صنفاً' : 'articles'}
               </span>
             </div>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
-              {language === 'ar'
-                ? 'مراقبة كميات السلع، التنبيه بالنواقص، تعديل أسعار التكلفة والتجزئة، وتصدير ملفات الجرد'
-                : 'Gestion des fiches produits, codes-barres EAN-13, seuils d’alerte, valorisation à l’achat et réassort groupé.'}
-            </p>
           </div>
 
           <div className="flex items-center gap-2.5 flex-wrap">
@@ -1348,9 +1343,6 @@ export const PosInventoryView: React.FC = () => {
                   {(purchaseDocs || []).length}
                 </span>
               </div>
-              <p className="text-[11px] text-neutral-400">
-                {language === 'ar' ? 'تتبع الطلبيات وتحديث المخزون بنقرة واحدة' : 'Suivi des réceptions à quai avec incrémentation automatique du stock'}
-              </p>
             </div>
           </div>
 

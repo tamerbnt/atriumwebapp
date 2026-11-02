@@ -241,13 +241,6 @@ export const VenueDashboardView: React.FC = () => {
             <h1 className="text-2xl lg:text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white">
               {language === 'ar' ? 'مرحباً بك مجدداً!' : language === 'fr' ? 'Bienvenue à nouveau !' : 'Welcome back, Tamer!'}
             </h1>
-            <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-1">
-              {language === 'ar'
-                ? 'نظرة عامة ومباشرة على نشاط حجز القاعات ومداخيل المرافق اليوم.'
-                : language === 'fr'
-                ? 'Aperçu en direct de l\'activité des salles et des opérations du site.'
-                : 'Live overview of today\'s venue activity and facility operations.'}
-            </p>
           </div>
 
           <div className="flex items-center gap-3 relative">
@@ -401,13 +394,6 @@ export const VenueDashboardView: React.FC = () => {
                   <h3 className="text-[13.5px] font-bold text-neutral-900 dark:text-white">
                     {language === 'ar' ? 'ملخص الإشغال' : language === 'fr' ? 'Résumé' : 'Summary'}
                   </h3>
-                  <p className="text-[11px] text-neutral-400">
-                    {language === 'ar'
-                      ? 'متابعة أداء المرافق والقاعات المباشر.'
-                      : language === 'fr'
-                      ? 'Suivi des performances des salles en direct.'
-                      : 'Track live facility performance.'}
-                  </p>
                 </div>
 
                 <div className="px-3 py-1 bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700 rounded-[12px] text-xs font-semibold text-neutral-700 dark:text-neutral-300 shadow-2xs flex items-center gap-1.5">
@@ -581,13 +567,6 @@ export const VenueDashboardView: React.FC = () => {
                 <h3 className="text-[13.5px] font-bold text-neutral-900 dark:text-white">
                   {language === 'ar' ? 'نشاط المرافق اليومي' : language === 'fr' ? 'Activité' : 'Activity'}
                 </h3>
-                <p className="text-[11px] text-neutral-400">
-                  {language === 'ar'
-                    ? 'متابعة العمليات والمداخيل والضمانات الجارية.'
-                    : language === 'fr'
-                    ? 'Suivi de l\'activité opérationnelle journalière.'
-                    : 'Track your daily operational activity.'}
-                </p>
               </div>
 
               {/* 3 Inset Activity Cards (Revenue, Active Spaces, and Dark Espresso Card) */}
@@ -700,13 +679,6 @@ export const VenueDashboardView: React.FC = () => {
                   <h3 className="text-[13.5px] font-bold text-neutral-900 dark:text-white">
                     {language === 'ar' ? 'النشاط الأخير' : language === 'fr' ? 'Activité Récente' : 'Recent Activity'}
                   </h3>
-                  <p className="text-[11px] text-neutral-400">
-                    {language === 'ar'
-                      ? 'متابعة سجل حركات واستلام القاعات.'
-                      : language === 'fr'
-                      ? 'Historique en direct des réservations et passages.'
-                      : 'Live feed of room check-ins and bookings.'}
-                  </p>
                 </div>
 
                 {/* Filter Capsule Group */}

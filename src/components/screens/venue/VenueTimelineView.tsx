@@ -168,9 +168,6 @@ export const VenueTimelineView: React.FC = () => {
               <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white">
                 {t('venue_timeline_matrix_title')}
               </h1>
-              <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
-                {t('venue_timeline_matrix_sub')}
-              </p>
             </div>
           </div>
 

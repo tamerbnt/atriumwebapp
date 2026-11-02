@@ -435,13 +435,6 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white">
               {terminology.registration}
             </h1>
-            <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
-              {language === 'ar'
-                ? `إدارة طلبات الانضمام والاستفسارات وتسجيل المشتركين الجدد في ${currentBranch?.name || 'الفرع'}`
-                : language === 'fr'
-                ? `Traiter les demandes d'adhésion, qualifier les prospects et intégrer les nouveaux membres dans ${currentBranch?.name || 'l\'établissement'}`
-                : `Review self-service intake requests, qualify prospects, and onboard new members into ${currentBranch?.name || 'Atrium 1'}`}
-            </p>
           </div>
         </div>
 
@@ -518,9 +511,6 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
           <h2 className="text-base font-bold text-neutral-900 dark:text-white">
             {t('reg_pipeline_health_title', language)}
           </h2>
-          <p className="text-xs text-neutral-400 dark:text-neutral-500">
-            {t('reg_pipeline_health_desc', language)}
-          </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

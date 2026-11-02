@@ -440,9 +440,6 @@ export const AppointmentServicesView: React.FC = () => {
               {servicesCatalog.length} Prestations
             </span>
           </div>
-          <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
-            Barème tarifaire, durées cabines, coûts consommables et pourcentages de commission stylistes.
-          </p>
         </div>
 
         <div className="flex items-center gap-2.5 flex-wrap">

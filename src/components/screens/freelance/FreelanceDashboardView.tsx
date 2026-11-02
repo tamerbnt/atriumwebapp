@@ -299,13 +299,6 @@ export const FreelanceDashboardView: React.FC = () => {
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-900 dark:text-white">
               {language === 'ar' ? 'مرحباً بعودتك، ثامر!' : language === 'fr' ? 'Bon retour, Tamer !' : 'Welcome back, Tamer!'}
             </h1>
-            <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
-              {language === 'ar'
-                ? 'نظرة عامة حية على نشاط الاستوديو والمهام والفواتير قيد التحصيل.'
-                : language === 'fr'
-                ? 'Vue d\'ensemble en direct des livrables du studio, honoraires et facturation.'
-                : 'Live overview of today\'s studio deliverables, client billables, and cash flow.'}
-            </p>
           </div>
 
           <div className="flex items-center gap-2.5 flex-wrap self-start sm:self-auto">
@@ -493,9 +486,6 @@ export const FreelanceDashboardView: React.FC = () => {
                   <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
                     Summary
                   </h2>
-                  <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-                    Track live studio billable performance.
-                  </p>
                 </div>
                 <div className="px-3 py-1 rounded-[12px] bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-xs font-semibold text-neutral-700 dark:text-neutral-300 shadow-2xs">
                   Weekly ▾
@@ -660,9 +650,6 @@ export const FreelanceDashboardView: React.FC = () => {
                 <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
                   Activity
                 </h2>
-                <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-                  Track your daily studio and client activity.
-                </p>
               </div>
 
               {/* 3 Inset Activity Cards (Equal Width, 12px gap, Height 155px) */}
@@ -742,9 +729,6 @@ export const FreelanceDashboardView: React.FC = () => {
                   <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
                     Recent Activity
                   </h2>
-                  <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-                    Track your daily studio operational activity.
-                  </p>
                 </div>
 
                 {/* Filter Pill Group (CornerRadius 10px, Height 32px, Padding 3px) */}

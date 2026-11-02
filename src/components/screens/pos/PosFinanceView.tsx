@@ -374,11 +374,6 @@ export const PosFinanceView: React.FC = () => {
               {currentBranch.name}
             </span>
           </div>
-          <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
-            {language === 'ar'
-              ? 'مراقبة الرصيد الافتتاحي، التسوية المادية للمدفوعات، احتساب الفارق (Écart)، وطباعة تقرير Z للإغلاق'
-              : 'Fond de caisse initial, pointage physique des espèces, contrôle des écarts et édition du rapport Z de fin de journée.'}
-          </p>
         </div>
 
         <div className="flex items-center gap-2.5 flex-wrap">

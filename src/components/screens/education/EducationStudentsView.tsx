@@ -568,9 +568,6 @@ export const EducationStudentsView: React.FC = () => {
                   {totalStudentsCount} {language === 'ar' ? 'طالب' : 'students'} · {activeMinorsCount} {language === 'ar' ? 'قاصر' : 'minors'}
                 </span>
               </div>
-              <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
-                {t('edu_students_subtitle')}
-              </p>
             </div>
           </div>
 
@@ -698,9 +695,6 @@ export const EducationStudentsView: React.FC = () => {
             <h3 className="text-xs font-bold text-neutral-900 dark:text-white tracking-tight">
               {language === 'ar' ? 'مؤشرات الانضباط والتحصيل الدراسي' : language === 'fr' ? 'Effectifs & Assiduité Scolaire' : 'Student Body & Attendance Health'}
             </h3>
-            <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-              {language === 'ar' ? 'متابعة أداء وحضور ودفعات الطلبة' : language === 'fr' ? 'Indicateurs clés de présence et recouvrement' : 'Key enrollment, attendance, and tuition performance indicators'}
-            </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

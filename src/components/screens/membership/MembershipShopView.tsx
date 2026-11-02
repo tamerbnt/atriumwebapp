@@ -235,11 +235,6 @@ export const MembershipShopView: React.FC = () => {
               <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white">
                 {isAr ? 'متجر المكملات والتغذية الرياضية' : 'Pro-Shop & Nutrition Sportive'}
               </h1>
-              <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
-                {isAr
-                  ? 'مبيعات الصندوق المباشرة للبروتين، المكملات، الشيكرز والألبسة الرياضية'
-                  : 'Vente au comptoir de protéines, compléments alimentaires, shakers et textile'}
-              </p>
             </div>
           </div>
 
@@ -269,11 +264,6 @@ export const MembershipShopView: React.FC = () => {
             <h2 className="text-base font-bold text-neutral-900 dark:text-white">
               {isAr ? 'مؤشرات مبيعات المتجر وتدفق الصندوق' : 'Indicateurs Pro-Shop & Rotation de Stock'}
             </h2>
-            <p className="text-xs text-neutral-400 dark:text-neutral-500">
-              {isAr
-                ? 'متابعة حركة المخزون، تنبيهات إعادة التوريد وسيولة صندوق المتجر'
-                : 'Valorisation des stocks, alertes de réassort et encaissements au comptoir'}
-            </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

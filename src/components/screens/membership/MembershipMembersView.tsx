@@ -398,13 +398,6 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white">
               {terminology.members}
             </h1>
-            <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
-              {language === 'ar'
-                ? `إدارة وتصفية ملفات ${terminology.members} والباقات وسجل الزيارات`
-                : language === 'fr'
-                ? `Gérer et filtrer les profils, forfaits et historique des ${terminology.members.toLowerCase()}`
-                : `Browse, filter, and manage ${terminology.members.toLowerCase()} profiles, packages, and visit history`}
-            </p>
           </div>
         </div>
 
@@ -481,13 +474,6 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
           <h2 className="text-base font-bold text-neutral-900 dark:text-white">
             {terminology.members} & {language === 'ar' ? 'مؤشرات التجديد' : language === 'fr' ? 'Rétention & Renouvellements' : 'Retention Health'}
           </h2>
-          <p className="text-xs text-neutral-400 dark:text-neutral-500">
-            {language === 'ar'
-              ? `متابعة اشتراكات ${terminology.members} ومعدلات التجديد وحجم التسجيلات`
-              : language === 'fr'
-              ? `Pipeline des ${terminology.members.toLowerCase()}, taux de renouvellement et adhésions`
-              : `Active ${terminology.members.toLowerCase()} pipeline, renewal retention, and intake volume`}
-          </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

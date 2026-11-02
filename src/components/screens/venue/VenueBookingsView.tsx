@@ -393,9 +393,6 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
                 <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white">
                   {t('venue_bookings_page_title')}
                 </h1>
-                <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
-                  {t('venue_bookings_page_sub')}
-                </p>
               </div>
             </div>
 
@@ -497,13 +494,6 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
             <h2 className="text-base font-bold text-neutral-900 dark:text-white">
               {language === 'ar' ? 'سجل الحجوزات & مؤشرات الاستغلال' : language === 'fr' ? 'Réservations & Indicateurs d\'Activité' : 'Bookings Pipeline & Utilization Indicators'}
             </h2>
-            <p className="text-xs text-neutral-400 dark:text-neutral-500">
-              {language === 'ar'
-                ? 'متابعة جدول الحجوزات النشطة والجلسات الجارية والمداخيل المحققة'
-                : language === 'fr'
-                ? 'Suivi du planning, des sessions en cours et du chiffre d\'affaires réservé'
-                : 'Active booking intake, current live sessions, and overall booked volume'}
-            </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

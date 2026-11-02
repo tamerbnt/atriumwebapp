@@ -219,13 +219,6 @@ export const MembershipDashboardView: React.FC<MembershipDashboardViewProps> = (
             <h1 className="text-2xl lg:text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white">
               {language === 'ar' ? 'مرحباً بك مجدداً!' : language === 'fr' ? 'Bienvenue à nouveau !' : 'Welcome back!'}
             </h1>
-            <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-1">
-              {language === 'ar'
-                ? 'نظرة عامة ومباشرة على نشاط النادي، حركة المشتركين ومقبوضات الاشتراكات.'
-                : language === 'fr'
-                ? 'Aperçu en direct de l\'activité du club, des passages et des encaissements.'
-                : 'Live overview of facility activity, turnstile passages, and subscription cashflow.'}
-            </p>
           </div>
 
           <div className="flex items-center gap-3 relative flex-wrap">
@@ -390,13 +383,6 @@ export const MembershipDashboardView: React.FC<MembershipDashboardViewProps> = (
                   <h3 className="text-[13.5px] font-bold text-neutral-900 dark:text-white">
                     {language === 'ar' ? 'ملخص الإشغال' : language === 'fr' ? 'Résumé' : 'Summary'}
                   </h3>
-                  <p className="text-[11px] text-neutral-400">
-                    {language === 'ar'
-                      ? 'متابعة الحضور المباشر وحركة القاعة اليوم.'
-                      : language === 'fr'
-                      ? 'Suivi des passages et présence en salle en direct.'
-                      : 'Track live attendance and gym floor occupancy.'}
-                  </p>
                 </div>
 
                 <div className="px-3 py-1 bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700 rounded-[12px] text-xs font-semibold text-neutral-700 dark:text-neutral-300 shadow-2xs flex items-center gap-1.5">
@@ -570,13 +556,6 @@ export const MembershipDashboardView: React.FC<MembershipDashboardViewProps> = (
                 <h3 className="text-[13.5px] font-bold text-neutral-900 dark:text-white">
                   {language === 'ar' ? 'نشاط النادي والاشتراكات' : language === 'fr' ? 'Activité & Abonnements' : 'Facility Activity & Memberships'}
                 </h3>
-                <p className="text-[11px] text-neutral-400">
-                  {language === 'ar'
-                    ? 'المقبوضات المحصلة، الاشتراكات السارية والتنبيهات الاستباقية للتجديد.'
-                    : language === 'fr'
-                    ? 'Suivi des encaissements, adhérents en règle et alertes de renouvellement.'
-                    : 'Collections volume, valid passes, and proactive renewal alerts.'}
-                </p>
               </div>
 
               {/* 3-Card Metrics Grid */}
@@ -656,13 +635,6 @@ export const MembershipDashboardView: React.FC<MembershipDashboardViewProps> = (
                   <h3 className="text-[13.5px] font-bold text-neutral-900 dark:text-white">
                     {language === 'ar' ? 'سجل المرور والعمليات الآنية' : language === 'fr' ? 'Passages & Opérations en Direct' : 'Live Turnstile & Event Stream'}
                   </h3>
-                  <p className="text-[11px] text-neutral-400">
-                    {language === 'ar'
-                      ? 'بث مباشر لعمليات مسح شارات RFID وحركات الصندوق الأخيرة.'
-                      : language === 'fr'
-                      ? 'Flux en temps réel des accès RFID et dernières transactions d\'accueil.'
-                      : 'Real-time RFID access scans and recent frontdesk transactions.'}
-                  </p>
                 </div>
 
                 {/* Filter Capsule Switcher */}

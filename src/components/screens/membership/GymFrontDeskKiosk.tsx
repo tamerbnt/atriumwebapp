@@ -288,11 +288,6 @@ export const GymFrontDeskKiosk: React.FC = () => {
                 {isRtl ? 'مباشر' : 'Live Kiosk'}
               </span>
             </h1>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">
-              {isRtl
-                ? 'تحقق فوري من البطاقات والتذاكر في أقل من 3 ثوانٍ'
-                : 'Validation instantanée des abonnements et vente des pass séance'}
-            </p>
           </div>
         </div>
 

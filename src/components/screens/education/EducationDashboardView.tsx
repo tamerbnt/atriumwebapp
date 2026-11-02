@@ -270,13 +270,6 @@ export const EducationDashboardView: React.FC = () => {
                 ? `Bienvenue, ${currentUser?.fullName?.split(' ')[0] || 'Prof'} !`
                 : `Welcome back, ${currentUser?.fullName?.split(' ')[0] || 'Tamer'}!`}
             </h1>
-            <p className="text-[12.5px] text-neutral-500 dark:text-neutral-400 mt-1">
-              {language === 'ar'
-                ? 'نظرة شاملة على نشاط الأكاديمية والطلبة وحضور الحصص والتحصيل المالي اليوم.'
-                : language === 'fr'
-                ? 'Vue d\'ensemble des activités scolaires, assiduité des cohortes et flux de trésorerie.'
-                : 'Live overview of today\'s academic cohort activity, student presence, and tuition operations.'}
-            </p>
           </div>
 
           {/* Right Controls: Branch Switcher + Quick Actions Toggle */}
@@ -434,9 +427,6 @@ export const EducationDashboardView: React.FC = () => {
                   <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
                     {language === 'ar' ? 'الملخص والنشاط' : language === 'fr' ? 'Synthèse' : 'Summary'}
                   </h2>
-                  <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-                    {language === 'ar' ? 'تتبع حضور الطلبة وإشغال القاعات' : language === 'fr' ? 'Assiduité et fréquentation du campus' : 'Track live student attendance & campus presence'}
-                  </p>
                 </div>
                 <div className="h-7 px-2.5 rounded-[12px] bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-[11px] font-medium text-neutral-700 dark:text-neutral-300 flex items-center gap-1 shadow-2xs">
                   <span>{summaryTimeframe === 'daily' ? 'Daily' : summaryTimeframe === 'weekly' ? 'Weekly' : 'Monthly'}</span>
@@ -622,9 +612,6 @@ export const EducationDashboardView: React.FC = () => {
                 <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
                   {language === 'ar' ? 'مؤشرات الأداء الأكاديمي' : language === 'fr' ? 'Activité & Recouvrement' : 'Activity'}
                 </h2>
-                <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-                  {language === 'ar' ? 'تتبع الإيرادات وحالات الطلاب المعلقين' : language === 'fr' ? 'Flux financier et effectifs scolaires du jour' : 'Track daily tuition cashflow and cohort health'}
-                </p>
               </div>
 
               {/* 3 Inset Cards (equal width, 12px gap, height 155px, sparklines) */}
@@ -747,9 +734,6 @@ export const EducationDashboardView: React.FC = () => {
                   <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
                     {language === 'ar' ? 'سجل النشاط اليومي' : language === 'fr' ? 'Activité Récente' : 'Recent Activity'}
                   </h2>
-                  <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-                    {language === 'ar' ? 'تسجيلات الحضور، الحصص، والمقبوضات المالية المباشرة' : language === 'fr' ? 'Historique en direct des présences et encaissements' : 'Live stream of roll-calls, sessions, and payments'}
-                  </p>
                 </div>
 
                 {/* Filter Pill Group inside a bordered container */}

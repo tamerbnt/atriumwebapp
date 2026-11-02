@@ -355,13 +355,6 @@ export const UniversalStaffView: React.FC<UniversalStaffViewProps> = ({
             <Users className="w-6 h-6 text-[#C4785A]" />
             <span>{isAr ? 'فريق العمل' : isEn ? 'Staff' : 'Équipe'}</span>
           </h1>
-          <p className="text-xs text-neutral-500 mt-1">
-            {isAr
-              ? 'إدارة الموظفين، نقاط الحضور ببطاقات RFID، الرواتب، وتتبع الأداء'
-              : isEn
-              ? 'Staff directory, RFID attendance check-in, payroll dossier, and performance tracking'
-              : 'Annuaire des collaborateurs, pointage quotidien RFID, contrats et indicateurs de performance'}
-          </p>
         </div>
 
         {canCreate && (

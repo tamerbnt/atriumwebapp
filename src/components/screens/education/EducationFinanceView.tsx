@@ -465,9 +465,6 @@ export const EducationFinanceView: React.FC = () => {
                   {eduEnrollments.length} {language === 'ar' ? 'حسابات مسجلة' : 'dossiers'} · {formatMoney(totalCollected)} {language === 'ar' ? 'مستحصل' : 'recouvré'}
                 </span>
               </div>
-              <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
-                {t('edu_finance_subtitle')}
-              </p>
             </div>
           </div>
 
@@ -615,9 +612,6 @@ export const EducationFinanceView: React.FC = () => {
             <h3 className="text-xs font-bold text-neutral-900 dark:text-white tracking-tight">
               {language === 'ar' ? 'مؤشرات التحصيل والذمم المالية' : language === 'fr' ? 'Performance Financière & Recouvrement' : 'Tuition & Receivables Performance'}
             </h3>
-            <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-              {language === 'ar' ? 'متابعة سرعة التحصيل والأقساط المستحقة والديون المتعثرة' : language === 'fr' ? 'Indicateurs clés de facturation, encaissement et échéances en retard' : 'Key billing indicators, collection velocity, and overdue balances'}
-            </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

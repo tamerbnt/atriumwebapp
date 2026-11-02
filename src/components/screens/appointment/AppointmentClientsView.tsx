@@ -476,9 +476,6 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = ({
                   {salonClients.length} Clientes
                 </span>
               </div>
-              <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
-                Dossiers capillaires complets, historique des formulations, alertes allergies et suivi VIP.
-              </p>
             </div>
           </div>
 

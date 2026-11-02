@@ -548,9 +548,6 @@ export const FreelanceDeliverablesView: React.FC = () => {
                 </span>
               )}
             </div>
-            <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
-              {t('free_deliv_subtitle', language)}
-            </p>
           </div>
         </div>
 
@@ -687,9 +684,6 @@ export const FreelanceDeliverablesView: React.FC = () => {
           <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
             {language === 'ar' ? 'مؤشرات إنجاز المشاريع والمهام' : language === 'fr' ? 'Indicateurs des Livrables & Projets' : 'Deliverables & Production Performance'}
           </h2>
-          <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-            {language === 'ar' ? 'متابعة مراحل التسليم وساعات العمل المنجزة وتجاوزات الميزانية' : language === 'fr' ? 'Suivi du cycle de production, du temps passé et des alertes de dépassement' : 'Track task pipeline, tracked hours against estimates, and creep risks'}
-          </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

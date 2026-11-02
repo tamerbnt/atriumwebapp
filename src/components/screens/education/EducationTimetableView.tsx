@@ -293,9 +293,6 @@ export const EducationTimetableView: React.FC = () => {
                   {eduSessions.length} créneaux · {eduClassrooms.length} salles
                 </span>
               </div>
-              <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
-                {t('edu_timetable_subtitle')}
-              </p>
             </div>
           </div>
 
@@ -325,9 +322,6 @@ export const EducationTimetableView: React.FC = () => {
             <h3 className="text-xs font-bold text-neutral-900 dark:text-white tracking-tight">
               Planning & Utilisation des Espaces
             </h3>
-            <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-              Disponibilité des salles, rotation des formateurs et intégrité du calendrier
-            </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

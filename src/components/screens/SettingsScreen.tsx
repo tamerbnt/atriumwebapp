@@ -280,9 +280,6 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
             <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white">
               {t('settings_title', language)}
             </h1>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
-              {t('settings_subtitle', language)}
-            </p>
           </div>
         </div>
 

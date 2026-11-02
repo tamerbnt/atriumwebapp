@@ -401,13 +401,6 @@ export const MembershipFinanceView: React.FC = () => {
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white">
               {t('finance_payroll_title', language)}
             </h1>
-            <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
-              {language === 'ar'
-                ? `دليل الموظفين، مراتب الصلاحيات وصرف الرواتب لـ ${currentBranch?.name || 'الفرع'}`
-                : language === 'fr'
-                ? `Annuaire de l'équipe, niveaux d'accès et décaissements des salaires pour ${currentBranch?.name || 'l\'établissement'}`
-                : `Workforce directory, role authorization ranks, and salary disbursements for ${currentBranch?.name || 'Atrium 1'}`}
-            </p>
           </div>
         </div>
 
@@ -484,9 +477,6 @@ export const MembershipFinanceView: React.FC = () => {
           <h2 className="text-base font-bold text-neutral-900 dark:text-white">
             {language === 'ar' ? 'فريق العمل والكتلة الشهرية للأجور' : language === 'fr' ? 'Équipe & Masse salariale mensuelle' : 'Workforce & Compensation Health'}
           </h2>
-          <p className="text-xs text-neutral-400 dark:text-neutral-500">
-            {language === 'ar' ? 'عدد الموظفين النشطين، إجمالي الرواتب الشهرية ومستويات الصلاحيات' : language === 'fr' ? 'Effectif actif, engagements salariaux mensuels et privilèges d\'accès' : 'Active team headcount, monthly salary commitments, and role access privileges'}
-          </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

@@ -363,9 +363,6 @@ export const FreelanceFinanceView: React.FC = () => {
                 €{currencyTotals.totalEurEquiv.toLocaleString()} {language === 'ar' ? 'إجمالي الدخل' : 'total'}
               </span>
             </div>
-            <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
-              {t('free_fin_subtitle', language)}
-            </p>
           </div>
         </div>
 
@@ -489,9 +486,6 @@ export const FreelanceFinanceView: React.FC = () => {
           <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
             {language === 'ar' ? 'ملخص السيولة والتدفقات المالية' : language === 'fr' ? 'Trésorerie & Encaissements Multi-Devises' : 'Cashflow & Revenue Overview'}
           </h2>
-          <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-            {language === 'ar' ? 'حسابات بنكية متعددة العملات مع محاكاة تقديرية لصافي الأرباح بعد الضريبة' : language === 'fr' ? 'Comptes multi-devises et projection nette après charges et fiscalité' : 'Multi-currency revenue streams and net take-home forecast'}
-          </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

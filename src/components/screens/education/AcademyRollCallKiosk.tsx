@@ -296,11 +296,6 @@ export const AcademyRollCallKiosk: React.FC = () => {
                   </span>
                 )}
               </div>
-              <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
-                {isRtl
-                  ? 'تسجيل الحضور الفوري بلمسة واحدة بدون إظهار أي ديون أو مبالغ مالية'
-                  : 'Pointage tactile haute vitesse en 1 clic sans aucune exposition des créances ou scolarités'}
-              </p>
             </div>
           </div>
 

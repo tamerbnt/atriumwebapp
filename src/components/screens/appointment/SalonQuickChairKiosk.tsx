@@ -248,11 +248,6 @@ export const SalonQuickChairKiosk: React.FC = () => {
                 {isRtl ? 'نشط' : 'Live Floor'}
               </span>
             </h1>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">
-              {isRtl
-                ? 'إدارة محطات الحلاقة والخدمات والتحصيل الفوري بلمسة واحدة'
-                : 'Gestion en temps réel des fauteuils, statuts de soin et encaissement direct'}
-            </p>
           </div>
         </div>
 

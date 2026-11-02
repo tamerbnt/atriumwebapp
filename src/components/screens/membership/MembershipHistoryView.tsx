@@ -326,13 +326,6 @@ export const MembershipHistoryView: React.FC = () => {
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white">
               {t('history_sales_ledger', language)}
             </h1>
-            <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
-              {language === 'ar'
-                ? `المعاملات المالية المنجزة، وصولات نقطة البيع وسجل العمليات لـ ${currentBranch?.name || 'الفرع'}`
-                : language === 'fr'
-                ? `Règlements financiers, tickets de caisse POS et piste d'audit pour ${currentBranch?.name || 'l\'établissement'}`
-                : `Financial settlement, POS payment receipts, and audit trail for ${currentBranch?.name || 'Atrium 1'}`}
-            </p>
           </div>
         </div>
 
@@ -409,9 +402,6 @@ export const MembershipHistoryView: React.FC = () => {
           <h2 className="text-base font-bold text-neutral-900 dark:text-white">
             {language === 'ar' ? 'التسويات المالية ومؤشرات التدقيق' : language === 'fr' ? 'Règlements financiers & Piste d\'audit' : 'Financial Settlement & Audit Velocity'}
           </h2>
-          <p className="text-xs text-neutral-400 dark:text-neutral-500">
-            {language === 'ar' ? 'المدفوعات المحصلة، إغلاق الصناديق اليومية والمعاملات الإلكترونية' : language === 'fr' ? 'Paiements rapprochés, clôtures de caisse et transactions électroniques' : 'Reconciled payments, daily cash drawers, and electronic transactions'}
-          </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

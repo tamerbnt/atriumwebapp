@@ -505,9 +505,6 @@ export const FreelanceClientsView: React.FC = () => {
                   {totalClientsCount} {t('free_clients_accounts', language)} · {activeRetainersCount} {t('free_clients_active_retainers', language)}
                 </span>
               </div>
-              <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
-                {t('free_clients_crm_subtitle', language)}
-              </p>
             </div>
           </div>
 
@@ -640,9 +637,6 @@ export const FreelanceClientsView: React.FC = () => {
             <h3 className="text-xs font-bold text-neutral-900 dark:text-white tracking-tight">
               {language === 'ar' ? 'سعة ومؤشرات شبكة العملاء' : language === 'fr' ? 'Capacité & Santé du Portefeuille Clients' : 'Client Roster & Capacity'}
             </h3>
-            <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-              {language === 'ar' ? 'متابعة عقود الحجز الشهري والمشاريع وحجم التعاملات' : language === 'fr' ? 'Indicateurs clés de fidélisation, forfaits récurrents et facturation' : 'Key indicators for retainers, active projects, and lifetime billing'}
-            </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

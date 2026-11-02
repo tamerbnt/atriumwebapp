@@ -579,9 +579,6 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
           <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
             {language === 'ar' ? 'مؤشرات التنسيق الميداني والإنتاج الطباعي' : language === 'fr' ? 'Indicateurs de Coordination & Production Print' : 'Coordination & Print Production Metrics'}
           </h2>
-          <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-            {language === 'ar' ? 'حالة المشاريع قيد التنفيذ، تتبع أوامر الطباعة واستهلاك ميزانية المشتريات الميدانية' : language === 'fr' ? 'Avancement des campagnes, commandes POSM en cours et consommation des plafonds terrain' : 'Campaign execution rate, POSM orders progress, and field expenses burn rate'}
-          </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

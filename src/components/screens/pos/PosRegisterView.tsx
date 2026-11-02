@@ -1130,9 +1130,6 @@ export const PosRegisterView: React.FC<PosRegisterViewProps> = ({ initialTab = '
                 {t('status_active')}
               </span>
             </div>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
-              {t('shop_hub_desc')}
-            </p>
           </div>
 
           <div className="flex items-center gap-2.5 flex-wrap">
@@ -1826,9 +1823,6 @@ export const PosRegisterView: React.FC<PosRegisterViewProps> = ({ initialTab = '
               <h2 className="text-base font-black text-neutral-900 dark:text-white">
                 {t('shop_held_orders_title', { count: parkedOrders.length })}
               </h2>
-              <p className="text-xs text-neutral-500">
-                {t('shop_held_orders_desc')}
-              </p>
             </div>
           </div>
 
@@ -2235,9 +2229,6 @@ export const PosRegisterView: React.FC<PosRegisterViewProps> = ({ initialTab = '
               <h2 className="text-base font-black text-neutral-900 dark:text-white">
                 {t('shop_receipt_branding_title')}
               </h2>
-              <p className="text-xs text-neutral-500">
-                {t('shop_receipt_branding_desc')}
-              </p>
             </div>
 
             <div className="space-y-3 text-xs">

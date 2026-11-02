@@ -455,9 +455,6 @@ export const EducationCohortsView: React.FC = () => {
                   {eduCohorts.length} {language === 'ar' ? 'دفعات دراسية' : 'active batches'} · {eduCourses.length} {language === 'ar' ? 'برامج أكاديمية' : 'curricula'}
                 </span>
               </div>
-              <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
-                {t('edu_cohorts_subtitle')}
-              </p>
             </div>
           </div>
 
@@ -585,9 +582,6 @@ export const EducationCohortsView: React.FC = () => {
             <h3 className="text-xs font-bold text-neutral-900 dark:text-white tracking-tight">
               {language === 'ar' ? 'طاقة استيعاب الأفواج والبرامج' : language === 'fr' ? 'Capacité & Santé des Cohortes' : 'Capacity & Cohorts Health'}
             </h3>
-            <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-              {language === 'ar' ? 'متابعة المقاعد الشاغرة والقيمة الإجمالية للأفواج' : language === 'fr' ? 'Indicateurs clés de remplissage et valeur des cycles' : 'Key enrollment, seat fill ratio, and cohort valuation'}
-            </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

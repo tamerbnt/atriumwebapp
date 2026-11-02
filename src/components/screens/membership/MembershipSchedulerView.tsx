@@ -441,13 +441,6 @@ export const MembershipSchedulerView: React.FC = () => {
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white">
               {terminology.scheduler}
             </h1>
-            <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
-              {language === 'ar'
-                ? `جدول الحصص والورديات، الطاقة الاستيعابية وحجوزات الموظفين لـ ${currentBranch?.name || 'الفرع'}`
-                : language === 'fr'
-                ? `Emploi du temps hebdomadaire, capacités des cours et réservations pour ${currentBranch?.name || 'l\'établissement'}`
-                : `Weekly timetable, class capacities, and trainer reservations for ${currentBranch?.name || 'Atrium 1'}`}
-            </p>
           </div>
         </div>
 
@@ -526,11 +519,6 @@ export const MembershipSchedulerView: React.FC = () => {
           <h2 className="text-base font-bold text-neutral-900 dark:text-white">
             {language === 'ar' ? 'الطاقة الاستيعابية وجدول التمارين' : 'Weekly Session Matrix & Attendance Roster'}
           </h2>
-          <p className="text-xs text-neutral-400 dark:text-neutral-500">
-            {language === 'ar'
-              ? 'تتبع الحصص التدريبية، توزيع المدربين ومعدلات حضور المشتركين'
-              : 'Coach allocations, studio room assignments, and real-time attendance capacity'}
-          </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

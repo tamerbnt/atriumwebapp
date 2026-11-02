@@ -486,9 +486,6 @@ export const VenueInventoryView: React.FC = () => {
               <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white">
                 {t('venue_inv_title')}
               </h1>
-              <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
-                {t('venue_inv_subtitle')}
-              </p>
             </div>
           </div>
 
@@ -580,13 +577,6 @@ export const VenueInventoryView: React.FC = () => {
             <h2 className="text-base font-bold text-neutral-900 dark:text-white">
               {language === 'ar' ? 'سعة المرافق & أداء الحظيرة' : language === 'fr' ? 'Capacité des Espaces & Performance' : 'Venue Capacity & Portfolio Performance'}
             </h2>
-            <p className="text-xs text-neutral-400 dark:text-neutral-500">
-              {language === 'ar'
-                ? 'إجمالي القاعات القابلة للتأجير، سعة الضيوف الإجمالية ومتوسط التعريفة الساعية'
-                : language === 'fr'
-                ? 'Salles disponibles, capacité d\'accueil globale et tarif horaire moyen'
-                : 'Rentable spaces portfolio, aggregate seat capacity, and baseline hourly rates'}
-            </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

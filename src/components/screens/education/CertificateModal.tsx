@@ -93,9 +93,6 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
             <h2 className="text-base font-bold text-neutral-900 dark:text-white">
               {t(activeCert ? 'edu_cert_modal_title_view' : 'edu_cert_modal_title')}
             </h2>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">
-              {t('edu_cert_security_sub')}
-            </p>
           </div>
           <div className="flex items-center gap-2">
             {activeCert && (

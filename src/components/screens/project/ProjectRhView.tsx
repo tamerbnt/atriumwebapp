@@ -451,9 +451,6 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
           <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
             Ressources Humaines & Vivier Opérationnel
           </h2>
-          <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-            Enrôlement, conformité documentaire légale et traçabilité bancaire CCP des équipes d'animation
-          </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

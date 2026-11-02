@@ -430,13 +430,6 @@ export const AnalyticsScreen: React.FC = () => {
               {language === 'ar' ? 'مؤشرات حية' : language === 'fr' ? 'Données directes' : 'Live Intel'}
             </span>
           </div>
-          <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
-            {language === 'ar'
-              ? `المؤشرات التشغيلية الرئيسية، حركة الزبائن وبيانات المبيعات لـ ${currentBranch?.name || 'الفرع'}`
-              : language === 'fr'
-              ? `Indicateurs de performance, fréquentation et intelligence des revenus pour ${currentBranch?.name || 'l\'établissement'}`
-              : `Key operational metrics, footfall trends, and revenue intelligence for ${currentBranch?.name || 'Main Facility'}`}
-          </p>
         </div>
 
         {/* Right Toolbar: Facility Pill + Time Range + Export */}
@@ -653,9 +646,6 @@ export const AnalyticsScreen: React.FC = () => {
                 <h2 className="text-base font-bold text-neutral-900 dark:text-white">
                   {isPOS ? (language === 'ar' ? 'توزيع مبيعات الصندوق بالساعة' : language === 'fr' ? 'Distribution Horaire des Ventes' : 'Hourly Register Sales Distribution') : 'Hourly Peak Traffic & Density'}
                 </h2>
-                <p className="text-xs text-neutral-400 dark:text-neutral-500">
-                  {isPOS ? (language === 'ar' ? 'حجم المعاملات وساعات الذروة الشرائية على مدار اليوم.' : language === 'fr' ? 'Volume des transactions et pics d\'achat tout au long de la journée.' : 'Transaction throughput and peak buying hours across the day.') : 'Visitor distribution across operating hours.'}
-                </p>
               </div>
 
               {/* Day of Week Selector */}
@@ -776,9 +766,6 @@ export const AnalyticsScreen: React.FC = () => {
               <h2 className="text-base font-bold text-neutral-900 dark:text-white">
                 {isPOS ? (language === 'ar' ? 'تفصيل طرق السداد والقبض' : language === 'fr' ? 'Répartition des Règlements Caisse' : 'Payment Tender Breakdown') : 'Revenue Breakdown'}
               </h2>
-              <p className="text-xs text-neutral-400 dark:text-neutral-500">
-                {isPOS ? (language === 'ar' ? 'توزيع المداخيل حسب طريقة الدفع.' : language === 'fr' ? 'Ventilation des encaissements par mode de règlement.' : 'Settlement breakdown by tender method.') : 'Income segmentation across revenue channels.'}
-              </p>
             </div>
 
             {/* Segmented Progress Bar */}

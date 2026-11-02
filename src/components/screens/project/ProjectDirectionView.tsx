@@ -599,9 +599,6 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
               <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
                 {language === 'ar' ? 'مؤشرات القيادة الاستراتيجية والحوكمة المالية' : language === 'fr' ? 'Indicateurs de Pilotage Stratégique & Arbitrage' : 'Strategic Governance & Portfolio Indicators'}
               </h2>
-              <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-                {language === 'ar' ? 'حجم الميزانيات الملتزم بها، المشاريع النشطة وشبكة المواهب الميدانية في 58 ولاية' : language === 'fr' ? 'Engagements budgétaires globaux, portefeuille actif et réseau national des talents' : 'Committed agency billings, running campaigns, and nationwide talent network'}
-              </p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

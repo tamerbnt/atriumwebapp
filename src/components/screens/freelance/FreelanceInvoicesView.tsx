@@ -456,9 +456,6 @@ export const FreelanceInvoicesView: React.FC = () => {
                 {freelanceInvoices.length} {t('free_inv_title', language).toLowerCase()}
               </span>
             </div>
-            <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
-              {t('free_inv_subtitle', language)}
-            </p>
           </div>
         </div>
 
@@ -619,9 +616,6 @@ export const FreelanceInvoicesView: React.FC = () => {
           <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
             {language === 'ar' ? 'مؤشرات الفوترة والمستحقات المالية' : language === 'fr' ? 'Indicateurs de Facturation & Recouvrement' : 'Billing & Cash Flow Indicators'}
           </h2>
-          <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-            {language === 'ar' ? 'حالة تحصيل فواتير العملاء ومتابعة المستحقات المتأخرة والتدفق النقدي' : language === 'fr' ? 'Suivi du chiffre encaissé, des encours de paiement et des créances échues' : 'Track collected revenues, pending client payments, and overdue balances'}
-          </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

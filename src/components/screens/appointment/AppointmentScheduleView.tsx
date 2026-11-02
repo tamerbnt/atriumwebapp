@@ -457,9 +457,6 @@ export const AppointmentScheduleView: React.FC = () => {
                 )}
               </div>
             </div>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">
-              {t('salon_schedule_subtitle', language)}
-            </p>
           </div>
 
 

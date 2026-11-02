@@ -393,9 +393,6 @@ export const EducationAdmissionsView: React.FC = () => {
                   {eduAdmissions.length} active leads · 5 pipeline stages
                 </span>
               </div>
-              <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
-                {t('edu_admissions_subtitle')}
-              </p>
             </div>
           </div>
 
@@ -551,9 +548,6 @@ export const EducationAdmissionsView: React.FC = () => {
             <h3 className="text-xs font-bold text-neutral-900 dark:text-white tracking-tight">
               {language === 'ar' ? 'قمع القبول والتسجيلات' : language === 'fr' ? 'Pipeline d\'Admissions & Conversion' : 'Admissions Pipeline & Conversion Health'}
             </h3>
-            <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-              {language === 'ar' ? 'متابعة مسار استقطاب الطلبة ومعدلات القبول' : language === 'fr' ? 'Performance de l\'entonnoir de recrutement scolaire' : 'Intake flow, trial classes, and enrollment conversions'}
-            </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

@@ -291,11 +291,6 @@ export const PosHistoryView: React.FC = () => {
               {movementStats.totalMovements} {language === 'ar' ? 'حركة مسجلة' : 'événements'}
             </span>
           </div>
-          <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
-            {language === 'ar'
-              ? 'تتبع تاريخي لجميع حركات دخول وخروج الأصناف، المبيعات المباشرة، التعديلات اليدوية، وتسجيل المشغلين'
-              : 'Traçabilité complète des réassorts, ventes au comptoir, retours clients et pertes avec horodatage certifié.'}
-          </p>
         </div>
 
         <div className="flex items-center gap-2.5 flex-wrap">

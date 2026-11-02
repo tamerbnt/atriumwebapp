@@ -233,9 +233,6 @@ export const VenueFinanceView: React.FC = () => {
               <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white">
                 {t('venue_fin_page_title')}
               </h1>
-              <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
-                {t('venue_fin_page_sub')}
-              </p>
             </div>
           </div>
 
@@ -322,11 +319,6 @@ export const VenueFinanceView: React.FC = () => {
             <h2 className="text-base font-bold text-neutral-900 dark:text-white">
               {isAr ? 'الودائع الضامنة & سيولة الحسابات' : 'Trésorerie & Séquestre des Cautions'}
             </h2>
-            <p className="text-xs text-neutral-400 dark:text-neutral-500">
-              {isAr
-                ? 'متابعة أموال التأمين المحجوزة، مبالغ الإرجاع والاقتطاعات القانونية'
-                : 'Suivi des cautions bloquées, restitutions effectuées et retenues sur dégradations'}
-            </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

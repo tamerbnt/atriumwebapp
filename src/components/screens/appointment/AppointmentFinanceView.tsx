@@ -366,9 +366,6 @@ export const AppointmentFinanceView: React.FC = () => {
               {currentBranch?.name || 'Luxe Spa Hydra'}
             </span>
           </div>
-          <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
-            Recettes des soins, répartition des commissions d'équipe, caisse du jour et ventilation des paiements.
-          </p>
         </div>
 
         <div className="flex items-center gap-2.5 flex-wrap">
@@ -569,9 +566,6 @@ export const AppointmentFinanceView: React.FC = () => {
             <h2 className="text-base font-black text-neutral-900 dark:text-white">
               Bordereaux de Commissions & Payouts Stylistes
             </h2>
-            <p className="text-xs text-neutral-500">
-              Relevés individuels de prestations, ventes de cosmétiques et validation des règlements.
-            </p>
           </div>
 
           <div className="flex items-center gap-2.5 flex-wrap">

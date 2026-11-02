@@ -585,9 +585,6 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
           <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
             Trésorerie Agence & Décaissements Postaux
           </h2>
-          <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-            Traçabilité des mandats postaux CCP SFP 01 et suivi des remboursements opérationnels
-          </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

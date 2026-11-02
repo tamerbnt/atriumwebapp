@@ -472,9 +472,6 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
           <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
             Indicateurs Pré-Presse & Livrables BAT
           </h2>
-          <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-            Conformité technique d'impression, validations clients et fichiers d'exécution prêts déblocage
-          </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

@@ -278,11 +278,6 @@ export const AppointmentDashboardView: React.FC<AppointmentDashboardViewProps> =
                   Luxe Aesthetics
                 </span>
               </div>
-              <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
-                {language === 'ar'
-                  ? 'متابعة حية للعمليات بالصالون، إشغال المقاعد والكبائن، وصرف العمولات'
-                  : 'Suivi en direct des postes de coiffure, du planning cabines et de la recette journalière.'}
-              </p>
             </div>
           </div>
 
@@ -362,9 +357,6 @@ export const AppointmentDashboardView: React.FC<AppointmentDashboardViewProps> =
                   <h3 className="text-[13.5px] font-bold text-neutral-900 dark:text-white">
                     {language === 'ar' ? 'ملخص إشغال الصالون' : 'Synthèse Fauteuils & Cabines'}
                   </h3>
-                  <p className="text-[11px] text-neutral-400">
-                    {language === 'ar' ? 'متابعة الجلسات في الوقت الفعلي' : 'Suivi des postes techniques et cabines privées.'}
-                  </p>
                 </div>
 
                 <div className="px-3 py-1 bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700 rounded-[12px] text-xs font-semibold text-neutral-700 dark:text-neutral-300 shadow-2xs flex items-center gap-1.5">
@@ -538,9 +530,6 @@ export const AppointmentDashboardView: React.FC<AppointmentDashboardViewProps> =
                 <h3 className="text-[13.5px] font-bold text-neutral-900 dark:text-white">
                   {language === 'ar' ? 'نشاط الصالون اليومي' : 'Activité Opérationnelle du Jour'}
                 </h3>
-                <p className="text-[11px] text-neutral-400">
-                  {language === 'ar' ? 'متابعة المداخيل، الزبائن بالخدمة، وعمولات الفريق' : 'Revenu prévisionnel, clients installés et cagnotte des stylistes.'}
-                </p>
               </div>
 
               {/* 3 Inset Activity Cards */}
@@ -653,9 +642,6 @@ export const AppointmentDashboardView: React.FC<AppointmentDashboardViewProps> =
                   <h3 className="text-[13.5px] font-bold text-neutral-900 dark:text-white">
                     {language === 'ar' ? 'جدول مواعيد اليوم' : 'Programme & File des Soins'}
                   </h3>
-                  <p className="text-[11px] text-neutral-400">
-                    {language === 'ar' ? 'إدارة سريعة لتسكين العملاء وإنهاء الجلسات' : 'Installation en fauteuil et validation des prestations.'}
-                  </p>
                 </div>
 
                 {/* Filter Capsule Group */}

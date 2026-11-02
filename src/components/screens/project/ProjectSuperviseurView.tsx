@@ -554,9 +554,6 @@ export const ProjectSuperviseurView: React.FC<ProjectSuperviseurViewProps> = ({ 
           <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
             Supervision Opérationnelle & Déploiement Terrains
           </h2>
-          <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-            Activation des activations marketing, suivi du pointage géolocalisé et conformité émargement
-          </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

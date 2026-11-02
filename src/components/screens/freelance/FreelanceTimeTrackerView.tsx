@@ -587,17 +587,7 @@ export const FreelanceTimeTrackerView: React.FC = () => {
             <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white">
               {t('free_time_title', language)}
             </h1>
-            <span className="text-xs text-neutral-500">
-              {language === 'ar'
-                ? 'مؤقت مباشر، إيقاع بومودورو وفوترة بنقرة واحدة'
-                : language === 'fr'
-                ? 'Chronomètre en direct, sessions Pomodoro & facturation en 1 clic'
-                : 'Live stopwatch, Pomodoro rhythms & 1-click invoice roll-up'}
-            </span>
           </div>
-          <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
-            {t('free_time_subtitle', language)}
-          </p>
         </div>
 
         <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
@@ -853,9 +843,6 @@ export const FreelanceTimeTrackerView: React.FC = () => {
           <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
             {language === 'ar' ? 'مؤشرات تتبع الوقت والإنتاجية' : language === 'fr' ? 'Indicateurs de Temps & Productivité' : 'Time Tracking & Productivity Metrics'}
           </h2>
-          <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-            {language === 'ar' ? 'تحليل ساعات العمل وساعات الفوترة وتراكم الأتعاب غير المفوترة' : language === 'fr' ? 'Analyse des heures pointées, du taux facturable et des honoraires en attente' : 'Logged hours breakdown, billability ratio, and unbilled invoice queue'}
-          </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

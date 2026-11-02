@@ -503,11 +503,6 @@ export const PosDashboardView: React.FC<PosDashboardViewProps> = () => {
                   {language === 'ar' ? 'الصندوق مفتوح' : 'Caisse Ouverte'}
                 </span>
               </div>
-              <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
-                {language === 'ar'
-                  ? 'مراقبة المبيعات الحية، رصيد الصندوق، المخزون الحرج، وإصدار وصلي 80 مم للزبائن'
-                  : 'Flux d’encaissements en temps réel, réconciliation du tiroir-caisse, valorisation du stock et audit des tickets.'}
-              </p>
             </div>
           </div>
 
@@ -600,11 +595,6 @@ export const PosDashboardView: React.FC<PosDashboardViewProps> = () => {
                   <h3 className="text-[13.5px] font-bold text-neutral-900 dark:text-white">
                     {language === 'ar' ? 'ملخص المبيعات' : 'Résumé des Encaissements'}
                   </h3>
-                  <p className="text-[11px] text-neutral-400">
-                    {language === 'ar'
-                      ? 'متابعة وتيرة العمليات والنشاط المالي.'
-                      : 'Suivi du débit horaire et volume des tickets.'}
-                  </p>
                 </div>
 
                 <div className="px-3 py-1 bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700 rounded-[12px] text-xs font-semibold text-neutral-700 dark:text-neutral-300 shadow-2xs flex items-center gap-1.5">
@@ -777,11 +767,6 @@ export const PosDashboardView: React.FC<PosDashboardViewProps> = () => {
                 <h3 className="text-[13.5px] font-bold text-neutral-900 dark:text-white">
                   {language === 'ar' ? 'نشاط الصندوق والسيولة' : 'Activité Caisse & Trésorerie'}
                 </h3>
-                <p className="text-[11px] text-neutral-400">
-                  {language === 'ar'
-                    ? 'متابعة تدفق المقبوضات ومطابقة درج النقود.'
-                    : 'Suivi opérationnel des encaissements et réconciliation du tiroir.'}
-                </p>
               </div>
 
               {/* 3 Inset Activity Cards */}
@@ -898,11 +883,6 @@ export const PosDashboardView: React.FC<PosDashboardViewProps> = () => {
                   <h3 className="text-[13.5px] font-bold text-neutral-900 dark:text-white">
                     {language === 'ar' ? 'النشاط الأخير ومبيعات اليوم' : 'Derniers Encaissements & Tickets'}
                   </h3>
-                  <p className="text-[11px] text-neutral-400">
-                    {language === 'ar'
-                      ? 'متابعة سريعة للتذاكر الصادرة وإصدار وصولات 80 مم.'
-                      : 'Tickets émis en direct au comptoir de vente.'}
-                  </p>
                 </div>
 
                 {/* Filter Capsule Group */}

@@ -335,9 +335,6 @@ export const AppointmentHistoryView: React.FC = () => {
               {historyStats.completedCount} Soins Réalisés
             </span>
           </div>
-          <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
-            Recherche plein texte, formules de coloration enregistrées et édition des reçus thermiques 80mm.
-          </p>
         </div>
 
         <div className="flex items-center gap-2.5 flex-wrap">
@@ -457,9 +454,6 @@ export const AppointmentHistoryView: React.FC = () => {
             <h2 className="text-base font-black text-neutral-900 dark:text-white">
               Registre Chronologique des Prestations
             </h2>
-            <p className="text-xs text-neutral-500">
-              Historique complet des visites clientes avec formules et détails de règlement.
-            </p>
           </div>
 
           <div className="flex items-center gap-2.5 flex-wrap">

@@ -472,9 +472,6 @@ export const FreelanceProposalsView: React.FC = () => {
                 {freelanceProposals.length} {language === 'ar' ? 'عروض' : 'proposals'}
               </span>
             </div>
-            <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
-              {t('free_prop_subtitle')}
-            </p>
           </div>
         </div>
 
@@ -574,9 +571,6 @@ export const FreelanceProposalsView: React.FC = () => {
           <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
             {language === 'ar' ? 'مؤشرات العروض التجارية والفرص التعاقدية' : language === 'fr' ? 'Indicateurs des Devis & Opportunités' : 'Proposals & Deal Pipeline Indicators'}
           </h2>
-          <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-            {language === 'ar' ? 'متابعة العروض قيد الدراسة، الصفقات الموقعة وقيمة العقود الإجمالية' : language === 'fr' ? 'Suivi du pipeline de prospection, des propositions gagnées et du volume contracté' : 'Pipeline conversion status, active quotes, and total won contract value'}
-          </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
