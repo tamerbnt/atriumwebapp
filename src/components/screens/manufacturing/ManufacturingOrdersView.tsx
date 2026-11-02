@@ -389,11 +389,6 @@ export const ManufacturingOrdersView: React.FC = () => {
           <h2 className="text-base font-bold text-neutral-900 dark:text-white">
             {language === 'ar' ? 'مؤشرات خطوط الإنتاج والورشة' : 'Indicateurs de Cadence & Encours Atelier'}
           </h2>
-          <p className="text-xs text-neutral-400 dark:text-neutral-500">
-            {language === 'ar'
-              ? 'متابعة الدفعات النشطة، قيمة الإنتاج قيد الإنجاز، ونسب الإتمام'
-              : 'Ordres actifs sur postes de travail, valorisation matières & respect des délais'}
-          </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

@@ -101,11 +101,6 @@ export const AgricultureDashboardView: React.FC = () => {
           <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
             {isAr ? 'مؤشرات الإنتاج والمحاصيل' : 'Indicateurs Globaux de l\'Exploitation'}
           </h2>
-          <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-            {isAr
-              ? 'المساحات المزروعة، حجم الإنتاج الموزون وصافي عائدات أسواق الجملة'
-              : 'Assolement, tonnages récoltés au pont-bascule et recettes nettes'}
-          </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

@@ -104,9 +104,6 @@ export const ManufacturingDashboardView: React.FC = () => {
           <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
             {language === 'ar' ? 'مؤشرات خطوط الإنتاج والورشة' : 'Cadence de Production & Rendement Lignes'}
           </h2>
-          <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-            {language === 'ar' ? 'متابعة تشغيل المحطات، الوحدات المنجزة ونسب الامتثال' : 'Ordres de fabrication en cours, unités produites et disponibilité BOM'}
-          </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

@@ -564,9 +564,6 @@ export const EducationStudentsView: React.FC = () => {
                 <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-900 dark:text-white">
                   {t('edu_students_title')}
                 </h1>
-                <span className="text-xs text-neutral-500 dark:text-neutral-400">
-                  {totalStudentsCount} {language === 'ar' ? 'طالب' : 'students'} · {activeMinorsCount} {language === 'ar' ? 'قاصر' : 'minors'}
-                </span>
               </div>
             </div>
           </div>

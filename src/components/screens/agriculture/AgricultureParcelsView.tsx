@@ -403,11 +403,6 @@ export const AgricultureParcelsView: React.FC = () => {
           <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
             {isAr ? 'توزيع الأراضي الزراعية ونظم الري' : 'Répartition du Domaine & Assolement'}
           </h2>
-          <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-            {isAr
-              ? 'متابعة القطع النشطة، شبكات التسميد السائل والري المحوري'
-              : 'Surfaces cultivées, pilotage de l\'irrigation et rotation des cultures'}
-          </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -472,9 +467,6 @@ export const AgricultureParcelsView: React.FC = () => {
             <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
               {isAr ? 'سجل القطع الفلاحية والبيوت المحمية' : 'Cadastre Parcellaire & Blocs de Serres'}
             </h2>
-            <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-              {isAr ? 'تتبع المحاصيل الموسمية ونظم الري بالتقطير والمحوري' : 'Cartographie des assolements et statut hydrique par parcelle'}
-            </p>
           </div>
 
           {/* Authentic Agriculture Irrigation Capsules */}

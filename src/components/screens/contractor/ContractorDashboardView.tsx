@@ -156,11 +156,6 @@ export const ContractorDashboardView: React.FC = () => {
           <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
             {isAr ? 'مؤشرات أداء الورشات والصفقات' : 'Indicateurs de Pilotage & Conformité BTP'}
           </h2>
-          <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-            {isAr
-              ? 'متابعة الالتزامات التعاقدية، الخرسانة، العمالة المسجلة والكشوف المالية'
-              : 'Suivi en temps réel des engagements, ressources chantier et jalons réglementaires'}
-          </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

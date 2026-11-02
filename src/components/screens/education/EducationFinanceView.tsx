@@ -461,9 +461,6 @@ export const EducationFinanceView: React.FC = () => {
                 <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-900 dark:text-white">
                   {t('edu_finance_title')}
                 </h1>
-                <span className="text-xs text-neutral-500 dark:text-neutral-400">
-                  {eduEnrollments.length} {language === 'ar' ? 'حسابات مسجلة' : 'dossiers'} · {formatMoney(totalCollected)} {language === 'ar' ? 'مستحصل' : 'recouvré'}
-                </span>
               </div>
             </div>
           </div>

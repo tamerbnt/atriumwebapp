@@ -436,11 +436,6 @@ export const ContractorSitesView: React.FC = () => {
           <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
             {isAr ? 'توزيع الورشات والالتزامات التعاقدية' : 'Suivi Opérationnel & Engagements BTP'}
           </h2>
-          <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-            {isAr
-              ? 'متابعة مراحل التنفيذ، تواريخ التسليم التعاقدية والضمانات البنكية'
-              : 'État d’avancement physique, réceptions provisoires et retenues de garantie'}
-          </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

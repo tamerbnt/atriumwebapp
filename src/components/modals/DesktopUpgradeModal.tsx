@@ -170,9 +170,6 @@ export const DesktopUpgradeModal: React.FC<DesktopUpgradeModalProps> = ({
               <h3 className="text-xl font-black text-white tracking-tight">
                 {t('upgrade_modal_title', language)}
               </h3>
-              <p className="text-xs text-neutral-300 leading-relaxed">
-                {t('upgrade_modal_subtitle', language)}
-              </p>
             </div>
 
             <div className="w-16 h-16 rounded-2xl bg-[#C4785A]/20 border border-[#C4785A]/40 text-[#C4785A] flex items-center justify-center shrink-0 self-center">

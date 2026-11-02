@@ -164,9 +164,6 @@ export const ManufacturingQcView: React.FC = () => {
           <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
             {isAr ? 'مؤشرات المطابقة ونسب الفاقد' : 'Indicateurs de Conformité & Maîtrise des Rebuts'}
           </h2>
-          <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-            {isAr ? 'متابعة الجودة عند نهاية الخط، التالف المعياري والامتثال لدفتر الشروط' : 'Contrôles dimensionnels libératoires et pourcentage de scrap maîtrisé'}
-          </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -231,9 +228,6 @@ export const ManufacturingQcView: React.FC = () => {
             <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
               {isAr ? 'سجل الفحص المخبري ومراقبة الجودة (QC / ISO)' : 'Registre des Contrôles Qualité Libératoires (AQL)'}
             </h2>
-            <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-              {isAr ? 'فحص المقاسات المترولوجية، اختبارات التحمل، وتصاريح إطلاق الدفعات' : 'Inspection dimensionnelle, tests destructifs, conformité ISO 9001 et libération'}
-            </p>
           </div>
 
           {/* Authentic Manufacturing QC Filter Capsules */}

@@ -438,9 +438,6 @@ export const TradingDashboardView: React.FC<TradingDashboardViewProps> = () => {
                   <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
                     {language === 'ar' ? 'حركة المبيعات والفوترة' : language === 'fr' ? 'Synthèse Commerciale' : 'Sales & Invoicing Velocity'}
                   </h2>
-                  <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-                    {language === 'ar' ? 'حجم الفواتير المنفذة مقابل أذونات الخروج' : language === 'fr' ? 'Chiffre HT facturé et bons de livraison émis' : 'Invoiced turnover and delivery slip volume'}
-                  </p>
                 </div>
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#C4785A]/15 text-[#C4785A]">
                   Mensuel
@@ -611,9 +608,6 @@ export const TradingDashboardView: React.FC<TradingDashboardViewProps> = () => {
                 <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
                   {language === 'ar' ? 'مؤشرات الأداء المالي والمخزون' : 'Activité & Trésorerie'}
                 </h2>
-                <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-                  {language === 'ar' ? 'السيولة المستحقة، دوران المخزون والذمم المدينة' : 'Suivi des créances clients, valorisation des dépôts et chiffre réalisé'}
-                </p>
               </div>
 
               {/* 3 Inset Cards */}
@@ -698,9 +692,6 @@ export const TradingDashboardView: React.FC<TradingDashboardViewProps> = () => {
                     <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
                       {t('trading_dash_recent_docs')}
                     </h2>
-                    <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-                      {t('trading_dash_recent_docs_sub')}
-                    </p>
                   </div>
 
                   {/* Filter segmented pills */}

@@ -139,9 +139,6 @@ export const MedicalDashboardView: React.FC = () => {
           <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
             {language === 'ar' ? 'مؤشرات النشاط العيادي والتدفق' : 'Indicateurs d\'Activité Clinique & Flux Patients'}
           </h2>
-          <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-            {language === 'ar' ? 'متابعة قائمة الانتظار، الملفات الطبية الإلكترونية وتغطية بطاقة الشفاء' : 'File d\'attente temps réel, dossiers médicaux partagés et télétransmission Chifa'}
-          </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

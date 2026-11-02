@@ -204,9 +204,6 @@ export const RealEstateInspectionsView: React.FC = () => {
           <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
             {isAr ? 'إحصائيات المعاينة وسلامة العقارات' : 'Registre des Constats & Conformité'}
           </h2>
-          <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-            {isAr ? 'محاضر الدخول والخروج، جرد التجهيزات والعدادات الحيوية' : 'Procès-verbaux contradictoires rédigés et index compteurs enregistrés'}
-          </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -271,9 +268,6 @@ export const RealEstateInspectionsView: React.FC = () => {
             <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
               {isAr ? 'محاضر تسليم واستلام الأماكن والنزاعات' : 'Registre des États des Lieux d\'Entrée & Sortie'}
             </h2>
-            <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-              {isAr ? 'المعاينة الميدانية، العدادات وتسليم المفاتيح' : 'Procès-verbaux contradictoires, index compteurs et état d\'habitabilité'}
-            </p>
           </div>
 
           {/* Authentic Real Estate Inspection Filter Capsules */}

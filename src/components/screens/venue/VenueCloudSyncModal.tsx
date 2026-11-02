@@ -295,9 +295,6 @@ ON CONFLICT (id) DO NOTHING;
               <h2 className="text-lg font-bold text-neutral-900 dark:text-white">
                 Supabase Live Cloud Verification
               </h2>
-              <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                Check whether data goes to Supabase and verify row-level storage
-              </p>
             </div>
           </div>
           <button

@@ -361,11 +361,6 @@ export const RealEstatePropertiesView: React.FC = () => {
           <h2 className="text-base font-bold text-neutral-900 dark:text-white">
             {language === 'ar' ? 'مؤشرات المحفظة العقارية ونسبة الإشغال' : 'Indicateurs de Portefeuille & Taux d\'Occupation'}
           </h2>
-          <p className="text-xs text-neutral-400 dark:text-neutral-500">
-            {language === 'ar'
-              ? 'متابعة الوحدات المؤجرة، المداخيل المتوقعة، والعقارات المتاحة للتأجير'
-              : 'Taux de vacance locative, encaissement mensuel et mandats actifs'}
-          </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

@@ -705,9 +705,6 @@ export const ManufacturingMaterialsView: React.FC = () => {
               <h2 className="text-sm font-bold text-neutral-900 dark:text-white">
                 {isAr ? 'سجل السندات الرسمية (المرسوم التنفيذي 05-468)' : 'Registre Officiel des Bons de Mouvement (Décret 05-468)'}
               </h2>
-              <p className="text-xs text-neutral-400 mt-0.5">
-                Bons de Sortie Magasin (BSM), Bons de Réception (BR) et Transferts Inter-Ateliers
-              </p>
             </div>
             <AtriumButton
               variant="primary"

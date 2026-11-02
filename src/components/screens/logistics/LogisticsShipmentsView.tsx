@@ -363,11 +363,6 @@ export const LogisticsShipmentsView: React.FC = () => {
           <h2 className="text-base font-bold text-neutral-900 dark:text-white">
             {language === 'ar' ? 'مؤشرات التوزيع والتحصيل النقدي' : 'Indicateurs de Distribution & Cash COD'}
           </h2>
-          <p className="text-xs text-neutral-400 dark:text-neutral-500">
-            {language === 'ar'
-              ? 'متابعة الطرود في الشاحنات، أموال التحصيل المتوقعة، ومعدل التسليم الناجح'
-              : 'Colis en tournée active, encours espèces attendu & taux de remise'}
-          </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

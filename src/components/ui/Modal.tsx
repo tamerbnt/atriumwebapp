@@ -67,11 +67,6 @@ export const Modal: React.FC<ModalProps> = ({
             <h2 className="text-xl font-bold tracking-tight text-neutral-900 dark:text-white">
               {title}
             </h2>
-            {subtitle && (
-              <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
-                {subtitle}
-              </p>
-            )}
           </div>
           <button
             type="button"

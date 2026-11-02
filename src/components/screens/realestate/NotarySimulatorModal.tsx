@@ -37,9 +37,6 @@ export const NotarySimulatorModal: React.FC<NotarySimulatorModalProps> = ({
             </div>
             <div>
               <h2 className="text-xl font-bold tracking-tight">Simulateur de Frais de Notaire & Enregistrement</h2>
-              <p className="text-xs text-[#64748B] dark:text-[#A1A1AA]">
-                Décret exécutif n° 08-243 & Loi de Finances (Droits d'enregistrement et publicité foncière)
-              </p>
             </div>
           </div>
           <button

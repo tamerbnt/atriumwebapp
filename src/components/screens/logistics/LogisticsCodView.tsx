@@ -206,9 +206,6 @@ export const LogisticsCodView: React.FC = () => {
           <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
             {isAr ? 'مؤشرات صندوق التحصيل وأموال التجار' : 'Trésorerie des Encaissements & Reversements'}
           </h2>
-          <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-            {isAr ? 'إجمالي المبالغ المقبوضة، رسوم النقل المستحقة وصافي المبالغ المحولة للبائعين' : 'Ventilation des encaissements livreurs, commissions hub et solde net marchands'}
-          </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -317,9 +314,6 @@ export const LogisticsCodView: React.FC = () => {
               <h2 className="text-sm font-bold text-neutral-900 dark:text-white">
                 {isAr ? 'طرود جاهزة لتسوية المستحقات' : 'Colis Livrés & Encaissements'}
               </h2>
-              <p className="text-xs text-neutral-500">
-                {isAr ? 'الطرود المسلمة والمقبوضة نقدياً بانتظار التحويل للمتاجر' : 'Règlements des e-commerçants après retenue de la commission'}
-              </p>
             </div>
             <div className="text-xs font-mono font-bold text-[#C4785A]">
               {deliveredShipments.length} {isAr ? 'طرد' : 'colis'}
@@ -421,9 +415,6 @@ export const LogisticsCodView: React.FC = () => {
               <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
                 {isAr ? 'محاضر تبرئة ذمة السائقين (Double-Lock Vault)' : 'Registre des Billets de Décharge Chauffeurs'}
               </h3>
-              <p className="text-xs text-neutral-500">
-                Comptage physique des billets de banque et décharge conjointe caisse / chauffeur
-              </p>
             </div>
             <span className="text-xs font-mono font-bold text-neutral-600 dark:text-neutral-300">
               {discharges.length} procès-verbaux
@@ -507,9 +498,6 @@ export const LogisticsCodView: React.FC = () => {
               <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
                 {isAr ? 'دفعات التحويل البريدي للتجار (Algérie Poste & BaridiMob)' : 'Lots de Règlements E-Commerçants'}
               </h3>
-              <p className="text-xs text-neutral-500">
-                Télétransmission des bordereaux SFP 01 / B1 et virements BaridiMob avec Clé 97
-              </p>
             </div>
             <AtriumButton
               variant="primary"
@@ -604,9 +592,6 @@ export const LogisticsCodView: React.FC = () => {
                 <h3 className="font-bold text-sm text-neutral-900 dark:text-white">
                   {isAr ? 'سائق أجير دائم (Salarié CDI)' : 'Chauffeur Salarié Flotte Interne'}
                 </h3>
-                <span className="text-[11px] text-neutral-500">
-                  Salaire fixe mensuel + prime de livraison (50 DZD/colis) + carburant
-                </span>
               </div>
             </div>
 
@@ -640,9 +625,6 @@ export const LogisticsCodView: React.FC = () => {
                 <h3 className="font-bold text-sm text-neutral-900 dark:text-white">
                   {isAr ? 'سائق مقاول ذاتي (Auto-Entrepreneur)' : 'Livreur Sous-Traitant Auto-Entrepreneur'}
                 </h3>
-                <span className="text-[11px] text-neutral-500">
-                  Rémunération à l'acte (Loi 22-23) • Retenue à la source IFU 5%
-                </span>
               </div>
             </div>
 

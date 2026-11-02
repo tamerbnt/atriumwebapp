@@ -373,9 +373,6 @@ export const MedicalBillingView: React.FC = () => {
           <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
             {isAr ? 'مؤشرات التحصيل الطبي والتأمين' : 'Indicateurs de Recouvrement & Tiers-Payant'}
           </h2>
-          <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-            {isAr ? 'توزيع الأتعاب بين التغطية التأمينية والتحصيل الفوري' : 'Répartition des honoraires conventionnés et encaissements patients'}
-          </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -908,9 +905,6 @@ export const MedicalBillingView: React.FC = () => {
                 <Users size={16} className="text-[#C4785A]" />
                 <span>Rétrocession des Honoraires Médicaux & Quotes-parts Polyclinique</span>
               </h2>
-              <p className="text-[11px] text-neutral-500">
-                Calcul automatisé des commissions par praticien selon convention d'exercice libéral
-              </p>
             </div>
 
             <button
@@ -987,9 +981,6 @@ export const MedicalBillingView: React.FC = () => {
                 <Coins size={16} className="text-amber-500" />
                 <span>Feuille de Caisse Journalière & Clôture Secrétariat</span>
               </h2>
-              <p className="text-[11px] text-neutral-500">
-                Pointage physique des espèces, tickets modérateurs et rapprochement automatique du tiroir-caisse
-              </p>
             </div>
           </div>
 

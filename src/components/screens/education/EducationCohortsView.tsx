@@ -451,9 +451,6 @@ export const EducationCohortsView: React.FC = () => {
                 <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-900 dark:text-white">
                   {t('edu_cohorts_title')}
                 </h1>
-                <span className="text-xs text-neutral-500 dark:text-neutral-400">
-                  {eduCohorts.length} {language === 'ar' ? 'دفعات دراسية' : 'active batches'} · {eduCourses.length} {language === 'ar' ? 'برامج أكاديمية' : 'curricula'}
-                </span>
               </div>
             </div>
           </div>

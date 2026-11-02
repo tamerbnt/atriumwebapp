@@ -134,9 +134,6 @@ export const LegalMatterModal: React.FC<LegalMatterModalProps> = ({
                   ? isAr ? 'تعديل ملف القضية' : 'Modifier le Dossier Juridique'
                   : isAr ? 'فتح ملف قضية جديدة' : 'Ouverture de Dossier Juridique'}
               </h2>
-              <p className="text-xs text-neutral-500">
-                {isAr ? 'تسجيل البيانات المزدوجة بالفرنسية والعربية ومراجع المحكمة' : 'Conformité légale CPCA & double saisie Arabe/Français'}
-              </p>
             </div>
           </div>
           <button

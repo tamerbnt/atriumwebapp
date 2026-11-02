@@ -483,9 +483,6 @@ export const MedicalPrescriptionsView: React.FC = () => {
               <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
                 {isAr ? 'مؤشرات الوصفات الطبية والسلامة الدوائية' : 'Indicateurs de Prescription & Sécurisation Pharmacologique'}
               </h2>
-              <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-                {isAr ? 'المطابقة الدوائية مع الصندوق الوطني للتأمينات، والتحقق الفوري بالباركود' : 'Conformité Chifa, détection des interactions et traçabilité par QR Code certifié'}
-              </p>
             </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

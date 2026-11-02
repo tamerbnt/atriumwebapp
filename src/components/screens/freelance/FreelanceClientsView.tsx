@@ -501,9 +501,6 @@ export const FreelanceClientsView: React.FC = () => {
                 <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-900 dark:text-white">
                   {t('free_clients_crm_title', language)}
                 </h1>
-                <span className="text-xs text-neutral-500 dark:text-neutral-400">
-                  {totalClientsCount} {t('free_clients_accounts', language)} · {activeRetainersCount} {t('free_clients_active_retainers', language)}
-                </span>
               </div>
             </div>
           </div>

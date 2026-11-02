@@ -371,9 +371,6 @@ export const MedicalQueueView: React.FC = () => {
           <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
             {isAr ? 'مؤشرات تدفق المرضى وأوقات الانتظار' : 'Flux Salle d\'Attente & Triage des Urgences'}
           </h2>
-          <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-            {isAr ? 'متابعة حية للعلامات الحيوية وحالات الكشف السريري' : 'Constantes vitales (TA, Température, Poids) et affectation en cabinet'}
-          </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

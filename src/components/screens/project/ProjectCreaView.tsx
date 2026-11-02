@@ -756,9 +756,6 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
               <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mt-1">
                 Validation Technique des Fichiers Imprimeur
               </h2>
-              <p className="text-xs text-zinc-500">
-                Verrouillage strict : les fichiers doivent être en CMJN natif, minimum 300 DPI avec 3mm de fond perdu.
-              </p>
             </div>
 
             {uploadSuccess && (

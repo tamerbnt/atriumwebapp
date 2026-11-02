@@ -289,9 +289,6 @@ export const EducationTimetableView: React.FC = () => {
                 <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-900 dark:text-white">
                   {t('edu_timetable_title')}
                 </h1>
-                <span className="text-xs text-neutral-500 dark:text-neutral-400">
-                  {eduSessions.length} créneaux · {eduClassrooms.length} salles
-                </span>
               </div>
             </div>
           </div>
@@ -395,9 +392,6 @@ export const EducationTimetableView: React.FC = () => {
               <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
                 {isAr ? 'جدول الحصص والقاعات التدريبية' : 'Grille Générale des Séances & Horaires'}
               </h2>
-              <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-                {isAr ? 'توزيع القاعات، الأفواج التدريبية وتفادي تضارب المواعيد' : 'Affectation des salles, rotation des formateurs et contrôle d’intégrité'}
-              </p>
             </div>
 
             {/* Authentic Education Classroom Filter Capsules */}

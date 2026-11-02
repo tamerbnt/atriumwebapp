@@ -111,9 +111,6 @@ export const QuittanceModal: React.FC<QuittanceModalProps> = ({
             </div>
             <div>
               <h2 className="text-xl font-bold tracking-tight">Encaissement & Quittance de Loyer</h2>
-              <p className="text-xs text-[#64748B] dark:text-[#A1A1AA]">
-                Émission de quittance avec calcul automatique du droit de timbre fiscal (Art. 317)
-              </p>
             </div>
           </div>
           <button

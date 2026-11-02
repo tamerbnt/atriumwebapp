@@ -40,9 +40,6 @@ export const CcpSlipModal: React.FC<CcpSlipModalProps> = ({
               <h3 className="font-semibold text-zinc-900 dark:text-zinc-100 text-sm">
                 {t('pm_ccp_modal_title')}
               </h3>
-              <p className="text-xs text-zinc-500">
-                {t('pm_ccp_modal_sub')}
-              </p>
             </div>
           </div>
           <div className="flex items-center gap-2">

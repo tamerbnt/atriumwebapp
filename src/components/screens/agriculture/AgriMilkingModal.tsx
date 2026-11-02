@@ -92,11 +92,6 @@ export const AgriMilkingModal: React.FC<AgriMilkingModalProps> = ({
               <h2 className="text-base font-bold text-neutral-900 dark:text-white">
                 {isAr ? 'تسجيل جلسة حلب وتبريد الحليب' : 'Enregistrer une Session de Traite & Tank'}
               </h2>
-              <p className="text-xs text-neutral-500">
-                {isAr
-                  ? 'مراقبة درجة حرارة خزان التبريد واحتساب دعم أونيل (12 دج/ل)'
-                  : 'Contrôle thermique du tank à lait et calcul de la prime d’État ONIL'}
-              </p>
             </div>
           </div>
           <button

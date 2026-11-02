@@ -239,11 +239,6 @@ export const AutoGarageDashboardView: React.FC = () => {
               <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
                 {isAr ? 'مؤشرات الأداء المالي واستغلال طاقة الورشة' : 'Performance Financière & Taux d’Occupation'}
               </h2>
-              <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-                {isAr
-                  ? 'رقم الأعمال الإجمالي، نسبة دوران الرافعات، وذمم أساطيل الشركات'
-                  : 'Chiffre d’affaires atelier, saturation des 6 ponts & encours de crédit B2B'}
-              </p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -388,11 +383,6 @@ export const AutoGarageDashboardView: React.FC = () => {
               <h2 className="text-sm font-bold text-neutral-900 dark:text-white">
                 {isAr ? 'طابور الاستقبال والفحص التناقضي' : 'Flux Accueil, Devis & Restitutions'}
               </h2>
-              <p className="text-[11px] text-neutral-500">
-                {isAr
-                  ? 'المركبات الوافدة، أوامر الإصلاح في انتظار موافقة الزبون، والسيارات الجاهزة للتسليم'
-                  : 'Fiches contradictoires, accords clients WhatsApp & véhicules prêts à restituer'}
-              </p>
             </div>
             <AtriumButton
               variant="primary"
@@ -493,11 +483,6 @@ export const AutoGarageDashboardView: React.FC = () => {
               <h2 className="text-sm font-bold text-neutral-900 dark:text-white">
                 {isAr ? 'مستودع قطع الغيار والطلبيات الحرجة' : 'Magasin Pièces : Réquisitions Atelier & Alertes Stock'}
               </h2>
-              <p className="text-[11px] text-neutral-500">
-                {isAr
-                  ? 'متابعة القطع القريبة من النفاد وصرف المستلزمات لميكانيكيي الورشة'
-                  : 'Seuils critiques, approvisionnements fournisseurs & sorties pour les ORs'}
-              </p>
             </div>
             <AtriumButton
               variant="primary"
@@ -539,11 +524,6 @@ export const AutoGarageDashboardView: React.FC = () => {
               <h2 className="text-sm font-bold text-neutral-900 dark:text-white">
                 {isAr ? 'صندوق الورشة والفوترة الجبائية DGI' : 'Caisse Journalière & Facturation Conforme DGI'}
               </h2>
-              <p className="text-[11px] text-neutral-500">
-                {isAr
-                  ? 'متابعة مقبوضات اليوم نقداً وبطاقات بنكية، وقسيمة الطابع الجبائي م.317'
-                  : 'Totalisations session Z, timbres fiscaux espèces & encaissements'}
-              </p>
             </div>
             <AtriumButton
               variant="primary"

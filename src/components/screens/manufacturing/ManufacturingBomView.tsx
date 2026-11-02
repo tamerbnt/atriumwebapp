@@ -387,11 +387,6 @@ export const ManufacturingBomView: React.FC = () => {
           <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
             {isAr ? 'هندسة المنتجات والمكونات المعيارية' : 'Ingénierie Produits & Standard de Coût'}
           </h2>
-          <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-            {isAr
-              ? 'متابعة الوصفات التصنيعية، المواد المستهلكة ومتوسط التكلفة للوحدة'
-              : 'Formules de fabrication actives, matières premières mobilisées et coût moyen'}
-          </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -456,9 +451,6 @@ export const ManufacturingBomView: React.FC = () => {
             <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
               {isAr ? 'قوائم المكونات الصناعية والتركيبات (BOM)' : 'Nomenclatures Produits & Formules BOM'}
             </h2>
-            <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-              {isAr ? 'تفكيك المواد، كميات الاستهلاك المعيارية، وساعات العمل الصناعية' : 'Structures multi-niveaux, coûts de revient standard et temps gamme atelier'}
-            </p>
           </div>
 
           {/* Authentic Manufacturing BOM Filter Capsules */}

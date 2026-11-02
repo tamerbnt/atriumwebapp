@@ -194,9 +194,6 @@ export const RealEstateFinanceView: React.FC = () => {
           <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
             {isAr ? 'مؤشرات التحصيل وعمولات الوكالة' : 'Encaissement des Loyers & Commissions'}
           </h2>
-          <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-            {isAr ? 'توزيع المبالغ المحصلة بين أتعاب الإدارة وصافي التحويل للمالك' : 'Ventilation des sommes perçues, honoraires de gestion et reversement bailleur'}
-          </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -261,9 +258,6 @@ export const RealEstateFinanceView: React.FC = () => {
             <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
               {isAr ? 'سجل الوصولات ومستحقات الملاك العقاريين' : 'Registre des Quittances & Règlements Bailleurs'}
             </h2>
-            <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-              {isAr ? 'إدارة الإيجارات وتصفية حسابات الملاك والعمولات' : 'Émission des quittances, prélèvement des honoraires et reversements'}
-            </p>
           </div>
 
           {/* Authentic Real Estate Settlement Filter Capsules */}

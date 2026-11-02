@@ -161,9 +161,6 @@ export const LogisticsDashboardView: React.FC = () => {
             <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
               {isAr ? 'مؤشرات التوزيع وخدمات التوصيل' : 'Activité du Hub & Performance des Tournées'}
             </h2>
-            <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-              {isAr ? 'متابعة حركة الطرود عبر الولايات، نسبة النجاح والتحصيل النقدي عند الباب' : 'Flux de colis en transit, expéditions réussies et encaissement COD'}
-            </p>
           </div>
           <span className="text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-1 rounded-full border border-emerald-200 dark:border-emerald-800">
             {deliverySuccessRate}% {isAr ? 'نسبة التسليم الناجح' : 'Taux de Succès'}

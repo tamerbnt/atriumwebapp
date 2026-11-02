@@ -436,11 +436,6 @@ export const AutoGarageVehiclesView: React.FC = () => {
           <h2 className="text-base font-bold text-neutral-900 dark:text-white">
             {language === 'ar' ? 'مؤشرات الحظيرة ونشاط الصيانة' : 'Indicateurs de Flotte & Atelier'}
           </h2>
-          <p className="text-xs text-neutral-400 dark:text-neutral-500">
-            {language === 'ar'
-              ? 'متابعة المركبات قيد الإصلاح، الحظيرة المسجلة، وجاهزية التسليم'
-              : 'Véhicules actuellement sur les ponts, parc actif et taux de fidélisation'}
-          </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

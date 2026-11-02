@@ -175,9 +175,6 @@ export const BonDeVisiteModal: React.FC<BonDeVisiteModalProps> = ({
             </div>
             <div>
               <h2 className="text-xl font-bold tracking-tight">Bon de Visite Numérique Certifié</h2>
-              <p className="text-xs text-[#64748B] dark:text-[#A1A1AA]">
-                Protection anti-contournement avec signature tactile et horodatage GPS
-              </p>
             </div>
           </div>
           <button

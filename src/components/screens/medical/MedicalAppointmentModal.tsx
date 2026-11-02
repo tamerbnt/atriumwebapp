@@ -135,9 +135,6 @@ export const MedicalAppointmentModal: React.FC<MedicalAppointmentModalProps> = (
               <h2 className="text-base font-bold text-neutral-900 dark:text-white">
                 Nouveau Rendez-vous Médical
               </h2>
-              <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                Planification sur l'agenda polyclinique
-              </p>
             </div>
           </div>
 

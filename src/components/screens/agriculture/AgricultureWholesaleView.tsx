@@ -198,11 +198,6 @@ export const AgricultureWholesaleView: React.FC = () => {
           <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
             {isAr ? 'حسابات الوكلاء والمبيعات الإجمالية' : 'Comptabilité Ventes Gros & Mandataires'}
           </h2>
-          <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-            {isAr
-              ? 'متابعة المبيعات الإجمالية بالأسواق، نسبة عمولة الوكيل القانونية والسيولة المقبوضة'
-              : 'Volumes marchands réalisés en criée, frais d’intermédiation et encaissements'}
-          </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -267,9 +262,6 @@ export const AgricultureWholesaleView: React.FC = () => {
             <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
               {isAr ? 'وصولات البيع وتسويات أسواق الجملة' : 'Bordereaux de Criée & Ventes Mandataires'}
             </h2>
-            <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-              {isAr ? 'متابعة العمولات والاقتطاعات والصافي المستحق للمستثمرة' : 'Rapprochement des pesées, commissions 6% et encaissements définitifs'}
-            </p>
           </div>
 
           {/* Authentic Agriculture Wholesale Filter Capsules */}

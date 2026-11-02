@@ -403,11 +403,6 @@ export const MedicalPatientsView: React.FC = () => {
           <h2 className="text-base font-bold text-neutral-900 dark:text-white">
             {language === 'ar' ? 'مؤشرات الرعاية الصحية والسجلات' : 'Indicateurs de Prise en Charge Clinique'}
           </h2>
-          <p className="text-xs text-neutral-400 dark:text-neutral-500">
-            {language === 'ar'
-              ? 'متابعة الحالات المزمنة، الحساسيات الدوائية، والربط الإلكتروني ببطاقة الشفاء'
-              : 'Surveillance des pathologies chroniques, contre-indications et télétransmission'}
-          </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

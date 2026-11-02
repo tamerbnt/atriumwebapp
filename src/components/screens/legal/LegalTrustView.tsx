@@ -428,9 +428,6 @@ export const LegalTrustView: React.FC = () => {
             <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
               {isAr ? 'مؤشرات حسابات الودائع والحراسة العقارية' : 'Fonds Mandants & Prix de Vente Séquestrés'}
             </h2>
-            <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-              {isAr ? 'ضمان حقوق الأطراف إلى غاية نشر العقد بالمحافظة العقارية' : 'Sécurisation des transactions immobilières jusqu\'à formalités cadastrales'}
-            </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -893,9 +890,6 @@ export const LegalTrustView: React.FC = () => {
             <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
               {isAr ? 'المؤشرات المحاسبية وميزان المراجعة' : 'Balance des Écritures & Conformité SCF'}
             </h2>
-            <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-              {isAr ? 'الرقابة الصارمة على توازن القيد المحاسبي وحسابات الضرائب' : 'Équilibre fondamental des flux et traçabilité des pièces'}
-            </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -1288,9 +1282,6 @@ export const LegalTrustView: React.FC = () => {
             <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
               {isAr ? 'حالة الصندوق والسيولة النقدية' : 'Situation de Caisse & Droits de Timbre'}
             </h2>
-            <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-              {isAr ? 'الرقابة اليومية على النقدية المستلمة وطوابع الخزينة العمومية' : 'Recettes du jour et droits de timbre reversés au Trésor'}
-            </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -1655,11 +1646,6 @@ export const LegalTrustView: React.FC = () => {
           <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
             {isAr ? 'إدارة أموال الموكلين والودائع القضائية' : 'Comptabilité des Fonds Mandants & Diligences'}
           </h2>
-          <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-            {isAr
-              ? 'الفصل المحاسبي الصارم بين أتعاب المحامي والمبالغ المودعة على ذمة الأحكام'
-              : 'Fonds séquestre protégés et décomptes d\'honoraires selon déontologie du barreau'}
-          </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

@@ -176,9 +176,6 @@ export const StockMovementModal: React.FC<StockMovementModalProps> = ({
               <h2 className="text-lg font-bold text-stone-900 dark:text-stone-100">
                 {t('trading_stock_modal_title')}
               </h2>
-              <p className="text-xs text-stone-500">
-                {t('trading_stock_modal_sub')}
-              </p>
             </div>
           </div>
           <button

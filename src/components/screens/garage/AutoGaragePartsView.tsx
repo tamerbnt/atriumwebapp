@@ -433,11 +433,6 @@ export const AutoGaragePartsView: React.FC = () => {
           <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
             {isAr ? 'مؤشرات المستودع والقطع الحرجة' : 'Niveaux de Stock & Approvisionnement'}
           </h2>
-          <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-            {isAr
-              ? 'متابعة الأصناف المتوفرة، القطع القريبة من النفاد والتقييم المالي'
-              : 'Références gérées, articles sous le seuil d’alerte et valeur globale'}
-          </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -1063,9 +1058,6 @@ export const AutoGaragePartsView: React.FC = () => {
                   <h2 className="text-base font-bold text-neutral-900 dark:text-white">
                     {isAr ? 'طلبية تموين من المورد (Bon de Commande)' : 'Bon de Commande Fournisseur Gros'}
                   </h2>
-                  <p className="text-xs text-neutral-500">
-                    {isAr ? 'تموين المخزن من كبار موزعي قطع الغيار بالجزائر' : 'Approvisionnement comptoir de gros & entrée en stock'}
-                  </p>
                 </div>
               </div>
               <button

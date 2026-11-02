@@ -614,9 +614,6 @@ export const AgricultureHarvestView: React.FC = () => {
           <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
             {isAr ? 'إحصائيات الشحن والإنتاج المباع' : 'Tonnage Expédié & Recettes Agricoles'}
           </h2>
-          <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-            {isAr ? 'تتبع الكميات المجنية وصافي المستحقات المالية من أسواق الجملة' : 'Poids net expédié, déductions mandataire et recettes réelles de récolte'}
-          </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -681,9 +678,6 @@ export const AgricultureHarvestView: React.FC = () => {
             <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
               {isAr ? 'سجل وصولات الجني والوزن (بونت باسكول)' : 'Bons de Pesée Pont-Bascule & Expéditions'}
             </h2>
-            <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-              {isAr ? 'تتبع الوزن القائم والفارغ والصافي وعائدات أسواق الجملة' : 'Relevés de tare et net expédié, commission mandataire et traçabilité des lots'}
-            </p>
           </div>
 
           {/* Authentic Agriculture Harvest Filter Capsules */}
@@ -1049,11 +1043,6 @@ export const AgricultureHarvestView: React.FC = () => {
               <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
                 {isAr ? 'مؤشرات جني المحصول ودفتر حضور التاشرون' : 'Indicateurs de Récolte & Pointage des Tâcherons'}
               </h2>
-              <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-                {isAr
-                  ? 'تتبع عدد الصناديق المجنية يومياً، الأجور المستحقة بالقطعة والتسبيقات المدفوعة'
-                  : 'Comptage unitaire des caisses, rémunération au rendement (40 DA/caisse) et acomptes espèces'}
-              </p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -1116,9 +1105,6 @@ export const AgricultureHarvestView: React.FC = () => {
                 <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
                   {isAr ? 'جدول حضور ومردودية العمال (Muster Roll)' : 'Registre d’Appel & Rendement des Tâcherons'}
                 </h2>
-                <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-                  {isAr ? 'عد سريع للصناديق (+1 / +5)، خصم التسبيقات، وتصفية الأجر نقداً' : 'Comptage tactile rapide (+1 / +5), avances sur salaire et règlement direct en espèces'}
-                </p>
               </div>
 
               {/* Filter pills */}
@@ -1382,9 +1368,6 @@ export const AgricultureHarvestView: React.FC = () => {
                   <h2 className="text-base font-bold text-neutral-900 dark:text-white">
                     {isAr ? 'تسجيل حضور وجني لعامل' : 'Pointer un Ouvrier Saisonnier'}
                   </h2>
-                  <p className="text-xs text-neutral-500">
-                    {isAr ? 'تحديد العامل والقطعة والصناديق الأولية' : 'Comptage à la caisse et versement d’acompte'}
-                  </p>
                 </div>
               </div>
               <button

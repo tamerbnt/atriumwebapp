@@ -161,9 +161,6 @@ export const RealEstatePropertyModal: React.FC<RealEstatePropertyModalProps> = (
               <h3 className="font-bold text-lg text-[#18181B] dark:text-white">
                 {propertyToEdit ? 'Modifier le Bien & Passeport Foncier' : 'Nouveau Bien Immobilier & Passeport Cadastral'}
               </h3>
-              <p className="text-xs text-[#64748B] dark:text-[#A1A1AA]">
-                Intégration du descriptif technique et audit légal du titre de propriété
-              </p>
             </div>
           </div>
           <button

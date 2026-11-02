@@ -401,9 +401,6 @@ export const ContractorBoqView: React.FC = () => {
           <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
             {isAr ? 'التقييم المالي والإنجاز الكمي للمشروع' : 'Suivi Budgétaire & Avancement Métré'}
           </h2>
-          <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-            {isAr ? 'مقارنة المبالغ التقديرية بالكميات الميدانية المحققة' : 'Comparatif prévisionnel vs situation d’attachement'}
-          </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -468,9 +465,6 @@ export const ContractorBoqView: React.FC = () => {
             <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
               {isAr ? 'قائمة بنود المقايسة والتسعير التعاقدي' : 'Nomenclature des Postes & Relevés Métrés'}
             </h2>
-            <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-              {isAr ? 'تتبع الكميات المنفذة والأسعار الأحادية التعاقدية' : 'Bordereau quantitatif avec suivi d’avancement physique et financier'}
-            </p>
           </div>
 
           {/* Authentic BTP Execution Filter Capsules */}

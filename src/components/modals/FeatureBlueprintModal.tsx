@@ -730,9 +730,6 @@ export const FeatureBlueprintModal: React.FC<FeatureBlueprintModalProps> = ({
             <h2 className="text-xl sm:text-2xl font-black text-white leading-snug">
               {data.title[language] || data.title.en}
             </h2>
-            <p className="text-xs text-neutral-400 mt-1">
-              {data.subtitle[language] || data.subtitle.en}
-            </p>
           </div>
 
           <button

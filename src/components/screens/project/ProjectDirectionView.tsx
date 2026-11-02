@@ -854,9 +854,6 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
               <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
                 {language === 'ar' ? 'سجل محفظة المشاريع والتعاقدات' : 'Portefeuille Projets & Gouvernance Grands Comptes'}
               </h2>
-              <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-                {language === 'ar' ? 'متابعة المشاريع السنوية، العقود قيد التنفيذ والمشاريع المكتملة' : 'Retainers annuels, campagnes de communication et arbitrage direction'}
-              </p>
             </div>
 
             {/* Authentic Direction Project Status Filter Capsules */}
@@ -1047,9 +1044,6 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
             <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mt-1">
               {t('pm_dir_screen_new_title')}
             </h2>
-            <p className="text-xs text-zinc-500">
-              {t('pm_dir_screen_new_sub')}
-            </p>
           </div>
 
           {projectCreatedSuccess && (
@@ -1229,9 +1223,6 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
               <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mt-0.5">
                 {t('pm_dir_approvals_title')}
               </h2>
-              <p className="text-xs text-zinc-500">
-                {t('pm_dir_approvals_sub')}
-              </p>
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
@@ -1444,9 +1435,6 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
                 <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">
                   Audit Financier Consolidé — Année 2026
                 </h2>
-                <p className="text-xs text-zinc-500 mt-0.5">
-                  Analyse transversale de la rentabilité par client, wilaya et catégorie d'activation.
-                </p>
               </div>
 
               <button

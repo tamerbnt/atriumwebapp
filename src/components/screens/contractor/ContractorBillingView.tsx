@@ -320,9 +320,6 @@ export const ContractorBillingView: React.FC = () => {
           <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
             {isAr ? 'الوضعية المالية للمشروع' : 'Situation Financière & Retenues du Projet'}
           </h2>
-          <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-            {selectedProject ? `${selectedProject.projectCode} · ${selectedProject.projectName}` : 'Chantier actif'}
-          </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -384,9 +381,6 @@ export const ContractorBillingView: React.FC = () => {
             <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
               {isAr ? 'كشوف الحساب والوضعيات المالية (DGP)' : 'Décomptes Généraux & Situations de Travaux (DGP)'}
             </h2>
-            <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-              {isAr ? 'المطالبات المالية الدورية واقتطاعات الضمان النظامية' : 'Suivi des attestations de paiement, TVA 19% et retenues de garantie 5%'}
-            </p>
           </div>
 
           {/* Authentic BTP Billing Filter Capsules */}

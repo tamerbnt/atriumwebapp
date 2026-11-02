@@ -435,9 +435,6 @@ export const ContractorDailyLogsView: React.FC = () => {
           <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
             {isAr ? 'مؤشرات التواجد الميداني والأمان الفني' : 'Pointages Météo, Béton & Effectifs Chantier'}
           </h2>
-          <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-            {selectedProject ? `${selectedProject.projectCode} · ${selectedProject.projectName}` : 'Chantier actif'}
-          </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
@@ -525,9 +522,6 @@ export const ContractorDailyLogsView: React.FC = () => {
               <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
                 {isAr ? 'محاضر وسجلات الورشة اليومية' : 'Registres des Attachements & Météo Chantier'}
               </h2>
-              <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-                {isAr ? 'بيانات التواجد والعتاد والأمان الميداني' : 'Pointages certifiés d’effectifs, météo et sécurité HSE'}
-              </p>
             </div>
 
             <div className="flex items-center gap-1.5 p-1 bg-white dark:bg-neutral-800 rounded-full border border-neutral-200/80 dark:border-neutral-700/60 shadow-2xs">
@@ -883,9 +877,6 @@ export const ContractorDailyLogsView: React.FC = () => {
               <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
                 {isAr ? 'سجل صبات الخرسانة ومطابقة المخابر المعتمدة CTC' : 'Contrôle des Bétons & Écrasement d’Éprouvettes (CBA 93 / CTC)'}
               </h2>
-              <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-                {isAr ? 'تتبع مقاومة الضغط عند 7 و28 يوما مع قفل فك الدعائم التلقائي' : 'Traçabilité des bons de livraison, affaissement au cône d’Abrams et seuils de décoffrage'}
-              </p>
             </div>
 
             <AtriumButton
@@ -998,9 +989,6 @@ export const ContractorDailyLogsView: React.FC = () => {
               <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
                 {isAr ? 'مراقبة العتاد الثقيل واستهلاك الوقود' : 'Gestion du Parc Engins & Rapprochement Gasoil'}
               </h2>
-              <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-                {isAr ? 'رصد ساعات العمل وكشف سرقة أو تبذير الوقود بنسبة تتجاوز 25%' : 'Compteurs horaires, consommation unitaire L/h et détection d’anomalie carburant'}
-              </p>
             </div>
 
             <AtriumButton

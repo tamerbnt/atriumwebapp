@@ -406,9 +406,6 @@ export const LogisticsManifestsView: React.FC = () => {
           <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
             {isAr ? 'حمولة الأسطول ومبالغ التحصيل الميداني' : 'Activité Flotte & Encaissement Livreur'}
           </h2>
-          <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-            {isAr ? 'متابعة حركة الشاحنات، الطرود المسندة وإجمالي مبالغ الدفع عند الاستلام' : 'Feuilles de routes actives, réconciliation des montants contre-remboursement'}
-          </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -473,9 +470,6 @@ export const LogisticsManifestsView: React.FC = () => {
             <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
               {isAr ? 'بيانات الشحن وأوراق الطريق الرسمية' : 'Manifestes de Dispatch & Feuilles de Route'}
             </h2>
-            <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-              {isAr ? 'متابعة مسارات السائقين، حمولات الطرود ومبالغ الدفع عند الاستلام' : 'Attribution des tournées chauffeurs, scellés de sécurité et suivi COD'}
-            </p>
           </div>
 
           {/* Authentic Logistics Manifest Filter Capsules */}
@@ -895,9 +889,6 @@ export const LogisticsManifestsView: React.FC = () => {
                       ? (isAr ? 'تعديل ورقة الطريق' : 'Modifier le Manifeste')
                       : (isAr ? 'إنشاء ورقة طريق جديدة' : 'Nouvelle Feuille de Route')}
                   </h2>
-                  <p className="text-xs text-neutral-500">
-                    {isAr ? 'تعيين السائق، المركبة، ومنطقة التوزيع' : 'Affectation chauffeur, véhicule et zone de distribution'}
-                  </p>
                 </div>
               </div>
               <button

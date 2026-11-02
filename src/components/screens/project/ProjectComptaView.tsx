@@ -646,9 +646,6 @@ export const ProjectComptaView: React.FC<ProjectComptaViewProps> = ({ initialTab
               <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100 mt-0.5">
                 Déblocage Trésorerie Postale
               </h2>
-              <p className="text-xs text-zinc-500">
-                Chaque lot validé par la Direction Générale génère les bordereaux officiels SFP 01 avec montant en toutes lettres.
-              </p>
             </div>
 
             {pmPayrollBatches.some((b) => b.status === 'approved_by_direction') && (

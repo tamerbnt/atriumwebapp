@@ -335,9 +335,6 @@ export const RealEstateLeasesView: React.FC = () => {
           <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
             {isAr ? 'التزامات الإيجار والضمانات المالية' : 'Engagements Locatifs & Cautions Déposées'}
           </h2>
-          <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-            {isAr ? 'متابعة سريان العقود، الودائع الضامنة المحتجزة والكتلة الإيجارية الشهرية' : 'Baux en cours, montants des garanties sous séquestre et quittancement'}
-          </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -402,9 +399,6 @@ export const RealEstateLeasesView: React.FC = () => {
             <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
               {isAr ? 'سجل عقود الإيجار والالتزامات' : 'Registre des Baux & Contrats de Location'}
             </h2>
-            <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-              {isAr ? 'إدارة العقود السارية، تجديد الإيجارات ومتابعة الودائع الضامنة' : 'Gestion des baux en cours, échéances de renouvellement et suivi des cautions'}
-            </p>
           </div>
 
           {/* Authentic Real Estate Lease Filter Capsules */}

@@ -958,9 +958,6 @@ export const ProjectRhView: React.FC<ProjectRhViewProps> = ({ initialTab }) => {
             <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mt-1">
               Enregistrement Direct d'un Candidat Présent en Agence
             </h2>
-            <p className="text-xs text-zinc-500">
-              Formulaire express avec validation automatique des pièces d'identité et du compte postal CCP.
-            </p>
           </div>
 
           <form onSubmit={(e) => handleCreateTalent(e, 'walkin')} className="space-y-4">

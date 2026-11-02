@@ -130,9 +130,6 @@ export const MandateModal: React.FC<MandateModalProps> = ({
             </div>
             <div>
               <h2 className="text-xl font-bold tracking-tight">Nouveau Mandat d'Agence (Décret 09-18)</h2>
-              <p className="text-xs text-[#64748B] dark:text-[#A1A1AA]">
-                Enregistrement chronologique officiel au registre des mandats de l'agence
-              </p>
             </div>
           </div>
           <button

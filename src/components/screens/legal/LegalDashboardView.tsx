@@ -218,9 +218,6 @@ export const LegalDashboardView: React.FC = () => {
             <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
               {isAr ? 'مؤشرات القضايا والودائع ومواعيد الطعن (CPCA)' : 'Contentieux Actif & Radar des Délais Légaux CPCA'}
             </h2>
-            <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-              {isAr ? 'متابعة الملفات بالجدول، آجال الاستئناف الحاسمة، والجلسات المقبلة' : 'Dossiers au rôle, calendrier des audiences et alertes sous 48h'}
-            </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
@@ -289,9 +286,6 @@ export const LegalDashboardView: React.FC = () => {
             <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
               {isAr ? 'مؤشرات مكتب التوثيق وسجل العقود وحسابات الحراسة' : 'Étude Notariale — Répertoire des Actes & Décret 08-243'}
             </h2>
-            <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-              {isAr ? 'العقود المحررة، التعريفات الرسمية المحصلة ومبالغ الحراسة المعلقة' : 'Volume d\'actes authentiques, honoraires légaux et séquestres sous condition'}
-            </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
@@ -360,9 +354,6 @@ export const LegalDashboardView: React.FC = () => {
             <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
               {isAr ? 'مؤشرات المحاسبة المالية SCF والرزنامة الجبائية G50' : 'Cabinet d\'Audit & Comptabilité SCF (Loi 07-11)'}
             </h2>
-            <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-              {isAr ? 'توازن القيود المحاسبية، التصريحات الجبائية G50، ومتابعة ملفات التدقيق' : 'Équilibre Débit/Crédit, calendrier Jibayatic et mandats de commissariat'}
-            </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
@@ -431,9 +422,6 @@ export const LegalDashboardView: React.FC = () => {
             <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
               {isAr ? 'الصندوق المركزي وطابع المادة 317 والتبليغات اليومية' : 'Caisse Centrale & Rapprochement Fiscal Art. 317'}
             </h2>
-            <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-              {isAr ? 'السيولة المقبوضة نقداً، رسوم الطابع المقتطعة، وتطابق العد الفعلي' : 'Encaissements du jour en espèces, droits de timbre collectés et rapprochement'}
-            </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">

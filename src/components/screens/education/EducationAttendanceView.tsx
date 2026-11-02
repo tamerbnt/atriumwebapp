@@ -527,9 +527,6 @@ export const EducationAttendanceView: React.FC = () => {
                 <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-900 dark:text-white">
                   {t('edu_attendance_title')}
                 </h1>
-                <span className="text-xs text-neutral-500 dark:text-neutral-400">
-                  {activeCohort?.name || t('edu_label_cohort')} · {t('edu_learners_count', { count: String(cohortStudents.length) })}
-                </span>
               </div>
             </div>
           </div>

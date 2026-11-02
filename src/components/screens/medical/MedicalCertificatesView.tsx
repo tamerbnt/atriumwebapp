@@ -199,9 +199,6 @@ export const MedicalCertificatesView: React.FC = () => {
             <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
               Activité des Certifications Médicales
             </h2>
-            <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-              Registres des attestations médicales délivrées avec empreinte numérique SHA-256
-            </p>
           </div>
 
           <div className="flex items-center gap-2">
@@ -353,7 +350,6 @@ export const MedicalCertificatesView: React.FC = () => {
                   <h2 className="text-base font-bold text-neutral-900 dark:text-white">
                     Établir un Certificat Médical
                   </h2>
-                  <p className="text-xs text-neutral-500">Document légal conforme aux normes de santé publique</p>
                 </div>
               </div>
               <button

@@ -392,9 +392,6 @@ export const LogisticsScannerView: React.FC = () => {
               <h2 className="text-sm font-bold text-neutral-900 dark:text-white">
                 {isAr ? 'طرود رصيف الفرز' : 'Colis au Quai de Tri'}
               </h2>
-              <p className="text-xs text-neutral-500">
-                {isAr ? 'الطرود المسجلة والمعدة للشحن عبر الولايات' : 'Expéditions affectées au Hub Baraki'}
-              </p>
             </div>
             <div className="text-xs font-mono font-bold text-[#C4785A]">
               {shipments.length} {isAr ? 'طرد' : 'colis'}

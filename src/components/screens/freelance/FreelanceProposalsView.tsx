@@ -468,9 +468,6 @@ export const FreelanceProposalsView: React.FC = () => {
               <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-900 dark:text-white">
                 {t('free_prop_title')}
               </h1>
-              <span className="text-xs text-neutral-500 dark:text-neutral-400">
-                {freelanceProposals.length} {language === 'ar' ? 'عروض' : 'proposals'}
-              </span>
             </div>
           </div>
         </div>

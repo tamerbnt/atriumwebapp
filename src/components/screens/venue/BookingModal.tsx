@@ -338,9 +338,6 @@ export const BookingModal: React.FC<BookingModalProps> = ({
             <h2 className="text-xl font-semibold text-neutral-900 dark:text-white">
               {bookingToEdit ? t('venue_modal_edit_title') : t('venue_modal_new_title')}
             </h2>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
-              {t('venue_modal_sub')}
-            </p>
           </div>
           <button
             onClick={onClose}

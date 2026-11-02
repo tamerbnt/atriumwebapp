@@ -539,9 +539,6 @@ export const LegalVaultView: React.FC = () => {
           <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
             {isAr ? 'أمان الوثائق والقوة الإثباتية' : 'Force Probante & Intégrité des Pièces'}
           </h2>
-          <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-            {isAr ? 'تأمين المستندات الرسمية، الأختام الرقمية والمطابقة القضائية' : 'Conservation probatoire scellée, horodatage certifié et conformité aux règles déontologiques'}
-          </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -603,9 +600,6 @@ export const LegalVaultView: React.FC = () => {
             <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
               {roleMetadata.title}
             </h2>
-            <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-              {isAr ? 'سجل الأرشيف والمستندات القضائية والمحاسبية' : 'Recherche par référence, intitulé, partie ou numéro d\'enregistrement'}
-            </p>
           </div>
 
           <div className="flex items-center gap-1.5 p-1 bg-white dark:bg-neutral-800 rounded-full border border-neutral-200/80 dark:border-neutral-700/60 shadow-2xs overflow-x-auto">
@@ -923,9 +917,6 @@ export const LegalVaultView: React.FC = () => {
                       ? (isAr ? 'تعديل وثيقة بالخزينة' : 'Modifier la Pièce du Coffre')
                       : (isAr ? 'إيداع وثيقة جديدة بالخزينة' : 'Déposer une Pièce au Coffre-fort')}
                   </h2>
-                  <p className="text-xs text-neutral-500">
-                    {isAr ? 'أرشفة مشفرة وسندات رسمية' : 'Chiffrement sécurisé AES-256 et horodatage'}
-                  </p>
                 </div>
               </div>
               <button
