@@ -209,6 +209,7 @@ export function LabelInput({
       data-up={Boolean(up)}
       data-focus={focus}
       data-filled={Boolean(value !== undefined && value !== null && String(value).length > 0)}
+      data-has-prefix={Boolean(prefix)}
       style={{ width: typeof width === "number" ? `${width}px` : width }}
     >
       <div
@@ -282,8 +283,8 @@ export function LabelInput({
           step={step}
           inputMode={quiet ? "none" : undefined}
           style={{
-            paddingLeft: isRtl ? (isSecret ? 48 : suffix ? 44 : lx) : (prefix ? lx + 16 : lx),
-            paddingRight: isRtl ? (prefix ? lx + 16 : lx) : (isSecret ? 48 : suffix ? 44 : lx),
+            paddingLeft: isRtl ? (isSecret ? 48 : suffix ? 44 : (prefix ? 38 : lx)) : (prefix ? 38 : lx),
+            paddingRight: isRtl ? (prefix ? 38 : (isSecret ? 48 : suffix ? 44 : lx)) : (isSecret ? 48 : suffix ? 44 : lx),
             textAlign: isRtl ? "right" : "left",
           }}
         />

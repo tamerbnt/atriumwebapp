@@ -695,6 +695,23 @@ export const TopBar: React.FC<TopBarProps> = ({
             </span>
           </nav>
         );
+      case 'staff':
+        return (
+          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs">
+            <button
+              type="button"
+              onClick={() => setScreen('dashboard')}
+              className="text-neutral-400 hover:text-[#C4785A] font-medium transition-colors flex items-center gap-1 cursor-pointer"
+            >
+              <Home size={12} />
+              <span>{homeLabel}</span>
+            </button>
+            <ChevronRight size={13} className="text-neutral-300 dark:text-neutral-600" />
+            <span className="text-neutral-900 dark:text-white font-semibold">
+              {language === 'ar' ? 'فريق العمل' : language === 'en' ? 'Staff' : 'Équipe'}
+            </span>
+          </nav>
+        );
       default: {
         return (
           <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs">

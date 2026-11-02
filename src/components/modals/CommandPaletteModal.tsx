@@ -34,6 +34,7 @@ import {
 import { useAtriumStore, ActiveScreen } from '../../services/store';
 import { t } from '../../utils/i18n';
 import { localizeStatus } from '../../utils/rules';
+import { canAccessStaffScreen, getEffectiveUserRole } from '../../utils/staffRules';
 
 export interface CommandPaletteModalProps {
   isOpen: boolean;
@@ -71,6 +72,19 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
     openFastSwitch,
     openOnboarding,
     selectMember,
+    currentUser,
+    activePmRole,
+    activeGarageRole,
+    activeRealEstateRole,
+    activeManufacturingRole,
+    activeLegalRole,
+    activeLogisticsRole,
+    activeContractorRole,
+    activeAgriRole,
+    activeMembershipRole,
+    activeAppointmentRole,
+    activePosRole,
+    activeEducationRole,
     language,
   } = useAtriumStore();
 
@@ -196,6 +210,37 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
             onClose();
           },
         });
+      });
+    }
+
+    // Unified Staff Screen Navigation
+    const effectiveRole = getEffectiveUserRole(category, {
+      currentUser,
+      activePmRole,
+      activeGarageRole,
+      activeRealEstateRole,
+      activeManufacturingRole,
+      activeLegalRole,
+      activeLogisticsRole,
+      activeContractorRole,
+      activeAgriRole,
+      activeMembershipRole,
+      activeAppointmentRole,
+      activePosRole,
+      activeEducationRole,
+    });
+
+    if (canAccessStaffScreen(category, effectiveRole)) {
+      list.push({
+        id: 'nav-staff',
+        title: language === 'ar' ? 'فريق العمل' : language === 'en' ? 'Staff' : 'Équipe',
+        subtitle: language === 'ar' ? 'إدارة الموظفين ونقاط الحضور والرواتب' : language === 'en' ? 'Staff & Workforce Management' : 'Annuaire d\'équipe & Pointage',
+        category: navCategoryLabel,
+        icon: <Users size={15} className="text-[#C4785A]" />,
+        onSelect: () => {
+          setScreen('staff');
+          onClose();
+        },
       });
     }
 

@@ -7,6 +7,8 @@ import {
   canViewSensitivePayroll,
   normalizePhone,
   getCategoryPerformanceMetricLabel,
+  canCreateStaff,
+  getEffectiveUserRole,
 } from './staffRules';
 import { StaffMember } from '../types/index';
 
@@ -254,4 +256,31 @@ test('Staff Rules: Category Performance Metric Labels returns appropriate KPI me
 
   const gar = getCategoryPerformanceMetricLabel('auto_garage');
   assert.ok(gar.labelFr.includes('Réparation'));
+});
+
+test('Staff Rules: canCreateStaff enforces owner-only in dual-role and operational leads in multi-role', () => {
+  // Dual-role
+  assert.equal(canCreateStaff('membership_session', 'Owner'), true);
+  assert.equal(canCreateStaff('membership_session', 'Coach'), false);
+  assert.equal(canCreateStaff('pos_inventory', 'Cashier'), false);
+
+  // Multi-role
+  assert.equal(canCreateStaff('construction_contractor', 'ConducteurTravaux'), true);
+  assert.equal(canCreateStaff('construction_contractor', 'ChefChantier'), false);
+  assert.equal(canCreateStaff('auto_garage', 'ChefAtelier'), true);
+  assert.equal(canCreateStaff('auto_garage', 'Mecanicien'), false);
+  assert.equal(canCreateStaff('logistics_delivery', 'Dispatcher'), true);
+  assert.equal(canCreateStaff('logistics_delivery', 'Chauffeur'), false);
+});
+
+test('Staff Rules: getEffectiveUserRole properly resolves category switcher states', () => {
+  // Dual role switcher
+  assert.equal(getEffectiveUserRole('membership_session', { activeMembershipRole: 'staff' }), 'Staff');
+  assert.equal(getEffectiveUserRole('membership_session', { activeMembershipRole: 'owner' }), 'Owner');
+  assert.equal(getEffectiveUserRole('education_cohort', { activeEducationRole: 'staff' }), 'Staff');
+
+  // Multi-role switcher
+  assert.equal(getEffectiveUserRole('auto_garage', { activeGarageRole: 'mecanicien' }), 'mecanicien');
+  assert.equal(getEffectiveUserRole('construction_contractor', { activeContractorRole: 'conducteur' }), 'conducteur');
+  assert.equal(getEffectiveUserRole('logistics_delivery', { activeLogisticsRole: 'dispatcher' }), 'dispatcher');
 });

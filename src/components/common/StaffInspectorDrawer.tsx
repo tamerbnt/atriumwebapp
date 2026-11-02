@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import {
   X,
   User,
@@ -24,7 +25,12 @@ import {
 } from 'lucide-react';
 import { StaffMember, BusinessCategory } from '../../types/index';
 import { useAtriumStore } from '../../services/store';
-import { canViewSensitivePayroll, getCategoryPerformanceMetricLabel } from '../../utils/staffRules';
+import {
+  canViewSensitivePayroll,
+  getCategoryPerformanceMetricLabel,
+  getEffectiveUserRole,
+  canCreateStaff,
+} from '../../utils/staffRules';
 import { ConfirmDialog } from '../ui/ConfirmDialog';
 
 interface StaffInspectorDrawerProps {
@@ -49,7 +55,20 @@ export const StaffInspectorDrawer: React.FC<StaffInspectorDrawerProps> = ({
     terminateStaffMember,
     deleteStaffMember,
     punchStaffAttendance,
+    showToast,
     language,
+    activePmRole,
+    activeGarageRole,
+    activeRealEstateRole,
+    activeManufacturingRole,
+    activeLegalRole,
+    activeLogisticsRole,
+    activeContractorRole,
+    activeAgriRole,
+    activeMembershipRole,
+    activeAppointmentRole,
+    activePosRole,
+    activeEducationRole,
   } = useAtriumStore();
 
   const [confirmAction, setConfirmAction] = useState<
@@ -60,7 +79,25 @@ export const StaffInspectorDrawer: React.FC<StaffInspectorDrawerProps> = ({
 
   const isAr = language === 'ar';
   const isEn = language === 'en';
-  const isOwnerViewer = canViewSensitivePayroll(currentUser?.role);
+
+  const effectiveRole = getEffectiveUserRole(currentCategory, {
+    currentUser,
+    activePmRole,
+    activeGarageRole,
+    activeRealEstateRole,
+    activeManufacturingRole,
+    activeLegalRole,
+    activeLogisticsRole,
+    activeContractorRole,
+    activeAgriRole,
+    activeMembershipRole,
+    activeAppointmentRole,
+    activePosRole,
+    activeEducationRole,
+  });
+
+  const isOwnerViewer = canViewSensitivePayroll(effectiveRole);
+  const canEdit = canCreateStaff(currentCategory, effectiveRole);
   const metricLabel = getCategoryPerformanceMetricLabel(currentCategory);
 
   const handleConfirm = () => {
@@ -77,7 +114,11 @@ export const StaffInspectorDrawer: React.FC<StaffInspectorDrawerProps> = ({
         onClose();
       }
     } catch (e: any) {
-      alert(e.message);
+      showToast({
+        type: 'warning',
+        title: isAr ? 'تعذر إتمام العملية' : isEn ? 'Operation Restricted' : 'Action refusée',
+        message: e.message || 'Action impossible.',
+      });
     } finally {
       setConfirmAction(null);
     }
@@ -111,14 +152,14 @@ export const StaffInspectorDrawer: React.FC<StaffInspectorDrawerProps> = ({
     }
   };
 
-  return (
-    <>
-      <div className="fixed inset-0 z-40 bg-black/30 backdrop-blur-xs" onClick={onClose} />
+  const drawerContent = (
+    <div className="fixed inset-0 z-[9990] pointer-events-none">
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-xs pointer-events-auto transition-opacity duration-200" onClick={onClose} />
 
       <aside
         className={`fixed top-0 bottom-0 ${
           isAr ? 'left-0' : 'right-0'
-        } z-50 w-full sm:w-[420px] bg-white dark:bg-[#18181B] border-l border-neutral-200 dark:border-neutral-800 shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-${
+        } z-[9995] pointer-events-auto w-full sm:w-[420px] bg-white dark:bg-[#18181B] border-l border-neutral-200 dark:border-neutral-800 shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-${
           isAr ? 'left' : 'right'
         } duration-200`}
         dir={isAr ? 'rtl' : 'ltr'}
@@ -145,13 +186,15 @@ export const StaffInspectorDrawer: React.FC<StaffInspectorDrawerProps> = ({
           </div>
 
           <div className="flex items-center gap-1">
-            <button
-              onClick={() => onEdit(staff)}
-              className="p-2 rounded-xl text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-              title={isAr ? 'تعديل' : isEn ? 'Edit' : 'Modifier'}
-            >
-              <Edit className="w-4 h-4" />
-            </button>
+            {canEdit && (
+              <button
+                onClick={() => onEdit(staff)}
+                className="p-2 rounded-xl text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                title={isAr ? 'تعديل' : isEn ? 'Edit' : 'Modifier'}
+              >
+                <Edit className="w-4 h-4" />
+              </button>
+            )}
             <button
               onClick={onClose}
               className="p-2 rounded-xl text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
@@ -372,45 +415,47 @@ export const StaffInspectorDrawer: React.FC<StaffInspectorDrawerProps> = ({
           )}
         </div>
 
-        {/* Drawer Action Bar */}
-        <div className="p-4 border-t border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-900/50 space-y-2">
-          <div className="grid grid-cols-3 gap-2">
-            <button
-              onClick={() => setConfirmAction('freeze')}
-              disabled={staff.status === 'frozen'}
-              className="py-2 px-2 rounded-xl border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 font-semibold text-[11px] flex items-center justify-center gap-1 transition-colors disabled:opacity-40"
-            >
-              <PauseCircle className="w-3.5 h-3.5" />
-              <span>{isAr ? 'تجميد' : isEn ? 'Freeze' : 'Geler'}</span>
-            </button>
+        {/* Drawer Action Bar (Management & Owner Only) */}
+        {canEdit && (
+          <div className="p-4 border-t border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-900/50 space-y-2">
+            <div className="grid grid-cols-3 gap-2">
+              <button
+                onClick={() => setConfirmAction('freeze')}
+                disabled={staff.status === 'frozen'}
+                className="py-2 px-2 rounded-xl border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 font-semibold text-[11px] flex items-center justify-center gap-1 transition-colors disabled:opacity-40"
+              >
+                <PauseCircle className="w-3.5 h-3.5" />
+                <span>{isAr ? 'تجميد' : isEn ? 'Freeze' : 'Geler'}</span>
+              </button>
+
+              <button
+                onClick={() => setConfirmAction('vacation')}
+                disabled={staff.status === 'vacation'}
+                className="py-2 px-2 rounded-xl border border-blue-500/30 bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 font-semibold text-[11px] flex items-center justify-center gap-1 transition-colors disabled:opacity-40"
+              >
+                <Plane className="w-3.5 h-3.5" />
+                <span>{isAr ? 'عطلة' : isEn ? 'Vacation' : 'Congé'}</span>
+              </button>
+
+              <button
+                onClick={() => setConfirmAction('terminate')}
+                disabled={staff.status === 'terminated'}
+                className="py-2 px-2 rounded-xl border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 font-semibold text-[11px] flex items-center justify-center gap-1 transition-colors disabled:opacity-40"
+              >
+                <AlertTriangle className="w-3.5 h-3.5" />
+                <span>{isAr ? 'إنهاء' : isEn ? 'End' : 'Arrêter'}</span>
+              </button>
+            </div>
 
             <button
-              onClick={() => setConfirmAction('vacation')}
-              disabled={staff.status === 'vacation'}
-              className="py-2 px-2 rounded-xl border border-blue-500/30 bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 font-semibold text-[11px] flex items-center justify-center gap-1 transition-colors disabled:opacity-40"
+              onClick={() => setConfirmAction('delete')}
+              className="w-full py-2 px-3 rounded-xl border border-red-200 dark:border-red-900/40 hover:bg-red-500/10 text-red-500 font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors"
             >
-              <Plane className="w-3.5 h-3.5" />
-              <span>{isAr ? 'عطلة' : isEn ? 'Vacation' : 'Congé'}</span>
-            </button>
-
-            <button
-              onClick={() => setConfirmAction('terminate')}
-              disabled={staff.status === 'terminated'}
-              className="py-2 px-2 rounded-xl border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 font-semibold text-[11px] flex items-center justify-center gap-1 transition-colors disabled:opacity-40"
-            >
-              <AlertTriangle className="w-3.5 h-3.5" />
-              <span>{isAr ? 'إنهاء' : isEn ? 'End' : 'Arrêter'}</span>
+              <Trash2 className="w-3.5 h-3.5" />
+              <span>{isAr ? 'حذف الموظف نهائياً' : isEn ? 'Delete Staff Member' : 'Supprimer définitivement'}</span>
             </button>
           </div>
-
-          <button
-            onClick={() => setConfirmAction('delete')}
-            className="w-full py-2 px-3 rounded-xl border border-red-200 dark:border-red-900/40 hover:bg-red-500/10 text-red-500 font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors"
-          >
-            <Trash2 className="w-3.5 h-3.5" />
-            <span>{isAr ? 'حذف الموظف نهائياً' : isEn ? 'Delete Staff Member' : 'Supprimer définitivement'}</span>
-          </button>
-        </div>
+        )}
       </aside>
 
       {/* Safety Confirmation Dialog */}
@@ -443,6 +488,10 @@ export const StaffInspectorDrawer: React.FC<StaffInspectorDrawerProps> = ({
         }
         variant={confirmAction === 'delete' || confirmAction === 'terminate' ? 'danger' : 'warning'}
       />
-    </>
+    </div>
   );
+
+  return typeof document !== 'undefined'
+    ? createPortal(drawerContent, document.body)
+    : drawerContent;
 };

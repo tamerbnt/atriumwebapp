@@ -28,6 +28,8 @@ import {
   canAccessStaffScreen,
   canViewSensitivePayroll,
   getCategoryPerformanceMetricLabel,
+  getEffectiveUserRole,
+  canCreateStaff,
 } from '../../utils/staffRules';
 
 interface UniversalStaffViewProps {
@@ -44,7 +46,20 @@ export const UniversalStaffView: React.FC<UniversalStaffViewProps> = ({
     businesses,
     currentUser,
     punchStaffAttendance,
+    setScreen,
     language,
+    activePmRole,
+    activeGarageRole,
+    activeRealEstateRole,
+    activeManufacturingRole,
+    activeLegalRole,
+    activeLogisticsRole,
+    activeContractorRole,
+    activeAgriRole,
+    activeMembershipRole,
+    activeAppointmentRole,
+    activePosRole,
+    activeEducationRole,
   } = useAtriumStore();
 
   const currentBiz = businesses.find((b) => b.id === currentBusinessId);
@@ -53,9 +68,26 @@ export const UniversalStaffView: React.FC<UniversalStaffViewProps> = ({
   const isAr = language === 'ar';
   const isEn = language === 'en';
 
-  // Strict RBAC Access Check
-  const hasAccess = canAccessStaffScreen(activeCategory, currentUser?.role);
-  const isOwnerViewer = canViewSensitivePayroll(currentUser?.role);
+  // Strict RBAC Access Check based on Effective Active Role
+  const effectiveRole = getEffectiveUserRole(activeCategory, {
+    currentUser,
+    activePmRole,
+    activeGarageRole,
+    activeRealEstateRole,
+    activeManufacturingRole,
+    activeLegalRole,
+    activeLogisticsRole,
+    activeContractorRole,
+    activeAgriRole,
+    activeMembershipRole,
+    activeAppointmentRole,
+    activePosRole,
+    activeEducationRole,
+  });
+
+  const hasAccess = canAccessStaffScreen(activeCategory, effectiveRole);
+  const isOwnerViewer = canViewSensitivePayroll(effectiveRole);
+  const canCreate = canCreateStaff(activeCategory, effectiveRole);
   const metricLabel = getCategoryPerformanceMetricLabel(activeCategory);
 
   // Filter staff by current facility / branch
@@ -159,6 +191,14 @@ export const UniversalStaffView: React.FC<UniversalStaffViewProps> = ({
             ? 'The Staff and Workforce Management module is strictly reserved for the Facility Owner and authorized Operational Team Leads.'
             : 'Le module de gestion du personnel et des présences est strictement réservé au Propriétaire ou aux Responsables d\'équipe habilités.'}
         </p>
+        <div className="pt-2">
+          <AtriumButton
+            onClick={() => setScreen('dashboard')}
+            className="px-5 py-2 text-xs font-semibold shadow-xs"
+          >
+            {isAr ? 'العودة إلى لوحة التحكم' : isEn ? 'Return to Dashboard' : 'Retour au tableau de bord'}
+          </AtriumButton>
+        </div>
       </div>
     );
   }
@@ -324,17 +364,19 @@ export const UniversalStaffView: React.FC<UniversalStaffViewProps> = ({
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
-          <AtriumButton
-            onClick={handleOpenCreate}
-            className="px-4 py-2.5 text-xs font-semibold shadow-md flex items-center gap-2"
-          >
-            <UserPlus className="w-4 h-4" />
-            <span>
-              {isAr ? 'إضافة موظف جديد' : isEn ? 'Create Staff' : 'Créer un collaborateur'}
-            </span>
-          </AtriumButton>
-        </div>
+        {canCreate && (
+          <div className="flex items-center gap-3">
+            <AtriumButton
+              onClick={handleOpenCreate}
+              className="px-4 py-2.5 text-xs font-semibold shadow-md flex items-center gap-2"
+            >
+              <UserPlus className="w-4 h-4" />
+              <span>
+                {isAr ? 'إضافة موظف جديد' : isEn ? 'Create Staff' : 'Créer un collaborateur'}
+              </span>
+            </AtriumButton>
+          </div>
+        )}
       </div>
 
       {/* 3-KPI Elevated Tray */}
@@ -485,19 +527,19 @@ export const UniversalStaffView: React.FC<UniversalStaffViewProps> = ({
         </div>
       </div>
 
-      {/* Universal Data Collection Table / Grid */}
-      <div className="bg-white dark:bg-[#18181B] rounded-3xl border border-neutral-200 dark:border-neutral-800 shadow-xs overflow-hidden">
+      {/* Universal Data Collection Table / Grid on Gray Pod Tray */}
+      <div className="bg-[#F8F9FA] dark:bg-[#141416] p-4 sm:p-5 rounded-3xl border border-neutral-200/80 dark:border-neutral-800/80 space-y-3">
         <UniversalDataCollection<StaffMember>
           items={filteredStaff}
           columns={columns}
           keyExtractor={(s) => s.id}
           onItemClick={handleRowClick}
-          onEdit={handleOpenEdit}
+          onEdit={canCreate ? handleOpenEdit : undefined}
           defaultViewMode="list"
           renderCard={(s) => (
             <div
               onClick={() => handleRowClick(s)}
-              className="p-4 rounded-2xl border border-neutral-200 dark:border-neutral-800 hover:border-[#C4785A]/40 transition-all cursor-pointer bg-neutral-50/50 dark:bg-neutral-900/50 space-y-3"
+              className="p-4 rounded-2xl border border-neutral-200/90 dark:border-neutral-800 hover:border-[#C4785A]/40 transition-all cursor-pointer bg-white dark:bg-[#18181B] shadow-2xs space-y-3"
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
@@ -520,7 +562,7 @@ export const UniversalStaffView: React.FC<UniversalStaffViewProps> = ({
                 />
               </div>
 
-              <div className="pt-2 border-t border-neutral-200 dark:border-neutral-800 flex items-center justify-between text-[11px]">
+              <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800/80 flex items-center justify-between text-[11px]">
                 <span className="text-neutral-500">{metricLabel.labelFr}:</span>
                 <span className="font-bold text-[#C4785A]">
                   {s.performance?.kpiValue ?? '90%'}

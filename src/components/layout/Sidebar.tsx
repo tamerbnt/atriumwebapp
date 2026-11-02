@@ -49,7 +49,7 @@ import {
 import { useAtriumStore, ActiveScreen } from '../../services/store';
 import { FiveCubesLogo } from '../auth/AtriumMonolith';
 import { useTranslation } from '../../utils/useTranslation';
-import { canAccessStaffScreen } from '../../utils/staffRules';
+import { canAccessStaffScreen, getEffectiveUserRole } from '../../utils/staffRules';
 
 interface SidebarProps {
   onOpenVoucherModal: () => void;
@@ -1775,7 +1775,23 @@ export const Sidebar: React.FC<SidebarProps> = ({
   }
 
   // Unified Staff / Workforce Screen Injection Across All Categories
-  if (canAccessStaffScreen(category, currentUser?.role)) {
+  const effectiveRole = getEffectiveUserRole(category, {
+    currentUser,
+    activePmRole,
+    activeGarageRole,
+    activeRealEstateRole,
+    activeManufacturingRole,
+    activeLegalRole,
+    activeLogisticsRole,
+    activeContractorRole,
+    activeAgriRole,
+    activeMembershipRole,
+    activeAppointmentRole,
+    activePosRole,
+    activeEducationRole,
+  });
+
+  if (canAccessStaffScreen(category, effectiveRole)) {
     const hasStaffItem = dockNavItems.some((item) => item.id === 'staff');
     if (!hasStaffItem) {
       const staffNavItem = {

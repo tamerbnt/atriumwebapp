@@ -182,7 +182,7 @@ export const StaffModal: React.FC<StaffModalProps> = ({
     setCcpNumber(cleaned);
     if (cleaned.length >= 6) {
       const calcKey = calculateCcpKey(cleaned);
-      setCcpKey(calcKey);
+      setCcpKey(String(calcKey).padStart(2, '0'));
     }
   };
 

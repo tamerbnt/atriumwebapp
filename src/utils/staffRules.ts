@@ -177,6 +177,104 @@ export function canAccessStaffScreen(category: BusinessCategory | string, userRo
 }
 
 /**
+ * Checks if the current viewer is authorized to create or edit staff members.
+ * Enforces owner-only authority in simple dual-role categories, and allows operational team leads in multi-role categories.
+ */
+export function canCreateStaff(category: BusinessCategory | string, userRole: string | undefined): boolean {
+  if (!userRole) return false;
+  const role = userRole.toLowerCase().trim();
+
+  // Owners, Gerants, and Admins always have creation authority
+  if (role === 'owner' || role === 'gerant' || role === 'directeur_general' || role === 'admin') {
+    return true;
+  }
+
+  // Simple Dual-Role Categories: ONLY the Owner can create/edit staff
+  const dualRoleCategories = [
+    'membership_session',
+    'appointment_service',
+    'pos_inventory',
+    'education_cohort',
+    'freelance_solo',
+  ];
+
+  if (dualRoleCategories.includes(category)) {
+    return false;
+  }
+
+  // Multi-Role Categories: Specific management roles authorized to create/edit staff
+  const authorizedCreationRolesByCategory: Record<string, string[]> = {
+    project_milestone: ['manager', 'agencydirector', 'projectmanager', 'directeur_agence', 'chef_projet', 'direction'],
+    medical_clinic: ['manager', 'doctor', 'medecinchef', 'medecin_chef'],
+    auto_garage: ['manager', 'chefatelier', 'chef_atelier'],
+    real_estate: ['manager', 'director', 'directeur_agence', 'directeur_commercial', 'direction'],
+    manufacturing_production: ['manager', 'productionmanager', 'chefproduction', 'responsable_production', 'chef_atelier'],
+    legal_notary: ['partner', 'associate', 'avocat_associe'],
+    logistics_delivery: ['manager', 'fleetmanager', 'dispatcher', 'responsable_flotte', 'chef_quai'],
+    construction_contractor: ['manager', 'conducteurtravaux', 'conducteur_travaux', 'conducteur'],
+    agriculture_livestock: ['manager', 'chefexploitation', 'chefculture', 'chef_exploitation', 'chef_culture', 'regisseur'],
+    trading_commercial: ['manager', 'directeurcommercial', 'directeur_commercial'],
+    rental_booking: ['manager', 'regisseur_general'],
+  };
+
+  const allowed = authorizedCreationRolesByCategory[category] || [];
+  return allowed.some((r) => role.includes(r));
+}
+
+/**
+ * Resolves the effective active user role by taking into account category-specific switcher states.
+ */
+export function getEffectiveUserRole(
+  category: BusinessCategory | string,
+  state: {
+    currentUser?: { role?: string } | null;
+    activePmRole?: string;
+    activeGarageRole?: string;
+    activeRealEstateRole?: string;
+    activeManufacturingRole?: string;
+    activeLegalRole?: string;
+    activeLogisticsRole?: string;
+    activeContractorRole?: string;
+    activeAgriRole?: string;
+    activeMembershipRole?: string;
+    activeAppointmentRole?: string;
+    activePosRole?: string;
+    activeEducationRole?: string;
+  }
+): string {
+  switch (category) {
+    case 'membership_session':
+      return state.activeMembershipRole === 'staff' ? 'Staff' : (state.currentUser?.role || 'Owner');
+    case 'appointment_service':
+      return state.activeAppointmentRole === 'staff' ? 'Staff' : (state.currentUser?.role || 'Owner');
+    case 'pos_inventory':
+      return state.activePosRole === 'staff' ? 'Staff' : (state.currentUser?.role || 'Owner');
+    case 'education_cohort':
+      return state.activeEducationRole === 'staff' ? 'Staff' : (state.currentUser?.role || 'Owner');
+    case 'freelance_solo':
+      return state.currentUser?.role || 'Owner';
+    case 'auto_garage':
+      return state.activeGarageRole || state.currentUser?.role || 'gerant';
+    case 'construction_contractor':
+      return state.activeContractorRole || state.currentUser?.role || 'gerant';
+    case 'logistics_delivery':
+      return state.activeLogisticsRole || state.currentUser?.role || 'gerant';
+    case 'manufacturing_production':
+      return state.activeManufacturingRole || state.currentUser?.role || 'gerant';
+    case 'agriculture_livestock':
+      return state.activeAgriRole || state.currentUser?.role || 'gerant';
+    case 'legal_notary':
+      return state.activeLegalRole || state.currentUser?.role || 'avocat_associe';
+    case 'real_estate':
+      return state.activeRealEstateRole || state.currentUser?.role || 'direction';
+    case 'project_milestone':
+      return state.activePmRole || state.currentUser?.role || 'direction';
+    default:
+      return state.currentUser?.role || 'Owner';
+  }
+}
+
+/**
  * Checks if the current viewer is authorized to view confidential compensation and bank data (Salary, CCP).
  * Redacted for team managers/leads — visible only to Facility Owners.
  */

@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { AlertTriangle, AlertCircle, Info, X } from 'lucide-react';
 import { AtriumButton } from './AtriumButton';
 
@@ -63,11 +64,11 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
 
   const IconComponent = variantStyles.Icon;
 
-  return (
-    <div className="fixed inset-0 z-60 flex items-center justify-center p-4">
+  const dialogContent = (
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/50 backdrop-blur-xs transition-opacity duration-200"
+        className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity duration-200"
         onClick={!isLoading ? onClose : undefined}
       />
 
@@ -122,4 +123,8 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
       </div>
     </div>
   );
+
+  return typeof document !== 'undefined'
+    ? createPortal(dialogContent, document.body)
+    : dialogContent;
 };

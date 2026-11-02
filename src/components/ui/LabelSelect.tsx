@@ -264,6 +264,7 @@ export const LabelSelect: React.FC<LabelSelectProps> = ({
       data-up={Boolean(up)}
       data-focus={isOpen}
       data-filled={Boolean(selectedOption !== undefined)}
+      data-has-prefix={Boolean(prefix)}
       style={{ width: typeof width === 'number' ? `${width}px` : width }}
       onKeyDown={handleKeyDown}
     >
@@ -314,6 +315,12 @@ export const LabelSelect: React.FC<LabelSelectProps> = ({
           )}
         </label>
 
+        {prefix && (
+          <div className="absolute left-3 rtl:left-auto rtl:right-3 top-1/2 -translate-y-1/2 z-10 flex items-center pointer-events-none text-neutral-400">
+            {prefix}
+          </div>
+        )}
+
         {/* Interactive Custom Button Trigger */}
         <button
           type="button"
@@ -324,16 +331,13 @@ export const LabelSelect: React.FC<LabelSelectProps> = ({
           }}
           className="w-full h-full flex items-center justify-between text-left rtl:text-right focus:outline-none cursor-pointer bg-transparent transition-opacity"
           style={{
-            paddingInlineStart: prefix ? lx + 16 : lx,
+            paddingInlineStart: prefix ? 38 : lx,
             paddingInlineEnd: Math.max(10, r),
           }}
           aria-haspopup="listbox"
           aria-expanded={isOpen}
         >
           <div className="flex items-center gap-2 truncate pr-2 rtl:pr-0 rtl:pl-2">
-            {prefix && (
-              <span className="shrink-0 text-neutral-400">{prefix}</span>
-            )}
             {selectedOption?.icon && (
               <span className="shrink-0 text-neutral-500">
                 {selectedOption.icon}
