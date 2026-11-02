@@ -109,11 +109,6 @@ export const WilayaTariffModal: React.FC<WilayaTariffModalProps> = ({ isOpen, on
               <h3 className="font-bold text-base text-neutral-900 dark:text-white">
                 {isAr ? 'شبكة تسعير التوصيل عبر 58 ولاية' : 'Grille Tarifaire des 58 Wilayas & Zones'}
               </h3>
-              <p className="text-xs text-neutral-500">
-                {isAr
-                  ? 'تعريفة التوصيل للمنزل والمكتب، وزن القاعدة، والزيادة عن كل كغ إضافي'
-                  : 'Tarifs réglementaires Stop-Desk & Domicile, franchise de poids et surcoût au kg'}
-              </p>
             </div>
           </div>
           <button

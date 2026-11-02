@@ -175,9 +175,6 @@ export const MedicalCertificatesView: React.FC = () => {
                 Conforme CNAS
               </span>
             </div>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">
-              Arrêts de travail légaux, certificats d'aptitude sportive, ITT médico-légal et lettres de liaison
-            </p>
           </div>
         </div>
 

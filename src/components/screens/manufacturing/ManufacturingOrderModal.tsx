@@ -134,9 +134,6 @@ export const ManufacturingOrderModal: React.FC<ManufacturingOrderModalProps> = (
                   ? (isAr ? 'تعديل أمر التصنيع' : 'Modifier l\'Ordre de Fabrication')
                   : (isAr ? 'أمر تصنيع جديد (OF)' : 'Nouvel Ordre de Fabrication (OF)')}
               </h3>
-              <p className="text-xs text-neutral-400">
-                {isAr ? 'حجز المواد الأولية وجدولة خطوط الإنتاج' : 'Réservation stocks matières & ordonnancement atelier'}
-              </p>
             </div>
           </div>
           <button

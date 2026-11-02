@@ -166,11 +166,6 @@ export const AgricultureWholesaleView: React.FC = () => {
                 Commission 6%
               </span>
             </div>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">
-              {isAr
-                ? 'مطابقة مداخيل وكلاء أسواق الجملة، اقتطاع العمولة 6%، وسيولة المستثمرة'
-                : 'Rapprochement des bordereaux mandataires, commission 6% et trésorerie domaine'}
-            </p>
           </div>
         </div>
 

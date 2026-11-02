@@ -340,9 +340,6 @@ export const TradingInventoryView: React.FC = () => {
                   {warehouses.length} {language === 'ar' ? 'مستودعات' : 'dépôts actifs'}
                 </span>
               </div>
-              <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
-                {t('trading_inventory_subtitle', 'Gestion multi-dépôts, suivi des stocks en temps réel et bons d\'entrée/sortie/transfert')}
-              </p>
             </div>
           </div>
 

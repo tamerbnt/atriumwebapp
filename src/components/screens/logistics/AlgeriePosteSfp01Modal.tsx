@@ -74,11 +74,6 @@ export const AlgeriePosteSfp01Modal: React.FC<AlgeriePosteSfp01ModalProps> = ({
               <h3 className="font-bold text-base text-neutral-900 dark:text-white">
                 {isAr ? 'تصدير ملف بريد الجزائر CCP SFP 01 / B1' : 'Export Fichier Algérie Poste CCP (SFP 01 / B1)'}
               </h3>
-              <p className="text-xs text-neutral-500">
-                {isAr
-                  ? 'ملف نصي موحد بدقة 57 حرفاً مع مفتاح 97 الحسابي المعتمد في المراكز البريدية'
-                  : 'Format ASCII standardisé à largeur fixe (57 cols) avec contrôle algorithmique Clé 97'}
-              </p>
             </div>
           </div>
           <button

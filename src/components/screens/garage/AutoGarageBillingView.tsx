@@ -257,11 +257,6 @@ export const AutoGarageBillingView: React.FC = () => {
                   : 'Facturation DGI, Caisse & Règlements Flottes'}
               </span>
             </h1>
-            <p className="text-xs text-neutral-500 mt-1">
-              {isAr
-                ? 'فواتير رسمية مطابقة لمصالح الضرائب (TVA 19% + طابع جبائي)، وصولات ورخص الخروج'
-                : 'Factures conformes DGI (TVA 19% + Droit de Timbre), bons de caisse et relevés B2B'}
-            </p>
           </div>
 
           <div className="flex items-center gap-2">

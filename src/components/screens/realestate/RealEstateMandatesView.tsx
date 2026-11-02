@@ -172,11 +172,6 @@ export const RealEstateMandatesView: React.FC = () => {
                   Décret 09-18 Conforme
                 </span>
               </div>
-              <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                {isAr
-                  ? 'ترقيم تسلسلي إلزامي، متابعة الآجال، وتطبيق نسب الأتعاب القانونية'
-                  : "Enregistrement séquentiel légal, suivi d'expiration et honoraires réglementés"}
-              </p>
             </div>
           </div>
 

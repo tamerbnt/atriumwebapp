@@ -368,11 +368,6 @@ export const MedicalPatientsView: React.FC = () => {
                 {patients.length} {language === 'ar' ? 'مريض' : 'patients'}
               </span>
             </div>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">
-              {language === 'ar'
-                ? 'الملفات الطبية الإلكترونية، السوابق المرضية، الحساسيات ومعلومات الطوارئ'
-                : 'Dossiers médicaux partagés, antécédents, allergies médicamenteuses & urgences'}
-            </p>
           </div>
         </div>
 

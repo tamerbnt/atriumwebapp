@@ -354,11 +354,6 @@ export const ManufacturingBomView: React.FC = () => {
                 {boms.length} BOM
               </span>
             </div>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">
-              {isAr
-                ? 'تعريف المواد الأولية، تكاليف المكونات، وساعات اليد العاملة المعيارية'
-                : 'Structure des produits finis, décomposition matière & temps de gamme opératoire'}
-            </p>
           </div>
         </div>
 

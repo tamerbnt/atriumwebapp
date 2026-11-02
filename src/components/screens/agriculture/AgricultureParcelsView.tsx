@@ -367,11 +367,6 @@ export const AgricultureParcelsView: React.FC = () => {
                 {parcels.length} {isAr ? 'قطعة' : 'parcelles'}
               </span>
             </div>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">
-              {isAr
-                ? 'مساحات المستثمرة الفلاحية، نظم الري بالتقطير، والمحاصيل الموسمية'
-                : 'Cartographie parcellaire, assolements, modes d’irrigation et cycles culturaux'}
-            </p>
           </div>
         </div>
 

@@ -198,11 +198,6 @@ export const AutoOrderModal: React.FC<AutoOrderModalProps> = ({
               <h3 className="font-bold text-base text-neutral-900 dark:text-white">
                 {language === 'ar' ? 'استلام مركبة جديدة وأمر تصليح (OR)' : 'Fiche d\'Entrée Atelier & Ordre de Réparation'}
               </h3>
-              <p className="text-xs text-neutral-500">
-                {language === 'ar'
-                  ? 'معاينة حالة الهيكل، الوقود، العداد والمسؤولية القانونية'
-                  : 'Contrat de dépôt contradictoire, niveau de carburant & cartographie des dommages'}
-              </p>
             </div>
           </div>
           <button

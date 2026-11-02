@@ -162,11 +162,6 @@ export const RealEstateFinanceView: React.FC = () => {
                 Légal Foncier
               </span>
             </div>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">
-              {isAr
-                ? 'إصدار وصولات الإيجار القانونية، عمولات الوكالة، وتسوية حسابات الملاك'
-                : 'Quittances de loyer dématérialisées, redditions de comptes & commissions'}
-            </p>
           </div>
         </div>
 

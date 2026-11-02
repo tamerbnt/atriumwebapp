@@ -310,11 +310,6 @@ export const AutoGarageOrdersView: React.FC = () => {
                   : 'Ordres de Réparation & Gestion des Ponts'}
               </span>
             </h1>
-            <p className="text-xs text-neutral-500 mt-1">
-              {isAr
-                ? 'متابعة مراحل الإصلاح، توزيع الرافعات، وصرف قطع الغيار المباشر'
-                : 'Suivi de l\'avancement en atelier, occupation des ponts et réquisitions de pièces'}
-            </p>
           </div>
 
           <div className="flex items-center gap-2">

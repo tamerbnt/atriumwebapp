@@ -308,11 +308,6 @@ export const LegalMattersView: React.FC = () => {
               {activeLegalRole.toUpperCase()}
             </span>
           </div>
-          <p className="text-xs text-neutral-500 dark:text-neutral-400">
-            {activeLegalRole === 'notaire_titulaire'
-              ? isAr ? 'الأرقام التسلسلية الإلزامية، أتعاب 5 شرائح، والمسح العقاري' : 'Enregistrement chronologique séquentiel sans lacune, barème 5 tranches'
-              : isAr ? 'متابعة ملفات المحاماة، تواريخ الجلسات، وحسابات الودائع' : 'Gestion du contentieux, parties adverses, conventions d\'honoraires'}
-          </p>
         </div>
 
         <div className="flex items-center gap-2">

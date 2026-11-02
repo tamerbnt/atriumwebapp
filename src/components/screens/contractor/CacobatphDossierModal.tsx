@@ -68,9 +68,6 @@ export const CacobatphDossierModal: React.FC<CacobatphDossierModalProps> = ({
                   ? 'ملف التصريح بالتوقف عن العمل بسبب سوء الأحوال الجوية (CACOBATPH)'
                   : 'Dossier d\'Arrêt Intempéries CACOBATPH (Délai Légal 48h)'}
               </h3>
-              <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-                Décret Exécutif n° 97-47 & Réglementation Chômage-Intempéries BTPH
-              </p>
             </div>
           </div>
 

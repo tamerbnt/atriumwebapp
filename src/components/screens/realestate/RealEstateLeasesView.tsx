@@ -302,11 +302,6 @@ export const RealEstateLeasesView: React.FC = () => {
                 {leases.length} {isAr ? 'عقد' : 'baux'}
               </span>
             </div>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">
-              {isAr
-                ? 'إدارة عقود الإيجار السنوية، مواعيد التجديد، والودائع المالية'
-                : 'Suivi juridique des baux, échéances de reconduction & dépôts de garantie'}
-            </p>
           </div>
         </div>
 

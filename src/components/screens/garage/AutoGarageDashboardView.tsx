@@ -145,28 +145,6 @@ export const AutoGarageDashboardView: React.FC = () => {
                 {activeGarageRole === 'caisse' && (isAr ? 'الصندوق والفوترة' : 'Caisse & DGI')}
               </span>
             </div>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">
-              {activeGarageRole === 'gerant' &&
-                (isAr
-                  ? 'متابعة الأداء الإداري والمالي، نسبة إشغال الرافعات، وذمم الأساطيل'
-                  : 'Cockpit exécutif : occupation des ponts, marges brutes & encours flottes B2B')}
-              {activeGarageRole === 'reception' &&
-                (isAr
-                  ? 'استقبال المركبات، الفحص التناقضي الأولي، ومتابعة تسليم السيارات'
-                  : 'Accueil atelier, fiche d’état contradictoire & validation devis client')}
-              {activeGarageRole === 'mecanicien' &&
-                (isAr
-                  ? 'المهام المعينة على الرافعات، تشخيص الأعطال، وطلب قطع الغيار'
-                  : 'Poste technicien : tâches sur ponts, diagnostic OBD-II & réquisitions')}
-              {activeGarageRole === 'magasinier' &&
-                (isAr
-                  ? 'صرف قطع الغيار لأوامر الإصلاح، ومتابعة طلبيات الموردين'
-                  : 'Gestionnaire magasin : sorties pièces OR & seuils de réapprovisionnement')}
-              {activeGarageRole === 'caisse' &&
-                (isAr
-                  ? 'تحصيل المدفوعات، تطبيق الطابع الجبائي م.317، وغلق الجلسة اليومية'
-                  : 'Comptoir encaissement : factures DGI, droits de timbre & session Z')}
-            </p>
           </div>
         </div>
 

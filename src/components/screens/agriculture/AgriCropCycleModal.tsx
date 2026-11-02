@@ -137,11 +137,6 @@ export const AgriCropCycleModal: React.FC<AgriCropCycleModalProps> = ({
                   ? (isAr ? 'تعديل دورة المحصول الفلاحي' : 'Modifier le Cycle de Culture')
                   : (isAr ? 'فتح دورة محصول وموسم فلاحي جديد' : 'Nouveau Cycle de Culture & Assolement')}
               </h2>
-              <p className="text-xs text-neutral-500">
-                {isAr
-                  ? 'متابعة مراحل الإنتاج، البذور المعتمدة وتوقعات المحصول بالقنطار'
-                  : 'Suivi de la campagne agricole, assolements, intrants et rendements prévus'}
-              </p>
             </div>
           </div>
           <button

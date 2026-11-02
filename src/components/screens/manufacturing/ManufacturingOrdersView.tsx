@@ -354,11 +354,6 @@ export const ManufacturingOrdersView: React.FC = () => {
                 {orders.length} {language === 'ar' ? 'أمر' : 'OF'}
               </span>
             </div>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">
-              {language === 'ar'
-                ? 'إطلاق دفعات الإنتاج، حجز المواد الأولية، وحساب تكلفة اليد العاملة'
-                : 'Lancement d\'ordres d\'atelier, consommation matières & suivi d\'avancement'}
-            </p>
           </div>
         </div>
 

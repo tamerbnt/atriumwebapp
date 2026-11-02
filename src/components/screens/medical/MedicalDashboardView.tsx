@@ -97,11 +97,6 @@ export const MedicalDashboardView: React.FC = () => {
                 Polyclinic OS
               </span>
             </div>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">
-              {language === 'ar'
-                ? 'لوحة المتابعة السريرية، مؤشرات الفحص والنشاط اليومي'
-                : 'Pilotage polyclinique, flux d\'attente temps réel et télétransmission Chifa'}
-            </p>
           </div>
         </div>
 

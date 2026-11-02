@@ -406,11 +406,6 @@ export const ManufacturingMaterialsView: React.FC = () => {
                 {materials.length} {isAr ? 'صنف' : 'références'}
               </span>
             </div>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">
-              {isAr
-                ? 'تقييم المخزون بطريقة PMP وإصدار أذونات الخروج والاستلام الرسمية'
-                : 'Valorisation FIFO/PMP, gestion des casiers et traçabilité BSM / BR Décret 05-468'}
-            </p>
           </div>
         </div>
 

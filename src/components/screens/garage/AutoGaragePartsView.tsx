@@ -386,11 +386,6 @@ export const AutoGaragePartsView: React.FC = () => {
                 {parts.length} {isAr ? 'صنف' : 'références'}
               </span>
             </div>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">
-              {isAr
-                ? 'إدارة مخزون الورشة، حدود الطلب الحرج، ومواقع التخزين'
-                : 'Inventaire atelier, seuils de réapprovisionnement & emplacements de stockage'}
-            </p>
           </div>
         </div>
 

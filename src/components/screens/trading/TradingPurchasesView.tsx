@@ -370,9 +370,6 @@ export const TradingPurchasesView: React.FC = () => {
                   {purchaseDocs.length} {language === 'ar' ? 'طلب واستلام' : 'commandes & réceptions'}
                 </span>
               </div>
-              <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
-                {t('trading_purchases_subtitle', 'Approvisionnement, bons de commande d\'achat (PO) et entrée automatique en stock à quai (BR)')}
-              </p>
             </div>
           </div>
 

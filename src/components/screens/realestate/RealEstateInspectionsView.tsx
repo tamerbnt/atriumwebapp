@@ -147,11 +147,6 @@ export const RealEstateInspectionsView: React.FC = () => {
                 Conforme Juridique
               </span>
             </div>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">
-              {isAr
-                ? 'محاضر تسليم المفاتيح، قراءة العدادات (سونلغاز / سيال)، وفحص جودة التجهيزات'
-                : 'Relevés de compteurs (Sonelgaz/Seaal), remise de clés & constat d\'habitabilité'}
-            </p>
           </div>
         </div>
 

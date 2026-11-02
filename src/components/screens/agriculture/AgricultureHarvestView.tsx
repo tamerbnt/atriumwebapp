@@ -537,15 +537,6 @@ export const AgricultureHarvestView: React.FC = () => {
                 {activeMode === 'tickets' ? `${filteredTickets.length} tickets` : `${pointages.length} ouvriers`}
               </span>
             </div>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">
-              {activeMode === 'tickets'
-                ? (isAr
-                    ? 'قياس الحمولة الصافية، حساب عمولة الوكيل وسوق الجملة'
-                    : 'Pesée camion, tare, décompte caisses, commission mandataire et règlement domaine')
-                : (isAr
-                    ? 'متابعة الصناديق المجنية بالقطعة، التسبيقات النقدية وتصفية الأجور اليومية'
-                    : 'Pointage terrain au rendement (40 DA/caisse), acomptes espèces et solde journalier')}
-            </p>
           </div>
         </div>
 

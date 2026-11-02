@@ -506,9 +506,6 @@ export const LegalVaultView: React.FC = () => {
                 {roleMetadata.badge}
               </span>
             </div>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">
-              {roleMetadata.subtitle}
-            </p>
           </div>
         </div>
 

@@ -400,11 +400,6 @@ export const ContractorSitesView: React.FC = () => {
                 {projects.length} {isAr ? 'ورشة' : 'sites'}
               </span>
             </div>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">
-              {isAr
-                ? 'إدارة محفظة صفقات البناء، أوامر الخدمة، والتقارير الهندسية'
-                : 'Fiches chantiers, attachements, bordereaux BOQ et suivi des retenues de garantie'}
-            </p>
           </div>
         </div>
 

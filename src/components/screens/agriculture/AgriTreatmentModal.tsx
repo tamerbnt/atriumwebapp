@@ -198,11 +198,6 @@ export const AgriTreatmentModal: React.FC<AgriTreatmentModalProps> = ({
                   ? (isAr ? 'تعديل المعالجة النباتية' : 'Modifier le Traitement Phytosanitaire')
                   : (isAr ? 'قيد معالجة جديدة وفترة الأمان DAR' : 'Consigner un Traitement & Délai DAR (INPV)')}
               </h2>
-              <p className="text-xs text-neutral-500">
-                {isAr
-                  ? 'مراقبة فترات الأمان قبل الجني لحماية المستهلك وضمان مطابقة التصدير'
-                  : 'Enregistrement obligatoire au carnet sanitaire et verrouillage de récolte'}
-              </p>
             </div>
           </div>
           <button

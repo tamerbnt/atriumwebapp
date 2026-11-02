@@ -288,11 +288,6 @@ export const ContractorBillingView: React.FC = () => {
                 {projectDgps.length} situations
               </span>
             </div>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">
-              {isAr
-                ? 'كشوفات الأشغال المنجزة، اقتطاع الضمان 5%، استهلاك التسبيقات الضريبية'
-                : 'Facturations périodiques de chantier, retenues de garantie et régularisations'}
-            </p>
           </div>
         </div>
 

@@ -231,11 +231,6 @@ export const LogisticsScannerView: React.FC = () => {
                 Audio Chime Active
               </span>
             </div>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">
-              {isAr
-                ? 'مسح الباركود الصوتي عالي السرعة، تعبئة أكياس الولايات، وختم أقفال الحماية الأمنية'
-                : 'Lecture codes-barres 1D/2D, constitution des sacs inter-wilayas et pose des scellés de sécurité'}
-            </p>
           </div>
         </div>
 

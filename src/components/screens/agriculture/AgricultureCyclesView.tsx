@@ -526,11 +526,6 @@ export const AgricultureCyclesView: React.FC = () => {
                 {cropCycles.length} {isAr ? 'دورات' : 'cycles'}
               </span>
             </div>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">
-              {isAr
-                ? 'متابعة الحملات الزراعية، المردود بالقنطار، وقفل الأمان الكيميائي DAR'
-                : 'Planification des assolements, rendements et verrouillage de récolte sanitaire'}
-            </p>
           </div>
         </div>
 

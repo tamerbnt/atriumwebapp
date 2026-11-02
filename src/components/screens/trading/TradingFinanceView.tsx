@@ -278,9 +278,6 @@ export const TradingFinanceView: React.FC = () => {
                   {language === 'ar' ? 'تحصيل الشركات' : 'Recouvrement B2B'}
                 </span>
               </div>
-              <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
-                {t('trading_finance_subtitle', 'Suivi des échéances clients, encaissement des factures et balance des dettes fournisseurs')}
-              </p>
             </div>
           </div>
 

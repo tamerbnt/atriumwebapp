@@ -401,11 +401,6 @@ export const AutoGarageVehiclesView: React.FC = () => {
                 {vehicles.length} {language === 'ar' ? 'مركبة' : 'véhicules'}
               </span>
             </div>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">
-              {language === 'ar'
-                ? 'قاعدة بيانات لوحات الترقيم، أرقام الشاسيه (VIN)، وأصحاب المركبات'
-                : 'Registre d\'immatriculation, historique kilométrique & coordonnées propriétaires'}
-            </p>
           </div>
         </div>
 

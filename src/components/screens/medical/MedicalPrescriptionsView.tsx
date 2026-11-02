@@ -340,11 +340,6 @@ export const MedicalPrescriptionsView: React.FC = () => {
                 Chifa Validated
               </span>
             </div>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">
-              {isAr
-                ? 'إصدار الوصفات الرقمية، الجرعات، التوقيع الطبي الإلكتروني والتحقق بـ QR Code'
-                : 'Prescriptions normalisées, posologie, signature numérique & QR Code'}
-            </p>
           </div>
         </div>
 

@@ -371,9 +371,6 @@ export const TradingSalesView: React.FC = () => {
                   {commercialDocs.length} {language === 'ar' ? 'معاملة' : 'pièces'}
                 </span>
               </div>
-              <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
-                {t('trading_sales_subtitle', 'Flux commercial complet certifié : Devis → Bon de Commande → Bon de Livraison → Facture Fiscale → Avoir')}
-              </p>
             </div>
           </div>
 

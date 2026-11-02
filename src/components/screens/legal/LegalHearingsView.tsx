@@ -368,11 +368,6 @@ export const LegalHearingsView: React.FC = () => {
                 : 'Rôle des Audiences & Délais CPCA'}
             </span>
           </h1>
-          <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-1">
-            {isAr
-              ? 'متابعة جدول الحضور القضائي، تتبع قرارات التأجيل (RPP/RPO) ورادار المواعيد الإجرائية الرسمية'
-              : 'Audiencier judiciaire, codes de renvoi (RPP / RPO) et radar des délais de recours péremptoires (Loi 08-09)'}
-          </p>
         </div>
 
         <div className="flex items-center gap-2 self-end sm:self-auto flex-wrap">

@@ -277,11 +277,6 @@ export const MedicalQueueView: React.FC = () => {
                 {waitingCount} {isAr ? 'في الانتظار' : 'en attente'}
               </span>
             </div>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">
-              {isAr
-                ? 'إدارة دور الدخول للعيادة، العلامات الحيوية، وأولويات الكشف الطبي'
-                : 'Priorités de passage, constantes vitales & suivi en temps réel de la consultation'}
-            </p>
           </div>
         </div>
 

@@ -516,11 +516,6 @@ export const AgricultureLivestockView: React.FC = () => {
                 {livestock.length} {isAr ? 'رأس' : 'têtes'}
               </span>
             </div>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">
-              {isAr
-                ? 'متابعة ترقيم الأبقار DZ-16، جلسات الحلب، تبريد الخزان ودعم أونيل'
-                : 'Identification individuelle, traçabilité des boucles, tank à lait et prime ONIL'}
-            </p>
           </div>
         </div>
 

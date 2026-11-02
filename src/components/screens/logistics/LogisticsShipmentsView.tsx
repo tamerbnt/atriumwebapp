@@ -328,11 +328,6 @@ export const LogisticsShipmentsView: React.FC = () => {
                 {shipments.length} {language === 'ar' ? 'طرد' : 'colis'}
               </span>
             </div>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">
-              {language === 'ar'
-                ? 'إدارة التوصيل السريع للميل الأخير، التحصيل النقدي (COD)، ومتابعة السائقين'
-                : 'Suivi des tournées livreurs, bordereaux AWB & encaissements espèces'}
-            </p>
           </div>
         </div>
 

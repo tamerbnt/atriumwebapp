@@ -153,9 +153,6 @@ export const AutoVehicleModal: React.FC<AutoVehicleModalProps> = ({
                   ? (isAr ? 'تعديل بيانات المركبة' : 'Modifier la Fiche Véhicule')
                   : (isAr ? 'تسجيل مركبة جديدة في الحظيرة' : 'Nouveau Véhicule au Parc')}
               </h3>
-              <p className="text-xs text-neutral-500">
-                {isAr ? 'الترقيم، رقم الشاسيه، الحظيرة والمتابعة الكيلومترية' : 'Immatriculation, VIN, rattachement flotte & entretien'}
-              </p>
             </div>
           </div>
           <button

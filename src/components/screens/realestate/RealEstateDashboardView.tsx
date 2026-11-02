@@ -90,11 +90,6 @@ export const RealEstateDashboardView: React.FC = () => {
                 {activeRealEstateRole === 'notaire_compta' && (language === 'ar' ? '⚖️ الموثق والمحاسبة' : '⚖️ Notaire & Compta')}
               </span>
             </div>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">
-              {language === 'ar'
-                ? 'إدارة محفظة العقارات، عقود الإيجار، معاينة الأماكن ومستحقات الملاك'
-                : 'Portefeuille de biens, baux d\'habitation & commerciaux, quittances et états des lieux'}
-            </p>
           </div>
         </div>
 

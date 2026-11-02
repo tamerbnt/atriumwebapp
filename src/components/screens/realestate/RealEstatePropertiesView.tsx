@@ -326,11 +326,6 @@ export const RealEstatePropertiesView: React.FC = () => {
                 {properties.length} {language === 'ar' ? 'عقار' : 'lots'}
               </span>
             </div>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">
-              {language === 'ar'
-                ? 'إدارة الشقق، الفلل، المحلات التجارية، والمكاتب مع عقود الإيجار'
-                : 'Gestion locative, états des lieux, diagnostics & mandats d\'agence'}
-            </p>
           </div>
         </div>
 

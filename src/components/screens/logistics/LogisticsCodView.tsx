@@ -168,11 +168,6 @@ export const LogisticsCodView: React.FC = () => {
                 Paiement à la Livraison
               </span>
             </div>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">
-              {isAr
-                ? 'مطابقة مبالغ الدفع عند الاستلام، تبرئة ذمة السائقين، وتصدير دفعات بريد الجزائر CCP SFP 01'
-                : 'Rapprochement des encaissements à la livraison, décharge coffre livreurs & télétransmission CCP'}
-            </p>
           </div>
         </div>
 

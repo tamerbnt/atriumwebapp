@@ -458,9 +458,6 @@ export const TradingCatalogView: React.FC = () => {
                   {products.length} {language === 'ar' ? 'عنصر' : 'références'}
                 </span>
               </div>
-              <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
-                {t('trading_catalog_subtitle', 'Tarifs HT, taux de TVA réglementaires (0%, 9%, 19%) et gestion des unités de vente')}
-              </p>
             </div>
           </div>
 

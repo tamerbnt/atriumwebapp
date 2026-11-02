@@ -136,11 +136,6 @@ export const ManufacturingQcView: React.FC = () => {
                 Norme ISO 9001
               </span>
             </div>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">
-              {isAr
-                ? 'فحص المطابقة، رصد نسبة التالف (Scrap Rate)، وإصدار شهادات المطابقة'
-                : 'Conformité dimensionnelle, taux de rebut atelier & validation fin de chaîne'}
-            </p>
           </div>
         </div>
 

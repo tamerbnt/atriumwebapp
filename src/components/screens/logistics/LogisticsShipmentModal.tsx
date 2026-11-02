@@ -207,11 +207,6 @@ export const LogisticsShipmentModal: React.FC<LogisticsShipmentModalProps> = ({
               <h3 className="font-bold text-base text-neutral-900 dark:text-white">
                 {isAr ? 'تسجيل طرد وشحنة جديدة (AWB 58 ولاية)' : 'Nouvelle Expédition (AWB 58 Wilayas)'}
               </h3>
-              <p className="text-xs text-neutral-500">
-                {isAr
-                  ? 'حساب آلي للوزن الحجمي، طابع المادة 317 والتعريفة حسب المنطقة'
-                  : 'Calcul automatique volumétrique, timbre fiscal Art. 317 & zonage légal'}
-              </p>
             </div>
           </div>
           <button

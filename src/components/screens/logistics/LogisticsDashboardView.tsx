@@ -112,11 +112,6 @@ export const LogisticsDashboardView: React.FC = () => {
                   : (isAr ? 'مكتب الاستلام' : 'Stop-Desk')}
               </span>
             </div>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">
-              {isAr
-                ? 'إدارة الشحنات والطرود، رحلات التوزيع، مسح الباركود، بيانات Décret 05-468 وتحصيل أموال COD'
-                : 'Tri des colis, tournées livreurs, lettres de voiture 05-468, décharges caisse et reversements CCP'}
-            </p>
           </div>
         </div>
 

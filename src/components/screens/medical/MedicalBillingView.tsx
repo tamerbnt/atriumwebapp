@@ -299,11 +299,6 @@ export const MedicalBillingView: React.FC = () => {
                 CNAS / CASNOS
               </span>
             </div>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">
-              {isAr
-                ? 'تحصيل أتعاب الفحص الطبي، مستحقات الصندوق، نسب الأطباء والإغلاق اليومي للكاسة'
-                : 'Ticket modérateur, bordereaux Chifa télétransmis, honoraires praticiens & clôture de caisse'}
-            </p>
           </div>
         </div>
 

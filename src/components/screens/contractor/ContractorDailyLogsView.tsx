@@ -332,11 +332,6 @@ export const ContractorDailyLogsView: React.FC = () => {
                   : `${projectEquipmentLogs.length} engins`}
               </span>
             </div>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">
-              {isAr
-                ? 'محاضر الحضور اليومية، صبات الخرسانة ومطابقة CTC، استهلاك عتاد الورشة والوقود'
-                : 'Pointages d’effectifs, coulage béton & contrôle CTC, suivi engins et gasoil'}
-            </p>
           </div>
         </div>
 

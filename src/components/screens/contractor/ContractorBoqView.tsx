@@ -360,11 +360,6 @@ export const ContractorBoqView: React.FC = () => {
                 {filteredItems.length} postes
               </span>
             </div>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">
-              {isAr
-                ? 'جداول الأسعار الأحادية، قياس الكميات المنجزة ومطابقة الكشوفات'
-                : 'Métrés contradictoires, décomptes provisoires et suivi budgétaire par poste'}
-            </p>
           </div>
         </div>
 

@@ -115,9 +115,6 @@ export const ContractorProjectModal: React.FC<ContractorProjectModalProps> = ({
                   ? (isAr ? 'تعديل بيانات الورشة' : 'Modifier le Chantier')
                   : (isAr ? 'فتح ورشة عمل جديدة (Chantier)' : 'Nouveau Chantier & Marché BTP')}
               </h2>
-              <p className="text-xs text-neutral-500">
-                {isAr ? 'تسجيل صفقة المقاولة والضمانات البنكية' : 'Création de fiche projet, montant du marché et retenue'}
-              </p>
             </div>
           </div>
           <button

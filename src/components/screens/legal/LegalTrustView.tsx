@@ -400,11 +400,6 @@ export const LegalTrustView: React.FC = () => {
                   Double-Verrou Obligatoire
                 </span>
               </div>
-              <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                {isAr
-                  ? 'فك القفل المزدوج المشروط بالإشهار العقاري بالمحافظة العقارية ورمز الأمان للموثق'
-                  : 'Libération conditionnelle des fonds de vente sous réserve de publicité foncière et validation PIN'}
-              </p>
             </div>
           </div>
 
@@ -865,11 +860,6 @@ export const LegalTrustView: React.FC = () => {
                   Partie Double Équilibrée
                 </span>
               </div>
-              <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                {isAr
-                  ? 'محاسبة الالتزام، تسجيل القيود المزدوجة، متابعة حسابات الفئة 4، 5 و 7'
-                  : 'Comptabilité d\'engagement, validation stricte Débit = Crédit et écritures auxiliaires'}
-              </p>
             </div>
           </div>
 
@@ -1250,11 +1240,6 @@ export const LegalTrustView: React.FC = () => {
                   Espèces & Droit de Timbre
                 </span>
               </div>
-              <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                {isAr
-                  ? 'حساب الطابع الجبائي التصاعدي على الدفع نقداً وفق المادة 317 ومحضر المطابقة اليومي'
-                  : 'Calcul automatique du timbre fiscal gradué pour tout paiement en espèces et procès-verbal d\'arrêté'}
-              </p>
             </div>
           </div>
 
@@ -1618,11 +1603,6 @@ export const LegalTrustView: React.FC = () => {
                 Ordre des Avocats
               </span>
             </div>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">
-              {isAr
-                ? 'فصل أموال الموكلين المودعة تحت الحراسة القضائية عن الأتعاب التشغيلية للمكتب'
-                : 'Séparation stricte des fonds mandants (séquestre) et des honoraires de diligence'}
-            </p>
           </div>
         </div>
 

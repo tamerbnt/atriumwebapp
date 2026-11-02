@@ -76,11 +76,6 @@ export const AgricultureDashboardView: React.FC = () => {
                 Facility: 25
               </span>
             </div>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">
-              {isAr
-                ? 'متابعة القطع الفلاحية، الجني، مبيعات سوق الجملة، وسجل المواشي'
-                : 'Supervision des cultures, récoltes pesées, ventes mandataires et cheptel'}
-            </p>
           </div>
         </div>
 

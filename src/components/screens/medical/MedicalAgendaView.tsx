@@ -128,9 +128,6 @@ export const MedicalAgendaView: React.FC = () => {
                 Polyclinique
               </span>
             </div>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">
-              Planning synchronisé des consultations et affectation des cabinets
-            </p>
           </div>
         </div>
 

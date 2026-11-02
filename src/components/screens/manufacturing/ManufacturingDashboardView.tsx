@@ -79,11 +79,6 @@ export const ManufacturingDashboardView: React.FC = () => {
                 Facility: 21
               </span>
             </div>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">
-              {language === 'ar'
-                ? 'إدارة خطوط التصنيع، جداول المكونات (BOM)، وأوامر الإنتاج (OF)'
-                : 'Planification industrielle, ordres de fabrication (OF), nomenclatures (BOM) & suivi qualité'}
-            </p>
           </div>
         </div>
 

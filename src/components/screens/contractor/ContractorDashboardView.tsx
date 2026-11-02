@@ -133,9 +133,6 @@ export const ContractorDashboardView: React.FC = () => {
                 {roleInfo.tag}
               </span>
             </div>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">
-              {roleInfo.subtitle}
-            </p>
           </div>
         </div>
 

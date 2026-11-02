@@ -354,9 +354,6 @@ export const TradingDirectoryView: React.FC = () => {
                   {b2bClients.length} {language === 'ar' ? 'عميل' : 'Clients'} • {b2bSuppliers.length} {language === 'ar' ? 'مورد' : 'Fournisseurs'}
                 </span>
               </div>
-              <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
-                {t('trading_directory_subtitle', 'Fiches légales certifiées, suivi des encours, limites de crédit et historique complet')}
-              </p>
             </div>
           </div>
 

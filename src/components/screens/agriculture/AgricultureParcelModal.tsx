@@ -130,11 +130,6 @@ export const AgricultureParcelModal: React.FC<AgricultureParcelModalProps> = ({
                   ? (isAr ? 'تعديل بيانات القطعة الفلاحية' : 'Modifier la Parcelle Agricole')
                   : (isAr ? 'تسجيل قطعة فلاحية / امتياز جديد' : 'Nouvelle Parcelle Agricole & Cadastre')}
               </h2>
-              <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                {isAr
-                  ? 'سند الامتياز (قانون 10-03)، المخطط المساحي، نوع التربة وحصة المياه ANRH'
-                  : 'Passeport foncier Loi 10-03, sol, système d\'irrigation et quota ANRH'}
-              </p>
             </div>
           </div>
           <button
