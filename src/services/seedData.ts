@@ -574,8 +574,42 @@ export const INITIAL_STAFF: StaffMember[] = [
 export const INITIAL_PRODUCTS: Product[] = [];
 export const INITIAL_SCHEDULE: ScheduleEvent[] = [];
 export const INITIAL_SALES: Sale[] = [];
-export const INITIAL_PARKED_ORDERS: ParkedOrder[] = [];
-export const INITIAL_STOCK_MOVEMENTS: StockMovement[] = [];
+export const INITIAL_PARKED_ORDERS: ParkedOrder[] = [
+  {
+    id: 'po_01',
+    accountId: 'acc_01',
+    businessId: 'biz_01',
+    branchId: 'branch_gym_main',
+    staffId: 'stf_01',
+    tenantId: 'acc_01',
+    facilityId: 'branch_gym_main',
+    referenceName: 'Commande En Attente #1',
+    items: [],
+    discount: 0,
+    subtotal: 0,
+    totalAmount: 0,
+    createdAt: '2026-01-15T10:00:00Z',
+  },
+];
+
+export const INITIAL_STOCK_MOVEMENTS: StockMovement[] = [
+  {
+    id: 'sm_01',
+    accountId: 'acc_01',
+    businessId: 'biz_01',
+    branchId: 'branch_gym_main',
+    staffId: 'stf_01',
+    tenantId: 'acc_01',
+    facilityId: 'branch_gym_main',
+    productId: 'prod_01',
+    productName: 'Mouvement Stock Initial',
+    type: 'Initial',
+    quantity: 10,
+    previousStock: 0,
+    newStock: 10,
+    createdAt: '2026-01-15T10:00:00Z',
+  },
+];
 
 export const DEFAULT_RECEIPT_CONFIG: ReceiptConfig = {
   headerTitle: 'ATRIUM POS RETAIL',
@@ -602,14 +636,19 @@ export const INITIAL_FREELANCE_INVOICES: FreelanceInvoice[] = [];
 export const INITIAL_FREELANCE_PROPOSALS: FreelanceProposal[] = [];
 export const INITIAL_FREELANCE_EXPENSES: FreelanceExpense[] = [];
 export const INITIAL_ACTIVE_TIMER: ActiveTimerState = {
-  activeTaskId: null,
-  activeProjectId: null,
-  activeDeliverableId: null,
-  description: '',
-  secondsElapsed: 0,
   isRunning: false,
+  isPaused: false,
+  clientId: '',
+  clientName: '',
+  projectId: '',
+  projectTitle: '',
+  deliverableId: undefined,
+  deliverableTitle: undefined,
+  taskDescription: '',
+  elapsedSeconds: 0,
   isBillable: true,
-  hourlyRate: 4500,
+  isPomodoro: false,
+  pomodoroRemainingSeconds: 1500,
   pomodoroMode: 'work',
   startedAt: null,
 };

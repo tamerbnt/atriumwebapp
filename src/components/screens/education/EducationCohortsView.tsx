@@ -57,6 +57,11 @@ export const EducationCohortsView: React.FC = () => {
     updateEduCohort,
     deleteEduCohort,
     showToast,
+    isSyncing,
+    networkMode,
+    retryCloudSync,
+    lastSyncedAt,
+    isSyncTimeout,
   } = useAtriumStore();
 
   const [categoryFilter, setCategoryFilter] = useState<CourseCat>('All');
