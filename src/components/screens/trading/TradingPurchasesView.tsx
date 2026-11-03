@@ -24,6 +24,7 @@ import { AtriumButton } from '../../ui/AtriumButton';
 import { Seek } from '../../ui/Seek';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
+import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { CommercialDocPrintModal } from './CommercialDocPrintModal';
 import { useTranslation } from '../../../utils/useTranslation';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
@@ -535,42 +536,19 @@ export const TradingPurchasesView: React.FC = () => {
 
             {/* Controls Bar: Segment Tabs + Seek Search */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
-              {/* Segment Capsules */}
-              <div className="flex items-center gap-1 bg-neutral-200/60 dark:bg-neutral-800 p-1 rounded-2xl overflow-x-auto self-start">
-                {(
-                  [
-                    { key: 'all', label: t('trading_purchases_tab_all', 'Toutes les Pièces'), count: tabCounts.all },
-                    { key: 'po', label: t('trading_purchases_tab_po', 'Commandes (PO)'), count: tabCounts.po },
-                    { key: 'br', label: t('trading_purchases_tab_br', 'Réceptions (BR)'), count: tabCounts.br },
-                    { key: 'facture_fournisseur', label: t('trading_purchases_tab_bills', 'Factures Fournisseurs'), count: tabCounts.facture_fournisseur },
-                  ] as const
-                ).map((item) => {
-                  const isSelected = activeTab === item.key;
-                  return (
-                    <button
-                      key={item.key}
-                      type="button"
-                      onClick={() => setActiveTab(item.key)}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
-                        isSelected
-                          ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-xs'
-                          : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
-                      }`}
-                    >
-                      <span>{item.label}</span>
-                      <span
-                        className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono ${
-                          isSelected
-                            ? 'bg-[#C4785A] text-white'
-                            : 'bg-neutral-300/60 dark:bg-neutral-700 text-neutral-500'
-                        }`}
-                      >
-                        {item.count}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
+              {/* Segment Filter Kinetic Live Segmented Control */}
+              <LiveSegmentedControl
+                size="sm"
+                value={activeTab}
+                onValueChange={(val) => setActiveTab(val as PurchaseTab)}
+                options={[
+                  { value: 'all', label: t('trading_purchases_tab_all', 'Toutes'), count: tabCounts.all },
+                  { value: 'po', label: t('trading_purchases_tab_po', 'Commandes (PO)'), count: tabCounts.po },
+                  { value: 'br', label: t('trading_purchases_tab_br', 'Réceptions (BR)'), count: tabCounts.br },
+                  { value: 'facture_fournisseur', label: t('trading_purchases_tab_bills', 'Factures'), count: tabCounts.facture_fournisseur },
+                ]}
+                aria-label="Trading Purchases Tab Filter"
+              />
 
               {/* Seek Search */}
               <div className="self-end sm:self-auto">

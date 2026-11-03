@@ -36,6 +36,7 @@ import { Seek } from '../../ui/Seek';
 import { AutoVehicleModal } from './AutoVehicleModal';
 import { AutoOrderModal } from './AutoOrderModal';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 
@@ -506,75 +507,21 @@ export const AutoGarageVehiclesView: React.FC = () => {
               openWidth={220}
             />
 
-            <div className="flex items-center bg-white dark:bg-neutral-800 border border-neutral-200/80 dark:border-neutral-700 p-0.5 rounded-xl shadow-2xs overflow-x-auto">
-              <button
-                type="button"
-                onClick={() => setFilterSegment('All')}
-                className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
-                  filterSegment === 'All'
-                    ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold shadow-2xs'
-                    : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
-                }`}
-              >
-                {isAr ? 'الكل' : 'Tous'} ({vehicles.length})
-              </button>
-              <button
-                type="button"
-                onClick={() => setFilterSegment('Fleet')}
-                className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1 ${
-                  filterSegment === 'Fleet'
-                    ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold shadow-2xs'
-                    : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
-                }`}
-              >
-                <Building2 size={12} />
-                <span>{isAr ? 'أساطيل B2B' : 'Flottes B2B'}</span> ({fleetVehiclesCount})
-              </button>
-              <button
-                type="button"
-                onClick={() => setFilterSegment('Individual')}
-                className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
-                  filterSegment === 'Individual'
-                    ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold shadow-2xs'
-                    : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
-                }`}
-              >
-                {isAr ? 'أفراد' : 'Particuliers'}
-              </button>
-              <button
-                type="button"
-                onClick={() => setFilterSegment('Renault')}
-                className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
-                  filterSegment === 'Renault'
-                    ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold shadow-2xs'
-                    : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
-                }`}
-              >
-                Renault
-              </button>
-              <button
-                type="button"
-                onClick={() => setFilterSegment('Peugeot')}
-                className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
-                  filterSegment === 'Peugeot'
-                    ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold shadow-2xs'
-                    : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
-                }`}
-              >
-                Peugeot
-              </button>
-              <button
-                type="button"
-                onClick={() => setFilterSegment('Toyota')}
-                className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
-                  filterSegment === 'Toyota'
-                    ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold shadow-2xs'
-                    : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
-                }`}
-              >
-                Toyota
-              </button>
-            </div>
+            {/* Vehicle Segment Kinetic Live Segmented Control */}
+            <LiveSegmentedControl
+              size="sm"
+              value={filterSegment}
+              onValueChange={(val) => setFilterSegment(val as any)}
+              options={[
+                { value: 'All', label: isAr ? 'الكل' : 'Tous', count: vehicles.length },
+                { value: 'Fleet', label: isAr ? 'أساطيل B2B' : 'Flottes B2B', count: fleetVehiclesCount },
+                { value: 'Individual', label: isAr ? 'أفراد' : 'Particuliers', count: vehicles.length - fleetVehiclesCount },
+                { value: 'Renault', label: 'Renault', count: vehicles.filter((v) => v.brand.toLowerCase() === 'renault').length },
+                { value: 'Peugeot', label: 'Peugeot', count: vehicles.filter((v) => v.brand.toLowerCase() === 'peugeot').length },
+                { value: 'Toyota', label: 'Toyota', count: vehicles.filter((v) => v.brand.toLowerCase() === 'toyota').length },
+              ]}
+              aria-label="Garage Vehicles Filter"
+            />
           </div>
         </div>
 

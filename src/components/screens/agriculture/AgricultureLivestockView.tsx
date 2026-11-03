@@ -30,6 +30,7 @@ import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { AgriLivestock, AgriMilkingRecord, BovineBreed, CowReproStatus } from '../../../types';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { ActionButtonDef } from '../../ui/collection/CollectionListRow';
 import { OnilBordereauPrintModal } from './OnilBordereauPrintModal';
 import { AgriMilkingModal } from './AgriMilkingModal';
@@ -557,39 +558,25 @@ export const AgricultureLivestockView: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Switcher: Cheptel vs Milking Sessions */}
-      <div className="flex items-center gap-2 border-b border-neutral-200 dark:border-neutral-800 pb-2">
-        <button
-          type="button"
-          onClick={() => setActiveTabMode('cheptel')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition ${
-            activeTabMode === 'cheptel'
-              ? 'bg-[#C4785A] text-white shadow-xs'
-              : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800'
-          }`}
-        >
-          <Layers size={15} />
-          {isAr ? 'سجل القطيع والترقيم (DZ-16)' : 'Cheptel & Identification (DZ-16)'}
-          <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-white/20 ml-1">
-            {livestock.length}
-          </span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setActiveTabMode('milking')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition ${
-            activeTabMode === 'milking'
-              ? 'bg-[#C4785A] text-white shadow-xs'
-              : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800'
-          }`}
-        >
-          <Milk size={15} />
-          {isAr ? 'جلسات الحلب وخزان التبريد' : 'Sessions de Traite & Tank à Lait'}
-          <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-white/20 ml-1">
-            {milkingRecords.length}
-          </span>
-        </button>
+      {/* Kinetic Live Switcher: Cheptel vs Milking Sessions */}
+      <div className="border-b border-neutral-200 dark:border-neutral-800 pb-2">
+        <LiveSegmentedControl
+          value={activeTabMode}
+          onChange={(val) => setActiveTabMode(val as 'cheptel' | 'milking')}
+          size="sm"
+          options={[
+            {
+              id: 'cheptel',
+              label: isAr ? 'سجل القطيع والترقيم (DZ-16)' : 'Cheptel & Identification (DZ-16)',
+              count: livestock.length,
+            },
+            {
+              id: 'milking',
+              label: isAr ? 'جلسات الحلب وخزان التبريد' : 'Sessions de Traite & Tank à Lait',
+              count: milkingRecords.length,
+            },
+          ]}
+        />
       </div>
 
       {/* Antibiotic Milk Withholding / Sécurité Sanitaire Alert Banner */}

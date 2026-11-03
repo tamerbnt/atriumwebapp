@@ -41,6 +41,7 @@ import { FilterSelect } from '../../ui/FilterSelect';
 import { Seek } from '../../ui/Seek';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { useTranslation } from '../../../utils/useTranslation';
 import { TranslationKey } from '../../../utils/i18n';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
@@ -785,32 +786,23 @@ export const FreelanceDeliverablesView: React.FC = () => {
               </div>
             </div>
 
-            {/* Kanban vs Collection Switcher */}
-            <div className="flex items-center p-0.5 bg-white dark:bg-neutral-800 rounded-full border border-neutral-200/80 dark:border-neutral-700 ml-2">
-              <button
-                type="button"
-                onClick={() => setViewLayout('kanban')}
-                className={`px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
-                  viewLayout === 'kanban'
-                    ? 'bg-[#C4785A] text-white shadow-2xs'
-                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
-                }`}
-              >
-                <Kanban size={12} />
-                <span>{language === 'ar' ? 'لوحة كانبان' : 'Kanban'}</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setViewLayout('collection')}
-                className={`px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
-                  viewLayout === 'collection'
-                    ? 'bg-[#C4785A] text-white shadow-2xs'
-                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
-                }`}
-              >
-                <Layers size={12} />
-                <span>{language === 'ar' ? 'قائمة وتصنيف' : language === 'fr' ? 'Liste' : 'Collection'}</span>
-              </button>
+            {/* Kinetic Live Layout Switcher */}
+            <div className="ml-2">
+              <LiveSegmentedControl
+                value={viewLayout}
+                onChange={(val) => setViewLayout(val as 'kanban' | 'collection')}
+                size="sm"
+                options={[
+                  {
+                    id: 'kanban',
+                    label: language === 'ar' ? 'لوحة كانبان' : 'Kanban',
+                  },
+                  {
+                    id: 'collection',
+                    label: language === 'ar' ? 'قائمة وتصنيف' : language === 'fr' ? 'Liste' : 'Collection',
+                  },
+                ]}
+              />
             </div>
           </div>
 

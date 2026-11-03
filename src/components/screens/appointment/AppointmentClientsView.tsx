@@ -36,6 +36,7 @@ import { AtriumButton } from '../../ui/AtriumButton';
 import { FilterSelect } from '../../ui/FilterSelect';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
+import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { formatMoney } from '../../../utils/rules';
 import { AppointmentModal } from '../../modals/AppointmentModal';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
@@ -661,59 +662,18 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = ({
 
             {/* Right Controls: Segment Tabs + FilterSelects + Seek Search */}
             <div className="flex items-center gap-2 flex-wrap self-end lg:self-auto">
-              {/* Segment Filter Capsules */}
-              <div className="flex items-center gap-1 bg-white dark:bg-neutral-800 p-1 rounded-xl border border-neutral-200 dark:border-neutral-700 shadow-2xs text-xs font-bold">
-                <button
-                  type="button"
-                  onClick={() => setSegmentFilter('all')}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
-                    segmentFilter === 'all'
-                      ? 'bg-[#C4785A] text-white shadow-2xs'
-                      : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
-                  }`}
-                >
-                  <span>Toutes</span>
-                  <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono ${
-                    segmentFilter === 'all' ? 'bg-white/20 text-white' : 'bg-neutral-100 dark:bg-neutral-700 text-neutral-500'
-                  }`}>
-                    {salonClients.length}
-                  </span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setSegmentFilter('vip')}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
-                    segmentFilter === 'vip'
-                      ? 'bg-[#C4785A] text-white shadow-2xs'
-                      : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
-                  }`}
-                >
-                  <span>VIP</span>
-                  <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono ${
-                    segmentFilter === 'vip' ? 'bg-white/20 text-white' : 'bg-neutral-100 dark:bg-neutral-700 text-neutral-500'
-                  }`}>
-                    {metrics.vipCount}
-                  </span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setSegmentFilter('allergies')}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
-                    segmentFilter === 'allergies'
-                      ? 'bg-[#C4785A] text-white shadow-2xs'
-                      : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
-                  }`}
-                >
-                  <span>Allergies</span>
-                  <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono ${
-                    segmentFilter === 'allergies' ? 'bg-white/20 text-white' : 'bg-neutral-100 dark:bg-neutral-700 text-neutral-500'
-                  }`}>
-                    {metrics.allergiesCount}
-                  </span>
-                </button>
-              </div>
+              {/* Segment Filter Kinetic Live Segmented Control */}
+              <LiveSegmentedControl
+                size="sm"
+                value={segmentFilter}
+                onValueChange={(val) => setSegmentFilter(val as any)}
+                options={[
+                  { value: 'all', label: language === 'ar' ? 'جميع الزبائن' : 'Toutes', count: salonClients.length },
+                  { value: 'vip', label: 'VIP', count: metrics.vipCount },
+                  { value: 'allergies', label: language === 'ar' ? 'الحساسيات' : 'Allergies', count: metrics.allergiesCount },
+                ]}
+                aria-label="Salon Clients Filter"
+              />
 
               <FilterSelect
                 value={selectedStylistFilter}

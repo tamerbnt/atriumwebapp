@@ -33,6 +33,7 @@ import { MedicalPatientModal } from './MedicalPatientModal';
 import { MedicalConsultationModal } from './MedicalConsultationModal';
 import { MedicalLabViewerModal } from './MedicalLabViewerModal';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 
@@ -477,42 +478,29 @@ export const MedicalPatientsView: React.FC = () => {
               openWidth={220}
             />
 
-            {/* Filter Pills */}
-            <div className="flex items-center bg-white dark:bg-neutral-800 border border-neutral-200/80 dark:border-neutral-700 p-0.5 rounded-xl shadow-2xs">
-              <button
-                type="button"
-                onClick={() => setFilterCondition('All')}
-                className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                  filterCondition === 'All'
-                    ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold shadow-2xs'
-                    : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
-                }`}
-              >
-                {language === 'ar' ? 'الكل' : 'Tous'} ({patients.length})
-              </button>
-              <button
-                type="button"
-                onClick={() => setFilterCondition('Sensitive')}
-                className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                  filterCondition === 'Sensitive'
-                    ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold shadow-2xs'
-                    : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
-                }`}
-              >
-                {language === 'ar' ? 'حساسيات & مزمن' : 'Vigilances'} ({sensitiveCount})
-              </button>
-              <button
-                type="button"
-                onClick={() => setFilterCondition('Regular')}
-                className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                  filterCondition === 'Regular'
-                    ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold shadow-2xs'
-                    : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
-                }`}
-              >
-                {language === 'ar' ? 'عادي' : 'Standards'} ({patients.length - sensitiveCount})
-              </button>
-            </div>
+            {/* Kinetic Live Patient Filter */}
+            <LiveSegmentedControl
+              value={filterCondition}
+              onChange={(val) => setFilterCondition(val as any)}
+              size="sm"
+              options={[
+                {
+                  id: 'All',
+                  label: language === 'ar' ? 'الكل' : 'Tous',
+                  count: patients.length,
+                },
+                {
+                  id: 'Sensitive',
+                  label: language === 'ar' ? 'حساسيات & مزمن' : 'Vigilances',
+                  count: sensitiveCount,
+                },
+                {
+                  id: 'Regular',
+                  label: language === 'ar' ? 'عادي' : 'Standards',
+                  count: patients.length - sensitiveCount,
+                },
+              ]}
+            />
           </div>
         </div>
 

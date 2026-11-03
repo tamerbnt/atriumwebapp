@@ -36,6 +36,7 @@ import { VenueCloudSyncModal } from './VenueCloudSyncModal';
 import { Seek } from '../../ui/Seek';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 
@@ -577,29 +578,20 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
                 openWidth={220}
               />
 
-              {/* Status Filter Capsules */}
-              <div className="flex items-center bg-white dark:bg-neutral-800 border border-neutral-200/80 dark:border-neutral-700 p-0.5 rounded-xl shadow-2xs overflow-x-auto max-w-full">
-                {[
-                  { id: 'All', label: t('venue_filter_all') },
-                  { id: 'InUse', label: t('venue_filter_in_use') },
-                  { id: 'Confirmed', label: t('venue_filter_confirmed') },
-                  { id: 'Tentative', label: t('venue_filter_inquiries') },
-                  { id: 'Completed', label: t('venue_filter_completed') },
-                ].map((tab) => (
-                  <button
-                    key={tab.id}
-                    type="button"
-                    onClick={() => setSelectedStatus(tab.id)}
-                    className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all whitespace-nowrap cursor-pointer ${
-                      selectedStatus === tab.id
-                        ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold shadow-2xs'
-                        : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
-                    }`}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
-              </div>
+              {/* Status Filter Kinetic Live Segmented Control */}
+              <LiveSegmentedControl
+                size="sm"
+                value={selectedStatus}
+                onValueChange={setSelectedStatus}
+                options={[
+                  { value: 'All', label: t('venue_filter_all'), count: rentalBookings.length },
+                  { value: 'InUse', label: t('venue_filter_in_use'), count: rentalBookings.filter((b) => b.status === 'Confirmed').length },
+                  { value: 'Confirmed', label: t('venue_filter_confirmed'), count: rentalBookings.filter((b) => b.status === 'Confirmed').length },
+                  { value: 'Tentative', label: t('venue_filter_inquiries'), count: rentalBookings.filter((b) => b.status === 'Tentative').length },
+                  { value: 'Completed', label: t('venue_filter_completed'), count: rentalBookings.filter((b) => b.status === 'Completed').length },
+                ]}
+                aria-label="Venue Bookings Status Filter"
+              />
 
               {/* Export CSV Button */}
               <button

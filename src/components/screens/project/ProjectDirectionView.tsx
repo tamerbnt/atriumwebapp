@@ -194,7 +194,12 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
         p.clientName.toLowerCase().includes(q) ||
         p.projectManagerName.toLowerCase().includes(q) ||
         p.leadCreativeName.toLowerCase().includes(q);
-      const matchStatus = projectStatusFilter === 'all' || p.status === projectStatusFilter;
+      const matchStatus =
+        projectStatusFilter === 'all' ||
+        p.status === projectStatusFilter ||
+        (projectStatusFilter === 'production' && (p.status === 'production' || p.status === 'crea_active' || p.status === 'print_ready')) ||
+        (projectStatusFilter === 'field_execution' && (p.status === 'field_execution' || p.status === 'field_active')) ||
+        (projectStatusFilter === 'completed' && (p.status === 'completed' || p.status === 'closed'));
       return matchSearch && matchStatus;
     });
   }, [pmProjects, projectSearch, projectStatusFilter]);
@@ -951,9 +956,9 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
               options={[
                 { value: 'all', label: language === 'ar' ? 'جميع المشاريع' : 'Tous les comptes', count: pmProjects.length },
                 { value: 'framing', label: language === 'ar' ? 'دفتر الشروط' : 'Cahier des charges', count: pmProjects.filter(p => p.status === 'framing').length },
-                { value: 'production', label: language === 'ar' ? 'قيد الإنتاج' : 'En production', count: pmProjects.filter(p => p.status === 'production').length },
-                { value: 'field_execution', label: language === 'ar' ? 'الميدان الحي' : 'Terrain live', count: pmProjects.filter(p => p.status === 'field_execution').length },
-                { value: 'completed', label: language === 'ar' ? 'مكتملة ومقفلة' : 'Clôturés', count: pmProjects.filter(p => p.status === 'completed').length },
+                { value: 'production', label: language === 'ar' ? 'قيد الإنتاج' : 'En production', count: pmProjects.filter(p => p.status === 'production' || p.status === 'crea_active' || p.status === 'print_ready').length },
+                { value: 'field_execution', label: language === 'ar' ? 'الميدان الحي' : 'Terrain live', count: pmProjects.filter(p => p.status === 'field_execution' || p.status === 'field_active').length },
+                { value: 'completed', label: language === 'ar' ? 'مكتملة ومقفلة' : 'Clôturés', count: pmProjects.filter(p => p.status === 'completed' || p.status === 'closed').length },
               ]}
             />
           </div>

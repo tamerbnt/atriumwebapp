@@ -30,6 +30,7 @@ import {
 import { LabelInput } from '../../ui/LabelInput';
 import { Seek } from '../../ui/Seek';
 import { FilterSelect } from '../../ui/FilterSelect';
+import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { formatMoney } from '../../../utils/rules';
 import { useTranslation } from '../../../utils/useTranslation';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
@@ -655,31 +656,20 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
             </h2>
           </div>
 
-          {/* Authentic Project Review Stage Capsules */}
-          <div className="flex items-center gap-1.5 p-1 bg-white dark:bg-neutral-800 rounded-full border border-neutral-200/80 dark:border-neutral-700/60 shadow-2xs overflow-x-auto">
-            {[
-              { id: 'portfolio', label: language === 'ar' ? 'المشاريع والميزانية' : 'Pilotage & Budgets' },
-              { id: 'catalog', label: language === 'ar' ? 'كتالوج POSM' : 'Catalogue POSM' },
-              { id: 'orders', label: language === 'ar' ? 'أوامر الطباعة' : 'Commandes Print' },
-              { id: 'bat', label: language === 'ar' ? 'مراجعة BAT' : 'Revue BAT' },
-              { id: 'expenses', label: language === 'ar' ? 'مصاريف الميدان' : 'Dépenses Terrain' },
-            ].map((tab) => {
-              const isActive = activeTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id as any)}
-                  className="px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer"
-                  style={{
-                    backgroundColor: isActive ? '#FCEEE8' : 'transparent',
-                    color: isActive ? 'var(--color-accent)' : '#71717A',
-                  }}
-                >
-                  {tab.label}
-                </button>
-              );
-            })}
-          </div>
+          {/* Stage Filter Kinetic Live Segmented Control */}
+          <LiveSegmentedControl
+            size="sm"
+            value={activeTab}
+            onValueChange={(val) => setActiveTab(val as any)}
+            options={[
+              { value: 'portfolio', label: language === 'ar' ? 'المشاريع' : 'Pilotage', count: pmProjects.length },
+              { value: 'catalog', label: language === 'ar' ? 'كتالوج POSM' : 'Catalogue POSM', count: pmCollateralItems.length },
+              { value: 'orders', label: language === 'ar' ? 'الطباعة' : 'Commandes Print', count: pmPrintOrders.length },
+              { value: 'bat', label: language === 'ar' ? 'مراجعة BAT' : 'Revue BAT', count: pmBatDeliverables.length },
+              { value: 'expenses', label: language === 'ar' ? 'المصاريف' : 'Dépenses', count: pmExpenses.length },
+            ]}
+            aria-label="Project Chef de Projet Stages Filter"
+          />
         </div>
 
         {/* TAB 1: PILOTAGE & BUDGETS */}

@@ -30,6 +30,7 @@ import { LabelInput } from '../../ui/LabelInput';
 import { Seek } from '../../ui/Seek';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { FilterSelect } from '../../ui/FilterSelect';
+import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { useTranslation } from '../../../utils/useTranslation';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
@@ -434,36 +435,20 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
         </div>
       </div>
 
-      {/* Navigation Sub-Tabs */}
-      <div className="flex border-b border-zinc-200 dark:border-zinc-800 gap-1 overflow-x-auto">
-        {[
-          { id: 'kanban', label: 'Kanban Studio', icon: Layers },
-          { id: 'production', label: 'Livrables BAT (Collection)', icon: FileCheck2, count: pmBatDeliverables.length },
-          { id: 'upload', label: 'Uploader Conforme', icon: UploadCloud },
-          { id: 'briefs', label: 'Briefs & Key Visuals', icon: FileText, count: pmProjects.length },
-        ].map((tab) => {
-          const Icon = tab.icon;
-          const isActive = activeTab === tab.id;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
-              className={`flex items-center gap-2 py-2.5 px-4 border-b-2 font-medium text-xs whitespace-nowrap transition-colors cursor-pointer ${
-                isActive
-                  ? 'border-[#C4785A] text-[#C4785A]'
-                  : 'border-transparent text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
-              }`}
-            >
-              <Icon className="w-4 h-4" />
-              <span>{tab.label}</span>
-              {tab.count !== undefined && tab.count > 0 && (
-                <span className="px-1.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300">
-                  {tab.count}
-                </span>
-              )}
-            </button>
-          );
-        })}
+      {/* Navigation Sub-Tabs Kinetic Live Segmented Control */}
+      <div className="pb-2">
+        <LiveSegmentedControl
+          size="sm"
+          value={activeTab}
+          onValueChange={(val) => setActiveTab(val as any)}
+          options={[
+            { value: 'kanban', label: 'Kanban Studio', icon: <Layers className="w-3.5 h-3.5 inline mr-1" /> },
+            { value: 'production', label: 'Livrables BAT', icon: <FileCheck2 className="w-3.5 h-3.5 inline mr-1" />, count: pmBatDeliverables.length },
+            { value: 'upload', label: 'Uploader Conforme', icon: <UploadCloud className="w-3.5 h-3.5 inline mr-1" /> },
+            { value: 'briefs', label: 'Briefs & Key Visuals', icon: <FileText className="w-3.5 h-3.5 inline mr-1" />, count: pmProjects.length },
+          ]}
+          aria-label="Creative Studio Subtab"
+        />
       </div>
 
       {/* Canonical 3-Card Top Metrics Pod Tray */}

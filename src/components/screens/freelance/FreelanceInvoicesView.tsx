@@ -40,6 +40,7 @@ import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { useTranslation } from '../../../utils/useTranslation';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
@@ -705,28 +706,40 @@ export const FreelanceInvoicesView: React.FC = () => {
               </div>
             </div>
 
-            {/* Status Filter Capsules */}
-            <div className="flex items-center gap-1 p-0.5 bg-white dark:bg-neutral-800 rounded-full border border-neutral-200/80 dark:border-neutral-700 ml-2 overflow-x-auto">
-              {[
-                { id: 'all', label: t('free_inv_filter_all', language) },
-                { id: 'sent', label: t('free_inv_filter_sent', language) },
-                { id: 'paid', label: t('free_inv_filter_paid', language) },
-                { id: 'overdue', label: t('free_inv_filter_overdue', language) },
-                { id: 'draft', label: t('free_inv_filter_draft', language) },
-              ].map((tab) => (
-                <button
-                  key={tab.id}
-                  type="button"
-                  onClick={() => setSelectedStatus(tab.id)}
-                  className={`px-3 py-1 text-xs font-semibold rounded-full transition-all whitespace-nowrap cursor-pointer ${
-                    selectedStatus === tab.id
-                      ? 'bg-[#C4785A] text-white shadow-2xs'
-                      : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              ))}
+            {/* Kinetic Live Status Filter */}
+            <div className="ml-2">
+              <LiveSegmentedControl
+                value={selectedStatus}
+                onChange={setSelectedStatus}
+                size="sm"
+                options={[
+                  {
+                    id: 'all',
+                    label: t('free_inv_filter_all', language),
+                    count: freelanceInvoices.length,
+                  },
+                  {
+                    id: 'sent',
+                    label: t('free_inv_filter_sent', language),
+                    count: freelanceInvoices.filter((i) => i.status.toLowerCase() === 'sent').length,
+                  },
+                  {
+                    id: 'paid',
+                    label: t('free_inv_filter_paid', language),
+                    count: paidCount,
+                  },
+                  {
+                    id: 'overdue',
+                    label: t('free_inv_filter_overdue', language),
+                    count: overdueCount,
+                  },
+                  {
+                    id: 'draft',
+                    label: t('free_inv_filter_draft', language),
+                    count: freelanceInvoices.filter((i) => i.status.toLowerCase() === 'draft').length,
+                  },
+                ]}
+              />
             </div>
           </div>
 

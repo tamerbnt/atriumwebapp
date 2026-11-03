@@ -25,6 +25,7 @@ import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { ContractorDgp } from '../../../types';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { Cloud } from 'lucide-react';
 import { calculateDecompteProvisoire } from '../../../utils/contractorRules';
 import { ContractorDecomptePrintModal } from './ContractorDecomptePrintModal';
@@ -58,15 +59,21 @@ export const ContractorBillingView: React.FC = () => {
   const [penaltiesDzd, setPenaltiesDzd] = useState('0');
   const [vatRate, setVatRate] = useState('19');
 
+  const [billingStatus, setBillingStatus] = useState<'all' | 'bet' | 'paid'>('all');
+
   const selectedProject = projects.find((p) => p.id === selectedProjectId) || projects[0];
   const projectDgps = dgps.filter((d) => d.projectId === (selectedProject?.id || selectedProjectId));
 
   const filteredDgps = useMemo(() => {
-    return projectDgps.filter((d) =>
-      d.dgpNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      d.periodLabel.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  }, [projectDgps, searchQuery]);
+    return projectDgps.filter((d) => {
+      if (billingStatus === 'paid' && d.status !== 'Paid') return false;
+      if (billingStatus === 'bet' && d.status === 'Paid') return false;
+      return (
+        d.dgpNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        d.periodLabel.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    });
+  }, [projectDgps, searchQuery, billingStatus]);
 
   const sortedDgps = useMemo(() => {
     const list = [...filteredDgps];
@@ -378,25 +385,29 @@ export const ContractorBillingView: React.FC = () => {
             </h2>
           </div>
 
-          {/* Authentic BTP Billing Filter Capsules */}
-          <div className="flex items-center gap-1.5 p-1 bg-white dark:bg-neutral-800 rounded-full border border-neutral-200/80 dark:border-neutral-700/60 shadow-2xs overflow-x-auto">
-            {[
-              { id: 'all', label: isAr ? 'جميع الكشوفات' : 'Toutes les situations' },
-              { id: 'bet', label: isAr ? 'مقبولة BET' : 'Approuvées BET' },
-              { id: 'paid', label: isAr ? 'مسددة' : 'Mandatées / Réglées' },
-            ].map((tab, idx) => (
-              <button
-                key={tab.id}
-                className="px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer"
-                style={{
-                  backgroundColor: idx === 0 ? '#FCEEE8' : 'transparent',
-                  color: idx === 0 ? 'var(--color-accent)' : '#71717A',
-                }}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
+          {/* Kinetic Live BTP Billing Filter Switcher */}
+          <LiveSegmentedControl
+            value={billingStatus}
+            onChange={(val) => setBillingStatus(val as any)}
+            size="sm"
+            options={[
+              {
+                id: 'all',
+                label: isAr ? 'جميع الكشوفات' : 'Toutes les situations',
+                count: projectDgps.length,
+              },
+              {
+                id: 'bet',
+                label: isAr ? 'مقبولة BET' : 'Approuvées BET',
+                count: projectDgps.filter((d) => d.status !== 'Paid').length,
+              },
+              {
+                id: 'paid',
+                label: isAr ? 'مسددة' : 'Mandatées / Réglées',
+                count: projectDgps.filter((d) => d.status === 'Paid').length,
+              },
+            ]}
+          />
         </div>
 
         {/* Main Workspace Area with Dual Collection and 390px Inspector */}

@@ -34,6 +34,7 @@ import { Seek } from '../../ui/Seek';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { AgriWeighbridgePrintModal } from './AgriWeighbridgePrintModal';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
@@ -571,31 +572,24 @@ export const AgricultureHarvestView: React.FC = () => {
         </div>
       </div>
 
-      {/* View Mode Switcher: Weighbridge Tickets vs. Worker Muster Roll */}
-      <div className="flex items-center gap-2 p-1 bg-neutral-100 dark:bg-neutral-800 rounded-2xl w-fit border border-neutral-200 dark:border-neutral-700">
-        <button
-          onClick={() => setActiveMode('tickets')}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
-            activeMode === 'tickets'
-              ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-xs'
-              : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
-          }`}
-        >
-          <Scale size={14} />
-          {isAr ? 'وصولات ميزان الجسر (Pont-Bascule)' : 'Bons de Pesée & Expéditions'}
-        </button>
-        <button
-          onClick={() => setActiveMode('pointage')}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
-            activeMode === 'pointage'
-              ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-xs'
-              : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
-          }`}
-        >
-          <Users size={14} />
-          {isAr ? 'مخطط حضور وجني التاشرون (Muster Mode)' : 'Pointage Tâcherons & Ouvriers (Muster)'}
-        </button>
-      </div>
+      {/* Kinetic Live Mode Switcher */}
+      <LiveSegmentedControl
+        value={activeMode}
+        onChange={(val) => setActiveMode(val as 'tickets' | 'pointage')}
+        size="sm"
+        options={[
+          {
+            id: 'tickets',
+            label: isAr ? 'وصولات ميزان الجسر (Pont-Bascule)' : 'Bons de Pesée & Expéditions',
+            count: filteredTickets.length,
+          },
+          {
+            id: 'pointage',
+            label: isAr ? 'حضور وجني التاشرون (Muster)' : 'Pointage Tâcherons (Muster)',
+            count: pointages.length,
+          },
+        ]}
+      />
 
       {activeMode === 'tickets' ? (
         <>
@@ -1098,26 +1092,29 @@ export const AgricultureHarvestView: React.FC = () => {
                 </h2>
               </div>
 
-              {/* Filter pills */}
-              <div className="flex items-center gap-1.5 p-1 bg-white dark:bg-neutral-800 rounded-full border border-neutral-200/80 dark:border-neutral-700/60 shadow-2xs">
-                {[
-                  { id: 'all', label: isAr ? 'الكل' : 'Tous' },
-                  { id: 'unpaid', label: isAr ? 'غير مسدد' : 'À régler' },
-                  { id: 'paid', label: isAr ? 'مسدد' : 'Réglés' },
-                ].map((f) => (
-                  <button
-                    key={f.id}
-                    onClick={() => setPointageStatusFilter(f.id as any)}
-                    className={`px-3 py-1 rounded-full text-xs font-semibold cursor-pointer transition-all ${
-                      pointageStatusFilter === f.id
-                        ? 'bg-[#FCEEE8] text-[#C4785A]'
-                        : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'
-                    }`}
-                  >
-                    {f.label}
-                  </button>
-                ))}
-              </div>
+              {/* Kinetic Live Pointage Status Filter */}
+              <LiveSegmentedControl
+                value={pointageStatusFilter}
+                onChange={(val) => setPointageStatusFilter(val as any)}
+                size="sm"
+                options={[
+                  {
+                    id: 'all',
+                    label: isAr ? 'الكل' : 'Tous',
+                    count: pointages.length,
+                  },
+                  {
+                    id: 'unpaid',
+                    label: isAr ? 'غير مسدد' : 'À régler',
+                    count: pointages.filter((p) => !p.isPaid).length,
+                  },
+                  {
+                    id: 'paid',
+                    label: isAr ? 'مسدد' : 'Réglés',
+                    count: pointages.filter((p) => p.isPaid).length,
+                  },
+                ]}
+              />
             </div>
 
             {/* Muster Cards Grid */}

@@ -29,6 +29,7 @@ import { AtriumButton } from '../../ui/AtriumButton';
 import { Seek } from '../../ui/Seek';
 import { ManufacturingOrderModal } from './ManufacturingOrderModal';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 
@@ -459,41 +460,18 @@ export const ManufacturingOrdersView: React.FC = () => {
               openWidth={220}
             />
 
-            <div className="flex items-center bg-white dark:bg-neutral-800 border border-neutral-200/80 dark:border-neutral-700 p-0.5 rounded-xl shadow-2xs">
-              <button
-                type="button"
-                onClick={() => setFilterStatus('All')}
-                className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                  filterStatus === 'All'
-                    ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold shadow-2xs'
-                    : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
-                }`}
-              >
-                {language === 'ar' ? 'الكل' : 'Tous'} ({orders.length})
-              </button>
-              <button
-                type="button"
-                onClick={() => setFilterStatus('InProduction')}
-                className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                  filterStatus === 'InProduction'
-                    ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold shadow-2xs'
-                    : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
-                }`}
-              >
-                {language === 'ar' ? 'قيد التصنيع' : 'En Cours'} ({activeInProduction})
-              </button>
-              <button
-                type="button"
-                onClick={() => setFilterStatus('Completed')}
-                className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                  filterStatus === 'Completed'
-                    ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold shadow-2xs'
-                    : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
-                }`}
-              >
-                {language === 'ar' ? 'مكتمل' : 'Terminés'} ({orders.filter((o) => o.status === 'Completed').length})
-              </button>
-            </div>
+            {/* Status Filter Kinetic Live Segmented Control */}
+            <LiveSegmentedControl
+              size="sm"
+              value={filterStatus}
+              onValueChange={setFilterStatus}
+              options={[
+                { value: 'All', label: language === 'ar' ? 'الكل' : 'Tous', count: orders.length },
+                { value: 'InProduction', label: language === 'ar' ? 'قيد التصنيع' : 'En Cours', count: activeInProduction },
+                { value: 'Completed', label: language === 'ar' ? 'مكتمل' : 'Terminés', count: orders.filter((o) => o.status === 'Completed').length },
+              ]}
+              aria-label="Manufacturing Orders Filter"
+            />
           </div>
         </div>
 

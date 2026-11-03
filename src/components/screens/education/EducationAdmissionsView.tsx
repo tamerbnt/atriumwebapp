@@ -29,6 +29,7 @@ import { Seek } from '../../ui/Seek';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { AtriumButton } from '../../ui/AtriumButton';
+import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { useTranslation } from '../../../utils/useTranslation';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
@@ -633,8 +634,20 @@ export const EducationAdmissionsView: React.FC = () => {
               </span>
             </div>
 
-            {/* Right Controls: Seek + Filter Capsules + Export CSV */}
+            {/* Right Controls: View Layout Switcher + Seek + Export CSV */}
             <div className="flex items-center gap-2.5 flex-wrap">
+              {/* Layout Switcher Kinetic Live Segmented Control */}
+              <LiveSegmentedControl
+                size="sm"
+                value={viewLayout}
+                onValueChange={(val) => setViewLayout(val as 'kanban' | 'collection')}
+                options={[
+                  { value: 'kanban', label: language === 'ar' ? 'مسار كانبان' : 'Kanban Funnel', count: totalLeads },
+                  { value: 'collection', label: language === 'ar' ? 'سجل القبول' : 'Tableau & Grille' },
+                ]}
+                aria-label="Admissions View Mode"
+              />
+
               {/* Kinetic Seek Search */}
               <Seek
                 value={searchQuery}

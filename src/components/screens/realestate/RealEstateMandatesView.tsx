@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { Seek } from '../../ui/Seek';
-import { FilterCapsules } from '../../ui/FilterCapsules';
+import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { UniversalDataCollection } from '../../ui/collection/UniversalDataCollection';
 import { ActionButtonDef } from '../../ui/collection/CollectionListRow';
 import { MandateModal } from './MandateModal';
@@ -243,17 +243,21 @@ export const RealEstateMandatesView: React.FC = () => {
           </div>
         </div>
 
-        {/* Filter Capsules */}
-        <FilterCapsules
-          activeKey={statusFilter}
-          onChange={setStatusFilter}
-          options={[
-            { label: isAr ? 'جميع الوكالات' : 'Tous les Mandats', key: 'all', count: mandates.length },
-            { label: isAr ? 'سارية' : 'Actifs', key: 'active', count: activeCount },
-            { label: isAr ? 'تنتهي قريباً' : 'Expirant Bientôt', key: 'expiring', count: expiringCount },
-            { label: isAr ? 'حصرية' : 'Exclusifs', key: 'exclusive', count: exclusiveCount },
-          ]}
-        />
+        {/* Status Filter Kinetic Live Segmented Control */}
+        <div className="flex justify-end">
+          <LiveSegmentedControl
+            size="sm"
+            value={statusFilter}
+            onValueChange={setStatusFilter}
+            options={[
+              { value: 'all', label: isAr ? 'جميع الوكالات' : 'Tous les Mandats', count: mandates.length },
+              { value: 'active', label: isAr ? 'سارية' : 'Actifs', count: activeCount },
+              { value: 'expiring', label: isAr ? 'تنتهي قريباً' : 'Expirant', count: expiringCount },
+              { value: 'exclusive', label: isAr ? 'حصرية' : 'Exclusifs', count: exclusiveCount },
+            ]}
+            aria-label="Real Estate Mandates Filter"
+          />
+        </div>
 
         {/* UniversalDataCollection List & Grid */}
         <UniversalDataCollection<RealEstateMandate>

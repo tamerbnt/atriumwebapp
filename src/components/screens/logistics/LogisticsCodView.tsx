@@ -25,6 +25,7 @@ import { LogisticsShipment, CourierCashDischarge, MerchantRemittanceBatch } from
 import { useLogisticsData } from './logisticsData';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { UniversalDataCollection } from '../../ui/collection/UniversalDataCollection';
+import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { ActionButtonDef } from '../../ui/collection/CollectionListRow';
 import { AlgeriePosteSfp01Modal } from './AlgeriePosteSfp01Modal';
 import { calculateDriverPayout } from '../../../utils/logisticsRules';
@@ -257,49 +258,33 @@ export const LogisticsCodView: React.FC = () => {
         </div>
       </div>
 
-      {/* Tabs Strip: Shipments Settled vs Driver Discharges vs CCP Batches vs Payroll */}
-      <div className="flex rounded-xl bg-neutral-100 dark:bg-neutral-800 p-1 border border-neutral-200 dark:border-neutral-700 w-fit">
-        <button
-          onClick={() => setActiveTab('shipments')}
-          className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
-            activeTab === 'shipments'
-              ? 'bg-white dark:bg-neutral-900 text-[#C4785A] shadow-xs'
-              : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
-          }`}
-        >
-          {isAr ? 'تسويات الطرود' : 'Rapprochement Colis'}
-        </button>
-        <button
-          onClick={() => setActiveTab('discharges')}
-          className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
-            activeTab === 'discharges'
-              ? 'bg-white dark:bg-neutral-900 text-[#C4785A] shadow-xs'
-              : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
-          }`}
-        >
-          {isAr ? 'محاضر تبرئة ذمة السائقين' : 'Bons de Décharge Chauffeurs'}
-        </button>
-        <button
-          onClick={() => setActiveTab('remittances')}
-          className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
-            activeTab === 'remittances'
-              ? 'bg-white dark:bg-neutral-900 text-[#C4785A] shadow-xs'
-              : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
-          }`}
-        >
-          {isAr ? 'دفعات بريد الجزائر CCP' : 'Lots CCP SFP 01'}
-        </button>
-        <button
-          onClick={() => setActiveTab('driver_payroll')}
-          className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
-            activeTab === 'driver_payroll'
-              ? 'bg-white dark:bg-neutral-900 text-[#C4785A] shadow-xs'
-              : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
-          }`}
-        >
-          {isAr ? 'أجور وعمولات السائقين' : 'Paie & Commissions Livreurs'}
-        </button>
-      </div>
+      {/* Kinetic Live Filter Switcher: Shipments Settled vs Driver Discharges vs CCP Batches vs Payroll */}
+      <LiveSegmentedControl
+        value={activeTab}
+        onChange={(val) => setActiveTab(val as any)}
+        size="sm"
+        options={[
+          {
+            id: 'shipments',
+            label: isAr ? 'تسويات الطرود' : 'Rapprochement Colis',
+            count: deliveredShipments.length,
+          },
+          {
+            id: 'discharges',
+            label: isAr ? 'تبرئة الذمة' : 'Bons de Décharge',
+            count: discharges.length,
+          },
+          {
+            id: 'remittances',
+            label: isAr ? 'دفعات CCP' : 'Lots CCP SFP 01',
+            count: remittances.length,
+          },
+          {
+            id: 'driver_payroll',
+            label: isAr ? 'أجور وعمولات' : 'Paie Livreurs',
+          },
+        ]}
+      />
 
       {/* Tab 1: Shipments Collection */}
       {activeTab === 'shipments' && (

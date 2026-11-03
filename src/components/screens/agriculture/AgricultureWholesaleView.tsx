@@ -26,6 +26,7 @@ import { AtriumButton } from '../../ui/AtriumButton';
 import { FilterSelect } from '../../ui/FilterSelect';
 import { AgriHarvestTicket } from '../../../types';
 import { UniversalDataCollection } from '../../ui/collection/UniversalDataCollection';
+import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { ActionButtonDef } from '../../ui/collection/CollectionListRow';
 import { AgriWeighbridgePrintModal } from './AgriWeighbridgePrintModal';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
@@ -259,25 +260,29 @@ export const AgricultureWholesaleView: React.FC = () => {
             </h2>
           </div>
 
-          {/* Authentic Agriculture Wholesale Filter Capsules */}
-          <div className="flex items-center gap-1.5 p-1 bg-white dark:bg-neutral-800 rounded-full border border-neutral-200/80 dark:border-neutral-700/60 shadow-2xs overflow-x-auto">
-            {[
-              { id: 'all', label: isAr ? 'جميع التسويات' : 'Tous les bordereaux' },
-              { id: 'encaisse', label: isAr ? 'مقبوضة' : 'Encaissés' },
-              { id: 'attente', label: isAr ? 'قيد التحصيل' : 'En attente mandataire' },
-            ].map((tab, idx) => (
-              <button
-                key={tab.id}
-                className="px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer"
-                style={{
-                  backgroundColor: idx === 0 ? '#FCEEE8' : 'transparent',
-                  color: idx === 0 ? 'var(--color-accent)' : '#71717A',
-                }}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
+          {/* Kinetic Live Wholesale Filter Switcher */}
+          <LiveSegmentedControl
+            value={statusFilter}
+            onChange={setStatusFilter}
+            size="sm"
+            options={[
+              {
+                id: 'all',
+                label: isAr ? 'جميع التسويات' : 'Tous les bordereaux',
+                count: harvestTickets.length,
+              },
+              {
+                id: 'settled',
+                label: isAr ? 'مقبوضة' : 'Encaissés',
+                count: settledTickets.length,
+              },
+              {
+                id: 'pending',
+                label: isAr ? 'قيد التحصيل' : 'En attente mandataire',
+                count: harvestTickets.filter((t) => !settledTickets.includes(t.id)).length,
+              },
+            ]}
+          />
         </div>
 
         {/* Main Collection Area + 390px Inspector Drawer */}

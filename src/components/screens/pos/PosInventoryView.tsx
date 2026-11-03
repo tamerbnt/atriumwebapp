@@ -32,6 +32,7 @@ import { Modal } from '../../ui/Modal';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { FilterSelect } from '../../ui/FilterSelect';
+import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { B2bEntityModal } from '../trading/B2bEntityModal';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
@@ -1073,35 +1074,30 @@ export const PosInventoryView: React.FC = () => {
                 </div>
 
                 <div className="flex items-center gap-2 flex-wrap self-end sm:self-auto">
-                  <div className="flex items-center p-0.5 rounded-xl bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-xs font-bold">
-                    <button
-                      type="button"
-                      onClick={() => setStockStatusFilter('all')}
-                      className={`px-3 py-1.5 rounded-lg cursor-pointer ${
-                        stockStatusFilter === 'all' ? 'bg-[#C4785A] text-white' : 'text-neutral-500'
-                      }`}
-                    >
-                      {t('shop_filter_all', { count: products.length })}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setStockStatusFilter('low')}
-                      className={`px-3 py-1.5 rounded-lg cursor-pointer ${
-                        stockStatusFilter === 'low' ? 'bg-amber-600 text-white' : 'text-neutral-500'
-                      }`}
-                    >
-                      {t('shop_filter_low', { count: inventoryStats.lowStockItems })}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setStockStatusFilter('out')}
-                      className={`px-3 py-1.5 rounded-lg cursor-pointer ${
-                        stockStatusFilter === 'out' ? 'bg-red-600 text-white' : 'text-neutral-500'
-                      }`}
-                    >
-                      {t('shop_filter_out', { count: inventoryStats.outOfStockItems })}
-                    </button>
-                  </div>
+                  {/* Status Filter Kinetic Live Segmented Control */}
+                  <LiveSegmentedControl
+                    size="sm"
+                    value={stockStatusFilter}
+                    onValueChange={(val) => setStockStatusFilter(val as any)}
+                    options={[
+                      {
+                        value: 'all',
+                        label: language === 'ar' ? 'الكل' : 'Tous',
+                        count: products.length,
+                      },
+                      {
+                        value: 'low',
+                        label: language === 'ar' ? 'منخفض' : 'Stock bas',
+                        count: inventoryStats.lowStockItems,
+                      },
+                      {
+                        value: 'out',
+                        label: language === 'ar' ? 'نفذ' : 'Rupture',
+                        count: inventoryStats.outOfStockItems,
+                      },
+                    ]}
+                    aria-label="POS Stock Filter"
+                  />
 
                   <FilterSelect
                     label={t('shop_filter_category_label')}

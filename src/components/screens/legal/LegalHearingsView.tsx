@@ -34,6 +34,7 @@ import { useLegalData } from './legalData';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { Seek } from '../../ui/Seek';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { ActionButtonDef } from '../../ui/collection/CollectionListRow';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
@@ -457,53 +458,33 @@ export const LegalHearingsView: React.FC = () => {
             className="flex-1 max-w-md"
           />
 
-          {/* Filter Capsules */}
-          <div className="hidden sm:flex items-center gap-1.5 bg-[#F8F9FA] dark:bg-neutral-900/60 p-1 rounded-full border border-[#EDF1F3] dark:border-neutral-800">
-            {[
-              { id: 'All', label: isAr ? 'الكل' : 'Tous' },
-              { id: 'Scheduled', label: isAr ? 'مبرمجة' : 'Fixées' },
-              { id: 'Postponed', label: isAr ? 'مؤجلة' : 'Renvois' },
-              { id: 'Completed', label: isAr ? 'منتهية' : 'Plaidées' },
-            ].map((f) => (
-              <button
-                key={f.id}
-                onClick={() => setFilterCategory(f.id)}
-                className={`px-3 py-1 rounded-full text-xs font-semibold transition-all ${
-                  filterCategory === f.id
-                    ? 'bg-[#C4785A] text-white shadow-xs'
-                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900'
-                }`}
-              >
-                {f.label}
-              </button>
-            ))}
+          {/* Kinetic Live Status Filter */}
+          <div className="hidden sm:block">
+            <LiveSegmentedControl
+              value={filterCategory}
+              onChange={setFilterCategory}
+              size="sm"
+              options={[
+                { id: 'All', label: isAr ? 'الكل' : 'Tous', count: hearings.length },
+                { id: 'Scheduled', label: isAr ? 'مبرمجة' : 'Fixées', count: totalScheduled },
+                { id: 'Postponed', label: isAr ? 'مؤجلة' : 'Renvois', count: hearings.filter((h) => h.status === 'Postponed').length },
+                { id: 'Completed', label: isAr ? 'منتهية' : 'Plaidées', count: totalCompleted },
+              ]}
+            />
           </div>
         </div>
 
-        {/* Hybrid Switcher: Docket Roll vs UDC Collection */}
-        <div className="flex items-center gap-1 bg-[#F8F9FA] dark:bg-neutral-900/60 p-1 rounded-full border border-[#EDF1F3] dark:border-neutral-800 self-end md:self-auto">
-          <button
-            onClick={() => setHybridView('docket')}
-            className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all ${
-              hybridView === 'docket'
-                ? 'bg-white dark:bg-neutral-800 text-[#C4785A] shadow-xs'
-                : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
-            }`}
-          >
-            <Calendar size={13} />
-            <span>{isAr ? 'رول الجلسات' : 'Rôle d\'Audience'}</span>
-          </button>
-          <button
-            onClick={() => setHybridView('register')}
-            className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all ${
-              hybridView === 'register'
-                ? 'bg-white dark:bg-neutral-800 text-[#C4785A] shadow-xs'
-                : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
-            }`}
-          >
-            <Layers size={13} />
-            <span>{isAr ? 'الجدول الشامل' : 'Registre UDC'}</span>
-          </button>
+        {/* Kinetic Live Hybrid Switcher: Docket Roll vs UDC Collection */}
+        <div className="self-end md:self-auto">
+          <LiveSegmentedControl
+            value={hybridView}
+            onChange={(val) => setHybridView(val as any)}
+            size="sm"
+            options={[
+              { id: 'docket', label: isAr ? 'رول الجلسات' : 'Rôle d\'Audience' },
+              { id: 'register', label: isAr ? 'الجدول الشامل' : 'Registre UDC' },
+            ]}
+          />
         </div>
       </div>
 

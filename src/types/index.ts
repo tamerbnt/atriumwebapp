@@ -1319,11 +1319,17 @@ export interface PMClient {
 }
 
 export type PMProjectStatus =
-  | 'framing'      // En cadrage
-  | 'crea_active'  // Créa en cours
-  | 'print_ready'  // Prêt pour impression
-  | 'field_active' // En exécution terrain
-  | 'closed';      // Clôturé
+  | 'framing'           // En cadrage / Cahier des charges
+  | 'crea_active'       // Créa en cours
+  | 'print_ready'       // Prêt pour impression
+  | 'field_active'      // En exécution terrain
+  | 'closed'            // Clôturé
+  | 'creative_kv'       // KV Créa
+  | 'client_validated'  // Validé Client
+  | 'production'        // En Production
+  | 'field_execution'   // Terrain Live
+  | 'completed'         // Clôturé
+  | 'archived';         // Archivé
 
 export interface PMProject {
   id: string;

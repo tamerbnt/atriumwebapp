@@ -29,6 +29,7 @@ import { AgricultureParcelModal } from './AgricultureParcelModal';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { Seek } from '../../ui/Seek';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
+import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
 
@@ -464,27 +465,34 @@ export const AgricultureParcelsView: React.FC = () => {
             </h2>
           </div>
 
-          {/* Authentic Agriculture Irrigation Capsules */}
-          <div className="flex items-center gap-1.5 p-1 bg-white dark:bg-neutral-800 rounded-full border border-neutral-200/80 dark:border-neutral-700/60 shadow-2xs overflow-x-auto">
-            {[
-              { id: 'All', label: isAr ? 'جميع القطع' : 'Toutes parcelles' },
-              { id: 'Drip', label: 'Goutte-à-goutte' },
-              { id: 'Pivot', label: 'Pivot' },
-              { id: 'Gravity', label: 'Gravitaire' },
-            ].map((f) => (
-              <button
-                key={f.id}
-                onClick={() => setFilterIrrigation(f.id)}
-                className="px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer"
-                style={{
-                  backgroundColor: filterIrrigation === f.id ? '#FCEEE8' : 'transparent',
-                  color: filterIrrigation === f.id ? 'var(--color-accent)' : '#71717A',
-                }}
-              >
-                {f.label}
-              </button>
-            ))}
-          </div>
+          {/* Kinetic Live Irrigation Filter Switcher */}
+          <LiveSegmentedControl
+            value={filterIrrigation}
+            onChange={setFilterIrrigation}
+            size="sm"
+            options={[
+              {
+                id: 'All',
+                label: isAr ? 'جميع القطع' : 'Toutes parcelles',
+                count: parcels.length,
+              },
+              {
+                id: 'Drip',
+                label: 'Goutte-à-goutte',
+                count: parcels.filter((p) => p.irrigationType === 'Drip').length,
+              },
+              {
+                id: 'Pivot',
+                label: 'Pivot',
+                count: parcels.filter((p) => p.irrigationType === 'Pivot').length,
+              },
+              {
+                id: 'Gravity',
+                label: 'Gravitaire',
+                count: parcels.filter((p) => p.irrigationType === 'Gravity').length,
+              },
+            ]}
+          />
         </div>
 
         {/* Main Workspace: Left Collection + Right 390px Inspector Drawer */}

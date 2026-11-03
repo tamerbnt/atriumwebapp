@@ -30,6 +30,8 @@ import { AtriumButton } from '../../ui/AtriumButton';
 import { Seek } from '../../ui/Seek';
 import { LabelInput } from '../../ui/LabelInput';
 import { LabelSelect } from '../../ui/LabelSelect';
+import { FilterSelect } from '../../ui/FilterSelect';
+import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
@@ -431,30 +433,16 @@ export const ManufacturingMaterialsView: React.FC = () => {
       </div>
 
       {/* Sub-tab Switcher: Inventory vs. Vouchers */}
-      <div className="flex items-center gap-2 p-1 bg-neutral-100 dark:bg-neutral-800/80 rounded-2xl w-fit">
-        <button
-          type="button"
-          onClick={() => setActiveSubTab('inventory')}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-            activeSubTab === 'inventory'
-              ? 'bg-white dark:bg-neutral-900 text-[#C4785A] shadow-xs'
-              : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900'
-          }`}
-        >
-          {isAr ? 'مخزون المواد الأولية PMP' : 'Stock & Valorisation PMP'} ({materials.length})
-        </button>
-        <button
-          type="button"
-          onClick={() => setActiveSubTab('vouchers')}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-            activeSubTab === 'vouchers'
-              ? 'bg-white dark:bg-neutral-900 text-[#C4785A] shadow-xs'
-              : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900'
-          }`}
-        >
-          {isAr ? 'سجل السندات (BSM / BR)' : 'Registre Bons Décret 05-468'} ({vouchers.length})
-        </button>
-      </div>
+      <LiveSegmentedControl
+        size="sm"
+        value={activeSubTab}
+        onValueChange={(val) => setActiveSubTab(val as 'inventory' | 'vouchers')}
+        options={[
+          { value: 'inventory', label: isAr ? 'مخزون المواد الأولية PMP' : 'Stock & Valorisation PMP', count: materials.length },
+          { value: 'vouchers', label: isAr ? 'سجل السندات (BSM / BR)' : 'Registre Bons Décret 05-468', count: vouchers.length },
+        ]}
+        aria-label="Manufacturing Materials Subtab"
+      />
 
       {/* KPI Pod Tray */}
       <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
@@ -530,19 +518,20 @@ export const ManufacturingMaterialsView: React.FC = () => {
                 openWidth={220}
               />
 
-              <select
+              <FilterSelect
+                label={isAr ? 'الصنف' : 'Catégorie'}
                 value={categoryFilter}
-                onChange={(e) => setCategoryFilter(e.target.value)}
-                className="px-3 py-1.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-xs font-semibold text-neutral-700 dark:text-neutral-300 outline-none"
-              >
-                <option value="All">{isAr ? 'جميع الأصناف' : 'Toutes Catégories'}</option>
-                <option value="Wood">Bois</option>
-                <option value="Metals">Métaux</option>
-                <option value="Plastics">Plastiques</option>
-                <option value="Chemicals">Chimie</option>
-                <option value="Textiles">Textiles</option>
-                <option value="Hardware">Quincaillerie</option>
-              </select>
+                onChange={(val) => setCategoryFilter(typeof val === 'string' ? val : val.target?.value || val)}
+                options={[
+                  { value: 'All', label: isAr ? 'جميع الأصناف' : 'Toutes Catégories' },
+                  { value: 'Wood', label: 'Bois' },
+                  { value: 'Metals', label: 'Métaux' },
+                  { value: 'Plastics', label: 'Plastiques' },
+                  { value: 'Chemicals', label: 'Chimie' },
+                  { value: 'Textiles', label: 'Textiles' },
+                  { value: 'Hardware', label: 'Quincaillerie' },
+                ]}
+              />
             </div>
           </div>
 
