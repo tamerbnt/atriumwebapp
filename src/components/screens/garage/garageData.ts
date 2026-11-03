@@ -874,27 +874,27 @@ export const useGarageData = () => {
   const [orders, setOrders] = useState<RepairOrder[]>(() => {
     try {
       const saved = localStorage.getItem('atrium_garage_orders_v2');
-      return saved ? JSON.parse(saved) : INITIAL_ORDERS;
+      return saved ? JSON.parse(saved) : [];
     } catch {
-      return INITIAL_ORDERS;
+      return [];
     }
   });
 
   const [vehicles, setVehicles] = useState<VehicleAsset[]>(() => {
     try {
       const saved = localStorage.getItem('atrium_garage_vehicles_v2');
-      return saved ? JSON.parse(saved) : INITIAL_VEHICLES;
+      return saved ? JSON.parse(saved) : [];
     } catch {
-      return INITIAL_VEHICLES;
+      return [];
     }
   });
 
   const [parts, setParts] = useState<SparePart[]>(() => {
     try {
       const saved = localStorage.getItem('atrium_garage_parts_v2');
-      return saved ? JSON.parse(saved) : INITIAL_PARTS;
+      return saved ? JSON.parse(saved) : [];
     } catch {
-      return INITIAL_PARTS;
+      return [];
     }
   });
 
@@ -919,9 +919,9 @@ export const useGarageData = () => {
   const [invoices, setInvoices] = useState<GarageInvoice[]>(() => {
     try {
       const saved = localStorage.getItem('atrium_garage_invoices_v2');
-      return saved ? JSON.parse(saved) : INITIAL_INVOICES;
+      return saved ? JSON.parse(saved) : [];
     } catch {
-      return INITIAL_INVOICES;
+      return [];
     }
   });
 
@@ -1145,14 +1145,12 @@ export const useGarageData = () => {
     setInvoices((prev) => prev.map((i) => (i.id === id ? { ...i, isPaid: true } : i)));
   };
 
-  // Reset demo data
+  // Reset data to empty state
   const resetGarageDemoData = () => {
-    setOrders(INITIAL_ORDERS);
-    setVehicles(INITIAL_VEHICLES);
-    setParts(INITIAL_PARTS);
-    setBays(INITIAL_BAYS);
-    setFleets(INITIAL_FLEETS);
-    setInvoices(INITIAL_INVOICES);
+    setOrders([]);
+    setVehicles([]);
+    setParts([]);
+    setInvoices([]);
     localStorage.removeItem('atrium_garage_orders_v2');
     localStorage.removeItem('atrium_garage_vehicles_v2');
     localStorage.removeItem('atrium_garage_parts_v2');

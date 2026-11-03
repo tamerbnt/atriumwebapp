@@ -582,45 +582,45 @@ export const useManufacturingData = () => {
   const [boms, setBoms] = useState<ManufacturingBom[]>(() => {
     try {
       const saved = localStorage.getItem('atrium_mfg_boms');
-      return saved ? JSON.parse(saved) : INITIAL_BOMS;
+      return saved ? JSON.parse(saved) : [];
     } catch {
-      return INITIAL_BOMS;
+      return [];
     }
   });
 
   const [orders, setOrders] = useState<ManufacturingOrder[]>(() => {
     try {
       const saved = localStorage.getItem('atrium_mfg_orders');
-      return saved ? JSON.parse(saved) : INITIAL_ORDERS;
+      return saved ? JSON.parse(saved) : [];
     } catch {
-      return INITIAL_ORDERS;
+      return [];
     }
   });
 
   const [materials, setMaterials] = useState<RawMaterialStockItem[]>(() => {
     try {
       const saved = localStorage.getItem('atrium_mfg_raw_materials_v2');
-      return saved ? JSON.parse(saved) : INITIAL_RAW_MATERIALS;
+      return saved ? JSON.parse(saved) : [];
     } catch {
-      return INITIAL_RAW_MATERIALS;
+      return [];
     }
   });
 
   const [vouchers, setVouchers] = useState<MaterialTransferVoucher[]>(() => {
     try {
       const saved = localStorage.getItem('atrium_mfg_vouchers');
-      return saved ? JSON.parse(saved) : INITIAL_VOUCHERS;
+      return saved ? JSON.parse(saved) : [];
     } catch {
-      return INITIAL_VOUCHERS;
+      return [];
     }
   });
 
   const [qcRecords, setQcRecords] = useState<QualityInspectionRecord[]>(() => {
     try {
       const saved = localStorage.getItem('atrium_mfg_qc_records');
-      return saved ? JSON.parse(saved) : INITIAL_QC_RECORDS;
+      return saved ? JSON.parse(saved) : [];
     } catch {
-      return INITIAL_QC_RECORDS;
+      return [];
     }
   });
 

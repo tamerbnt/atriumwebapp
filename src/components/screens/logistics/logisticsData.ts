@@ -522,45 +522,45 @@ export const useLogisticsData = () => {
   const [shipments, setShipments] = useState<LogisticsShipment[]>(() => {
     try {
       const saved = localStorage.getItem('atrium_logistics_shipments_v2');
-      return saved ? JSON.parse(saved) : INITIAL_SHIPMENTS;
+      return saved ? JSON.parse(saved) : [];
     } catch {
-      return INITIAL_SHIPMENTS;
+      return [];
     }
   });
 
   const [bags, setBags] = useState<TransportBag[]>(() => {
     try {
       const saved = localStorage.getItem('atrium_logistics_bags_v2');
-      return saved ? JSON.parse(saved) : INITIAL_BAGS;
+      return saved ? JSON.parse(saved) : [];
     } catch {
-      return INITIAL_BAGS;
+      return [];
     }
   });
 
   const [manifests, setManifests] = useState<LogisticsManifest[]>(() => {
     try {
       const saved = localStorage.getItem('atrium_logistics_manifests_v2');
-      return saved ? JSON.parse(saved) : INITIAL_MANIFESTS;
+      return saved ? JSON.parse(saved) : [];
     } catch {
-      return INITIAL_MANIFESTS;
+      return [];
     }
   });
 
   const [discharges, setDischarges] = useState<CourierCashDischarge[]>(() => {
     try {
       const saved = localStorage.getItem('atrium_logistics_discharges_v2');
-      return saved ? JSON.parse(saved) : INITIAL_DISCHARGES;
+      return saved ? JSON.parse(saved) : [];
     } catch {
-      return INITIAL_DISCHARGES;
+      return [];
     }
   });
 
   const [remittances, setRemittances] = useState<MerchantRemittanceBatch[]>(() => {
     try {
       const saved = localStorage.getItem('atrium_logistics_remittances_v2');
-      return saved ? JSON.parse(saved) : INITIAL_REMITTANCES;
+      return saved ? JSON.parse(saved) : [];
     } catch {
-      return INITIAL_REMITTANCES;
+      return [];
     }
   });
 
@@ -660,17 +660,17 @@ export const useLogisticsData = () => {
   };
 
   const resetLogisticsDemoData = () => {
-    setShipments(INITIAL_SHIPMENTS);
-    setBags(INITIAL_BAGS);
-    setManifests(INITIAL_MANIFESTS);
-    setDischarges(INITIAL_DISCHARGES);
-    setRemittances(INITIAL_REMITTANCES);
+    setShipments([]);
+    setBags([]);
+    setManifests([]);
+    setDischarges([]);
+    setRemittances([]);
     try {
-      localStorage.setItem('atrium_logistics_shipments_v2', JSON.stringify(INITIAL_SHIPMENTS));
-      localStorage.setItem('atrium_logistics_bags_v2', JSON.stringify(INITIAL_BAGS));
-      localStorage.setItem('atrium_logistics_manifests_v2', JSON.stringify(INITIAL_MANIFESTS));
-      localStorage.setItem('atrium_logistics_discharges_v2', JSON.stringify(INITIAL_DISCHARGES));
-      localStorage.setItem('atrium_logistics_remittances_v2', JSON.stringify(INITIAL_REMITTANCES));
+      localStorage.setItem('atrium_logistics_shipments_v2', JSON.stringify([]));
+      localStorage.setItem('atrium_logistics_bags_v2', JSON.stringify([]));
+      localStorage.setItem('atrium_logistics_manifests_v2', JSON.stringify([]));
+      localStorage.setItem('atrium_logistics_discharges_v2', JSON.stringify([]));
+      localStorage.setItem('atrium_logistics_remittances_v2', JSON.stringify([]));
     } catch {}
   };
 

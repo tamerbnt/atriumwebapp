@@ -542,72 +542,72 @@ export const useAgricultureData = () => {
   const [parcels, setParcels] = useState<AgriParcel[]>(() => {
     try {
       const saved = localStorage.getItem('atrium_agri_parcels_v2');
-      return saved ? JSON.parse(saved) : INITIAL_PARCELS;
+      return saved ? JSON.parse(saved) : [];
     } catch {
-      return INITIAL_PARCELS;
+      return [];
     }
   });
 
   const [cropCycles, setCropCycles] = useState<AgriCropCycle[]>(() => {
     try {
       const saved = localStorage.getItem('atrium_agri_cycles_v2');
-      return saved ? JSON.parse(saved) : INITIAL_CYCLES;
+      return saved ? JSON.parse(saved) : [];
     } catch {
-      return INITIAL_CYCLES;
+      return [];
     }
   });
 
   const [treatmentLogs, setTreatmentLogs] = useState<AgriTreatmentLog[]>(() => {
     try {
       const saved = localStorage.getItem('atrium_agri_treatments_v2');
-      return saved ? JSON.parse(saved) : INITIAL_TREATMENTS;
+      return saved ? JSON.parse(saved) : [];
     } catch {
-      return INITIAL_TREATMENTS;
+      return [];
     }
   });
 
   const [workers, setWorkers] = useState<AgriWorker[]>(() => {
     try {
       const saved = localStorage.getItem('atrium_agri_workers_v2');
-      return saved ? JSON.parse(saved) : INITIAL_WORKERS;
+      return saved ? JSON.parse(saved) : [];
     } catch {
-      return INITIAL_WORKERS;
+      return [];
     }
   });
 
   const [pointages, setPointages] = useState<AgriDailyPointage[]>(() => {
     try {
       const saved = localStorage.getItem('atrium_agri_pointages_v2');
-      return saved ? JSON.parse(saved) : INITIAL_POINTAGES;
+      return saved ? JSON.parse(saved) : [];
     } catch {
-      return INITIAL_POINTAGES;
+      return [];
     }
   });
 
   const [dairyCows, setDairyCows] = useState<AgriDairyCow[]>(() => {
     try {
       const saved = localStorage.getItem('atrium_agri_dairy_cows_v2');
-      return saved ? JSON.parse(saved) : INITIAL_DAIRY_COWS;
+      return saved ? JSON.parse(saved) : [];
     } catch {
-      return INITIAL_DAIRY_COWS;
+      return [];
     }
   });
 
   const [milkingRecords, setMilkingRecords] = useState<AgriMilkingRecord[]>(() => {
     try {
       const saved = localStorage.getItem('atrium_agri_milking_v2');
-      return saved ? JSON.parse(saved) : INITIAL_MILKING_RECORDS;
+      return saved ? JSON.parse(saved) : [];
     } catch {
-      return INITIAL_MILKING_RECORDS;
+      return [];
     }
   });
 
   const [weighbridgeTickets, setWeighbridgeTickets] = useState<AgriWeighbridgeTicket[]>(() => {
     try {
       const saved = localStorage.getItem('atrium_agri_weighbridge_v2');
-      return saved ? JSON.parse(saved) : INITIAL_WEIGHBRIDGE_TICKETS;
+      return saved ? JSON.parse(saved) : [];
     } catch {
-      return INITIAL_WEIGHBRIDGE_TICKETS;
+      return [];
     }
   });
 
@@ -763,16 +763,16 @@ export const useAgricultureData = () => {
     setWeighbridgeTickets((prev) => prev.filter((t) => t.id !== id));
   };
 
-  // Reset to default seed
+  // Reset data to empty state
   const resetToSeed = () => {
-    setParcels(INITIAL_PARCELS);
-    setCropCycles(INITIAL_CYCLES);
-    setTreatmentLogs(INITIAL_TREATMENTS);
-    setWorkers(INITIAL_WORKERS);
-    setPointages(INITIAL_POINTAGES);
-    setDairyCows(INITIAL_DAIRY_COWS);
-    setMilkingRecords(INITIAL_MILKING_RECORDS);
-    setWeighbridgeTickets(INITIAL_WEIGHBRIDGE_TICKETS);
+    setParcels([]);
+    setCropCycles([]);
+    setTreatmentLogs([]);
+    setWorkers([]);
+    setPointages([]);
+    setDairyCows([]);
+    setMilkingRecords([]);
+    setWeighbridgeTickets([]);
   };
 
   return {

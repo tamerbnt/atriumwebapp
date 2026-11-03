@@ -239,22 +239,6 @@ export const MembershipShopView: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-3 relative flex-wrap">
-            <AtriumButton
-              type="button"
-              variant="outline"
-              size="sm"
-              icon={<Sparkles size={14} className="text-[#C4785A]" />}
-              onClick={() => {
-                seedDemoInventory();
-                showToast({
-                  type: 'success',
-                  title: 'Inventory Restocked',
-                  message: 'Pro-Shop supplements stock replenished.',
-                });
-              }}
-            >
-              <span className="hidden sm:inline">{isAr ? 'شحن المخزون' : 'Stock Démo'}</span>
-            </AtriumButton>
           </div>
         </div>
 

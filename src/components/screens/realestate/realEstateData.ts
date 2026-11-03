@@ -701,63 +701,63 @@ export const useRealEstateData = () => {
   const [properties, setProperties] = useState<RealEstateProperty[]>(() => {
     try {
       const saved = localStorage.getItem('atrium_realestate_props_v2');
-      return saved ? JSON.parse(saved) : INITIAL_PROPERTIES;
+      return saved ? JSON.parse(saved) : [];
     } catch {
-      return INITIAL_PROPERTIES;
+      return [];
     }
   });
 
   const [mandates, setMandates] = useState<RealEstateMandate[]>(() => {
     try {
       const saved = localStorage.getItem('atrium_realestate_mandates_v2');
-      return saved ? JSON.parse(saved) : INITIAL_MANDATES;
+      return saved ? JSON.parse(saved) : [];
     } catch {
-      return INITIAL_MANDATES;
+      return [];
     }
   });
 
   const [leases, setLeases] = useState<RealEstateLease[]>(() => {
     try {
       const saved = localStorage.getItem('atrium_realestate_leases_v2');
-      return saved ? JSON.parse(saved) : INITIAL_LEASES;
+      return saved ? JSON.parse(saved) : [];
     } catch {
-      return INITIAL_LEASES;
+      return [];
     }
   });
 
   const [quittances, setQuittances] = useState<RentalQuittanceRecord[]>(() => {
     try {
       const saved = localStorage.getItem('atrium_realestate_quittances_v2');
-      return saved ? JSON.parse(saved) : INITIAL_QUITTANCES;
+      return saved ? JSON.parse(saved) : [];
     } catch {
-      return INITIAL_QUITTANCES;
+      return [];
     }
   });
 
   const [visits, setVisits] = useState<BonDeVisiteRecord[]>(() => {
     try {
       const saved = localStorage.getItem('atrium_realestate_visits_v2');
-      return saved ? JSON.parse(saved) : INITIAL_VISITS;
+      return saved ? JSON.parse(saved) : [];
     } catch {
-      return INITIAL_VISITS;
+      return [];
     }
   });
 
   const [inspections, setInspections] = useState<RealEstateInspection[]>(() => {
     try {
       const saved = localStorage.getItem('atrium_realestate_inspections_v2');
-      return saved ? JSON.parse(saved) : INITIAL_INSPECTIONS;
+      return saved ? JSON.parse(saved) : [];
     } catch {
-      return INITIAL_INSPECTIONS;
+      return [];
     }
   });
 
   const [buyers, setBuyers] = useState<BuyerDemandProfile[]>(() => {
     try {
       const saved = localStorage.getItem('atrium_realestate_buyers_v2');
-      return saved ? JSON.parse(saved) : INITIAL_BUYERS;
+      return saved ? JSON.parse(saved) : [];
     } catch {
-      return INITIAL_BUYERS;
+      return [];
     }
   });
 
@@ -856,15 +856,15 @@ export const useRealEstateData = () => {
     setBuyers((prev) => [buyer, ...prev]);
   };
 
-  // Reset to initial demo seeds
+  // Reset to empty state
   const resetToDemoSeeds = () => {
-    setProperties(INITIAL_PROPERTIES);
-    setMandates(INITIAL_MANDATES);
-    setLeases(INITIAL_LEASES);
-    setQuittances(INITIAL_QUITTANCES);
-    setVisits(INITIAL_VISITS);
-    setInspections(INITIAL_INSPECTIONS);
-    setBuyers(INITIAL_BUYERS);
+    setProperties([]);
+    setMandates([]);
+    setLeases([]);
+    setQuittances([]);
+    setVisits([]);
+    setInspections([]);
+    setBuyers([]);
   };
 
   return {

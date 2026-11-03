@@ -48,105 +48,7 @@ interface VaultItem {
   officialSealNumber?: string;
 }
 
-const INITIAL_VAULT: VaultItem[] = [
-  // Avocat Associe Items
-  {
-    id: 'v_01',
-    code: 'DOC-2026-081',
-    title: 'Contrat Commercial Original & Avenants Recouvrement',
-    matterReference: 'DOS-2026-0091',
-    category: 'Contrats',
-    depositDate: '2026-05-02',
-    status: 'OriginalScanned',
-    roleScope: 'avocat',
-    officialSealNumber: 'SEAL-DZ-ALG-0491',
-  },
-  {
-    id: 'v_02',
-    code: 'DOC-2026-082',
-    title: 'Mémoire de Défense & Pièces Numérotées (Tribunal Sidi M\'Hamed)',
-    matterReference: 'DOS-2026-0091',
-    category: 'Mémoires',
-    depositDate: '2026-05-08',
-    status: 'Confidential',
-    roleScope: 'avocat',
-    officialSealNumber: 'SEAL-DZ-ALG-0492',
-  },
-
-  // Notaire Titulaire Items (Minutes & Grosses)
-  {
-    id: 'v_03',
-    code: 'MIN-2026-0142',
-    title: 'Minute Officielle Acte de Vente Immobilière El Biar (LF-16/04-0982)',
-    matterReference: 'DOS-2026-0092',
-    category: 'Minutes Notariées',
-    depositDate: '2026-04-10',
-    status: 'MinuteOfficielle',
-    roleScope: 'notaire',
-    cadastralVolume: 'Vol. 418',
-    cadastralNumber: 'N° 22',
-    officialSealNumber: 'NOTAIRE-SCEAU-16-0142',
-  },
-  {
-    id: 'v_04',
-    code: 'MIN-2026-0143',
-    title: 'Grosse Revêtue de la Formule Exécutoire Bail Commercial Didouche',
-    matterReference: 'DOS-2026-0093',
-    category: 'Grosses Exécutoires',
-    depositDate: '2026-05-02',
-    status: 'MinuteOfficielle',
-    roleScope: 'notaire',
-    officialSealNumber: 'NOTAIRE-SCEAU-16-0143',
-  },
-
-  // Expert Comptable Items (Audit Working Papers & Reports)
-  {
-    id: 'v_05',
-    code: 'AUD-2026-001',
-    title: 'Rapport Général du Commissaire aux Comptes (Exercice 2025)',
-    matterReference: 'MANDAT-SARL-ATLAS',
-    category: 'Rapports CAC',
-    depositDate: '2026-04-20',
-    status: 'DossierAudit',
-    roleScope: 'comptable',
-    officialSealNumber: 'CAC-ORDRE-2026-88',
-  },
-  {
-    id: 'v_06',
-    code: 'AUD-2026-002',
-    title: 'Feuille de Travail Déclaration G50 & Rapprochement Fiscal/Comptable',
-    matterReference: 'MANDAT-EURL-AGRO',
-    category: 'Feuilles de Travail',
-    depositDate: '2026-05-01',
-    status: 'DossierAudit',
-    roleScope: 'comptable',
-    officialSealNumber: 'CAC-ORDRE-2026-89',
-  },
-
-  // Secretaire Caisse Items (Client Identification & Dépôts)
-  {
-    id: 'v_07',
-    code: 'DEP-2026-051',
-    title: 'Copie Conforme Carte Biométrique NIN Hadj Amine Mansouri',
-    matterReference: 'DOS-2026-0092',
-    category: 'Identité NIN/NIF',
-    depositDate: '2026-05-04',
-    status: 'PieceClient',
-    roleScope: 'secretaire',
-    officialSealNumber: 'RECEP-CAISSE-051',
-  },
-  {
-    id: 'v_08',
-    code: 'DEP-2026-052',
-    title: 'Extrait du Registre de Commerce & Statuts SARL Atlas Distribution',
-    matterReference: 'DOS-2026-0091',
-    category: 'Registre Commerce',
-    depositDate: '2026-05-05',
-    status: 'PieceClient',
-    roleScope: 'secretaire',
-    officialSealNumber: 'RECEP-CAISSE-052',
-  },
-];
+const INITIAL_VAULT: VaultItem[] = [];
 
 export const LegalVaultView: React.FC = () => {
   const { language, activeLegalRole, isSyncing, networkMode, retryCloudSync } = useAtriumStore();
@@ -157,14 +59,14 @@ export const LegalVaultView: React.FC = () => {
       const saved = localStorage.getItem('atrium_legal_vault_v2');
       if (saved) return JSON.parse(saved);
     } catch {}
-    return INITIAL_VAULT;
+    return [];
   });
 
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('All');
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [pinnedIds, setPinnedIds] = useState<Set<string>>(new Set(['v_01', 'v_03']));
+  const [pinnedIds, setPinnedIds] = useState<Set<string>>(new Set());
   const [sortBy, setSortBy] = useState<string>('depositDate');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
 

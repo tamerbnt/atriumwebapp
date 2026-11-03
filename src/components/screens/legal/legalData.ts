@@ -507,81 +507,103 @@ export const useLegalData = () => {
   const [entities, setEntities] = useState<LegalClientEntity[]>(() => {
     try {
       const s = localStorage.getItem('atrium_legal_entities');
-      return s ? JSON.parse(s) : INITIAL_LEGAL_ENTITIES;
+      return s ? JSON.parse(s) : [];
     } catch {
-      return INITIAL_LEGAL_ENTITIES;
+      return [];
     }
   });
 
   const [matters, setMatters] = useState<LegalMatter[]>(() => {
     try {
       const s = localStorage.getItem('atrium_legal_matters');
-      return s ? JSON.parse(s) : INITIAL_MATTERS;
+      return s ? JSON.parse(s) : [];
     } catch {
-      return INITIAL_MATTERS;
+      return [];
     }
   });
 
   const [hearings, setHearings] = useState<LegalHearing[]>(() => {
     try {
       const s = localStorage.getItem('atrium_legal_hearings');
-      return s ? JSON.parse(s) : INITIAL_HEARINGS;
+      return s ? JSON.parse(s) : [];
     } catch {
-      return INITIAL_HEARINGS;
+      return [];
     }
   });
 
   const [deadlines, setDeadlines] = useState<CPCADeadline[]>(() => {
     try {
       const s = localStorage.getItem('atrium_legal_cpca_deadlines');
-      return s ? JSON.parse(s) : INITIAL_CPCA_DEADLINES;
+      return s ? JSON.parse(s) : [];
     } catch {
-      return INITIAL_CPCA_DEADLINES;
+      return [];
     }
   });
 
   const [notaryDeeds, setNotaryDeeds] = useState<NotaryDeed[]>(() => {
     try {
       const s = localStorage.getItem('atrium_legal_notary_deeds');
-      return s ? JSON.parse(s) : INITIAL_NOTARY_DEEDS;
+      return s ? JSON.parse(s) : [];
     } catch {
-      return INITIAL_NOTARY_DEEDS;
+      return [];
     }
   });
 
   const [escrowAccounts, setEscrowAccounts] = useState<EscrowAccount[]>(() => {
     try {
       const s = localStorage.getItem('atrium_legal_escrow_accounts');
-      return s ? JSON.parse(s) : INITIAL_ESCROW_ACCOUNTS;
+      return s ? JSON.parse(s) : [];
     } catch {
-      return INITIAL_ESCROW_ACCOUNTS;
+      return [];
     }
   });
 
   const [scfEntries, setScfEntries] = useState<SCFJournalEntry[]>(() => {
     try {
       const s = localStorage.getItem('atrium_legal_scf_entries');
-      return s ? JSON.parse(s) : INITIAL_SCF_ENTRIES;
+      return s ? JSON.parse(s) : [];
     } catch {
-      return INITIAL_SCF_ENTRIES;
+      return [];
     }
   });
 
   const [cashReceipts, setCashReceipts] = useState<CashReceipt[]>(() => {
     try {
       const s = localStorage.getItem('atrium_legal_cash_receipts');
-      return s ? JSON.parse(s) : INITIAL_CASH_RECEIPTS;
+      return s ? JSON.parse(s) : [];
     } catch {
-      return INITIAL_CASH_RECEIPTS;
+      return [];
     }
   });
 
   const [dailyClosure, setDailyClosure] = useState<DailyCashClosure>(() => {
     try {
       const s = localStorage.getItem('atrium_legal_daily_closure');
-      return s ? JSON.parse(s) : INITIAL_DAILY_CLOSURE;
+      return s ? JSON.parse(s) : {
+        date: new Date().toISOString().split('T')[0],
+        totalCashReceivedDzd: 0,
+        totalTimbreAccruedDzd: 0,
+        actualPhysicalCashCountedDzd: 0,
+        theoreticalCashDzd: 0,
+        isReconciled: true,
+        closedByStaffName: 'Secrétaire',
+        signedOffByOwner: false,
+        cashDrawerLimitDzd: 200000,
+        notes: '',
+      };
     } catch {
-      return INITIAL_DAILY_CLOSURE;
+      return {
+        date: new Date().toISOString().split('T')[0],
+        totalCashReceivedDzd: 0,
+        totalTimbreAccruedDzd: 0,
+        actualPhysicalCashCountedDzd: 0,
+        theoreticalCashDzd: 0,
+        isReconciled: true,
+        closedByStaffName: 'Secrétaire',
+        signedOffByOwner: false,
+        cashDrawerLimitDzd: 200000,
+        notes: '',
+      };
     }
   });
 
@@ -635,15 +657,26 @@ export const useLegalData = () => {
   const updateDailyClosure = (cl: DailyCashClosure) => setDailyClosure(cl);
 
   const resetLegalMockData = () => {
-    setEntities(INITIAL_LEGAL_ENTITIES);
-    setMatters(INITIAL_MATTERS);
-    setHearings(INITIAL_HEARINGS);
-    setDeadlines(INITIAL_CPCA_DEADLINES);
-    setNotaryDeeds(INITIAL_NOTARY_DEEDS);
-    setEscrowAccounts(INITIAL_ESCROW_ACCOUNTS);
-    setScfEntries(INITIAL_SCF_ENTRIES);
-    setCashReceipts(INITIAL_CASH_RECEIPTS);
-    setDailyClosure(INITIAL_DAILY_CLOSURE);
+    setEntities([]);
+    setMatters([]);
+    setHearings([]);
+    setDeadlines([]);
+    setNotaryDeeds([]);
+    setEscrowAccounts([]);
+    setScfEntries([]);
+    setCashReceipts([]);
+    setDailyClosure({
+      date: new Date().toISOString().split('T')[0],
+      totalCashReceivedDzd: 0,
+      totalTimbreAccruedDzd: 0,
+      actualPhysicalCashCountedDzd: 0,
+      theoreticalCashDzd: 0,
+      isReconciled: true,
+      closedByStaffName: 'Secrétaire',
+      signedOffByOwner: false,
+      cashDrawerLimitDzd: 200000,
+      notes: '',
+    });
   };
 
   return {

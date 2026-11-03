@@ -177,11 +177,8 @@ export default function App() {
 
   const { t } = useTranslation();
 
-  // Strict 3-stage lifecycle enforced on every start of the app:
-  // Stage 1: Cinematic Atrium Intro Animation plays first
-  // Stage 2: Power Onboarding wizard displays after the animation completes
-  // Stage 3: Completing or skipping onboarding transitions into the main Dashboard
-  const [isIntroActive, setIsIntroActive] = useState<boolean>(true);
+  // User enters directly into the app workspace cleanly
+  const [isIntroActive, setIsIntroActive] = useState<boolean>(false);
 
   // When intro animation finishes or replay is requested
   useEffect(() => {
@@ -202,8 +199,8 @@ export default function App() {
     };
   }, []);
 
-  // Stage 2: Onboarding wizard is active at every app start
-  const [showPowerOnboarding, setShowPowerOnboarding] = useState<boolean>(true);
+  // Direct app entry without blocking onboarding overlay
+  const [showPowerOnboarding, setShowPowerOnboarding] = useState<boolean>(false);
 
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [isVoucherModalOpen, setIsVoucherModalOpen] = useState(false);

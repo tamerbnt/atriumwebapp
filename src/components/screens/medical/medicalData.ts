@@ -794,81 +794,81 @@ export const useMedicalData = () => {
   const [patients, setPatients] = useState<MedicalPatient[]>(() => {
     try {
       const saved = localStorage.getItem('atrium_medical_patients_v2');
-      return saved ? JSON.parse(saved) : INITIAL_PATIENTS;
+      return saved ? JSON.parse(saved) : [];
     } catch {
-      return INITIAL_PATIENTS;
+      return [];
     }
   });
 
   const [consultations, setConsultations] = useState<MedicalConsultation[]>(() => {
     try {
       const saved = localStorage.getItem('atrium_medical_consultations_v2');
-      return saved ? JSON.parse(saved) : INITIAL_CONSULTATIONS;
+      return saved ? JSON.parse(saved) : [];
     } catch {
-      return INITIAL_CONSULTATIONS;
+      return [];
     }
   });
 
   const [appointments, setAppointments] = useState<MedicalAppointmentSlot[]>(() => {
     try {
       const saved = localStorage.getItem('atrium_medical_appointments_v2');
-      return saved ? JSON.parse(saved) : INITIAL_APPOINTMENTS;
+      return saved ? JSON.parse(saved) : [];
     } catch {
-      return INITIAL_APPOINTMENTS;
+      return [];
     }
   });
 
   const [prescriptions, setPrescriptions] = useState<MedicalPrescription[]>(() => {
     try {
       const saved = localStorage.getItem('atrium_medical_prescriptions_v2');
-      return saved ? JSON.parse(saved) : INITIAL_PRESCRIPTIONS;
+      return saved ? JSON.parse(saved) : [];
     } catch {
-      return INITIAL_PRESCRIPTIONS;
+      return [];
     }
   });
 
   const [labRecords, setLabRecords] = useState<MedicalLabRecord[]>(() => {
     try {
       const saved = localStorage.getItem('atrium_medical_labs_v2');
-      return saved ? JSON.parse(saved) : INITIAL_LAB_RECORDS;
+      return saved ? JSON.parse(saved) : [];
     } catch {
-      return INITIAL_LAB_RECORDS;
+      return [];
     }
   });
 
   const [certificates, setCertificates] = useState<MedicalCertificateRecord[]>(() => {
     try {
       const saved = localStorage.getItem('atrium_medical_certificates_v2');
-      return saved ? JSON.parse(saved) : INITIAL_CERTIFICATES;
+      return saved ? JSON.parse(saved) : [];
     } catch {
-      return INITIAL_CERTIFICATES;
+      return [];
     }
   });
 
   const [chifaClaims, setChifaClaims] = useState<ChifaClaimRecord[]>(() => {
     try {
       const saved = localStorage.getItem('atrium_medical_chifa_v2');
-      return saved ? JSON.parse(saved) : INITIAL_CHIFA_CLAIMS;
+      return saved ? JSON.parse(saved) : [];
     } catch {
-      return INITIAL_CHIFA_CLAIMS;
+      return [];
     }
   });
 
   const [consumables, setConsumables] = useState<ClinicConsumableItem[]>(() => {
     try {
       const saved = localStorage.getItem('atrium_medical_consumables_v2');
-      return saved ? JSON.parse(saved) : INITIAL_CONSUMABLES;
+      return saved ? JSON.parse(saved) : [];
     } catch {
-      return INITIAL_CONSUMABLES;
+      return [];
     }
   });
 
   const [cashClosures, setCashClosures] = useState<DailyCashClosure[]>(() => {
     try {
       const saved = localStorage.getItem('atrium_medical_cash_closures_v2');
-      return saved ? JSON.parse(saved) : INITIAL_CASH_CLOSURES;
+      return saved ? JSON.parse(saved) : [];
     } catch {
-      return INITIAL_CASH_CLOSURES;
+      return [];
     }
   });
 
@@ -1085,15 +1085,15 @@ export const useMedicalData = () => {
   const resetToDemoData = () => {
     setPractitioners(INITIAL_PRACTITIONERS);
     setDoctorConfigs(DEFAULT_ORDONNANCE_CONFIGS);
-    setPatients(INITIAL_PATIENTS);
-    setConsultations(INITIAL_CONSULTATIONS);
-    setAppointments(INITIAL_APPOINTMENTS);
-    setPrescriptions(INITIAL_PRESCRIPTIONS);
-    setLabRecords(INITIAL_LAB_RECORDS);
-    setCertificates(INITIAL_CERTIFICATES);
-    setChifaClaims(INITIAL_CHIFA_CLAIMS);
-    setConsumables(INITIAL_CONSUMABLES);
-    setCashClosures(INITIAL_CASH_CLOSURES);
+    setPatients([]);
+    setConsultations([]);
+    setAppointments([]);
+    setPrescriptions([]);
+    setLabRecords([]);
+    setCertificates([]);
+    setChifaClaims([]);
+    setConsumables([]);
+    setCashClosures([]);
     setIsEmergencyAlarmActive(false);
   };
 

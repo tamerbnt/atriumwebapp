@@ -43,41 +43,7 @@ interface PosExpense {
   createdAt: string;
 }
 
-const INITIAL_POS_EXPENSES: PosExpense[] = [
-  {
-    id: 'exp_pos_01',
-    reference: 'DEC-001',
-    payee: 'Boulangerie Centrale Didouche',
-    category: 'Supplier',
-    amount: 3500,
-    paymentMethod: 'Cash',
-    paidBy: 'Amine Bentouati',
-    notes: 'Morning fresh croissant delivery invoice #412',
-    createdAt: new Date(Date.now() - 3600 * 1000 * 5).toISOString(),
-  },
-  {
-    id: 'exp_pos_02',
-    reference: 'DEC-002',
-    payee: 'Sarl Emballage Express Alger',
-    category: 'Supplies',
-    amount: 4200,
-    paymentMethod: 'Cash',
-    paidBy: 'Amine Bentouati',
-    notes: 'Rolls of 80mm thermal paper (50 rolls) + shopping kraft bags',
-    createdAt: new Date(Date.now() - 3600 * 1000 * 2.5).toISOString(),
-  },
-  {
-    id: 'exp_pos_03',
-    reference: 'DEC-003',
-    payee: 'Kiosk Presse Didouche',
-    category: 'Maintenance',
-    amount: 600,
-    paymentMethod: 'Cash',
-    paidBy: 'Ryan Mehdi',
-    notes: 'Cleaning detergent and counter sanitizing wipes',
-    createdAt: new Date(Date.now() - 3600 * 1000 * 1).toISOString(),
-  },
-];
+const INITIAL_POS_EXPENSES: PosExpense[] = [];
 
 export const PosFinanceView: React.FC = () => {
   const { t, language, isRtl } = useTranslation();
@@ -91,7 +57,7 @@ export const PosFinanceView: React.FC = () => {
     retryCloudSync,
   } = useAtriumStore();
 
-  const [expenses, setExpenses] = useState<PosExpense[]>(INITIAL_POS_EXPENSES);
+  const [expenses, setExpenses] = useState<PosExpense[]>([]);
   const [openingFloat, setOpeningFloat] = useState<number>(15000); // 15,000 DA cash drawer float
   const [actualCashInput, setActualCashInput] = useState<string>('');
   const [isZReportOpen, setIsZReportOpen] = useState(false);

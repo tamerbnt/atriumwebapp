@@ -32,8 +32,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
   const [langMenuOpen, setLangMenuOpen] = useState(false);
 
   const [authMode, setAuthMode] = useState<'password' | 'pin'>('password');
-  const [email, setEmail] = useState('mehdisamih79@gmail.com');
-  const [password, setPassword] = useState('••••••••••••');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [pin, setPin] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -418,10 +418,10 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
 
             <p className="text-center text-[11px] text-neutral-500 font-mono">
               {language === 'ar'
-                ? 'الرموز الافتراضية: 1234 (المالك)، 5566 (المدير)، 9988 (الكاشير)'
+                ? 'أدخل رمز PIN الخاص بحسابك'
                 : language === 'fr'
-                ? 'Codes PIN par défaut : 1234 (Propriétaire), 5566 (Manager), 9988 (Caissier)'
-                : 'Default PINs: 1234 (Owner), 5566 (Manager), 9988 (Cashier)'}
+                ? 'Entrez votre code PIN personnel à 4 chiffres'
+                : 'Enter your personal 4-digit staff PIN'}
             </p>
           </div>
         )}

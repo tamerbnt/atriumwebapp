@@ -1539,18 +1539,6 @@ export const TopBar: React.FC<TopBarProps> = ({
                 onSelect: () => openFastSwitch(),
               },
               {
-                id: 'intro',
-                label: 'ATRIUM Monolith Cinema',
-                description: 'Replay Kinetic Typographic Intro',
-                icon: <Sparkles size={15} />,
-                onSelect: () => {
-                  try {
-                    sessionStorage.removeItem('atrium-intro-seen');
-                  } catch {}
-                  window.dispatchEvent(new CustomEvent('atrium:replayintro'));
-                },
-              },
-              {
                 id: 'wizard',
                 label: language === 'ar' ? 'معالج إعداد النشاط التجاري' : 'Business Onboarding Wizard',
                 description: 'Launch initial setup guide',

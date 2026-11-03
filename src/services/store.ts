@@ -377,46 +377,7 @@ interface AppState {
   notifications: AppNotification[];
 }
 
-export const INITIAL_NOTIFICATIONS: AppNotification[] = [
-  {
-    id: 'notif-alert-stock',
-    title: 'Low Stock Threshold Warning',
-    message: 'Whey Isolate 1kg is down to 3 units in main depot. Restock required.',
-    type: 'warning',
-    category: 'alert',
-    read: false,
-    createdAt: Date.now() - 1000 * 60 * 12,
-    targetScreen: 'shop',
-    action: {
-      label: 'View Inventory',
-      targetScreen: 'shop',
-    },
-  },
-  {
-    id: 'notif-act-sale',
-    title: 'Transaction Settled',
-    message: 'Invoice #INV-2026-004 settled for 380,000 DZD by Algérie Telecom.',
-    type: 'success',
-    category: 'activity',
-    read: false,
-    createdAt: Date.now() - 1000 * 60 * 45,
-    targetScreen: 'finance',
-    action: {
-      label: 'Open Invoices',
-      targetScreen: 'finance',
-    },
-  },
-  {
-    id: 'notif-sys-cloud',
-    title: 'Realtime Cloud Ready',
-    message: 'Hybrid storage active. Workspace synchronized with PostgreSQL database.',
-    type: 'info',
-    category: 'system',
-    read: true,
-    createdAt: Date.now() - 1000 * 60 * 180,
-    targetScreen: 'settings',
-  },
-];
+export const INITIAL_NOTIFICATIONS: AppNotification[] = [];
 
 const DEFAULT_USER: CurrentUser = {
   id: 'stf_01',

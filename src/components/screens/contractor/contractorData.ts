@@ -643,76 +643,76 @@ export const useContractorData = () => {
   const [projects, setProjects] = useState<ContractorProject[]>(() => {
     try {
       const saved = localStorage.getItem('atrium_contractor_projects');
-      return saved ? JSON.parse(saved) : INITIAL_CONTRACTOR_PROJECTS;
+      return saved ? JSON.parse(saved) : [];
     } catch {
-      return INITIAL_CONTRACTOR_PROJECTS;
+      return [];
     }
   });
 
   const [boqItems, setBoqItems] = useState<ContractorBoqItem[]>(() => {
     try {
       const saved = localStorage.getItem('atrium_contractor_boq');
-      return saved ? JSON.parse(saved) : INITIAL_CONTRACTOR_BOQ_ITEMS;
+      return saved ? JSON.parse(saved) : [];
     } catch {
-      return INITIAL_CONTRACTOR_BOQ_ITEMS;
+      return [];
     }
   });
 
   const [dailyLogs, setDailyLogs] = useState<ContractorDailyLog[]>(() => {
     try {
       const saved = localStorage.getItem('atrium_contractor_logs');
-      return saved ? JSON.parse(saved) : INITIAL_CONTRACTOR_DAILY_LOGS;
+      return saved ? JSON.parse(saved) : [];
     } catch {
-      return INITIAL_CONTRACTOR_DAILY_LOGS;
+      return [];
     }
   });
 
   const [dgps, setDgps] = useState<ContractorDgp[]>(() => {
     try {
       const saved = localStorage.getItem('atrium_contractor_dgps');
-      return saved ? JSON.parse(saved) : INITIAL_CONTRACTOR_DGPS;
+      return saved ? JSON.parse(saved) : [];
     } catch {
-      return INITIAL_CONTRACTOR_DGPS;
+      return [];
     }
   });
 
   const [serviceOrders, setServiceOrders] = useState<ContractorServiceOrder[]>(() => {
     try {
       const saved = localStorage.getItem('atrium_contractor_os');
-      return saved ? JSON.parse(saved) : INITIAL_SERVICE_ORDERS;
+      return saved ? JSON.parse(saved) : [];
     } catch {
-      return INITIAL_SERVICE_ORDERS;
+      return [];
     }
   });
 
   const [concretePours, setConcretePours] = useState<ConcretePourRecord[]>(() => {
     try {
       const saved = localStorage.getItem('atrium_contractor_concrete');
-      return saved ? JSON.parse(saved) : INITIAL_CONCRETE_POURS;
+      return saved ? JSON.parse(saved) : [];
     } catch {
-      return INITIAL_CONCRETE_POURS;
+      return [];
     }
   });
 
   const [subcontractors, setSubcontractors] = useState<SubcontractorAgreement[]>(() => {
     try {
       const saved = localStorage.getItem('atrium_contractor_subcontractors');
-      return saved ? JSON.parse(saved) : INITIAL_SUBCONTRACTORS;
+      return saved ? JSON.parse(saved) : [];
     } catch {
-      return INITIAL_SUBCONTRACTORS;
+      return [];
     }
   });
 
   const [equipmentLogs, setEquipmentLogs] = useState<EquipmentLogRecord[]>(() => {
     try {
       const saved = localStorage.getItem('atrium_contractor_equipment');
-      return saved ? JSON.parse(saved) : INITIAL_EQUIPMENT_LOGS;
+      return saved ? JSON.parse(saved) : [];
     } catch {
-      return INITIAL_EQUIPMENT_LOGS;
+      return [];
     }
   });
 
-  const [selectedProjectId, setSelectedProjectId] = useState<string>('proj_btp_01');
+  const [selectedProjectId, setSelectedProjectId] = useState<string>('');
 
   useEffect(() => {
     try {
@@ -815,23 +815,23 @@ export const useContractorData = () => {
   }, [equipmentLogs]);
 
   const resetContractorDemoData = () => {
-    setProjects(INITIAL_CONTRACTOR_PROJECTS);
-    setBoqItems(INITIAL_CONTRACTOR_BOQ_ITEMS);
-    setDailyLogs(INITIAL_CONTRACTOR_DAILY_LOGS);
-    setDgps(INITIAL_CONTRACTOR_DGPS);
-    setServiceOrders(INITIAL_SERVICE_ORDERS);
-    setConcretePours(INITIAL_CONCRETE_POURS);
-    setSubcontractors(INITIAL_SUBCONTRACTORS);
-    setEquipmentLogs(INITIAL_EQUIPMENT_LOGS);
+    setProjects([]);
+    setBoqItems([]);
+    setDailyLogs([]);
+    setDgps([]);
+    setServiceOrders([]);
+    setConcretePours([]);
+    setSubcontractors([]);
+    setEquipmentLogs([]);
     try {
-      localStorage.setItem('atrium_contractor_projects', JSON.stringify(INITIAL_CONTRACTOR_PROJECTS));
-      localStorage.setItem('atrium_contractor_boq', JSON.stringify(INITIAL_CONTRACTOR_BOQ_ITEMS));
-      localStorage.setItem('atrium_contractor_logs', JSON.stringify(INITIAL_CONTRACTOR_DAILY_LOGS));
-      localStorage.setItem('atrium_contractor_dgps', JSON.stringify(INITIAL_CONTRACTOR_DGPS));
-      localStorage.setItem('atrium_contractor_os', JSON.stringify(INITIAL_SERVICE_ORDERS));
-      localStorage.setItem('atrium_contractor_concrete', JSON.stringify(INITIAL_CONCRETE_POURS));
-      localStorage.setItem('atrium_contractor_subcontractors', JSON.stringify(INITIAL_SUBCONTRACTORS));
-      localStorage.setItem('atrium_contractor_equipment', JSON.stringify(INITIAL_EQUIPMENT_LOGS));
+      localStorage.setItem('atrium_contractor_projects', JSON.stringify([]));
+      localStorage.setItem('atrium_contractor_boq', JSON.stringify([]));
+      localStorage.setItem('atrium_contractor_logs', JSON.stringify([]));
+      localStorage.setItem('atrium_contractor_dgps', JSON.stringify([]));
+      localStorage.setItem('atrium_contractor_os', JSON.stringify([]));
+      localStorage.setItem('atrium_contractor_concrete', JSON.stringify([]));
+      localStorage.setItem('atrium_contractor_subcontractors', JSON.stringify([]));
+      localStorage.setItem('atrium_contractor_equipment', JSON.stringify([]));
     } catch {}
   };
 

@@ -1177,16 +1177,6 @@ export const PosRegisterView: React.FC<PosRegisterViewProps> = ({ initialTab = '
               )}
             </div>
 
-            {/* Quick Demo Recharge */}
-            <button
-              type="button"
-              onClick={() => seedDemoInventory()}
-              className="h-10 px-3.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 hover:bg-neutral-50 text-xs font-bold text-neutral-700 dark:text-neutral-200 flex items-center gap-1.5 cursor-pointer shadow-2xs"
-            >
-              <Sparkles size={14} className="text-[#C4785A]" />
-              <span>{language === 'ar' ? 'شحن العينة' : 'Démo Recharge'}</span>
-            </button>
-
             {/* Sound Toggle */}
             <button
               type="button"
@@ -1439,7 +1429,7 @@ export const PosRegisterView: React.FC<PosRegisterViewProps> = ({ initialTab = '
               ))}
             </div>
 
-            {/* Empty Branch notice with 1-click Demo Seed */}
+            {/* Empty Branch notice */}
             {products.length === 0 && (
               <div className="p-8 rounded-3xl bg-neutral-50 dark:bg-neutral-900 border border-dashed border-neutral-300 dark:border-neutral-700 text-center space-y-3">
                 <Package size={36} className="text-[#C4785A] mx-auto opacity-70" />
@@ -1449,14 +1439,6 @@ export const PosRegisterView: React.FC<PosRegisterViewProps> = ({ initialTab = '
                 <p className="text-xs text-neutral-500 max-w-md mx-auto">
                   {t('shop_empty_inventory_desc')}
                 </p>
-                <button
-                  type="button"
-                  onClick={() => seedDemoInventory(currentBranch.id)}
-                  className="px-5 py-2.5 rounded-full bg-[#C4785A] text-white text-xs font-bold hover:opacity-90 cursor-pointer shadow-xs inline-flex items-center gap-2"
-                >
-                  <Sparkles size={14} />
-                  <span>{t('shop_seed_catalog_btn')}</span>
-                </button>
               </div>
             )}
 
