@@ -67,11 +67,11 @@ export const TradingDashboardView: React.FC = () => {
   }, [commercialDocs, todayStr]);
 
   const todayGross = useMemo(() => {
-    return todayDocs.reduce((sum, d) => sum + (d.totalAmount || 0), 0) || 680000;
+    return todayDocs.reduce((sum, d) => sum + (d.totalTtc || d.netToPay || 0), 0) || 680000;
   }, [todayDocs]);
 
   const pendingShipments = useMemo(() => {
-    return (commercialDocs || []).filter((d) => d.status === 'confirmed' || d.status === 'pending_validation').length || 4;
+    return (commercialDocs || []).filter((d) => d.status === 'Validated' || d.status === 'Draft').length || 4;
   }, [commercialDocs]);
 
   const dailyTarget = 1500000;

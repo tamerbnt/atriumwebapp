@@ -78,23 +78,23 @@ export const AppointmentDashboardView: React.FC<AppointmentDashboardViewProps> =
   }, [appointments, todayStr]);
 
   const activeInChair = useMemo(
-    () => todayAppointments.filter((a) => a.status === 'in_chair').length,
+    () => todayAppointments.filter((a) => a.status === 'InChair').length,
     [todayAppointments]
   );
   const pendingOrScheduled = useMemo(
-    () => todayAppointments.filter((a) => a.status === 'scheduled' || a.status === 'confirmed').length,
+    () => todayAppointments.filter((a) => a.status === 'Booked' || a.status === 'Confirmed').length,
     [todayAppointments]
   );
   const completedToday = useMemo(
-    () => todayAppointments.filter((a) => a.status === 'completed').length,
+    () => todayAppointments.filter((a) => a.status === 'Completed').length,
     [todayAppointments]
   );
 
   // Revenue computations
   const todayRevenue = useMemo(() => {
     return todayAppointments
-      .filter((a) => a.status === 'completed' || a.status === 'in_chair')
-      .reduce((sum, a) => sum + (a.totalAmount || a.price || 0), 0);
+      .filter((a) => a.status === 'Completed' || a.status === 'InChair')
+      .reduce((sum, a) => sum + (a.price || 0), 0);
   }, [todayAppointments]);
 
   const dailyTarget = 35000;
@@ -104,7 +104,7 @@ export const AppointmentDashboardView: React.FC<AppointmentDashboardViewProps> =
   const hourlyData = useMemo(() => {
     const counts = [0, 0, 0, 0, 0]; // 00:00, 05:00, 10:00, 15:00, 20:00
     todayAppointments.forEach((apt) => {
-      const h = parseInt(apt.time?.split(':')[0] || '12', 10);
+      const h = parseInt((apt.startTime || '').split(':')[0] || '12', 10);
       if (h < 8) counts[0]++;
       else if (h < 11) counts[1]++;
       else if (h < 15) counts[2]++;
@@ -124,7 +124,7 @@ export const AppointmentDashboardView: React.FC<AppointmentDashboardViewProps> =
 
   const vipClients = useMemo(() => Math.max(1, Math.floor(totalClients * 0.25)), [totalClients]);
   const noShowOrLapsed = useMemo(
-    () => (appointments || []).filter((a) => a.status === 'no_show' || a.status === 'cancelled').length,
+    () => (appointments || []).filter((a) => a.status === 'NoShow' || a.status === 'Cancelled').length,
     [appointments]
   );
 

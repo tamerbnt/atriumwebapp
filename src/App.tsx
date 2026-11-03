@@ -158,6 +158,10 @@ export default function App() {
     closeOnboarding,
     closeFastSwitch,
     closeDesktopUpgradeModal,
+    activeGarageRole,
+    activeLegalRole,
+    activeLogisticsRole,
+    activeContractorRole,
     activeRealEstateRole,
     activeManufacturingRole,
     activeAgriRole,
@@ -540,6 +544,32 @@ export default function App() {
       if (activeScreen === 'settings') {
         return <SettingsScreen onOpenVoucherModal={() => setIsVoucherModalOpen(true)} />;
       }
+      if (activeGarageRole === 'mecanicien') {
+        switch (activeScreen) {
+          case 'dashboard':
+          case 'scheduler':
+          case 'registrations':
+            return <AutoGarageOrdersView />;
+          case 'members':
+            return <AutoGarageVehiclesView />;
+          case 'shop':
+            return <AutoGaragePartsView />;
+          default:
+            return <AutoGarageOrdersView />;
+        }
+      }
+      if (activeGarageRole === 'magasinier') {
+        switch (activeScreen) {
+          case 'dashboard':
+          case 'shop':
+            return <AutoGaragePartsView />;
+          case 'scheduler':
+          case 'registrations':
+            return <AutoGarageOrdersView />;
+          default:
+            return <AutoGaragePartsView />;
+        }
+      }
       switch (activeScreen) {
         case 'dashboard':
           return <AutoGarageDashboardView />;
@@ -687,6 +717,19 @@ export default function App() {
       if (activeScreen === 'settings') {
         return <SettingsScreen onOpenVoucherModal={() => setIsVoucherModalOpen(true)} />;
       }
+      if (activeLegalRole === 'secretaire_caisse') {
+        switch (activeScreen) {
+          case 'dashboard':
+          case 'finance':
+            return <LegalTrustView />;
+          case 'members':
+            return <LegalMattersView />;
+          case 'scheduler':
+            return <LegalHearingsView />;
+          default:
+            return <LegalTrustView />;
+        }
+      }
       switch (activeScreen) {
         case 'dashboard':
           return <LegalDashboardView />;
@@ -707,6 +750,21 @@ export default function App() {
       if (activeScreen === 'settings') {
         return <SettingsScreen onOpenVoucherModal={() => setIsVoucherModalOpen(true)} />;
       }
+      if (activeLogisticsRole === 'hub_sorter' || activeLogisticsRole === 'stop_desk_agent') {
+        switch (activeScreen) {
+          case 'dashboard':
+          case 'registrations':
+            return <LogisticsScannerView />;
+          case 'members':
+            return <LogisticsShipmentsView />;
+          case 'scheduler':
+            return <LogisticsManifestsView />;
+          case 'finance':
+            return <LogisticsCodView />;
+          default:
+            return <LogisticsScannerView />;
+        }
+      }
       switch (activeScreen) {
         case 'dashboard':
           return <LogisticsDashboardView />;
@@ -726,6 +784,22 @@ export default function App() {
     if (currentBusiness?.category === 'construction_contractor') {
       if (activeScreen === 'settings') {
         return <SettingsScreen onOpenVoucherModal={() => setIsVoucherModalOpen(true)} />;
+      }
+      if (activeContractorRole === 'chef_chantier') {
+        switch (activeScreen) {
+          case 'dashboard':
+          case 'scheduler':
+            return <ContractorDailyLogsView />;
+          case 'members':
+          case 'registrations':
+            return <ContractorSitesView />;
+          case 'shop':
+            return <ContractorBoqView />;
+          case 'finance':
+            return <ContractorBillingView />;
+          default:
+            return <ContractorDailyLogsView />;
+        }
       }
       switch (activeScreen) {
         case 'dashboard':

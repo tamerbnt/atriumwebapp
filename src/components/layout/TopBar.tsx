@@ -41,6 +41,7 @@ import { useTranslation } from '../../utils/useTranslation';
 import { BackendDiagnosticPanel } from '../BackendDiagnosticPanel';
 import { NotificationDropdown } from './NotificationDropdown';
 import { PinVerificationModal } from '../modals/PinVerificationModal';
+import { LiveButton, LiveIconButton, LiveDropdownMenu, LiveSwitch } from '../ui/live';
 
 interface TopBarProps {
   onOpenVoucherModal: () => void;
@@ -1455,22 +1456,25 @@ export const TopBar: React.FC<TopBarProps> = ({
           />
         )}
 
-        {/* Sun / Moon Theme Capsule */}
-        <button
-          type="button"
-          onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
-          className="h-8 px-2.5 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center gap-2 cursor-pointer hover:bg-neutral-200/70 dark:hover:bg-neutral-700/80 transition-colors"
+        {/* Sun / Moon Theme Liquid Switch */}
+        <div
+          className="flex items-center gap-1.5 px-2 py-1 rounded-[6px] bg-neutral-100 dark:bg-neutral-800/80 border border-neutral-200/50 dark:border-neutral-700/50"
           title={`Switch to ${theme === 'light' ? 'Dark' : 'Light'} Mode`}
         >
           <Sun
-            size={14}
+            size={13}
             className={`${theme === 'light' ? 'text-amber-500 font-bold' : 'text-neutral-400'}`}
           />
-          <Moon
-            size={14}
-            className={`${theme === 'dark' ? 'text-blue-400 font-bold' : 'text-neutral-400'}`}
+          <LiveSwitch
+            checked={theme === 'dark'}
+            onCheckedChange={(checked) => setTheme(checked ? 'dark' : 'light')}
+            aria-label="Toggle dark mode"
           />
-        </button>
+          <Moon
+            size={13}
+            className={`${theme === 'dark' ? 'text-amber-300 font-bold' : 'text-neutral-400'}`}
+          />
+        </div>
 
         {/* Focus Mode / Collapse Header Button */}
         <button
@@ -1599,42 +1603,37 @@ export const TopBar: React.FC<TopBarProps> = ({
         </div>
 
         {/* Sync / Refresh Button */}
-        <button
-          type="button"
+        <LiveIconButton
+          icon={<RotateCw size={14} className={isSyncing ? 'animate-spin' : ''} />}
+          kick="spin"
+          tone="soft"
           onClick={() => syncWithSupabase()}
-          title={isSupabaseConfigured ? (language === 'ar' ? 'مزامنة مع سحابة سوبابيس' : language === 'fr' ? 'Synchroniser avec Supabase Cloud' : 'Sync with Supabase Cloud') : (language === 'ar' ? 'تحديث الحالة' : language === 'fr' ? 'Actualiser l\'état' : 'Refresh State')}
-          className={`w-8 h-8 rounded-full flex items-center justify-center text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer ${
-            isSyncing ? 'animate-spin text-[#C4785A]' : ''
-          }`}
-        >
-          <RotateCw size={14} />
-        </button>
-
+          title={
+            isSupabaseConfigured
+              ? language === 'ar'
+                ? 'مزامنة مع سحابة سوبابيس'
+                : language === 'fr'
+                ? 'Synchroniser avec Supabase Cloud'
+                : 'Sync with Supabase Cloud'
+              : language === 'ar'
+              ? 'تحديث الحالة'
+              : language === 'fr'
+              ? "Actualiser l'état"
+              : 'Refresh State'
+          }
+          aria-label="Refresh and sync"
+        />
 
         {/* TopBar Notification Bell & Center Trigger */}
         <div ref={notificationMenuRef} className="relative">
-          <button
-            type="button"
+          <LiveIconButton
+            icon={<Bell size={14} />}
+            badge={unreadNotificationCount}
+            tone={notificationsOpen ? 'accent' : 'soft'}
             onClick={toggleNotifications}
             title={language === 'ar' ? 'مركز الإشعارات والتنبيهات' : language === 'fr' ? 'Centre de notifications' : 'Notifications & Alerts'}
-            className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors cursor-pointer relative ${
-              notificationsOpen
-                ? 'bg-[#C4785A] text-white shadow-xs'
-                : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800'
-            }`}
             aria-label="Open notifications menu"
-          >
-            <Bell size={14} />
-            {unreadNotificationCount > 0 && (
-              <span
-                className={`absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full text-[9px] font-bold flex items-center justify-center border-2 border-white dark:border-[#18181B] ${
-                  notificationsOpen ? 'bg-white text-[#C4785A]' : 'bg-[#C4785A] text-white'
-                }`}
-              >
-                {unreadNotificationCount > 9 ? '9+' : unreadNotificationCount}
-              </span>
-            )}
-          </button>
+          />
 
           <NotificationDropdown
             isOpen={notificationsOpen}
@@ -1643,129 +1642,86 @@ export const TopBar: React.FC<TopBarProps> = ({
         </div>
 
         {/* User Identity Menu Button */}
-        <div ref={userMenuRef} className="relative">
-          <div
-            onClick={toggleUserMenu}
-            className="flex items-center gap-2.5 pl-2 cursor-pointer group"
-            title={`Operator: ${currentUser.fullName} (${currentUser.role})`}
-          >
-            <div className="text-right leading-tight hidden sm:block">
-              <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200 block group-hover:text-[#C4785A] transition-colors">
-                {currentUser.fullName.split(' ')[0]}
-              </span>
-              <span className="text-[10px] text-neutral-400 block -mt-0.5">{currentUser.role}</span>
-            </div>
-            <div className="w-8 h-8 rounded-full bg-[#C4785A] text-white flex items-center justify-center font-bold text-xs shadow-xs">
-              {currentUser.fullName.charAt(0)}
-            </div>
-          </div>
-
-          {/* User Profile Dropdown Menu */}
-          {userMenuOpen && (
-            <div className="absolute right-0 rtl:right-auto rtl:left-0 mt-2 w-64 rounded-2xl bg-white dark:bg-[#1E1B19] border border-neutral-200 dark:border-neutral-700 shadow-2xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
-              <div className="px-4 py-2 border-b border-neutral-100 dark:border-neutral-800">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-xs font-bold text-neutral-900 dark:text-white">
-                    {currentUser.fullName}
-                  </span>
-                  <span className="text-[9px] font-bold text-[#C4785A] bg-[#C4785A]/15 px-1.5 py-0.5 rounded-full uppercase">
-                    {currentUser.role}
-                  </span>
+        <LiveDropdownMenu
+          aria-label="Account"
+          placement="bottom-end"
+          header={
+            <>
+              <b>{currentUser.fullName}</b>
+              <small>{currentUser.email}</small>
+            </>
+          }
+          items={[
+            {
+              id: 'lock',
+              label: 'Lock Terminal / Switch Staff',
+              icon: <Lock size={14} className="text-[#d4522f]" />,
+              onClick: openFastSwitch,
+            },
+            {
+              id: 'diag',
+              label: language === 'ar' ? 'فحص جاهزية الخادم وCRUD' : language === 'fr' ? 'Diagnostic CRUD & Serveur' : 'Backend & CRUD Diagnostics',
+              description: language === 'ar' ? 'اختبار العمليات الحية عبر كافة الأنشطة' : language === 'fr' ? 'Audit live des métiers' : 'Live CRUD audit across all verticals',
+              icon: <Activity size={14} className="text-emerald-500" />,
+              onClick: () => setIsDiagnosticPanelOpen(true),
+            },
+            {
+              id: 'cinema',
+              label: 'ATRIUM Monolith Cinema',
+              description: 'Replay Kinetic Typographic Intro',
+              icon: <Sparkles size={14} className="text-[#d4522f]" />,
+              onClick: () => {
+                try {
+                  sessionStorage.removeItem('atrium-intro-seen');
+                } catch {}
+                window.dispatchEvent(new CustomEvent('atrium:replayintro'));
+              },
+            },
+            {
+              id: 'wizard',
+              label: 'New Business Onboarding Wizard',
+              icon: <Sparkles size={14} className="text-amber-500" />,
+              onClick: openOnboarding,
+            },
+            {
+              id: 'voucher',
+              label: 'Redeem Lifetime License Voucher',
+              icon: <Rocket size={14} className="text-blue-500" />,
+              onClick: onOpenVoucherModal,
+            },
+            { type: 'separator' },
+            {
+              id: 'logout',
+              label: language === 'ar' ? 'تسجيل الخروج' : language === 'fr' ? 'Déconnexion' : 'Sign Out',
+              icon: <LogOut size={14} />,
+              danger: true,
+              onClick: logout,
+            },
+          ]}
+          trigger={(triggerProps) => (
+            <LiveButton
+              {...triggerProps}
+              tone="soft"
+              trailing={
+                <ChevronDown
+                  size={12}
+                  data-atr-chev=""
+                  className="text-neutral-400 group-hover:text-neutral-600 transition-transform"
+                />
+              }
+              aria-label={`Operator: ${currentUser.fullName} (${currentUser.role})`}
+            >
+              <div className="flex items-center gap-2">
+                <div className="w-5 h-5 rounded-full bg-[#d4522f] text-white flex items-center justify-center font-bold text-[10px]">
+                  {currentUser.fullName.charAt(0)}
                 </div>
-                <span className="text-[11px] text-neutral-400 block truncate">{currentUser.email}</span>
+                <span className="font-semibold text-xs text-neutral-800 dark:text-neutral-200">
+                  {currentUser.fullName.split(' ')[0]}
+                </span>
               </div>
-
-              <div className="py-1">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setUserMenuOpen(false);
-                    openFastSwitch();
-                  }}
-                  className="w-full px-4 py-2 text-left text-xs text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center gap-2.5 cursor-pointer"
-                >
-                  <Lock size={14} className="text-[#C4785A]" />
-                  <span>Lock Terminal / Switch Staff</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setUserMenuOpen(false);
-                    setIsDiagnosticPanelOpen(true);
-                  }}
-                  className="w-full px-4 py-2 text-left text-xs text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center gap-2.5 cursor-pointer"
-                >
-                  <Activity size={14} className="text-emerald-500" />
-                  <div className="flex flex-col">
-                    <span className="font-semibold">
-                      {language === 'ar' ? 'فحص جاهزية الخادم وCRUD' : language === 'fr' ? 'Diagnostic CRUD & Serveur' : 'Backend & CRUD Diagnostics'}
-                    </span>
-                    <span className="text-[10px] text-neutral-400">
-                      {language === 'ar' ? 'اختبار العمليات الحية عبر الـ 7 أنشطة' : language === 'fr' ? 'Audit live des 7 métiers' : 'Live CRUD audit across all 7 verticals'}
-                    </span>
-                  </div>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setUserMenuOpen(false);
-                    try {
-                      sessionStorage.removeItem('atrium-intro-seen');
-                    } catch {}
-                    window.dispatchEvent(new CustomEvent('atrium:replayintro'));
-                  }}
-                  className="w-full px-4 py-2 text-left text-xs text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center gap-2.5 cursor-pointer"
-                >
-                  <Sparkles size={14} className="text-[#C4785A]" />
-                  <div className="flex flex-col">
-                    <span className="font-semibold">ATRIUM Monolith Cinema</span>
-                    <span className="text-[10px] text-neutral-400">Replay Kinetic Typographic Intro</span>
-                  </div>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setUserMenuOpen(false);
-                    openOnboarding();
-                  }}
-                  className="w-full px-4 py-2 text-left text-xs text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center gap-2.5 cursor-pointer"
-                >
-                  <Sparkles size={14} className="text-amber-500" />
-                  <span>New Business Onboarding Wizard</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setUserMenuOpen(false);
-                    onOpenVoucherModal();
-                  }}
-                  className="w-full px-4 py-2 text-left text-xs text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center gap-2.5 cursor-pointer"
-                >
-                  <Rocket size={14} className="text-blue-500" />
-                  <span>Redeem Lifetime License Voucher</span>
-                </button>
-              </div>
-
-              <div className="pt-1 border-t border-neutral-100 dark:border-neutral-800">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setUserMenuOpen(false);
-                    logout();
-                  }}
-                  className="w-full px-4 py-2 text-left text-xs text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 flex items-center gap-2.5 cursor-pointer font-semibold"
-                >
-                  <LogOut size={14} />
-                  <span>Sign Out</span>
-                </button>
-              </div>
-            </div>
+            </LiveButton>
           )}
-        </div>
+        />
       </div>
 
       {/* Agriculture PIN Verification Modal */}

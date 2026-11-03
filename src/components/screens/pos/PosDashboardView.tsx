@@ -71,11 +71,11 @@ export const PosDashboardView: React.FC<PosDashboardViewProps> = ({
 
   // Today's sales
   const todaySales = useMemo(() => {
-    return (sales || []).filter((s) => s.date?.startsWith(todayStr));
+    return (sales || []).filter((s) => s.createdAt?.startsWith(todayStr));
   }, [sales, todayStr]);
 
   const todayGross = useMemo(() => {
-    return todaySales.reduce((sum, s) => sum + (s.total || 0), 0);
+    return todaySales.reduce((sum, s) => sum + (s.totalAmount || 0), 0);
   }, [todaySales]);
 
   const activeTicketsCount = todaySales.length;
@@ -88,7 +88,7 @@ export const PosDashboardView: React.FC<PosDashboardViewProps> = ({
   const hourlyData = useMemo(() => {
     const counts = [0, 0, 0, 0, 0];
     todaySales.forEach((s) => {
-      const h = s.time ? parseInt(s.time.split(':')[0], 10) : 14;
+      const h = s.createdAt ? new Date(s.createdAt).getHours() : 14;
       if (h < 9) counts[0]++;
       else if (h < 12) counts[1]++;
       else if (h < 15) counts[2]++;
@@ -101,13 +101,13 @@ export const PosDashboardView: React.FC<PosDashboardViewProps> = ({
 
   // Total products & low stock items
   const lowStockItems = useMemo(
-    () => (products || []).filter((p) => (p.stock || 0) <= (p.minStock || 5)),
+    () => (products || []).filter((p) => (p.stockQuantity || 0) <= (p.reorderLevel || 5)),
     [products]
   );
 
   // 4-week revenue trend
   const weeklyRevenueTrend = useMemo(() => {
-    const base = sales.reduce((sum, s) => sum + (s.total || 0), 0) || 180000;
+    const base = sales.reduce((sum, s) => sum + (s.totalAmount || 0), 0) || 180000;
     return [
       { week: language === 'ar' ? 'أسبوع 1' : 'week 1', value: Math.round(base * 0.22) },
       { week: language === 'ar' ? 'أسبوع 2' : 'week 2', value: Math.round(base * 0.26) },
@@ -150,7 +150,7 @@ export const PosDashboardView: React.FC<PosDashboardViewProps> = ({
   // Top SKUs
   const topProducts = useMemo(() => {
     const top = [...(products || [])]
-      .sort((a, b) => (b.price || 0) - (a.price || 0))
+      .sort((a, b) => (b.price?.amount || 0) - (a.price?.amount || 0))
       .slice(0, 4);
     if (top.length === 0) {
       return [
@@ -162,7 +162,7 @@ export const PosDashboardView: React.FC<PosDashboardViewProps> = ({
     }
     return top.map((p) => ({
       week: p.name.length > 12 ? p.name.substring(0, 10) + '..' : p.name,
-      value: Math.max(5, Math.round(p.stock || 10)),
+      value: Math.max(5, Math.round(p.stockQuantity || 10)),
     }));
   }, [products]);
 

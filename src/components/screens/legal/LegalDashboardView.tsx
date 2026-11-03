@@ -53,6 +53,7 @@ export const LegalDashboardView: React.FC = () => {
     deadlines,
     escrowAccounts,
     addMatter,
+    addCPCADeadline,
   } = useLegalData();
 
   const { showSkeleton, isTimedOut, isOffline } = useSkeletonLoading({
@@ -69,11 +70,11 @@ export const LegalDashboardView: React.FC = () => {
   const todayStr = useMemo(() => new Date().toISOString().split('T')[0], []);
 
   const todayHearings = useMemo(() => {
-    return (hearings || []).filter((h) => h.date === todayStr);
+    return (hearings || []).filter((h) => h.hearingDate === todayStr);
   }, [hearings, todayStr]);
 
   const activeMatters = (matters || []).filter((m) => m.status === 'Active').length || 28;
-  const criticalDeadlines = (deadlines || []).filter((d) => d.status === 'Pending').length || 3;
+  const criticalDeadlines = (deadlines || []).filter((d) => d.status === 'critical' || d.status === 'approaching').length || 3;
 
   const todayTrustReceipts = 480000;
   const dailyTarget = 600000;
@@ -544,7 +545,8 @@ export const LegalDashboardView: React.FC = () => {
         <CpcaDeadlineModal
           isOpen={isDeadlineModalOpen}
           onClose={() => setIsDeadlineModalOpen(false)}
-          onSave={() => {}}
+          matters={matters || []}
+          onSaveDeadline={addCPCADeadline}
         />
       )}
     </div>

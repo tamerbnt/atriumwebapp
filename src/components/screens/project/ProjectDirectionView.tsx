@@ -489,7 +489,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
             {currentScreen === 'dashboard'
-              ? 'Cockpit & Vue d\'Ensemble'
+              ? t('nav_dashboard', language)
               : currentScreen === 'projects'
               ? 'Portefeuille Projets'
               : currentScreen === 'new_project'
@@ -566,7 +566,7 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
       {/* Navigation Sub-Tabs */}
       <div className="flex border-b border-zinc-200 dark:border-zinc-800 gap-1 overflow-x-auto">
         {[
-          { id: 'dashboard', label: 'Cockpit & Vue d\'Ensemble', icon: TrendingUp },
+          { id: 'dashboard', label: t('nav_dashboard', language), icon: TrendingUp },
           { id: 'projects', label: 'Portefeuille Projets', icon: FolderKanban, count: pmProjects.length },
           { id: 'approvals', label: 'Approbations & Décaissements', icon: ShieldCheck, count: totalPendingApprovals },
           { id: 'reports', label: 'Rapports & Marges', icon: Layers },

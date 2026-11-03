@@ -54,6 +54,8 @@ export const MedicalDashboardView: React.FC = () => {
     consultations,
     practitioners,
     prescriptions,
+    addPatient,
+    addConsultation,
   } = useMedicalData();
 
   const { showSkeleton, isTimedOut, isOffline } = useSkeletonLoading({
@@ -539,18 +541,22 @@ export const MedicalDashboardView: React.FC = () => {
         <MedicalPatientModal
           isOpen={isPatientModalOpen}
           onClose={() => setIsPatientModalOpen(false)}
+          onSave={addPatient}
         />
       )}
       {isConsultationModalOpen && (
         <MedicalConsultationModal
           isOpen={isConsultationModalOpen}
           onClose={() => setIsConsultationModalOpen(false)}
+          onSave={addConsultation}
         />
       )}
       {isTvModalOpen && (
         <MedicalWaitingRoomTvModal
           isOpen={isTvModalOpen}
           onClose={() => setIsTvModalOpen(false)}
+          consultations={consultations || []}
+          practitioners={practitioners || []}
         />
       )}
     </div>

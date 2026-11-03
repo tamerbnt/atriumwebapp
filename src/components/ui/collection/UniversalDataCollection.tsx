@@ -18,6 +18,7 @@ import { SkeletonTable, SkeletonCardGrid } from '../skeleton/StructuralSkeletons
 import { SkeletonText, SkeletonBox } from '../skeleton/SkeletonPrimitives';
 import { OfflineRetryBanner } from '../../common/OfflineRetryBanner';
 import { useAtriumStore } from '../../../services/store';
+import { LiveSegmentedControl, LiveButton } from '../live';
 
 export interface ColumnDefinition<T> {
   key?: string;
@@ -409,46 +410,18 @@ export function UniversalDataCollection<T>({
         <div className="flex items-center justify-between pb-3">
           <div className="flex items-center gap-2">{headerActions}</div>
           {showViewToggle && (
-            <div className="flex items-center bg-neutral-100 dark:bg-neutral-800 p-1 rounded-xl">
-              <button
-                type="button"
-                onClick={() => setViewMode('list')}
-                className={`p-1.5 rounded-lg transition-all ${
-                  viewMode === 'list'
-                    ? 'bg-[#C4785A] text-white shadow-sm'
-                    : 'text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200'
-                }`}
-                title="List View"
-              >
-                <List className="w-4 h-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() => setViewMode('grid')}
-                className={`p-1.5 rounded-lg transition-all ${
-                  viewMode === 'grid'
-                    ? 'bg-[#C4785A] text-white shadow-sm'
-                    : 'text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200'
-                }`}
-                title="Grid View"
-              >
-                <LayoutGrid className="w-4 h-4" />
-              </button>
-              {showCalendarToggle && (
-                <button
-                  type="button"
-                  onClick={() => setViewMode('calendar')}
-                  className={`p-1.5 rounded-lg transition-all ${
-                    viewMode === 'calendar'
-                      ? 'bg-[#C4785A] text-white shadow-sm'
-                      : 'text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200'
-                  }`}
-                  title="Calendar View"
-                >
-                  <Calendar className="w-4 h-4" />
-                </button>
-              )}
-            </div>
+            <LiveSegmentedControl
+              options={[
+                { value: 'list', icon: <List className="w-3.5 h-3.5" />, 'aria-label': 'List View' },
+                { value: 'grid', icon: <LayoutGrid className="w-3.5 h-3.5" />, 'aria-label': 'Grid View' },
+                ...(showCalendarToggle
+                  ? [{ value: 'calendar', icon: <Calendar className="w-3.5 h-3.5" />, 'aria-label': 'Calendar View' }]
+                  : []),
+              ]}
+              value={viewMode}
+              onValueChange={(val) => setViewMode(val as any)}
+              aria-label="View Mode"
+            />
           )}
         </div>
 
@@ -522,46 +495,18 @@ export function UniversalDataCollection<T>({
           )}
 
           {showViewToggle && (
-            <div className="flex items-center bg-neutral-100 dark:bg-neutral-800/80 p-0.5 rounded-xl border border-neutral-200/50 dark:border-neutral-700/50">
-              <button
-                type="button"
-                onClick={() => setViewMode('list')}
-                className={`p-1.5 rounded-lg transition-all cursor-pointer ${
-                  viewMode === 'list'
-                    ? 'bg-[#C4785A] text-white shadow-sm'
-                    : 'text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200'
-                }`}
-                title="List View"
-              >
-                <List className="w-4 h-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() => setViewMode('grid')}
-                className={`p-1.5 rounded-lg transition-all cursor-pointer ${
-                  viewMode === 'grid'
-                    ? 'bg-[#C4785A] text-white shadow-sm'
-                    : 'text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200'
-                }`}
-                title="Grid View"
-              >
-                <LayoutGrid className="w-4 h-4" />
-              </button>
-              {showCalendarToggle && (
-                <button
-                  type="button"
-                  onClick={() => setViewMode('calendar')}
-                  className={`p-1.5 rounded-lg transition-all cursor-pointer ${
-                    viewMode === 'calendar'
-                      ? 'bg-[#C4785A] text-white shadow-sm'
-                      : 'text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200'
-                  }`}
-                  title="Calendar / Schedule View"
-                >
-                  <Calendar className="w-4 h-4" />
-                </button>
-              )}
-            </div>
+            <LiveSegmentedControl
+              options={[
+                { value: 'list', icon: <List className="w-3.5 h-3.5" />, 'aria-label': 'List View' },
+                { value: 'grid', icon: <LayoutGrid className="w-3.5 h-3.5" />, 'aria-label': 'Grid View' },
+                ...(showCalendarToggle
+                  ? [{ value: 'calendar', icon: <Calendar className="w-3.5 h-3.5" />, 'aria-label': 'Calendar View' }]
+                  : []),
+              ]}
+              value={viewMode}
+              onValueChange={(val) => setViewMode(val as any)}
+              aria-label="View Mode"
+            />
           )}
         </div>
       </div>

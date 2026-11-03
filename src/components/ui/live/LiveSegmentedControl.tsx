@@ -1,0 +1,191 @@
+import React, { forwardRef, useRef, useState, useEffect, useImperativeHandle } from 'react';
+import { SegmentedBlobController } from '../../../utils/atriumSprings';
+import { LiveButtonSize } from './LiveButton';
+
+export interface SegmentedOption {
+  value: string;
+  label?: React.ReactNode;
+  icon?: React.ReactNode;
+  disabled?: boolean;
+  'aria-label'?: string;
+}
+
+export interface LiveSegmentedControlProps {
+  options: SegmentedOption[];
+  value?: string;
+  defaultValue?: string;
+  onValueChange?: (val: string) => void;
+  size?: LiveButtonSize;
+  className?: string;
+  style?: React.CSSProperties;
+  'aria-label'?: string;
+}
+
+const classes = {
+  root: 'd',
+  blob: 's',
+  option: 'e',
+  iconOnly: 'z',
+};
+
+function getSizeProps(size?: LiveButtonSize, style?: React.CSSProperties) {
+  if (size === undefined) return { style };
+  if (typeof size === 'number') {
+    return {
+      style: {
+        ...style,
+        '--atr-h': `${size}px`,
+      } as React.CSSProperties,
+    };
+  }
+  return {
+    'data-atr-size': size,
+    style,
+  };
+}
+
+export const LiveSegmentedControl = forwardRef<HTMLDivElement, LiveSegmentedControlProps>(
+  function LiveSegmentedControl(
+    {
+      options,
+      value: controlledValue,
+      defaultValue,
+      onValueChange,
+      size,
+      className = '',
+      style,
+      'aria-label': ariaLabel,
+    },
+    ref
+  ) {
+    const isControlled = controlledValue !== undefined;
+    const firstEnabled = options.find((o) => !o.disabled)?.value ?? options[0]?.value;
+    const [internalValue, setInternalValue] = useState<string>(
+      defaultValue !== undefined ? defaultValue : firstEnabled
+    );
+    const currentValue = isControlled ? controlledValue : internalValue;
+
+    const selectedIndex = Math.max(
+      0,
+      options.findIndex((o) => o.value === currentValue)
+    );
+
+    const rootRef = useRef<HTMLDivElement>(null);
+    const blobRef = useRef<HTMLDivElement>(null);
+    const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
+    const controllerRef = useRef<SegmentedBlobController | null>(null);
+    const indexRef = useRef(selectedIndex);
+    indexRef.current = selectedIndex;
+
+    useImperativeHandle(ref, () => rootRef.current as HTMLDivElement);
+
+    const handleSelect = (val: string) => {
+      if (!isControlled) {
+        setInternalValue(val);
+      }
+      onValueChange?.(val);
+    };
+
+    // Initialize controller and resize observer
+    useEffect(() => {
+      const root = rootRef.current;
+      const blob = blobRef.current;
+      if (!root || !blob) return;
+
+      const items = itemRefs.current.slice(0, options.length).filter(Boolean) as HTMLButtonElement[];
+      const controller = new SegmentedBlobController(root, blob, items);
+      controllerRef.current = controller;
+
+      const refresh = () => {
+        controller.measure();
+        controller.setIndex(indexRef.current, false);
+      };
+
+      refresh();
+      root.setAttribute('data-live', 'true');
+
+      let ro: ResizeObserver | undefined;
+      if (typeof ResizeObserver !== 'undefined') {
+        ro = new ResizeObserver(refresh);
+        ro.observe(root);
+      }
+
+      let active = true;
+      if (typeof document !== 'undefined' && document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(() => {
+          if (active) refresh();
+        });
+      }
+
+      return () => {
+        active = false;
+        ro?.disconnect();
+        controller.dispose();
+        controllerRef.current = null;
+        root.removeAttribute('data-live');
+      };
+    }, [options.length]);
+
+    // Animate blob when index changes
+    useEffect(() => {
+      controllerRef.current?.setIndex(selectedIndex, true);
+    }, [selectedIndex]);
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+        e.preventDefault();
+        const dir = e.key === 'ArrowRight' ? 1 : -1;
+        const total = options.length;
+        let next = selectedIndex + dir;
+        while (next >= 0 && next < total && options[next].disabled) {
+          next += dir;
+        }
+        if (next >= 0 && next < total) {
+          const nextOpt = options[next];
+          handleSelect(nextOpt.value);
+          itemRefs.current[next]?.focus();
+        }
+      }
+    };
+
+    const sizeProps = getSizeProps(size, style);
+
+    return (
+      <div
+        ref={rootRef}
+        role="radiogroup"
+        aria-label={ariaLabel}
+        className={[classes.root, className].filter(Boolean).join(' ')}
+        onKeyDown={handleKeyDown}
+        {...sizeProps}
+      >
+        <div ref={blobRef} className={classes.blob} aria-hidden="true" />
+        {options.map((opt, idx) => {
+          const isChecked = opt.value === currentValue;
+          const isIconOnly = opt.icon && !opt.label;
+          return (
+            <button
+              key={opt.value}
+              ref={(el) => {
+                itemRefs.current[idx] = el;
+              }}
+              type="button"
+              role="radio"
+              aria-checked={isChecked}
+              aria-label={opt['aria-label'] || (typeof opt.label === 'string' ? opt.label : undefined)}
+              disabled={opt.disabled}
+              className={[classes.option, isIconOnly ? classes.iconOnly : ''].filter(Boolean).join(' ')}
+              tabIndex={isChecked ? 0 : -1}
+              onClick={() => handleSelect(opt.value)}
+            >
+              {opt.icon}
+              {opt.label && <span>{opt.label}</span>}
+            </button>
+          );
+        })}
+      </div>
+    );
+  }
+);
+
+LiveSegmentedControl.displayName = 'LiveSegmentedControl';
