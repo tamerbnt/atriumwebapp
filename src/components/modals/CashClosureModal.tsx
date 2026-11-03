@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../services/store';
 import { Modal } from '../ui/Modal';
-import { AtriumButton } from '../ui/AtriumButton';
+import { Button, LiquidButton } from '@/atrium';
 import { LabelInput } from '../ui/LabelInput';
 import { formatMoney } from '../../utils/rules';
 import { DailyCashClosure, CashReceipt } from '../../types';
@@ -213,12 +213,16 @@ export const CashClosureModal: React.FC<CashClosureModalProps> = ({
         />
 
         <div className="flex justify-end gap-2 pt-2 border-t border-neutral-200 dark:border-neutral-800">
-          <AtriumButton variant="secondary" onClick={onClose} type="button">
+          <Button tone="soft" onClick={onClose} type="button">
             {isAr ? 'إلغاء' : 'Annuler'}
-          </AtriumButton>
-          <AtriumButton variant="primary" type="submit" icon={<CheckCircle2 size={15} />}>
-            {isAr ? 'تأكيد وإقفال الصندوق' : 'Valider & Clôturer la Caisse'}
-          </AtriumButton>
+          </Button>
+          <LiquidButton
+            kind="confirm"
+            type="submit"
+            labels={{
+              idle: isAr ? 'تأكيد وإقفال الصندوق' : 'Valider & Clôturer la Caisse',
+            }}
+          />
         </div>
       </form>
     </Modal>

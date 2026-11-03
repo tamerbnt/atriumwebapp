@@ -426,42 +426,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
           </div>
         )}
 
-        {/* Demo Fast Login Pills */}
-        <div className="mt-6 pt-5 border-t border-neutral-800/80">
-          <div className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 mb-2.5 flex items-center justify-between">
-            <span>{language === 'ar' ? 'دخول تجريبي سريع' : language === 'fr' ? 'Connexion démo rapide' : 'Fast Demo Sign-In'}</span>
-            <span className="text-[9px] text-[#C4785A]">{language === 'ar' ? 'اضغط للتجربة' : language === 'fr' ? 'Cliquer pour tester' : 'Click to test'}</span>
-          </div>
-          <div className="grid grid-cols-3 gap-2 text-left">
-            <button
-              type="button"
-              onClick={() => quickFillStaff('bentouatitamer@gmail.com', '1234')}
-              className="p-2 rounded-xl bg-neutral-900/90 border border-neutral-800 hover:border-[#C4785A]/50 transition-colors cursor-pointer group"
-            >
-              <div className="text-xs font-bold text-white group-hover:text-[#C4785A]">Tamer</div>
-              <div className="text-[10px] text-neutral-400">{language === 'ar' ? 'المالك (1234)' : language === 'fr' ? 'Propriétaire (1234)' : 'Owner (1234)'}</div>
-            </button>
-            <button
-              type="button"
-              onClick={() => quickFillStaff('samir.manager@atrium.dz', '5566')}
-              className="p-2 rounded-xl bg-neutral-900/90 border border-neutral-800 hover:border-[#C4785A]/50 transition-colors cursor-pointer group"
-            >
-              <div className="text-xs font-bold text-white group-hover:text-[#C4785A]">Samir</div>
-              <div className="text-[10px] text-neutral-400">{language === 'ar' ? 'المدير (5566)' : language === 'fr' ? 'Manager (5566)' : 'Manager (5566)'}</div>
-            </button>
-            <button
-              type="button"
-              onClick={() => quickFillStaff('meriem.cashier@atrium.dz', '9988')}
-              className="p-2 rounded-xl bg-neutral-900/90 border border-neutral-800 hover:border-[#C4785A]/50 transition-colors cursor-pointer group"
-            >
-              <div className="text-xs font-bold text-white group-hover:text-[#C4785A]">Meriem</div>
-              <div className="text-[10px] text-neutral-400">{language === 'ar' ? 'الكاشير (9988)' : language === 'fr' ? 'Caissier (9988)' : 'Cashier (9988)'}</div>
-            </button>
-          </div>
-        </div>
-
         {/* Onboarding Link Section (Section 11.2) */}
-        <div className="mt-6 text-center pt-3">
+        <div className="mt-6 text-center pt-3 border-t border-neutral-800/80">
           <p className="text-xs text-neutral-400">
             {language === 'ar'
               ? 'هل تؤسس نشاطاً تجارياً أو فرعاً جديداً؟'
@@ -496,10 +462,10 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onStartOnboarding }) =
             </p>
             <div className="p-3 rounded-xl bg-neutral-900 border border-neutral-800 text-xs text-neutral-400">
               {language === 'ar'
-                ? <>تلميح: استخدم بيانات الدخول التجريبية أو رمز PIN المكون من 4 أرقام (<span className="text-[#C4785A] font-bold">1234</span> للمالك).</>
+                ? <>تلميح: سجّل الدخول باستخدام عنوان بريدك الإلكتروني المعتمد أو رمز PIN المكون من 4 أرقام.</>
                 : language === 'fr'
-                ? <>Astuce : Utilisez les identifiants de démo ou votre code PIN à 4 chiffres (<span className="text-[#C4785A] font-bold">1234</span> pour le Propriétaire).</>
-                : <>Recovery hint: Use default demo credentials or sign in with your 4-digit PIN (<span className="text-[#C4785A] font-bold">1234</span> for Owner).</>}
+                ? <>Astuce : Connectez-vous avec votre adresse email enregistrée ou votre code PIN personnel à 4 chiffres.</>
+                : <>Recovery hint: Sign in with your registered account email or your 4-digit PIN.</>}
             </div>
             <button
               type="button"

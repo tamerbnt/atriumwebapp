@@ -211,7 +211,6 @@ export const AppointmentDashboardView: React.FC<AppointmentDashboardViewProps> =
         currentBranchName={currentBranch?.name || 'Salon Atrium'}
         branches={branches}
         onSwitchBranch={switchBranch}
-        onResetDemoData={resetSalonMockData}
         exportFileName="salon_dashboard_report"
       />
 

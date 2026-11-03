@@ -1,7 +1,6 @@
 import React, { forwardRef } from 'react';
-import { LiveButton, LiveButtonTone, LiveButtonSize } from './LiveButton';
-import { LiveBadge, liveBadgeClasses } from './LiveBadge';
-import { spinIcon } from '../../../utils/atriumSprings';
+import { IconButton as AtriumIconButton } from '@/atrium';
+import type { LiveButtonTone, LiveButtonSize } from './LiveButton';
 
 export interface LiveIconButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'size'> {
   icon: React.ReactNode;
@@ -9,22 +8,7 @@ export interface LiveIconButtonProps extends Omit<React.ButtonHTMLAttributes<HTM
   kick?: 'spin' | 'none';
   tone?: LiveButtonTone;
   size?: LiveButtonSize;
-}
-
-function getSizeProps(size?: LiveButtonSize, style?: React.CSSProperties) {
-  if (size === undefined) return { style };
-  if (typeof size === 'number') {
-    return {
-      style: {
-        ...style,
-        '--atr-h': `${size}px`,
-      } as React.CSSProperties,
-    };
-  }
-  return {
-    'data-atr-size': size,
-    style,
-  };
+  'aria-label'?: string;
 }
 
 export const LiveIconButton = forwardRef<HTMLButtonElement, LiveIconButtonProps>(
@@ -38,52 +22,28 @@ export const LiveIconButton = forwardRef<HTMLButtonElement, LiveIconButtonProps>
       tone = 'soft',
       onClick,
       className = '',
+      'aria-label': ariaLabel,
+      title,
       ...props
     },
     ref
   ) {
-    const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-      onClick?.(e);
-      if (kick === 'spin' && !e.defaultPrevented) {
-        const svg = e.currentTarget.querySelector('svg');
-        if (svg) {
-          spinIcon(svg as SVGElement);
-        }
-      }
-    };
-
-    if (badge === undefined || badge === null) {
-      return (
-        <LiveButton
-          ref={ref}
-          iconOnly
-          tone={tone}
-          size={size}
-          style={style}
-          onClick={handleClick}
-          leading={icon}
-          className={className}
-          {...props}
-        />
-      );
-    }
-
-    const sizeProps = getSizeProps(size, style);
-
+    const label = ariaLabel || title || 'Action';
     return (
-      <span className={liveBadgeClasses.wrap} {...sizeProps}>
-        <LiveButton
-          ref={ref}
-          iconOnly
-          tone={tone}
-          size={size}
-          onClick={handleClick}
-          leading={icon}
-          className={className}
-          {...props}
-        />
-        <LiveBadge value={badge} floating />
-      </span>
+      <AtriumIconButton
+        ref={ref}
+        icon={icon}
+        aria-label={label}
+        badge={badge ?? undefined}
+        kick={kick === 'spin' ? 'spin' : undefined}
+        tone={tone}
+        size={size}
+        style={style}
+        onClick={onClick}
+        className={className}
+        title={title}
+        {...props}
+      />
     );
   }
 );

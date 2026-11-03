@@ -71,13 +71,6 @@ export const AppointmentScheduleView: React.FC = () => {
     retryCloudSync,
   } = useAtriumStore();
 
-  useEffect(() => {
-    if (!appointments || appointments.length === 0) {
-      resetSalonMockData();
-    }
-  }, [appointments?.length, resetSalonMockData]);
-
-
   const [selectedDate, setSelectedDate] = useState<string>(
     new Date().toISOString().split('T')[0]
   );
@@ -473,16 +466,6 @@ export const AppointmentScheduleView: React.FC = () => {
 
           {/* Action Buttons */}
           <div className="flex items-center gap-2.5">
-            <AtriumButton
-              type="button"
-              variant="outline"
-              size="sm"
-              icon={<Sparkles size={14} />}
-              onClick={() => resetSalonMockData()}
-              title="Restaurer l'agenda et les rendez-vous d'Alger"
-            >
-              Recharger Démo
-            </AtriumButton>
 
             <AtriumButton
               type="button"

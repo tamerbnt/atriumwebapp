@@ -1,0 +1,137 @@
+/*
+ * Every measurement is a fraction of --atr-h (the control's height), so the shape is identical
+ * from 24 px to 44 px: radius .147, padding .5, gap .25, type .38, icon .42.
+ */
+.root {
+  --h: var(--atr-h, 34px);
+  --r: calc(var(--h) * 0.147);
+
+  position: relative;
+  overflow: hidden;
+  appearance: none;
+  -webkit-appearance: none;
+  box-sizing: border-box;
+  height: var(--h);
+  margin: 0;
+  padding: 0 calc(var(--h) * 0.5);
+  border: 1px solid transparent;
+  border-radius: var(--r);
+  background: var(--b);
+  color: var(--ob);
+  font-family: var(--atr-font-ui, inherit);
+  font-size: calc(var(--h) * 0.38);
+  font-weight: 500;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(var(--h) * 0.25);
+  white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* the liquid: a circle that grows from the pointer, driven by the engine */
+.lq {
+  position: absolute;
+  inset: 0;
+  background: var(--q);
+  clip-path: circle(0px at 50% 50%);
+  pointer-events: none;
+}
+
+.tx {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(var(--h) * 0.25);
+  pointer-events: none;
+}
+
+/* Icons: pass any inline SVG (Lucide works as is). Stroke style matches the brand sheets. */
+.root svg {
+  width: calc(var(--h) * 0.42);
+  height: calc(var(--h) * 0.42);
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.root:focus-visible {
+  outline: 2px solid var(--atr-acc-text);
+  outline-offset: 3px;
+}
+
+.root:disabled,
+.root[aria-disabled='true'] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* tones */
+.accent {
+  --b: var(--atr-acc);
+  --ob: var(--atr-onacc);
+  --q: var(--atr-accq);
+}
+.outline {
+  --b: transparent;
+  --ob: var(--atr-acc-text);
+  --q: var(--atr-hl);
+  border-color: var(--atr-acc-text);
+}
+.soft {
+  --b: var(--atr-soft);
+  --ob: var(--atr-ink);
+  --q: var(--atr-hl);
+  border-color: var(--atr-line);
+}
+.success {
+  --b: var(--atr-okbg);
+  --ob: var(--atr-ok);
+  --q: var(--atr-okq);
+}
+
+.icon {
+  width: var(--h);
+  padding: 0;
+}
+
+/* ---- tier "off": no simulation, so plain CSS carries the feedback ---- */
+:global([data-atr-motion='off']) .root:hover .lq,
+:global([data-atr-motion='off']) .root:active .lq {
+  clip-path: circle(150% at 50% 50%);
+}
+:global([data-atr-motion='off']) .root:hover .lq {
+  opacity: 0.55;
+}
+:global([data-atr-motion='off']) .root:active .lq {
+  opacity: 1;
+}
+
+/* ---- Windows high contrast ---- */
+@media (forced-colors: active) {
+  .root {
+    border-color: ButtonText;
+  }
+  .lq {
+    display: none;
+  }
+  .root:disabled,
+  .root[aria-disabled='true'] {
+    opacity: 1;
+    color: GrayText;
+    border-color: GrayText;
+  }
+  .root:focus-visible {
+    outline-color: Highlight;
+  }
+}

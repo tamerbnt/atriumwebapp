@@ -82,13 +82,6 @@ export const AppointmentServicesView: React.FC = () => {
   const [formColor, setFormColor] = useState('#C4785A');
   const [formDescription, setFormDescription] = useState('');
 
-  // Auto-heal empty mock state on mount
-  useEffect(() => {
-    if (!servicesCatalog || servicesCatalog.length === 0) {
-      resetSalonMockData();
-    }
-  }, [servicesCatalog, resetSalonMockData]);
-
   // Filtered services list
   const filteredServices = useMemo(() => {
     return (servicesCatalog || []).filter((s) => {
@@ -443,14 +436,6 @@ export const AppointmentServicesView: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2.5 flex-wrap">
-          <AtriumButton
-            variant="outline"
-            size="sm"
-            icon={<Sparkles className="w-3.5 h-3.5 text-[#C4785A]" />}
-            onClick={() => resetSalonMockData()}
-          >
-            Recharger Catalogue
-          </AtriumButton>
 
           <AtriumButton
             variant="secondary"

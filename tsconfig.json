@@ -4,7 +4,7 @@
     "experimentalDecorators": true,
     "useDefineForClassFields": false,
     "module": "ESNext",
-    "types": ["vite/client"],
+    "types": ["vite/client", "vitest/globals", "node"],
     "lib": [
       "ES2022",
       "DOM",
@@ -17,6 +17,12 @@
     "allowJs": true,
     "jsx": "react-jsx",
     "paths": {
+      "@/atrium": [
+        "./src/atrium/index.ts"
+      ],
+      "@/atrium/*": [
+        "./src/atrium/*"
+      ],
       "@/*": [
         "./*"
       ]

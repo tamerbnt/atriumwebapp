@@ -21,7 +21,7 @@ import { Appointment, AppointmentStatus, ServiceItem } from '../../types/index';
 import { Modal } from '../ui/Modal';
 import { LabelInput } from '../ui/LabelInput';
 import { LabelSelect } from '../ui/LabelSelect';
-import { AtriumButton } from '../ui/AtriumButton';
+import { Button, LiquidButton } from '@/atrium';
 import { formatMoney, localizeStatus } from '../../utils/rules';
 import { t, getLocalizedService, getLocalizedServiceCategory } from '../../utils/i18n';
 
@@ -553,19 +553,20 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
 
         {/* Action Buttons */}
         <div className="pt-2 flex items-center justify-end gap-2.5 border-t border-neutral-200 dark:border-neutral-800">
-          <AtriumButton
+          <Button
             type="button"
-            variant="ghost"
+            tone="soft"
             onClick={onClose}
           >
             {t('action_cancel', language)}
-          </AtriumButton>
-          <AtriumButton
+          </Button>
+          <LiquidButton
+            kind={isEditing ? 'confirm' : 'create'}
             type="submit"
-            variant="primary"
-          >
-            {isEditing ? t('action_save', language) : t('apt_btn_confirm', language)}
-          </AtriumButton>
+            labels={{
+              idle: isEditing ? t('action_save', language) : t('apt_btn_confirm', language),
+            }}
+          />
         </div>
       </form>
     </Modal>

@@ -4,7 +4,7 @@ import { Member, Gender } from '../../types/index';
 import { Modal } from '../ui/Modal';
 import { LabelInput } from '../ui/LabelInput';
 import { LabelSelect } from '../ui/LabelSelect';
-import { AtriumButton } from '../ui/AtriumButton';
+import { Button, LiquidButton } from '@/atrium';
 import { t } from '../../utils/i18n';
 
 interface MemberModalProps {
@@ -327,25 +327,26 @@ export const MemberModal: React.FC<MemberModalProps> = ({
 
         {/* Footer actions */}
         <div className="flex items-center justify-end gap-3 pt-3 border-t border-neutral-200/60 dark:border-neutral-800/80">
-          <AtriumButton
+          <Button
             type="button"
-            variant="ghost"
+            tone="soft"
             onClick={onClose}
           >
             {t('action_cancel', language)}
-          </AtriumButton>
-          <AtriumButton
+          </Button>
+          <LiquidButton
+            kind={memberToEdit ? 'confirm' : 'create'}
             type="submit"
-            variant="primary"
-          >
-            {memberToEdit
-              ? t('action_save', language)
-              : language === 'ar'
-              ? `تسجيل ${terminology.memberSingle}`
-              : language === 'fr'
-              ? `Inscrire ${terminology.memberSingle.toLowerCase()}`
-              : `Enroll ${terminology.memberSingle}`}
-          </AtriumButton>
+            labels={{
+              idle: memberToEdit
+                ? t('action_save', language)
+                : language === 'ar'
+                ? `تسجيل ${terminology.memberSingle}`
+                : language === 'fr'
+                ? `Inscrire ${terminology.memberSingle.toLowerCase()}`
+                : `Enroll ${terminology.memberSingle}`,
+            }}
+          />
         </div>
       </form>
     </Modal>

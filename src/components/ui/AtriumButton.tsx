@@ -1,9 +1,10 @@
 import React, { forwardRef } from 'react';
 import { Loader2 } from 'lucide-react';
-import { LiveButton, LiveButtonTone, LiveButtonSize } from './live/LiveButton';
+import { Button as AtriumCoreButton, Tone as AtriumTone } from '@/atrium';
+import type { Size as AtriumSize } from '@/atrium';
 
 export interface AtriumButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'success';
   size?: 'xs' | 'sm' | 'md' | 'lg';
   glow?: boolean;
   icon?: React.ReactNode;
@@ -27,8 +28,8 @@ export const AtriumButton = forwardRef<HTMLButtonElement, AtriumButtonProps>(fun
   },
   ref
 ) {
-  // Map variant to Atrium Live Button tone
-  let tone: LiveButtonTone = 'accent';
+  // Map variant to official Atrium Button tone
+  let tone: AtriumTone = 'accent';
   let dangerClass = '';
   switch (variant) {
     case 'primary':
@@ -41,26 +42,29 @@ export const AtriumButton = forwardRef<HTMLButtonElement, AtriumButtonProps>(fun
     case 'outline':
       tone = 'outline';
       break;
+    case 'success':
+      tone = 'success';
+      break;
     case 'danger':
       tone = 'outline';
-      dangerClass = '!border-rose-500 !text-rose-500 hover:!bg-rose-500/10';
+      dangerClass = '!border-[var(--atr-danger)] !text-[var(--atr-danger)]';
       break;
   }
 
-  // Map size to Atrium Live scale
-  let liveSize: LiveButtonSize = 'md';
+  // Map size to Atrium scale (sm = 28px, md = 34px, lg = 44px, xs = 24px)
+  let atrSize: AtriumSize = 'sm';
   switch (size) {
     case 'xs':
-      liveSize = 26;
+      atrSize = 24;
       break;
     case 'sm':
-      liveSize = 'sm'; // 28px
+      atrSize = 'sm';
       break;
     case 'md':
-      liveSize = 'md'; // 34px standard desktop density
+      atrSize = 'md';
       break;
     case 'lg':
-      liveSize = 'lg'; // 44px
+      atrSize = 'lg';
       break;
   }
 
@@ -73,11 +77,11 @@ export const AtriumButton = forwardRef<HTMLButtonElement, AtriumButtonProps>(fun
   const trailing = !loading && icon && iconPosition === 'right' ? icon : undefined;
 
   return (
-    <LiveButton
+    <AtriumCoreButton
       ref={ref}
       type={type}
       tone={tone}
-      size={liveSize}
+      size={atrSize}
       disabled={disabled || loading}
       leading={leading}
       trailing={trailing}
@@ -85,7 +89,7 @@ export const AtriumButton = forwardRef<HTMLButtonElement, AtriumButtonProps>(fun
       {...props}
     >
       {children}
-    </LiveButton>
+    </AtriumCoreButton>
   );
 });
 

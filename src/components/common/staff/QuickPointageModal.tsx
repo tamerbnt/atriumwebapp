@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { QrCode, Scan, KeyRound, CheckCircle2, X, Clock, ArrowRight, User } from 'lucide-react';
 import { Modal } from '../../ui/Modal';
 import { LabelInput } from '../../ui/LabelInput';
-import { AtriumButton } from '../../ui/AtriumButton';
+import { LiquidButton } from '@/atrium';
 import { StaffMember } from '../../../types/index';
 
 interface QuickPointageModalProps {
@@ -100,14 +100,18 @@ export const QuickPointageModal: React.FC<QuickPointageModalProps> = ({
             autoFocus
           />
 
-          <AtriumButton
-            type="submit"
-            variant="primary"
-            className="w-full justify-center"
-            icon={<CheckCircle2 size={16} />}
-          >
-            {isAr ? 'تأكيد الحضور' : isEn ? 'Validate Pointage' : 'Valider le Pointage'}
-          </AtriumButton>
+          <div className="flex justify-center pt-1">
+            <LiquidButton
+              kind="scan"
+              type="submit"
+              size="md"
+              labels={{
+                idle: isAr ? 'تأكيد الحضور' : isEn ? 'Validate Pointage' : 'Valider le Pointage',
+                busy: isAr ? 'جاري المسح...' : isEn ? 'Scanning...' : 'Scan en cours...',
+                done: isAr ? 'تم التسجيل' : isEn ? 'Recorded' : 'Pointé',
+              }}
+            />
+          </div>
         </form>
 
         {/* Success Toast Banner */}

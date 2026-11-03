@@ -1,0 +1,90 @@
+.root {
+  --h: var(--atr-h, 34px);
+  --r: calc(var(--h) * 0.147);
+
+  position: relative;
+  display: inline-flex;
+  box-sizing: border-box;
+  padding: calc(var(--h) * 0.08);
+  border: 1px solid var(--atr-line);
+  border-radius: var(--r);
+  background: var(--atr-card);
+}
+
+.bl {
+  position: absolute;
+  inset: calc(var(--h) * 0.08);
+  background: var(--atr-acc);
+  clip-path: inset(0 100% 0 0);
+  pointer-events: none;
+}
+
+.so {
+  position: relative;
+  appearance: none;
+  -webkit-appearance: none;
+  border: 0;
+  margin: 0;
+  background: transparent;
+  box-sizing: border-box;
+  height: calc(var(--h) * 0.84 - 2px);
+  padding: 0 calc(var(--h) * 0.42);
+  border-radius: calc(var(--r) * 0.8);
+  color: var(--atr-ink);
+  font-family: var(--atr-font-ui, inherit);
+  font-size: calc(var(--h) * 0.36);
+  font-weight: 500;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: calc(var(--h) * 0.2);
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.so svg {
+  width: calc(var(--h) * 0.42);
+  height: calc(var(--h) * 0.42);
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.ic {
+  padding: 0 calc(var(--h) * 0.3);
+}
+
+.so:focus-visible {
+  outline: 2px solid var(--atr-acc-text);
+  outline-offset: 2px;
+}
+
+.so:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Before the engine has measured (server render, no JS, tier "off" fallback) the selected option
+   carries the accent itself. Once the blob is live (data-live) it takes over. */
+.root:not([data-live]) .so[aria-checked='true'] {
+  background: var(--atr-acc);
+  color: var(--atr-onacc);
+}
+
+@media (forced-colors: active) {
+  .bl {
+    display: none;
+  }
+  .so[aria-checked='true'] {
+    background: Highlight;
+    color: HighlightText;
+    forced-color-adjust: none;
+  }
+}

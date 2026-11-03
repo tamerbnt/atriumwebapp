@@ -1987,65 +1987,6 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
                 </a>
               </div>
             </div>
-
-            {/* 1-Click Instant Demo Voucher generator */}
-            <div className="p-3 rounded-xl bg-[#201D1A] border border-dashed border-[#C4785A]/50">
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[#C4785A] flex items-center gap-1">
-                  <KeyRound className="w-3 h-3 text-[#C4785A]" />
-                  {isAr ? 'التقييم والتجربة الفورية' : isFr ? 'Évaluation & Essai immédiat' : 'Instant Evaluation Mode'}
-                </span>
-                <span className="text-[10px] text-neutral-400">Sandbox Code</span>
-              </div>
-              <p className="text-[11px] text-neutral-300 mb-2 leading-relaxed">
-                {isAr
-                  ? 'يمكنك تفعيل قسيمة ترخيص تجريبية معتمدة لهذا المستوى فوراً ومتابعة الإعداد:'
-                  : isFr
-                  ? 'Vous pouvez insérer automatiquement un voucher de démonstration actif pour ce niveau :'
-                  : 'You can instantly insert an active demonstration voucher for this tier:'}
-              </p>
-              <button
-                type="button"
-                onClick={() => {
-                  const demoCode =
-                    selectedPlanTier === 'starter'
-                      ? 'ATR-STARTER-LIFE-2026-X89K'
-                      : selectedPlanTier === 'enterprise'
-                      ? 'ATR-ENTERPRISE-LIFE-2026-X89K'
-                      : 'ATR-PRO-LIFE-2026-X89K';
-                  setVoucherCode(demoCode);
-                  setTestVoucherCopied(true);
-                  setPaidVoucherError(null);
-                  setTimeout(() => {
-                    setShowLicenseModal(false);
-                    setTestVoucherCopied(false);
-                  }, 450);
-                }}
-                className={`w-full py-2 px-3 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                  testVoucherCopied
-                    ? 'bg-emerald-500 text-white'
-                    : 'bg-[#C4785A] hover:bg-[#b3684a] text-white shadow-md'
-                }`}
-              >
-                {testVoucherCopied ? (
-                  <>
-                    <Check className="w-3.5 h-3.5" />
-                    <span>{isAr ? 'تم تطبيق القسيمة بنجاح!' : isFr ? 'Voucher appliqué avec succès !' : 'Voucher Applied!'}</span>
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="w-3.5 h-3.5" />
-                    <span>
-                      {isAr
-                        ? `تطبيق رمز تجريبي: ATR-${selectedPlanTier.toUpperCase()}-LIFE-2026-X89K`
-                        : isFr
-                        ? `Appliquer le voucher test ATR-${selectedPlanTier.toUpperCase()}-LIFE-2026-X89K`
-                        : `Apply demo voucher ATR-${selectedPlanTier.toUpperCase()}-LIFE-2026-X89K`}
-                    </span>
-                  </>
-                )}
-              </button>
-            </div>
           </div>
         </div>
       )}

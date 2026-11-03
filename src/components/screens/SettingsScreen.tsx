@@ -33,9 +33,9 @@ import { Modal } from '../ui/Modal';
 import { ConfirmDialog } from '../ui/ConfirmDialog';
 import { validateVoucherCode } from '../../utils/rules';
 import { LabelInput } from '../ui/LabelInput';
+import { Button, LiquidButton, Toggle } from '@/atrium';
 import { AtriumButton } from '../ui/AtriumButton';
 import { t, getSystemDefaultLanguage, SUPPORTED_LANGUAGES } from '../../utils/i18n';
-import { BackendDiagnosticPanel } from '../BackendDiagnosticPanel';
 import { useSkeletonLoading } from '../../hooks/useSkeletonLoading';
 import { SkeletonPageHeader } from '../ui/skeleton/StructuralSkeletons';
 import { SkeletonBox, SkeletonText } from '../ui/skeleton/SkeletonPrimitives';
@@ -78,13 +78,11 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
     syncErrorMessage,
     exportDatabase,
     importDatabase,
-    resetToDefaultDemoData,
     networkMode,
     retryCloudSync,
   } = useAtriumStore();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
   const [isRestoreModalOpen, setIsRestoreModalOpen] = useState(false);
   const [pendingBackupContent, setPendingBackupContent] = useState<string | null>(null);
   const [pendingBackupMeta, setPendingBackupMeta] = useState<{
@@ -106,7 +104,6 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
   const [deviceHwId, setDeviceHwId] = useState('');
   const [deviceError, setDeviceError] = useState<string | null>(null);
   const [exportedStatus, setExportedStatus] = useState<string | null>(null);
-  const [isDiagnosticPanelOpen, setIsDiagnosticPanelOpen] = useState(false);
 
   const handleExportDataBackup = () => {
     try {
@@ -556,6 +553,30 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
           </div>
         </div>
 
+        {/* Dynamic Atrium Theme Toggle */}
+        <div className="flex items-center justify-between p-3.5 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-xl bg-[#d4522f]/10 text-[#d4522f] flex items-center justify-center">
+              {theme === 'dark' ? <Moon size={16} /> : <Sun size={16} />}
+            </div>
+            <div>
+              <div className="text-xs font-bold text-neutral-900 dark:text-white">
+                {language === 'ar' ? 'المفتاح السائل للوضع الليلي' : language === 'fr' ? 'Interrupteur Liquide Mode Sombre' : 'Obsidian Theme Liquid Switch'}
+              </div>
+              <div className="text-[10px] text-neutral-400">
+                {theme === 'dark' ? 'Obsidian night theme' : 'Porcelain day theme'}
+              </div>
+            </div>
+          </div>
+          <Toggle
+            aria-label="Toggle dark mode"
+            checked={theme === 'dark'}
+            onCheckedChange={(checked) => {
+              setTheme(checked ? 'dark' : 'light');
+            }}
+          />
+        </div>
+
         {/* Theme Options Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
           {/* Option: Light Mode */}
@@ -802,20 +823,6 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5">
-            <button
-              type="button"
-              onClick={() => setIsDiagnosticPanelOpen(true)}
-              className="h-9 px-4 text-xs font-bold rounded-xl border border-neutral-300 dark:border-neutral-700 bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900 hover:opacity-90 flex items-center gap-2 cursor-pointer transition-all shadow-2xs"
-            >
-              <Activity size={13} className="text-[#C4785A]" />
-              <span>
-                {language === 'ar'
-                  ? 'فحص CRUD المباشر'
-                  : language === 'fr'
-                  ? 'Audit CRUD en direct'
-                  : 'Live CRUD Diagnostics'}
-              </span>
-            </button>
 
             <button
               type="button"
@@ -909,32 +916,33 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              onClick={handleExportDataBackup}
-              className="h-9 px-3.5 rounded-xl bg-neutral-900 hover:bg-neutral-800 dark:bg-white dark:hover:bg-neutral-100 text-white dark:text-neutral-900 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
-            >
-              <FileDown size={14} />
-              <span>{language === 'ar' ? 'تصدير JSON كامل' : language === 'fr' ? 'Exporter JSON complet' : 'Export Full JSON'}</span>
-            </button>
+            <LiquidButton
+              kind="export"
+              size="sm"
+              labels={{
+                idle: language === 'ar' ? 'تصدير JSON كامل' : language === 'fr' ? 'Exporter JSON' : 'Export JSON',
+                busy: language === 'ar' ? 'جاري التصدير' : language === 'fr' ? 'Exportation...' : 'Exporting...',
+                done: language === 'ar' ? 'تم التصدير' : language === 'fr' ? 'Exporté' : 'Exported',
+              }}
+              onPress={async () => {
+                await Promise.resolve(handleExportDataBackup());
+              }}
+            />
 
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className="h-9 px-3.5 rounded-xl bg-white dark:bg-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-700/80 text-neutral-800 dark:text-neutral-200 border border-neutral-300 dark:border-neutral-700 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
-            >
-              <FileUp size={14} className="text-[#C4785A]" />
-              <span>{t('settings_restore_backup', language)}</span>
-            </button>
+            <LiquidButton
+              kind="import"
+              size="sm"
+              tone="ink"
+              labels={{
+                idle: t('settings_restore_backup', language),
+                busy: language === 'ar' ? 'استعادة...' : 'Restauration...',
+                done: language === 'ar' ? 'تمت الاستعادة' : 'Restauré',
+              }}
+              onPress={() => {
+                fileInputRef.current?.click();
+              }}
+            />
 
-            <button
-              type="button"
-              onClick={() => setIsResetConfirmOpen(true)}
-              className="h-9 px-3.5 rounded-xl bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-900/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-900/60 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
-            >
-              <RotateCw size={14} className="text-rose-600 dark:text-rose-400" />
-              <span>{language === 'ar' ? 'إعادة تعيين البيانات' : language === 'fr' ? 'Réinitialiser démo' : 'Reset Demo Data'}</span>
-            </button>
           </div>
         </div>
 
@@ -1418,30 +1426,6 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
         </div>
       </Modal>
 
-      <ConfirmDialog
-        isOpen={isResetConfirmOpen}
-        onClose={() => setIsResetConfirmOpen(false)}
-        onConfirm={() => {
-          setIsResetConfirmOpen(false);
-          resetToDefaultDemoData(currentBusiness.category);
-        }}
-        title={language === 'ar' ? 'إعادة تعيين بيانات العرض التوضيحي' : language === 'fr' ? 'Réinitialiser les données de démonstration' : 'Reset Demo Data'}
-        description={
-          language === 'ar'
-            ? `هل أنت متأكد من إعادة تعيين سجلات منشأة "${currentBusiness.name}" إلى بيانات الاختبار القياسية؟ يمكنك التراجع فوراً من الإشعار.`
-            : language === 'fr'
-            ? `Voulez-vous réinitialiser les données de démonstration pour "${currentBusiness.name}" (${currentBusiness.category}) ? Vous pourrez annuler l'action immédiatement depuis la notification.`
-            : `Are you sure you want to restore factory demo records for "${currentBusiness.name}"? You will be able to undo immediately from the toast.`
-        }
-        confirmLabel={language === 'ar' ? 'إعادة التعيين الآن' : language === 'fr' ? 'Réinitialiser maintenant' : 'Reset Now'}
-        cancelLabel={language === 'ar' ? 'إلغاء' : language === 'fr' ? 'Conserver mes données' : 'Cancel'}
-        variant="warning"
-      />
-
-      <BackendDiagnosticPanel
-        isOpen={isDiagnosticPanelOpen}
-        onClose={() => setIsDiagnosticPanelOpen(false)}
-      />
     </div>
   );
 };

@@ -62,14 +62,6 @@ export const AppointmentFinanceView: React.FC = () => {
 
   // Payout detail modal
   const [inspectingPayout, setInspectingPayout] = useState<StylistPayout | null>(null);
-
-  // Auto-heal empty mock state on mount
-  useEffect(() => {
-    if (!stylistPayouts || stylistPayouts.length === 0 || !appointments || appointments.length === 0) {
-      resetSalonMockData();
-    }
-  }, [stylistPayouts, appointments, resetSalonMockData]);
-
   // Aggregate financial metrics
   const totalServicesRevenue = useMemo(() => {
     return (stylistPayouts || []).reduce((sum, p) => sum + (p.totalServiceRevenue || 0), 0);
@@ -369,14 +361,6 @@ export const AppointmentFinanceView: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2.5 flex-wrap">
-          <AtriumButton
-            variant="outline"
-            size="sm"
-            icon={<Sparkles className="w-3.5 h-3.5 text-[#C4785A]" />}
-            onClick={() => resetSalonMockData()}
-          >
-            Recharger Démo
-          </AtriumButton>
 
           <AtriumButton
             variant="secondary"

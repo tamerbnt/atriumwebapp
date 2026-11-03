@@ -61,14 +61,6 @@ export const AppointmentHistoryView: React.FC = () => {
 
   // Receipt Modal
   const [receiptAppointment, setReceiptAppointment] = useState<Appointment | null>(null);
-
-  // Auto-heal empty mock state on mount
-  useEffect(() => {
-    if (!appointments || appointments.length === 0) {
-      resetSalonMockData();
-    }
-  }, [appointments, resetSalonMockData]);
-
   // Completed & historical appointments
   const historyAppointments = useMemo(() => {
     return (appointments || []).filter((a) => {
@@ -338,14 +330,6 @@ export const AppointmentHistoryView: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2.5 flex-wrap">
-          <AtriumButton
-            variant="outline"
-            size="sm"
-            icon={<Sparkles className="w-3.5 h-3.5 text-[#C4785A]" />}
-            onClick={() => resetSalonMockData()}
-          >
-            Recharger Démo
-          </AtriumButton>
 
           <AtriumButton
             variant="secondary"

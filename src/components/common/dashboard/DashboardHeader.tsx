@@ -2,9 +2,8 @@ import React from 'react';
 import { Home, ChevronDown, Sparkles, Download } from 'lucide-react';
 import { useAtriumStore } from '../../../services/store';
 import { useTranslation } from '../../../utils/useTranslation';
-import { AtriumButton } from '../../ui/AtriumButton';
+import { Button, LiquidButton } from '@/atrium';
 import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
-import { LiquidExportButton } from '../../ui/liquid/LiquidExportButton';
 
 export interface DashboardHeaderProps {
   title?: string;
@@ -47,7 +46,6 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
     currentBusinessId,
     switchBusiness,
     switchBranch,
-    resetToDefaultDemoData,
     currentBusiness,
     showToast,
   } = useAtriumStore();
@@ -87,40 +85,18 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
       ? "Voici l'activité opérationnelle et les indicateurs en direct."
       : "Here's what's happening in your facility today.");
 
-  const handleSeedDemo = () => {
-    if (onRefreshDemoData) {
-      onRefreshDemoData();
-      return;
-    }
-    if (onResetDemoData) {
-      onResetDemoData();
-      return;
-    }
-    if (currentBusiness?.category) {
-      resetToDefaultDemoData(currentBusiness.category);
-      showToast({
-        type: 'success',
-        title:
-          language === 'ar'
-            ? 'تم تحديث البيانات التجريبية'
-            : language === 'fr'
-            ? 'Données Démo Réinitialisées'
-            : 'Demo Data Refreshed',
-        message:
-          language === 'ar'
-            ? 'تم استرجاع السجلات والمؤشرات النموذجية بنجاح'
-            : language === 'fr'
-            ? 'Indicateurs opérationnels et données témoins synchronisés.'
-            : 'Operational mock records successfully hydrated.',
-      });
-    }
-  };
+  const [exportProgress, setExportProgress] = React.useState<number | undefined>(undefined);
 
-  const handleExport = () => {
+  const handleExport = async () => {
+    setExportProgress(0.15);
     if (onExportReport) {
-      onExportReport();
-      return;
+      await Promise.resolve(onExportReport());
     }
+    for (let step = 1; step <= 5; step++) {
+      await new Promise((r) => setTimeout(r, 220));
+      setExportProgress(step / 5);
+    }
+    setExportProgress(undefined);
     showToast({
       type: 'info',
       title:
@@ -131,10 +107,10 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
           : 'Executive Report Export',
       message:
         language === 'ar'
-          ? 'جاري إعداد التقرير المالي والتشغيلي (PDF / CSV)...'
+          ? 'تم إعداد التقرير المالي والتشغيلي بنجاح (PDF / CSV).'
           : language === 'fr'
-          ? 'Génération du rapport de synthèse (PDF / CSV)...'
-          : 'Compiling executive summary report (PDF / CSV)...',
+          ? 'Rapport de synthèse (PDF / CSV) exporté avec succès.'
+          : 'Executive summary report successfully generated.',
     });
   };
 
@@ -227,25 +203,21 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
           )}
         </div>
 
-        {/* 1-Click Mock Demo Data Seeder */}
-        <AtriumButton
-          type="button"
-          variant="outline"
-          size="sm"
-          icon={<Sparkles size={14} className="text-[#C4785A]" />}
-          onClick={handleSeedDemo}
-          title={language === 'ar' ? 'إعادة شحن بيانات تجريبية' : language === 'fr' ? 'Recharger Données Démo' : 'Seed Mock Data'}
-        >
-          <span className="hidden sm:inline">
-            {language === 'ar' ? 'بيانات تجريبية' : language === 'fr' ? 'Données Démo' : 'Demo Data'}
-          </span>
-        </AtriumButton>
 
         {/* Liquid Export Report Action */}
-        <LiquidExportButton
+        <LiquidButton
+          kind="export"
           size="sm"
-          onExport={handleExport}
+          progress={exportProgress}
+          onPress={handleExport}
           id="dash-header-export-btn"
+          labels={{
+            idle: language === 'ar' ? 'تصدير' : language === 'fr' ? 'Exporter' : 'Export',
+            busy: language === 'ar' ? 'جاري التصدير' : language === 'fr' ? 'Exportation' : 'Exporting',
+            done: language === 'ar' ? 'تم التصدير' : language === 'fr' ? 'Exporté' : 'Exported',
+            error: language === 'ar' ? 'فشل' : language === 'fr' ? 'Échec' : 'Failed',
+          }}
+          aria-label={language === 'ar' ? 'تصدير التقرير' : language === 'fr' ? 'Exporter le rapport' : 'Export report'}
         />
 
         {extraActions}

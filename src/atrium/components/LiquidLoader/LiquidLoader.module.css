@@ -1,0 +1,12 @@
+.root { display: inline-block; vertical-align: middle; line-height: 0; flex: none; }
+.stir { cursor: pointer; touch-action: manipulation; }
+.svg { width: 100%; height: 100%; overflow: visible; display: block; }
+.ring { fill: var(--atr-acc); }
+.parts { fill: var(--atr-ink); }
+
+/* reduced motion and the `off` tier: the solid mark, breathing softly */
+@media (prefers-reduced-motion: reduce) {
+  .pulse { animation: atr-breathe 2.4s ease-in-out infinite; }
+}
+:global(html[data-atr-motion='off']) .pulse { animation: atr-breathe 2.4s ease-in-out infinite; }
+@keyframes atr-breathe { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }

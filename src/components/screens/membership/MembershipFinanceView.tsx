@@ -66,7 +66,7 @@ export const MembershipFinanceView: React.FC = () => {
 
   const transactions: MembershipTransaction[] = useMemo(() => {
     return members.map((m: any, idx) => ({
-      id: `TX-GYM-${m.id.slice(0, 6)}`,
+      id: `TX-GYM-${m.id}-${idx + 1}`,
       memberName: m.fullName,
       plan: m.membershipType || m.membershipPlanName || (isAr ? 'اشتراك لياقة شهري' : 'Pass Fitness Mensuel'),
       amount: m.membershipFee || 4500,

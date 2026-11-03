@@ -99,14 +99,6 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
     isLoading: isSyncing || networkMode === 'force_skeleton',
     hasCachedData: pmProjects.length > 0,
   });
-
-  // Auto-heal empty mock state on mount
-  useEffect(() => {
-    if (!pmProjects || pmProjects.length === 0) {
-      resetPmMockData();
-    }
-  }, [pmProjects, resetPmMockData]);
-
   const [isBranchDropdownOpen, setIsBranchDropdownOpen] = useState(false);
   const [selectedReceiptUrl, setSelectedReceiptUrl] = useState<string | null>(null);
   const [rejectionModalId, setRejectionModalId] = useState<string | null>(null);
@@ -570,15 +562,6 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
             )}
           </div>
 
-          {/* 1-Click Demo Data Recharge Button */}
-          <button
-            onClick={() => resetPmMockData()}
-            title="Recharger les données démo complètes de l'agence"
-            className="px-3 py-1.5 text-xs font-semibold text-zinc-700 dark:text-zinc-300 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 rounded-xl flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer"
-          >
-            <Sparkles className="w-3.5 h-3.5 text-[#C4785A]" />
-            <span>Demo Data</span>
-          </button>
 
           {/* Liquid CSV Export */}
           <LiquidExportButton

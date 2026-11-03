@@ -19,7 +19,7 @@ import {
 import { Modal } from '../ui/Modal';
 import { LabelInput } from '../ui/LabelInput';
 import { LabelSelect, SelectOption } from '../ui/LabelSelect';
-import { AtriumButton } from '../ui/AtriumButton';
+import { Button, LiquidButton } from '@/atrium';
 import {
   StaffMember,
   StaffRole,
@@ -665,31 +665,32 @@ export const StaffModal: React.FC<StaffModalProps> = ({
 
         {/* Modal Actions */}
         <div className="pt-4 border-t border-neutral-200 dark:border-neutral-800 flex items-center justify-end gap-3">
-          <button
+          <Button
             type="button"
+            tone="soft"
             onClick={onClose}
-            className="px-4 py-2.5 rounded-2xl border border-neutral-300 dark:border-neutral-700 text-xs font-semibold text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
           >
             {isAr ? 'إلغاء' : isEn ? 'Cancel' : 'Annuler'}
-          </button>
+          </Button>
 
-          <AtriumButton
+          <LiquidButton
+            kind={staffToEdit ? 'confirm' : 'create'}
             type="submit"
             disabled={isSubmitting}
-            className="px-6 py-2.5 text-xs font-semibold shadow-md"
-          >
-            {staffToEdit
-              ? isAr
-                ? 'حفظ التعديلات'
+            labels={{
+              idle: staffToEdit
+                ? isAr
+                  ? 'حفظ التعديلات'
+                  : isEn
+                  ? 'Save Changes'
+                  : 'Enregistrer'
+                : isAr
+                ? 'إنشاء الموظف'
                 : isEn
-                ? 'Save Changes'
-                : 'Enregistrer les modifications'
-              : isAr
-              ? 'إنشاء الموظف'
-              : isEn
-              ? 'Create Staff Member'
-              : 'Créer le collaborateur'}
-          </AtriumButton>
+                ? 'Create Staff Member'
+                : 'Créer le collaborateur',
+            }}
+          />
         </div>
       </form>
     </Modal>

@@ -92,14 +92,6 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = ({
   const [newFormulaText, setNewFormulaText] = useState('');
   const [newFormulaStylist, setNewFormulaStylist] = useState('Sarah Louati');
   const [newFormulaNotes, setNewFormulaNotes] = useState('');
-
-  // Ensure salon mock data is populated
-  useEffect(() => {
-    if (!members || members.length === 0 || !members.some((m) => m.id.startsWith('mem_salon_'))) {
-      resetSalonMockData();
-    }
-  }, [members, resetSalonMockData]);
-
   // Salon-specific clients
   const salonClients = useMemo(() => {
     return (members || []).filter(
@@ -523,16 +515,6 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = ({
               )}
             </div>
 
-            {/* Demo Data Reset */}
-            <button
-              type="button"
-              onClick={() => resetSalonMockData()}
-              className="h-10 px-3.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-xs font-semibold text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700/60 flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
-              title="Restaurer les 15 dossiers clientes d'Alger"
-            >
-              <RefreshCw size={13} className="text-neutral-500" />
-              <span>Démo Salon</span>
-            </button>
 
             {/* Export CSV */}
             <AtriumButton

@@ -11,6 +11,7 @@ export default defineConfig(() => {
     plugins: [react(), tailwindcss()],
     resolve: {
       alias: {
+        '@/atrium': path.resolve(__dirname, './src/atrium'),
         '@': path.resolve(__dirname, '.'),
       },
     },

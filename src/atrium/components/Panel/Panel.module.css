@@ -1,0 +1,144 @@
+/*
+ * Shared by Menu and Select. The panel is portalled to <body> and positioned with
+ * position: fixed, so it is never clipped by an overflow: hidden ancestor.
+ */
+.panel {
+  --h: var(--atr-h, 34px);
+  --r: calc(var(--h) * 0.147);
+
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: var(--atr-z-popover, 1000);
+  box-sizing: border-box;
+  width: calc(var(--h) * 8.6);
+  min-width: calc(var(--h) * 4);
+  max-height: min(70vh, 480px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: calc(var(--h) * 0.2);
+  background: var(--atr-card);
+  color: var(--atr-ink);
+  border: 1px solid var(--atr-line);
+  border-radius: calc(var(--r) * 1.8);
+  box-shadow: var(--atr-shadow-pop);
+  font-family: var(--atr-font-ui, inherit);
+  font-size: calc(var(--h) * 0.34);
+  outline: none;
+  visibility: hidden;
+  clip-path: inset(0 0 100% 0);
+  transform-origin: top;
+}
+.panel[data-side='up'] {
+  transform-origin: bottom;
+  clip-path: inset(100% 0 0 0);
+}
+
+.panel svg {
+  width: calc(var(--h) * 0.42);
+  height: calc(var(--h) * 0.42);
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* the blob that follows the pointer */
+.hl {
+  position: absolute;
+  left: calc(var(--h) * 0.2);
+  right: calc(var(--h) * 0.2);
+  top: 0;
+  height: 0;
+  border-radius: var(--r);
+  background: var(--atr-hl);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.header {
+  position: relative;
+  padding: calc(var(--h) * 0.18) calc(var(--h) * 0.25);
+}
+.header b {
+  font-weight: 600;
+}
+.header small {
+  display: block;
+  color: var(--atr-mut);
+  font-size: 0.84em;
+  margin-top: calc(var(--h) * 0.06);
+}
+
+.hr {
+  height: 1px;
+  background: var(--atr-line);
+  margin: calc(var(--h) * 0.12) calc(var(--h) * 0.1);
+}
+
+.item {
+  position: relative;
+  appearance: none;
+  -webkit-appearance: none;
+  display: flex;
+  align-items: center;
+  gap: calc(var(--h) * 0.3);
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0;
+  text-align: start;
+  padding: calc(var(--h) * 0.2) calc(var(--h) * 0.25);
+  border: 0;
+  border-radius: var(--r);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.item:focus-visible {
+  outline: 2px solid var(--atr-acc-text);
+  outline-offset: -2px;
+}
+.item:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.item b {
+  display: block;
+  font-weight: 500;
+}
+.item small {
+  display: block;
+  color: var(--atr-mut);
+  font-size: 0.8em;
+  margin-top: calc(var(--h) * 0.05);
+}
+.text {
+  flex: 1;
+  min-width: 0;
+}
+.danger {
+  color: var(--atr-danger);
+}
+
+/* the selected option in a Select: one of the logo's corner squares */
+.mark {
+  flex: none;
+  width: calc(var(--h) * 0.2);
+  height: calc(var(--h) * 0.2);
+  border-radius: calc(var(--h) * 0.03);
+  background: var(--atr-acc-text);
+}
+
+@media (forced-colors: active) {
+  .panel {
+    border-color: CanvasText;
+  }
+  .item:focus-visible,
+  .item[aria-selected='true'] {
+    outline: 2px solid Highlight;
+  }
+}

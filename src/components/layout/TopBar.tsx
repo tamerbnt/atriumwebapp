@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   RotateCw,
   Rocket,
-  Menu,
+  Menu as MenuIcon,
   ChevronRight,
   Home,
   Lock,
@@ -37,9 +37,9 @@ import { formatDuration } from '../../utils/rules';
 import { ContractorRole, LegalRole, LogisticsRole, ManufacturingRole, PMRole, RealEstateRole, SupportedLanguage, AgriRole, StandardRole } from '../../types/index';
 import { Seek } from '../ui/Seek';
 import { useTranslation } from '../../utils/useTranslation';
-import { BackendDiagnosticPanel } from '../BackendDiagnosticPanel';
 import { NotificationDropdown } from './NotificationDropdown';
 import { PinVerificationModal } from '../modals/PinVerificationModal';
+import { Menu, MenuTriggerProps } from '@/atrium';
 import { LiveButton, LiveIconButton, LivePopoverPanel, popoverClasses } from '../ui/live';
 
 interface TopBarProps {
@@ -119,7 +119,6 @@ export const TopBar: React.FC<TopBarProps> = ({
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [networkMenuOpen, setNetworkMenuOpen] = useState(false);
   const [topBarSearch, setTopBarSearch] = useState('');
-  const [isDiagnosticPanelOpen, setIsDiagnosticPanelOpen] = useState(false);
   const [agriPinTargetRole, setAgriPinTargetRole] = useState<AgriRole | null>(null);
   const [agriPinInput, setAgriPinInput] = useState('');
   const [agriPinError, setAgriPinError] = useState(false);
@@ -743,7 +742,7 @@ export const TopBar: React.FC<TopBarProps> = ({
           className="lg:hidden w-8 h-8 rounded-lg flex items-center justify-center text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
           aria-label="Toggle mobile navigation menu"
         >
-          <Menu size={17} />
+          <MenuIcon size={17} />
         </button>
 
         <div>
@@ -1470,119 +1469,6 @@ export const TopBar: React.FC<TopBarProps> = ({
 
 
 
-        {/* Supabase Cloud Connection Status Badge / Diagnostics Trigger */}
-        <button
-          type="button"
-          onClick={() => setIsDiagnosticPanelOpen(true)}
-          title={
-            supabaseStatus === 'connected'
-              ? (language === 'ar' ? `متصل بسوبابيس PostgreSQL والبث المباشر (انقر لفتح فحص CRUD)` : language === 'fr' ? `Connecté à Supabase PostgreSQL & temps réel (Cliquer pour ouvrir le diagnostic CRUD)` : `Connected to Supabase PostgreSQL & Realtime (Click for CRUD Diagnostics)`)
-              : supabaseStatus === 'connecting'
-              ? (language === 'ar' ? 'جارٍ الاتصال بسوبابيس...' : language === 'fr' ? 'Connexion à Supabase...' : 'Connecting to Supabase...')
-              : supabaseStatus === 'offline'
-              ? (language === 'ar' ? 'الوضع المحلي بدون إنترنت — انقر لتشغيل فحص CRUD' : language === 'fr' ? 'Mode hors-ligne — cliquer pour tester le CRUD' : 'Offline mode — click to run CRUD diagnostics')
-              : (language === 'ar' ? 'وضع التخزين المحلي / التجريبي — انقر للفحص' : language === 'fr' ? 'Stockage local / Mode démo — cliquer pour tester' : 'Local Storage / Demo Mode — click for diagnostics')
-          }
-          className={`hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium border transition-colors cursor-pointer hover:shadow-xs ${
-            supabaseStatus === 'connected'
-              ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800'
-              : supabaseStatus === 'connecting'
-              ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800'
-              : supabaseStatus === 'offline'
-              ? 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-800'
-              : 'bg-neutral-100 text-neutral-600 border-neutral-200 dark:bg-neutral-800 dark:text-neutral-300 dark:border-neutral-700 hover:bg-neutral-200/60'
-          }`}
-        >
-          {supabaseStatus === 'connected' ? (
-            <>
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              <Cloud size={12} />
-              <span>{t('topbar_cloud_synced', language)}</span>
-            </>
-          ) : supabaseStatus === 'connecting' ? (
-            <>
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-ping" />
-              <RotateCw size={12} className="animate-spin" />
-              <span>{t('topbar_syncing', language)}</span>
-            </>
-          ) : supabaseStatus === 'offline' ? (
-            <>
-              <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
-              <CloudOff size={12} />
-              <span>{t('topbar_offline', language)}</span>
-            </>
-          ) : (
-            <>
-              <Database size={12} className="text-[#C4785A]" />
-              <span>{language === 'ar' ? 'محلي / هجين' : language === 'fr' ? 'Hybride / Local' : 'Hybrid / Local'}</span>
-            </>
-          )}
-        </button>
-
-        {/* Network & Skeleton Loading Simulation Control */}
-        <div ref={networkMenuRef} className="relative">
-          <button
-            type="button"
-            onClick={toggleNetworkMenu}
-            title="Simulate Network Condition & Skeleton Loading"
-            className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700/60 transition-colors cursor-pointer"
-          >
-            <span
-              className={`w-1.5 h-1.5 rounded-full ${
-                networkMode === 'online'
-                  ? 'bg-emerald-500'
-                  : networkMode === 'slow_3g'
-                  ? 'bg-amber-500 animate-pulse'
-                  : networkMode === 'offline'
-                  ? 'bg-rose-500'
-                  : 'bg-purple-500 animate-pulse'
-              }`}
-            />
-            <span className="capitalize font-mono text-[10px]">
-              {networkMode === 'online'
-                ? 'Online'
-                : networkMode === 'slow_3g'
-                ? 'Slow 3G'
-                : networkMode === 'offline'
-                ? 'Offline'
-                : 'Freeze Skel'}
-            </span>
-            <ChevronDown size={10} className="text-neutral-400" />
-          </button>
-
-          {networkMenuOpen && (
-            <div className="absolute right-0 rtl:right-auto rtl:left-0 mt-1.5 w-52 rounded-2xl bg-white dark:bg-[#18181B] border border-neutral-200 dark:border-neutral-800 shadow-2xl py-1.5 z-50 text-xs animate-in fade-in zoom-in-95 duration-150">
-              <div className="px-3 py-1.5 border-b border-neutral-100 dark:border-neutral-800/80 font-semibold text-neutral-500 dark:text-neutral-400 text-[10px] uppercase tracking-wider">
-                Network & Loading Test
-              </div>
-              {[
-                { id: 'online', label: 'Online (Live Data)', desc: 'Normal network conditions' },
-                { id: 'slow_3g', label: 'Slow 3G (3s Delay)', desc: 'Tests skeleton & timeout fallback' },
-                { id: 'offline', label: 'Offline Mode', desc: 'Tests cached fallback & retry banner' },
-                { id: 'force_skeleton', label: 'Freeze Skeleton', desc: 'Inspect skeleton wireframes' },
-              ].map((opt) => (
-                <button
-                  key={opt.id}
-                  type="button"
-                  onClick={() => {
-                    setNetworkMode(opt.id as any);
-                    setNetworkMenuOpen(false);
-                  }}
-                  className={`w-full text-left px-3 py-2 flex flex-col hover:bg-neutral-50 dark:hover:bg-neutral-800/60 cursor-pointer ${
-                    networkMode === opt.id ? 'bg-[#C4785A]/10 text-[#C4785A] font-semibold' : 'text-neutral-700 dark:text-neutral-200'
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <span>{opt.label}</span>
-                    {networkMode === opt.id && <Check size={13} className="text-[#C4785A]" />}
-                  </div>
-                  <span className="text-[10px] text-neutral-400 font-normal">{opt.desc}</span>
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
         {/* Sync / Refresh Button */}
         <LiveIconButton
           icon={<RotateCw size={14} className={isSyncing ? 'animate-spin' : ''} />}
@@ -1623,42 +1509,10 @@ export const TopBar: React.FC<TopBarProps> = ({
           />
         </div>
 
-        {/* User Identity Menu */}
-        <div ref={userMenuRef} className="relative">
-          <LiveButton
-            ref={userButtonRef}
-            tone="soft"
-            onClick={toggleUserMenu}
-            aria-haspopup="menu"
-            aria-expanded={userMenuOpen}
-            className={`!rounded-full !pl-1.5 !pr-2.5 !py-1 !h-[34px] !max-h-[34px] border cursor-pointer select-none ${
-              userMenuOpen
-                ? '!border-neutral-400 dark:!border-neutral-500 shadow-xs'
-                : 'border-neutral-200/80 dark:border-neutral-700/70'
-            }`}
-            aria-label={`Operator: ${currentUser.fullName} (${currentUser.role})`}
-          >
-            <div className="w-6 h-6 rounded-full bg-[#d4522f] text-white flex items-center justify-center font-bold text-xs shadow-2xs shrink-0">
-              {currentUser.fullName.charAt(0).toUpperCase()}
-            </div>
-            <div className="flex flex-col text-left rtl:text-right min-w-0">
-              <span className="font-semibold text-xs text-neutral-800 dark:text-neutral-200 leading-tight truncate max-w-[110px]">
-                {currentUser.fullName.split(' ')[0]}
-              </span>
-            </div>
-            <ChevronDown
-              size={12}
-              data-atr-chev=""
-              className="text-neutral-400"
-            />
-          </LiveButton>
-
-          <LivePopoverPanel
-            anchor={userButtonRef.current}
-            open={userMenuOpen}
-            onRequestClose={() => setUserMenuOpen(false)}
+        {/* User Identity Menu using Atrium Menu with liquid blooming panel */}
+        <div className="relative">
+          <Menu
             placement="bottom-end"
-            role="menu"
             aria-label="Account menu"
             header={
               <div className="flex items-center gap-2.5">
@@ -1676,138 +1530,83 @@ export const TopBar: React.FC<TopBarProps> = ({
                 </div>
               </div>
             }
-          >
-            <button
-              type="button"
-              role="menuitem"
-              data-atr-item=""
-              tabIndex={-1}
-              className={popoverClasses.item}
-              onClick={() => {
-                setUserMenuOpen(false);
-                openFastSwitch();
-              }}
-            >
-              <Lock size={15} />
-              <span className={popoverClasses.text}>
-                <b>{language === 'ar' ? 'قفل الجهاز / تبديل الموظف' : language === 'fr' ? "Verrouiller / Changer d'agent" : 'Lock Terminal / Switch Staff'}</b>
-                <small>{language === 'ar' ? 'التبديل الفوري برمز PIN السريع' : 'Fast PIN operator switch'}</small>
-              </span>
-            </button>
-
-            <button
-              type="button"
-              role="menuitem"
-              data-atr-item=""
-              tabIndex={-1}
-              className={popoverClasses.item}
-              onClick={() => {
-                setUserMenuOpen(false);
-                setIsDiagnosticPanelOpen(true);
-              }}
-            >
-              <Activity size={15} />
-              <span className={popoverClasses.text}>
-                <b>{language === 'ar' ? 'فحص جاهزية الخادم وCRUD' : language === 'fr' ? 'Diagnostic CRUD & Serveur' : 'Backend & CRUD Diagnostics'}</b>
-                <small>{language === 'ar' ? 'اختبار العمليات الحية لكافة الأنشطة' : 'Live CRUD audit across all verticals'}</small>
-              </span>
-            </button>
-
-            <button
-              type="button"
-              role="menuitem"
-              data-atr-item=""
-              tabIndex={-1}
-              className={popoverClasses.item}
-              onClick={() => {
-                setUserMenuOpen(false);
-                try {
-                  sessionStorage.removeItem('atrium-intro-seen');
-                } catch {}
-                window.dispatchEvent(new CustomEvent('atrium:replayintro'));
-              }}
-            >
-              <Sparkles size={15} />
-              <span className={popoverClasses.text}>
-                <b>ATRIUM Monolith Cinema</b>
-                <small>Replay Kinetic Typographic Intro</small>
-              </span>
-            </button>
-
-            <button
-              type="button"
-              role="menuitem"
-              data-atr-item=""
-              tabIndex={-1}
-              className={popoverClasses.item}
-              onClick={() => {
-                setUserMenuOpen(false);
-                openOnboarding();
-              }}
-            >
-              <Sparkles size={15} />
-              <span className={popoverClasses.text}>
-                <b>{language === 'ar' ? 'معالج إعداد النشاط التجاري' : 'Business Onboarding Wizard'}</b>
-                <small>Launch initial setup guide</small>
-              </span>
-            </button>
-
-            <button
-              type="button"
-              role="menuitem"
-              data-atr-item=""
-              tabIndex={-1}
-              className={popoverClasses.item}
-              onClick={() => {
-                setUserMenuOpen(false);
-                onOpenVoucherModal?.();
-              }}
-            >
-              <Rocket size={15} />
-              <span className={popoverClasses.text}>
-                <b>{language === 'ar' ? 'تفعيل قسيمة الترخيص الدائم' : 'Redeem Lifetime Voucher'}</b>
-                <small>Prepaid lifetime license activation</small>
-              </span>
-            </button>
-
-            <button
-              type="button"
-              role="menuitem"
-              data-atr-item=""
-              tabIndex={-1}
-              className={popoverClasses.item}
-              onClick={() => {
-                setUserMenuOpen(false);
-                setScreen('settings');
-              }}
-            >
-              <Settings size={15} />
-              <span className={popoverClasses.text}>
-                <b>{t('settings_title', language)}</b>
-                <small>{language === 'ar' ? 'إعدادات النظام والسمات والمظهر' : language === 'fr' ? 'Préférences, thème & apparence' : 'Preferences, theme & appearance'}</small>
-              </span>
-            </button>
-
-            <div className={popoverClasses.hr} role="separator" />
-
-            <button
-              type="button"
-              role="menuitem"
-              data-atr-item=""
-              tabIndex={-1}
-              className={`${popoverClasses.item} ${popoverClasses.danger}`}
-              onClick={() => {
-                setUserMenuOpen(false);
-                logout();
-              }}
-            >
-              <LogOut size={15} />
-              <span className={popoverClasses.text}>
-                <b>{language === 'ar' ? 'تسجيل الخروج' : language === 'fr' ? 'Se déconnecter' : 'Sign Out'}</b>
-                <small>{currentUser.email}</small>
-              </span>
-            </button>
-          </LivePopoverPanel>
+            items={[
+              {
+                id: 'lock',
+                label: language === 'ar' ? 'قفل الجهاز / تبديل الموظف' : language === 'fr' ? "Verrouiller / Changer d'agent" : 'Lock Terminal / Switch Staff',
+                description: language === 'ar' ? 'التبديل الفوري برمز PIN السريع' : 'Fast PIN operator switch',
+                icon: <Lock size={15} />,
+                onSelect: () => openFastSwitch(),
+              },
+              {
+                id: 'intro',
+                label: 'ATRIUM Monolith Cinema',
+                description: 'Replay Kinetic Typographic Intro',
+                icon: <Sparkles size={15} />,
+                onSelect: () => {
+                  try {
+                    sessionStorage.removeItem('atrium-intro-seen');
+                  } catch {}
+                  window.dispatchEvent(new CustomEvent('atrium:replayintro'));
+                },
+              },
+              {
+                id: 'wizard',
+                label: language === 'ar' ? 'معالج إعداد النشاط التجاري' : 'Business Onboarding Wizard',
+                description: 'Launch initial setup guide',
+                icon: <Sparkles size={15} />,
+                onSelect: () => openOnboarding(),
+              },
+              {
+                id: 'voucher',
+                label: language === 'ar' ? 'تفعيل قسيمة الترخيص الدائم' : 'Redeem Lifetime Voucher',
+                description: 'Prepaid lifetime license activation',
+                icon: <Rocket size={15} />,
+                onSelect: () => onOpenVoucherModal?.(),
+              },
+              {
+                id: 'settings',
+                label: t('settings_title', language),
+                description: language === 'ar' ? 'إعدادات النظام والسمات والمظهر' : language === 'fr' ? 'Préférences, thème & apparence' : 'Preferences, theme & appearance',
+                icon: <Settings size={15} />,
+                onSelect: () => setScreen('settings'),
+              },
+              { type: 'separator' },
+              {
+                id: 'logout',
+                label: language === 'ar' ? 'تسجيل الخروج' : language === 'fr' ? 'Se déconnecter' : 'Sign Out',
+                description: currentUser.email,
+                icon: <LogOut size={15} />,
+                danger: true,
+                onSelect: () => logout(),
+              },
+            ]}
+            trigger={(props: MenuTriggerProps, { open }: { open: boolean }) => (
+              <LiveButton
+                {...props}
+                tone="soft"
+                className={`!rounded-full !pl-1.5 !pr-2.5 !py-1 !h-[34px] !max-h-[34px] border cursor-pointer select-none ${
+                  open
+                    ? '!border-neutral-400 dark:!border-neutral-500 shadow-xs'
+                    : 'border-neutral-200/80 dark:border-neutral-700/70'
+                }`}
+                aria-label={`Operator: ${currentUser.fullName} (${currentUser.role})`}
+              >
+                <div className="w-6 h-6 rounded-full bg-[#d4522f] text-white flex items-center justify-center font-bold text-xs shadow-2xs shrink-0">
+                  {currentUser.fullName.charAt(0).toUpperCase()}
+                </div>
+                <div className="flex flex-col text-left rtl:text-right min-w-0">
+                  <span className="font-semibold text-xs text-neutral-800 dark:text-neutral-200 leading-tight truncate max-w-[110px]">
+                    {currentUser.fullName.split(' ')[0]}
+                  </span>
+                </div>
+                <ChevronDown
+                  size={12}
+                  className={`text-neutral-400 transition-transform ${open ? 'rotate-180' : ''}`}
+                />
+              </LiveButton>
+            )}
+          />
         </div>
       </div>
 
@@ -1885,10 +1684,6 @@ export const TopBar: React.FC<TopBarProps> = ({
         </div>
       )}
 
-      <BackendDiagnosticPanel
-        isOpen={isDiagnosticPanelOpen}
-        onClose={() => setIsDiagnosticPanelOpen(false)}
-      />
 
       {/* Generic Dual-Role PIN Verification Modal */}
       <PinVerificationModal

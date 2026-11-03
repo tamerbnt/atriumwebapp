@@ -72,14 +72,6 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
     retryCloudSync,
     lastSyncedAt,
   } = useAtriumStore();
-
-  // Auto-heal empty mock state on mount
-  useEffect(() => {
-    if (!pmCollateralCatalog || pmCollateralCatalog.length === 0) {
-      resetPmMockData();
-    }
-  }, [pmCollateralCatalog, resetPmMockData]);
-
   const [isBranchDropdownOpen, setIsBranchDropdownOpen] = useState(false);
 
   const activeTab: 'portfolio' | 'catalog' | 'orders' | 'bat' | 'expenses' =
@@ -546,15 +538,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
             )}
           </div>
 
-          {/* Demo Data Recharge Button */}
-          <button
-            onClick={() => resetPmMockData()}
-            title="Recharger les données démo du chef de projet"
-            className="px-3 py-1.5 text-xs font-semibold text-zinc-700 dark:text-zinc-300 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 rounded-xl flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer"
-          >
-            <Sparkles className="w-3.5 h-3.5 text-[#C4785A]" />
-            <span>Demo Data</span>
-          </button>
+
 
           {/* Cart Trigger */}
           <AtriumButton

@@ -238,6 +238,7 @@ export default function App() {
   // Sync theme & RTL on boot
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
+    document.documentElement.setAttribute('data-atrium-theme', theme);
     if (theme === 'dark') {
       document.documentElement.classList.add('dark');
     } else {

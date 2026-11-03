@@ -1,0 +1,80 @@
+.root {
+  /* the tube is a little shorter than a button of the same --atr-h */
+  --tube: calc(var(--atr-h, 34px) * 0.82);
+
+  position: relative;
+  display: inline-flex;
+  flex: none;
+  appearance: none;
+  -webkit-appearance: none;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  border-radius: var(--tube);
+  cursor: pointer;
+  touch-action: none; /* we handle horizontal drags ourselves */
+  -webkit-tap-highlight-color: transparent;
+}
+
+.root:focus-visible {
+  outline: 2px solid var(--atr-acc-text);
+  outline-offset: 3px;
+}
+
+.root:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.track {
+  position: relative;
+  width: calc(var(--tube) * 2);
+  height: var(--tube);
+  overflow: hidden;
+  border-radius: var(--tube);
+  background: var(--atr-sw-body);
+  pointer-events: none;
+}
+
+.pool {
+  position: absolute;
+  inset: 0;
+  background: var(--atr-sw-liquid);
+  /* server render / no JS: the pool rests on the correct side */
+  clip-path: inset(0 50% 0 0 round 999px);
+}
+.root[aria-checked='true'] .pool {
+  clip-path: inset(0 0 0 50% round 999px);
+}
+
+.knob {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: calc(var(--tube) / 3);
+  height: calc(var(--tube) / 3);
+  margin-top: calc(var(--tube) / -6);
+  border-radius: 50%;
+  background: var(--atr-sw-knob);
+  transform: translateX(calc(var(--tube) * 0.5 - var(--tube) / 6));
+}
+.root[aria-checked='true'] .knob {
+  transform: translateX(calc(var(--tube) * 1.5 - var(--tube) / 6));
+}
+
+@media (forced-colors: active) {
+  .track {
+    border: 1px solid CanvasText;
+    background: Canvas;
+  }
+  .pool {
+    background: Highlight;
+    forced-color-adjust: none;
+  }
+  .knob {
+    background: HighlightText;
+    forced-color-adjust: none;
+  }
+}

@@ -1,0 +1,42 @@
+.wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.badge {
+  --h: var(--atr-h, 34px);
+  --r: calc(var(--h) * 0.147);
+  box-sizing: border-box;
+  min-width: calc(var(--h) * 0.42);
+  height: calc(var(--h) * 0.42);
+  padding: 0 calc(var(--h) * 0.1);
+  border-radius: var(--r);
+  background: var(--atr-acc);
+  color: var(--atr-onacc);
+  font-family: var(--atr-font-ui, inherit);
+  font-size: calc(var(--h) * 0.28);
+  font-weight: 600;
+  line-height: calc(var(--h) * 0.42);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+
+.floating {
+  position: absolute;
+  top: calc(var(--h) * -0.16);
+  right: calc(var(--h) * -0.16);
+}
+.inline {
+  display: inline-block;
+}
+
+.dot {
+  --h: var(--atr-h, 34px);
+  display: inline-block;
+  flex: none;
+  width: calc(var(--h) * 0.2);
+  height: calc(var(--h) * 0.2);
+  border-radius: 50%;
+  background: var(--atr-ok);
+}

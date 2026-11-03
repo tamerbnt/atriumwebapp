@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Lock, X, Delete, Check } from 'lucide-react';
 import { useAtriumStore } from '../../services/store';
+import { Button, LiquidButton } from '@/atrium';
 
 interface PinVerificationModalProps {
   isOpen: boolean;
@@ -207,23 +208,22 @@ export const PinVerificationModal: React.FC<PinVerificationModalProps> = ({
         </div>
 
         {/* Footer Actions */}
-        <div className="flex gap-2.5 justify-center">
-          <button
+        <div className="flex gap-2.5 justify-center items-center pt-1">
+          <Button
             type="button"
+            tone="soft"
             onClick={onClose}
-            className="flex-1 py-2.5 px-4 rounded-xl text-xs font-semibold bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 transition-colors cursor-pointer"
           >
             {isRtl ? 'إلغاء' : language === 'fr' ? 'Annuler' : 'Cancel'}
-          </button>
-          <button
-            type="button"
-            onClick={() => validatePin(pin)}
+          </Button>
+          <LiquidButton
+            kind="confirm"
             disabled={pin.length < 4}
-            className="flex-1 py-2.5 px-4 rounded-xl text-xs font-semibold bg-[#C4785A] hover:bg-[#b3684a] text-white shadow-xs disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-1.5 cursor-pointer"
-          >
-            <Check size={14} />
-            <span>{isRtl ? 'تأكيد' : language === 'fr' ? 'Valider' : 'Confirm'}</span>
-          </button>
+            onPress={() => validatePin(pin)}
+            labels={{
+              idle: isRtl ? 'تأكيد' : language === 'fr' ? 'Valider' : 'Confirm',
+            }}
+          />
         </div>
       </div>
     </div>
