@@ -55,7 +55,6 @@ export const FreelanceInvoicesView: React.FC = () => {
     updateInvoiceStatus,
     deleteFreelanceInvoice,
     billUnbilledHours,
-    resetFreelanceMockData,
     businesses,
     branches,
     currentBusinessId,
@@ -80,15 +79,6 @@ export const FreelanceInvoicesView: React.FC = () => {
   const [pinnedInvoiceIds, setPinnedInvoiceIds] = useState<Set<string>>(new Set());
   const [invoiceSortBy, setInvoiceSortBy] = useState<string>('invoiceNumber');
   const [invoiceSortDir, setInvoiceSortDir] = useState<'asc' | 'desc'>('desc');
-
-  // Auto-heal empty freelance invoices safely once on mount
-  const hasAutoHealed = useRef(false);
-  useEffect(() => {
-    if (!hasAutoHealed.current && freelanceInvoices.length === 0) {
-      hasAutoHealed.current = true;
-      resetFreelanceMockData();
-    }
-  }, [freelanceInvoices.length, resetFreelanceMockData]);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
@@ -592,19 +582,7 @@ export const FreelanceInvoicesView: React.FC = () => {
                   </div>
                   <span>{language === 'ar' ? 'تصدير CSV' : language === 'fr' ? 'Exporter CSV' : 'Export CSV'}</span>
                 </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsQuickActionsOpen(false);
-                    resetFreelanceMockData();
-                  }}
-                  className="w-full h-10 px-2.5 rounded-xl hover:bg-[#F8F9FA] dark:hover:bg-neutral-700 flex items-center gap-2.5 text-xs text-neutral-800 dark:text-neutral-200 font-medium transition-colors cursor-pointer text-left rtl:text-right"
-                >
-                  <div className="w-[30px] h-[30px] rounded-lg bg-amber-500/15 text-amber-600 flex items-center justify-center shrink-0">
-                    <Sparkles size={15} />
-                  </div>
-                  <span>{language === 'ar' ? 'إعادة ضبط البيانات' : 'Reset Demo Data'}</span>
-                </button>
+
               </div>
             )}
           </div>

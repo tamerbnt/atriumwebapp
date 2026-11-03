@@ -85,29 +85,6 @@ export const TopBar: React.FC<TopBarProps> = ({
     stopTimer,
     openDesktopUpgradeModal,
     activePmRole,
-    setActivePmRole,
-    activeGarageRole,
-    setActiveGarageRole,
-    activeRealEstateRole,
-    setActiveRealEstateRole,
-    activeManufacturingRole,
-    setActiveManufacturingRole,
-    activeLegalRole,
-    setActiveLegalRole,
-    activeLogisticsRole,
-    setActiveLogisticsRole,
-    activeContractorRole,
-    setActiveContractorRole,
-    activeAgriRole,
-    setActiveAgriRole,
-    activeMembershipRole,
-    setActiveMembershipRole,
-    activeAppointmentRole,
-    setActiveAppointmentRole,
-    activePosRole,
-    setActivePosRole,
-    activeEducationRole,
-    setActiveEducationRole,
     unreadNotificationCount,
     networkMode,
     setNetworkMode,
@@ -119,13 +96,6 @@ export const TopBar: React.FC<TopBarProps> = ({
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [networkMenuOpen, setNetworkMenuOpen] = useState(false);
   const [topBarSearch, setTopBarSearch] = useState('');
-  const [agriPinTargetRole, setAgriPinTargetRole] = useState<AgriRole | null>(null);
-  const [agriPinInput, setAgriPinInput] = useState('');
-  const [agriPinError, setAgriPinError] = useState(false);
-  const [pendingPinAction, setPendingPinAction] = useState<{
-    categoryName: string;
-    onSuccess: () => void;
-  } | null>(null);
 
   const userMenuRef = useRef<HTMLDivElement>(null);
   const userButtonRef = useRef<HTMLButtonElement>(null);

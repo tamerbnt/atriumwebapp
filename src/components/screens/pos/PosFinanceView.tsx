@@ -377,14 +377,7 @@ export const PosFinanceView: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2.5 flex-wrap">
-          <button
-            type="button"
-            onClick={resetPosMockData}
-            className="h-10 px-3.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 hover:bg-neutral-50 text-xs font-bold text-neutral-700 dark:text-neutral-200 flex items-center gap-2 cursor-pointer shadow-2xs"
-          >
-            <Sparkles size={14} className="text-[#C4785A]" />
-            <span>{language === 'ar' ? 'شحن العينة' : 'Démo Recharge'}</span>
-          </button>
+
 
           <AtriumButton
             type="button"

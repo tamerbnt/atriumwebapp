@@ -77,14 +77,7 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
     retryCloudSync,
   } = useAtriumStore();
 
-  // Auto-heal empty bookings safely once on mount
-  const hasAutoHealed = useRef(false);
-  useEffect(() => {
-    if (!hasAutoHealed.current && rentalBookings.length === 0) {
-      hasAutoHealed.current = true;
-      resetVenueMockData();
-    }
-  }, [rentalBookings.length, resetVenueMockData]);
+
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<string>('All');
@@ -465,16 +458,7 @@ export const VenueBookingsView: React.FC<VenueBookingsViewProps> = ({
                 <span className="hidden sm:inline">Supabase</span>
               </button>
 
-              {/* Seed Demo Data Button */}
-              <AtriumButton
-                variant="outline"
-                size="sm"
-                icon={<Sparkles size={14} className="text-[#C4785A]" />}
-                onClick={resetVenueMockData}
-                title={language === 'ar' ? 'إعادة شحن بيانات تجريبية' : language === 'fr' ? 'Recharger Données Démo' : 'Seed Mock Data'}
-              >
-                <span className="hidden sm:inline">{language === 'ar' ? 'بيانات تجريبية' : language === 'fr' ? 'Données Démo' : 'Demo Data'}</span>
-              </AtriumButton>
+
 
               {/* New Reservation Button */}
               <AtriumButton

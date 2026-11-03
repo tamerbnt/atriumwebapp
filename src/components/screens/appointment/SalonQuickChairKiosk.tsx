@@ -59,38 +59,7 @@ export const SalonQuickChairKiosk: React.FC = () => {
     stage: SalonChairStage;
     startTime: number;
     appointmentId?: string;
-  }>>({
-    'ws_1': {
-      clientName: 'Amine Djilali',
-      serviceName: 'Dégradé Laser & Barbe',
-      servicePriceDzd: 1800,
-      stylistName: 'Sofiane',
-      stylistId: 'stf_sofiane',
-      stage: 'in_progress',
-      startTime: Date.now() - 1000 * 60 * 18,
-      appointmentId: 'apt_demo_01',
-    },
-    'ws_2': {
-      clientName: 'Redha Mansouri',
-      serviceName: 'Soin Visage Purifiant',
-      servicePriceDzd: 2500,
-      stylistName: 'Yacine',
-      stylistId: 'stf_yacine',
-      stage: 'waiting',
-      startTime: Date.now() - 1000 * 60 * 5,
-      appointmentId: 'apt_demo_02',
-    },
-    'ws_3': {
-      clientName: 'Tarek Belkacem',
-      serviceName: 'Coupe Ciseaux & Shampoing',
-      servicePriceDzd: 1200,
-      stylistName: 'Walid',
-      stylistId: 'stf_walid',
-      stage: 'completed',
-      startTime: Date.now() - 1000 * 60 * 35,
-      appointmentId: 'apt_demo_03',
-    },
-  });
+  }>>({});
 
   // Fast Checkout Modal
   const [checkoutModalStationKey, setCheckoutModalStationKey] = useState<string | null>(null);

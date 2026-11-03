@@ -60,13 +60,7 @@ export const VenueFinanceView: React.FC = () => {
     retryCloudSync,
   } = useAtriumStore();
 
-  const hasAutoHealed = useRef(false);
-  useEffect(() => {
-    if (!hasAutoHealed.current && (securityDeposits.length === 0 || rentalBookings.length === 0)) {
-      hasAutoHealed.current = true;
-      resetVenueMockData();
-    }
-  }, [securityDeposits.length, rentalBookings.length, resetVenueMockData]);
+
 
   const [statusFilter, setStatusFilter] = useState<'All' | 'Held' | 'Released' | 'Deducted'>('All');
   const [deductionTarget, setDeductionTarget] = useState<SecurityDepositRecord | null>(null);
@@ -292,15 +286,7 @@ export const VenueFinanceView: React.FC = () => {
               )}
             </div>
 
-            <AtriumButton
-              type="button"
-              variant="outline"
-              size="sm"
-              icon={<Sparkles size={14} className="text-[#C4785A]" />}
-              onClick={resetVenueMockData}
-            >
-              <span className="hidden sm:inline">{isAr ? 'بيانات تجريبية' : 'Demo Data'}</span>
-            </AtriumButton>
+
 
             <AtriumButton
               type="button"

@@ -58,14 +58,7 @@ export const VenueRentersView: React.FC = () => {
     retryCloudSync,
   } = useAtriumStore();
 
-  // Auto-heal empty renters directory safely once on mount
-  const hasAutoHealed = useRef(false);
-  useEffect(() => {
-    if (!hasAutoHealed.current && rentalRenters.length === 0) {
-      hasAutoHealed.current = true;
-      resetVenueMockData();
-    }
-  }, [rentalRenters.length, resetVenueMockData]);
+
 
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<'All' | 'Corporate' | 'Individual'>('All');
@@ -455,19 +448,7 @@ export const VenueRentersView: React.FC = () => {
               )}
             </div>
 
-            {/* Seed Demo Data Button */}
-            <AtriumButton
-              type="button"
-              variant="outline"
-              size="sm"
-              icon={<Sparkles size={14} className="text-[#C4785A]" />}
-              onClick={resetVenueMockData}
-              title={language === 'ar' ? 'إعادة شحن بيانات تجريبية' : language === 'fr' ? 'Recharger Données Démo' : 'Seed Mock Data'}
-            >
-              <span className="hidden sm:inline">
-                {language === 'ar' ? 'بيانات تجريبية' : language === 'fr' ? 'Données Démo' : 'Demo Data'}
-              </span>
-            </AtriumButton>
+
 
             {/* Add Renter Primary Button */}
             <AtriumButton

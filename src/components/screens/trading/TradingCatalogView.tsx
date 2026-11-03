@@ -503,16 +503,7 @@ export const TradingCatalogView: React.FC = () => {
               )}
             </div>
 
-            {/* Demo Data Reset */}
-            <button
-              type="button"
-              onClick={() => resetTradingMockData && resetTradingMockData()}
-              className="h-10 px-3.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-xs font-semibold text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700/60 flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
-              title="Réinitialiser les données B2B de test"
-            >
-              <Sparkles size={13} className="text-[#C4785A]" />
-              <span>{language === 'ar' ? 'بيانات تجريبية' : 'Démo B2B'}</span>
-            </button>
+
 
             {/* Primary Action Button */}
             <AtriumButton

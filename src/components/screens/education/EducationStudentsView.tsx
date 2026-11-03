@@ -75,14 +75,7 @@ export const EducationStudentsView: React.FC = () => {
 
   const isStaff = activeEducationRole === 'staff';
 
-  // Auto-heal empty students directory safely once on mount
-  const hasAutoHealed = useRef(false);
-  useEffect(() => {
-    if (!hasAutoHealed.current && eduStudents.length === 0) {
-      hasAutoHealed.current = true;
-      resetEduMockData();
-    }
-  }, [eduStudents.length, resetEduMockData]);
+
 
   const [searchQuery, setSearchQuery] = useState('');
   const [filterKey, setFilterKey] = useState<FilterKey>('all');
@@ -625,16 +618,7 @@ export const EducationStudentsView: React.FC = () => {
               )}
             </div>
 
-            {/* Seed Demo Data Button */}
-            <button
-              type="button"
-              onClick={resetEduMockData}
-              className="h-10 px-3.5 bg-[#FCEEE8] dark:bg-neutral-800 hover:bg-[#F8DFD4] dark:hover:bg-neutral-700 text-[#C4785A] text-xs font-semibold rounded-xl transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer"
-              title={language === 'ar' ? 'إعادة شحن بيانات تجريبية' : language === 'fr' ? 'Recharger Données Démo' : 'Seed Mock Data'}
-            >
-              <Sparkles size={14} />
-              <span className="hidden sm:inline">{language === 'ar' ? 'بيانات تجريبية' : language === 'fr' ? 'Données Démo' : 'Demo Data'}</span>
-            </button>
+
 
             <AtriumButton
               variant="primary"

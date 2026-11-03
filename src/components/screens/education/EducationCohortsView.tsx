@@ -53,26 +53,11 @@ export const EducationCohortsView: React.FC = () => {
     currentBusinessId,
     switchBusiness,
     switchBranch,
-    resetEduMockData,
     addEduCohort,
     updateEduCohort,
     deleteEduCohort,
     showToast,
-    isSyncing,
-    networkMode,
-    retryCloudSync,
-    lastSyncedAt,
-    isSyncTimeout,
   } = useAtriumStore();
-
-  // Auto-heal empty cohorts directory safely once on mount
-  const hasAutoHealed = useRef(false);
-  useEffect(() => {
-    if (!hasAutoHealed.current && eduCohorts.length === 0) {
-      hasAutoHealed.current = true;
-      resetEduMockData();
-    }
-  }, [eduCohorts.length, resetEduMockData]);
 
   const [categoryFilter, setCategoryFilter] = useState<CourseCat>('All');
   const [searchQuery, setSearchQuery] = useState('');
@@ -512,16 +497,6 @@ export const EducationCohortsView: React.FC = () => {
             </div>
 
             {/* Seed Demo Data Button */}
-            <button
-              type="button"
-              onClick={resetEduMockData}
-              className="h-10 px-3.5 bg-[#FCEEE8] dark:bg-neutral-800 hover:bg-[#F8DFD4] dark:hover:bg-neutral-700 text-[#C4785A] text-xs font-semibold rounded-xl transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer"
-              title={language === 'ar' ? 'إعادة شحن بيانات تجريبية' : language === 'fr' ? 'Recharger Données Démo' : 'Seed Mock Data'}
-            >
-              <Sparkles size={14} />
-              <span className="hidden sm:inline">{language === 'ar' ? 'بيانات تجريبية' : language === 'fr' ? 'Données Démo' : 'Demo Data'}</span>
-            </button>
-
             <AtriumButton
               variant="primary"
               onClick={() => setIsAddCohortModalOpen(true)}

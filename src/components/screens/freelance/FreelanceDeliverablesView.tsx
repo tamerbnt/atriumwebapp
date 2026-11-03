@@ -94,7 +94,6 @@ export const FreelanceDeliverablesView: React.FC = () => {
     addFreelanceProject,
     deleteFreelanceProject,
     startTimer,
-    resetFreelanceMockData,
     businesses,
     branches,
     currentBusinessId,
@@ -113,15 +112,6 @@ export const FreelanceDeliverablesView: React.FC = () => {
   const [isFacilityDropdownOpen, setIsFacilityDropdownOpen] = useState(false);
   const [isQuickActionsOpen, setIsQuickActionsOpen] = useState(false);
   const [viewLayout, setViewLayout] = useState<'kanban' | 'collection'>('kanban');
-
-  // Auto-heal empty freelance deliverables safely once on mount
-  const hasAutoHealed = useRef(false);
-  useEffect(() => {
-    if (!hasAutoHealed.current && freelanceProjects.length === 0) {
-      hasAutoHealed.current = true;
-      resetFreelanceMockData();
-    }
-  }, [freelanceProjects.length, resetFreelanceMockData]);
 
   const [selectedProjectId, setSelectedProjectId] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');

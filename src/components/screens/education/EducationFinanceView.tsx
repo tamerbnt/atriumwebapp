@@ -58,14 +58,7 @@ export const EducationFinanceView: React.FC = () => {
     retryCloudSync,
   } = useAtriumStore();
 
-  // Auto-heal empty enrollments directory safely once on mount
-  const hasAutoHealed = useRef(false);
-  useEffect(() => {
-    if (!hasAutoHealed.current && eduEnrollments.length === 0) {
-      hasAutoHealed.current = true;
-      resetEduMockData();
-    }
-  }, [eduEnrollments.length, resetEduMockData]);
+
 
   const [filterKey, setFilterKey] = useState<PaymentFilterKey>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -521,23 +514,7 @@ export const EducationFinanceView: React.FC = () => {
               )}
             </div>
 
-            {/* Seed Demo Data Button */}
-            <AtriumButton
-              variant="outline"
-              size="sm"
-              icon={<Sparkles size={14} className="text-[#C4785A]" />}
-              onClick={() => {
-                resetEduMockData();
-                showToast?.({
-                  type: 'success',
-                  title: 'Données Réinitialisées',
-                  message: '20 contrats de scolarité et échéanciers algériens rechargés.',
-                });
-              }}
-              title="Recharge Demo Data"
-            >
-              <span className="hidden sm:inline">Demo Data</span>
-            </AtriumButton>
+
 
             {/* Print Ledger */}
             <AtriumButton

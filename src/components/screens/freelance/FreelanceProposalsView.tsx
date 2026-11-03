@@ -65,14 +65,7 @@ export const FreelanceProposalsView: React.FC = () => {
   const [proposalSortBy, setProposalSortBy] = useState<string>('title');
   const [proposalSortDir, setProposalSortDir] = useState<'asc' | 'desc'>('asc');
 
-  // Auto-heal empty freelance proposals safely once on mount
-  const hasAutoHealed = useRef(false);
-  useEffect(() => {
-    if (!hasAutoHealed.current && freelanceProposals.length === 0) {
-      hasAutoHealed.current = true;
-      resetFreelanceMockData();
-    }
-  }, [freelanceProposals.length, resetFreelanceMockData]);
+
 
   const [isDraftModalOpen, setIsDraftModalOpen] = useState(false);
   const [proposalToEdit, setProposalToEdit] = useState<FreelanceProposal | null>(null);
@@ -539,16 +532,7 @@ export const FreelanceProposalsView: React.FC = () => {
             <span className="hidden sm:inline">CSV</span>
           </AtriumButton>
 
-          {/* Seed Demo Data Button */}
-          <AtriumButton
-            variant="outline"
-            size="sm"
-            icon={<Sparkles size={14} className="text-[#C4785A]" />}
-            onClick={resetFreelanceMockData}
-            title={language === 'ar' ? 'إعادة شحن بيانات تجريبية' : language === 'fr' ? 'Recharger Données Démo' : 'Seed Mock Data'}
-          >
-            <span className="hidden sm:inline">{language === 'ar' ? 'بيانات تجريبية' : language === 'fr' ? 'Données Démo' : 'Demo Data'}</span>
-          </AtriumButton>
+
 
           <AtriumButton
             variant="primary"

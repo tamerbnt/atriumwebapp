@@ -50,7 +50,6 @@ export const FreelanceClientsView: React.FC = () => {
     deleteFreelanceClient,
     startTimer,
     billUnbilledHours,
-    resetFreelanceMockData,
     businesses,
     branches,
     currentBusinessId,
@@ -68,15 +67,6 @@ export const FreelanceClientsView: React.FC = () => {
 
   const currentBranch = branches.find((b) => b.id === currentBranchId);
   const [isFacilityDropdownOpen, setIsFacilityDropdownOpen] = useState(false);
-
-  // Auto-heal empty freelance client directory safely once on mount
-  const hasAutoHealed = useRef(false);
-  useEffect(() => {
-    if (!hasAutoHealed.current && freelanceClients.length === 0) {
-      hasAutoHealed.current = true;
-      resetFreelanceMockData();
-    }
-  }, [freelanceClients.length, resetFreelanceMockData]);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
@@ -561,17 +551,6 @@ export const FreelanceClientsView: React.FC = () => {
               )}
             </div>
 
-            {/* Seed Demo Data Button */}
-            <AtriumButton
-              type="button"
-              variant="outline"
-              size="sm"
-              icon={<Sparkles size={14} className="text-[#C4785A]" />}
-              onClick={resetFreelanceMockData}
-              title={language === 'ar' ? 'إعادة شحن بيانات تجريبية' : language === 'fr' ? 'Recharger Données Démo' : 'Seed Mock Data'}
-            >
-              <span className="hidden sm:inline">{language === 'ar' ? 'بيانات تجريبية' : language === 'fr' ? 'Données Démo' : 'Demo Data'}</span>
-            </AtriumButton>
 
             {/* Add Client CTA Button */}
             <AtriumButton

@@ -61,19 +61,12 @@ export const FreelanceTimeTrackerView: React.FC = () => {
     currentBusiness,
     switchBusiness,
     switchBranch,
-    resetFreelanceMockData,
     isSyncing,
     networkMode,
     retryCloudSync,
   } = useAtriumStore();
 
   const [isFacilityDropdownOpen, setIsFacilityDropdownOpen] = useState(false);
-
-  useEffect(() => {
-    if (freelanceClients.length === 0 && freelanceProjects.length === 0) {
-      resetFreelanceMockData?.();
-    }
-  }, [freelanceClients.length, freelanceProjects.length, resetFreelanceMockData]);
 
   const [selectedClientId, setSelectedClientId] = useState<string>(
     freelanceClients[0]?.id || ''
@@ -640,15 +633,7 @@ export const FreelanceTimeTrackerView: React.FC = () => {
             )}
           </div>
 
-          <AtriumButton
-            variant="outline"
-            size="sm"
-            icon={<Sparkles size={13} className="text-[#C4785A]" />}
-            onClick={() => resetFreelanceMockData?.()}
-            title={t('common_reset_demo') || 'Recharger Données Démo'}
-          >
-            <span className="hidden sm:inline">{t('common_reset_demo') || 'Démo'}</span>
-          </AtriumButton>
+
 
           <AtriumButton
             variant="outline"

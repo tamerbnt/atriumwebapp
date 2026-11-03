@@ -64,12 +64,7 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
     lastSyncedAt,
   } = useAtriumStore();
 
-  // Auto-heal empty mock state on mount
-  useEffect(() => {
-    if (!pmBatDeliverables || pmBatDeliverables.length === 0) {
-      resetPmMockData();
-    }
-  }, [pmBatDeliverables, resetPmMockData]);
+
 
   const [isBranchDropdownOpen, setIsBranchDropdownOpen] = useState(false);
 
@@ -413,15 +408,7 @@ export const ProjectCreaView: React.FC<ProjectCreaViewProps> = ({ initialTab }) 
             )}
           </div>
 
-          {/* Demo Data Recharge Button */}
-          <button
-            onClick={() => resetPmMockData()}
-            title="Recharger les livrables créatifs"
-            className="px-3 py-1.5 text-xs font-semibold text-zinc-700 dark:text-zinc-300 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 rounded-xl flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer"
-          >
-            <Sparkles className="w-3.5 h-3.5 text-[#C4785A]" />
-            <span>Demo Data</span>
-          </button>
+
 
           {/* New Deliverable Upload Button */}
           <AtriumButton

@@ -48,7 +48,6 @@ export const FreelanceFinanceView: React.FC = () => {
     currentBusiness,
     switchBusiness,
     switchBranch,
-    resetFreelanceMockData,
     showToast,
     isSyncing,
     networkMode,
@@ -68,13 +67,6 @@ export const FreelanceFinanceView: React.FC = () => {
   const [pinnedExpenseIds, setPinnedExpenseIds] = useState<Set<string>>(new Set());
   const [expenseSortBy, setExpenseSortBy] = useState<string>('amount');
   const [expenseSortDir, setExpenseSortDir] = useState<'asc' | 'desc'>('desc');
-
-  // Auto-heal if store empty
-  useEffect(() => {
-    if (freelanceExpenses.length === 0 && freelanceInvoices.length === 0) {
-      resetFreelanceMockData?.();
-    }
-  }, [freelanceExpenses.length, freelanceInvoices.length, resetFreelanceMockData]);
 
   // New Expense Form
   const [vendor, setVendor] = useState('');
@@ -461,19 +453,7 @@ export const FreelanceFinanceView: React.FC = () => {
                   </div>
                   <span>{language === 'ar' ? 'تصدير CSV' : language === 'fr' ? 'Exporter CSV' : 'Export CSV'}</span>
                 </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsQuickActionsOpen(false);
-                    resetFreelanceMockData?.();
-                  }}
-                  className="w-full h-10 px-2.5 rounded-xl hover:bg-[#F8F9FA] dark:hover:bg-neutral-700 flex items-center gap-2.5 text-xs text-neutral-800 dark:text-neutral-200 font-medium transition-colors cursor-pointer text-left rtl:text-right"
-                >
-                  <div className="w-[30px] h-[30px] rounded-lg bg-amber-500/15 text-amber-600 flex items-center justify-center shrink-0">
-                    <Sparkles size={15} />
-                  </div>
-                  <span>{language === 'ar' ? 'إعادة ضبط البيانات' : 'Reset Demo Data'}</span>
-                </button>
+
               </div>
             )}
           </div>

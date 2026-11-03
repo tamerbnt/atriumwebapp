@@ -53,7 +53,6 @@ export const EducationAttendanceView: React.FC = () => {
     recordEduGrade,
     deleteEduGrade,
     batchRecordAttendance,
-    resetEduMockData,
     showToast,
     isSyncing,
     networkMode,
@@ -61,15 +60,6 @@ export const EducationAttendanceView: React.FC = () => {
     lastSyncedAt,
     isSyncTimeout,
   } = useAtriumStore();
-
-  // Auto-healing
-  const hasAutoHealed = useRef(false);
-  useEffect(() => {
-    if (!hasAutoHealed.current && eduStudents.length === 0 && resetEduMockData) {
-      hasAutoHealed.current = true;
-      resetEduMockData();
-    }
-  }, [eduStudents.length, resetEduMockData]);
 
   const [activeTab, setActiveTab] = useState<ModeKey>('attendance');
   const [selectedCohortId, setSelectedCohortId] = useState<string>(
@@ -586,17 +576,6 @@ export const EducationAttendanceView: React.FC = () => {
                 </div>
               )}
             </div>
-
-            {/* Seed Demo Data Button */}
-            <button
-              type="button"
-              onClick={resetEduMockData}
-              className="h-10 px-3.5 bg-[#FCEEE8] dark:bg-neutral-800 hover:bg-[#F8DFD4] dark:hover:bg-neutral-700 text-[#C4785A] text-xs font-semibold rounded-xl transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer"
-              title={language === 'ar' ? 'إعادة شحن بيانات تجريبية' : language === 'fr' ? 'Recharger Données Démo' : 'Seed Mock Data'}
-            >
-              <Sparkles size={14} />
-              <span className="hidden sm:inline">{language === 'ar' ? 'بيانات تجريبية' : language === 'fr' ? 'Données Démo' : 'Demo Data'}</span>
-            </button>
 
             {activeTab === 'attendance' ? (
               <AtriumButton

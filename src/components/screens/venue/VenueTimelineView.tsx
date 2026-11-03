@@ -54,14 +54,7 @@ export const VenueTimelineView: React.FC = () => {
     retryCloudSync,
   } = useAtriumStore();
 
-  // Auto-heal empty venue datasets safely once on mount if empty
-  const hasAutoHealed = useRef(false);
-  useEffect(() => {
-    if (!hasAutoHealed.current && (rentableUnits.length === 0 || rentalBookings.length === 0)) {
-      hasAutoHealed.current = true;
-      resetVenueMockData();
-    }
-  }, [rentableUnits.length, rentalBookings.length, resetVenueMockData]);
+
 
   const [selectedDate, setSelectedDate] = useState<string>(
     new Date().toISOString().split('T')[0]
