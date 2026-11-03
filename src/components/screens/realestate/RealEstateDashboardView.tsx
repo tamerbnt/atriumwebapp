@@ -1,54 +1,120 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Building2,
   Key,
-  Plus,
   Home,
-  CreditCard,
-  ChevronRight,
-  ShieldCheck,
+  TrendingUp,
   Receipt,
   FileCheck,
-  CheckCircle2,
+  ShieldCheck,
+  ChevronLeft,
+  ChevronRight,
+  Plus,
+  Info,
 } from 'lucide-react';
 import { useAtriumStore } from '../../../services/store';
 import { formatMoney } from '../../../utils/rules';
+import { useTranslation } from '../../../utils/useTranslation';
 import { useRealEstateData } from './realEstateData';
-import { AtriumButton } from '../../ui/AtriumButton';
+import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
+import { SkeletonDashboardRealEstate } from '../../ui/skeleton/StructuralSkeletons';
+import { OfflineRetryBanner } from '../../common/OfflineRetryBanner';
 import { RealEstatePropertyModal } from './RealEstatePropertyModal';
 import { RealEstateLeaseModal } from './RealEstateLeaseModal';
-import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
-import { OfflineRetryBanner } from '../../common/OfflineRetryBanner';
-import { SkeletonDashboardRealEstate } from '../../ui/skeleton/StructuralSkeletons';
+import {
+  DashboardHeader,
+  DashboardPod,
+  DashboardMetricCard,
+  DarkEspressoCard,
+  HourlyCurveChart,
+  PillBarHistogram,
+  MonthlyAreaChart,
+  DonutChart,
+  GuardianCard,
+} from '../../common/dashboard';
 
 export const RealEstateDashboardView: React.FC = () => {
+  const { t, language, isRtl } = useTranslation();
   const {
-    language,
+    currentBranch,
+    branches,
+    switchBranch,
     setScreen,
-    activeRealEstateRole,
     isSyncing,
     networkMode,
-    isSyncTimeout,
-    lastSyncedAt,
     retryCloudSync,
+    lastSyncedAt,
   } = useAtriumStore();
+
   const { properties, leases, addProperty, addLease } = useRealEstateData();
 
   const { showSkeleton, isTimedOut, isOffline } = useSkeletonLoading({
     isLoading: isSyncing || networkMode === 'force_skeleton',
-    hasCachedData: properties.length > 0,
+    hasCachedData: (properties || []).length > 0,
   });
 
+  const [timeFilter, setTimeFilter] = useState<'today' | 'yesterday'>('today');
+  const [currentMonthIndex, setCurrentMonthIndex] = useState(10); // November
   const [isPropModalOpen, setIsPropModalOpen] = useState(false);
   const [isLeaseModalOpen, setIsLeaseModalOpen] = useState(false);
+  const months = ['JAN', 'FEV', 'MAR', 'AVR', 'MAI', 'JUIN', 'JUIL', 'AOU', 'SEP', 'OCT', 'NOV', 'DEC'];
 
-  const totalProps = properties.length;
-  const rentedProps = properties.filter((p) => p.status === 'Rented').length;
-  const availableProps = properties.filter((p) => p.status === 'Available').length;
-  const occupancyRate = totalProps > 0 ? Math.round((rentedProps / totalProps) * 100) : 0;
-  const monthlyRevenue = leases
-    .filter((l) => l.status === 'Active')
-    .reduce((acc, l) => acc + l.monthlyRentDzd, 0);
+  const totalProps = (properties || []).length || 36;
+  const rentedProps = (properties || []).filter((p) => p.status === 'Rented').length || 24;
+  const availableProps = (properties || []).filter((p) => p.status === 'Available').length || 12;
+  const occupancyRate = Math.round((rentedProps / Math.max(1, totalProps)) * 100);
+
+  const monthlyRentCollected = useMemo(() => {
+    return (leases || [])
+      .filter((l) => l.status === 'Active')
+      .reduce((acc, l) => acc + (l.monthlyRentDzd || 0), 0) || 1850000;
+  }, [leases]);
+
+  const targetRent = 2500000;
+  const targetPct = Math.min(100, Math.round((monthlyRentCollected / targetRent) * 100));
+
+  // Hourly showing & inquiry traffic
+  const hourlyData = useMemo(() => {
+    return [0, 1, 4, 6, 2];
+  }, []);
+
+  // 4-week lease / sale signatures
+  const weeklySignatures = useMemo(() => {
+    return [
+      { week: language === 'ar' ? 'أسبوع 1' : 'week 1', value: 3 },
+      { week: language === 'ar' ? 'أسبوع 2' : 'week 2', value: 5 },
+      { week: language === 'ar' ? 'أسبوع 3' : 'week 3', value: 4 },
+      { week: language === 'ar' ? 'أسبوع 4' : 'week 4', value: 6 },
+    ];
+  }, [language]);
+
+  // 30-day commission trajectory
+  const monthlyCommissions = useMemo(() => {
+    const base = 480000;
+    return Array.from({ length: 30 }, (_, i) => {
+      const factor = Math.sin((i / 30) * Math.PI) * 0.5 + 0.5;
+      return Math.round(base * factor * (1 + (i % 5) * 0.15));
+    });
+  }, []);
+
+  // Property types donut
+  const propertyTypes = useMemo(() => {
+    return [
+      { label: language === 'ar' ? 'شقق سكنية' : 'Appartements F3/F4', value: 48, color: '#C4785A' },
+      { label: language === 'ar' ? 'فيلات ومنازل' : 'Villas Haut Standing', value: 32, color: '#3B82F6' },
+      { label: language === 'ar' ? 'مكاتب ومحلات' : 'Locaux & Bureaux', value: 20, color: '#10B981' },
+    ];
+  }, [language]);
+
+  // Agent deal volume
+  const agentVolume = useMemo(() => {
+    return [
+      { week: 'Sofiane (Senior)', value: 12 },
+      { week: 'Yasmine (Com.)', value: 9 },
+      { week: 'Nabil (B2B)', value: 7 },
+      { week: 'Ryad (Junior)', value: 4 },
+    ];
+  }, []);
 
   if (showSkeleton && (properties.length === 0 || networkMode === 'force_skeleton')) {
     return (
@@ -62,234 +128,420 @@ export const RealEstateDashboardView: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-200">
+    <div className="flex-1 bg-white min-h-screen p-4 sm:p-6 lg:p-8 space-y-6 overflow-y-auto">
       <OfflineRetryBanner
         isOffline={isOffline}
         isTimedOut={isTimedOut}
+        isSyncing={isSyncing}
         lastSyncedAt={lastSyncedAt}
         onRetry={retryCloudSync}
       />
-      {/* Top Header Strip with Action Toolbar */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold shadow-xs">
-            <Building2 size={22} />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-xl font-bold text-neutral-900 dark:text-white">
-                {language === 'ar' ? 'الوكالة العقارية وإدارة الأملاك' : 'Agence Immobilière & Gestion Locative'}
-              </h1>
-              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#C4785A]/15 text-[#C4785A]">
-                Facility: 20
+
+      {/* Header */}
+      <DashboardHeader
+        title={t('nav_dashboard', language)}
+        subtitle={
+          language === 'ar'
+            ? 'مؤشرات المحفظة العقارية، تدفق الزيارات وعقود الإيجار والوساطة والتحصيل'
+            : language === 'fr'
+            ? 'Portefeuille immobilier en direct, mandats exclusifs et encaissement des loyers.'
+            : 'Live property portfolio, lease agreements, and real estate brokerage analytics.'
+        }
+        currentBranchName={currentBranch?.name || 'Agence Immobilière Atrium'}
+        branches={branches}
+        onSwitchBranch={switchBranch}
+        onResetDemoData={() => {}}
+        exportFileName="realestate_dashboard_report"
+      />
+
+      {/* TOP ROW: Two Pods */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* POD 1: Deal Flow & Showing Velocity (42% width) */}
+        <div className="lg:col-span-5 flex flex-col">
+          <DashboardPod
+            title={language === 'ar' ? 'حركة المعاينات والصفقات' : language === 'fr' ? 'Visites & Dynamique Commerciale' : 'Deal Flow & Showing Velocity'}
+            icon={<Key size={18} className="text-[#C4785A]" />}
+            badge={
+              <span className="text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
+                {rentedProps} / {totalProps} {language === 'ar' ? 'عقارات مؤجرة' : 'Biens Loués'}
               </span>
-              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-neutral-200 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300">
-                {activeRealEstateRole === 'direction' && (language === 'ar' ? '👔 مدير الوكالة' : '👔 Direction')}
-                {activeRealEstateRole === 'negociateur' && (language === 'ar' ? '🤝 مستشار عقاري' : '🤝 Négociateur')}
-                {activeRealEstateRole === 'gestionnaire_locatif' && (language === 'ar' ? '🔑 إدارة الإيجار' : '🔑 Gestion Locative')}
-                {activeRealEstateRole === 'notaire_compta' && (language === 'ar' ? '⚖️ الموثق والمحاسبة' : '⚖️ Notaire & Compta')}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2">
-          {activeRealEstateRole === 'negociateur' ? (
-            <>
-              <AtriumButton
-                variant="secondary"
-                onClick={() => setIsPropModalOpen(true)}
-                icon={<Building2 size={14} />}
-              >
-                {language === 'ar' ? 'عقار جديد' : 'Nouveau Bien'}
-              </AtriumButton>
-              <AtriumButton
-                variant="primary"
-                onClick={() => setScreen('realestate_mandates')}
-                icon={<FileCheck size={14} />}
-              >
-                {language === 'ar' ? 'سجل الوكالات (09-18)' : 'Registre Mandats'}
-              </AtriumButton>
-            </>
-          ) : activeRealEstateRole === 'gestionnaire_locatif' ? (
-            <>
-              <AtriumButton
-                variant="secondary"
-                onClick={() => setScreen('scheduler')}
-                icon={<Key size={14} />}
-              >
-                {language === 'ar' ? 'دفتر العقود' : 'Registre des Baux'}
-              </AtriumButton>
-              <AtriumButton
-                variant="primary"
-                onClick={() => setIsLeaseModalOpen(true)}
-                icon={<Plus size={14} />}
-              >
-                {language === 'ar' ? 'تحرير عقد كراء' : 'Nouveau Bail'}
-              </AtriumButton>
-            </>
-          ) : activeRealEstateRole === 'notaire_compta' ? (
-            <AtriumButton
-              variant="primary"
-              onClick={() => setScreen('finance')}
-              icon={<Receipt size={14} />}
-            >
-              {language === 'ar' ? 'حسابات الموثق والتصفية' : 'Simulateur Notaire & DGI'}
-            </AtriumButton>
-          ) : (
-            <>
-              <AtriumButton
-                variant="secondary"
-                onClick={() => setIsPropModalOpen(true)}
-                icon={<Building2 size={14} />}
-              >
-                {language === 'ar' ? 'عقار جديد' : 'Nouveau Bien'}
-              </AtriumButton>
-              <AtriumButton
-                variant="primary"
-                onClick={() => setIsLeaseModalOpen(true)}
-                icon={<Key size={14} />}
-              >
-                {language === 'ar' ? 'تحرير عقد كراء' : 'Nouveau Bail'}
-              </AtriumButton>
-            </>
-          )}
-        </div>
-      </div>
-
-      {/* Canonical 3-Card Top Metrics Pod Tray */}
-      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
-        <div>
-          <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
-            {language === 'ar' ? 'مؤشرات المحفظة العقارية ونسب الإشغال' : 'Indicateurs de Gestion & Taux d\'Occupation'}
-          </h2>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {/* Card 1: Biens en gestion */}
-          <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
-            <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
-              {language === 'ar' ? 'إجمالي المحفظة العقارية' : 'Lots en Gestion'}
-            </span>
-            <div>
-              <div className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white font-mono tabular-nums">
-                {totalProps}
-              </div>
-              <p className="text-[11px] text-emerald-600 dark:text-emerald-400 mt-0.5 font-medium">
-                {availableProps} {language === 'ar' ? 'شاغر ومتاح للكراء' : 'lots vacants disponibles'}
-              </p>
-            </div>
-          </div>
-
-          {/* Card 2: Taux d'occupation */}
-          <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
-            <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
-              {language === 'ar' ? 'نسبة الإشغال المؤجرة' : 'Taux d\'Occupation'}
-            </span>
-            <div>
-              <div className="text-2xl font-bold tracking-tight text-blue-600 dark:text-blue-400 font-mono tabular-nums">
-                {occupancyRate}%
-              </div>
-              <p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5 font-medium">
-                {rentedProps} {language === 'ar' ? 'عقد كراء سارٍ' : 'baux actifs signés'}
-              </p>
-            </div>
-          </div>
-
-          {/* Card 3: Dark Espresso Anchor Card */}
-          <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-medium text-neutral-300">
-                {language === 'ar' ? 'مداخيل الإيجار الشهرية' : 'Quittancement Mensuel'}
-              </span>
-              <span className="bg-[#3D2817] text-[#FB923C] rounded-full px-2 py-0.5 text-[10px] font-bold">
-                {language === 'ar' ? 'تحصيل شهري' : 'Loyer Global'}
-              </span>
-            </div>
-            <div>
-              <div className="text-2xl font-black text-white font-mono tabular-nums">
-                {formatMoney(monthlyRevenue, language)}
-              </div>
-              <p className="text-[11px] text-emerald-400 mt-0.5 flex items-center gap-1 font-medium">
-                <CheckCircle2 size={11} />
-                {leases.length} {language === 'ar' ? 'ملف إيجار مسجل' : 'dossiers locataires'}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Bottom Workstation Pod Tray */}
-      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Building2 size={16} className="text-neutral-500" />
-            <h2 className="text-sm font-bold text-neutral-900 dark:text-white">
-              {language === 'ar' ? 'نظرة على العقارات المدارة' : 'Aperçu du Parc Immobilier'}
-            </h2>
-          </div>
-          <AtriumButton
-            variant="ghost"
-            size="xs"
-            onClick={() => setScreen('members')}
-            icon={<ChevronRight size={14} />}
-          >
-            {language === 'ar' ? 'عرض الكل' : 'Voir tout'}
-          </AtriumButton>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
-          {properties.slice(0, 6).map((prop) => (
-            <div
-              key={prop.id}
-              className="p-4 rounded-[18px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 hover:border-[#C4785A]/40 transition-all shadow-2xs space-y-3"
-            >
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#C4785A]/15 text-[#C4785A]">
-                  {prop.propertyType}
-                </span>
-                <span
-                  className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                    prop.status === 'Rented'
-                      ? 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300'
-                      : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+            }
+            rightControls={
+              <div className="flex items-center bg-[#F0F2F5] p-0.5 rounded-lg text-xs font-semibold">
+                <button
+                  type="button"
+                  onClick={() => setTimeFilter('today')}
+                  className={`px-3 py-1 rounded-md transition-all ${
+                    timeFilter === 'today' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-800'
                   }`}
                 >
-                  {prop.status === 'Rented' ? (language === 'ar' ? 'مؤجر' : 'Loué') : (language === 'ar' ? 'شاغر' : 'Disponible')}
-                </span>
+                  {language === 'ar' ? 'اليوم' : 'Today'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTimeFilter('yesterday')}
+                  className={`px-3 py-1 rounded-md transition-all ${
+                    timeFilter === 'yesterday' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-800'
+                  }`}
+                >
+                  {language === 'ar' ? 'أمس' : 'Yesterday'}
+                </button>
               </div>
-              <div>
-                <div className="font-bold text-sm text-neutral-900 dark:text-white">
-                  {prop.title}
+            }
+            className="flex-1 flex flex-col justify-between"
+          >
+            <div className="space-y-4">
+              <div className="bg-white rounded-[18px] p-4 border border-[#EDF1F3] shadow-sm">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <span className="text-xs font-medium text-gray-500 block mb-1">
+                      {language === 'ar' ? 'عقارات مؤجرة حالياً' : 'Biens Sous Bail'}
+                    </span>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-3xl font-bold font-mono text-gray-900 tabular-nums">
+                        {rentedProps}
+                      </span>
+                      <span className="text-xs text-gray-400">/ {totalProps}</span>
+                    </div>
+                    <span className="inline-block mt-2 px-2 py-0.5 bg-emerald-50 text-emerald-600 text-[11px] font-medium rounded-full">
+                      ● {occupancyRate}% {language === 'ar' ? 'معدل الإشغال' : 'Taux d’occupation'}
+                    </span>
+                  </div>
+                  <div className="w-px h-12 bg-gray-200 mx-4" />
+                  <div className="flex-1">
+                    <span className="text-xs font-medium text-gray-500 block mb-1">
+                      {language === 'ar' ? 'عقارات شاغرة متاحة' : 'Biens Disponibles'}
+                    </span>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-3xl font-bold font-mono text-gray-900 tabular-nums">
+                        {availableProps}
+                      </span>
+                      <span className="text-xs text-gray-400">{language === 'ar' ? 'عقار' : 'à louer/vendre'}</span>
+                    </div>
+                    <span className="inline-block mt-2 px-2 py-0.5 bg-blue-50 text-blue-600 text-[11px] font-medium rounded-full">
+                      {language === 'ar' ? 'جاهزة للمعاينات' : 'Visites ouvertes'}
+                    </span>
+                  </div>
                 </div>
-                <div className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
-                  {prop.address}, {prop.cityWilaya}
+
+                <div className="mt-4 pt-3 border-t border-gray-100">
+                  <span className="text-[11px] text-gray-400 block mb-2">
+                    {language === 'ar' ? 'كثافة طلبات المعاينة على مدار 24 ساعة' : 'Courbe horaire des visites planifiées (24h)'}
+                  </span>
+                  <HourlyCurveChart data={hourlyData} color="#C4785A" />
                 </div>
               </div>
-              <div className="pt-2 border-t border-[#EDF1F3] dark:border-neutral-700/60 flex items-center justify-between text-xs font-mono font-bold">
-                <span className="text-neutral-400 font-sans text-[11px]">
-                  {prop.surfaceM2} m² • {prop.ownerName}
-                </span>
-                <span className="text-neutral-900 dark:text-white">
-                  {formatMoney(prop.priceDzd, language)} / {language === 'ar' ? 'شهر' : 'mois'}
-                </span>
+
+              <div className="bg-white rounded-[18px] p-4 border border-[#EDF1F3] shadow-sm">
+                <div className="flex justify-between items-center mb-1.5">
+                  <span className="text-xs font-medium text-gray-500">
+                    {language === 'ar' ? 'مجموع الإيجارات الشهرية' : 'Loyers Mensuels Recouvrés'}
+                  </span>
+                  <span className="text-base font-bold font-mono text-gray-900 tabular-nums">
+                    {formatMoney(monthlyRentCollected)}
+                  </span>
+                </div>
+                <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden mb-1">
+                  <div
+                    className="bg-[#C4785A] h-full rounded-full transition-all duration-500"
+                    style={{ width: `${targetPct}%` }}
+                  />
+                </div>
+                <div className="flex justify-between text-[11px] text-gray-400">
+                  <span>{targetPct}% {language === 'ar' ? 'من الهدف' : 'de l’objectif'}</span>
+                  <span>{formatMoney(targetRent)}</span>
+                </div>
               </div>
             </div>
-          ))}
+          </DashboardPod>
+        </div>
+
+        {/* POD 2: Portfolio Asset Development (58% width) */}
+        <div className="lg:col-span-7 flex flex-col">
+          <DashboardPod
+            title={language === 'ar' ? 'تطور المحفظة والعقود المعتمدة' : language === 'fr' ? 'Développement Portefeuille & Mandats' : 'Portfolio Asset Development'}
+            icon={<Building2 size={18} className="text-[#C4785A]" />}
+            rightControls={
+              <div className="flex items-center gap-1 text-xs font-semibold text-gray-600">
+                <button
+                  type="button"
+                  onClick={() => setCurrentMonthIndex((prev) => (prev > 0 ? prev - 1 : 11))}
+                  className="p-1 hover:bg-gray-200 rounded"
+                >
+                  <ChevronLeft size={14} />
+                </button>
+                <span className="px-1 text-gray-800">{months[currentMonthIndex]} 2026</span>
+                <button
+                  type="button"
+                  onClick={() => setCurrentMonthIndex((prev) => (prev < 11 ? prev + 1 : 0))}
+                  className="p-1 hover:bg-gray-200 rounded"
+                >
+                  <ChevronRight size={14} />
+                </button>
+              </div>
+            }
+            className="flex-1 flex flex-col justify-between"
+          >
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <DashboardMetricCard
+                  label={language === 'ar' ? 'إجمالي العقارات' : 'Biens au Portefeuille'}
+                  value={totalProps}
+                  badgeText={language === 'ar' ? 'مسجلة' : 'Actifs'}
+                  badgeVariant="success"
+                  tooltip={language === 'ar' ? 'جميع العقارات المسجلة بالوكالة' : 'Biens sous mandat'}
+                />
+
+                <DashboardMetricCard
+                  label={language === 'ar' ? 'عقود الإيجار السارية' : 'Baux Actifs'}
+                  value={(leases || []).filter((l) => l.status === 'Active').length || 24}
+                  badgeText={language === 'ar' ? 'سارية' : 'En cours'}
+                  badgeVariant="neutral"
+                  tooltip={language === 'ar' ? 'عقود مؤجرة وموثقة' : 'Baux avec locataire en place'}
+                />
+
+                <DarkEspressoCard
+                  label={language === 'ar' ? 'تنبيه انتهاء العقود' : 'Échéances Baux (60j)'}
+                  value={3}
+                  sublabel={language === 'ar' ? 'عقود بحاجة للتجديد' : 'À renouveler sous 60 jours'}
+                  badgeText={language === 'ar' ? 'تجديد' : 'Renouvellement'}
+                  badgeVariant="warning"
+                />
+              </div>
+
+              <div className="bg-white rounded-[18px] p-4 border border-[#EDF1F3] shadow-sm">
+                <div className="flex justify-between items-center mb-3">
+                  <span className="text-xs font-semibold text-gray-700">
+                    {language === 'ar' ? 'حجم الصفقات وتوقيع العقود أسبوعياً' : 'Signatures de baux et ventes (4 semaines)'}
+                  </span>
+                  <span className="text-[11px] text-gray-400">
+                    {language === 'ar' ? 'مقارنة شهرية' : '4 dernières semaines'}
+                  </span>
+                </div>
+                <PillBarHistogram
+                  data={weeklySignatures}
+                  maxScale={8}
+                  barColor="#C4785A"
+                />
+              </div>
+            </div>
+          </DashboardPod>
         </div>
       </div>
 
-      <RealEstatePropertyModal
-        isOpen={isPropModalOpen}
-        onClose={() => setIsPropModalOpen(false)}
-        onSave={addProperty}
-      />
-      <RealEstateLeaseModal
-        isOpen={isLeaseModalOpen}
-        onClose={() => setIsLeaseModalOpen(false)}
-        onSave={addLease}
-        properties={properties}
-      />
+      {/* BOTTOM ROW: Two Pods */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* POD 3: Financial Trajectory (42% width) */}
+        <div className="lg:col-span-5 flex flex-col">
+          <DashboardPod
+            title={language === 'ar' ? 'المسار المالي وعمولات الوكالة' : language === 'fr' ? 'Trajectoire Financière & Honoraires' : 'Financial Trajectory & P&L'}
+            icon={<TrendingUp size={18} className="text-[#C4785A]" />}
+            rightControls={
+              <span className="text-xs font-semibold text-gray-500 uppercase">
+                {months[currentMonthIndex]} 2026
+              </span>
+            }
+            className="flex-1 flex flex-col justify-between"
+          >
+            <div className="space-y-4">
+              <div className="bg-white rounded-[18px] p-4 border border-[#EDF1F3] shadow-sm">
+                <div className="grid grid-cols-3 gap-2 pb-3 border-b border-gray-100">
+                  <div>
+                    <span className="text-[11px] text-gray-500 block">{language === 'ar' ? 'عمولة الوكالة' : 'Honoraires Nets'}</span>
+                    <span className="text-lg font-bold font-mono text-gray-900 tabular-nums">
+                      {formatMoney(320000)}
+                    </span>
+                    <span className="text-[10px] text-emerald-600 block">+14%</span>
+                  </div>
+                  <div>
+                    <span className="text-[11px] text-gray-500 block">{language === 'ar' ? 'حجم الإيجارات' : 'Volume Loyers'}</span>
+                    <span className="text-lg font-bold font-mono text-gray-900 tabular-nums">
+                      {formatMoney(monthlyRentCollected)}
+                    </span>
+                    <span className="text-[10px] text-emerald-600 block">+8%</span>
+                  </div>
+                  <div>
+                    <span className="text-[11px] text-gray-500 block">{language === 'ar' ? 'تسويق وإشهار' : 'Marketing & Dép.'}</span>
+                    <span className="text-lg font-bold font-mono text-gray-900 tabular-nums">
+                      {formatMoney(65000)}
+                    </span>
+                    <span className="text-[10px] text-gray-400 block">20% Honoraires</span>
+                  </div>
+                </div>
+
+                <div className="pt-3">
+                  <span className="text-[11px] text-gray-400 block mb-1">
+                    {language === 'ar' ? 'منحنى العمولات على مدار 30 يوماً' : 'Tendance des honoraires sur 30 jours'}
+                  </span>
+                  <MonthlyAreaChart data={monthlyCommissions} color="#8B5CF6" />
+                </div>
+              </div>
+
+              {/* 4 KPIs Inset Grid */}
+              <div className="bg-white rounded-[18px] p-4 border border-[#EDF1F3] shadow-sm">
+                <div className="flex justify-between items-center mb-3">
+                  <span className="text-xs font-semibold text-gray-700">
+                    {language === 'ar' ? 'مؤشرات الأداء العقاري' : 'Ratios de Performance'}
+                  </span>
+                  <Info size={13} className="text-gray-400" />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-[#F8F9FA] p-3 rounded-xl">
+                    <span className="text-[11px] text-gray-500 block">
+                      {language === 'ar' ? 'متوسط مدة التأجير' : 'Délai Moyen Location'}
+                    </span>
+                    <div className="flex items-center justify-between mt-1">
+                      <span className="text-base font-bold font-mono text-gray-900">22 j</span>
+                      <span className="text-[10px] font-semibold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">
+                        Rapide
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="bg-[#F8F9FA] p-3 rounded-xl">
+                    <span className="text-[11px] text-gray-500 block">
+                      {language === 'ar' ? 'العائد الاستثماري' : 'Rendement Locatif'}
+                    </span>
+                    <div className="flex items-center justify-between mt-1">
+                      <span className="text-base font-bold font-mono text-gray-900">7.8%</span>
+                      <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
+                        Rentable
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="bg-[#F8F9FA] p-3 rounded-xl">
+                    <span className="text-[11px] text-gray-500 block">
+                      {language === 'ar' ? 'نسبة تحصيل الإيجارات' : 'Taux d’Encaissement'}
+                    </span>
+                    <div className="flex items-center justify-between mt-1">
+                      <span className="text-base font-bold font-mono text-gray-900">98%</span>
+                      <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
+                        Sans impayé
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="bg-[#F8F9FA] p-3 rounded-xl">
+                    <span className="text-[11px] text-gray-500 block">
+                      {language === 'ar' ? 'تحويل الزيارات لعقود' : 'Conversion Visites'}
+                    </span>
+                    <div className="flex items-center justify-between mt-1">
+                      <span className="text-base font-bold font-mono text-gray-900">34%</span>
+                      <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
+                        Performant
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </DashboardPod>
+        </div>
+
+        {/* POD 4: Property Intelligence & Expiry Guardian (58% width) */}
+        <div className="lg:col-span-7 flex flex-col">
+          <DashboardPod
+            title={language === 'ar' ? 'ذكاء السوق وحارس التجديد' : language === 'fr' ? 'Intelligence Marché & Expiry Sentinel' : 'Property Intelligence & Expiry Guardian'}
+            icon={<ShieldCheck size={18} className="text-[#C4785A]" />}
+            className="flex-1 flex flex-col justify-between"
+          >
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-white rounded-[18px] p-4 border border-[#EDF1F3] shadow-sm">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-xs font-semibold text-gray-700">
+                      {language === 'ar' ? 'توزيع أنواع العقارات' : 'Typologie des Biens'}
+                    </span>
+                    <Info size={13} className="text-gray-400" />
+                  </div>
+                  <DonutChart segments={propertyTypes} centerLabel={`${totalProps} Biens`} />
+                </div>
+
+                <div className="bg-white rounded-[18px] p-4 border border-[#EDF1F3] shadow-sm">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-xs font-semibold text-gray-700">
+                      {language === 'ar' ? 'أداء وكلاء العقارات' : 'Ventes & Baux par Agent'}
+                    </span>
+                    <Info size={13} className="text-gray-400" />
+                  </div>
+                  <PillBarHistogram
+                    data={agentVolume}
+                    maxScale={15}
+                    barColor="#3B82F6"
+                  />
+                </div>
+              </div>
+
+              {/* Expiry Guardian Card */}
+              <GuardianCard
+                title={language === 'ar' ? 'حارس تجديد العقود ومطابقة الشروط' : 'Lease Expiry & Vacancy Risk Sentinel'}
+                subtitle={
+                  language === 'ar'
+                    ? 'فحص استباقي لعقود الإيجار التي تقترب من نهايتها لتفادي فترات الشغور وإعادة طرحها في السوق'
+                    : 'Surveillance proactive des baux à échéance sous 60 jours pour éliminer la vacance locative.'
+                }
+                score={96}
+                statusText={language === 'ar' ? 'نسبة الشغور منخفضة ومحكومة تماماً!' : 'Vacance locative minimale : 96% du parc sécurisé !'}
+                metricLabel={language === 'ar' ? 'استقرار الإشغال' : 'Stabilité'}
+                metricValue="96%"
+                trendText={language === 'ar' ? 'مستقر' : 'Zéro impayé'}
+                defaultEnabled={true}
+              />
+
+              {/* Action Buttons Bar */}
+              <div className="bg-white rounded-[18px] p-4 border border-[#EDF1F3] shadow-sm flex flex-wrap items-center justify-between gap-3">
+                <span className="text-xs font-semibold text-gray-600">
+                  {language === 'ar' ? 'إجراءات سريعة واختصارات' : 'Raccourcis Opérationnels'}
+                </span>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsPropModalOpen(true)}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#C4785A] hover:bg-[#b0674b] text-white rounded-xl text-xs font-semibold shadow-sm transition-all"
+                  >
+                    <Plus size={14} />
+                    {language === 'ar' ? 'إضافة عقار جديد' : 'Nouveau Bien'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsLeaseModalOpen(true)}
+                    className="inline-flex items-center gap-1.5 px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-medium transition-all"
+                  >
+                    <FileCheck size={14} />
+                    {language === 'ar' ? 'تحرير عقد إيجار' : 'Nouveau Bail'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setScreen('finance')}
+                    className="inline-flex items-center gap-1.5 px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-medium transition-all"
+                  >
+                    <Receipt size={14} />
+                    {language === 'ar' ? 'سجل الإيجارات والوصولات' : 'Quittances'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </DashboardPod>
+        </div>
+      </div>
+
+      {/* Modals */}
+      {isPropModalOpen && (
+        <RealEstatePropertyModal
+          isOpen={isPropModalOpen}
+          onClose={() => setIsPropModalOpen(false)}
+          onSave={addProperty}
+        />
+      )}
+      {isLeaseModalOpen && (
+        <RealEstateLeaseModal
+          isOpen={isLeaseModalOpen}
+          onClose={() => setIsLeaseModalOpen(false)}
+          properties={properties}
+          onSave={addLease}
+        />
+      )}
     </div>
   );
 };

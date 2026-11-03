@@ -1723,12 +1723,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
           label: t('nav_home', language),
         },
         {
-          id: 'analytics',
-          icon: <BarChart2 size={19} />,
-          title: t('nav_analytics', language),
-          label: t('nav_analytics', language),
-        },
-        {
           id: 'members',
           icon: <Users size={19} />,
           title: terminology.members,

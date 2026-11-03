@@ -1,313 +1,539 @@
-import React, { useState } from 'react';
-import { Sprout, Tractor, Scale, Droplets, Layers, Calendar, CheckCircle2, Plus, ArrowRight, ShieldCheck } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import {
+  Sprout,
+  Tractor,
+  Droplets,
+  Calendar,
+  TrendingUp,
+  Receipt,
+  ShieldCheck,
+  Building2,
+  ChevronLeft,
+  ChevronRight,
+  Plus,
+  Info,
+} from 'lucide-react';
 import { useAtriumStore } from '../../../services/store';
 import { formatMoney } from '../../../utils/rules';
+import { useTranslation } from '../../../utils/useTranslation';
 import { useAgricultureData } from './agricultureData';
-import { AtriumButton } from '../../ui/AtriumButton';
-import { AgricultureParcelModal } from './AgricultureParcelModal';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
-import { OfflineRetryBanner } from '../../common/OfflineRetryBanner';
 import { SkeletonDashboardAgriculture } from '../../ui/skeleton/StructuralSkeletons';
+import { OfflineRetryBanner } from '../../common/OfflineRetryBanner';
+import { AgricultureParcelModal } from './AgricultureParcelModal';
+import {
+  DashboardHeader,
+  DashboardPod,
+  DashboardMetricCard,
+  DarkEspressoCard,
+  HourlyCurveChart,
+  PillBarHistogram,
+  MonthlyAreaChart,
+  DonutChart,
+  GuardianCard,
+} from '../../common/dashboard';
 
 export const AgricultureDashboardView: React.FC = () => {
+  const { t, language, isRtl } = useTranslation();
   const {
-    language,
+    currentBranch,
+    branches,
+    switchBranch,
+    setScreen,
     isSyncing,
     networkMode,
-    isSyncTimeout,
-    lastSyncedAt,
     retryCloudSync,
+    lastSyncedAt,
   } = useAtriumStore();
-  const isAr = language === 'ar';
-  const { parcels, harvestTickets, livestock, treatmentLogs, addParcel, setSelectedParcelId } = useAgricultureData();
+
+  const { parcels, harvestTickets, livestock, treatmentLogs, addParcel } = useAgricultureData();
 
   const { showSkeleton, isTimedOut, isOffline } = useSkeletonLoading({
     isLoading: isSyncing || networkMode === 'force_skeleton',
-    hasCachedData: parcels.length > 0,
+    hasCachedData: (parcels || []).length > 0,
   });
 
+  const [timeFilter, setTimeFilter] = useState<'today' | 'yesterday'>('today');
+  const [currentMonthIndex, setCurrentMonthIndex] = useState(10); // November
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const months = ['JAN', 'FEV', 'MAR', 'AVR', 'MAI', 'JUIN', 'JUIL', 'AOU', 'SEP', 'OCT', 'NOV', 'DEC'];
 
-  const totalHectares = parcels.reduce((acc, p) => acc + p.surfaceHectares, 0);
-  const totalHarvestNetKg = harvestTickets.reduce((acc, t) => acc + t.netWeightKg, 0);
-  const totalWholesalePayoutDzd = harvestTickets.reduce((acc, t) => acc + (t.netFarmPayoutDzd || t.totalAmountDzd || 0), 0);
-  const totalDailyMilkLiters = livestock
-    .filter((a) => a.dailyProductionLiters)
-    .reduce((acc, a) => acc + (a.dailyProductionLiters || 0), 0);
+  const totalHectares = (parcels || []).reduce((acc, p) => acc + (p.surfaceHectares || 0), 0) || 120;
+  const totalHarvestNetKg = (harvestTickets || []).reduce((acc, t) => acc + (t.netWeightKg || 0), 0) || 28500;
+  const totalWholesalePayoutDzd = (harvestTickets || []).reduce(
+    (acc, t) => acc + (t.netFarmPayoutDzd || t.totalAmountDzd || 0),
+    0
+  ) || 1650000;
 
-  const totalAnrhQuotaM3 = parcels.reduce((acc, p) => acc + (p.anrhAnnualQuotaM3 || 0), 0);
-  const totalAnrhConsumedM3 = parcels.reduce((acc, p) => acc + (p.anrhConsumedM3 || 0), 0);
-  const waterUsagePct = totalAnrhQuotaM3 > 0 ? Math.round((totalAnrhConsumedM3 / totalAnrhQuotaM3) * 100) : 0;
+  const totalAnrhQuotaM3 = (parcels || []).reduce((acc, p) => acc + (p.anrhAnnualQuotaM3 || 0), 0) || 85000;
+  const totalAnrhConsumedM3 = (parcels || []).reduce((acc, p) => acc + (p.anrhConsumedM3 || 0), 0) || 52000;
+  const waterUsagePct = totalAnrhQuotaM3 > 0 ? Math.round((totalAnrhConsumedM3 / totalAnrhQuotaM3) * 100) : 61;
+
+  const dailyHarvestKg = 1850;
+  const dailyTargetKg = 2500;
+  const targetPct = Math.min(100, Math.round((dailyHarvestKg / dailyTargetKg) * 100));
+
+  // Hourly irrigation / sensor curve
+  const hourlyData = useMemo(() => {
+    return [1, 5, 8, 4, 2];
+  }, []);
+
+  // 4-week harvest yield histogram (quintaux)
+  const weeklyYield = useMemo(() => {
+    return [
+      { week: language === 'ar' ? 'أسبوع 1' : 'week 1', value: 85 },
+      { week: language === 'ar' ? 'أسبوع 2' : 'week 2', value: 110 },
+      { week: language === 'ar' ? 'أسبوع 3' : 'week 3', value: 95 },
+      { week: language === 'ar' ? 'أسبوع 4' : 'week 4', value: 130 },
+    ];
+  }, [language]);
+
+  // 30-day crop revenue curve
+  const monthlyRevenue = useMemo(() => {
+    const base = 3200000;
+    return Array.from({ length: 30 }, (_, i) => {
+      const factor = Math.sin((i / 30) * Math.PI) * 0.5 + 0.5;
+      return Math.round(base * factor * (1 + (i % 5) * 0.14));
+    });
+  }, []);
+
+  // Crop variety donut
+  const cropMix = useMemo(() => {
+    return [
+      { label: language === 'ar' ? 'حبوب وقمح صلب' : 'Blé Dur & Céréales', value: 45, color: '#C4785A' },
+      { label: language === 'ar' ? 'أشجار مثمرة وزيتون' : 'Arboriculture & Oliviers', value: 35, color: '#3B82F6' },
+      { label: language === 'ar' ? 'خضروات موسمية' : 'Maraîchage Primeur', value: 20, color: '#10B981' },
+    ];
+  }, [language]);
+
+  // Parcel yield comparison
+  const parcelYield = useMemo(() => {
+    return [
+      { week: 'Parcelle Nord (Blé)', value: 48 },
+      { week: 'Parcelle Est (Olives)', value: 62 },
+      { week: 'Parcelle Ouest (Maraîcher)', value: 54 },
+      { week: 'Plateau Sud (Fourrage)', value: 36 },
+    ];
+  }, []);
 
   if (showSkeleton && (parcels.length === 0 || networkMode === 'force_skeleton')) {
     return (
-      <div className="space-y-6 animate-in fade-in duration-200">
-        <OfflineRetryBanner
-          isOffline={isOffline}
-          isTimedOut={isTimedOut}
-          lastSyncedAt={lastSyncedAt}
-          onRetry={retryCloudSync}
-        />
-        <SkeletonDashboardAgriculture />
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-6 animate-in fade-in duration-200">
-      <OfflineRetryBanner
+      <SkeletonDashboardAgriculture
         isOffline={isOffline}
         isTimedOut={isTimedOut}
         lastSyncedAt={lastSyncedAt}
         onRetry={retryCloudSync}
       />
-      {/* Top Header Strip with Action Toolbar */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold shadow-xs">
-            <Sprout size={22} />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-xl font-bold text-neutral-900 dark:text-white">
-                {isAr ? 'لوحة قيادة المستثمرة الفلاحية' : 'Tableau de Bord du Domaine Agricole'}
-              </h1>
-              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#C4785A]/15 text-[#C4785A]">
-                Facility: 25
+    );
+  }
+
+  return (
+    <div className="flex-1 bg-white min-h-screen p-4 sm:p-6 lg:p-8 space-y-6 overflow-y-auto">
+      <OfflineRetryBanner
+        isOffline={isOffline}
+        isTimedOut={isTimedOut}
+        isSyncing={isSyncing}
+        lastSyncedAt={lastSyncedAt}
+        onRetry={retryCloudSync}
+      />
+
+      {/* Header */}
+      <DashboardHeader
+        title={t('nav_dashboard', language)}
+        subtitle={
+          language === 'ar'
+            ? 'مؤشرات المستثمرة الفلاحية، نظام السقي ANRH، الحصاد وتتبع الثروة الحيوانية والبيع بالجملة'
+            : language === 'fr'
+            ? 'Rendement des parcelles agricoles, quotas d’irrigation ANRH et vente en gros carreau.'
+            : 'Live farm parcel yield, irrigation quota tracking, livestock monitoring, and crop wholesale.'
+        }
+        currentBranchName={currentBranch?.name || 'Exploitation Agricole Atrium Mitidja'}
+        branches={branches}
+        onSwitchBranch={switchBranch}
+        onResetDemoData={() => {}}
+        exportFileName="agriculture_dashboard_report"
+      />
+
+      {/* TOP ROW: Two Pods */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* POD 1: Field Flow & Irrigation Velocity (42% width) */}
+        <div className="lg:col-span-5 flex flex-col">
+          <DashboardPod
+            title={language === 'ar' ? 'حركة الحقول وشبكة السقي' : language === 'fr' ? 'Activité Parcelles & Irrigation' : 'Field Flow & Irrigation Velocity'}
+            icon={<Sprout size={18} className="text-[#C4785A]" />}
+            badge={
+              <span className="text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
+                {(parcels || []).length || 8} {language === 'ar' ? 'قطع فلاحية نشطة' : 'Parcelles Cultivées'}
               </span>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <AtriumButton
-            variant="primary"
-            onClick={() => setIsModalOpen(true)}
-            icon={<Plus size={14} />}
-          >
-            {isAr ? 'قطعة جديدة' : 'Nouvelle Parcelle'}
-          </AtriumButton>
-        </div>
-      </div>
-
-      {/* Canonical 3-Card Top Metrics Pod Tray */}
-      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
-        <div>
-          <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
-            {isAr ? 'مؤشرات الإنتاج والمحاصيل' : 'Indicateurs Globaux de l\'Exploitation'}
-          </h2>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {/* Card 1: Superficie Exploitation */}
-          <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
-            <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
-              {isAr ? 'إجمالي المساحة المستغلة' : 'Superficie Exploitation'}
-            </span>
-            <div>
-              <div className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white font-mono tabular-nums">
-                {totalHectares} <span className="text-sm font-sans font-normal text-neutral-500">Hectares</span>
-              </div>
-              <p className="text-[11px] text-[#C4785A] mt-0.5 font-medium">
-                {parcels.length} {isAr ? 'قطع وبيوت بلاستيكية' : 'parcelles & blocs serres'}
-              </p>
-            </div>
-          </div>
-
-          {/* Card 2: Volume Récolté */}
-          <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
-            <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
-              {isAr ? 'إجمالي المحاصيل المجنية' : 'Volume Récolté (Net)'}
-            </span>
-            <div>
-              <div className="text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 font-mono tabular-nums">
-                {(totalHarvestNetKg / 1000).toFixed(1)} <span className="text-sm font-sans font-normal text-neutral-500">Tonnes</span>
-              </div>
-              <p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5 font-medium">
-                {totalHarvestNetKg.toLocaleString()} kg pesés au pont
-              </p>
-            </div>
-          </div>
-
-          {/* Card 3: Dark Espresso Anchor Card */}
-          <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-medium text-neutral-300">
-                {isAr ? 'مداخيل سوق الجملة (صافي)' : 'Ventes Marchés de Gros'}
-              </span>
-              <span className="bg-[#3D2817] text-[#FB923C] rounded-full px-2 py-0.5 text-[10px] font-bold">
-                Mandataires 6%
-              </span>
-            </div>
-            <div>
-              <div className="text-2xl font-black text-white font-mono tabular-nums">
-                {formatMoney(totalWholesalePayoutDzd)}
-              </div>
-              <p className="text-[11px] text-emerald-400 mt-0.5 flex items-center gap-1 font-medium">
-                <CheckCircle2 size={11} />
-                {totalDailyMilkLiters.toFixed(0)} L/j {isAr ? 'حليب يومي' : 'lait produit'} · {livestock.length} têtes
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* ANRH Borehole Irrigation Water Dial & Budget */}
-        {totalAnrhQuotaM3 > 0 && (
-          <div className="pt-3 border-t border-neutral-200 dark:border-neutral-700/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-            <div className="flex items-center gap-2">
-              <Droplets size={16} className="text-blue-500 shrink-0" />
-              <div>
-                <span className="font-bold text-neutral-800 dark:text-neutral-200">
-                  {isAr ? 'حصة مياه السقي بالآبار الارتوازية (وكالة ANRH) :' : 'Ressources Hydriques & Forages ANRH :'}
-                </span>{' '}
-                <span className="text-neutral-500">
-                  {totalAnrhConsumedM3.toLocaleString()} m³ / {totalAnrhQuotaM3.toLocaleString()} m³ {isAr ? 'مستهلكة' : 'alloués'}
-                </span>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <div className="w-32 bg-neutral-200 dark:bg-neutral-700 h-2 rounded-full overflow-hidden">
-                <div
-                  className={`h-full ${
-                    waterUsagePct >= 85 ? 'bg-amber-500' : 'bg-blue-500'
+            }
+            rightControls={
+              <div className="flex items-center bg-[#F0F2F5] p-0.5 rounded-lg text-xs font-semibold">
+                <button
+                  type="button"
+                  onClick={() => setTimeFilter('today')}
+                  className={`px-3 py-1 rounded-md transition-all ${
+                    timeFilter === 'today' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-800'
                   }`}
-                  style={{ width: `${Math.min(100, waterUsagePct)}%` }}
+                >
+                  {language === 'ar' ? 'اليوم' : 'Today'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTimeFilter('yesterday')}
+                  className={`px-3 py-1 rounded-md transition-all ${
+                    timeFilter === 'yesterday' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-800'
+                  }`}
+                >
+                  {language === 'ar' ? 'أمس' : 'Yesterday'}
+                </button>
+              </div>
+            }
+            className="flex-1 flex flex-col justify-between"
+          >
+            <div className="space-y-4">
+              <div className="bg-white rounded-[18px] p-4 border border-[#EDF1F3] shadow-sm">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <span className="text-xs font-medium text-gray-500 block mb-1">
+                      {language === 'ar' ? 'استهلاك حصة المياه ANRH' : 'Quota Irrigation ANRH'}
+                    </span>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-3xl font-bold font-mono text-gray-900 tabular-nums">
+                        {waterUsagePct}%
+                      </span>
+                      <span className="text-xs text-gray-400">/ 100% max</span>
+                    </div>
+                    <span className="inline-block mt-2 px-2 py-0.5 bg-emerald-50 text-emerald-600 text-[11px] font-medium rounded-full">
+                      ● {language === 'ar' ? 'تنقيط موضعي ذكي' : 'Goutte-à-goutte économe'}
+                    </span>
+                  </div>
+                  <div className="w-px h-12 bg-gray-200 mx-4" />
+                  <div className="flex-1">
+                    <span className="text-xs font-medium text-gray-500 block mb-1">
+                      {language === 'ar' ? 'مساحة الأراضي المزروعة' : 'Superficie Exploitable'}
+                    </span>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-3xl font-bold font-mono text-gray-900 tabular-nums">
+                        {totalHectares}
+                      </span>
+                      <span className="text-xs text-gray-400">{language === 'ar' ? 'هكتار' : 'Hectares'}</span>
+                    </div>
+                    <span className="inline-block mt-2 px-2 py-0.5 bg-blue-50 text-blue-600 text-[11px] font-medium rounded-full">
+                      {(parcels || []).length || 8} {language === 'ar' ? 'قطع' : 'parcelles'}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="mt-4 pt-3 border-t border-gray-100">
+                  <span className="text-[11px] text-gray-400 block mb-2">
+                    {language === 'ar' ? 'دورة تشغيل المضخات على مدار 24 ساعة' : 'Courbe horaire de pompage & irrigation (24h)'}
+                  </span>
+                  <HourlyCurveChart data={hourlyData} color="#C4785A" />
+                </div>
+              </div>
+
+              <div className="bg-white rounded-[18px] p-4 border border-[#EDF1F3] shadow-sm">
+                <div className="flex justify-between items-center mb-1.5">
+                  <span className="text-xs font-medium text-gray-500">
+                    {language === 'ar' ? 'محصول اليوم المجمع' : 'Récolte Journalière'}
+                  </span>
+                  <span className="text-base font-bold font-mono text-gray-900 tabular-nums">
+                    {dailyHarvestKg} / {dailyTargetKg} kg
+                  </span>
+                </div>
+                <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden mb-1">
+                  <div
+                    className="bg-[#C4785A] h-full rounded-full transition-all duration-500"
+                    style={{ width: `${targetPct}%` }}
+                  />
+                </div>
+                <div className="flex justify-between text-[11px] text-gray-400">
+                  <span>{targetPct}% {language === 'ar' ? 'من الهدف' : 'de l’objectif'}</span>
+                  <span>{dailyTargetKg} kg / {language === 'ar' ? 'يوم' : 'jour'}</span>
+                </div>
+              </div>
+            </div>
+          </DashboardPod>
+        </div>
+
+        {/* POD 2: Crop & Livestock Asset Development (58% width) */}
+        <div className="lg:col-span-7 flex flex-col">
+          <DashboardPod
+            title={language === 'ar' ? 'تطور المحاصيل والثروة الحيوانية' : language === 'fr' ? 'Développement Cultures & Cheptel' : 'Crop & Livestock Asset Development'}
+            icon={<Tractor size={18} className="text-[#C4785A]" />}
+            rightControls={
+              <div className="flex items-center gap-1 text-xs font-semibold text-gray-600">
+                <button
+                  type="button"
+                  onClick={() => setCurrentMonthIndex((prev) => (prev > 0 ? prev - 1 : 11))}
+                  className="p-1 hover:bg-gray-200 rounded"
+                >
+                  <ChevronLeft size={14} />
+                </button>
+                <span className="px-1 text-gray-800">{months[currentMonthIndex]} 2026</span>
+                <button
+                  type="button"
+                  onClick={() => setCurrentMonthIndex((prev) => (prev < 11 ? prev + 1 : 0))}
+                  className="p-1 hover:bg-gray-200 rounded"
+                >
+                  <ChevronRight size={14} />
+                </button>
+              </div>
+            }
+            className="flex-1 flex flex-col justify-between"
+          >
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <DashboardMetricCard
+                  label={language === 'ar' ? 'إجمالي المحصول المفرغ' : 'Production Cumulée'}
+                  value={`${Math.round(totalHarvestNetKg / 1000)} T`}
+                  badgeText={language === 'ar' ? 'محصول' : 'Tonnes'}
+                  badgeVariant="success"
+                  tooltip={language === 'ar' ? 'وزن المحاصيل المعبأة والمسلمة' : 'Pesées nettes aux carreaux de gros'}
+                />
+
+                <DashboardMetricCard
+                  label={language === 'ar' ? 'رؤوس الماشية والأبقار' : 'Cheptel Élevage'}
+                  value={(livestock || []).length || 45}
+                  badgeText={language === 'ar' ? 'رأس' : 'Têtes'}
+                  badgeVariant="neutral"
+                  tooltip={language === 'ar' ? 'قطيع المزرعة المسجل' : 'Bovins et ovins identifiés'}
+                />
+
+                <DarkEspressoCard
+                  label={language === 'ar' ? 'عوائد البيع بالجملة' : 'Revenu Vente en Gros'}
+                  value={formatMoney(totalWholesalePayoutDzd)}
+                  sublabel={language === 'ar' ? 'سوق الجملة (الخوبة)' : 'Marché de gros (Khemis/Attatba)'}
+                  badgeText="Encaissé"
+                  badgeVariant="neutral"
                 />
               </div>
-              <span className={`font-mono font-bold ${waterUsagePct >= 85 ? 'text-amber-600' : 'text-neutral-700 dark:text-neutral-300'}`}>
-                {waterUsagePct}%
+
+              <div className="bg-white rounded-[18px] p-4 border border-[#EDF1F3] shadow-sm">
+                <div className="flex justify-between items-center mb-3">
+                  <span className="text-xs font-semibold text-gray-700">
+                    {language === 'ar' ? 'المردود الأسبوعي (قنطار)' : 'Rendement hebdomadaire récolté (Quintaux)'}
+                  </span>
+                  <span className="text-[11px] text-gray-400">
+                    {language === 'ar' ? 'مقارنة شهرية' : '4 dernières semaines'}
+                  </span>
+                </div>
+                <PillBarHistogram
+                  data={weeklyYield}
+                  maxScale={150}
+                  barColor="#C4785A"
+                />
+              </div>
+            </div>
+          </DashboardPod>
+        </div>
+      </div>
+
+      {/* BOTTOM ROW: Two Pods */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* POD 3: Financial Trajectory (42% width) */}
+        <div className="lg:col-span-5 flex flex-col">
+          <DashboardPod
+            title={language === 'ar' ? 'المسار المالي وإيرادات المواسم' : language === 'fr' ? 'Trajectoire Financière & Campagne' : 'Financial Trajectory & P&L'}
+            icon={<TrendingUp size={18} className="text-[#C4785A]" />}
+            rightControls={
+              <span className="text-xs font-semibold text-gray-500 uppercase">
+                {months[currentMonthIndex]} 2026
               </span>
-            </div>
-          </div>
-        )}
-      </div>
+            }
+            className="flex-1 flex flex-col justify-between"
+          >
+            <div className="space-y-4">
+              <div className="bg-white rounded-[18px] p-4 border border-[#EDF1F3] shadow-sm">
+                <div className="grid grid-cols-3 gap-2 pb-3 border-b border-gray-100">
+                  <div>
+                    <span className="text-[11px] text-gray-500 block">{language === 'ar' ? 'صافي المزرعة' : 'Net Exploitation'}</span>
+                    <span className="text-lg font-bold font-mono text-gray-900 tabular-nums">
+                      {formatMoney(1150000)}
+                    </span>
+                    <span className="text-[10px] text-emerald-600 block">36% Brut</span>
+                  </div>
+                  <div>
+                    <span className="text-[11px] text-gray-500 block">{language === 'ar' ? 'مبيعات الجملة' : 'CA Ventes'}</span>
+                    <span className="text-lg font-bold font-mono text-gray-900 tabular-nums">
+                      {formatMoney(totalWholesalePayoutDzd)}
+                    </span>
+                    <span className="text-[10px] text-emerald-600 block">+14%</span>
+                  </div>
+                  <div>
+                    <span className="text-[11px] text-gray-500 block">{language === 'ar' ? 'أسمدة ومحروقات' : 'Engrais & Mazout'}</span>
+                    <span className="text-lg font-bold font-mono text-gray-900 tabular-nums">
+                      {formatMoney(500000)}
+                    </span>
+                    <span className="text-[10px] text-gray-400 block">30% CA</span>
+                  </div>
+                </div>
 
-      {/* Parcels Grid Pod Tray */}
-      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Tractor size={16} className="text-neutral-500" />
-            <h2 className="text-sm font-bold text-neutral-900 dark:text-white">
-              {isAr ? 'القطع الفلاحية قيد الدورة الزراعية' : 'Parcelles & Cultures en Cours'}
-            </h2>
-          </div>
-          <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-neutral-200 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300 font-mono">
-            {parcels.length} parcelles
-          </span>
+                <div className="pt-3">
+                  <span className="text-[11px] text-gray-400 block mb-1">
+                    {language === 'ar' ? 'منحنى التدفق النقدي على مدار 30 يوماً' : 'Tendance des encaissements sur 30 jours'}
+                  </span>
+                  <MonthlyAreaChart data={monthlyRevenue} color="#8B5CF6" />
+                </div>
+              </div>
+
+              {/* 4 KPIs Inset Grid */}
+              <div className="bg-white rounded-[18px] p-4 border border-[#EDF1F3] shadow-sm">
+                <div className="flex justify-between items-center mb-3">
+                  <span className="text-xs font-semibold text-gray-700">
+                    {language === 'ar' ? 'مؤشرات الكفاءة الزراعية' : 'Indicateurs Agronomiques'}
+                  </span>
+                  <Info size={13} className="text-gray-400" />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-[#F8F9FA] p-3 rounded-xl">
+                    <span className="text-[11px] text-gray-500 block">
+                      {language === 'ar' ? 'المردود للهكتار' : 'Rendement / Hectare'}
+                    </span>
+                    <div className="flex items-center justify-between mt-1">
+                      <span className="text-base font-bold font-mono text-gray-900">42 Qx/ha</span>
+                      <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
+                        Élevé
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="bg-[#F8F9FA] p-3 rounded-xl">
+                    <span className="text-[11px] text-gray-500 block">
+                      {language === 'ar' ? 'كفاءة استهلاك المياه' : 'Efficience Eau (ANRH)'}
+                    </span>
+                    <div className="flex items-center justify-between mt-1">
+                      <span className="text-base font-bold font-mono text-gray-900">380 m³/T</span>
+                      <span className="text-[10px] font-semibold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">
+                        Économe
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="bg-[#F8F9FA] p-3 rounded-xl">
+                    <span className="text-[11px] text-gray-500 block">
+                      {language === 'ar' ? 'نسبة تلف المحصول' : 'Taux de Perte'}
+                    </span>
+                    <div className="flex items-center justify-between mt-1">
+                      <span className="text-base font-bold font-mono text-gray-900">1.8%</span>
+                      <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
+                        Minime
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="bg-[#F8F9FA] p-3 rounded-xl">
+                    <span className="text-[11px] text-gray-500 block">
+                      {language === 'ar' ? 'إنتاجية الحليب / بقرة' : 'Lait / Vache / Jour'}
+                    </span>
+                    <div className="flex items-center justify-between mt-1">
+                      <span className="text-base font-bold font-mono text-gray-900">24 L/j</span>
+                      <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
+                        Optimal
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </DashboardPod>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {parcels.map((p) => (
-            <div
-              key={p.id}
-              onClick={() => setSelectedParcelId(p.id)}
-              className="bg-white dark:bg-neutral-900 p-5 rounded-[20px] border border-[#E9EEF0] dark:border-neutral-800 shadow-2xs hover:border-[#C4785A]/60 transition-all cursor-pointer flex flex-col justify-between space-y-3"
-            >
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="font-mono text-xs font-bold text-neutral-500">
-                    {p.surfaceHectares} Ha
-                  </span>
-                  <span
-                    className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                      p.status === 'Harvesting'
-                        ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
-                        : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
-                    }`}
+        {/* POD 4: Agronomic Intelligence & Pest Weather Guardian (58% width) */}
+        <div className="lg:col-span-7 flex flex-col">
+          <DashboardPod
+            title={language === 'ar' ? 'ذكاء المحاصيل وحارس المناخ والأمراض' : language === 'fr' ? 'Intelligence Agronomique & Pest Sentinel' : 'Agronomic Intelligence & Guardian'}
+            icon={<ShieldCheck size={18} className="text-[#C4785A]" />}
+            className="flex-1 flex flex-col justify-between"
+          >
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-white rounded-[18px] p-4 border border-[#EDF1F3] shadow-sm">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-xs font-semibold text-gray-700">
+                      {language === 'ar' ? 'تنوع المحاصيل المزروعة' : 'Assolement des Cultures'}
+                    </span>
+                    <Info size={13} className="text-gray-400" />
+                  </div>
+                  <DonutChart segments={cropMix} centerLabel={`${totalHectares} Ha`} />
+                </div>
+
+                <div className="bg-white rounded-[18px] p-4 border border-[#EDF1F3] shadow-sm">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-xs font-semibold text-gray-700">
+                      {language === 'ar' ? 'مردود الحقول (قنطار/هكتار)' : 'Rendement par Parcelle'}
+                    </span>
+                    <Info size={13} className="text-gray-400" />
+                  </div>
+                  <PillBarHistogram
+                    data={parcelYield}
+                    maxScale={70}
+                    barColor="#3B82F6"
+                  />
+                </div>
+              </div>
+
+              {/* Weather & Pest Sentinel Card */}
+              <GuardianCard
+                title={language === 'ar' ? 'حارس الصقيع والآفات الزراعية (Pest Sentinel)' : 'Weather Frost & Phytosanitary Sentinel'}
+                subtitle={
+                  language === 'ar'
+                    ? 'رصد مستمر لمحطات الطقس والرطوبة النسبية للإنذار المبكر من الصقيع وفطر الفيتوفتورا ومعالجة الأشجار'
+                    : 'Surveillance proactive des alertes météo gel, hygrométrie et traitements phytosanitaires préventifs.'
+                }
+                score={98}
+                statusText={language === 'ar' ? 'الظروف المناخية والصحية للمحاصيل مؤمنة بالكامل!' : 'Climat et santé végétale sous protection optimale !'}
+                metricLabel={language === 'ar' ? 'سلامة المحصول' : 'Protection'}
+                metricValue="98%"
+                trendText={language === 'ar' ? 'محمي' : 'Zéro ravageur'}
+                defaultEnabled={true}
+              />
+
+              {/* Action Buttons Bar */}
+              <div className="bg-white rounded-[18px] p-4 border border-[#EDF1F3] shadow-sm flex flex-wrap items-center justify-between gap-3">
+                <span className="text-xs font-semibold text-gray-600">
+                  {language === 'ar' ? 'إجراءات سريعة واختصارات' : 'Raccourcis Opérationnels'}
+                </span>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsModalOpen(true)}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#C4785A] hover:bg-[#b0674b] text-white rounded-xl text-xs font-semibold shadow-sm transition-all"
                   >
-                    {p.status}
-                  </span>
-                </div>
-
-                <div>
-                  <h3 className="text-sm font-bold text-neutral-900 dark:text-white line-clamp-1">
-                    {p.name}
-                  </h3>
-                  <p className="text-xs text-[#C4785A] font-medium line-clamp-1 mt-0.5">
-                    {p.currentCrop}
-                  </p>
-                </div>
-              </div>
-
-              <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800 space-y-1 text-xs text-neutral-500">
-                <div className="flex justify-between">
-                  <span>Irrigation:</span>
-                  <span className="font-medium text-neutral-700 dark:text-neutral-300">{p.irrigationType}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Sol:</span>
-                  <span className="truncate max-w-[120px] text-neutral-700 dark:text-neutral-300">{p.soilType}</span>
+                    <Plus size={14} />
+                    {language === 'ar' ? 'إضافة قطعة فلاحية' : 'Nouvelle Parcelle'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setScreen('shop')}
+                    className="inline-flex items-center gap-1.5 px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-medium transition-all"
+                  >
+                    <Tractor size={14} />
+                    {language === 'ar' ? 'وصل وزن المحصول' : 'Ticket Pesée'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setScreen('registrations')}
+                    className="inline-flex items-center gap-1.5 px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-medium transition-all"
+                  >
+                    <Calendar size={14} />
+                    {language === 'ar' ? 'سجل القطيع' : 'Registre Cheptel'}
+                  </button>
                 </div>
               </div>
             </div>
-          ))}
+          </DashboardPod>
         </div>
       </div>
 
-      {/* Recent Weighing Tickets Pod Tray */}
-      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Scale size={16} className="text-neutral-500" />
-            <h2 className="text-sm font-bold text-neutral-900 dark:text-white">
-              {isAr ? 'آخر وصولات وزن المحاصيل (Pont-Bascule)' : 'Dernières Pesées & Expéditions Récolte'}
-            </h2>
-          </div>
-          <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-neutral-200 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300 font-mono">
-            {harvestTickets.length} tickets
-          </span>
-        </div>
-
-        <div className="space-y-3">
-          {harvestTickets.map((t) => (
-            <div
-              key={t.id}
-              className="bg-white dark:bg-neutral-900 p-4 rounded-[18px] border border-[#E9EEF0] dark:border-neutral-800 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs"
-            >
-              <div className="space-y-1 max-w-xl">
-                <div className="flex items-center gap-2">
-                  <span className="font-bold text-neutral-900 dark:text-white font-mono bg-[#C4785A]/10 text-[#C4785A] px-2 py-0.5 rounded-md">
-                    {t.ticketNumber}
-                  </span>
-                  <span className="font-semibold text-neutral-800 dark:text-neutral-200">
-                    {t.cropDesignation}
-                  </span>
-                  <span className="text-neutral-400">· {t.truckPlate || t.vehiclePlate}</span>
-                </div>
-                <p className="text-neutral-500">
-                  Destination: {t.destinationWholesaleMarket} · Chauffeur: {t.driverName || 'Non assigné'}
-                </p>
-              </div>
-
-              <div className="flex items-center justify-between sm:justify-end gap-5 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-zinc-100 dark:border-zinc-800">
-                <div className="text-left sm:text-right">
-                  <span className="text-[10px] text-neutral-400 block uppercase tracking-wider">Poids Net</span>
-                  <span className="font-bold font-mono text-neutral-900 dark:text-white text-sm">
-                    {t.netWeightKg.toLocaleString()} kg
-                  </span>
-                </div>
-                <div className="text-right">
-                  <span className="text-[10px] text-neutral-400 block uppercase tracking-wider">Net Mandataire</span>
-                  <span className="font-bold font-mono text-emerald-600 dark:text-emerald-400 text-sm">
-                    {formatMoney(t.netFarmPayoutDzd || t.totalAmountDzd || 0)}
-                  </span>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* New Parcel Modal */}
-      <AgricultureParcelModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSave={(p) => {
-          addParcel(p);
-          setIsModalOpen(false);
-        }}
-      />
+      {/* Modals */}
+      {isModalOpen && (
+        <AgricultureParcelModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onSave={addParcel}
+        />
+      )}
     </div>
   );
 };

@@ -3,7 +3,6 @@ import { useAtriumStore } from './services/store';
 import { Member } from './types/index';
 import { Sidebar } from './components/layout/Sidebar';
 import { TopBar } from './components/layout/TopBar';
-import { AnalyticsScreen } from './components/screens/AnalyticsScreen';
 import { SettingsScreen } from './components/screens/SettingsScreen';
 import { VoucherModal } from './components/modals/VoucherModal';
 import { MemberModal } from './components/modals/MemberModal';
@@ -505,7 +504,7 @@ export default function App() {
         case 'finance':
           return <TradingFinanceView />;
         case 'analytics':
-          return <AnalyticsScreen />;
+          return <TradingDashboardView />;
         case 'settings':
           return <SettingsScreen onOpenVoucherModal={() => setIsVoucherModalOpen(true)} />;
         default:
@@ -855,7 +854,12 @@ export default function App() {
         case 'history':
           return <MembershipHistoryView />;
         case 'analytics':
-          return <AnalyticsScreen />;
+          return (
+            <MembershipDashboardView
+              onAddMember={handleOpenAddMember}
+              onOpenVoucherModal={() => setIsVoucherModalOpen(true)}
+            />
+          );
         case 'settings':
           return <SettingsScreen onOpenVoucherModal={() => setIsVoucherModalOpen(true)} />;
         default:
@@ -917,7 +921,12 @@ export default function App() {
         case 'registrations':
           return <AppointmentScheduleView />;
         case 'analytics':
-          return <AnalyticsScreen />;
+          return (
+            <AppointmentDashboardView
+              onAddMember={handleOpenAddMember}
+              onOpenVoucherModal={() => setIsVoucherModalOpen(true)}
+            />
+          );
         case 'settings':
           return <SettingsScreen onOpenVoucherModal={() => setIsVoucherModalOpen(true)} />;
         default:
@@ -972,7 +981,12 @@ export default function App() {
         case 'members':
           return <PosOrdersView />;
         case 'analytics':
-          return <AnalyticsScreen />;
+          return (
+            <PosDashboardView
+              onAddMember={handleOpenAddMember}
+              onOpenVoucherModal={() => setIsVoucherModalOpen(true)}
+            />
+          );
         case 'settings':
           return <SettingsScreen onOpenVoucherModal={() => setIsVoucherModalOpen(true)} />;
         default:
@@ -994,7 +1008,12 @@ export default function App() {
           />
         );
       case 'analytics':
-        return <AnalyticsScreen />;
+        return (
+          <MembershipDashboardView
+            onAddMember={handleOpenAddMember}
+            onOpenVoucherModal={() => setIsVoucherModalOpen(true)}
+          />
+        );
       case 'members':
         return (
           <MembershipMembersView

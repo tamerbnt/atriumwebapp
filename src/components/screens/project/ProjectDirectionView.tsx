@@ -43,6 +43,16 @@ import { AtriumButton } from '../../ui/AtriumButton';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { OfflineRetryBanner } from '../../common/OfflineRetryBanner';
 import { SkeletonDashboardProject } from '../../ui/skeleton/StructuralSkeletons';
+import {
+  DashboardPod,
+  DashboardMetricCard,
+  DarkEspressoCard,
+  HourlyCurveChart,
+  PillBarHistogram,
+  MonthlyAreaChart,
+  DonutChart,
+  GuardianCard,
+} from '../../common/dashboard';
 
 interface ProjectDirectionViewProps {
   initialTab?: 'dashboard' | 'projects' | 'new_project' | 'approvals' | 'reports';
@@ -593,253 +603,329 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
       {/* SCREEN 1.1: COCKPIT & COMMAND CENTER */}
       {currentScreen === 'dashboard' && (
         <div className="space-y-6">
-          {/* Canonical 3-Card Top Metrics Pod Tray */}
-          <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
-            <div>
-              <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
-                {language === 'ar' ? 'مؤشرات القيادة الاستراتيجية والحوكمة المالية' : language === 'fr' ? 'Indicateurs de Pilotage Stratégique & Arbitrage' : 'Strategic Governance & Portfolio Indicators'}
-              </h2>
+          {/* TOP ROW: Two Pods */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            {/* POD 1: Sprint Velocity & Deliverable Flow (42% width) */}
+            <div className="lg:col-span-5 flex flex-col">
+              <DashboardPod
+                title={language === 'ar' ? 'حركة تسليم المشاريع والمهام' : language === 'fr' ? 'Vélocité Projets & Livrables' : 'Active Sprint Velocity & Deliverable Flow'}
+                icon={<TrendingUp size={18} className="text-[#C4785A]" />}
+                badge={
+                  <span className="text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
+                    {pmProjects.length} {language === 'ar' ? 'مشاريع نشطة' : 'Campagnes Actives'}
+                  </span>
+                }
+                rightControls={
+                  <span className="text-xs font-semibold text-gray-500">
+                    {pmTalents.length} {language === 'ar' ? 'فريق معتمد' : 'Talents Mobilisés'}
+                  </span>
+                }
+                className="flex-1 flex flex-col justify-between"
+              >
+                <div className="space-y-4">
+                  <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#EDF1F3] dark:border-neutral-700/60 shadow-sm">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <span className="text-xs font-medium text-gray-500 dark:text-neutral-400 block mb-1">
+                          {language === 'ar' ? 'الحملات قيد التنفيذ' : 'Campagnes Terrain'}
+                        </span>
+                        <div className="flex items-baseline gap-2">
+                          <span className="text-3xl font-bold font-mono text-gray-900 dark:text-white tabular-nums">
+                            {pmProjects.length}
+                          </span>
+                          <span className="text-xs text-gray-400">/ 12 obj</span>
+                        </div>
+                        <span className="inline-block mt-2 px-2 py-0.5 bg-emerald-50 text-emerald-600 text-[11px] font-medium rounded-full">
+                          ● {language === 'ar' ? 'تسليم في الموعد' : 'Dans les délais'}
+                        </span>
+                      </div>
+                      <div className="w-px h-12 bg-gray-200 dark:bg-neutral-700 mx-4" />
+                      <div className="flex-1">
+                        <span className="text-xs font-medium text-gray-500 dark:text-neutral-400 block mb-1">
+                          {language === 'ar' ? 'تأشيرات معلقة' : 'Approbations Requises'}
+                        </span>
+                        <div className="flex items-baseline gap-2">
+                          <span className="text-3xl font-bold font-mono text-gray-900 dark:text-white tabular-nums">
+                            {totalPendingApprovals}
+                          </span>
+                          <span className="text-xs text-gray-400">{language === 'ar' ? 'ملفات' : 'décaissements'}</span>
+                        </div>
+                        <span className="inline-block mt-2 px-2 py-0.5 bg-amber-50 text-amber-600 text-[11px] font-medium rounded-full">
+                          {language === 'ar' ? 'بانتظار الإدارة' : 'En attente DG'}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="mt-4 pt-3 border-t border-gray-100 dark:border-neutral-700">
+                      <span className="text-[11px] text-gray-400 block mb-2">
+                        {language === 'ar' ? 'كثافة نشاط الفريق على مدار 24 ساعة' : 'Courbe horaire de cadence agence (24h)'}
+                      </span>
+                      <HourlyCurveChart data={[0, 2, 8, 6, 2]} color="#C4785A" />
+                    </div>
+                  </div>
+
+                  <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#EDF1F3] dark:border-neutral-700/60 shadow-sm">
+                    <div className="flex justify-between items-center mb-1.5">
+                      <span className="text-xs font-medium text-gray-500 dark:text-neutral-400">
+                        {language === 'ar' ? 'نسبة إنجاز مراحل المشاريع' : 'Burn-Down & Avancement Lots'}
+                      </span>
+                      <span className="text-base font-bold font-mono text-gray-900 dark:text-white tabular-nums">
+                        88%
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-100 dark:bg-neutral-700 h-2 rounded-full overflow-hidden mb-1">
+                      <div
+                        className="bg-[#C4785A] h-full rounded-full transition-all duration-500"
+                        style={{ width: '88%' }}
+                      />
+                    </div>
+                    <div className="flex justify-between text-[11px] text-gray-400">
+                      <span>88% {language === 'ar' ? 'منجز' : 'réalisé'}</span>
+                      <span>Target 95%</span>
+                    </div>
+                  </div>
+                </div>
+              </DashboardPod>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              {/* Card 1: Active Retainers & Projects */}
-              <div
-                onClick={() => setActivePmSubScreen('projects')}
-                className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px] cursor-pointer hover:border-[#C4785A] transition-colors"
+            {/* POD 2: Project Portfolio Development (58% width) */}
+            <div className="lg:col-span-7 flex flex-col">
+              <DashboardPod
+                title={language === 'ar' ? 'تطور محفظة المشاريع والعملاء' : language === 'fr' ? 'Développement Portefeuille & Contrats' : 'Project Portfolio Development'}
+                icon={<FolderKanban size={18} className="text-[#C4785A]" />}
+                rightControls={
+                  <span className="text-xs font-semibold text-gray-500">
+                    58 Wilayas Coverage
+                  </span>
+                }
+                className="flex-1 flex flex-col justify-between"
               >
-                <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
-                    {t('pm_kpi_active_projects')}
-                  </span>
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
-                    {pmProjects.length} {language === 'ar' ? 'حملات' : 'campagnes'}
-                  </span>
-                </div>
-                <div>
-                  <div className="text-2xl font-black text-neutral-900 dark:text-white tabular-nums font-mono">
-                    {pmProjects.length}
-                  </div>
-                  <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">
-                    {language === 'ar' ? 'مشاريع قيد التنفيذ والتسليم' : 'projets en cours de déploiement'}
-                  </p>
-                </div>
-              </div>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <DashboardMetricCard
+                      label={language === 'ar' ? 'حملات نشطة' : 'Campagnes Actives'}
+                      value={pmProjects.length}
+                      badgeText={language === 'ar' ? 'سارية' : 'En cours'}
+                      badgeVariant="success"
+                      tooltip={language === 'ar' ? 'مشاريع قيد التنفيذ' : 'Projets déployés'}
+                    />
 
-              {/* Card 2: Field Talents & 58 Wilayas */}
-              <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs flex flex-col justify-between h-[124px]">
-                <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
-                    {t('pm_kpi_field_talents')}
-                  </span>
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
-                    58 Wilayas
-                  </span>
-                </div>
-                <div>
-                  <div className="text-2xl font-black text-blue-600 dark:text-blue-400 tabular-nums font-mono">
-                    {pmTalents.length}
-                  </div>
-                  <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">
-                    {language === 'ar' ? 'مشرفين ومنشطين معتمدين' : 'superviseurs & animateurs qualifiés'}
-                  </p>
-                </div>
-              </div>
+                    <DashboardMetricCard
+                      label={language === 'ar' ? 'طاقم العمل الميداني' : 'Talents Mobilisés'}
+                      value={pmTalents.length}
+                      badgeText="Terrain"
+                      badgeVariant="neutral"
+                      tooltip={language === 'ar' ? 'مشرفين ومنشطين معتمدين' : 'Superviseurs qualifiés'}
+                    />
 
-              {/* Card 3: DARK ESPRESSO ANCHOR CARD (#1F1D1B) — Total Committed Budget */}
-              <div
-                onClick={() => setActivePmSubScreen('approvals')}
-                className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm cursor-pointer hover:border-[#FB923C]/50 transition-colors"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-medium text-neutral-300">
-                    {t('pm_kpi_budget_committed')}
-                  </span>
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#3D2817] text-[#FB923C] border border-[#FB923C]/30">
-                    {totalPendingApprovals > 0 ? `${totalPendingApprovals} ${language === 'ar' ? 'بانتظار التأشير' : 'en attente'}` : (language === 'ar' ? 'مؤشر بالكامل' : 'Validé')}
-                  </span>
-                </div>
-                <div>
-                  <div className="text-2xl font-black text-[#FB923C] tabular-nums font-mono">
-                    {formatMoney(totalTurnoverDzd, 'DZD')}
+                    <DarkEspressoCard
+                      label={language === 'ar' ? 'حجم التعاقدات المعتمدة' : 'Budget Engagé Validé'}
+                      value={formatMoney(totalTurnoverDzd)}
+                      sublabel={language === 'ar' ? 'عقود مؤشرة' : 'Volume d’affaires'}
+                      badgeText="Contrats"
+                      badgeVariant="neutral"
+                    />
                   </div>
-                  <p className="text-[11px] text-neutral-400 mt-0.5 flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-[#FB923C] animate-pulse" />
-                    <span>{language === 'ar' ? 'حجم الفوترة والتعاقدات المعتمدة' : 'Volume d\'affaires contracté'}</span>
-                  </p>
+
+                  <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#EDF1F3] dark:border-neutral-700/60 shadow-sm">
+                    <div className="flex justify-between items-center mb-3">
+                      <span className="text-xs font-semibold text-gray-700 dark:text-neutral-200">
+                        {language === 'ar' ? 'إنجاز المراحل أسبوعياً' : 'Jalons & Livrables clôturés (4 semaines)'}
+                      </span>
+                      <span className="text-[11px] text-gray-400">
+                        {language === 'ar' ? 'مقارنة شهرية' : '4 dernières semaines'}
+                      </span>
+                    </div>
+                    <PillBarHistogram
+                      data={[
+                        { week: 'Semaine 1', value: 8 },
+                        { week: 'Semaine 2', value: 14 },
+                        { week: 'Semaine 3', value: 11 },
+                        { week: 'Semaine 4', value: 16 },
+                      ]}
+                      maxScale={20}
+                      barColor="#C4785A"
+                    />
+                  </div>
                 </div>
-              </div>
+              </DashboardPod>
             </div>
           </div>
 
-          {/* Main Grid: Left Widgets & Right Live Queue */}
+          {/* BOTTOM ROW: Two Pods */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            {/* Left 7 Columns: Chart & Specs Injection */}
-            <div className="lg:col-span-7 space-y-6">
-              {/* Missions par mois Bar Chart */}
-              <div className="p-5 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs space-y-3">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                    {t('pm_dir_missions_month')}
-                  </h3>
-                  <span className="text-xs text-zinc-400">{t('pm_dir_year')}</span>
-                </div>
-                <div className="h-32 flex items-end justify-between gap-3 pt-4 px-2">
-                  {[
-                    { month: t('pm_month_jan'), count: 4, height: '40%' },
-                    { month: t('pm_month_feb'), count: 6, height: '55%' },
-                    { month: t('pm_month_mar'), count: 5, height: '48%' },
-                    { month: t('pm_month_apr'), count: 8, height: '70%' },
-                    { month: t('pm_month_may'), count: 9, height: '78%' },
-                    { month: t('pm_month_jun'), count: 7, height: '62%' },
-                    { month: t('pm_month_jul'), count: 12, height: '100%', active: true },
-                  ].map((bar) => (
-                    <div key={bar.month} className="flex-1 flex flex-col items-center gap-1.5 h-full justify-end group">
-                      <span className="text-[10px] font-mono font-semibold text-zinc-500 opacity-0 group-hover:opacity-100 transition-opacity">
-                        {bar.count}
+            {/* POD 3: Financial Trajectory & Margin P&L (42% width) */}
+            <div className="lg:col-span-5 flex flex-col">
+              <DashboardPod
+                title={language === 'ar' ? 'المسار المالي وهوامش المشاريع' : language === 'fr' ? 'Trajectoire Financière & Marges' : 'Financial Trajectory & Project P&L'}
+                subtitle={language === 'ar' ? 'تتبع الإيرادات المفوترة، تكاليف المواهب وهامش الربحية' : language === 'fr' ? 'Suivi de la facturation client, coûts talents et marge nette' : 'Billing milestones, talent fees and gross margins'}
+                icon={<DollarSign size={18} className="text-[#C4785A]" />}
+                rightControls={
+                  <span className="text-xs font-semibold text-gray-500 font-mono">
+                    {language === 'ar' ? 'نوفمبر 2026' : 'NOVEMBRE 2026'}
+                  </span>
+                }
+              >
+                <div className="space-y-4">
+                  {/* 3 Metric cards strip */}
+                  <div className="grid grid-cols-3 gap-2">
+                    <DashboardMetricCard
+                      label={language === 'ar' ? 'صافي الهامش' : language === 'fr' ? 'Marge Nette' : 'Net Margin'}
+                      value={`${Math.round(totalTurnoverDzd * 0.42).toLocaleString()} DA`}
+                      subtext={language === 'ar' ? '42% نسبة الهامش' : '42.0% ratio'}
+                      trend="+8.4%"
+                      trendDirection="up"
+                    />
+                    <DashboardMetricCard
+                      label={language === 'ar' ? 'المفوتر' : language === 'fr' ? 'Facturé' : 'Invoiced'}
+                      value={`${totalTurnoverDzd.toLocaleString()} DA`}
+                      subtext={language === 'ar' ? 'ميزانيات العقود' : 'Engagé client'}
+                    />
+                    <DashboardMetricCard
+                      label={language === 'ar' ? 'تكاليف الإنتاج' : language === 'fr' ? 'Coûts Engagés' : 'Talent & Ops'}
+                      value={`${Math.round(totalTurnoverDzd * 0.58).toLocaleString()} DA`}
+                      subtext={language === 'ar' ? 'رواتب ونفقات' : 'Paies & frais'}
+                      trendDirection="neutral"
+                    />
+                  </div>
+
+                  {/* 30-day Cash Trajectory Curve */}
+                  <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-4 border border-[#EDF1F3] dark:border-neutral-700/60 shadow-sm">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">
+                        {language === 'ar' ? 'مسار الفوترة والتحصيل (30 يوماً)' : language === 'fr' ? 'Trajectoire Facturation & Recouvrement (30j)' : 'Billing & Collections Trajectory (30d)'}
                       </span>
-                      <div
-                        style={{ height: bar.height }}
-                        className={`w-full rounded-t-md transition-all ${
-                          bar.active
-                            ? 'bg-[#DC2626] shadow-sm'
-                            : 'bg-red-200 dark:bg-red-950/60 hover:bg-red-300'
-                        }`}
-                      />
-                      <span className="text-[11px] font-medium text-zinc-600 dark:text-zinc-400">
-                        {bar.month}
+                      <span className="text-[11px] font-mono text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full font-semibold">
+                        +12.6% M/M
                       </span>
                     </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Injection de cahier des charges */}
-              <div className="p-5 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs space-y-3">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-                    <FileText className="w-4 h-4 text-[#DC2626]" />
-                    {t('pm_dir_injection_title')}
-                  </h3>
-                  <span className="text-[11px] text-zinc-400">{t('pm_dir_step_crea')}</span>
-                </div>
-
-                <div className="p-4 rounded-xl border border-zinc-200/80 dark:border-zinc-800 bg-zinc-50/60 dark:bg-zinc-800/40 space-y-3">
-                  <div className="flex items-center justify-between text-xs font-semibold text-zinc-800 dark:text-zinc-200">
-                    <span>{t('pm_dir_new_specs')}</span>
-                    <span className="text-zinc-500 font-normal">{t('pm_dir_client_deadline')}</span>
+                    <MonthlyAreaChart
+                      data={[
+                        80000, 120000, 150000, 190000, 240000, 280000, 310000, 360000, 420000, 480000,
+                        510000, 560000, 620000, 680000, 710000, 750000, 820000, 890000, 940000, 990000,
+                        1050000, 1120000, 1180000, 1240000, 1310000, 1380000, 1420000, 1490000, 1560000, totalTurnoverDzd || 1650000
+                      ]}
+                      currency="DA"
+                      color="#C4785A"
+                    />
                   </div>
-                  <LabelInput
-                    field="Brief"
-                    value={quickBriefTitle}
-                    onChange={setQuickBriefTitle}
-                    placeholder="Titre du brief / campagne"
-                    height={44}
-                    corner={12}
-                  />
-                  <div className="flex items-center justify-between pt-1">
-                    <span className="text-[11px] text-zinc-500">
-                      Transmis instantanément au Studio Créa pour élaboration du Key Visual.
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setQuickBriefSuccess(true);
-                        setTimeout(() => setQuickBriefSuccess(false), 2000);
-                      }}
-                      className="px-3.5 py-1.5 text-xs font-semibold text-white bg-[#DC2626] hover:bg-red-700 rounded-lg shadow-xs cursor-pointer transition-colors"
-                    >
-                      {quickBriefSuccess ? 'Transmis !' : 'Injecter au Studio ➔'}
-                    </button>
+
+                  {/* 4 Inset Domain KPIs */}
+                  <div className="grid grid-cols-2 gap-2 pt-1">
+                    <div className="bg-white dark:bg-neutral-800 p-3 rounded-[16px] border border-[#EDF1F3] dark:border-neutral-700/60 shadow-sm">
+                      <span className="text-[11px] text-gray-500 dark:text-gray-400 block">{language === 'ar' ? 'نسبة التحصيل' : language === 'fr' ? 'Taux de Recouvrement' : 'Collection Rate'}</span>
+                      <span className="text-base font-bold font-mono text-gray-900 dark:text-white tabular-nums">92.4%</span>
+                      <span className="text-[10px] text-emerald-600 font-semibold block mt-0.5">{language === 'ar' ? 'ممتاز' : 'Optimal'}</span>
+                    </div>
+                    <div className="bg-white dark:bg-neutral-800 p-3 rounded-[16px] border border-[#EDF1F3] dark:border-neutral-700/60 shadow-sm">
+                      <span className="text-[11px] text-gray-500 dark:text-gray-400 block">{language === 'ar' ? 'متوسط السداد (DSO)' : language === 'fr' ? 'Délai Paiement Client' : 'Average DSO'}</span>
+                      <span className="text-base font-bold font-mono text-gray-900 dark:text-white tabular-nums">28j</span>
+                      <span className="text-[10px] text-blue-600 font-semibold block mt-0.5">{language === 'ar' ? 'تحت الهدف' : '< 30 jours'}</span>
+                    </div>
+                    <div className="bg-white dark:bg-neutral-800 p-3 rounded-[16px] border border-[#EDF1F3] dark:border-neutral-700/60 shadow-sm">
+                      <span className="text-[11px] text-gray-500 dark:text-gray-400 block">{language === 'ar' ? 'انحراف الميزانية' : language === 'fr' ? 'Dérapage Budgétaire' : 'Budget Variance'}</span>
+                      <span className="text-base font-bold font-mono text-gray-900 dark:text-white tabular-nums">0.0%</span>
+                      <span className="text-[10px] text-emerald-600 font-semibold block mt-0.5">{language === 'ar' ? 'مضبوط' : 'Sous contrôle'}</span>
+                    </div>
+                    <div className="bg-white dark:bg-neutral-800 p-3 rounded-[16px] border border-[#EDF1F3] dark:border-neutral-700/60 shadow-sm">
+                      <span className="text-[11px] text-gray-500 dark:text-gray-400 block">{language === 'ar' ? 'المشاريع الرابحة' : language === 'fr' ? 'Projets Rentables' : 'Profitable Projects'}</span>
+                      <span className="text-base font-bold font-mono text-gray-900 dark:text-white tabular-nums">94%</span>
+                      <span className="text-[10px] text-emerald-600 font-semibold block mt-0.5">↗ +4.0%</span>
+                    </div>
                   </div>
                 </div>
-              </div>
+              </DashboardPod>
             </div>
 
-            {/* Right 5 Columns: Paies en attente de validation & Ce que ça change */}
-            <div className="lg:col-span-5 space-y-6">
-              {/* Paies en attente de validation Table */}
-              <div className="p-5 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs space-y-3">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                    {t('pm_dir_pending_validation')}
-                  </h3>
-                  <span className="text-xs font-mono text-red-600 bg-red-50 dark:bg-red-950/40 px-2 py-0.5 rounded font-bold">
-                    {pendingPayrollBatches.length} lot(s)
-                  </span>
-                </div>
+            {/* POD 4: Team Allocation & Budget Runaway Guardian (58% width) */}
+            <div className="lg:col-span-7 flex flex-col">
+              <DashboardPod
+                title={language === 'ar' ? 'ذكاء الفريق ومراقبة الانحراف' : language === 'fr' ? 'Intelligence Équipe & Gardien Budget' : 'Team Allocation & Budget Runaway Guardian'}
+                subtitle={language === 'ar' ? 'توزيع الموارد حسب التخصص وحماية هوامش المشاريع' : language === 'fr' ? 'Répartition par pôle, cadence créative et prévention des dépassements' : 'Workload distribution, creative cadence and runaway guard'}
+                icon={<ShieldCheck size={18} className="text-[#C4785A]" />}
+              >
+                <div className="space-y-4">
+                  {/* Two domain intelligence charts */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-3.5 border border-[#EDF1F3] dark:border-neutral-700/60 shadow-sm">
+                      <span className="text-xs font-semibold text-gray-700 dark:text-gray-300 block mb-2">
+                        {language === 'ar' ? 'توزيع ساعات العمل' : language === 'fr' ? 'Répartition Heures / Pôle' : 'Hours by Discipline'}
+                      </span>
+                      <DonutChart
+                        segments={[
+                          { label: language === 'ar' ? 'تصميم وهوية' : 'Key Visual / UI', value: 45, color: '#C4785A' },
+                          { label: language === 'ar' ? 'تطوير وإنتاج' : 'Dev / Motion', value: 30, color: '#6366F1' },
+                          { label: language === 'ar' ? 'استراتيجية وإدارة' : 'Stratégie & PM', value: 15, color: '#10B981' },
+                          { label: language === 'ar' ? 'مراجعة وتدقيق' : 'QA & Recette', value: 10, color: '#F59E0B' },
+                        ]}
+                        size={110}
+                      />
+                    </div>
+                    <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-3.5 border border-[#EDF1F3] dark:border-neutral-700/60 shadow-sm flex flex-col justify-between">
+                      <span className="text-xs font-semibold text-gray-700 dark:text-gray-300 block mb-2">
+                        {language === 'ar' ? 'وتيرة إنجاز المهام (أسبوعياً)' : language === 'fr' ? 'Cadence Livrables / Semaine' : 'Weekly Deliverable Cadence'}
+                      </span>
+                      <PillBarHistogram
+                        bars={[
+                          { label: language === 'ar' ? 'أسبوع 1' : 'Sem 1', value: 14 },
+                          { label: language === 'ar' ? 'أسبوع 2' : 'Sem 2', value: 18 },
+                          { label: language === 'ar' ? 'أسبوع 3' : 'Sem 3', value: 16 },
+                          { label: language === 'ar' ? 'أسبوع 4' : 'Sem 4', value: 20, highlight: true },
+                        ]}
+                        activeColor="#C4785A"
+                      />
+                    </div>
+                  </div>
 
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs">
-                    <thead>
-                      <tr className="border-b border-zinc-100 dark:border-zinc-800 text-[11px] text-zinc-400 uppercase font-semibold">
-                        <th className="pb-2">Réf. Lot</th>
-                        <th className="pb-2">Projet</th>
-                        <th className="pb-2 text-right">Montant</th>
-                        <th className="pb-2 text-right">Action</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800/60">
-                      {pendingPayrollBatches.slice(0, 4).map((batch) => {
-                        const isValidated = validatedPaieIds.includes(batch.id);
-                        return (
-                          <tr key={batch.id} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/40">
-                            <td className="py-2.5 font-semibold text-zinc-900 dark:text-zinc-100 font-mono text-[11px]">
-                              {batch.batchNumber}
-                            </td>
-                            <td className="py-2.5 text-zinc-500 truncate max-w-[120px]">{batch.projectTitle}</td>
-                            <td className="py-2.5 text-right font-mono font-semibold text-zinc-900 dark:text-zinc-100 tabular-nums">
-                              {batch.totalAmountDzd.toLocaleString()} DA
-                            </td>
-                            <td className="py-2.5 text-right">
-                              {isValidated ? (
-                                <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-md">
-                                  <Check className="w-3.5 h-3.5" /> {t('pm_dir_status_validated_dg')}
-                                </span>
-                              ) : (
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    setValidatedPaieIds((prev) => [...prev, batch.id]);
-                                    approvePmPayrollBatch(batch.id);
-                                  }}
-                                  className="px-2.5 py-1 text-xs font-bold text-white bg-[#DC2626] hover:bg-red-700 rounded-lg shadow-xs cursor-pointer transition-colors"
-                                >
-                                  Valider
-                                </button>
-                              )}
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
+                  {/* Dark Espresso Guardian Card */}
+                  <GuardianCard
+                    title={language === 'ar' ? 'حارس ميزانية المشاريع' : language === 'fr' ? 'Budget Runaway Guardian' : 'Budget Runaway Guardian'}
+                    subtitle={
+                      pendingPayrollBatches.length > 0
+                        ? language === 'ar'
+                          ? `تنبيه: يوجد ${pendingPayrollBatches.length} دفعة رواتب معلقة تتطلب مصادقة الإدارة العامة.`
+                          : `${pendingPayrollBatches.length} lot(s) de paie en attente de visa direction.`
+                        : language === 'ar'
+                        ? 'ممتاز! جميع الميزانيات ونفقات المواهب مطابقة لسقوف العقود.'
+                        : 'Excellente gestion: tous les jalons livrables sont dans l\'enveloppe budgétaire.'
+                    }
+                    score={pendingPayrollBatches.length > 0 ? 88 : 96}
+                    scoreLabel={language === 'ar' ? 'معدل الحماية' : 'Conformité'}
+                    gaugeColor={pendingPayrollBatches.length > 0 ? '#F59E0B' : '#10B981'}
+                    onToggle={() => showToast(language === 'ar' ? 'تم تحديث وضع حارس الميزانية' : 'Gardien budgétaire actif', 'info')}
+                  />
 
-              {/* Ce que ça change Panel */}
-              <div className="p-5 bg-zinc-50 dark:bg-zinc-800/40 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-3">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-900 dark:text-zinc-100">
-                  {t('pm_dir_what_changes')}
-                </h4>
-                <ul className="space-y-2.5 text-xs text-zinc-600 dark:text-zinc-400">
-                  <li className="flex items-start gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#DC2626] mt-1.5 shrink-0" />
-                    <span>{t('pm_dir_benefit_1')}</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#DC2626] mt-1.5 shrink-0" />
-                    <span>{t('pm_dir_benefit_2')}</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#DC2626] mt-1.5 shrink-0" />
-                    <span>{t('pm_dir_benefit_3')}</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#DC2626] mt-1.5 shrink-0" />
-                    <span>{t('pm_dir_benefit_4')}</span>
-                  </li>
-                </ul>
-              </div>
+                  {/* Operational Shortcuts */}
+                  <div className="bg-white dark:bg-neutral-800 rounded-[18px] p-3 border border-[#EDF1F3] dark:border-neutral-700/60 shadow-sm">
+                    <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider block mb-2">
+                      {language === 'ar' ? 'اختصارات العمليات والتقارير' : language === 'fr' ? 'Raccourcis Opérationnels & Direction' : 'Operational Shortcuts & Reports'}
+                    </span>
+                    <div className="grid grid-cols-3 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setActivePmSubScreen('new_project')}
+                        className="py-2.5 px-3 rounded-[12px] bg-[#C4785A] hover:bg-[#B3684B] text-white text-xs font-semibold text-center transition-colors cursor-pointer shadow-xs"
+                      >
+                        {language === 'ar' ? '+ مشروع جديد' : '+ Nouveau Projet'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setActivePmSubScreen('approvals')}
+                        className="py-2.5 px-3 rounded-[12px] bg-gray-100 hover:bg-gray-200 dark:bg-neutral-700 dark:hover:bg-neutral-600 text-gray-800 dark:text-gray-200 text-xs font-semibold text-center transition-colors cursor-pointer"
+                      >
+                        {language === 'ar' ? 'الموافقات والرواتب' : 'Valider Lots Paie'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setActivePmSubScreen('reports')}
+                        className="py-2.5 px-3 rounded-[12px] bg-gray-100 hover:bg-gray-200 dark:bg-neutral-700 dark:hover:bg-neutral-600 text-gray-800 dark:text-gray-200 text-xs font-semibold text-center transition-colors cursor-pointer"
+                      >
+                        {language === 'ar' ? 'تقارير المردودية' : 'Rapports Rentabilité'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </DashboardPod>
             </div>
           </div>
         </div>

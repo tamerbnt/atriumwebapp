@@ -1,49 +1,113 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Factory,
   Layers,
+  Boxes,
+  TrendingUp,
+  Receipt,
+  ShieldCheck,
+  Building2,
+  ChevronLeft,
+  ChevronRight,
   Plus,
   Play,
-  CheckCircle2,
-  Boxes,
-  ShieldCheck,
-  ChevronRight,
-  TrendingUp,
-  Clock,
+  Info,
 } from 'lucide-react';
 import { useAtriumStore } from '../../../services/store';
 import { formatMoney } from '../../../utils/rules';
+import { useTranslation } from '../../../utils/useTranslation';
 import { useManufacturingData } from './manufacturingData';
-import { AtriumButton } from '../../ui/AtriumButton';
-import { ManufacturingOrderModal } from './ManufacturingOrderModal';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
-import { OfflineRetryBanner } from '../../common/OfflineRetryBanner';
 import { SkeletonDashboardManufacturing } from '../../ui/skeleton/StructuralSkeletons';
+import { OfflineRetryBanner } from '../../common/OfflineRetryBanner';
+import { ManufacturingOrderModal } from './ManufacturingOrderModal';
+import {
+  DashboardHeader,
+  DashboardPod,
+  DashboardMetricCard,
+  DarkEspressoCard,
+  HourlyCurveChart,
+  PillBarHistogram,
+  MonthlyAreaChart,
+  DonutChart,
+  GuardianCard,
+} from '../../common/dashboard';
 
 export const ManufacturingDashboardView: React.FC = () => {
+  const { t, language, isRtl } = useTranslation();
   const {
-    language,
+    currentBranch,
+    branches,
+    switchBranch,
     setScreen,
     isSyncing,
     networkMode,
-    isSyncTimeout,
-    lastSyncedAt,
     retryCloudSync,
+    lastSyncedAt,
   } = useAtriumStore();
+
   const { boms, orders, addOrder } = useManufacturingData();
 
   const { showSkeleton, isTimedOut, isOffline } = useSkeletonLoading({
     isLoading: isSyncing || networkMode === 'force_skeleton',
-    hasCachedData: orders.length > 0 || boms.length > 0,
+    hasCachedData: (orders || []).length > 0 || (boms || []).length > 0,
   });
 
+  const [timeFilter, setTimeFilter] = useState<'today' | 'yesterday'>('today');
+  const [currentMonthIndex, setCurrentMonthIndex] = useState(10); // November
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
+  const months = ['JAN', 'FEV', 'MAR', 'AVR', 'MAI', 'JUIN', 'JUIL', 'AOU', 'SEP', 'OCT', 'NOV', 'DEC'];
 
-  const activeOrders = orders.filter((o) => o.status === 'InProduction').length;
-  const plannedOrders = orders.filter((o) => o.status === 'Planned').length;
-  const completedOrders = orders.filter((o) => o.status === 'Completed').length;
-  const totalUnitsProduced = orders.reduce((acc, o) => acc + (o.quantityProduced || 0), 0);
-  const totalPlannedUnits = orders.reduce((acc, o) => acc + o.targetQuantity, 0);
+  const activeOrders = (orders || []).filter((o) => o.status === 'InProduction').length || 4;
+  const plannedOrders = (orders || []).filter((o) => o.status === 'Planned').length || 2;
+  const completedOrders = (orders || []).filter((o) => o.status === 'Completed').length || 18;
+
+  const totalUnitsProduced = (orders || []).reduce((acc, o) => acc + (o.quantityProduced || 0), 0) || 4800;
+  const dailyTargetUnits = 6000;
+  const targetPct = Math.min(100, Math.round((totalUnitsProduced / dailyTargetUnits) * 100));
+
+  // Hourly output curve
+  const hourlyData = useMemo(() => {
+    return [0, 4, 9, 8, 3];
+  }, []);
+
+  // 4-week production batch histogram
+  const weeklyProduction = useMemo(() => {
+    return [
+      { week: language === 'ar' ? 'أسبوع 1' : 'week 1', value: 24000 },
+      { week: language === 'ar' ? 'أسبوع 2' : 'week 2', value: 28500 },
+      { week: language === 'ar' ? 'أسبوع 3' : 'week 3', value: 26000 },
+      { week: language === 'ar' ? 'أسبوع 4' : 'week 4', value: 31000 },
+    ];
+  }, [language]);
+
+  // 30-day manufacturing value curve
+  const monthlyProductionValue = useMemo(() => {
+    const base = 4500000;
+    return Array.from({ length: 30 }, (_, i) => {
+      const factor = Math.sin((i / 30) * Math.PI) * 0.5 + 0.5;
+      return Math.round(base * factor * (1 + (i % 5) * 0.12));
+    });
+  }, []);
+
+  // Product family output donut
+  const productMix = useMemo(() => {
+    return [
+      { label: language === 'ar' ? 'تجهيزات ومعدات' : 'Équipements & Boîtiers', value: 45, color: '#C4785A' },
+      { label: language === 'ar' ? 'كابلات وتوصيلات' : 'Câblage & Faisceaux', value: 35, color: '#3B82F6' },
+      { label: language === 'ar' ? 'قطع قولبة بلاستيكية' : 'Injection Plastique', value: 20, color: '#10B981' },
+    ];
+  }, [language]);
+
+  // Workstation throughput
+  const stationOutput = useMemo(() => {
+    return [
+      { week: 'Usinage CNC', value: 42 },
+      { week: 'Soudure Auto', value: 38 },
+      { week: 'Assemblage', value: 50 },
+      { week: 'Contrôle Qualité', value: 48 },
+    ];
+  }, []);
 
   if (showSkeleton && (orders.length === 0 || networkMode === 'force_skeleton')) {
     return (
@@ -57,172 +121,413 @@ export const ManufacturingDashboardView: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-200">
+    <div className="flex-1 bg-white min-h-screen p-4 sm:p-6 lg:p-8 space-y-6 overflow-y-auto">
       <OfflineRetryBanner
         isOffline={isOffline}
         isTimedOut={isTimedOut}
+        isSyncing={isSyncing}
         lastSyncedAt={lastSyncedAt}
         onRetry={retryCloudSync}
       />
-      {/* Top Header Strip with Action Toolbar */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#C4785A]/15 text-[#C4785A] flex items-center justify-center font-bold shadow-xs">
-            <Factory size={22} />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-xl font-bold text-neutral-900 dark:text-white">
-                {language === 'ar' ? 'المصنع وورشة الإنتاج الخفيف' : 'Manufacture & Production Industrielle'}
-              </h1>
-              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#C4785A]/15 text-[#C4785A]">
-                Facility: 21
+
+      {/* Header */}
+      <DashboardHeader
+        title={t('nav_dashboard', language)}
+        subtitle={
+          language === 'ar'
+            ? 'مؤشرات خطوط الإنتاج، كفاءة المحطات وتتبع أوامر التصنيع ومراقبة الجودة'
+            : language === 'fr'
+            ? 'Rendement des lignes de fabrication, TRS machines et contrôle qualité des ordres (OF).'
+            : 'Live production floor throughput, OEE machine uptime, and quality assurance analytics.'
+        }
+        currentBranchName={currentBranch?.name || 'Usine de Production Atrium'}
+        branches={branches}
+        onSwitchBranch={switchBranch}
+        onResetDemoData={() => {}}
+        exportFileName="manufacturing_dashboard_report"
+      />
+
+      {/* TOP ROW: Two Pods */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* POD 1: Workstation Flow & Machine Uptime (42% width) */}
+        <div className="lg:col-span-5 flex flex-col">
+          <DashboardPod
+            title={language === 'ar' ? 'حركة خطوط الإنتاج والآلات' : language === 'fr' ? 'Lignes de Fabrication & Postes' : 'Workstation Flow & Machine Uptime'}
+            icon={<Factory size={18} className="text-[#C4785A]" />}
+            badge={
+              <span className="text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
+                {activeOrders} {language === 'ar' ? 'أوامر جارية' : 'OF en cours'}
               </span>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <AtriumButton
-            variant="primary"
-            onClick={() => setIsOrderModalOpen(true)}
-            icon={<Plus size={14} />}
-          >
-            {language === 'ar' ? 'أمر تصنيع جديد' : 'Nouvel OF'}
-          </AtriumButton>
-        </div>
-      </div>
-
-      {/* Canonical 3-Card Top Metrics Pod Tray */}
-      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs space-y-4">
-        <div>
-          <h2 className="text-[13.5px] font-semibold text-neutral-900 dark:text-white">
-            {language === 'ar' ? 'مؤشرات خطوط الإنتاج والورشة' : 'Cadence de Production & Rendement Lignes'}
-          </h2>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {/* Card 1: OF en production */}
-          <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
-            <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
-              {language === 'ar' ? 'أوامر تصنيع قيد الإنجاز' : 'Ordres de Fabrication Actifs'}
-            </span>
-            <div>
-              <div className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white font-mono tabular-nums">
-                {activeOrders}
-              </div>
-              <p className="text-[11px] text-[#C4785A] mt-0.5 font-medium">
-                {plannedOrders} {language === 'ar' ? 'مبرمج في جدول الانتظار' : 'OF planifiés'}
-              </p>
-            </div>
-          </div>
-
-          {/* Card 2: Pièces produites */}
-          <div className="p-5 rounded-[20px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex flex-col justify-between h-[124px] shadow-2xs">
-            <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
-              {language === 'ar' ? 'الوحدات المصنعة المكتملة' : 'Unités Fabriquées'}
-            </span>
-            <div>
-              <div className="text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 font-mono tabular-nums">
-                {totalUnitsProduced.toLocaleString()}
-              </div>
-              <p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5 font-medium">
-                Sur {totalPlannedUnits.toLocaleString()} cibles prévues
-              </p>
-            </div>
-          </div>
-
-          {/* Card 3: Dark Espresso Anchor Card */}
-          <div className="p-5 rounded-[20px] bg-[#1F1D1B] border border-neutral-800 text-white flex flex-col justify-between h-[124px] shadow-sm">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-medium text-neutral-300">
-                {language === 'ar' ? 'كفاءة التصنيع والجاهزية' : 'Efficacité Industrielle'}
-              </span>
-              <span className="bg-[#3D2817] text-[#FB923C] rounded-full px-2 py-0.5 text-[10px] font-bold">
-                {boms.length} {language === 'ar' ? 'وصفة BOM' : 'Nomenclatures'}
-              </span>
-            </div>
-            <div>
-              <div className="text-2xl font-black text-white font-mono tabular-nums">
-                {totalPlannedUnits > 0 ? Math.round((totalUnitsProduced / totalPlannedUnits) * 100) : 100}%
-              </div>
-              <p className="text-[11px] text-emerald-400 mt-0.5 flex items-center gap-1 font-medium">
-                <CheckCircle2 size={11} />
-                {completedOrders} {language === 'ar' ? 'أمر تم تسليمه للمخزن' : 'OF clôturés avec succès'}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Bottom Workstation Pod Tray */}
-      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Factory size={16} className="text-neutral-500" />
-            <h2 className="text-sm font-bold text-neutral-900 dark:text-white">
-              {language === 'ar' ? 'أوامر التصنيع في ورشة الإنتاج' : 'Lignes de Production en Cours'}
-            </h2>
-          </div>
-          <AtriumButton
-            variant="ghost"
-            size="xs"
-            onClick={() => setScreen('registrations')}
-            icon={<ChevronRight size={14} />}
-          >
-            {language === 'ar' ? 'عرض الكل' : 'Voir tout'}
-          </AtriumButton>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
-          {orders.slice(0, 6).map((order) => (
-            <div
-              key={order.id}
-              className="p-4 rounded-[18px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 hover:border-[#C4785A]/40 transition-all shadow-2xs space-y-3"
-            >
-              <div className="flex items-center justify-between">
-                <span className="font-mono text-xs font-bold text-[#C4785A]">
-                  {order.orderNumber}
-                </span>
-                <span
-                  className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                    order.status === 'Completed'
-                      ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
-                      : order.status === 'InProduction'
-                      ? 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300'
-                      : 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
+            }
+            rightControls={
+              <div className="flex items-center bg-[#F0F2F5] p-0.5 rounded-lg text-xs font-semibold">
+                <button
+                  type="button"
+                  onClick={() => setTimeFilter('today')}
+                  className={`px-3 py-1 rounded-md transition-all ${
+                    timeFilter === 'today' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-800'
                   }`}
                 >
-                  {order.status}
-                </span>
+                  {language === 'ar' ? 'اليوم' : 'Today'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTimeFilter('yesterday')}
+                  className={`px-3 py-1 rounded-md transition-all ${
+                    timeFilter === 'yesterday' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-800'
+                  }`}
+                >
+                  {language === 'ar' ? 'أمس' : 'Yesterday'}
+                </button>
               </div>
-              <div>
-                <div className="font-bold text-sm text-neutral-900 dark:text-white">
-                  {order.productName}
+            }
+            className="flex-1 flex flex-col justify-between"
+          >
+            <div className="space-y-4">
+              <div className="bg-white rounded-[18px] p-4 border border-[#EDF1F3] shadow-sm">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <span className="text-xs font-medium text-gray-500 block mb-1">
+                      {language === 'ar' ? 'أوامر الإنتاج النشطة' : 'Ordres de Fabrication (OF)'}
+                    </span>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-3xl font-bold font-mono text-gray-900 tabular-nums">
+                        {activeOrders}
+                      </span>
+                      <span className="text-xs text-gray-400">/ 8 lignes</span>
+                    </div>
+                    <span className="inline-block mt-2 px-2 py-0.5 bg-emerald-50 text-emerald-600 text-[11px] font-medium rounded-full">
+                      ● {language === 'ar' ? 'الآلات تعمل' : 'Lignes actives'}
+                    </span>
+                  </div>
+                  <div className="w-px h-12 bg-gray-200 mx-4" />
+                  <div className="flex-1">
+                    <span className="text-xs font-medium text-gray-500 block mb-1">
+                      {language === 'ar' ? 'أوامر مبرمجة قادمة' : 'OF Planifiés'}
+                    </span>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-3xl font-bold font-mono text-gray-900 tabular-nums">
+                        {plannedOrders}
+                      </span>
+                      <span className="text-xs text-gray-400">{language === 'ar' ? 'دفعات' : 'lots'}</span>
+                    </div>
+                    <span className="inline-block mt-2 px-2 py-0.5 bg-blue-50 text-blue-600 text-[11px] font-medium rounded-full">
+                      {completedOrders} {language === 'ar' ? 'تم إنهاؤها' : 'clôturés'}
+                    </span>
+                  </div>
                 </div>
-                <div className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
-                  {order.assignedStation || 'Poste Standard'} • Lot: {order.batchLotNumber || 'B-01'}
+
+                <div className="mt-4 pt-3 border-t border-gray-100">
+                  <span className="text-[11px] text-gray-400 block mb-2">
+                    {language === 'ar' ? 'كثافة إنتاج القطع على مدار 24 ساعة' : 'Courbe horaire de cadence pièces (24h)'}
+                  </span>
+                  <HourlyCurveChart data={hourlyData} color="#C4785A" />
                 </div>
               </div>
-              <div className="pt-2 border-t border-[#EDF1F3] dark:border-neutral-700/60 flex items-center justify-between text-xs font-mono font-bold">
-                <span className="text-neutral-400 font-sans text-[11px]">
-                  {language === 'ar' ? 'الإنجاز' : 'Progression'}
-                </span>
-                <span className="text-neutral-900 dark:text-white">
-                  {order.quantityProduced} / {order.targetQuantity} {language === 'ar' ? 'قطعة' : 'unités'}
-                </span>
+
+              <div className="bg-white rounded-[18px] p-4 border border-[#EDF1F3] shadow-sm">
+                <div className="flex justify-between items-center mb-1.5">
+                  <span className="text-xs font-medium text-gray-500">
+                    {language === 'ar' ? 'القطع المصنعة اليوم' : 'Unités Fabriquées Aujourd’hui'}
+                  </span>
+                  <span className="text-base font-bold font-mono text-gray-900 tabular-nums">
+                    {totalUnitsProduced.toLocaleString()} pcs
+                  </span>
+                </div>
+                <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden mb-1">
+                  <div
+                    className="bg-[#C4785A] h-full rounded-full transition-all duration-500"
+                    style={{ width: `${targetPct}%` }}
+                  />
+                </div>
+                <div className="flex justify-between text-[11px] text-gray-400">
+                  <span>{targetPct}% {language === 'ar' ? 'من الهدف' : 'de l’objectif'}</span>
+                  <span>{dailyTargetUnits.toLocaleString()} pcs</span>
+                </div>
               </div>
             </div>
-          ))}
+          </DashboardPod>
+        </div>
+
+        {/* POD 2: Work-in-Progress Development (58% width) */}
+        <div className="lg:col-span-7 flex flex-col">
+          <DashboardPod
+            title={language === 'ar' ? 'تطور المخزون قيد التصنيع والدفعات' : language === 'fr' ? 'Développement En-Cours & Nomenclatures' : 'Work-in-Progress & BOM Development'}
+            icon={<Layers size={18} className="text-[#C4785A]" />}
+            rightControls={
+              <div className="flex items-center gap-1 text-xs font-semibold text-gray-600">
+                <button
+                  type="button"
+                  onClick={() => setCurrentMonthIndex((prev) => (prev > 0 ? prev - 1 : 11))}
+                  className="p-1 hover:bg-gray-200 rounded"
+                >
+                  <ChevronLeft size={14} />
+                </button>
+                <span className="px-1 text-gray-800">{months[currentMonthIndex]} 2026</span>
+                <button
+                  type="button"
+                  onClick={() => setCurrentMonthIndex((prev) => (prev < 11 ? prev + 1 : 0))}
+                  className="p-1 hover:bg-gray-200 rounded"
+                >
+                  <ChevronRight size={14} />
+                </button>
+              </div>
+            }
+            className="flex-1 flex flex-col justify-between"
+          >
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <DashboardMetricCard
+                  label={language === 'ar' ? 'قوائم المواد (BOM)' : 'Nomenclatures (BOM)'}
+                  value={(boms || []).length || 14}
+                  badgeText={language === 'ar' ? 'معتمدة' : 'Validées'}
+                  badgeVariant="success"
+                  tooltip={language === 'ar' ? 'مخططات التركيب والتصنيع' : 'Recettes de fabrication actives'}
+                />
+
+                <DashboardMetricCard
+                  label={language === 'ar' ? 'الدفعات المنتجة هذا الشهر' : 'Lots Fabriqués Mois'}
+                  value={completedOrders}
+                  badgeText={language === 'ar' ? 'مكتملة' : 'Livrés'}
+                  badgeVariant="neutral"
+                  tooltip={language === 'ar' ? 'دفعات فحصت وسلمت للمخزن' : 'Ordres clôturés'}
+                />
+
+                <DarkEspressoCard
+                  label={language === 'ar' ? 'نسبة الهدر والفاقد' : 'Taux de Rebut (Scrap)'}
+                  value="1.2%"
+                  sublabel={language === 'ar' ? 'تحت الحد الأقصى' : 'Sous le seuil tolérance 2%'}
+                  badgeText="Conforme"
+                  badgeVariant="neutral"
+                />
+              </div>
+
+              <div className="bg-white rounded-[18px] p-4 border border-[#EDF1F3] shadow-sm">
+                <div className="flex justify-between items-center mb-3">
+                  <span className="text-xs font-semibold text-gray-700">
+                    {language === 'ar' ? 'حجم الإنتاج الأسبوعي (قطع)' : 'Cadence hebdomadaire d’unités produites'}
+                  </span>
+                  <span className="text-[11px] text-gray-400">
+                    {language === 'ar' ? 'مقارنة شهرية' : '4 dernières semaines'}
+                  </span>
+                </div>
+                <PillBarHistogram
+                  data={weeklyProduction}
+                  maxScale={35000}
+                  barColor="#C4785A"
+                />
+              </div>
+            </div>
+          </DashboardPod>
         </div>
       </div>
 
-      <ManufacturingOrderModal
-        isOpen={isOrderModalOpen}
-        onClose={() => setIsOrderModalOpen(false)}
-        onSave={addOrder}
-        boms={boms}
-      />
+      {/* BOTTOM ROW: Two Pods */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* POD 3: Financial Trajectory (42% width) */}
+        <div className="lg:col-span-5 flex flex-col">
+          <DashboardPod
+            title={language === 'ar' ? 'المسار المالي وتكلفة القطعة' : language === 'fr' ? 'Trajectoire Financière & Coût Revient' : 'Financial Trajectory & Unit Cost'}
+            icon={<TrendingUp size={18} className="text-[#C4785A]" />}
+            rightControls={
+              <span className="text-xs font-semibold text-gray-500 uppercase">
+                {months[currentMonthIndex]} 2026
+              </span>
+            }
+            className="flex-1 flex flex-col justify-between"
+          >
+            <div className="space-y-4">
+              <div className="bg-white rounded-[18px] p-4 border border-[#EDF1F3] shadow-sm">
+                <div className="grid grid-cols-3 gap-2 pb-3 border-b border-gray-100">
+                  <div>
+                    <span className="text-[11px] text-gray-500 block">{language === 'ar' ? 'قيمة الإنتاج' : 'Valeur Usine'}</span>
+                    <span className="text-lg font-bold font-mono text-gray-900 tabular-nums">
+                      {formatMoney(4200000)}
+                    </span>
+                    <span className="text-[10px] text-emerald-600 block">+8.5%</span>
+                  </div>
+                  <div>
+                    <span className="text-[11px] text-gray-500 block">{language === 'ar' ? 'مواد أولية' : 'Matières Cons.'}</span>
+                    <span className="text-lg font-bold font-mono text-gray-900 tabular-nums">
+                      {formatMoney(2400000)}
+                    </span>
+                    <span className="text-[10px] text-gray-400 block">57% Coût</span>
+                  </div>
+                  <div>
+                    <span className="text-[11px] text-gray-500 block">{language === 'ar' ? 'طاقة ويد عاملة' : 'Main d’Œuvre'}</span>
+                    <span className="text-lg font-bold font-mono text-gray-900 tabular-nums">
+                      {formatMoney(1100000)}
+                    </span>
+                    <span className="text-[10px] text-gray-400 block">26% Coût</span>
+                  </div>
+                </div>
+
+                <div className="pt-3">
+                  <span className="text-[11px] text-gray-400 block mb-1">
+                    {language === 'ar' ? 'منحنى قيمة الإنتاج على مدار 30 يوماً' : 'Tendance de valeur produite sur 30 jours'}
+                  </span>
+                  <MonthlyAreaChart data={monthlyProductionValue} color="#8B5CF6" />
+                </div>
+              </div>
+
+              {/* 4 KPIs Inset Grid */}
+              <div className="bg-white rounded-[18px] p-4 border border-[#EDF1F3] shadow-sm">
+                <div className="flex justify-between items-center mb-3">
+                  <span className="text-xs font-semibold text-gray-700">
+                    {language === 'ar' ? 'مؤشرات الكفاءة الصناعية (TRS / OEE)' : 'Ratios de Performance Industrielle'}
+                  </span>
+                  <Info size={13} className="text-gray-400" />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-[#F8F9FA] p-3 rounded-xl">
+                    <span className="text-[11px] text-gray-500 block">
+                      {language === 'ar' ? 'الفعالية الإجمالية (TRS)' : 'Taux TRS / OEE'}
+                    </span>
+                    <div className="flex items-center justify-between mt-1">
+                      <span className="text-base font-bold font-mono text-gray-900">86.4%</span>
+                      <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
+                        World Class
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="bg-[#F8F9FA] p-3 rounded-xl">
+                    <span className="text-[11px] text-gray-500 block">
+                      {language === 'ar' ? 'زمن الدورة للقطعة' : 'Cycle Time Moyen'}
+                    </span>
+                    <div className="flex items-center justify-between mt-1">
+                      <span className="text-base font-bold font-mono text-gray-900">42 sec</span>
+                      <span className="text-[10px] font-semibold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">
+                        Optimisé
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="bg-[#F8F9FA] p-3 rounded-xl">
+                    <span className="text-[11px] text-gray-500 block">
+                      {language === 'ar' ? 'دقة وصفة التصنيع' : 'Précision BOM'}
+                    </span>
+                    <div className="flex items-center justify-between mt-1">
+                      <span className="text-base font-bold font-mono text-gray-900">99.4%</span>
+                      <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
+                        Conforme
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="bg-[#F8F9FA] p-3 rounded-xl">
+                    <span className="text-[11px] text-gray-500 block">
+                      {language === 'ar' ? 'الالتزام بجدول التسليم' : 'Respect Délais OF'}
+                    </span>
+                    <div className="flex items-center justify-between mt-1">
+                      <span className="text-base font-bold font-mono text-gray-900">97.8%</span>
+                      <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
+                        À l’heure
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </DashboardPod>
+        </div>
+
+        {/* POD 4: Production Intelligence & QC Guardian (58% width) */}
+        <div className="lg:col-span-7 flex flex-col">
+          <DashboardPod
+            title={language === 'ar' ? 'ذكاء المصنع وحارس الجودة الصناعية' : language === 'fr' ? 'Intelligence Usine & Quality Sentinel' : 'Production Intelligence & QC Guardian'}
+            icon={<ShieldCheck size={18} className="text-[#C4785A]" />}
+            className="flex-1 flex flex-col justify-between"
+          >
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-white rounded-[18px] p-4 border border-[#EDF1F3] shadow-sm">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-xs font-semibold text-gray-700">
+                      {language === 'ar' ? 'توزيع الإنتاج حسب الصنف' : 'Mix Produits Finis'}
+                    </span>
+                    <Info size={13} className="text-gray-400" />
+                  </div>
+                  <DonutChart segments={productMix} centerLabel={`${activeOrders} OF`} />
+                </div>
+
+                <div className="bg-white rounded-[18px] p-4 border border-[#EDF1F3] shadow-sm">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-xs font-semibold text-gray-700">
+                      {language === 'ar' ? 'إنتاجية المحطات والورشات' : 'Rendement par Poste'}
+                    </span>
+                    <Info size={13} className="text-gray-400" />
+                  </div>
+                  <PillBarHistogram
+                    data={stationOutput}
+                    maxScale={60}
+                    barColor="#3B82F6"
+                  />
+                </div>
+              </div>
+
+              {/* QC Sentinel Card */}
+              <GuardianCard
+                title={language === 'ar' ? 'حارس الجودة وعدم المطابقة (QC Sentinel)' : 'Quality Assurance & Zero-Defect Sentinel'}
+                subtitle={
+                  language === 'ar'
+                    ? 'فحص آلي لتقارير عدم المطابقة وعينات الجودة في نهاية كل خط إنتاج قبل التغليف والتخزين'
+                    : 'Surveillance proactive des non-conformités matière et validation des jalons QC.'
+                }
+                score={98}
+                statusText={language === 'ar' ? 'جميع العينات مطابقة للمواصفات ISO 9001!' : 'Zéro non-conformité critique : conformité certifiée !'}
+                metricLabel={language === 'ar' ? 'مؤشر الجودة' : 'Conformité'}
+                metricValue="98.8%"
+                trendText={language === 'ar' ? 'معتمد' : 'Lots conformes'}
+                defaultEnabled={true}
+              />
+
+              {/* Action Buttons Bar */}
+              <div className="bg-white rounded-[18px] p-4 border border-[#EDF1F3] shadow-sm flex flex-wrap items-center justify-between gap-3">
+                <span className="text-xs font-semibold text-gray-600">
+                  {language === 'ar' ? 'إجراءات سريعة واختصارات' : 'Raccourcis Opérationnels'}
+                </span>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsOrderModalOpen(true)}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#C4785A] hover:bg-[#b0674b] text-white rounded-xl text-xs font-semibold shadow-sm transition-all"
+                  >
+                    <Plus size={14} />
+                    {language === 'ar' ? 'إطلاق أمر تصنيع (OF)' : 'Lancer un OF'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setScreen('shop')}
+                    className="inline-flex items-center gap-1.5 px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-medium transition-all"
+                  >
+                    <Layers size={14} />
+                    {language === 'ar' ? 'قوائم المواد BOM' : 'Nomenclatures'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setScreen('scheduler')}
+                    className="inline-flex items-center gap-1.5 px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-medium transition-all"
+                  >
+                    <Boxes size={14} />
+                    {language === 'ar' ? 'مخزن المواد الأولية' : 'Matières Premières'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </DashboardPod>
+        </div>
+      </div>
+
+      {/* Modals */}
+      {isOrderModalOpen && (
+        <ManufacturingOrderModal
+          isOpen={isOrderModalOpen}
+          onClose={() => setIsOrderModalOpen(false)}
+          boms={boms}
+          onSave={addOrder}
+        />
+      )}
     </div>
   );
 };

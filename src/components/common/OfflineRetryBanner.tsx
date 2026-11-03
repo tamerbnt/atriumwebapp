@@ -4,6 +4,7 @@ import { WifiOff, RefreshCw, AlertCircle, Clock } from 'lucide-react';
 export interface OfflineRetryBannerProps {
   isOffline?: boolean;
   isTimedOut?: boolean;
+  isSyncing?: boolean;
   lastSyncedAt?: string | null;
   onRetry?: () => Promise<void> | void;
   className?: string;
