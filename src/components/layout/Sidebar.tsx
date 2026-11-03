@@ -2030,6 +2030,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   if (onCloseMobile) onCloseMobile();
                 }}
                 title={item.title}
+                data-atr-liquid=""
+                data-atr-tone={isActive ? 'accent' : 'soft'}
                 style={{
                   backgroundColor: isActive ? 'var(--color-accent)' : 'transparent',
                   color: isActive ? '#FFFFFF' : '#A1A1AA',

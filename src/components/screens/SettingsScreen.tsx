@@ -25,6 +25,8 @@ import {
   Globe,
   Check,
   Activity,
+  Sun,
+  Moon,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../services/store';
 import { Modal } from '../ui/Modal';
@@ -51,6 +53,8 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
     devices,
     quotas,
     currentBusiness,
+    theme,
+    setTheme,
     language,
     isLanguageAuto,
     setLanguage,
@@ -517,6 +521,112 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
         <div className="p-3.5 rounded-2xl bg-white dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700/60 flex items-center gap-3 text-xs text-neutral-600 dark:text-neutral-300">
           <Sparkles size={16} className="text-[#C4785A] shrink-0" />
           <span>{t('settings_rtl_notice', language)}</span>
+        </div>
+      </div>
+
+      {/* Row 1.1: Appearance & Theme Mode */}
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div
+              style={{ backgroundColor: 'var(--color-accent-dim)', color: 'var(--color-accent)' }}
+              className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 shadow-xs"
+            >
+              {theme === 'dark' ? <Moon size={20} /> : <Sun size={20} />}
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-base font-bold text-neutral-900 dark:text-white">
+                  {language === 'ar' ? 'مظهر النظام والسمة اللونية' : language === 'fr' ? 'Apparence et Thème du Système' : 'Interface Theme & Appearance'}
+                </h3>
+                <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-[#d4522f]/10 text-[#d4522f]">
+                  {theme === 'dark'
+                    ? (language === 'ar' ? 'الوضع الداكن' : language === 'fr' ? 'Mode Sombre' : 'Dark Mode')
+                    : (language === 'ar' ? 'الوضع الفاتح' : language === 'fr' ? 'Mode Clair' : 'Light Mode')}
+                </span>
+              </div>
+              <p className="text-xs text-[#52525B] dark:text-neutral-400 mt-0.5">
+                {language === 'ar'
+                  ? 'اختر السمة البصرية المناسبة لبيئة العمل (نهاري رخامي أو ليلي مهدئ للأعين)'
+                  : language === 'fr'
+                  ? 'Choisissez le thème visuel adapté à votre environnement de travail'
+                  : 'Select your preferred visual aesthetic for executive desktop workflows'}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Theme Options Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+          {/* Option: Light Mode */}
+          <button
+            type="button"
+            onClick={() => {
+              setTheme('light');
+              showToast({
+                type: 'info',
+                title: language === 'ar' ? 'الوضع الفاتح' : language === 'fr' ? 'Mode Clair activé' : 'Light Theme Activated',
+                message: language === 'ar' ? 'تم تطبيق المظهر النهاري الرخامي بنجاح.' : 'Executive day porcelain theme enabled.',
+              });
+            }}
+            className={`p-4 rounded-[20px] text-left rtl:text-right transition-all border cursor-pointer relative ${
+              theme === 'light'
+                ? 'bg-white dark:bg-neutral-800 border-[#d4522f] ring-2 ring-[#d4522f]/20 shadow-sm'
+                : 'bg-white/60 dark:bg-neutral-800/60 border-[#E9EEF0] dark:border-neutral-700/60 hover:bg-white dark:hover:bg-neutral-800'
+            }`}
+          >
+            <div className="flex items-center justify-between mb-3">
+              <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-500 flex items-center justify-center">
+                <Sun size={20} />
+              </div>
+              {theme === 'light' && (
+                <span className="w-5 h-5 rounded-full bg-[#d4522f] text-white flex items-center justify-center text-xs shadow-xs">
+                  <Check size={12} strokeWidth={3} />
+                </span>
+              )}
+            </div>
+            <div className="font-bold text-sm text-neutral-900 dark:text-white">
+              {language === 'ar' ? 'الوضع الفاتح (نهاري)' : language === 'fr' ? 'Mode Clair (Jour)' : 'Light Theme (Day)'}
+            </div>
+            <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-1">
+              {language === 'ar' ? 'خلفيات ناصعة، تباين عالي وخطوط واضحة للاستخدام المكتبي المشرق' : language === 'fr' ? 'Interface claire, contraste élevé pour un usage diurne' : 'Clean porcelain canvas with high contrast for brightly lit offices'}
+            </p>
+          </button>
+
+          {/* Option: Dark Mode */}
+          <button
+            type="button"
+            onClick={() => {
+              setTheme('dark');
+              showToast({
+                type: 'info',
+                title: language === 'ar' ? 'الوضع الداكن' : language === 'fr' ? 'Mode Sombre activé' : 'Dark Theme Activated',
+                message: language === 'ar' ? 'تم تطبيق المظهر الليلي الهادئ بنجاح.' : 'Executive obsidian night theme enabled.',
+              });
+            }}
+            className={`p-4 rounded-[20px] text-left rtl:text-right transition-all border cursor-pointer relative ${
+              theme === 'dark'
+                ? 'bg-white dark:bg-neutral-800 border-[#d4522f] ring-2 ring-[#d4522f]/20 shadow-sm'
+                : 'bg-white/60 dark:bg-neutral-800/60 border-[#E9EEF0] dark:border-neutral-700/60 hover:bg-white dark:hover:bg-neutral-800'
+            }`}
+          >
+            <div className="flex items-center justify-between mb-3">
+              <div className="w-10 h-10 rounded-xl bg-neutral-900 text-amber-300 flex items-center justify-center">
+                <Moon size={20} />
+              </div>
+              {theme === 'dark' && (
+                <span className="w-5 h-5 rounded-full bg-[#d4522f] text-white flex items-center justify-center text-xs shadow-xs">
+                  <Check size={12} strokeWidth={3} />
+                </span>
+              )}
+            </div>
+            <div className="font-bold text-sm text-neutral-900 dark:text-white">
+              {language === 'ar' ? 'الوضع الداكن (ليلي)' : language === 'fr' ? 'Mode Sombre (Nuit)' : 'Dark Theme (Night)'}
+            </div>
+            <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-1">
+              {language === 'ar' ? 'ألوان حجر الأوبسيديان الداكنة المريحة للأعين أثناء الفترات المسائية' : language === 'fr' ? 'Teintes obsidian profondes pour un confort visuel maximal en soirée' : 'Deep obsidian surfaces designed to reduce eye strain in low-light environments'}
+            </p>
+          </button>
         </div>
       </div>
 

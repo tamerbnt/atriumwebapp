@@ -337,15 +337,17 @@ export class ButtonLiquidController implements SpringBody {
   }
 
   aim() {
-    this.r.t = this.hold > 0 ? this.cov : this.press ? 0.9 : this.hover ? 0.55 : 0;
+    this.r.t = this.hold > 0 ? this.cov : this.press ? 0.9 : this.hover ? 0.6 : 0;
     if (this.hover || this.press) {
       this.x.t = this.px;
       this.y.t = this.py;
     }
     this.sx.t = this.press ? 1.03 : 1;
     this.sy.t = this.press ? 0.945 : 1;
-    this.bx.t = this.hover ? clamp((this.px - 0.5) * 0.14, -0.08, 0.08) : 0;
-    this.by.t = this.hover ? clamp((this.py - 0.5) * 0.2, -0.06, 0.06) : 0;
+    const maxDisplace = Math.min(this.H, 44);
+    const dampFactor = maxDisplace / Math.max(1, this.H);
+    this.bx.t = this.hover ? clamp((this.px - 0.5) * 0.14, -0.08, 0.08) * dampFactor : 0;
+    this.by.t = this.hover ? clamp((this.py - 0.5) * 0.2, -0.06, 0.06) * dampFactor : 0;
   }
 
   step(dt: number) {
@@ -362,7 +364,8 @@ export class ButtonLiquidController implements SpringBody {
     }
     const e = this.H;
     if (this.lq) {
-      this.lq.style.clipPath = `circle(${fmt(Math.max(0, this.r.x) * e)}px at ${fmt(
+      const radius = Math.max(0, this.r.x) * Math.max(e, Math.min(this.w * 0.5, 120));
+      this.lq.style.clipPath = `circle(${fmt(radius)}px at ${fmt(
         this.x.x * this.w
       )}px ${fmt(this.y.x * e)}px)`;
     }
@@ -400,7 +403,15 @@ const buttonControllers = new WeakMap<HTMLElement, ButtonLiquidController>();
 export function getButtonController(el: HTMLElement): ButtonLiquidController {
   let c = buttonControllers.get(el);
   if (!c) {
-    c = new ButtonLiquidController(el, el.querySelector(':scope > [data-atr-lq]'));
+    let lq = el.querySelector<HTMLElement>(':scope > [data-atr-lq]');
+    if (!lq && !el.hasAttribute('data-no-lq-inject') && !el.hasAttribute('data-no-liquid')) {
+      lq = document.createElement('span');
+      lq.className = 't';
+      lq.setAttribute('data-atr-lq', '');
+      lq.setAttribute('aria-hidden', 'true');
+      el.prepend(lq);
+    }
+    c = new ButtonLiquidController(el, lq);
     buttonControllers.set(el, c);
   }
   return c;
@@ -426,7 +437,16 @@ export function initGlobalButtonDelegation() {
 
   const getTarget = (e: Event): HTMLElement | null => {
     const t = e.target as HTMLElement | null;
-    return t?.closest?.('[data-atr-liquid]') || null;
+    if (!t) return null;
+    return (
+      t.closest?.('[data-atr-liquid]') ||
+      t.closest?.('[data-atr-btn]') ||
+      t.closest?.('[data-atr-card]') ||
+      t.closest?.('.interactive-card') ||
+      t.closest?.('button:not(.o):not(.e):not(.r):not([role="switch"]):not([data-no-liquid]):not([disabled])') ||
+      t.closest?.('[role="button"]:not(.o):not(.e):not(.r):not([data-no-liquid]):not([disabled])') ||
+      null
+    );
   };
 
   const isDisabled = (el: HTMLElement) => {

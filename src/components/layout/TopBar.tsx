@@ -1,7 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  Sun,
-  Moon,
   RotateCw,
   Rocket,
   Menu,
@@ -32,6 +30,7 @@ import {
   Briefcase,
   Activity,
   Bell,
+  Settings,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../services/store';
 import { formatDuration } from '../../utils/rules';
@@ -41,7 +40,7 @@ import { useTranslation } from '../../utils/useTranslation';
 import { BackendDiagnosticPanel } from '../BackendDiagnosticPanel';
 import { NotificationDropdown } from './NotificationDropdown';
 import { PinVerificationModal } from '../modals/PinVerificationModal';
-import { LiveButton, LiveIconButton, LiveDropdownMenu, LiveSwitch } from '../ui/live';
+import { LiveButton, LiveIconButton, LivePopoverPanel, popoverClasses } from '../ui/live';
 
 interface TopBarProps {
   onOpenVoucherModal: () => void;
@@ -60,8 +59,6 @@ export const TopBar: React.FC<TopBarProps> = ({
     setScreen,
     selectedMember,
     selectMember,
-    theme,
-    setTheme,
     language,
     isLanguageAuto,
     setLanguage,
@@ -132,6 +129,7 @@ export const TopBar: React.FC<TopBarProps> = ({
   } | null>(null);
 
   const userMenuRef = useRef<HTMLDivElement>(null);
+  const userButtonRef = useRef<HTMLButtonElement>(null);
   const networkMenuRef = useRef<HTMLDivElement>(null);
   const notificationMenuRef = useRef<HTMLDivElement>(null);
 
@@ -182,7 +180,10 @@ export const TopBar: React.FC<TopBarProps> = ({
       if (!target) return;
 
       if (userMenuOpen && userMenuRef.current && !userMenuRef.current.contains(target)) {
-        setUserMenuOpen(false);
+        const popover = document.querySelector('.i[role="menu"]');
+        if (!popover || !popover.contains(target)) {
+          setUserMenuOpen(false);
+        }
       }
 
       if (networkMenuOpen && networkMenuRef.current && !networkMenuRef.current.contains(target)) {
@@ -1456,36 +1457,16 @@ export const TopBar: React.FC<TopBarProps> = ({
           />
         )}
 
-        {/* Sun / Moon Theme Liquid Switch */}
-        <div
-          className="flex items-center gap-1.5 px-2 py-1 rounded-[6px] bg-neutral-100 dark:bg-neutral-800/80 border border-neutral-200/50 dark:border-neutral-700/50"
-          title={`Switch to ${theme === 'light' ? 'Dark' : 'Light'} Mode`}
-        >
-          <Sun
-            size={13}
-            className={`${theme === 'light' ? 'text-amber-500 font-bold' : 'text-neutral-400'}`}
-          />
-          <LiveSwitch
-            checked={theme === 'dark'}
-            onCheckedChange={(checked) => setTheme(checked ? 'dark' : 'light')}
-            aria-label="Toggle dark mode"
-          />
-          <Moon
-            size={13}
-            className={`${theme === 'dark' ? 'text-amber-300 font-bold' : 'text-neutral-400'}`}
-          />
-        </div>
 
         {/* Focus Mode / Collapse Header Button */}
-        <button
-          type="button"
+        <LiveIconButton
+          icon={<ChevronUp size={16} />}
+          tone="soft"
           onClick={toggleTopBarCollapsed}
-          className="hidden sm:flex w-8 h-8 rounded-full items-center justify-center text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+          className="hidden sm:inline-flex !w-8 !h-8 !rounded-full text-neutral-500 dark:text-neutral-400"
           title={t('topbar_focus_hide', "Mode Plein Écran / Masquer l'en-tête (Cmd+\\)")}
           aria-label="Collapse header"
-        >
-          <ChevronUp size={16} />
-        </button>
+        />
 
 
 
@@ -1627,12 +1608,13 @@ export const TopBar: React.FC<TopBarProps> = ({
         {/* TopBar Notification Bell & Center Trigger */}
         <div ref={notificationMenuRef} className="relative">
           <LiveIconButton
-            icon={<Bell size={14} />}
-            badge={unreadNotificationCount}
+            icon={<Bell size={15} />}
+            badge={unreadNotificationCount > 0 ? (unreadNotificationCount > 9 ? '9+' : unreadNotificationCount) : null}
             tone={notificationsOpen ? 'accent' : 'soft'}
             onClick={toggleNotifications}
             title={language === 'ar' ? 'مركز الإشعارات والتنبيهات' : language === 'fr' ? 'Centre de notifications' : 'Notifications & Alerts'}
             aria-label="Open notifications menu"
+            className="!w-8 !h-8 !rounded-full"
           />
 
           <NotificationDropdown
@@ -1641,87 +1623,192 @@ export const TopBar: React.FC<TopBarProps> = ({
           />
         </div>
 
-        {/* User Identity Menu Button */}
-        <LiveDropdownMenu
-          aria-label="Account"
-          placement="bottom-end"
-          header={
-            <>
-              <b>{currentUser.fullName}</b>
-              <small>{currentUser.email}</small>
-            </>
-          }
-          items={[
-            {
-              id: 'lock',
-              label: 'Lock Terminal / Switch Staff',
-              icon: <Lock size={14} className="text-[#d4522f]" />,
-              onClick: openFastSwitch,
-            },
-            {
-              id: 'diag',
-              label: language === 'ar' ? 'فحص جاهزية الخادم وCRUD' : language === 'fr' ? 'Diagnostic CRUD & Serveur' : 'Backend & CRUD Diagnostics',
-              description: language === 'ar' ? 'اختبار العمليات الحية عبر كافة الأنشطة' : language === 'fr' ? 'Audit live des métiers' : 'Live CRUD audit across all verticals',
-              icon: <Activity size={14} className="text-emerald-500" />,
-              onClick: () => setIsDiagnosticPanelOpen(true),
-            },
-            {
-              id: 'cinema',
-              label: 'ATRIUM Monolith Cinema',
-              description: 'Replay Kinetic Typographic Intro',
-              icon: <Sparkles size={14} className="text-[#d4522f]" />,
-              onClick: () => {
+        {/* User Identity Menu */}
+        <div ref={userMenuRef} className="relative">
+          <LiveButton
+            ref={userButtonRef}
+            tone="soft"
+            onClick={toggleUserMenu}
+            aria-haspopup="menu"
+            aria-expanded={userMenuOpen}
+            className={`!rounded-full !pl-1.5 !pr-2.5 !py-1 !h-[34px] !max-h-[34px] border cursor-pointer select-none ${
+              userMenuOpen
+                ? '!border-neutral-400 dark:!border-neutral-500 shadow-xs'
+                : 'border-neutral-200/80 dark:border-neutral-700/70'
+            }`}
+            aria-label={`Operator: ${currentUser.fullName} (${currentUser.role})`}
+          >
+            <div className="w-6 h-6 rounded-full bg-[#d4522f] text-white flex items-center justify-center font-bold text-xs shadow-2xs shrink-0">
+              {currentUser.fullName.charAt(0).toUpperCase()}
+            </div>
+            <div className="flex flex-col text-left rtl:text-right min-w-0">
+              <span className="font-semibold text-xs text-neutral-800 dark:text-neutral-200 leading-tight truncate max-w-[110px]">
+                {currentUser.fullName.split(' ')[0]}
+              </span>
+            </div>
+            <ChevronDown
+              size={12}
+              data-atr-chev=""
+              className="text-neutral-400"
+            />
+          </LiveButton>
+
+          <LivePopoverPanel
+            anchor={userButtonRef.current}
+            open={userMenuOpen}
+            onRequestClose={() => setUserMenuOpen(false)}
+            placement="bottom-end"
+            role="menu"
+            aria-label="Account menu"
+            header={
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-full bg-[#d4522f] text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">
+                  {currentUser.fullName.charAt(0).toUpperCase()}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <b className="truncate block leading-snug">{currentUser.fullName}</b>
+                  <small className="truncate block opacity-75">{currentUser.email}</small>
+                  <div className="mt-0.5">
+                    <span className="inline-block text-[10px] font-semibold text-[#d4522f] capitalize">
+                      {currentUser.role}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            }
+          >
+            <button
+              type="button"
+              role="menuitem"
+              data-atr-item=""
+              tabIndex={-1}
+              className={popoverClasses.item}
+              onClick={() => {
+                setUserMenuOpen(false);
+                openFastSwitch();
+              }}
+            >
+              <Lock size={15} />
+              <span className={popoverClasses.text}>
+                <b>{language === 'ar' ? 'قفل الجهاز / تبديل الموظف' : language === 'fr' ? "Verrouiller / Changer d'agent" : 'Lock Terminal / Switch Staff'}</b>
+                <small>{language === 'ar' ? 'التبديل الفوري برمز PIN السريع' : 'Fast PIN operator switch'}</small>
+              </span>
+            </button>
+
+            <button
+              type="button"
+              role="menuitem"
+              data-atr-item=""
+              tabIndex={-1}
+              className={popoverClasses.item}
+              onClick={() => {
+                setUserMenuOpen(false);
+                setIsDiagnosticPanelOpen(true);
+              }}
+            >
+              <Activity size={15} />
+              <span className={popoverClasses.text}>
+                <b>{language === 'ar' ? 'فحص جاهزية الخادم وCRUD' : language === 'fr' ? 'Diagnostic CRUD & Serveur' : 'Backend & CRUD Diagnostics'}</b>
+                <small>{language === 'ar' ? 'اختبار العمليات الحية لكافة الأنشطة' : 'Live CRUD audit across all verticals'}</small>
+              </span>
+            </button>
+
+            <button
+              type="button"
+              role="menuitem"
+              data-atr-item=""
+              tabIndex={-1}
+              className={popoverClasses.item}
+              onClick={() => {
+                setUserMenuOpen(false);
                 try {
                   sessionStorage.removeItem('atrium-intro-seen');
                 } catch {}
                 window.dispatchEvent(new CustomEvent('atrium:replayintro'));
-              },
-            },
-            {
-              id: 'wizard',
-              label: 'New Business Onboarding Wizard',
-              icon: <Sparkles size={14} className="text-amber-500" />,
-              onClick: openOnboarding,
-            },
-            {
-              id: 'voucher',
-              label: 'Redeem Lifetime License Voucher',
-              icon: <Rocket size={14} className="text-blue-500" />,
-              onClick: onOpenVoucherModal,
-            },
-            { type: 'separator' },
-            {
-              id: 'logout',
-              label: language === 'ar' ? 'تسجيل الخروج' : language === 'fr' ? 'Déconnexion' : 'Sign Out',
-              icon: <LogOut size={14} />,
-              danger: true,
-              onClick: logout,
-            },
-          ]}
-          trigger={(triggerProps) => (
-            <LiveButton
-              {...triggerProps}
-              tone="soft"
-              trailing={
-                <ChevronDown
-                  size={12}
-                  data-atr-chev=""
-                  className="text-neutral-400 group-hover:text-neutral-600 transition-transform"
-                />
-              }
-              aria-label={`Operator: ${currentUser.fullName} (${currentUser.role})`}
+              }}
             >
-              <div className="flex items-center gap-2">
-                <div className="w-5 h-5 rounded-full bg-[#d4522f] text-white flex items-center justify-center font-bold text-[10px]">
-                  {currentUser.fullName.charAt(0)}
-                </div>
-                <span className="font-semibold text-xs text-neutral-800 dark:text-neutral-200">
-                  {currentUser.fullName.split(' ')[0]}
-                </span>
-              </div>
-            </LiveButton>
-          )}
-        />
+              <Sparkles size={15} />
+              <span className={popoverClasses.text}>
+                <b>ATRIUM Monolith Cinema</b>
+                <small>Replay Kinetic Typographic Intro</small>
+              </span>
+            </button>
+
+            <button
+              type="button"
+              role="menuitem"
+              data-atr-item=""
+              tabIndex={-1}
+              className={popoverClasses.item}
+              onClick={() => {
+                setUserMenuOpen(false);
+                openOnboarding();
+              }}
+            >
+              <Sparkles size={15} />
+              <span className={popoverClasses.text}>
+                <b>{language === 'ar' ? 'معالج إعداد النشاط التجاري' : 'Business Onboarding Wizard'}</b>
+                <small>Launch initial setup guide</small>
+              </span>
+            </button>
+
+            <button
+              type="button"
+              role="menuitem"
+              data-atr-item=""
+              tabIndex={-1}
+              className={popoverClasses.item}
+              onClick={() => {
+                setUserMenuOpen(false);
+                onOpenVoucherModal?.();
+              }}
+            >
+              <Rocket size={15} />
+              <span className={popoverClasses.text}>
+                <b>{language === 'ar' ? 'تفعيل قسيمة الترخيص الدائم' : 'Redeem Lifetime Voucher'}</b>
+                <small>Prepaid lifetime license activation</small>
+              </span>
+            </button>
+
+            <button
+              type="button"
+              role="menuitem"
+              data-atr-item=""
+              tabIndex={-1}
+              className={popoverClasses.item}
+              onClick={() => {
+                setUserMenuOpen(false);
+                setScreen('settings');
+              }}
+            >
+              <Settings size={15} />
+              <span className={popoverClasses.text}>
+                <b>{t('settings_title', language)}</b>
+                <small>{language === 'ar' ? 'إعدادات النظام والسمات والمظهر' : language === 'fr' ? 'Préférences, thème & apparence' : 'Preferences, theme & appearance'}</small>
+              </span>
+            </button>
+
+            <div className={popoverClasses.hr} role="separator" />
+
+            <button
+              type="button"
+              role="menuitem"
+              data-atr-item=""
+              tabIndex={-1}
+              className={`${popoverClasses.item} ${popoverClasses.danger}`}
+              onClick={() => {
+                setUserMenuOpen(false);
+                logout();
+              }}
+            >
+              <LogOut size={15} />
+              <span className={popoverClasses.text}>
+                <b>{language === 'ar' ? 'تسجيل الخروج' : language === 'fr' ? 'Se déconnecter' : 'Sign Out'}</b>
+                <small>{currentUser.email}</small>
+              </span>
+            </button>
+          </LivePopoverPanel>
+        </div>
       </div>
 
       {/* Agriculture PIN Verification Modal */}

@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useCallback } from 'react';
+import React, { useRef, useEffect, useCallback, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { PopoverMenuController, calculatePopoverPlacement } from '../../../utils/atriumSprings';
 
@@ -22,10 +22,13 @@ export interface LivePopoverPanelProps {
   onRequestClose: (reason?: string) => void;
   onClosed?: () => void;
   placement?: 'bottom-start' | 'bottom-end' | 'top-start' | 'top-end';
-  width?: 'menu' | 'anchor';
+  width?: 'menu' | 'anchor' | string | number;
   header?: React.ReactNode;
   children: React.ReactNode;
   'aria-label'?: string;
+  className?: string;
+  style?: React.CSSProperties;
+  theme?: string;
 }
 
 export function LivePopoverPanel({
@@ -40,8 +43,12 @@ export function LivePopoverPanel({
   width = 'menu',
   header,
   children,
+  className,
+  style,
+  theme,
   'aria-label': ariaLabel,
 }: LivePopoverPanelProps) {
+  const [mounted, setMounted] = useState(open);
   const panelRef = useRef<HTMLDivElement>(null);
   const hlRef = useRef<HTMLDivElement>(null);
   const controllerRef = useRef<PopoverMenuController | null>(null);
@@ -49,6 +56,19 @@ export function LivePopoverPanel({
   closeRef.current = onRequestClose;
   const closedRef = useRef(onClosed);
   closedRef.current = onClosed;
+
+  useEffect(() => {
+    if (open) {
+      setMounted(true);
+    }
+  }, [open]);
+
+  const handleClosed = useCallback(() => {
+    if (!open) {
+      setMounted(false);
+    }
+    closedRef.current?.();
+  }, [open]);
 
   const updatePosition = useCallback(() => {
     const panel = panelRef.current;
@@ -58,6 +78,10 @@ export function LivePopoverPanel({
     const anchorRect = anchor.getBoundingClientRect();
     if (width === 'anchor') {
       panel.style.width = `${Math.round(anchorRect.width)}px`;
+    } else if (typeof width === 'number') {
+      panel.style.width = `${width}px`;
+    } else if (typeof width === 'string' && width !== 'menu') {
+      panel.style.width = width;
     }
 
     const docEl = anchor.ownerDocument.documentElement;
@@ -84,7 +108,7 @@ export function LivePopoverPanel({
 
     const chev = anchor.querySelector<HTMLElement>('[data-atr-chev]');
     const ctrl = new PopoverMenuController(panel, hl, chev, () => {
-      closedRef.current?.();
+      handleClosed();
     });
     controllerRef.current = ctrl;
 
@@ -101,7 +125,7 @@ export function LivePopoverPanel({
       controllerRef.current = null;
       if (chev) chev.style.transform = '';
     };
-  }, [anchor, updatePosition]);
+  }, [anchor, updatePosition, handleClosed]);
 
   // Handle open state transition
   useEffect(() => {
@@ -199,7 +223,10 @@ export function LivePopoverPanel({
     };
   }, [open, anchor, updatePosition]);
 
-  if (typeof document === 'undefined') return null;
+  if (typeof document === 'undefined' || (!mounted && !open) || !anchor) return null;
+
+  const currentTheme =
+    theme || (document.documentElement.classList.contains('dark') ? 'dark' : 'light');
 
   return createPortal(
     <div
@@ -207,8 +234,14 @@ export function LivePopoverPanel({
       id={id}
       role={role}
       aria-label={ariaLabel}
-      className={popoverClasses.panel}
+      className={`${popoverClasses.panel}${className ? ` ${className}` : ''}`}
+      data-atrium-theme={currentTheme}
       tabIndex={-1}
+      style={style}
+      onPointerOver={(e) => {
+        const item = (e.target as HTMLElement)?.closest<HTMLElement>('[data-atr-item]:not([disabled])');
+        controllerRef.current?.setHover(item || null);
+      }}
       onPointerMove={(e) => {
         const item = (e.target as HTMLElement)?.closest<HTMLElement>('[data-atr-item]:not([disabled])');
         controllerRef.current?.setHover(item || null);
@@ -216,12 +249,16 @@ export function LivePopoverPanel({
       onPointerLeave={() => {
         controllerRef.current?.setHover(null);
       }}
+      onFocusCapture={(e) => {
+        const item = (e.target as HTMLElement)?.closest<HTMLElement>('[data-atr-item]:not([disabled])');
+        if (item) controllerRef.current?.setHover(item);
+      }}
     >
       <div ref={hlRef} className={popoverClasses.hl} aria-hidden="true" />
       {header && <div className={popoverClasses.header}>{header}</div>}
       {header && <div className={popoverClasses.hr} />}
       {children}
     </div>,
-    document.body
+    anchor.ownerDocument.body
   );
 }

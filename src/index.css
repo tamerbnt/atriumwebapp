@@ -1602,9 +1602,55 @@
 .t {
   position: absolute;
   inset: 0;
-  background: var(--q);
+  background: var(--q, var(--atr-hl));
   clip-path: circle(0px at 50% 50%);
   pointer-events: none;
+  border-radius: inherit;
+}
+
+/* Universal Kinetic Liquid Controls Standard */
+[data-atr-liquid],
+[data-atr-btn],
+[data-atr-card],
+.interactive-card,
+button:not(.o):not(.e):not(.r):not([role="switch"]):not([data-no-liquid]):not([disabled]),
+[role="button"]:not(.o):not(.e):not(.r):not([data-no-liquid]):not([disabled]) {
+  position: relative;
+  overflow: hidden;
+  --q: var(--atr-hl);
+  transition-property: color, background-color, border-color, opacity, box-shadow;
+}
+
+/* Contextual tone mapping */
+[data-atr-tone="accent"],
+.btn-primary,
+button[class*="bg-[#d4522f]"],
+button[class*="bg-[#C4785A]"],
+button[class*="bg-accent"] {
+  --q: var(--atr-accq);
+}
+
+[data-atr-tone="success"],
+button[class*="bg-emerald-"],
+button[class*="bg-green-"] {
+  --q: var(--atr-okq);
+}
+
+[data-atr-tone="soft"],
+[data-atr-tone="secondary"],
+.btn-secondary {
+  --q: var(--atr-hl);
+}
+
+/* Ensure inner content sits cleanly above the .t ripple */
+[data-atr-liquid] > *:not([data-atr-lq]),
+[data-atr-btn] > *:not([data-atr-lq]),
+[data-atr-card] > *:not([data-atr-lq]),
+.interactive-card > *:not([data-atr-lq]),
+button:not(.o):not(.e):not(.r):not([role="switch"]):not([data-no-liquid]) > *:not([data-atr-lq]),
+[role="button"]:not(.o):not(.e):not(.r):not([data-no-liquid]) > *:not([data-atr-lq]) {
+  position: relative;
+  z-index: 1;
 }
 .h {
   position: relative;
