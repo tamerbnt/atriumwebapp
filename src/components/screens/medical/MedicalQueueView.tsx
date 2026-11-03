@@ -26,6 +26,7 @@ import { formatMoney } from '../../../utils/rules';
 import { MedicalConsultation } from '../../../types';
 import { useMedicalData } from './medicalData';
 import { AtriumButton } from '../../ui/AtriumButton';
+import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { Seek } from '../../ui/Seek';
 import { FilterSelect } from '../../ui/FilterSelect';
 import { MedicalConsultationModal } from './MedicalConsultationModal';
@@ -84,6 +85,13 @@ export const MedicalQueueView: React.FC = () => {
       return true;
     });
   }, [consultations, searchQuery, statusFilter]);
+
+  const queueCounts = useMemo(() => ({
+    all: consultations.length,
+    waiting: consultations.filter((c) => c.status === 'InWaitingQueue').length,
+    in_progress: consultations.filter((c) => c.status === 'InConsultation').length,
+    completed: consultations.filter((c) => c.status === 'Completed').length,
+  }), [consultations]);
 
   const sortedConsultations = useMemo(() => {
     const list = [...filtered];
@@ -442,35 +450,19 @@ export const MedicalQueueView: React.FC = () => {
               openWidth={220}
             />
 
-            {/* Medical Triage Domain Filter Capsules */}
-            <div className="flex items-center p-0.5 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 gap-0.5 text-xs font-semibold shadow-2xs">
-              {(
-                [
-                  { id: 'all', label: isAr ? 'الكل' : 'Tous' },
-                  { id: 'waiting', label: isAr ? 'في الانتظار' : 'En attente' },
-                  { id: 'in_progress', label: isAr ? 'في الفحص' : 'En consultation' },
-                  { id: 'completed', label: isAr ? 'مكتمل' : 'Clôturés' },
-                ] as const
-              ).map((filter) => {
-                const isActive = statusFilter === filter.id;
-                return (
-                  <button
-                    key={filter.id}
-                    type="button"
-                    onClick={() => setStatusFilter(filter.id)}
-                    style={{
-                      backgroundColor: isActive ? '#FCEEE8' : 'transparent',
-                      color: isActive ? 'var(--color-accent)' : '#71717A',
-                    }}
-                    className={`px-3 py-1 rounded-full cursor-pointer transition-all ${
-                      isActive ? 'font-bold' : 'hover:text-neutral-900 dark:hover:text-white'
-                    }`}
-                  >
-                    {filter.label}
-                  </button>
-                );
-              })}
-            </div>
+            {/* Medical Triage Kinetic Live Segmented Control */}
+            <LiveSegmentedControl
+              size="sm"
+              value={statusFilter}
+              onValueChange={(val) => setStatusFilter(val as any)}
+              options={[
+                { value: 'all', label: isAr ? 'الكل' : 'Tous', count: queueCounts.all },
+                { value: 'waiting', label: isAr ? 'في الانتظار' : 'En attente', count: queueCounts.waiting },
+                { value: 'in_progress', label: isAr ? 'في الفحص' : 'En consultation', count: queueCounts.in_progress },
+                { value: 'completed', label: isAr ? 'مكتمل' : 'Clôturés', count: queueCounts.completed },
+              ]}
+              aria-label="Medical Triage Filter"
+            />
           </div>
         </div>
 

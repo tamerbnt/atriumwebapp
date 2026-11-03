@@ -40,6 +40,7 @@ import { formatMoney } from '../../../utils/rules';
 import { useTranslation } from '../../../utils/useTranslation';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { AtriumButton } from '../../ui/AtriumButton';
+import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { OfflineRetryBanner } from '../../common/OfflineRetryBanner';
 import { SkeletonDashboardProject } from '../../ui/skeleton/StructuralSkeletons';
@@ -942,31 +943,19 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
               </h2>
             </div>
 
-            {/* Authentic Direction Project Status Filter Capsules */}
-            <div className="flex items-center gap-1.5 p-1 bg-white dark:bg-neutral-800 rounded-full border border-neutral-200/80 dark:border-neutral-700/60 shadow-2xs overflow-x-auto">
-              {[
-                { id: 'all', label: language === 'ar' ? 'جميع المشاريع' : 'Tous les comptes' },
-                { id: 'framing', label: language === 'ar' ? 'دفتر الشروط' : 'Cahier des charges' },
-                { id: 'production', label: language === 'ar' ? 'قيد الإنتاج' : 'En production' },
-                { id: 'field_execution', label: language === 'ar' ? 'الميدان الحي' : 'Terrain live' },
-                { id: 'completed', label: language === 'ar' ? 'مكتملة ومقفلة' : 'Clôturés' },
-              ].map((tab) => {
-                const isActive = projectStatusFilter === tab.id;
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => setProjectStatusFilter(tab.id)}
-                    className="px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer"
-                    style={{
-                      backgroundColor: isActive ? '#FCEEE8' : 'transparent',
-                      color: isActive ? 'var(--color-accent)' : '#71717A',
-                    }}
-                  >
-                    {tab.label}
-                  </button>
-                );
-              })}
-            </div>
+            {/* Authentic Direction Project Status Kinetic Switcher */}
+            <LiveSegmentedControl
+              size="sm"
+              value={projectStatusFilter}
+              onValueChange={(val) => setProjectStatusFilter(val)}
+              options={[
+                { value: 'all', label: language === 'ar' ? 'جميع المشاريع' : 'Tous les comptes', count: pmProjects.length },
+                { value: 'framing', label: language === 'ar' ? 'دفتر الشروط' : 'Cahier des charges', count: pmProjects.filter(p => p.status === 'framing').length },
+                { value: 'production', label: language === 'ar' ? 'قيد الإنتاج' : 'En production', count: pmProjects.filter(p => p.status === 'production').length },
+                { value: 'field_execution', label: language === 'ar' ? 'الميدان الحي' : 'Terrain live', count: pmProjects.filter(p => p.status === 'field_execution').length },
+                { value: 'completed', label: language === 'ar' ? 'مكتملة ومقفلة' : 'Clôturés', count: pmProjects.filter(p => p.status === 'completed').length },
+              ]}
+            />
           </div>
 
           {/* Controls Bar */}

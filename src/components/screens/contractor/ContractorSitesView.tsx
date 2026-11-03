@@ -34,6 +34,7 @@ import { Seek } from '../../ui/Seek';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
+import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 
 export const ContractorSitesView: React.FC = () => {
   const { language, showToast, isSyncing, networkMode, retryCloudSync } = useAtriumStore();
@@ -510,35 +511,18 @@ export const ContractorSitesView: React.FC = () => {
               openWidth={220}
             />
 
-            {/* Contractor Domain Filter Capsules */}
-            <div className="flex items-center p-0.5 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 gap-0.5 text-xs font-semibold shadow-2xs">
-              {(
-                [
-                  { id: 'All', label: isAr ? 'الكل' : 'Tous' },
-                  { id: 'InProgress', label: isAr ? 'قيد الإنجاز' : 'En cours' },
-                  { id: 'ProvisionalHandover', label: isAr ? 'استلام مؤقت' : 'Réc. provisoire' },
-                  { id: 'DefinitiveHandover', label: isAr ? 'استلام نهائي' : 'Réc. définitive' },
-                ] as const
-              ).map((filter) => {
-                const isActive = filterStatus === filter.id;
-                return (
-                  <button
-                    key={filter.id}
-                    type="button"
-                    onClick={() => setFilterStatus(filter.id)}
-                    style={{
-                      backgroundColor: isActive ? '#FCEEE8' : 'transparent',
-                      color: isActive ? 'var(--color-accent)' : '#71717A',
-                    }}
-                    className={`px-3 py-1 rounded-full cursor-pointer transition-all ${
-                      isActive ? 'font-bold' : 'hover:text-neutral-900 dark:hover:text-white'
-                    }`}
-                  >
-                    {filter.label}
-                  </button>
-                );
-              })}
-            </div>
+            {/* Contractor Domain Kinetic Filter Capsules */}
+            <LiveSegmentedControl
+              size="sm"
+              value={filterStatus}
+              onValueChange={(val) => setFilterStatus(val)}
+              options={[
+                { value: 'All', label: isAr ? 'الكل' : 'Tous', count: projects.length },
+                { value: 'InProgress', label: isAr ? 'قيد الإنجاز' : 'En cours', count: activeCount },
+                { value: 'ProvisionalHandover', label: isAr ? 'استلام مؤقت' : 'Réc. provisoire', count: projects.filter(p => p.status === 'ProvisionalHandover').length },
+                { value: 'DefinitiveHandover', label: isAr ? 'استلام نهائي' : 'Réc. définitive', count: projects.filter(p => p.status === 'DefinitiveHandover').length },
+              ]}
+            />
           </div>
         </div>
 

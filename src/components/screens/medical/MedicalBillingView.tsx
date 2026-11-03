@@ -28,6 +28,7 @@ import { formatMoney } from '../../../utils/rules';
 import { MedicalConsultation, ChifaClaimRecord, DailyCashClosure } from '../../../types';
 import { useMedicalData } from './medicalData';
 import { AtriumButton } from '../../ui/AtriumButton';
+import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { Seek } from '../../ui/Seek';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
@@ -89,6 +90,12 @@ export const MedicalBillingView: React.FC = () => {
       return true;
     });
   }, [consultations, searchQuery, statusFilter]);
+
+  const billingCounts = useMemo(() => ({
+    all: consultations.length,
+    paid: consultations.filter((c) => c.isPaid).length,
+    pending: consultations.filter((c) => !c.isPaid).length,
+  }), [consultations]);
 
   const sortedConsultations = useMemo(() => {
     const list = [...filtered];
@@ -444,33 +451,18 @@ export const MedicalBillingView: React.FC = () => {
                 openWidth={220}
               />
 
-              <div className="flex items-center p-0.5 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 gap-0.5 text-xs font-semibold shadow-2xs">
-                {(
-                  [
-                    { id: 'all', label: isAr ? 'الكل' : 'Toutes' },
-                    { id: 'paid', label: isAr ? 'تم التحصيل' : 'Encaissées' },
-                    { id: 'pending', label: isAr ? 'قيد الانتظار' : 'En attente' },
-                  ] as const
-                ).map((filter) => {
-                  const isActive = statusFilter === filter.id;
-                  return (
-                    <button
-                      key={filter.id}
-                      type="button"
-                      onClick={() => setStatusFilter(filter.id)}
-                      style={{
-                        backgroundColor: isActive ? '#FCEEE8' : 'transparent',
-                        color: isActive ? 'var(--color-accent)' : '#71717A',
-                      }}
-                      className={`px-3 py-1 rounded-full cursor-pointer transition-all ${
-                        isActive ? 'font-bold' : 'hover:text-neutral-900 dark:hover:text-white'
-                      }`}
-                    >
-                      {filter.label}
-                    </button>
-                  );
-                })}
-              </div>
+              {/* Billing Status Kinetic Live Segmented Control */}
+              <LiveSegmentedControl
+                size="sm"
+                value={statusFilter}
+                onValueChange={(val) => setStatusFilter(val as any)}
+                options={[
+                  { value: 'all', label: isAr ? 'الكل' : 'Toutes', count: billingCounts.all },
+                  { value: 'paid', label: isAr ? 'تم التحصيل' : 'Encaissées', count: billingCounts.paid },
+                  { value: 'pending', label: isAr ? 'قيد الانتظار' : 'En attente', count: billingCounts.pending },
+                ]}
+                aria-label="Medical Billing Filter"
+              />
             </div>
           </div>
 

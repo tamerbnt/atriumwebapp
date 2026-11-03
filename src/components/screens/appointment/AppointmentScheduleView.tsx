@@ -35,6 +35,7 @@ import { t, getLocalizedService, getLocalizedServiceCategory, getLocalizedServic
 import { Seek } from '../../ui/Seek';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { AtriumButton } from '../../ui/AtriumButton';
+import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCalendarTimeline } from '../../ui/skeleton/StructuralSkeletons';
@@ -122,6 +123,16 @@ export const AppointmentScheduleView: React.FC = () => {
       return true;
     });
   }, [appointments, selectedDate, selectedStylistId, statusFilter, searchQuery]);
+
+  const statusCounts = useMemo(() => {
+    const list = appointments.filter((apt) => apt.date === selectedDate);
+    return {
+      all: list.length,
+      confirmed: list.filter((a) => a.status === 'Confirmed').length,
+      inChair: list.filter((a) => a.status === 'InChair').length,
+      completed: list.filter((a) => a.status === 'Completed').length,
+    };
+  }, [appointments, selectedDate]);
 
   const sortedDayAppointments = useMemo(() => {
     return [...dayAppointments].sort((a, b) => {
@@ -630,23 +641,19 @@ export const AppointmentScheduleView: React.FC = () => {
                 </button>
               </div>
 
-              {/* Status Filters */}
-              <div className="flex items-center gap-1 bg-white dark:bg-neutral-800 p-1 rounded-xl border border-neutral-200 dark:border-neutral-700 shadow-2xs text-xs font-bold overflow-x-auto">
-                {['All', 'Confirmed', 'InChair', 'Completed'].map((st) => (
-                  <button
-                    key={st}
-                    type="button"
-                    onClick={() => setStatusFilter(st)}
-                    className={`px-2 py-0.5 rounded-lg transition-colors cursor-pointer text-xs ${
-                      statusFilter === st
-                        ? 'bg-[#C4785A] text-white font-semibold shadow-2xs'
-                        : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900'
-                    }`}
-                  >
-                    {st === 'All' ? t('common_all', language) : localizeStatus(st, language)}
-                  </button>
-                ))}
-              </div>
+              {/* Status Filters Kinetic Live Segmented Control */}
+              <LiveSegmentedControl
+                size="sm"
+                value={statusFilter}
+                onValueChange={setStatusFilter}
+                options={[
+                  { value: 'All', label: t('common_all', language), count: statusCounts.all },
+                  { value: 'Confirmed', label: localizeStatus('Confirmed', language), count: statusCounts.confirmed },
+                  { value: 'InChair', label: localizeStatus('InChair', language), count: statusCounts.inChair },
+                  { value: 'Completed', label: localizeStatus('Completed', language), count: statusCounts.completed },
+                ]}
+                aria-label="Appointment Status Filter"
+              />
 
               {/* Stylist Dropdown */}
               <LabelSelect

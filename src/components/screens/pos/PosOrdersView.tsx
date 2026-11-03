@@ -35,6 +35,7 @@ import { FilterSelect } from '../../ui/FilterSelect';
 import { LabelInput } from '../../ui/LabelInput';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
+import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 
 export const PosOrdersView: React.FC = () => {
   const { t, language, isRtl } = useTranslation();
@@ -687,76 +688,39 @@ export const PosOrdersView: React.FC = () => {
             </div>
 
             <div className="flex items-center gap-2 flex-wrap self-end lg:self-auto">
-              {/* Segment Capsules */}
-              <div className="flex items-center gap-1.5 bg-neutral-200/60 dark:bg-neutral-800 p-1 rounded-2xl">
-                <button
-                  type="button"
-                  onClick={() => setActiveSubTab('sales')}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
-                    activeSubTab === 'sales'
-                      ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-xs'
-                      : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
-                  }`}
-                >
-                  <Receipt size={14} />
-                  <span>{language === 'ar' ? 'المبيعات' : 'Encaissés'}</span>
-                  <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono ${
-                    activeSubTab === 'sales' ? 'bg-[#C4785A]/15 text-[#C4785A]' : 'bg-neutral-300/60 dark:bg-neutral-700 text-neutral-500'
-                  }`}>
-                    {branchSales.length}
-                  </span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setActiveSubTab('parked')}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
-                    activeSubTab === 'parked'
-                      ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-xs'
-                      : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
-                  }`}
-                >
-                  <PauseCircle size={14} />
-                  <span>{language === 'ar' ? 'المعلقة' : 'En Pause'}</span>
-                  <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono ${
-                    activeSubTab === 'parked' ? 'bg-[#C4785A]/15 text-[#C4785A]' : 'bg-neutral-300/60 dark:bg-neutral-700 text-neutral-500'
-                  }`}>
-                    {parkedOrders.length}
-                  </span>
-                </button>
-              </div>
+              {/* Kinetic Segment Capsules */}
+              <LiveSegmentedControl
+                size="sm"
+                value={activeSubTab}
+                onValueChange={(val) => setActiveSubTab(val as 'sales' | 'parked')}
+                options={[
+                  {
+                    value: 'sales',
+                    label: language === 'ar' ? 'المبيعات' : 'Encaissés',
+                    icon: <Receipt size={14} />,
+                    count: branchSales.length,
+                  },
+                  {
+                    value: 'parked',
+                    label: language === 'ar' ? 'المعلقة' : 'En Pause',
+                    icon: <PauseCircle size={14} />,
+                    count: parkedOrders.length,
+                  },
+                ]}
+              />
 
               {/* Quick Date Capsules (when on sales tab) */}
               {activeSubTab === 'sales' && (
-                <div className="flex items-center gap-1 bg-neutral-200/50 dark:bg-neutral-800/60 p-1 rounded-xl text-xs font-bold overflow-x-auto">
-                  <button
-                    type="button"
-                    onClick={() => setDateFilter('all')}
-                    className={`px-2.5 py-1 rounded-lg cursor-pointer ${
-                      dateFilter === 'all' ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-2xs' : 'text-neutral-500'
-                    }`}
-                  >
-                    {language === 'ar' ? 'الكل' : 'Tous'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setDateFilter('today')}
-                    className={`px-2.5 py-1 rounded-lg cursor-pointer ${
-                      dateFilter === 'today' ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-2xs' : 'text-neutral-500'
-                    }`}
-                  >
-                    {language === 'ar' ? 'اليوم' : 'Aujourd’hui'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setDateFilter('7days')}
-                    className={`px-2.5 py-1 rounded-lg cursor-pointer ${
-                      dateFilter === '7days' ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-2xs' : 'text-neutral-500'
-                    }`}
-                  >
-                    {language === 'ar' ? '7 أيام' : '7 jours'}
-                  </button>
-                </div>
+                <LiveSegmentedControl
+                  size="sm"
+                  value={dateFilter}
+                  onValueChange={(val) => setDateFilter(val as any)}
+                  options={[
+                    { value: 'all', label: language === 'ar' ? 'الكل' : 'Tous' },
+                    { value: 'today', label: language === 'ar' ? 'اليوم' : 'Aujourd’hui' },
+                    { value: '7days', label: language === 'ar' ? '7 أيام' : '7 jours' },
+                  ]}
+                />
               )}
 
               {/* Seek Search */}

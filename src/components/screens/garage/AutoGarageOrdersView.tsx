@@ -34,6 +34,7 @@ import { useAtriumStore, showToast } from '../../../services/store';
 import { formatMoney } from '../../../utils/rules';
 import { useGarageData, RepairOrder, WorkshopBay } from './garageData';
 import { AtriumButton } from '../../ui/AtriumButton';
+import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { Seek } from '../../ui/Seek';
 import { AutoOrderModal } from './AutoOrderModal';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
@@ -314,30 +315,16 @@ export const AutoGarageOrdersView: React.FC = () => {
 
           <div className="flex items-center gap-2">
             {/* View Switcher: Kanban vs Table */}
-            <div className="flex items-center p-1 bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-2xs">
-              <button
-                type="button"
-                onClick={() => setDisplayMode('kanban')}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                  displayMode === 'kanban'
-                    ? 'bg-[#C4785A] text-white shadow-xs'
-                    : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'
-                }`}
-              >
-                {isAr ? 'لوحة الجسور (Kanban)' : 'Ponts (Kanban)'}
-              </button>
-              <button
-                type="button"
-                onClick={() => setDisplayMode('collection')}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                  displayMode === 'collection'
-                    ? 'bg-[#C4785A] text-white shadow-xs'
-                    : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'
-                }`}
-              >
-                {isAr ? 'سجل الأوامر (Tableau)' : 'Registre (Tableau)'}
-              </button>
-            </div>
+            <LiveSegmentedControl
+              size="sm"
+              value={displayMode}
+              onValueChange={(val) => setDisplayMode(val as any)}
+              options={[
+                { value: 'kanban', label: isAr ? 'لوحة الجسور' : 'Ponts (Kanban)', count: orders.length },
+                { value: 'collection', label: isAr ? 'سجل الأوامر' : 'Registre (Tableau)' },
+              ]}
+              aria-label="Garage View Mode"
+            />
 
             <AtriumButton
               variant="primary"

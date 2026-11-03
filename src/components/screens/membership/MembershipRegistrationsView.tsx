@@ -31,6 +31,7 @@ import { Avatar } from '../../ui/Avatar';
 import { Modal } from '../../ui/Modal';
 import { Seek } from '../../ui/Seek';
 import { AtriumButton } from '../../ui/AtriumButton';
+import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { localizeStatus } from '../../../utils/rules';
@@ -131,6 +132,7 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
 
   const pendingCount = useMemo(() => leads.filter((l) => l.status === 'Pending').length, [leads]);
   const approvedCount = useMemo(() => leads.filter((l) => l.status === 'Approved').length, [leads]);
+  const declinedCount = useMemo(() => leads.filter((l) => l.status === 'Declined').length, [leads]);
 
   const handleTogglePinLead = (lead: RegistrationLead) => {
     setPinnedLeadIds((prev) => {
@@ -605,36 +607,35 @@ export const MembershipRegistrationsView: React.FC<MembershipRegistrationsViewPr
               openWidth={240}
             />
 
-            {/* Status Filter Capsules */}
-            <div className="flex items-center p-0.5 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 gap-0.5 text-xs font-semibold shadow-2xs">
-              {(['All', 'Pending', 'Approved', 'Declined'] as const).map((filter) => {
-                const isActive = statusFilter === filter;
-                const label =
-                  filter === 'All'
-                    ? t('member_filter_all', language)
-                    : filter === 'Pending'
-                    ? (language === 'ar' ? 'قيد الانتظار' : language === 'fr' ? 'En attente' : 'Pending')
-                    : filter === 'Approved'
-                    ? (language === 'ar' ? 'معتمد' : language === 'fr' ? 'Approuvé' : 'Approved')
-                    : (language === 'ar' ? 'مرفوض' : language === 'fr' ? 'Refusé' : 'Declined');
-                return (
-                  <button
-                    key={filter}
-                    type="button"
-                    onClick={() => setStatusFilter(filter)}
-                    style={{
-                      backgroundColor: isActive ? '#FCEEE8' : 'transparent',
-                      color: isActive ? 'var(--color-accent)' : '#71717A',
-                    }}
-                    className={`px-3 py-1 rounded-full cursor-pointer transition-all ${
-                      isActive ? 'font-bold shadow-2xs' : 'hover:text-neutral-900 dark:hover:text-white'
-                    }`}
-                  >
-                    {label}
-                  </button>
-                );
-              })}
-            </div>
+            {/* Status Filter Kinetic Live Segmented Control */}
+            <LiveSegmentedControl
+              size="sm"
+              value={statusFilter}
+              onValueChange={(val) => setStatusFilter(val as any)}
+              options={[
+                {
+                  value: 'All',
+                  label: t('member_filter_all', language),
+                  count: leads.length,
+                },
+                {
+                  value: 'Pending',
+                  label: language === 'ar' ? 'قيد الانتظار' : language === 'fr' ? 'En attente' : 'Pending',
+                  count: pendingCount,
+                },
+                {
+                  value: 'Approved',
+                  label: language === 'ar' ? 'معتمد' : language === 'fr' ? 'Approuvé' : 'Approved',
+                  count: approvedCount,
+                },
+                {
+                  value: 'Declined',
+                  label: language === 'ar' ? 'مرفوض' : language === 'fr' ? 'Refusé' : 'Declined',
+                  count: declinedCount,
+                },
+              ]}
+              aria-label="Registrations Status Filter"
+            />
 
             {/* Plan Filter Dropdown */}
             <LabelSelect

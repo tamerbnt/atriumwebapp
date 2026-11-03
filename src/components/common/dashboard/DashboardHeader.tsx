@@ -3,6 +3,7 @@ import { Home, ChevronDown, Sparkles, Download } from 'lucide-react';
 import { useAtriumStore } from '../../../services/store';
 import { useTranslation } from '../../../utils/useTranslation';
 import { AtriumButton } from '../../ui/AtriumButton';
+import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 
 export interface DashboardHeaderProps {
   title?: string;
@@ -15,6 +16,9 @@ export interface DashboardHeaderProps {
   onResetDemoData?: () => void;
   onExportReport?: () => void;
   exportFileName?: string;
+  period?: string;
+  onPeriodChange?: (period: string) => void;
+  periodOptions?: Array<{ value: string; label: string; count?: number | string }>;
   extraActions?: React.ReactNode;
 }
 
@@ -29,6 +33,9 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   onResetDemoData,
   onExportReport,
   exportFileName,
+  period,
+  onPeriodChange,
+  periodOptions,
   extraActions,
 }) => {
   const { language, isRtl } = useTranslation();
@@ -45,6 +52,23 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   } = useAtriumStore();
 
   const [isBranchDropdownOpen, setIsBranchDropdownOpen] = React.useState(false);
+  const [internalPeriod, setInternalPeriod] = React.useState('today');
+  const activePeriod = period !== undefined ? period : internalPeriod;
+
+  const handlePeriodChange = (val: string) => {
+    if (onPeriodChange) {
+      onPeriodChange(val);
+    } else {
+      setInternalPeriod(val);
+    }
+  };
+
+  const defaultPeriodOptions = [
+    { value: 'today', label: language === 'ar' ? 'اليوم' : language === 'fr' ? "Aujourd'hui" : 'Today' },
+    { value: '7d', label: language === 'ar' ? '٧ أيام' : language === 'fr' ? '7J' : '7D' },
+    { value: '30d', label: language === 'ar' ? '٣٠ يوماً' : language === 'fr' ? '30J' : '30D' },
+    { value: 'year', label: language === 'ar' ? 'السنة' : language === 'fr' ? 'Année' : 'Year' },
+  ];
 
   const displayTitle =
     title ||
@@ -135,6 +159,17 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
       </div>
 
       <div className="flex items-center gap-2.5 flex-wrap">
+        {/* Kinetic 34px Dashboard Live Filter Switcher */}
+        <div className="order-first sm:order-none">
+          <LiveSegmentedControl
+            size="md"
+            value={activePeriod}
+            onValueChange={handlePeriodChange}
+            options={periodOptions || defaultPeriodOptions}
+            aria-label="Dashboard Period Filter"
+          />
+        </div>
+
         {/* Branch / Facility Selector Pill */}
         <div className="relative">
           <button

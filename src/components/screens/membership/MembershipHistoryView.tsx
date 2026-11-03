@@ -23,6 +23,7 @@ import { Sale } from '../../../types/index';
 import { formatMoney } from '../../../utils/rules';
 import { Seek } from '../../ui/Seek';
 import { AtriumButton } from '../../ui/AtriumButton';
+import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { t } from '../../../utils/i18n';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
@@ -78,6 +79,12 @@ export const MembershipHistoryView: React.FC = () => {
       return true;
     });
   }, [sales, statusFilter, methodFilter, searchQuery]);
+
+  const statusCounts = useMemo(() => ({
+    all: sales.length,
+    settled: sales.filter((s) => s.status !== 'Refunded').length,
+    refunded: sales.filter((s) => s.status === 'Refunded').length,
+  }), [sales]);
 
   const totalSettledAmount = useMemo(() => {
     return sales.reduce((sum, s) => sum + s.totalAmount, 0);
@@ -491,67 +498,33 @@ export const MembershipHistoryView: React.FC = () => {
               openWidth={230}
             />
 
-            {/* Status Capsules: All | Settled | Refunded */}
-            <div className="flex items-center p-0.5 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 gap-0.5 text-xs font-semibold shadow-2xs">
-              {(['All', 'Settled', 'Refunded'] as const).map((st) => {
-                const isActive = statusFilter === st;
-                const label =
-                  st === 'All'
-                    ? (language === 'ar' ? 'الكل' : language === 'fr' ? 'Tous' : 'All')
-                    : st === 'Settled'
-                    ? (language === 'ar' ? 'مسدد' : language === 'fr' ? 'Encaissé' : 'Settled')
-                    : (language === 'ar' ? 'مسترجع' : language === 'fr' ? 'Remboursé' : 'Refunded');
-                return (
-                  <button
-                    key={st}
-                    type="button"
-                    onClick={() => setStatusFilter(st)}
-                    style={{
-                      backgroundColor: isActive ? (st === 'Refunded' ? '#FEE2E2' : '#FCEEE8') : 'transparent',
-                      color: isActive ? (st === 'Refunded' ? '#DC2626' : 'var(--color-accent)') : '#71717A',
-                    }}
-                    className={`px-3 py-1 rounded-full cursor-pointer transition-all ${
-                      isActive ? 'font-bold' : 'hover:text-neutral-900 dark:hover:text-white'
-                    }`}
-                  >
-                    {label}
-                  </button>
-                );
-              })}
-            </div>
+            {/* Status Live Segmented Control */}
+            <LiveSegmentedControl
+              size="sm"
+              value={statusFilter}
+              onValueChange={(val) => setStatusFilter(val as any)}
+              options={[
+                { value: 'All', label: language === 'ar' ? 'الكل' : language === 'fr' ? 'Tous' : 'All', count: statusCounts.all },
+                { value: 'Settled', label: language === 'ar' ? 'مسدد' : language === 'fr' ? 'Encaissé' : 'Settled', count: statusCounts.settled },
+                { value: 'Refunded', label: language === 'ar' ? 'مسترجع' : language === 'fr' ? 'Remboursé' : 'Refunded', count: statusCounts.refunded },
+              ]}
+              aria-label="Billing Status Filter"
+            />
 
-            {/* Payment Method Capsules */}
-            <div className="flex items-center p-0.5 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 gap-0.5 text-xs font-semibold shadow-2xs">
-              {(['All', 'Cash', 'Card', 'Split', 'MemberBalance'] as const).map((method) => {
-                const isActive = methodFilter === method;
-                const label =
-                  method === 'All'
-                    ? (language === 'ar' ? 'الكل' : language === 'fr' ? 'Tous' : 'All')
-                    : method === 'Cash'
-                    ? (language === 'ar' ? 'نقداً' : language === 'fr' ? 'Espèces' : 'Cash')
-                    : method === 'Card'
-                    ? (language === 'ar' ? 'بطاقة CIB' : language === 'fr' ? 'Carte' : 'Card')
-                    : method === 'Split'
-                    ? (language === 'ar' ? 'مقسم' : language === 'fr' ? 'Mixte' : 'Split')
-                    : (language === 'ar' ? 'الرصيد' : language === 'fr' ? 'Solde' : 'Balance');
-                return (
-                  <button
-                    key={method}
-                    type="button"
-                    onClick={() => setMethodFilter(method)}
-                    style={{
-                      backgroundColor: isActive ? '#FCEEE8' : 'transparent',
-                      color: isActive ? 'var(--color-accent)' : '#71717A',
-                    }}
-                    className={`px-3 py-1 rounded-full cursor-pointer transition-all ${
-                      isActive ? 'font-bold' : 'hover:text-neutral-900 dark:hover:text-white'
-                    }`}
-                  >
-                    {label}
-                  </button>
-                );
-              })}
-            </div>
+            {/* Payment Method Live Segmented Control */}
+            <LiveSegmentedControl
+              size="sm"
+              value={methodFilter}
+              onValueChange={(val) => setMethodFilter(val as any)}
+              options={[
+                { value: 'All', label: language === 'ar' ? 'الكل' : language === 'fr' ? 'Tous' : 'All' },
+                { value: 'Cash', label: language === 'ar' ? 'نقداً' : language === 'fr' ? 'Espèces' : 'Cash' },
+                { value: 'Card', label: language === 'ar' ? 'بطاقة CIB' : language === 'fr' ? 'Carte' : 'Card' },
+                { value: 'Split', label: language === 'ar' ? 'مقسم' : language === 'fr' ? 'Mixte' : 'Split' },
+                { value: 'MemberBalance', label: language === 'ar' ? 'الرصيد' : language === 'fr' ? 'Solde' : 'Balance' },
+              ]}
+              aria-label="Payment Method Filter"
+            />
 
             {/* Export Data Button */}
             <AtriumButton

@@ -563,7 +563,7 @@ export class SegmentedBlobController implements SpringBody {
     const leftOffset = parseFloat(getComputedStyle(this.blob).left) || 0;
     this.W = this.blob.offsetWidth || 1;
     const r = this.opts[0] ? parseFloat(getComputedStyle(this.opts[0]).borderTopLeftRadius) : 0;
-    this.rad = r || 5;
+    this.rad = r > 10 ? Math.min(r, (this.blob.offsetHeight || 30) / 2) : (r || 5);
     this.geo = this.opts.map((o) => [o.offsetLeft - leftOffset, o.offsetLeft - leftOffset + o.offsetWidth]);
   }
 

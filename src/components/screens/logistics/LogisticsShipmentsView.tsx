@@ -31,6 +31,7 @@ import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { StopDeskHandoverModal } from './StopDeskHandoverModal';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
+import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 
 export const LogisticsShipmentsView: React.FC = () => {
   const { language, showToast, isSyncing, networkMode, retryCloudSync } = useAtriumStore();
@@ -433,41 +434,17 @@ export const LogisticsShipmentsView: React.FC = () => {
               openWidth={220}
             />
 
-            <div className="flex items-center bg-white dark:bg-neutral-800 border border-neutral-200/80 dark:border-neutral-700 p-0.5 rounded-xl shadow-2xs">
-              <button
-                type="button"
-                onClick={() => setFilterStatus('All')}
-                className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                  filterStatus === 'All'
-                    ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold shadow-2xs'
-                    : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
-                }`}
-              >
-                {language === 'ar' ? 'الكل' : 'Tous'} ({shipments.length})
-              </button>
-              <button
-                type="button"
-                onClick={() => setFilterStatus('OutForDelivery')}
-                className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                  filterStatus === 'OutForDelivery'
-                    ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold shadow-2xs'
-                    : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
-                }`}
-              >
-                {language === 'ar' ? 'في التوزيع' : 'En Tournée'} ({activeInDelivery})
-              </button>
-              <button
-                type="button"
-                onClick={() => setFilterStatus('Delivered')}
-                className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                  filterStatus === 'Delivered'
-                    ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A] font-bold shadow-2xs'
-                    : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
-                }`}
-              >
-                {language === 'ar' ? 'تم التوصيل' : 'Livrés'} ({shipments.filter((s) => s.status === 'Delivered').length})
-              </button>
-            </div>
+            {/* Logistics Status Kinetic Switcher */}
+            <LiveSegmentedControl
+              size="sm"
+              value={filterStatus}
+              onValueChange={(val) => setFilterStatus(val)}
+              options={[
+                { value: 'All', label: language === 'ar' ? 'الكل' : 'Tous', count: shipments.length },
+                { value: 'OutForDelivery', label: language === 'ar' ? 'في التوزيع' : 'En Tournée', count: activeInDelivery },
+                { value: 'Delivered', label: language === 'ar' ? 'تم التوصيل' : 'Livrés', count: shipments.filter((s) => s.status === 'Delivered').length },
+              ]}
+            />
           </div>
         </div>
 

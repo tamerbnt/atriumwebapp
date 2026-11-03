@@ -1736,19 +1736,26 @@ button:not(.o):not(.e):not(.r):not([role="switch"]):not([data-no-liquid]) > *:no
 /* Segmented Control */
 .d {
   --h: var(--atr-h, 34px);
-  --r: calc(var(--h) * .147);
+  --r: calc(var(--h) / 2);
   position: relative;
   display: inline-flex;
   box-sizing: border-box;
-  padding: calc(var(--h) * .08);
+  padding: 3px;
   border: 1px solid var(--atr-line);
-  border-radius: var(--r);
+  border-radius: 9999px;
   background: var(--atr-card);
+}
+.d[data-atr-size="sm"] {
+  --atr-h: 30px;
+}
+.d[data-atr-size="md"] {
+  --atr-h: 34px;
 }
 .s {
   position: absolute;
-  inset: calc(var(--h) * .08);
+  inset: 3px;
   background: var(--atr-acc);
+  border-radius: 9999px;
   clip-path: inset(0 100% 0 0);
   pointer-events: none;
 }
@@ -1760,23 +1767,50 @@ button:not(.o):not(.e):not(.r):not([role="switch"]):not([data-no-liquid]) > *:no
   margin: 0;
   background: transparent;
   box-sizing: border-box;
-  height: calc(var(--h) * .84 - 2px);
-  padding: 0 calc(var(--h) * .42);
-  border-radius: calc(var(--r) * .8);
+  height: calc(var(--h) - 8px);
+  padding: 0 calc(var(--h) * .38);
+  border-radius: 9999px;
   color: var(--atr-ink);
   font-family: var(--atr-font-ui, inherit);
-  font-size: calc(var(--h) * .36);
-  font-weight: 500;
+  font-size: calc(var(--h) * .35);
+  font-weight: 600;
   line-height: 1;
   display: inline-flex;
   align-items: center;
-  gap: calc(var(--h) * .2);
+  justify-content: center;
+  gap: 6px;
   white-space: nowrap;
   cursor: pointer;
   user-select: none;
   -webkit-user-select: none;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
+}
+.d .e .atr-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1px 6px;
+  border-radius: 9999px;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+  background: rgba(0, 0, 0, 0.07);
+  color: inherit;
+  margin-inline-start: 4px;
+  transition: background-color 150ms ease;
+}
+.d .e[aria-checked="true"] .atr-badge {
+  background: rgba(255, 255, 255, 0.24);
+  color: var(--atr-onacc);
+}
+[data-theme="dark"] .d .e .atr-badge {
+  background: rgba(255, 255, 255, 0.12);
+}
+[data-theme="dark"] .d .e[aria-checked="true"] .atr-badge {
+  background: rgba(0, 0, 0, 0.28);
+  color: var(--atr-onacc);
 }
 .e svg {
   width: calc(var(--h) * .42);

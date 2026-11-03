@@ -2,35 +2,35 @@ import React from 'react';
 import { LiveSegmentedControl } from './live/LiveSegmentedControl';
 import { LiveBadge } from './live/LiveBadge';
 
-interface FilterOption<T extends string> {
+export interface FilterOption<T extends string = string> {
   key: T;
   label: string;
-  count?: number;
+  count?: number | string;
+  disabled?: boolean;
 }
 
-interface FilterCapsulesProps<T extends string> {
+export interface FilterCapsulesProps<T extends string = string> {
   options: FilterOption<T>[];
   activeKey: T;
   onChange: (key: T) => void;
+  size?: 'sm' | 'md' | number;
   className?: string;
+  'aria-label'?: string;
 }
 
-export function FilterCapsules<T extends string>({
+export function FilterCapsules<T extends string = string>({
   options,
   activeKey,
   onChange,
+  size = 'sm',
   className = '',
+  'aria-label': ariaLabel = 'Status Filter',
 }: FilterCapsulesProps<T>) {
   const segmentedOptions = options.map((option) => ({
     value: option.key,
-    label: (
-      <span className="inline-flex items-center gap-1.5">
-        <span>{option.label}</span>
-        {typeof option.count === 'number' && (
-          <LiveBadge value={option.count} floating={false} max={999} showZero />
-        )}
-      </span>
-    ),
+    label: option.label,
+    count: option.count,
+    disabled: option.disabled,
   }));
 
   return (
@@ -39,7 +39,8 @@ export function FilterCapsules<T extends string>({
         options={segmentedOptions}
         value={activeKey}
         onValueChange={(val) => onChange(val as T)}
-        aria-label="Filter"
+        size={size}
+        aria-label={ariaLabel}
       />
     </div>
   );

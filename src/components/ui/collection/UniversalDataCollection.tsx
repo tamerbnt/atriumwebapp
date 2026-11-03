@@ -470,6 +470,17 @@ export function UniversalDataCollection<T>({
         ) : (
           <div className="flex items-center gap-2">
             {headerActions}
+            {!headerActions && filterOptions && filterOptions.length > 0 && onFilterChange && (
+              <LiveSegmentedControl
+                size="sm"
+                options={filterOptions.map((opt) => ({
+                  value: opt.value,
+                  label: opt.label,
+                }))}
+                value={filterValue || filterOptions[0].value}
+                onValueChange={onFilterChange}
+              />
+            )}
             {effectiveIsLoading && (
               <span className="text-[11px] text-[#C4785A] dark:text-[#E09070] font-medium animate-pulse ml-2">
                 Syncing...

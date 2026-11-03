@@ -38,6 +38,7 @@ import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { useTranslation } from '../../../utils/useTranslation';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
+import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 
 type FilterKey = 'all' | 'active' | 'minors' | 'overdue' | 'graduated';
 
@@ -799,32 +800,19 @@ export const EducationStudentsView: React.FC = () => {
                 openWidth={240}
               />
 
-              {/* Status Filter Capsules */}
-              <div className="flex items-center gap-1 p-1 bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 shadow-2xs">
-                {[
-                  { id: 'all', label: t('edu_filter_all'), count: eduStudents.length },
-                  { id: 'active', label: t('edu_status_active'), count: eduStudents.filter((s) => s.status === 'Active').length },
-                  { id: 'minors', label: t('edu_filter_minors') },
-                  ...(!isStaff ? [{ id: 'overdue', label: t('edu_tuition_overdue') }] : []),
-                  { id: 'graduated', label: t('edu_status_graduated') },
-                ].map((tab) => (
-                  <button
-                    key={tab.id}
-                    type="button"
-                    onClick={() => setFilterKey(tab.id as FilterKey)}
-                    className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-colors whitespace-nowrap cursor-pointer ${
-                      filterKey === tab.id
-                        ? 'bg-[#FCEEE8] dark:bg-neutral-700 text-[#C4785A]'
-                        : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
-                    }`}
-                  >
-                    {tab.label}
-                    {tab.count !== undefined && (
-                      <span className="opacity-70 ml-1 text-[10px]">({tab.count})</span>
-                    )}
-                  </button>
-                ))}
-              </div>
+              {/* Kinetic Status Filter Capsules */}
+              <LiveSegmentedControl
+                size="sm"
+                value={filterKey}
+                onValueChange={(val) => setFilterKey(val as FilterKey)}
+                options={[
+                  { value: 'all', label: t('edu_filter_all'), count: eduStudents.length },
+                  { value: 'active', label: t('edu_status_active'), count: eduStudents.filter((s) => s.status === 'Active').length },
+                  { value: 'minors', label: t('edu_filter_minors') },
+                  ...(!isStaff ? [{ value: 'overdue', label: t('edu_tuition_overdue') }] : []),
+                  { value: 'graduated', label: t('edu_status_graduated') },
+                ]}
+              />
 
               {/* Export CSV Button */}
               <button

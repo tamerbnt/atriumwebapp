@@ -33,6 +33,7 @@ import { ConfirmDialog } from '../../ui/ConfirmDialog';
 import { useTranslation } from '../../../utils/useTranslation';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
+import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 
 type TabKey = 'all' | 'devis' | 'commande' | 'bl' | 'facture' | 'avoir';
 
@@ -555,44 +556,20 @@ export const TradingSalesView: React.FC = () => {
 
             {/* Controls Bar: Segment Tabs + Seek Search */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
-              {/* Segment Capsules */}
-              <div className="flex items-center gap-1 bg-neutral-200/60 dark:bg-neutral-800 p-1 rounded-2xl overflow-x-auto self-start">
-                {(
-                  [
-                    { key: 'all', label: t('trading_doc_all', 'Toutes les Pièces'), count: tabCounts.all },
-                    { key: 'devis', label: t('trading_doc_devis', 'Devis'), count: tabCounts.devis },
-                    { key: 'commande', label: t('trading_doc_commande', 'Commandes'), count: tabCounts.commande },
-                    { key: 'bl', label: t('trading_doc_bl', 'Livraisons (BL)'), count: tabCounts.bl },
-                    { key: 'facture', label: t('trading_doc_facture', 'Factures Fiscales'), count: tabCounts.facture },
-                    { key: 'avoir', label: t('trading_doc_avoir', 'Avoirs'), count: tabCounts.avoir },
-                  ] as const
-                ).map((tab) => {
-                  const isSelected = activeTab === tab.key;
-                  return (
-                    <button
-                      key={tab.key}
-                      type="button"
-                      onClick={() => setActiveTab(tab.key)}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
-                        isSelected
-                          ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-xs'
-                          : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
-                      }`}
-                    >
-                      <span>{tab.label}</span>
-                      <span
-                        className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono ${
-                          isSelected
-                            ? 'bg-[#C4785A] text-white'
-                            : 'bg-neutral-300/60 dark:bg-neutral-700 text-neutral-500'
-                        }`}
-                      >
-                        {tab.count}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
+              {/* Kinetic Segment Capsules */}
+              <LiveSegmentedControl
+                size="sm"
+                value={activeTab}
+                onValueChange={(val) => setActiveTab(val as TabKey)}
+                options={[
+                  { value: 'all', label: t('trading_doc_all', 'Toutes les Pièces'), count: tabCounts.all },
+                  { value: 'devis', label: t('trading_doc_devis', 'Devis'), count: tabCounts.devis },
+                  { value: 'commande', label: t('trading_doc_commande', 'Commandes'), count: tabCounts.commande },
+                  { value: 'bl', label: t('trading_doc_bl', 'Livraisons (BL)'), count: tabCounts.bl },
+                  { value: 'facture', label: t('trading_doc_facture', 'Factures Fiscales'), count: tabCounts.facture },
+                  { value: 'avoir', label: t('trading_doc_avoir', 'Avoirs'), count: tabCounts.avoir },
+                ]}
+              />
 
               {/* Seek Search */}
               <div className="self-end sm:self-auto">

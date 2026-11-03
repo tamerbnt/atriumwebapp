@@ -37,6 +37,7 @@ import { ActionNode } from '../../ui/ActionNode';
 import { LabelSelect } from '../../ui/LabelSelect';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { AtriumButton } from '../../ui/AtriumButton';
+import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { t } from '../../../utils/i18n';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { SkeletonCollectionScreen } from '../../ui/skeleton/StructuralSkeletons';
@@ -142,6 +143,14 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
 
   const expiringCount = useMemo(() => {
     return members.filter((m) => calculateDaysRemaining(false, m.expirationDate) <= 14 && calculateDaysRemaining(false, m.expirationDate) > 0).length;
+  }, [members]);
+
+  const expiredCount = useMemo(() => {
+    return members.filter((m) => m.status === 'Expired').length;
+  }, [members]);
+
+  const archivedCount = useMemo(() => {
+    return members.filter((m) => m.status === 'Banned' || m.status === 'Suspended').length;
   }, [members]);
 
   const toggleSelectAll = () => {
@@ -562,40 +571,40 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
               openWidth={220}
             />
 
-            {/* Status Filter Segmented Capsules matching Screenshot 881 */}
-            <div className="flex items-center p-0.5 rounded-full bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 gap-0.5 text-xs font-semibold shadow-2xs">
-              {(['All', 'Active', 'Expiring', 'Expired', 'Archived'] as const).map(
-                (filter) => {
-                  const isActive = statusFilter === filter;
-                  const label =
-                    filter === 'All'
-                      ? t('member_filter_all', language)
-                      : filter === 'Active'
-                      ? t('member_filter_active', language)
-                      : filter === 'Expiring'
-                      ? t('member_filter_expiring', language)
-                      : filter === 'Expired'
-                      ? t('member_filter_expired', language)
-                      : t('member_filter_archived', language);
-                  return (
-                    <button
-                      key={filter}
-                      type="button"
-                      onClick={() => setStatusFilter(filter)}
-                      style={{
-                        backgroundColor: isActive ? '#FCEEE8' : 'transparent',
-                        color: isActive ? 'var(--color-accent)' : '#71717A',
-                      }}
-                      className={`px-3 py-1 rounded-full cursor-pointer transition-all ${
-                        isActive ? 'font-bold' : 'hover:text-neutral-900 dark:hover:text-white'
-                      }`}
-                    >
-                      {label}
-                    </button>
-                  );
-                }
-              )}
-            </div>
+            {/* Status Filter Kinetic Live Segmented Control */}
+            <LiveSegmentedControl
+              size="sm"
+              value={statusFilter}
+              onValueChange={(val) => setStatusFilter(val as any)}
+              options={[
+                {
+                  value: 'All',
+                  label: t('member_filter_all', language),
+                  count: members.length,
+                },
+                {
+                  value: 'Active',
+                  label: t('member_filter_active', language),
+                  count: activeMembersCount,
+                },
+                {
+                  value: 'Expiring',
+                  label: t('member_filter_expiring', language),
+                  count: expiringCount,
+                },
+                {
+                  value: 'Expired',
+                  label: t('member_filter_expired', language),
+                  count: expiredCount,
+                },
+                {
+                  value: 'Archived',
+                  label: t('member_filter_archived', language),
+                  count: archivedCount,
+                },
+              ]}
+              aria-label="Member Status Filter"
+            />
 
             {/* Plan Filter Dropdown */}
             <LabelSelect

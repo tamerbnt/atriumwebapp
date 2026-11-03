@@ -6,6 +6,7 @@ export interface SegmentedOption {
   value: string;
   label?: React.ReactNode;
   icon?: React.ReactNode;
+  count?: number | string;
   disabled?: boolean;
   'aria-label'?: string;
 }
@@ -15,20 +16,38 @@ export interface LiveSegmentedControlProps {
   value?: string;
   defaultValue?: string;
   onValueChange?: (val: string) => void;
-  size?: LiveButtonSize;
+  size?: LiveButtonSize | 'sm' | 'md' | number;
   className?: string;
   style?: React.CSSProperties;
   'aria-label'?: string;
 }
 
 const classes = {
-  root: 'd',
-  blob: 's',
-  option: 'e',
+  root: 'd !rounded-full',
+  blob: 's !rounded-full',
+  option: 'e !rounded-full',
   iconOnly: 'z',
 };
 
-function getSizeProps(size?: LiveButtonSize, style?: React.CSSProperties) {
+function getSizeProps(size?: LiveButtonSize | 'sm' | 'md' | number, style?: React.CSSProperties) {
+  if (size === 'sm') {
+    return {
+      'data-atr-size': 'sm',
+      style: {
+        ...style,
+        '--atr-h': '30px',
+      } as React.CSSProperties,
+    };
+  }
+  if (size === 'md') {
+    return {
+      'data-atr-size': 'md',
+      style: {
+        ...style,
+        '--atr-h': '34px',
+      } as React.CSSProperties,
+    };
+  }
   if (size === undefined) return { style };
   if (typeof size === 'number') {
     return {
@@ -124,7 +143,7 @@ export const LiveSegmentedControl = forwardRef<HTMLDivElement, LiveSegmentedCont
         controllerRef.current = null;
         root.removeAttribute('data-live');
       };
-    }, [options.length]);
+    }, [options.length, options.map((o) => `${o.value}_${o.count}`).join('|')]);
 
     // Animate blob when index changes
     useEffect(() => {
@@ -163,6 +182,7 @@ export const LiveSegmentedControl = forwardRef<HTMLDivElement, LiveSegmentedCont
         {options.map((opt, idx) => {
           const isChecked = opt.value === currentValue;
           const isIconOnly = opt.icon && !opt.label;
+          const hasCount = opt.count !== undefined && opt.count !== null;
           return (
             <button
               key={opt.value}
@@ -180,6 +200,7 @@ export const LiveSegmentedControl = forwardRef<HTMLDivElement, LiveSegmentedCont
             >
               {opt.icon}
               {opt.label && <span>{opt.label}</span>}
+              {hasCount && <span className="atr-badge">{opt.count}</span>}
             </button>
           );
         })}

@@ -32,6 +32,7 @@ import { formatCurrencyAmount } from '../../../utils/rules';
 import { useTranslation } from '../../../utils/useTranslation';
 import { LabelInput } from '../../ui/LabelInput';
 import { AtriumButton } from '../../ui/AtriumButton';
+import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { UniversalDataCollection } from '../../ui/collection/UniversalDataCollection';
 import { ActionButtonDef } from '../../ui/collection/CollectionListRow';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
@@ -378,6 +379,20 @@ export const VenueFinanceView: React.FC = () => {
             <UniversalDataCollection<SecurityDepositRecord>
               title={isAr ? 'سجل الودائع الضامنة' : 'Registre des Cautions & Séquestres d\'Événements'}
               subtitle={isAr ? 'إدارة أموال التأمين المحجوزة للمناسبات' : 'Fonds séquestrés, dégradations constatées et déblocages après événement'}
+              headerActions={
+                <LiveSegmentedControl
+                  size="sm"
+                  value={statusFilter}
+                  onValueChange={(val) => setStatusFilter(val as any)}
+                  options={[
+                    { value: 'All', label: isAr ? 'الكل' : 'Toutes', count: securityDeposits.length },
+                    { value: 'Held', label: isAr ? 'محجوزة' : 'Bloquées', count: totalHeldCount },
+                    { value: 'Released', label: isAr ? 'مستردة' : 'Restituées', count: securityDeposits.filter((d) => d.status === 'Released').length },
+                    { value: 'Deducted', label: isAr ? 'مقتطعة' : 'Déduites', count: securityDeposits.filter((d) => d.status === 'Deducted').length },
+                  ]}
+                  aria-label="Security Deposit Status Filter"
+                />
+              }
               items={filteredDeposits}
               keyExtractor={(d) => d.id}
               searchPlaceholder={t('venue_fin_search_ph')}

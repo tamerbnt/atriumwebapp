@@ -2,6 +2,7 @@ import React from 'react';
 import { UserPlus, QrCode, LayoutGrid, List } from 'lucide-react';
 import { Seek } from '../../ui/Seek';
 import { AtriumButton } from '../../ui/AtriumButton';
+import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { StaffLifecycleStatus } from '../../../types/index';
 
 interface StaffActionToolbarProps {
@@ -66,52 +67,30 @@ export const StaffActionToolbar: React.FC<StaffActionToolbarProps> = ({
         </div>
 
         {/* Status filter capsules */}
-        <div className="flex items-center p-0.5 bg-neutral-100 dark:bg-neutral-800/60 rounded-xl text-xs font-medium">
-          {filterOptions.map((opt) => (
-            <button
-              key={opt.id}
-              type="button"
-              onClick={() => onStatusFilterChange(opt.id)}
-              className={`px-2.5 py-1.5 rounded-lg transition-all ${
-                statusFilter === opt.id
-                  ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white shadow-xs font-semibold'
-                  : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200'
-              }`}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
+        <LiveSegmentedControl
+          size="sm"
+          options={filterOptions.map((opt) => ({
+            value: opt.id,
+            label: opt.label,
+          }))}
+          value={statusFilter}
+          onValueChange={(val) => onStatusFilterChange(val as 'all' | StaffLifecycleStatus)}
+          aria-label="Staff Lifecycle Filter"
+        />
       </div>
 
       {/* Right: List/Grid mode + New Staff Button */}
       <div className="flex items-center gap-2.5 self-end lg:self-auto shrink-0">
-        <div className="flex items-center p-0.5 bg-neutral-100 dark:bg-neutral-800/60 rounded-xl">
-          <button
-            type="button"
-            onClick={() => onViewModeChange('list')}
-            aria-label="List view"
-            className={`p-1.5 rounded-lg transition-all ${
-              viewMode === 'list'
-                ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white shadow-xs'
-                : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-300'
-            }`}
-          >
-            <List size={16} />
-          </button>
-          <button
-            type="button"
-            onClick={() => onViewModeChange('grid')}
-            aria-label="Grid view"
-            className={`p-1.5 rounded-lg transition-all ${
-              viewMode === 'grid'
-                ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white shadow-xs'
-                : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-300'
-            }`}
-          >
-            <LayoutGrid size={16} />
-          </button>
-        </div>
+        <LiveSegmentedControl
+          size="sm"
+          options={[
+            { value: 'list', icon: <List size={14} />, 'aria-label': 'List view' },
+            { value: 'grid', icon: <LayoutGrid size={14} />, 'aria-label': 'Grid view' },
+          ]}
+          value={viewMode}
+          onValueChange={(val) => onViewModeChange(val as 'list' | 'grid')}
+          aria-label="View Mode"
+        />
 
         {canCreate && (
           <AtriumButton

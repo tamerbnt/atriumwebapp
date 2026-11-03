@@ -26,6 +26,7 @@ import { formatMoney } from '../../../utils/rules';
 import { RealEstateLease } from '../../../types';
 import { useRealEstateData } from './realEstateData';
 import { AtriumButton } from '../../ui/AtriumButton';
+import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { Seek } from '../../ui/Seek';
 import { RealEstateLeaseModal } from './RealEstateLeaseModal';
 import { QuittanceModal } from './QuittanceModal';
@@ -86,6 +87,18 @@ export const RealEstateLeasesView: React.FC = () => {
       return true;
     });
   }, [leases, statusFilter, searchQuery]);
+
+  const leaseCounts = useMemo(() => ({
+    all: leases.length,
+    active: leases.filter((l) => l.status === 'Active').length,
+    renew: leases.filter((l) => {
+      const end = new Date(l.endDate).getTime();
+      const diffDays = Math.ceil((end - Date.now()) / (1000 * 60 * 60 * 24));
+      return diffDays <= 30 && diffDays >= 0;
+    }).length,
+    terminated: leases.filter((l) => l.status === 'Terminated').length,
+    caution: leases.filter((l) => l.securityDepositDzd > 0).length,
+  }), [leases]);
 
   // KPIs
   const activeLeases = leases.filter((l) => l.status === 'Active').length;
@@ -396,31 +409,20 @@ export const RealEstateLeasesView: React.FC = () => {
             </h2>
           </div>
 
-          {/* Authentic Real Estate Lease Filter Capsules */}
-          <div className="flex items-center gap-1.5 p-1 bg-white dark:bg-neutral-800 rounded-full border border-neutral-200/80 dark:border-neutral-700/60 shadow-2xs overflow-x-auto">
-            {[
-              { id: 'All', label: isAr ? 'جميع العقود' : 'Tous les baux' },
-              { id: 'Active', label: isAr ? 'عقود سارية' : 'Baux actifs' },
-              { id: 'Renew', label: isAr ? 'تجديد < 30 يوم' : 'Renouvellement < 30j' },
-              { id: 'Terminated', label: isAr ? 'عقود مفسوخة' : 'Baux résiliés' },
-              { id: 'Caution', label: isAr ? 'الودائع الضامنة' : 'Cautions séquestre' },
-            ].map((tab) => {
-              const isActive = statusFilter === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setStatusFilter(tab.id)}
-                  className="px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer"
-                  style={{
-                    backgroundColor: isActive ? '#FCEEE8' : 'transparent',
-                    color: isActive ? 'var(--color-accent)' : '#71717A',
-                  }}
-                >
-                  {tab.label}
-                </button>
-              );
-            })}
-          </div>
+          {/* Authentic Real Estate Lease Kinetic Live Filter Switcher */}
+          <LiveSegmentedControl
+            size="sm"
+            value={statusFilter}
+            onValueChange={(val) => setStatusFilter(val as any)}
+            options={[
+              { value: 'All', label: isAr ? 'جميع العقود' : 'Tous les baux', count: leaseCounts.all },
+              { value: 'Active', label: isAr ? 'عقود سارية' : 'Baux actifs', count: leaseCounts.active },
+              { value: 'Renew', label: isAr ? 'تجديد < 30 يوم' : 'Renouvellement < 30j', count: leaseCounts.renew },
+              { value: 'Terminated', label: isAr ? 'عقود مفسوخة' : 'Baux résiliés', count: leaseCounts.terminated },
+              { value: 'Caution', label: isAr ? 'الودائع الضامنة' : 'Cautions séquestre', count: leaseCounts.caution },
+            ]}
+            aria-label="Real Estate Lease Filter"
+          />
         </div>
 
         {/* Main Workspace: Left Collection + Right 390px Inspector Drawer */}
