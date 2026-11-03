@@ -345,11 +345,11 @@ export const LegalMattersView: React.FC = () => {
             onSearchChange={setSearchQuery}
             searchPlaceholder={isAr ? 'بحث في الفهرس، الأطراف، أو رقم العقد...' : 'Rechercher au répertoire, partie, référence...'}
             filterOptions={[
-              { value: 'All', label: isAr ? 'كل العقود' : 'Tous les Actes' },
-              { value: 'vente_immobiliere', label: isAr ? 'عقود بيع عقاري' : 'Ventes Immobilières' },
-              { value: 'bail_commercial', label: isAr ? 'إيجار تجاري' : 'Baux Commerciaux' },
-              { value: 'fredha', label: isAr ? 'فرائض شرعية' : 'Actes de Frédha' },
-              { value: 'statuts_societe', label: isAr ? 'عقود تأسيس شركات' : 'Statuts Sociétés' },
+              { value: 'All', label: isAr ? 'كل العقود' : 'Tous les Actes', count: notaryDeeds.length },
+              { value: 'vente_immobiliere', label: isAr ? 'عقود بيع عقاري' : 'Ventes Immobilières', count: notaryDeeds.filter((d) => d.actType === 'vente_immobiliere').length },
+              { value: 'bail_commercial', label: isAr ? 'إيجار تجاري' : 'Baux Commerciaux', count: notaryDeeds.filter((d) => d.actType === 'bail_commercial').length },
+              { value: 'fredha', label: isAr ? 'فرائض شرعية' : 'Actes de Frédha', count: notaryDeeds.filter((d) => d.actType === 'fredha').length },
+              { value: 'statuts_societe', label: isAr ? 'عقود تأسيس شركات' : 'Statuts Sociétés', count: notaryDeeds.filter((d) => d.actType === 'statuts_societe').length },
             ]}
             filterValue={filterCategory}
             onFilterChange={setFilterCategory}
@@ -403,11 +403,11 @@ export const LegalMattersView: React.FC = () => {
             onSearchChange={setSearchQuery}
             searchPlaceholder={isAr ? 'بحث في القضايا، الموكلين، أو المحكمة...' : 'Rechercher une affaire, client, juridiction...'}
             filterOptions={[
-              { value: 'All', label: isAr ? 'كل القضايا' : 'Tous les Dossiers' },
-              { value: 'Commercial', label: isAr ? 'تجاري ومنازعات' : 'Commercial' },
-              { value: 'Civil', label: isAr ? 'مدني وعقارات' : 'Civil' },
-              { value: 'Labor', label: isAr ? 'عمالي واجتماعي' : 'Social' },
-              { value: 'Penal', label: isAr ? 'جزائي وجنائي' : 'Pénal' },
+              { value: 'All', label: isAr ? 'كل القضايا' : 'Tous les Dossiers', count: matters.length },
+              { value: 'Commercial', label: isAr ? 'تجاري ومنازعات' : 'Commercial', count: matters.filter((m) => m.category === 'Commercial').length },
+              { value: 'Civil', label: isAr ? 'مدني وعقارات' : 'Civil', count: matters.filter((m) => m.category === 'Civil').length },
+              { value: 'Labor', label: isAr ? 'عمالي واجتماعي' : 'Social', count: matters.filter((m) => m.category === 'Labor').length },
+              { value: 'Penal', label: isAr ? 'جزائي وجنائي' : 'Pénal', count: matters.filter((m) => m.category === 'Penal').length },
             ]}
             filterValue={filterCategory}
             onFilterChange={setFilterCategory}

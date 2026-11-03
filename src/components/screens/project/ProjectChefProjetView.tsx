@@ -663,7 +663,7 @@ export const ProjectChefProjetView: React.FC<ProjectChefProjetViewProps> = ({ in
             onValueChange={(val) => setActiveTab(val as any)}
             options={[
               { value: 'portfolio', label: language === 'ar' ? 'المشاريع' : 'Pilotage', count: pmProjects.length },
-              { value: 'catalog', label: language === 'ar' ? 'كتالوج POSM' : 'Catalogue POSM', count: pmCollateralItems.length },
+              { value: 'catalog', label: language === 'ar' ? 'كتالوج POSM' : 'Catalogue POSM', count: pmCollateralCatalog.length },
               { value: 'orders', label: language === 'ar' ? 'الطباعة' : 'Commandes Print', count: pmPrintOrders.length },
               { value: 'bat', label: language === 'ar' ? 'مراجعة BAT' : 'Revue BAT', count: pmBatDeliverables.length },
               { value: 'expenses', label: language === 'ar' ? 'المصاريف' : 'Dépenses', count: pmExpenses.length },

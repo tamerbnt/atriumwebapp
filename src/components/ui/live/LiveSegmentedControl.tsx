@@ -3,7 +3,8 @@ import { SegmentedBlobController } from '../../../utils/atriumSprings';
 import { LiveButtonSize } from './LiveButton';
 
 export interface SegmentedOption {
-  value: string;
+  value?: string;
+  id?: string;
   label?: React.ReactNode;
   icon?: React.ReactNode;
   count?: number | string;
@@ -16,6 +17,7 @@ export interface LiveSegmentedControlProps {
   value?: string;
   defaultValue?: string;
   onValueChange?: (val: string) => void;
+  onChange?: (val: string) => void;
   size?: LiveButtonSize | 'sm' | 'md' | number;
   className?: string;
   style?: React.CSSProperties;
@@ -70,6 +72,7 @@ export const LiveSegmentedControl = forwardRef<HTMLDivElement, LiveSegmentedCont
       value: controlledValue,
       defaultValue,
       onValueChange,
+      onChange,
       size,
       className = '',
       style,
@@ -78,7 +81,9 @@ export const LiveSegmentedControl = forwardRef<HTMLDivElement, LiveSegmentedCont
     ref
   ) {
     const isControlled = controlledValue !== undefined;
-    const firstEnabled = options.find((o) => !o.disabled)?.value ?? options[0]?.value;
+    const getOptVal = (o?: SegmentedOption): string => (o ? (o.value ?? o.id ?? '') : '');
+
+    const firstEnabled = getOptVal(options.find((o) => !o.disabled)) || getOptVal(options[0]);
     const [internalValue, setInternalValue] = useState<string>(
       defaultValue !== undefined ? defaultValue : firstEnabled
     );
@@ -86,7 +91,7 @@ export const LiveSegmentedControl = forwardRef<HTMLDivElement, LiveSegmentedCont
 
     const selectedIndex = Math.max(
       0,
-      options.findIndex((o) => o.value === currentValue)
+      options.findIndex((o) => getOptVal(o) === currentValue)
     );
 
     const rootRef = useRef<HTMLDivElement>(null);
@@ -103,6 +108,7 @@ export const LiveSegmentedControl = forwardRef<HTMLDivElement, LiveSegmentedCont
         setInternalValue(val);
       }
       onValueChange?.(val);
+      onChange?.(val);
     };
 
     // Initialize controller and resize observer
@@ -143,7 +149,7 @@ export const LiveSegmentedControl = forwardRef<HTMLDivElement, LiveSegmentedCont
         controllerRef.current = null;
         root.removeAttribute('data-live');
       };
-    }, [options.length, options.map((o) => `${o.value}_${o.count}`).join('|')]);
+    }, [options.length, options.map((o) => `${getOptVal(o)}_${o.count}`).join('|')]);
 
     // Animate blob when index changes
     useEffect(() => {
@@ -161,7 +167,7 @@ export const LiveSegmentedControl = forwardRef<HTMLDivElement, LiveSegmentedCont
         }
         if (next >= 0 && next < total) {
           const nextOpt = options[next];
-          handleSelect(nextOpt.value);
+          handleSelect(getOptVal(nextOpt));
           itemRefs.current[next]?.focus();
         }
       }
@@ -180,12 +186,13 @@ export const LiveSegmentedControl = forwardRef<HTMLDivElement, LiveSegmentedCont
       >
         <div ref={blobRef} className={classes.blob} aria-hidden="true" />
         {options.map((opt, idx) => {
-          const isChecked = opt.value === currentValue;
+          const val = getOptVal(opt);
+          const isChecked = val === currentValue;
           const isIconOnly = opt.icon && !opt.label;
           const hasCount = opt.count !== undefined && opt.count !== null;
           return (
             <button
-              key={opt.value}
+              key={val || idx}
               ref={(el) => {
                 itemRefs.current[idx] = el;
               }}
@@ -196,7 +203,7 @@ export const LiveSegmentedControl = forwardRef<HTMLDivElement, LiveSegmentedCont
               disabled={opt.disabled}
               className={[classes.option, isIconOnly ? classes.iconOnly : ''].filter(Boolean).join(' ')}
               tabIndex={isChecked ? 0 : -1}
-              onClick={() => handleSelect(opt.value)}
+              onClick={() => handleSelect(val)}
             >
               {opt.icon}
               {opt.label && <span>{opt.label}</span>}

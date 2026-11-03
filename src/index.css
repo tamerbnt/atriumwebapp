@@ -34,6 +34,14 @@
     --atr-radius-k: .147;
     --atr-z-popover: 1000;
 
+    /* Liquid Buttons Tokens — Light Mode (Orange Card Theme from Main.dc.html) */
+    --atr-liq-btn-bg: #D5532F;
+    --atr-liq-btn-body: #0A0A0A;
+    --atr-liq-btn-liq: #F4EDE6;
+    --atr-liq-btn-t1: #F4EDE6;
+    --atr-liq-btn-t2: #0A0A0A;
+    --atr-liq-btn-shadow: 0 4px 20px rgba(213, 83, 47, 0.35);
+
     /* Desktop Outer Window Canvas (Detached Floating Island backdrop) */
     --color-window-bg: #E8ECEF;
     --color-surface-bg: #FFFFFF;
@@ -122,6 +130,14 @@
     --atr-sw-liquid: #f4ede6;
     --atr-sw-knob: #0a0a0a;
     --atr-shadow-pop: 0 14px 34px rgba(0, 0, 0, .5);
+
+    /* Liquid Buttons Tokens — Dark Mode (Ink Card Theme from Main.dc.html) */
+    --atr-liq-btn-bg: #18181B;
+    --atr-liq-btn-body: #E8643F;
+    --atr-liq-btn-liq: #F4EDE6;
+    --atr-liq-btn-t1: #0A0A0A;
+    --atr-liq-btn-t2: #0A0A0A;
+    --atr-liq-btn-shadow: 0 4px 24px rgba(0, 0, 0, 0.6);
 
     --color-window-bg: #0C0C0E;
     --color-surface-bg: #18181B;

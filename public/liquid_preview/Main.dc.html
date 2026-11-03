@@ -1,0 +1,678 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Atrium liquid motion</title>
+<script src="./vendor/react.js"></script>
+<script src="./vendor/react-dom.js"></script>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&amp;family=Inter:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0}
+.card{background:#0A0A0A;color:#F4EDE6;--body:#E8643F;--liq:#F4EDE6;--t1:#0A0A0A;--t2:#0A0A0A}
+.card[data-theme=orange]{background:#D5532F;color:#0A0A0A;--body:#0A0A0A;--liq:#F4EDE6;--t1:#F4EDE6;--t2:#0A0A0A}
+.hit{appearance:none;-webkit-appearance:none;border:0;padding:0;margin:0;background:transparent;border-radius:14px;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.hit:focus-visible{outline:3px solid currentColor;outline-offset:6px}
+.seg{font:600 14px 'Inter',sans-serif;height:44px;padding:0 18px;border:2px solid #0A0A0A;background:transparent;color:#0A0A0A;border-radius:10px;cursor:pointer}
+.seg[aria-pressed=true]{background:#0A0A0A;color:#F4EDE6}
+.seg:focus-visible{outline:3px solid #D5532F;outline-offset:3px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.stage{position:absolute;overflow:hidden;-webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 34px);mask-image:linear-gradient(to bottom,transparent 0,#000 34px)}
+</style>
+</helmet>
+<div id="lm-root" style="width: 1440px; height: 1000px; box-sizing: border-box; background: #F4EDE6; padding: 56px 80px; display: flex; flex-direction: column; gap: 40px; font-family: 'Inter', sans-serif; color: #0A0A0A">
+  <header style="display: flex; align-items: flex-end; justify-content: space-between; gap: 32px">
+    <div style="display: flex; flex-direction: column; gap: 14px">
+      <div style="display: flex; align-items: center; gap: 14px">
+        <svg width="44" height="44" viewBox="0 0 44 44" aria-hidden="true"><g fill="#0A0A0A"><rect x="0" y="0" width="10.4" height="10.4" rx="1.5"></rect><rect x="33.6" y="0" width="10.4" height="10.4" rx="1.5"></rect><rect x="0" y="33.6" width="10.4" height="10.4" rx="1.5"></rect><rect x="33.6" y="33.6" width="10.4" height="10.4" rx="1.5"></rect><rect x="10.4" y="10.4" width="23.2" height="23.2" rx="2.4"></rect></g><rect x="14.4" y="14.4" width="15.2" height="15.2" fill="#F4EDE6"></rect></svg>
+        <span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 600; letter-spacing: 0.14em; font-size: 17px; text-transform: uppercase">Atrium · Motion</span>
+      </div>
+      <h1 style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 88px; line-height: 0.9; text-transform: uppercase; letter-spacing: 0.01em">Liquid buttons</h1>
+    </div>
+    <div style="max-width: 470px; display: flex; flex-direction: column; gap: 16px; align-items: flex-end; text-align: right">
+      <p style="margin: 0; font-size: 15px; line-height: 1.5; color: #2E2A27">Nothing here is keyframed. Springs, gravity and surface tension run live, so click, hold and interrupt any button mid-flight. Damping ratio is 1/φ, which gives one soft 8.5% overshoot.</p>
+      <div style="display: flex; gap: 10px">
+        <button id="lm-slow-0" class="seg" aria-pressed="true">Real time</button>
+        <button id="lm-slow-1" class="seg" aria-pressed="false">Slow motion ¼×</button>
+      </div>
+    </div>
+  </header>
+  <main style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px">
+    <sc-for list="{{cards}}" as="c" hint-placeholder-count="5">
+      <section class="card" data-theme="{{c.theme}}" style="position: relative; height: 340px; border-radius: 14px; overflow: hidden">
+        <div style="position: absolute; left: 28px; top: 26px; right: 28px; display: flex; flex-direction: column; gap: 8px">
+          <div style="font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 17px; letter-spacing: 0.14em; text-transform: uppercase">{{c.num}} · {{c.name}}</div>
+          <div style="font-size: 13px; line-height: 1.5; max-width: 330px">{{c.note}}</div>
+        </div>
+        <svg id="b{{c.i}}-svg" class="stage" width="340" height="240" viewBox="0 0 340 240" style="left: 35px; top: 100px" aria-hidden="true">
+          <defs>
+            <clipPath id="b{{c.i}}-clip"><rect id="b{{c.i}}-clipr" x="0" y="0" width="300" height="72" rx="10.6"></rect></clipPath>
+            <clipPath id="b{{c.i}}-lqc"><path id="b{{c.i}}-lqcp" d="M0 0"></path></clipPath>
+          </defs>
+          <g id="b{{c.i}}-root" transform="translate(20 126)">
+            <rect id="b{{c.i}}-body" x="0" y="0" width="300" height="72" rx="10.6" style="fill: var(--body)"></rect>
+            <g clip-path="url(#b{{c.i}}-clip)"><path id="b{{c.i}}-liq" d="M0 0" style="fill: var(--liq)"></path></g>
+            <path id="b{{c.i}}-air" d="M0 0" style="fill: var(--liq)"></path>
+            <g clip-path="url(#b{{c.i}}-clip)" style="fill: var(--t1); stroke: var(--t1)">
+              <g id="b{{c.i}}-ct">
+                <path id="b{{c.i}}-mark" fill-rule="evenodd" stroke="none" d="M0 0"></path>
+                <path id="b{{c.i}}-chk" fill="none" stroke-width="5.4" stroke-linecap="round" stroke-linejoin="round" d="M0 0"></path>
+                <path id="b{{c.i}}-arw" fill="none" stroke-width="5.4" stroke-linecap="round" stroke-linejoin="round" d="M0 0"></path>
+                <g id="b{{c.i}}-l0"><text id="b{{c.i}}-t0" x="92" y="46" stroke="none" font-family="'Barlow Condensed', sans-serif" font-weight="600" font-size="28" letter-spacing="1.8" data-copy="{{c.idle}}"></text></g>
+                <g id="b{{c.i}}-l1" opacity="0"><text id="b{{c.i}}-t1" x="92" y="46" stroke="none" font-family="'Barlow Condensed', sans-serif" font-weight="600" font-size="28" letter-spacing="1.8" data-copy="{{c.busy}}"></text></g>
+                <g id="b{{c.i}}-l2" opacity="0"><text id="b{{c.i}}-t2" x="92" y="46" stroke="none" font-family="'Barlow Condensed', sans-serif" font-weight="600" font-size="28" letter-spacing="1.8" data-copy="{{c.done}}"></text></g>
+              </g>
+            </g>
+            <g clip-path="url(#b{{c.i}}-clip)"><g clip-path="url(#b{{c.i}}-lqc)" style="fill: var(--t2); stroke: var(--t2)"><use href="#b{{c.i}}-ct"></use></g></g>
+          </g>
+        </svg>
+        <button id="b{{c.i}}-hit" class="hit" aria-label="{{c.aria}}" style="position: absolute; left: 55px; top: 226px; width: 300px; height: 72px"></button>
+        <span id="b{{c.i}}-st" class="sr" aria-live="polite"></span>
+      </section>
+    </sc-for>
+    <section class="card" data-theme="ink" style="position: relative; height: 340px; border-radius: 14px; overflow: hidden">
+      <div style="position: absolute; left: 28px; top: 26px; right: 28px; display: flex; flex-direction: column; gap: 8px">
+        <div style="font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 17px; letter-spacing: 0.14em; text-transform: uppercase">06 · Loading</div>
+        <div style="font-size: 13px; line-height: 1.5; max-width: 330px">Four squares melt into a swirl, then re-solidify. Total area never changes. Click to stir.</div>
+      </div>
+      <svg id="ld-svg" width="220" height="220" viewBox="-10 -10 220 220" style="position: absolute; left: 95px; top: 106px; cursor: pointer; overflow: visible" role="img" aria-label="Loading animation. Click to stir.">
+        <defs>
+          <filter id="ld-goo" filterUnits="userSpaceOnUse" x="-10" y="-10" width="220" height="220">
+            <feGaussianBlur id="ld-blur" in="SourceGraphic" stdDeviation="0.01" result="b"></feGaussianBlur>
+            <feColorMatrix in="b" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -8"></feColorMatrix>
+          </filter>
+        </defs>
+        <path id="ld-ring" fill-rule="evenodd" d="M0 0" style="fill: var(--body)"></path>
+        <g filter="url(#ld-goo)"><path id="ld-parts" d="M0 0" style="fill: var(--liq)"></path></g>
+      </svg>
+    </section>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"damping":{"editor":"range","default":0.618,"min":0.25,"max":1.2,"step":0.01,"section":"Physics"},"stiffness":{"editor":"range","default":1,"min":0.5,"max":2,"step":0.05,"section":"Physics"},"gravity":{"editor":"range","default":900,"min":300,"max":2000,"step":50,"section":"Physics"},"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      cards: [
+        { i: 0, theme: 'orange', num: '01', name: 'Scan', note: 'Corner magnets pull in and release while a flexible liquid bar swings across on a spring.', idle: 'SCAN', busy: 'SCANNING', done: 'SCANNED', aria: 'Scan document' },
+        { i: 1, theme: 'ink', num: '02', name: 'Import', note: 'Drops fall under gravity. Each one lands, splashes and lifts the liquid level.', idle: 'IMPORT', busy: 'IMPORTING 0%', done: 'IMPORTED', aria: 'Import files' },
+        { i: 2, theme: 'orange', num: '03', name: 'Export', note: 'Pressure builds, a neck stretches, surface tension pinches a drop off. The button recoils.', idle: 'EXPORT', busy: 'EXPORTING 0%', done: 'EXPORTED', aria: 'Export data' },
+        { i: 3, theme: 'ink', num: '04', name: 'Confirm', note: 'The vessel fills and sloshes while a weighted pen draws the check in the ring.', idle: 'CONFIRM', busy: 'CONFIRMING', done: 'CONFIRMED', aria: 'Confirm' },
+        { i: 4, theme: 'orange', num: '05', name: 'Continue', note: 'Pull back, release. The arrow slingshots out on a rubber band and the body follows through.', idle: 'CONTINUE', busy: 'CONTINUE', done: 'CONTINUE', aria: 'Continue' }
+      ]
+    };
+  }
+
+  componentDidMount() {
+    const self = this;
+    const D = document;
+    const $ = (id) => D.getElementById(id);
+    if (!$('lm-root')) return;
+
+    // ---------- constants (body-local px) ----------
+    const W = 300, H = 72, OX = 20, OY = 126, R0 = 0.147 * H;
+    const N = 56, DX = W / (N - 1);
+    const IC = 44, IX = 28, IY = 14;
+    const CS = IC * 0.236, CR = CS * 0.147, RO = IC * 0.528, ROR = IC * 0.0555, RI = IC * 0.346;
+    const HOME = [[0, 0], [IC - CS, 0], [0, IC - CS], [IC - CS, IC - CS]];
+    const DIR = [[-1, -1], [1, -1], [-1, 1], [1, 1]];
+    const PW = [[13.5, 22.5], [19.5, 28.5], [30.5, 15]];
+    const reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    let ZETA = 0.618, KM = 1, G = 900, TS = 1;
+
+    // ---------- helpers ----------
+    const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+    const rnd = (a, b) => a + Math.random() * (b - a);
+    const f = (n) => (Math.round(n * 100) / 100).toString();
+    const spr = (x, k, z) => ({ x: x, v: 0, t: x, k: k, z: (z === undefined ? null : z), a: 0 });
+    const stepS = (s, dt) => {
+      const z = s.z === null ? ZETA : s.z;
+      const k = s.k * KM;
+      const c = 2 * z * Math.sqrt(k);
+      s.a = k * (s.t - s.x) - c * s.v;
+      s.v += s.a * dt;
+      s.x += s.v * dt;
+    };
+    const rr = (x, y, w, h, r) => {
+      r = Math.max(0, Math.min(r, w / 2, h / 2));
+      return 'M' + f(x + r) + ' ' + f(y) + 'H' + f(x + w - r) + 'A' + f(r) + ' ' + f(r) + ' 0 0 1 ' + f(x + w) + ' ' + f(y + r) +
+        'V' + f(y + h - r) + 'A' + f(r) + ' ' + f(r) + ' 0 0 1 ' + f(x + w - r) + ' ' + f(y + h) +
+        'H' + f(x + r) + 'A' + f(r) + ' ' + f(r) + ' 0 0 1 ' + f(x) + ' ' + f(y + h - r) +
+        'V' + f(y + r) + 'A' + f(r) + ' ' + f(r) + ' 0 0 1 ' + f(x + r) + ' ' + f(y) + 'Z';
+    };
+    const el = (cx, cy, rx, ry) => 'M' + f(cx - rx) + ' ' + f(cy) + 'A' + f(rx) + ' ' + f(ry) + ' 0 1 0 ' + f(cx + rx) + ' ' + f(cy) +
+      'A' + f(rx) + ' ' + f(ry) + ' 0 1 0 ' + f(cx - rx) + ' ' + f(cy) + 'Z';
+    // two-circle metaball bridge: the stretching liquid neck
+    const metaball = (r1, r2, c1, c2, handle, v) => {
+      const HP = Math.PI / 2;
+      const dx = c2[0] - c1[0], dy = c2[1] - c1[1];
+      const d = Math.sqrt(dx * dx + dy * dy);
+      const maxD = r1 + r2 * 2.6;
+      if (r1 < 0.5 || r2 < 0.5 || d > maxD || d <= Math.abs(r1 - r2) + 0.01) return '';
+      let u1 = 0, u2 = 0;
+      if (d < r1 + r2) {
+        u1 = Math.acos(clamp((r1 * r1 + d * d - r2 * r2) / (2 * r1 * d), -1, 1));
+        u2 = Math.acos(clamp((r2 * r2 + d * d - r1 * r1) / (2 * r2 * d), -1, 1));
+      }
+      const ab = Math.atan2(c1[1] - c2[1], c1[0] - c2[0]) + Math.PI; // angle from c1 to c2
+      const spread = Math.acos(clamp((r1 - r2) / d, -1, 1));
+      const a1 = ab + u1 + (spread - u1) * v;
+      const a2 = ab - u1 - (spread - u1) * v;
+      const a3 = ab + Math.PI - u2 - (Math.PI - u2 - spread) * v;
+      const a4 = ab - Math.PI + u2 + (Math.PI - u2 - spread) * v;
+      const P = (c, a, r) => [c[0] + r * Math.cos(a), c[1] + r * Math.sin(a)];
+      const p1 = P(c1, a1, r1), p2 = P(c1, a2, r1), p3 = P(c2, a3, r2), p4 = P(c2, a4, r2);
+      const tot = r1 + r2;
+      const dd = Math.hypot(p1[0] - p3[0], p1[1] - p3[1]);
+      let d2 = Math.min(v * handle, dd / tot);
+      d2 *= Math.min(1, (d * 2) / tot);
+      const R1 = r1 * d2, R2 = r2 * d2;
+      const h1 = P(p1, a1 - HP, R1), h2 = P(p2, a2 + HP, R1), h3 = P(p3, a3 + HP, R2), h4 = P(p4, a4 - HP, R2);
+      const s = (p) => f(p[0]) + ' ' + f(p[1]);
+      return 'M' + s(p1) + 'C' + s(h1) + ' ' + s(h3) + ' ' + s(p3) +
+        'A' + f(r2) + ' ' + f(r2) + ' 0 ' + (d > r1 ? 0 : 1) + ' 0 ' + s(p4) +
+        'C' + s(h4) + ' ' + s(h2) + ' ' + s(p2) +
+        'A' + f(r1) + ' ' + f(r1) + ' 0 ' + (d > r2 ? 1 : 0) + ' 0 ' + s(p1) + 'Z';
+    };
+
+    // ---------- buttons ----------
+    const KINDS = ['scan', 'import', 'export', 'confirm', 'continue'];
+    const HOLD = { scan: 1.5, import: 1.7, export: 1.5, confirm: 1.9, continue: 0 };
+    const M = 15; // string nodes of the scan bar
+    const btns = KINDS.map((kind, i) => {
+      const p = 'b' + i + '-';
+      const b = {
+        i: i, kind: kind, state: 'idle', t: 0, hover: false, press: false, px: W / 2, py: H / 2,
+        bx: spr(0, 230), by: spr(0, 230), sx: spr(1, 360), sy: spr(1, 360), rad: spr(R0, 170),
+        bxo: 0, sxo: 1, syo: 1,
+        level: spr(0, 58), h: new Float32Array(N), hv: new Float32Array(N),
+        lab: [spr(0, 280), spr(1, 280), spr(1, 280)],
+        cx: [], cy: [], cs: spr(1, 420), ring: spr(1, 260), chk: spr(0, 260),
+        pen: { x: 0, y: 0, vx: 0, vy: 0, wp: 1, on: false }, trail: [],
+        drops: [], sp: [], ex: [], nz: spr(0, 520, 0.45), nzx: W / 2,
+        bar: spr(-26, 70, 0.35), barA: spr(0, 200, 0.7), barDir: 1, bu: new Float32Array(M), bv: new Float32Array(M),
+        arw: spr(0, 120, 0.4), arw2: spr(0, 70, 0.55), fired: false,
+        landed: 0, spawned: 0, spawnT: 0, exStarted: 0, released: 0, lastEv: 0, noise: rnd(0.4, 1.6), lastBusyText: '',
+        el: {}
+      };
+      for (let j = 0; j < 4; j++) { b.cx.push(spr(0, 520, 0.5)); b.cy.push(spr(0, 520, 0.5)); }
+      ['svg', 'root', 'body', 'clipr', 'liq', 'lqcp', 'air', 'mark', 'chk', 'arw', 'l0', 'l1', 'l2', 't0', 't1', 't2', 'hit', 'st'].forEach((k) => { b.el[k] = $(p + k); });
+      ['t0', 't1', 't2'].forEach((k) => { if (b.el[k]) b.el[k].textContent = b.el[k].getAttribute('data-copy') || ''; });
+      return b;
+    });
+
+    const setLabels = (b, L) => {
+      for (let j = 0; j < 3; j++) b.lab[j].t = j === L ? 0 : (j < L ? -1 : 1);
+    };
+    const busyText = (b) => {
+      if (b.kind === 'import') return 'IMPORTING ' + Math.round(100 * b.landed / 7) + '%';
+      if (b.kind === 'export') return 'EXPORTING ' + Math.round(100 * b.released / 5) + '%';
+      return null;
+    };
+    const fit = (b, k) => {
+      const t = b.el[k]; if (!t || !t.getComputedTextLength) return;
+      const avail = (b.kind === 'continue' ? W - 28 - 118 : W - 92 - 24);
+      t.removeAttribute('textLength');
+      let L = 0; try { L = t.getComputedTextLength(); } catch (e) { L = 0; }
+      if (L > avail) { t.setAttribute('textLength', f(avail)); t.setAttribute('lengthAdjust', 'spacingAndGlyphs'); }
+    };
+    const say = (b, s) => { if (b.el.st) b.el.st.textContent = s; };
+
+    const poke = (b, x, amp, w) => {
+      const c = x / DX;
+      for (let i = 0; i < N; i++) { const d = (i - c) / w; b.hv[i] += amp * Math.exp(-d * d); }
+    };
+    const surfAt = (b, x) => {
+      const i = clamp(Math.round(x / DX), 0, N - 1);
+      return H * (1 - b.level.x) - b.h[i];
+    };
+
+    const startPen = (b) => {
+      b.pen.x = PW[0][0]; b.pen.y = PW[0][1]; b.pen.vx = 0; b.pen.vy = 0; b.pen.wp = 1; b.pen.on = true;
+      b.trail = [[b.pen.x, b.pen.y]];
+      b.chk.x = 1; b.chk.v = 0; b.chk.t = 1;
+    };
+
+    const enter = (b, s) => {
+      b.state = s; b.t = 0;
+      setLabels(b, s === 'idle' ? 0 : (s === 'busy' ? 1 : 2));
+      for (let j = 0; j < 4; j++) { b.cx[j].t = 0; b.cy[j].t = 0; }
+      if (s === 'idle') {
+        b.level.t = 0; b.barA.t = 0; b.nz.t = 0; b.bxo = 0; b.sxo = 1; b.syo = 1; b.arw.t = 0;
+        b.ring.t = 1; b.chk.t = 0;
+        say(b, '');
+      }
+      if (s === 'done') {
+        b.ring.t = 0;
+        if (b.kind !== 'continue' && (!b.pen.on || b.chk.t < 0.5)) startPen(b);
+        say(b, b.el.t2 ? b.el.t2.textContent : '');
+      }
+    };
+    const finish = (b) => {
+      enter(b, 'done');
+      if (b.kind === 'scan') { b.level.t = 0; b.barA.t = 0; b.bar.t = W + 50; }
+      if (b.kind === 'import') b.level.t = 1;
+      if (b.kind === 'export') b.level.t = 0;
+      if (b.kind === 'confirm') b.level.t = 1;
+      for (let j = 0; j < 4; j++) { b.cx[j].t = -DIR[j][0] * 2.2; b.cy[j].t = -DIR[j][1] * 2.2; }
+    };
+    const clearLists = (b) => { b.drops = []; b.sp = []; b.ex = []; };
+    const start = (b) => {
+      clearLists(b);
+      b.landed = 0; b.spawned = 0; b.spawnT = 0.12; b.exStarted = 0; b.released = 0; b.fired = false; b.lastEv = 0; b.barDir = 1;
+      enter(b, 'busy');
+      say(b, 'Working');
+      if (b.kind === 'scan') {
+        b.bar.x = -26; b.bar.v = 0; b.bar.t = W - 34; b.barA.t = 1; b.level.t = 0.07;
+        b.bu.fill(0); b.bv.fill(0);
+      }
+      if (b.kind === 'import') { b.level.t = 0; }
+      if (b.kind === 'export') { b.level.t = 1; }
+      if (b.kind === 'confirm') { b.level.t = 1; }
+      if (b.kind === 'continue') { b.bxo = -9; b.arw.t = -17; b.arw2.t = -17; b.sxo = 0.97; b.syo = 1.03; }
+    };
+    const cancel = (b) => {
+      clearLists(b);
+      enter(b, 'idle');
+      if (b.kind === 'scan') b.bar.t = W + 50;
+    };
+    const trigger = (b) => {
+      if (b.state === 'idle') start(b);
+      else if (b.state === 'busy') cancel(b);
+    };
+
+    // ---------- per-kind logic ----------
+    const stepScan = (b, dt) => {
+      if (b.state === 'busy') {
+        const tgt = b.barDir > 0 ? W - 34 : 34;
+        b.bar.t = tgt;
+        if (Math.abs(b.bar.x - tgt) < 24) b.barDir = -b.barDir;
+        const ph = Math.floor(b.t / 0.55) % 2;
+        for (let j = 0; j < 4; j++) {
+          b.cx[j].t = ph ? 0 : -DIR[j][0] * 6;
+          b.cy[j].t = ph ? 0 : -DIR[j][1] * 6;
+        }
+        if (b.t > 3.2) finish(b);
+      }
+      if (b.barA.x > 0.01 || b.barA.t > 0) {
+        for (let j = 1; j < M - 1; j++) {
+          const g = Math.sin(Math.PI * j / (M - 1));
+          const a = -b.bar.a * 0.075 * g - 160 * b.bu[j] - 7 * b.bv[j] + 520 * (b.bu[j - 1] + b.bu[j + 1] - 2 * b.bu[j]);
+          b.bv[j] += a * dt;
+        }
+        for (let j = 1; j < M - 1; j++) b.bu[j] = clamp(b.bu[j] + b.bv[j] * dt, -18, 18);
+        // the bar drags a wake through the liquid floor
+        if (b.state === 'busy') {
+          const c = b.bar.x / DX;
+          const k = clamp(b.bar.v, -700, 700) * 0.06 * dt * 240 / 240;
+          for (let i = 0; i < N; i++) { const d = (i - c) / 3; b.hv[i] += k * Math.exp(-d * d); }
+        }
+      }
+    };
+
+    const stepImport = (b, dt) => {
+      if (b.state === 'busy') {
+        b.spawnT -= dt;
+        if (b.spawned < 7 && b.spawnT <= 0) {
+          b.drops.push({ x: rnd(W * 0.2, W * 0.86), y: -116, vy: rnd(0, 80), r: rnd(7.5, 10.5) });
+          b.spawned++; b.spawnT = rnd(0.26, 0.42);
+        }
+        const t = b.landed / 7;
+        b.level.t = t;
+        if (b.landed >= 7 && b.t - b.lastEv > 0.75) finish(b);
+      }
+      for (let n = b.drops.length - 1; n >= 0; n--) {
+        const d = b.drops[n];
+        d.vy += G * dt; d.y += d.vy * dt;
+        const ry = d.r * (1 + clamp(d.vy / 1500, 0, 0.55));
+        if (d.y + ry >= surfAt(b, d.x) && d.y > -30) {
+          b.drops.splice(n, 1);
+          if (b.state === 'busy') {
+            b.landed++; b.lastEv = b.t;
+            poke(b, d.x, -clamp(d.vy, 200, 900) * 0.55, 2.4);
+            b.by.v += 40 + d.vy * 0.05;
+            b.ring.v -= 2.2;
+            for (let j = 0; j < 4; j++) { b.cx[j].v += DIR[j][0] * -90; b.cy[j].v += DIR[j][1] * -90; }
+            const sy = surfAt(b, d.x);
+            for (let q = 0; q < 4; q++) b.sp.push({ x: d.x, y: sy - 1, vx: rnd(-120, 120), vy: -rnd(140, 290), r: rnd(1.7, 3.4) });
+          }
+        }
+      }
+      for (let n = b.sp.length - 1; n >= 0; n--) {
+        const s = b.sp[n];
+        s.vy += G * 1.1 * dt; s.x += s.vx * dt; s.y += s.vy * dt;
+        if (s.vy > 0 && s.y >= surfAt(b, s.x)) { b.sp.splice(n, 1); poke(b, s.x, -35, 1.6); }
+        else if (s.x < 0 || s.x > W) b.sp.splice(n, 1);
+      }
+    };
+
+    const stepExport = (b, dt) => {
+      if (b.state === 'busy') {
+        const k = b.exStarted;
+        if (k < 5 && b.t > 0.8 + k * 0.62 && !b.ex.some((d) => d.st === 'form')) {
+          const x = rnd(W * 0.3, W * 0.78);
+          b.ex.push({ st: 'form', x: x, y: -3, vy: 0, r: rnd(7.5, 9.5), ft: 0, e: spr(0, 1100, 0.1), k: k });
+          b.nzx = x; b.nz.t = 1; b.exStarted++;
+          poke(b, x, 160, 3);
+        }
+        if (b.released >= 5 && b.t - b.lastEv > 0.55) finish(b);
+      }
+      for (let n = b.ex.length - 1; n >= 0; n--) {
+        const d = b.ex[n];
+        stepS(d.e, dt);
+        if (d.st === 'form') {
+          d.ft += dt;
+          const fp = 2700 * clamp(d.ft / 0.32, 0, 1);
+          const a = -fp - 70 * (d.y + 5) - 8 * d.vy;
+          d.vy += a * dt; d.y += d.vy * dt;
+          if (d.y < -37) {
+            d.st = 'free'; d.vy -= 150; d.e.v = (Math.random() < 0.5 ? -1 : 1) * 15;
+            b.nz.t = 0; b.released++; b.lastEv = b.t;
+            b.by.v += 150; b.sy.v -= 0.9; b.sx.v += 0.4;
+            b.level.t = Math.max(0, 1 - b.released / 5);
+            poke(b, d.x, -200, 3);
+            for (let j = 0; j < 4; j++) { b.cx[j].v += DIR[j][0] * 170; b.cy[j].v += DIR[j][1] * 170; }
+            b.ring.v += 2.6;
+          }
+        } else {
+          d.vy += 240 * dt; d.y += d.vy * dt;
+          if (d.y < -170) b.ex.splice(n, 1);
+        }
+      }
+    };
+
+    const stepConfirm = (b, dt) => {
+      if (b.state === 'busy') {
+        b.rad.t = 18;
+        for (let j = 0; j < 4; j++) { b.cx[j].t = -DIR[j][0] * 3; b.cy[j].t = -DIR[j][1] * 3; }
+        if (!b.pen.on && b.t > 0.1) { b.ring.t = 0; startPen(b); }
+        if (b.t > 0.45) finish(b);
+      }
+    };
+
+    const stepContinue = (b, dt) => {
+      if (b.state === 'busy') {
+        if (!b.fired && b.t > 0.16) {
+          b.fired = true; b.bxo = 0; b.sxo = 1; b.syo = 1;
+          b.arw.t = 0; b.arw.v = 980; b.arw2.t = 0;
+          b.bx.v += 420; b.sx.v += 1.5; b.sy.v -= 1.3;
+          b.level.t = 0.16;
+          poke(b, 34, 320, 5);
+        }
+        if (b.t > 1.3) { b.level.t = 0; enter(b, 'idle'); }
+      }
+      b.arw2.t = b.arw.x;
+    };
+
+    // ---------- per-button step ----------
+    const stepBtn = (b, dt) => {
+      b.t += dt;
+      const busy = b.state === 'busy';
+      b.bx.t = (b.hover ? clamp((b.px - W / 2) * 0.05, -8, 8) : 0) + b.bxo;
+      b.by.t = (b.hover ? clamp((b.py - H / 2) * 0.1, -4, 4) : 0) + (b.press ? 2 : 0);
+      b.sx.t = (b.press ? 1.03 : 1) * b.sxo;
+      b.sy.t = (b.press ? 0.945 : 1) * b.syo;
+      b.rad.t = (busy && b.kind !== 'continue' ? 20 : R0) + (b.hover && b.state === 'idle' ? 3 : 0);
+      b.cs.t = b.press ? 0.86 : 1;
+      if (b.state === 'idle' && !reduce) {
+        b.noise -= dt;
+        if (b.noise <= 0) {
+          b.noise = rnd(0.6, 2.2);
+          const j = (Math.random() * 4) | 0;
+          b.cx[j].v += rnd(-16, 16); b.cy[j].v += rnd(-16, 16); b.ring.v += rnd(-0.5, 0.5);
+          if (b.kind === 'continue') b.arw.v += rnd(-30, 30);
+        }
+      }
+      if (b.kind === 'scan') stepScan(b, dt);
+      else if (b.kind === 'import') stepImport(b, dt);
+      else if (b.kind === 'export') stepExport(b, dt);
+      else if (b.kind === 'confirm') stepConfirm(b, dt);
+      else stepContinue(b, dt);
+
+      if (b.state === 'done' && b.t > HOLD[b.kind]) enter(b, 'idle');
+
+      // integrate springs
+      stepS(b.bx, dt); stepS(b.by, dt); stepS(b.sx, dt); stepS(b.sy, dt); stepS(b.rad, dt);
+      stepS(b.level, dt); stepS(b.cs, dt); stepS(b.ring, dt); stepS(b.chk, dt); stepS(b.nz, dt);
+      stepS(b.bar, dt); stepS(b.barA, dt); stepS(b.arw, dt); stepS(b.arw2, dt);
+      for (let j = 0; j < 3; j++) stepS(b.lab[j], dt);
+      for (let j = 0; j < 4; j++) { stepS(b.cx[j], dt); stepS(b.cy[j], dt); }
+
+      // liquid surface: damped wave equation, driven by the vessel's own acceleration
+      const C2 = 2300, KK = 26, DAMP = 1.7;
+      const fy = -b.by.a * 0.0035;
+      for (let i = 0; i < N; i++) {
+        const l = b.h[i > 0 ? i - 1 : 0], r = b.h[i < N - 1 ? i + 1 : N - 1];
+        const xi = (i / (N - 1)) * 2 - 1;
+        const a = C2 * (l + r - 2 * b.h[i]) - KK * b.h[i] - DAMP * b.hv[i] - b.bx.a * 0.011 * xi + fy;
+        b.hv[i] += a * dt;
+      }
+      for (let i = 0; i < N; i++) b.h[i] = clamp(b.h[i] + b.hv[i] * dt, -17, 17);
+
+      // pen with mass draws the check
+      const p = b.pen;
+      if (p.on) {
+        const tg = PW[Math.min(p.wp, PW.length - 1)];
+        const dx = tg[0] - p.x, dy = tg[1] - p.y;
+        p.vx += (860 * dx - 40 * p.vx) * dt; p.vy += (860 * dy - 40 * p.vy) * dt;
+        p.x += p.vx * dt; p.y += p.vy * dt;
+        if (p.wp < PW.length - 1 && Math.hypot(dx, dy) < 5.5) p.wp++;
+      }
+      if (b.state === 'idle' && b.chk.x < 0.03 && b.pen.on) { b.pen.on = false; b.trail = []; }
+    };
+
+    // ---------- render ----------
+    const renderBtn = (b) => {
+      const E = b.el;
+      if (!E.root) return;
+      E.root.setAttribute('transform', 'translate(' + f(OX + b.bx.x) + ' ' + f(OY + b.by.x) + ') translate(150 36) scale(' + f(b.sx.x) + ' ' + f(b.sy.x) + ') translate(-150 -36)');
+      const r = f(clamp(b.rad.x, 2, H / 2));
+      E.body.setAttribute('rx', r); E.clipr.setAttribute('rx', r);
+
+      // liquid
+      const base = H * (1 - b.level.x);
+      let d = 'M-3 ' + (H + 4) + 'L-3 ' + f(base - b.h[0]);
+      for (let i = 0; i < N; i++) d += 'L' + f(i * DX) + ' ' + f(base - b.h[i]);
+      d += 'L' + (W + 3) + ' ' + f(base - b.h[N - 1]) + 'L' + (W + 3) + ' ' + (H + 4) + 'Z';
+      // scan bar: a flexible liquid band, drawn as part of the liquid
+      const w0 = 3.6 * b.barA.x;
+      if (w0 > 0.2) {
+        let L = '', Rr = '';
+        const pts = [];
+        for (let j = 0; j < M; j++) {
+          const y = -2 + j * (H + 4) / (M - 1);
+          const x = b.bar.x + b.bu[j];
+          const w = w0 * (1 + 0.55 * Math.sin(Math.PI * j / (M - 1)));
+          pts.push([x - w, x + w, y]);
+        }
+        Rr = 'M' + f(pts[0][0]) + ' ' + f(pts[0][2]) + 'L' + f(pts[0][1]) + ' ' + f(pts[0][2]);
+        for (let j = 1; j < M; j++) Rr += 'L' + f(pts[j][1]) + ' ' + f(pts[j][2]);
+        for (let j = M - 1; j >= 0; j--) Rr += 'L' + f(pts[j][0]) + ' ' + f(pts[j][2]);
+        d += Rr + 'Z';
+      }
+      E.liq.setAttribute('d', d); E.lqcp.setAttribute('d', d);
+
+      // liquid in the air: falling drops, splashes, necks
+      let air = '';
+      for (let n = 0; n < b.drops.length; n++) {
+        const dr = b.drops[n];
+        const ry = dr.r * (1 + clamp(dr.vy / 1500, 0, 0.55));
+        air += el(dr.x, dr.y, dr.r * dr.r / ry, ry);
+      }
+      for (let n = 0; n < b.sp.length; n++) { const s = b.sp[n]; air += el(s.x, s.y, s.r, s.r); }
+      const nr = 12 * clamp(b.nz.x, 0, 1.3);
+      let nzDrawn = false;
+      for (let n = 0; n < b.ex.length; n++) {
+        const dr = b.ex[n];
+        const e = clamp(dr.e.x, -0.35, 0.35);
+        const ry = dr.r * (1 + e), rx = dr.r * dr.r / ry;
+        air += el(dr.x, dr.y, rx, ry);
+        if (dr.st === 'form') {
+          air += metaball(nr, dr.r, [b.nzx, -1], [dr.x, dr.y], 2.4, 0.5);
+        }
+      }
+      if (nr > 0.6) air += el(b.nzx, -1, nr, nr);
+      E.air.setAttribute('d', air || 'M0 0');
+
+      // content layer
+      for (let j = 0; j < 3; j++) {
+        const L = b.lab[j].x;
+        const g = E['l' + j];
+        g.setAttribute('transform', 'translate(0 ' + f(L * 46) + ')');
+        g.setAttribute('opacity', f(clamp(1 - Math.abs(L) * 1.3, 0, 1)));
+      }
+      if (b.kind !== 'continue') {
+        const cs = CS * b.cs.x;
+        let m = '';
+        for (let j = 0; j < 4; j++) {
+          const cx = IX + HOME[j][0] + CS / 2 + b.cx[j].x, cy = IY + HOME[j][1] + CS / 2 + b.cy[j].x;
+          m += rr(cx - cs / 2, cy - cs / 2, cs, cs, CR * b.cs.x);
+        }
+        const rs = Math.max(0, b.ring.x);
+        if (rs > 0.03) {
+          const c = IX + IC / 2, c2 = IY + IC / 2, o = RO * rs / 2, i = RI * rs / 2;
+          m += rr(c - o, c2 - o, o * 2, o * 2, ROR * rs);
+          m += 'M' + f(c - i) + ' ' + f(c2 - i) + 'h' + f(i * 2) + 'v' + f(i * 2) + 'h' + f(-i * 2) + 'Z';
+        }
+        E.mark.setAttribute('d', m);
+        // check trail
+        if (b.pen.on) {
+          const tr = b.trail, last = tr[tr.length - 1];
+          if (Math.hypot(b.pen.x - last[0], b.pen.y - last[1]) > 0.45) tr.push([b.pen.x, b.pen.y]);
+          let c = 'M' + f(IX + tr[0][0]) + ' ' + f(IY + tr[0][1]);
+          for (let n = 1; n < tr.length; n++) c += 'L' + f(IX + tr[n][0]) + ' ' + f(IY + tr[n][1]);
+          c += 'L' + f(IX + b.pen.x) + ' ' + f(IY + b.pen.y);
+          E.chk.setAttribute('d', c);
+          const s = Math.max(0, b.chk.x), cc = IX + IC / 2, c3 = IY + IC / 2;
+          E.chk.setAttribute('transform', 'translate(' + f(cc) + ' ' + f(c3) + ') scale(' + f(s) + ') translate(' + f(-cc) + ' ' + f(-c3) + ')');
+        } else E.chk.setAttribute('d', 'M0 0');
+      } else {
+        const y = H / 2, x0 = W - 94 + clamp(b.arw2.x, -30, 140), tip = W - 46 + b.arw.x;
+        const hd = 10;
+        E.arw.setAttribute('d', 'M' + f(x0) + ' ' + f(y) + 'H' + f(tip) + 'M' + f(tip - hd) + ' ' + f(y - hd) + 'L' + f(tip) + ' ' + f(y) + 'L' + f(tip - hd) + ' ' + f(y + hd));
+      }
+      // live percent
+      const bt = busyText(b);
+      if (bt !== null && bt !== b.lastBusyText) { b.lastBusyText = bt; if (E.t1 && E.t1.firstChild) { E.t1.firstChild.data = bt; fit(b, 't1'); } }
+    };
+
+    // ---------- loader: melt / swirl / re-solidify ----------
+    const LDe = { ring: $('ld-ring'), parts: $('ld-parts'), blur: $('ld-blur'), svg: $('ld-svg') };
+    const LA = 47.2 * 47.2;
+    const LC = 100, LS = 47.2;
+    const LH = [[LS / 2, LS / 2], [200 - LS / 2, LS / 2], [LS / 2, 200 - LS / 2], [200 - LS / 2, 200 - LS / 2]];
+    const LD = {
+      m: spr(0, 16, 0.92), ring: spr(1, 240), tim: 0, ph: 0,
+      p: LH.map((h) => ({ x: h[0], y: h[1], vx: 0, vy: 0 }))
+    };
+    const stepLoader = (dt) => {
+      LD.tim += dt;
+      const solid = 1.05, liquid = 2.3;
+      if (LD.tim > solid + liquid) { LD.tim -= solid + liquid; }
+      const want = LD.tim < solid ? 0 : 1;
+      if (want !== LD.ph) { LD.ph = want; LD.ring.v += want ? -3.2 : 4.2; }
+      LD.m.t = want;
+      stepS(LD.m, dt); stepS(LD.ring, dt);
+      const mm = clamp(LD.m.x, 0, 1);
+      const kh = (1 - mm) * 640, kc = mm * 40, sw = mm * mm * 1000;
+      const cdr = (1 - mm) * 2 * ZETA * Math.sqrt(640 * KM) + mm * 5;
+      for (let j = 0; j < 4; j++) {
+        const p = LD.p[j];
+        const rx = p.x - LC, ry = p.y - LC;
+        const dist = Math.max(0.001, Math.hypot(rx, ry));
+        const ax = kh * KM * (LH[j][0] - p.x) + kc * (LC - p.x) - (ry / dist) * sw - cdr * p.vx;
+        const ay = kh * KM * (LH[j][1] - p.y) + kc * (LC - p.y) + (rx / dist) * sw - cdr * p.vy;
+        p.vx += ax * dt; p.vy += ay * dt; p.x += p.vx * dt; p.y += p.vy * dt;
+      }
+    };
+    const renderLoader = () => {
+      if (!LDe.parts) return;
+      const mm = clamp(LD.m.x, 0, 1);
+      const rmax = Math.sqrt(LA / Math.PI);
+      const r = CR * (LS / CS) + (rmax - CR * (LS / CS)) * mm; // corner radius, rest is the logo's 0.147
+      const a = Math.sqrt(LA + (4 - Math.PI) * r * r);          // side that keeps the area constant
+      let d = '';
+      for (let j = 0; j < 4; j++) d += rr(LD.p[j].x - a / 2, LD.p[j].y - a / 2, a, a, r);
+      LDe.parts.setAttribute('d', d);
+      LDe.blur.setAttribute('stdDeviation', f(0.01 + 6.2 * mm * mm));
+      const s = Math.max(0, LD.ring.x);
+      const o = 200 * 0.528 / 2 * s, i = 200 * 0.346 / 2 * s;
+      LDe.ring.setAttribute('d', rr(LC - o, LC - o, o * 2, o * 2, 200 * 0.0555 * s) + 'M' + f(LC - i) + ' ' + f(LC - i) + 'h' + f(i * 2) + 'v' + f(i * 2) + 'h' + f(-i * 2) + 'Z');
+    };
+
+    // ---------- input ----------
+    const cleanups = [];
+    const on = (t, ev, fn, o) => { if (!t) return; t.addEventListener(ev, fn, o); cleanups.push(() => t.removeEventListener(ev, fn, o)); };
+    btns.forEach((b) => {
+      const hit = b.el.hit;
+      const loc = (e) => {
+        const r = hit.getBoundingClientRect();
+        b.px = (e.clientX - r.left) / Math.max(1, r.width) * W;
+        b.py = (e.clientY - r.top) / Math.max(1, r.height) * H;
+      };
+      on(hit, 'pointerenter', (e) => { loc(e); b.hover = true; poke(b, b.px, 70, 3); });
+      on(hit, 'pointermove', (e) => { loc(e); });
+      on(hit, 'pointerleave', () => { b.hover = false; b.press = false; });
+      on(hit, 'pointerdown', (e) => { loc(e); b.press = true; });
+      on(hit, 'pointerup', () => { b.press = false; });
+      on(hit, 'pointercancel', () => { b.press = false; });
+      on(hit, 'click', () => { trigger(b); });
+    });
+    on(LDe.svg, 'pointerdown', (e) => {
+      const r = LDe.svg.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width * 220 - 10, y = (e.clientY - r.top) / r.height * 220 - 10;
+      LD.p.forEach((p) => {
+        const dx = p.x - x, dy = p.y - y, dist = Math.max(14, Math.hypot(dx, dy));
+        p.vx += dx / dist * 260 + rnd(-60, 60); p.vy += dy / dist * 260 + rnd(-60, 60);
+      });
+      LD.ring.v -= 2.4;
+    });
+    const seg = [$('lm-slow-0'), $('lm-slow-1')];
+    let slow = 1;
+    const setSlow = (s) => { slow = s; seg[0].setAttribute('aria-pressed', s === 1 ? 'true' : 'false'); seg[1].setAttribute('aria-pressed', s === 1 ? 'false' : 'true'); };
+    on(seg[0], 'click', () => setSlow(1));
+    on(seg[1], 'click', () => setSlow(0.25));
+
+    // ---------- loop ----------
+    const DT = 1 / 240;
+    let last = performance.now(), acc = 0, raf = 0, alive = true;
+    const frame = (now) => {
+      if (!alive) return;
+      raf = requestAnimationFrame(frame);
+      let dt = (now - last) / 1000; last = now;
+      if (dt > 0.05) dt = 0.05;
+      const pr = self.props || {};
+      ZETA = reduce ? 1 : (pr.damping !== undefined ? pr.damping : 0.618);
+      KM = pr.stiffness !== undefined ? pr.stiffness : 1;
+      G = pr.gravity !== undefined ? pr.gravity : 900;
+      acc += dt * slow;
+      let n = 0;
+      while (acc >= DT && n < 60) {
+        for (let k = 0; k < btns.length; k++) stepBtn(btns[k], DT);
+        stepLoader(DT);
+        acc -= DT; n++;
+      }
+      if (n === 60) acc = 0;
+      for (let k = 0; k < btns.length; k++) renderBtn(btns[k]);
+      renderLoader();
+    };
+    // initial layout
+    btns.forEach((b) => { b.lab[1].x = 1; b.lab[2].x = 1; if (b.kind === 'continue') { ['t0', 't1', 't2'].forEach((k) => b.el[k] && b.el[k].setAttribute('x', '28')); } });
+    btns.forEach(renderBtn); renderLoader();
+    const fitAll = () => btns.forEach((b) => { fit(b, 't0'); fit(b, 't1'); fit(b, 't2'); });
+    fitAll();
+    if (D.fonts && D.fonts.ready) D.fonts.ready.then(fitAll);
+    raf = requestAnimationFrame(frame);
+    window.__lm = { btns: btns, LD: LD, trigger: trigger, setSlow: setSlow };
+    this._stop = () => { alive = false; cancelAnimationFrame(raf); cleanups.forEach((c) => c()); };
+  }
+
+  componentWillUnmount() { if (this._stop) this._stop(); }
+}
+</script>
+</body>
+</html>

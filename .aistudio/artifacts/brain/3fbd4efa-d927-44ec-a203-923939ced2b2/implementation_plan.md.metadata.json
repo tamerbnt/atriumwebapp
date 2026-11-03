@@ -1,0 +1,6 @@
+{
+  "summary": "Completed resolution of hitbox misalignment and export button sizing. Fixed the global CSS position:relative override by adding data-no-liquid and inline absolute overlay styling, normalized LiquidExportButton viewBox to 0 0 300 72 with standard 40px (h-10) action density, and applied adaptive font sizing for long action strings. Certified by 89 passing unit, integration, and performance benchmark tests.",
+  "updatedAt": "2026-11-03T19:58:26.337337129Z",
+  "requestFeedback": true,
+  "userFacing": true
+}

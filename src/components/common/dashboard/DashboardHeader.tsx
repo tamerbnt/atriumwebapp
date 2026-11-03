@@ -4,6 +4,7 @@ import { useAtriumStore } from '../../../services/store';
 import { useTranslation } from '../../../utils/useTranslation';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
+import { LiquidExportButton } from '../../ui/liquid/LiquidExportButton';
 
 export interface DashboardHeaderProps {
   title?: string;
@@ -240,16 +241,12 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
           </span>
         </AtriumButton>
 
-        {/* Export Report Action */}
-        <button
-          type="button"
-          onClick={handleExport}
-          className="h-10 px-4 rounded-xl bg-[#C4785A] hover:bg-[#B26A4E] text-white text-xs font-bold flex items-center gap-2 transition-all shadow-sm cursor-pointer active:scale-95"
-        >
-          <Download size={14} />
-          <span>{language === 'ar' ? 'تصدير' : language === 'fr' ? 'Exporter' : 'Export'}</span>
-          <ChevronDown size={12} className="opacity-80" />
-        </button>
+        {/* Liquid Export Report Action */}
+        <LiquidExportButton
+          size="sm"
+          onExport={handleExport}
+          id="dash-header-export-btn"
+        />
 
         {extraActions}
       </div>

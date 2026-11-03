@@ -64,6 +64,7 @@ import {
 import { AtriumMonolith, FiveCubesLogo } from './AtriumMonolith';
 import { LabelInput } from '../ui/LabelInput';
 import { OnboardingBackdrop } from './OnboardingBackdrop';
+import { LiquidContinueButton } from '../ui/liquid/LiquidContinueButton';
 
 interface PowerOnboardingScreenProps {
   onComplete: () => void;
@@ -842,64 +843,59 @@ export const PowerOnboardingScreen: React.FC<PowerOnboardingScreenProps> = ({
 
         {/* Step 0: Continue button */}
         {currentStep === 0 && (
-          <button
-            type="button"
-            onClick={() => setCurrentStep(1)}
-            className="flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-[#C4552A] to-[#E64A19] hover:from-[#d84315] hover:to-[#f4511e] shadow-[0_4px_20px_rgba(230,74,25,0.45)] transition-all cursor-pointer active:scale-95 ml-auto"
-          >
-            <span>{isAr ? 'متابعة' : isFr ? 'Continuer' : 'Continue'}</span>
-            <ChevronRight className="w-4 h-4" />
-          </button>
+          <div className="ml-auto">
+            <LiquidContinueButton
+              size="md"
+              onClick={() => setCurrentStep(1)}
+              id="onb-step-0-continue"
+            />
+          </div>
         )}
 
         {/* Step 2: Continue button */}
         {currentStep === 2 && (
-          <button
-            type="button"
-            onClick={() => setCurrentStep(3)}
-            className="flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-[#C4552A] to-[#E64A19] hover:from-[#d84315] hover:to-[#f4511e] shadow-[0_4px_20px_rgba(230,74,25,0.45)] transition-all cursor-pointer active:scale-95 ml-auto"
-          >
-            <span>{isAr ? 'متابعة' : isFr ? 'Continuer' : 'Continue'}</span>
-            <ChevronRight className="w-4 h-4" />
-          </button>
+          <div className="ml-auto">
+            <LiquidContinueButton
+              size="md"
+              onClick={() => setCurrentStep(3)}
+              id="onb-step-2-continue"
+            />
+          </div>
         )}
 
         {/* Step 6: Continue button */}
         {currentStep === 6 && (
-          <button
-            type="button"
-            onClick={() => setCurrentStep(7)}
-            className="flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-[#C4552A] to-[#E64A19] hover:from-[#d84315] hover:to-[#f4511e] shadow-[0_4px_20px_rgba(230,74,25,0.45)] transition-all cursor-pointer active:scale-95 ml-auto"
-          >
-            <span>{isAr ? 'متابعة' : isFr ? 'Continuer' : 'Continue'}</span>
-            <ChevronRight className="w-4 h-4" />
-          </button>
+          <div className="ml-auto">
+            <LiquidContinueButton
+              size="md"
+              onClick={() => setCurrentStep(7)}
+              id="onb-step-6-continue"
+            />
+          </div>
         )}
 
         {/* Step 8: Workspace Identity Configured -> Advance to Dedicated Step 9 (Subscription Plans) */}
         {currentStep === 8 && (
-          <button
-            type="button"
-            onClick={() => setCurrentStep(9)}
-            className="flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-[#C4552A] to-[#E64A19] hover:from-[#d84315] hover:to-[#f4511e] shadow-[0_4px_20px_rgba(230,74,25,0.45)] transition-all cursor-pointer active:scale-95 ml-auto"
-          >
-            <span>{isAr ? 'متابعة لاختيار الخطة' : isFr ? 'Continuer vers les forfaits' : 'Continue to Plans'}</span>
-            <ChevronRight className="w-4 h-4" />
-          </button>
+          <div className="ml-auto">
+            <LiquidContinueButton
+              size="md"
+              onClick={() => setCurrentStep(9)}
+              label={isAr ? 'متابعة لاختيار الخطة' : isFr ? 'CONTINUER (FORFAITS)' : 'CONTINUE TO PLANS'}
+              id="onb-step-8-continue"
+            />
+          </div>
         )}
 
         {/* Step 9: Final Launch Workspace Button */}
         {currentStep === 9 && (
-          <button
-            type="button"
-            onClick={handleLaunchWorkspace}
-            className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-[#C4552A] to-[#E64A19] hover:from-[#d84315] hover:to-[#f4511e] shadow-[0_6px_24px_rgba(230,74,25,0.5)] transition-all cursor-pointer active:scale-95 ml-auto"
-          >
-            <Rocket className="w-4 h-4" />
-            <span>
-              {isAr ? 'إطلاق مساحة العمل الآن' : isFr ? 'Lancer mon espace Atrium' : 'Launch My Workspace'}
-            </span>
-          </button>
+          <div className="ml-auto">
+            <LiquidContinueButton
+              size="md"
+              onClick={handleLaunchWorkspace}
+              label={isAr ? 'إطلاق مساحة العمل' : isFr ? 'LANCER MON ESPACE' : 'LAUNCH WORKSPACE'}
+              id="onb-step-9-launch"
+            />
+          </div>
         )}
     </div>
   );

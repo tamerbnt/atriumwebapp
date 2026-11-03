@@ -70,6 +70,7 @@ export const AppointmentClientsView: React.FC<AppointmentClientsViewProps> = ({
     retryCloudSync,
     lastSyncedAt,
     isSyncTimeout,
+    language,
   } = useAtriumStore();
 
   const [isFacilityDropdownOpen, setIsFacilityDropdownOpen] = useState(false);

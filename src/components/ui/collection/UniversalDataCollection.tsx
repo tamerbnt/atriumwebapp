@@ -19,6 +19,7 @@ import { SkeletonText, SkeletonBox } from '../skeleton/SkeletonPrimitives';
 import { OfflineRetryBanner } from '../../common/OfflineRetryBanner';
 import { useAtriumStore } from '../../../services/store';
 import { LiveSegmentedControl, LiveButton } from '../live';
+import { LiquidExportButton } from '../liquid/LiquidExportButton';
 
 export interface ColumnDefinition<T> {
   key?: string;
@@ -90,7 +91,7 @@ export interface UniversalDataCollectionProps<T> {
   searchPlaceholder?: string;
   filterValue?: string;
   onFilterChange?: (val: string) => void;
-  filterOptions?: { value: string; label: string }[];
+  filterOptions?: { value: string; label: string; count?: number | string }[];
   viewMode?: 'list' | 'grid' | 'calendar';
   onViewModeChange?:
     | ((mode: 'list' | 'grid' | 'calendar') => void)
@@ -476,6 +477,7 @@ export function UniversalDataCollection<T>({
                 options={filterOptions.map((opt) => ({
                   value: opt.value,
                   label: opt.label,
+                  count: opt.count,
                 }))}
                 value={filterValue || filterOptions[0].value}
                 onValueChange={onFilterChange}
@@ -745,15 +747,12 @@ export function UniversalDataCollection<T>({
               <span>{bulkSecondaryAction.label}</span>
             </button>
           ) : (
-            <button
-              type="button"
-              onClick={handleDefaultSecondaryAction}
-              className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-neutral-800 hover:bg-neutral-700 text-neutral-100 flex items-center gap-1.5 transition-colors cursor-pointer border border-neutral-700 shadow-2xs"
-              title="Exporter la sélection en CSV"
-            >
-              <Download size={13} />
-              <span>Exporter sélection</span>
-            </button>
+            <LiquidExportButton
+              size="sm"
+              onExport={handleDefaultSecondaryAction}
+              idleLabel={store.language === 'ar' ? 'تصدير المحدد' : store.language === 'fr' ? 'EXPORTER SÉLECTION' : 'EXPORT SELECTED'}
+              id="bulk-toolbar-export-btn"
+            />
           )}
 
           {/* Custom extra bulk actions if provided */}

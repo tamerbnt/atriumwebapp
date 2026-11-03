@@ -41,6 +41,7 @@ import { useTranslation } from '../../../utils/useTranslation';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
+import { LiquidExportButton } from '../../ui/liquid/LiquidExportButton';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
 import { OfflineRetryBanner } from '../../common/OfflineRetryBanner';
 import { SkeletonDashboardProject } from '../../ui/skeleton/StructuralSkeletons';
@@ -122,6 +123,9 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
       : activePmSubScreen === 'projects' || initialTab === 'projects'
       ? 'projects'
       : 'dashboard';
+
+  // Dashboard Analytical Period
+  const [directionPeriod, setDirectionPeriod] = useState<string>('today');
 
   // Projects Collection State
   const [projectSearch, setProjectSearch] = useState('');
@@ -506,7 +510,25 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
           </h1>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2.5 flex-wrap">
+          {/* Kinetic 34px Dashboard Live Filter Switcher */}
+          {currentScreen === 'dashboard' && (
+            <div className="order-first sm:order-none">
+              <LiveSegmentedControl
+                size="md"
+                value={directionPeriod}
+                onValueChange={setDirectionPeriod}
+                options={[
+                  { value: 'today', label: language === 'ar' ? 'اليوم' : language === 'fr' ? "Aujourd'hui" : 'Today' },
+                  { value: '7d', label: language === 'ar' ? '٧ أيام' : language === 'fr' ? '7J' : '7D' },
+                  { value: '30d', label: language === 'ar' ? '٣٠ يوماً' : language === 'fr' ? '30J' : '30D' },
+                  { value: 'year', label: language === 'ar' ? 'السنة' : language === 'fr' ? 'Année' : 'Year' },
+                ]}
+                aria-label="Direction Period Filter"
+              />
+            </div>
+          )}
+
           {/* Facility Switcher Dropdown Pill */}
           <div className="relative">
             <button
@@ -558,14 +580,13 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
             <span>Demo Data</span>
           </button>
 
-          {/* CSV Export */}
-          <button
-            onClick={currentScreen === 'projects' ? handleExportProjectsCsv : handleExportAuditCsv}
-            className="px-3 py-1.5 text-xs font-semibold text-zinc-700 dark:text-zinc-300 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 rounded-xl flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer"
-          >
-            <Download className="w-3.5 h-3.5" />
-            <span>{t('common_export')} CSV</span>
-          </button>
+          {/* Liquid CSV Export */}
+          <LiquidExportButton
+            size="sm"
+            onExport={currentScreen === 'projects' ? handleExportProjectsCsv : handleExportAuditCsv}
+            idleLabel={language === 'ar' ? 'تصدير CSV' : language === 'fr' ? 'EXPORTER CSV' : 'EXPORT CSV'}
+            id="pm-dir-export-btn"
+          />
         </div>
       </div>
 
@@ -1517,14 +1538,12 @@ export const ProjectDirectionView: React.FC<ProjectDirectionViewProps> = ({ init
                 </h2>
               </div>
 
-              <button
-                type="button"
-                onClick={handleExportAuditCsv}
-                className="px-4 py-2 text-xs font-bold text-white bg-[#DC2626] hover:bg-red-700 rounded-xl transition-all shadow-xs flex items-center gap-2 cursor-pointer self-start"
-              >
-                <Download className="w-4 h-4" />
-                Télécharger l'Audit Fiscal & Marge (CSV)
-              </button>
+              <LiquidExportButton
+                size="md"
+                onExport={handleExportAuditCsv}
+                idleLabel={language === 'ar' ? 'تحميل التدقيق المالي' : language === 'fr' ? 'TÉLÉCHARGER AUDIT (CSV)' : 'DOWNLOAD AUDIT (CSV)'}
+                id="pm-dir-audit-export-btn"
+              />
             </div>
 
             {/* 4 Performance Indicators */}
