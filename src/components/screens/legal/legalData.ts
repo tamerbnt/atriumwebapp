@@ -579,31 +579,9 @@ export const useLegalData = () => {
   const [dailyClosure, setDailyClosure] = useState<DailyCashClosure>(() => {
     try {
       const s = localStorage.getItem('atrium_legal_daily_closure');
-      return s ? JSON.parse(s) : {
-        date: new Date().toISOString().split('T')[0],
-        totalCashReceivedDzd: 0,
-        totalTimbreAccruedDzd: 0,
-        actualPhysicalCashCountedDzd: 0,
-        theoreticalCashDzd: 0,
-        isReconciled: true,
-        closedByStaffName: 'Secrétaire',
-        signedOffByOwner: false,
-        cashDrawerLimitDzd: 200000,
-        notes: '',
-      };
+      return s ? JSON.parse(s) : INITIAL_DAILY_CLOSURE;
     } catch {
-      return {
-        date: new Date().toISOString().split('T')[0],
-        totalCashReceivedDzd: 0,
-        totalTimbreAccruedDzd: 0,
-        actualPhysicalCashCountedDzd: 0,
-        theoreticalCashDzd: 0,
-        isReconciled: true,
-        closedByStaffName: 'Secrétaire',
-        signedOffByOwner: false,
-        cashDrawerLimitDzd: 200000,
-        notes: '',
-      };
+      return INITIAL_DAILY_CLOSURE;
     }
   });
 
@@ -665,18 +643,7 @@ export const useLegalData = () => {
     setEscrowAccounts([]);
     setScfEntries([]);
     setCashReceipts([]);
-    setDailyClosure({
-      date: new Date().toISOString().split('T')[0],
-      totalCashReceivedDzd: 0,
-      totalTimbreAccruedDzd: 0,
-      actualPhysicalCashCountedDzd: 0,
-      theoreticalCashDzd: 0,
-      isReconciled: true,
-      closedByStaffName: 'Secrétaire',
-      signedOffByOwner: false,
-      cashDrawerLimitDzd: 200000,
-      notes: '',
-    });
+    setDailyClosure(INITIAL_DAILY_CLOSURE);
   };
 
   return {

@@ -2175,6 +2175,9 @@ export interface DailyCashClosure {
   notes?: string;
   isClosed?: boolean;
   verifiedAt?: string;
+  isReconciled?: boolean;
+  signedOffByOwner?: boolean;
+  cashDrawerLimitDzd?: number;
 }
 
 // ==========================================
