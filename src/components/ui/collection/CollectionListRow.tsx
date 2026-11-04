@@ -265,10 +265,10 @@ export const CollectionListRow: React.FC<CollectionListRowProps> = ({
               e.stopPropagation();
               setIsKebabOpen((prev) => !prev);
             }}
-            className="w-7 h-7 rounded-md flex items-center justify-center text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-100 hover:bg-neutral-200/60 dark:hover:bg-neutral-700/60 transition-colors cursor-pointer"
+            className="w-8 h-8 rounded-[6px] flex items-center justify-center text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-100 hover:bg-neutral-200/60 dark:hover:bg-neutral-700/60 transition-colors cursor-pointer"
             title="Options"
           >
-            <MoreVertical className="w-3.5 h-3.5" />
+            <MoreVertical className="w-4 h-4" />
           </button>
 
           {/* Floating Context Menu */}
@@ -281,10 +281,10 @@ export const CollectionListRow: React.FC<CollectionListRowProps> = ({
       </div>
 
       {/* ================= ACTION ROW STRIP (EXPANDS ON HOVER) ================= */}
-      {/* Real layout height expansion (0 -> 46px) pushing rows below down */}
+      {/* Real layout height expansion (0 -> 52px) pushing rows below down */}
       <div
         style={{
-          height: isHovered ? '46px' : '0px',
+          height: isHovered ? '52px' : '0px',
           opacity: isHovered ? 1 : 0,
           marginTop: isHovered ? '6px' : '0px',
           marginBottom: isHovered ? '4px' : '0px',
@@ -297,7 +297,7 @@ export const CollectionListRow: React.FC<CollectionListRowProps> = ({
         }}
         className="w-full overflow-hidden flex items-center justify-center pointer-events-auto"
       >
-        <div className="flex items-center justify-center gap-4 py-1">
+        <div className="flex items-center justify-center gap-3.5 py-1">
           {defaultActions.map((action, idx) => {
             // Stagger calculation: Left-to-right (40ms) on enter, Right-to-left (30ms) on exit
             const enterDelay = idx * 40;
@@ -319,10 +319,10 @@ export const CollectionListRow: React.FC<CollectionListRowProps> = ({
                     : 'cubic-bezier(0.4, 0, 1, 1)',
                   transitionDelay: `${isHovered ? enterDelay : exitDelay}ms`,
                 }}
-                className={`w-9 h-9 rounded-full bg-white dark:bg-[#1E1E22] border border-neutral-200/90 dark:border-neutral-700/80 shadow-md flex items-center justify-center transition-all hover:scale-110 active:scale-95 cursor-pointer ${
+                className={`w-10 h-10 rounded-[6px] bg-white dark:bg-[#1E1E22] border border-neutral-200/90 dark:border-neutral-700/80 shadow-md flex items-center justify-center transition-all hover:scale-105 active:scale-95 cursor-pointer ${
                   action.isSpecialDelete
                     ? 'hover:bg-red-50 dark:hover:bg-red-950/40 hover:border-red-300'
-                    : 'hover:bg-neutral-50 dark:hover:bg-neutral-700/60 hover:border-neutral-300'
+                    : 'hover:bg-[#FDF4F0] dark:hover:bg-neutral-700/60 hover:border-[#C4785A]/50'
                 }`}
               >
                 {action.icon}

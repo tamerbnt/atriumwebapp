@@ -185,7 +185,7 @@ export const CollectionGridCard: React.FC<CollectionGridCardProps> = ({
                     : 'cubic-bezier(0.4, 0, 1, 1)',
                   transitionDelay: `${delay}ms`,
                 }}
-                className={`absolute -top-4 -right-4 w-[34px] h-[34px] rounded-full bg-white dark:bg-[#1E1E22] border border-neutral-200 dark:border-neutral-700 shadow-md flex items-center justify-center transition-transform hover:scale-115 active:scale-95 cursor-pointer z-50 ${
+                className={`absolute -top-4 -right-4 w-9 h-9 rounded-[6px] bg-white dark:bg-[#1E1E22] border border-neutral-200 dark:border-neutral-700 shadow-md flex items-center justify-center transition-transform hover:scale-115 active:scale-95 cursor-pointer z-50 ${
                   btn.isSpecialDelete
                     ? 'hover:bg-red-50 dark:hover:bg-red-950/40 hover:border-red-300'
                     : 'hover:bg-neutral-50 dark:hover:bg-neutral-700/60'

@@ -61,7 +61,9 @@ export const Seek: React.FC<SeekProps> = ({
   // Click outside to collapse if empty
   useEffect(() => {
     const handleOutsideClick = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+      const target = e.target as Node | null;
+      if (!target || !document.contains(target)) return;
+      if (containerRef.current && !containerRef.current.contains(target)) {
         if (!value || value.trim().length === 0) {
           setIsOpen(false);
         }
@@ -78,6 +80,18 @@ export const Seek: React.FC<SeekProps> = ({
       setTimeout(() => {
         inputRef.current?.focus();
       }, 50);
+    }
+  };
+
+  const handleToggle = () => {
+    if (isOpen) {
+      if (!value || value.trim().length === 0) {
+        setIsOpen(false);
+      } else {
+        inputRef.current?.focus();
+      }
+    } else {
+      handleOpen();
     }
   };
 
@@ -132,14 +146,22 @@ export const Seek: React.FC<SeekProps> = ({
       }
     >
       <div
-        className="sek-skin"
+        className={`sek-skin ${!isOpen ? 'cursor-pointer' : ''}`}
+        onClick={(e) => {
+          if ((e.target as HTMLElement).closest('.sek-clear')) return;
+          if (!isOpen) {
+            handleOpen();
+          } else {
+            inputRef.current?.focus();
+          }
+        }}
         onMouseDown={() => setIsPress(true)}
         onMouseUp={() => setIsPress(false)}
         style={
           {
             "--w": `${currentWidth}px`,
             "--shut": `${shutSize}px`,
-            "--sek-r": `${shutSize / 2}px`,
+            "--sek-r": `${Math.max(5, Math.round(shutSize * 0.147))}px`,
             "--lens": `${lensSize}px`,
             "--inset": `${inset}px`,
             "--say": say,
@@ -147,15 +169,41 @@ export const Seek: React.FC<SeekProps> = ({
           } as React.CSSProperties
         }
       >
-        {/* The 18x18 SVG Search Lens that stays in place */}
-        <svg
-          className="sek-lens"
-          viewBox="0 0 18 18"
-          aria-hidden="true"
+        {/* Clickable search icon lens button */}
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            handleToggle();
+          }}
+          className="sek-lens-btn absolute flex items-center justify-center cursor-pointer z-10"
+          style={{
+            left: `${inset}px`,
+            top: '50%',
+            transform: 'translateY(-50%)',
+            width: `${lensSize + 4}px`,
+            height: `${lensSize + 4}px`,
+            background: 'none',
+            border: 0,
+            padding: 0,
+          }}
+          aria-label={isOpen ? "Focus search field" : "Open search field"}
+          title={isOpen ? "Search" : "Open search"}
         >
-          <circle cx="7.5" cy="7.5" r="5" />
-          <line x1="11.5" y1="11.5" x2="16" y2="16" />
-        </svg>
+          <svg
+            className="sek-lens"
+            viewBox="0 0 18 18"
+            aria-hidden="true"
+            style={{
+              width: `${lensSize}px`,
+              height: `${lensSize}px`,
+              pointerEvents: 'none',
+            }}
+          >
+            <circle cx="7.5" cy="7.5" r="5" />
+            <line x1="11.5" y1="11.5" x2="16" y2="16" />
+          </svg>
+        </button>
 
         {/* Input Field: slides out from behind the lens */}
         <input
@@ -170,6 +218,9 @@ export const Seek: React.FC<SeekProps> = ({
           autoComplete="off"
           spellCheck={false}
           tabIndex={isOpen ? 0 : -1}
+          style={{
+            pointerEvents: isOpen ? 'auto' : 'none',
+          }}
         />
 
         {/* Clear Button when open and value present */}
@@ -177,8 +228,9 @@ export const Seek: React.FC<SeekProps> = ({
           <button
             type="button"
             onClick={handleClear}
-            className="absolute right-2.5 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full flex items-center justify-center text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 transition-colors cursor-pointer"
+            className="sek-clear absolute right-2.5 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full flex items-center justify-center text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 transition-colors cursor-pointer z-10"
             title="Clear search"
+            aria-label="Clear search"
           >
             <X size={13} strokeWidth={2.2} />
           </button>
@@ -189,7 +241,10 @@ export const Seek: React.FC<SeekProps> = ({
           <button
             type="button"
             className="sek-hit"
-            onClick={handleOpen}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleOpen();
+            }}
             aria-label="Open search field"
           />
         )}

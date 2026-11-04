@@ -81,7 +81,7 @@ export class ToggleBody implements Body {
     this.track.style.transform = `rotate(${f(this.rot.x)}deg) scale(${f(this.sc.x)})`;
     const left = clamp(this.L.x, 0, 2) * H;
     const right = clamp(2 - this.R.x, 0, 2) * H;
-    this.pool.style.clipPath = `inset(0 ${f(right)}px 0 ${f(left)}px round ${f(H / 2)}px)`;
+    this.pool.style.clipPath = `inset(0 ${f(right)}px 0 ${f(left)}px round ${f(H * 0.18)}px)`;
     // the knob is a drop: it elongates along its direction of travel
     const e = 1 + clamp(Math.abs(this.R.v) * 0.336, 0, 0.5);
     const cx = ((this.L.x + this.R.x) / 2) * H;

@@ -167,7 +167,7 @@ export const MemberModal: React.FC<MemberModalProps> = ({
               type="email"
               width="100%"
               height={40}
-              corner={12}
+              corner={6}
               required
             />
 
@@ -179,7 +179,7 @@ export const MemberModal: React.FC<MemberModalProps> = ({
               type="tel"
               width="100%"
               height={40}
-              corner={12}
+              corner={6}
               required
             />
 
@@ -196,7 +196,7 @@ export const MemberModal: React.FC<MemberModalProps> = ({
                 ]}
                 width="100%"
                 height={40}
-                corner={12}
+                corner={6}
               />
 
               <LabelInput
@@ -207,7 +207,7 @@ export const MemberModal: React.FC<MemberModalProps> = ({
                 onChange={setDateOfBirth}
                 width="100%"
                 height={40}
-                corner={12}
+                corner={6}
               />
             </div>
           </div>
@@ -231,7 +231,7 @@ export const MemberModal: React.FC<MemberModalProps> = ({
               }))}
               width="100%"
               height={40}
-              corner={12}
+              corner={6}
             />
 
             <LabelInput
@@ -242,7 +242,7 @@ export const MemberModal: React.FC<MemberModalProps> = ({
               onChange={setStartDate}
               width="100%"
               height={40}
-              corner={12}
+              corner={6}
             />
 
             <LabelInput
@@ -253,7 +253,7 @@ export const MemberModal: React.FC<MemberModalProps> = ({
               placeholder="RFID-XXXXXX"
               width="100%"
               height={40}
-              corner={12}
+              corner={6}
             />
           </div>
         </div>
@@ -272,7 +272,7 @@ export const MemberModal: React.FC<MemberModalProps> = ({
               placeholder={language === 'ar' ? 'اسم جهة الاتصال' : language === 'fr' ? 'Nom du contact' : 'Contact Name'}
               width="100%"
               height={40}
-              corner={12}
+              corner={6}
             />
 
             <LabelInput
@@ -284,7 +284,7 @@ export const MemberModal: React.FC<MemberModalProps> = ({
               placeholder="+213 555 00 00 00"
               width="100%"
               height={40}
-              corner={12}
+              corner={6}
             />
 
             <LabelSelect
@@ -302,7 +302,7 @@ export const MemberModal: React.FC<MemberModalProps> = ({
               ]}
               width="100%"
               height={40}
-              corner={12}
+              corner={6}
             />
           </div>
 
@@ -330,6 +330,7 @@ export const MemberModal: React.FC<MemberModalProps> = ({
           <Button
             type="button"
             tone="soft"
+            size={40}
             onClick={onClose}
           >
             {t('action_cancel', language)}

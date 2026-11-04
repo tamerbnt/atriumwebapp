@@ -1,0 +1,6 @@
+{
+  "summary": "Implementation plan for the Linear/Stripe-inspired Single-Row Command Toolbar on the Adhérents (Membership) screen, introducing streamlined quick status tabs, an on-demand floating filter popover with active filter capsules, and a right-aligned utility cluster to eliminate multi-row toolbar wrapping.",
+  "updatedAt": "2026-11-04T15:44:23.359036146Z",
+  "requestFeedback": true,
+  "userFacing": true
+}

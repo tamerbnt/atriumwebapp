@@ -13,7 +13,7 @@ export interface FilterCapsulesProps<T extends string = string> {
   options: FilterOption<T>[];
   activeKey: T;
   onChange: (key: T) => void;
-  size?: 'sm' | 'md' | number;
+  size?: 'sm' | 'md' | 'lg' | number;
   className?: string;
   'aria-label'?: string;
 }
@@ -22,7 +22,7 @@ export function FilterCapsules<T extends string = string>({
   options,
   activeKey,
   onChange,
-  size = 'sm',
+  size = 'md',
   className = '',
   'aria-label': ariaLabel = 'Status Filter',
 }: FilterCapsulesProps<T>) {

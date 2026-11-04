@@ -412,11 +412,12 @@ export function UniversalDataCollection<T>({
           <div className="flex items-center gap-2">{headerActions}</div>
           {showViewToggle && (
             <LiveSegmentedControl
+              size="md"
               options={[
-                { value: 'list', icon: <List className="w-3.5 h-3.5" />, 'aria-label': 'List View' },
-                { value: 'grid', icon: <LayoutGrid className="w-3.5 h-3.5" />, 'aria-label': 'Grid View' },
+                { value: 'list', icon: <List className="w-4 h-4" />, 'aria-label': 'List View' },
+                { value: 'grid', icon: <LayoutGrid className="w-4 h-4" />, 'aria-label': 'Grid View' },
                 ...(showCalendarToggle
-                  ? [{ value: 'calendar', icon: <Calendar className="w-3.5 h-3.5" />, 'aria-label': 'Calendar View' }]
+                  ? [{ value: 'calendar', icon: <Calendar className="w-4 h-4" />, 'aria-label': 'Calendar View' }]
                   : []),
               ]}
               value={viewMode}
@@ -450,79 +451,82 @@ export function UniversalDataCollection<T>({
       />
 
       {/* ================= TOP VIEW SWITCHER / HEADER CONTROLS ================= */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3">
-        {title ? (
-          <div>
+      {(Boolean(title) || Boolean(headerActions) || (Boolean(filterOptions) && filterOptions!.length > 0 && Boolean(onFilterChange)) || Boolean(searchFilter) || showViewToggle) && (
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3">
+          {title ? (
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-sm font-bold text-neutral-900 dark:text-white">{title}</h2>
+                <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 font-mono">
+                  {actualItems.length}
+                </span>
+                {effectiveIsLoading && (
+                  <span className="text-[11px] text-[#C4785A] dark:text-[#E09070] font-medium animate-pulse">
+                    Syncing...
+                  </span>
+                )}
+              </div>
+              {subtitle && (
+                <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">{subtitle}</p>
+              )}
+            </div>
+          ) : (
             <div className="flex items-center gap-2">
-              <h2 className="text-sm font-bold text-neutral-900 dark:text-white">{title}</h2>
-              <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 font-mono">
-                {actualItems.length}
-              </span>
+              {headerActions}
+              {!headerActions && filterOptions && filterOptions.length > 0 && onFilterChange && (
+                <LiveSegmentedControl
+                  size="sm"
+                  options={filterOptions.map((opt) => ({
+                    value: opt.value,
+                    label: opt.label,
+                    count: opt.count,
+                  }))}
+                  value={filterValue || filterOptions[0].value}
+                  onValueChange={onFilterChange}
+                />
+              )}
               {effectiveIsLoading && (
-                <span className="text-[11px] text-[#C4785A] dark:text-[#E09070] font-medium animate-pulse">
+                <span className="text-[11px] text-[#C4785A] dark:text-[#E09070] font-medium animate-pulse ml-2">
                   Syncing...
                 </span>
               )}
             </div>
-            {subtitle && (
-              <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">{subtitle}</p>
+          )}
+
+          <div className="flex items-center gap-2.5 ml-auto">
+            {searchFilter && (
+              <div className="w-56">
+                <input
+                  type="text"
+                  placeholder={searchPlaceholder || 'Rechercher...'}
+                  value={effectiveSearchQuery}
+                  onChange={(e) => {
+                    setInternalSearchQuery(e.target.value);
+                    onSearchChange?.(e.target.value);
+                  }}
+                  className="w-full h-8 px-3 rounded-xl text-xs bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#C4785A]"
+                />
+              </div>
             )}
-          </div>
-        ) : (
-          <div className="flex items-center gap-2">
-            {headerActions}
-            {!headerActions && filterOptions && filterOptions.length > 0 && onFilterChange && (
+
+            {showViewToggle && (
               <LiveSegmentedControl
-                size="sm"
-                options={filterOptions.map((opt) => ({
-                  value: opt.value,
-                  label: opt.label,
-                  count: opt.count,
-                }))}
-                value={filterValue || filterOptions[0].value}
-                onValueChange={onFilterChange}
+                size="md"
+                options={[
+                  { value: 'list', icon: <List className="w-4 h-4" />, 'aria-label': 'List View' },
+                  { value: 'grid', icon: <LayoutGrid className="w-4 h-4" />, 'aria-label': 'Grid View' },
+                  ...(showCalendarToggle
+                    ? [{ value: 'calendar', icon: <Calendar className="w-4 h-4" />, 'aria-label': 'Calendar View' }]
+                    : []),
+                ]}
+                value={viewMode}
+                onValueChange={(val) => setViewMode(val as any)}
+                aria-label="View Mode"
               />
-            )}
-            {effectiveIsLoading && (
-              <span className="text-[11px] text-[#C4785A] dark:text-[#E09070] font-medium animate-pulse ml-2">
-                Syncing...
-              </span>
             )}
           </div>
-        )}
-
-        <div className="flex items-center gap-2.5 ml-auto">
-          {searchFilter && (
-            <div className="w-56">
-              <input
-                type="text"
-                placeholder={searchPlaceholder || 'Rechercher...'}
-                value={effectiveSearchQuery}
-                onChange={(e) => {
-                  setInternalSearchQuery(e.target.value);
-                  onSearchChange?.(e.target.value);
-                }}
-                className="w-full h-8 px-3 rounded-xl text-xs bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#C4785A]"
-              />
-            </div>
-          )}
-
-          {showViewToggle && (
-            <LiveSegmentedControl
-              options={[
-                { value: 'list', icon: <List className="w-3.5 h-3.5" />, 'aria-label': 'List View' },
-                { value: 'grid', icon: <LayoutGrid className="w-3.5 h-3.5" />, 'aria-label': 'Grid View' },
-                ...(showCalendarToggle
-                  ? [{ value: 'calendar', icon: <Calendar className="w-3.5 h-3.5" />, 'aria-label': 'Calendar View' }]
-                  : []),
-              ]}
-              value={viewMode}
-              onValueChange={(val) => setViewMode(val as any)}
-              aria-label="View Mode"
-            />
-          )}
         </div>
-      </div>
+      )}
 
       {/* ================= LIST VIEW ================= */}
       {viewMode === 'list' && (

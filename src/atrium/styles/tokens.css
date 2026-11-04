@@ -86,12 +86,15 @@
   color-scheme: dark;
 }
 
+[data-atr-size='xs'] {
+  --atr-h: 30px;
+}
 [data-atr-size='sm'] {
-  --atr-h: 28px;
+  --atr-h: 36px;
 }
 [data-atr-size='md'] {
-  --atr-h: 34px;
+  --atr-h: 40px;
 }
 [data-atr-size='lg'] {
-  --atr-h: 44px;
+  --atr-h: 48px;
 }

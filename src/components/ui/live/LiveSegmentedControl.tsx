@@ -18,26 +18,26 @@ export interface LiveSegmentedControlProps {
   defaultValue?: string;
   onValueChange?: (val: string) => void;
   onChange?: (val: string) => void;
-  size?: LiveButtonSize | 'sm' | 'md' | number;
+  size?: LiveButtonSize | 'sm' | 'md' | 'lg' | number;
   className?: string;
   style?: React.CSSProperties;
   'aria-label'?: string;
 }
 
 const classes = {
-  root: 'd !rounded-full',
-  blob: 's !rounded-full',
-  option: 'e !rounded-full',
+  root: 'd',
+  blob: 's',
+  option: 'e',
   iconOnly: 'z',
 };
 
-function getSizeProps(size?: LiveButtonSize | 'sm' | 'md' | number, style?: React.CSSProperties) {
+function getSizeProps(size?: LiveButtonSize | 'sm' | 'md' | 'lg' | number, style?: React.CSSProperties) {
   if (size === 'sm') {
     return {
       'data-atr-size': 'sm',
       style: {
         ...style,
-        '--atr-h': '30px',
+        '--atr-h': '36px',
       } as React.CSSProperties,
     };
   }
@@ -46,7 +46,16 @@ function getSizeProps(size?: LiveButtonSize | 'sm' | 'md' | number, style?: Reac
       'data-atr-size': 'md',
       style: {
         ...style,
-        '--atr-h': '34px',
+        '--atr-h': '40px',
+      } as React.CSSProperties,
+    };
+  }
+  if (size === 'lg') {
+    return {
+      'data-atr-size': 'lg',
+      style: {
+        ...style,
+        '--atr-h': '48px',
       } as React.CSSProperties,
     };
   }

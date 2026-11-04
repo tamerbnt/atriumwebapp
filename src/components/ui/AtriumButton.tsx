@@ -5,7 +5,7 @@ import type { Size as AtriumSize } from '@/atrium';
 
 export interface AtriumButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'success';
-  size?: 'xs' | 'sm' | 'md' | 'lg';
+  size?: 'xs' | 'sm' | 'md' | 'lg' | number;
   glow?: boolean;
   icon?: React.ReactNode;
   iconPosition?: 'left' | 'right';
@@ -16,7 +16,7 @@ export const AtriumButton = forwardRef<HTMLButtonElement, AtriumButtonProps>(fun
   {
     children,
     variant = 'primary',
-    size = 'sm',
+    size = 'md',
     glow = true,
     icon,
     iconPosition = 'left',
@@ -51,25 +51,43 @@ export const AtriumButton = forwardRef<HTMLButtonElement, AtriumButtonProps>(fun
       break;
   }
 
-  // Map size to Atrium scale (sm = 28px, md = 34px, lg = 44px, xs = 24px)
-  let atrSize: AtriumSize = 'sm';
-  switch (size) {
-    case 'xs':
-      atrSize = 24;
-      break;
-    case 'sm':
-      atrSize = 'sm';
-      break;
-    case 'md':
-      atrSize = 'md';
-      break;
-    case 'lg':
-      atrSize = 'lg';
-      break;
+  // Map size to Atrium scale (sm = 36px, md = 40px, lg = 48px, xs = 30px)
+  let atrSize: AtriumSize = 40;
+  if (typeof size === 'number') {
+    atrSize = size;
+  } else {
+    switch (size) {
+      case 'xs':
+        atrSize = 30;
+        break;
+      case 'sm':
+        atrSize = 36;
+        break;
+      case 'md':
+        atrSize = 40;
+        break;
+      case 'lg':
+        atrSize = 48;
+        break;
+      default:
+        atrSize = 40;
+        break;
+    }
   }
 
+  const loaderSize =
+    typeof size === 'number'
+      ? Math.round(size * 0.42)
+      : size === 'xs'
+      ? 14
+      : size === 'sm'
+      ? 16
+      : size === 'lg'
+      ? 20
+      : 18;
+
   const leading = loading ? (
-    <Loader2 size={size === 'xs' ? 12 : size === 'sm' ? 14 : 16} className="animate-spin" />
+    <Loader2 size={loaderSize} className="animate-spin" />
   ) : icon && iconPosition === 'left' ? (
     icon
   ) : undefined;

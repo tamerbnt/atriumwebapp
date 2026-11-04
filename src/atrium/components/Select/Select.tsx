@@ -21,6 +21,7 @@ export interface SelectProps<T extends string = string> {
   value?: T;
   defaultValue?: T;
   onValueChange?: (value: T) => void;
+  prefix?: ReactNode;
   /** shown when nothing is selected */
   placeholder?: ReactNode;
   tone?: Tone;
@@ -50,6 +51,7 @@ export function Select<T extends string = string>({
   value,
   defaultValue,
   onValueChange,
+  prefix,
   placeholder,
   tone = 'soft',
   size,
@@ -80,6 +82,7 @@ export function Select<T extends string = string>({
         leading={selected?.icon}
         trailing={<Chevron />}
       >
+        {prefix ? <span className="opacity-60 text-[11px] font-normal mr-1">{prefix}:</span> : null}
         {selected ? selected.label : placeholder}
       </Button>
       {name ? <input type="hidden" name={name} value={current ?? ''} /> : null}

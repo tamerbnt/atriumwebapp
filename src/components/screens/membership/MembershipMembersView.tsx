@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import {
   Users,
   Plus,
@@ -27,6 +27,9 @@ import {
   ShoppingCart,
   UserCheck,
   Activity,
+  SlidersHorizontal,
+  List,
+  LayoutGrid,
 } from 'lucide-react';
 import { useAtriumStore } from '../../../services/store';
 import { Member, MemberStatus } from '../../../types/index';
@@ -34,7 +37,7 @@ import { calculateDaysRemaining, formatMoney, localizeStatus } from '../../../ut
 import { AppointmentModal } from '../../modals/AppointmentModal';
 import { Seek } from '../../ui/Seek';
 import { ActionNode } from '../../ui/ActionNode';
-import { LabelSelect } from '../../ui/LabelSelect';
+import { Select, SelectOption } from '../../../atrium';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
@@ -96,6 +99,40 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
   const [saveNoteSuccess, setSaveNoteSuccess] = useState(false);
   const [isBookModalOpen, setIsBookModalOpen] = useState(false);
   const [gymDrawerTab, setGymDrawerTab] = useState<'history' | 'sales' | 'bookings'>('history');
+  const [isFilterPopoverOpen, setIsFilterPopoverOpen] = useState(false);
+  const filterPopoverRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!isFilterPopoverOpen) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (filterPopoverRef.current && !filterPopoverRef.current.contains(e.target as Node)) {
+        setIsFilterPopoverOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isFilterPopoverOpen]);
+
+  const hasActiveAdvancedFilters = planFilter !== 'All' || statusFilter === 'Expired' || statusFilter === 'Archived';
+  const activeFiltersCount = (planFilter !== 'All' ? 1 : 0) + (statusFilter === 'Expired' || statusFilter === 'Archived' ? 1 : 0);
+
+  const handleResetFilters = () => {
+    setPlanFilter('All');
+    if (statusFilter === 'Expired' || statusFilter === 'Archived') {
+      setStatusFilter('All');
+    }
+    setSearchQuery('');
+    setIsFilterPopoverOpen(false);
+  };
+
+  const planSelectOptions = useMemo<SelectOption[]>(() => [
+    { value: 'All', label: t('member_filter_all_plans', language) },
+    ...plans.map((p) => ({
+      value: p.id,
+      label: p.name,
+      description: `${p.durationDays} ${t('member_days_unit', language)} · ${formatMoney(p.price.amount)}`,
+    })),
+  ], [plans, language]);
 
   // Desktop sample members matching screenshot amira and saraa
   const displayMembers = useMemo(() => {
@@ -152,6 +189,12 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
   const archivedCount = useMemo(() => {
     return members.filter((m) => m.status === 'Banned' || m.status === 'Suspended').length;
   }, [members]);
+
+  const quickStatusOptions = useMemo(() => [
+    { value: 'All', label: t('member_filter_all', language), count: members.length },
+    { value: 'Active', label: t('member_filter_active', language), count: activeMembersCount },
+    { value: 'Expiring', label: t('member_filter_expiring', language), count: expiringCount },
+  ], [language, members.length, activeMembersCount, expiringCount]);
 
   const toggleSelectAll = () => {
     if (selectedIds.length === displayMembers.length) {
@@ -411,14 +454,14 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
         </div>
 
         <div className="flex items-center gap-3 relative">
-          {/* Facility Pill: Atrium 1 ▾ */}
+          {/* Facility Selector: 40px Standard Squircle */}
           <div className="relative">
             <button
               type="button"
               onClick={() => setIsFacilityDropdownOpen(!isFacilityDropdownOpen)}
-              className="h-10 px-4 rounded-xl bg-[#F4EFEA] dark:bg-neutral-800/80 border border-[#E8DFD8] dark:border-neutral-700 flex items-center gap-2 cursor-pointer hover:bg-[#EFE8E1] dark:hover:bg-neutral-800 transition-colors shadow-2xs"
+              className="h-10 px-4 rounded-[6px] bg-[#F4EFEA] dark:bg-neutral-800/80 border border-[#E8DFD8] dark:border-neutral-700 flex items-center gap-2 cursor-pointer hover:bg-[#EFE8E1] dark:hover:bg-neutral-800 transition-colors shadow-2xs"
             >
-              <Home size={15} className="text-[#C4785A]" />
+              <Home size={16} className="text-[#C4785A]" />
               <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
                 {currentBranch?.name || 'Atrium 1'}
               </span>
@@ -466,13 +509,17 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
             )}
           </div>
 
-          {/* Add Member Primary Button */}
+          {/* Add Member Primary Button: 48px Hero Action */}
           <AtriumButton
             variant="primary"
+            size="lg"
             onClick={onAddMember}
-            icon={<Plus size={15} strokeWidth={2.5} />}
+            icon={<Plus size={18} strokeWidth={2.5} />}
+            className="px-6 font-semibold shadow-md"
           >
-            {t('action_add', language)} {terminology.memberSingle}
+            <span className="text-sm font-bold tracking-wide">
+              {t('action_add', language)} {terminology.memberSingle}
+            </span>
           </AtriumButton>
         </div>
       </div>
@@ -547,103 +594,252 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
 
       {/* Row 2: Members Master Table Group matching Screenshot 881 */}
       <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
-        {/* Table Control Header */}
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          {/* Left: Icon + Title + Count */}
-          <div className="flex items-center gap-2">
-            <Users size={16} className="text-neutral-500" />
-            <span className="text-sm font-bold text-neutral-900 dark:text-white">
-              {terminology.members}
-            </span>
-            <span className="text-xs text-neutral-400 font-semibold tabular-nums ml-1">
-              {displayMembers.length}
-            </span>
-          </div>
+        {/* Table Control Header - STRICT SINGLE ROW (Linear / Stripe inspired) */}
+        <div className="flex items-center justify-between gap-3 flex-nowrap w-full">
+          {/* Left Discovery Group: Title/Count + Search + Quick Status Tabs + Filters Button */}
+          <div className="flex items-center gap-2.5 min-w-0 flex-1 overflow-x-auto no-scrollbar py-0.5">
+            {/* Title + Count */}
+            <div className="flex items-center gap-1.5 shrink-0 pr-1.5 border-r border-neutral-200 dark:border-neutral-700/60 mr-0.5">
+              <Users size={16} className="text-neutral-500 shrink-0" />
+              <span className="text-xs font-bold text-neutral-900 dark:text-white whitespace-nowrap hidden sm:inline">
+                {terminology.members}
+              </span>
+              <span className="text-[11px] text-neutral-400 font-bold tabular-nums">
+                {displayMembers.length}
+              </span>
+            </div>
 
-          {/* Right Controls Bar */}
-          <div className="flex flex-wrap items-center gap-2.5 ml-auto">
-            {/* Seek Kinetic Search Box */}
+            {/* Seek Kinetic Search Box (40px Standard Squircle) */}
             <Seek
               value={searchQuery}
               onChange={setSearchQuery}
-              placeholder={language === 'ar' ? `البحث في ${terminology.members}...` : language === 'fr' ? `Rechercher ${terminology.members.toLowerCase()}...` : `Search ${terminology.members.toLowerCase()}...`}
-              shutSize={36}
+              placeholder={language === 'ar' ? `البحث في ${terminology.members}...` : language === 'fr' ? `Rechercher...` : `Search...`}
+              shutSize={40}
               openWidth={220}
+              className="shrink-0"
             />
 
-            {/* Status Filter Kinetic Live Segmented Control */}
+            {/* Streamlined Quick Status Tabs (40px Standard Squircle) */}
+            <div className="shrink-0">
+              <LiveSegmentedControl
+                size="md"
+                value={statusFilter === 'Expired' || statusFilter === 'Archived' ? '' : statusFilter}
+                onValueChange={(val) => setStatusFilter(val as any)}
+                options={quickStatusOptions}
+                aria-label="Member Status Filter"
+              />
+            </div>
+
+            {/* On-Demand Filters Popover Button (40px Standard Squircle) */}
+            <div className="relative shrink-0" ref={filterPopoverRef}>
+              <button
+                type="button"
+                onClick={() => setIsFilterPopoverOpen(!isFilterPopoverOpen)}
+                className={`h-10 px-3.5 rounded-[6px] border flex items-center gap-2 text-xs font-semibold cursor-pointer transition-all shadow-2xs select-none ${
+                  hasActiveAdvancedFilters || isFilterPopoverOpen
+                    ? 'bg-[#FCEEE8] dark:bg-[#C4785A]/15 text-[#C4785A] border-[#C4785A]/40'
+                    : 'bg-white dark:bg-neutral-800 border-[#E9EEF0] dark:border-neutral-700/60 text-neutral-700 dark:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-neutral-700/50'
+                }`}
+                title={language === 'ar' ? 'مرشحات متقدمة' : language === 'fr' ? 'Filtres avancés' : 'Advanced Filters'}
+                aria-expanded={isFilterPopoverOpen}
+              >
+                <SlidersHorizontal size={15} className={hasActiveAdvancedFilters ? 'text-[#C4785A]' : 'text-neutral-500'} />
+                <span>{language === 'ar' ? 'مرشحات' : language === 'fr' ? 'Filtres' : 'Filters'}</span>
+                {activeFiltersCount > 0 && (
+                  <span className="w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center bg-[#C4785A] text-white tabular-nums">
+                    {activeFiltersCount}
+                  </span>
+                )}
+                <ChevronDown
+                  size={13}
+                  className={`transition-transform duration-200 text-neutral-400 ${
+                    isFilterPopoverOpen ? 'rotate-180' : ''
+                  }`}
+                />
+              </button>
+
+              {/* Floating Filter Popover */}
+              {isFilterPopoverOpen && (
+                <div
+                  className="absolute left-0 mt-2 z-50 w-80 sm:w-88 rounded-[16px] bg-white dark:bg-[#1C1C20] border border-[#E9EEF0] dark:border-neutral-700/80 shadow-2xl p-4 space-y-4 animate-in fade-in zoom-in-95 duration-150"
+                  style={{ minWidth: '320px' }}
+                >
+                  <div className="flex items-center justify-between pb-2 border-b border-neutral-100 dark:border-neutral-800">
+                    <div className="flex items-center gap-2">
+                      <SlidersHorizontal size={14} className="text-[#C4785A]" />
+                      <span className="text-xs font-bold text-neutral-900 dark:text-white uppercase tracking-wider">
+                        {language === 'ar' ? 'مرشحات متقدمة' : language === 'fr' ? 'Filtres avancés' : 'Advanced Filters'}
+                      </span>
+                    </div>
+                    {hasActiveAdvancedFilters && (
+                      <button
+                        type="button"
+                        onClick={handleResetFilters}
+                        className="text-[11px] font-semibold text-[#C4785A] hover:underline flex items-center gap-1 cursor-pointer"
+                      >
+                        <RotateCcw size={11} />
+                        <span>{language === 'ar' ? 'إعادة ضبط' : language === 'fr' ? 'Réinitialiser' : 'Reset'}</span>
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Section 1: Formule / Plan Filter */}
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+                      {t('member_filter_plan_label', language)}
+                    </label>
+                    <div className="w-full">
+                      <Select
+                        options={planSelectOptions}
+                        value={planFilter}
+                        onValueChange={(val) => setPlanFilter(val)}
+                        tone="soft"
+                        size="md"
+                        className="w-full justify-between"
+                        aria-label={t('member_filter_plan_label', language)}
+                        placeholder={t('member_filter_all_plans', language)}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Section 2: Extended Status Filter */}
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+                      {language === 'ar' ? 'حالة الحساب' : language === 'fr' ? 'Statut du compte' : 'Account Status'}
+                    </label>
+                    <div className="grid grid-cols-2 gap-1.5">
+                      {[
+                        { val: 'All', label: t('member_filter_all', language), count: members.length },
+                        { val: 'Active', label: t('member_filter_active', language), count: activeMembersCount },
+                        { val: 'Expiring', label: t('member_filter_expiring', language), count: expiringCount },
+                        { val: 'Expired', label: t('member_filter_expired', language), count: expiredCount },
+                        { val: 'Archived', label: t('member_filter_archived', language), count: archivedCount },
+                      ].map((item) => {
+                        const isSelected = statusFilter === item.val;
+                        return (
+                          <button
+                            key={item.val}
+                            type="button"
+                            onClick={() => setStatusFilter(item.val as any)}
+                            className={`h-8 px-2.5 rounded-[6px] border text-xs flex items-center justify-between font-medium cursor-pointer transition-all ${
+                              isSelected
+                                ? 'bg-[#FCEEE8] dark:bg-[#C4785A]/20 text-[#C4785A] border-[#C4785A]/40 font-bold'
+                                : 'bg-neutral-50 dark:bg-neutral-800/60 border-neutral-200/80 dark:border-neutral-700/60 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700/40'
+                            }`}
+                          >
+                            <span className="truncate">{item.label}</span>
+                            <span className="text-[10px] opacity-70 tabular-nums ml-1 font-mono">
+                              {item.count}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Section 3: Quick Close / Apply Button */}
+                  <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800">
+                    <AtriumButton
+                      variant="primary"
+                      size="md"
+                      onClick={() => setIsFilterPopoverOpen(false)}
+                      className="w-full font-semibold"
+                    >
+                      <span>{language === 'ar' ? 'تطبيق وإغلاق' : language === 'fr' ? 'Appliquer & fermer' : 'Apply & Close'}</span>
+                    </AtriumButton>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Right Utility Group: View Switcher (List/Grid) + Export CSV + Fullscreen */}
+          <div className="flex items-center gap-2 shrink-0">
+            {/* View Switcher: List | Grid (40px standard squircle) */}
             <LiveSegmentedControl
-              size="sm"
-              value={statusFilter}
-              onValueChange={(val) => setStatusFilter(val as any)}
+              size="md"
               options={[
-                {
-                  value: 'All',
-                  label: t('member_filter_all', language),
-                  count: members.length,
-                },
-                {
-                  value: 'Active',
-                  label: t('member_filter_active', language),
-                  count: activeMembersCount,
-                },
-                {
-                  value: 'Expiring',
-                  label: t('member_filter_expiring', language),
-                  count: expiringCount,
-                },
-                {
-                  value: 'Expired',
-                  label: t('member_filter_expired', language),
-                  count: expiredCount,
-                },
-                {
-                  value: 'Archived',
-                  label: t('member_filter_archived', language),
-                  count: archivedCount,
-                },
+                { value: 'list', icon: <List className="w-4 h-4" />, 'aria-label': 'List View' },
+                { value: 'grid', icon: <LayoutGrid className="w-4 h-4" />, 'aria-label': 'Grid View' },
               ]}
-              aria-label="Member Status Filter"
+              value={viewMode}
+              onValueChange={(val) => setViewMode(val as any)}
+              aria-label="View Switcher"
             />
 
-            {/* Plan Filter Dropdown */}
-            <LabelSelect
-              field="Plan"
-              label={t('member_filter_plan_label', language)}
-              value={planFilter}
-              onChange={(val) => setPlanFilter(val?.target?.value ?? String(val))}
-              options={[
-                { value: 'All', label: t('member_filter_all_plans', language) },
-                ...plans.map((p) => ({ value: p.id, label: p.name })),
-              ]}
-              width={160}
-              height={36}
-              corner={18}
-            />
-
-            {/* Export Data Button with Tray Icon */}
-            <AtriumButton
-              variant="secondary"
+            {/* Export CSV Button (40px standard squircle) */}
+            <button
+              type="button"
               onClick={handleExportCSV}
-              icon={<Download size={13} />}
-              size="sm"
+              className="h-10 px-3 rounded-[6px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex items-center gap-1.5 text-xs font-semibold text-neutral-700 dark:text-neutral-200 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-50 dark:hover:bg-neutral-700/50 cursor-pointer transition-colors shadow-2xs"
+              title={t('members_export_csv', language)}
             >
-              <span>{t('members_export_csv', language)}</span>
-            </AtriumButton>
+              <Download size={15} className="text-neutral-500" />
+              <span className="hidden xl:inline">{t('members_export_csv', language)}</span>
+            </button>
 
-
-
-            {/* Fullscreen Expand Icon */}
+            {/* Fullscreen Expand Icon (40px standard squircle) */}
             <button
               type="button"
               onClick={toggleFullscreen}
-              className="w-9 h-9 rounded-xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex items-center justify-center text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 cursor-pointer transition-colors shadow-2xs"
+              className="w-10 h-10 rounded-[6px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex items-center justify-center text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 cursor-pointer transition-colors shadow-2xs shrink-0"
               title="Toggle Fullscreen"
             >
-              <Maximize2 size={13} />
+              <Maximize2 size={15} />
             </button>
           </div>
         </div>
+
+        {/* Active Filter Capsules (Progressive Disclosure Sub-Row) */}
+        {hasActiveAdvancedFilters && (
+          <div className="flex items-center gap-2 flex-wrap pt-0.5 text-xs">
+            <span className="text-neutral-400 font-medium text-[11px]">
+              {language === 'ar' ? 'المرشحات النشطة:' : language === 'fr' ? 'Filtres actifs:' : 'Active filters:'}
+            </span>
+
+            {planFilter !== 'All' && (
+              <span className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-[6px] bg-[#FCEEE8] dark:bg-[#C4785A]/20 text-[#C4785A] border border-[#C4785A]/30 text-xs font-semibold">
+                <span>
+                  {t('member_filter_plan_label', language)}: {plans.find((p) => p.id === planFilter)?.name || planFilter}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setPlanFilter('All')}
+                  className="hover:text-neutral-900 dark:hover:text-white transition-colors cursor-pointer"
+                  title="Supprimer filtre"
+                  aria-label="Remove filter"
+                >
+                  <X size={12} />
+                </button>
+              </span>
+            )}
+
+            {(statusFilter === 'Expired' || statusFilter === 'Archived') && (
+              <span className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-[6px] bg-[#FCEEE8] dark:bg-[#C4785A]/20 text-[#C4785A] border border-[#C4785A]/30 text-xs font-semibold">
+                <span>
+                  {language === 'ar' ? 'الحالة' : language === 'fr' ? 'Statut' : 'Status'}: {localizeStatus(statusFilter, language)}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setStatusFilter('All')}
+                  className="hover:text-neutral-900 dark:hover:text-white transition-colors cursor-pointer"
+                  title="Supprimer filtre"
+                  aria-label="Remove filter"
+                >
+                  <X size={12} />
+                </button>
+              </span>
+            )}
+
+            <button
+              type="button"
+              onClick={handleResetFilters}
+              className="text-[11px] font-semibold text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 underline cursor-pointer ml-1"
+            >
+              {language === 'ar' ? 'إعادة تعيين الكل' : language === 'fr' ? 'Effacer tout' : 'Reset all'}
+            </button>
+          </div>
+        )}
 
         {/* Master Content Area + 390px Detail Inspector Panel */}
         <div className="flex items-start gap-4">
@@ -657,6 +853,9 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
               items={sortedMembers}
               keyExtractor={(m) => m.id}
               defaultViewMode={viewMode}
+              viewMode={viewMode}
+              onViewModeChange={setViewMode}
+              showViewToggle={false}
               columns={memberColumns}
               isLoading={isSyncing || networkMode === 'force_skeleton'}
               isOffline={networkMode === 'offline'}
@@ -804,7 +1003,6 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
                   setMemberSortDir('asc');
                 }
               }}
-              showViewToggle={true}
               emptyTitle={language === 'ar' ? 'لا يوجد مشتركون' : language === 'fr' ? 'Aucun adhérent trouvé' : 'No members found'}
               emptyDescription={language === 'ar' ? 'جرب تغيير معايير البحث أو إضافة مشترك جديد' : language === 'fr' ? 'Essayez de modifier vos filtres ou ajoutez un nouvel adhérent' : 'Try adjusting your search filters or add a new member'}
               emptyIcon={<Users size={32} className="text-[#C4785A]" />}
@@ -854,30 +1052,30 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
                   <button
                     type="button"
                     onClick={closeDetail}
-                    className="w-7 h-7 rounded-full flex items-center justify-center text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+                    className="w-8 h-8 rounded-[6px] flex items-center justify-center text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer transition-colors"
                   >
                     <X size={15} />
                   </button>
                 </div>
 
-                {/* Quick Actions */}
-                <div className="grid grid-cols-4 gap-1.5">
+                {/* Quick Actions (Atrium Squircle 40px buttons) */}
+                <div className="grid grid-cols-4 gap-2">
                   <button
                     type="button"
                     onClick={() => checkInMember(selectedMember.id)}
-                    className="p-2 rounded-xl bg-[#FDF4F0] dark:bg-neutral-800 text-xs font-semibold flex flex-col items-center gap-1 text-[#C4785A] hover:bg-[#FCEEE8] cursor-pointer transition-colors border border-[#F5E2D8] dark:border-neutral-700"
+                    className="h-14 p-1.5 rounded-[6px] bg-[#FDF4F0] dark:bg-neutral-800 text-xs font-semibold flex flex-col items-center justify-center gap-1 text-[#C4785A] hover:bg-[#FCEEE8] cursor-pointer transition-colors border border-[#F5E2D8] dark:border-neutral-700"
                     title={t('member_drawer_quick_checkin', language)}
                   >
-                    <UserCheck size={14} />
-                    <span className="text-[10px] truncate max-w-full">{t('member_drawer_quick_checkin', language)}</span>
+                    <UserCheck size={16} />
+                    <span className="text-[10px] font-medium truncate max-w-full">{t('member_drawer_quick_checkin', language)}</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => onEditMember(selectedMember)}
-                    className="p-2 rounded-xl border border-neutral-200 dark:border-neutral-800 text-xs font-semibold flex flex-col items-center gap-1 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 cursor-pointer transition-colors"
+                    className="h-14 p-1.5 rounded-[6px] border border-neutral-200 dark:border-neutral-800 text-xs font-semibold flex flex-col items-center justify-center gap-1 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 cursor-pointer transition-colors"
                   >
-                    <Edit size={14} className="text-[#C4785A]" />
-                    <span className="text-[10px] truncate max-w-full">{t('action_edit', language)}</span>
+                    <Edit size={16} className="text-[#C4785A]" />
+                    <span className="text-[10px] font-medium truncate max-w-full">{t('action_edit', language)}</span>
                   </button>
                   <button
                     type="button"
@@ -885,14 +1083,14 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
                       const next = selectedMember.status === 'Frozen' ? 'Active' : 'Frozen';
                       updateMember(selectedMember.id, { status: next });
                     }}
-                    className="p-2 rounded-xl border border-neutral-200 dark:border-neutral-800 text-xs font-semibold flex flex-col items-center gap-1 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 cursor-pointer transition-colors"
+                    className="h-14 p-1.5 rounded-[6px] border border-neutral-200 dark:border-neutral-800 text-xs font-semibold flex flex-col items-center justify-center gap-1 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 cursor-pointer transition-colors"
                   >
                     {selectedMember.status === 'Frozen' ? (
-                      <Unlock size={14} className="text-emerald-500" />
+                      <Unlock size={16} className="text-emerald-500" />
                     ) : (
-                      <Lock size={14} className="text-amber-500" />
+                      <Lock size={16} className="text-amber-500" />
                     )}
-                    <span className="text-[10px] truncate max-w-full">
+                    <span className="text-[10px] font-medium truncate max-w-full">
                       {selectedMember.status === 'Frozen'
                         ? t('member_drawer_unblock', language)
                         : t('member_drawer_block', language)}
@@ -901,10 +1099,10 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
                   <button
                     type="button"
                     onClick={() => updateMember(selectedMember.id, { remainingSessions: (selectedMember.remainingSessions || 0) + 30 })}
-                    className="p-2 rounded-xl border border-neutral-200 dark:border-neutral-800 text-xs font-semibold flex flex-col items-center gap-1 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 cursor-pointer transition-colors"
+                    className="h-14 p-1.5 rounded-[6px] border border-neutral-200 dark:border-neutral-800 text-xs font-semibold flex flex-col items-center justify-center gap-1 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 cursor-pointer transition-colors"
                   >
-                    <RotateCcw size={14} className="text-blue-500" />
-                    <span className="text-[10px] truncate max-w-full">{currentBusiness.category === 'appointment_service' ? '+Pass' : t('member_drawer_renew', language)}</span>
+                    <RotateCcw size={16} className="text-blue-500" />
+                    <span className="text-[10px] font-medium truncate max-w-full">{currentBusiness.category === 'appointment_service' ? '+Pass' : t('member_drawer_renew', language)}</span>
                   </button>
                 </div>
 
@@ -948,46 +1146,21 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
                   </div>
                 </div>
 
-
-                  /* Dedicated Gym & Fitness Tabs: Turnstile History, Pro-Shop Sales, and Class Bookings */
-                  <div className="space-y-2.5 text-xs">
-                    <div className="flex items-center justify-between pb-1">
-                      <div className="flex items-center p-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-[10px] font-bold">
-                        <button
-                          type="button"
-                          onClick={() => setGymDrawerTab('history')}
-                          className={`px-2.5 py-1 rounded-full cursor-pointer transition-all ${
-                            gymDrawerTab === 'history'
-                              ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-xs'
-                              : 'text-neutral-500 hover:text-neutral-800'
-                          }`}
-                        >
-                          {t('member_drawer_tab_history', language)}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setGymDrawerTab('sales')}
-                          className={`px-2.5 py-1 rounded-full cursor-pointer transition-all ${
-                            gymDrawerTab === 'sales'
-                              ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-xs'
-                              : 'text-neutral-500 hover:text-neutral-800'
-                          }`}
-                        >
-                          {t('member_drawer_tab_sales', language)}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setGymDrawerTab('bookings')}
-                          className={`px-2.5 py-1 rounded-full cursor-pointer transition-all ${
-                            gymDrawerTab === 'bookings'
-                              ? 'bg-white dark:bg-neutral-700 text-[#C4785A] shadow-xs'
-                              : 'text-neutral-500 hover:text-neutral-800'
-                          }`}
-                        >
-                          {t('member_drawer_tab_bookings', language)}
-                        </button>
-                      </div>
-                    </div>
+                {/* Dedicated Gym & Fitness Tabs: Turnstile History, Pro-Shop Sales, and Class Bookings */}
+                <div className="space-y-2.5 text-xs">
+                  <div className="pb-1">
+                    <LiveSegmentedControl
+                      size="sm"
+                      value={gymDrawerTab}
+                      onValueChange={(val) => setGymDrawerTab(val as any)}
+                      options={[
+                        { value: 'history', label: t('member_drawer_tab_history', language) },
+                        { value: 'sales', label: t('member_drawer_tab_sales', language) },
+                        { value: 'bookings', label: t('member_drawer_tab_bookings', language) },
+                      ]}
+                      aria-label="Gym Drawer Navigation"
+                    />
+                  </div>
 
                     {gymDrawerTab === 'history' && (
                       <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
