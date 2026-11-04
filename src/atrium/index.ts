@@ -32,8 +32,8 @@ export type { LiquidLoaderProps } from './components/LiquidLoader/LiquidLoader';
 
 export { Sidebar } from './components/Shell/Sidebar';
 export type { SidebarProps, SidebarItem } from './components/Shell/Sidebar';
-export { AppShell } from './components/Shell/AppShell';
-export type { AppShellProps } from './components/Shell/AppShell';
+export { AppShell, ShellContext } from './components/Shell/AppShell';
+export type { AppShellProps, ShellContextValue } from './components/Shell/AppShell';
 
 export { AtriumLogo } from './components/Logo/AtriumLogo';
 export type { AtriumLogoProps } from './components/Logo/AtriumLogo';

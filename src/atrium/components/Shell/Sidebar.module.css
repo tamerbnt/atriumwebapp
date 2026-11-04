@@ -3,11 +3,11 @@
 .root {
   --open: 0;
   --wr: var(--atr-rail, 60px);
-  --wx: var(--atr-rail-open, 208px);
+  --wx: var(--atr-rail-open, 236px);
   --bleed: 18px; /* extra panel hidden behind the clip, shown only by the spring's overshoot */
   --r: var(--atr-r-card, 24px);
   position: relative;
-  width: var(--wr);
+  width: 100%;
   height: 100%;
   z-index: 20;
   color: var(--atr-side-ink);
@@ -36,12 +36,42 @@
 }
 .brandMark { width: 40px; height: 40px; display: grid; place-items: center; flex: none; }
 .brandMark svg { width: 24px; height: 24px; }
-.brandTitle { margin-left: 8px; font-family: 'Sigana Condensed', 'Cinzel', var(--atr-font-ui, sans-serif); font-size: 20px; line-height: 1; font-weight: 700; letter-spacing: 0.14em; color: var(--atr-side-ink); }
+.brandTitle { margin-left: 8px; font-family: var(--atr-font-brand, 'Sigana Condensed', 'Cinzel', var(--atr-font-ui, sans-serif)); font-size: 20px; line-height: 1; font-weight: 700; letter-spacing: 0.14em; color: var(--atr-side-ink); }
 
-.list { list-style: none; margin: 14px 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; flex: 1; min-height: 0; overflow: hidden; }
+.list {
+  position: relative;
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Fluid terracotta magnetic hover pill: tracking pointer with velocity stretch */
+.magneticHl {
+  position: absolute;
+  left: 10px;
+  width: calc(var(--wx) - 20px);
+  top: 0;
+  height: 40px;
+  border-radius: 20px;
+  background: rgba(212, 82, 47, 0.16);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 1;
+  clip-path: inset(0 calc((1 - var(--open)) * (100% - 40px)) 0 0 round 20px);
+  contain: layout paint;
+  will-change: transform, height, opacity;
+}
 
 .item {
   position: relative;
+  z-index: 2;
   display: flex;
   align-items: center;
   box-sizing: border-box;
@@ -68,20 +98,23 @@
   position: absolute;
   inset: 0;
   background: var(--atr-acc);
+  box-shadow: 0 4px 14px rgba(212, 82, 47, 0.35);
   border-radius: 20px;
   clip-path: inset(0 calc((1 - var(--open)) * (100% - 40px)) 0 0 round 20px);
+  z-index: 1;
 }
-.item[aria-current='page'] { color: var(--atr-onacc); }
+.item[aria-current='page'] {
+  color: #ffffff;
+  font-weight: 600;
+}
+.item[aria-current='page'] .ico svg {
+  stroke: #ffffff;
+}
+.item[aria-current='page'] .lab {
+  color: #ffffff;
+  opacity: 1;
+}
 .item:not([aria-current='page']) .hl { display: none; }
-/* hover wash, same clip so it also grows with the panel */
-.item:not([aria-current='page']):hover::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 20px;
-  background: var(--atr-side-hl);
-  clip-path: inset(0 calc((1 - var(--open)) * (100% - 40px)) 0 0 round 20px);
-}
 
 .ico { position: relative; width: 40px; height: 40px; flex: none; display: grid; place-items: center; }
 .ico svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
@@ -160,10 +193,12 @@
 [dir="rtl"] .item {
   text-align: right;
 }
-[dir="rtl"] .hl {
+[dir="rtl"] .magneticHl {
+  left: auto;
+  right: 10px;
   clip-path: inset(0 0 0 calc((1 - var(--open)) * (100% - 40px)) round 20px);
 }
-[dir="rtl"] .item:not([aria-current='page']):hover::before {
+[dir="rtl"] .hl {
   clip-path: inset(0 0 0 calc((1 - var(--open)) * (100% - 40px)) round 20px);
 }
 [dir="rtl"] .lab {

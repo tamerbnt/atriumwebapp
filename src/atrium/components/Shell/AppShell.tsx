@@ -1,19 +1,29 @@
 'use client';
 
-import { useCallback, useEffect, useRef } from 'react';
+import { createContext, useCallback, useEffect, useRef } from 'react';
 import type { CSSProperties, ReactNode, RefObject } from 'react';
 import { cx, useControllable, useIsoLayoutEffect } from '../../hooks';
 import { initMotionEnv } from '../../motion/env';
-import { BarBody } from './shellBodies';
+import { BarBody, PushBody } from './shellBodies';
 import s from './AppShell.module.css';
 
+export interface ShellContextValue {
+  sidebarOpen: boolean;
+  setSidebarOpen: (open: boolean) => void;
+}
+export const ShellContext = createContext<ShellContextValue | null>(null);
+
 export interface AppShellProps {
-  /** a <Sidebar />. It takes the rail's width; its expanded panel overlays the page. */
+  /** a <Sidebar />. It takes the rail's width; its expanded panel overlays or pushes the page. */
   sidebar: ReactNode;
   /** the content of the top bar (breadcrumbs, filters, icon buttons…) */
   topbar: ReactNode;
   /** the page. It is the shell's scroll container (a rounded card). */
   children: ReactNode;
+  /** sidebar expanded? controlled */
+  sidebarOpen?: boolean;
+  defaultSidebarOpen?: boolean;
+  onSidebarOpenChange?: (open: boolean) => void;
   /** top bar hidden? controlled */
   barHidden?: boolean;
   defaultBarHidden?: boolean;
@@ -26,6 +36,8 @@ export interface AppShellProps {
   style?: CSSProperties;
   /** accessible name for the page region */
   mainLabel?: string;
+  /** DOM ID for the scrollable main container */
+  mainId?: string;
 }
 
 const HIDE_AFTER = 48; // px scrolled down before the bar goes
@@ -37,19 +49,27 @@ const COOLDOWN = 520; // ms after a move before the next one (the layout settles
  *
  * The top bar can leave and return. Hiding it gives its space to the page: the layout changes once
  * and a spring-driven transform on the bar and the card carries the move, so there is no layout work
- * per frame. Scrolling down hides it, scrolling up (or a hover on the top edge, or focus, or the
- * "Show top bar" button for keyboard users) brings it back.
+ * per frame.
+ *
+ * When the sidebar expands, the content area (top bar + main card) is pushed in lockstep with the
+ * sidebar's spring using a single-commit FLIP compositor transform: zero reflow per frame.
  */
 export function AppShell({
-  sidebar, topbar, children, barHidden: hiddenProp, defaultBarHidden, onBarHiddenChange,
-  autoHide = true, scrollRef, className, style, mainLabel = 'Page',
+  sidebar, topbar, children,
+  sidebarOpen: sidebarOpenProp, defaultSidebarOpen, onSidebarOpenChange,
+  barHidden: hiddenProp, defaultBarHidden, onBarHiddenChange,
+  autoHide = true, scrollRef, className, style, mainLabel = 'Page', mainId = 'main-content-scroll',
 }: AppShellProps) {
+  const [sidebarOpen, setSidebarOpen] = useControllable<boolean>(sidebarOpenProp, defaultSidebarOpen ?? false, onSidebarOpenChange);
   const [hidden, setHidden] = useControllable<boolean>(hiddenProp, defaultBarHidden ?? false, onBarHiddenChange);
   const root = useRef<HTMLDivElement>(null);
+  const content = useRef<HTMLDivElement>(null);
   const bar = useRef<HTMLDivElement>(null);
   const main = useRef<HTMLElement>(null);
   const body = useRef<BarBody | null>(null);
+  const pushBody = useRef<PushBody | null>(null);
   const hiddenRef = useRef(hidden);
+  const sidebarOpenRef = useRef(sidebarOpen);
   const queued = useRef<boolean | null>(null);
   const lastMove = useRef(0);
 
@@ -73,32 +93,43 @@ export function AppShell({
   );
 
   useIsoLayoutEffect(() => {
-    if (!root.current || !bar.current || !main.current) return;
+    if (!root.current || !bar.current || !main.current || !content.current) return;
     initMotionEnv();
     if (scrollRef) (scrollRef as { current: HTMLElement | null }).current = main.current;
     const b = new BarBody(bar.current, main.current, root.current, hiddenRef.current);
     body.current = b;
+    const pb = new PushBody(content.current, root.current, sidebarOpenRef.current);
+    pushBody.current = pb;
+
     const measure = () => {
       const gap = parseFloat(getComputedStyle(root.current as Element).columnGap) || 12;
       b.H = (bar.current as HTMLElement).offsetHeight + gap;
       b.snap();
       b.render();
       b.onSleep();
+      pb.measure();
+      pb.snap();
+      pb.render();
+      pb.onSleep();
     };
     measure();
+
     let ro: ResizeObserver | undefined;
     if (typeof ResizeObserver !== 'undefined') {
       ro = new ResizeObserver(measure);
       ro.observe(bar.current);
+      ro.observe(root.current);
     }
     return () => {
       ro?.disconnect();
       b.dispose();
+      pb.dispose();
       body.current = null;
+      pushBody.current = null;
     };
   }, []);
 
-  // The layout flips in this commit; the body starts its transform in the same layout phase,
+  // The bar layout flips in this commit; the body starts its transform in the same layout phase,
   // before paint, so the card never shows the jump.
   useIsoLayoutEffect(() => {
     if (hiddenRef.current === hidden) return;
@@ -109,6 +140,16 @@ export function AppShell({
     b.setHidden(hidden);
     b.render();
   }, [hidden]);
+
+  // The push layout flips in this commit; PushBody cancels the visual jump before paint and glides smoothly.
+  useIsoLayoutEffect(() => {
+    if (sidebarOpenRef.current === sidebarOpen) return;
+    sidebarOpenRef.current = sidebarOpen;
+    const pb = pushBody.current;
+    if (!pb) return;
+    pb.setOpen(sidebarOpen);
+    pb.render();
+  }, [sidebarOpen]);
 
   // a queued request goes out as soon as the bar has landed
   useEffect(() => {
@@ -176,26 +217,31 @@ export function AppShell({
   const onBarFocus = () => request(false);
 
   return (
-    <div
-      ref={root}
-      className={cx(s.root, className)}
-      style={style}
-      data-bar={hidden ? 'hidden' : 'shown'}
-    >
-      <div className={s.side}>{sidebar}</div>
-      <div className={s.slot}>
-        <div ref={bar} className={s.bar} onFocusCapture={onBarFocus}>
-          {topbar}
+    <ShellContext.Provider value={{ sidebarOpen, setSidebarOpen }}>
+      <div
+        ref={root}
+        className={cx(s.root, className)}
+        style={style}
+        data-bar={hidden ? 'hidden' : 'shown'}
+        data-expanded={sidebarOpen ? '' : undefined}
+      >
+        <div className={s.side}>{sidebar}</div>
+        <div ref={content} className={s.content}>
+          <div className={s.slot}>
+            <div ref={bar} className={s.bar} onFocusCapture={onBarFocus}>
+              {topbar}
+            </div>
+          </div>
+          {hidden ? (
+            <button type="button" className={s.reveal} onClick={() => request(false)}>
+              Show top bar
+            </button>
+          ) : null}
+          <main ref={main} id={mainId} className={s.main} aria-label={mainLabel} tabIndex={-1}>
+            {children}
+          </main>
         </div>
       </div>
-      {hidden ? (
-        <button type="button" className={s.reveal} onClick={() => request(false)}>
-          Show top bar
-        </button>
-      ) : null}
-      <main ref={main} className={s.main} aria-label={mainLabel} tabIndex={-1}>
-        {children}
-      </main>
-    </div>
+    </ShellContext.Provider>
   );
 }

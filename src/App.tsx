@@ -210,6 +210,7 @@ export default function App() {
   const [memberToEdit, setMemberToEdit] = useState<Member | null>(null);
   const [isLeadModalOpen, setIsLeadModalOpen] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // Global keyboard shortcuts (Ctrl+K, Cmd+K, '/')
   useEffect(() => {
@@ -1153,8 +1154,12 @@ export default function App() {
             onBarHiddenChange={(hidden) => {
               setTopBarCollapsed(hidden);
             }}
+            sidebarOpen={isSidebarOpen}
+            onSidebarOpenChange={setIsSidebarOpen}
             sidebar={
               <Sidebar
+                open={isSidebarOpen}
+                onOpenChange={setIsSidebarOpen}
                 onOpenVoucherModal={() => setIsVoucherModalOpen(true)}
                 isOpenMobile={isMobileSidebarOpen}
                 onCloseMobile={() => setIsMobileSidebarOpen(false)}
@@ -1168,7 +1173,7 @@ export default function App() {
               />
             }
           >
-            <div id="main-content-scroll" className="relative w-full min-h-full flex flex-col p-6 sm:p-8 pb-16 sm:pb-20">
+            <div className="relative w-full min-h-full flex flex-col p-6 sm:p-8 pb-16 sm:pb-20">
               {renderActiveScreen()}
               <ScrollJumpPill
                 className="!fixed bottom-6 right-8 z-20"

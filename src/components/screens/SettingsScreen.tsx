@@ -27,6 +27,8 @@ import {
   Activity,
   Sun,
   Moon,
+  Layout,
+  ChevronUp,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../services/store';
 import { Modal } from '../ui/Modal';
@@ -59,6 +61,8 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
     isLanguageAuto,
     setLanguage,
     setSystemDefaultLanguage,
+    isTopBarAutoHide,
+    toggleTopBarAutoHide,
     addBranch,
     registerDevice,
     revokeDevice,
@@ -648,6 +652,103 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ onOpenVoucherMod
               {language === 'ar' ? 'ألوان حجر الأوبسيديان الداكنة المريحة للأعين أثناء الفترات المسائية' : language === 'fr' ? 'Teintes obsidian profondes pour un confort visuel maximal en soirée' : 'Deep obsidian surfaces designed to reduce eye strain in low-light environments'}
             </p>
           </button>
+        </div>
+      </div>
+
+      {/* Row 1.2: AppShell Architecture & Kinetic Top Bar Settings */}
+      <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div
+              style={{ backgroundColor: 'var(--color-accent-dim)', color: 'var(--color-accent)' }}
+              className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 shadow-xs"
+            >
+              <Layout size={20} />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-base font-bold text-neutral-900 dark:text-white">
+                  {language === 'ar' ? 'هيكل نظام Atrium AppShell وشريط المهام العلوي' : language === 'fr' ? 'Architecture Atrium AppShell & Barre Supérieure' : 'Atrium AppShell & Kinetic Top Bar Motion'}
+                </h3>
+                <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-[#d4522f]/10 text-[#d4522f]">
+                  Sigana Engine
+                </span>
+              </div>
+              <p className="text-xs text-[#52525B] dark:text-neutral-400 mt-0.5">
+                {language === 'ar'
+                  ? 'التحكم في حركة شريط المهام العلوي (Auto-hide عند التمرير) ومسار التنقل الجانبي بدون إعادة حساب المخطط'
+                  : language === 'fr'
+                  ? 'Comportement cinétique de la barre supérieure (auto-hide au défilement) et rail latéral sans reflow'
+                  : 'Kinetic spring-driven scroll auto-hide (48px threshold) with zero layout reflow and 0-frames at rest'}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Kinetic Auto-Hide Switch */}
+        <div className="flex items-center justify-between p-3.5 rounded-2xl bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 shadow-2xs">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-xl bg-[#d4522f]/10 text-[#d4522f] flex items-center justify-center">
+              <ChevronUp size={16} />
+            </div>
+            <div>
+              <div className="text-xs font-bold text-neutral-900 dark:text-white">
+                {language === 'ar' ? 'الإخفاء التلقائي عند التمرير (Scroll Auto-Hide)' : language === 'fr' ? 'Masquage automatique au défilement' : 'Scroll Auto-Hide (Kinetic 48px)'}
+              </div>
+              <div className="text-[10px] text-neutral-400">
+                {isTopBarAutoHide
+                  ? (language === 'ar' ? 'الشريط يختفي بسلاسة عند النزول 48 بكسل ويعود عند الصعود 24 بكسل' : 'Bar slides away on 48px scroll down, returns on 24px scroll up or top edge hover')
+                  : (language === 'ar' ? 'الشريط العلوي ثابت ودائم الظهور' : 'Top bar stays permanently fixed and visible')}
+              </div>
+            </div>
+          </div>
+          <Toggle
+            aria-label="Toggle Top Bar Auto-hide"
+            checked={isTopBarAutoHide}
+            onCheckedChange={() => {
+              toggleTopBarAutoHide();
+              showToast({
+                type: 'info',
+                title: isTopBarAutoHide ? 'Top Bar Fixé' : 'Top Bar Auto-Hide Activé',
+                message: isTopBarAutoHide
+                  ? 'La barre supérieure reste désormais fixée.'
+                  : 'La barre supérieure s\'effacera automatiquement lors du défilement.',
+              });
+            }}
+          />
+        </div>
+
+        {/* Feature summary pills */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1 text-xs">
+          <div className="p-3 rounded-xl bg-white/70 dark:bg-neutral-800/70 border border-neutral-200/80 dark:border-neutral-700/80">
+            <div className="font-bold text-neutral-800 dark:text-neutral-200 flex items-center gap-1.5 mb-1">
+              <span className="w-2 h-2 rounded-full bg-[#d4522f]" />
+              <span>Rail 60px ➔ 236px</span>
+            </div>
+            <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+              {language === 'ar' ? 'لوحة تراكب ربيعية دون إزاحة الصفحة أو تغيير العرض' : 'Overlay panel clipped by one spring without pushing content.'}
+            </p>
+          </div>
+
+          <div className="p-3 rounded-xl bg-white/70 dark:bg-neutral-800/70 border border-neutral-200/80 dark:border-neutral-700/80">
+            <div className="font-bold text-neutral-800 dark:text-neutral-200 flex items-center gap-1.5 mb-1">
+              <span className="w-2 h-2 rounded-full bg-emerald-500" />
+              <span>Zero Reflow</span>
+            </div>
+            <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+              {language === 'ar' ? 'كتابة تحويلية مباشرة على بطاقة الرسوميات (0 إطارات عند السكون)' : 'Direct hardware-accelerated transforms, 0 frames at rest.'}
+            </p>
+          </div>
+
+          <div className="p-3 rounded-xl bg-white/70 dark:bg-neutral-800/70 border border-neutral-200/80 dark:border-neutral-700/80">
+            <div className="font-bold text-neutral-800 dark:text-neutral-200 flex items-center gap-1.5 mb-1">
+              <span className="w-2 h-2 rounded-full bg-amber-500" />
+              <span>Sigana Condensed</span>
+            </div>
+            <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+              {language === 'ar' ? 'الخط الأصلي للهوية البصرية لعلامة Atrium بنسبة ذهبية' : 'Official display typography with 0.14em tracking.'}
+            </p>
+          </div>
         </div>
       </div>
 

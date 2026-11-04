@@ -1,0 +1,6 @@
+{
+  "summary": "Revised architectural specification prioritizing 60fps/120fps performance, zero per-frame layout reflows, and zero React re-renders for the kinetic push sidebar and magnetic hover engine. Details the hardware-accelerated FLIP compositor transform, direct DOM spring loop execution, and sleep-at-rest governor.",
+  "updatedAt": "2026-11-04T23:03:59.695436274Z",
+  "requestFeedback": true,
+  "userFacing": true
+}

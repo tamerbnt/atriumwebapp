@@ -8,20 +8,37 @@
   height: 100%;
   display: grid;
   grid-template-columns: var(--atr-rail, 60px) minmax(0, 1fr);
-  grid-template-rows: var(--bar-h) minmax(0, 1fr);
   column-gap: var(--gap);
   padding: var(--gap);
   overflow: hidden;
   background: var(--atr-bg);
   color: var(--atr-ink);
   font-family: var(--atr-font-ui, inherit);
+  transition: none;
 }
+/* expanded: the grid column flips once, and the content's transform (PushBody) cancels the jump */
+.root[data-expanded] {
+  grid-template-columns: var(--atr-rail-open, 236px) minmax(0, 1fr);
+}
+
+.side { grid-column: 1; min-height: 0; height: 100%; }
+
+/* The content wrapper holds both the topbar slot and the main card, gliding together on the compositor GPU thread */
+.content {
+  grid-column: 2;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  position: relative;
+  display: grid;
+  grid-template-rows: var(--bar-h) minmax(0, 1fr);
+  will-change: transform;
+}
+.root[data-push-settled] .content { will-change: auto; }
 /* hidden: the row collapses once, and the card's transform (BarBody) cancels the jump */
-.root[data-bar='hidden'] { grid-template-rows: 0 minmax(0, 1fr); }
+.root[data-bar='hidden'] .content { grid-template-rows: 0 minmax(0, 1fr); }
 
-.side { grid-column: 1; grid-row: 1 / span 2; min-height: 0; }
-
-.slot { grid-column: 2; grid-row: 1; position: relative; z-index: 10; }
+.slot { grid-row: 1; position: relative; z-index: 10; }
 .bar {
   position: absolute;
   inset: 0 0 auto 0;
@@ -39,7 +56,6 @@
 .root[data-bar='hidden'][data-settled] .bar { visibility: hidden; will-change: auto; }
 
 .main {
-  grid-column: 2;
   grid-row: 2;
   min-width: 0;
   min-height: 0;

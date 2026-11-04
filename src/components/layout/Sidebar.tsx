@@ -53,15 +53,19 @@ import { useTranslation } from '../../utils/useTranslation';
 import { canAccessStaffScreen, getEffectiveUserRole } from '../../utils/staffRules';
 
 interface SidebarProps {
-  onOpenVoucherModal: () => void;
+  onOpenVoucherModal?: () => void;
   isOpenMobile?: boolean;
   onCloseMobile?: () => void;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
   onOpenVoucherModal,
   isOpenMobile = false,
   onCloseMobile,
+  open: openProp,
+  onOpenChange: onOpenChangeProp,
 }) => {
   const { t } = useTranslation();
   const {
@@ -86,7 +90,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
     currentUser,
     language,
   } = useAtriumStore();
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [internalExpanded, setInternalExpanded] = useState(false);
+  const isExpanded = openProp !== undefined ? openProp : internalExpanded;
+  const setIsExpanded = onOpenChangeProp || setInternalExpanded;
   const isRtl = language === 'ar';
 
   const category = currentBusiness?.category || 'pos_inventory';
@@ -1936,7 +1942,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
             mark: <AtriumLogo variant="mark" height={24} style={{ color: '#E8643F' }} />,
             title: 'ATRIUM',
           }}
-          onBrandClick={onOpenVoucherModal}
           footer={
             category === 'project_milestone' ? (
               <div className="flex flex-col items-center gap-1 px-2">

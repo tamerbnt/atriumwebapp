@@ -67,6 +67,7 @@
   --atr-side-ink: #ece6e0;
   --atr-side-mut: #a39b93;
   --atr-side-hl: rgba(255, 255, 255, 0.07);
+  --atr-font-brand: 'Sigana Condensed', 'Cinzel', 'Inter Tight', sans-serif;
 }
 
 [data-atrium-theme='dark'] {
