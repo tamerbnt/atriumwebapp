@@ -1,4 +1,5 @@
-import React, { useState, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import {
   Users,
   Plus,
@@ -37,7 +38,6 @@ import { calculateDaysRemaining, formatMoney, localizeStatus } from '../../../ut
 import { AppointmentModal } from '../../modals/AppointmentModal';
 import { Seek } from '../../ui/Seek';
 import { ActionNode } from '../../ui/ActionNode';
-import { Select, SelectOption } from '../../../atrium';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { AtriumButton } from '../../ui/AtriumButton';
 import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
@@ -86,6 +86,8 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
   } = useAtriumStore();
 
   const [statusFilter, setStatusFilter] = useState<'All' | 'Active' | 'Expiring' | 'Expired' | 'Archived'>('All');
+  const [genderFilter, setGenderFilter] = useState<'All' | 'Male' | 'Female' | 'Other'>('All');
+  const [ageGroupFilter, setAgeGroupFilter] = useState<'All' | 'under18' | '18-25' | '26-40' | '41-60' | 'over60' | 'unspecified'>('All');
   const [isSearchActive, setIsSearchActive] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [planFilter, setPlanFilter] = useState('All');
@@ -101,23 +103,127 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
   const [gymDrawerTab, setGymDrawerTab] = useState<'history' | 'sales' | 'bookings'>('history');
   const [isFilterPopoverOpen, setIsFilterPopoverOpen] = useState(false);
   const filterPopoverRef = useRef<HTMLDivElement | null>(null);
+  const filterButtonRef = useRef<HTMLButtonElement | null>(null);
+  const [popoverCoords, setPopoverCoords] = useState<{ top: number; left: number; width: number } | null>(null);
+
+  // Helper to compute age from birthdate
+  const getMemberAge = (dobString?: string): number | null => {
+    if (!dobString) return null;
+    const dob = new Date(dobString);
+    if (isNaN(dob.getTime())) return null;
+    const now = new Date();
+    let age = now.getFullYear() - dob.getFullYear();
+    const m = now.getMonth() - dob.getMonth();
+    if (m < 0 || (m === 0 && now.getDate() < dob.getDate())) {
+      age--;
+    }
+    return age >= 0 ? age : null;
+  };
+
+  const matchesAgeGroup = (dobString: string | undefined, group: string): boolean => {
+    if (group === 'All') return true;
+    const age = getMemberAge(dobString);
+    if (group === 'unspecified') return age === null;
+    if (age === null) return false;
+    if (group === 'under18') return age < 18;
+    if (group === '18-25') return age >= 18 && age <= 25;
+    if (group === '26-40') return age >= 26 && age <= 40;
+    if (group === '41-60') return age >= 41 && age <= 60;
+    if (group === 'over60') return age > 60;
+    return true;
+  };
+
+  const updatePopoverCoords = useCallback(() => {
+    if (!filterButtonRef.current) return;
+    const rect = filterButtonRef.current.getBoundingClientRect();
+    const popoverWidth = Math.min(460, window.innerWidth - 32);
+    const isRtl = language === 'ar' || document.documentElement.dir === 'rtl';
+
+    let left = isRtl ? rect.right - popoverWidth : rect.left;
+    if (left + popoverWidth > window.innerWidth - 16) {
+      left = window.innerWidth - popoverWidth - 16;
+    }
+    if (left < 16) left = 16;
+
+    let top = rect.bottom + 8;
+    const estimatedHeight = 520;
+    if (top + estimatedHeight > window.innerHeight - 16 && rect.top > estimatedHeight) {
+      top = Math.max(16, rect.top - estimatedHeight - 8);
+    }
+
+    setPopoverCoords({
+      top: Math.round(top),
+      left: Math.round(left),
+      width: popoverWidth,
+    });
+  }, [language]);
+
+  const toggleFilterPopover = () => {
+    if (!isFilterPopoverOpen) {
+      updatePopoverCoords();
+      setIsFilterPopoverOpen(true);
+    } else {
+      setIsFilterPopoverOpen(false);
+    }
+  };
 
   useEffect(() => {
     if (!isFilterPopoverOpen) return;
+    updatePopoverCoords();
+
     const handleClickOutside = (e: MouseEvent) => {
-      if (filterPopoverRef.current && !filterPopoverRef.current.contains(e.target as Node)) {
+      const target = e.target as Node;
+      if (
+        filterPopoverRef.current &&
+        !filterPopoverRef.current.contains(target) &&
+        filterButtonRef.current &&
+        !filterButtonRef.current.contains(target)
+      ) {
         setIsFilterPopoverOpen(false);
       }
     };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isFilterPopoverOpen]);
 
-  const hasActiveAdvancedFilters = planFilter !== 'All' || statusFilter === 'Expired' || statusFilter === 'Archived';
-  const activeFiltersCount = (planFilter !== 'All' ? 1 : 0) + (statusFilter === 'Expired' || statusFilter === 'Archived' ? 1 : 0);
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsFilterPopoverOpen(false);
+        filterButtonRef.current?.focus();
+      }
+    };
+
+    const handleScrollOrResize = () => {
+      updatePopoverCoords();
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('resize', handleScrollOrResize);
+    window.addEventListener('scroll', handleScrollOrResize, true);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('resize', handleScrollOrResize);
+      window.removeEventListener('scroll', handleScrollOrResize, true);
+    };
+  }, [isFilterPopoverOpen, updatePopoverCoords]);
+
+  const hasActiveAdvancedFilters =
+    planFilter !== 'All' ||
+    genderFilter !== 'All' ||
+    ageGroupFilter !== 'All' ||
+    statusFilter === 'Expired' ||
+    statusFilter === 'Archived';
+
+  const activeFiltersCount =
+    (planFilter !== 'All' ? 1 : 0) +
+    (genderFilter !== 'All' ? 1 : 0) +
+    (ageGroupFilter !== 'All' ? 1 : 0) +
+    (statusFilter === 'Expired' || statusFilter === 'Archived' ? 1 : 0);
 
   const handleResetFilters = () => {
     setPlanFilter('All');
+    setGenderFilter('All');
+    setAgeGroupFilter('All');
     if (statusFilter === 'Expired' || statusFilter === 'Archived') {
       setStatusFilter('All');
     }
@@ -125,14 +231,23 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
     setIsFilterPopoverOpen(false);
   };
 
-  const planSelectOptions = useMemo<SelectOption[]>(() => [
-    { value: 'All', label: t('member_filter_all_plans', language) },
-    ...plans.map((p) => ({
-      value: p.id,
-      label: p.name,
-      description: `${p.durationDays} ${t('member_days_unit', language)} · ${formatMoney(p.price.amount)}`,
-    })),
-  ], [plans, language]);
+  // Dynamic distinct plans derived directly from current catalog and members
+  const dynamicAvailablePlans = useMemo(() => {
+    const map = new Map<string, { id: string; name: string; price: number }>();
+    plans.forEach((p) => {
+      map.set(p.id, { id: p.id, name: p.name, price: p.price?.amount || 0 });
+    });
+    members.forEach((m) => {
+      if (m.membershipPlanId && !map.has(m.membershipPlanId)) {
+        map.set(m.membershipPlanId, {
+          id: m.membershipPlanId,
+          name: m.membershipPlanName || m.membershipPlanId,
+          price: 0,
+        });
+      }
+    });
+    return Array.from(map.values());
+  }, [plans, members]);
 
   // Desktop sample members matching screenshot amira and saraa
   const displayMembers = useMemo(() => {
@@ -146,6 +261,16 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
       if (planFilter !== 'All') {
         if (member.membershipPlanId !== planFilter && member.membershipPlanName !== planFilter) return false;
       }
+      if (genderFilter !== 'All') {
+        if (genderFilter === 'Other') {
+          if (member.gender === 'Male' || member.gender === 'Female') return false;
+        } else if (member.gender !== genderFilter) {
+          return false;
+        }
+      }
+      if (ageGroupFilter !== 'All') {
+        if (!matchesAgeGroup(member.dateOfBirth, ageGroupFilter)) return false;
+      }
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         if (
@@ -158,7 +283,7 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
       }
       return true;
     });
-  }, [members, statusFilter, planFilter, searchQuery]);
+  }, [members, statusFilter, planFilter, genderFilter, ageGroupFilter, searchQuery]);
 
 
   const customerSalesMetrics = useMemo(() => {
@@ -594,28 +719,43 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
 
       {/* Row 2: Members Master Table Group matching Screenshot 881 */}
       <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
-        {/* Table Control Header - STRICT SINGLE ROW (Linear / Stripe inspired) */}
-        <div className="flex items-center justify-between gap-3 flex-nowrap w-full">
-          {/* Left Discovery Group: Title/Count + Search + Quick Status Tabs + Filters Button */}
-          <div className="flex items-center gap-2.5 min-w-0 flex-1 overflow-x-auto no-scrollbar py-0.5">
-            {/* Title + Count */}
-            <div className="flex items-center gap-1.5 shrink-0 pr-1.5 border-r border-neutral-200 dark:border-neutral-700/60 mr-0.5">
-              <Users size={16} className="text-neutral-500 shrink-0" />
-              <span className="text-xs font-bold text-neutral-900 dark:text-white whitespace-nowrap hidden sm:inline">
-                {terminology.members}
-              </span>
-              <span className="text-[11px] text-neutral-400 font-bold tabular-nums">
-                {displayMembers.length}
-              </span>
+        {/* Pod Header ALONE (Row 1 of Pod) */}
+        <div className="flex items-center justify-between pb-3.5 border-b border-neutral-200/70 dark:border-neutral-700/60">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-white dark:bg-neutral-800 border border-neutral-200/80 dark:border-neutral-700/80 flex items-center justify-center text-neutral-700 dark:text-neutral-300 shadow-2xs">
+              <Users size={17} className="text-[#C4785A]" />
             </div>
+            <div>
+              <div className="flex items-center gap-2.5">
+                <h2 className="text-base font-bold text-neutral-900 dark:text-white tracking-tight">
+                  {language === 'ar' ? 'قائمة المشتركين' : 'Liste des adhérents'}
+                </h2>
+                <span className="px-2.5 py-0.5 text-xs font-bold rounded-full bg-white dark:bg-neutral-800 border border-neutral-200/80 dark:border-neutral-700/70 text-neutral-700 dark:text-neutral-300 shadow-2xs tabular-nums">
+                  {displayMembers.length}
+                </span>
+              </div>
+              <p className="text-[11px] text-neutral-400 mt-0.5">
+                {language === 'ar'
+                  ? 'إدارة اشتراكات الأعضاء وحالات الحسابات والبيانات المسجلة'
+                  : language === 'fr'
+                  ? 'Gestion complète des adhésions, forfaits et statuts'
+                  : 'Complete management of member profiles, plans and active statuses'}
+              </p>
+            </div>
+          </div>
+        </div>
 
-            {/* Seek Kinetic Search Box (40px Standard Squircle) */}
+        {/* Tools and Filters Sub-Row (Row 2 of Pod) */}
+        <div className="flex flex-wrap items-center justify-between gap-3 w-full pt-0.5">
+          {/* Left Discovery Group: Seek + Quick Status Tabs + Filters Button */}
+          <div className="flex items-center gap-2.5 min-w-0 flex-wrap">
+            {/* Seek Kinetic Search Box (40px Standard Circular/Pill) */}
             <Seek
               value={searchQuery}
               onChange={setSearchQuery}
               placeholder={language === 'ar' ? `البحث في ${terminology.members}...` : language === 'fr' ? `Rechercher...` : `Search...`}
               shutSize={40}
-              openWidth={220}
+              openWidth={240}
               className="shrink-0"
             />
 
@@ -631,13 +771,14 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
             </div>
 
             {/* On-Demand Filters Popover Button (40px Standard Squircle) */}
-            <div className="relative shrink-0" ref={filterPopoverRef}>
+            <div className="relative shrink-0">
               <button
+                ref={filterButtonRef}
                 type="button"
-                onClick={() => setIsFilterPopoverOpen(!isFilterPopoverOpen)}
+                onClick={toggleFilterPopover}
                 className={`h-10 px-3.5 rounded-[6px] border flex items-center gap-2 text-xs font-semibold cursor-pointer transition-all shadow-2xs select-none ${
                   hasActiveAdvancedFilters || isFilterPopoverOpen
-                    ? 'bg-[#FCEEE8] dark:bg-[#C4785A]/15 text-[#C4785A] border-[#C4785A]/40'
+                    ? 'bg-[#FCEEE8] dark:bg-[#C4785A]/15 text-[#C4785A] border-[#C4785A]/40 ring-1 ring-[#C4785A]/20'
                     : 'bg-white dark:bg-neutral-800 border-[#E9EEF0] dark:border-neutral-700/60 text-neutral-700 dark:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-neutral-700/50'
                 }`}
                 title={language === 'ar' ? 'مرشحات متقدمة' : language === 'fr' ? 'Filtres avancés' : 'Advanced Filters'}
@@ -657,103 +798,309 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
                   }`}
                 />
               </button>
-
-              {/* Floating Filter Popover */}
-              {isFilterPopoverOpen && (
-                <div
-                  className="absolute left-0 mt-2 z-50 w-80 sm:w-88 rounded-[16px] bg-white dark:bg-[#1C1C20] border border-[#E9EEF0] dark:border-neutral-700/80 shadow-2xl p-4 space-y-4 animate-in fade-in zoom-in-95 duration-150"
-                  style={{ minWidth: '320px' }}
-                >
-                  <div className="flex items-center justify-between pb-2 border-b border-neutral-100 dark:border-neutral-800">
-                    <div className="flex items-center gap-2">
-                      <SlidersHorizontal size={14} className="text-[#C4785A]" />
-                      <span className="text-xs font-bold text-neutral-900 dark:text-white uppercase tracking-wider">
-                        {language === 'ar' ? 'مرشحات متقدمة' : language === 'fr' ? 'Filtres avancés' : 'Advanced Filters'}
-                      </span>
-                    </div>
-                    {hasActiveAdvancedFilters && (
-                      <button
-                        type="button"
-                        onClick={handleResetFilters}
-                        className="text-[11px] font-semibold text-[#C4785A] hover:underline flex items-center gap-1 cursor-pointer"
-                      >
-                        <RotateCcw size={11} />
-                        <span>{language === 'ar' ? 'إعادة ضبط' : language === 'fr' ? 'Réinitialiser' : 'Reset'}</span>
-                      </button>
-                    )}
-                  </div>
-
-                  {/* Section 1: Formule / Plan Filter */}
-                  <div className="space-y-1.5">
-                    <label className="text-[11px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
-                      {t('member_filter_plan_label', language)}
-                    </label>
-                    <div className="w-full">
-                      <Select
-                        options={planSelectOptions}
-                        value={planFilter}
-                        onValueChange={(val) => setPlanFilter(val)}
-                        tone="soft"
-                        size="md"
-                        className="w-full justify-between"
-                        aria-label={t('member_filter_plan_label', language)}
-                        placeholder={t('member_filter_all_plans', language)}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Section 2: Extended Status Filter */}
-                  <div className="space-y-1.5">
-                    <label className="text-[11px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
-                      {language === 'ar' ? 'حالة الحساب' : language === 'fr' ? 'Statut du compte' : 'Account Status'}
-                    </label>
-                    <div className="grid grid-cols-2 gap-1.5">
-                      {[
-                        { val: 'All', label: t('member_filter_all', language), count: members.length },
-                        { val: 'Active', label: t('member_filter_active', language), count: activeMembersCount },
-                        { val: 'Expiring', label: t('member_filter_expiring', language), count: expiringCount },
-                        { val: 'Expired', label: t('member_filter_expired', language), count: expiredCount },
-                        { val: 'Archived', label: t('member_filter_archived', language), count: archivedCount },
-                      ].map((item) => {
-                        const isSelected = statusFilter === item.val;
-                        return (
-                          <button
-                            key={item.val}
-                            type="button"
-                            onClick={() => setStatusFilter(item.val as any)}
-                            className={`h-8 px-2.5 rounded-[6px] border text-xs flex items-center justify-between font-medium cursor-pointer transition-all ${
-                              isSelected
-                                ? 'bg-[#FCEEE8] dark:bg-[#C4785A]/20 text-[#C4785A] border-[#C4785A]/40 font-bold'
-                                : 'bg-neutral-50 dark:bg-neutral-800/60 border-neutral-200/80 dark:border-neutral-700/60 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700/40'
-                            }`}
-                          >
-                            <span className="truncate">{item.label}</span>
-                            <span className="text-[10px] opacity-70 tabular-nums ml-1 font-mono">
-                              {item.count}
-                            </span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {/* Section 3: Quick Close / Apply Button */}
-                  <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800">
-                    <AtriumButton
-                      variant="primary"
-                      size="md"
-                      onClick={() => setIsFilterPopoverOpen(false)}
-                      className="w-full font-semibold"
-                    >
-                      <span>{language === 'ar' ? 'تطبيق وإغلاق' : language === 'fr' ? 'Appliquer & fermer' : 'Apply & Close'}</span>
-                    </AtriumButton>
-                  </div>
-                </div>
-              )}
             </div>
           </div>
 
-          {/* Right Utility Group: View Switcher (List/Grid) + Export CSV + Fullscreen */}
+          {/* Floating Filter Popover Rendered via Portal (Apple HIG Inspired - Translucent Frosted Glass & Inset Groups) */}
+          {isFilterPopoverOpen && popoverCoords && createPortal(
+            <div
+              ref={filterPopoverRef}
+              style={{
+                position: 'fixed',
+                top: `${popoverCoords.top}px`,
+                left: `${popoverCoords.left}px`,
+                width: `${popoverCoords.width}px`,
+                maxHeight: 'calc(100vh - 32px)',
+                zIndex: 99999,
+              }}
+              className="rounded-[22px] bg-white/95 dark:bg-[#18181B]/95 backdrop-blur-xl border border-[#E9EEF0] dark:border-neutral-700/80 shadow-2xl p-5 space-y-4 animate-in fade-in zoom-in-95 duration-150 text-neutral-900 dark:text-white overflow-hidden flex flex-col"
+            >
+              {/* Header: Title, Total Matches, Reset & Close */}
+              <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800 shrink-0">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-[#FCEEE8] dark:bg-[#C4785A]/20 flex items-center justify-center text-[#C4785A] shadow-2xs">
+                    <SlidersHorizontal size={15} />
+                  </div>
+                  <div>
+                    <span className="text-xs font-bold text-neutral-900 dark:text-white uppercase tracking-wider block">
+                      {language === 'ar' ? 'مرشحات متقدمة' : language === 'fr' ? 'Filtres avancés' : 'Advanced Filters'}
+                    </span>
+                    <span className="text-[11px] text-neutral-400">
+                      {displayMembers.length} {terminology.members.toLowerCase()}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  {hasActiveAdvancedFilters && (
+                    <button
+                      type="button"
+                      onClick={handleResetFilters}
+                      className="text-[11px] font-semibold text-[#C4785A] hover:underline flex items-center gap-1 cursor-pointer transition-colors"
+                    >
+                      <RotateCcw size={11} />
+                      <span>{language === 'ar' ? 'إعادة ضبط' : language === 'fr' ? 'Réinitialiser' : 'Reset'}</span>
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => setIsFilterPopoverOpen(false)}
+                    className="w-7 h-7 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 flex items-center justify-center cursor-pointer transition-colors"
+                    aria-label="Close filters"
+                  >
+                    <X size={15} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Scrollable Filters Body */}
+              <div className="space-y-4 overflow-y-auto pr-1 max-h-[62vh] -mr-1">
+                {/* Section 1: Gender (Apple Segmented Control Style) */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+                      {language === 'ar' ? 'الجنس' : language === 'fr' ? 'Sexe / Genre' : 'Gender'}
+                    </label>
+                    {genderFilter !== 'All' && (
+                      <button
+                        type="button"
+                        onClick={() => setGenderFilter('All')}
+                        className="text-[10px] text-[#C4785A] font-semibold hover:underline cursor-pointer"
+                      >
+                        {language === 'ar' ? 'الكل' : language === 'fr' ? 'Tous' : 'All'}
+                      </button>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-4 gap-1 p-1 bg-neutral-100/80 dark:bg-neutral-800/80 rounded-[10px] border border-neutral-200/60 dark:border-neutral-700/60">
+                    {[
+                      { val: 'All', label: language === 'ar' ? 'الكل' : language === 'fr' ? 'Tous' : 'All' },
+                      { val: 'Male', label: language === 'ar' ? 'ذكور' : language === 'fr' ? 'Hommes' : 'Male' },
+                      { val: 'Female', label: language === 'ar' ? 'إناث' : language === 'fr' ? 'Femmes' : 'Female' },
+                      { val: 'Other', label: language === 'ar' ? 'آخر' : language === 'fr' ? 'Autre' : 'Other' },
+                    ].map((g) => {
+                      const isSelected = genderFilter === g.val;
+                      return (
+                        <button
+                          key={g.val}
+                          type="button"
+                          onClick={() => setGenderFilter(g.val as any)}
+                          className={`h-7 rounded-[7px] text-xs font-semibold flex items-center justify-center transition-all cursor-pointer ${
+                            isSelected
+                              ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white shadow-2xs font-bold'
+                              : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
+                          }`}
+                        >
+                          {g.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Section 2: Age Groups (Apple Inset Grouped Tiles) */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+                      {language === 'ar' ? 'الفئات العمرية' : language === 'fr' ? "Tranches d'âge" : 'Age Groups'}
+                    </label>
+                    {ageGroupFilter !== 'All' && (
+                      <button
+                        type="button"
+                        onClick={() => setAgeGroupFilter('All')}
+                        className="text-[10px] text-[#C4785A] font-semibold hover:underline cursor-pointer"
+                      >
+                        {language === 'ar' ? 'الكل' : language === 'fr' ? 'Tous' : 'All'}
+                      </button>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+                    {[
+                      { val: 'All', label: language === 'ar' ? 'جميع الأعمار' : language === 'fr' ? 'Tous les âges' : 'All Ages' },
+                      { val: 'under18', label: '< 18 ans' },
+                      { val: '18-25', label: '18 - 25 ans' },
+                      { val: '26-40', label: '26 - 40 ans' },
+                      { val: '41-60', label: '41 - 60 ans' },
+                      { val: 'over60', label: '> 60 ans' },
+                    ].map((ag) => {
+                      const isSelected = ageGroupFilter === ag.val;
+                      const count = members.filter((m) => matchesAgeGroup(m.dateOfBirth, ag.val)).length;
+                      return (
+                        <button
+                          key={ag.val}
+                          type="button"
+                          onClick={() => setAgeGroupFilter(ag.val as any)}
+                          className={`h-9 px-2.5 rounded-[9px] border text-xs flex items-center justify-between font-medium cursor-pointer transition-all ${
+                            isSelected
+                              ? 'bg-[#FCEEE8] dark:bg-[#C4785A]/20 text-[#C4785A] border-[#C4785A]/40 font-bold shadow-2xs'
+                              : 'bg-neutral-50/80 dark:bg-neutral-800/60 border-neutral-200/80 dark:border-neutral-700/60 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700/40'
+                          }`}
+                        >
+                          <span className="truncate">{ag.label}</span>
+                          <span className="text-[10px] font-mono opacity-70 tabular-nums ml-1">
+                            {count}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Section 3: Dynamic Membership Plans (Dynamic to Catalog and Database) */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+                      {t('member_filter_plan_label', language)}
+                    </label>
+                    {planFilter !== 'All' && (
+                      <button
+                        type="button"
+                        onClick={() => setPlanFilter('All')}
+                        className="text-[10px] text-[#C4785A] font-semibold hover:underline cursor-pointer"
+                      >
+                        {language === 'ar' ? 'عرض الكل' : language === 'fr' ? 'Toutes' : 'Show All'}
+                      </button>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-40 overflow-y-auto pr-1">
+                    <button
+                      type="button"
+                      onClick={() => setPlanFilter('All')}
+                      className={`px-3 py-2 rounded-[9px] border text-xs flex items-center justify-between font-medium cursor-pointer transition-all ${
+                        planFilter === 'All'
+                          ? 'bg-[#FCEEE8] dark:bg-[#C4785A]/20 text-[#C4785A] border-[#C4785A]/40 font-bold shadow-2xs'
+                          : 'bg-neutral-50/80 dark:bg-neutral-800/60 border-neutral-200/80 dark:border-neutral-700/60 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700/50'
+                      }`}
+                    >
+                      <span className="truncate">{t('member_filter_all_plans', language)}</span>
+                      <span className="text-[10px] font-mono opacity-70 tabular-nums ml-1">
+                        {members.length}
+                      </span>
+                    </button>
+                    {dynamicAvailablePlans.map((p) => {
+                      const isSelected = planFilter === p.id || planFilter === p.name;
+                      const count = members.filter(
+                        (m) => m.membershipPlanId === p.id || m.membershipPlanName === p.name
+                      ).length;
+                      return (
+                        <button
+                          key={p.id}
+                          type="button"
+                          onClick={() => setPlanFilter(p.id)}
+                          className={`px-3 py-2 rounded-[9px] border text-xs flex items-center justify-between font-medium cursor-pointer transition-all ${
+                            isSelected
+                              ? 'bg-[#FCEEE8] dark:bg-[#C4785A]/20 text-[#C4785A] border-[#C4785A]/40 font-bold shadow-2xs'
+                              : 'bg-neutral-50/80 dark:bg-neutral-800/60 border-neutral-200/80 dark:border-neutral-700/60 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700/50'
+                          }`}
+                        >
+                          <div className="min-w-0 text-left rtl:text-right">
+                            <div className="truncate font-semibold">{p.name}</div>
+                            {p.price > 0 && (
+                              <div className="text-[10px] text-neutral-400 font-mono">
+                                {formatMoney(p.price)}
+                              </div>
+                            )}
+                          </div>
+                          <span className="text-[10px] font-mono opacity-70 tabular-nums ml-2 shrink-0">
+                            {count}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Section 4: Extended Status Filter */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+                      {language === 'ar' ? 'حالة الحساب والوصول' : language === 'fr' ? 'Statut du compte' : 'Account Status'}
+                    </label>
+                    {statusFilter !== 'All' && (
+                      <button
+                        type="button"
+                        onClick={() => setStatusFilter('All')}
+                        className="text-[10px] text-[#C4785A] font-semibold hover:underline cursor-pointer"
+                      >
+                        {language === 'ar' ? 'إعادة ضبط' : language === 'fr' ? 'Réinitialiser' : 'Reset'}
+                      </button>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+                    {[
+                      { val: 'All', label: t('member_filter_all', language), count: members.length, color: 'neutral' },
+                      { val: 'Active', label: t('member_filter_active', language), count: activeMembersCount, color: 'emerald' },
+                      { val: 'Expiring', label: t('member_filter_expiring', language), count: expiringCount, color: 'amber' },
+                      { val: 'Expired', label: t('member_filter_expired', language), count: expiredCount, color: 'rose' },
+                      { val: 'Archived', label: t('member_filter_archived', language), count: archivedCount, color: 'zinc' },
+                    ].map((item) => {
+                      const isSelected = statusFilter === item.val;
+                      return (
+                        <button
+                          key={item.val}
+                          type="button"
+                          onClick={() => setStatusFilter(item.val as any)}
+                          className={`h-9 px-2.5 rounded-[9px] border text-xs flex items-center justify-between font-medium cursor-pointer transition-all ${
+                            isSelected
+                              ? 'bg-[#FCEEE8] dark:bg-[#C4785A]/20 text-[#C4785A] border-[#C4785A]/40 font-bold shadow-2xs'
+                              : 'bg-neutral-50/80 dark:bg-neutral-800/60 border-neutral-200/80 dark:border-neutral-700/60 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700/40'
+                          }`}
+                        >
+                          <div className="flex items-center gap-1.5 min-w-0">
+                            <span
+                              className={`w-2 h-2 rounded-full shrink-0 ${
+                                item.color === 'emerald'
+                                  ? 'bg-emerald-500'
+                                  : item.color === 'amber'
+                                  ? 'bg-amber-500'
+                                  : item.color === 'rose'
+                                  ? 'bg-rose-500'
+                                  : item.color === 'zinc'
+                                  ? 'bg-neutral-400'
+                                  : 'bg-neutral-300'
+                              }`}
+                            />
+                            <span className="truncate">{item.label}</span>
+                          </div>
+                          <span className="text-[10px] font-mono opacity-70 tabular-nums ml-1">
+                            {item.count}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+
+              {/* Bottom Action: Reset & Confirmation Button */}
+              <div className="pt-3 border-t border-neutral-100 dark:border-neutral-800 flex items-center gap-2 shrink-0">
+                {hasActiveAdvancedFilters && (
+                  <button
+                    type="button"
+                    onClick={handleResetFilters}
+                    className="px-3.5 py-2.5 rounded-[10px] border border-neutral-200 dark:border-neutral-700 text-xs font-semibold text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+                  >
+                    {language === 'ar' ? 'إعادة ضبط' : language === 'fr' ? 'Réinitialiser' : 'Reset'}
+                  </button>
+                )}
+                <AtriumButton
+                  variant="primary"
+                  size="md"
+                  onClick={() => setIsFilterPopoverOpen(false)}
+                  className="flex-1 font-semibold"
+                >
+                  <span>
+                    {language === 'ar'
+                      ? `عرض ${displayMembers.length} من ${terminology.members}`
+                      : language === 'fr'
+                      ? `Afficher ${displayMembers.length} ${terminology.members.toLowerCase()}`
+                      : `Show ${displayMembers.length} ${terminology.members}`}
+                  </span>
+                </AtriumButton>
+              </div>
+            </div>,
+            document.body
+          )}
+
+          {/* Right Utility Group: View Switcher (List/Grid) + Atrium Export Button + Fullscreen */}
           <div className="flex items-center gap-2 shrink-0">
             {/* View Switcher: List | Grid (40px standard squircle) */}
             <LiveSegmentedControl
@@ -767,16 +1114,17 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
               aria-label="View Switcher"
             />
 
-            {/* Export CSV Button (40px standard squircle) */}
-            <button
-              type="button"
+            {/* Official Atrium Export Button */}
+            <AtriumButton
+              variant="secondary"
+              size="md"
+              icon={<Download size={15} className="text-neutral-500" />}
               onClick={handleExportCSV}
-              className="h-10 px-3 rounded-[6px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex items-center gap-1.5 text-xs font-semibold text-neutral-700 dark:text-neutral-200 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-50 dark:hover:bg-neutral-700/50 cursor-pointer transition-colors shadow-2xs"
               title={t('members_export_csv', language)}
+              className="font-semibold shadow-2xs"
             >
-              <Download size={15} className="text-neutral-500" />
               <span className="hidden xl:inline">{t('members_export_csv', language)}</span>
-            </button>
+            </AtriumButton>
 
             {/* Fullscreen Expand Icon (40px standard squircle) */}
             <button
@@ -797,10 +1145,50 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
               {language === 'ar' ? 'المرشحات النشطة:' : language === 'fr' ? 'Filtres actifs:' : 'Active filters:'}
             </span>
 
+            {genderFilter !== 'All' && (
+              <span className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-[6px] bg-[#FCEEE8] dark:bg-[#C4785A]/20 text-[#C4785A] border border-[#C4785A]/30 text-xs font-semibold">
+                <span>
+                  {language === 'ar' ? 'الجنس' : 'Sexe'}: {genderFilter === 'Male' ? (language === 'ar' ? 'ذكور' : 'Hommes') : genderFilter === 'Female' ? (language === 'ar' ? 'إناث' : 'Femmes') : (language === 'ar' ? 'آخر' : 'Autre')}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setGenderFilter('All')}
+                  className="hover:text-neutral-900 dark:hover:text-white transition-colors cursor-pointer"
+                  title="Supprimer filtre"
+                  aria-label="Remove gender filter"
+                >
+                  <X size={12} />
+                </button>
+              </span>
+            )}
+
+            {ageGroupFilter !== 'All' && (
+              <span className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-[6px] bg-[#FCEEE8] dark:bg-[#C4785A]/20 text-[#C4785A] border border-[#C4785A]/30 text-xs font-semibold">
+                <span>
+                  {language === 'ar' ? 'العمر' : 'Âge'}: {
+                    ageGroupFilter === 'under18' ? '< 18 ans' :
+                    ageGroupFilter === '18-25' ? '18 - 25 ans' :
+                    ageGroupFilter === '26-40' ? '26 - 40 ans' :
+                    ageGroupFilter === '41-60' ? '41 - 60 ans' :
+                    ageGroupFilter === 'over60' ? '> 60 ans' : 'Tous'
+                  }
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setAgeGroupFilter('All')}
+                  className="hover:text-neutral-900 dark:hover:text-white transition-colors cursor-pointer"
+                  title="Supprimer filtre"
+                  aria-label="Remove age filter"
+                >
+                  <X size={12} />
+                </button>
+              </span>
+            )}
+
             {planFilter !== 'All' && (
               <span className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-[6px] bg-[#FCEEE8] dark:bg-[#C4785A]/20 text-[#C4785A] border border-[#C4785A]/30 text-xs font-semibold">
                 <span>
-                  {t('member_filter_plan_label', language)}: {plans.find((p) => p.id === planFilter)?.name || planFilter}
+                  {t('member_filter_plan_label', language)}: {dynamicAvailablePlans.find((p) => p.id === planFilter)?.name || plans.find((p) => p.id === planFilter)?.name || planFilter}
                 </span>
                 <button
                   type="button"
@@ -841,14 +1229,10 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
           </div>
         )}
 
-        {/* Master Content Area + 390px Detail Inspector Panel */}
-        <div className="flex items-start gap-4">
+        {/* Master Content Area - Full 100% Width Table / Grid */}
+        <div className="w-full">
           {/* Table / Grid Container */}
-          <div
-            className={`flex-1 transition-all duration-300 min-w-0 ${
-              isDetailOpen ? 'max-w-[calc(100%-406px)]' : 'w-full'
-            }`}
-          >
+          <div className="w-full">
             <UniversalDataCollection<Member>
               items={sortedMembers}
               keyExtractor={(m) => m.id}
@@ -1010,33 +1394,48 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
               onAddFirstItem={onAddMember}
             />
           </div>
+        </div>
+      </div>
 
-          {/* 390px Slide-in Detail Inspector Panel */}
-          {isDetailOpen && selectedMember && (
-            <aside
-              style={{
-                width: '390px',
-              }}
-              className="shrink-0 p-6 flex flex-col justify-between max-h-[calc(100vh-220px)] overflow-y-auto animate-in slide-in-from-right-8 duration-200 bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 rounded-[24px] shadow-lg"
-            >
-              <div className="space-y-6">
-                {/* Header */}
-                <div className="flex items-start justify-between pb-4 border-b border-neutral-100 dark:border-neutral-800">
+      {/* Floating Free-Floating Member Detail Island Card (Separated like Sidebar) */}
+      {isDetailOpen && selectedMember && createPortal(
+        <div className="fixed inset-0 z-[100] flex justify-end p-4 pointer-events-none animate-in fade-in duration-200" role="dialog" aria-modal="true">
+          {/* Backdrop Overlay */}
+          <div
+            className="fixed inset-0 bg-neutral-950/40 dark:bg-black/60 backdrop-blur-xs transition-opacity cursor-pointer pointer-events-auto"
+            onClick={closeDetail}
+            aria-hidden="true"
+          />
+
+          {/* Floating Freely 480px Card with Complete Rounded Corners (Matching Sidebar Margin & Radius) */}
+          <aside
+            style={{
+              width: '480px',
+              maxWidth: 'calc(100vw - 32px)',
+              borderRadius: '28px',
+            }}
+            className="relative z-10 h-full bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.35)] flex flex-col justify-between overflow-hidden pointer-events-auto animate-in zoom-in-95 fade-in duration-200 select-none touch-pan-y"
+          >
+            {/* Drawer Body with Apple Top-Level Segmented Tabs */}
+            <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+              {/* Header: Avatar, Name, Badges, Close */}
+              <div className="p-6 pb-3 shrink-0 border-b border-neutral-100 dark:border-neutral-800/80">
+                <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3.5">
                     <div
                       style={{
                         backgroundColor: getMemberInitialsColor(selectedMember.fullName),
                       }}
-                      className="w-11 h-11 rounded-full flex items-center justify-center font-bold text-white text-sm shadow-xs"
+                      className="w-12 h-12 rounded-2xl flex items-center justify-center font-bold text-white text-base shadow-sm ring-2 ring-white dark:ring-neutral-700 select-none"
                     >
                       {selectedMember.fullName.charAt(0).toUpperCase()}
                     </div>
                     <div>
-                      <h3 className="text-base font-bold text-neutral-900 dark:text-white capitalize">
+                      <h3 className="text-lg font-bold text-neutral-900 dark:text-white capitalize leading-tight">
                         {selectedMember.fullName}
                       </h3>
                       <div className="mt-1 flex items-center gap-1.5 flex-wrap">
-                        <span className="text-[11px] font-bold text-[#C4785A] bg-[#C4785A]/15 px-2 py-0.5 rounded-full">
+                        <span className="text-[11px] font-bold text-[#C4785A] bg-[#FCEEE8] dark:bg-[#C4785A]/15 px-2.5 py-0.5 rounded-full border border-[#C4785A]/20">
                           {selectedMember.membershipPlanName || (language === 'ar' ? 'الباقة القياسية' : language === 'fr' ? 'Formule Standard' : 'Standard Package')}
                         </span>
                         <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 dark:bg-emerald-950/60 dark:text-emerald-300 px-2 py-0.5 rounded-full flex items-center gap-1">
@@ -1052,168 +1451,296 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
                   <button
                     type="button"
                     onClick={closeDetail}
-                    className="w-8 h-8 rounded-[6px] flex items-center justify-center text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer transition-colors"
+                    className="w-9 h-9 rounded-xl flex items-center justify-center text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer transition-colors shadow-2xs border border-transparent hover:border-neutral-200 dark:hover:border-neutral-700"
+                    aria-label="Close details"
                   >
-                    <X size={15} />
+                    <X size={17} />
                   </button>
                 </div>
 
-                {/* Quick Actions (Atrium Squircle 40px buttons) */}
-                <div className="grid grid-cols-4 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => checkInMember(selectedMember.id)}
-                    className="h-14 p-1.5 rounded-[6px] bg-[#FDF4F0] dark:bg-neutral-800 text-xs font-semibold flex flex-col items-center justify-center gap-1 text-[#C4785A] hover:bg-[#FCEEE8] cursor-pointer transition-colors border border-[#F5E2D8] dark:border-neutral-700"
-                    title={t('member_drawer_quick_checkin', language)}
-                  >
-                    <UserCheck size={16} />
-                    <span className="text-[10px] font-medium truncate max-w-full">{t('member_drawer_quick_checkin', language)}</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => onEditMember(selectedMember)}
-                    className="h-14 p-1.5 rounded-[6px] border border-neutral-200 dark:border-neutral-800 text-xs font-semibold flex flex-col items-center justify-center gap-1 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 cursor-pointer transition-colors"
-                  >
-                    <Edit size={16} className="text-[#C4785A]" />
-                    <span className="text-[10px] font-medium truncate max-w-full">{t('action_edit', language)}</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const next = selectedMember.status === 'Frozen' ? 'Active' : 'Frozen';
-                      updateMember(selectedMember.id, { status: next });
-                    }}
-                    className="h-14 p-1.5 rounded-[6px] border border-neutral-200 dark:border-neutral-800 text-xs font-semibold flex flex-col items-center justify-center gap-1 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 cursor-pointer transition-colors"
-                  >
-                    {selectedMember.status === 'Frozen' ? (
-                      <Unlock size={16} className="text-emerald-500" />
-                    ) : (
-                      <Lock size={16} className="text-amber-500" />
-                    )}
-                    <span className="text-[10px] font-medium truncate max-w-full">
-                      {selectedMember.status === 'Frozen'
-                        ? t('member_drawer_unblock', language)
-                        : t('member_drawer_block', language)}
-                    </span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => updateMember(selectedMember.id, { remainingSessions: (selectedMember.remainingSessions || 0) + 30 })}
-                    className="h-14 p-1.5 rounded-[6px] border border-neutral-200 dark:border-neutral-800 text-xs font-semibold flex flex-col items-center justify-center gap-1 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 cursor-pointer transition-colors"
-                  >
-                    <RotateCcw size={16} className="text-blue-500" />
-                    <span className="text-[10px] font-medium truncate max-w-full">{currentBusiness.category === 'appointment_service' ? '+Pass' : t('member_drawer_renew', language)}</span>
-                  </button>
+                {/* Top-Level Apple Segmented Control - Full Width Tabs */}
+                <div className="mt-4 pt-1">
+                  <LiveSegmentedControl
+                    size="md"
+                    value={gymDrawerTab}
+                    onValueChange={(val) => setGymDrawerTab(val as any)}
+                    options={[
+                      {
+                        value: 'history',
+                        label: language === 'ar' ? 'البطاقة والاشتراك' : language === 'fr' ? 'Aperçu & Forfait' : 'Overview & Pass',
+                      },
+                      {
+                        value: 'bookings',
+                        label: language === 'ar' ? 'سجل الدخول والحصص' : language === 'fr' ? 'Accès & Séances' : 'Access & Bookings',
+                      },
+                      {
+                        value: 'sales',
+                        label: language === 'ar' ? 'المشتريات والفواتير' : language === 'fr' ? 'Ventes & Factures' : 'Sales & Receipts',
+                      },
+                    ]}
+                    aria-label="Member Detail Inspector Navigation"
+                  />
                 </div>
+              </div>
 
-                {/* Subscription / Package Details Card */}
-                <div className="p-4 rounded-2xl bg-[#FAF9F6] dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-800 text-xs space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-neutral-400">
-                      {currentBusiness.category === 'appointment_service'
-                        ? t('salon_package_plan', language)
-                        : (language === 'ar' ? 'باقة الاشتراك:' : language === 'fr' ? 'Formule d\'abonnement :' : 'Account Plan:')}
-                    </span>
-                    <span className="font-bold text-neutral-900 dark:text-white truncate max-w-[180px]">
-                      {selectedMember.membershipPlanName || (currentBusiness.category === 'appointment_service' ? t('salon_standard_package', language) : (language === 'ar' ? 'الباقة القياسية' : language === 'fr' ? 'Formule Standard' : 'Standard Package'))}
-                    </span>
+              {/* Tab 1: Overview & Subscription (Full Height) */}
+              {gymDrawerTab === 'history' && (
+                <div className="flex-1 overflow-y-auto overflow-x-hidden p-6 space-y-5 animate-in fade-in duration-150">
+                  {/* Quick Action Squircle Tiles */}
+                  <div>
+                    <h4 className="text-[11px] font-bold uppercase tracking-wider text-neutral-400 mb-2">
+                      {language === 'ar' ? 'الإجراءات السريعة' : language === 'fr' ? 'Actions rapides' : 'Quick Actions'}
+                    </h4>
+                    <div className="grid grid-cols-4 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => checkInMember(selectedMember.id)}
+                        className="h-16 p-2 rounded-[14px] bg-[#FDF4F0] dark:bg-[#C4785A]/15 text-xs font-semibold flex flex-col items-center justify-center gap-1 text-[#C4785A] hover:bg-[#FCEEE8] cursor-pointer transition-all border border-[#F5E2D8] dark:border-[#C4785A]/30 shadow-2xs hover:scale-[1.02] active:scale-[0.98]"
+                        title={t('member_drawer_quick_checkin', language)}
+                      >
+                        <UserCheck size={18} />
+                        <span className="text-[10px] font-medium truncate max-w-full">{t('member_drawer_quick_checkin', language)}</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => onEditMember(selectedMember)}
+                        className="h-16 p-2 rounded-[14px] bg-white dark:bg-neutral-800/80 border border-neutral-200/80 dark:border-neutral-700/80 text-xs font-semibold flex flex-col items-center justify-center gap-1 text-neutral-700 dark:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-neutral-800 cursor-pointer transition-all shadow-2xs hover:scale-[1.02] active:scale-[0.98]"
+                      >
+                        <Edit size={18} className="text-[#C4785A]" />
+                        <span className="text-[10px] font-medium truncate max-w-full">{t('action_edit', language)}</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const next = selectedMember.status === 'Frozen' ? 'Active' : 'Frozen';
+                          updateMember(selectedMember.id, { status: next });
+                        }}
+                        className="h-16 p-2 rounded-[14px] bg-white dark:bg-neutral-800/80 border border-neutral-200/80 dark:border-neutral-700/80 text-xs font-semibold flex flex-col items-center justify-center gap-1 text-neutral-700 dark:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-neutral-800 cursor-pointer transition-all shadow-2xs hover:scale-[1.02] active:scale-[0.98]"
+                      >
+                        {selectedMember.status === 'Frozen' ? (
+                          <Unlock size={18} className="text-emerald-500" />
+                        ) : (
+                          <Lock size={18} className="text-amber-500" />
+                        )}
+                        <span className="text-[10px] font-medium truncate max-w-full">
+                          {selectedMember.status === 'Frozen'
+                            ? t('member_drawer_unblock', language)
+                            : t('member_drawer_block', language)}
+                        </span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => updateMember(selectedMember.id, { remainingSessions: (selectedMember.remainingSessions || 0) + 30 })}
+                        className="h-16 p-2 rounded-[14px] bg-white dark:bg-neutral-800/80 border border-neutral-200/80 dark:border-neutral-700/80 text-xs font-semibold flex flex-col items-center justify-center gap-1 text-neutral-700 dark:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-neutral-800 cursor-pointer transition-all shadow-2xs hover:scale-[1.02] active:scale-[0.98]"
+                      >
+                        <RotateCcw size={18} className="text-blue-500" />
+                        <span className="text-[10px] font-medium truncate max-w-full">{currentBusiness.category === 'appointment_service' ? '+Pass' : t('member_drawer_renew', language)}</span>
+                      </button>
+                    </div>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-neutral-400">
-                      {language === 'ar' ? 'تاريخ الانتهاء:' : language === 'fr' ? 'Date d\'échéance :' : 'Expiration Date:'}
-                    </span>
-                    <span className="font-semibold tabular-nums text-neutral-800 dark:text-neutral-200">
-                      {selectedMember.expirationDate}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-neutral-400">
-                      {language === 'ar' ? 'الأيام المتبقية:' : language === 'fr' ? 'Jours restants :' : 'Remaining Days:'}
-                    </span>
-                    <span className="font-bold text-[#C4785A] tabular-nums">
-                      {calculateDaysRemaining(false, selectedMember.expirationDate)} {t('member_days_unit', language)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-neutral-400">
-                      {currentBusiness.category === 'appointment_service'
-                        ? t('salon_included_sessions', language)
-                        : (language === 'ar' ? 'الحصص المتبقية:' : language === 'fr' ? 'Séances restantes :' : 'Remaining Sessions:')}
-                    </span>
-                    <span className="font-bold text-emerald-600 tabular-nums">
-                      {selectedMember.remainingSessions || 30} {currentBusiness.category === 'appointment_service' ? t('salon_session_unit', language) : (language === 'ar' ? 'حصة' : language === 'fr' ? 'séances' : 'visits')}
-                    </span>
-                  </div>
-                </div>
 
-                {/* Dedicated Gym & Fitness Tabs: Turnstile History, Pro-Shop Sales, and Class Bookings */}
-                <div className="space-y-2.5 text-xs">
-                  <div className="pb-1">
-                    <LiveSegmentedControl
-                      size="sm"
-                      value={gymDrawerTab}
-                      onValueChange={(val) => setGymDrawerTab(val as any)}
-                      options={[
-                        { value: 'history', label: t('member_drawer_tab_history', language) },
-                        { value: 'sales', label: t('member_drawer_tab_sales', language) },
-                        { value: 'bookings', label: t('member_drawer_tab_bookings', language) },
-                      ]}
-                      aria-label="Gym Drawer Navigation"
+                  {/* Subscription Overview Card */}
+                  <div className="p-4 rounded-[20px] bg-[#F8F9FA] dark:bg-neutral-800/50 border border-neutral-200/70 dark:border-neutral-700/70 text-xs space-y-3 shadow-2xs">
+                    <div className="flex justify-between items-center pb-2 border-b border-neutral-200/50 dark:border-neutral-700/50">
+                      <span className="text-neutral-500 dark:text-neutral-400 font-medium">
+                        {currentBusiness.category === 'appointment_service'
+                          ? t('salon_package_plan', language)
+                          : (language === 'ar' ? 'باقة الاشتراك:' : language === 'fr' ? 'Formule d\'abonnement :' : 'Account Plan:')}
+                      </span>
+                      <span className="font-bold text-neutral-900 dark:text-white truncate max-w-[220px]">
+                        {selectedMember.membershipPlanName || (currentBusiness.category === 'appointment_service' ? t('salon_standard_package', language) : (language === 'ar' ? 'الباقة القياسية' : language === 'fr' ? 'Formule Standard' : 'Standard Package'))}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-neutral-500 dark:text-neutral-400 font-medium">
+                        {language === 'ar' ? 'تاريخ الانتهاء:' : language === 'fr' ? 'Date d\'échéance :' : 'Expiration Date:'}
+                      </span>
+                      <span className="font-semibold tabular-nums text-neutral-800 dark:text-neutral-200 font-mono">
+                        {selectedMember.expirationDate}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-neutral-500 dark:text-neutral-400 font-medium">
+                        {language === 'ar' ? 'الأيام المتبقية:' : language === 'fr' ? 'Jours restants :' : 'Remaining Days:'}
+                      </span>
+                      <span className="font-bold text-[#C4785A] tabular-nums">
+                        {calculateDaysRemaining(false, selectedMember.expirationDate)} {t('member_days_unit', language)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center pt-2 border-t border-neutral-200/50 dark:border-neutral-700/50">
+                      <span className="text-neutral-500 dark:text-neutral-400 font-medium">
+                        {currentBusiness.category === 'appointment_service'
+                          ? t('salon_included_sessions', language)
+                          : (language === 'ar' ? 'الحصص المتبقية:' : language === 'fr' ? 'Séances restantes :' : 'Remaining Sessions:')}
+                      </span>
+                      <span className="font-bold text-emerald-600 tabular-nums">
+                        {selectedMember.remainingSessions || 30} {currentBusiness.category === 'appointment_service' ? t('salon_session_unit', language) : (language === 'ar' ? 'حصة' : language === 'fr' ? 'séances' : 'visits')}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Contact Information Group */}
+                  <div className="space-y-2 text-xs">
+                    <h4 className="text-[11px] font-bold uppercase tracking-wider text-neutral-400">
+                      {language === 'ar' ? 'بيانات الاتصال والدخول' : language === 'fr' ? 'Contact & Accès' : 'Contact & Access'}
+                    </h4>
+                    <div className="p-3.5 rounded-[18px] bg-[#F8F9FA] dark:bg-neutral-800/40 border border-neutral-200/60 dark:border-neutral-700/60 space-y-2.5">
+                      <div className="flex items-center gap-2.5 text-neutral-700 dark:text-neutral-300">
+                        <Phone size={14} className="text-neutral-400 shrink-0" />
+                        <span className="font-mono text-xs">{selectedMember.phoneNumber || '—'}</span>
+                      </div>
+                      <div className="flex items-center gap-2.5 text-neutral-700 dark:text-neutral-300">
+                        <Mail size={14} className="text-neutral-400 shrink-0" />
+                        <span className="text-xs truncate">{selectedMember.email || '—'}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Staff Notes */}
+                  <div className="space-y-1.5 text-xs">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-[11px] font-bold uppercase tracking-wider text-neutral-400">
+                        {language === 'ar' ? 'ملاحظات الفريق' : language === 'fr' ? 'Notes du personnel' : 'Staff Notes'}
+                      </h4>
+                      {saveNoteSuccess && (
+                        <span className="text-[10px] text-emerald-600 font-bold flex items-center gap-0.5">
+                          <Check size={11} /> {language === 'ar' ? 'تم الحفظ' : language === 'fr' ? 'Enregistré' : 'Saved'}
+                        </span>
+                      )}
+                    </div>
+                    <textarea
+                      rows={3}
+                      value={selectedMember.notes || ''}
+                      onChange={(e) => {
+                        updateMember(selectedMember.id, { notes: e.target.value });
+                        setSaveNoteSuccess(true);
+                        setTimeout(() => setSaveNoteSuccess(false), 2000);
+                      }}
+                      placeholder={language === 'ar' ? 'أضف ملاحظات خاصة حول المشترك...' : language === 'fr' ? 'Ajouter des notes internes sur l\'adhérent...' : 'Add private staff notes...'}
+                      className="w-full p-3.5 rounded-[18px] border border-neutral-200 dark:border-neutral-800 bg-[#F8F9FA] dark:bg-neutral-800/60 text-xs focus:outline-none focus:border-[#C4785A] text-neutral-900 dark:text-white resize-none shadow-2xs"
                     />
                   </div>
+                </div>
+              )}
 
-                    {gymDrawerTab === 'history' && (
-                      <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
-                        <div className="p-2.5 rounded-xl border border-neutral-100 dark:border-neutral-800/80 bg-neutral-50/60 dark:bg-neutral-800/40 text-xs flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                            <div>
-                              <div className="font-bold text-neutral-900 dark:text-white">
-                                {language === 'ar' ? 'بوابة الدخول الرئيسية A1' : language === 'fr' ? 'Portique Tourniquet A1' : 'Main Turnstile Gate A1'}
-                              </div>
-                              <div className="text-[10px] text-neutral-400">
-                                {language === 'ar' ? 'اليوم · 09:14' : language === 'fr' ? 'Aujourd\'hui · 09:14' : 'Today · 09:14'} · {selectedMember.cardId || 'RFID-994821'}
-                              </div>
+              {/* Tab 2: Turnstile Access & Bookings (Full Vertical Height) */}
+              {gymDrawerTab === 'bookings' && (
+                <div className="flex-1 overflow-y-auto overflow-x-hidden p-6 space-y-5 animate-in fade-in duration-150">
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="text-[11px] font-bold uppercase tracking-wider text-neutral-400">
+                        {language === 'ar' ? 'سجل دخول البوابة الإلكترونية' : language === 'fr' ? 'Historique des passages tourniquet' : 'Turnstile Access Log'}
+                      </h4>
+                      <span className="text-[10px] text-emerald-600 font-bold bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
+                        {language === 'ar' ? 'مباشر' : 'Live'}
+                      </span>
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="p-3.5 rounded-[18px] border border-neutral-200/70 dark:border-neutral-800/80 bg-[#F8F9FA] dark:bg-neutral-800/40 text-xs flex items-center justify-between shadow-2xs">
+                        <div className="flex items-center gap-3">
+                          <div className="w-3 h-3 rounded-full bg-emerald-500 shrink-0" />
+                          <div>
+                            <div className="font-bold text-neutral-900 dark:text-white">
+                              {language === 'ar' ? 'بوابة الدخول الرئيسية A1' : language === 'fr' ? 'Portique Tourniquet A1' : 'Main Turnstile Gate A1'}
+                            </div>
+                            <div className="text-[11px] text-neutral-400 mt-0.5">
+                              {language === 'ar' ? 'اليوم · 09:14' : language === 'fr' ? 'Aujourd\'hui · 09:14' : 'Today · 09:14'} · {selectedMember.cardId || 'RFID-994821'}
                             </div>
                           </div>
-                          <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
-                            {language === 'ar' ? 'تم الدخول' : language === 'fr' ? 'Accès Autorisé' : 'Admitted'}
-                          </span>
                         </div>
-                        <div className="p-2.5 rounded-xl border border-neutral-100 dark:border-neutral-800/80 bg-neutral-50/60 dark:bg-neutral-800/40 text-xs flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                            <div>
-                              <div className="font-bold text-neutral-900 dark:text-white">
-                                {language === 'ar' ? 'بوابة الدخول الرئيسية A1' : language === 'fr' ? 'Portique Tourniquet A1' : 'Main Turnstile Gate A1'}
-                              </div>
-                              <div className="text-[10px] text-neutral-400">
-                                {language === 'ar' ? 'أمس · 17:35' : language === 'fr' ? 'Hier · 17:35' : 'Yesterday · 17:35'} · {selectedMember.cardId || 'RFID-994821'}
-                              </div>
-                            </div>
-                          </div>
-                          <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
-                            {language === 'ar' ? 'تم الدخول' : language === 'fr' ? 'Accès Autorisé' : 'Admitted'}
-                          </span>
-                        </div>
+                        <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-1 rounded-full">
+                          {language === 'ar' ? 'تم الدخول' : language === 'fr' ? 'Accès Autorisé' : 'Admitted'}
+                        </span>
                       </div>
-                    )}
 
-                    {gymDrawerTab === 'sales' && (
-                      <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
-                        {(() => {
-                          const memberSales = sales.filter((s) => s.memberId === selectedMember.id);
-                          if (memberSales.length === 0) {
-                            return (
-                              <div className="p-3 rounded-xl border border-dashed border-neutral-200 dark:border-neutral-800 text-center text-neutral-400">
-                                <p className="text-[11px]">{language === 'ar' ? 'لا توجد مشتريات مسجلة للمشترك' : language === 'fr' ? 'Aucun achat boutique enregistré' : 'No purchases recorded for this member'}</p>
-                              </div>
-                            );
-                          }
-                          return memberSales.map((sale) => (
+                      <div className="p-3.5 rounded-[18px] border border-neutral-200/70 dark:border-neutral-800/80 bg-[#F8F9FA] dark:bg-neutral-800/40 text-xs flex items-center justify-between shadow-2xs">
+                        <div className="flex items-center gap-3">
+                          <div className="w-3 h-3 rounded-full bg-emerald-500 shrink-0" />
+                          <div>
+                            <div className="font-bold text-neutral-900 dark:text-white">
+                              {language === 'ar' ? 'بوابة الدخول الرئيسية A1' : language === 'fr' ? 'Portique Tourniquet A1' : 'Main Turnstile Gate A1'}
+                            </div>
+                            <div className="text-[11px] text-neutral-400 mt-0.5">
+                              {language === 'ar' ? 'أمس · 17:35' : language === 'fr' ? 'Hier · 17:35' : 'Yesterday · 17:35'} · {selectedMember.cardId || 'RFID-994821'}
+                            </div>
+                          </div>
+                        </div>
+                        <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-1 rounded-full">
+                          {language === 'ar' ? 'تم الدخول' : language === 'fr' ? 'Accès Autorisé' : 'Admitted'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4 className="text-[11px] font-bold uppercase tracking-wider text-neutral-400 mb-2">
+                      {language === 'ar' ? 'الحصص والأنشطة المحجوزة' : language === 'fr' ? 'Séances & Cours réservés' : 'Booked Classes & Sessions'}
+                    </h4>
+                    <div className="space-y-2">
+                      {schedule.slice(0, 4).map((ev) => (
+                        <div
+                          key={ev.id}
+                          className="p-3.5 rounded-[18px] border border-neutral-200/70 dark:border-neutral-800/80 bg-[#F8F9FA] dark:bg-neutral-800/40 text-xs flex flex-col gap-1.5 shadow-2xs"
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="font-bold text-neutral-900 dark:text-white">
+                              {ev.title}
+                            </span>
+                            <span className="text-[10px] font-bold text-[#C4785A] bg-[#C4785A]/10 px-2.5 py-0.5 rounded-full">
+                              {ev.category}
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between text-[11px] text-neutral-500">
+                            <span>{ev.startTime} - {ev.endTime} • {ev.roomOrArea}</span>
+                            <span className="text-neutral-400 font-medium">{ev.trainerOrStaff}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Tab 3: Sales & Purchases (Full Vertical Height) */}
+              {gymDrawerTab === 'sales' && (
+                <div className="flex-1 overflow-y-auto overflow-x-hidden p-6 space-y-4 animate-in fade-in duration-150">
+                  {(() => {
+                    const memberSales = sales.filter((s) => s.memberId === selectedMember.id);
+                    if (memberSales.length === 0) {
+                      return (
+                        <div className="p-8 rounded-[20px] border border-dashed border-neutral-200 dark:border-neutral-800 text-center text-neutral-400 flex flex-col items-center justify-center gap-2">
+                          <ShoppingCart size={24} className="text-neutral-300 dark:text-neutral-600" />
+                          <p className="text-xs font-medium">
+                            {language === 'ar' ? 'لا توجد مشتريات مسجلة للمشترك' : language === 'fr' ? 'Aucun achat boutique enregistré' : 'No purchases recorded for this member'}
+                          </p>
+                        </div>
+                      );
+                    }
+
+                    const totalSpent = memberSales.reduce((sum, s) => sum + s.totalAmount, 0);
+
+                    return (
+                      <>
+                        <div className="p-4 rounded-[20px] bg-[#FCEEE8] dark:bg-[#C4785A]/15 border border-[#C4785A]/30 flex items-center justify-between shadow-2xs">
+                          <div>
+                            <span className="text-[11px] text-[#C4785A] font-bold uppercase tracking-wider block">
+                              {language === 'ar' ? 'إجمالي المشتريات' : language === 'fr' ? 'Total des achats' : 'Lifetime Spend'}
+                            </span>
+                            <span className="text-xs text-neutral-500 dark:text-neutral-400">
+                              {memberSales.length} {language === 'ar' ? 'عمليات دفع' : 'factures'}
+                            </span>
+                          </div>
+                          <span className="text-lg font-bold font-mono text-[#C4785A] tabular-nums">
+                            {formatMoney(totalSpent)}
+                          </span>
+                        </div>
+
+                        <div className="space-y-2.5">
+                          {memberSales.map((sale) => (
                             <div
                               key={sale.id}
-                              className="p-2.5 rounded-xl border border-neutral-100 dark:border-neutral-800/80 bg-neutral-50/60 dark:bg-neutral-800/40 text-xs flex flex-col gap-1"
+                              className="p-3.5 rounded-[18px] border border-neutral-200/70 dark:border-neutral-800/80 bg-[#F8F9FA] dark:bg-neutral-800/40 text-xs flex flex-col gap-1.5 shadow-2xs"
                             >
                               <div className="flex items-center justify-between">
                                 <span className="font-bold text-neutral-900 dark:text-white font-mono">
@@ -1226,112 +1753,59 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
                               <div className="text-[11px] text-neutral-500 truncate">
                                 {sale.items.map((it) => `${it.quantity}x ${it.productName}`).join(', ')}
                               </div>
-                              <div className="flex items-center justify-between text-[10px] text-neutral-400 pt-0.5 border-t border-neutral-200/50 dark:border-neutral-700/50">
+                              <div className="flex items-center justify-between text-[10px] text-neutral-400 pt-1.5 border-t border-neutral-200/50 dark:border-neutral-700/50">
                                 <span>{new Date(sale.createdAt).toLocaleDateString()}</span>
                                 <span className="font-medium text-neutral-600 dark:text-neutral-300">{sale.paymentMethod}</span>
                               </div>
                             </div>
-                          ));
-                        })()}
-                      </div>
-                    )}
-
-                    {gymDrawerTab === 'bookings' && (
-                      <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
-                        {schedule.slice(0, 3).map((ev) => (
-                          <div
-                            key={ev.id}
-                            className="p-2.5 rounded-xl border border-neutral-100 dark:border-neutral-800/80 bg-neutral-50/60 dark:bg-neutral-800/40 text-xs flex flex-col gap-1"
-                          >
-                            <div className="flex items-center justify-between">
-                              <span className="font-bold text-neutral-900 dark:text-white">
-                                {ev.title}
-                              </span>
-                              <span className="text-[10px] font-bold text-[#C4785A] bg-[#C4785A]/10 px-2 py-0.5 rounded-full">
-                                {ev.category}
-                              </span>
-                            </div>
-                            <div className="flex items-center justify-between text-[11px] text-neutral-500">
-                              <span>{ev.startTime} - {ev.endTime} • {ev.roomOrArea}</span>
-                              <span className="text-neutral-400 font-medium">{ev.trainerOrStaff}</span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                {/* Contact Information */}
-                <div className="space-y-2 text-xs">
-                  <h4 className="text-[11px] font-bold uppercase tracking-wider text-neutral-400">
-                    {language === 'ar' ? 'بيانات الاتصال والدخول' : language === 'fr' ? 'Contact & Accès' : 'Contact & Access'}
-                  </h4>
-                  <div className="flex items-center gap-2 text-neutral-700 dark:text-neutral-300">
-                    <Phone size={13} className="text-neutral-400" />
-                    <span>{selectedMember.phoneNumber}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-neutral-700 dark:text-neutral-300">
-                    <Mail size={13} className="text-neutral-400" />
-                    <span>{selectedMember.email}</span>
-                  </div>
+                          ))}
+                        </div>
+                      </>
+                    );
+                  })()}
                 </div>
+              )}
+            </div>
 
-                {/* Staff Notes */}
-                <div className="space-y-1.5 text-xs">
-                  <div className="flex items-center justify-between">
-                    <h4 className="text-[11px] font-bold uppercase tracking-wider text-neutral-400">
-                      {language === 'ar' ? 'ملاحظات الفريق' : language === 'fr' ? 'Notes du personnel' : 'Staff Notes'}
-                    </h4>
-                    {saveNoteSuccess && (
-                      <span className="text-[10px] text-emerald-600 font-bold flex items-center gap-0.5">
-                        <Check size={11} /> {language === 'ar' ? 'تم الحفظ' : language === 'fr' ? 'Enregistré' : 'Saved'}
-                      </span>
-                    )}
-                  </div>
-                  <textarea
-                    rows={2}
-                    value={selectedMember.notes || ''}
-                    onChange={(e) => {
-                      updateMember(selectedMember.id, { notes: e.target.value });
-                      setSaveNoteSuccess(true);
-                      setTimeout(() => setSaveNoteSuccess(false), 2000);
-                    }}
-                    placeholder={language === 'ar' ? 'أضف ملاحظات خاصة حول المشترك...' : language === 'fr' ? 'Ajouter des notes internes sur l\'adhérent...' : 'Add private staff notes...'}
-                    className="w-full p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-800 text-xs focus:outline-none focus:border-[#C4785A] text-neutral-900 dark:text-white resize-none"
-                  />
-                </div>
-              </div>
+            {/* Bottom Actions Footer */}
+            <div className="p-4 border-t border-neutral-100 dark:border-neutral-800 bg-neutral-50/60 dark:bg-neutral-900/60 flex items-center justify-between gap-3 shrink-0">
+              <button
+                type="button"
+                onClick={() => {
+                  const confirmMsg = language === 'ar'
+                    ? `هل أنت متأكد من حذف ${selectedMember.fullName}؟`
+                    : language === 'fr'
+                    ? `Supprimer définitivement ${selectedMember.fullName} ?`
+                    : `Delete ${selectedMember.fullName}?`;
+                  if (confirm(confirmMsg)) {
+                    deleteMember(selectedMember.id);
+                  }
+                }}
+                className="text-xs font-semibold text-rose-600 hover:text-rose-700 dark:text-rose-400 dark:hover:text-rose-300 cursor-pointer flex items-center gap-1.5 transition-colors px-2 py-1.5 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/30"
+              >
+                <Trash2 size={14} />
+                <span>
+                  {language === 'ar'
+                    ? `حذف ${terminology.memberSingle}`
+                    : language === 'fr'
+                    ? `Supprimer ${terminology.memberSingle.toLowerCase()}`
+                    : `Delete ${terminology.memberSingle}`}
+                </span>
+              </button>
 
-              {/* Bottom Delete */}
-              <div className="pt-4 border-t border-neutral-100 dark:border-neutral-800 flex justify-end">
-                <button
-                  type="button"
-                  onClick={() => {
-                    const confirmMsg = language === 'ar'
-                      ? `هل أنت متأكد من حذف ${selectedMember.fullName}؟`
-                      : language === 'fr'
-                      ? `Supprimer définitivement ${selectedMember.fullName} ?`
-                      : `Delete ${selectedMember.fullName}?`;
-                    if (confirm(confirmMsg)) {
-                      deleteMember(selectedMember.id);
-                    }
-                  }}
-                  className="text-xs font-semibold text-rose-600 hover:text-rose-700 cursor-pointer flex items-center gap-1"
-                >
-                  <Trash2 size={13} />
-                  <span>
-                    {language === 'ar'
-                      ? `حذف ${terminology.memberSingle}`
-                      : language === 'fr'
-                      ? `Supprimer ${terminology.memberSingle.toLowerCase()}`
-                      : `Delete ${terminology.memberSingle}`}
-                  </span>
-                </button>
-              </div>
-            </aside>
-          )}
-        </div>
-      </div>
+              <AtriumButton
+                variant="primary"
+                size="md"
+                onClick={closeDetail}
+                className="font-semibold shadow-2xs"
+              >
+                {language === 'ar' ? 'إغلاق' : language === 'fr' ? 'Fermer' : 'Close'}
+              </AtriumButton>
+            </div>
+          </aside>
+        </div>,
+        document.body
+      )}
 
       {/* Floating Batch Actions Bar */}
       {selectedIds.length > 0 && (

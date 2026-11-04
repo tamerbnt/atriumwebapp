@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { X } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { useAtriumStore } from "../../services/store";
 
 /* ══ Seek ═════════════════════════════════════════════════
@@ -161,7 +161,7 @@ export const Seek: React.FC<SeekProps> = ({
           {
             "--w": `${currentWidth}px`,
             "--shut": `${shutSize}px`,
-            "--sek-r": `${Math.max(5, Math.round(shutSize * 0.147))}px`,
+            "--sek-r": `${Math.round(shutSize / 2)}px`,
             "--lens": `${lensSize}px`,
             "--inset": `${inset}px`,
             "--say": say,
@@ -176,13 +176,9 @@ export const Seek: React.FC<SeekProps> = ({
             e.stopPropagation();
             handleToggle();
           }}
-          className="sek-lens-btn absolute flex items-center justify-center cursor-pointer z-10"
+          className="sek-lens-btn absolute left-0 top-0 h-full flex items-center justify-center cursor-pointer z-10 text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors"
           style={{
-            left: `${inset}px`,
-            top: '50%',
-            transform: 'translateY(-50%)',
-            width: `${lensSize + 4}px`,
-            height: `${lensSize + 4}px`,
+            width: `${shutSize}px`,
             background: 'none',
             border: 0,
             padding: 0,
@@ -190,19 +186,11 @@ export const Seek: React.FC<SeekProps> = ({
           aria-label={isOpen ? "Focus search field" : "Open search field"}
           title={isOpen ? "Search" : "Open search"}
         >
-          <svg
-            className="sek-lens"
-            viewBox="0 0 18 18"
-            aria-hidden="true"
-            style={{
-              width: `${lensSize}px`,
-              height: `${lensSize}px`,
-              pointerEvents: 'none',
-            }}
-          >
-            <circle cx="7.5" cy="7.5" r="5" />
-            <line x1="11.5" y1="11.5" x2="16" y2="16" />
-          </svg>
+          <Search
+            size={Math.max(16, Math.round(shutSize * 0.44))}
+            strokeWidth={2.2}
+            className="transition-transform duration-200"
+          />
         </button>
 
         {/* Input Field: slides out from behind the lens */}
@@ -219,6 +207,8 @@ export const Seek: React.FC<SeekProps> = ({
           spellCheck={false}
           tabIndex={isOpen ? 0 : -1}
           style={{
+            left: `${shutSize}px`,
+            right: isOpen && value ? '34px' : '14px',
             pointerEvents: isOpen ? 'auto' : 'none',
           }}
         />

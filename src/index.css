@@ -991,7 +991,7 @@
   position: relative;
   width: var(--w);
   height: var(--shut);
-  border-radius: var(--sek-r, 6px);
+  border-radius: var(--sek-r, 9999px);
   background: var(--color-surface-bg, var(--pane));
   color: var(--color-text-primary, var(--ink));
   -webkit-backdrop-filter:
@@ -1003,7 +1003,8 @@
   transition:
     width 280ms cubic-bezier(0.22, 1, 0.36, 1),
     transform 160ms cubic-bezier(0.22, 1, 0.36, 1),
-    background 220ms ease;
+    background 220ms ease,
+    box-shadow 220ms ease;
   overflow: hidden;
 }
 
@@ -1018,8 +1019,9 @@
 }
 
 .sek:not([data-open="true"]) .sek-skin:hover {
-  --sk: 1.02;
+  --sk: 1.05;
   --g-bright: 104%;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
 }
 
 .sek[data-press="true"] .sek-skin {
@@ -1043,15 +1045,11 @@
 }
 
 .sek-lens {
-  position: absolute;
-  left: var(--inset);
-  top: 50%;
-  width: var(--lens);
-  height: var(--lens);
-  margin-top: calc(var(--lens) / -2);
+  width: var(--lens, 18px);
+  height: var(--lens, 18px);
   fill: none;
   stroke: currentColor;
-  stroke-width: 1.6;
+  stroke-width: 1.8;
   stroke-linecap: round;
   pointer-events: none;
   transition: stroke 220ms ease, stroke-width 220ms ease;
