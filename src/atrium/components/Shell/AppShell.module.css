@@ -1,0 +1,74 @@
+.root {
+  --gap: var(--atr-shell-gap, 12px);
+  --bar-h: var(--atr-bar-h, 52px);
+  --r: var(--atr-r-card, 24px);
+  position: relative;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: var(--atr-rail, 60px) minmax(0, 1fr);
+  grid-template-rows: var(--bar-h) minmax(0, 1fr);
+  column-gap: var(--gap);
+  padding: var(--gap);
+  overflow: hidden;
+  background: var(--atr-bg);
+  color: var(--atr-ink);
+  font-family: var(--atr-font-ui, inherit);
+}
+/* hidden: the row collapses once, and the card's transform (BarBody) cancels the jump */
+.root[data-bar='hidden'] { grid-template-rows: 0 minmax(0, 1fr); }
+
+.side { grid-column: 1; grid-row: 1 / span 2; min-height: 0; }
+
+.slot { grid-column: 2; grid-row: 1; position: relative; z-index: 10; }
+.bar {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: var(--bar-h);
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 12px 0 18px;
+  background: var(--atr-card);
+  border: 1px solid var(--atr-line);
+  border-radius: var(--r);
+  will-change: transform;
+}
+.root[data-bar='hidden'][data-settled] .bar { visibility: hidden; will-change: auto; }
+
+.main {
+  grid-column: 2;
+  grid-row: 2;
+  min-width: 0;
+  min-height: 0;
+  margin-top: var(--gap);
+  overflow: auto;
+  overscroll-behavior: contain;
+  background: var(--atr-card);
+  border: 1px solid var(--atr-line);
+  border-radius: var(--r);
+  will-change: transform;
+}
+.root[data-bar='hidden'] .main { margin-top: 0; }
+.root[data-settled] .main { will-change: auto; }
+
+/* keyboard way back to a hidden bar: invisible until focused */
+.reveal {
+  position: absolute;
+  left: 50%;
+  top: 8px;
+  z-index: 30;
+  transform: translate(-50%, -200%);
+  padding: 8px 14px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--atr-acc);
+  color: var(--atr-onacc);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.reveal:focus-visible { transform: translate(-50%, 0); outline: 2px solid var(--atr-ink); outline-offset: 2px; }

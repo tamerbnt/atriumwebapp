@@ -288,6 +288,7 @@ interface AppState {
   isDesktopUpgradeModalOpen: boolean;
   desktopUpgradeReason: 'branch_limit' | 'business_limit' | 'general';
   isTopBarCollapsed: boolean;
+  isTopBarAutoHide: boolean;
   // Supabase Integration & Sync
   supabaseStatus: SupabaseStatus;
   isSyncing: boolean;
@@ -429,6 +430,7 @@ const DEFAULT_STATE: AppState = {
   isDesktopUpgradeModalOpen: false,
   desktopUpgradeReason: 'general',
   isTopBarCollapsed: false,
+  isTopBarAutoHide: false,
   supabaseStatus: isSupabaseConfigured() ? 'connecting' : 'unconfigured',
   isSyncing: false,
   lastSyncedAt: null,
@@ -7836,6 +7838,7 @@ export function useAtriumStore() {
     isDesktopUpgradeModalOpen: state.isDesktopUpgradeModalOpen,
     desktopUpgradeReason: state.desktopUpgradeReason,
     isTopBarCollapsed: state.isTopBarCollapsed || false,
+    isTopBarAutoHide: state.isTopBarAutoHide ?? false,
     // Lists
     members: currentMembers,
     leads: currentLeads,
@@ -8267,6 +8270,20 @@ export function useAtriumStore() {
       globalState = {
         ...globalState,
         isTopBarCollapsed: !globalState.isTopBarCollapsed,
+      };
+      notify();
+    },
+    toggleTopBarAutoHide: () => {
+      globalState = {
+        ...globalState,
+        isTopBarAutoHide: !globalState.isTopBarAutoHide,
+      };
+      notify();
+    },
+    setTopBarAutoHide: (autoHide: boolean) => {
+      globalState = {
+        ...globalState,
+        isTopBarAutoHide: autoHide,
       };
       notify();
     },

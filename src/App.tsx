@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAtriumStore } from './services/store';
 import { Member } from './types/index';
+import { AppShell } from '@/atrium';
 import { Sidebar } from './components/layout/Sidebar';
 import { TopBar } from './components/layout/TopBar';
 import { SettingsScreen } from './components/screens/SettingsScreen';
@@ -170,6 +171,7 @@ export default function App() {
     activePosRole,
     activeEducationRole,
     isTopBarCollapsed,
+    isTopBarAutoHide,
     toggleTopBarCollapsed,
     setTopBarCollapsed,
     loginWithPin,
@@ -230,7 +232,8 @@ export default function App() {
     };
     window.addEventListener('keydown', handleGlobalKeyDown);
     return () => window.removeEventListener('keydown', handleGlobalKeyDown);
-  }, [isTopBarCollapsed, toggleTopBarCollapsed, setTopBarCollapsed]);
+  }, [isTopBarCollapsed,
+    isTopBarAutoHide, toggleTopBarCollapsed, setTopBarCollapsed]);
 
   // Sync theme & RTL on boot
   useEffect(() => {
@@ -1143,69 +1146,39 @@ export default function App() {
           <LoginScreen onStartOnboarding={openOnboarding} />
         </div>
       ) : (
-        <div className="flex h-screen w-screen overflow-hidden bg-[var(--color-window-bg)]">
-      {/* 288px Obsidian Sidebar with Mobile Drawer */}
-      <Sidebar
-        onOpenVoucherModal={() => setIsVoucherModalOpen(true)}
-        isOpenMobile={isMobileSidebarOpen}
-        onCloseMobile={() => setIsMobileSidebarOpen(false)}
-      />
-
-      {/* Main Content Viewport */}
-      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden p-4 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]">
-        {/* Animated TopBar Header Wrapper */}
-        <div
-          className={`w-full relative z-30 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-visible shrink-0 ${
-            isTopBarCollapsed
-              ? 'max-h-0 -translate-y-[120%] opacity-0 pointer-events-none mb-0'
-              : 'max-h-[64px] translate-y-0 opacity-100 mb-4'
-          }`}
-        >
-          <TopBar
-            onOpenVoucherModal={() => setIsVoucherModalOpen(true)}
-            onToggleMobileMenu={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
-            onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
-          />
-        </div>
-
-        {/* Dynamic Screen Viewport wrapped in pure white desktop container matching sidebar baseline */}
-        <main className="flex-1 min-h-0 min-w-0 flex flex-col w-full relative z-10 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]">
-          <div className="flex-1 min-h-0 bg-white dark:bg-[#18181B] rounded-[32px] border border-[#E9EEF0] dark:border-neutral-800 shadow-2xs overflow-hidden flex flex-col relative">
-            {/* Top-Center Floating Restore Notch when TopBar is collapsed */}
-            {isTopBarCollapsed && (
-              <div className="absolute top-2.5 left-1/2 -translate-x-1/2 z-30 animate-in fade-in slide-in-from-top-2 duration-200">
-                <button
-                  type="button"
-                  onClick={toggleTopBarCollapsed}
-                  title={t('topbar_focus_restore', "Afficher l'en-tête (Cmd+\\)")}
-                  className="group flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/95 dark:bg-neutral-900/95 text-neutral-600 dark:text-neutral-300 border border-neutral-200/90 dark:border-neutral-700/90 shadow-md backdrop-blur-md hover:border-[#C4785A]/80 hover:text-[#C4785A] dark:hover:text-[#E09070] hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#C4785A]"
-                >
-                  <ChevronDown className="w-3.5 h-3.5 text-[#C4785A] group-hover:translate-y-0.5 transition-transform" />
-                  <span className="text-[11px] font-semibold tracking-wide">
-                    {t('topbar_focus_restore', "Afficher l'en-tête")}
-                  </span>
-                </button>
-              </div>
-            )}
-
-            {/* Inner Scrollable Viewport */}
-            <div
-              id="main-content-scroll"
-              className="flex-1 min-h-0 overflow-y-auto p-7 sm:p-9 pb-16 sm:pb-20 overscroll-contain"
-            >
+        <div className="h-screen w-screen overflow-hidden bg-[var(--color-window-bg)]">
+          <AppShell
+            autoHide={isTopBarAutoHide}
+            barHidden={isTopBarCollapsed}
+            onBarHiddenChange={(hidden) => {
+              setTopBarCollapsed(hidden);
+            }}
+            sidebar={
+              <Sidebar
+                onOpenVoucherModal={() => setIsVoucherModalOpen(true)}
+                isOpenMobile={isMobileSidebarOpen}
+                onCloseMobile={() => setIsMobileSidebarOpen(false)}
+              />
+            }
+            topbar={
+              <TopBar
+                onOpenVoucherModal={() => setIsVoucherModalOpen(true)}
+                onToggleMobileMenu={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
+                onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
+              />
+            }
+          >
+            <div id="main-content-scroll" className="relative w-full min-h-full flex flex-col p-6 sm:p-8 pb-16 sm:pb-20">
               {renderActiveScreen()}
+              <ScrollJumpPill
+                className="!fixed bottom-6 right-8 z-20"
+              />
             </div>
-
-            {/* Universal Smart Scroll Jump Pill (Anchored bottom center inside the card) */}
-            <ScrollJumpPill
-              targetContainerId="main-content-scroll"
-              className="!absolute"
-            />
-          </div>
-        </main>
-      </div>
-
-      {/* Global Modals */}
+          </AppShell>
+        </div>
+      )
+    }
+{/* Global Modals */}
       <CommandPaletteModal
         isOpen={isCommandPaletteOpen}
         onClose={() => setIsCommandPaletteOpen(false)}
@@ -1247,8 +1220,6 @@ export default function App() {
 
       {/* Kinetic Category-Dedicated ToastStack */}
       <ToastStack />
-    </div>
-      )}
   </AppleOverscrollProvider>
 );
 }

@@ -112,6 +112,8 @@ export const TopBar: React.FC<TopBarProps> = ({
     setActivePosRole,
     activeEducationRole,
     setActiveEducationRole,
+    isTopBarAutoHide,
+    toggleTopBarAutoHide,
   } = useAtriumStore();
 
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -732,7 +734,7 @@ export const TopBar: React.FC<TopBarProps> = ({
 
   return (
     <header
-      className="relative z-30 h-[54px] w-full px-4 sm:px-5 rounded-[27px] bg-white dark:bg-[#18181B] border border-[#E9EEF0] dark:border-neutral-800 flex items-center justify-between gap-3 shrink-0 shadow-2xs"
+      className="w-full h-full flex items-center justify-between gap-3 shrink-0 select-none"
     >
       {/* Left: Mobile Toggle & Working Interactive Breadcrumbs & Facility Capsule */}
       <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
@@ -1551,6 +1553,15 @@ export const TopBar: React.FC<TopBarProps> = ({
                 description: 'Prepaid lifetime license activation',
                 icon: <Rocket size={15} />,
                 onSelect: () => onOpenVoucherModal?.(),
+              },
+              {
+                id: 'autohide',
+                label: isTopBarAutoHide
+                  ? (language === 'ar' ? 'تعطيل الإخفاء التلقائي للشريط' : language === 'fr' ? 'Désactiver masquage auto' : 'Disable Top Bar Auto-hide')
+                  : (language === 'ar' ? 'تفعيل الإخفاء التلقائي عند التمرير' : language === 'fr' ? 'Activer masquage auto' : 'Enable Top Bar Auto-hide'),
+                description: isTopBarAutoHide ? 'Top bar is floating / auto-hiding' : 'Top bar stays permanently visible',
+                icon: <ChevronUp size={15} />,
+                onSelect: () => toggleTopBarAutoHide(),
               },
               {
                 id: 'settings',

@@ -1,0 +1,177 @@
+/* The rail is the only thing that takes layout space (--atr-rail). Expanding draws a panel over the
+   page, clipped by one clip-path that follows --open, so nothing reflows and no icon ever moves. */
+.root {
+  --open: 0;
+  --wr: var(--atr-rail, 60px);
+  --wx: var(--atr-rail-open, 208px);
+  --bleed: 18px; /* extra panel hidden behind the clip, shown only by the spring's overshoot */
+  --r: var(--atr-r-card, 24px);
+  position: relative;
+  width: var(--wr);
+  height: 100%;
+  z-index: 20;
+  color: var(--atr-side-ink);
+  font-family: var(--atr-font-ui, inherit);
+}
+
+.panel {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: calc(var(--wx) + var(--bleed));
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  background: var(--atr-side);
+  border-radius: var(--r);
+  clip-path: inset(0 calc(var(--bleed) + (1 - var(--open)) * (var(--wx) - var(--wr))) 0 0 round var(--r));
+  contain: layout paint;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  height: 64px;
+  margin: 0 10px;
+  flex: none;
+}
+.brandMark { width: 40px; height: 40px; display: grid; place-items: center; flex: none; }
+.brandMark svg { width: 24px; height: 24px; }
+.brandTitle { margin-left: 8px; font-family: 'Sigana Condensed', 'Cinzel', var(--atr-font-ui, sans-serif); font-size: 20px; line-height: 1; font-weight: 700; letter-spacing: 0.14em; color: var(--atr-side-ink); }
+
+.list { list-style: none; margin: 14px 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; flex: 1; min-height: 0; overflow: hidden; }
+
+.item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  width: calc(var(--wx) - 20px);
+  height: 40px;
+  margin: 0 10px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--atr-side-mut);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 20px;
+  -webkit-tap-highlight-color: transparent;
+}
+.item:hover { color: var(--atr-side-ink); }
+.item:focus-visible { outline: 2px solid var(--atr-acc); outline-offset: 2px; }
+
+/* active pill: a circle in the rail that the clip stretches to the full row */
+.hl {
+  position: absolute;
+  inset: 0;
+  background: var(--atr-acc);
+  border-radius: 20px;
+  clip-path: inset(0 calc((1 - var(--open)) * (100% - 40px)) 0 0 round 20px);
+}
+.item[aria-current='page'] { color: var(--atr-onacc); }
+.item:not([aria-current='page']) .hl { display: none; }
+/* hover wash, same clip so it also grows with the panel */
+.item:not([aria-current='page']):hover::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 20px;
+  background: var(--atr-side-hl);
+  clip-path: inset(0 calc((1 - var(--open)) * (100% - 40px)) 0 0 round 20px);
+}
+
+.ico { position: relative; width: 40px; height: 40px; flex: none; display: grid; place-items: center; }
+.ico svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+/* labels fade and slide in after the panel has started to open, one row after another */
+.lab {
+  position: relative;
+  margin-left: 4px;
+  white-space: nowrap;
+  opacity: clamp(0, (var(--open) - 0.28 - var(--i, 0) * 0.035) * 2.4, 1);
+  transform: translateX(calc((1 - min(1, var(--open))) * -10px));
+}
+.badge {
+  position: relative;
+  margin-left: auto;
+  margin-right: 12px;
+  min-width: 18px;
+  padding: 0 5px;
+  height: 18px;
+  border-radius: 9px;
+  box-sizing: border-box;
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--atr-acc);
+  color: var(--atr-onacc);
+  opacity: clamp(0, (var(--open) - 0.5) * 2.4, 1);
+}
+.footer { flex: none; padding: 0 0 10px; opacity: clamp(0, (var(--open) - 0.4) * 2.4, 1); font-size: 10px; letter-spacing: 0.14em; text-align: center; color: var(--atr-side-mut); }
+
+/* the little handle on the panel's leading edge: rides on a transform, so it costs no layout */
+.edge {
+  position: absolute;
+  top: 24px;
+  left: calc(var(--wr) - 11px);
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--atr-acc);
+  color: var(--atr-onacc);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transform: translateX(calc((var(--wx) - var(--wr)) * var(--open)));
+  box-shadow: 0 0 0 3px var(--atr-bg);
+}
+.edge svg { width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; transform: rotate(calc(var(--open) * 180deg)); }
+.edge:focus-visible { outline: 2px solid var(--atr-ink); outline-offset: 2px; }
+
+/* tier "off" and reduced motion: the same CSS, the engine just jumps --open to 0 or 1 */
+@media (forced-colors: active) {
+  .panel { border: 1px solid CanvasText; }
+  .hl { background: Highlight; }
+}
+
+/* RTL layout optical adjustments */
+[dir="rtl"] .panel {
+  inset: 0 0 0 auto;
+  clip-path: inset(0 0 0 calc(var(--bleed) + (1 - var(--open)) * (var(--wx) - var(--wr))) round var(--r));
+}
+[dir="rtl"] .edge {
+  left: auto;
+  right: calc(var(--wr) - 11px);
+  transform: translateX(calc((var(--wx) - var(--wr)) * -1 * var(--open)));
+}
+[dir="rtl"] .edge svg {
+  transform: rotate(calc(var(--open) * -180deg + 180deg));
+}
+[dir="rtl"] .brandTitle {
+  margin-left: 0;
+  margin-right: 8px;
+}
+[dir="rtl"] .item {
+  text-align: right;
+}
+[dir="rtl"] .hl {
+  clip-path: inset(0 0 0 calc((1 - var(--open)) * (100% - 40px)) round 20px);
+}
+[dir="rtl"] .item:not([aria-current='page']):hover::before {
+  clip-path: inset(0 0 0 calc((1 - var(--open)) * (100% - 40px)) round 20px);
+}
+[dir="rtl"] .lab {
+  margin-left: 0;
+  margin-right: 4px;
+  transform: translateX(calc((1 - min(1, var(--open))) * 10px));
+}
+[dir="rtl"] .badge {
+  margin-left: 12px;
+  margin-right: auto;
+}

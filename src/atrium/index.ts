@@ -30,6 +30,11 @@ export type { LiquidButtonProps, LiquidKind, LiquidStatus, LiquidLabels } from '
 export { LiquidLoader } from './components/LiquidLoader/LiquidLoader';
 export type { LiquidLoaderProps } from './components/LiquidLoader/LiquidLoader';
 
+export { Sidebar } from './components/Shell/Sidebar';
+export type { SidebarProps, SidebarItem } from './components/Shell/Sidebar';
+export { AppShell } from './components/Shell/AppShell';
+export type { AppShellProps } from './components/Shell/AppShell';
+
 export { AtriumLogo } from './components/Logo/AtriumLogo';
 export type { AtriumLogoProps } from './components/Logo/AtriumLogo';
 

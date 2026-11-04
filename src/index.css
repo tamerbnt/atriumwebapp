@@ -3,6 +3,14 @@
 
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *, .dark, .dark *));
 
+@font-face {
+  font-family: 'Sigana Condensed';
+  src: url('/fonts/SiganaCondensed.otf') format('opentype');
+  font-weight: 400 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 @layer base {
   :root {
     /* Brand Accent — Atrium Executive Terracotta */

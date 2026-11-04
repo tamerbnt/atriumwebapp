@@ -56,6 +56,17 @@
 :root {
   --atr-h: 34px;
   --atr-radius-k: 0.147; /* radius = 0.147 × height */
+  /* app shell */
+  --atr-r-card: 24px; /* big containers: the sidebar, the page card, the top bar */
+  --atr-rail: 60px; /* collapsed sidebar width */
+  --atr-rail-open: 236px; /* expanded sidebar width */
+  --atr-bar-h: 52px; /* top bar height */
+  --atr-shell-gap: 12px;
+  /* the sidebar is dark in both themes */
+  --atr-side: #151413;
+  --atr-side-ink: #ece6e0;
+  --atr-side-mut: #a39b93;
+  --atr-side-hl: rgba(255, 255, 255, 0.07);
 }
 
 [data-atrium-theme='dark'] {
@@ -86,15 +97,12 @@
   color-scheme: dark;
 }
 
-[data-atr-size='xs'] {
-  --atr-h: 30px;
-}
 [data-atr-size='sm'] {
-  --atr-h: 36px;
+  --atr-h: 28px;
 }
 [data-atr-size='md'] {
-  --atr-h: 40px;
+  --atr-h: 34px;
 }
 [data-atr-size='lg'] {
-  --atr-h: 48px;
+  --atr-h: 44px;
 }
