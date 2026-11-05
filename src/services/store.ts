@@ -101,6 +101,11 @@ import {
   WalkInTicket,
   SalonChairStation,
   EduQuickAttendanceRecord,
+  StaffAttendanceLogRecord,
+  StaffWeeklyAttendance,
+  StaffSalaryAdvance,
+  StaffPayrollSlipRecord,
+  StaffPayrollRunRecord,
 } from '../types/index';
 import {
   INITIAL_ACCOUNT,
@@ -120,6 +125,10 @@ import {
   INITIAL_SALON_CLIENTS,
   INITIAL_SCHEDULE,
   INITIAL_STAFF,
+  INITIAL_STAFF_ATTENDANCE_LOGS,
+  INITIAL_STAFF_SALARY_ADVANCES,
+  INITIAL_STAFF_PAYROLL_RUNS,
+  INITIAL_STAFF_PAYROLL_SLIPS,
   INITIAL_FREELANCE_CLIENTS,
   INITIAL_FREELANCE_PROJECTS,
   INITIAL_TIME_LOGS,
@@ -179,6 +188,7 @@ import {
   normalizePhone,
   getCategoryPerformanceMetricLabel,
 } from '../utils/staffRules';
+import { calculateAlgerianGrossToNet } from '../utils/algerianPayroll';
 
 import {
   isSupabaseConfigured,
@@ -275,6 +285,10 @@ interface AppState {
   products: Product[];
   sales: Sale[];
   staff: StaffMember[];
+  staffAttendanceLogs: StaffAttendanceLogRecord[];
+  staffSalaryAdvances: StaffSalaryAdvance[];
+  staffPayrollRuns: StaffPayrollRunRecord[];
+  staffPayrollSlips: StaffPayrollSlipRecord[];
   schedule: ScheduleEvent[];
   devices: Device[];
   appointments: Appointment[];
@@ -417,6 +431,10 @@ const DEFAULT_STATE: AppState = {
   products: [...INITIAL_PRODUCTS, ...INITIAL_TRADING_PRODUCTS],
   sales: INITIAL_SALES,
   staff: INITIAL_STAFF,
+  staffAttendanceLogs: INITIAL_STAFF_ATTENDANCE_LOGS,
+  staffSalaryAdvances: INITIAL_STAFF_SALARY_ADVANCES,
+  staffPayrollRuns: INITIAL_STAFF_PAYROLL_RUNS,
+  staffPayrollSlips: INITIAL_STAFF_PAYROLL_SLIPS,
   schedule: INITIAL_SCHEDULE,
   devices: INITIAL_DEVICES,
   appointments: INITIAL_APPOINTMENTS,
@@ -2306,7 +2324,33 @@ export function useAtriumStore() {
     }
 
     const nowTime = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    const nowIso = new Date().toISOString();
+    const todayStr = nowIso.slice(0, 10);
     const isClockingIn = !target.isClockedInToday;
+
+    const logMethod: 'pin' | 'rfid' | 'kiosk' =
+      target.pinCode === idOrToken
+        ? 'pin'
+        : (target.cardId && target.cardId.toUpperCase() === clean) ||
+          (target.badgeToken && target.badgeToken.toUpperCase() === clean)
+        ? 'rfid'
+        : 'kiosk';
+
+    const newLogEntry: StaffAttendanceLogRecord = {
+      id: `att_log_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      accountId: target.accountId || globalState.account.id,
+      businessId: target.businessId || globalState.currentBusinessId,
+      branchId: target.branchId || target.facilityId || globalState.currentBranchId,
+      staffId: target.id,
+      staffName: target.fullName,
+      staffRole: target.role,
+      timestamp: nowIso,
+      date: todayStr,
+      type: isClockingIn ? 'in' : 'out',
+      method: logMethod,
+      terminalId: 'KIOSK_DESK_MAIN',
+      notes: isClockingIn ? 'Pointage d\'arrivée enregistré' : 'Pointage de sortie enregistré',
+    };
 
     globalState = {
       ...globalState,
@@ -2320,6 +2364,7 @@ export function useAtriumStore() {
             }
           : s
       ),
+      staffAttendanceLogs: [newLogEntry, ...(globalState.staffAttendanceLogs || [])],
     };
     notify();
 
@@ -2335,6 +2380,237 @@ export function useAtriumStore() {
       action: isClockingIn ? 'clock_in' : 'clock_out',
       time: nowTime,
     };
+  };
+
+  const createStaffSalaryAdvance = (data: {
+    staffId: string;
+    staffName: string;
+    amountDzd: number;
+    paymentMethod: 'cash' | 'ccp' | 'bank_transfer';
+    reason?: string;
+  }) => {
+    const newAdvance: StaffSalaryAdvance = {
+      id: `adv_${Date.now()}`,
+      accountId: globalState.account.id,
+      businessId: globalState.currentBusinessId,
+      branchId: globalState.currentBranchId,
+      staffId: data.staffId,
+      staffName: data.staffName,
+      amountDzd: data.amountDzd,
+      dateIssued: new Date().toISOString().slice(0, 10),
+      paymentMethod: data.paymentMethod,
+      reason: data.reason || 'Acompte sur salaire',
+      voucherNumber: `VCH-ACP-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 9000) + 1000)}`,
+      status: 'pending',
+    };
+    globalState = {
+      ...globalState,
+      staffSalaryAdvances: [newAdvance, ...(globalState.staffSalaryAdvances || [])],
+    };
+    notify();
+    showToast({
+      type: 'success',
+      title: 'Acompte enregistré',
+      message: `Acompte de ${data.amountDzd.toLocaleString()} DZD octroyé à ${data.staffName}.`,
+    });
+    return newAdvance;
+  };
+
+  const waiveStaffSalaryAdvance = (advanceId: string) => {
+    globalState = {
+      ...globalState,
+      staffSalaryAdvances: (globalState.staffSalaryAdvances || []).map((a) =>
+        a.id === advanceId ? { ...a, status: 'waived' as const } : a
+      ),
+    };
+    notify();
+  };
+
+  const generateStaffPayrollRun = (month: number, year: number, category = 'membership_session') => {
+    const dateObj = new Date(year, month - 1, 1);
+    const periodMonthName = dateObj.toLocaleString('fr-FR', { month: 'long' });
+    const capitalizedPeriod = periodMonthName.charAt(0).toUpperCase() + periodMonthName.slice(1) + ' ' + year;
+    const runId = `payrun_${year}_${String(month).padStart(2, '0')}`;
+
+    const staffPool = (globalState.staff || []).filter((s) => s.status !== 'terminated');
+
+    let totalGross = 0;
+    let totalCnasSal = 0;
+    let totalCnasPat = 0;
+    let totalIrg = 0;
+    let totalNet = 0;
+
+    const slips: StaffPayrollSlipRecord[] = staffPool.map((member, idx) => {
+      const pendingAdvances = (globalState.staffSalaryAdvances || []).filter(
+        (a) => a.staffId === member.id && a.status === 'pending'
+      );
+      const advancesSum = pendingAdvances.reduce((sum, a) => sum + a.amountDzd, 0);
+
+      const coachingCommission = member.serviceCommissionRate ? (member.salary * member.serviceCommissionRate) / 100 : 0;
+      const primesCotisables = coachingCommission > 0 ? [{ label: 'Commissions Séances & Pass', amount: Math.round(coachingCommission) }] : [];
+
+      const calc = calculateAlgerianGrossToNet({
+        baseSalary: member.salary || 50000,
+        workedDays: 22,
+        standardDays: 22,
+        primesCotisables,
+        advancesDeducted: advancesSum,
+      });
+
+      totalGross += calc.salaireBrutCotisable;
+      totalCnasSal += calc.cnasSalarial;
+      totalCnasPat += calc.cnasPatronal;
+      totalIrg += calc.irgTax;
+      totalNet += calc.netAPayer;
+
+      return {
+        id: `slip_${year}_${month}_${member.id}`,
+        payrollRunId: runId,
+        staffId: member.id,
+        matricule: `MAT-GYM-${String(idx + 1).padStart(3, '0')}`,
+        staffFullName: member.fullName,
+        role: member.role,
+        periodMonth: month,
+        periodYear: year,
+        periodLabel: capitalizedPeriod,
+        baseSalary: calc.baseSalary,
+        actualBaseSalary: calc.actualBaseSalary,
+        workedDays: calc.workedDays,
+        standardDays: calc.standardDays,
+        coachingCommission: Math.round(coachingCommission),
+        primesCotisables: calc.primesCotisables,
+        salaireBrutCotisable: calc.salaireBrutCotisable,
+        cnasSalarial: calc.cnasSalarial,
+        cnasPatronal: calc.cnasPatronal,
+        salaireBrutImposable: calc.salaireBrutImposable,
+        irgTax: calc.irgTax,
+        primesNonImposables: calc.primesNonImposables,
+        acomptesDeduits: calc.acomptesDeduits,
+        autresRetenues: calc.autresRetenues,
+        netAPayer: calc.netAPayer,
+        paymentMethod: member.paymentMethod || 'cash',
+        ccpNumber: member.ccpNumber,
+        ccpKey: member.ccpKey,
+        bankRib: member.bankRib,
+        nss: '89 04 16 0000 00',
+        isPaid: false,
+        receiptNumber: `FP-${year}-${String(month).padStart(2, '0')}-${String(idx + 1).padStart(3, '0')}`,
+      };
+    });
+
+    const newRun: StaffPayrollRunRecord = {
+      id: runId,
+      accountId: globalState.account.id,
+      businessId: globalState.currentBusinessId,
+      branchId: globalState.currentBranchId,
+      periodMonth: month,
+      periodYear: year,
+      title: `Paie ${capitalizedPeriod}`,
+      status: 'draft',
+      totalGrossCotisable: totalGross,
+      totalCnasSalarial: totalCnasSal,
+      totalCnasPatronal: totalCnasPat,
+      totalIrg: totalIrg,
+      totalNet: totalNet,
+      slipsCount: slips.length,
+      createdAt: new Date().toISOString(),
+    };
+
+    const existingRuns = (globalState.staffPayrollRuns || []).filter((r) => r.id !== runId);
+    const existingSlips = (globalState.staffPayrollSlips || []).filter((s) => s.payrollRunId !== runId);
+
+    globalState = {
+      ...globalState,
+      staffPayrollRuns: [newRun, ...existingRuns],
+      staffPayrollSlips: [...slips, ...existingSlips],
+    };
+    notify();
+
+    showToast({
+      type: 'success',
+      title: 'Paie calculée avec succès',
+      message: `Calcul effectué pour ${slips.length} collaborateurs (${capitalizedPeriod}). Masse nette : ${totalNet.toLocaleString()} DZD.`,
+    });
+
+    return newRun;
+  };
+
+  const approveStaffPayrollRun = (runId: string) => {
+    const run = (globalState.staffPayrollRuns || []).find((r) => r.id === runId);
+    if (!run) return;
+
+    const updatedAdvances = (globalState.staffSalaryAdvances || []).map((adv) =>
+      adv.status === 'pending'
+        ? { ...adv, status: 'deducted' as const, deductedInPeriod: `${run.periodYear}-${String(run.periodMonth).padStart(2, '0')}` }
+        : adv
+    );
+
+    globalState = {
+      ...globalState,
+      staffPayrollRuns: (globalState.staffPayrollRuns || []).map((r) =>
+        r.id === runId ? { ...r, status: 'paid' as const, approvedAt: new Date().toISOString() } : r
+      ),
+      staffPayrollSlips: (globalState.staffPayrollSlips || []).map((s) =>
+        s.payrollRunId === runId ? { ...s, isPaid: true, paidDate: new Date().toISOString().slice(0, 10) } : s
+      ),
+      staffSalaryAdvances: updatedAdvances,
+    };
+    notify();
+
+    showToast({
+      type: 'success',
+      title: 'Paie clôturée & validée',
+      message: `${run.title} clôturée avec succès. Bulletins de paie disponibles.`,
+    });
+  };
+
+  const markStaffPayrollSlipPaid = (slipId: string) => {
+    globalState = {
+      ...globalState,
+      staffPayrollSlips: (globalState.staffPayrollSlips || []).map((s) =>
+        s.id === slipId ? { ...s, isPaid: true, paidDate: new Date().toISOString().slice(0, 10) } : s
+      ),
+    };
+    notify();
+  };
+
+  const logStaffAttendanceManual = (
+    staffId: string,
+    date: string,
+    type: 'in' | 'out',
+    time: string,
+    notes?: string
+  ) => {
+    const target = (globalState.staff || []).find((s) => s.id === staffId);
+    if (!target) return;
+
+    const logEntry: StaffAttendanceLogRecord = {
+      id: `att_log_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      accountId: target.accountId || globalState.account.id,
+      businessId: target.businessId || globalState.currentBusinessId,
+      branchId: target.branchId || target.facilityId || globalState.currentBranchId,
+      staffId: target.id,
+      staffName: target.fullName,
+      staffRole: target.role,
+      timestamp: `${date}T${time}:00Z`,
+      date,
+      type,
+      method: 'manual',
+      terminalId: 'PORTAIL_MANAGER',
+      notes: notes || 'Pointage manuel manager',
+    };
+
+    globalState = {
+      ...globalState,
+      staffAttendanceLogs: [logEntry, ...(globalState.staffAttendanceLogs || [])],
+    };
+    notify();
+
+    showToast({
+      type: 'success',
+      title: 'Pointage enregistré',
+      message: `${target.fullName} : ${type === 'in' ? 'Arrivée' : 'Sortie'} manuelle à ${time} (${date}).`,
+    });
   };
 
   const parkOrder = (
@@ -8325,6 +8601,16 @@ export function useAtriumStore() {
     terminateStaffMember,
     deleteStaffMember,
     punchStaffAttendance,
+    staffAttendanceLogs: state.staffAttendanceLogs || [],
+    staffSalaryAdvances: state.staffSalaryAdvances || [],
+    staffPayrollRuns: state.staffPayrollRuns || [],
+    staffPayrollSlips: state.staffPayrollSlips || [],
+    createStaffSalaryAdvance,
+    waiveStaffSalaryAdvance,
+    generateStaffPayrollRun,
+    approveStaffPayrollRun,
+    markStaffPayrollSlipPaid,
+    logStaffAttendanceManual,
     canAccessStaffScreen: (cat: BusinessCategory | string, role?: string) =>
       canAccessStaffScreen(cat, role || state.currentUser?.role),
     canViewSensitivePayroll: (role?: string) =>

@@ -1,0 +1,6 @@
+{
+  "summary": "Comprehensive architectural and visual replication plan to bring 1:1 parity between MembershipMembersView and MembershipStaffView: matching container paddings, 40px squircle control heights, #F8F9FA grey pod styling, 124px metric card heights, dark espresso anchor card, single unified 40px toolbar with Seek, filter popover, view switcher, and LiquidButton export, eliminating the duplicated list/grid toggle, and harmonizing all sub-tabs to follow the exact same pod architecture and Atrium branded buttons.",
+  "updatedAt": "2026-11-05T23:30:54.895617284Z",
+  "requestFeedback": true,
+  "userFacing": true
+}

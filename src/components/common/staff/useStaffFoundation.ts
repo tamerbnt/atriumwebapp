@@ -24,6 +24,16 @@ export function useStaffFoundation({ category }: UseStaffFoundationOptions) {
     freezeStaffMember,
     vacationStaffMember,
     terminateStaffMember,
+    staffAttendanceLogs,
+    staffSalaryAdvances,
+    staffPayrollRuns,
+    staffPayrollSlips,
+    createStaffSalaryAdvance,
+    waiveStaffSalaryAdvance,
+    generateStaffPayrollRun,
+    approveStaffPayrollRun,
+    markStaffPayrollSlipPaid,
+    logStaffAttendanceManual,
     showToast,
     language,
     activePmRole,
@@ -42,6 +52,8 @@ export function useStaffFoundation({ category }: UseStaffFoundationOptions) {
 
   const isAr = language === 'ar';
   const isEn = language === 'en';
+
+  const [activeSubTab, setActiveSubTab] = useState<'directory' | 'attendance' | 'payroll' | 'history'>('directory');
 
   // Strict RBAC Access Check based on Effective Active Role
   const effectiveRole = getEffectiveUserRole(category, {
@@ -268,6 +280,18 @@ export function useStaffFoundation({ category }: UseStaffFoundationOptions) {
     handleBulkStatusChange,
     handleBulkDelete,
     handleBulkPointage,
+    activeSubTab,
+    setActiveSubTab,
+    staffAttendanceLogs,
+    staffSalaryAdvances,
+    staffPayrollRuns,
+    staffPayrollSlips,
+    createStaffSalaryAdvance,
+    waiveStaffSalaryAdvance,
+    generateStaffPayrollRun,
+    approveStaffPayrollRun,
+    markStaffPayrollSlipPaid,
+    logStaffAttendanceManual,
     isAr,
     isEn,
     language,

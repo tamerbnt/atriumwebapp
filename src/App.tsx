@@ -926,7 +926,7 @@ export default function App() {
         case 'scheduler':
           return <MembershipSchedulerView />;
         case 'finance':
-          return <MembershipFinanceView />;
+          return <MembershipStaffView />;
         case 'history':
           return <MembershipHistoryView />;
         case 'analytics':

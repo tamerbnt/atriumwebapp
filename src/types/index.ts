@@ -3578,3 +3578,124 @@ export interface EduQuickAttendanceRecord {
   isLocked: boolean;
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// WORKFORCE ERP: ATTENDANCE, SALARY ADVANCES & STATUTORY PAYROLL
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type StaffAttendanceDayStatus =
+  | 'present'
+  | 'late'
+  | 'half_day'
+  | 'absent_justified'
+  | 'absent_unjustified'
+  | 'vacation'
+  | 'rest';
+
+export interface StaffAttendanceLogRecord {
+  id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  staffId: string;
+  staffName: string;
+  staffRole?: string;
+  timestamp: string; // ISO datetime
+  date: string; // YYYY-MM-DD
+  type: 'in' | 'out';
+  method: 'rfid' | 'pin' | 'kiosk' | 'manual';
+  terminalId?: string;
+  notes?: string;
+  lateMinutes?: number;
+}
+
+export interface StaffWeeklyAttendanceDay {
+  date: string; // YYYY-MM-DD
+  dayLabel: string; // Sam, Dim, Lun, Mar, Mer, Jeu, Ven
+  status: StaffAttendanceDayStatus;
+  hoursWorked: number;
+  lateMinutes?: number;
+  overtimeHours?: number;
+}
+
+export interface StaffWeeklyAttendance {
+  staffId: string;
+  staffName: string;
+  role: string;
+  weekStartDate: string; // YYYY-MM-DD (Saturday)
+  days: Record<string, StaffWeeklyAttendanceDay>; // key is YYYY-MM-DD
+  totalHoursWorked: number;
+  totalLateMinutes: number;
+  totalOvertimeHours: number;
+  isValidatedByManager?: boolean;
+}
+
+export interface StaffSalaryAdvance {
+  id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  staffId: string;
+  staffName: string;
+  amountDzd: number;
+  dateIssued: string; // YYYY-MM-DD
+  paymentMethod: 'cash' | 'ccp' | 'bank_transfer';
+  reason?: string;
+  voucherNumber: string;
+  status: 'pending' | 'deducted' | 'waived';
+  deductedInPeriod?: string; // e.g. "2026-11"
+}
+
+export interface StaffPayrollSlipRecord {
+  id: string;
+  payrollRunId: string;
+  staffId: string;
+  matricule: string;
+  staffFullName: string;
+  role: string;
+  periodMonth: number;
+  periodYear: number;
+  periodLabel: string;
+  baseSalary: number;
+  actualBaseSalary: number;
+  workedDays: number;
+  standardDays: number;
+  coachingCommission?: number;
+  primesCotisables: Array<{ label: string; amount: number }>;
+  salaireBrutCotisable: number;
+  cnasSalarial: number; // 9%
+  cnasPatronal: number; // 26%
+  salaireBrutImposable: number;
+  irgTax: number;
+  primesNonImposables: Array<{ label: string; amount: number }>;
+  acomptesDeduits: number;
+  autresRetenues: number;
+  netAPayer: number;
+  paymentMethod: 'cash' | 'ccp' | 'bank_transfer';
+  ccpNumber?: string;
+  ccpKey?: string;
+  bankRib?: string;
+  nss?: string;
+  isPaid: boolean;
+  paidDate?: string;
+  receiptNumber: string;
+}
+
+export interface StaffPayrollRunRecord {
+  id: string;
+  accountId?: string;
+  businessId?: string;
+  branchId?: string;
+  periodMonth: number;
+  periodYear: number;
+  title: string;
+  status: 'draft' | 'approved' | 'paid';
+  totalGrossCotisable: number;
+  totalCnasSalarial: number;
+  totalCnasPatronal: number;
+  totalIrg: number;
+  totalNet: number;
+  slipsCount: number;
+  createdAt: string;
+  approvedAt?: string;
+}
+

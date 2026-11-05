@@ -1760,12 +1760,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
           label: terminology.scheduler,
         },
         {
-          id: 'finance',
-          icon: <Wallet size={19} />,
-          title: t('nav_finance', language),
-          label: t('nav_finance', language),
-        },
-        {
           id: 'settings',
           icon: <Settings size={19} />,
           title: t('nav_settings', language),
@@ -1798,8 +1792,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
       const staffNavItem = {
         id: 'staff' as ActiveScreen,
         icon: <Users size={19} />,
-        title: language === 'ar' ? 'فريق العمل' : language === 'en' ? 'Staff' : 'Équipe',
-        label: language === 'ar' ? 'فريق العمل' : language === 'en' ? 'Staff' : 'Équipe',
+        title: language === 'ar' ? 'فريق العمل' : 'Staff',
+        label: language === 'ar' ? 'فريق العمل' : 'Staff',
       };
       const settingsIndex = dockNavItems.findIndex((item) => item.id === 'settings');
       if (settingsIndex >= 0) {
