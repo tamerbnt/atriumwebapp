@@ -36,7 +36,22 @@
 }
 .brandMark { width: 40px; height: 40px; display: grid; place-items: center; flex: none; }
 .brandMark svg { width: 24px; height: 24px; }
-.brandTitle { margin-left: 8px; font-family: var(--atr-font-brand, 'Sigana Condensed', 'Cinzel', var(--atr-font-ui, sans-serif)); font-size: 20px; line-height: 1; font-weight: 700; letter-spacing: 0.14em; color: var(--atr-side-ink); }
+.brandTitle {
+  margin-left: 8px;
+  font-family: var(--atr-font-brand, 'Sigana Condensed', 'Cinzel', var(--atr-font-ui, sans-serif));
+  font-size: 25px;
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  color: var(--atr-side-ink);
+  -webkit-text-stroke: 0.55px currentColor;
+  text-shadow: 0 0 0.5px currentColor;
+  font-synthesis: weight style;
+  display: inline-flex;
+  align-items: center;
+  transform: scaleY(1.08);
+  transform-origin: left center;
+}
 
 .list {
   position: relative;
@@ -45,26 +60,35 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 0;
   flex: 1;
   min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
 }
 
+.list > li {
+  padding: 3px 0;
+  margin: 0;
+  list-style: none;
+  display: flex;
+  justify-content: flex-start;
+  flex: none;
+}
+
 /* Fluid terracotta magnetic hover pill: tracking pointer with velocity stretch */
 .magneticHl {
   position: absolute;
   left: 10px;
-  width: calc(var(--wx) - 20px);
+  width: calc(40px + var(--open) * 176px);
   top: 0;
   height: 40px;
   border-radius: 20px;
-  background: rgba(212, 82, 47, 0.16);
+  background: rgba(212, 82, 47, 0.18);
+  box-shadow: 0 2px 10px rgba(212, 82, 47, 0.14);
   opacity: 0;
   pointer-events: none;
   z-index: 1;
-  clip-path: inset(0 calc((1 - var(--open)) * (100% - 40px)) 0 0 round 20px);
   contain: layout paint;
   will-change: transform, height, opacity;
 }
@@ -75,12 +99,12 @@
   display: flex;
   align-items: center;
   box-sizing: border-box;
-  width: calc(var(--wx) - 20px);
+  width: calc(40px + var(--open) * 176px);
   height: 40px;
   margin: 0 10px;
   padding: 0;
   border: 0;
-  background: none;
+  background: transparent;
   color: var(--atr-side-mut);
   font: inherit;
   font-size: 13px;
@@ -89,21 +113,23 @@
   cursor: pointer;
   border-radius: 20px;
   -webkit-tap-highlight-color: transparent;
+  overflow: hidden;
+  transition: background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1), color 0.15s ease;
 }
 .item:hover { color: var(--atr-side-ink); }
+.item:hover:not([aria-current='page']) .ico svg {
+  stroke: var(--atr-acc);
+  transition: stroke 0.15s ease;
+}
+.item:hover:not([aria-current='page']) .lab {
+  color: var(--atr-side-ink);
+}
 .item:focus-visible { outline: 2px solid var(--atr-acc); outline-offset: 2px; }
 
-/* active pill: a circle in the rail that the clip stretches to the full row */
-.hl {
-  position: absolute;
-  inset: 0;
-  background: var(--atr-acc);
-  box-shadow: 0 4px 14px rgba(212, 82, 47, 0.35);
-  border-radius: 20px;
-  clip-path: inset(0 calc((1 - var(--open)) * (100% - 40px)) 0 0 round 20px);
-  z-index: 1;
-}
+/* active pill: solid terracotta capsule directly on the item button */
 .item[aria-current='page'] {
+  background: var(--atr-acc);
+  box-shadow: 0 4px 14px rgba(212, 82, 47, 0.38);
   color: #ffffff;
   font-weight: 600;
 }
@@ -112,20 +138,30 @@
 }
 .item[aria-current='page'] .lab {
   color: #ffffff;
-  opacity: 1;
+  font-weight: 600;
 }
-.item:not([aria-current='page']) .hl { display: none; }
 
-.ico { position: relative; width: 40px; height: 40px; flex: none; display: grid; place-items: center; }
+.ico { position: relative; z-index: 2; width: 40px; height: 40px; flex: none; display: grid; place-items: center; }
 .ico svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
 /* labels fade and slide in after the panel has started to open, one row after another */
 .lab {
   position: relative;
+  z-index: 2;
   margin-left: 4px;
   white-space: nowrap;
   opacity: clamp(0, (var(--open) - 0.28 - var(--i, 0) * 0.035) * 2.4, 1);
   transform: translateX(calc((1 - min(1, var(--open))) * -10px));
+}
+
+/* In collapsed state: strictly force zero text, badges, titles or footers */
+.root:not([data-open]) .lab,
+.root:not([data-open]) .badge,
+.root:not([data-open]) .brandTitle,
+.root:not([data-open]) .footer {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
 }
 .badge {
   position: relative;
@@ -170,7 +206,7 @@
 /* tier "off" and reduced motion: the same CSS, the engine just jumps --open to 0 or 1 */
 @media (forced-colors: active) {
   .panel { border: 1px solid CanvasText; }
-  .hl { background: Highlight; }
+  .item[aria-current='page'] { background: Highlight; }
 }
 
 /* RTL layout optical adjustments */
@@ -189,6 +225,7 @@
 [dir="rtl"] .brandTitle {
   margin-left: 0;
   margin-right: 8px;
+  transform-origin: right center;
 }
 [dir="rtl"] .item {
   text-align: right;
@@ -196,10 +233,6 @@
 [dir="rtl"] .magneticHl {
   left: auto;
   right: 10px;
-  clip-path: inset(0 0 0 calc((1 - var(--open)) * (100% - 40px)) round 20px);
-}
-[dir="rtl"] .hl {
-  clip-path: inset(0 0 0 calc((1 - var(--open)) * (100% - 40px)) round 20px);
 }
 [dir="rtl"] .lab {
   margin-left: 0;

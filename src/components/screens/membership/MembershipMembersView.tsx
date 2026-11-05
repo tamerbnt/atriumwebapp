@@ -7,7 +7,6 @@ import {
   ChevronDown,
   Search,
   Download,
-  Maximize2,
   Check,
   Eye,
   X,
@@ -40,6 +39,7 @@ import { Seek } from '../../ui/Seek';
 import { ActionNode } from '../../ui/ActionNode';
 import { UniversalDataCollection, ColumnDefinition } from '../../ui/collection';
 import { AtriumButton } from '../../ui/AtriumButton';
+import { Button as BrandedAtriumButton } from '@/atrium';
 import { LiveSegmentedControl } from '../../ui/live/LiveSegmentedControl';
 import { t } from '../../../utils/i18n';
 import { useSkeletonLoading } from '../../../hooks/useSkeletonLoading';
@@ -104,7 +104,6 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
   const [isFilterPopoverOpen, setIsFilterPopoverOpen] = useState(false);
   const filterPopoverRef = useRef<HTMLDivElement | null>(null);
   const filterButtonRef = useRef<HTMLButtonElement | null>(null);
-  const [popoverCoords, setPopoverCoords] = useState<{ top: number; left: number; width: number } | null>(null);
 
   // Helper to compute age from birthdate
   const getMemberAge = (dobString?: string): number | null => {
@@ -133,55 +132,12 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
     return true;
   };
 
-  const updatePopoverCoords = useCallback(() => {
-    if (!filterButtonRef.current) return;
-    const rect = filterButtonRef.current.getBoundingClientRect();
-    const popoverWidth = Math.min(460, window.innerWidth - 32);
-    const isRtl = language === 'ar' || document.documentElement.dir === 'rtl';
-
-    let left = isRtl ? rect.right - popoverWidth : rect.left;
-    if (left + popoverWidth > window.innerWidth - 16) {
-      left = window.innerWidth - popoverWidth - 16;
-    }
-    if (left < 16) left = 16;
-
-    let top = rect.bottom + 8;
-    const estimatedHeight = 520;
-    if (top + estimatedHeight > window.innerHeight - 16 && rect.top > estimatedHeight) {
-      top = Math.max(16, rect.top - estimatedHeight - 8);
-    }
-
-    setPopoverCoords({
-      top: Math.round(top),
-      left: Math.round(left),
-      width: popoverWidth,
-    });
-  }, [language]);
-
   const toggleFilterPopover = () => {
-    if (!isFilterPopoverOpen) {
-      updatePopoverCoords();
-      setIsFilterPopoverOpen(true);
-    } else {
-      setIsFilterPopoverOpen(false);
-    }
+    setIsFilterPopoverOpen((prev) => !prev);
   };
 
   useEffect(() => {
     if (!isFilterPopoverOpen) return;
-    updatePopoverCoords();
-
-    const handleClickOutside = (e: MouseEvent) => {
-      const target = e.target as Node;
-      if (
-        filterPopoverRef.current &&
-        !filterPopoverRef.current.contains(target) &&
-        filterButtonRef.current &&
-        !filterButtonRef.current.contains(target)
-      ) {
-        setIsFilterPopoverOpen(false);
-      }
-    };
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -190,22 +146,11 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
       }
     };
 
-    const handleScrollOrResize = () => {
-      updatePopoverCoords();
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
     document.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('resize', handleScrollOrResize);
-    window.addEventListener('scroll', handleScrollOrResize, true);
-
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
       document.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('resize', handleScrollOrResize);
-      window.removeEventListener('scroll', handleScrollOrResize, true);
     };
-  }, [isFilterPopoverOpen, updatePopoverCoords]);
+  }, [isFilterPopoverOpen]);
 
   const hasActiveAdvancedFilters =
     planFilter !== 'All' ||
@@ -530,14 +475,6 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
     document.body.removeChild(link);
   };
 
-  const toggleFullscreen = () => {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen().catch(() => {});
-    } else {
-      document.exitFullscreen().catch(() => {});
-    }
-  };
-
   const { showSkeleton, isTimedOut, isOffline, retry } = useSkeletonLoading({
     isLoading: isSyncing || networkMode === 'force_skeleton',
     hasCachedData: members.length > 0,
@@ -717,37 +654,21 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
         </div>
       </div>
 
-      {/* Row 2: Members Master Table Group matching Screenshot 881 */}
+      {/* Row 2: Members Master Table Group */}
       <div className="bg-[#F8F9FA] dark:bg-neutral-800/40 rounded-[24px] p-5 space-y-4 border border-[#EDF1F3] dark:border-neutral-800/60 shadow-2xs">
-        {/* Pod Header ALONE (Row 1 of Pod) */}
-        <div className="flex items-center justify-between pb-3.5 border-b border-neutral-200/70 dark:border-neutral-700/60">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-white dark:bg-neutral-800 border border-neutral-200/80 dark:border-neutral-700/80 flex items-center justify-center text-neutral-700 dark:text-neutral-300 shadow-2xs">
-              <Users size={17} className="text-[#C4785A]" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2.5">
-                <h2 className="text-base font-bold text-neutral-900 dark:text-white tracking-tight">
-                  {language === 'ar' ? 'قائمة المشتركين' : 'Liste des adhérents'}
-                </h2>
-                <span className="px-2.5 py-0.5 text-xs font-bold rounded-full bg-white dark:bg-neutral-800 border border-neutral-200/80 dark:border-neutral-700/70 text-neutral-700 dark:text-neutral-300 shadow-2xs tabular-nums">
-                  {displayMembers.length}
-                </span>
-              </div>
-              <p className="text-[11px] text-neutral-400 mt-0.5">
-                {language === 'ar'
-                  ? 'إدارة اشتراكات الأعضاء وحالات الحسابات والبيانات المسجلة'
-                  : language === 'fr'
-                  ? 'Gestion complète des adhésions, forfaits et statuts'
-                  : 'Complete management of member profiles, plans and active statuses'}
-              </p>
-            </div>
+        {/* Unified Header & Tools Row: Title on Left, Search & Filters Middle, Export on Right */}
+        <div className="flex flex-wrap items-center justify-between gap-3 w-full">
+          {/* Left: Section Title & Count Badge */}
+          <div className="flex items-center gap-2.5 shrink-0">
+            <h2 className="text-base font-bold text-neutral-900 dark:text-white tracking-tight">
+              {language === 'ar' ? 'قائمة المشتركين' : 'Liste des adhérents'}
+            </h2>
+            <span className="px-2.5 py-0.5 text-xs font-bold rounded-full bg-white dark:bg-neutral-800 border border-neutral-200/80 dark:border-neutral-700/70 text-neutral-700 dark:text-neutral-300 shadow-2xs tabular-nums">
+              {displayMembers.length}
+            </span>
           </div>
-        </div>
 
-        {/* Tools and Filters Sub-Row (Row 2 of Pod) */}
-        <div className="flex flex-wrap items-center justify-between gap-3 w-full pt-0.5">
-          {/* Left Discovery Group: Seek + Quick Status Tabs + Filters Button */}
+          {/* Middle: Search + Quick Status Tabs + Filter Modal Button */}
           <div className="flex items-center gap-2.5 min-w-0 flex-wrap">
             {/* Seek Kinetic Search Box (40px Standard Circular/Pill) */}
             <Seek
@@ -770,13 +691,13 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
               />
             </div>
 
-            {/* On-Demand Filters Popover Button (40px Standard Squircle) */}
+            {/* On-Demand Filters Modal Trigger Button (40px Standard Squircle/Pill) */}
             <div className="relative shrink-0">
               <button
                 ref={filterButtonRef}
                 type="button"
                 onClick={toggleFilterPopover}
-                className={`h-10 px-3.5 rounded-[6px] border flex items-center gap-2 text-xs font-semibold cursor-pointer transition-all shadow-2xs select-none ${
+                className={`h-10 px-3.5 rounded-full border flex items-center gap-2 text-xs font-semibold cursor-pointer transition-all shadow-2xs select-none ${
                   hasActiveAdvancedFilters || isFilterPopoverOpen
                     ? 'bg-[#FCEEE8] dark:bg-[#C4785A]/15 text-[#C4785A] border-[#C4785A]/40 ring-1 ring-[#C4785A]/20'
                     : 'bg-white dark:bg-neutral-800 border-[#E9EEF0] dark:border-neutral-700/60 text-neutral-700 dark:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-neutral-700/50'
@@ -801,31 +722,61 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
             </div>
           </div>
 
-          {/* Floating Filter Popover Rendered via Portal (Apple HIG Inspired - Translucent Frosted Glass & Inset Groups) */}
-          {isFilterPopoverOpen && popoverCoords && createPortal(
+          {/* Right Utility Group: View Switcher (List/Grid) + Branded Atrium Export Button (40px) */}
+          <div className="flex items-center gap-2 shrink-0">
+            {/* View Switcher: List | Grid (40px standard squircle) */}
+            <LiveSegmentedControl
+              size="md"
+              options={[
+                { value: 'list', icon: <List className="w-4 h-4" />, 'aria-label': 'List View' },
+                { value: 'grid', icon: <LayoutGrid className="w-4 h-4" />, 'aria-label': 'Grid View' },
+              ]}
+              value={viewMode}
+              onValueChange={(val) => setViewMode(val as any)}
+              aria-label="View Switcher"
+            />
+
+            {/* Official Branded Atrium Export Button (exact 40px height) */}
+            <BrandedAtriumButton
+              size={40}
+              tone="soft"
+              leading={<Download size={15} className="text-neutral-500" />}
+              onClick={handleExportCSV}
+              title={t('members_export_csv', language)}
+              className="font-semibold shadow-2xs"
+            >
+              <span className="hidden xl:inline">{t('members_export_csv', language)}</span>
+            </BrandedAtriumButton>
+          </div>
+        </div>
+
+        {/* Centered Apple-Style Filters Modal Sheet with Frosted Backdrop */}
+        {isFilterPopoverOpen && createPortal(
+          <div
+            className="fixed inset-0 z-[99999] flex items-center justify-center p-4 sm:p-6 bg-black/40 dark:bg-black/70 backdrop-blur-md animate-in fade-in duration-200"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setIsFilterPopoverOpen(false);
+            }}
+            role="dialog"
+            aria-modal="true"
+            aria-label={language === 'ar' ? 'مرشحات متقدمة' : language === 'fr' ? 'Filtres avancés' : 'Advanced Filters'}
+          >
             <div
               ref={filterPopoverRef}
-              style={{
-                position: 'fixed',
-                top: `${popoverCoords.top}px`,
-                left: `${popoverCoords.left}px`,
-                width: `${popoverCoords.width}px`,
-                maxHeight: 'calc(100vh - 32px)',
-                zIndex: 99999,
-              }}
-              className="rounded-[22px] bg-white/95 dark:bg-[#18181B]/95 backdrop-blur-xl border border-[#E9EEF0] dark:border-neutral-700/80 shadow-2xl p-5 space-y-4 animate-in fade-in zoom-in-95 duration-150 text-neutral-900 dark:text-white overflow-hidden flex flex-col"
+              className="w-full max-w-lg max-h-[85vh] bg-white/95 dark:bg-[#18181B]/95 backdrop-blur-2xl rounded-[26px] border border-black/5 dark:border-white/10 shadow-2xl p-5 sm:p-6 space-y-4 animate-in zoom-in-95 duration-150 text-neutral-900 dark:text-white overflow-hidden flex flex-col"
+              onClick={(e) => e.stopPropagation()}
             >
               {/* Header: Title, Total Matches, Reset & Close */}
-              <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800 shrink-0">
+              <div className="flex items-center justify-between pb-3.5 border-b border-neutral-100 dark:border-neutral-800 shrink-0">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-[#FCEEE8] dark:bg-[#C4785A]/20 flex items-center justify-center text-[#C4785A] shadow-2xs">
-                    <SlidersHorizontal size={15} />
+                  <div className="w-9 h-9 rounded-full bg-[#FCEEE8] dark:bg-[#C4785A]/20 flex items-center justify-center text-[#C4785A] shadow-2xs">
+                    <SlidersHorizontal size={16} />
                   </div>
                   <div>
-                    <span className="text-xs font-bold text-neutral-900 dark:text-white uppercase tracking-wider block">
+                    <span className="text-sm font-bold text-neutral-900 dark:text-white tracking-tight block">
                       {language === 'ar' ? 'مرشحات متقدمة' : language === 'fr' ? 'Filtres avancés' : 'Advanced Filters'}
                     </span>
-                    <span className="text-[11px] text-neutral-400">
+                    <span className="text-xs text-neutral-400">
                       {displayMembers.length} {terminology.members.toLowerCase()}
                     </span>
                   </div>
@@ -835,25 +786,25 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
                     <button
                       type="button"
                       onClick={handleResetFilters}
-                      className="text-[11px] font-semibold text-[#C4785A] hover:underline flex items-center gap-1 cursor-pointer transition-colors"
+                      className="text-xs font-semibold text-[#C4785A] hover:underline flex items-center gap-1 cursor-pointer transition-colors px-2 py-1 rounded-md"
                     >
-                      <RotateCcw size={11} />
+                      <RotateCcw size={12} />
                       <span>{language === 'ar' ? 'إعادة ضبط' : language === 'fr' ? 'Réinitialiser' : 'Reset'}</span>
                     </button>
                   )}
                   <button
                     type="button"
                     onClick={() => setIsFilterPopoverOpen(false)}
-                    className="w-7 h-7 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 flex items-center justify-center cursor-pointer transition-colors"
+                    className="w-8 h-8 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 flex items-center justify-center cursor-pointer transition-colors"
                     aria-label="Close filters"
                   >
-                    <X size={15} />
+                    <X size={16} />
                   </button>
                 </div>
               </div>
 
-              {/* Scrollable Filters Body */}
-              <div className="space-y-4 overflow-y-auto pr-1 max-h-[62vh] -mr-1">
+              {/* Scrollable Filters Body (Apple Inset Groups with Atrium Terracotta Styling) */}
+              <div className="space-y-4 overflow-y-auto pr-1 max-h-[58vh] -mr-1">
                 {/* Section 1: Gender (Apple Segmented Control Style) */}
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
@@ -1070,22 +1021,23 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
                 </div>
               </div>
 
-              {/* Bottom Action: Reset & Confirmation Button */}
+              {/* Bottom Action: Reset & Confirmation Button with Branded Atrium Buttons */}
               <div className="pt-3 border-t border-neutral-100 dark:border-neutral-800 flex items-center gap-2 shrink-0">
                 {hasActiveAdvancedFilters && (
-                  <button
-                    type="button"
+                  <BrandedAtriumButton
+                    tone="soft"
+                    size={40}
                     onClick={handleResetFilters}
-                    className="px-3.5 py-2.5 rounded-[10px] border border-neutral-200 dark:border-neutral-700 text-xs font-semibold text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+                    className="font-semibold text-xs"
                   >
-                    {language === 'ar' ? 'إعادة ضبط' : language === 'fr' ? 'Réinitialiser' : 'Reset'}
-                  </button>
+                    <span>{language === 'ar' ? 'إعادة ضبط' : language === 'fr' ? 'Réinitialiser' : 'Reset'}</span>
+                  </BrandedAtriumButton>
                 )}
-                <AtriumButton
-                  variant="primary"
-                  size="md"
+                <BrandedAtriumButton
+                  tone="accent"
+                  size={40}
                   onClick={() => setIsFilterPopoverOpen(false)}
-                  className="flex-1 font-semibold"
+                  className="flex-1 font-semibold text-xs"
                 >
                   <span>
                     {language === 'ar'
@@ -1094,49 +1046,12 @@ export const MembershipMembersView: React.FC<MembershipMembersViewProps> = ({
                       ? `Afficher ${displayMembers.length} ${terminology.members.toLowerCase()}`
                       : `Show ${displayMembers.length} ${terminology.members}`}
                   </span>
-                </AtriumButton>
+                </BrandedAtriumButton>
               </div>
-            </div>,
-            document.body
-          )}
-
-          {/* Right Utility Group: View Switcher (List/Grid) + Atrium Export Button + Fullscreen */}
-          <div className="flex items-center gap-2 shrink-0">
-            {/* View Switcher: List | Grid (40px standard squircle) */}
-            <LiveSegmentedControl
-              size="md"
-              options={[
-                { value: 'list', icon: <List className="w-4 h-4" />, 'aria-label': 'List View' },
-                { value: 'grid', icon: <LayoutGrid className="w-4 h-4" />, 'aria-label': 'Grid View' },
-              ]}
-              value={viewMode}
-              onValueChange={(val) => setViewMode(val as any)}
-              aria-label="View Switcher"
-            />
-
-            {/* Official Atrium Export Button */}
-            <AtriumButton
-              variant="secondary"
-              size="md"
-              icon={<Download size={15} className="text-neutral-500" />}
-              onClick={handleExportCSV}
-              title={t('members_export_csv', language)}
-              className="font-semibold shadow-2xs"
-            >
-              <span className="hidden xl:inline">{t('members_export_csv', language)}</span>
-            </AtriumButton>
-
-            {/* Fullscreen Expand Icon (40px standard squircle) */}
-            <button
-              type="button"
-              onClick={toggleFullscreen}
-              className="w-10 h-10 rounded-[6px] bg-white dark:bg-neutral-800 border border-[#E9EEF0] dark:border-neutral-700/60 flex items-center justify-center text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 cursor-pointer transition-colors shadow-2xs shrink-0"
-              title="Toggle Fullscreen"
-            >
-              <Maximize2 size={15} />
-            </button>
-          </div>
-        </div>
+            </div>
+          </div>,
+          document.body
+        )}
 
         {/* Active Filter Capsules (Progressive Disclosure Sub-Row) */}
         {hasActiveAdvancedFilters && (

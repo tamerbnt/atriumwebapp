@@ -1909,12 +1909,30 @@ export const Sidebar: React.FC<SidebarProps> = ({
   }));
 
   // Resolve current active item id
-  let activeId = activeScreen;
+  let activeId: string = activeScreen;
   if (!sidebarItems.some(it => it.id === activeId)) {
     if (activeScreen === 'trading_dashboard' && sidebarItems.some(it => it.id === 'dashboard')) {
       activeId = 'dashboard';
     } else if (activeScreen === 'dashboard' && sidebarItems.some(it => it.id === 'trading_dashboard')) {
       activeId = 'trading_dashboard';
+    } else if (activeScreen === 'dashboard' && sidebarItems.some(it => it.id.includes('dashboard'))) {
+      activeId = sidebarItems.find(it => it.id.includes('dashboard'))!.id;
+    } else if (category === 'project_milestone') {
+      const match = sidebarItems.find(it => 
+        it.id === activeScreen || 
+        it.id.startsWith(`pm_${activePmRole}`) ||
+        (activeScreen.includes('project') && it.id.includes('project'))
+      );
+      if (match) activeId = match.id;
+    } else {
+      const directMatch = sidebarItems.find(it => 
+        activeScreen.startsWith(it.id) || it.id.startsWith(activeScreen)
+      );
+      if (directMatch) {
+        activeId = directMatch.id;
+      } else if (sidebarItems.length > 0 && (activeScreen === 'dashboard' || activeScreen.includes('dashboard'))) {
+        activeId = sidebarItems[0].id;
+      }
     }
   }
 

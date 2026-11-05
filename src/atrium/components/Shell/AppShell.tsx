@@ -101,22 +101,27 @@ export function AppShell({
     const pb = new PushBody(content.current, root.current, sidebarOpenRef.current);
     pushBody.current = pb;
 
-    const measure = () => {
+    const measure = (forceSnap = false) => {
+      if (!root.current || !bar.current || !content.current) return;
       const gap = parseFloat(getComputedStyle(root.current as Element).columnGap) || 12;
       b.H = (bar.current as HTMLElement).offsetHeight + gap;
-      b.snap();
-      b.render();
-      b.onSleep();
       pb.measure();
-      pb.snap();
-      pb.render();
-      pb.onSleep();
+      if (forceSnap || !b.moving) {
+        b.snap();
+        b.render();
+        b.onSleep();
+      }
+      if (forceSnap || !pb.moving) {
+        pb.snap();
+        pb.render();
+        pb.onSleep();
+      }
     };
-    measure();
+    measure(true);
 
     let ro: ResizeObserver | undefined;
     if (typeof ResizeObserver !== 'undefined') {
-      ro = new ResizeObserver(measure);
+      ro = new ResizeObserver(() => measure(false));
       ro.observe(bar.current);
       ro.observe(root.current);
     }

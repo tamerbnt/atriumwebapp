@@ -96,7 +96,7 @@ export function Sidebar({
     };
   }, []);
 
-  useEffect(() => {
+  useIsoLayoutEffect(() => {
     body.current?.setOpen(open);
   }, [open]);
 
@@ -130,21 +130,22 @@ export function Sidebar({
     }
   };
 
-  const onListPointerMove = (e: React.PointerEvent) => {
+  const lastTargetBtn = useRef<HTMLButtonElement | null>(null);
+
+  const handleListPointer = (e: React.PointerEvent) => {
     if (e.pointerType === 'touch') return;
     const target = e.target as HTMLElement;
     const btn = target.closest('button');
-    if (!btn || !listRef.current) {
-      hoverBody.current?.setHover(null);
-      return;
-    }
-    const li = btn.closest('li');
-    if (li) {
-      hoverBody.current?.setHover([li.offsetTop, li.offsetHeight || 40]);
-    }
+    if (!btn || !listRef.current) return;
+    if (btn === lastTargetBtn.current) return;
+    lastTargetBtn.current = btn;
+    hoverBody.current?.setHover([btn.offsetTop, btn.offsetHeight || 40]);
   };
 
-  const onListPointerLeave = () => {
+  const onListPointerLeave = (e: React.PointerEvent) => {
+    const related = e.relatedTarget as Node | null;
+    if (listRef.current && related && listRef.current.contains(related)) return;
+    lastTargetBtn.current = null;
     hoverBody.current?.setHover(null);
   };
 
@@ -185,7 +186,8 @@ export function Sidebar({
         <ul
           ref={listRef}
           className={s.list}
-          onPointerMove={onListPointerMove}
+          onPointerOver={handleListPointer}
+          onPointerMove={handleListPointer}
           onPointerLeave={onListPointerLeave}
         >
           <span ref={magneticHlRef} className={s.magneticHl} aria-hidden="true" />
@@ -200,7 +202,6 @@ export function Sidebar({
                 style={{ ['--i' as string]: i + 1 } as CSSProperties}
                 onClick={() => onSelect?.(it.id)}
               >
-                <span className={s.hl} />
                 <span className={s.ico}>{it.icon}</span>
                 <span className={s.lab} aria-hidden="true">{it.label}</span>
                 {it.badge ? <span className={s.badge}>{it.badge}</span> : null}

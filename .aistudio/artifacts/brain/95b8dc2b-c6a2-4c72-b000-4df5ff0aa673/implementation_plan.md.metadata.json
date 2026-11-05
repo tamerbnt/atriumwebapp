@@ -1,0 +1,6 @@
+{
+  "summary": "Implementation plan for the Members screen refinements:\n- Consolidating the second pod header into a single unified row (Title on left, search and filters in middle, export on right) without the icon, subtitle, or separation line.\n- Removing the fullscreen button from the member pod and adding it to the TopBar profile dropdown menu.\n- Replacing the export button with the genuine branded 40px Atrium Button.\n- Redesigning the filters view into a centered Apple-style modal sheet with frosted backdrop and Atrium terracotta accents.",
+  "updatedAt": "2026-11-05T00:06:12.030879801Z",
+  "requestFeedback": true,
+  "userFacing": true
+}

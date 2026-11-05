@@ -31,6 +31,8 @@ import {
   Activity,
   Bell,
   Settings,
+  Maximize2,
+  Minimize2,
 } from 'lucide-react';
 import { useAtriumStore, showToast } from '../../services/store';
 import { formatDuration } from '../../utils/rules';
@@ -128,6 +130,24 @@ export const TopBar: React.FC<TopBarProps> = ({
     categoryName: string;
     onSuccess: () => void;
   } | null>(null);
+
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(() => {});
+    } else {
+      document.exitFullscreen().catch(() => {});
+    }
+  };
 
   const userMenuRef = useRef<HTMLDivElement>(null);
   const userButtonRef = useRef<HTMLButtonElement>(null);
@@ -1562,6 +1582,17 @@ export const TopBar: React.FC<TopBarProps> = ({
                 description: isTopBarAutoHide ? 'Top bar is floating / auto-hiding' : 'Top bar stays permanently visible',
                 icon: <ChevronUp size={15} />,
                 onSelect: () => toggleTopBarAutoHide(),
+              },
+              {
+                id: 'fullscreen',
+                label: isFullscreen
+                  ? (language === 'ar' ? 'إنهاء وضع ملء الشاشة' : language === 'fr' ? 'Quitter le mode plein écran' : 'Exit Fullscreen')
+                  : (language === 'ar' ? 'وضع ملء الشاشة' : language === 'fr' ? 'Mode plein écran' : 'Full Screen Mode'),
+                description: isFullscreen
+                  ? (language === 'ar' ? 'الرجوع إلى العرض العادي' : 'Return to standard window')
+                  : (language === 'ar' ? 'توسيع واجهة النظام على كامل الشاشة' : 'Expand workspace to full display'),
+                icon: isFullscreen ? <Minimize2 size={15} /> : <Maximize2 size={15} />,
+                onSelect: () => toggleFullscreen(),
               },
               {
                 id: 'settings',
